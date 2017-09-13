@@ -1,49 +1,25 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
+# English translations for Beremiz package.
+# Copyright (C) 2017 THE Beremiz'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Beremiz package.
+# Automatically generated, 2017.
+# 
+# Translators:
+# Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Beremiz_Korean_Version\n"
+"Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-07 01:17+0200\n"
-"PO-Revision-Date: 2012-09-07 01:38+0100\n"
-"Last-Translator: Laurent BESSARD <laurent.bessard@gmail.com>\n"
-"Language-Team: LinuxIT <lij3105@gmail.com>\n"
-"Language: \n"
+"POT-Creation-Date: 2017-07-05 13:02+0300\n"
+"PO-Revision-Date: 2017-07-05 13:02+0300\n"
+"Last-Translator: Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017\n"
+"Language-Team: Korean (Korea) (https://www.transifex.com/beremiz/teams/75746/ko_KR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Language: Korean\n"
-"X-Poedit-Country: KOREA, REPUBLIC OF\n"
-"X-Poedit-SourceCharset: utf-8\n"
-"X-Poedit-Language: Korean\n"
-"X-Poedit-Country: KOREA, REPUBLIC OF\n"
-"X-Poedit-SourceCharset: utf-8\n"
+"Language: ko_KR\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
 
-#: ../PLCOpenEditor.py:520
-msgid ""
-"\n"
-"An error has occurred.\n"
-"\n"
-"Click OK to save an error report.\n"
-"\n"
-"Please be kind enough to send this file to:\n"
-"edouard.tisserant@gmail.com\n"
-"\n"
-"Error:\n"
-msgstr ""
-"\n"
-"알 수 없는 에러가 발생했습니다.\n"
-"\n"
-"OK 버튼을 눌러 에러 리포트를 저장하세요.\n"
-"\n"
-"edouard.tisserant@gmail.com 주소로 에러 리포트를 첨부하여 보내주세요\n"
-"\n"
-"에러:\n"
-
-#: ../Beremiz.py:1071
+#: ../BeremizIDE.py:1095 ../PLCOpenEditor.py:418
 #, python-format
 msgid ""
 "\n"
@@ -53,223 +29,156 @@ msgid ""
 "Please be kind enough to send this file to:\n"
 "beremiz-devel@lists.sourceforge.net\n"
 "\n"
-"You should now restart Beremiz.\n"
+"You should now restart program.\n"
 "\n"
 "Traceback:\n"
 msgstr ""
-"\n"
-"원인을 알 수 없는 에러가 발생하였습니다. 버그 리포트 저장 위치 :\n"
-"(%s)\n"
-"\n"
-"버그 리포트 파일을 beremiz-devel@lists.sourceforge.net으로\n"
-"전송해주시면 감사하겠습니다.\n"
-"\n"
-"베레미즈를 다시 시작해주세요.\n"
-"\n"
-"에러 위치:\n"
 
-#: ../controls/VariablePanel.py:77
+#: ../controls/VariablePanel.py:72
 msgid "   External"
 msgstr "   외부"
 
-#: ../controls/VariablePanel.py:76
+#: ../controls/VariablePanel.py:71
 msgid "   InOut"
 msgstr "   입출력"
 
-#: ../controls/VariablePanel.py:76
+#: ../controls/VariablePanel.py:71
 msgid "   Input"
 msgstr "   입력"
 
-#: ../controls/VariablePanel.py:77
+#: ../controls/VariablePanel.py:72
 msgid "   Local"
 msgstr "   로컬"
 
-#: ../controls/VariablePanel.py:76
+#: ../controls/VariablePanel.py:71
 msgid "   Output"
 msgstr "   출력"
 
-#: ../controls/VariablePanel.py:78
+#: ../controls/VariablePanel.py:73
 msgid "   Temp"
 msgstr "   임시"
 
-#: ../PLCOpenEditor.py:530
-msgid " : "
-msgstr " :"
-
-#: ../dialogs/PouTransitionDialog.py:94
-#: ../dialogs/PouActionDialog.py:91
-#: ../dialogs/PouDialog.py:111
-#: ../dialogs/SFCTransitionDialog.py:144
+#: ../dialogs/PouTransitionDialog.py:94 ../dialogs/ProjectDialog.py:69
+#: ../dialogs/PouActionDialog.py:92 ../dialogs/PouDialog.py:114
 #, python-format
 msgid " and %s"
 msgstr " , %s"
 
-#: ../ProjectController.py:890
+#: ../ProjectController.py:1151
 msgid " generation failed !\n"
 msgstr "생성 실패!\n"
 
-#: ../plcopen/plcopen.py:1051
+#: ../plcopen/plcopen.py:886
 #, python-format
 msgid "\"%s\" Data Type doesn't exist !!!"
 msgstr "\"%s\" 존재하지 않는 데이터 타입!!!"
 
-#: ../plcopen/plcopen.py:1069
+#: ../plcopen/plcopen.py:904
 #, python-format
 msgid "\"%s\" POU already exists !!!"
 msgstr "\"%s\" POU가 이미 존재합니다!!!"
 
-#: ../plcopen/plcopen.py:1090
+#: ../plcopen/plcopen.py:925
 #, python-format
 msgid "\"%s\" POU doesn't exist !!!"
 msgstr "\"%s\" POU가 존재하지 않습니다!!!"
 
-#: ../editors/Viewer.py:234
+#: ../editors/Viewer.py:247
 #, python-format
 msgid "\"%s\" can't use itself!"
 msgstr "\"%s\": 자신을 사용 할 수 없습니다!"
 
-#: ../IDEFrame.py:1706
-#: ../IDEFrame.py:1725
+#: ../IDEFrame.py:1655 ../IDEFrame.py:1674
 #, python-format
 msgid "\"%s\" config already exists!"
 msgstr "\"%s\" 설정(config)이 이미 존재합니다!"
 
-#: ../plcopen/plcopen.py:315
+#: ../plcopen/plcopen.py:472
 #, python-format
 msgid "\"%s\" configuration already exists !!!"
 msgstr "\"%s\" 설정(configuration)이 이미 존재합니다!"
 
-#: ../IDEFrame.py:1660
+#: ../IDEFrame.py:1605
 #, python-format
 msgid "\"%s\" data type already exists!"
 msgstr "\"%s\" 데이터 타입이 이미존재합니다!"
 
-#: ../PLCControler.py:2040
-#: ../PLCControler.py:2044
-#, python-format
-msgid "\"%s\" element can't be pasted here!!!"
-msgstr "\"%s\" 항목을 이곳에 붙여넣기 할 수 없습니다!!!"
-
-#: ../editors/TextViewer.py:305
-#: ../editors/TextViewer.py:325
-#: ../editors/Viewer.py:252
-#: ../dialogs/PouTransitionDialog.py:105
-#: ../dialogs/ConnectionDialog.py:150
-#: ../dialogs/PouActionDialog.py:102
-#: ../dialogs/FBDBlockDialog.py:162
+#: ../dialogs/PouTransitionDialog.py:105 ../dialogs/BlockPreviewDialog.py:220
+#: ../dialogs/PouActionDialog.py:103 ../editors/Viewer.py:263
+#: ../editors/Viewer.py:331 ../editors/Viewer.py:355 ../editors/Viewer.py:375
+#: ../editors/TextViewer.py:272 ../editors/TextViewer.py:301
+#: ../controls/VariablePanel.py:396
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
 msgstr "이 POU에 \"%s\" 항목이 이미 존재합니다!"
 
-#: ../Beremiz.py:894
+#: ../BeremizIDE.py:897
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr "\"%s\" 베레미즈 프로젝트 폴더가 아닙니다\n"
 
-#: ../plcopen/structures.py:106
-#, python-format
-msgid "\"%s\" function cancelled in \"%s\" POU: No input connected"
-msgstr "\"%s\" 펑션이 취소 되었습니다 \"%s\" POU: 연결된 입력 없음"
-
-#: ../controls/VariablePanel.py:656
-#: ../IDEFrame.py:1651
-#: ../editors/DataTypeEditor.py:548
-#: ../editors/DataTypeEditor.py:577
-#: ../dialogs/PouNameDialog.py:49
-#: ../dialogs/PouTransitionDialog.py:101
-#: ../dialogs/SFCStepNameDialog.py:51
-#: ../dialogs/ConnectionDialog.py:146
-#: ../dialogs/FBDVariableDialog.py:199
-#: ../dialogs/PouActionDialog.py:98
-#: ../dialogs/PouDialog.py:118
-#: ../dialogs/SFCStepDialog.py:122
-#: ../dialogs/FBDBlockDialog.py:158
+#: ../dialogs/SFCStepNameDialog.py:52 ../dialogs/PouTransitionDialog.py:101
+#: ../dialogs/BlockPreviewDialog.py:208 ../dialogs/PouNameDialog.py:50
+#: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:121
+#: ../editors/ResourceEditor.py:449 ../editors/ResourceEditor.py:484
+#: ../editors/DataTypeEditor.py:555 ../editors/DataTypeEditor.py:587
+#: ../editors/CodeFileEditor.py:776 ../controls/VariablePanel.py:773
+#: ../IDEFrame.py:1596
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
 msgstr "\"%s\" 는 키워드 입니다. 사용 할 수 없습니다!"
 
-#: ../editors/Viewer.py:240
-#, python-format
-msgid "\"%s\" is already used by \"%s\"!"
-msgstr "\"%s\" 는 \"%s\" 에서 이미 사용중입니다!"
-
-#: ../plcopen/plcopen.py:2786
+#: ../plcopen/plcopen.py:2417
 #, python-format
 msgid "\"%s\" is an invalid value!"
 msgstr "\"%s\" 유효하지 않은 값입니다!"
 
-#: ../PLCOpenEditor.py:362
-#: ../PLCOpenEditor.py:399
+#: ../PLCOpenEditor.py:349 ../PLCOpenEditor.py:391
 #, python-format
 msgid "\"%s\" is not a valid folder!"
 msgstr "\"%s\" 유효하지 않은 폴더입니다!"
 
-#: ../controls/VariablePanel.py:654
-#: ../IDEFrame.py:1649
-#: ../editors/DataTypeEditor.py:572
-#: ../dialogs/PouNameDialog.py:47
-#: ../dialogs/PouTransitionDialog.py:99
-#: ../dialogs/SFCStepNameDialog.py:49
-#: ../dialogs/ConnectionDialog.py:144
-#: ../dialogs/PouActionDialog.py:96
-#: ../dialogs/PouDialog.py:116
-#: ../dialogs/SFCStepDialog.py:120
-#: ../dialogs/FBDBlockDialog.py:156
+#: ../dialogs/SFCStepNameDialog.py:50 ../dialogs/PouTransitionDialog.py:99
+#: ../dialogs/BlockPreviewDialog.py:204 ../dialogs/PouNameDialog.py:48
+#: ../dialogs/PouActionDialog.py:97 ../dialogs/PouDialog.py:119
+#: ../editors/ResourceEditor.py:447 ../editors/ResourceEditor.py:482
+#: ../editors/DataTypeEditor.py:585 ../editors/CodeFileEditor.py:774
+#: ../controls/VariablePanel.py:771 ../IDEFrame.py:1594
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
 msgstr "\"%s\"는 유효하지 않은 식별자입니다!"
 
-#: ../IDEFrame.py:214
-#: ../IDEFrame.py:2445
-#: ../IDEFrame.py:2464
+#: ../IDEFrame.py:2410
 #, python-format
-msgid "\"%s\" is used by one or more POUs. It can't be removed!"
-msgstr "\"%s\" 는 현재 하나 이상의 POU에서 사용중입니다. 제거할 수 없습니다!"
+msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
+msgstr ""
 
-#: ../controls/VariablePanel.py:311
-#: ../IDEFrame.py:1669
-#: ../editors/TextViewer.py:303
-#: ../editors/TextViewer.py:323
-#: ../editors/TextViewer.py:360
-#: ../editors/Viewer.py:250
-#: ../editors/Viewer.py:295
-#: ../editors/Viewer.py:312
-#: ../dialogs/ConnectionDialog.py:148
-#: ../dialogs/PouDialog.py:120
-#: ../dialogs/FBDBlockDialog.py:160
+#: ../dialogs/BlockPreviewDialog.py:212 ../dialogs/PouDialog.py:123
+#: ../editors/Viewer.py:261 ../editors/Viewer.py:316 ../editors/Viewer.py:346
+#: ../editors/Viewer.py:368 ../editors/TextViewer.py:270
+#: ../editors/TextViewer.py:299 ../editors/TextViewer.py:350
+#: ../editors/TextViewer.py:373 ../controls/VariablePanel.py:338
+#: ../IDEFrame.py:1614
 #, python-format
 msgid "\"%s\" pou already exists!"
 msgstr "\"%s\" POU는 이미 존재합니다!"
 
-#: ../plcopen/plcopen.py:346
-#, python-format
-msgid "\"%s\" resource already exists in \"%s\" configuration !!!"
-msgstr "\"%s\" 리소스는 \"%s\" 설정(configuration)에 이미 존재합니다 !!!"
-
-#: ../plcopen/plcopen.py:362
-#, python-format
-msgid "\"%s\" resource doesn't exist in \"%s\" configuration !!!"
-msgstr "\"%s\" 리소스를 \"%s\" 설정(configuration)에서 찾을 수 없습니다 !!!"
-
-#: ../dialogs/SFCStepNameDialog.py:57
-#: ../dialogs/SFCStepDialog.py:128
+#: ../dialogs/SFCStepNameDialog.py:58
 #, python-format
 msgid "\"%s\" step already exists!"
 msgstr "\"%s\" 스텝이 이미 생성되었습니다!"
 
-#: ../editors/DataTypeEditor.py:543
+#: ../editors/DataTypeEditor.py:550
 #, python-format
 msgid "\"%s\" value already defined!"
 msgstr "\"%s\" 이미 정의된 값이 있습니다!"
 
-#: ../editors/DataTypeEditor.py:719
-#: ../dialogs/ArrayTypeDialog.py:97
+#: ../dialogs/ArrayTypeDialog.py:97 ../editors/DataTypeEditor.py:743
 #, python-format
 msgid "\"%s\" value isn't a valid array dimension!"
 msgstr "\"%s\" 값은 올바른 배열 차원이 아닙니다!"
 
-#: ../editors/DataTypeEditor.py:726
-#: ../dialogs/ArrayTypeDialog.py:103
+#: ../dialogs/ArrayTypeDialog.py:103 ../editors/DataTypeEditor.py:750
 #, python-format
 msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
@@ -278,218 +187,254 @@ msgstr ""
 "\"%s\" 올바른 데이터를 입력하세요!\n"
 "우측의 데이터는 좌측보다 커야 합니다."
 
-#: ../PLCControler.py:793
-#, python-format
-msgid "%s \"%s\" can't be pasted as a %s."
-msgstr "%s \"%s\" 붙여넣기 할 수 없는 형식 :  %s."
+#: ../PLCGenerator.py:1101
+#, python-brace-format
+msgid "\"{a1}\" function cancelled in \"{a2}\" POU: No input connected"
+msgstr ""
 
-#: ../PLCControler.py:1422
-#, fuzzy, python-format
+#: ../editors/Viewer.py:251
+#, python-brace-format
+msgid "\"{a1}\" is already used by \"{a2}\"!"
+msgstr ""
+
+#: ../plcopen/plcopen.py:496
+#, python-brace-format
+msgid "\"{a1}\" resource already exists in \"{a2}\" configuration !!!"
+msgstr ""
+
+#: ../plcopen/plcopen.py:514
+#, python-brace-format
+msgid "\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!"
+msgstr ""
+
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:578
+#, python-format
+msgid "%03gms"
+msgstr ""
+
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:569
+#, python-format
+msgid "%dd"
+msgstr ""
+
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:56
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:570
+#, python-format
+msgid "%dh"
+msgstr ""
+
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:55
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:571
+#, python-format
+msgid "%dm"
+msgstr ""
+
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:53
+#, python-format
+msgid "%dms"
+msgstr ""
+
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:54
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:572
+#, python-format
+msgid "%ds"
+msgstr ""
+
+#: ../PLCControler.py:1533
+#, python-format
 msgid "%s Data Types"
-msgstr "데이터 타입(Data Types)"
+msgstr ""
 
-#: ../editors/GraphicViewer.py:278
+#: ../PLCControler.py:1516
 #, python-format
-msgid "%s Graphics"
-msgstr "%s 그래픽"
-
-#: ../PLCControler.py:1417
-#, fuzzy, python-format
 msgid "%s POUs"
-msgstr "POU 붙여넣기"
+msgstr ""
 
-#: ../canfestival/SlaveEditor.py:42
-#: ../canfestival/NetworkEditor.py:72
+#: ../canfestival/SlaveEditor.py:69 ../canfestival/NetworkEditor.py:90
 #, python-format
 msgid "%s Profile"
 msgstr "%s 프로필"
 
-#: ../plcopen/plcopen.py:1780
-#: ../plcopen/plcopen.py:1790
-#: ../plcopen/plcopen.py:1800
-#: ../plcopen/plcopen.py:1810
-#: ../plcopen/plcopen.py:1819
+#: ../plcopen/plcopen.py:1650 ../plcopen/plcopen.py:1657
+#: ../plcopen/plcopen.py:1669 ../plcopen/plcopen.py:1677
+#: ../plcopen/plcopen.py:1687
 #, python-format
 msgid "%s body don't have instances!"
 msgstr "%s 인스턴스를 찾을 수 없습니다!"
 
-#: ../plcopen/plcopen.py:1842
-#: ../plcopen/plcopen.py:1849
+#: ../plcopen/plcopen.py:1705 ../plcopen/plcopen.py:1712
+#: ../plcopen/plcopen.py:1719
 #, python-format
 msgid "%s body don't have text!"
 msgstr "%s 텍스트를 찾을 수 없습니다!"
 
-#: ../IDEFrame.py:364
+#: ../IDEFrame.py:386
 msgid "&Add Element"
 msgstr "&구성원 추가"
 
-#: ../IDEFrame.py:334
+#: ../dialogs/AboutDialog.py:73 ../dialogs/AboutDialog.py:121
+#: ../dialogs/AboutDialog.py:158
+msgid "&Close"
+msgstr ""
+
+#: ../IDEFrame.py:356
 msgid "&Configuration"
 msgstr "&설정(Configuration)"
 
-#: ../IDEFrame.py:325
+#: ../IDEFrame.py:345
 msgid "&Data Type"
 msgstr "&데이터 타입"
 
-#: ../IDEFrame.py:368
+#: ../IDEFrame.py:390
 msgid "&Delete"
 msgstr "&삭제"
 
-#: ../IDEFrame.py:317
+#: ../IDEFrame.py:337
 msgid "&Display"
 msgstr "&보기"
 
-#: ../IDEFrame.py:316
-#, fuzzy
+#: ../IDEFrame.py:336
 msgid "&Edit"
-msgstr "수정"
+msgstr ""
 
-#: ../IDEFrame.py:315
+#: ../IDEFrame.py:335
 msgid "&File"
 msgstr "&파일"
 
-#: ../IDEFrame.py:327
+#: ../IDEFrame.py:347
 msgid "&Function"
 msgstr "&함수"
 
-#: ../IDEFrame.py:318
+#: ../IDEFrame.py:338
 msgid "&Help"
 msgstr "&도움말"
 
-#: ../IDEFrame.py:331
+#: ../dialogs/AboutDialog.py:72
+msgid "&License"
+msgstr ""
+
+#: ../IDEFrame.py:351
 msgid "&Program"
 msgstr "&프로그램"
 
-#: ../PLCOpenEditor.py:148
-#, fuzzy
+#: ../PLCOpenEditor.py:127
 msgid "&Properties"
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"&속성\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"&프로젝트 속성"
 
-#: ../Beremiz.py:310
+#: ../BeremizIDE.py:219
 msgid "&Recent Projects"
 msgstr "&최근 프로젝트"
 
-#: ../Beremiz.py:352
+#: ../IDEFrame.py:353
 msgid "&Resource"
 msgstr ""
 
-#: ../controls/SearchResultPanel.py:237
-#, python-format
-msgid "'%s' - %d match in project"
-msgstr "'%s' - %d 개의 검색된 결과"
-
 #: ../controls/SearchResultPanel.py:239
-#, python-format
-msgid "'%s' - %d matches in project"
-msgstr "'%s' - %d 개의 검색된 결과들"
-
-#: ../connectors/PYRO/__init__.py:51
-#, python-format
-msgid "'%s' is located at %s\n"
+#, python-brace-format
+msgid "'{a1}' - {a2} match in project"
 msgstr ""
 
-#: ../controls/SearchResultPanel.py:289
+#: ../controls/SearchResultPanel.py:241
+#, python-brace-format
+msgid "'{a1}' - {a2} matches in project"
+msgstr ""
+
+#: ../connectors/PYRO/__init__.py:90
+#, python-brace-format
+msgid "'{a1}' is located at {a2}\n"
+msgstr ""
+
+#: ../controls/SearchResultPanel.py:291
 #, python-format
 msgid "(%d matches)"
 msgstr ""
 
-#: ../PLCOpenEditor.py:508
-#: ../PLCOpenEditor.py:510
-#: ../PLCOpenEditor.py:511
+#: ../PLCOpenEditor.py:406 ../PLCOpenEditor.py:408 ../PLCOpenEditor.py:409
 msgid ",   "
 msgstr ",   "
 
-#: ../dialogs/PouTransitionDialog.py:96
-#: ../dialogs/PouActionDialog.py:93
-#: ../dialogs/PouDialog.py:113
-#: ../dialogs/SFCTransitionDialog.py:146
+#: ../dialogs/PouTransitionDialog.py:96 ../dialogs/PouActionDialog.py:94
+#: ../dialogs/PouDialog.py:116
 #, python-format
 msgid ", %s"
 msgstr ", %s"
 
-#: ../PLCOpenEditor.py:506
+#: ../PLCOpenEditor.py:404
 msgid ". "
 msgstr ". "
 
-#: ../ProjectController.py:1268
-msgid "... debugger recovered\n"
-msgstr "... 디버거 복구\n"
+#: ../controls/LogViewer.py:279
+msgid "1d"
+msgstr ""
 
-#: ../IDEFrame.py:1672
-#: ../IDEFrame.py:1714
-#: ../IDEFrame.py:1733
-#: ../dialogs/PouDialog.py:122
+#: ../controls/LogViewer.py:280
+msgid "1h"
+msgstr ""
+
+#: ../controls/LogViewer.py:281
+msgid "1m"
+msgstr ""
+
+#: ../controls/LogViewer.py:282
+msgid "1s"
+msgstr ""
+
+#: ../dialogs/PouDialog.py:125 ../IDEFrame.py:1617 ../IDEFrame.py:1663
+#: ../IDEFrame.py:1682
 #, python-format
-msgid "A POU has an element named \"%s\". This could cause a conflict. Do you wish to continue?"
+msgid ""
+"A POU has an element named \"%s\". This could cause a conflict. Do you wish "
+"to continue?"
 msgstr "POU 구성원의 이름 \"%s\"은 오류를 발생시킬 수 있습니다. 계속 하시겠습니까?"
 
-#: ../controls/VariablePanel.py:658
-#: ../IDEFrame.py:1684
-#: ../IDEFrame.py:1695
-#: ../dialogs/PouNameDialog.py:51
-#: ../dialogs/PouTransitionDialog.py:103
-#: ../dialogs/SFCStepNameDialog.py:53
-#: ../dialogs/PouActionDialog.py:100
-#: ../dialogs/SFCStepDialog.py:124
+#: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:103
+#: ../dialogs/PouNameDialog.py:52 ../dialogs/PouActionDialog.py:101
+#: ../controls/VariablePanel.py:775 ../IDEFrame.py:1631 ../IDEFrame.py:1644
 #, python-format
 msgid "A POU named \"%s\" already exists!"
 msgstr "이미 생성된 POU 이름입니다 : \"%s\""
 
-#: ../ConfigTreeNode.py:371
-#, fuzzy, python-format
-msgid "A child named \"%s\" already exist -> \"%s\"\n"
-msgstr "입력 하신 \"%s\" 이 중복 되는 이름입니다. -> \"%s\"\n"
+#: ../ConfigTreeNode.py:424
+#, python-brace-format
+msgid "A child named \"{a1}\" already exists -> \"{a2}\"\n"
+msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:175
+#: ../dialogs/BrowseLocationsDialog.py:218
 msgid "A location must be selected!"
 msgstr "위치를 지정해야 합니다!"
 
-#: ../controls/VariablePanel.py:660
-#: ../IDEFrame.py:1686
-#: ../IDEFrame.py:1697
-#: ../dialogs/SFCStepNameDialog.py:55
-#: ../dialogs/SFCStepDialog.py:126
+#: ../editors/ResourceEditor.py:451
+msgid "A task with the same name already exists!"
+msgstr ""
+
+#: ../dialogs/SFCStepNameDialog.py:56 ../controls/VariablePanel.py:777
+#: ../IDEFrame.py:1633 ../IDEFrame.py:1646
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
 msgstr "변수 \"%s\"는 이미 POU에 정의 되어 있습니다!"
 
-#: ../Beremiz.py:362
-#: ../PLCOpenEditor.py:181
-#, fuzzy
+#: ../editors/CodeFileEditor.py:780
+#, python-format
+msgid "A variable with \"%s\" as name already exists!"
+msgstr ""
+
+#: ../BeremizIDE.py:283 ../dialogs/AboutDialog.py:48 ../PLCOpenEditor.py:168
 msgid "About"
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"베레미즈는...\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"베레미즈란"
-
-#: ../Beremiz.py:931
-msgid "About Beremiz"
-msgstr "베레미즈"
-
-#: ../PLCOpenEditor.py:376
-msgid "About PLCOpenEditor"
-msgstr "PLC 오픈에디터..."
 
 #: ../plcopen/iec_std.csv:22
 msgid "Absolute number"
 msgstr "절대값 연산"
 
-#: ../dialogs/ActionBlockDialog.py:41
-#: ../dialogs/SFCStepDialog.py:69
+#: ../dialogs/SFCStepDialog.py:73 ../dialogs/ActionBlockDialog.py:43
 msgid "Action"
 msgstr "액션(Action)"
 
-#: ../editors/Viewer.py:495
-#, fuzzy
+#: ../editors/Viewer.py:614 ../editors/Viewer.py:2394
 msgid "Action Block"
-msgstr "함수 블럭(Function Block)"
+msgstr ""
 
-#: ../dialogs/PouActionDialog.py:81
+#: ../dialogs/PouActionDialog.py:82
 msgid "Action Name"
 msgstr "액션 명"
 
@@ -497,149 +442,156 @@ msgstr "액션 명"
 msgid "Action Name:"
 msgstr "액션 명:"
 
-#: ../plcopen/plcopen.py:1480
+#: ../plcopen/plcopen.py:1364
 #, python-format
 msgid "Action with name %s doesn't exist!"
 msgstr "액션 명 %s는 이미 존재합니다!"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:98
 msgid "Actions"
 msgstr "액션(Actions)"
 
-#: ../dialogs/ActionBlockDialog.py:134
+#: ../dialogs/ActionBlockDialog.py:133
 msgid "Actions:"
 msgstr "액션(Actions):"
 
-#: ../canfestival/SlaveEditor.py:54
-#: ../canfestival/NetworkEditor.py:84
-#: ../editors/Viewer.py:527
+#: ../editors/Viewer.py:431
+msgid "Active"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:80 ../canfestival/NetworkEditor.py:101
+#: ../BeremizIDE.py:965 ../editors/Viewer.py:647
 msgid "Add"
 msgstr "추가"
 
-#: ../IDEFrame.py:1925
-#: ../IDEFrame.py:1956
+#: ../IDEFrame.py:1893 ../IDEFrame.py:1928
 msgid "Add Action"
 msgstr "액션 추가"
 
-#: ../features.py:7
+#: ../features.py:32
 msgid "Add C code accessing located variables synchronously"
 msgstr "동기적으로 위치한 변수를 액세스하는 C 코드를 추가합니다"
 
-#: ../IDEFrame.py:1908
+#: ../IDEFrame.py:1876
 msgid "Add Configuration"
 msgstr "설정(Configuration) 추가"
 
-#: ../IDEFrame.py:1888
+#: ../IDEFrame.py:1856
 msgid "Add DataType"
 msgstr "데이터 타입 추가"
 
-#: ../editors/Viewer.py:453
+#: ../editors/Viewer.py:572
 msgid "Add Divergence Branch"
 msgstr "Branch 추가"
 
-#: ../dialogs/DiscoveryDialog.py:115
+#: ../dialogs/DiscoveryDialog.py:117
 msgid "Add IP"
 msgstr ""
 
-#: ../IDEFrame.py:1896
+#: ../IDEFrame.py:1864
 msgid "Add POU"
 msgstr "POU 추가"
 
-#: ../features.py:8
+#: ../features.py:33
 msgid "Add Python code executed asynchronously"
 msgstr "비동기적으로 실행되는 파이썬 코드를 추가합니다"
 
-#: ../IDEFrame.py:1936
-#: ../IDEFrame.py:1982
+#: ../IDEFrame.py:1904 ../IDEFrame.py:1954
 msgid "Add Resource"
 msgstr "리소스 추가"
 
-#: ../IDEFrame.py:1914
-#: ../IDEFrame.py:1953
+#: ../IDEFrame.py:1882 ../IDEFrame.py:1925
 msgid "Add Transition"
 msgstr "트랜지션(Transition) 추가"
 
-#: ../editors/Viewer.py:442
+#: ../editors/Viewer.py:559
 msgid "Add Wire Segment"
 msgstr "와이어 세그먼트(Wire Segment) 추가"
 
-#: ../editors/SFCViewer.py:359
+#: ../editors/SFCViewer.py:433
 msgid "Add a new initial step"
 msgstr "새로운 초기 스텝 추가"
 
-#: ../editors/Viewer.py:2289
-#: ../editors/SFCViewer.py:696
+#: ../editors/Viewer.py:2757 ../editors/SFCViewer.py:770
 msgid "Add a new jump"
 msgstr "새로운 점프 추가"
 
-#: ../editors/SFCViewer.py:381
+#: ../editors/SFCViewer.py:455
 msgid "Add a new step"
 msgstr "새로운 스텝 추가"
 
-#: ../features.py:9
+#: ../features.py:34
 msgid "Add a simple WxGlade based GUI."
 msgstr "간단 WxGlade GUI를 추가합니다"
 
-#: ../dialogs/ActionBlockDialog.py:138
-#, fuzzy
+#: ../dialogs/ActionBlockDialog.py:137
 msgid "Add action"
-msgstr "액션 추가"
+msgstr ""
 
-#: ../editors/DataTypeEditor.py:345
-#, fuzzy
+#: ../editors/DataTypeEditor.py:352
 msgid "Add element"
-msgstr "구성원(Element) 추가"
+msgstr ""
 
-#: ../editors/ResourceEditor.py:251
-#, fuzzy
+#: ../editors/ResourceEditor.py:268
 msgid "Add instance"
-msgstr "인스턴스 추가"
+msgstr ""
 
-#: ../canfestival/NetworkEditor.py:86
+#: ../canfestival/NetworkEditor.py:103
 msgid "Add slave"
 msgstr "슬레이브 추가"
 
-#: ../editors/ResourceEditor.py:222
-#, fuzzy
+#: ../editors/ResourceEditor.py:239
 msgid "Add task"
-msgstr "태스크 추가"
+msgstr ""
 
-#: ../controls/VariablePanel.py:378
-#, fuzzy
+#: ../editors/CodeFileEditor.py:658 ../controls/VariablePanel.py:450
 msgid "Add variable"
-msgstr "변수"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:33
 msgid "Addition"
 msgstr "추가"
 
-#: ../plcopen/structures.py:250
+#: ../plcopen/definitions.py:49
 msgid "Additional function blocks"
 msgstr "추가적 함수 블록"
 
-#: ../editors/Viewer.py:1395
+#: ../editors/Viewer.py:630
+msgid "Adjust Block Size"
+msgstr ""
+
+#: ../editors/Viewer.py:1686
 msgid "Alignment"
 msgstr "정렬"
 
-#: ../controls/VariablePanel.py:75
-#: ../dialogs/BrowseLocationsDialog.py:35
-#: ../dialogs/BrowseLocationsDialog.py:116
+#: ../dialogs/BrowseLocationsDialog.py:40
+#: ../dialogs/BrowseLocationsDialog.py:48
+#: ../dialogs/BrowseLocationsDialog.py:141
+#: ../dialogs/BrowseLocationsDialog.py:144 ../controls/LogViewer.py:298
+#: ../controls/VariablePanel.py:70
 msgid "All"
 msgstr "모두"
 
 #: ../editors/FileManagementPanel.py:35
-#, fuzzy
 msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
-msgstr "SVG 파일 (*.svg)|*svg|모든 파일|*.*"
+msgstr ""
 
-#: ../ProjectController.py:1335
+#: ../ProjectController.py:1685
 msgid "Already connected. Please disconnect\n"
 msgstr "이미 접속중입니다. 연결을 해제 하세요\n"
 
-#: ../editors/DataTypeEditor.py:587
+#: ../editors/DataTypeEditor.py:591
 #, python-format
 msgid "An element named \"%s\" already exists in this structure!"
 msgstr "항목 \"%s\" 는 이미 구조체 안에 존재 합니다!"
+
+#: ../editors/ResourceEditor.py:486
+msgid "An instance with the same name already exists!"
+msgstr ""
+
+#: ../dialogs/ConnectionDialog.py:100
+msgid "Apply name modification to all continuations with the same name"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:31
 msgid "Arc cosine"
@@ -657,8 +609,8 @@ msgstr "Arc tangent"
 msgid "Arithmetic"
 msgstr "산술 연산"
 
-#: ../controls/VariablePanel.py:729
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54 ../editors/DataTypeEditor.py:633
+#: ../controls/VariablePanel.py:858
 msgid "Array"
 msgstr "배열"
 
@@ -666,19 +618,19 @@ msgstr "배열"
 msgid "Assignment"
 msgstr "할당"
 
-#: ../dialogs/FBDVariableDialog.py:197
+#: ../dialogs/FBDVariableDialog.py:222
 msgid "At least a variable or an expression must be selected!"
 msgstr "변수 또는 표현식이 필요합니다!"
 
-#: ../controls/ProjectPropertiesPanel.py:99
+#: ../controls/ProjectPropertiesPanel.py:100
 msgid "Author"
 msgstr "작성자"
 
-#: ../controls/ProjectPropertiesPanel.py:96
+#: ../controls/ProjectPropertiesPanel.py:97
 msgid "Author Name (optional):"
 msgstr "작성자 이름(옵션):"
 
-#: ../dialogs/FindInPouDialog.py:72
+#: ../dialogs/FindInPouDialog.py:77
 msgid "Backward"
 msgstr ""
 
@@ -690,25 +642,21 @@ msgstr "도메인 이름이 올바르지 않습니다(circular 네임):"
 msgid "Bad domain name at "
 msgstr "도메인 이름이 올바르지 않습니다:"
 
-#: ../canfestival/config_utils.py:341
-#: ../canfestival/config_utils.py:623
+#: ../canfestival/config_utils.py:342 ../canfestival/config_utils.py:630
 #, python-format
 msgid "Bad location size : %s"
 msgstr "잘못된 로케이션 사이즈: %s"
 
-#: ../editors/DataTypeEditor.py:168
-#: ../editors/DataTypeEditor.py:198
-#: ../editors/DataTypeEditor.py:290
-#: ../dialogs/ArrayTypeDialog.py:55
+#: ../dialogs/ArrayTypeDialog.py:54 ../editors/DataTypeEditor.py:175
+#: ../editors/DataTypeEditor.py:205 ../editors/DataTypeEditor.py:297
 msgid "Base Type:"
 msgstr "기본 타입:"
 
-#: ../controls/VariablePanel.py:699
-#: ../editors/DataTypeEditor.py:617
+#: ../editors/DataTypeEditor.py:623 ../controls/VariablePanel.py:816
 msgid "Base Types"
 msgstr "기본 타입"
 
-#: ../Beremiz.py:486
+#: ../BeremizIDE.py:455
 msgid "Beremiz"
 msgstr "베레미즈"
 
@@ -740,144 +688,169 @@ msgstr "비트 연산 XOR"
 msgid "Bitwise inverting"
 msgstr "비트 연산 반전 (Invert)"
 
-#: ../editors/Viewer.py:465
-#, fuzzy
+#: ../editors/Viewer.py:584 ../editors/Viewer.py:2407
 msgid "Block"
-msgstr "블럭 수정"
+msgstr ""
 
-#: ../dialogs/FBDBlockDialog.py:38
+#: ../dialogs/FBDBlockDialog.py:60
 msgid "Block Properties"
 msgstr "블럭 속성"
 
-#: ../editors/Viewer.py:434
+#: ../editors/TextViewer.py:262
+msgid "Block name"
+msgstr ""
+
+#: ../editors/Viewer.py:550
 msgid "Bottom"
 msgstr "하단"
 
-#: ../dialogs/BrowseValuesLibraryDialog.py:37
-#, fuzzy, python-format
-msgid "Browse %s values library"
-msgstr "%s 라이브러리 탐색"
+#: ../ProjectController.py:1363
+msgid "Broken"
+msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:55
+#: ../dialogs/BrowseValuesLibraryDialog.py:38
+#, python-format
+msgid "Browse %s values library"
+msgstr ""
+
+#: ../dialogs/BrowseLocationsDialog.py:65
 msgid "Browse Locations"
 msgstr "위치 탐색"
 
-#: ../ProjectController.py:1484
+#: ../ProjectController.py:1832
 msgid "Build"
 msgstr "빌드"
 
-#: ../ProjectController.py:1051
+#: ../ProjectController.py:1297
 msgid "Build directory already clean\n"
 msgstr "빌드 디렉토리가 이미 비어 있습니다\n"
 
-#: ../ProjectController.py:1485
+#: ../ProjectController.py:1833
 msgid "Build project into build folder"
 msgstr "현재 작성된 프로젝트를 빌드 폴더에 생성합니다"
 
-#: ../ProjectController.py:910
+#: ../ProjectController.py:1080
 msgid "C Build crashed !\n"
 msgstr "C 파일 빌드 과정에 문제가 있습니다!\n"
 
-#: ../ProjectController.py:907
+#: ../ProjectController.py:1077
 msgid "C Build failed.\n"
 msgstr "C 파일 빌드에 실패 했습니다\n"
 
-#: ../ProjectController.py:895
+#: ../c_ext/CFileEditor.py:63
+msgid "C code"
+msgstr ""
+
+#: ../ProjectController.py:1155
 msgid "C code generated successfully.\n"
 msgstr "C 코드가 성공적으로 생성되었습니다\n"
 
-#: ../targets/toolchain_gcc.py:132
+#: ../targets/toolchain_makefile.py:122
+msgid "C compilation failed.\n"
+msgstr ""
+
+#: ../targets/toolchain_gcc.py:192
 #, python-format
 msgid "C compilation of %s failed.\n"
 msgstr "%s 의 C 컴파일 작업이 실패 했습니다\n"
 
-#: ../features.py:7
+#: ../features.py:32
 msgid "C extension"
 msgstr "C 확장"
 
-#: ../features.py:6
+#: ../dialogs/AboutDialog.py:71
+msgid "C&redits"
+msgstr ""
+
+#: ../canfestival/NetworkEditor.py:52
+msgid "CANOpen network"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:44
+msgid "CANOpen slave"
+msgstr ""
+
+#: ../features.py:31
 msgid "CANopen support"
 msgstr "CANopen 지원"
 
-#: ../plcopen/plcopen.py:1722
-#: ../plcopen/plcopen.py:1736
-#: ../plcopen/plcopen.py:1757
-#: ../plcopen/plcopen.py:1773
+#: ../plcopen/plcopen.py:1589 ../plcopen/plcopen.py:1603
+#: ../plcopen/plcopen.py:1627 ../plcopen/plcopen.py:1643
 msgid "Can only generate execution order on FBD networks!"
 msgstr "FBD 네트워크 상태에서만 실행 순서를 생성할 수 있습니다!"
 
-#: ../controls/VariablePanel.py:256
+#: ../controls/VariablePanel.py:267
 msgid "Can only give a location to local or global variables"
 msgstr "로컬 또는 전역 변수만 위치 지정 가능합니다"
 
-#: ../PLCOpenEditor.py:357
+#: ../PLCOpenEditor.py:344
 #, python-format
 msgid "Can't generate program to file %s!"
 msgstr "프로그램을 %s 파일로 생성할 수 없습니다!"
 
-#: ../controls/VariablePanel.py:254
+#: ../controls/VariablePanel.py:265
 msgid "Can't give a location to a function block instance"
 msgstr "함수 블럭 인스턴스에는 위치를 지정할 수 없습니다"
 
-#: ../PLCOpenEditor.py:397
+#: ../PLCOpenEditor.py:389
 #, python-format
 msgid "Can't save project to file %s!"
 msgstr "프로젝트를 %s로 저장할 수 없습니다!"
 
-#: ../controls/VariablePanel.py:298
-#, fuzzy
+#: ../controls/VariablePanel.py:313
 msgid "Can't set an initial value to a function block instance"
-msgstr "함수 블럭 인스턴스에는 위치를 지정할 수 없습니다"
+msgstr ""
 
-#: ../ConfigTreeNode.py:470
-#, python-format
-msgid "Cannot create child %s of type %s "
-msgstr "%s로 (%s 타입) 차일드를 생성 할 수 없습니다"
+#: ../ConfigTreeNode.py:529
+#, python-brace-format
+msgid "Cannot create child {a1} of type {a2} "
+msgstr ""
 
-#: ../ConfigTreeNode.py:400
+#: ../ConfigTreeNode.py:454
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
 msgstr "%d보다 낮은 번호의 가용 IEC 채널을 검색하는데 실패했습니다\n"
 
-#: ../connectors/PYRO/__init__.py:92
+#: ../connectors/PYRO/__init__.py:131
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr "현재 PLC 상태를 알 수 없습니다 - 접속 실패.\n"
 
-#: ../ProjectController.py:715
+#: ../ProjectController.py:943
 msgid "Cannot open/parse VARIABLES.csv!\n"
 msgstr "VARIABLES.csv 파일을 열거나 파싱할 수 없습니다!\n"
 
-#: ../canfestival/config_utils.py:371
-#, python-format
-msgid "Cannot set bit offset for non bool '%s' variable (ID:%d,Idx:%x,sIdx:%x))"
-msgstr "'%s' 변수의 비트 옵셋 설정 실패 (ID:%d,ldx:%x,sldx:%x))"
+#: ../canfestival/config_utils.py:374
+#, python-brace-format
+msgid ""
+"Cannot set bit offset for non bool '{a1}' variable "
+"(ID:{a2},Idx:{a3},sIdx:{a4}))"
+msgstr ""
 
-#: ../dialogs/FindInPouDialog.py:81
-#: ../dialogs/SearchInProjectDialog.py:67
+#: ../dialogs/SearchInProjectDialog.py:59 ../dialogs/FindInPouDialog.py:86
 msgid "Case sensitive"
 msgstr "대소문자 구별"
 
-#: ../editors/Viewer.py:429
+#: ../editors/Viewer.py:545
 msgid "Center"
 msgstr "중앙"
 
-#: ../Beremiz_service.py:322
+#: ../Beremiz_service.py:268
 msgid "Change IP of interface to bind"
 msgstr "바인드 인터페이스 IP 변경"
 
-#: ../Beremiz_service.py:321
+#: ../Beremiz_service.py:267
 msgid "Change Name"
 msgstr "이름 변경"
 
-#: ../IDEFrame.py:1974
+#: ../IDEFrame.py:1946
 msgid "Change POU Type To"
 msgstr "POU 타입 변경"
 
-#: ../Beremiz_service.py:325
+#: ../Beremiz_service.py:269
 msgid "Change Port Number"
 msgstr "포트 번호 변경"
 
-#: ../Beremiz_service.py:327
+#: ../Beremiz_service.py:270
 msgid "Change working directory"
 msgstr "작업 디렉토리 변경"
 
@@ -885,113 +858,115 @@ msgstr "작업 디렉토리 변경"
 msgid "Character string"
 msgstr "문자열"
 
-#: ../svgui/svgui.py:92
+#: ../svgui/svgui.py:128
 msgid "Choose a SVG file"
 msgstr "SVG 파일 선택"
 
-#: ../ProjectController.py:353
+#: ../ProjectController.py:542
 msgid "Choose a directory to save project"
 msgstr "프로젝트 저장 디렉토리 선택"
 
-#: ../canfestival/canfestival.py:118
-#: ../PLCOpenEditor.py:313
-#: ../PLCOpenEditor.py:347
-#: ../PLCOpenEditor.py:391
+#: ../canfestival/canfestival.py:162 ../PLCOpenEditor.py:302
+#: ../PLCOpenEditor.py:334 ../PLCOpenEditor.py:383
 msgid "Choose a file"
 msgstr "파일 선택"
 
-#: ../Beremiz.py:831
-#: ../Beremiz.py:866
+#: ../BeremizIDE.py:833 ../BeremizIDE.py:869
 msgid "Choose a project"
 msgstr "프로젝트 선택"
 
-#: ../dialogs/BrowseValuesLibraryDialog.py:42
-#, fuzzy, python-format
+#: ../dialogs/BrowseValuesLibraryDialog.py:41
+#, python-format
 msgid "Choose a value for %s:"
-msgstr "%s 선택:"
+msgstr ""
 
-#: ../Beremiz_service.py:373
+#: ../Beremiz_service.py:325
 msgid "Choose a working directory "
 msgstr "작업 디렉토리 선택"
 
-#: ../ProjectController.py:281
+#: ../ProjectController.py:449
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
 msgstr "베레미즈 프로젝트 폴더를 선택해 주세요. 선택하신 폴더는 프로젝트 폴더가 아닙니다!"
 
-#: ../ProjectController.py:247
+#: ../ProjectController.py:416
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr "선택된 폴더는 비어있지 않습니다. 새 프로젝트 폴더로 사용 할 수 없습니다!"
 
-#: ../controls/VariablePanel.py:58
-#: ../controls/VariablePanel.py:59
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Class"
 msgstr "클래스"
 
-#: ../controls/VariablePanel.py:369
+#: ../controls/VariablePanel.py:441
 msgid "Class Filter:"
 msgstr "클래스 필터:"
 
-#: ../dialogs/FBDVariableDialog.py:62
+#: ../dialogs/FBDVariableDialog.py:70
 msgid "Class:"
 msgstr "클래스:"
 
-#: ../ProjectController.py:1488
+#: ../ProjectController.py:1836
 msgid "Clean"
 msgstr "클린"
 
-#: ../ProjectController.py:1490
+#: ../controls/LogViewer.py:318
+msgid "Clean log messages"
+msgstr ""
+
+#: ../ProjectController.py:1838
 msgid "Clean project build folder"
 msgstr "프로젝트 빌드 폴더를 비웁니다"
 
-#: ../ProjectController.py:1048
+#: ../ProjectController.py:1294
 msgid "Cleaning the build directory\n"
 msgstr "빌드 디렉토리를 비우는 중\n"
 
-#: ../IDEFrame.py:411
-#, fuzzy
+#: ../IDEFrame.py:435
 msgid "Clear Errors"
-msgstr "에러 화면 클리어\tCTRL+K"
+msgstr ""
 
-#: ../editors/Viewer.py:520
+#: ../editors/Viewer.py:641
 msgid "Clear Execution Order"
 msgstr "실행 순서 클리어"
 
-#: ../editors/GraphicViewer.py:125
-msgid "Clear the graph values"
+#: ../dialogs/SearchInProjectDialog.py:103 ../dialogs/FindInPouDialog.py:109
+msgid "Close"
 msgstr ""
 
-#: ../Beremiz.py:598
-#: ../PLCOpenEditor.py:221
+#: ../BeremizIDE.py:595 ../PLCOpenEditor.py:209
 msgid "Close Application"
 msgstr "어플리케이션 닫기"
 
-#: ../IDEFrame.py:1089
-#: ../Beremiz.py:319
-#: ../Beremiz.py:552
-#: ../PLCOpenEditor.py:131
+#: ../BeremizIDE.py:228 ../BeremizIDE.py:539 ../PLCOpenEditor.py:110
+#: ../IDEFrame.py:1013
 msgid "Close Project"
 msgstr "프로젝트 닫기"
 
-#: ../Beremiz.py:317
-#: ../PLCOpenEditor.py:129
-#, fuzzy
+#: ../BeremizIDE.py:226 ../PLCOpenEditor.py:108
 msgid "Close Tab"
-msgstr "탭 닫기\tCTRL+W"
+msgstr ""
 
-#: ../editors/Viewer.py:481
+#: ../editors/Viewer.py:600 ../editors/Viewer.py:2415
 msgid "Coil"
 msgstr ""
 
-#: ../editors/Viewer.py:501
-#: ../editors/LDViewer.py:503
+#: ../editors/Viewer.py:620 ../editors/LDViewer.py:506
 msgid "Comment"
 msgstr "코멘트"
 
-#: ../controls/ProjectPropertiesPanel.py:94
+#: ../BeremizIDE.py:276 ../BeremizIDE.py:279 ../PLCOpenEditor.py:161
+#: ../PLCOpenEditor.py:164
+msgid "Community support"
+msgstr ""
+
+#: ../dialogs/ProjectDialog.py:60
+msgid "Company Name"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:95
 msgid "Company Name (required):"
 msgstr "회사명(필수):"
 
-#: ../controls/ProjectPropertiesPanel.py:95
+#: ../controls/ProjectPropertiesPanel.py:96
 msgid "Company URL (optional):"
 msgstr "회사 URL(옵션):"
 
@@ -999,7 +974,7 @@ msgstr "회사 URL(옵션):"
 msgid "Comparison"
 msgstr "비교연산"
 
-#: ../ProjectController.py:538
+#: ../ProjectController.py:734
 msgid "Compiling IEC Program into C code...\n"
 msgstr "IEC 프로그램을 C코드로 컴파일링 중...\n"
 
@@ -1007,72 +982,93 @@ msgstr "IEC 프로그램을 C코드로 컴파일링 중...\n"
 msgid "Concatenation"
 msgstr "문자열 연결(concatenation)"
 
-#: ../dialogs/SearchInProjectDialog.py:47
+#: ../editors/ConfTreeNodeEditor.py:230
+msgid "Config"
+msgstr ""
+
+#: ../editors/ProjectNodeEditor.py:36
+msgid "Config variables"
+msgstr ""
+
+#: ../dialogs/SearchInProjectDialog.py:40
 msgid "Configuration"
 msgstr "설정(Configuration)"
 
-#: ../PLCControler.py:96
+#: ../PLCControler.py:99
 msgid "Configurations"
 msgstr "구성(Configurations)"
 
-#: ../ProjectController.py:1503
+#: ../editors/Viewer.py:308 ../editors/Viewer.py:338 ../editors/Viewer.py:360
+#: ../editors/TextViewer.py:291 ../editors/TextViewer.py:342
+#: ../editors/TextViewer.py:365 ../controls/VariablePanel.py:328
+msgid "Confirm or change variable name"
+msgstr ""
+
+#: ../ProjectController.py:1851
 msgid "Connect"
 msgstr "연결하기"
 
-#: ../ProjectController.py:1504
+#: ../ProjectController.py:1852
 msgid "Connect to the target PLC"
 msgstr "타겟 PLC와 연결"
 
-#: ../connectors/PYRO/__init__.py:40
+#: ../ProjectController.py:1354
 #, python-format
-msgid "Connecting to URI : %s\n"
-msgstr "URI 주소로 연결중 : %s\n"
+msgid "Connected to URI: %s"
+msgstr ""
 
-#: ../editors/Viewer.py:467
-#: ../dialogs/SFCTransitionDialog.py:76
+#: ../dialogs/SFCTransitionDialog.py:77 ../editors/Viewer.py:586
+#: ../editors/Viewer.py:2408
 msgid "Connection"
 msgstr "연결"
 
-#: ../dialogs/ConnectionDialog.py:37
+#: ../dialogs/ConnectionDialog.py:53
 msgid "Connection Properties"
 msgstr "연결 속성"
 
-#: ../ProjectController.py:1359
+#: ../ProjectController.py:1709
 msgid "Connection canceled!\n"
 msgstr "연결 취소!\n"
 
-#: ../ProjectController.py:1384
+#: ../ProjectController.py:1734
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr "%s 연결에 실패 하였습니다!\n"
 
-#: ../connectors/PYRO/__init__.py:63
-#, fuzzy, python-format
-msgid "Connection to '%s' failed.\n"
-msgstr "%s 의 C 컴파일 작업이 실패 했습니다\n"
+#: ../connectors/PYRO/__init__.py:115 ../connectors/WAMP/__init__.py:111
+msgid "Connection lost!\n"
+msgstr ""
 
-#: ../dialogs/ConnectionDialog.py:56
+#: ../connectors/PYRO/__init__.py:102
+#, python-format
+msgid "Connection to '%s' failed.\n"
+msgstr ""
+
+#: ../dialogs/ConnectionDialog.py:65 ../editors/Viewer.py:1643
 msgid "Connector"
 msgstr "연결자(Connector)"
 
-#: ../dialogs/SFCStepDialog.py:58
+#: ../dialogs/SFCStepDialog.py:66
 msgid "Connectors:"
 msgstr "연결자(Connectors):"
 
-#: ../controls/VariablePanel.py:65
+#: ../BeremizIDE.py:350
+msgid "Console"
+msgstr ""
+
+#: ../controls/VariablePanel.py:60
 msgid "Constant"
 msgstr "상수"
 
-#: ../editors/Viewer.py:477
-#, fuzzy
+#: ../editors/Viewer.py:596 ../editors/Viewer.py:2411
 msgid "Contact"
-msgstr "지속 커넥터"
+msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:197
+#: ../controls/ProjectPropertiesPanel.py:198
 msgid "Content Description (optional):"
 msgstr "컨텐츠 설명(옵션):"
 
-#: ../dialogs/ConnectionDialog.py:61
+#: ../dialogs/ConnectionDialog.py:66 ../editors/Viewer.py:1644
 msgid "Continuation"
 msgstr "지속 커넥터"
 
@@ -1092,21 +1088,20 @@ msgstr "날짜로 변환"
 msgid "Conversion to time-of-day"
 msgstr "시간으로 변환"
 
-#: ../IDEFrame.py:348
-#: ../IDEFrame.py:401
-#: ../editors/Viewer.py:536
+#: ../editors/Viewer.py:656 ../controls/LogViewer.py:704 ../IDEFrame.py:370
+#: ../IDEFrame.py:425
 msgid "Copy"
 msgstr "복사하기"
 
-#: ../IDEFrame.py:1961
+#: ../IDEFrame.py:1933
 msgid "Copy POU"
 msgstr "POU 복사"
 
-#: ../editors/FileManagementPanel.py:283
+#: ../editors/FileManagementPanel.py:65
 msgid "Copy file from left folder to right"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:282
+#: ../editors/FileManagementPanel.py:64
 msgid "Copy file from right folder to left"
 msgstr ""
 
@@ -1114,55 +1109,53 @@ msgstr ""
 msgid "Cosine"
 msgstr "Cosine"
 
-#: ../ConfigTreeNode.py:582
-#, python-format
+#: ../ConfigTreeNode.py:656
+#, python-brace-format
 msgid ""
-"Could not add child \"%s\", type %s :\n"
-"%s\n"
+"Could not add child \"{a1}\", type {a2} :\n"
+"{a3}\n"
 msgstr ""
-"\"%s\" child 추가 할 수 없습니다, type %s:\n"
-"%s\n"
 
-#: ../ConfigTreeNode.py:559
+#: ../py_ext/PythonFileCTNMixin.py:78
 #, python-format
-msgid ""
-"Couldn't load confnode base parameters %s :\n"
-" %s"
+msgid "Couldn't import old %s file."
 msgstr ""
-"플러그인 베이스 파라메터를 불러 올 수 없습니다 %s:\n"
-"%s"
 
-#: ../ConfigTreeNode.py:570
-#, python-format
+#: ../ConfigTreeNode.py:626
+#, python-brace-format
 msgid ""
-"Couldn't load confnode parameters %s :\n"
-" %s"
+"Couldn't load confnode base parameters {a1} :\n"
+" {a2}"
 msgstr ""
-"플러그인 파라메터를 불러 올 수 없습니다 %s:\n"
-"%s"
 
-#: ../PLCControler.py:765
-#: ../PLCControler.py:802
+#: ../ConfigTreeNode.py:643 ../CodeFileTreeNode.py:124
+#, python-brace-format
+msgid ""
+"Couldn't load confnode parameters {a1} :\n"
+" {a2}"
+msgstr ""
+
+#: ../PLCControler.py:948
 msgid "Couldn't paste non-POU object."
 msgstr "POU 오브젝트만 붙여넣기 가능합니다"
 
-#: ../ProjectController.py:1317
+#: ../ProjectController.py:1651
 msgid "Couldn't start PLC !\n"
 msgstr "PLC 를 시작 할 수 없습니다!\n"
 
-#: ../ProjectController.py:1325
+#: ../ProjectController.py:1659
 msgid "Couldn't stop PLC !\n"
 msgstr "PLC 를 정지 할 수 없습니다!\n"
 
-#: ../ProjectController.py:1295
+#: ../ProjectController.py:1623
 msgid "Couldn't stop debugger.\n"
 msgstr "디버거를 정지 할 수 없습니다.\n"
 
-#: ../svgui/svgui.py:22
+#: ../svgui/svgui.py:49
 msgid "Create HMI"
 msgstr "HMI 생성"
 
-#: ../dialogs/PouDialog.py:43
+#: ../dialogs/PouDialog.py:46
 msgid "Create a new POU"
 msgstr "새로운 POU 생성"
 
@@ -1170,118 +1163,107 @@ msgstr "새로운 POU 생성"
 msgid "Create a new action"
 msgstr "새로운 액션 생성"
 
-#: ../IDEFrame.py:135
+#: ../IDEFrame.py:159
 msgid "Create a new action block"
 msgstr "새로운 액션 블럭 생성"
 
-#: ../IDEFrame.py:84
-#: ../IDEFrame.py:114
-#: ../IDEFrame.py:147
+#: ../IDEFrame.py:108 ../IDEFrame.py:138 ../IDEFrame.py:171
 msgid "Create a new block"
 msgstr "새로운 블럭 생성"
 
-#: ../IDEFrame.py:108
+#: ../IDEFrame.py:132
 msgid "Create a new branch"
 msgstr "새로운 분기(Branch) 생성"
 
-#: ../IDEFrame.py:102
+#: ../IDEFrame.py:126
 msgid "Create a new coil"
 msgstr "새로운 코일 생성"
 
-#: ../IDEFrame.py:78
-#: ../IDEFrame.py:93
-#: ../IDEFrame.py:123
+#: ../IDEFrame.py:102 ../IDEFrame.py:117 ../IDEFrame.py:147
 msgid "Create a new comment"
 msgstr "새로운 코멘트 생성"
 
-#: ../IDEFrame.py:87
-#: ../IDEFrame.py:117
-#: ../IDEFrame.py:150
+#: ../IDEFrame.py:111 ../IDEFrame.py:141 ../IDEFrame.py:174
 msgid "Create a new connection"
 msgstr "새로운 연결 생성"
 
-#: ../IDEFrame.py:105
-#: ../IDEFrame.py:156
+#: ../IDEFrame.py:129 ../IDEFrame.py:180
 msgid "Create a new contact"
 msgstr "새로운 접점 생성"
 
-#: ../IDEFrame.py:138
+#: ../IDEFrame.py:162
 msgid "Create a new divergence"
 msgstr "새로운 분기(divergence) 생성"
 
-#: ../dialogs/SFCDivergenceDialog.py:36
+#: ../dialogs/SFCDivergenceDialog.py:53
 msgid "Create a new divergence or convergence"
 msgstr "새로운 분기(divergence) 또는 합류(convergence) 생성"
 
-#: ../IDEFrame.py:126
+#: ../IDEFrame.py:150
 msgid "Create a new initial step"
 msgstr "새로운 이니셜 스텝 생성"
 
-#: ../IDEFrame.py:141
+#: ../IDEFrame.py:165
 msgid "Create a new jump"
 msgstr "새로운 점프 생성"
 
-#: ../IDEFrame.py:96
-#: ../IDEFrame.py:153
+#: ../IDEFrame.py:120 ../IDEFrame.py:177
 msgid "Create a new power rail"
 msgstr "새로운 전원 레일 생성"
 
-#: ../IDEFrame.py:99
+#: ../IDEFrame.py:123
 msgid "Create a new rung"
 msgstr "새로운 Rung 생성"
 
-#: ../IDEFrame.py:129
+#: ../IDEFrame.py:153
 msgid "Create a new step"
 msgstr "새로운 스텝 생성"
 
-#: ../IDEFrame.py:132
-#: ../dialogs/PouTransitionDialog.py:42
+#: ../dialogs/PouTransitionDialog.py:42 ../IDEFrame.py:156
 msgid "Create a new transition"
 msgstr "새로운 트랜지션 생성"
 
-#: ../IDEFrame.py:81
-#: ../IDEFrame.py:111
-#: ../IDEFrame.py:144
+#: ../IDEFrame.py:105 ../IDEFrame.py:135 ../IDEFrame.py:168
 msgid "Create a new variable"
 msgstr "새로운 변수 생성"
 
-#: ../IDEFrame.py:346
-#: ../IDEFrame.py:400
-#: ../editors/Viewer.py:535
+#: ../dialogs/AboutDialog.py:113
+msgid "Credits"
+msgstr ""
+
+#: ../Beremiz_service.py:434
+msgid "Current working directory :"
+msgstr ""
+
+#: ../editors/Viewer.py:655 ../IDEFrame.py:368 ../IDEFrame.py:424
 msgid "Cut"
 msgstr "잘라내기"
 
-#: ../editors/ResourceEditor.py:71
+#: ../editors/ResourceEditor.py:72
 msgid "Cyclic"
 msgstr "주기적"
 
-#: ../plcopen/iec_std.csv:42
-#: ../plcopen/iec_std.csv:44
-#: ../plcopen/iec_std.csv:46
-#: ../plcopen/iec_std.csv:50
-#: ../plcopen/iec_std.csv:52
-#: ../plcopen/iec_std.csv:54
-#: ../plcopen/iec_std.csv:56
-#: ../plcopen/iec_std.csv:58
+#: ../plcopen/iec_std.csv:42 ../plcopen/iec_std.csv:44
+#: ../plcopen/iec_std.csv:46 ../plcopen/iec_std.csv:50
+#: ../plcopen/iec_std.csv:52 ../plcopen/iec_std.csv:54
+#: ../plcopen/iec_std.csv:56 ../plcopen/iec_std.csv:58
 #: ../plcopen/iec_std.csv:60
 msgid "DEPRECATED"
 msgstr "사용중지됨"
 
-#: ../canfestival/SlaveEditor.py:50
-#: ../canfestival/NetworkEditor.py:80
+#: ../canfestival/SlaveEditor.py:76 ../canfestival/NetworkEditor.py:97
 msgid "DS-301 Profile"
 msgstr "DS-301 프로필"
 
-#: ../canfestival/SlaveEditor.py:51
-#: ../canfestival/NetworkEditor.py:81
+#: ../canfestival/SlaveEditor.py:77 ../canfestival/NetworkEditor.py:98
 msgid "DS-302 Profile"
 msgstr "DS-302 프로필"
 
-#: ../dialogs/SearchInProjectDialog.py:43
+#: ../dialogs/SearchInProjectDialog.py:36
 msgid "Data Type"
 msgstr "데이터 타입(Data Type)"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:98
 msgid "Data Types"
 msgstr "데이터 타입(Data Types)"
 
@@ -1289,82 +1271,75 @@ msgstr "데이터 타입(Data Types)"
 msgid "Data type conversion"
 msgstr "데이터 타입 변환"
 
-#: ../plcopen/iec_std.csv:44
-#: ../plcopen/iec_std.csv:45
+#: ../plcopen/iec_std.csv:44 ../plcopen/iec_std.csv:45
 msgid "Date addition"
 msgstr "날짜 추가"
 
-#: ../plcopen/iec_std.csv:56
-#: ../plcopen/iec_std.csv:57
-#: ../plcopen/iec_std.csv:58
-#: ../plcopen/iec_std.csv:59
+#: ../plcopen/iec_std.csv:56 ../plcopen/iec_std.csv:57
+#: ../plcopen/iec_std.csv:58 ../plcopen/iec_std.csv:59
 msgid "Date and time subtraction"
 msgstr "날짜, 시간 뺄셈"
 
-#: ../plcopen/iec_std.csv:50
-#: ../plcopen/iec_std.csv:51
+#: ../plcopen/iec_std.csv:50 ../plcopen/iec_std.csv:51
 msgid "Date subtraction"
 msgstr "날짜 뺄셈"
 
-#: ../dialogs/DurationEditorDialog.py:43
+#: ../dialogs/DurationEditorDialog.py:44
 msgid "Days:"
 msgstr ""
 
-#: ../ProjectController.py:1405
-msgid "Debug connect matching running PLC\n"
-msgstr "디버그 작동중인 PLC와 매칭 되었습니다\n"
+#: ../ProjectController.py:1756
+msgid "Debug does not match PLC - stop/transfert/start to re-enable\n"
+msgstr ""
 
-#: ../ProjectController.py:1408
-msgid "Debug do not match PLC - stop/transfert/start to re-enable\n"
-msgstr "PLC와 디버거가 연결되지 않았습니다 - 정지/전송/시작을 다시 시도하세요\n"
-
-#: ../controls/PouInstanceVariablesPanel.py:52
-#, fuzzy
+#: ../controls/PouInstanceVariablesPanel.py:134
 msgid "Debug instance"
-msgstr "인스턴스 삭제"
+msgstr ""
 
-#: ../editors/Viewer.py:3222
+#: ../editors/Viewer.py:448
 #, python-format
 msgid "Debug: %s"
 msgstr "디버그: %s"
 
-#: ../ProjectController.py:1122
-#, fuzzy, python-format
+#: ../ProjectController.py:1412
+#, python-format
 msgid "Debug: Unknown variable '%s'\n"
-msgstr "디버그 : 알 수 없는 변수 %s\n"
+msgstr ""
 
-#: ../ProjectController.py:1120
-#, fuzzy, python-format
+#: ../ProjectController.py:1410
+#, python-format
 msgid "Debug: Unsupported type to debug '%s'\n"
-msgstr "디버그 : 지원하지 않는 타입 %s\n"
+msgstr ""
 
-#: ../IDEFrame.py:608
+#: ../IDEFrame.py:639
 msgid "Debugger"
 msgstr "디버거"
 
-#: ../ProjectController.py:1285
+#: ../ProjectController.py:1592
 msgid "Debugger disabled\n"
 msgstr "디버거 사용 불가\n"
 
-#: ../ProjectController.py:1297
+#: ../ProjectController.py:1753
+msgid "Debugger ready\n"
+msgstr ""
+
+#: ../ProjectController.py:1625
 msgid "Debugger stopped.\n"
 msgstr "디버거 정지.\n"
 
-#: ../IDEFrame.py:1990
-#: ../Beremiz.py:958
-#: ../editors/Viewer.py:511
+#: ../BeremizIDE.py:968 ../editors/Viewer.py:631 ../IDEFrame.py:1962
 msgid "Delete"
 msgstr "삭제"
 
-#: ../editors/Viewer.py:454
+#: ../editors/Viewer.py:573
 msgid "Delete Divergence Branch"
 msgstr "파생된 Branch 삭제 (Divergence Branch)"
 
-#: ../editors/FileManagementPanel.py:371
+#: ../editors/FileManagementPanel.py:153
 msgid "Delete File"
 msgstr ""
 
-#: ../editors/Viewer.py:443
+#: ../editors/Viewer.py:560
 msgid "Delete Wire Segment"
 msgstr "와이어 세그먼트 삭제"
 
@@ -1376,184 +1351,168 @@ msgstr "항목 삭제"
 msgid "Deletion (within)"
 msgstr "내부 삭제"
 
-#: ../editors/DataTypeEditor.py:146
+#: ../editors/DataTypeEditor.py:153
 msgid "Derivation Type:"
 msgstr "미분 타입"
 
-#: ../plcopen/structures.py:264
-msgid ""
-"Derivative\n"
-"The derivative function block produces an output XOUT proportional to the rate of change of the input XIN."
+#: ../editors/CodeFileEditor.py:739
+msgid "Description"
 msgstr ""
-"미분\n"
-"미분 함수 블럭은 입력 XIN의 변화의 속도에 비례하여 출력 XOUT을 생성합니다"
 
-#: ../controls/VariablePanel.py:360
-#, fuzzy
+#: ../controls/VariablePanel.py:432
 msgid "Description:"
-msgstr "방향:"
+msgstr ""
 
-#: ../editors/DataTypeEditor.py:314
-#: ../dialogs/ArrayTypeDialog.py:61
+#: ../dialogs/ArrayTypeDialog.py:60 ../editors/DataTypeEditor.py:321
 msgid "Dimensions:"
 msgstr "넓이:"
 
-#: ../dialogs/FindInPouDialog.py:61
-#, fuzzy
+#: ../dialogs/FindInPouDialog.py:66
 msgid "Direction"
-msgstr "방향:"
+msgstr ""
 
-#: ../dialogs/BrowseLocationsDialog.py:78
+#: ../dialogs/BrowseLocationsDialog.py:91
 msgid "Direction:"
 msgstr "방향:"
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Directly"
 msgstr "직접"
 
-#: ../ProjectController.py:1512
+#: ../ProjectController.py:1860
 msgid "Disconnect"
 msgstr "연결 해제"
 
-#: ../ProjectController.py:1514
+#: ../ProjectController.py:1862
 msgid "Disconnect from PLC"
 msgstr "PLC 연결 해제"
 
-#: ../editors/Viewer.py:496
-#, fuzzy
+#: ../ProjectController.py:1364
+msgid "Disconnected"
+msgstr ""
+
+#: ../editors/Viewer.py:615 ../editors/Viewer.py:2403
 msgid "Divergence"
-msgstr "벡터 발산(Divergence) 선택"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:36
 msgid "Division"
 msgstr "분할"
 
-#: ../editors/FileManagementPanel.py:370
+#: ../editors/FileManagementPanel.py:152
 #, python-format
 msgid "Do you really want to delete the file '%s'?"
 msgstr ""
 
-#: ../controls/VariablePanel.py:58
-#: ../controls/VariablePanel.py:59
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Documentation"
 msgstr "도움문서"
 
-#: ../PLCOpenEditor.py:351
+#: ../PLCOpenEditor.py:338
 msgid "Done"
 msgstr "완료"
 
-#: ../plcopen/structures.py:227
-msgid ""
-"Down-counter\n"
-"The down-counter can be used to signal when a count has reached zero, on counting down from a preset value."
-msgstr ""
-"감산 카운터\n"
-"감산 카운터는 사용자가 설정한 값으로부터 감소하여 0이 될 때 신호를 발생시킵니다."
-
-#: ../dialogs/ActionBlockDialog.py:37
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Duration"
 msgstr "지속시간"
 
-#: ../canfestival/canfestival.py:118
-#, fuzzy
+#: ../canfestival/canfestival.py:165
 msgid "EDS files (*.eds)|*.eds|All files|*.*"
-msgstr "SVG 파일 (*.svg)|*svg|모든 파일|*.*"
+msgstr ""
 
-#: ../editors/Viewer.py:510
+#: ../editors/Viewer.py:629
 msgid "Edit Block"
 msgstr "블럭 수정"
 
-#: ../dialogs/LDElementDialog.py:41
+#: ../dialogs/LDElementDialog.py:56
 msgid "Edit Coil Values"
 msgstr "코일 데이터 수정"
 
-#: ../dialogs/LDElementDialog.py:38
+#: ../dialogs/LDElementDialog.py:54
 msgid "Edit Contact Values"
 msgstr "접접 데이터 수정"
 
 #: ../dialogs/DurationEditorDialog.py:59
-#, fuzzy
 msgid "Edit Duration"
-msgstr "트랜지션 수정"
+msgstr ""
 
-#: ../dialogs/SFCStepDialog.py:35
+#: ../dialogs/SFCStepDialog.py:51
 msgid "Edit Step"
 msgstr "스텝 수정"
 
-#: ../wxglade_hmi/wxglade_hmi.py:12
+#: ../wxglade_hmi/wxglade_hmi.py:38
 msgid "Edit a WxWidgets GUI with WXGlade"
 msgstr "WXGlade를 이용하여 GUI 수정"
 
-#: ../dialogs/ActionBlockDialog.py:122
+#: ../dialogs/ActionBlockDialog.py:121
 msgid "Edit action block properties"
 msgstr "액션 블럭 속성 수정"
 
-#: ../dialogs/ArrayTypeDialog.py:45
-#, fuzzy
+#: ../dialogs/ArrayTypeDialog.py:44
 msgid "Edit array type properties"
-msgstr "액션 블럭 속성 수정"
+msgstr ""
 
-#: ../editors/Viewer.py:2112
-#: ../editors/Viewer.py:2114
-#: ../editors/Viewer.py:2630
-#: ../editors/Viewer.py:2632
+#: ../editors/Viewer.py:2626 ../editors/Viewer.py:3055
 msgid "Edit comment"
 msgstr "코멘트 수정"
 
-#: ../editors/FileManagementPanel.py:284
-#, fuzzy
+#: ../editors/FileManagementPanel.py:66
 msgid "Edit file"
-msgstr "C 파일 수정"
+msgstr ""
 
 #: ../controls/CustomEditableListBox.py:39
 msgid "Edit item"
 msgstr "항목 수정"
 
-#: ../editors/Viewer.py:2594
+#: ../editors/Viewer.py:3014
 msgid "Edit jump target"
 msgstr "점프 타겟 수정"
 
-#: ../ProjectController.py:1526
+#: ../ProjectController.py:1874
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr "PLCGenerator로 생성된 IEC 코드 수정"
 
-#: ../editors/SFCViewer.py:725
+#: ../editors/SFCViewer.py:799
 msgid "Edit step name"
 msgstr "스텝 이름 수정"
 
-#: ../dialogs/SFCTransitionDialog.py:38
+#: ../dialogs/SFCTransitionDialog.py:52
 msgid "Edit transition"
 msgstr "트랜지션 수정"
 
-#: ../IDEFrame.py:580
+#: ../IDEFrame.py:611
 msgid "Editor ToolBar"
 msgstr ""
 
-#: ../ProjectController.py:1013
+#: ../ProjectController.py:1257
 msgid "Editor selection"
 msgstr ""
 
-#: ../editors/DataTypeEditor.py:341
+#: ../editors/DataTypeEditor.py:348
 msgid "Elements :"
 msgstr "구성원:"
 
-#: ../IDEFrame.py:343
+#: ../ProjectController.py:1362
+msgid "Empty"
+msgstr ""
+
+#: ../IDEFrame.py:365
 msgid "Enable Undo/Redo"
 msgstr "되돌리기/되돌리기 취소 활성화"
 
-#: ../Beremiz_service.py:380
+#: ../Beremiz_service.py:333
 msgid "Enter a name "
 msgstr "이름 입력"
 
-#: ../Beremiz_service.py:365
+#: ../Beremiz_service.py:318
 msgid "Enter a port number "
 msgstr "포트 번호 입력"
 
-#: ../Beremiz_service.py:355
+#: ../Beremiz_service.py:309
 msgid "Enter the IP of the interface to bind"
 msgstr "바인드 인터페이스 IP 입력"
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Enumerated"
 msgstr "열거형 데이터"
 
@@ -1561,69 +1520,48 @@ msgstr "열거형 데이터"
 msgid "Equal to"
 msgstr "같은 값 일때"
 
-#: ../Beremiz_service.py:270
-#: ../Beremiz_service.py:394
-#: ../controls/VariablePanel.py:330
-#: ../controls/VariablePanel.py:678
-#: ../controls/DebugVariablePanel.py:164
-#: ../IDEFrame.py:1083
-#: ../IDEFrame.py:1672
-#: ../IDEFrame.py:1709
-#: ../IDEFrame.py:1714
-#: ../IDEFrame.py:1728
-#: ../IDEFrame.py:1733
-#: ../IDEFrame.py:2422
-#: ../Beremiz.py:1083
-#: ../PLCOpenEditor.py:358
-#: ../PLCOpenEditor.py:363
-#: ../PLCOpenEditor.py:531
-#: ../PLCOpenEditor.py:541
-#: ../editors/TextViewer.py:376
-#: ../editors/DataTypeEditor.py:543
-#: ../editors/DataTypeEditor.py:548
-#: ../editors/DataTypeEditor.py:572
-#: ../editors/DataTypeEditor.py:577
-#: ../editors/DataTypeEditor.py:587
-#: ../editors/DataTypeEditor.py:719
-#: ../editors/DataTypeEditor.py:726
-#: ../editors/Viewer.py:366
-#: ../editors/LDViewer.py:663
-#: ../editors/LDViewer.py:879
-#: ../editors/LDViewer.py:883
-#: ../editors/FileManagementPanel.py:210
-#: ../ProjectController.py:221
-#: ../dialogs/PouNameDialog.py:53
-#: ../dialogs/PouTransitionDialog.py:107
-#: ../dialogs/BrowseLocationsDialog.py:175
-#: ../dialogs/ProjectDialog.py:71
-#: ../dialogs/SFCStepNameDialog.py:59
-#: ../dialogs/ConnectionDialog.py:152
-#: ../dialogs/FBDVariableDialog.py:201
-#: ../dialogs/PouActionDialog.py:104
-#: ../dialogs/BrowseValuesLibraryDialog.py:83
-#: ../dialogs/PouDialog.py:132
-#: ../dialogs/SFCTransitionDialog.py:147
+#: ../BeremizIDE.py:1107 ../dialogs/ForceVariableDialog.py:197
+#: ../dialogs/SearchInProjectDialog.py:168 ../dialogs/SFCStepNameDialog.py:60
 #: ../dialogs/DurationEditorDialog.py:121
-#: ../dialogs/DurationEditorDialog.py:163
-#: ../dialogs/SearchInProjectDialog.py:157
-#: ../dialogs/SFCStepDialog.py:130
-#: ../dialogs/ArrayTypeDialog.py:97
-#: ../dialogs/ArrayTypeDialog.py:103
-#: ../dialogs/FBDBlockDialog.py:164
-#: ../dialogs/ForceVariableDialog.py:169
+#: ../dialogs/DurationEditorDialog.py:167
+#: ../dialogs/PouTransitionDialog.py:107 ../dialogs/BlockPreviewDialog.py:237
+#: ../dialogs/ProjectDialog.py:74 ../dialogs/ArrayTypeDialog.py:97
+#: ../dialogs/ArrayTypeDialog.py:103 ../dialogs/PouNameDialog.py:54
+#: ../dialogs/BrowseLocationsDialog.py:218
+#: ../dialogs/BrowseValuesLibraryDialog.py:83
+#: ../dialogs/PouActionDialog.py:105 ../dialogs/PouDialog.py:135
+#: ../PLCOpenEditor.py:345 ../PLCOpenEditor.py:350 ../PLCOpenEditor.py:430
+#: ../PLCOpenEditor.py:440 ../editors/ResourceEditor.py:436
+#: ../editors/Viewer.py:424 ../editors/LDViewer.py:666
+#: ../editors/LDViewer.py:882 ../editors/LDViewer.py:886
+#: ../editors/DataTypeEditor.py:550 ../editors/DataTypeEditor.py:555
+#: ../editors/DataTypeEditor.py:574 ../editors/DataTypeEditor.py:743
+#: ../editors/DataTypeEditor.py:750 ../editors/TextViewer.py:389
+#: ../editors/CodeFileEditor.py:762 ../ProjectController.py:372
+#: ../ProjectController.py:512 ../ProjectController.py:519
+#: ../controls/FolderTree.py:217
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:166
+#: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:137
+#: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:231
+#: ../controls/VariablePanel.py:402 ../controls/VariablePanel.py:759
+#: ../IDEFrame.py:1007 ../IDEFrame.py:1617 ../IDEFrame.py:1658
+#: ../IDEFrame.py:1663 ../IDEFrame.py:1677 ../IDEFrame.py:1682
+#: ../Beremiz_service.py:213
 msgid "Error"
 msgstr "에러"
 
-#: ../ProjectController.py:587
-msgid "Error : At least one configuration and one resource must be declared in PLC !\n"
+#: ../ProjectController.py:789
+msgid ""
+"Error : At least one configuration and one resource must be declared in PLC "
+"!\n"
 msgstr "에러 : PLC 프로그램은 하나 이상의 설정과 리소스가 반드시 선언되어야 합니다!\n"
 
-#: ../ProjectController.py:579
+#: ../ProjectController.py:781
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr "에러 : IEC -> C 컴파일러 %d\n"
 
-#: ../ProjectController.py:520
+#: ../ProjectController.py:712
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
@@ -1632,38 +1570,37 @@ msgstr ""
 "ST/IL/SFC 코드 생성기 에러 : \n"
 "%s\n"
 
-#: ../ConfigTreeNode.py:182
+#: ../ConfigTreeNode.py:216
 #, python-format
 msgid "Error while saving \"%s\"\n"
 msgstr "저장 중 에러 발생 \"%s\"\n"
 
-#: ../canfestival/canfestival.py:122
+#: ../canfestival/canfestival.py:170
 msgid "Error: Export slave failed\n"
 msgstr ""
 
-#: ../canfestival/canfestival.py:270
+#: ../canfestival/canfestival.py:371
 msgid "Error: No Master generated\n"
 msgstr "에러 : 마스터 미생성 \"%s\"\n"
 
-#: ../canfestival/canfestival.py:265
+#: ../canfestival/canfestival.py:366
 msgid "Error: No PLC built\n"
 msgstr "에러 : PLC 빌드 미생성\n"
 
-#: ../ProjectController.py:1378
+#: ../ProjectController.py:1728
 #, python-format
 msgid "Exception while connecting %s!\n"
 msgstr "%s접속중 예외 상황이 발생했습니다!\n"
 
-#: ../dialogs/FBDBlockDialog.py:95
+#: ../dialogs/FBDBlockDialog.py:120
 msgid "Execution Control:"
 msgstr "실행 제어:"
 
-#: ../dialogs/FBDVariableDialog.py:76
-#: ../dialogs/FBDBlockDialog.py:87
+#: ../dialogs/FBDVariableDialog.py:80 ../dialogs/FBDBlockDialog.py:108
 msgid "Execution Order:"
 msgstr "실행 순서:"
 
-#: ../features.py:10
+#: ../features.py:35
 msgid "Experimental web based HMI"
 msgstr "웹 기반의 HMI(실험중)"
 
@@ -1675,193 +1612,171 @@ msgstr "지수"
 msgid "Exponentiation"
 msgstr "지수화"
 
-#: ../canfestival/canfestival.py:128
+#: ../canfestival/canfestival.py:176
 msgid "Export CanOpen slave to EDS file"
 msgstr ""
 
-#: ../editors/GraphicViewer.py:144
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:243
 msgid "Export graph values to clipboard"
 msgstr ""
 
-#: ../canfestival/canfestival.py:127
+#: ../canfestival/canfestival.py:175
 msgid "Export slave"
 msgstr ""
 
-#: ../dialogs/FBDVariableDialog.py:69
+#: ../dialogs/FBDVariableDialog.py:90
 msgid "Expression:"
 msgstr "표현식:"
 
-#: ../controls/VariablePanel.py:77
+#: ../controls/VariablePanel.py:72
 msgid "External"
 msgstr "외부"
 
-#: ../ProjectController.py:591
+#: ../ProjectController.py:802
 msgid "Extracting Located Variables...\n"
 msgstr "위치 변수(located variables) 추출 중...\n"
 
-#: ../controls/ProjectPropertiesPanel.py:143
-#: ../dialogs/PouTransitionDialog.py:35
-#: ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "FBD"
 msgstr "FBD"
 
-#: ../ProjectController.py:1445
+#: ../ProjectController.py:1791
 msgid "Failed : Must build before transfer.\n"
 msgstr "실패 : 빌드 후에 전송 하세요.\n"
 
-#: ../editors/Viewer.py:405
-#: ../dialogs/LDElementDialog.py:84
+#: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:521
 msgid "Falling Edge"
 msgstr "폴링 엣지"
 
-#: ../plcopen/structures.py:217
-msgid ""
-"Falling edge detector\n"
-"The output produces a single pulse when a falling edge is detected."
-msgstr ""
-"폴링 엣지 검출\n"
-"출력부의 폴링 엣지를 검출합니다"
-
-#: ../ProjectController.py:900
+#: ../ProjectController.py:1070
 msgid "Fatal : cannot get builder.\n"
 msgstr "치명적 오류 : 빌드 파일 생성 프로그램을 찾을 수 없습니다.\n"
 
-#: ../dialogs/DurationEditorDialog.py:160
-#, fuzzy, python-format
+#: ../Beremiz.py:156
+#, python-format
+msgid "Fetching %s"
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:164
+#, python-format
 msgid "Field %s hasn't a valid value!"
-msgstr "\"%s\" 유효하지 않은 값입니다!"
+msgstr ""
 
-#: ../dialogs/DurationEditorDialog.py:162
-#, fuzzy, python-format
+#: ../dialogs/DurationEditorDialog.py:166
+#, python-format
 msgid "Fields %s haven't a valid value!"
-msgstr "\"%s\" 유효하지 않은 값입니다!"
+msgstr ""
 
-#: ../editors/FileManagementPanel.py:209
-#, fuzzy, python-format
+#: ../controls/FolderTree.py:216
+#, python-format
 msgid "File '%s' already exists!"
-msgstr "입력 하신 \"%s\" 이 중복 되는 이름입니다. -> \"%s\"\n"
+msgstr ""
 
-#: ../IDEFrame.py:353
-#: ../dialogs/FindInPouDialog.py:30
-#: ../dialogs/FindInPouDialog.py:99
+#: ../dialogs/SearchInProjectDialog.py:98 ../dialogs/FindInPouDialog.py:37
+#: ../dialogs/FindInPouDialog.py:104 ../IDEFrame.py:375
 msgid "Find"
 msgstr ""
 
-#: ../IDEFrame.py:355
-#, fuzzy
+#: ../IDEFrame.py:377
 msgid "Find Next"
-msgstr "인쇄\tCTRL+P"
+msgstr ""
 
-#: ../IDEFrame.py:357
-#, fuzzy
+#: ../IDEFrame.py:379
 msgid "Find Previous"
-msgstr "인쇄 페이지 미리보기\tCTRL+SHIFT+P"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:90
 msgid "Find position"
 msgstr "위치 찾기"
 
-#: ../dialogs/FindInPouDialog.py:51
+#: ../dialogs/FindInPouDialog.py:55
 msgid "Find:"
 msgstr ""
 
-#: ../connectors/PYRO/__init__.py:125
+#: ../connectors/PYRO/__init__.py:163
 msgid "Force runtime reload\n"
 msgstr "실행환경 강제 리로딩\n"
 
-#: ../controls/DebugVariablePanel.py:295
-#: ../editors/Viewer.py:1353
+#: ../editors/Viewer.py:1600
 msgid "Force value"
 msgstr "강제 데이터 입력"
 
-#: ../dialogs/ForceVariableDialog.py:152
+#: ../dialogs/ForceVariableDialog.py:162
 msgid "Forcing Variable Value"
 msgstr "강제 변수 데이터"
 
-#: ../dialogs/PouTransitionDialog.py:97
-#: ../dialogs/ProjectDialog.py:70
-#: ../dialogs/PouActionDialog.py:94
-#: ../dialogs/PouDialog.py:114
-#: ../dialogs/SFCTransitionDialog.py:147
+#: ../dialogs/SFCTransitionDialog.py:182 ../dialogs/PouTransitionDialog.py:97
+#: ../dialogs/ProjectDialog.py:73 ../dialogs/PouActionDialog.py:95
+#: ../dialogs/PouDialog.py:117
 #, python-format
 msgid "Form isn't complete. %s must be filled!"
 msgstr "형식이 완성되지 않았습니다. %s 를 입력하세요!"
 
-#: ../dialogs/ConnectionDialog.py:142
-#: ../dialogs/FBDBlockDialog.py:154
+#: ../dialogs/SFCStepDialog.py:147 ../dialogs/FBDBlockDialog.py:236
+#: ../dialogs/ConnectionDialog.py:163
 msgid "Form isn't complete. Name must be filled!"
 msgstr "형식이 완성되지 않았습니다. 이름을 입력하세요"
 
-#: ../dialogs/SearchInProjectDialog.py:145
-msgid "Form isn't complete. Pattern to search must be filled!"
-msgstr "형식이 완성되지 않았습니다. 검색어를 입력하세요!"
-
-#: ../dialogs/FBDBlockDialog.py:152
+#: ../dialogs/FBDBlockDialog.py:232
 msgid "Form isn't complete. Valid block type must be selected!"
 msgstr "형식이 완성되지 않았습니다. 블럭 타입을 선택하세요!"
 
-#: ../dialogs/FindInPouDialog.py:67
+#: ../dialogs/FindInPouDialog.py:72
 msgid "Forward"
 msgstr ""
 
-#: ../dialogs/SearchInProjectDialog.py:44
+#: ../dialogs/SearchInProjectDialog.py:37 ../IDEFrame.py:1749
 msgid "Function"
 msgstr "함수"
 
-#: ../IDEFrame.py:329
+#: ../IDEFrame.py:349
 msgid "Function &Block"
 msgstr "함수 &블록"
 
-#: ../IDEFrame.py:1969
-#: ../dialogs/SearchInProjectDialog.py:45
+#: ../dialogs/SearchInProjectDialog.py:38 ../IDEFrame.py:1748
+#: ../IDEFrame.py:1941
 msgid "Function Block"
 msgstr "함수 블럭(Function Block)"
 
-#: ../controls/VariablePanel.py:741
+#: ../controls/VariablePanel.py:854
 msgid "Function Block Types"
 msgstr "함수 블럭 타입"
 
-#: ../PLCControler.py:94
+#: ../PLCControler.py:97
 msgid "Function Blocks"
 msgstr "함수 블럭(Function Blocks)"
 
-#: ../editors/Viewer.py:236
+#: ../editors/Viewer.py:249
 msgid "Function Blocks can't be used in Functions!"
 msgstr "함수 블럭을 함수에서 사용할 수 없습니다!"
 
-#: ../editors/Viewer.py:238
-msgid "Function Blocks can't be used in Transitions!"
-msgstr "함수 블럭을 트랜지션에서 사용할 수 없습니다!"
-
-#: ../PLCControler.py:2055
+#: ../PLCControler.py:2343
 #, python-format
 msgid "FunctionBlock \"%s\" can't be pasted in a Function!!!"
 msgstr "함수 블럭 \"%s\" 을 함수에 붙여 넣기 할 수 없습니다!!!"
 
-#: ../PLCControler.py:94
+#: ../PLCControler.py:97
 msgid "Functions"
 msgstr "함수 (Functions)"
 
-#: ../PLCOpenEditor.py:138
-#, fuzzy
+#: ../PLCOpenEditor.py:117
 msgid "Generate Program"
-msgstr "프로그램 생성\tCTRL+G"
+msgstr ""
 
-#: ../ProjectController.py:510
+#: ../ProjectController.py:703
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr "IEC-61131 기반의 ST/IL/SFC 코드 생성중...\n"
 
-#: ../controls/VariablePanel.py:78
+#: ../controls/VariablePanel.py:73
 msgid "Global"
 msgstr "글로벌"
 
-#: ../editors/GraphicViewer.py:131
-#, fuzzy
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:242
 msgid "Go to current value"
-msgstr "강제 데이터 입력"
+msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:173
+#: ../controls/ProjectPropertiesPanel.py:174
 msgid "Graphics"
 msgstr "그래픽"
 
@@ -1873,114 +1788,110 @@ msgstr "큰 값 일때"
 msgid "Greater than or equal to"
 msgstr "크거나 같은 값 일때"
 
-#: ../controls/ProjectPropertiesPanel.py:134
+#: ../controls/ProjectPropertiesPanel.py:135
 msgid "Grid Resolution:"
 msgstr "격자 해상도:"
 
-#: ../controls/ProjectPropertiesPanel.py:120
+#: ../runtime/NevowServer.py:182
+msgid "HTTP interface port :"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:121
 msgid "Height:"
 msgstr "높이:"
 
-#: ../editors/FileManagementPanel.py:303
+#: ../editors/FileManagementPanel.py:85
 msgid "Home Directory:"
 msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:150
+#: ../controls/ProjectPropertiesPanel.py:151
 msgid "Horizontal:"
 msgstr "가로:"
 
-#: ../dialogs/DurationEditorDialog.py:44
+#: ../dialogs/DurationEditorDialog.py:45
 msgid "Hours:"
 msgstr ""
 
-#: ../plcopen/structures.py:279
-msgid ""
-"Hysteresis\n"
-"The hysteresis function block provides a hysteresis boolean output driven by the difference of two floating point (REAL) inputs XIN1 and XIN2."
-msgstr ""
-"이력(Hysteresis)\n"
-"이력 펑션 블럭은 두 부동 소수점(REAL) 입력 XIN1, XIN2의 차이에 의한 이력(Hysteresis) 참,거짓(불린) 출력을 제공합니다"
-
-#: ../ProjectController.py:827
-msgid "IEC-61131-3 code generation failed !\n"
-msgstr "IEC-61131-3 코드 생성 실패!\n"
-
-#: ../dialogs/PouTransitionDialog.py:35
-#: ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37
 msgid "IL"
 msgstr "IL"
 
-#: ../Beremiz_service.py:356
-#: ../Beremiz_service.py:357
+#: ../dialogs/DiscoveryDialog.py:94
+msgid "IP"
+msgstr ""
+
+#: ../Beremiz_service.py:310 ../Beremiz_service.py:311
 msgid "IP is not valid!"
 msgstr "IP를 정확히 입력하세요!"
 
-#: ../svgui/svgui.py:17
-#: ../svgui/svgui.py:18
+#: ../svgui/svgui.py:44 ../svgui/svgui.py:45
 msgid "Import SVG"
 msgstr "SVG 가져오기"
 
-#: ../controls/VariablePanel.py:76
-#: ../dialogs/FBDVariableDialog.py:34
+#: ../dialogs/FBDVariableDialog.py:39 ../editors/Viewer.py:1629
+#: ../controls/VariablePanel.py:71
 msgid "InOut"
 msgstr "입출력"
 
-#: ../controls/VariablePanel.py:263
-#, python-format
-msgid "Incompatible data types between \"%s\" and \"%s\""
-msgstr "\"%s\" 와 \"%s\"간의 데이터 타입이 호환되지 않습니다"
+#: ../editors/Viewer.py:431
+msgid "Inactive"
+msgstr ""
 
-#: ../controls/VariablePanel.py:274
-#, python-format
-msgid "Incompatible size of data between \"%s\" and \"%s\""
-msgstr "\"%s\"와 \"%s\"간의 데이터 크기가 호환되지 않습니다"
+#: ../controls/VariablePanel.py:276
+#, python-brace-format
+msgid "Incompatible data types between \"{a1}\" and \"{a2}\""
+msgstr ""
 
-#: ../controls/VariablePanel.py:270
+#: ../controls/VariablePanel.py:282
 #, python-format
 msgid "Incompatible size of data between \"%s\" and \"BOOL\""
 msgstr "\"%s\"와 \"BOOL\"간의 데이터 크기가 호환되지 않습니다"
 
-#: ../dialogs/ActionBlockDialog.py:37
+#: ../controls/VariablePanel.py:286
+#, python-brace-format
+msgid "Incompatible size of data between \"{a1}\" and \"{a2}\""
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Indicator"
 msgstr "지시기(Indicator)"
 
-#: ../editors/Viewer.py:492
-#, fuzzy
-msgid "Initial Step"
-msgstr "초기 값"
+#: ../editors/CodeFileEditor.py:739
+msgid "Initial"
+msgstr ""
 
-#: ../controls/VariablePanel.py:58
-#: ../controls/VariablePanel.py:59
-#: ../editors/DataTypeEditor.py:48
+#: ../editors/Viewer.py:611
+msgid "Initial Step"
+msgstr ""
+
+#: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
+#: ../controls/VariablePanel.py:54
 msgid "Initial Value"
 msgstr "초기 값"
 
-#: ../editors/DataTypeEditor.py:178
-#: ../editors/DataTypeEditor.py:209
-#: ../editors/DataTypeEditor.py:265
-#: ../editors/DataTypeEditor.py:303
+#: ../editors/DataTypeEditor.py:185 ../editors/DataTypeEditor.py:216
+#: ../editors/DataTypeEditor.py:272 ../editors/DataTypeEditor.py:310
 msgid "Initial Value:"
 msgstr "초기 값:"
 
-#: ../svgui/svgui.py:21
+#: ../svgui/svgui.py:48
 msgid "Inkscape"
 msgstr "Inkscape"
 
-#: ../dialogs/ActionBlockDialog.py:41
-#: ../dialogs/SFCTransitionDialog.py:66
-#: ../dialogs/SFCTransitionDialog.py:137
+#: ../dialogs/SFCTransitionDialog.py:76 ../dialogs/ActionBlockDialog.py:43
 msgid "Inline"
 msgstr "인라인"
 
-#: ../controls/VariablePanel.py:76
-#: ../dialogs/BrowseLocationsDialog.py:36
-#: ../dialogs/FBDVariableDialog.py:33
-#: ../dialogs/SFCStepDialog.py:61
+#: ../dialogs/SFCStepDialog.py:71 ../dialogs/FBDVariableDialog.py:38
+#: ../dialogs/BrowseLocationsDialog.py:41 ../editors/Viewer.py:290
+#: ../editors/Viewer.py:1627 ../editors/TextViewer.py:307
+#: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
+#: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Input"
 msgstr "입력"
 
-#: ../dialogs/FBDBlockDialog.py:78
+#: ../dialogs/FBDBlockDialog.py:96
 msgid "Inputs:"
 msgstr "입력(Inputs):"
 
@@ -1988,68 +1899,62 @@ msgstr "입력(Inputs):"
 msgid "Insertion (into)"
 msgstr "대상에 삽입"
 
-#: ../plcopen/plcopen.py:1833
+#: ../plcopen/plcopen.py:1696
 #, python-format
 msgid "Instance with id %d doesn't exist!"
 msgstr "ID %d의 인스턴스가 존재하지 않습니다!"
 
-#: ../editors/ResourceEditor.py:247
+#: ../editors/ResourceEditor.py:264
 msgid "Instances:"
 msgstr "인스턴스:"
 
-#: ../plcopen/structures.py:259
-msgid ""
-"Integral\n"
-"The integral function block integrates the value of input XIN over time."
-msgstr ""
-"적분\n"
-"적분 함수 블럭은 시간에 따른 입력 XIN의 데이터를 적분합니다"
-
-#: ../controls/VariablePanel.py:75
+#: ../controls/VariablePanel.py:70
 msgid "Interface"
 msgstr "인터페이스"
 
-#: ../editors/ResourceEditor.py:71
+#: ../editors/ResourceEditor.py:72
 msgid "Interrupt"
 msgstr "인터럽트"
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Interval"
 msgstr "간격 (Interval)"
 
-#: ../PLCControler.py:2032
-#: ../PLCControler.py:2070
+#: ../PLCControler.py:2331
 msgid "Invalid plcopen element(s)!!!"
 msgstr "알 수 없는 plcopen 항목입니다!!!"
 
-#: ../canfestival/config_utils.py:376
-#: ../canfestival/config_utils.py:637
-#, python-format
-msgid "Invalid type \"%s\"-> %d != %d  for location\"%s\""
-msgstr "타입 에러 \"%s\" -> %d != %d 위치 \"%s\""
+#: ../canfestival/config_utils.py:381
+#, python-brace-format
+msgid "Invalid type \"{a1}\"-> {a2} != {a3}  for location\"{a4}\""
+msgstr ""
 
-#: ../dialogs/ForceVariableDialog.py:167
-#, python-format
-msgid "Invalid value \"%s\" for \"%s\" variable!"
-msgstr "\"%s\"값은 \"%s\" 변수에 적합하지 않습니다!"
+#: ../canfestival/config_utils.py:645
+#, python-brace-format
+msgid "Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\""
+msgstr ""
 
-#: ../controls/DebugVariablePanel.py:153
-#: ../controls/DebugVariablePanel.py:156
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:132
+#: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:92
+#: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:166
 #, python-format
 msgid "Invalid value \"%s\" for debug variable"
 msgstr "\"%s\"값은 디버그 변수에 적합하지 않습니다!"
 
-#: ../controls/VariablePanel.py:244
-#: ../controls/VariablePanel.py:247
-#, fuzzy, python-format
+#: ../controls/VariablePanel.py:255 ../controls/VariablePanel.py:258
+#, python-format
 msgid "Invalid value \"%s\" for variable grid element"
-msgstr "\"%s\"값은 \"%s\" 변수에 적합하지 않습니다!"
+msgstr ""
 
-#: ../editors/Viewer.py:221
-#: ../editors/Viewer.py:224
+#: ../editors/Viewer.py:234 ../editors/Viewer.py:237
 #, python-format
 msgid "Invalid value \"%s\" for viewer block"
 msgstr "\"%s\" 값은 뷰어 블록에 적합하지 않습니다!"
+
+#: ../dialogs/ForceVariableDialog.py:195
+#, python-brace-format
+msgid "Invalid value \"{a1}\" for \"{a2}\" variable!"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:121
 msgid ""
@@ -2057,56 +1962,51 @@ msgid ""
 "You must fill a numeric value."
 msgstr ""
 
-#: ../editors/Viewer.py:497
+#: ../editors/Viewer.py:616 ../editors/Viewer.py:2392
 msgid "Jump"
 msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:143
-#: ../dialogs/PouTransitionDialog.py:35
-#: ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "LD"
 msgstr "LD"
 
-#: ../editors/LDViewer.py:215
-#: ../editors/LDViewer.py:231
+#: ../editors/LDViewer.py:215 ../editors/LDViewer.py:231
 #, python-format
 msgid "Ladder element with id %d is on more than one rung."
 msgstr "래더 항목 ID %d이 하나 이상의 Rung에 존재합니다"
 
-#: ../dialogs/PouTransitionDialog.py:86
-#: ../dialogs/PouActionDialog.py:83
-#: ../dialogs/PouDialog.py:102
+#: ../dialogs/PouTransitionDialog.py:86 ../dialogs/PouActionDialog.py:84
+#: ../dialogs/PouDialog.py:105
 msgid "Language"
 msgstr "언어"
 
-#: ../controls/ProjectPropertiesPanel.py:186
+#: ../controls/ProjectPropertiesPanel.py:187
 msgid "Language (optional):"
 msgstr "언어(옵션):"
 
-#: ../dialogs/PouTransitionDialog.py:60
-#: ../dialogs/PouActionDialog.py:56
-#: ../dialogs/PouDialog.py:71
+#: ../dialogs/PouTransitionDialog.py:60 ../dialogs/PouActionDialog.py:56
+#: ../dialogs/PouDialog.py:73
 msgid "Language:"
 msgstr "언어:"
 
-#: ../ProjectController.py:1451
+#: ../ProjectController.py:1797
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr "최근 빌드가 이미 타겟과 일치합니다. 전송합니다...\n"
 
-#: ../Beremiz_service.py:324
+#: ../Beremiz_service.py:273
 msgid "Launch WX GUI inspector"
 msgstr "WX GUI Inspector 실행"
 
-#: ../Beremiz_service.py:323
+#: ../Beremiz_service.py:272
 msgid "Launch a live Python shell"
 msgstr "Live Python Shell 실행"
 
-#: ../editors/Viewer.py:428
+#: ../editors/Viewer.py:544
 msgid "Left"
 msgstr "좌측"
 
-#: ../dialogs/LDPowerRailDialog.py:55
+#: ../dialogs/LDPowerRailDialog.py:63
 msgid "Left PowerRail"
 msgstr "좌측 전원 레일"
 
@@ -2122,92 +2022,95 @@ msgstr "작은 값 일때"
 msgid "Less than or equal to"
 msgstr "작거나 같은 값 일때"
 
-#: ../IDEFrame.py:600
+#: ../IDEFrame.py:631
 msgid "Library"
 msgstr "라이브러리"
+
+#: ../dialogs/AboutDialog.py:151
+msgid "License"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:73
 msgid "Limitation"
 msgstr "한도"
 
-#: ../targets/toolchain_gcc.py:142
+#: ../targets/toolchain_gcc.py:202
 msgid "Linking :\n"
 msgstr "링크 중 : \n"
 
-#: ../controls/VariablePanel.py:77
-#: ../dialogs/DiscoveryDialog.py:110
+#: ../dialogs/DiscoveryDialog.py:112 ../controls/VariablePanel.py:72
 msgid "Local"
 msgstr "로컬"
 
-#: ../ProjectController.py:1353
+#: ../canfestival/canfestival.py:348
+msgid "Local entries"
+msgstr ""
+
+#: ../ProjectController.py:1703
 msgid "Local service discovery failed!\n"
 msgstr ""
 
-#: ../controls/VariablePanel.py:58
+#: ../controls/VariablePanel.py:53
 msgid "Location"
 msgstr "위치"
 
-#: ../dialogs/BrowseLocationsDialog.py:61
+#: ../dialogs/BrowseLocationsDialog.py:72
 msgid "Locations available:"
 msgstr "가능한 위치:"
-
-#: ../Beremiz.py:393
-msgid "Log Console"
-msgstr "로그 콘솔"
 
 #: ../plcopen/iec_std.csv:25
 msgid "Logarithm to base 10"
 msgstr "상용로그(상용대수)"
 
-#: ../connectors/PYRO/__init__.py:55
+#: ../connectors/PYRO/__init__.py:94
 #, python-format
 msgid "MDNS resolution failure for '%s'\n"
 msgstr ""
 
-#: ../canfestival/SlaveEditor.py:37
-#: ../canfestival/NetworkEditor.py:67
+#: ../canfestival/SlaveEditor.py:64 ../canfestival/NetworkEditor.py:85
 msgid "Map Variable"
 msgstr "변수 맵"
 
-#: ../features.py:6
+#: ../features.py:31
 msgid "Map located variables over CANopen"
 msgstr "CANopen 변수 맵"
 
-#: ../canfestival/NetworkEditor.py:89
+#: ../canfestival/NetworkEditor.py:106
 msgid "Master"
 msgstr "CAN 마스터"
 
-#: ../ConfigTreeNode.py:480
-#, python-format
-msgid "Max count (%d) reached for this confnode of type %s "
-msgstr "플러그인 최대 카운트 (%d)에 도달했습니다. %s"
+#: ../ConfigTreeNode.py:539
+#, python-brace-format
+msgid "Max count ({a1}) reached for this confnode of type {a2} "
+msgstr ""
 
 #: ../plcopen/iec_std.csv:71
 msgid "Maximum"
 msgstr "최대값"
 
-#: ../editors/DataTypeEditor.py:232
+#: ../editors/DataTypeEditor.py:239
 msgid "Maximum:"
 msgstr "최대값:"
 
-#: ../dialogs/BrowseLocationsDialog.py:38
+#: ../dialogs/BrowseLocationsDialog.py:43 ../editors/Viewer.py:290
+#: ../editors/TextViewer.py:307 ../controls/LocationCellEditor.py:98
+#: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Memory"
 msgstr "메모리"
 
-#: ../IDEFrame.py:568
-#, fuzzy
+#: ../IDEFrame.py:599
 msgid "Menu ToolBar"
-msgstr "툴바"
+msgstr ""
 
-#: ../dialogs/DurationEditorDialog.py:48
+#: ../dialogs/DurationEditorDialog.py:49
 msgid "Microseconds:"
 msgstr ""
 
-#: ../editors/Viewer.py:433
+#: ../editors/Viewer.py:549
 msgid "Middle"
 msgstr "중간"
 
-#: ../dialogs/DurationEditorDialog.py:47
+#: ../dialogs/DurationEditorDialog.py:48
 msgid "Milliseconds:"
 msgstr ""
 
@@ -2215,86 +2118,66 @@ msgstr ""
 msgid "Minimum"
 msgstr "최소값"
 
-#: ../editors/DataTypeEditor.py:219
+#: ../editors/DataTypeEditor.py:226
 msgid "Minimum:"
 msgstr "최소값:"
 
-#: ../dialogs/DurationEditorDialog.py:45
+#: ../dialogs/DurationEditorDialog.py:46
 msgid "Minutes:"
 msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:210
+#: ../controls/ProjectPropertiesPanel.py:211
 msgid "Miscellaneous"
 msgstr "기타"
 
-#: ../dialogs/LDElementDialog.py:59
+#: ../dialogs/LDElementDialog.py:63
 msgid "Modifier:"
 msgstr "수정자:"
 
-#: ../PLCGenerator.py:703
-#: ../PLCGenerator.py:936
-#, python-format
-msgid "More than one connector found corresponding to \"%s\" continuation in \"%s\" POU"
-msgstr "\"%s\"에 대응하는 하나 이상의 연결이 \"%s\" POU에서 발견 되었습니다"
-
-#: ../dialogs/ActionBlockDialog.py:141
-#, fuzzy
-msgid "Move action down"
-msgstr "하단 이동"
+#: ../PLCGenerator.py:786 ../PLCGenerator.py:1230
+#, python-brace-format
+msgid ""
+"More than one connector found corresponding to \"{a1}\" continuation in "
+"\"{a2}\" POU"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:140
-#, fuzzy
+msgid "Move action down"
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:139
 msgid "Move action up"
-msgstr "상단 이동"
-
-#: ../controls/DebugVariablePanel.py:185
-#, fuzzy
-msgid "Move debug variable down"
-msgstr "출력 변수를 찾을 수 없습니다"
-
-#: ../controls/DebugVariablePanel.py:184
-#, fuzzy
-msgid "Move debug variable up"
-msgstr "출력 변수를 찾을 수 없습니다"
+msgstr ""
 
 #: ../controls/CustomEditableListBox.py:43
 msgid "Move down"
 msgstr "하단 이동"
 
-#: ../editors/DataTypeEditor.py:348
-#, fuzzy
+#: ../editors/DataTypeEditor.py:355
 msgid "Move element down"
-msgstr "하단 이동"
+msgstr ""
 
-#: ../editors/DataTypeEditor.py:347
-#, fuzzy
+#: ../editors/DataTypeEditor.py:354
 msgid "Move element up"
-msgstr "상단 이동"
+msgstr ""
 
-#: ../editors/ResourceEditor.py:254
-#, fuzzy
+#: ../editors/ResourceEditor.py:271
 msgid "Move instance down"
-msgstr "하단 이동"
+msgstr ""
 
-#: ../editors/ResourceEditor.py:253
-#, fuzzy
+#: ../editors/ResourceEditor.py:270
 msgid "Move instance up"
-msgstr "상단 이동"
+msgstr ""
 
-#: ../editors/ResourceEditor.py:225
-#, fuzzy
+#: ../editors/ResourceEditor.py:242
 msgid "Move task down"
-msgstr "하단 이동"
+msgstr ""
 
-#: ../editors/ResourceEditor.py:224
-#, fuzzy
+#: ../editors/ResourceEditor.py:241
 msgid "Move task up"
-msgstr "상단 이동"
+msgstr ""
 
-#: ../IDEFrame.py:75
-#: ../IDEFrame.py:90
-#: ../IDEFrame.py:120
-#: ../IDEFrame.py:161
+#: ../IDEFrame.py:99 ../IDEFrame.py:114 ../IDEFrame.py:144 ../IDEFrame.py:185
 msgid "Move the view"
 msgstr "화면을 드래그하여 이동"
 
@@ -2302,15 +2185,13 @@ msgstr "화면을 드래그하여 이동"
 msgid "Move up"
 msgstr "상단 이동"
 
-#: ../controls/VariablePanel.py:381
-#, fuzzy
+#: ../editors/CodeFileEditor.py:661 ../controls/VariablePanel.py:453
 msgid "Move variable down"
-msgstr "하단 이동"
+msgstr ""
 
-#: ../controls/VariablePanel.py:380
-#, fuzzy
+#: ../editors/CodeFileEditor.py:660 ../controls/VariablePanel.py:452
 msgid "Move variable up"
-msgstr "상단 이동"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:74
 msgid "Multiplexer (select 1 of N)"
@@ -2320,28 +2201,26 @@ msgstr "멀티플렉서(MUX, 단일 출력선)"
 msgid "Multiplication"
 msgstr "곱셈"
 
-#: ../editors/FileManagementPanel.py:301
-#, fuzzy
+#: ../editors/FileManagementPanel.py:83
 msgid "My Computer:"
-msgstr "컴파일러"
+msgstr ""
 
-#: ../controls/VariablePanel.py:58
-#: ../controls/VariablePanel.py:59
-#: ../editors/DataTypeEditor.py:48
-#: ../editors/ResourceEditor.py:67
-#: ../editors/ResourceEditor.py:76
+#: ../dialogs/DiscoveryDialog.py:92
+msgid "NAME"
+msgstr ""
+
+#: ../editors/ResourceEditor.py:68 ../editors/ResourceEditor.py:83
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:739
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Name"
 msgstr "이름"
 
-#: ../Beremiz_service.py:381
+#: ../Beremiz_service.py:334
 msgid "Name must not be null!"
 msgstr "이름은 널(null)이 되어서는 안됩니다!"
 
-#: ../dialogs/ConnectionDialog.py:65
-#: ../dialogs/FBDVariableDialog.py:89
-#: ../dialogs/LDElementDialog.py:88
-#: ../dialogs/SFCStepDialog.py:51
-#: ../dialogs/FBDBlockDialog.py:70
+#: ../dialogs/SFCStepDialog.py:57 ../dialogs/FBDBlockDialog.py:86
+#: ../dialogs/ConnectionDialog.py:76
 msgid "Name:"
 msgstr "이름:"
 
@@ -2349,15 +2228,20 @@ msgstr "이름:"
 msgid "Natural logarithm"
 msgstr "자연 로그"
 
-#: ../editors/Viewer.py:403
-#: ../dialogs/LDElementDialog.py:67
+#: ../dialogs/LDElementDialog.py:75 ../editors/Viewer.py:519
 msgid "Negated"
 msgstr "역 방향(Negate)"
 
-#: ../Beremiz.py:307
-#: ../Beremiz.py:342
-#: ../PLCOpenEditor.py:125
-#: ../PLCOpenEditor.py:167
+#: ../Beremiz_service.py:580
+msgid "Nevow Web service failed. "
+msgstr ""
+
+#: ../Beremiz_service.py:556
+msgid "Nevow/Athena import failed :"
+msgstr ""
+
+#: ../BeremizIDE.py:216 ../BeremizIDE.py:251 ../PLCOpenEditor.py:104
+#: ../PLCOpenEditor.py:146
 msgid "New"
 msgstr "새로 만들기"
 
@@ -2365,30 +2249,25 @@ msgstr "새로 만들기"
 msgid "New item"
 msgstr "새로운 아이템"
 
-#: ../editors/Viewer.py:402
+#: ../editors/Viewer.py:518
 msgid "No Modifier"
 msgstr "수정자 없음"
 
-#: ../PLCControler.py:2929
-msgid "No PLC project found"
-msgstr "PLC 프로젝트를 찾을 수 없습니다"
-
-#: ../ProjectController.py:1478
+#: ../ProjectController.py:1826
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr "전송할 PLC 파일이 없습니다 (빌드 성공 여부를 확인하세요)\n"
 
-#: ../PLCGenerator.py:1321
+#: ../PLCGenerator.py:1631
 #, python-format
 msgid "No body defined in \"%s\" POU"
 msgstr "\"%s\" POU에 바디(body)가 정의되어 있지 않습니다"
 
-#: ../PLCGenerator.py:722
-#: ../PLCGenerator.py:945
-#, python-format
-msgid "No connector found corresponding to \"%s\" continuation in \"%s\" POU"
-msgstr "\"%s\"에 대응하는 연결을 \"%s\" POU에서 찾을 수 없습니다"
+#: ../PLCGenerator.py:806 ../PLCGenerator.py:1241
+#, python-brace-format
+msgid "No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU"
+msgstr ""
 
-#: ../PLCOpenEditor.py:370
+#: ../PLCOpenEditor.py:357
 msgid ""
 "No documentation available.\n"
 "Coming soon."
@@ -2396,75 +2275,69 @@ msgstr ""
 "현재 지원되는 도움 문서가 없습니다.\n"
 "지원 예정"
 
-#: ../PLCGenerator.py:744
+#: ../PLCGenerator.py:829
 #, python-format
 msgid "No informations found for \"%s\" block"
 msgstr "\"%s\"블럭에 대한 정보를 찾을 수 없습니다"
 
-#: ../plcopen/structures.py:167
-msgid "No output variable found"
-msgstr "출력 변수를 찾을 수 없습니다"
-
-#: ../Beremiz_service.py:394
-msgid "No running PLC"
-msgstr "실행중인 PLC가 없습니다"
+#: ../PLCGenerator.py:1194
+#, python-brace-format
+msgid ""
+"No output {a1} variable found in block {a2} in POU {a3}. Connection must be "
+"broken"
+msgstr ""
 
 #: ../controls/SearchResultPanel.py:169
 msgid "No search results available."
 msgstr "검색된 결과가 없습니다"
 
-#: ../svgui/svgui.py:98
+#: ../svgui/svgui.py:134
 #, python-format
 msgid "No such SVG file: %s\n"
 msgstr "선택하신 %s파일은 없습니다\n"
 
-#: ../canfestival/config_utils.py:632
-#, python-format
-msgid "No such index/subindex (%x,%x) (variable %s)"
-msgstr "인덱스/서브 인덱스 (%x,%x)(변수 %s) 에러"
+#: ../canfestival/config_utils.py:639
+#, python-brace-format
+msgid "No such index/subindex ({a1},{a2}) (variable {a3})"
+msgstr ""
 
-#: ../canfestival/config_utils.py:361
-#, python-format
-msgid "No such index/subindex (%x,%x) in ID : %d (variable %s)"
-msgstr "인덱스/서브 인덱스 (%x,%x) ID 위치: %d (변수 %s)"
+#: ../canfestival/config_utils.py:362
+#, python-brace-format
+msgid "No such index/subindex ({a1},{a2}) in ID : {a3} (variable {a4})"
+msgstr ""
 
 #: ../dialogs/BrowseValuesLibraryDialog.py:83
 msgid "No valid value selected!"
 msgstr "유효한 데이터 값을 선택하세요!"
 
-#: ../PLCGenerator.py:1319
+#: ../PLCGenerator.py:1629
 #, python-format
 msgid "No variable defined in \"%s\" POU"
 msgstr "\"%s\" POU에 정의된 변수가 없습니다"
 
-#: ../canfestival/SlaveEditor.py:49
-#: ../canfestival/NetworkEditor.py:79
-msgid "Node infos"
-msgstr "노드 정보"
+#: ../canfestival/config_utils.py:355
+#, python-brace-format
+msgid "Non existing node ID : {a1} (variable {a2})"
+msgstr ""
 
-#: ../canfestival/config_utils.py:354
-#, python-format
-msgid "Non existing node ID : %d (variable %s)"
-msgstr "Node ID : %d(변수%s)를 찾을 수 없습니다"
-
-#: ../controls/VariablePanel.py:69
+#: ../controls/VariablePanel.py:64
 msgid "Non-Retain"
 msgstr "유지 안함(No Retain)"
 
-#: ../dialogs/LDElementDialog.py:62
+#: ../dialogs/LDElementDialog.py:75
 msgid "Normal"
 msgstr "기본(Normal)"
 
-#: ../canfestival/config_utils.py:383
-#, python-format
-msgid "Not PDO mappable variable : '%s' (ID:%d,Idx:%x,sIdx:%x))"
-msgstr "PDO 맵핑 변수가 아닙니다 : '%s'(ID:%d,ldx:%x,sldx:%x))"
+#: ../canfestival/config_utils.py:389
+#, python-brace-format
+msgid "Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:80
 msgid "Not equal to"
 msgstr "같지 않을 때"
 
-#: ../dialogs/SFCDivergenceDialog.py:80
+#: ../dialogs/SFCDivergenceDialog.py:89
 msgid "Number of sequences:"
 msgstr "시퀀스 넘버:"
 
@@ -2472,299 +2345,310 @@ msgstr "시퀀스 넘버:"
 msgid "Numerical"
 msgstr "수치(Numeric)"
 
-#: ../plcopen/structures.py:247
-msgid ""
-"Off-delay timer\n"
-"The off-delay timer can be used to delay setting an output false, for fixed period after input goes false."
+#: ../editors/CodeFileEditor.py:739
+msgid "OnChange"
 msgstr ""
-"오프 딜레이 타이머\n"
-"오프 딜레이 타이머는 입력이 FALSE로 진행되는 주기를 수정하여 출력을 FALSE로 셋팅합니다"
 
-#: ../plcopen/structures.py:242
-msgid ""
-"On-delay timer\n"
-"The on-delay timer can be used to delay setting an output true, for fixed period after an input becomes true."
-msgstr ""
-"온 딜레이 타이머\n"
-"온 딜레이 타이머는 입력이 TRUE로 진행되는 주기를 수정하여 출력을 TRUE로 셋팅합니다"
-
-#: ../dialogs/SearchInProjectDialog.py:93
+#: ../dialogs/SearchInProjectDialog.py:84
 msgid "Only Elements"
 msgstr "구성원 내부 검색"
 
-#: ../Beremiz.py:309
-#: ../Beremiz.py:343
-#: ../PLCOpenEditor.py:127
-#: ../PLCOpenEditor.py:168
-#, fuzzy
+#: ../BeremizIDE.py:218 ../BeremizIDE.py:252 ../PLCOpenEditor.py:106
+#: ../PLCOpenEditor.py:147
 msgid "Open"
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"프로젝트 열기\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"파일 열기"
 
-#: ../svgui/svgui.py:107
+#: ../svgui/svgui.py:143
 msgid "Open Inkscape"
 msgstr "잉크스케이프 열기"
 
-#: ../ProjectController.py:1530
+#: ../version.py:77
+msgid ""
+"Open Source framework for automation, implemented IEC 61131 IDE with "
+"constantly growing set of extensions and flexible PLC runtime."
+msgstr ""
+
+#: ../ProjectController.py:1878
 msgid "Open a file explorer to manage project files"
 msgstr ""
 
-#: ../wxglade_hmi/wxglade_hmi.py:109
+#: ../wxglade_hmi/wxglade_hmi.py:155
 msgid "Open wxGlade"
 msgstr "WxGlade 열기"
 
-#: ../controls/VariablePanel.py:58
-#: ../controls/VariablePanel.py:59
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Option"
 msgstr "옵션"
 
-#: ../dialogs/FindInPouDialog.py:76
-#, fuzzy
+#: ../dialogs/FindInPouDialog.py:81 ../editors/CodeFileEditor.py:739
 msgid "Options"
-msgstr "옵션"
+msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:97
+#: ../controls/ProjectPropertiesPanel.py:98
 msgid "Organization (optional):"
 msgstr "구성단체(옵션):"
 
-#: ../canfestival/SlaveEditor.py:47
-#: ../canfestival/NetworkEditor.py:77
+#: ../canfestival/SlaveEditor.py:74 ../canfestival/NetworkEditor.py:95
 msgid "Other Profile"
 msgstr "다른 프로필"
 
-#: ../controls/VariablePanel.py:76
-#: ../dialogs/BrowseLocationsDialog.py:37
-#: ../dialogs/FBDVariableDialog.py:35
-#: ../dialogs/SFCStepDialog.py:65
+#: ../dialogs/SFCStepDialog.py:72 ../dialogs/FBDVariableDialog.py:40
+#: ../dialogs/BrowseLocationsDialog.py:42 ../editors/Viewer.py:290
+#: ../editors/Viewer.py:1628 ../editors/TextViewer.py:307
+#: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
+#: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Output"
 msgstr "출력"
 
-#: ../canfestival/SlaveEditor.py:36
-#: ../canfestival/NetworkEditor.py:66
+#: ../canfestival/SlaveEditor.py:63 ../canfestival/NetworkEditor.py:84
 msgid "PDO Receive"
 msgstr "수신 PDO"
 
-#: ../canfestival/SlaveEditor.py:35
-#: ../canfestival/NetworkEditor.py:65
+#: ../canfestival/SlaveEditor.py:62 ../canfestival/NetworkEditor.py:83
 msgid "PDO Transmit"
 msgstr "전송 PDO"
 
-#: ../plcopen/structures.py:269
-msgid ""
-"PID\n"
-"The PID (proportional, Integral, Derivative) function block provides the classical three term controller for closed loop control."
-msgstr ""
-"PID\n"
-"PID 펑션 블럭은 폐쇄 루프 제어를 위한 다음과 같은 비례상수, 미분, 적분등의 기본 제어 규칙을 제공합니다"
-
-#: ../targets/toolchain_gcc.py:107
+#: ../targets/toolchain_gcc.py:167
 msgid "PLC :\n"
 msgstr "PLC :\n"
 
-#: ../ProjectController.py:1096
-#: ../ProjectController.py:1398
-#, python-format
-msgid "PLC is %s\n"
-msgstr "현재 PLC %s\n"
+#: ../BeremizIDE.py:355
+msgid "PLC Log"
+msgstr ""
 
-#: ../PLCOpenEditor.py:313
-#: ../PLCOpenEditor.py:391
+#: ../ProjectController.py:1054
+msgid "PLC code generation failed !\n"
+msgstr ""
+
+#: ../Beremiz_service.py:297
+msgid "PLC is empty or already started."
+msgstr ""
+
+#: ../Beremiz_service.py:304
+msgid "PLC is not started."
+msgstr ""
+
+#: ../PLCOpenEditor.py:206 ../PLCOpenEditor.py:319
+#, python-brace-format
+msgid ""
+"PLC syntax error at line {a1}:\n"
+"{a2}"
+msgstr ""
+
+#: ../PLCOpenEditor.py:302 ../PLCOpenEditor.py:383
 msgid "PLCOpen files (*.xml)|*.xml|All files|*.*"
 msgstr "PLCOpen files (*.xml)|*.xml|모든 파일|*.*"
 
-#: ../PLCOpenEditor.py:175
-#: ../PLCOpenEditor.py:231
+#: ../PLCOpenEditor.py:154 ../PLCOpenEditor.py:219
 msgid "PLCOpenEditor"
 msgstr "PLCOpenEditor"
 
-#: ../dialogs/PouDialog.py:98
+#: ../PLCOpenEditor.py:365
+msgid ""
+"PLCOpenEditor is part of Beremiz project.\n"
+"\n"
+"Beremiz is an "
+msgstr ""
+
+#: ../dialogs/DiscoveryDialog.py:95
+msgid "PORT"
+msgstr ""
+
+#: ../dialogs/PouDialog.py:101
 msgid "POU Name"
 msgstr "POU 이름"
 
-#: ../dialogs/PouDialog.py:56
+#: ../dialogs/PouDialog.py:58
 msgid "POU Name:"
 msgstr "POU 이름:"
 
-#: ../dialogs/PouDialog.py:100
+#: ../dialogs/PouDialog.py:103
 msgid "POU Type"
 msgstr "POU 타입"
 
-#: ../dialogs/PouDialog.py:63
+#: ../dialogs/PouDialog.py:65
 msgid "POU Type:"
 msgstr "POU 타입:"
 
-#: ../Beremiz.py:322
-#: ../PLCOpenEditor.py:141
+#: ../connectors/PYRO/__init__.py:45
+#, python-format
+msgid "PYRO connecting to URI : %s\n"
+msgstr ""
+
+#: ../connectors/PYRO/__init__.py:61
+#, python-format
+msgid "PYRO using certificates in '%s' \n"
+msgstr ""
+
+#: ../BeremizIDE.py:231 ../PLCOpenEditor.py:120
 msgid "Page Setup"
 msgstr "인쇄 페이지 설정"
 
-#: ../controls/ProjectPropertiesPanel.py:110
+#: ../controls/ProjectPropertiesPanel.py:111
 msgid "Page Size (optional):"
 msgstr "페이지 크기(옵션):"
 
-#: ../PLCOpenEditor.py:476
+#: ../IDEFrame.py:2613
 #, python-format
 msgid "Page: %d"
 msgstr "인쇄 페이지: %d"
 
-#: ../controls/PouInstanceVariablesPanel.py:41
-#, fuzzy
+#: ../controls/PouInstanceVariablesPanel.py:124
 msgid "Parent instance"
-msgstr "인스턴스 삭제"
+msgstr ""
 
-#: ../IDEFrame.py:350
-#: ../IDEFrame.py:402
-#: ../editors/Viewer.py:537
+#: ../editors/Viewer.py:657 ../IDEFrame.py:372 ../IDEFrame.py:426
 msgid "Paste"
 msgstr "붙여넣기"
 
-#: ../IDEFrame.py:1900
+#: ../IDEFrame.py:1868
 msgid "Paste POU"
 msgstr "POU 붙여넣기"
 
-#: ../dialogs/SearchInProjectDialog.py:64
+#: ../dialogs/SearchInProjectDialog.py:56
 msgid "Pattern to search:"
 msgstr "검색할 문자열 패턴:"
 
-#: ../dialogs/LDPowerRailDialog.py:64
+#: ../dialogs/LDPowerRailDialog.py:74
 msgid "Pin number:"
 msgstr "핀 넘버:"
 
-#: ../editors/Viewer.py:2289
-#: ../editors/Viewer.py:2594
-#: ../editors/SFCViewer.py:696
+#: ../editors/Viewer.py:2757 ../editors/Viewer.py:3014
+#: ../editors/SFCViewer.py:770
 msgid "Please choose a target"
 msgstr "타겟을 선택하세요"
 
-#: ../editors/Viewer.py:2112
-#: ../editors/Viewer.py:2114
-#: ../editors/Viewer.py:2630
-#: ../editors/Viewer.py:2632
+#: ../editors/TextViewer.py:262
+msgid "Please enter a block name"
+msgstr ""
+
+#: ../editors/Viewer.py:2627 ../editors/Viewer.py:3056
 msgid "Please enter comment text"
 msgstr "코멘트를 입력하세요"
 
-#: ../editors/SFCViewer.py:359
-#: ../editors/SFCViewer.py:381
-#: ../editors/SFCViewer.py:725
+#: ../editors/SFCViewer.py:433 ../editors/SFCViewer.py:455
+#: ../editors/SFCViewer.py:799
 msgid "Please enter step name"
 msgstr "스텝 이름을 입력하세요"
 
-#: ../dialogs/ForceVariableDialog.py:153
+#: ../Beremiz_service.py:196
+msgid "Please enter text"
+msgstr "텍스트를 입력하세요"
+
+#: ../dialogs/ForceVariableDialog.py:163
 #, python-format
 msgid "Please enter value for a \"%s\" variable:"
 msgstr "\"%s\" 변수의 데이터를 입력하세요"
 
-#: ../Beremiz_service.py:366
+#: ../Beremiz_service.py:319
 msgid "Port number must be 0 <= port <= 65535!"
 msgstr "포트 번호는 0~65535까지 유효합니다!"
 
-#: ../Beremiz_service.py:366
+#: ../Beremiz_service.py:319
 msgid "Port number must be an integer!"
 msgstr "포트 번호는 숫자로만 입력하세요!"
 
-#: ../editors/GraphicViewer.py:105
-msgid "Position:"
-msgstr "위치:"
-
-#: ../editors/Viewer.py:476
-#, fuzzy
+#: ../editors/Viewer.py:595 ../editors/Viewer.py:2416
 msgid "Power Rail"
-msgstr "좌측 전원 레일"
+msgstr ""
 
-#: ../dialogs/LDPowerRailDialog.py:36
+#: ../dialogs/LDPowerRailDialog.py:51
 msgid "Power Rail Properties"
 msgstr "전원 레일 속성"
 
-#: ../Beremiz.py:324
-#: ../PLCOpenEditor.py:143
+#: ../BeremizIDE.py:233 ../PLCOpenEditor.py:122
 msgid "Preview"
 msgstr "인쇄 페이지 미리보기"
 
-#: ../dialogs/SFCDivergenceDialog.py:93
-#: ../dialogs/LDPowerRailDialog.py:78
-#: ../dialogs/ConnectionDialog.py:78
-#: ../dialogs/FBDVariableDialog.py:97
-#: ../dialogs/SFCTransitionDialog.py:96
-#: ../dialogs/LDElementDialog.py:101
-#: ../dialogs/SFCStepDialog.py:79
-#: ../dialogs/FBDBlockDialog.py:103
+#: ../dialogs/BlockPreviewDialog.py:57
 msgid "Preview:"
 msgstr "인쇄 페이지 미리보기:"
 
-#: ../Beremiz.py:326
-#: ../Beremiz.py:346
-#: ../PLCOpenEditor.py:145
-#: ../PLCOpenEditor.py:171
+#: ../BeremizIDE.py:235 ../BeremizIDE.py:255 ../PLCOpenEditor.py:124
+#: ../PLCOpenEditor.py:150
 msgid "Print"
 msgstr "인쇄"
 
-#: ../IDEFrame.py:1155
+#: ../IDEFrame.py:1079
 msgid "Print preview"
 msgstr "인쇄 미리보기"
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Priority"
 msgstr "우선권"
 
-#: ../dialogs/SFCTransitionDialog.py:83
+#: ../dialogs/SFCTransitionDialog.py:90
 msgid "Priority:"
 msgstr "우선권:"
 
-#: ../controls/ProjectPropertiesPanel.py:80
+#: ../runtime/PLCObject.py:369
+#, python-format
+msgid "Problem starting PLC : error %d"
+msgstr ""
+
+#: ../dialogs/ProjectDialog.py:58
+msgid "Product Name"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:81
 msgid "Product Name (required):"
 msgstr "제품 이름(필수):"
 
-#: ../controls/ProjectPropertiesPanel.py:82
+#: ../controls/ProjectPropertiesPanel.py:83
 msgid "Product Release (optional):"
 msgstr "제품 출시 번호(옵션):"
 
-#: ../controls/ProjectPropertiesPanel.py:81
+#: ../dialogs/ProjectDialog.py:59
+msgid "Product Version"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:82
 msgid "Product Version (required):"
 msgstr "제품 버젼(필수):"
 
-#: ../IDEFrame.py:1972
-#: ../dialogs/SearchInProjectDialog.py:46
+#: ../dialogs/SearchInProjectDialog.py:39 ../IDEFrame.py:1747
+#: ../IDEFrame.py:1944
 msgid "Program"
 msgstr "프로그램"
 
-#: ../PLCOpenEditor.py:360
+#: ../PLCOpenEditor.py:347
 msgid "Program was successfully generated!"
 msgstr "프로그램이 성공적으로 생성되었습니다!"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:98
 msgid "Programs"
 msgstr "프로그램(Programs)"
 
-#: ../editors/Viewer.py:230
+#: ../editors/Viewer.py:243
 msgid "Programs can't be used by other POUs!"
 msgstr "다른 POU에서 사용할 수 없는 프로그램입니다!"
 
-#: ../controls/ProjectPropertiesPanel.py:84
-#: ../IDEFrame.py:553
+#: ../controls/ProjectPropertiesPanel.py:85 ../IDEFrame.py:584
 msgid "Project"
 msgstr "프로젝트"
 
 #: ../controls/SearchResultPanel.py:173
-#, fuzzy, python-format
+#, python-format
 msgid "Project '%s':"
-msgstr "프로젝트"
+msgstr ""
 
-#: ../ProjectController.py:1529
+#: ../ProjectController.py:1877
 msgid "Project Files"
 msgstr ""
 
-#: ../controls/ProjectPropertiesPanel.py:78
+#: ../dialogs/ProjectDialog.py:57
+msgid "Project Name"
+msgstr ""
+
+#: ../controls/ProjectPropertiesPanel.py:79
 msgid "Project Name (required):"
 msgstr "프로젝트 명(필수):"
 
-#: ../controls/ProjectPropertiesPanel.py:79
+#: ../controls/ProjectPropertiesPanel.py:80
 msgid "Project Version (optional):"
 msgstr "프로젝트 버젼(옵션):"
 
-#: ../PLCControler.py:2916
+#: ../PLCControler.py:3164
 msgid ""
 "Project file syntax error:\n"
 "\n"
@@ -2772,103 +2656,90 @@ msgstr ""
 "프로젝트 파일 구문 오류:\n"
 "\n"
 
-#: ../dialogs/ProjectDialog.py:32
+#: ../dialogs/ProjectDialog.py:33 ../editors/ProjectNodeEditor.py:37
 msgid "Project properties"
 msgstr "프로젝트 속성"
 
-#: ../ConfigTreeNode.py:506
-#, python-format
-msgid "Project tree layout do not match confnode.xml %s!=%s "
-msgstr "프로젝트 레이아웃이 포함된 %s!=%s confnode.xml파일이 손상되거나 일치 하지 않습니다"
+#: ../ConfigTreeNode.py:566
+#, python-brace-format
+msgid "Project tree layout do not match confnode.xml {a1}!={a2} "
+msgstr ""
 
-#: ../PLCControler.py:96
+#: ../dialogs/ConnectionDialog.py:98
+msgid "Propagate Name"
+msgstr ""
+
+#: ../PLCControler.py:99
 msgid "Properties"
 msgstr "속성"
 
-#: ../plcopen/structures.py:237
-msgid ""
-"Pulse timer\n"
-"The pulse timer can be used to generate output pulses of a given time duration."
+#: ../Beremiz_service.py:442
+msgid "Publishing service on local network"
 msgstr ""
-"펄스 타이머\n"
-"펄스 타이머 펑션 블럭은 사용자가 설정한 시간동안 출력 신호를 생성하는데 사용합니다"
 
-#: ../features.py:8
+#: ../connectors/PYRO/__init__.py:118
+#, python-format
+msgid "Pyro exception: %s\n"
+msgstr ""
+
+#: ../Beremiz_service.py:429
+msgid "Pyro object's uri :"
+msgstr ""
+
+#: ../Beremiz_service.py:428
+msgid "Pyro port :"
+msgstr ""
+
+#: ../py_ext/PythonEditor.py:81
+msgid "Python code"
+msgstr ""
+
+#: ../features.py:33
 msgid "Python file"
 msgstr "파이썬 파일"
 
-#: ../dialogs/ActionBlockDialog.py:37
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Qualifier"
 msgstr "한정자"
 
-#: ../Beremiz_service.py:328
-#: ../Beremiz.py:329
-#: ../PLCOpenEditor.py:151
+#: ../BeremizIDE.py:238 ../PLCOpenEditor.py:130 ../Beremiz_service.py:275
 msgid "Quit"
 msgstr "프로그램 종료"
 
-#: ../plcopen/structures.py:202
-msgid ""
-"RS bistable\n"
-"The RS bistable is a latch where the Reset dominates."
-msgstr ""
-"RS 쌍안정 회로\n"
-"RS 쌍안정(bistable) 회로 함수은 리셋 동작시 래치가 발생됩니다"
-
-#: ../plcopen/structures.py:274
-#, fuzzy
-msgid ""
-"Ramp\n"
-"The RAMP function block is modelled on example given in the standard."
-msgstr ""
-"램프(Ramp)\n"
-"램프(Ramp) 함수 블럭은 정지(Holdback) 기능이 추가된 기본 예제 모델입니다"
-
-#: ../editors/GraphicViewer.py:89
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:225
 msgid "Range:"
 msgstr "범위:"
 
-#: ../ProjectController.py:1525
+#: ../ProjectController.py:1873
 msgid "Raw IEC code"
 msgstr "IEC 코드"
 
-#: ../plcopen/structures.py:254
-msgid ""
-"Real time clock\n"
-"The real time clock has many uses including time stamping, setting dates and times of day in batch reports, in alarm messages and so on."
+#: ../BeremizIDE.py:1047
+#, python-format
+msgid "Really delete node '%s'?"
 msgstr ""
 
-#: ../Beremiz.py:1039
-#, fuzzy, python-format
-msgid "Really delete node '%s'?"
-msgstr "플러그인을 삭제하시겠습니까?"
-
-#: ../IDEFrame.py:340
-#: ../IDEFrame.py:398
+#: ../IDEFrame.py:362 ../IDEFrame.py:422
 msgid "Redo"
 msgstr "되돌리기 취소"
 
-#: ../dialogs/SFCTransitionDialog.py:57
-#: ../dialogs/SFCTransitionDialog.py:135
+#: ../dialogs/SFCTransitionDialog.py:75
 msgid "Reference"
 msgstr "레퍼런스"
 
-#: ../IDEFrame.py:408
-#: ../dialogs/DiscoveryDialog.py:105
+#: ../dialogs/DiscoveryDialog.py:107 ../IDEFrame.py:432
 msgid "Refresh"
 msgstr "새로고침"
 
-#: ../dialogs/SearchInProjectDialog.py:73
+#: ../dialogs/SearchInProjectDialog.py:66
 msgid "Regular expression"
 msgstr "정규 표현식"
 
-#: ../dialogs/FindInPouDialog.py:91
-#, fuzzy
+#: ../dialogs/FindInPouDialog.py:96
 msgid "Regular expressions"
-msgstr "정규 표현식"
+msgstr ""
 
-#: ../controls/DebugVariablePanel.py:299
-#: ../editors/Viewer.py:1356
+#: ../editors/Viewer.py:1603
 msgid "Release value"
 msgstr "강제 데이터 입력 해제"
 
@@ -2876,53 +2747,57 @@ msgstr "강제 데이터 입력 해제"
 msgid "Remainder (modulo)"
 msgstr "잔여 (모듈)"
 
-#: ../Beremiz.py:1040
-#, fuzzy, python-format
+#: ../BeremizIDE.py:1048
+#, python-format
 msgid "Remove %s node"
-msgstr "플러그인 제거"
+msgstr ""
 
-#: ../dialogs/ActionBlockDialog.py:139
-#, fuzzy
+#: ../IDEFrame.py:2419
+msgid "Remove Datatype"
+msgstr ""
+
+#: ../IDEFrame.py:2424
+msgid "Remove Pou"
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:138
 msgid "Remove action"
-msgstr "선택"
+msgstr ""
 
-#: ../controls/DebugVariablePanel.py:183
-#, fuzzy
-msgid "Remove debug variable"
-msgstr "새로운 변수 생성"
-
-#: ../editors/DataTypeEditor.py:346
+#: ../editors/DataTypeEditor.py:353
 msgid "Remove element"
 msgstr ""
 
-#: ../editors/FileManagementPanel.py:281
+#: ../editors/FileManagementPanel.py:63
 msgid "Remove file from left folder"
 msgstr ""
 
-#: ../editors/ResourceEditor.py:252
-#, fuzzy
+#: ../editors/ResourceEditor.py:269
 msgid "Remove instance"
-msgstr "인스턴스 삭제"
+msgstr ""
 
-#: ../canfestival/NetworkEditor.py:87
+#: ../canfestival/NetworkEditor.py:104
 msgid "Remove slave"
 msgstr "슬레이브 제거"
 
-#: ../editors/ResourceEditor.py:223
+#: ../editors/ResourceEditor.py:240
 msgid "Remove task"
 msgstr ""
 
-#: ../controls/VariablePanel.py:379
-#, fuzzy
+#: ../editors/CodeFileEditor.py:659 ../controls/VariablePanel.py:451
 msgid "Remove variable"
-msgstr "새로운 변수 생성"
+msgstr ""
 
-#: ../IDEFrame.py:1976
+#: ../IDEFrame.py:1948
 msgid "Rename"
 msgstr "이름 변경"
 
-#: ../editors/FileManagementPanel.py:399
+#: ../editors/FileManagementPanel.py:181
 msgid "Replace File"
+msgstr ""
+
+#: ../editors/Viewer.py:561
+msgid "Replace Wire by connections"
 msgstr ""
 
 #: ../plcopen/iec_std.csv:89
@@ -2933,11 +2808,11 @@ msgstr "내부 교체"
 msgid "Reset"
 msgstr "리셋 코일(Unlatch)"
 
-#: ../editors/Viewer.py:521
+#: ../editors/Viewer.py:642
 msgid "Reset Execution Order"
 msgstr "실행 순서 초기화"
 
-#: ../IDEFrame.py:423
+#: ../IDEFrame.py:451
 msgid "Reset Perspective"
 msgstr ""
 
@@ -2945,42 +2820,29 @@ msgstr ""
 msgid "Reset search result"
 msgstr ""
 
-#: ../editors/GraphicViewer.py:137
-msgid "Reset zoom and offset"
-msgstr ""
-
-#: ../PLCControler.py:96
+#: ../BeremizIDE.py:979 ../PLCControler.py:99
 msgid "Resources"
 msgstr "리소스"
 
-#: ../controls/VariablePanel.py:67
+#: ../controls/VariablePanel.py:62
 msgid "Retain"
 msgstr "유지 변수"
 
-#: ../controls/VariablePanel.py:352
+#: ../controls/VariablePanel.py:424
 msgid "Return Type:"
 msgstr "반환(Return) 타입:"
 
-#: ../editors/Viewer.py:430
+#: ../editors/Viewer.py:546
 msgid "Right"
 msgstr "우측"
 
-#: ../dialogs/LDPowerRailDialog.py:60
+#: ../dialogs/LDPowerRailDialog.py:64
 msgid "Right PowerRail"
 msgstr "우측 전원 레일"
 
-#: ../editors/Viewer.py:404
-#: ../dialogs/LDElementDialog.py:80
+#: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:520
 msgid "Rising Edge"
 msgstr "라이징 엣지"
-
-#: ../plcopen/structures.py:212
-msgid ""
-"Rising edge detector\n"
-"The output produces a single pulse when a rising edge is detected."
-msgstr ""
-"라이징 엣지 검출\n"
-"출력부의 라이징 엣지를 검출합니다"
 
 #: ../plcopen/iec_std.csv:65
 msgid "Rotate left"
@@ -2994,156 +2856,138 @@ msgstr "우측으로 회전 (rotate)"
 msgid "Rounding up/down"
 msgstr "라운딩 업/다운"
 
-#: ../ProjectController.py:1493
+#: ../ProjectController.py:1841
 msgid "Run"
 msgstr "실행"
 
-#: ../ProjectController.py:841
-#: ../ProjectController.py:850
-msgid "Runtime extensions C code generation failed !\n"
-msgstr "확장 C 코드의 생성에 실패하였습니다 ! \n"
+#: ../ProjectController.py:1099
+msgid "Runtime IO extensions C code generation failed !\n"
+msgstr ""
 
-#: ../canfestival/SlaveEditor.py:34
-#: ../canfestival/NetworkEditor.py:64
+#: ../ProjectController.py:1108
+msgid "Runtime library extensions C code generation failed !\n"
+msgstr ""
+
+#: ../canfestival/SlaveEditor.py:61 ../canfestival/NetworkEditor.py:82
 msgid "SDO Client"
 msgstr "SDO 클라이언트"
 
-#: ../canfestival/SlaveEditor.py:33
-#: ../canfestival/NetworkEditor.py:63
+#: ../canfestival/SlaveEditor.py:60 ../canfestival/NetworkEditor.py:81
 msgid "SDO Server"
 msgstr "SDO 서버"
 
-#: ../controls/ProjectPropertiesPanel.py:143
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "SFC"
 msgstr "SFC"
 
-#: ../plcopen/structures.py:197
-msgid ""
-"SR bistable\n"
-"The SR bistable is a latch where the Set dominates."
+#: ../PLCGenerator.py:1392
+#, python-brace-format
+msgid "SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\""
 msgstr ""
-"SR 쌍안정\n"
-"SR 쌍안정 셋팅시 래치 스위치가 동작합니다"
 
-#: ../dialogs/PouTransitionDialog.py:35
-#: ../dialogs/PouActionDialog.py:31
-#: ../dialogs/PouDialog.py:36
+#: ../PLCGenerator.py:773
+#, python-format
+msgid "SFC transition in POU \"%s\" must be connected."
+msgstr ""
+
+#: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
+#: ../dialogs/PouDialog.py:37
 msgid "ST"
 msgstr "ST"
 
-#: ../PLCOpenEditor.py:347
+#: ../PLCOpenEditor.py:334
 msgid "ST files (*.st)|*.st|All files|*.*"
 msgstr "ST 파일 (*.st)|*.st|모든 파일|*.*"
 
-#: ../svgui/svgui.py:92
+#: ../svgui/svgui.py:128
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
 msgstr "SVG 파일 (*.svg)|*svg|모든 파일|*.*"
 
-#: ../features.py:10
+#: ../features.py:35
 msgid "SVGUI"
 msgstr "SVGUI"
 
-#: ../Beremiz.py:313
-#: ../Beremiz.py:344
-#: ../PLCOpenEditor.py:134
-#: ../PLCOpenEditor.py:169
-#, fuzzy
+#: ../BeremizIDE.py:222 ../BeremizIDE.py:253 ../PLCOpenEditor.py:113
+#: ../PLCOpenEditor.py:148
 msgid "Save"
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"프로젝트 저장\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"파일 저장"
 
-#: ../Beremiz.py:345
-#: ../PLCOpenEditor.py:136
-#: ../PLCOpenEditor.py:170
-#, fuzzy
+#: ../BeremizIDE.py:254 ../PLCOpenEditor.py:115 ../PLCOpenEditor.py:149
 msgid "Save As..."
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"다른 이름으로 저장\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"다른 이름으로 저장..."
 
-#: ../Beremiz.py:315
-#, fuzzy
+#: ../BeremizIDE.py:224
 msgid "Save as"
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"프로젝트 저장\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"파일 저장"
 
-#: ../dialogs/SearchInProjectDialog.py:76
+#: ../ProjectController.py:511
+msgid "Save path is the same as path of a project! \n"
+msgstr ""
+
+#: ../dialogs/SearchInProjectDialog.py:69
 msgid "Scope"
 msgstr "검색 범위"
 
-#: ../IDEFrame.py:592
-#: ../dialogs/SearchInProjectDialog.py:105
+#: ../IDEFrame.py:623
 msgid "Search"
 msgstr "검색"
 
-#: ../IDEFrame.py:360
-#: ../IDEFrame.py:404
-#: ../dialogs/SearchInProjectDialog.py:52
+#: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:382
+#: ../IDEFrame.py:428
 msgid "Search in Project"
 msgstr "프로젝트 내부 검색"
 
-#: ../dialogs/DurationEditorDialog.py:46
+#: ../dialogs/DurationEditorDialog.py:47
 msgid "Seconds:"
 msgstr ""
 
-#: ../IDEFrame.py:366
-#, fuzzy
+#: ../IDEFrame.py:388
 msgid "Select All"
-msgstr "모두 선택\tCTRL+A"
+msgstr ""
 
-#: ../controls/VariablePanel.py:277
-#: ../editors/TextViewer.py:330
-#: ../editors/Viewer.py:277
+#: ../editors/Viewer.py:289 ../editors/TextViewer.py:306
+#: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:290
+#: ../controls/VariablePanel.py:350
 msgid "Select a variable class:"
 msgstr "변수 클래스 선택:"
 
-#: ../ProjectController.py:1013
+#: ../ProjectController.py:1257
 msgid "Select an editor:"
 msgstr ""
 
-#: ../controls/PouInstanceVariablesPanel.py:197
-#, fuzzy
+#: ../controls/PouInstanceVariablesPanel.py:281
 msgid "Select an instance"
-msgstr "인스턴스 삭제"
+msgstr ""
 
-#: ../IDEFrame.py:576
+#: ../IDEFrame.py:607
 msgid "Select an object"
 msgstr "오브젝트 선택"
+
+#: ../ProjectController.py:518
+msgid "Selected directory already contains another project. Overwrite? \n"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:70
 msgid "Selection"
 msgstr "선택"
 
-#: ../dialogs/SFCDivergenceDialog.py:62
+#: ../dialogs/SFCDivergenceDialog.py:65
 msgid "Selection Convergence"
 msgstr "수렴(Convergence) 선택"
 
-#: ../dialogs/SFCDivergenceDialog.py:55
+#: ../dialogs/SFCDivergenceDialog.py:64
 msgid "Selection Divergence"
 msgstr "벡터 발산(Divergence) 선택"
 
-#: ../plcopen/structures.py:207
-msgid ""
-"Semaphore\n"
-"The semaphore provides a mechanism to allow software elements mutually exclusive access to certain ressources."
+#: ../dialogs/DiscoveryDialog.py:82
+msgid "Service Discovery"
 msgstr ""
-"세마포어(semaphore)\n"
-"세마포어 함수 블럭은 소프트웨어적으로 동시에 두 개 이상의 프로그램 요소가 실행될 수 있는 다중 프로그래밍 환경에서 한순간에 반드시 하나의 작업에 의해 접근되어야 하는 임계 영역 및 상호 배제 원리를 지키기 위해 사용됩니다"
 
-#: ../dialogs/DiscoveryDialog.py:84
+#: ../dialogs/DiscoveryDialog.py:85
 msgid "Services available:"
 msgstr "서비스 이용 가능:"
 
-#: ../dialogs/LDElementDialog.py:72
+#: ../dialogs/LDElementDialog.py:76
 msgid "Set"
 msgstr "셋팅 코일(Latch)"
 
@@ -3155,27 +2999,27 @@ msgstr "좌측으로 이동(Shift)"
 msgid "Shift right"
 msgstr "우측이로 이동(Shift)"
 
-#: ../ProjectController.py:1519
+#: ../ProjectController.py:1867
 msgid "Show IEC code generated by PLCGenerator"
 msgstr "PLCGenerator가 생성한 IEC 코드 보기"
 
-#: ../canfestival/canfestival.py:288
+#: ../canfestival/canfestival.py:389
 msgid "Show Master"
 msgstr "마스터 보기"
 
-#: ../canfestival/canfestival.py:289
+#: ../canfestival/canfestival.py:390
 msgid "Show Master generated by config_utils"
 msgstr "config_util(설정 유틸리티)에 의해 생성된 마스터 보기"
 
-#: ../ProjectController.py:1517
+#: ../ProjectController.py:1865
 msgid "Show code"
 msgstr "코드 보기"
 
-#: ../dialogs/SFCDivergenceDialog.py:74
+#: ../dialogs/SFCDivergenceDialog.py:67
 msgid "Simultaneous Convergence"
 msgstr "동시 수렴"
 
-#: ../dialogs/SFCDivergenceDialog.py:68
+#: ../dialogs/SFCDivergenceDialog.py:66
 msgid "Simultaneous Divergence"
 msgstr "동시 발산"
 
@@ -3183,62 +3027,79 @@ msgstr "동시 발산"
 msgid "Sine"
 msgstr "Sine"
 
-#: ../editors/ResourceEditor.py:67
+#: ../editors/ResourceEditor.py:68
 msgid "Single"
 msgstr "싱글"
+
+#: ../targets/toolchain_makefile.py:126
+msgid "Source didn't change, no build.\n"
+msgstr ""
+
+#: ../PLCGenerator.py:397
+#, python-brace-format
+msgid ""
+"Source signal has to be defined for single task '{a1}' in resource "
+"'{a2}.{a3}'."
+msgstr ""
 
 #: ../plcopen/iec_std.csv:23
 msgid "Square root (base 2)"
 msgstr "제곱근 (SQRT: base 2)"
 
-#: ../plcopen/structures.py:193
+#: ../plcopen/definitions.py:48
 msgid "Standard function blocks"
 msgstr "기본 함수 블럭"
 
-#: ../Beremiz_service.py:319
-#: ../ProjectController.py:1495
+#: ../ProjectController.py:1843 ../Beremiz_service.py:263
 msgid "Start PLC"
 msgstr "PLC 시작"
 
-#: ../ProjectController.py:819
+#: ../ProjectController.py:1046
 #, python-format
 msgid "Start build in %s\n"
 msgstr "%s에서 빌드를 시작합니다\n"
 
-#: ../ProjectController.py:1314
+#: ../ProjectController.py:1360
+msgid "Started"
+msgstr ""
+
+#: ../ProjectController.py:1648
 msgid "Starting PLC\n"
 msgstr "PLC 시작중\n"
 
-#: ../Beremiz.py:403
+#: ../BeremizIDE.py:365
 msgid "Status ToolBar"
 msgstr ""
 
-#: ../editors/Viewer.py:493
-#, fuzzy
+#: ../editors/Viewer.py:612 ../editors/Viewer.py:2391
 msgid "Step"
-msgstr "스텝 수정"
+msgstr ""
 
-#: ../ProjectController.py:1498
+#: ../ProjectController.py:1846
 msgid "Stop"
 msgstr "정지"
 
-#: ../Beremiz_service.py:320
+#: ../Beremiz_service.py:264
 msgid "Stop PLC"
 msgstr "PLC 정지"
 
-#: ../ProjectController.py:1500
+#: ../ProjectController.py:1848
 msgid "Stop Running PLC"
 msgstr "작동중인 PLC 정지"
 
-#: ../ProjectController.py:1292
+#: ../ProjectController.py:1361
+msgid "Stopped"
+msgstr ""
+
+#: ../ProjectController.py:1620
 msgid "Stopping debugger...\n"
 msgstr "디버거 정지중...\n"
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Structure"
 msgstr "구조"
 
-#: ../editors/DataTypeEditor.py:52
+#: ../editors/DataTypeEditor.py:54
 msgid "Subrange"
 msgstr "서브레인지"
 
@@ -3246,58 +3107,73 @@ msgstr "서브레인지"
 msgid "Subtraction"
 msgstr "뺄셈 연산"
 
-#: ../ProjectController.py:915
+#: ../ProjectController.py:1085
 msgid "Successfully built.\n"
 msgstr "성공적으로 빌드 완료 되었습니다\n"
 
-#: ../dialogs/SearchInProjectDialog.py:154
+#: ../IDEFrame.py:447
+msgid "Switch perspective"
+msgstr ""
+
+#: ../dialogs/SearchInProjectDialog.py:165 ../dialogs/FindInPouDialog.py:115
 msgid "Syntax error in regular expression of pattern to search!"
 msgstr "정규 표현식에 적합하지 않은 검색어 입니다!"
+
+#: ../dialogs/DiscoveryDialog.py:93
+msgid "TYPE"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:29
 msgid "Tangent"
 msgstr "Tangent"
 
-#: ../editors/ResourceEditor.py:76
+#: ../editors/ResourceEditor.py:83
 msgid "Task"
 msgstr "태스크"
 
-#: ../editors/ResourceEditor.py:218
+#: ../editors/ResourceEditor.py:235
 msgid "Tasks:"
 msgstr "태스크:"
 
-#: ../controls/VariablePanel.py:78
+#: ../controls/VariablePanel.py:73
 msgid "Temp"
 msgstr "임시"
 
-#: ../editors/FileManagementPanel.py:398
+#: ../version.py:30
+msgid ""
+"The best place to ask questions about Beremiz/PLCOpenEditor\n"
+"is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
+"\n"
+"This is the main community support channel.\n"
+"For posting it is required to be subscribed to the mailing list.\n"
+"\n"
+"You can subscribe to the list here:\n"
+"https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
+msgstr ""
+
+#: ../editors/FileManagementPanel.py:180
 #, python-format
 msgid ""
 "The file '%s' already exist.\n"
 "Do you want to replace it?"
 msgstr ""
 
-#: ../editors/LDViewer.py:879
+#: ../editors/LDViewer.py:882
 msgid "The group of block must be coherent!"
 msgstr "블럭 그룹은 일관성을 가져야 합니다!"
 
-#: ../IDEFrame.py:1091
-#: ../Beremiz.py:555
-#, fuzzy
+#: ../BeremizIDE.py:542 ../IDEFrame.py:1015
 msgid "There are changes, do you want to save?"
 msgstr ""
-"#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"프로젝트가 수정되었습니다. 저장 하시겠습니까?\n"
-"#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-"프로젝트 파일이 변경되었습니다. 저장 하시겠습니까?"
 
-#: ../IDEFrame.py:1709
-#: ../IDEFrame.py:1728
+#: ../IDEFrame.py:1658 ../IDEFrame.py:1677
 #, python-format
-msgid "There is a POU named \"%s\". This could cause a conflict. Do you wish to continue?"
+msgid ""
+"There is a POU named \"%s\". This could cause a conflict. Do you wish to "
+"continue?"
 msgstr "\"%s\" POU 에 문제가 있을 수 있습니다. 계속 하시겠습니까?"
 
-#: ../IDEFrame.py:1178
+#: ../IDEFrame.py:1102
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
@@ -3305,20 +3181,20 @@ msgstr ""
 "인쇄 작업에 문제가 있습니다.\n"
 "프린터 설정을 확인하세요"
 
-#: ../editors/LDViewer.py:888
+#: ../editors/LDViewer.py:891
 msgid "This option isn't available yet!"
 msgstr "선택하신 옵션은 지원되지 않습니다!"
 
-#: ../editors/GraphicViewer.py:278
-msgid "Tick"
-msgstr "틱(Tick)"
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:565
+#, python-format
+msgid "Tick: %d"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:40
 msgid "Time"
 msgstr "시간 연산"
 
-#: ../plcopen/iec_std.csv:40
-#: ../plcopen/iec_std.csv:41
+#: ../plcopen/iec_std.csv:40 ../plcopen/iec_std.csv:41
 msgid "Time addition"
 msgstr "시간 더하기 연산"
 
@@ -3326,61 +3202,61 @@ msgstr "시간 더하기 연산"
 msgid "Time concatenation"
 msgstr "시간 연결 연산"
 
-#: ../plcopen/iec_std.csv:60
-#: ../plcopen/iec_std.csv:61
+#: ../plcopen/iec_std.csv:60 ../plcopen/iec_std.csv:61
 msgid "Time division"
 msgstr "시간 나누기 연산"
 
-#: ../plcopen/iec_std.csv:46
-#: ../plcopen/iec_std.csv:47
+#: ../plcopen/iec_std.csv:46 ../plcopen/iec_std.csv:47
 msgid "Time multiplication"
 msgstr "시간 곱하기 연산"
 
-#: ../plcopen/iec_std.csv:48
-#: ../plcopen/iec_std.csv:49
+#: ../plcopen/iec_std.csv:48 ../plcopen/iec_std.csv:49
 msgid "Time subtraction"
 msgstr "시간 뺄셈 연산"
 
-#: ../plcopen/iec_std.csv:42
-#: ../plcopen/iec_std.csv:43
+#: ../plcopen/iec_std.csv:42 ../plcopen/iec_std.csv:43
 msgid "Time-of-day addition"
 msgstr "하루의 시간 더하기"
 
-#: ../plcopen/iec_std.csv:52
-#: ../plcopen/iec_std.csv:53
-#: ../plcopen/iec_std.csv:54
-#: ../plcopen/iec_std.csv:55
+#: ../plcopen/iec_std.csv:52 ../plcopen/iec_std.csv:53
+#: ../plcopen/iec_std.csv:54 ../plcopen/iec_std.csv:55
 msgid "Time-of-day subtraction"
 msgstr "하루의 시간 빼기"
 
-#: ../editors/Viewer.py:432
+#: ../dialogs/ForceVariableDialog.py:172
+msgid "Toggle value"
+msgstr ""
+
+#: ../editors/Viewer.py:548
 msgid "Top"
 msgstr "상단"
 
-#: ../ProjectController.py:1507
+#: ../ProjectController.py:1855
 msgid "Transfer"
 msgstr "전송"
 
-#: ../ProjectController.py:1509
+#: ../ProjectController.py:1857
 msgid "Transfer PLC"
 msgstr "PLC에 전송"
 
-#: ../ProjectController.py:1474
+#: ../ProjectController.py:1820
 msgid "Transfer completed successfully.\n"
 msgstr "전송이 성공적으로 완료되었습니다\n"
 
-#: ../ProjectController.py:1476
+#: ../ProjectController.py:1823
 msgid "Transfer failed\n"
 msgstr "전송 실패\n"
 
-#: ../editors/Viewer.py:494
-#, fuzzy
+#: ../editors/Viewer.py:613 ../editors/Viewer.py:2393
+#: ../editors/Viewer.py:2420
 msgid "Transition"
-msgstr "트랜지션"
+msgstr ""
 
-#: ../PLCGenerator.py:1212
+#: ../PLCGenerator.py:1518
 #, python-format
-msgid "Transition \"%s\" body must contain an output variable or coil referring to its name"
+msgid ""
+"Transition \"%s\" body must contain an output variable or coil referring to "
+"its name"
 msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:84
@@ -3391,39 +3267,50 @@ msgstr "트랜지션 이름"
 msgid "Transition Name:"
 msgstr "트랜지션 이름:"
 
-#: ../PLCGenerator.py:1301
-#, python-format
-msgid "Transition with content \"%s\" not connected to a next step in \"%s\" POU"
-msgstr "\"%s\" 트랜지션의 내용이 POU 다음 스텝 \"%s\"와 연결되지 않았습니다"
+#: ../PLCGenerator.py:1609
+#, python-brace-format
+msgid "Transition with content \"{a1}\" not connected to a next step in \"{a2}\" POU"
+msgstr ""
 
-#: ../PLCGenerator.py:1292
-#, python-format
-msgid "Transition with content \"%s\" not connected to a previous step in \"%s\" POU"
-msgstr "\"%s\" 트랜지션의 내용이 POU 이전 스텝 \"%s\"와 연결되지 않았습니다"
+#: ../PLCGenerator.py:1598
+#, python-brace-format
+msgid ""
+"Transition with content \"{a1}\" not connected to a previous step in "
+"\"{a2}\" POU"
+msgstr ""
 
-#: ../plcopen/plcopen.py:1442
+#: ../plcopen/plcopen.py:1323
 #, python-format
 msgid "Transition with name %s doesn't exist!"
 msgstr "%s 트랜지션 이름이 존재 하지 않습니다!"
 
-#: ../PLCControler.py:95
+#: ../PLCControler.py:98
 msgid "Transitions"
 msgstr "트랜지션"
 
-#: ../editors/ResourceEditor.py:67
+#: ../dialogs/AboutDialog.py:131
+msgid "Translated by"
+msgstr ""
+
+#: ../editors/ResourceEditor.py:68
 msgid "Triggering"
 msgstr "트리거링 스위치"
 
-#: ../controls/VariablePanel.py:58
-#: ../controls/VariablePanel.py:59
-#: ../editors/DataTypeEditor.py:48
-#: ../editors/ResourceEditor.py:76
-#: ../dialogs/ActionBlockDialog.py:37
+#: ../Beremiz_service.py:478
+msgid "Twisted unavailable."
+msgstr ""
+
+#: ../dialogs/ActionBlockDialog.py:39 ../editors/ResourceEditor.py:83
+#: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:739
+#: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Type"
 msgstr "타입"
 
-#: ../canfestival/config_utils.py:335
-#: ../canfestival/config_utils.py:617
+#: ../dialogs/BrowseLocationsDialog.py:49
+msgid "Type and derivated"
+msgstr ""
+
+#: ../canfestival/config_utils.py:336 ../canfestival/config_utils.py:624
 #, python-format
 msgid "Type conflict for location \"%s\""
 msgstr "\"%s\" 타입 에러"
@@ -3432,175 +3319,179 @@ msgstr "\"%s\" 타입 에러"
 msgid "Type conversion"
 msgstr "변환 타입"
 
-#: ../editors/DataTypeEditor.py:155
+#: ../editors/DataTypeEditor.py:162
 msgid "Type infos:"
 msgstr "타입 정보:"
 
-#: ../dialogs/SFCDivergenceDialog.py:51
-#: ../dialogs/LDPowerRailDialog.py:51
-#: ../dialogs/ConnectionDialog.py:52
-#: ../dialogs/SFCTransitionDialog.py:53
-#: ../dialogs/FBDBlockDialog.py:48
+#: ../dialogs/BrowseLocationsDialog.py:50
+msgid "Type strict"
+msgstr ""
+
+#: ../dialogs/SFCDivergenceDialog.py:59 ../dialogs/SFCTransitionDialog.py:58
+#: ../dialogs/LDPowerRailDialog.py:57 ../dialogs/BrowseLocationsDialog.py:100
+#: ../dialogs/FBDBlockDialog.py:66 ../dialogs/ConnectionDialog.py:59
 msgid "Type:"
 msgstr "타입:"
 
-#: ../canfestival/config_utils.py:455
-#: ../canfestival/config_utils.py:469
+#: ../canfestival/config_utils.py:462 ../canfestival/config_utils.py:476
 #, python-format
 msgid "Unable to define PDO mapping for node %02x"
 msgstr "PDO 매핑 정의 에러:%02x"
 
-#: ../targets/Xenomai/__init__.py:14
+#: ../targets/Xenomai/__init__.py:39
 #, python-format
 msgid "Unable to get Xenomai's %s \n"
 msgstr "Xenomai의 %s 를 가져 올 수 없습니다\n"
 
-#: ../PLCGenerator.py:865
-#: ../PLCGenerator.py:924
-#, fuzzy, python-format
-msgid "Undefined block type \"%s\" in \"%s\" POU"
-msgstr "\"%s\" 의 POU 타입이 정의되지 않았습니다"
+#: ../PLCGenerator.py:961 ../PLCGenerator.py:1214
+#, python-brace-format
+msgid "Undefined block type \"{a1}\" in \"{a2}\" POU"
+msgstr ""
 
-#: ../PLCGenerator.py:240
+#: ../PLCGenerator.py:254
 #, python-format
 msgid "Undefined pou type \"%s\""
 msgstr "\"%s\" 의 POU 타입이 정의되지 않았습니다"
 
-#: ../IDEFrame.py:338
-#: ../IDEFrame.py:397
+#: ../IDEFrame.py:360 ../IDEFrame.py:421
 msgid "Undo"
 msgstr "되돌리기"
 
-#: ../ProjectController.py:254
+#: ../ProjectController.py:423
 msgid "Unknown"
 msgstr ""
 
-#: ../editors/Viewer.py:336
+#: ../editors/Viewer.py:394
 #, python-format
 msgid "Unknown variable \"%s\" for this POU!"
 msgstr "\"%s\" 변수를 현재 POU에서 알 수 없습니다!"
 
-#: ../ProjectController.py:251
-#: ../ProjectController.py:252
+#: ../ProjectController.py:420 ../ProjectController.py:421
 msgid "Unnamed"
 msgstr ""
 
-#: ../PLCControler.py:305
+#: ../PLCControler.py:638
 #, python-format
 msgid "Unnamed%d"
 msgstr "이름 없음%d"
 
-#: ../controls/VariablePanel.py:272
+#: ../controls/VariablePanel.py:284
 #, python-format
 msgid "Unrecognized data size \"%s\""
 msgstr "\"%s\"의 데이터 크기를 알 수 없습니다"
 
-#: ../plcopen/structures.py:222
-msgid ""
-"Up-counter\n"
-"The up-counter can be used to signal when a count has reached a maximum value."
-msgstr ""
-"업 카운터\n"
-"업 카운터는 시그널이 사용자가 설정한 최대값에 도달할 때까지 동작합니다"
-
-#: ../plcopen/structures.py:232
-msgid ""
-"Up-down counter\n"
-"The up-down counter has two inputs CU and CD. It can be used to both count up on one input and down on the other."
-msgstr ""
-"업 다운 카운터\n"
-"업 다운 카운터는 CU, CD 두 개의 입력부를 가지고 있습니다. 입력부는 동시에 동작하며 하나는 카운터 상승, 다른 하나는 카운터 감소로 동작합니다"
-
-#: ../controls/VariablePanel.py:709
-#: ../editors/DataTypeEditor.py:623
+#: ../editors/DataTypeEditor.py:630 ../controls/VariablePanel.py:827
 msgid "User Data Types"
 msgstr "사용자 데이터 타입"
 
-#: ../canfestival/SlaveEditor.py:38
-#: ../canfestival/NetworkEditor.py:68
+#: ../canfestival/SlaveEditor.py:65 ../canfestival/NetworkEditor.py:86
 msgid "User Type"
 msgstr "사용자 타입"
 
-#: ../PLCControler.py:94
+#: ../PLCControler.py:97
 msgid "User-defined POUs"
 msgstr "사용자 정의 POU"
 
-#: ../controls/DebugVariablePanel.py:40
-#: ../dialogs/ActionBlockDialog.py:37
+#: ../dialogs/ActionBlockDialog.py:39
 msgid "Value"
 msgstr "데이터 값"
 
-#: ../editors/GraphicViewer.py:278
-msgid "Values"
-msgstr "데이터 값"
-
-#: ../editors/DataTypeEditor.py:252
+#: ../editors/DataTypeEditor.py:259
 msgid "Values:"
 msgstr "데이터 값:"
 
-#: ../controls/DebugVariablePanel.py:40
-#: ../editors/Viewer.py:466
-#: ../dialogs/ActionBlockDialog.py:41
+#: ../dialogs/ActionBlockDialog.py:43 ../editors/Viewer.py:585
+#: ../editors/Viewer.py:2423
 msgid "Variable"
 msgstr "변수"
 
-#: ../dialogs/FBDVariableDialog.py:47
+#: ../editors/Viewer.py:309 ../editors/Viewer.py:339 ../editors/Viewer.py:361
+#: ../editors/TextViewer.py:292 ../editors/TextViewer.py:343
+#: ../editors/TextViewer.py:366 ../controls/VariablePanel.py:329
+msgid "Variable Drop"
+msgstr ""
+
+#: ../dialogs/FBDVariableDialog.py:64
 msgid "Variable Properties"
 msgstr "변수 속성"
 
-#: ../controls/VariablePanel.py:277
-#: ../editors/TextViewer.py:330
-#: ../editors/Viewer.py:277
+#: ../editors/Viewer.py:289 ../editors/TextViewer.py:306
+#: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:290
+#: ../controls/VariablePanel.py:350
 msgid "Variable class"
 msgstr "변수 클래스"
 
-#: ../editors/TextViewer.py:374
-#: ../editors/Viewer.py:338
+#: ../editors/Viewer.py:396 ../editors/TextViewer.py:387
 msgid "Variable don't belong to this POU!"
 msgstr "POU에 속하지 않는 변수 입니다!"
 
-#: ../controls/VariablePanel.py:77
+#: ../dialogs/LDElementDialog.py:89
+msgid "Variable:"
+msgstr ""
+
+#: ../controls/VariablePanel.py:72
 msgid "Variables"
 msgstr "변수"
 
-#: ../controls/ProjectPropertiesPanel.py:151
+#: ../controls/ProjectPropertiesPanel.py:152
 msgid "Vertical:"
 msgstr "수직:"
 
-#: ../wxglade_hmi/wxglade_hmi.py:11
+#: ../Beremiz_service.py:588
+msgid "WAMP client startup failed. "
+msgstr ""
+
+#: ../connectors/WAMP/__init__.py:91
+#, python-format
+msgid "WAMP connecting to URL : %s\n"
+msgstr ""
+
+#: ../connectors/WAMP/__init__.py:131
+msgid "WAMP connection timeout"
+msgstr ""
+
+#: ../connectors/WAMP/__init__.py:150
+#, python-format
+msgid "WAMP connection to '%s' failed.\n"
+msgstr ""
+
+#: ../Beremiz_service.py:564
+msgid "WAMP import failed :"
+msgstr ""
+
+#: ../wxglade_hmi/wxglade_hmi.py:37
 msgid "WXGLADE GUI"
 msgstr "WXGLADE GUI"
 
-#: ../ProjectController.py:1276
-msgid "Waiting debugger to recover...\n"
-msgstr "디버거 복구 대기중...\n"
-
-#: ../editors/LDViewer.py:888
-#: ../dialogs/PouDialog.py:126
+#: ../dialogs/PouDialog.py:129 ../editors/LDViewer.py:891
 msgid "Warning"
 msgstr "경고"
 
-#: ../ProjectController.py:515
+#: ../ProjectController.py:707
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr "ST/IL/SFC 코드 생성기 경고:\n"
 
-#: ../dialogs/SearchInProjectDialog.py:85
+#: ../dialogs/SearchInProjectDialog.py:78
 msgid "Whole Project"
 msgstr "프로젝트 전체 검색"
 
-#: ../controls/ProjectPropertiesPanel.py:119
+#: ../controls/ProjectPropertiesPanel.py:120
 msgid "Width:"
 msgstr "폭:"
 
-#: ../dialogs/FindInPouDialog.py:86
+#: ../dialogs/FindInPouDialog.py:91
 msgid "Wrap search"
 msgstr ""
 
-#: ../features.py:9
+#: ../dialogs/AboutDialog.py:130
+msgid "Written by"
+msgstr ""
+
+#: ../features.py:34
 msgid "WxGlade GUI"
 msgstr "WxGlade GUI"
 
-#: ../svgui/svgui.py:106
+#: ../svgui/svgui.py:142
 msgid ""
 "You don't have write permissions.\n"
 "Open Inkscape anyway ?"
@@ -3608,7 +3499,7 @@ msgstr ""
 "현재 쓰기 권한이 없습니다\n"
 "그래도 Inkscape를 열까요?"
 
-#: ../wxglade_hmi/wxglade_hmi.py:108
+#: ../wxglade_hmi/wxglade_hmi.py:154
 msgid ""
 "You don't have write permissions.\n"
 "Open wxGlade anyway ?"
@@ -3616,7 +3507,7 @@ msgstr ""
 "현재 쓰기 권한이 없습니다\n"
 "그래도 WxGlade를 열까요?"
 
-#: ../ProjectController.py:220
+#: ../ProjectController.py:371
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
@@ -3624,67 +3515,81 @@ msgstr ""
 "프로젝트 작업에는 권한이 필요합니다\n"
 "사본으로 작업하시겠습니까?"
 
-#: ../editors/LDViewer.py:883
-msgid "You must select the block or group of blocks around which a branch should be added!"
+#: ../editors/LDViewer.py:886
+msgid ""
+"You must select the block or group of blocks around which a branch should be"
+" added!"
 msgstr "Branch를 추가할 블럭 또는 블럭 그룹을 선택해야 합니다!"
 
-#: ../editors/LDViewer.py:663
+#: ../editors/LDViewer.py:666
 msgid "You must select the wire where a contact should be added!"
 msgstr "접점에 추가될 와이어를 선택해야 합니다!"
 
-#: ../dialogs/PouNameDialog.py:45
-#: ../dialogs/SFCStepNameDialog.py:47
-#: ../dialogs/SFCStepDialog.py:118
+#: ../dialogs/SFCStepNameDialog.py:48 ../dialogs/PouNameDialog.py:46
 msgid "You must type a name!"
 msgstr "이름을 입력하세요!"
 
-#: ../dialogs/ForceVariableDialog.py:165
+#: ../dialogs/ForceVariableDialog.py:193
 msgid "You must type a value!"
 msgstr "데이터 값을 입력하세요!"
 
-#: ../IDEFrame.py:414
+#: ../IDEFrame.py:438
 msgid "Zoom"
 msgstr "확대(Zoom)"
 
-#: ../editors/GraphicViewer.py:97
-#, fuzzy
-msgid "Zoom:"
-msgstr "확대(Zoom)"
+#: ../dialogs/DurationEditorDialog.py:155
+msgid "days"
+msgstr ""
 
-#: ../PLCOpenEditor.py:356
+#: ../PLCOpenEditor.py:343
 #, python-format
 msgid "error: %s\n"
 msgstr "에러: %s\n"
 
-#: ../util/ProcessLogger.py:161
-#, python-format
-msgid "exited with status %s (pid %s)\n"
-msgstr "종료함: 종료 상태 번호 %s(PID %s)\n"
+#: ../util/ProcessLogger.py:169
+#, python-brace-format
+msgid "exited with status {a1} (pid {a2})\n"
+msgstr ""
 
-#: ../PLCOpenEditor.py:508
-#: ../PLCOpenEditor.py:510
+#: ../PLCOpenEditor.py:406 ../PLCOpenEditor.py:408
 msgid "file : "
 msgstr "파일 :"
 
-#: ../dialogs/PouDialog.py:31
+#: ../dialogs/PouDialog.py:32
 msgid "function"
 msgstr "함수"
 
-#: ../PLCOpenEditor.py:511
+#: ../PLCOpenEditor.py:409
 msgid "function : "
 msgstr "함수 :"
 
-#: ../dialogs/PouDialog.py:31
+#: ../dialogs/PouDialog.py:32
 msgid "functionBlock"
 msgstr "함수 블럭"
 
-#: ../PLCOpenEditor.py:511
+#: ../dialogs/DurationEditorDialog.py:155
+msgid "hours"
+msgstr ""
+
+#: ../PLCOpenEditor.py:409
 msgid "line : "
 msgstr "라인 :"
 
-#: ../dialogs/PouDialog.py:31
+#: ../dialogs/DurationEditorDialog.py:157
+msgid "milliseconds"
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:156
+msgid "minutes"
+msgstr ""
+
+#: ../dialogs/PouDialog.py:32
 msgid "program"
 msgstr "프로그램"
+
+#: ../dialogs/DurationEditorDialog.py:156
+msgid "seconds"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:84
 msgid "string from the middle"
@@ -3698,10 +3603,26 @@ msgstr "좌측 문자열"
 msgid "string right of"
 msgstr "우측 문자열"
 
-#: ../PLCOpenEditor.py:354
+#: ../Beremiz.py:164
+msgid "update info unavailable."
+msgstr ""
+
+#: ../PLCOpenEditor.py:341
 #, python-format
 msgid "warning: %s\n"
 msgstr "경고: %s\n"
+
+#: ../PLCControler.py:972
+#, python-brace-format
+msgid "{a1} \"{a2}\" can't be pasted as a {a3}."
+msgstr ""
+
+#: ../ConfigTreeNode.py:56
+#, python-brace-format
+msgid ""
+"{a1} XML file doesn't follow XSD schema at line %{a2}:\n"
+"{a3}"
+msgstr ""
 
 #: Extra XSD strings
 msgid "CanFestivalSlaveNode"
@@ -3734,17 +3655,35 @@ msgstr "CanFestival 인스턴스"
 msgid "CAN_Driver"
 msgstr "CAN 드라이버"
 
-msgid "Debug_mode"
-msgstr "디버그 모드"
+msgid "Generic"
+msgstr ""
 
-msgid "CExtension"
-msgstr "C 확장"
+msgid "Command"
+msgstr ""
+
+msgid "Xenomai"
+msgstr "Xenomai"
+
+msgid "XenoConfig"
+msgstr "Xenomai 설정"
+
+msgid "Compiler"
+msgstr "컴파일러"
 
 msgid "CFLAGS"
 msgstr "CFLAGS"
 
+msgid "Linker"
+msgstr "링커"
+
 msgid "LDFLAGS"
 msgstr "LDFLAGS"
+
+msgid "Linux"
+msgstr "리눅스"
+
+msgid "Win32"
+msgstr "Win32"
 
 msgid "BaseParams"
 msgstr "베이스 파라메터"
@@ -3754,24 +3693,6 @@ msgstr "IEC_Channel"
 
 msgid "Enabled"
 msgstr "가능"
-
-msgid "Linux"
-msgstr "리눅스"
-
-msgid "Compiler"
-msgstr "컴파일러"
-
-msgid "Linker"
-msgstr "링커"
-
-msgid "Win32"
-msgstr "Win32"
-
-msgid "Xenomai"
-msgstr "Xenomai"
-
-msgid "XenoConfig"
-msgstr "Xenomai 설정"
 
 msgid "BeremizRoot"
 msgstr "베레미즈 루트"
@@ -3788,159 +3709,206 @@ msgstr "URI 주소"
 msgid "Disable_Extensions"
 msgstr "확장 모듈 제거 (Extension 제거)"
 
-#~ msgid "Close Project\tCTRL+SHIFT+W"
-#~ msgstr "프로젝트 닫기\tCTRL+SHIFT+W"
+msgid "%(codefile_name)s"
+msgstr ""
 
-#~ msgid "New\tCTRL+N"
-#~ msgstr "새로 만들기\tCTRL+N"
+msgid "variables"
+msgstr ""
 
-#~ msgid "Open\tCTRL+O"
-#~ msgstr "프로젝트 열기\tCTRL+O"
+msgid "variable"
+msgstr ""
 
-#~ msgid "Page Setup\tCTRL+ALT+P"
-#~ msgstr "인쇄 페이지 설정\tCTRL+ALT+P"
+msgid "name"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Preview\tCTRL+SHIFT+P"
-#~ msgstr ""
-#~ "#-#-#-#-#  Beremiz_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-#~ "인쇄 미리보기\tnCTRL+SHIFT+P\n"
-#~ "#-#-#-#-#  PLCOpenEditor_ko_KR.po (Beremiz_Korean_Version)  #-#-#-#-#\n"
-#~ "인쇄 페이지 미리보기\tCTRL+SHIFT+P"
+msgid "type"
+msgstr ""
 
-#~ msgid "Print\tCTRL+P"
-#~ msgstr "인쇄\tCTRL+P"
+msgid "class"
+msgstr ""
 
-#~ msgid "Quit\tCTRL+Q"
-#~ msgstr "프로그램 종료\tCTRL+Q"
+msgid "initial"
+msgstr ""
 
-#~ msgid "Save\tCTRL+S"
-#~ msgstr "프로젝트 저장\tCTRL+S"
+msgid "desc"
+msgstr ""
 
-#~ msgid "Save as\tCTRL+SHIFT+S"
-#~ msgstr "다른 이름으로 저장\tCTRL+SHIFT+S"
+msgid "onchange"
+msgstr ""
 
-#~ msgid "Copy\tCTRL+C"
-#~ msgstr "복사\tCTRL+C"
+msgid "opts"
+msgstr ""
 
-#~ msgid "Cut\tCTRL+X"
-#~ msgstr "잘라내기\tCTRL+X"
+#: Extra TC6 documentation strings
+msgid "0 - current time, 1 - load time from PDT"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Find\tCTRL+F"
-#~ msgstr "되돌리기\tCTRL+Z"
+msgid "Preset datetime"
+msgstr ""
 
-#~ msgid "PLCOpenEditor\tF1"
-#~ msgstr "PLCOpenEditor\tF1"
+msgid "Copy of IN"
+msgstr ""
 
-#~ msgid "Paste\tCTRL+V"
-#~ msgstr "붙여넣기\tCTRL+V"
+msgid "Datetime, current or relative to PDT"
+msgstr ""
 
-#~ msgid "Redo\tCTRL+Y"
-#~ msgstr "되돌리기 취소\tCTRL+Y"
+msgid ""
+"The real time clock has many uses including time stamping, setting dates and"
+" times of day in batch reports, in alarm messages and so on."
+msgstr ""
 
-#~ msgid "Refresh\tCTRL+R"
-#~ msgstr "새로 고침\tCTRL+R"
+msgid "1 = integrate, 0 = hold"
+msgstr ""
 
-#~ msgid "Save As...\tCTRL+SHIFT+S"
-#~ msgstr "다른 이름으로 저장...\tCTRL+SHIFT+S"
+msgid "Overriding reset"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Search in Project\tCTRL+SHIFT+F"
-#~ msgstr "프로젝트 내부 검색\tCTRL+F"
+msgid "Input variable"
+msgstr ""
 
-#~ msgid "Undo\tCTRL+Z"
-#~ msgstr "되돌리기\tCTRL+Z"
+msgid "Initial value"
+msgstr ""
 
-#~ msgid "&ConfNode"
-#~ msgstr "&플러그인"
+msgid "Sampling period"
+msgstr ""
 
-#~ msgid "Add ConfNode"
-#~ msgstr "플러그인 추가"
+msgid "NOT R1"
+msgstr ""
 
-#~ msgid "Add a sub confnode"
-#~ msgstr "서브 플러그인 추가"
+msgid "Integrated output"
+msgstr ""
 
-#~ msgid "Append "
-#~ msgstr "추가"
+msgid ""
+"The integral function block integrates the value of input XIN over time."
+msgstr ""
 
-#~ msgid "Delete this confnode"
-#~ msgstr "해당 플러그인 삭제"
+msgid "0 = reset"
+msgstr ""
 
-#~ msgid "Edit CanOpen Network with NetworkEdit"
-#~ msgstr "네트워크 에디터를 이용하여 CanOpen 네트워크 수정"
+msgid "Input to be differentiated"
+msgstr ""
 
-#~ msgid "Edit Python File"
-#~ msgstr "파이썬 파일 수정"
+msgid "Differentiated output"
+msgstr ""
 
-#~ msgid "Edit network"
-#~ msgstr "네트워크 수정"
+msgid ""
+"The derivative function block produces an output XOUT proportional to the "
+"rate of change of the input XIN."
+msgstr ""
 
-#~ msgid "Enable/Disable this confnode"
-#~ msgstr "플러그인 사용/정지"
+msgid "0 - manual , 1 - automatic"
+msgstr ""
 
-#~ msgid "Please enter a name for confnode:"
-#~ msgstr "플러그인 이름을 입력하세요:"
+msgid "Process variable"
+msgstr ""
 
-#~ msgid "Project not created"
-#~ msgstr "프로젝트가 생성되지 않았습니다"
+msgid "Set point"
+msgstr ""
 
-#~ msgid "Topology"
-#~ msgstr "토폴로지"
+msgid "Manual output adjustment - Typically from transfer station"
+msgstr ""
 
-#~ msgid "Wrong URI, please check it !\n"
-#~ msgstr "URI 타입 주소를 확인하세요!\n"
+msgid "Proportionality constant"
+msgstr ""
 
-#~ msgid "Add a new data type"
-#~ msgstr "새로운 데이터 타입 추가"
+msgid "Reset time"
+msgstr ""
 
-#~ msgid "Add new configuration"
-#~ msgstr "새로운 설정(configuration) 추가"
+msgid "Derivative time constant"
+msgstr ""
 
-#~ msgid "Add new resource"
-#~ msgstr "새로운 리소스 추가"
+msgid "PV - SP"
+msgstr ""
 
-#~ msgid "Block Types"
-#~ msgstr "블럭 타입"
+msgid "FB for integral term"
+msgstr ""
 
-#~ msgid "CSV Log"
-#~ msgstr "CSV 로그"
+msgid "FB for derivative term"
+msgstr ""
 
-#~ msgid "Delete Task"
-#~ msgstr "태스크 삭제"
+msgid ""
+"The PID (proportional, Integral, Derivative) function block provides the "
+"classical three term controller for closed loop control."
+msgstr ""
 
-#~ msgid "Display"
-#~ msgstr "디스플레이"
+msgid "0 - track X0, 1 - ramp to/track X1"
+msgstr ""
 
-#~ msgid "File"
-#~ msgstr "파일"
+msgid "Ramp duration"
+msgstr ""
 
-#~ msgid "Graphic Panel"
-#~ msgstr "그래픽 패널"
+msgid "BUSY = 1 during ramping period"
+msgstr ""
 
-#~ msgid "Help"
-#~ msgstr "도움말"
+msgid "Elapsed time of ramp"
+msgstr ""
 
-#~ msgid "Instances"
-#~ msgstr "인스턴스"
+msgid "The RAMP function block is modelled on example given in the standard."
+msgstr ""
 
-#~ msgid "Invalid value \"%s\" for location"
-#~ msgstr "\"%s\"값은 위치에 적합하지 않습니다!"
+msgid ""
+"The hysteresis function block provides a hysteresis boolean output driven by"
+" the difference of two floating point (REAL) inputs XIN1 and XIN2."
+msgstr ""
 
-#~ msgid "Please enter configuration name"
-#~ msgstr "설정(configuration) 이름을 입력하세요"
+msgid "The SR bistable is a latch where the Set dominates."
+msgstr ""
 
-#~ msgid "Please enter data type name"
-#~ msgstr "데이터 타입 이름을 입력하세요"
+msgid "The RS bistable is a latch where the Reset dominates."
+msgstr ""
 
-#~ msgid "Please enter resource name"
-#~ msgstr "리소스 이름을 입력하세요"
+msgid ""
+"The semaphore provides a mechanism to allow software elements mutually "
+"exclusive access to certain ressources."
+msgstr ""
 
-#~ msgid "Please enter text"
-#~ msgstr "텍스트를 입력하세요"
+msgid "The output produces a single pulse when a rising edge is detected."
+msgstr ""
 
-#~ msgid "Plugins"
-#~ msgstr "플러그인"
+msgid "The output produces a single pulse when a falling edge is detected."
+msgstr ""
 
-#~ msgid "Types"
-#~ msgstr "타입(Types)"
+msgid ""
+"The up-counter can be used to signal when a count has reached a maximum "
+"value."
+msgstr ""
+
+msgid ""
+"The down-counter can be used to signal when a count has reached zero, on "
+"counting down from a preset value."
+msgstr ""
+
+msgid ""
+"The up-down counter has two inputs CU and CD. It can be used to both count "
+"up on one input and down on the other."
+msgstr ""
+
+msgid "first input parameter"
+msgstr ""
+
+msgid "second input parameter"
+msgstr ""
+
+msgid "first output parameter"
+msgstr ""
+
+msgid "second output parameter"
+msgstr ""
+
+msgid "internal state: 0-reset, 1-counting, 2-set"
+msgstr ""
+
+msgid ""
+"The pulse timer can be used to generate output pulses of a given time "
+"duration."
+msgstr ""
+
+msgid ""
+"The on-delay timer can be used to delay setting an output true, for fixed "
+"period after an input becomes true."
+msgstr ""
+
+msgid ""
+"The off-delay timer can be used to delay setting an output false, for fixed "
+"period after input goes false."
+msgstr ""

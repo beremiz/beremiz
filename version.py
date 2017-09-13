@@ -119,13 +119,58 @@ def GetAboutDialogInfo():
     info.Icon = wx.Icon(os.path.join(path, "images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
 
     info.Translators = (
-        "Russian\t- Andrey Skvortsov <andrej.skvortzov@gmail.com>",
-        "Korean\t- Reinhard Lee <lij3105@gmail.com>",
-        "German\t- Mark Muzenhardt <mark.muzenhardt@gmail.com>",
-        "French\t- Laurent Bessard <laurent.bessard@gmail.com>",
-        "      \t  Fabien M <mail@fabienm.eu>",
-        "Slovenian\t- Janez Pregelj",
-        "Portuguese\t- Thiago Alves <thiagoralves@gmail.com>"
+        "Bengali (Bangladesh)",
+        "  Adhir Dutta <likhon52@gmail.com>, 2017",
+        "",
+
+        "Chinese",
+        "  Frank Guan <gpfrank@163.com>, 2017",
+        "",
+
+        "French",
+        "  Fabien Marteau <mail@fabienm.eu>, 2017",
+        "  Laurent Bessard <laurent.bessard@gmail.com>, 2008",
+        "",
+
+        "German",
+        "  Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017",
+        "  Mark Muzenhardt <mark.muzenhardt@gmail.com>, 2012",
+        "",
+
+        "Hungarian",
+        "  Gábor Véninger <veninger.gabor@gmail.com>, 2017",
+        "",
+
+        "Italian",
+        "  Luca Magnabosco <magnabosco.luca@gmail.com>, 2017",
+        "  Manuele Conti <manuele.conti@sirius-es.it>, 2017",
+        "",
+
+        "Korean",
+        "  Reinhard Lee <lij3105@gmail.com>, 2012",
+        "",
+
+        "Portuguese (Portugal)",
+        "  Pedro Coimbra <pcoimbra310@gmail.com>, 2017",
+        "",
+
+        "Portuguese (Brazil)",
+        "  Thiago Alves <thiagoralves@gmail.com>, 2017",
+        "",
+
+        "Russian",
+        "  Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017",
+        "",
+
+        "Slovenian",
+        "  Janez Pregelj <janezpregelj@gmail.com>, 2017",
+        "",
+
+        "Spanish",
+        "  Marcial González de Armas <mgacod@gmail.com>, 2017",
+        "  Carlos Guilarte <guilartec@gmail.com>, 2017",
+        "",
+
     )
     return info
 

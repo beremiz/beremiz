@@ -4,22 +4,20 @@
 # Automatically generated, 2017.
 # 
 # Translators:
-# Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017
-# frank guan <gpfrank@163.com>, 2017
-# Tango_Wu <wuyangtang@live.com>, 2017
+# Pedro Coimbra <pcoimbra310@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-07-05 13:02+0300\n"
 "PO-Revision-Date: 2017-07-05 13:02+0300\n"
-"Last-Translator: Tango_Wu <wuyangtang@live.com>, 2017\n"
-"Language-Team: Chinese (China) (https://www.transifex.com/beremiz/teams/75746/zh_CN/)\n"
+"Last-Translator: Pedro Coimbra <pcoimbra310@gmail.com>, 2017\n"
+"Language-Team: Portuguese (https://www.transifex.com/beremiz/teams/75746/pt/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: zh_CN\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../BeremizIDE.py:1095 ../PLCOpenEditor.py:418
 #, python-format
@@ -35,85 +33,75 @@ msgid ""
 "\n"
 "Traceback:\n"
 msgstr ""
-"\n"
-"未处理的异常发生(错误) 。缺陷报告保存在：\n"
-"(%s)\n"
-"\n"
-"请好心地把这个文件发送到：\n"
-"beremiz-devel@lists.sourceforge.net\n"
-"\n"
-"您现在应该重新启动程序.\n"
-"\n"
-"追溯：\n"
 
 #: ../controls/VariablePanel.py:72
 msgid "   External"
-msgstr "   外部"
+msgstr "Externo"
 
 #: ../controls/VariablePanel.py:71
 msgid "   InOut"
-msgstr "   输入输出"
+msgstr "EntradaSaída"
 
 #: ../controls/VariablePanel.py:71
 msgid "   Input"
-msgstr "   输入"
+msgstr "Entrada"
 
 #: ../controls/VariablePanel.py:72
 msgid "   Local"
-msgstr "   本地"
+msgstr "Local"
 
 #: ../controls/VariablePanel.py:71
 msgid "   Output"
-msgstr "   输出"
+msgstr "Saída"
 
 #: ../controls/VariablePanel.py:73
 msgid "   Temp"
-msgstr "临时"
+msgstr "Temp"
 
 #: ../dialogs/PouTransitionDialog.py:94 ../dialogs/ProjectDialog.py:69
 #: ../dialogs/PouActionDialog.py:92 ../dialogs/PouDialog.py:114
 #, python-format
 msgid " and %s"
-msgstr "和 %s"
+msgstr "e %s"
 
 #: ../ProjectController.py:1151
 msgid " generation failed !\n"
-msgstr "生成失败！\n"
+msgstr "geração falhada !\n"
 
 #: ../plcopen/plcopen.py:886
 #, python-format
 msgid "\"%s\" Data Type doesn't exist !!!"
-msgstr "\"%s\" 数据类型尚不存在！！！"
+msgstr "\" %s \" O tipo de dados não existe !!!"
 
 #: ../plcopen/plcopen.py:904
 #, python-format
 msgid "\"%s\" POU already exists !!!"
-msgstr "\"%s\"POU已经存在！！！"
+msgstr "\" %s \" POU já existe !!!"
 
 #: ../plcopen/plcopen.py:925
 #, python-format
 msgid "\"%s\" POU doesn't exist !!!"
-msgstr "\"%s\" POU不存在！！！"
+msgstr "\" %s \" POU não existe !!!"
 
 #: ../editors/Viewer.py:247
 #, python-format
 msgid "\"%s\" can't use itself!"
-msgstr "\"%s\" 不能自己使用！"
+msgstr "\"%s\" não pode usar-se!"
 
 #: ../IDEFrame.py:1655 ../IDEFrame.py:1674
 #, python-format
 msgid "\"%s\" config already exists!"
-msgstr "\"%s\" 配置已存在！"
+msgstr "\"%s \" config já existe!"
 
 #: ../plcopen/plcopen.py:472
 #, python-format
 msgid "\"%s\" configuration already exists !!!"
-msgstr "\"%s\" 配置已存在！！！"
+msgstr "\"%s\" configuração já existe !!!"
 
 #: ../IDEFrame.py:1605
 #, python-format
 msgid "\"%s\" data type already exists!"
-msgstr "\"%s\" 数据类型已存在！"
+msgstr "\"%s\" o tipo de dados já existe!"
 
 #: ../dialogs/PouTransitionDialog.py:105 ../dialogs/BlockPreviewDialog.py:220
 #: ../dialogs/PouActionDialog.py:103 ../editors/Viewer.py:263
@@ -122,12 +110,12 @@ msgstr "\"%s\" 数据类型已存在！"
 #: ../controls/VariablePanel.py:396
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
-msgstr "\"%s\" 元素对于此POU已经存在！"
+msgstr "\"%s\" o elemento para esta pou já existe!"
 
 #: ../BeremizIDE.py:897
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
-msgstr "\"%s\" 文件夹不是有效的Beremiz项目\n"
+msgstr "\"%s\" o ficheiro não é um projecto Beremiz válido\n"
 
 #: ../dialogs/SFCStepNameDialog.py:52 ../dialogs/PouTransitionDialog.py:101
 #: ../dialogs/BlockPreviewDialog.py:208 ../dialogs/PouNameDialog.py:50
@@ -138,17 +126,17 @@ msgstr "\"%s\" 文件夹不是有效的Beremiz项目\n"
 #: ../IDEFrame.py:1596
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
-msgstr "\"%s\" 是一个关键词。它不能被使用！"
+msgstr "\"%s\" é uma palavra-chave. Não pode ser usada!"
 
 #: ../plcopen/plcopen.py:2417
 #, python-format
 msgid "\"%s\" is an invalid value!"
-msgstr "\"%s\"不是有效值！"
+msgstr "\"%s\" é um valor inválido!"
 
 #: ../PLCOpenEditor.py:349 ../PLCOpenEditor.py:391
 #, python-format
 msgid "\"%s\" is not a valid folder!"
-msgstr "\"%s\"不是有效文件夹！"
+msgstr "\"%s\" não é um ficheiro válido!"
 
 #: ../dialogs/SFCStepNameDialog.py:50 ../dialogs/PouTransitionDialog.py:99
 #: ../dialogs/BlockPreviewDialog.py:204 ../dialogs/PouNameDialog.py:48
@@ -158,12 +146,12 @@ msgstr "\"%s\"不是有效文件夹！"
 #: ../controls/VariablePanel.py:771 ../IDEFrame.py:1594
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
-msgstr "\"%s\"不是有效标识符！"
+msgstr "\"%s\" não é um identificador válido!"
 
 #: ../IDEFrame.py:2410
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
-msgstr "\"%s\"被一个或多个程序组织单元使用，你确定要继续吗？ "
+msgstr "\"%s\" é usáda por uma ou mais POUs. Deseja continuar?"
 
 #: ../dialogs/BlockPreviewDialog.py:212 ../dialogs/PouDialog.py:123
 #: ../editors/Viewer.py:261 ../editors/Viewer.py:316 ../editors/Viewer.py:346
@@ -173,22 +161,22 @@ msgstr "\"%s\"被一个或多个程序组织单元使用，你确定要继续吗
 #: ../IDEFrame.py:1614
 #, python-format
 msgid "\"%s\" pou already exists!"
-msgstr "\"%s\"编程组织单元已经存在！"
+msgstr "\"%s\" pou já existe!"
 
 #: ../dialogs/SFCStepNameDialog.py:58
 #, python-format
 msgid "\"%s\" step already exists!"
-msgstr "\"%s\"步骤已经存在！"
+msgstr "\"%s\" o passo já existe!"
 
 #: ../editors/DataTypeEditor.py:550
 #, python-format
 msgid "\"%s\" value already defined!"
-msgstr "\"%s\" 值已经被定义！"
+msgstr "\"%s\" valor já defenido|"
 
 #: ../dialogs/ArrayTypeDialog.py:97 ../editors/DataTypeEditor.py:743
 #, python-format
 msgid "\"%s\" value isn't a valid array dimension!"
-msgstr "\"%s\" 值不是有效数组维数！"
+msgstr "\"%s\" o valor não é uma dimensão de matriz válida!"
 
 #: ../dialogs/ArrayTypeDialog.py:103 ../editors/DataTypeEditor.py:750
 #, python-format
@@ -196,28 +184,28 @@ msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
 msgstr ""
-"\"%s\" 不是一个有效的数组维数值！\n"
-"右边的数值必须大于左边的数值。"
+"\"%s\" o valor não é uma dimensão de matriz válida!\n"
+"O valor direito tem de ser maior do que o valor esquerdo."
 
 #: ../PLCGenerator.py:1101
 #, python-brace-format
 msgid "\"{a1}\" function cancelled in \"{a2}\" POU: No input connected"
-msgstr "\"{a1}\" 功能 被取消在 \"{a2}\" POU：没有输入被连接"
+msgstr "\"{a1}\" função cancelada na POU  \"{a2}\" : Sem entrada conectada"
 
 #: ../editors/Viewer.py:251
 #, python-brace-format
 msgid "\"{a1}\" is already used by \"{a2}\"!"
-msgstr "\"{a1}\" 被用在了 \"{a2}\"!"
+msgstr "\"{a1}\" já está a ser usada por \"{a2}\"!"
 
 #: ../plcopen/plcopen.py:496
 #, python-brace-format
 msgid "\"{a1}\" resource already exists in \"{a2}\" configuration !!!"
-msgstr "\"{a1}\" 资源已经存在于 \"{a2}\" 配置 ！！！"
+msgstr "o recurso\"{a1}\" já existe na  configuração\"{a2}\" !!!"
 
 #: ../plcopen/plcopen.py:514
 #, python-brace-format
 msgid "\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!"
-msgstr "\"{a1}\" 资源部存在于 \"{a2}\" 配置！！！"
+msgstr "o recurso\"{a1}\" não existe na configuração\"{a2}\" !!!"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:578
 #, python-format
@@ -255,7 +243,7 @@ msgstr "%ds"
 #: ../PLCControler.py:1533
 #, python-format
 msgid "%s Data Types"
-msgstr "%s 数据类型"
+msgstr "%s Tipo de dados"
 
 #: ../PLCControler.py:1516
 #, python-format
@@ -265,115 +253,115 @@ msgstr "%s POUs"
 #: ../canfestival/SlaveEditor.py:69 ../canfestival/NetworkEditor.py:90
 #, python-format
 msgid "%s Profile"
-msgstr "%s Profile"
+msgstr "%s Perfil"
 
 #: ../plcopen/plcopen.py:1650 ../plcopen/plcopen.py:1657
 #: ../plcopen/plcopen.py:1669 ../plcopen/plcopen.py:1677
 #: ../plcopen/plcopen.py:1687
 #, python-format
 msgid "%s body don't have instances!"
-msgstr "%s 未包含实例！"
+msgstr "%s o corpo não tem instâncias!"
 
 #: ../plcopen/plcopen.py:1705 ../plcopen/plcopen.py:1712
 #: ../plcopen/plcopen.py:1719
 #, python-format
 msgid "%s body don't have text!"
-msgstr "%s 未包含文本！"
+msgstr "%s o corpo não tem texto!"
 
 #: ../IDEFrame.py:386
 msgid "&Add Element"
-msgstr "&增加元素"
+msgstr "&Adicione elemento"
 
 #: ../dialogs/AboutDialog.py:73 ../dialogs/AboutDialog.py:121
 #: ../dialogs/AboutDialog.py:158
 msgid "&Close"
-msgstr "&关闭"
+msgstr "&Fechar"
 
 #: ../IDEFrame.py:356
 msgid "&Configuration"
-msgstr "&配置"
+msgstr "&Configuração"
 
 #: ../IDEFrame.py:345
 msgid "&Data Type"
-msgstr "&数据类型"
+msgstr "&Tipo de dados"
 
 #: ../IDEFrame.py:390
 msgid "&Delete"
-msgstr "&删除"
+msgstr "&Apagar"
 
 #: ../IDEFrame.py:337
 msgid "&Display"
-msgstr "&显示"
+msgstr "&Exibir"
 
 #: ../IDEFrame.py:336
 msgid "&Edit"
-msgstr "&编辑"
+msgstr "&Editar"
 
 #: ../IDEFrame.py:335
 msgid "&File"
-msgstr "&文件"
+msgstr "&Ficheiro"
 
 #: ../IDEFrame.py:347
 msgid "&Function"
-msgstr "&功能"
+msgstr "&Função"
 
 #: ../IDEFrame.py:338
 msgid "&Help"
-msgstr "&帮助"
+msgstr "&Ajuda"
 
 #: ../dialogs/AboutDialog.py:72
 msgid "&License"
-msgstr "&许可"
+msgstr "&Licensa"
 
 #: ../IDEFrame.py:351
 msgid "&Program"
-msgstr "&程序"
+msgstr "&Programa"
 
 #: ../PLCOpenEditor.py:127
 msgid "&Properties"
-msgstr "&属性"
+msgstr "&Propriedades"
 
 #: ../BeremizIDE.py:219
 msgid "&Recent Projects"
-msgstr "&最近项目"
+msgstr "&Projectos recentes"
 
 #: ../IDEFrame.py:353
 msgid "&Resource"
-msgstr "&资源"
+msgstr "&Recurso"
 
 #: ../controls/SearchResultPanel.py:239
 #, python-brace-format
 msgid "'{a1}' - {a2} match in project"
-msgstr "'{a1}' - {a2} 在项目中匹配"
+msgstr "'{a1}' - {a2} é idêntico no projecto"
 
 #: ../controls/SearchResultPanel.py:241
 #, python-brace-format
 msgid "'{a1}' - {a2} matches in project"
-msgstr "'{a1}' - {a2} 在项目中匹配"
+msgstr "'{a1}' - {a2} são idênticos no projecto"
 
 #: ../connectors/PYRO/__init__.py:90
 #, python-brace-format
 msgid "'{a1}' is located at {a2}\n"
-msgstr "'{a1}' 位于 {a2}\n"
+msgstr "'{a1}' está localizado em {a2}\n"
 
 #: ../controls/SearchResultPanel.py:291
 #, python-format
 msgid "(%d matches)"
-msgstr "(%d 匹配)"
+msgstr "(%d corresponde)"
 
 #: ../PLCOpenEditor.py:406 ../PLCOpenEditor.py:408 ../PLCOpenEditor.py:409
 msgid ",   "
-msgstr "，"
+msgstr ","
 
 #: ../dialogs/PouTransitionDialog.py:96 ../dialogs/PouActionDialog.py:94
 #: ../dialogs/PouDialog.py:116
 #, python-format
 msgid ", %s"
-msgstr "， %s"
+msgstr ", %s"
 
 #: ../PLCOpenEditor.py:404
 msgid ". "
-msgstr "。"
+msgstr "."
 
 #: ../controls/LogViewer.py:279
 msgid "1d"
@@ -397,184 +385,186 @@ msgstr "1s"
 msgid ""
 "A POU has an element named \"%s\". This could cause a conflict. Do you wish "
 "to continue?"
-msgstr "一个编程组织单元的成员被命名为\"%s\"。这可能会产生冲突。你希望继续吗？"
+msgstr ""
+"Uma POU contém um elemento chamado \"%s\" Isto pode causar um conflito. "
+"Deseja continuar?"
 
 #: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:103
 #: ../dialogs/PouNameDialog.py:52 ../dialogs/PouActionDialog.py:101
 #: ../controls/VariablePanel.py:775 ../IDEFrame.py:1631 ../IDEFrame.py:1644
 #, python-format
 msgid "A POU named \"%s\" already exists!"
-msgstr "一个以\"%s\"命名的的编程组织单元已经存在！"
+msgstr "Uma POU chmada  \"%s\" já existe!"
 
 #: ../ConfigTreeNode.py:424
 #, python-brace-format
 msgid "A child named \"{a1}\" already exists -> \"{a2}\"\n"
-msgstr "一个子命名的 \"{a1}\" 已经存在 -> \"{a2}\"\n"
+msgstr "Um filho chamado \"{a1}\" ajá existe -> \"{a2}\"\n"
 
 #: ../dialogs/BrowseLocationsDialog.py:218
 msgid "A location must be selected!"
-msgstr "一个定位必须被选择！"
+msgstr "Uma localização tem de ser seleccionada!"
 
 #: ../editors/ResourceEditor.py:451
 msgid "A task with the same name already exists!"
-msgstr "相同名称的任务已经存在！"
+msgstr "Uma tarefa com o mesmo nome já existe!"
 
 #: ../dialogs/SFCStepNameDialog.py:56 ../controls/VariablePanel.py:777
 #: ../IDEFrame.py:1633 ../IDEFrame.py:1646
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
-msgstr "一个以\"%s\"命名的变量在这个编程组织单元中已经存在！"
+msgstr "Uma variavel com o nome\"%s\" já existe nesta pou!"
 
 #: ../editors/CodeFileEditor.py:780
 #, python-format
 msgid "A variable with \"%s\" as name already exists!"
-msgstr "一个变量以 \"%s\" 作为名字已经存在！"
+msgstr "Uma variavel com o nome\"%s\" já existe!"
 
 #: ../BeremizIDE.py:283 ../dialogs/AboutDialog.py:48 ../PLCOpenEditor.py:168
 msgid "About"
-msgstr "关于"
+msgstr "Sobre"
 
 #: ../plcopen/iec_std.csv:22
 msgid "Absolute number"
-msgstr "绝对值"
+msgstr "Numero absoluto"
 
 #: ../dialogs/SFCStepDialog.py:73 ../dialogs/ActionBlockDialog.py:43
 msgid "Action"
-msgstr "动作"
+msgstr "Acção"
 
 #: ../editors/Viewer.py:614 ../editors/Viewer.py:2394
 msgid "Action Block"
-msgstr "动作控制功能块"
+msgstr "Bloco de acção"
 
 #: ../dialogs/PouActionDialog.py:82
 msgid "Action Name"
-msgstr "动作名字"
+msgstr "Nome da acção"
 
 #: ../dialogs/PouActionDialog.py:49
 msgid "Action Name:"
-msgstr "动作名字："
+msgstr "Nome da acção:"
 
 #: ../plcopen/plcopen.py:1364
 #, python-format
 msgid "Action with name %s doesn't exist!"
-msgstr "一个以\"%s\"命名的的行动不存在！"
+msgstr "A acção com o nome \"%s\" não existe!"
 
 #: ../PLCControler.py:98
 msgid "Actions"
-msgstr "动作"
+msgstr "Acções"
 
 #: ../dialogs/ActionBlockDialog.py:133
 msgid "Actions:"
-msgstr "动作："
+msgstr "Acções:"
 
 #: ../editors/Viewer.py:431
 msgid "Active"
-msgstr "活动"
+msgstr "Activo"
 
 #: ../canfestival/SlaveEditor.py:80 ../canfestival/NetworkEditor.py:101
 #: ../BeremizIDE.py:965 ../editors/Viewer.py:647
 msgid "Add"
-msgstr "添加"
+msgstr "Adicionar"
 
 #: ../IDEFrame.py:1893 ../IDEFrame.py:1928
 msgid "Add Action"
-msgstr "添加动作"
+msgstr "Adicionar acção"
 
 #: ../features.py:32
 msgid "Add C code accessing located variables synchronously"
-msgstr "同步的增加C代码访问定位的变量"
+msgstr "Adicionar codigo C acessando variaveis localizadas sincronamente"
 
 #: ../IDEFrame.py:1876
 msgid "Add Configuration"
-msgstr "添加配置"
+msgstr "Adicionar Configuração"
 
 #: ../IDEFrame.py:1856
 msgid "Add DataType"
-msgstr "添加数据类型"
+msgstr "Adicionar  um Tipo de Dados"
 
 #: ../editors/Viewer.py:572
 msgid "Add Divergence Branch"
-msgstr "添加发散分支"
+msgstr "Adicionar um Ramo de divergência"
 
 #: ../dialogs/DiscoveryDialog.py:117
 msgid "Add IP"
-msgstr "添加 IP"
+msgstr "Adicionar IP"
 
 #: ../IDEFrame.py:1864
 msgid "Add POU"
-msgstr "添加 POU"
+msgstr "Adicionao POU"
 
 #: ../features.py:33
 msgid "Add Python code executed asynchronously"
-msgstr "添加异步执行的Python代码"
+msgstr "Adicionar codigo Python executado assincronamente"
 
 #: ../IDEFrame.py:1904 ../IDEFrame.py:1954
 msgid "Add Resource"
-msgstr "添加源"
+msgstr "Adicionar Recurso"
 
 #: ../IDEFrame.py:1882 ../IDEFrame.py:1925
 msgid "Add Transition"
-msgstr "添加跃迁"
+msgstr "Adicionar Transição"
 
 #: ../editors/Viewer.py:559
 msgid "Add Wire Segment"
-msgstr "添加布线段"
+msgstr "Adicionar seguemento de ligação"
 
 #: ../editors/SFCViewer.py:433
 msgid "Add a new initial step"
-msgstr "新建一个初始步骤"
+msgstr "Adicionar um novo passo de inicio"
 
 #: ../editors/Viewer.py:2757 ../editors/SFCViewer.py:770
 msgid "Add a new jump"
-msgstr "新建一个跳跃"
+msgstr "Adicionar um novo salto"
 
 #: ../editors/SFCViewer.py:455
 msgid "Add a new step"
-msgstr "添加一个新步骤"
+msgstr "Adicionar um novo passo"
 
 #: ../features.py:34
 msgid "Add a simple WxGlade based GUI."
-msgstr "添加一个简单的基于 WxGlade的 GUI."
+msgstr "Adicionar um simples GUI baseado em WxGlade"
 
 #: ../dialogs/ActionBlockDialog.py:137
 msgid "Add action"
-msgstr "添加动作"
+msgstr "Adicionar acção"
 
 #: ../editors/DataTypeEditor.py:352
 msgid "Add element"
-msgstr "添加元素"
+msgstr "Adicionar elemento"
 
 #: ../editors/ResourceEditor.py:268
 msgid "Add instance"
-msgstr "添加实例"
+msgstr "Adicionar instância"
 
 #: ../canfestival/NetworkEditor.py:103
 msgid "Add slave"
-msgstr "添加从站"
+msgstr "Adicionar escravo"
 
 #: ../editors/ResourceEditor.py:239
 msgid "Add task"
-msgstr "添加任务"
+msgstr "Adicionar tarefa"
 
 #: ../editors/CodeFileEditor.py:658 ../controls/VariablePanel.py:450
 msgid "Add variable"
-msgstr "添加变量"
+msgstr "Adicionar variável"
 
 #: ../plcopen/iec_std.csv:33
 msgid "Addition"
-msgstr "加法"
+msgstr "Adição"
 
 #: ../plcopen/definitions.py:49
 msgid "Additional function blocks"
-msgstr "附加功能类型"
+msgstr "Blocos de função adicionais"
 
 #: ../editors/Viewer.py:630
 msgid "Adjust Block Size"
-msgstr "调整块尺寸"
+msgstr "Ajustar tamanho de bloco"
 
 #: ../editors/Viewer.py:1686
 msgid "Alignment"
-msgstr "对准"
+msgstr "Alinhamento"
 
 #: ../dialogs/BrowseLocationsDialog.py:40
 #: ../dialogs/BrowseLocationsDialog.py:48
@@ -582,91 +572,92 @@ msgstr "对准"
 #: ../dialogs/BrowseLocationsDialog.py:144 ../controls/LogViewer.py:298
 #: ../controls/VariablePanel.py:70
 msgid "All"
-msgstr "所有"
+msgstr "Tudo"
 
 #: ../editors/FileManagementPanel.py:35
 msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
-msgstr "所有文件 (*.*)|*.*|CSV 文件 (*.csv)|*.csv"
+msgstr "Todos os ficheiros (*.*)|*.*|CSV files (*.csv)|*.csv"
 
 #: ../ProjectController.py:1685
 msgid "Already connected. Please disconnect\n"
-msgstr "已经连接。请断开连接\n"
+msgstr "Já conectado. Por favor desconecte-se\n"
 
 #: ../editors/DataTypeEditor.py:591
 #, python-format
 msgid "An element named \"%s\" already exists in this structure!"
-msgstr "一个以\"%s\"命名的元素已经在这个结构中存在！"
+msgstr "Um elemento chamado \"%s\" já existe nesta estrutura!"
 
 #: ../editors/ResourceEditor.py:486
 msgid "An instance with the same name already exists!"
-msgstr "相同名称的实例已经存在！"
+msgstr "Uma instância com o mesmo nome já existe!"
 
 #: ../dialogs/ConnectionDialog.py:100
 msgid "Apply name modification to all continuations with the same name"
-msgstr "应用名称修改到所有伴随相同名称的延续"
+msgstr ""
+"Aplicar modificação de nome para todas as continuações com o mesmo nome"
 
 #: ../plcopen/iec_std.csv:31
 msgid "Arc cosine"
-msgstr "反余弦"
+msgstr "Arco coseno"
 
 #: ../plcopen/iec_std.csv:30
 msgid "Arc sine"
-msgstr "反正弦"
+msgstr "Arco seno"
 
 #: ../plcopen/iec_std.csv:32
 msgid "Arc tangent"
-msgstr "反正切"
+msgstr "Arco tangente"
 
 #: ../plcopen/iec_std.csv:33
 msgid "Arithmetic"
-msgstr "运算"
+msgstr "Aritmético"
 
 #: ../editors/DataTypeEditor.py:54 ../editors/DataTypeEditor.py:633
 #: ../controls/VariablePanel.py:858
 msgid "Array"
-msgstr "阵列的"
+msgstr "Array"
 
 #: ../plcopen/iec_std.csv:39
 msgid "Assignment"
-msgstr "分配"
+msgstr "Atribuição"
 
 #: ../dialogs/FBDVariableDialog.py:222
 msgid "At least a variable or an expression must be selected!"
-msgstr "至少选择一个变量或者表达式！"
+msgstr "Pelo menos uma variável ou expressão tem de ser seleccionada!"
 
 #: ../controls/ProjectPropertiesPanel.py:100
 msgid "Author"
-msgstr "作者"
+msgstr "Autor"
 
 #: ../controls/ProjectPropertiesPanel.py:97
 msgid "Author Name (optional):"
-msgstr "作者姓名（选填）："
+msgstr "Nome de Autor (opcional)"
 
 #: ../dialogs/FindInPouDialog.py:77
 msgid "Backward"
-msgstr "反向"
+msgstr "Para trás"
 
 #: ../util/Zeroconf.py:599
 msgid "Bad domain name (circular) at "
-msgstr "不好域名称(循环的)在"
+msgstr "Mau nome de domínio (circular) em"
 
 #: ../util/Zeroconf.py:602
 msgid "Bad domain name at "
-msgstr "不好的域名称在"
+msgstr "Mau nome de domínio em"
 
 #: ../canfestival/config_utils.py:342 ../canfestival/config_utils.py:630
 #, python-format
 msgid "Bad location size : %s"
-msgstr "不好的位置大小：%s"
+msgstr "Mau tamanho de posição %s"
 
 #: ../dialogs/ArrayTypeDialog.py:54 ../editors/DataTypeEditor.py:175
 #: ../editors/DataTypeEditor.py:205 ../editors/DataTypeEditor.py:297
 msgid "Base Type:"
-msgstr "基类型："
+msgstr "Tipo base"
 
 #: ../editors/DataTypeEditor.py:623 ../controls/VariablePanel.py:816
 msgid "Base Types"
-msgstr "基类型"
+msgstr "Tipos base"
 
 #: ../BeremizIDE.py:455
 msgid "Beremiz"
@@ -674,101 +665,101 @@ msgstr "Beremiz"
 
 #: ../plcopen/iec_std.csv:70
 msgid "Binary selection (1 of 2)"
-msgstr "二进制选取（二选一）"
+msgstr "Selecção binária (1 de 2)"
 
 #: ../plcopen/iec_std.csv:62
 msgid "Bit-shift"
-msgstr "位移"
+msgstr "Bit-shift"
 
 #: ../plcopen/iec_std.csv:66
 msgid "Bitwise"
-msgstr "位操作"
+msgstr "Bitwise"
 
 #: ../plcopen/iec_std.csv:66
 msgid "Bitwise AND"
-msgstr "按位”与“"
+msgstr "Bitwise AND"
 
 #: ../plcopen/iec_std.csv:67
 msgid "Bitwise OR"
-msgstr "按位”或“"
+msgstr "Bitwise OR"
 
 #: ../plcopen/iec_std.csv:68
 msgid "Bitwise XOR"
-msgstr "按位”异或“"
+msgstr "Bitwise XOR"
 
 #: ../plcopen/iec_std.csv:69
 msgid "Bitwise inverting"
-msgstr "按位“反向”"
+msgstr "Bitwise inverting"
 
 #: ../editors/Viewer.py:584 ../editors/Viewer.py:2407
 msgid "Block"
-msgstr "块"
+msgstr "Bloco"
 
 #: ../dialogs/FBDBlockDialog.py:60
 msgid "Block Properties"
-msgstr "块属性"
+msgstr "Propriedades do bloco"
 
 #: ../editors/TextViewer.py:262
 msgid "Block name"
-msgstr "块名称"
+msgstr "Nome do bloco "
 
 #: ../editors/Viewer.py:550
 msgid "Bottom"
-msgstr "底部"
+msgstr "Fundo"
 
 #: ../ProjectController.py:1363
 msgid "Broken"
-msgstr "损坏"
+msgstr "Avariado"
 
 #: ../dialogs/BrowseValuesLibraryDialog.py:38
 #, python-format
 msgid "Browse %s values library"
-msgstr "浏览 %s 值库"
+msgstr "Explore a biblioteca de valores %s"
 
 #: ../dialogs/BrowseLocationsDialog.py:65
 msgid "Browse Locations"
-msgstr "浏览定位"
+msgstr "Navegar nos endereços"
 
 #: ../ProjectController.py:1832
 msgid "Build"
-msgstr "构建"
+msgstr "Compilar"
 
 #: ../ProjectController.py:1297
 msgid "Build directory already clean\n"
-msgstr "构建目录已经清除\n"
+msgstr "Directório de compilação já está limpo\n"
 
 #: ../ProjectController.py:1833
 msgid "Build project into build folder"
-msgstr "在构建文件夹中构建项目"
+msgstr "Compilar projecto no ficheiro de compilação"
 
 #: ../ProjectController.py:1080
 msgid "C Build crashed !\n"
-msgstr "C构建损坏！\n"
+msgstr "A compilação C quebrou !\n"
 
 #: ../ProjectController.py:1077
 msgid "C Build failed.\n"
-msgstr "C构建失败。\n"
+msgstr "A compilação C falhou.\n"
 
 #: ../c_ext/CFileEditor.py:63
 msgid "C code"
-msgstr "C 代码"
+msgstr "Codigo C"
 
 #: ../ProjectController.py:1155
 msgid "C code generated successfully.\n"
-msgstr "C代码生成成功。\n"
+msgstr "Codigo C gerado com sucesso.\n"
 
 #: ../targets/toolchain_makefile.py:122
 msgid "C compilation failed.\n"
-msgstr "C编译失败。\n"
+msgstr "A compilação C falhou.\n"
 
 #: ../targets/toolchain_gcc.py:192
 #, python-format
 msgid "C compilation of %s failed.\n"
-msgstr " %s 的C编译失败。\n"
+msgstr "A compilação C de %s falhou.\n"
 
 #: ../features.py:32
 msgid "C extension"
-msgstr "C扩展"
+msgstr "Extensão C"
 
 #: ../dialogs/AboutDialog.py:71
 msgid "C&redits"
@@ -776,350 +767,355 @@ msgstr "C&redits"
 
 #: ../canfestival/NetworkEditor.py:52
 msgid "CANOpen network"
-msgstr "CANOpen 网络"
+msgstr "Rede CANOpen"
 
 #: ../canfestival/SlaveEditor.py:44
 msgid "CANOpen slave"
-msgstr "CANOpen 从站"
+msgstr "Escravo CANOpen"
 
 #: ../features.py:31
 msgid "CANopen support"
-msgstr "CANOpen 支持"
+msgstr "Suporte CANOpen"
 
 #: ../plcopen/plcopen.py:1589 ../plcopen/plcopen.py:1603
 #: ../plcopen/plcopen.py:1627 ../plcopen/plcopen.py:1643
 msgid "Can only generate execution order on FBD networks!"
-msgstr "在功能块网络，只能生成执行命令！"
+msgstr "Só pode gerar ordens de execução em redes FBD!"
 
 #: ../controls/VariablePanel.py:267
 msgid "Can only give a location to local or global variables"
-msgstr "只能影响本地或全局变量的位置"
+msgstr "Só pode gerar um endereço para variáveis locais ou globais"
 
 #: ../PLCOpenEditor.py:344
 #, python-format
 msgid "Can't generate program to file %s!"
-msgstr "这个编程生成文件失败 %s！"
+msgstr "Não é possivel gerar um programa no ficheiro %s !"
 
 #: ../controls/VariablePanel.py:265
 msgid "Can't give a location to a function block instance"
-msgstr "不能影响功能块实例的位置"
+msgstr ""
+"Não é possivel gerar um endereço para uma instância de bloco de função"
 
 #: ../PLCOpenEditor.py:389
 #, python-format
 msgid "Can't save project to file %s!"
-msgstr "这个项目保存为文件失败 %s！"
+msgstr "Não é possivel salvar o projecto no ficheiro %s !"
 
 #: ../controls/VariablePanel.py:313
 msgid "Can't set an initial value to a function block instance"
-msgstr "不能设置一个初始值到一个功能块实例"
+msgstr ""
+"Não é possivel atribuir um valor inicial a uma instância de bloco de função"
 
 #: ../ConfigTreeNode.py:529
 #, python-brace-format
 msgid "Cannot create child {a1} of type {a2} "
-msgstr "不能创建类型 {a2} 的子类型 {a1} "
+msgstr "Não é possivel criar um elemento filho {a1} do tipo {a2} "
 
 #: ../ConfigTreeNode.py:454
 #, python-format
 msgid "Cannot find lower free IEC channel than %d\n"
-msgstr "无法找到比 %d 更低的自由的IEC通道\n"
+msgstr "Nâo é possivel encontrar um canal IEC livre inferior a %d\n"
 
 #: ../connectors/PYRO/__init__.py:131
 msgid "Cannot get PLC status - connection failed.\n"
-msgstr "无法获取PLC的状态 - 连接失败。\n"
+msgstr "Não é possivel obter o estado do PLC - falha de conexão.\n"
 
 #: ../ProjectController.py:943
 msgid "Cannot open/parse VARIABLES.csv!\n"
-msgstr "无法打开／解析 VARIABLES.csv！\n"
+msgstr "Não é possível abrir / analisar VARIÁVEIS.csv!\n"
 
 #: ../canfestival/config_utils.py:374
 #, python-brace-format
 msgid ""
 "Cannot set bit offset for non bool '{a1}' variable "
 "(ID:{a2},Idx:{a3},sIdx:{a4}))"
-msgstr "不能设置位偏移对于非布尔 '{a1}' 变量 (ID:{a2},Idx:{a3},sIdx:{a4}))"
+msgstr ""
+"Não é possível defenir o bit de offset para uma variavel não  bool '{a1}'  "
+"(ID:{a2},Idx:{a3},sIdx:{a4}))"
 
 #: ../dialogs/SearchInProjectDialog.py:59 ../dialogs/FindInPouDialog.py:86
 msgid "Case sensitive"
-msgstr "区分大小写"
+msgstr "Maiúsculas e minúsculas"
 
 #: ../editors/Viewer.py:545
 msgid "Center"
-msgstr "中"
+msgstr "Centrar"
 
 #: ../Beremiz_service.py:268
 msgid "Change IP of interface to bind"
-msgstr "更改界面的ip用以绑定"
+msgstr "Alterar IP da interface a ligar"
 
 #: ../Beremiz_service.py:267
 msgid "Change Name"
-msgstr "更改名字"
+msgstr "Alterar nome"
 
 #: ../IDEFrame.py:1946
 msgid "Change POU Type To"
-msgstr "将POU类型转换为"
+msgstr "Alterar tipo de Pou para"
 
 #: ../Beremiz_service.py:269
 msgid "Change Port Number"
-msgstr "更改端口号"
+msgstr "Alterar numero de porto"
 
 #: ../Beremiz_service.py:270
 msgid "Change working directory"
-msgstr "更改工作目录"
+msgstr "Alterar directoria de trabalho"
 
 #: ../plcopen/iec_std.csv:81
 msgid "Character string"
-msgstr "字符串"
+msgstr "Cadeia de caracteres"
 
 #: ../svgui/svgui.py:128
 msgid "Choose a SVG file"
-msgstr "选择一个SVG文件"
+msgstr "Escolha um ficheiro SVG"
 
 #: ../ProjectController.py:542
 msgid "Choose a directory to save project"
-msgstr "选择一个目录保存项目"
+msgstr "Escolha um directório para salvar projecto"
 
 #: ../canfestival/canfestival.py:162 ../PLCOpenEditor.py:302
 #: ../PLCOpenEditor.py:334 ../PLCOpenEditor.py:383
 msgid "Choose a file"
-msgstr "选择一个文件"
+msgstr "Escolha um ficheiro"
 
 #: ../BeremizIDE.py:833 ../BeremizIDE.py:869
 msgid "Choose a project"
-msgstr "选择一个项目"
+msgstr "Escolha um projecto"
 
 #: ../dialogs/BrowseValuesLibraryDialog.py:41
 #, python-format
 msgid "Choose a value for %s:"
-msgstr "这对 %s选择一个值："
+msgstr "Escalha um valor para %s :"
 
 #: ../Beremiz_service.py:325
 msgid "Choose a working directory "
-msgstr "选择一个工作目录"
+msgstr "Escolha um directório de trabalho"
 
 #: ../ProjectController.py:449
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
-msgstr "被选中的文件夹未包含一个程序。它不是一个有效项目！"
+msgstr "A pasta escolhida não contém um programa. Não é um projecto válido!"
 
 #: ../ProjectController.py:416
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
-msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
+msgstr ""
+"A pasta escolhida não está vazia. Não pode ser usada para um novo projecto!"
 
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Class"
-msgstr "分类"
+msgstr "Classe"
 
 #: ../controls/VariablePanel.py:441
 msgid "Class Filter:"
-msgstr "类过滤器："
+msgstr "Filtro de Classe:"
 
 #: ../dialogs/FBDVariableDialog.py:70
 msgid "Class:"
-msgstr "分类："
+msgstr "Classe:"
 
 #: ../ProjectController.py:1836
 msgid "Clean"
-msgstr "清除"
+msgstr "Limpar"
 
 #: ../controls/LogViewer.py:318
 msgid "Clean log messages"
-msgstr "清楚记录信息"
+msgstr "Limpar menssagens log"
 
 #: ../ProjectController.py:1838
 msgid "Clean project build folder"
-msgstr "清除项目构建目录"
+msgstr "Limpar a pasta de compilação do projeto"
 
 #: ../ProjectController.py:1294
 msgid "Cleaning the build directory\n"
-msgstr "清除构建目录\n"
+msgstr "Limpar o directório de compilação\n"
 
 #: ../IDEFrame.py:435
 msgid "Clear Errors"
-msgstr "清楚错误"
+msgstr "limpar erros"
 
 #: ../editors/Viewer.py:641
 msgid "Clear Execution Order"
-msgstr "清空执行命令"
+msgstr "limpar ordem de execução"
 
 #: ../dialogs/SearchInProjectDialog.py:103 ../dialogs/FindInPouDialog.py:109
 msgid "Close"
-msgstr "关闭"
+msgstr "Fechar"
 
 #: ../BeremizIDE.py:595 ../PLCOpenEditor.py:209
 msgid "Close Application"
-msgstr "关闭应用"
+msgstr "Fechar aplicação"
 
 #: ../BeremizIDE.py:228 ../BeremizIDE.py:539 ../PLCOpenEditor.py:110
 #: ../IDEFrame.py:1013
 msgid "Close Project"
-msgstr "关闭项目"
+msgstr "Fechar projecto"
 
 #: ../BeremizIDE.py:226 ../PLCOpenEditor.py:108
 msgid "Close Tab"
-msgstr "关闭标签"
+msgstr "Fechar aba"
 
 #: ../editors/Viewer.py:600 ../editors/Viewer.py:2415
 msgid "Coil"
-msgstr "线圈"
+msgstr "Bobine"
 
 #: ../editors/Viewer.py:620 ../editors/LDViewer.py:506
 msgid "Comment"
-msgstr "注释"
+msgstr "Comentário"
 
 #: ../BeremizIDE.py:276 ../BeremizIDE.py:279 ../PLCOpenEditor.py:161
 #: ../PLCOpenEditor.py:164
 msgid "Community support"
-msgstr "社区支持"
+msgstr "Suporte da comunidade"
 
 #: ../dialogs/ProjectDialog.py:60
 msgid "Company Name"
-msgstr "公司名称"
+msgstr "Nome da Empresa"
 
 #: ../controls/ProjectPropertiesPanel.py:95
 msgid "Company Name (required):"
-msgstr "公司名字（必须）："
+msgstr "Nome da Empresa (obrigatório):"
 
 #: ../controls/ProjectPropertiesPanel.py:96
 msgid "Company URL (optional):"
-msgstr "公司网址（选填）："
+msgstr "URL da Empresa (opcional):"
 
 #: ../plcopen/iec_std.csv:75
 msgid "Comparison"
-msgstr "比较"
+msgstr "Comparação"
 
 #: ../ProjectController.py:734
 msgid "Compiling IEC Program into C code...\n"
-msgstr "正在将IEC程序编译成C代码...\n"
+msgstr "A compilar programa ICE para codigo C...\n"
 
 #: ../plcopen/iec_std.csv:85
 msgid "Concatenation"
-msgstr "级联"
+msgstr "Concatenação"
 
 #: ../editors/ConfTreeNodeEditor.py:230
 msgid "Config"
-msgstr "配置"
+msgstr "Config"
 
 #: ../editors/ProjectNodeEditor.py:36
 msgid "Config variables"
-msgstr "配置变量"
+msgstr "Config variáveis"
 
 #: ../dialogs/SearchInProjectDialog.py:40
 msgid "Configuration"
-msgstr "配置"
+msgstr "Configuração"
 
 #: ../PLCControler.py:99
 msgid "Configurations"
-msgstr "配置"
+msgstr "Configurações"
 
 #: ../editors/Viewer.py:308 ../editors/Viewer.py:338 ../editors/Viewer.py:360
 #: ../editors/TextViewer.py:291 ../editors/TextViewer.py:342
 #: ../editors/TextViewer.py:365 ../controls/VariablePanel.py:328
 msgid "Confirm or change variable name"
-msgstr "确认或变更变量名称"
+msgstr "Confirme ou altere o nome da variável"
 
 #: ../ProjectController.py:1851
 msgid "Connect"
-msgstr "连接"
+msgstr "Conectar"
 
 #: ../ProjectController.py:1852
 msgid "Connect to the target PLC"
-msgstr "连接到PLC目标"
+msgstr "Conectar ao PLC alvo"
 
 #: ../ProjectController.py:1354
 #, python-format
 msgid "Connected to URI: %s"
-msgstr "连接到URI： %s"
+msgstr "Conectar ao URI: %s"
 
 #: ../dialogs/SFCTransitionDialog.py:77 ../editors/Viewer.py:586
 #: ../editors/Viewer.py:2408
 msgid "Connection"
-msgstr "连接"
+msgstr "Conexão"
 
 #: ../dialogs/ConnectionDialog.py:53
 msgid "Connection Properties"
-msgstr "连接属性"
+msgstr "Propriedades da conexão"
 
 #: ../ProjectController.py:1709
 msgid "Connection canceled!\n"
-msgstr "取消连接！\n"
+msgstr "Conexão cancelada!\n"
 
 #: ../ProjectController.py:1734
 #, python-format
 msgid "Connection failed to %s!\n"
-msgstr "连接失败 %s!\n"
+msgstr "Falha na conexão a %s !\n"
 
 #: ../connectors/PYRO/__init__.py:115 ../connectors/WAMP/__init__.py:111
 msgid "Connection lost!\n"
-msgstr "失去连接！\n"
+msgstr "Conexão perdida!\n"
 
 #: ../connectors/PYRO/__init__.py:102
 #, python-format
 msgid "Connection to '%s' failed.\n"
-msgstr "连接到 '%s' 失败。\n"
+msgstr "A conexão com %s falhou.\n"
 
 #: ../dialogs/ConnectionDialog.py:65 ../editors/Viewer.py:1643
 msgid "Connector"
-msgstr "连接"
+msgstr "Conector"
 
 #: ../dialogs/SFCStepDialog.py:66
 msgid "Connectors:"
-msgstr "连接："
+msgstr "Conectores:"
 
 #: ../BeremizIDE.py:350
 msgid "Console"
-msgstr "控制台"
+msgstr "Consola"
 
 #: ../controls/VariablePanel.py:60
 msgid "Constant"
-msgstr "常量"
+msgstr "Constante"
 
 #: ../editors/Viewer.py:596 ../editors/Viewer.py:2411
 msgid "Contact"
-msgstr "连接"
+msgstr "Contacto"
 
 #: ../controls/ProjectPropertiesPanel.py:198
 msgid "Content Description (optional):"
-msgstr "内容描述（选填）："
+msgstr "descrição de conteúdo (opcional):"
 
 #: ../dialogs/ConnectionDialog.py:66 ../editors/Viewer.py:1644
 msgid "Continuation"
-msgstr "连续"
+msgstr "Continuação"
 
 #: ../plcopen/iec_std.csv:18
 msgid "Conversion from BCD"
-msgstr "由BCD码转换"
+msgstr "Conversão de BCD"
 
 #: ../plcopen/iec_std.csv:19
 msgid "Conversion to BCD"
-msgstr "转换为BCD码"
+msgstr "Conversão para BCD"
 
 #: ../plcopen/iec_std.csv:21
 msgid "Conversion to date"
-msgstr "转换为日期"
+msgstr "Conversão para data"
 
 #: ../plcopen/iec_std.csv:20
 msgid "Conversion to time-of-day"
-msgstr "转换为日期时间"
+msgstr "Conversão para hora-do-dia"
 
 #: ../editors/Viewer.py:656 ../controls/LogViewer.py:704 ../IDEFrame.py:370
 #: ../IDEFrame.py:425
 msgid "Copy"
-msgstr "复制"
+msgstr "Copiar"
 
 #: ../IDEFrame.py:1933
 msgid "Copy POU"
-msgstr "复制POU"
+msgstr "Copiar POU"
 
 #: ../editors/FileManagementPanel.py:65
 msgid "Copy file from left folder to right"
-msgstr "从左侧文件夹中复制文件到右侧"
+msgstr "Copiar o arquivo da pasta esquerda para a direita"
 
 #: ../editors/FileManagementPanel.py:64
 msgid "Copy file from right folder to left"
-msgstr "从右侧文件夹中复制文件到左侧"
+msgstr "Copiar o arquivo da pasta direita para a esquerda"
 
 #: ../plcopen/iec_std.csv:28
 msgid "Cosine"
-msgstr "余弦"
+msgstr "Coseno"
 
 #: ../ConfigTreeNode.py:656
 #, python-brace-format
@@ -1127,13 +1123,13 @@ msgid ""
 "Could not add child \"{a1}\", type {a2} :\n"
 "{a3}\n"
 msgstr ""
-"不能增加子 \"{a1}\"，类型 {a2} :\n"
-"{a3}\n"
+"Não foi possível adicionar elemento filho \"{a1}\", tipo  {a2}:\n"
+" {a3} \n"
 
 #: ../py_ext/PythonFileCTNMixin.py:78
 #, python-format
 msgid "Couldn't import old %s file."
-msgstr "不能导入旧 %s 文件。"
+msgstr "Não foi possivél importar o ficheiro antigo %s."
 
 #: ../ConfigTreeNode.py:626
 #, python-brace-format
@@ -1141,7 +1137,7 @@ msgid ""
 "Couldn't load confnode base parameters {a1} :\n"
 " {a2}"
 msgstr ""
-"不能加载 confnode 基础参数 {a1} ：\n"
+"Não foi possível carregar parâmetros  base de confnode {a1} : \n"
 " {a2}"
 
 #: ../ConfigTreeNode.py:643 ../CodeFileTreeNode.py:124
@@ -1150,116 +1146,116 @@ msgid ""
 "Couldn't load confnode parameters {a1} :\n"
 " {a2}"
 msgstr ""
-"不能加载 confnode 参数 {a1} ：\n"
+"Não foi possível carregar parâmetros  de confnode {a1} : \n"
 " {a2}"
 
 #: ../PLCControler.py:948
 msgid "Couldn't paste non-POU object."
-msgstr "不能粘贴 非-POU 目标。"
+msgstr "Não foi possível colar o objeto não-POU."
 
 #: ../ProjectController.py:1651
 msgid "Couldn't start PLC !\n"
-msgstr "无法开始PLC！\n"
+msgstr "Não foi possível iniciar o PLC!\n"
 
 #: ../ProjectController.py:1659
 msgid "Couldn't stop PLC !\n"
-msgstr "无法停止PLC！\n"
+msgstr "Não foi possível parar o PLC!\n"
 
 #: ../ProjectController.py:1623
 msgid "Couldn't stop debugger.\n"
-msgstr "不能停止调试器。\n"
+msgstr "Não foi possível parar o depurador.\n"
 
 #: ../svgui/svgui.py:49
 msgid "Create HMI"
-msgstr "新建 HMI"
+msgstr "Criar HMI"
 
 #: ../dialogs/PouDialog.py:46
 msgid "Create a new POU"
-msgstr "新建一个POU"
+msgstr "Criar uma nova POU"
 
 #: ../dialogs/PouActionDialog.py:38
 msgid "Create a new action"
-msgstr "新建一个动作"
+msgstr "Criar uma nova acção"
 
 #: ../IDEFrame.py:159
 msgid "Create a new action block"
-msgstr "新建一个动作控制功能块"
+msgstr "Criar um novo bloco de ação"
 
 #: ../IDEFrame.py:108 ../IDEFrame.py:138 ../IDEFrame.py:171
 msgid "Create a new block"
-msgstr "新建一个块"
+msgstr "Criar um novo bloco"
 
 #: ../IDEFrame.py:132
 msgid "Create a new branch"
-msgstr "新建一个支流"
+msgstr "Criar uma nova ramificação"
 
 #: ../IDEFrame.py:126
 msgid "Create a new coil"
-msgstr "新建一个线圈"
+msgstr "Criar uma nova bobine"
 
 #: ../IDEFrame.py:102 ../IDEFrame.py:117 ../IDEFrame.py:147
 msgid "Create a new comment"
-msgstr "新建一个备注"
+msgstr "Criar um novo comentário"
 
 #: ../IDEFrame.py:111 ../IDEFrame.py:141 ../IDEFrame.py:174
 msgid "Create a new connection"
-msgstr "新建一个连接"
+msgstr "Criar uma nova conexão"
 
 #: ../IDEFrame.py:129 ../IDEFrame.py:180
 msgid "Create a new contact"
-msgstr "新建一个接触点"
+msgstr "Criar um novo contacto"
 
 #: ../IDEFrame.py:162
 msgid "Create a new divergence"
-msgstr "新建一个发散"
+msgstr "Criar uma nova divergência"
 
 #: ../dialogs/SFCDivergenceDialog.py:53
 msgid "Create a new divergence or convergence"
-msgstr "新建一个发散或者收敛"
+msgstr "Criar uma nova divergência ou convergência"
 
 #: ../IDEFrame.py:150
 msgid "Create a new initial step"
-msgstr "新建一个初始步骤"
+msgstr "Criar um novo passo inicial"
 
 #: ../IDEFrame.py:165
 msgid "Create a new jump"
-msgstr "新建一个跳跃"
+msgstr "Criar um novo salto"
 
 #: ../IDEFrame.py:120 ../IDEFrame.py:177
 msgid "Create a new power rail"
-msgstr "新建一个电源导轨"
+msgstr "Criar um novo trilho de energia"
 
 #: ../IDEFrame.py:123
 msgid "Create a new rung"
-msgstr "新建一个梯级"
+msgstr "Criar uma nova rung"
 
 #: ../IDEFrame.py:153
 msgid "Create a new step"
-msgstr "新建一个步骤"
+msgstr "Criar um novo passo"
 
 #: ../dialogs/PouTransitionDialog.py:42 ../IDEFrame.py:156
 msgid "Create a new transition"
-msgstr "新建一个跃迁"
+msgstr "Criar uma nova transição"
 
 #: ../IDEFrame.py:105 ../IDEFrame.py:135 ../IDEFrame.py:168
 msgid "Create a new variable"
-msgstr "新建一个变量"
+msgstr "Criar uma nova variável"
 
 #: ../dialogs/AboutDialog.py:113
 msgid "Credits"
-msgstr "关于作者"
+msgstr "Creditos"
 
 #: ../Beremiz_service.py:434
 msgid "Current working directory :"
-msgstr "当前工作目录："
+msgstr "Directoria de trabalho actual"
 
 #: ../editors/Viewer.py:655 ../IDEFrame.py:368 ../IDEFrame.py:424
 msgid "Cut"
-msgstr "剪切"
+msgstr "Cortar"
 
 #: ../editors/ResourceEditor.py:72
 msgid "Cyclic"
-msgstr "循环"
+msgstr "Cíclico"
 
 #: ../plcopen/iec_std.csv:42 ../plcopen/iec_std.csv:44
 #: ../plcopen/iec_std.csv:46 ../plcopen/iec_std.csv:50
@@ -1267,276 +1263,278 @@ msgstr "循环"
 #: ../plcopen/iec_std.csv:56 ../plcopen/iec_std.csv:58
 #: ../plcopen/iec_std.csv:60
 msgid "DEPRECATED"
-msgstr "DEPRECATED"
+msgstr "Descontinuada"
 
 #: ../canfestival/SlaveEditor.py:76 ../canfestival/NetworkEditor.py:97
 msgid "DS-301 Profile"
-msgstr "DS-301 配置"
+msgstr "Perfile DS-301"
 
 #: ../canfestival/SlaveEditor.py:77 ../canfestival/NetworkEditor.py:98
 msgid "DS-302 Profile"
-msgstr "DS-302 配置"
+msgstr "Perfile DS-302"
 
 #: ../dialogs/SearchInProjectDialog.py:36
 msgid "Data Type"
-msgstr "数据类型"
+msgstr "Tipo de dado"
 
 #: ../PLCControler.py:98
 msgid "Data Types"
-msgstr "数据类型 "
+msgstr "Tipo de dados"
 
 #: ../plcopen/iec_std.csv:16
 msgid "Data type conversion"
-msgstr "日期类型转换"
+msgstr "Converção de tipo de dados"
 
 #: ../plcopen/iec_std.csv:44 ../plcopen/iec_std.csv:45
 msgid "Date addition"
-msgstr "日期加法"
+msgstr "Adição de data"
 
 #: ../plcopen/iec_std.csv:56 ../plcopen/iec_std.csv:57
 #: ../plcopen/iec_std.csv:58 ../plcopen/iec_std.csv:59
 msgid "Date and time subtraction"
-msgstr "日期和时间减法"
+msgstr "Subtração de data e hora"
 
 #: ../plcopen/iec_std.csv:50 ../plcopen/iec_std.csv:51
 msgid "Date subtraction"
-msgstr "日期减法"
+msgstr "Subtração de data"
 
 #: ../dialogs/DurationEditorDialog.py:44
 msgid "Days:"
-msgstr "日："
+msgstr "Dias:"
 
 #: ../ProjectController.py:1756
 msgid "Debug does not match PLC - stop/transfert/start to re-enable\n"
-msgstr "调试部匹配PLC  -  停止/传输/启动 来新启用\n"
+msgstr ""
+"Depuração não corresponde ao PLC - parar / transferir / iniciar para "
+"reativar\n"
 
 #: ../controls/PouInstanceVariablesPanel.py:134
 msgid "Debug instance"
-msgstr "调试实例"
+msgstr "Depurar a instância"
 
 #: ../editors/Viewer.py:448
 #, python-format
 msgid "Debug: %s"
-msgstr "调试：%s"
+msgstr "depuração %s"
 
 #: ../ProjectController.py:1412
 #, python-format
 msgid "Debug: Unknown variable '%s'\n"
-msgstr "调试：未知变量 '%s'\n"
+msgstr "Depuração: Variável desconhecida '%s '\n"
 
 #: ../ProjectController.py:1410
 #, python-format
 msgid "Debug: Unsupported type to debug '%s'\n"
-msgstr "调试：不支持的类型进行调试 '%s'\n"
+msgstr "Depuração: Tipo não suportado para depurar ' %s '\n"
 
 #: ../IDEFrame.py:639
 msgid "Debugger"
-msgstr "调试器"
+msgstr "Depurador"
 
 #: ../ProjectController.py:1592
 msgid "Debugger disabled\n"
-msgstr "调试器禁用\n"
+msgstr "Depurador desabilitado\n"
 
 #: ../ProjectController.py:1753
 msgid "Debugger ready\n"
-msgstr "调试器准备好\n"
+msgstr "Depurador pronto\n"
 
 #: ../ProjectController.py:1625
 msgid "Debugger stopped.\n"
-msgstr "调试器停止。\n"
+msgstr "Depurador parado\n"
 
 #: ../BeremizIDE.py:968 ../editors/Viewer.py:631 ../IDEFrame.py:1962
 msgid "Delete"
-msgstr "删除"
+msgstr "Eliminar"
 
 #: ../editors/Viewer.py:573
 msgid "Delete Divergence Branch"
-msgstr "删除发散分支"
+msgstr "Eliminar ramificação de divergência"
 
 #: ../editors/FileManagementPanel.py:153
 msgid "Delete File"
-msgstr "删除文件"
+msgstr "Eliminar ficheiro"
 
 #: ../editors/Viewer.py:560
 msgid "Delete Wire Segment"
-msgstr "删除布线段"
+msgstr "Eliminar seguemento de fio"
 
 #: ../controls/CustomEditableListBox.py:41
 msgid "Delete item"
-msgstr "删除项目"
+msgstr "Eliminar item"
 
 #: ../plcopen/iec_std.csv:88
 msgid "Deletion (within)"
-msgstr "删除"
+msgstr "Eliminação (dentro)"
 
 #: ../editors/DataTypeEditor.py:153
 msgid "Derivation Type:"
-msgstr "推导类型："
+msgstr "Tipo de Derivação:"
 
 #: ../editors/CodeFileEditor.py:739
 msgid "Description"
-msgstr "描述"
+msgstr "Descrição"
 
 #: ../controls/VariablePanel.py:432
 msgid "Description:"
-msgstr "描述："
+msgstr "Descrição:"
 
 #: ../dialogs/ArrayTypeDialog.py:60 ../editors/DataTypeEditor.py:321
 msgid "Dimensions:"
-msgstr "维数："
+msgstr "Dimensões:"
 
 #: ../dialogs/FindInPouDialog.py:66
 msgid "Direction"
-msgstr "方向"
+msgstr "Direcção"
 
 #: ../dialogs/BrowseLocationsDialog.py:91
 msgid "Direction:"
-msgstr "方向："
+msgstr "Direcção:"
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Directly"
-msgstr "直接的"
+msgstr "Diretamente"
 
 #: ../ProjectController.py:1860
 msgid "Disconnect"
-msgstr "断开"
+msgstr ""
 
 #: ../ProjectController.py:1862
 msgid "Disconnect from PLC"
-msgstr "从PLC断开"
+msgstr ""
 
 #: ../ProjectController.py:1364
 msgid "Disconnected"
-msgstr "已断开"
+msgstr ""
 
 #: ../editors/Viewer.py:615 ../editors/Viewer.py:2403
 msgid "Divergence"
-msgstr "偏差"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:36
 msgid "Division"
-msgstr "除法"
+msgstr ""
 
 #: ../editors/FileManagementPanel.py:152
 #, python-format
 msgid "Do you really want to delete the file '%s'?"
-msgstr "你真的想删除这个文件 '%s' ？"
+msgstr ""
 
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Documentation"
-msgstr "文档"
+msgstr ""
 
 #: ../PLCOpenEditor.py:338
 msgid "Done"
-msgstr "完成"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:39
 msgid "Duration"
-msgstr "时间"
+msgstr ""
 
 #: ../canfestival/canfestival.py:165
 msgid "EDS files (*.eds)|*.eds|All files|*.*"
-msgstr "EDS 文件 (*.eds)|*.eds|All files|*.*"
+msgstr ""
 
 #: ../editors/Viewer.py:629
 msgid "Edit Block"
-msgstr "编辑块"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:56
 msgid "Edit Coil Values"
-msgstr "编辑线圈值"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:54
 msgid "Edit Contact Values"
-msgstr "编辑接触点值"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:59
 msgid "Edit Duration"
-msgstr "编辑期间"
+msgstr ""
 
 #: ../dialogs/SFCStepDialog.py:51
 msgid "Edit Step"
-msgstr "编辑步骤"
+msgstr ""
 
 #: ../wxglade_hmi/wxglade_hmi.py:38
 msgid "Edit a WxWidgets GUI with WXGlade"
-msgstr "用 WXGlade 编辑一个 WxWidgets 用户图形界面"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:121
 msgid "Edit action block properties"
-msgstr "编辑行动块属性"
+msgstr ""
 
 #: ../dialogs/ArrayTypeDialog.py:44
 msgid "Edit array type properties"
-msgstr "编辑数组类型属性"
+msgstr ""
 
 #: ../editors/Viewer.py:2626 ../editors/Viewer.py:3055
 msgid "Edit comment"
-msgstr "编辑注释"
+msgstr ""
 
 #: ../editors/FileManagementPanel.py:66
 msgid "Edit file"
-msgstr "编辑文件"
+msgstr ""
 
 #: ../controls/CustomEditableListBox.py:39
 msgid "Edit item"
-msgstr "编辑项目"
+msgstr ""
 
 #: ../editors/Viewer.py:3014
 msgid "Edit jump target"
-msgstr "编辑跳跃目标"
+msgstr ""
 
 #: ../ProjectController.py:1874
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
-msgstr "编辑原始的IEC代码添加至PLCGenerator生成的代码"
+msgstr ""
 
 #: ../editors/SFCViewer.py:799
 msgid "Edit step name"
-msgstr "编辑步骤名称"
+msgstr ""
 
 #: ../dialogs/SFCTransitionDialog.py:52
 msgid "Edit transition"
-msgstr "编辑跃迁"
+msgstr ""
 
 #: ../IDEFrame.py:611
 msgid "Editor ToolBar"
-msgstr "编辑工具栏"
+msgstr ""
 
 #: ../ProjectController.py:1257
 msgid "Editor selection"
-msgstr "编辑选择"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:348
 msgid "Elements :"
-msgstr "元素："
+msgstr ""
 
 #: ../ProjectController.py:1362
 msgid "Empty"
-msgstr "空的"
+msgstr ""
 
 #: ../IDEFrame.py:365
 msgid "Enable Undo/Redo"
-msgstr "启用  取消/重做"
+msgstr ""
 
 #: ../Beremiz_service.py:333
 msgid "Enter a name "
-msgstr "输入一个名字"
+msgstr ""
 
 #: ../Beremiz_service.py:318
 msgid "Enter a port number "
-msgstr "输入一个端口号"
+msgstr ""
 
 #: ../Beremiz_service.py:309
 msgid "Enter the IP of the interface to bind"
-msgstr "输入界面的ip用以绑定"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Enumerated"
-msgstr "列举的"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:77
 msgid "Equal to"
-msgstr "等于"
+msgstr ""
 
 #: ../BeremizIDE.py:1107 ../dialogs/ForceVariableDialog.py:197
 #: ../dialogs/SearchInProjectDialog.py:168 ../dialogs/SFCStepNameDialog.py:60
@@ -1566,18 +1564,18 @@ msgstr "等于"
 #: ../IDEFrame.py:1663 ../IDEFrame.py:1677 ../IDEFrame.py:1682
 #: ../Beremiz_service.py:213
 msgid "Error"
-msgstr "错误"
+msgstr ""
 
 #: ../ProjectController.py:789
 msgid ""
 "Error : At least one configuration and one resource must be declared in PLC "
 "!\n"
-msgstr "错误：在PLC中，必须申明至少一个配置和一个资源！\n"
+msgstr ""
 
 #: ../ProjectController.py:781
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
-msgstr "错误：IEC到C编译器返回 %d\n"
+msgstr ""
 
 #: ../ProjectController.py:712
 #, python-format
@@ -1585,321 +1583,319 @@ msgid ""
 "Error in ST/IL/SFC code generator :\n"
 "%s\n"
 msgstr ""
-"错误在ST/IL/SFC代码生成器中：\n"
-"%s\n"
 
 #: ../ConfigTreeNode.py:216
 #, python-format
 msgid "Error while saving \"%s\"\n"
-msgstr "存储时有错误 \"%s\"\n"
+msgstr ""
 
 #: ../canfestival/canfestival.py:170
 msgid "Error: Export slave failed\n"
-msgstr "错误：导出从站失败\n"
+msgstr ""
 
 #: ../canfestival/canfestival.py:371
 msgid "Error: No Master generated\n"
-msgstr "错误：没有主控生成\n"
+msgstr ""
 
 #: ../canfestival/canfestival.py:366
 msgid "Error: No PLC built\n"
-msgstr "错误：没有PLC构建\n"
+msgstr ""
 
 #: ../ProjectController.py:1728
 #, python-format
 msgid "Exception while connecting %s!\n"
-msgstr "连接时存在异常 %s!\n"
+msgstr ""
 
 #: ../dialogs/FBDBlockDialog.py:120
 msgid "Execution Control:"
-msgstr "执行控制："
+msgstr ""
 
 #: ../dialogs/FBDVariableDialog.py:80 ../dialogs/FBDBlockDialog.py:108
 msgid "Execution Order:"
-msgstr "执行命令："
+msgstr ""
 
 #: ../features.py:35
 msgid "Experimental web based HMI"
-msgstr "实验性的WEB基础的HMI"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:38
 msgid "Exponent"
-msgstr "指数"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:26
 msgid "Exponentiation"
-msgstr "幂"
+msgstr ""
 
 #: ../canfestival/canfestival.py:176
 msgid "Export CanOpen slave to EDS file"
-msgstr "导出 CANOpen 从站到 EDS 文件"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:243
 msgid "Export graph values to clipboard"
-msgstr "导出图形值到剪切板"
+msgstr ""
 
 #: ../canfestival/canfestival.py:175
 msgid "Export slave"
-msgstr "导出从站"
+msgstr ""
 
 #: ../dialogs/FBDVariableDialog.py:90
 msgid "Expression:"
-msgstr "表达式："
+msgstr ""
 
 #: ../controls/VariablePanel.py:72
 msgid "External"
-msgstr "外部的"
+msgstr ""
 
 #: ../ProjectController.py:802
 msgid "Extracting Located Variables...\n"
-msgstr "正在提取位置变量......\n"
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
 #: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "FBD"
-msgstr "功能块图"
+msgstr ""
 
 #: ../ProjectController.py:1791
 msgid "Failed : Must build before transfer.\n"
-msgstr "失败：传输之前必须构建。\n"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:521
 msgid "Falling Edge"
-msgstr "下降沿"
+msgstr ""
 
 #: ../ProjectController.py:1070
 msgid "Fatal : cannot get builder.\n"
-msgstr "致命错误：无法获取构建者。\n"
+msgstr ""
 
 #: ../Beremiz.py:156
 #, python-format
 msgid "Fetching %s"
-msgstr "抓取 %s"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:164
 #, python-format
 msgid "Field %s hasn't a valid value!"
-msgstr "领域 %s 没有一个有效值！"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:166
 #, python-format
 msgid "Fields %s haven't a valid value!"
-msgstr "领域 %s 没有一个有效值！"
+msgstr ""
 
 #: ../controls/FolderTree.py:216
 #, python-format
 msgid "File '%s' already exists!"
-msgstr "文件 '%s' 已经存在！"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:98 ../dialogs/FindInPouDialog.py:37
 #: ../dialogs/FindInPouDialog.py:104 ../IDEFrame.py:375
 msgid "Find"
-msgstr "查找"
+msgstr ""
 
 #: ../IDEFrame.py:377
 msgid "Find Next"
-msgstr "查找下一个"
+msgstr ""
 
 #: ../IDEFrame.py:379
 msgid "Find Previous"
-msgstr "查找前一个"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:90
 msgid "Find position"
-msgstr "查找位置"
+msgstr ""
 
 #: ../dialogs/FindInPouDialog.py:55
 msgid "Find:"
-msgstr "查找："
+msgstr ""
 
 #: ../connectors/PYRO/__init__.py:163
 msgid "Force runtime reload\n"
-msgstr "强制运行时重新加载\n"
+msgstr ""
 
 #: ../editors/Viewer.py:1600
 msgid "Force value"
-msgstr "强制值"
+msgstr ""
 
 #: ../dialogs/ForceVariableDialog.py:162
 msgid "Forcing Variable Value"
-msgstr "强制变量值"
+msgstr ""
 
 #: ../dialogs/SFCTransitionDialog.py:182 ../dialogs/PouTransitionDialog.py:97
 #: ../dialogs/ProjectDialog.py:73 ../dialogs/PouActionDialog.py:95
 #: ../dialogs/PouDialog.py:117
 #, python-format
 msgid "Form isn't complete. %s must be filled!"
-msgstr "形式不完整。%s 必须被填补完整！"
+msgstr ""
 
 #: ../dialogs/SFCStepDialog.py:147 ../dialogs/FBDBlockDialog.py:236
 #: ../dialogs/ConnectionDialog.py:163
 msgid "Form isn't complete. Name must be filled!"
-msgstr "形式不完整。%s 名字必须填！"
+msgstr ""
 
 #: ../dialogs/FBDBlockDialog.py:232
 msgid "Form isn't complete. Valid block type must be selected!"
-msgstr "形式不完整。%s 有效的块类型必须被选择！"
+msgstr ""
 
 #: ../dialogs/FindInPouDialog.py:72
 msgid "Forward"
-msgstr "向前的"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:37 ../IDEFrame.py:1749
 msgid "Function"
-msgstr "功能"
+msgstr ""
 
 #: ../IDEFrame.py:349
 msgid "Function &Block"
-msgstr "功能 &块"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:38 ../IDEFrame.py:1748
 #: ../IDEFrame.py:1941
 msgid "Function Block"
-msgstr "功能块"
+msgstr ""
 
 #: ../controls/VariablePanel.py:854
 msgid "Function Block Types"
-msgstr "功能块类型"
+msgstr ""
 
 #: ../PLCControler.py:97
 msgid "Function Blocks"
-msgstr "功能块"
+msgstr ""
 
 #: ../editors/Viewer.py:249
 msgid "Function Blocks can't be used in Functions!"
-msgstr "功能块不能用于功能中！"
+msgstr ""
 
 #: ../PLCControler.py:2343
 #, python-format
 msgid "FunctionBlock \"%s\" can't be pasted in a Function!!!"
-msgstr "功能块 \"%s\" 不能用于功能中！"
+msgstr ""
 
 #: ../PLCControler.py:97
 msgid "Functions"
-msgstr "功能"
+msgstr ""
 
 #: ../PLCOpenEditor.py:117
 msgid "Generate Program"
-msgstr "生成程序"
+msgstr ""
 
 #: ../ProjectController.py:703
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
-msgstr "生成软PLC IEC-61131 ST/IL/SFC 代码......\n"
+msgstr ""
 
 #: ../controls/VariablePanel.py:73
 msgid "Global"
-msgstr "全球的"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:242
 msgid "Go to current value"
-msgstr "定位当前值"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:174
 msgid "Graphics"
-msgstr "图形"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:75
 msgid "Greater than"
-msgstr "大于"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:76
 msgid "Greater than or equal to"
-msgstr "大于或等于"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:135
 msgid "Grid Resolution:"
-msgstr "栅格分辨率："
+msgstr ""
 
 #: ../runtime/NevowServer.py:182
 msgid "HTTP interface port :"
-msgstr "HTTP 界面端口："
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:121
 msgid "Height:"
-msgstr "高度："
+msgstr ""
 
 #: ../editors/FileManagementPanel.py:85
 msgid "Home Directory:"
-msgstr "主目录"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:151
 msgid "Horizontal:"
-msgstr "水平："
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:45
 msgid "Hours:"
-msgstr "小时："
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
 #: ../dialogs/PouDialog.py:37
 msgid "IL"
-msgstr "指令表编程语言"
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:94
 msgid "IP"
-msgstr "IP"
+msgstr ""
 
 #: ../Beremiz_service.py:310 ../Beremiz_service.py:311
 msgid "IP is not valid!"
-msgstr "IP 无效！"
+msgstr ""
 
 #: ../svgui/svgui.py:44 ../svgui/svgui.py:45
 msgid "Import SVG"
-msgstr "导入 SVG"
+msgstr ""
 
 #: ../dialogs/FBDVariableDialog.py:39 ../editors/Viewer.py:1629
 #: ../controls/VariablePanel.py:71
 msgid "InOut"
-msgstr "输入输出"
+msgstr ""
 
 #: ../editors/Viewer.py:431
 msgid "Inactive"
-msgstr "不活动"
+msgstr ""
 
 #: ../controls/VariablePanel.py:276
 #, python-brace-format
 msgid "Incompatible data types between \"{a1}\" and \"{a2}\""
-msgstr " \"{a1}\" 和 \"{a2}\" 数据类型不相容"
+msgstr ""
 
 #: ../controls/VariablePanel.py:282
 #, python-format
 msgid "Incompatible size of data between \"%s\" and \"BOOL\""
-msgstr " \"%s\" 和  \"BOOL\" 数据尺寸不相容"
+msgstr ""
 
 #: ../controls/VariablePanel.py:286
 #, python-brace-format
 msgid "Incompatible size of data between \"{a1}\" and \"{a2}\""
-msgstr " \"{a1}\" 和 \"{a2}\" 数据尺寸不相容"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:39
 msgid "Indicator"
-msgstr "指示器"
+msgstr ""
 
 #: ../editors/CodeFileEditor.py:739
 msgid "Initial"
-msgstr "初始的"
+msgstr ""
 
 #: ../editors/Viewer.py:611
 msgid "Initial Step"
-msgstr "初始的步"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:50 ../controls/VariablePanel.py:53
 #: ../controls/VariablePanel.py:54
 msgid "Initial Value"
-msgstr "初始值"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:185 ../editors/DataTypeEditor.py:216
 #: ../editors/DataTypeEditor.py:272 ../editors/DataTypeEditor.py:310
 msgid "Initial Value:"
-msgstr "初始值："
+msgstr ""
 
 #: ../svgui/svgui.py:48
 msgid "Inkscape"
-msgstr "Inkscape"
+msgstr ""
 
 #: ../dialogs/SFCTransitionDialog.py:76 ../dialogs/ActionBlockDialog.py:43
 msgid "Inline"
-msgstr "在线"
+msgstr ""
 
 #: ../dialogs/SFCStepDialog.py:71 ../dialogs/FBDVariableDialog.py:38
 #: ../dialogs/BrowseLocationsDialog.py:41 ../editors/Viewer.py:290
@@ -1907,510 +1903,506 @@ msgstr "在线"
 #: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Input"
-msgstr "输入"
+msgstr ""
 
 #: ../dialogs/FBDBlockDialog.py:96
 msgid "Inputs:"
-msgstr "输入："
+msgstr ""
 
 #: ../plcopen/iec_std.csv:87
 msgid "Insertion (into)"
-msgstr "插入"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1696
 #, python-format
 msgid "Instance with id %d doesn't exist!"
-msgstr "有id的实例 %d 尚不存在！"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:264
 msgid "Instances:"
-msgstr "实例："
+msgstr ""
 
 #: ../controls/VariablePanel.py:70
 msgid "Interface"
-msgstr "界面"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:72
 msgid "Interrupt"
-msgstr "中断"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:68
 msgid "Interval"
-msgstr "区间"
+msgstr ""
 
 #: ../PLCControler.py:2331
 msgid "Invalid plcopen element(s)!!!"
-msgstr "无效的plcopen元素！！！"
+msgstr ""
 
 #: ../canfestival/config_utils.py:381
 #, python-brace-format
 msgid "Invalid type \"{a1}\"-> {a2} != {a3}  for location\"{a4}\""
-msgstr "无效类型 \"{a1}\"-> {a2} != {a3}  对于定位 \"{a4}\""
+msgstr ""
 
 #: ../canfestival/config_utils.py:645
 #, python-brace-format
 msgid "Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\""
-msgstr "无效类型 \"{a1}\"-> {a2} != {a3} 对于定位 \"{a4}\""
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:132
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:92
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:166
 #, python-format
 msgid "Invalid value \"%s\" for debug variable"
-msgstr "无效值 \"%s\" 为调试变量"
+msgstr ""
 
 #: ../controls/VariablePanel.py:255 ../controls/VariablePanel.py:258
 #, python-format
 msgid "Invalid value \"%s\" for variable grid element"
-msgstr "无效值 \"%s\" 对于变量网格元素"
+msgstr ""
 
 #: ../editors/Viewer.py:234 ../editors/Viewer.py:237
 #, python-format
 msgid "Invalid value \"%s\" for viewer block"
-msgstr "无效值 \"%s\" 在视窗块"
+msgstr ""
 
 #: ../dialogs/ForceVariableDialog.py:195
 #, python-brace-format
 msgid "Invalid value \"{a1}\" for \"{a2}\" variable!"
-msgstr "无效值 \"{a1}\" 对于 \"{a2}\" 变量！"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:121
 msgid ""
 "Invalid value!\n"
 "You must fill a numeric value."
 msgstr ""
-"无效值！\n"
-"你必须填入一个数字值。"
 
 #: ../editors/Viewer.py:616 ../editors/Viewer.py:2392
 msgid "Jump"
-msgstr "跳转"
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
 #: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "LD"
-msgstr "梯级图"
+msgstr ""
 
 #: ../editors/LDViewer.py:215 ../editors/LDViewer.py:231
 #, python-format
 msgid "Ladder element with id %d is on more than one rung."
-msgstr "有id的梯形元素 %d  不止在一个梯级上。"
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:86 ../dialogs/PouActionDialog.py:84
 #: ../dialogs/PouDialog.py:105
 msgid "Language"
-msgstr "语言"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:187
 msgid "Language (optional):"
-msgstr "语言（选填）："
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:60 ../dialogs/PouActionDialog.py:56
 #: ../dialogs/PouDialog.py:73
 msgid "Language:"
-msgstr "语言："
+msgstr ""
 
 #: ../ProjectController.py:1797
 msgid "Latest build already matches current target. Transfering anyway...\n"
-msgstr "最新构建已经与当前目标匹配。正在传输中......\n"
+msgstr ""
 
 #: ../Beremiz_service.py:273
 msgid "Launch WX GUI inspector"
-msgstr "启动 WX GUI 检查员"
+msgstr ""
 
 #: ../Beremiz_service.py:272
 msgid "Launch a live Python shell"
-msgstr "启动一个活的Python Shell"
+msgstr ""
 
 #: ../editors/Viewer.py:544
 msgid "Left"
-msgstr "左"
+msgstr ""
 
 #: ../dialogs/LDPowerRailDialog.py:63
 msgid "Left PowerRail"
-msgstr "左电源导轨"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:81
 msgid "Length of string"
-msgstr "字符串长度"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:78
 msgid "Less than"
-msgstr "小于"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:79
 msgid "Less than or equal to"
-msgstr "小于或等于"
+msgstr ""
 
 #: ../IDEFrame.py:631
 msgid "Library"
-msgstr "库"
+msgstr ""
 
 #: ../dialogs/AboutDialog.py:151
 msgid "License"
-msgstr "许可"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:73
 msgid "Limitation"
-msgstr "限制"
+msgstr ""
 
 #: ../targets/toolchain_gcc.py:202
 msgid "Linking :\n"
-msgstr "链接：\n"
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:112 ../controls/VariablePanel.py:72
 msgid "Local"
-msgstr "本地"
+msgstr ""
 
 #: ../canfestival/canfestival.py:348
 msgid "Local entries"
-msgstr "本地入口"
+msgstr ""
 
 #: ../ProjectController.py:1703
 msgid "Local service discovery failed!\n"
-msgstr "本地服务探索失败！\n"
+msgstr ""
 
 #: ../controls/VariablePanel.py:53
 msgid "Location"
-msgstr "位置"
+msgstr ""
 
 #: ../dialogs/BrowseLocationsDialog.py:72
 msgid "Locations available:"
-msgstr "存在的定位："
+msgstr ""
 
 #: ../plcopen/iec_std.csv:25
 msgid "Logarithm to base 10"
-msgstr "底数10的对数"
+msgstr ""
 
 #: ../connectors/PYRO/__init__.py:94
 #, python-format
 msgid "MDNS resolution failure for '%s'\n"
-msgstr "MDNS 解析度失败因为 '%s'\n"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:64 ../canfestival/NetworkEditor.py:85
 msgid "Map Variable"
-msgstr "映射变量"
+msgstr ""
 
 #: ../features.py:31
 msgid "Map located variables over CANopen"
-msgstr "通过CANopen映射位置变量"
+msgstr ""
 
 #: ../canfestival/NetworkEditor.py:106
 msgid "Master"
-msgstr "主站"
+msgstr ""
 
 #: ../ConfigTreeNode.py:539
 #, python-brace-format
 msgid "Max count ({a1}) reached for this confnode of type {a2} "
-msgstr "最大计数 ({a1}) 达到了对于类型 {a2} 这个confnode"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:71
 msgid "Maximum"
-msgstr "最大值"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:239
 msgid "Maximum:"
-msgstr "最大值："
+msgstr ""
 
 #: ../dialogs/BrowseLocationsDialog.py:43 ../editors/Viewer.py:290
 #: ../editors/TextViewer.py:307 ../controls/LocationCellEditor.py:98
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Memory"
-msgstr "存储"
+msgstr ""
 
 #: ../IDEFrame.py:599
 msgid "Menu ToolBar"
-msgstr "菜单工具栏"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:49
 msgid "Microseconds:"
-msgstr "微秒："
+msgstr ""
 
 #: ../editors/Viewer.py:549
 msgid "Middle"
-msgstr "中间"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:48
 msgid "Milliseconds:"
-msgstr "毫秒："
+msgstr ""
 
 #: ../plcopen/iec_std.csv:72
 msgid "Minimum"
-msgstr "最小值"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:226
 msgid "Minimum:"
-msgstr "最小值："
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:46
 msgid "Minutes:"
-msgstr "分："
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:211
 msgid "Miscellaneous"
-msgstr "其他"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:63
 msgid "Modifier:"
-msgstr "改动："
+msgstr ""
 
 #: ../PLCGenerator.py:786 ../PLCGenerator.py:1230
 #, python-brace-format
 msgid ""
 "More than one connector found corresponding to \"{a1}\" continuation in "
 "\"{a2}\" POU"
-msgstr "多个连接器发现对应在 \"{a2}\" POU中 \"{a1}\" 延续"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:140
 msgid "Move action down"
-msgstr "下移动作"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:139
 msgid "Move action up"
-msgstr "上移动作"
+msgstr ""
 
 #: ../controls/CustomEditableListBox.py:43
 msgid "Move down"
-msgstr "下移"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:355
 msgid "Move element down"
-msgstr "下移元素"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:354
 msgid "Move element up"
-msgstr "上移元素"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:271
 msgid "Move instance down"
-msgstr "下移实例"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:270
 msgid "Move instance up"
-msgstr "上移实例"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:242
 msgid "Move task down"
-msgstr "下移任务"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:241
 msgid "Move task up"
-msgstr "上移任务"
+msgstr ""
 
 #: ../IDEFrame.py:99 ../IDEFrame.py:114 ../IDEFrame.py:144 ../IDEFrame.py:185
 msgid "Move the view"
-msgstr "移动视图"
+msgstr ""
 
 #: ../controls/CustomEditableListBox.py:42
 msgid "Move up"
-msgstr "上移"
+msgstr ""
 
 #: ../editors/CodeFileEditor.py:661 ../controls/VariablePanel.py:453
 msgid "Move variable down"
-msgstr "下移变量"
+msgstr ""
 
 #: ../editors/CodeFileEditor.py:660 ../controls/VariablePanel.py:452
 msgid "Move variable up"
-msgstr "上移变量"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:74
 msgid "Multiplexer (select 1 of N)"
-msgstr "多路器（多选一）"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:34
 msgid "Multiplication"
-msgstr "乘法"
+msgstr ""
 
 #: ../editors/FileManagementPanel.py:83
 msgid "My Computer:"
-msgstr "我的计算机："
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:92
 msgid "NAME"
-msgstr "NAME"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:68 ../editors/ResourceEditor.py:83
 #: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:739
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Name"
-msgstr "名字"
+msgstr ""
 
 #: ../Beremiz_service.py:334
 msgid "Name must not be null!"
-msgstr "名称不能为空！"
+msgstr ""
 
 #: ../dialogs/SFCStepDialog.py:57 ../dialogs/FBDBlockDialog.py:86
 #: ../dialogs/ConnectionDialog.py:76
 msgid "Name:"
-msgstr "名字："
+msgstr ""
 
 #: ../plcopen/iec_std.csv:24
 msgid "Natural logarithm"
-msgstr "自然对数"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:75 ../editors/Viewer.py:519
 msgid "Negated"
-msgstr "否定"
+msgstr ""
 
 #: ../Beremiz_service.py:580
 msgid "Nevow Web service failed. "
-msgstr "Nevow Web 服务失败。 "
+msgstr ""
 
 #: ../Beremiz_service.py:556
 msgid "Nevow/Athena import failed :"
-msgstr "Nevow/Athena 导入失败："
+msgstr ""
 
 #: ../BeremizIDE.py:216 ../BeremizIDE.py:251 ../PLCOpenEditor.py:104
 #: ../PLCOpenEditor.py:146
 msgid "New"
-msgstr "新建"
+msgstr ""
 
 #: ../controls/CustomEditableListBox.py:40
 msgid "New item"
-msgstr "新建项目"
+msgstr ""
 
 #: ../editors/Viewer.py:518
 msgid "No Modifier"
-msgstr "无改动"
+msgstr ""
 
 #: ../ProjectController.py:1826
 msgid "No PLC to transfer (did build succeed ?)\n"
-msgstr "没有PLC可传输（构建是否成功？）\n"
+msgstr ""
 
 #: ../PLCGenerator.py:1631
 #, python-format
 msgid "No body defined in \"%s\" POU"
-msgstr "在 \"%s\" POU 中没有任何东西被定义"
+msgstr ""
 
 #: ../PLCGenerator.py:806 ../PLCGenerator.py:1241
 #, python-brace-format
 msgid "No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU"
-msgstr "没有连接器发现对应在 \"{a2}\" POU中 \"{a1}\" 延续"
+msgstr ""
 
 #: ../PLCOpenEditor.py:357
 msgid ""
 "No documentation available.\n"
 "Coming soon."
 msgstr ""
-"没有文件可用。\n"
-"稍候"
 
 #: ../PLCGenerator.py:829
 #, python-format
 msgid "No informations found for \"%s\" block"
-msgstr "对于 \"%s\" 块没有信息发现"
+msgstr ""
 
 #: ../PLCGenerator.py:1194
 #, python-brace-format
 msgid ""
 "No output {a1} variable found in block {a2} in POU {a3}. Connection must be "
 "broken"
-msgstr "无输出{a1}变量发现在 {a3} POU的 {a2} 块。 连接必须断开"
+msgstr ""
 
 #: ../controls/SearchResultPanel.py:169
 msgid "No search results available."
-msgstr "没有存在的搜索结果。"
+msgstr ""
 
 #: ../svgui/svgui.py:134
 #, python-format
 msgid "No such SVG file: %s\n"
-msgstr "没有这样的SVG文件：%s\n"
+msgstr ""
 
 #: ../canfestival/config_utils.py:639
 #, python-brace-format
 msgid "No such index/subindex ({a1},{a2}) (variable {a3})"
-msgstr "没有如此 标签/子标签 ({a1},{a2}) (变量 {a3})"
+msgstr ""
 
 #: ../canfestival/config_utils.py:362
 #, python-brace-format
 msgid "No such index/subindex ({a1},{a2}) in ID : {a3} (variable {a4})"
-msgstr "没有如此 标签/子标签 ({a1},{a2}) 在ID : {a3} (变量 {a4})"
+msgstr ""
 
 #: ../dialogs/BrowseValuesLibraryDialog.py:83
 msgid "No valid value selected!"
-msgstr "没有有效的值被选择！"
+msgstr ""
 
 #: ../PLCGenerator.py:1629
 #, python-format
 msgid "No variable defined in \"%s\" POU"
-msgstr "无变量被定义在 \"%s\" POU"
+msgstr ""
 
 #: ../canfestival/config_utils.py:355
 #, python-brace-format
 msgid "Non existing node ID : {a1} (variable {a2})"
-msgstr "不存在节点 ID ：{a1} (variable {a2})"
+msgstr ""
 
 #: ../controls/VariablePanel.py:64
 msgid "Non-Retain"
-msgstr "非保持"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:75
 msgid "Normal"
-msgstr "正常"
+msgstr ""
 
 #: ../canfestival/config_utils.py:389
 #, python-brace-format
 msgid "Not PDO mappable variable : '{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
-msgstr "不是PDO可映射变量：'{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:80
 msgid "Not equal to"
-msgstr "不等于"
+msgstr ""
 
 #: ../dialogs/SFCDivergenceDialog.py:89
 msgid "Number of sequences:"
-msgstr "序列号："
+msgstr ""
 
 #: ../plcopen/iec_std.csv:22
 msgid "Numerical"
-msgstr "数学式"
+msgstr ""
 
 #: ../editors/CodeFileEditor.py:739
 msgid "OnChange"
-msgstr "在改变中"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:84
 msgid "Only Elements"
-msgstr "唯一元素"
+msgstr ""
 
 #: ../BeremizIDE.py:218 ../BeremizIDE.py:252 ../PLCOpenEditor.py:106
 #: ../PLCOpenEditor.py:147
 msgid "Open"
-msgstr "打开"
+msgstr ""
 
 #: ../svgui/svgui.py:143
 msgid "Open Inkscape"
-msgstr "打开 Inkscape"
+msgstr ""
 
 #: ../version.py:77
 msgid ""
 "Open Source framework for automation, implemented IEC 61131 IDE with "
 "constantly growing set of extensions and flexible PLC runtime."
-msgstr "开源自动化框架，实现不断增长的扩展集和弹性的PLC运行时的IEC 61131-3 IDE"
+msgstr ""
 
 #: ../ProjectController.py:1878
 msgid "Open a file explorer to manage project files"
-msgstr "打开一个文件浏览器来管理项目文件"
+msgstr ""
 
 #: ../wxglade_hmi/wxglade_hmi.py:155
 msgid "Open wxGlade"
-msgstr "打开 wxGlade"
+msgstr ""
 
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Option"
-msgstr "选项"
+msgstr ""
 
 #: ../dialogs/FindInPouDialog.py:81 ../editors/CodeFileEditor.py:739
 msgid "Options"
-msgstr "选项"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:98
 msgid "Organization (optional):"
-msgstr "组织（选填）："
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:74 ../canfestival/NetworkEditor.py:95
 msgid "Other Profile"
-msgstr "其他配置"
+msgstr ""
 
 #: ../dialogs/SFCStepDialog.py:72 ../dialogs/FBDVariableDialog.py:40
 #: ../dialogs/BrowseLocationsDialog.py:42 ../editors/Viewer.py:290
@@ -2418,35 +2410,35 @@ msgstr "其他配置"
 #: ../controls/LocationCellEditor.py:98 ../controls/VariablePanel.py:71
 #: ../controls/VariablePanel.py:291 ../controls/VariablePanel.py:351
 msgid "Output"
-msgstr "输出"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:63 ../canfestival/NetworkEditor.py:84
 msgid "PDO Receive"
-msgstr "PDO 接收"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:62 ../canfestival/NetworkEditor.py:83
 msgid "PDO Transmit"
-msgstr "PDO 传输"
+msgstr ""
 
 #: ../targets/toolchain_gcc.py:167
 msgid "PLC :\n"
-msgstr "PLC：\n"
+msgstr ""
 
 #: ../BeremizIDE.py:355
 msgid "PLC Log"
-msgstr "PLC 记录"
+msgstr ""
 
 #: ../ProjectController.py:1054
 msgid "PLC code generation failed !\n"
-msgstr "PLC 代码生成失败！\n"
+msgstr ""
 
 #: ../Beremiz_service.py:297
 msgid "PLC is empty or already started."
-msgstr "PLC 是空的或者已经被启动。"
+msgstr ""
 
 #: ../Beremiz_service.py:304
 msgid "PLC is not started."
-msgstr "PLC 没有被启动。"
+msgstr ""
 
 #: ../PLCOpenEditor.py:206 ../PLCOpenEditor.py:319
 #, python-brace-format
@@ -2454,16 +2446,14 @@ msgid ""
 "PLC syntax error at line {a1}:\n"
 "{a2}"
 msgstr ""
-"PLC语法错误在行 {a1}:\n"
-"{a2}"
 
 #: ../PLCOpenEditor.py:302 ../PLCOpenEditor.py:383
 msgid "PLCOpen files (*.xml)|*.xml|All files|*.*"
-msgstr "PLCOpen 文件 (*.xml)|*.xml|所有文件|*.*"
+msgstr ""
 
 #: ../PLCOpenEditor.py:154 ../PLCOpenEditor.py:219
 msgid "PLCOpenEditor"
-msgstr "PLCOpen编辑器"
+msgstr ""
 
 #: ../PLCOpenEditor.py:365
 msgid ""
@@ -2471,698 +2461,693 @@ msgid ""
 "\n"
 "Beremiz is an "
 msgstr ""
-"PLCOpenEditor是Beremiz项目的一部分。\n"
-"\n"
-"Beremiz是一个"
 
 #: ../dialogs/DiscoveryDialog.py:95
 msgid "PORT"
-msgstr "端口"
+msgstr ""
 
 #: ../dialogs/PouDialog.py:101
 msgid "POU Name"
-msgstr "POU 名字"
+msgstr ""
 
 #: ../dialogs/PouDialog.py:58
 msgid "POU Name:"
-msgstr "POU 名字："
+msgstr ""
 
 #: ../dialogs/PouDialog.py:103
 msgid "POU Type"
-msgstr "POU类型"
+msgstr ""
 
 #: ../dialogs/PouDialog.py:65
 msgid "POU Type:"
-msgstr "POU 类型："
+msgstr ""
 
 #: ../connectors/PYRO/__init__.py:45
 #, python-format
 msgid "PYRO connecting to URI : %s\n"
-msgstr "PYRO 连接到 URI ： %s\n"
+msgstr ""
 
 #: ../connectors/PYRO/__init__.py:61
 #, python-format
 msgid "PYRO using certificates in '%s' \n"
-msgstr "PYRO使用认证在 '%s' \n"
+msgstr ""
 
 #: ../BeremizIDE.py:231 ../PLCOpenEditor.py:120
 msgid "Page Setup"
-msgstr "页面设置"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:111
 msgid "Page Size (optional):"
-msgstr "页面大小（选填）："
+msgstr ""
 
 #: ../IDEFrame.py:2613
 #, python-format
 msgid "Page: %d"
-msgstr "页：%d"
+msgstr ""
 
 #: ../controls/PouInstanceVariablesPanel.py:124
 msgid "Parent instance"
-msgstr "父实例"
+msgstr ""
 
 #: ../editors/Viewer.py:657 ../IDEFrame.py:372 ../IDEFrame.py:426
 msgid "Paste"
-msgstr "粘贴"
+msgstr ""
 
 #: ../IDEFrame.py:1868
 msgid "Paste POU"
-msgstr "粘贴POU"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:56
 msgid "Pattern to search:"
-msgstr "检索模式："
+msgstr ""
 
 #: ../dialogs/LDPowerRailDialog.py:74
 msgid "Pin number:"
-msgstr "插脚数："
+msgstr ""
 
 #: ../editors/Viewer.py:2757 ../editors/Viewer.py:3014
 #: ../editors/SFCViewer.py:770
 msgid "Please choose a target"
-msgstr "请选择一个目标"
+msgstr ""
 
 #: ../editors/TextViewer.py:262
 msgid "Please enter a block name"
-msgstr "请输入一个块名称"
+msgstr ""
 
 #: ../editors/Viewer.py:2627 ../editors/Viewer.py:3056
 msgid "Please enter comment text"
-msgstr "请输入注释文本"
+msgstr ""
 
 #: ../editors/SFCViewer.py:433 ../editors/SFCViewer.py:455
 #: ../editors/SFCViewer.py:799
 msgid "Please enter step name"
-msgstr "请输入步骤名称"
+msgstr ""
 
 #: ../Beremiz_service.py:196
 msgid "Please enter text"
-msgstr "请输入文本"
+msgstr ""
 
 #: ../dialogs/ForceVariableDialog.py:163
 #, python-format
 msgid "Please enter value for a \"%s\" variable:"
-msgstr "请输入值对于一个 \"%s\" 变量："
+msgstr ""
 
 #: ../Beremiz_service.py:319
 msgid "Port number must be 0 <= port <= 65535!"
-msgstr "端口号必须为 0 <= 端口号 <= 65535！"
+msgstr ""
 
 #: ../Beremiz_service.py:319
 msgid "Port number must be an integer!"
-msgstr "端口号必须是整数！"
+msgstr ""
 
 #: ../editors/Viewer.py:595 ../editors/Viewer.py:2416
 msgid "Power Rail"
-msgstr "电源导轨"
+msgstr ""
 
 #: ../dialogs/LDPowerRailDialog.py:51
 msgid "Power Rail Properties"
-msgstr "电源导轨属性"
+msgstr ""
 
 #: ../BeremizIDE.py:233 ../PLCOpenEditor.py:122
 msgid "Preview"
-msgstr "打印预览"
+msgstr ""
 
 #: ../dialogs/BlockPreviewDialog.py:57
 msgid "Preview:"
-msgstr "预览："
+msgstr ""
 
 #: ../BeremizIDE.py:235 ../BeremizIDE.py:255 ../PLCOpenEditor.py:124
 #: ../PLCOpenEditor.py:150
 msgid "Print"
-msgstr "打印"
+msgstr ""
 
 #: ../IDEFrame.py:1079
 msgid "Print preview"
-msgstr "打印预览"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:68
 msgid "Priority"
-msgstr "优先"
+msgstr ""
 
 #: ../dialogs/SFCTransitionDialog.py:90
 msgid "Priority:"
-msgstr "优先："
+msgstr ""
 
 #: ../runtime/PLCObject.py:369
 #, python-format
 msgid "Problem starting PLC : error %d"
-msgstr "故障启动PLC：错误 %d"
+msgstr ""
 
 #: ../dialogs/ProjectDialog.py:58
 msgid "Product Name"
-msgstr "产品名称"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:81
 msgid "Product Name (required):"
-msgstr "产品名字（必填）："
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:83
 msgid "Product Release (optional):"
-msgstr "产品发布（选填）："
+msgstr ""
 
 #: ../dialogs/ProjectDialog.py:59
 msgid "Product Version"
-msgstr "产品版本"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:82
 msgid "Product Version (required):"
-msgstr "产品版本（必填）："
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:39 ../IDEFrame.py:1747
 #: ../IDEFrame.py:1944
 msgid "Program"
-msgstr "程序"
+msgstr ""
 
 #: ../PLCOpenEditor.py:347
 msgid "Program was successfully generated!"
-msgstr "该编程成功生成文件！"
+msgstr ""
 
 #: ../PLCControler.py:98
 msgid "Programs"
-msgstr "程序"
+msgstr ""
 
 #: ../editors/Viewer.py:243
 msgid "Programs can't be used by other POUs!"
-msgstr "程序不能被其它POU使用！"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:85 ../IDEFrame.py:584
 msgid "Project"
-msgstr "项目"
+msgstr ""
 
 #: ../controls/SearchResultPanel.py:173
 #, python-format
 msgid "Project '%s':"
-msgstr "项目 '%s'："
+msgstr ""
 
 #: ../ProjectController.py:1877
 msgid "Project Files"
-msgstr "项目文件"
+msgstr ""
 
 #: ../dialogs/ProjectDialog.py:57
 msgid "Project Name"
-msgstr "项目名称"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:79
 msgid "Project Name (required):"
-msgstr "项目名称（必填）："
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:80
 msgid "Project Version (optional):"
-msgstr "项目版本（选填）："
+msgstr ""
 
 #: ../PLCControler.py:3164
 msgid ""
 "Project file syntax error:\n"
 "\n"
 msgstr ""
-"项目文件语法错误：\n"
-"\n"
 
 #: ../dialogs/ProjectDialog.py:33 ../editors/ProjectNodeEditor.py:37
 msgid "Project properties"
-msgstr "项目属性"
+msgstr ""
 
 #: ../ConfigTreeNode.py:566
 #, python-brace-format
 msgid "Project tree layout do not match confnode.xml {a1}!={a2} "
-msgstr "项目树的布局不匹配confnode.xml {a1}!={a2} "
+msgstr ""
 
 #: ../dialogs/ConnectionDialog.py:98
 msgid "Propagate Name"
-msgstr "扩展名"
+msgstr ""
 
 #: ../PLCControler.py:99
 msgid "Properties"
-msgstr "属性"
+msgstr ""
 
 #: ../Beremiz_service.py:442
 msgid "Publishing service on local network"
-msgstr "在本地网络上发布服务"
+msgstr ""
 
 #: ../connectors/PYRO/__init__.py:118
 #, python-format
 msgid "Pyro exception: %s\n"
-msgstr "Pyro异常： %s\n"
+msgstr ""
 
 #: ../Beremiz_service.py:429
 msgid "Pyro object's uri :"
-msgstr "Pyro 目标的URL："
+msgstr ""
 
 #: ../Beremiz_service.py:428
 msgid "Pyro port :"
-msgstr "Pyro端口："
+msgstr ""
 
 #: ../py_ext/PythonEditor.py:81
 msgid "Python code"
-msgstr "Python代码"
+msgstr ""
 
 #: ../features.py:33
 msgid "Python file"
-msgstr "Python文件"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:39
 msgid "Qualifier"
-msgstr "合格验证"
+msgstr ""
 
 #: ../BeremizIDE.py:238 ../PLCOpenEditor.py:130 ../Beremiz_service.py:275
 msgid "Quit"
-msgstr "退出"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:225
 msgid "Range:"
-msgstr "范围："
+msgstr ""
 
 #: ../ProjectController.py:1873
 msgid "Raw IEC code"
-msgstr "原始的IEC代码"
+msgstr ""
 
 #: ../BeremizIDE.py:1047
 #, python-format
 msgid "Really delete node '%s'?"
-msgstr "真的删除节点 '%s'吗？"
+msgstr ""
 
 #: ../IDEFrame.py:362 ../IDEFrame.py:422
 msgid "Redo"
-msgstr "重做"
+msgstr ""
 
 #: ../dialogs/SFCTransitionDialog.py:75
 msgid "Reference"
-msgstr "参照"
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:107 ../IDEFrame.py:432
 msgid "Refresh"
-msgstr "刷新"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:66
 msgid "Regular expression"
-msgstr "正则表达式"
+msgstr ""
 
 #: ../dialogs/FindInPouDialog.py:96
 msgid "Regular expressions"
-msgstr "正则表达式"
+msgstr ""
 
 #: ../editors/Viewer.py:1603
 msgid "Release value"
-msgstr "释放值"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:37
 msgid "Remainder (modulo)"
-msgstr "余数（模）"
+msgstr ""
 
 #: ../BeremizIDE.py:1048
 #, python-format
 msgid "Remove %s node"
-msgstr "移除 %s 节点"
+msgstr ""
 
 #: ../IDEFrame.py:2419
 msgid "Remove Datatype"
-msgstr "移除数据类型"
+msgstr ""
 
 #: ../IDEFrame.py:2424
 msgid "Remove Pou"
-msgstr "移除POU"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:138
 msgid "Remove action"
-msgstr "移除动作"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:353
 msgid "Remove element"
-msgstr "移除元素"
+msgstr ""
 
 #: ../editors/FileManagementPanel.py:63
 msgid "Remove file from left folder"
-msgstr "从左侧目录移除文件"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:269
 msgid "Remove instance"
-msgstr "移除实例"
+msgstr ""
 
 #: ../canfestival/NetworkEditor.py:104
 msgid "Remove slave"
-msgstr "移除从站"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:240
 msgid "Remove task"
-msgstr "移除任务"
+msgstr ""
 
 #: ../editors/CodeFileEditor.py:659 ../controls/VariablePanel.py:451
 msgid "Remove variable"
-msgstr "移除变量"
+msgstr ""
 
 #: ../IDEFrame.py:1948
 msgid "Rename"
-msgstr "重命名"
+msgstr ""
 
 #: ../editors/FileManagementPanel.py:181
 msgid "Replace File"
-msgstr "替换文件"
+msgstr ""
 
 #: ../editors/Viewer.py:561
 msgid "Replace Wire by connections"
-msgstr "通过连接替换Wire"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:89
 msgid "Replacement (within)"
-msgstr "替换"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:76
 msgid "Reset"
-msgstr "重置"
+msgstr ""
 
 #: ../editors/Viewer.py:642
 msgid "Reset Execution Order"
-msgstr "重置执行命令"
+msgstr ""
 
 #: ../IDEFrame.py:451
 msgid "Reset Perspective"
-msgstr "复位透视图"
+msgstr ""
 
 #: ../controls/SearchResultPanel.py:105
 msgid "Reset search result"
-msgstr "复位搜索结果"
+msgstr ""
 
 #: ../BeremizIDE.py:979 ../PLCControler.py:99
 msgid "Resources"
-msgstr "资源"
+msgstr ""
 
 #: ../controls/VariablePanel.py:62
 msgid "Retain"
-msgstr "保持"
+msgstr ""
 
 #: ../controls/VariablePanel.py:424
 msgid "Return Type:"
-msgstr "返回类型："
+msgstr ""
 
 #: ../editors/Viewer.py:546
 msgid "Right"
-msgstr "右"
+msgstr ""
 
 #: ../dialogs/LDPowerRailDialog.py:64
 msgid "Right PowerRail"
-msgstr "右电源导轨"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:77 ../editors/Viewer.py:520
 msgid "Rising Edge"
-msgstr "上升沿"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:65
 msgid "Rotate left"
-msgstr "循环左移"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:64
 msgid "Rotate right"
-msgstr "循环右移"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:17
 msgid "Rounding up/down"
-msgstr "四舍五入"
+msgstr ""
 
 #: ../ProjectController.py:1841
 msgid "Run"
-msgstr "运行"
+msgstr ""
 
 #: ../ProjectController.py:1099
 msgid "Runtime IO extensions C code generation failed !\n"
-msgstr "运行时IO扩展C代码生成失败！\n"
+msgstr ""
 
 #: ../ProjectController.py:1108
 msgid "Runtime library extensions C code generation failed !\n"
-msgstr "运行时库扩展C代码生成失败！\n"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:61 ../canfestival/NetworkEditor.py:82
 msgid "SDO Client"
-msgstr "SDO客户端"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:60 ../canfestival/NetworkEditor.py:81
 msgid "SDO Server"
-msgstr "SDO服务器"
+msgstr ""
 
 #: ../dialogs/PouDialog.py:37 ../controls/ProjectPropertiesPanel.py:144
 msgid "SFC"
-msgstr "顺序功能图"
+msgstr ""
 
 #: ../PLCGenerator.py:1392
 #, python-brace-format
 msgid "SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\""
-msgstr "POU \"{a1}\" 中的SFC跳转 涉及不存在SFC步 \"{a2}\""
+msgstr ""
 
 #: ../PLCGenerator.py:773
 #, python-format
 msgid "SFC transition in POU \"%s\" must be connected."
-msgstr "在POU \"%s\" 中 SFC 移动必须被连接。"
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:36 ../dialogs/PouActionDialog.py:32
 #: ../dialogs/PouDialog.py:37
 msgid "ST"
-msgstr "结构化文本"
+msgstr ""
 
 #: ../PLCOpenEditor.py:334
 msgid "ST files (*.st)|*.st|All files|*.*"
-msgstr "ST 文件 (*.st)|*.st|所有文件|*.*"
+msgstr ""
 
 #: ../svgui/svgui.py:128
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
-msgstr "SVG 文件 (*.svg)|*.svg|All files|*.*"
+msgstr ""
 
 #: ../features.py:35
 msgid "SVGUI"
-msgstr "SVGUI"
+msgstr ""
 
 #: ../BeremizIDE.py:222 ../BeremizIDE.py:253 ../PLCOpenEditor.py:113
 #: ../PLCOpenEditor.py:148
 msgid "Save"
-msgstr "保存"
+msgstr ""
 
 #: ../BeremizIDE.py:254 ../PLCOpenEditor.py:115 ../PLCOpenEditor.py:149
 msgid "Save As..."
-msgstr "另存为..."
+msgstr ""
 
 #: ../BeremizIDE.py:224
 msgid "Save as"
-msgstr "另存为"
+msgstr ""
 
 #: ../ProjectController.py:511
 msgid "Save path is the same as path of a project! \n"
-msgstr "保存路径和项目路径相同！\n"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:69
 msgid "Scope"
-msgstr "范围"
+msgstr ""
 
 #: ../IDEFrame.py:623
 msgid "Search"
-msgstr "搜索"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:45 ../IDEFrame.py:382
 #: ../IDEFrame.py:428
 msgid "Search in Project"
-msgstr "在项目中搜索"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:47
 msgid "Seconds:"
-msgstr "秒："
+msgstr ""
 
 #: ../IDEFrame.py:388
 msgid "Select All"
-msgstr "选择全部"
+msgstr ""
 
 #: ../editors/Viewer.py:289 ../editors/TextViewer.py:306
 #: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:290
 #: ../controls/VariablePanel.py:350
 msgid "Select a variable class:"
-msgstr "选择一个变量种类："
+msgstr ""
 
 #: ../ProjectController.py:1257
 msgid "Select an editor:"
-msgstr "选择一个编辑："
+msgstr ""
 
 #: ../controls/PouInstanceVariablesPanel.py:281
 msgid "Select an instance"
-msgstr "选择一个实例"
+msgstr ""
 
 #: ../IDEFrame.py:607
 msgid "Select an object"
-msgstr "选择一个对象"
+msgstr ""
 
 #: ../ProjectController.py:518
 msgid "Selected directory already contains another project. Overwrite? \n"
-msgstr "选择的目录已经包含其他项目。覆盖？\n"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:70
 msgid "Selection"
-msgstr "选择"
+msgstr ""
 
 #: ../dialogs/SFCDivergenceDialog.py:65
 msgid "Selection Convergence"
-msgstr "选择收敛"
+msgstr ""
 
 #: ../dialogs/SFCDivergenceDialog.py:64
 msgid "Selection Divergence"
-msgstr "选择发散"
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:82
 msgid "Service Discovery"
-msgstr "服务探索"
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:85
 msgid "Services available:"
-msgstr "存在的服务："
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:76
 msgid "Set"
-msgstr "设置"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:62
 msgid "Shift left"
-msgstr "左移"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:63
 msgid "Shift right"
-msgstr "右移"
+msgstr ""
 
 #: ../ProjectController.py:1867
 msgid "Show IEC code generated by PLCGenerator"
-msgstr "显示由PLCGenerator生成的IEC代码"
+msgstr ""
 
 #: ../canfestival/canfestival.py:389
 msgid "Show Master"
-msgstr "显示主控"
+msgstr ""
 
 #: ../canfestival/canfestival.py:390
 msgid "Show Master generated by config_utils"
-msgstr "显示由config_utils生成的主控"
+msgstr ""
 
 #: ../ProjectController.py:1865
 msgid "Show code"
-msgstr "显示代码"
+msgstr ""
 
 #: ../dialogs/SFCDivergenceDialog.py:67
 msgid "Simultaneous Convergence"
-msgstr "同步收敛"
+msgstr ""
 
 #: ../dialogs/SFCDivergenceDialog.py:66
 msgid "Simultaneous Divergence"
-msgstr "同步发散"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:27
 msgid "Sine"
-msgstr "正弦"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:68
 msgid "Single"
-msgstr "单"
+msgstr ""
 
 #: ../targets/toolchain_makefile.py:126
 msgid "Source didn't change, no build.\n"
-msgstr "源代码没有变化，不需要构建.\n"
+msgstr ""
 
 #: ../PLCGenerator.py:397
 #, python-brace-format
 msgid ""
 "Source signal has to be defined for single task '{a1}' in resource "
 "'{a2}.{a3}'."
-msgstr "源信号必须被定义对于一个单独任务 '{a1}' 在资源 '{a2}.{a3}'."
+msgstr ""
 
 #: ../plcopen/iec_std.csv:23
 msgid "Square root (base 2)"
-msgstr "平方根（底数2）"
+msgstr ""
 
 #: ../plcopen/definitions.py:48
 msgid "Standard function blocks"
-msgstr "标准功能类型"
+msgstr ""
 
 #: ../ProjectController.py:1843 ../Beremiz_service.py:263
 msgid "Start PLC"
-msgstr "开始PLC"
+msgstr ""
 
 #: ../ProjectController.py:1046
 #, python-format
 msgid "Start build in %s\n"
-msgstr "开始建立 %s\n"
+msgstr ""
 
 #: ../ProjectController.py:1360
 msgid "Started"
-msgstr "已开始"
+msgstr ""
 
 #: ../ProjectController.py:1648
 msgid "Starting PLC\n"
-msgstr "启动PLC\n"
+msgstr ""
 
 #: ../BeremizIDE.py:365
 msgid "Status ToolBar"
-msgstr "状态工具栏"
+msgstr ""
 
 #: ../editors/Viewer.py:612 ../editors/Viewer.py:2391
 msgid "Step"
-msgstr "步"
+msgstr ""
 
 #: ../ProjectController.py:1846
 msgid "Stop"
-msgstr "停止"
+msgstr ""
 
 #: ../Beremiz_service.py:264
 msgid "Stop PLC"
-msgstr "停止PLC"
+msgstr ""
 
 #: ../ProjectController.py:1848
 msgid "Stop Running PLC"
-msgstr "停止运行PLC"
+msgstr ""
 
 #: ../ProjectController.py:1361
 msgid "Stopped"
-msgstr "已停止"
+msgstr ""
 
 #: ../ProjectController.py:1620
 msgid "Stopping debugger...\n"
-msgstr "停止调试器...\n"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Structure"
-msgstr "结构的"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:54
 msgid "Subrange"
-msgstr "子集的"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:35
 msgid "Subtraction"
-msgstr "减法"
+msgstr ""
 
 #: ../ProjectController.py:1085
 msgid "Successfully built.\n"
-msgstr "成功构建.\n"
+msgstr ""
 
 #: ../IDEFrame.py:447
 msgid "Switch perspective"
-msgstr "切换视图"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:165 ../dialogs/FindInPouDialog.py:115
 msgid "Syntax error in regular expression of pattern to search!"
-msgstr "在模式搜索正则表达式语法错误！"
+msgstr ""
 
 #: ../dialogs/DiscoveryDialog.py:93
 msgid "TYPE"
-msgstr "类型"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:29
 msgid "Tangent"
-msgstr "正切"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:83
 msgid "Task"
-msgstr "任务 "
+msgstr ""
 
 #: ../editors/ResourceEditor.py:235
 msgid "Tasks:"
-msgstr "任务："
+msgstr ""
 
 #: ../controls/VariablePanel.py:73
 msgid "Temp"
-msgstr "缓冲"
+msgstr ""
 
 #: ../version.py:30
 msgid ""
@@ -3175,14 +3160,6 @@ msgid ""
 "You can subscribe to the list here:\n"
 "https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
 msgstr ""
-"关于Beremiz/PLCOpenEditor的最佳问问题点\n"
-"是项目的邮件列表： beremiz-devel@lists.sourceforge.net\n"
-"\n"
-"这主要是社区支持渠道。\n"
-"发布必须订阅邮件列表。\n"
-"\n"
-"你可在这里订阅列表：\n"
-"https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
 
 #: ../editors/FileManagementPanel.py:180
 #, python-format
@@ -3190,467 +3167,457 @@ msgid ""
 "The file '%s' already exist.\n"
 "Do you want to replace it?"
 msgstr ""
-"文件 '%s' 已经存在。\n"
-"你真的要替换它？"
 
 #: ../editors/LDViewer.py:882
 msgid "The group of block must be coherent!"
-msgstr "块的组必须是连贯的！"
+msgstr ""
 
 #: ../BeremizIDE.py:542 ../IDEFrame.py:1015
 msgid "There are changes, do you want to save?"
-msgstr "文件已被改动。你希望保存吗？"
+msgstr ""
 
 #: ../IDEFrame.py:1658 ../IDEFrame.py:1677
 #, python-format
 msgid ""
 "There is a POU named \"%s\". This could cause a conflict. Do you wish to "
 "continue?"
-msgstr "一个编程组织单元被命名为\"%s\"。这可能会产生冲突。你希望继续吗？"
+msgstr ""
 
 #: ../IDEFrame.py:1102
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
 msgstr ""
-"打印出现问题。\n"
-"请检查你当前打印机设置。"
 
 #: ../editors/LDViewer.py:891
 msgid "This option isn't available yet!"
-msgstr "该选项尚未可用！"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:565
 #, python-format
 msgid "Tick: %d"
-msgstr "滴答： %d"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:40
 msgid "Time"
-msgstr "时间"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:40 ../plcopen/iec_std.csv:41
 msgid "Time addition"
-msgstr "时间加法"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:86
 msgid "Time concatenation"
-msgstr "时间级联"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:60 ../plcopen/iec_std.csv:61
 msgid "Time division"
-msgstr "时间除法"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:46 ../plcopen/iec_std.csv:47
 msgid "Time multiplication"
-msgstr "时间乘法"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:48 ../plcopen/iec_std.csv:49
 msgid "Time subtraction"
-msgstr "时间减法"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:42 ../plcopen/iec_std.csv:43
 msgid "Time-of-day addition"
-msgstr "日期时间加法"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:52 ../plcopen/iec_std.csv:53
 #: ../plcopen/iec_std.csv:54 ../plcopen/iec_std.csv:55
 msgid "Time-of-day subtraction"
-msgstr "日期时间减法"
+msgstr ""
 
 #: ../dialogs/ForceVariableDialog.py:172
 msgid "Toggle value"
-msgstr "触发值"
+msgstr ""
 
 #: ../editors/Viewer.py:548
 msgid "Top"
-msgstr "顶部"
+msgstr ""
 
 #: ../ProjectController.py:1855
 msgid "Transfer"
-msgstr "传输"
+msgstr ""
 
 #: ../ProjectController.py:1857
 msgid "Transfer PLC"
-msgstr "传输PLC"
+msgstr ""
 
 #: ../ProjectController.py:1820
 msgid "Transfer completed successfully.\n"
-msgstr "传输成功\n"
+msgstr ""
 
 #: ../ProjectController.py:1823
 msgid "Transfer failed\n"
-msgstr "传输失败\n"
+msgstr ""
 
 #: ../editors/Viewer.py:613 ../editors/Viewer.py:2393
 #: ../editors/Viewer.py:2420
 msgid "Transition"
-msgstr "转换"
+msgstr ""
 
 #: ../PLCGenerator.py:1518
 #, python-format
 msgid ""
 "Transition \"%s\" body must contain an output variable or coil referring to "
 "its name"
-msgstr "转换 \"%s\" 体必须包含一个输出变量或圈指的是它的名字"
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:84
 msgid "Transition Name"
-msgstr "转换名字"
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:53
 msgid "Transition Name:"
-msgstr "转换名字："
+msgstr ""
 
 #: ../PLCGenerator.py:1609
 #, python-brace-format
 msgid "Transition with content \"{a1}\" not connected to a next step in \"{a2}\" POU"
-msgstr "转换的内容 \"{a1}\" 没有连接到下一步在 \"{a2}\" POU"
+msgstr ""
 
 #: ../PLCGenerator.py:1598
 #, python-brace-format
 msgid ""
 "Transition with content \"{a1}\" not connected to a previous step in "
 "\"{a2}\" POU"
-msgstr "转换的内容 \"{a1}\" 没有连接到前一步在 \"{a2}\" POU"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1323
 #, python-format
 msgid "Transition with name %s doesn't exist!"
-msgstr "已命名的转换 %s 尚不存在！"
+msgstr ""
 
 #: ../PLCControler.py:98
 msgid "Transitions"
-msgstr "转换"
+msgstr ""
 
 #: ../dialogs/AboutDialog.py:131
 msgid "Translated by"
-msgstr "转换因为"
+msgstr ""
 
 #: ../editors/ResourceEditor.py:68
 msgid "Triggering"
-msgstr "触发"
+msgstr ""
 
 #: ../Beremiz_service.py:478
 msgid "Twisted unavailable."
-msgstr "扭曲的不可用。"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:39 ../editors/ResourceEditor.py:83
 #: ../editors/DataTypeEditor.py:50 ../editors/CodeFileEditor.py:739
 #: ../controls/VariablePanel.py:53 ../controls/VariablePanel.py:54
 msgid "Type"
-msgstr "类型"
+msgstr ""
 
 #: ../dialogs/BrowseLocationsDialog.py:49
 msgid "Type and derivated"
-msgstr "类型和派生"
+msgstr ""
 
 #: ../canfestival/config_utils.py:336 ../canfestival/config_utils.py:624
 #, python-format
 msgid "Type conflict for location \"%s\""
-msgstr "位置的冲突类型 \"%s\""
+msgstr ""
 
 #: ../plcopen/iec_std.csv:16
 msgid "Type conversion"
-msgstr "类型转换"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:162
 msgid "Type infos:"
-msgstr "类型信息："
+msgstr ""
 
 #: ../dialogs/BrowseLocationsDialog.py:50
 msgid "Type strict"
-msgstr "严格类型"
+msgstr ""
 
 #: ../dialogs/SFCDivergenceDialog.py:59 ../dialogs/SFCTransitionDialog.py:58
 #: ../dialogs/LDPowerRailDialog.py:57 ../dialogs/BrowseLocationsDialog.py:100
 #: ../dialogs/FBDBlockDialog.py:66 ../dialogs/ConnectionDialog.py:59
 msgid "Type:"
-msgstr "类型："
+msgstr ""
 
 #: ../canfestival/config_utils.py:462 ../canfestival/config_utils.py:476
 #, python-format
 msgid "Unable to define PDO mapping for node %02x"
-msgstr "对于 %02x节点不能定义POU映射"
+msgstr ""
 
 #: ../targets/Xenomai/__init__.py:39
 #, python-format
 msgid "Unable to get Xenomai's %s \n"
-msgstr "不能获得 Xenomai 的 %s \n"
+msgstr ""
 
 #: ../PLCGenerator.py:961 ../PLCGenerator.py:1214
 #, python-brace-format
 msgid "Undefined block type \"{a1}\" in \"{a2}\" POU"
-msgstr "未定义块类型 \"{a1}\" 在 \"{a2}\" POU中"
+msgstr ""
 
 #: ../PLCGenerator.py:254
 #, python-format
 msgid "Undefined pou type \"%s\""
-msgstr "未定义的pou类型"
+msgstr ""
 
 #: ../IDEFrame.py:360 ../IDEFrame.py:421
 msgid "Undo"
-msgstr "撤销"
+msgstr ""
 
 #: ../ProjectController.py:423
 msgid "Unknown"
-msgstr "未知"
+msgstr ""
 
 #: ../editors/Viewer.py:394
 #, python-format
 msgid "Unknown variable \"%s\" for this POU!"
-msgstr "未知的变量 \"%s\" 这个POU！"
+msgstr ""
 
 #: ../ProjectController.py:420 ../ProjectController.py:421
 msgid "Unnamed"
-msgstr "未命名"
+msgstr ""
 
 #: ../PLCControler.py:638
 #, python-format
 msgid "Unnamed%d"
-msgstr "未命名%d"
+msgstr ""
 
 #: ../controls/VariablePanel.py:284
 #, python-format
 msgid "Unrecognized data size \"%s\""
-msgstr "无法识别数据大小 \"%s\""
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:630 ../controls/VariablePanel.py:827
 msgid "User Data Types"
-msgstr "用户数据类型"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:65 ../canfestival/NetworkEditor.py:86
 msgid "User Type"
-msgstr "用户类型"
+msgstr ""
 
 #: ../PLCControler.py:97
 msgid "User-defined POUs"
-msgstr "用户 - 定义POUs"
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:39
 msgid "Value"
-msgstr "值"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:259
 msgid "Values:"
-msgstr "值："
+msgstr ""
 
 #: ../dialogs/ActionBlockDialog.py:43 ../editors/Viewer.py:585
 #: ../editors/Viewer.py:2423
 msgid "Variable"
-msgstr "变量"
+msgstr ""
 
 #: ../editors/Viewer.py:309 ../editors/Viewer.py:339 ../editors/Viewer.py:361
 #: ../editors/TextViewer.py:292 ../editors/TextViewer.py:343
 #: ../editors/TextViewer.py:366 ../controls/VariablePanel.py:329
 msgid "Variable Drop"
-msgstr "变量Drop"
+msgstr ""
 
 #: ../dialogs/FBDVariableDialog.py:64
 msgid "Variable Properties"
-msgstr "变量属性"
+msgstr ""
 
 #: ../editors/Viewer.py:289 ../editors/TextViewer.py:306
 #: ../controls/LocationCellEditor.py:97 ../controls/VariablePanel.py:290
 #: ../controls/VariablePanel.py:350
 msgid "Variable class"
-msgstr "变量种类"
+msgstr ""
 
 #: ../editors/Viewer.py:396 ../editors/TextViewer.py:387
 msgid "Variable don't belong to this POU!"
-msgstr "变量不属于这个POU！"
+msgstr ""
 
 #: ../dialogs/LDElementDialog.py:89
 msgid "Variable:"
-msgstr "变量："
+msgstr ""
 
 #: ../controls/VariablePanel.py:72
 msgid "Variables"
-msgstr "变量"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:152
 msgid "Vertical:"
-msgstr "垂直的："
+msgstr ""
 
 #: ../Beremiz_service.py:588
 msgid "WAMP client startup failed. "
-msgstr "WAMP客户端启动失败。"
+msgstr ""
 
 #: ../connectors/WAMP/__init__.py:91
 #, python-format
 msgid "WAMP connecting to URL : %s\n"
-msgstr "WAMP 连接到 URL : %s\n"
+msgstr ""
 
 #: ../connectors/WAMP/__init__.py:131
 msgid "WAMP connection timeout"
-msgstr "WAMP连接超时"
+msgstr ""
 
 #: ../connectors/WAMP/__init__.py:150
 #, python-format
 msgid "WAMP connection to '%s' failed.\n"
-msgstr "WAMP 连接到 '%s' 失败。\n"
+msgstr ""
 
 #: ../Beremiz_service.py:564
 msgid "WAMP import failed :"
-msgstr "WAMP导入失败："
+msgstr ""
 
 #: ../wxglade_hmi/wxglade_hmi.py:37
 msgid "WXGLADE GUI"
-msgstr "WXGLADE 用户图形界面"
+msgstr ""
 
 #: ../dialogs/PouDialog.py:129 ../editors/LDViewer.py:891
 msgid "Warning"
-msgstr "警告"
+msgstr ""
 
 #: ../ProjectController.py:707
 msgid "Warnings in ST/IL/SFC code generator :\n"
-msgstr "警告在ST/IL/SFC代码生成器中：\n"
+msgstr ""
 
 #: ../dialogs/SearchInProjectDialog.py:78
 msgid "Whole Project"
-msgstr "整个项目"
+msgstr ""
 
 #: ../controls/ProjectPropertiesPanel.py:120
 msgid "Width:"
-msgstr "宽度："
+msgstr ""
 
 #: ../dialogs/FindInPouDialog.py:91
 msgid "Wrap search"
-msgstr "包搜索"
+msgstr ""
 
 #: ../dialogs/AboutDialog.py:130
 msgid "Written by"
-msgstr "出自"
+msgstr ""
 
 #: ../features.py:34
 msgid "WxGlade GUI"
-msgstr "WxGlade GUI"
+msgstr ""
 
 #: ../svgui/svgui.py:142
 msgid ""
 "You don't have write permissions.\n"
 "Open Inkscape anyway ?"
 msgstr ""
-"你没有写入的许可。\n"
-"无论如何都打开Inkscape？"
 
 #: ../wxglade_hmi/wxglade_hmi.py:154
 msgid ""
 "You don't have write permissions.\n"
 "Open wxGlade anyway ?"
 msgstr ""
-"你没有写入的许可。\n"
-"无论如何都打开wxGlade？"
 
 #: ../ProjectController.py:371
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
 msgstr ""
-"你必须有在此项目上工作的许可\n"
-"在项目的一个拷贝上工作？"
 
 #: ../editors/LDViewer.py:886
 msgid ""
 "You must select the block or group of blocks around which a branch should be"
 " added!"
-msgstr "你必须选择一个块或块的组围绕着需被添加的分支！"
+msgstr ""
 
 #: ../editors/LDViewer.py:666
 msgid "You must select the wire where a contact should be added!"
-msgstr "你必须选择一条线连接需被添加的接触点！"
+msgstr ""
 
 #: ../dialogs/SFCStepNameDialog.py:48 ../dialogs/PouNameDialog.py:46
 msgid "You must type a name!"
-msgstr "你必须输入一个名字！"
+msgstr ""
 
 #: ../dialogs/ForceVariableDialog.py:193
 msgid "You must type a value!"
-msgstr "你必须输入一个值！"
+msgstr ""
 
 #: ../IDEFrame.py:438
 msgid "Zoom"
-msgstr "显示比例"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:155
 msgid "days"
-msgstr "日"
+msgstr ""
 
 #: ../PLCOpenEditor.py:343
 #, python-format
 msgid "error: %s\n"
-msgstr "错误：%s\n"
+msgstr ""
 
 #: ../util/ProcessLogger.py:169
 #, python-brace-format
 msgid "exited with status {a1} (pid {a2})\n"
-msgstr "退出伴随状态 {a1} (pid {a2})\n"
+msgstr ""
 
 #: ../PLCOpenEditor.py:406 ../PLCOpenEditor.py:408
 msgid "file : "
-msgstr "文件："
+msgstr ""
 
 #: ../dialogs/PouDialog.py:32
 msgid "function"
-msgstr "功能"
+msgstr ""
 
 #: ../PLCOpenEditor.py:409
 msgid "function : "
-msgstr "功能："
+msgstr ""
 
 #: ../dialogs/PouDialog.py:32
 msgid "functionBlock"
-msgstr "功能块"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:155
 msgid "hours"
-msgstr "小时"
+msgstr ""
 
 #: ../PLCOpenEditor.py:409
 msgid "line : "
-msgstr "在线："
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:157
 msgid "milliseconds"
-msgstr "毫秒"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:156
 msgid "minutes"
-msgstr "分"
+msgstr ""
 
 #: ../dialogs/PouDialog.py:32
 msgid "program"
-msgstr "程序"
+msgstr ""
 
 #: ../dialogs/DurationEditorDialog.py:156
 msgid "seconds"
-msgstr "秒"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:84
 msgid "string from the middle"
-msgstr "从中间取字符串"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:82
 msgid "string left of"
-msgstr "从左取字符串"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:83
 msgid "string right of"
-msgstr "从右取字符串"
+msgstr ""
 
 #: ../Beremiz.py:164
 msgid "update info unavailable."
-msgstr "更新信息不存在"
+msgstr ""
 
 #: ../PLCOpenEditor.py:341
 #, python-format
 msgid "warning: %s\n"
-msgstr "警告：%s\n"
+msgstr ""
 
 #: ../PLCControler.py:972
 #, python-brace-format
 msgid "{a1} \"{a2}\" can't be pasted as a {a3}."
-msgstr "{a1} \"{a2}\" 不能被粘贴作为一个 {a3}."
+msgstr ""
 
 #: ../ConfigTreeNode.py:56
 #, python-brace-format
@@ -3658,294 +3625,292 @@ msgid ""
 "{a1} XML file doesn't follow XSD schema at line %{a2}:\n"
 "{a3}"
 msgstr ""
-"{a1} XML文件没有遵循XSD schema在行 %{a2}:\n"
-"{a3}"
 
 #: Extra XSD strings
 msgid "CanFestivalSlaveNode"
-msgstr "CanFestival从节点"
+msgstr ""
 
 msgid "CAN_Device"
-msgstr "CAN_设备"
+msgstr ""
 
 msgid "CAN_Baudrate"
-msgstr "CAN_波特率"
+msgstr ""
 
 msgid "NodeId"
-msgstr "节点Id"
+msgstr ""
 
 msgid "Sync_Align"
-msgstr "同步_对齐"
+msgstr ""
 
 msgid "Sync_Align_Ratio"
-msgstr "同步_对齐_比率"
+msgstr ""
 
 msgid "CanFestivalNode"
-msgstr "CanFestival节点"
+msgstr ""
 
 msgid "Sync_TPDOs"
-msgstr "Sync_TPDOs"
+msgstr ""
 
 msgid "CanFestivalInstance"
-msgstr "CanFestival实例"
+msgstr ""
 
 msgid "CAN_Driver"
-msgstr "CAN_驱动"
+msgstr ""
 
 msgid "Generic"
-msgstr "一般的"
+msgstr ""
 
 msgid "Command"
-msgstr "命令"
+msgstr ""
 
 msgid "Xenomai"
-msgstr "Xenomai"
+msgstr ""
 
 msgid "XenoConfig"
-msgstr "XenoConfig"
+msgstr ""
 
 msgid "Compiler"
-msgstr "编译"
+msgstr ""
 
 msgid "CFLAGS"
-msgstr "CFLAGS"
+msgstr ""
 
 msgid "Linker"
-msgstr "链接 "
+msgstr ""
 
 msgid "LDFLAGS"
-msgstr "LDFLAGS"
+msgstr ""
 
 msgid "Linux"
-msgstr "Linux"
+msgstr ""
 
 msgid "Win32"
-msgstr "Win32"
+msgstr ""
 
 msgid "BaseParams"
-msgstr "基本参照 "
+msgstr ""
 
 msgid "IEC_Channel"
-msgstr "IEC_频道"
+msgstr ""
 
 msgid "Enabled"
-msgstr "启用"
+msgstr ""
 
 msgid "BeremizRoot"
-msgstr "Beremiz根"
+msgstr ""
 
 msgid "TargetType"
-msgstr "目标类型"
+msgstr ""
 
 msgid "Libraries"
-msgstr "库"
+msgstr ""
 
 msgid "URI_location"
-msgstr "URI_位置"
+msgstr ""
 
 msgid "Disable_Extensions"
-msgstr "禁止_扩展"
+msgstr ""
 
 msgid "%(codefile_name)s"
-msgstr "%(codefile_name)s"
+msgstr ""
 
 msgid "variables"
-msgstr "变量"
+msgstr ""
 
 msgid "variable"
-msgstr "变量"
+msgstr ""
 
 msgid "name"
-msgstr "名字"
+msgstr ""
 
 msgid "type"
-msgstr "类型"
+msgstr ""
 
 msgid "class"
-msgstr "类"
+msgstr ""
 
 msgid "initial"
-msgstr "初始的"
+msgstr ""
 
 msgid "desc"
-msgstr "降序（desc）"
+msgstr ""
 
 msgid "onchange"
-msgstr "事件（onchange）"
+msgstr ""
 
 msgid "opts"
-msgstr "挑选（opts）"
+msgstr ""
 
 #: Extra TC6 documentation strings
 msgid "0 - current time, 1 - load time from PDT"
-msgstr "0 - 当前时间， 1 - 从PDT下载时间"
+msgstr ""
 
 msgid "Preset datetime"
-msgstr "当前日期"
+msgstr ""
 
 msgid "Copy of IN"
-msgstr "IN的复制"
+msgstr ""
 
 msgid "Datetime, current or relative to PDT"
-msgstr "日期时间，当前的或者PDT相对的"
+msgstr ""
 
 msgid ""
 "The real time clock has many uses including time stamping, setting dates and"
 " times of day in batch reports, in alarm messages and so on."
-msgstr "实时时钟大量用于包含时间戳，设置在批处理报告，报警信息等中的日期和日中的时间，"
+msgstr ""
 
 msgid "1 = integrate, 0 = hold"
-msgstr "1 = 积分， 0 = 保持"
+msgstr ""
 
 msgid "Overriding reset"
-msgstr "压倒一切的复位"
+msgstr ""
 
 msgid "Input variable"
-msgstr "输入变量"
+msgstr ""
 
 msgid "Initial value"
-msgstr "初始值"
+msgstr ""
 
 msgid "Sampling period"
-msgstr "采样周期"
+msgstr ""
 
 msgid "NOT R1"
-msgstr "NOT R1"
+msgstr ""
 
 msgid "Integrated output"
-msgstr "积分输出"
+msgstr ""
 
 msgid ""
 "The integral function block integrates the value of input XIN over time."
-msgstr "积分功能块集成了一段时间输入XIN的值"
+msgstr ""
 
 msgid "0 = reset"
-msgstr "0 = 复位"
+msgstr ""
 
 msgid "Input to be differentiated"
-msgstr "微分输入"
+msgstr ""
 
 msgid "Differentiated output"
-msgstr "微分输出"
+msgstr ""
 
 msgid ""
 "The derivative function block produces an output XOUT proportional to the "
 "rate of change of the input XIN."
-msgstr "微分功能块处理一个输出XOUT 比例于输入XIN的变化率."
+msgstr ""
 
 msgid "0 - manual , 1 - automatic"
-msgstr "0 - 手动， 1 - 自动"
+msgstr ""
 
 msgid "Process variable"
-msgstr "过程变量"
+msgstr ""
 
 msgid "Set point"
-msgstr "设置点"
+msgstr ""
 
 msgid "Manual output adjustment - Typically from transfer station"
-msgstr "手动输出调节 - 通常来自中转站"
+msgstr ""
 
 msgid "Proportionality constant"
-msgstr "比例常数"
+msgstr ""
 
 msgid "Reset time"
-msgstr "复位时间"
+msgstr ""
 
 msgid "Derivative time constant"
-msgstr "微分时间常数"
+msgstr ""
 
 msgid "PV - SP"
-msgstr "PV - SP"
+msgstr ""
 
 msgid "FB for integral term"
-msgstr "积分项的FB"
+msgstr ""
 
 msgid "FB for derivative term"
-msgstr "微分项的FB"
+msgstr ""
 
 msgid ""
 "The PID (proportional, Integral, Derivative) function block provides the "
 "classical three term controller for closed loop control."
-msgstr "PID（比例，积分，微分）功能块提供经典的三项控制器，实现闭环控制。"
+msgstr ""
 
 msgid "0 - track X0, 1 - ramp to/track X1"
-msgstr "0 - 追踪X0， 1 - 斜坡/追踪X1"
+msgstr ""
 
 msgid "Ramp duration"
-msgstr "斜坡时间"
+msgstr ""
 
 msgid "BUSY = 1 during ramping period"
-msgstr "BUSY = 1 在加速期"
+msgstr ""
 
 msgid "Elapsed time of ramp"
-msgstr "斜坡经过时间"
+msgstr ""
 
 msgid "The RAMP function block is modelled on example given in the standard."
-msgstr "（RAMP）斜坡功能块是根据标准中给出的示例建模的。"
+msgstr ""
 
 msgid ""
 "The hysteresis function block provides a hysteresis boolean output driven by"
 " the difference of two floating point (REAL) inputs XIN1 and XIN2."
-msgstr "迟滞功能块提供一个两个差异的浮点（实数）输入XIN1和XIN2驱动的迟滞布尔输出。"
+msgstr ""
 
 msgid "The SR bistable is a latch where the Set dominates."
-msgstr "SR双稳态是一个置位有限锁存器"
+msgstr ""
 
 msgid "The RS bistable is a latch where the Reset dominates."
-msgstr "RS双稳态是一个复位优先锁存器"
+msgstr ""
 
 msgid ""
 "The semaphore provides a mechanism to allow software elements mutually "
 "exclusive access to certain ressources."
-msgstr "信号量提供一种机制，允许软件元素互斥排他的访问某一资源。"
+msgstr ""
 
 msgid "The output produces a single pulse when a rising edge is detected."
-msgstr "当检测到一个上升沿时，输出产生一个单独的脉冲。"
+msgstr ""
 
 msgid "The output produces a single pulse when a falling edge is detected."
-msgstr "当检测到下降沿时，输出产生一个单独的脉冲。"
+msgstr ""
 
 msgid ""
 "The up-counter can be used to signal when a count has reached a maximum "
 "value."
-msgstr "当计数值达到最大值时，加计数器能被用来产生信号。"
+msgstr ""
 
 msgid ""
 "The down-counter can be used to signal when a count has reached zero, on "
 "counting down from a preset value."
-msgstr "当计数值从一个预设值减到0，减计数器能被用来产生信号。"
+msgstr ""
 
 msgid ""
 "The up-down counter has two inputs CU and CD. It can be used to both count "
 "up on one input and down on the other."
-msgstr "加减计数器有2个输入CU和CD，能被用来同时在一个输入上加计数在另一个上减计数。"
+msgstr ""
 
 msgid "first input parameter"
-msgstr "第一个输入参数"
+msgstr ""
 
 msgid "second input parameter"
-msgstr "第二个输入参数"
+msgstr ""
 
 msgid "first output parameter"
-msgstr "第一个输出参数"
+msgstr ""
 
 msgid "second output parameter"
-msgstr "第二个输出参数"
+msgstr ""
 
 msgid "internal state: 0-reset, 1-counting, 2-set"
-msgstr "内部状态：0-复位， 1-计数，2-设置"
+msgstr ""
 
 msgid ""
 "The pulse timer can be used to generate output pulses of a given time "
 "duration."
-msgstr "脉冲定时器能够被用来产生给定持续时间的输出脉冲"
+msgstr ""
 
 msgid ""
 "The on-delay timer can be used to delay setting an output true, for fixed "
 "period after an input becomes true."
-msgstr "接通延迟定时器能被用来延迟设置一个输出为TRUE，当输入为TRUE时，经过固定的时间，"
+msgstr ""
 
 msgid ""
 "The off-delay timer can be used to delay setting an output false, for fixed "
 "period after input goes false."
-msgstr "断开延迟定时器能被用来延迟设置一个输出为FALSE，当输入到FALSE后经过一个固定的时间。"
+msgstr ""
