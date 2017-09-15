@@ -5,6 +5,7 @@
 # programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
 #
 # Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2017: Andrey Skvortsov
 #
 # See COPYING file for copyrights details.
 #
@@ -28,10 +29,9 @@ from types import TupleType
 import wx
 import wx.grid
 import wx.lib.buttons
-
 from plcopen.structures import IEC_KEYWORDS, TestIdentifier, DefaultType
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD
-from controls import CustomEditableListBox, CustomGrid, CustomTable
+from controls import CustomEditableListBox, CustomGrid, CustomTable, CustomIntCtrl
 from dialogs import ArrayTypeDialog
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
@@ -225,9 +225,8 @@ class DataTypeEditor(EditorPanel):
         subrange_panel_sizer.AddWindow(subrange_initialvalue_label, 1, border=5,
                                        flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
-        self.SubrangeInitialValue = wx.SpinCtrl(self.SubrangePanel,
-                                                style=wx.TAB_TRAVERSAL)
-        self.Bind(wx.EVT_SPINCTRL, self.OnInfosChanged, self.SubrangeInitialValue)
+        self.SubrangeInitialValue = CustomIntCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
+        self.SubrangeInitialValue.Bind(CustomIntCtrl.EVT_CUSTOM_INT, self.OnInfosChanged)
         subrange_panel_sizer.AddWindow(self.SubrangeInitialValue, 1, border=5,
                                        flag=wx.GROW | wx.ALL)
 
@@ -235,8 +234,8 @@ class DataTypeEditor(EditorPanel):
         subrange_panel_sizer.AddWindow(subrange_minimum_label, 1, border=5,
                                        flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
-        self.SubrangeMinimum = wx.SpinCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
-        self.Bind(wx.EVT_SPINCTRL, self.OnSubrangeMinimumChanged, self.SubrangeMinimum)
+        self.SubrangeMinimum = CustomIntCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
+        self.SubrangeMinimum.Bind(CustomIntCtrl.EVT_CUSTOM_INT, self.OnSubrangeMinimumChanged)
         subrange_panel_sizer.AddWindow(self.SubrangeMinimum, 1, border=5,
                                        flag=wx.GROW | wx.ALL)
 
@@ -248,8 +247,8 @@ class DataTypeEditor(EditorPanel):
         subrange_panel_sizer.AddWindow(subrange_maximum_label, 1, border=5,
                                        flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
 
-        self.SubrangeMaximum = wx.SpinCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
-        self.Bind(wx.EVT_SPINCTRL, self.OnSubrangeMaximumChanged, self.SubrangeMaximum)
+        self.SubrangeMaximum = CustomIntCtrl(self.SubrangePanel, style=wx.TAB_TRAVERSAL)
+        self.SubrangeMaximum.Bind(CustomIntCtrl.EVT_CUSTOM_INT, self.OnSubrangeMaximumChanged)
 
         subrange_panel_sizer.AddWindow(self.SubrangeMaximum, 1, border=5,
                                        flag=wx.GROW | wx.ALL)
@@ -723,13 +722,13 @@ class DataTypeEditor(EditorPanel):
         range = self.Controler.GetDataTypeRange(self.SubrangeBaseType.GetStringSelection())
         if range is not None:
             min_value, max_value = range
-            self.SubrangeMinimum.SetRange(min_value, max_value)
+            self.SubrangeMinimum.SetBounds(min_value, max_value)
             self.SubrangeMinimum.SetValue(min(max(min_value, self.SubrangeMinimum.GetValue()), max_value))
-            self.SubrangeMaximum.SetRange(min_value, max_value)
+            self.SubrangeMaximum.SetBounds(min_value, max_value)
             self.SubrangeMaximum.SetValue(min(max(min_value, self.SubrangeMaximum.GetValue()), max_value))
 
     def RefreshSubrangeInitialValueRange(self):
-        self.SubrangeInitialValue.SetRange(self.SubrangeMinimum.GetValue(), self.SubrangeMaximum.GetValue())
+        self.SubrangeInitialValue.SetBounds(self.SubrangeMinimum.GetValue(), self.SubrangeMaximum.GetValue())
 
     def RefreshTypeInfos(self):
         selected = DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]
@@ -795,7 +794,8 @@ class DataTypeEditor(EditorPanel):
                 control.SetBackgroundColour(wx.NullColour)
                 control.SetForegroundColour(wx.NullColour)
             elif isinstance(control, wx.TextCtrl):
-                value = control.GetValue()
+                value = control.GetValueStr() if isinstance(control, CustomIntCtrl) else \
+                        control.GetValue()
                 control.SetStyle(0, len(value), wx.TextAttr(wx.NullColour))
             elif isinstance(control, wx.gizmos.EditableListBox):
                 listctrl = control.GetListCtrl()
