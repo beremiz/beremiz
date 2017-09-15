@@ -25,9 +25,11 @@
 import os
 import sys
 import unittest
+import pytest
 import wx
 import time
 import traceback
+import ddt
 
 import conftest
 import Beremiz
@@ -48,6 +50,9 @@ class UserApplicationTest(unittest.TestCase):
     def FinishApp(self):
         wx.CallAfter(self.app.frame.Close)
         self.app.MainLoop()
+        self.app = None
+
+    def setUp(self):
         self.app = None
 
     def tearDown(self):
@@ -71,6 +76,7 @@ class UserApplicationTest(unittest.TestCase):
             time.sleep(0.01)
 
 
+@ddt.ddt
 class BeremizApplicationTest(UserApplicationTest):
     """Test Beremiz as whole application"""
     def StartApp(self):
@@ -102,7 +108,9 @@ class BeremizApplicationTest(UserApplicationTest):
             self.ProcessEvents()
             item = self.app.frame.ProjectTree.GetNextVisible(item)
 
-    def CheckTestProject(self, project):
+    def CheckTestProject(self, name):
+        project = self.GetProjectPath(name)
+        print "Testing example " + name
         sys.argv = ["", project]
         self.StartApp()
         self.OpenAllProjectElements()
@@ -130,23 +138,19 @@ class BeremizApplicationTest(UserApplicationTest):
         self.StartApp()
         self.FinishApp()
 
-    # @unittest.skip("")
-    def testOpenExampleProjects(self):
-        """Opens, builds and runs user PLC examples from tests directory"""
-        prj = [
-            "first_steps",
-            "logging",
-            "svgui",
-            "traffic_lights",
-            "wxGlade",
-            "python",
-            "wiimote",
-            "wxHMI",
-        ]
-        for name in prj:
-            project = self.GetProjectPath(name)
-            print "Testing example " + name
-            self.CheckTestProject(project)
+    @ddt.data(
+        "first_steps",
+        "logging",
+        "svgui",
+        "traffic_lights",
+        "wxGlade",
+        "python",
+        "wiimote",
+        "wxHMI",
+    )
+    @pytest.mark.timeout(30)
+    def testCheckProject(self, name):
+        self.CheckTestProject(name)
 
 
 if __name__ == '__main__':
