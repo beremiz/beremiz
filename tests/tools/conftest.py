@@ -49,7 +49,7 @@ sys.path.append(
 # To avoid this Xvfb is launched and killed not by pytest.
 # $ Xvfb :42 -screen 0 1280x1024x24 &
 # $ export DISPLAY=:42
-# $ pytest --timeout=10 ./tests/tools 
+# $ pytest --timeout=10 ./tests/tools
 # $ pkill -9 Xvfb
 #
 # TODO: find root of this problem.
