@@ -28,6 +28,7 @@ from CustomEditableListBox import CustomEditableListBox
 from CustomGrid import CustomGrid
 from CustomTable import CustomTable
 from CustomTree import CustomTree
+from CustomIntCtrl import CustomIntCtrl
 from DebugVariablePanel import DebugVariablePanel
 from DurationCellEditor import DurationCellEditor
 from LibraryPanel import LibraryPanel
