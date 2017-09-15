@@ -1,22 +1,36 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz, a Integrated Development Environment for
+# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+#
+# Copyright (C) 2017: Andrey Skvortsov
+#
+# See COPYING file for copyrights details.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import os
 import sys
 import unittest
 import wx
 import time
 import traceback
-from xvfbwrapper import Xvfb
 
-vdisplay = None
-
-
-def setUpModule():
-    vdisplay = Xvfb(width=1280, height=720)
-    vdisplay.start()
-
-
-def tearDownModule():
-    if vdisplay is not None:
-        vdisplay.stop()
+import conftest
+import Beremiz
 
 
 class UserApplicationTest(unittest.TestCase):
@@ -34,7 +48,6 @@ class UserApplicationTest(unittest.TestCase):
     def FinishApp(self):
         wx.CallAfter(self.app.frame.Close)
         self.app.MainLoop()
-        # time.sleep(0.2)
         self.app = None
 
     def tearDown(self):
@@ -74,7 +87,7 @@ class BeremizApplicationTest(UserApplicationTest):
         self.app = None
 
     def OpenAllProjectElements(self):
-        # open every object in the project tree
+        """Open editor for every object in the project tree"""
         self.app.frame.ProjectTree.ExpandAll()
         self.ProcessEvents()
         item = self.app.frame.ProjectTree.GetRootItem()
@@ -106,14 +119,12 @@ class BeremizApplicationTest(UserApplicationTest):
             [self.app.frame.CTR._Disconnect],
         ]
 
-        # user_actions.append([self.app.frame.OnCloseProjectMenu, None])
         self.RunUIActions(user_actions)
         self.FinishApp()
 
     def GetProjectPath(self, project):
         return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", project))
 
-    # @unittest.skip("")
     def testStartUp(self):
         """Checks whether the app starts and finishes correctly"""
         self.StartApp()
@@ -139,8 +150,4 @@ class BeremizApplicationTest(UserApplicationTest):
 
 
 if __name__ == '__main__':
-    if __package__ is None:
-        sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-        global Beremiz
-        import Beremiz
     unittest.main()
