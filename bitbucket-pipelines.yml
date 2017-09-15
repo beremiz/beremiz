@@ -5,13 +5,18 @@ pipelines:
     checks: # The name that is displayed in the list in the Bitbucket Cloud GUI
         - step:
             script: # Modify the commands below to build your repository.
-              - python --version
+              - /usr/bin/python --version
               - ./tests/tools/check_source.sh
-              - /usr/bin/python ./tests/tools/test_application.py
+              - Xvfb :42 -screen 0 1280x1024x24 &
+              - DISPLAY=:42 pytest --timeout=10 ./tests/tools
+              - pkill -9 Xvfb
 
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - python --version
+          - /usr/bin/python --version
           - ./tests/tools/check_source.sh
-          - /usr/bin/python ./tests/tools/test_application.py
+          - Xvfb :42 -screen 0 1280x1024x24 &
+          - DISPLAY=:42 pytest --timeout=10 ./tests/tools
+          - pkill -9 Xvfb
+          
