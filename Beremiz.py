@@ -27,7 +27,6 @@ import os
 import sys
 import getopt
 import time
-import __builtin__
 import util.paths as paths
 
 
@@ -109,10 +108,7 @@ class BeremizIDELauncher:
             self.buildpath = args[1]
 
     def CreateApplication(self):
-        if os.path.exists("BEREMIZ_DEBUG"):
-            __builtin__.__dict__["BMZ_DBG"] = True
-        else:
-            __builtin__.__dict__["BMZ_DBG"] = False
+        BMZ_DBG = os.path.exists("BEREMIZ_DEBUG")
 
         global wx
         import wx
