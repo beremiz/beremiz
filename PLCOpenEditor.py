@@ -32,69 +32,23 @@ import version
 import util.paths as paths
 import util.ExceptionHandler
 
-
-beremiz_dir = paths.AbsDir(__file__)
-
-
-if __name__ == '__main__':
-    # Usage message displayed when help request or when error detected in
-    # command line
-    def usage():
-        print "\nUsage of PLCOpenEditor.py :"
-        print "\n   %s [Filepath]\n" % sys.argv[0]
-
-    # Parse options given to PLCOpenEditor in command line
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
-    except getopt.GetoptError:
-        # print help information and exit:
-        usage()
-        sys.exit(2)
-
-    # Extract if help has been requested
-    for o, a in opts:
-        if o in ("-h", "--help"):
-            usage()
-            sys.exit()
-
-    # Extract the optional filename to open
-    fileOpen = None
-    if len(args) > 1:
-        usage()
-        sys.exit()
-    elif len(args) == 1:
-        fileOpen = args[0]
-
-    # Create wxApp (Need to create App before internationalization because of
-    # Windows)
-    if wx.VERSION >= (3, 0, 0):
-        app = wx.App()
-    else:
-        app = wx.PySimpleApp()
-
-    from util.misc import InstallLocalRessources
-    InstallLocalRessources(beremiz_dir)
-
-    # these imports require wx.GetApp to return
-    # a valid application instance
-
-    from IDEFrame import IDEFrame, AppendMenu
-    from IDEFrame import \
-        TITLE, \
-        EDITORTOOLBAR, \
-        FILEMENU, \
-        EDITMENU, \
-        DISPLAYMENU, \
-        PROJECTTREE, \
-        POUINSTANCEVARIABLESPANEL, \
-        LIBRARYTREE, \
-        PAGETITLES
-
-    from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
-    from editors.Viewer import Viewer
-    from PLCControler import PLCControler
-    from dialogs import ProjectDialog
-    from dialogs.AboutDialog import ShowAboutDialog
+from IDEFrame import IDEFrame, AppendMenu
+from IDEFrame import \
+    TITLE, \
+    EDITORTOOLBAR, \
+    FILEMENU, \
+    EDITMENU, \
+    DISPLAYMENU, \
+    PROJECTTREE, \
+    POUINSTANCEVARIABLESPANEL, \
+    LIBRARYTREE, \
+    PAGETITLES
+from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
+from editors.Viewer import Viewer
+from PLCControler import PLCControler
+from dialogs import ProjectDialog
+from dialogs.AboutDialog import ShowAboutDialog
+from util.misc import InstallLocalRessources
 
 
 # -------------------------------------------------------------------------------
@@ -105,6 +59,9 @@ if __name__ == '__main__':
 [
     ID_PLCOPENEDITORFILEMENUGENERATE,
 ] = [wx.NewId() for _init_coll_FileMenu_Items in range(1)]
+
+
+beremiz_dir = paths.AbsDir(__file__)
 
 
 class PLCOpenEditor(IDEFrame):
@@ -414,14 +371,50 @@ class PLCOpenEditor(IDEFrame):
         dialog.Destroy()
 
 
+class PLCOpenEditorApp(wx.App):
+    # def SetOpenFile(
+
+    def PrintUsage(self):
+        print "\nUsage of PLCOpenEditor.py :"
+        print "\n   %s [Filepath]\n" % sys.argv[0]
+
+    def ParseCommandLine(self):
+        # Parse options given to PLCOpenEditor in command line
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+        except getopt.GetoptError:
+            # print help information and exit:
+            self.PrintUsage()
+            sys.exit(2)
+
+        # Extract if help has been requested
+        for o, a in opts:
+            if o in ("-h", "--help"):
+                self.PrintUsage()
+                sys.exit()
+
+        # Extract the optional filename to open
+        self.fileOpen = None
+        if len(args) > 1:
+            self.PrintUsage()
+            sys.exit()
+        elif len(args) == 1:
+            self.fileOpen = args[0]
+
+    def OnInit(self):
+        self.ParseCommandLine()
+        InstallLocalRessources(beremiz_dir)
+        if wx.VERSION < (3, 0, 0):
+            wx.InitAllImageHandlers()
+        util.ExceptionHandler.AddExceptHook(version.app_version)
+        self.frame = PLCOpenEditor(None, fileOpen=self.fileOpen)
+        return True
+
+    def Show(self):
+        self.frame.Show()
+
+
 if __name__ == '__main__':
-    if wx.VERSION < (3, 0, 0):
-        wx.InitAllImageHandlers()
-
-    # Install a exception handle for bug reports
-    util.ExceptionHandler.AddExceptHook(version.app_version)
-
-    frame = PLCOpenEditor(None, fileOpen=fileOpen)
-
-    frame.Show()
+    app = PLCOpenEditorApp()
+    app.Show()
     app.MainLoop()
