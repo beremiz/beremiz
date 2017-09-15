@@ -26,11 +26,7 @@ import os
 import __builtin__
 import wx
 
-# Get the default language
-langid = wx.LANGUAGE_DEFAULT
-
-# Define locale for wx
-locale = wx.Locale(langid)
+locale = None
 
 
 __builtin__.__dict__['_'] = wx.GetTranslation
@@ -53,6 +49,11 @@ def AddCatalog(locale_dir):
     if os.path.exists(locale_dir) and os.path.isdir(locale_dir):
         domain = GetDomain(locale_dir)
         if domain is not None:
+            global locale
+            if locale is None:
+                # Define locale for wx
+                locale = wx.Locale(wx.LANGUAGE_DEFAULT)
+
             locale.AddCatalogLookupPathPrefix(locale_dir)
             locale.AddCatalog(domain)
 
