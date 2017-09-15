@@ -41,10 +41,10 @@ from dialogs.ForceVariableDialog import ForceVariableDialog
  HIGHLIGHT_RESIZE] = range(6)
 
 # Viewer highlight styles
-HIGHLIGHT_DROP_PEN = wx.Pen(wx.Colour(0, 128, 255))
-HIGHLIGHT_DROP_BRUSH = wx.Brush(wx.Colour(0, 128, 255, 128))
-HIGHLIGHT_RESIZE_PEN = wx.Pen(wx.Colour(200, 200, 200))
-HIGHLIGHT_RESIZE_BRUSH = wx.Brush(wx.Colour(200, 200, 200))
+HIGHLIGHT_DROP_PEN = None
+HIGHLIGHT_DROP_BRUSH = None
+HIGHLIGHT_RESIZE_PEN = None
+HIGHLIGHT_RESIZE_BRUSH = None
 
 # -------------------------------------------------------------------------------
 #                        Base Debug Variable Viewer Class
@@ -72,6 +72,7 @@ class DebugVariableViewer:
         self.Highlight = HIGHLIGHT_NONE
         # List of buttons
         self.Buttons = []
+        self.InitHighlightPensBrushes()
 
     def __del__(self):
         """
@@ -79,6 +80,16 @@ class DebugVariableViewer:
         """
         # Remove reference to Debug Variable Panel
         self.ParentWindow = None
+
+    def InitHighlightPensBrushes(self):
+        """
+        Init global pens and brushes
+        """
+        if HIGHLIGHT_DROP_PEN is None:
+            HIGHLIGHT_DROP_PEN = wx.Pen(wx.Colour(0, 128, 255))
+            HIGHLIGHT_DROP_BRUSH = wx.Brush(wx.Colour(0, 128, 255, 128))
+            HIGHLIGHT_RESIZE_PEN = wx.Pen(wx.Colour(200, 200, 200))
+            HIGHLIGHT_RESIZE_BRUSH = wx.Brush(wx.Colour(200, 200, 200))
 
     def GetIndex(self):
         """
