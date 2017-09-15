@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 import os
-
+import __builtin__
 import wx
 
 # Get the default language
@@ -31,6 +31,9 @@ langid = wx.LANGUAGE_DEFAULT
 
 # Define locale for wx
 locale = wx.Locale(langid)
+
+
+__builtin__.__dict__['_'] = wx.GetTranslation
 
 
 def GetDomain(path):
