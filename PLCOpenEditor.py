@@ -402,6 +402,7 @@ class PLCOpenEditorApp(wx.App):
             self.fileOpen = args[0]
 
     def OnInit(self):
+        self.SetAppName('plcopeneditor')
         self.ParseCommandLine()
         InstallLocalRessources(beremiz_dir)
         if wx.VERSION < (3, 0, 0):
