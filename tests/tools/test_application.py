@@ -148,6 +148,7 @@ class BeremizApplicationTest(UserApplicationTest):
 
     def testStartUp(self):
         """Checks whether the app starts and finishes correctly"""
+        sys.argv = [""]
         self.StartApp()
         self.FinishApp()
 
