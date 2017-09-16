@@ -33,6 +33,7 @@ import ddt
 
 import conftest
 import Beremiz
+import PLCOpenEditor
 
 
 class UserApplicationTest(unittest.TestCase):
@@ -110,14 +111,16 @@ class BeremizApplicationTest(UserApplicationTest):
         self.app.frame.ProjectTree.ExpandAll()
         self.ProcessEvents()
         item = self.app.frame.ProjectTree.GetRootItem()
+        skip = self.GetSkippedProjectTreeItems()
+        tree_id = self.app.frame.ProjectTree.GetId()
         while item is not None:
             self.app.frame.ProjectTree.SelectItem(item, True)
             self.ProcessEvents()
-            id = self.app.frame.ProjectTree.GetId()
-            event = wx.lib.agw.customtreectrl.TreeEvent(
-                wx.lib.agw.customtreectrl.wxEVT_TREE_ITEM_ACTIVATED,
-                id, item)
-            self.app.frame.OnProjectTreeItemActivated(event)
+            if item not in skip:
+                event = wx.lib.agw.customtreectrl.TreeEvent(
+                    wx.lib.agw.customtreectrl.wxEVT_TREE_ITEM_ACTIVATED,
+                    tree_id, item)
+                self.app.frame.OnProjectTreeItemActivated(event)
             self.ProcessEvents()
             item = self.app.frame.ProjectTree.GetNextVisible(item)
 
@@ -175,6 +178,43 @@ class BeremizApplicationTest(UserApplicationTest):
         project = self.GetProjectPath(name)
         print "Testing example " + name
         self.CheckTestProject(project)
+
+
+class PLCOpenEditorApplicationTest(BeremizApplicationTest):
+    """Test PLCOpenEditor as whole application"""
+
+    def StartApp(self):
+        self.app = PLCOpenEditor.PLCOpenEditorApp()
+        # disable default exception handler in application
+        self.app.InstallExceptionHandler = lambda: None
+        self.InstallExceptionHandler()
+        self.app.Show()
+        self.ProcessEvents()
+        self.app.frame.ShowFullScreen(True)
+        self.ProcessEvents()
+
+    def FinishApp(self):
+        wx.CallAfter(self.app.frame.Close)
+        self.app.MainLoop()
+        time.sleep(1)
+        self.app = None
+
+    def GetSkippedProjectTreeItems(self):
+        """
+        Returns the list of skipped items in the project tree.
+
+        Root item opens dialog window for project settings.
+        To avoid code that handles closing dialog windows just skip this item.
+        """
+        return [self.app.frame.ProjectTree.GetRootItem()]
+
+    def GetUserActions(self):
+        return []
+
+    def GetProjectPath(self, project):
+        """Open PLC program in every Beremiz test project"""
+        project_dir = BeremizApplicationTest.GetProjectPath(self, project)
+        return os.path.join(project_dir, "plc.xml")
 
 
 if __name__ == '__main__':
