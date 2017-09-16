@@ -7,16 +7,13 @@ pipelines:
             script: # Modify the commands below to build your repository.
               - /usr/bin/python --version
               - ./tests/tools/check_source.sh
-              - Xvfb :42 -screen 0 1280x1024x24 &
-              - DISPLAY=:42 pytest --timeout=10 ./tests/tools
-              - pkill -9 Xvfb
+              - ./tests/tools/run_python_tests.sh
+
 
   default:
     - step:
         script: # Modify the commands below to build your repository.
           - /usr/bin/python --version
-          - ./tests/tools/check_source.sh
-          - Xvfb :42 -screen 0 1280x1024x24 &
-          - DISPLAY=:42 pytest --timeout=10 ./tests/tools
-          - pkill -9 Xvfb
+          - ./tests/tools/check_source.sh 
+          - ./tests/tools/run_python_tests.sh         
           
