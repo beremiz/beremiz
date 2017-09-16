@@ -86,6 +86,10 @@ class BeremizApplicationTest(UserApplicationTest):
         self.app.InstallExceptionHandler = lambda: None
         self.InstallExceptionHandler()
         self.app.PreStart()
+        self.app.frame.Show()
+        self.ProcessEvents()
+        self.app.frame.ShowFullScreen(True)
+        self.ProcessEvents()
 
     def FinishApp(self):
         wx.CallAfter(self.app.frame.Close)
