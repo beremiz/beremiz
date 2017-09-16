@@ -79,6 +79,7 @@ class UserApplicationTest(unittest.TestCase):
 @ddt.ddt
 class BeremizApplicationTest(UserApplicationTest):
     """Test Beremiz as whole application"""
+
     def StartApp(self):
         self.app = Beremiz.BeremizIDELauncher()
         # disable default exception handler in Beremiz
@@ -91,6 +92,14 @@ class BeremizApplicationTest(UserApplicationTest):
         self.app.MainLoop()
         time.sleep(1)
         self.app = None
+
+    def GetSkippedProjectTreeItems(self):
+        """
+        Returns the list of skipped items in the project tree.
+
+        Beremiz test don't need to skip any elemnts in the project tree.
+        """
+        return []
 
     def OpenAllProjectElements(self):
         """Open editor for every object in the project tree"""
@@ -108,13 +117,22 @@ class BeremizApplicationTest(UserApplicationTest):
             self.ProcessEvents()
             item = self.app.frame.ProjectTree.GetNextVisible(item)
 
-    def CheckTestProject(self, name):
-        project = self.GetProjectPath(name)
-        print "Testing example " + name
+    def CheckTestProject(self, project):
         sys.argv = ["", project]
         self.StartApp()
         self.OpenAllProjectElements()
+        user_actions = self.GetUserActions()
+        self.RunUIActions(user_actions)
+        self.FinishApp()
 
+    def GetProjectPath(self, project):
+        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", project))
+
+    def GetUserActions(self):
+        """
+        Returns list of user actions that will be executed
+        on every test project by testCheckProject test.
+        """
         user_actions = [
             [self.app.frame.SwitchFullScrMode, None],
             [self.app.frame.SwitchFullScrMode, None],
@@ -126,12 +144,7 @@ class BeremizApplicationTest(UserApplicationTest):
             [self.app.frame.CTR._Stop],
             [self.app.frame.CTR._Disconnect],
         ]
-
-        self.RunUIActions(user_actions)
-        self.FinishApp()
-
-    def GetProjectPath(self, project):
-        return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", project))
+        return user_actions
 
     def testStartUp(self):
         """Checks whether the app starts and finishes correctly"""
@@ -150,7 +163,13 @@ class BeremizApplicationTest(UserApplicationTest):
     )
     @pytest.mark.timeout(30)
     def testCheckProject(self, name):
-        self.CheckTestProject(name)
+        """
+        Checks that test PLC project can be open,
+        compiled and run on SoftPLC.
+        """
+        project = self.GetProjectPath(name)
+        print "Testing example " + name
+        self.CheckTestProject(project)
 
 
 if __name__ == '__main__':
