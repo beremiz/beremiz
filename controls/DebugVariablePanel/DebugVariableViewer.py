@@ -41,10 +41,8 @@ from dialogs.ForceVariableDialog import ForceVariableDialog
  HIGHLIGHT_RESIZE] = range(6)
 
 # Viewer highlight styles
-HIGHLIGHT_DROP_PEN = None
-HIGHLIGHT_DROP_BRUSH = None
-HIGHLIGHT_RESIZE_PEN = None
-HIGHLIGHT_RESIZE_BRUSH = None
+HIGHLIGHT = {
+}
 
 # -------------------------------------------------------------------------------
 #                        Base Debug Variable Viewer Class
@@ -85,11 +83,12 @@ class DebugVariableViewer:
         """
         Init global pens and brushes
         """
-        if HIGHLIGHT_DROP_PEN is None:
-            HIGHLIGHT_DROP_PEN = wx.Pen(wx.Colour(0, 128, 255))
-            HIGHLIGHT_DROP_BRUSH = wx.Brush(wx.Colour(0, 128, 255, 128))
-            HIGHLIGHT_RESIZE_PEN = wx.Pen(wx.Colour(200, 200, 200))
-            HIGHLIGHT_RESIZE_BRUSH = wx.Brush(wx.Colour(200, 200, 200))
+        global HIGHLIGHT
+        if not HIGHLIGHT:
+            HIGHLIGHT['DROP_PEN'] = wx.Pen(wx.Colour(0, 128, 255))
+            HIGHLIGHT['DROP_BRUSH'] = wx.Brush(wx.Colour(0, 128, 255, 128))
+            HIGHLIGHT['RESIZE_PEN'] = wx.Pen(wx.Colour(200, 200, 200))
+            HIGHLIGHT['RESIZE_BRUSH'] = wx.Brush(wx.Colour(200, 200, 200))
 
     def GetIndex(self):
         """
@@ -281,8 +280,8 @@ class DebugVariableViewer:
         width, height = self.GetSize()
 
         # Set dc styling for drop before or drop after highlight
-        dc.SetPen(HIGHLIGHT_DROP_PEN)
-        dc.SetBrush(HIGHLIGHT_DROP_BRUSH)
+        dc.SetPen(HIGHLIGHT['DROP_PEN'])
+        dc.SetBrush(HIGHLIGHT['DROP_BRUSH'])
 
         # Draw line at upper side of Viewer if highlight is drop before
         if self.Highlight == HIGHLIGHT_BEFORE:

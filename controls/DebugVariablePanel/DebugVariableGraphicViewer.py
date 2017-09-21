@@ -1398,15 +1398,15 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # If highlight to display is resize, draw thick grey line at bottom
         # side of canvas
         if self.Highlight == HIGHLIGHT_RESIZE:
-            destGC.SetPen(HIGHLIGHT_RESIZE_PEN)
-            destGC.SetBrush(HIGHLIGHT_RESIZE_BRUSH)
+            destGC.SetPen(HIGHLIGHT['RESIZE_PEN'])
+            destGC.SetBrush(HIGHLIGHT['RESIZE_BRUSH'])
             destGC.DrawRectangle(0, height - 5, width, 5)
 
         # If highlight to display is merging graph, draw 50% transparent blue
         # rectangle on left or right part of figure depending on highlight type
         elif self.Highlight in [HIGHLIGHT_LEFT, HIGHLIGHT_RIGHT]:
-            destGC.SetPen(HIGHLIGHT_DROP_PEN)
-            destGC.SetBrush(HIGHLIGHT_DROP_BRUSH)
+            destGC.SetPen(HIGHLIGHT['DROP_PEN'])
+            destGC.SetBrush(HIGHLIGHT['DROP_BRUSH'])
 
             x_offset = (bbox.width / 2
                         if self.Highlight == HIGHLIGHT_RIGHT
