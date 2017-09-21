@@ -58,8 +58,6 @@ def GetDatatypeTypes():
     return [_("Directly"), _("Subrange"), _("Enumerated"), _("Array"), _("Structure")]
 
 
-DATATYPE_TYPES_DICT = dict([(_(datatype), datatype) for datatype in GetDatatypeTypes()])
-
 # -------------------------------------------------------------------------------
 #                            Structure Elements Table
 # -------------------------------------------------------------------------------
@@ -399,6 +397,8 @@ class DataTypeEditor(EditorPanel):
                                                "Up": self.StructureUpButton,
                                                "Down": self.StructureDownButton})
 
+        self.DATATYPE_TYPES_DICT = dict([(_(datatype), datatype) for datatype in GetDatatypeTypes()])
+
         def _AddStructureElement(new_row):
             self.StructureElementsTable.InsertRow(new_row, self.StructureElementDefaultValue.copy())
             self.RefreshTypeInfos()
@@ -684,7 +684,7 @@ class DataTypeEditor(EditorPanel):
         dialog.Destroy()
 
     def RefreshDisplayedInfos(self):
-        selected = DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]
+        selected = self.DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]
         if selected != self.CurrentPanel:
             if self.CurrentPanel == "Directly":
                 self.DirectlyPanel.Hide()
@@ -731,7 +731,7 @@ class DataTypeEditor(EditorPanel):
         self.SubrangeInitialValue.SetBounds(self.SubrangeMinimum.GetValue(), self.SubrangeMaximum.GetValue())
 
     def RefreshTypeInfos(self):
-        selected = DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]
+        selected = self.DATATYPE_TYPES_DICT[self.DerivationType.GetStringSelection()]
         infos = {"type": selected}
         if selected == "Directly":
             infos["base_type"] = self.DirectlyBaseType.GetStringSelection()
