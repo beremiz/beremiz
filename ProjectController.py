@@ -177,21 +177,7 @@ class Iec2CSettings():
         return self.ieclib_c_path
 
 
-class ProjectController(ConfigTreeNode, PLCControler):
-    """
-    This class define Root object of the confnode tree.
-    It is responsible of :
-    - Managing project directory
-    - Building project
-    - Handling PLCOpenEditor controler and view
-    - Loading user confnodes and instanciante them as children
-    - ...
-
-    """
-
-    # For root object, available Children Types are modules of the confnode packages.
-    CTNChildrenTypes = ExtractChildrenTypesFromCatalog(features.catalog)
-
+def GetProjectControllerXSD():
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="BeremizRoot">
@@ -219,6 +205,23 @@ class ProjectController(ConfigTreeNode, PLCControler):
       </xsd:element>
     </xsd:schema>
     """
+    return XSD
+
+
+class ProjectController(ConfigTreeNode, PLCControler):
+    """
+    This class define Root object of the confnode tree.
+    It is responsible of :
+    - Managing project directory
+    - Building project
+    - Handling PLCOpenEditor controler and view
+    - Loading user confnodes and instanciante them as children
+    - ...
+
+    """
+    # For root object, available Children Types are modules of the confnode packages.
+    CTNChildrenTypes = ExtractChildrenTypesFromCatalog(features.catalog)
+    XSD = GetProjectControllerXSD()
     EditorType = ProjectNodeEditor
     iec2c_cfg = None
 
