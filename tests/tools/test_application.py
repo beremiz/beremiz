@@ -150,6 +150,7 @@ class BeremizApplicationTest(UserApplicationTest):
             [self.app.frame.CTR._Run],
             [self.app.frame.CTR._Stop],
             [self.app.frame.CTR._Disconnect],
+            [self.app.frame.CTR._Clean],
         ]
         return user_actions
 
