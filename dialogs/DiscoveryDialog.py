@@ -26,7 +26,7 @@
 import socket
 import wx
 import wx.lib.mixins.listctrl as listmix
-from util.Zeroconf import *
+from zeroconf import ServiceBrowser, Zeroconf
 
 import connectors
 
@@ -207,7 +207,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def GetURI(self):
         return self.URI
 
-    def removeService(self, zeroconf, _type, name):
+    def remove_service(self, zeroconf, _type, name):
         wx.CallAfter(self._removeService, name)
 
     def _removeService(self, name):
@@ -227,19 +227,18 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
                 self.ServicesList.DeleteItem(idx)
                 break
 
-    def addService(self, zeroconf, _type, name):
+    def add_service(self, zeroconf, _type, name):
         wx.CallAfter(self._addService, _type, name)
 
     def _addService(self, _type, name):
         '''
         called when a service with the desired type is discovered.
         '''
-        info = self.ZeroConfInstance.getServiceInfo(_type, name)
-
+        info = self.ZeroConfInstance.get_service_info(_type, name)
         svcname = name.split(".")[0]
         typename = _type.split(".")[0][1:]
-        ip = str(socket.inet_ntoa(info.getAddress()))
-        port = info.getPort()
+        ip = str(socket.inet_ntoa(info.address))
+        port = info.port
 
         num_items = self.ServicesList.GetItemCount()
 

@@ -25,7 +25,7 @@
 from __future__ import print_function
 import socket
 import threading
-from util import Zeroconf
+import zeroconf
 
 service_type = '_PYRO._tcp.local.'
 
@@ -55,7 +55,7 @@ class ServicePublisher():
         self.name = name
         self.port = port
 
-        self.server = Zeroconf.Zeroconf(ip)
+        self.server = zeroconf.Zeroconf()
         print("MDNS brodcasting on :" + ip)
 
         if ip == "0.0.0.0":
@@ -63,8 +63,8 @@ class ServicePublisher():
         print("MDNS brodcasted service address :" + ip)
         self.ip_32b = socket.inet_aton(ip)
 
-        self.server.registerService(
-             Zeroconf.ServiceInfo(service_type,
+        self.server.register_service(
+             zeroconf.ServiceInfo(service_type,
                                   self.service_name,
                                   self.ip_32b,
                                   self.port,
@@ -75,14 +75,15 @@ class ServicePublisher():
         if self.retrytimer is not None:
             self.retrytimer.cancel()
 
-        self.server.unregisterService(
-                                      Zeroconf.ServiceInfo(service_type,
-                                                           self.service_name,
-                                                           self.ip_32b,
-                                                           self.port,
-                                                           properties=self.serviceproperties))
-        self.server.close()
-        self.server = None
+        if self.server is not None:
+            self.server.unregister_service(
+                zeroconf.ServiceInfo(service_type,
+                                     self.service_name,
+                                     self.ip_32b,
+                                     self.port,
+                                     properties=self.serviceproperties))
+            self.server.close()
+            self.server = None
 
     def gethostaddr(self, dst='224.0.1.41'):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

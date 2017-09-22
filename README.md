@@ -19,7 +19,7 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 * # Ubuntu/Debian :
 sudo apt-get install build-essential bison flex autoconf
 sudo apt-get install python-wxgtk3.0 pyro mercurial
-sudo apt-get install python-numpy python-nevow python-matplotlib python-lxml
+sudo apt-get install python-nevow python-matplotlib python-lxml python-zeroconf
 ```
 * Prepare
 ```
