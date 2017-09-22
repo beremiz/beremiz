@@ -127,7 +127,7 @@ class _SlaveCTN(NodeManager):
         # TODO change netname when name change
         NodeManager.__init__(self)
         odfilepath = self.GetSlaveODPath()
-        if(os.path.isfile(odfilepath)):
+        if os.path.isfile(odfilepath):
             self.OpenFileInCurrent(odfilepath)
         else:
             self.FilePath = ""

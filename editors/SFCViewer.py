@@ -346,7 +346,7 @@ class SFC_Viewer(Viewer):
            (isinstance(startblock, SFC_Objects) or isinstance(endblock, SFC_Objects)):
             # Full "SFC_StandardRules" table would be symmetrical and
             # to avoid duplicate records and minimize the table only upper part is defined.
-            if (direction == SOUTH or direction == EAST):
+            if direction == SOUTH or direction == EAST:
                 startblock, endblock = endblock, startblock
             start = self.GetBlockName(startblock)
             end = self.GetBlockName(endblock)

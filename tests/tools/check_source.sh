@@ -203,7 +203,8 @@ pylint_checks()
     enable=
     enable=$enable,E1601          # print statement used    
     # enable=$enable,W0403        # relative import
-
+    enable=$enable,C0325        # (superfluous-parens) Unnecessary parens after keyword
+    # enable=
 
     options=
     options="$options --rcfile=.pylint"

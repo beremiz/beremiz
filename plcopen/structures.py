@@ -110,7 +110,7 @@ def find_section(section_name, table):
     return the matching row without first field
     """
     fields = [None]
-    while(fields[0] != section_name):
+    while fields[0] != section_name:
         fields = table.pop(0)
     return fields[1:]
 
@@ -123,7 +123,7 @@ def get_standard_funtions_input_variables(table):
     variables = find_section("Standard_functions_variables_types", table)
     standard_funtions_input_variables = {}
     fields = [True, True]
-    while(fields[1]):
+    while fields[1]:
         fields = table.pop(0)
         variable_from_csv = dict([(champ, val) for champ, val in zip(variables, fields[1:]) if champ != ''])
         standard_funtions_input_variables[variable_from_csv['name']] = variable_from_csv['type']

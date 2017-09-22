@@ -987,7 +987,7 @@ def str(text):
 
 
 def ord(x):
-    if(isString(x) and len(x) is 1):
+    if isString(x) and len(x) is 1:
         JS("""
             return x.charCodeAt(0);
         """)

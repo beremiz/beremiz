@@ -567,7 +567,7 @@ class ConfigTreeNode:
                     # Load the confnode.xml file into parameters members
                     _self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
-                    if (_self.BaseParams.getName() != NewCTNName):
+                    if _self.BaseParams.getName() != NewCTNName:
                         raise Exception(
                             _("Project tree layout do not match confnode.xml {a1}!={a2} ").
                             format(a1=NewCTNName, a2=_self.BaseParams.getName()))
