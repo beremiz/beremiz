@@ -201,14 +201,13 @@ pylint_checks()
     disable=$disable,W0511 # fixme
 
     enable=
-    # enable=$enable,W0403   # relative import
+    enable=$enable,E1601          # print statement used    
+    # enable=$enable,W0403        # relative import
+
 
     options=
-    options="$options --additional-builtins=_"
-    options="$options -r no"
+    options="$options --rcfile=.pylint"
     # options="$options --py3k"   # report errors for Python 3 porting
-    # options="$options -E"       # report only major errors
-    options="$options --output-format=parseable"
 
     if [ -n "$enable" ]; then
         options="$options --disable=all"
@@ -216,9 +215,9 @@ pylint_checks()
     else
         options="$options --disable=$disable"
     fi
-    echo $options
+    # echo $options
 
-    find ./ -name '*.py' | grep -v '/build/' | xargs pylint $options
+    find ./ -name '*.py' | grep -v '/build/' | xargs pylint $options 
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -230,7 +229,7 @@ main()
     pep8_checks_default
     # pep8_checks_selected
     # flake8_checks
-    # pylint_checks
+    pylint_checks
     exit $exit_code
 }
 
