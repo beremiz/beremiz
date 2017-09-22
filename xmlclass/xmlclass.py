@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 import os
 import sys
 import re
@@ -1192,20 +1194,20 @@ class ClassFactory:
         items.sort()
         if self.FileName is not None:
             for filename, classes in items:
-                print "File '%s':" % filename
+                print("File '%s':" % filename)
                 class_items = classes.items()
                 class_items.sort()
                 for classname, xmlclass in class_items:
-                    print "%s: %s" % (classname, str(xmlclass))
+                    print("%s: %s" % (classname, str(xmlclass)))
         else:
             for classname, xmlclass in items:
-                print "%s: %s" % (classname, str(xmlclass))
+                print("%s: %s" % (classname, str(xmlclass)))
 
     def PrintClassNames(self):
         classnames = self.XMLClassDefinitions.keys()
         classnames.sort()
         for classname in classnames:
-            print classname
+            print(classname)
 
 
 def ComputeMultiplicity(name, infos):

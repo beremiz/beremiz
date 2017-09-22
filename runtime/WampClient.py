@@ -21,6 +21,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+from __future__ import print_function
 import sys
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
@@ -68,7 +70,7 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
-        print 'WAMP session joined by :', ID
+        print('WAMP session joined by :', ID)
         for name in ExposedCalls:
             reg = yield self.register(GetCallee(name), '.'.join((ID, name)))
 
@@ -81,7 +83,7 @@ class WampSession(wamp.ApplicationSession):
     def onLeave(self, details):
         global _WampSession
         _WampSession = None
-        print 'WAMP session left'
+        print('WAMP session left')
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
@@ -125,7 +127,7 @@ def RegisterWampClient(wampconf):
 
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
-    print "WAMP client connecting to :", WSClientConf["url"]
+    print("WAMP client connecting to :", WSClientConf["url"])
     return conn
 
 

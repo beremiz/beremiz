@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 import sys
 import traceback
 import atexit
@@ -43,13 +45,13 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession, _WampSessionEvent
         _WampSession = self
         _WampSessionEvent.set()
-        print 'WAMP session joined for :', self.config.extra["ID"]
+        print('WAMP session joined for :', self.config.extra["ID"])
 
     def onLeave(self, details):
         global _WampSession, _WampSessionEvent
         _WampSessionEvent.clear()
         _WampSession = None
-        print 'WAMP session left'
+        print('WAMP session left')
 
 
 PLCObjDefaults = {
@@ -121,7 +123,7 @@ def WAMP_connector_factory(uri, confnodesroot):
                 except Exception, e:
                     errmess = traceback.format_exc()
                     confnodesroot.logger.write_error(errmess+"\n")
-                    print errmess
+                    print(errmess)
                     # confnodesroot._SetConnector(None)
             return PLCObjDefaults.get(funcname)
         return catcher_func

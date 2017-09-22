@@ -21,6 +21,8 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+
+from __future__ import print_function
 import socket
 import threading
 from util import Zeroconf
@@ -54,11 +56,11 @@ class ServicePublisher():
         self.port = port
 
         self.server = Zeroconf.Zeroconf(ip)
-        print "MDNS brodcasting on :"+ip
+        print("MDNS brodcasting on :" + ip)
 
         if ip == "0.0.0.0":
             ip = self.gethostaddr()
-        print "MDNS brodcasted service address :"+ip
+        print("MDNS brodcasted service address :" + ip)
         self.ip_32b = socket.inet_aton(ip)
 
         self.server.registerService(

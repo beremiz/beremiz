@@ -22,6 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from __future__ import print_function
 import os
 import wx
 
@@ -58,7 +59,7 @@ def open_lin_pdf(readerexepath, pdffile, pagenum=None):
     if pagenum is None:
         os.system("%s -remote DS301 %s &" % (readerexepath, pdffile))
     else:
-        print "Open pdf %s at page %d" % (pdffile, pagenum)
+        print("Open pdf %s at page %d" % (pdffile, pagenum))
         os.system("%s -remote DS301 %s %d &" % (readerexepath, pdffile, pagenum))
 
 

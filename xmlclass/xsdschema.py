@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 import os
 import re
 import datetime
@@ -1082,7 +1084,7 @@ class XSDClassFactory(ClassFactory):
         if element is None:
             if name in self.CurrentCompilations:
                 if self.Debug:
-                    print "Warning : \"%s\" is circular referenced!" % element_name
+                    print("Warning : \"%s\" is circular referenced!" % element_name)
             else:
                 raise ValueError("\"%s\" isn't defined!" % element_name)
         if element_type is not None and element["type"] != element_type:
