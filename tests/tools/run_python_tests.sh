@@ -1,5 +1,6 @@
 #!/bin/sh
 
+LC_ALL=ru_RU.utf-8
 
 export DISPLAY=:42
 Xvfb $DISPLAY -screen 0 1280x1024x24 &
