@@ -467,7 +467,7 @@ if __name__ == "__main__":
         printUsage(e[0])
         sys.exit(1)
     for (opt, val) in optionList:
-        if (opt == '-h'):
+        if opt == '-h':
             printUsage()
             sys.exit(0)
         option[optionKey[opt]] = 1 if val == '' else val

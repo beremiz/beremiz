@@ -787,7 +787,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if source_panel is not None:
             source_panel_idx = self.GraphicPanels.index(source_panel)
 
-            if (len(source_panel.GetItems()) == 1):
+            if len(source_panel.GetItems()) == 1:
 
                 if source_panel_idx < idx:
                     self.GraphicPanels.insert(idx, source_panel)
@@ -857,7 +857,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                             source_panel.ReleaseMouse()
                         source_panel.Destroy()
                         self.GraphicPanels.remove(source_panel)
-            elif (merge_type != graph_type and len(target_panel.Items) == 2):
+            elif merge_type != graph_type and len(target_panel.Items) == 2:
                 target_panel.RemoveItem(source_item)
             else:
                 target_panel = None

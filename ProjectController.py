@@ -1361,7 +1361,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if status is None:
             self._SetConnector(None, False)
             status = "Disconnected"
-        if(self.previous_plcstate != status):
+        if self.previous_plcstate != status:
             for args in {
                     "Started":      [("_Run", False),
                                      ("_Stop", True)],

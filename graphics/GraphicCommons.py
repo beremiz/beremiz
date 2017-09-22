@@ -2652,7 +2652,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         scalex, scaley = dc.GetUserScale()
         dc.SetUserScale(1, 1)
         # If user trying to connect wire with wrong input, highlight will become red.
-        if self.ErrHighlight and not (self.EndConnected):
+        if self.ErrHighlight and not self.EndConnected:
             highlightcolor = wx.RED
         else:
             highlightcolor = HIGHLIGHTCOLOR
