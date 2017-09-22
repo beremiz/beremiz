@@ -23,6 +23,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 import wx
 import os
 import sys
@@ -375,8 +377,8 @@ class PLCOpenEditorApp(wx.App):
     # def SetOpenFile(
 
     def PrintUsage(self):
-        print "\nUsage of PLCOpenEditor.py :"
-        print "\n   %s [Filepath]\n" % sys.argv[0]
+        print("\nUsage of PLCOpenEditor.py :")
+        print("\n   %s [Filepath]\n" % sys.argv[0])
 
     def ParseCommandLine(self):
         # Parse options given to PLCOpenEditor in command line

@@ -23,6 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from __future__ import print_function
 import os
 import sys
 import getopt
@@ -61,15 +62,15 @@ class BeremizIDELauncher:
                 time.sleep(0.01)
 
     def Usage(self):
-        print "Usage:"
-        print "%s [Options] [Projectpath] [Buildpath]" % sys.argv[0]
-        print ""
-        print "Supported options:"
-        print "-h --help                    Print this help"
-        print "-u --updatecheck URL         Retrieve update information by checking URL"
-        print "-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions"
-        print ""
-        print ""
+        print("Usage:")
+        print("%s [Options] [Projectpath] [Buildpath]" % sys.argv[0])
+        print("")
+        print("Supported options:")
+        print("-h --help                    Print this help")
+        print("-u --updatecheck URL         Retrieve update information by checking URL")
+        print("-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions")
+        print("")
+        print("")
 
     def SetCmdOptions(self):
         self.shortCmdOpts = "hu:e:"

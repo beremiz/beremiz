@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 from types import *
 
 # Translation between IEC types and Can Open types
@@ -697,7 +699,7 @@ if __name__ == "__main__":
     import getopt
 
     def usage():
-        print """
+        print("""
 Usage of config_utils.py test :
 
     %s [options]
@@ -710,7 +712,7 @@ Options:
             Reset the reference result of config_utils test.
             Use with caution. Be sure that config_utils
             is currently working properly.
-""" % sys.argv[0]
+""" % sys.argv[0])
 
     # Boolean that indicate if reference result must be redefined
     reset = False
@@ -764,7 +766,7 @@ Options:
     try:
         masternode, pointedvariables = GenerateConciseDCF(locations, (0, 1), nodelist, True, "TestNode")
     except ValueError, message:
-        print "%s\nTest Failed!" % message
+        print("%s\nTest Failed!" % message)
         sys.exit()
 
     import pprint
@@ -780,7 +782,7 @@ Options:
         testfile.write(result)
         testfile.close()
 
-        print "Reset Successful!"
+        print("Reset Successful!")
     else:
         import os
 

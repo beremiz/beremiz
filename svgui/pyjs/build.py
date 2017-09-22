@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import sys
 import os
 import shutil
@@ -103,7 +104,7 @@ def copytree_exists(src, dst, symlinks=False):
         except (IOError, os.error), why:
             errors.append((srcname, dstname, why))
     if errors:
-        print errors
+        print(errors)
 
 
 def check_html_file(source_file, dest_path):
@@ -175,24 +176,24 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
     msg = "Building '%(app_name)s' to output directory '%(output)s'" % locals()
     if debug:
         msg += " with debugging statements"
-    print msg
+    print(msg)
 
     # check the output directory
     if os.path.exists(output) and not os.path.isdir(output):
-        print >>sys.stderr, "Output destination %s exists and is not a directory" % output
+        print("Output destination %s exists and is not a directory" % output, file=sys.stderr)
         return
     if not os.path.isdir(output):
         try:
-            print "Creating output directory"
+            print("Creating output directory")
             os.mkdir(output)
         except StandardError, e:
-            print >>sys.stderr, "Exception creating output directory %s: %s" % (output, e)
+            print("Exception creating output directory %s: %s" % (output, e), file=sys.stderr)
 
     # public dir
     for p in pyjs.path:
         pub_dir = join(p, 'public')
         if isdir(pub_dir):
-            print "Copying: public directory of library %r" % p
+            print("Copying: public directory of library %r" % p)
             copytree_exists(pub_dir, output)
 
     # AppName.html - can be in current or public directory
@@ -205,27 +206,27 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
             try:
                 shutil.copy(html_input_filename, html_output_filename)
             except Exception:
-                print >>sys.stderr, "Warning: Missing module HTML file %s" % html_input_filename
+                print("Warning: Missing module HTML file %s" % html_input_filename, file=sys.stderr)
 
-            print "Copying: %(html_input_filename)s" % locals()
+            print("Copying: %(html_input_filename)s" % locals())
 
     if check_html_file(html_input_filename, output):
-        print >>sys.stderr, "Warning: Module HTML file %s has been auto-generated" % html_input_filename
+        print("Warning: Module HTML file %s has been auto-generated" % html_input_filename, file=sys.stderr)
 
     # pygwt.js
 
-    print "Copying: pygwt.js"
+    print("Copying: pygwt.js")
 
     pygwt_js_template = read_boilerplate(data_dir, "pygwt.js")
     pygwt_js_output = open(join(output, "pygwt.js"), "w")
 
-    print >>pygwt_js_output, pygwt_js_template
+    print(pygwt_js_template, file=pygwt_js_output)
 
     pygwt_js_output.close()
 
     # Images
 
-    print "Copying: Images and History"
+    print("Copying: Images and History")
     copy_boilerplate(data_dir, "corner_dialog_topleft_black.png", output)
     copy_boilerplate(data_dir, "corner_dialog_topright_black.png", output)
     copy_boilerplate(data_dir, "corner_dialog_bottomright_black.png", output)
@@ -247,7 +248,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
 
     # AppName.nocache.html
 
-    print "Creating: %(app_name)s.nocache.html" % locals()
+    print("Creating: %(app_name)s.nocache.html" % locals())
 
     home_nocache_html_template = read_boilerplate(data_dir, "home.nocache.html")
     home_nocache_html_output = open(join(output, app_name + ".nocache.html"),
@@ -258,16 +259,17 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
     script_selectors = StringIO()
 
     for platform, file_prefix in app_files:
-        print >> script_selectors, select_tmpl % (platform, file_prefix)
+        print(select_tmpl % (platform, file_prefix), file=script_selectors)
 
-    print >>home_nocache_html_output, home_nocache_html_template % dict(
-        app_name=app_name,
-        script_selectors=script_selectors.getvalue(),
-    )
+    print(
+        home_nocache_html_template % dict(
+            app_name=app_name,
+            script_selectors=script_selectors.getvalue(),
+        ), file=home_nocache_html_output)
 
     home_nocache_html_output.close()
 
-    print "Done. You can run your app by opening '%(html_output_filename)s' in a browser" % locals()
+    print("Done. You can run your app by opening '%(html_output_filename)s' in a browser" % locals())
 
 
 def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
@@ -280,7 +282,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
     for name in os.listdir(output):
         if CACHE_HTML_PAT.match(name):
             p = join(output, name)
-            print "Deleting existing app file %s" % p
+            print("Deleting existing app file %s" % p)
             os.unlink(p)
 
     app_files = []
@@ -334,7 +336,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             pd = overrides.setdefault(mname, {})
             pd[platform] = name
 
-        print appcode
+        print(appcode)
         # mod_code[platform][app_name] = appcode
 
         # platform.Module.cache.js
@@ -432,7 +434,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             else:
                 mod_cache_name = "%s.cache.js" % (mod_name)
 
-            print "Creating: " + mod_cache_name
+            print("Creating: " + mod_cache_name)
 
             modlevels = make_deps(None, dependencies, dependencies[mod_name])
 
@@ -456,7 +458,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             else:
                 mod_cache_html_output = StringIO()
 
-            print >>mod_cache_html_output, mod_cache_html_template % dict(
+            print(mod_cache_html_template % dict(
                 mod_name=mod_name,
                 app_name=app_name,
                 modnames=modnames,
@@ -464,7 +466,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
                 mod_libs=mod_libs[platform][mod_name],
                 dynamic=dynamic,
                 mod_code=mod_code_,
-            )
+            ), file=mod_cache_html_output)
 
             if dynamic:
                 mod_cache_html_output.close()
@@ -518,8 +520,8 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
         out_file.write(file_contents)
         out_file.close()
         app_files.append((platform.lower(), file_name))
-        print "Created app file %s:%s: %s" % (
-            app_name, platform, out_path)
+        print("Created app file %s:%s: %s" % (
+            app_name, platform, out_path))
 
     return app_files
 
@@ -619,7 +621,7 @@ def nodeps_list(mod_list, deps):
 
 
 def make_deps(app_name, deps, mod_list):
-    print "Calculating Dependencies ..."
+    print("Calculating Dependencies ...")
     mod_list = filter_mods(app_name, mod_list)
     deps = filter_deps(app_name, deps)
 

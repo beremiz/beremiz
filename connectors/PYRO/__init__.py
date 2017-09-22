@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 import Pyro
 import Pyro.core
 import Pyro.util
@@ -123,7 +125,7 @@ def PYRO_connector_factory(uri, confnodesroot):
                 # confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
                 confnodesroot.logger.write_error(errmess + "\n")
-                print errmess
+                print(errmess)
                 confnodesroot._SetConnector(None)
             return default
         return catcher_func

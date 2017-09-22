@@ -23,6 +23,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import print_function
 import os
 import sys
 import getopt
@@ -37,7 +39,7 @@ import util.paths as paths
 
 
 def usage():
-    print """
+    print("""
 Usage of Beremiz PLC execution service :\n
 %s {[-n servicename] [-i IP] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
            -n        - zeroconf service name (default:disabled)
@@ -52,14 +54,14 @@ Usage of Beremiz PLC execution service :\n
            -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
-""" % sys.argv[0]
+""" % sys.argv[0])
 
 
 try:
     opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
 except getopt.GetoptError, err:
     # print help information and exit:
-    print str(err)  # will print something like "option -a not recognized"
+    print(str(err))  # will print something like "option -a not recognized"
     usage()
     sys.exit(2)
 
@@ -172,7 +174,7 @@ if enablewx:
         import wx
         havewx = True
     except ImportError:
-        print "Wx unavailable !"
+        print("Wx unavailable !")
         havewx = False
 
     if havewx:
@@ -302,14 +304,14 @@ if enablewx:
                     if plcstatus is "Stopped":
                         self.pyroserver.plcobj.StartPLC()
                     else:
-                        print _("PLC is empty or already started.")
+                        print(_("PLC is empty or already started."))
 
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
                     if self.pyroserver.plcobj.GetPLCstatus()[0] == "Started":
                         Thread(target=self.pyroserver.plcobj.StopPLC).start()
                     else:
-                        print _("PLC is not started.")
+                        print(_("PLC is not started."))
 
             def OnTaskBarChangeInterface(self, evt):
                 ip_addr = self.pyroserver.ip_addr
@@ -433,13 +435,13 @@ class Server():
                                 self.pyruntimevars)
         uri = self.daemon.connect(self.plcobj, "PLCObject")
 
-        print _("Pyro port :"), self.port
-        print _("Pyro object's uri :"), uri
+        print(_("Pyro port :"), self.port)
+        print(_("Pyro object's uri :"), uri)
 
         # Beremiz IDE detects daemon start by looking
         # for self.workdir in the daemon's stdout.
         # Therefore don't delete the following line
-        print _("Current working directory :"), self.workdir
+        print(_("Current working directory :"), self.workdir)
 
         # Configure and publish service
         # Not publish service if localhost in address params
@@ -447,7 +449,7 @@ class Server():
            self.ip_addr is not None and \
            self.ip_addr != "localhost" and \
            self.ip_addr != "127.0.0.1":
-            print _("Publishing service on local network")
+            print(_("Publishing service on local network"))
             self.servicepublisher = ServicePublisher.ServicePublisher()
             self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
@@ -484,7 +486,7 @@ if enabletwisted:
 
             havetwisted = True
         except ImportError:
-            print _("Twisted unavailable.")
+            print(_("Twisted unavailable."))
             havetwisted = False
 
 pyruntimevars = {}
@@ -570,7 +572,7 @@ if havetwisted:
         try:
             import runtime.NevowServer as NS
         except Exception, e:
-            print _("Nevow/Athena import failed :"), e
+            print(_("Nevow/Athena import failed :"), e)
             webport = None
         NS.WorkingDir = WorkingDir
 
@@ -578,7 +580,7 @@ if havetwisted:
         try:
             import runtime.WampClient as WC
         except Exception, e:
-            print _("WAMP import failed :"), e
+            print(_("WAMP import failed :"), e)
             wampconf = None
 
 # Load extensions
@@ -594,7 +596,7 @@ if havetwisted:
             pyruntimevars["website"] = website
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception, e:
-            print _("Nevow Web service failed. "), e
+            print(_("Nevow Web service failed. "), e)
 
     if wampconf is not None:
         try:
@@ -602,7 +604,7 @@ if havetwisted:
             pyruntimevars["wampsession"] = WC.GetSession
             WC.SetServer(pyroserver)
         except Exception, e:
-            print _("WAMP client startup failed. "), e
+            print(_("WAMP client startup failed. "), e)
 
 
 if havetwisted or havewx:

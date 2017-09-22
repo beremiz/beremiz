@@ -78,6 +78,7 @@ You can get the gettext tools from the following sites:
 # Module Import
 # -------------
 #
+from __future__ import print_function
 import os
 import sys
 import wx
@@ -112,7 +113,7 @@ def getlanguageDict():
 
 def verbosePrint(verbose, str):
     if verbose:
-        print str
+        print(str)
 
 
 def processCustomFiles(filein, fileout, regexp, prefix=''):
@@ -300,7 +301,7 @@ def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=Non
 
 def printUsage(errorMsg=None):
     """Displays how to use this script from the command line."""
-    print """
+    print("""
     ##################################################################################
     #   mki18n :   Make internationalization files.                                  #
     #              Uses the GNU gettext system to create PO (Portable Object) files  #
@@ -330,9 +331,9 @@ def printUsage(errorMsg=None):
     #   specify the path of the target application.  If you leave it out mki18n      #
     #   will use the current directory as the application main directory.            #
     #                                                                                #
-    ##################################################################################"""
+    ##################################################################################""")
     if errorMsg:
-        print "\n   ERROR: %s" % errorMsg
+        print("\n   ERROR: %s" % errorMsg)
 
 
 def fileBaseOf(filename, withPath=0):
@@ -473,7 +474,7 @@ if __name__ == "__main__":
     if len(pargs) == 0:
         appDirPath = os.getcwd()
         if option['verbose']:
-            print "No project directory given. Using current one:  %s" % appDirPath
+            print("No project directory given. Using current one:  %s" % appDirPath)
     elif len(pargs) == 1:
         appDirPath = pargs[0]
     else:
@@ -483,7 +484,7 @@ if __name__ == "__main__":
         # If no domain specified, use the name of the target directory
         option['domain'] = fileBaseOf(appDirPath)
     if option['verbose']:
-        print "Application domain used is: '%s'" % option['domain']
+        print("Application domain used is: '%s'" % option['domain'])
     if option['po']:
         try:
             makePO(appDirPath, option['domain'], option['verbose'])
