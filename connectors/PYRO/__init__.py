@@ -84,13 +84,13 @@ def PYRO_connector_factory(uri, confnodesroot):
         schemename = "PYROLOC"
     if location.find(service_type) != -1:
         try:
-            from util.Zeroconf import Zeroconf
+            from zeroconf import Zeroconf
             r = Zeroconf()
-            i = r.getServiceInfo(service_type, location)
+            i = r.get_service_info(service_type, location)
             if i is None:
                 raise Exception("'%s' not found" % location)
-            ip = str(socket.inet_ntoa(i.getAddress()))
-            port = str(i.getPort())
+            ip = str(socket.inet_ntoa(i.address))
+            port = str(i.port)
             newlocation = ip + ':' + port
             confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
             location = newlocation
