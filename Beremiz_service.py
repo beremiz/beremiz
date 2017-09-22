@@ -29,7 +29,7 @@ import os
 import sys
 import getopt
 import threading
-from threading import Thread
+from threading import Thread, currentThread
 import traceback
 import __builtin__
 import Pyro.core as pyro
@@ -179,7 +179,6 @@ if enablewx:
 
     if havewx:
         import re
-        from threading import Thread, currentThread
         from types import *
 
         if wx.VERSION >= (3, 0, 0):
@@ -478,7 +477,6 @@ if enabletwisted:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         try:
-            from threading import Thread, currentThread
             if havewx:
                 from twisted.internet import wxreactor
                 wxreactor.install()

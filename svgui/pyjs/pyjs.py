@@ -1750,7 +1750,6 @@ usage = """
 
 
 def main():
-    import sys
     if len(sys.argv) < 2:
         print(usage % sys.argv[0], file=sys.stderr)
         sys.exit(1)

@@ -39,9 +39,7 @@ import wx.lib.statbmp
 import wx.stc
 import cPickle
 import types
-import time
 import re
-import time
 import commands
 from threading import Lock, Timer, currentThread
 from time import time as gettime
