@@ -58,7 +58,7 @@ NameTypeSeparator = '@'
 XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}")
 
 
-class ConfigTreeNode:
+class ConfigTreeNode(object):
     """
     This class is the one that define confnodes.
     """

@@ -40,7 +40,7 @@ def getNewId():
     return currentId
 
 
-class SvguiWidget:
+class SvguiWidget(object):
 
     def __init__(self, classname, id, **kwargs):
         self.classname = classname

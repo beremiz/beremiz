@@ -93,7 +93,7 @@ def GetAddMenuItems():
     return ExtractMenuItemsFromCatalog(features.catalog)
 
 
-class Iec2CSettings():
+class Iec2CSettings(object):
     def __init__(self):
         self.iec2c = None
         self.iec2c_buildopts = None

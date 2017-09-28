@@ -84,7 +84,7 @@ def _init_and_compare(function, v1, v2):
     return v1
 
 
-class rect:
+class rect(object):
     """
     Helper class for bounding_box calculation
     """

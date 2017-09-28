@@ -49,7 +49,7 @@ HIGHLIGHT = {
 # -------------------------------------------------------------------------------
 
 
-class DebugVariableViewer:
+class DebugVariableViewer(object):
     """
     Class that implements a generic viewer that display a list of variable values
     This class has to be inherited to effectively display variable values

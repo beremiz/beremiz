@@ -35,7 +35,7 @@ DEBUG_REFRESH_LOCK = Lock()  # Common refresh lock for all debug viewers
 # -------------------------------------------------------------------------------
 
 
-class DebugViewer:
+class DebugViewer(object):
     """
     Class that implements common behavior of every viewers able to display debug
     values

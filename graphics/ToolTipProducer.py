@@ -32,7 +32,7 @@ from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
 # -------------------------------------------------------------------------------
 
 
-class ToolTipProducer:
+class ToolTipProducer(object):
     """
     Class that implements an element that generate Tool Tip
     """

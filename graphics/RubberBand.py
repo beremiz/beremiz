@@ -32,7 +32,7 @@ from graphics.GraphicCommons import GetScaledEventPosition
 # -------------------------------------------------------------------------------
 
 
-class RubberBand:
+class RubberBand(object):
     """
     Class that implements a rubberband for graphic Viewers
     """

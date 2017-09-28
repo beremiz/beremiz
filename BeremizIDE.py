@@ -115,7 +115,7 @@ MainThread = currentThread().ident
 REFRESH_PERIOD = 0.1
 
 
-class LogPseudoFile:
+class LogPseudoFile(object):
     """ Base class for file like objects to facilitate StdOut for the Shell."""
     def __init__(self, output, risecall):
         self.red_white = 1

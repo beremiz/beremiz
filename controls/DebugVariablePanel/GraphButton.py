@@ -31,7 +31,7 @@ from util.BitmapLibrary import GetBitmap
 # -------------------------------------------------------------------------------
 
 
-class GraphButton():
+class GraphButton(object):
     """
     Class that implements a custom button for graphic Viewer
     """
