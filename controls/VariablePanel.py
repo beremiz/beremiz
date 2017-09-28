@@ -140,7 +140,7 @@ class VariableTable(CustomTable):
             value = getattr(self.data[row], colname, "")
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
-                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x: "..".join(x), value[2])), value[1])
+                    return "ARRAY [%s] OF %s" % (",".join(map("..".join, value[2])), value[1])
             if not isinstance(value, (StringType, UnicodeType)):
                 value = str(value)
             if colname in ["Class", "Option"]:

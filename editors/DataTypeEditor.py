@@ -82,7 +82,7 @@ class ElementsTable(CustomTable):
 
             if colname == "Type" and isinstance(value, TupleType):
                 if value[0] == "array":
-                    return "ARRAY [%s] OF %s" % (",".join(map(lambda x: "..".join(x), value[2])), value[1])
+                    return "ARRAY [%s] OF %s" % (",".join(map("..".join, value[2])), value[1])
             return value
 
     def SetValue(self, row, col, value):
@@ -510,7 +510,7 @@ class DataTypeEditor(EditorPanel):
                 self.EnumeratedInitialValue.SetStringSelection(type_infos["initial"])
             elif type_infos["type"] == "Array":
                 self.ArrayBaseType.SetStringSelection(type_infos["base_type"])
-                self.ArrayDimensions.SetStrings(map(lambda x: "..".join(x), type_infos["dimensions"]))
+                self.ArrayDimensions.SetStrings(map("..".join, type_infos["dimensions"]))
                 self.ArrayInitialValue.SetValue(type_infos["initial"])
             elif type_infos["type"] == "Structure":
                 self.StructureElementsTable.SetData(type_infos["elements"])

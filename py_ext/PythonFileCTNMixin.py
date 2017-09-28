@@ -95,8 +95,7 @@ class PythonFileCTNMixin(CodeFile):
 
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
-        location_str = "_".join(map(lambda x: str(x),
-                                self.GetCurrentLocation()))
+        location_str = "_".join(map(str, self.GetCurrentLocation()))
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
         pyextname = self.CTNName()

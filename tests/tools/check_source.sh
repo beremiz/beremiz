@@ -192,19 +192,21 @@ pylint_checks()
     export PYTHONPATH="$PWD/../CanFestival-3/objdictgen":$PYTHONPATH
 
     disable=
-    disable=$disable,C0103 # invalid-name
-    disable=$disable,C0111 # missing-docstring
-    disable=$disable,W0703 # broad-except
-    disable=$disable,C0326 # bad whitespace
-    disable=$disable,C0301 # Line too long
-    disable=$disable,C0302 # Too many lines in module
-    disable=$disable,W0511 # fixme
+    disable=$disable,C0103        # invalid-name
+    disable=$disable,C0111        # missing-docstring
+    disable=$disable,W0703        # broad-except
+    disable=$disable,C0326        # bad whitespace
+    disable=$disable,C0301        # Line too long
+    disable=$disable,C0302        # Too many lines in module
+    disable=$disable,W0511        # fixme
+    disable=$disable,W0110        # (deprecated-lambda) map/filter on lambda could be replaced by comprehension
 
     enable=
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword    
     enable=$enable,W0404          # reimported module    
-    enable=$enable,C0411          # (wrong-import-order), ] standard import "import x" comes before "import y"
+    enable=$enable,C0411          # (wrong-import-order), standard import "import x" comes before "import y"
+    enable=$enable,W0108          # (unnecessary-lambda), Lambda may not be necessary
 
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in
