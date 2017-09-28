@@ -30,13 +30,13 @@ import os
 import sys
 import traceback
 import time
+from time import localtime
 import shutil
 import re
 import tempfile
 from math import ceil
 from types import ListType
 from threading import Timer, Lock, Thread
-from time import localtime
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from itertools import izip
@@ -44,7 +44,6 @@ from itertools import izip
 import wx
 
 import features
-import targets
 import connectors
 import util.paths as paths
 from util.misc import CheckPathPerm, GetClassImporter
@@ -58,8 +57,9 @@ from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
-from targets.typemapping import DebugTypesSize, LogLevelsCount, LogLevels
-from targets.typemapping import UnpackDebugBuffer
+import targets
+from targets.typemapping import DebugTypesSize, \
+    LogLevelsCount, LogLevels, UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
 base_folder = paths.AbsParentDir(__file__)

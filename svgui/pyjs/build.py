@@ -2,13 +2,13 @@
 
 from __future__ import print_function
 import sys
-import os
 import shutil
 import time
 import re
+import os
+from os.path import join, dirname, basename, abspath, split, isfile, isdir
 from hashlib import md5
 from copy import copy
-from os.path import join, dirname, basename, abspath, split, isfile, isdir
 from optparse import OptionParser
 from cStringIO import StringIO
 

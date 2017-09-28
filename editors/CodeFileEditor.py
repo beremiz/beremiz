@@ -32,12 +32,13 @@ import wx.lib.buttons
 from plcopen.plcopen import TestTextElement
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS, DefaultType
 from controls import CustomGrid, CustomTable
-from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
-from util.BitmapLibrary import GetBitmap
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from controls.VariablePanel import VARIABLE_NAME_SUFFIX_MODEL
-from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
+from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
+
 
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT,
  STC_CODE_SECTION] = range(15, 18)

@@ -30,9 +30,9 @@ import tempfile
 import shutil
 import random
 import re
-import time
 import types
 import commands
+import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
 
@@ -43,15 +43,16 @@ import wx.stc
 
 
 import version
-import util.paths as paths
 from docutil import OpenHtmlFrame
 from editors.EditorPanel import EditorPanel
 from editors.Viewer import Viewer
 from editors.TextViewer import TextViewer
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
+from util import paths as paths
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
+from util.BitmapLibrary import GetBitmap
 from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
 from controls import EnhancedStatusBar as esb
@@ -84,8 +85,6 @@ from IDEFrame import \
     AppendMenu,\
     EncodeFileSystemPath, \
     DecodeFileSystemPath
-
-from util.BitmapLibrary import GetBitmap
 
 
 beremiz_dir = paths.AbsDir(__file__)

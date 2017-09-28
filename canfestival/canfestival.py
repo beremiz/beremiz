@@ -50,15 +50,14 @@ except ImportError:
 
     from nodelist import NodeList
 
-
 from nodemanager import NodeManager
-import config_utils
 import gen_cfile
 import eds_utils
 import canfestival_config as local_canfestival_config
 
 from commondialogs import CreateNodeDialog
 from subindextable import IECTypeConversion, SizeConversion
+import config_utils
 from SlaveEditor import SlaveEditor, MasterViewer
 from NetworkEditor import NetworkEditor
 

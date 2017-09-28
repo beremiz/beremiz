@@ -24,6 +24,9 @@
 
 
 from __future__ import print_function
+import os
+import sys
+import getopt
 from types import *
 
 # Translation between IEC types and Can Open types
@@ -694,10 +697,6 @@ def LocalODPointers(locations, current_location, slave):
 
 
 if __name__ == "__main__":
-    import os
-    import sys
-    import getopt
-
     def usage():
         print("""
 Usage of config_utils.py test :
@@ -784,8 +783,6 @@ Options:
 
         print("Reset Successful!")
     else:
-        import os
-
         testfile = open("test_config/result_tmp.txt", "w")
         testfile.write(result)
         testfile.close()

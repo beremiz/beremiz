@@ -34,6 +34,7 @@ import wx
 import version
 import util.paths as paths
 import util.ExceptionHandler
+from util.misc import InstallLocalRessources
 from IDEFrame import IDEFrame, AppendMenu
 from IDEFrame import \
     TITLE, \
@@ -50,7 +51,6 @@ from editors.Viewer import Viewer
 from PLCControler import PLCControler
 from dialogs import ProjectDialog
 from dialogs.AboutDialog import ShowAboutDialog
-from util.misc import InstallLocalRessources
 
 
 # -------------------------------------------------------------------------------
