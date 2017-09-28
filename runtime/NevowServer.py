@@ -191,7 +191,7 @@ def RegisterWebsite(port):
     return website
 
 
-class statuslistener:
+class statuslistener(object):
     def __init__(self, site):
         self.oldstate = None
         self.site = site

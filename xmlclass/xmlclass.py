@@ -752,7 +752,7 @@ def GenerateElement(element_name, attributes, elements_model,
     return ExtractElement
 
 
-class ClassFactory:
+class ClassFactory(object):
     """
     Class that generate class from an XML Tree
     """

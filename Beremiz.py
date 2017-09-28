@@ -31,7 +31,7 @@ import time
 import util.paths as paths
 
 
-class BeremizIDELauncher:
+class BeremizIDELauncher(object):
     def __init__(self):
         self.app = None
         self.frame = None

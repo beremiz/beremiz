@@ -33,7 +33,7 @@ import time
 includes_re = re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
 
-class toolchain_makefile():
+class toolchain_makefile(object):
     def __init__(self, CTRInstance):
         self.CTRInstance = CTRInstance
         self.md5key = None

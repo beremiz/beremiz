@@ -277,7 +277,7 @@ class PLCObject(pyro.ObjBase):
         self.python_runtime_vars = globals().copy()
         self.python_runtime_vars.update(self.pyruntimevars)
 
-        class PLCSafeGlobals:
+        class PLCSafeGlobals(object):
             def __getattr__(_self, name):
                 try:
                     t = self.python_runtime_vars["_"+name+"_ctype"]

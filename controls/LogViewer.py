@@ -183,7 +183,7 @@ class LogScrollBar(wx.Panel):
 BUTTON_SIZE = (70, 15)
 
 
-class LogButton():
+class LogButton(object):
 
     def __init__(self, label, callback):
         self.Position = wx.Point(0, 0)
@@ -229,7 +229,7 @@ DATE_INFO_SIZE = 10
 MESSAGE_INFO_SIZE = 18
 
 
-class LogMessage:
+class LogMessage(object):
 
     def __init__(self, tv_sec, tv_nsec, level, level_bitmap, msg):
         self.Date = datetime.utcfromtimestamp(tv_sec)

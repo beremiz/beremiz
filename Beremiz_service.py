@@ -393,7 +393,7 @@ def default_evaluator(tocall, *args, **kwargs):
     return res
 
 
-class Server():
+class Server(object):
     def __init__(self, servicename, ip_addr, port,
                  workdir, argv, autostart=False,
                  statuschange=None, evaluator=default_evaluator,

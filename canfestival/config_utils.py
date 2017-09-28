@@ -156,7 +156,7 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     return "".join(dcfdata), len(dcfdata)
 
 
-class ConciseDCFGenerator:
+class ConciseDCFGenerator(object):
 
     def __init__(self, nodelist, nodename):
         # Dictionary of location informations classed by name

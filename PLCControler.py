@@ -169,7 +169,7 @@ class _VariableInfos(object):
         return _VariableInfos(*[getattr(self, attr) for attr in self.__slots__])
 
 
-class VariablesInfosFactory:
+class VariablesInfosFactory(object):
 
     def __init__(self, variables):
         self.Variables = variables
@@ -242,7 +242,7 @@ class _VariablesTreeItemInfos(object):
         return _VariableTreeItem(*[getattr(self, attr) for attr in self.__slots__])
 
 
-class VariablesTreeInfosFactory:
+class VariablesTreeInfosFactory(object):
 
     def __init__(self):
         self.Root = None
@@ -264,7 +264,7 @@ class VariablesTreeInfosFactory:
                     [_BoolValue] * 2, args) + [[]])))
 
 
-class InstancesPathFactory:
+class InstancesPathFactory(object):
     """Helpers object for generating instances path list"""
     def __init__(self, instances):
         self.Instances = instances
@@ -273,7 +273,7 @@ class InstancesPathFactory:
         self.Instances.append(args[0][0])
 
 
-class InstanceTagName:
+class InstanceTagName(object):
     """Helpers object for generating instance tagname"""
 
     def __init__(self, controller):
@@ -387,7 +387,7 @@ class _ActionInfos(object):
         return _ActionInfos(*[getattr(self, attr) for attr in self.__slots__])
 
 
-class BlockInstanceFactory:
+class BlockInstanceFactory(object):
 
     def __init__(self, block_instances):
         self.BlockInstances = block_instances
@@ -461,7 +461,7 @@ pou_block_instances_xslt = etree.parse(
 UNDO_BUFFER_LENGTH = 20
 
 
-class UndoBuffer:
+class UndoBuffer(object):
     """
     Undo Buffer for PLCOpenEditor
     Class implementing a buffer of changes made on the current editing model
@@ -544,7 +544,7 @@ class UndoBuffer:
         return self.LastSave == self.CurrentIndex
 
 
-class PLCControler:
+class PLCControler(object):
     """
     Controler for PLCOpenEditor
     Class which controls the operations made on the plcopen model and answers to view requests

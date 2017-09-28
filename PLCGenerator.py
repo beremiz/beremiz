@@ -99,7 +99,7 @@ class PLCGenException(Exception):
 # -------------------------------------------------------------------------------
 
 
-class ProgramGenerator:
+class ProgramGenerator(object):
 
     # Create a new PCL program generator
     def __init__(self, controler, project, errors, warnings):
@@ -505,7 +505,7 @@ TransitionObjClass = PLCOpenParser.GetElementClass("transition", "transitions")
 ActionObjClass = PLCOpenParser.GetElementClass("action", "actions")
 
 
-class PouProgramGenerator:
+class PouProgramGenerator(object):
 
     # Create a new POU program generator
     def __init__(self, parent, name, type, errors, warnings):

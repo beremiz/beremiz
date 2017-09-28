@@ -156,7 +156,7 @@ TYPE_TRANSLATOR = {
 # -------------------------------------------------------------------------------
 
 
-class DebugDataConsumer:
+class DebugDataConsumer(object):
     """
     Class that implements an element that consumes debug values
     Value update can be inhibited during the time the associated Debug Viewer is

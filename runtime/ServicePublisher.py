@@ -30,7 +30,7 @@ import zeroconf
 service_type = '_PYRO._tcp.local.'
 
 
-class ServicePublisher():
+class ServicePublisher(object):
     def __init__(self):
         # type: fully qualified service type name
         self.serviceproperties = {'description': 'Beremiz remote PLC'}

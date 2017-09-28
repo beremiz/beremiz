@@ -32,7 +32,7 @@ import hashlib
 includes_re = re.compile('\s*#include\s*["<]([^">]*)[">].*')
 
 
-class toolchain_gcc():
+class toolchain_gcc(object):
     """
     This abstract class contains GCC specific code.
     It cannot be used as this and should be inherited in a target specific
