@@ -28,9 +28,9 @@ import json
 
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
-from twisted.internet.defer import inlineCallbacks
 from autobahn.wamp import types
 from autobahn.wamp.serializer import MsgPackSerializer
+from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 
 

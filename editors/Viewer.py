@@ -33,9 +33,8 @@ import wx
 from plcopen.structures import *
 from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
 from graphics.DebugDataConsumer import DebugDataConsumer
-
-from dialogs import *
 from graphics import *
+from dialogs import *
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from EditorPanel import EditorPanel
 

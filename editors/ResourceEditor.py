@@ -31,8 +31,8 @@ from controls import CustomGrid, CustomTable, DurationCellEditor
 from dialogs.DurationEditorDialog import IEC_TIME_MODEL
 from EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
-from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from util.TranslationCatalogs import NoTranslate
+from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 
 
 # -------------------------------------------------------------------------------

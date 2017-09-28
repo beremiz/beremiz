@@ -205,8 +205,9 @@ pylint_checks()
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword    
     enable=$enable,W0404          # reimported module    
-    enable=$enable,C0411          # (wrong-import-order), standard import "import x" comes before "import y"
-    enable=$enable,W0108          # (unnecessary-lambda), Lambda may not be necessary
+    enable=$enable,C0411          # (wrong-import-order) standard import "import x" comes before "import y"
+    enable=$enable,W0108          # (unnecessary-lambda) Lambda may not be necessary
+    enable=$enable,C0412          # (ungrouped-imports) Imports from package X are not grouped
 
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in

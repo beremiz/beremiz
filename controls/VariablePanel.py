@@ -37,8 +37,8 @@ from CustomGrid import CustomGrid
 from CustomTable import CustomTable
 from LocationCellEditor import LocationCellEditor
 from util.BitmapLibrary import GetBitmap
-from PLCControler import _VariableInfos
 from util.TranslationCatalogs import NoTranslate
+from PLCControler import _VariableInfos
 
 
 # -------------------------------------------------------------------------------

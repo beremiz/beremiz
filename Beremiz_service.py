@@ -29,7 +29,7 @@ import os
 import sys
 import getopt
 import threading
-from threading import Thread, currentThread
+from threading import Thread, currentThread, Semaphore
 import traceback
 import __builtin__
 import Pyro.core as pyro
@@ -496,7 +496,6 @@ if havetwisted:
         reactor.registerWxApp(app)
 
 if havewx:
-    from threading import Semaphore
     wx_eval_lock = Semaphore(0)
     main_thread = currentThread()
 
@@ -568,7 +567,7 @@ installThreadExcepthook()
 if havetwisted:
     if webport is not None:
         try:
-            import runtime.NevowServer as NS
+            import runtime.NevowServer as NS  # pylint: disable=C0412
         except Exception, e:
             print(_("Nevow/Athena import failed :"), e)
             webport = None
@@ -576,7 +575,7 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            import runtime.WampClient as WC
+            import runtime.WampClient as WC  # pylint: disable=C0412
         except Exception, e:
             print(_("WAMP import failed :"), e)
             wampconf = None
