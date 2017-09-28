@@ -21,7 +21,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-import Pyro.core as pyro
+
 from threading import Timer, Thread, Lock, Semaphore, Event
 import ctypes
 import os
@@ -29,8 +29,11 @@ import commands
 import types
 import sys
 import traceback
-from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator, UnpackDebugBuffer
 from time import time
+
+import Pyro.core as pyro
+
+from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator, UnpackDebugBuffer
 
 
 if os.name in ("nt", "ce"):

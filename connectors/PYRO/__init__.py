@@ -24,15 +24,17 @@
 
 
 from __future__ import print_function
-import Pyro
-import Pyro.core
-import Pyro.util
-from Pyro.errors import PyroError
 import traceback
 from time import sleep
 import copy
 import socket
 import os.path
+
+import Pyro
+import Pyro.core
+import Pyro.util
+from Pyro.errors import PyroError
+
 
 service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types

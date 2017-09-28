@@ -204,12 +204,12 @@ pylint_checks()
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword    
     enable=$enable,W0404          # reimported module    
-    # enable=$enable,C1001          # (old-style-class) Old-style class defined. Problem with PyJS
+    enable=$enable,C0411          # (wrong-import-order), ] standard import "import x" comes before "import y"
 
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in
     # enable=$enable,W0612        # unused-variable
-
+    # enable=$enable,C1001        # (old-style-class) Old-style class defined. Problem with PyJS
     # enable=
 
     options=

@@ -29,21 +29,20 @@ import sys
 import tempfile
 import shutil
 import random
+import re
 import time
-import version
+import types
+import commands
+from time import time as gettime
+from threading import Lock, Timer, currentThread
 
-from types import ListType
-
+import cPickle
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
-import cPickle
-import types
-import re
-import commands
-from threading import Lock, Timer, currentThread
-from time import time as gettime
 
+
+import version
 import util.paths as paths
 from docutil import OpenHtmlFrame
 from editors.EditorPanel import EditorPanel
@@ -723,7 +722,7 @@ class Beremiz(IDEFrame):
 
     def GenerateMenuRecursive(self, items, menu):
         for kind, infos in items:
-            if isinstance(kind, ListType):
+            if isinstance(kind, types.ListType):
                 text, id = infos
                 submenu = wx.Menu('')
                 self.GenerateMenuRecursive(kind, submenu)

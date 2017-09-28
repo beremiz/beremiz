@@ -25,15 +25,17 @@
 
 from xml.dom import minidom
 from types import StringType, UnicodeType, TupleType
-from lxml import etree
 from copy import deepcopy
 import os
 import sys
 import re
 import datetime
-import util.paths as paths
 from time import localtime
 from collections import OrderedDict, namedtuple
+
+from lxml import etree
+
+import util.paths as paths
 from util.TranslationCatalogs import NoTranslate
 from plcopen import *
 from graphics.GraphicCommons import *

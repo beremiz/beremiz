@@ -25,15 +25,16 @@
 
 from datetime import datetime
 from time import time as gettime
-import numpy
+from weakref import proxy
 
+import numpy
 import wx
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from targets.typemapping import LogLevelsCount, LogLevels
 from util.BitmapLibrary import GetBitmap
-from weakref import proxy
+
 
 THUMB_SIZE_RATIO = 1. / 8.
 

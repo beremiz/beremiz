@@ -27,13 +27,15 @@ from __future__ import print_function
 import sys
 import traceback
 import atexit
+from threading import Thread, Event
+
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types
 from autobahn.wamp.exception import TransportLost
 from autobahn.wamp.serializer import MsgPackSerializer
-from threading import Thread, Event
+
 
 _WampSession = None
 _WampConnection = None

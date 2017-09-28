@@ -25,15 +25,15 @@
 
 
 from __future__ import print_function
-import wx
 import os
 import sys
 import getopt
 
+import wx
+
 import version
 import util.paths as paths
 import util.ExceptionHandler
-
 from IDEFrame import IDEFrame, AppendMenu
 from IDEFrame import \
     TITLE, \

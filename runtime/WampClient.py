@@ -24,13 +24,15 @@
 
 from __future__ import print_function
 import sys
+import json
+
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from twisted.internet.defer import inlineCallbacks
 from autobahn.wamp import types
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.protocol import ReconnectingClientFactory
-import json
+
 
 _WampSession = None
 _PySrv = None

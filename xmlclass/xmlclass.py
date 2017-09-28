@@ -31,9 +31,10 @@ import datetime
 from types import *
 from xml.dom import minidom
 from xml.sax.saxutils import escape, unescape, quoteattr
-from lxml import etree
 from new import classobj
 from collections import OrderedDict
+
+from lxml import etree
 
 
 def CreateNode(name):
