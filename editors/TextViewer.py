@@ -70,7 +70,7 @@ HIGHLIGHT_TYPES = {
 
 
 def LineStartswith(line, symbols):
-    return reduce(lambda x, y: x or y, map(lambda x: line.startswith(x), symbols), False)
+    return reduce(lambda x, y: x or y, map(line.startswith, symbols), False)
 
 
 class TextViewer(EditorPanel):

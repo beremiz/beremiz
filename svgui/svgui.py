@@ -86,7 +86,7 @@ class SVGUI(PythonFileCTNMixin):
 
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x: str(x), current_location))
+        location_str = "_".join(map(str, current_location))
 
         res = ([], "", False)
 

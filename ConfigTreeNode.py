@@ -258,7 +258,7 @@ class ConfigTreeNode(object):
             }, ...]
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
-        self.GetCTRoot().logger.write_warning(".".join(map(lambda x: str(x), self.GetCurrentLocation())) + " -> Nothing to do\n")
+        self.GetCTRoot().logger.write_warning(".".join(map(str, self.GetCurrentLocation())) + " -> Nothing to do\n")
         return [], "", False
 
     def _Generate_C(self, buildpath, locations):
