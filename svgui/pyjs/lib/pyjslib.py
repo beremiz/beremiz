@@ -233,7 +233,7 @@ def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
 
 # as comment on line 20 says
 # import sys should be below
-import sys  # noqa
+import sys  # noqa # pylint: disable=C0411
 
 
 class BaseException:

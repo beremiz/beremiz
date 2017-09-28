@@ -30,9 +30,7 @@ import os
 import sys
 import traceback
 import time
-import features
 import shutil
-import wx
 import re
 import tempfile
 from math import ceil
@@ -43,6 +41,9 @@ from datetime import datetime
 from weakref import WeakKeyDictionary
 from itertools import izip
 
+import wx
+
+import features
 import targets
 import connectors
 import util.paths as paths

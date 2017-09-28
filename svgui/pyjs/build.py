@@ -4,18 +4,16 @@ from __future__ import print_function
 import sys
 import os
 import shutil
+import time
+import re
+from hashlib import md5
 from copy import copy
 from os.path import join, dirname, basename, abspath, split, isfile, isdir
 from optparse import OptionParser
-import pyjs
-import time
 from cStringIO import StringIO
-try:
-    # Python 2.5 and above
-    from hashlib import md5
-except Exception:
-    import md5
-import re
+
+import pyjs
+
 
 usage = """
   usage: %prog [options] <application module name or path>

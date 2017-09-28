@@ -25,10 +25,10 @@
 import os
 import sys
 import time
-import wx
 import subprocess
 import ctypes
 from threading import Timer, Lock, Thread, Semaphore
+import wx
 if os.name == 'posix':
     from signal import SIGTERM, SIGKILL
 

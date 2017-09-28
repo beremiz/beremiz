@@ -23,12 +23,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from xmlclass import *
 from types import *
 import os
 import re
-from lxml import etree
 from collections import OrderedDict
+
+from lxml import etree
+
+from xmlclass import *
 import util.paths as paths
 
 """

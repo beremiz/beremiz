@@ -23,11 +23,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-import wx
 import os
 import sys
 import shutil
 
+import wx
 from pyjs import translate
 
 import util.paths as paths

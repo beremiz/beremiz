@@ -24,9 +24,10 @@
 
 import os
 import sys
+import time
+
 import pytest
 import xvfbwrapper
-import time
 
 # append module root directory to sys.path
 sys.path.append(

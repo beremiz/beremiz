@@ -1,6 +1,6 @@
-import gluon.contrib.simplejson as simplejson
 import types
 import sys
+import gluon.contrib.simplejson as simplejson
 
 
 class JSONRPCServiceBase:

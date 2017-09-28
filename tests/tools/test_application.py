@@ -27,10 +27,11 @@ from __future__ import print_function
 import os
 import sys
 import unittest
-import pytest
-import wx
 import time
 import traceback
+
+import pytest
+import wx
 import ddt
 
 import conftest

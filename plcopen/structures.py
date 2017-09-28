@@ -24,8 +24,9 @@
 
 import string
 import re
-from plcopen import LoadProject
 from collections import OrderedDict
+
+from plcopen import LoadProject
 from definitions import *
 
 TypeHierarchy = dict(TypeHierarchy_list)

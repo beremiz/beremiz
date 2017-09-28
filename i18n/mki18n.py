@@ -81,8 +81,8 @@ You can get the gettext tools from the following sites:
 from __future__ import print_function
 import os
 import sys
-import wx
 import re
+import wx
 
 # -----------------------------------------------------------------------------
 # Global variables

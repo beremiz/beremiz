@@ -25,10 +25,11 @@
 import os
 import re
 import operator
-from util.ProcessLogger import ProcessLogger
 import hashlib
-
 import time
+
+from util.ProcessLogger import ProcessLogger
+
 
 includes_re = re.compile('\s*#include\s*["<]([^">]*)[">].*')
 

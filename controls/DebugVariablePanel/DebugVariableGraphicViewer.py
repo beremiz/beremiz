@@ -24,10 +24,10 @@
 
 from types import TupleType
 from time import time as gettime
+from distutils.version import LooseVersion
+
 import numpy
-
 import wx
-
 import matplotlib
 import matplotlib.pyplot
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
@@ -36,13 +36,11 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from mpl_toolkits.mplot3d import Axes3D
 
 from editors.DebugViewer import REFRESH_PERIOD
-
 from DebugVariableItem import DebugVariableItem
 from DebugVariableViewer import *
 from GraphButton import GraphButton
 
 
-from distutils.version import LooseVersion
 if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
     from cycler import cycler
 
