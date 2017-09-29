@@ -59,4 +59,4 @@ def AddCatalog(locale_dir):
 
 
 def NoTranslate(x):
-        return x
+    return x

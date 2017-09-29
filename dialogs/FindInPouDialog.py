@@ -31,7 +31,7 @@ class FindInPouDialog(wx.Dialog):
 
     def _init_icon(self, parent):
         if parent and parent.icon:
-                self.SetIcon(parent.icon)
+            self.SetIcon(parent.icon)
 
     def __init__(self, parent):
         wx.Dialog.__init__(

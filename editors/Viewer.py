@@ -2445,24 +2445,24 @@ class Viewer(EditorPanel, DebugViewer):
                 items.append((_(u'Divergence'), self.GetAddToWireMenuCallBack(self.AddNewDivergence,
                                                                               poss_div_types)))
         elif start_direction == EAST:
+            items.extend([
+                (_(u'Block'), self.GetAddToWireMenuCallBack(self.AddNewBlock)),
+                (_(u'Connection'), self.GetAddToWireMenuCallBack(self.AddNewConnection))])
+
+            if self.CurrentLanguage != "FBD":
+                items.append((_(u'Contact'), self.GetAddToWireMenuCallBack(self.AddNewContact)))
+
+            if self.CurrentLanguage == "LD":
                 items.extend([
-                    (_(u'Block'), self.GetAddToWireMenuCallBack(self.AddNewBlock)),
-                    (_(u'Connection'), self.GetAddToWireMenuCallBack(self.AddNewConnection))])
+                    (_(u'Coil'), self.GetAddToWireMenuCallBack(self.AddNewCoil)),
+                    (_(u'Power Rail'), self.GetAddToWireMenuCallBack(self.AddNewPowerRail))])
 
-                if self.CurrentLanguage != "FBD":
-                    items.append((_(u'Contact'), self.GetAddToWireMenuCallBack(self.AddNewContact)))
-
-                if self.CurrentLanguage == "LD":
-                    items.extend([
-                        (_(u'Coil'), self.GetAddToWireMenuCallBack(self.AddNewCoil)),
-                        (_(u'Power Rail'), self.GetAddToWireMenuCallBack(self.AddNewPowerRail))])
-
-                if self.CurrentLanguage == "SFC":
-                    items.append(
-                        (_(u'Transition'), self.GetAddToWireMenuCallBack(self.AddNewTransition, True)))
-                else:
-                    items.append(
-                        (_(u'Variable'), self.GetAddToWireMenuCallBack(self.AddNewVariable, True)))
+            if self.CurrentLanguage == "SFC":
+                items.append(
+                    (_(u'Transition'), self.GetAddToWireMenuCallBack(self.AddNewTransition, True)))
+            else:
+                items.append(
+                    (_(u'Variable'), self.GetAddToWireMenuCallBack(self.AddNewVariable, True)))
         return items
 
     # -------------------------------------------------------------------------------
