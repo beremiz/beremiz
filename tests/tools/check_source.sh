@@ -212,6 +212,7 @@ pylint_checks()
     enable=$enable,W0231          # (super-init-not-called) __init__ method from base class is not called
     enable=$enable,W0105          # (pointless-string-statement) String statement has no effect    
     enable=$enable,W0311          # (bad-indentation) Bad indentation. Found 16 spaces, expected 12
+    enable=$enable,W0101          # (unreachable) Unreachable code
 
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in
