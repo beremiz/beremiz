@@ -211,10 +211,10 @@ class CodeFile(object):
 #                      Current Buffering Management Functions
 # -------------------------------------------------------------------------------
 
-    """
-    Return a copy of the codefile model
-    """
     def Copy(self, model):
+        """
+        Return a copy of the codefile model
+        """
         return deepcopy(model)
 
     def CreateCodeFileBuffer(self, saved):

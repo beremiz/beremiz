@@ -33,9 +33,10 @@ from lxml import etree
 from xmlclass import *
 import util.paths as paths
 
-"""
-Dictionary that makes the relation between var names in plcopen and displayed values
-"""
+
+#: Dictionary that makes the relation between var names
+#: in plcopen and displayed values
+
 VarTypes = {
     "Local":    "localVars",
     "Temp":     "tempVars",
@@ -53,18 +54,26 @@ searchResultVarTypes = {
     "inOutVars":  "var_inout"
 }
 
-"""
-Define in which order var types must be displayed
-"""
+
+#: Define in which order var types must be displayed
+
 VarOrder = ["Local", "Temp", "Input", "Output", "InOut", "External", "Global", "Access"]
 
-"""
-Define which action qualifier must be associated with a duration
-"""
+
+#:  Define which action qualifier must be associated with a duration
+
 QualifierList = OrderedDict([
-    ("N", False), ("R", False), ("S", False),
-    ("L", True), ("D", True), ("P", False), ("P0", False),
-    ("P1", False), ("SD", True), ("DS", True), ("SL", True)])
+    ("N", False),
+    ("R", False),
+    ("S", False),
+    ("L", True),
+    ("D", True),
+    ("P", False),
+    ("P0", False),
+    ("P1", False),
+    ("SD", True),
+    ("DS", True),
+    ("SL", True)])
 
 
 FILTER_ADDRESS_MODEL = "(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)"
