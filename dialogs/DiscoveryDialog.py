@@ -80,17 +80,7 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
         self.SetSizer(self.MainSizer)
 
-    def _init_ctrls(self, prnt):
-        wx.Dialog.__init__(
-            self, id=ID_DISCOVERYDIALOG,
-            name='DiscoveryDialog', parent=prnt, style=wx.DEFAULT_DIALOG_STYLE,
-            title=_('Service Discovery'))
-
-        self.staticText1 = wx.StaticText(
-            id=ID_DISCOVERYDIALOGSTATICTEXT1,
-            label=_('Services available:'), name='staticText1', parent=self,
-            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-
+    def _init_list_ctrl(self):
         # Set up list control
         self.ServicesList = AutoWidthListCtrl(
             id=ID_DISCOVERYDIALOGSERVICESLIST,
@@ -108,7 +98,11 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, id=ID_DISCOVERYDIALOGSERVICESLIST)
         self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, id=ID_DISCOVERYDIALOGSERVICESLIST)
 
-        listmix.ColumnSorterMixin.__init__(self, 4)
+    def _init_ctrls(self, prnt):
+        self.staticText1 = wx.StaticText(
+            id=ID_DISCOVERYDIALOGSTATICTEXT1,
+            label=_('Services available:'), name='staticText1', parent=self,
+            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
 
         self.RefreshButton = wx.Button(
             id=ID_DISCOVERYDIALOGREFRESHBUTTON,
@@ -134,6 +128,15 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.Fit()
 
     def __init__(self, parent):
+        wx.Dialog.__init__(
+            self, id=ID_DISCOVERYDIALOG,
+            name='DiscoveryDialog', parent=parent,
+            style=wx.DEFAULT_DIALOG_STYLE,
+            title=_('Service Discovery'))
+
+        self._init_list_ctrl()
+        listmix.ColumnSorterMixin.__init__(self, 4)
+
         self._init_ctrls(parent)
 
         self.itemDataMap = {}

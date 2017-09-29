@@ -209,7 +209,8 @@ pylint_checks()
     enable=$enable,W0108          # (unnecessary-lambda) Lambda may not be necessary
     enable=$enable,C0412          # (ungrouped-imports) Imports from package X are not grouped
     enable=$enable,C0321          # (multiple-statements) More than one statement on a single line
-
+    enable=$enable,W0231          # (super-init-not-called) __init__ method from base class is not called
+    
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in
     # enable=$enable,W0612        # unused-variable

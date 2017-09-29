@@ -493,9 +493,6 @@ class IDEFrame(wx.Frame):
             self.SetIcon(parent.icon)
 
     def _init_ctrls(self, prnt):
-        wx.Frame.__init__(self, id=ID_PLCOPENEDITOR, name='IDEFrame',
-                          parent=prnt, pos=wx.DefaultPosition, size=wx.Size(1000, 600),
-                          style=wx.DEFAULT_FRAME_STYLE)
         self._init_icon(prnt)
         self.SetClientSize(wx.Size(1000, 600))
         self.Bind(wx.EVT_ACTIVATE, self.OnActivated)
@@ -678,6 +675,11 @@ class IDEFrame(wx.Frame):
         self.AUIManager.Update()
 
     def __init__(self, parent, enable_debug=False):
+        wx.Frame.__init__(self, id=ID_PLCOPENEDITOR, name='IDEFrame',
+                          parent=parent, pos=wx.DefaultPosition,
+                          size=wx.Size(1000, 600),
+                          style=wx.DEFAULT_FRAME_STYLE)
+
         self.Controler = None
         self.Config = wx.ConfigBase.Get()
         self.EnableDebug = enable_debug
