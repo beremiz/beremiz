@@ -228,6 +228,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def __init__(self, frame, logger):
         PLCControler.__init__(self)
+        ConfigTreeNode.__init__(self)
 
         if ProjectController.iec2c_cfg is None:
             ProjectController.iec2c_cfg = Iec2CSettings()

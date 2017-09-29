@@ -88,10 +88,6 @@ class SearchResultPanel(wx.Panel):
         self.SetSizer(self.MainSizer)
 
     def _init_ctrls(self, prnt):
-        wx.Panel.__init__(self, id=ID_SEARCHRESULTPANEL,
-                          name='SearchResultPanel', parent=prnt, pos=wx.Point(0, 0),
-                          size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
-
         self.HeaderLabel = wx.StaticText(id=ID_SEARCHRESULTPANELHEADERLABEL,
                                          name='HeaderLabel', parent=self,
                                          pos=wx.Point(0, 0), size=wx.Size(0, 17), style=0)
@@ -114,6 +110,11 @@ class SearchResultPanel(wx.Panel):
         self._init_sizers()
 
     def __init__(self, parent, window):
+        wx.Panel.__init__(self, id=ID_SEARCHRESULTPANEL,
+                          name='SearchResultPanel', parent=parent,
+                          pos=wx.Point(0, 0),
+                          size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
+
         self.ParentWindow = window
 
         self._init_ctrls(parent)

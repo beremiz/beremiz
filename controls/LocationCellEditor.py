@@ -34,7 +34,7 @@ class LocationCellControl(wx.PyControl):
     the BrowseLocationsDialog.
     '''
     def __init__(self, parent):
-        wx.Control.__init__(self, parent)
+        wx.PyControl.__init__(self, parent)
 
         main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
         main_sizer.AddGrowableCol(0)

@@ -68,9 +68,6 @@ class UrlClickHtmlWindow(wx.html.HtmlWindow):
 
 class HtmlFrame(wx.Frame):
         def _init_ctrls(self, prnt):
-            wx.Frame.__init__(self, id=ID_HTMLFRAME, name='HtmlFrame',
-                              parent=prnt, pos=wx.Point(320, 231), size=wx.Size(853, 616),
-                              style=wx.DEFAULT_FRAME_STYLE, title='')
             self.SetIcon(prnt.icon)
             self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
@@ -80,6 +77,10 @@ class HtmlFrame(wx.Frame):
             self.HtmlContent.Bind(HtmlWindowUrlClick, self.OnLinkClick)
 
         def __init__(self, parent, opened):
+            wx.Frame.__init__(self, id=ID_HTMLFRAME, name='HtmlFrame',
+                              parent=parent, pos=wx.Point(320, 231),
+                              size=wx.Size(853, 616),
+                              style=wx.DEFAULT_FRAME_STYLE, title='')
             self._init_ctrls(parent)
             self.HtmlFrameOpened = opened
 

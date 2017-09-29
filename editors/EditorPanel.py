@@ -38,8 +38,6 @@ class EditorPanel(wx.SplitterWindow):
         self.MenuItems = []
 
     def _init_ctrls(self, parent):
-        wx.SplitterWindow.__init__(self, parent,
-                                   style=wx.SUNKEN_BORDER | wx.SP_3D)
         self.SetMinimumPaneSize(1)
 
         self._init_MenuItems()
@@ -60,6 +58,9 @@ class EditorPanel(wx.SplitterWindow):
             self.Initialize(self.Editor)
 
     def __init__(self, parent, tagname, window, controler, debug=False):
+        wx.SplitterWindow.__init__(self, parent,
+                                   style=wx.SUNKEN_BORDER | wx.SP_3D)
+
         self.ParentWindow = window
         self.Controler = controler
         self.TagName = tagname

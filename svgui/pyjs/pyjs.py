@@ -155,6 +155,7 @@ class Klass:
 
 class TranslationError(Exception):
     def __init__(self, message, node):
+        Exception.__init__(self)
         self.message = "line %s:\n%s\n%s" % (node.lineno, message, node)
 
     def __str__(self):
