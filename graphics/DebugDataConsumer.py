@@ -48,7 +48,6 @@ def get_microseconds(value):
     return float(value.days * DAY +
                  value.seconds * SECOND +
                  value.microseconds)
-    return
 
 
 def generate_time(value):

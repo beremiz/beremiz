@@ -1788,7 +1788,6 @@ class PLCControler(object):
                     else basetype_type.upper())
         return (basetype_content.getname() if basetype_content_type == "derived"
                 else basetype_content_type.upper())
-        return None
 
     # Return Base Type of given possible derived type
     def GetBaseType(self, typename, debug=False):
