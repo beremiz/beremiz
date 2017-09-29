@@ -57,10 +57,9 @@ def NodeSetAttr(node, name, value):
     node._attrs[name] = attr
 
 
-"""
-Regular expression models for checking all kind of string values defined in XML
-standard
-"""
+# Regular expression models for checking all kind of
+# string values defined in XML standard
+
 Name_model = re.compile('([a-zA-Z_\:][\w\.\-\:]*)$')
 Names_model = re.compile('([a-zA-Z_\:][\w\.\-\:]*(?: [a-zA-Z_\:][\w\.\-\:]*)*)$')
 NMToken_model = re.compile('([\w\.\-\:]*)$')
@@ -1011,10 +1010,10 @@ class ClassFactory(object):
                       [[p] + self.GetEquivalentParents(p)
                        for p in self.EquivalentClassesParent.get(parent, {}).keys()], [])
 
-    """
-    Methods that generates the classes
-    """
     def CreateClasses(self):
+        """
+        Method that generates the classes
+        """
         self.ParseSchema()
         for name, infos in self.Namespaces[self.TargetNamespace].items():
             if infos["type"] == ELEMENT:
@@ -1187,10 +1186,10 @@ class ClassFactory(object):
 
         return class_infos
 
-    """
-    Methods that print the classes generated
-    """
     def PrintClasses(self):
+        """
+        Method that print the classes generated
+        """
         items = self.ComputedClasses.items()
         items.sort()
         if self.FileName is not None:
@@ -1725,10 +1724,6 @@ def generateCountMethod(attr):
     return countMethod
 
 
-"""
-This function generate a xml parser from a class factory
-"""
-
 NAMESPACE_PATTERN = re.compile("xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
 
 
@@ -1845,6 +1840,10 @@ class XMLClassParser(etree.XMLParser):
 
 
 def GenerateParser(factory, xsdstring):
+    """
+    This function generate a xml parser from a class factory
+    """
+
     ComputedClasses = factory.CreateClasses()
 
     if factory.FileName is not None:

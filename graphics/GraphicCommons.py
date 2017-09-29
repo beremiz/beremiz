@@ -34,11 +34,9 @@ from graphics.DebugDataConsumer import DebugDataConsumer
 
 # -------------------------------------------------------------------------------
 #                               Common constants
+#
+#            Definition of constants for dimensions of graphic elements
 # -------------------------------------------------------------------------------
-
-"""
-Definition of constants for dimensions of graphic elements
-"""
 
 # FBD and SFC constants
 MIN_MOVE = 5                            # Minimum move before starting a element dragging
@@ -128,10 +126,9 @@ def round_scaling(x, n, constraint=0):
     return int(xround * n)
 
 
-"""
-Basic vector operations for calculate wire points
-"""
-
+# -------------------------------------------------------------------------------
+# Basic vector operations for calculate wire points
+# -------------------------------------------------------------------------------
 
 def vector(p1, p2, normal=True):
     """

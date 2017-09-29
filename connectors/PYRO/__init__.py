@@ -163,10 +163,9 @@ def PYRO_connector_factory(uri, confnodesroot):
             """
             current_status, log_count = confnodesroot._connector.GetPyroProxy().GetPLCstatus()
             if current_status == "Dirty":
-                """
-                Some bad libs with static symbols may polute PLC
-                ask runtime to suicide and come back again
-                """
+                # Some bad libs with static symbols may polute PLC
+                # ask runtime to suicide and come back again
+
                 confnodesroot.logger.write(_("Force runtime reload\n"))
                 confnodesroot._connector.GetPyroProxy().ForceReload()
                 confnodesroot._Disconnect()

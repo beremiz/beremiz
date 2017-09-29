@@ -66,11 +66,10 @@ def GetBlockInfos(pou):
 # -------------------------------------------------------------------------------
 
 
-"""
-Ordored list of common data types defined in the IEC 61131-3
-Each type is associated to his direct parent type. It defines then a hierarchy
-between type that permits to make a comparison of two types
-"""
+#: Ordored list of common data types defined in the IEC 61131-3
+#: Each type is associated to his direct parent type. It defines then a hierarchy
+#: between type that permits to make a comparison of two types
+
 TypeHierarchy_list = [
     ("ANY", None),
     ("ANY_DERIVED", "ANY"),

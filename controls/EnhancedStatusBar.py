@@ -119,7 +119,7 @@ class EnhancedStatusBar(wx.StatusBar):
             if horizontalalignment == ESB_EXACT_FIT:
 
                 if verticalalignment == ESB_EXACT_FIT:
-                    """ 1 September 2015 Fix fit align """
+                    # 1 September 2015 Fix fit align
                     widget.SetSize((rect.width-4, rect.height-4))
                     widget.SetPosition((rect.x+2, rect.y+2))
                 elif verticalalignment == ESB_ALIGN_CENTER_VERTICAL:
