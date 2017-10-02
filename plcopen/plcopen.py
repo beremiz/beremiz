@@ -338,8 +338,10 @@ def SaveProject(project, filepath):
     project_file.close()
 
 
-cls = PLCOpenParser.GetElementClass("formattedText")
-if cls:
+# ----------------------------------------------------------------------
+
+
+def _updateFormattedTextClass(cls):
     def updateElementName(self, old_name, new_name):
         text = self.getanyText()
         pattern = re.compile('\\b' + old_name + '\\b', re.IGNORECASE)
@@ -370,9 +372,16 @@ if cls:
         return [(tuple(parent_infos),) + result for result in TestTextElement(self.getanyText(), criteria)]
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("project")
-if cls:
 
+cls = PLCOpenParser.GetElementClass("formattedText")
+if cls:
+    _updateFormattedTextClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateProjectClass(cls):
     def setname(self, name):
         self.contentHeader.setname(name)
     setattr(cls, "setname", setname)
@@ -614,9 +623,16 @@ if cls:
         return result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("contentHeader", "project")
-if cls:
 
+cls = PLCOpenParser.GetElementClass("project")
+if cls:
+    _updateProjectClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateContentHeaderProjectClass(cls):
     def setpageSize(self, width, height):
         self.coordinateInfo.setpageSize(width, height)
     setattr(cls, "setpageSize", setpageSize)
@@ -638,8 +654,16 @@ if cls:
         return scaling
     setattr(cls, "getscaling", getscaling)
 
-cls = PLCOpenParser.GetElementClass("coordinateInfo", "contentHeader")
+
+cls = PLCOpenParser.GetElementClass("contentHeader", "project")
 if cls:
+    _updateContentHeaderProjectClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateCoordinateInfoContentHeaderClass(cls):
     def setpageSize(self, width, height):
         if width == 0 and height == 0:
             self.deletepageSize()
@@ -677,6 +701,14 @@ if cls:
             return self.sfc.scaling.getx(), self.sfc.scaling.gety()
         return 0, 0
     setattr(cls, "getscaling", getscaling)
+
+
+cls = PLCOpenParser.GetElementClass("coordinateInfo", "contentHeader")
+if cls:
+    _updateCoordinateInfoContentHeaderClass(cls)
+
+
+# ----------------------------------------------------------------------
 
 
 def _Search(attributes, criteria, parent_infos):
@@ -744,9 +776,10 @@ def _SearchInConfigurationResource(self, criteria, parent_infos=[]):
     return search_result
 
 
-cls = PLCOpenParser.GetElementClass("configuration", "configurations")
-if cls:
+# ----------------------------------------------------------------------
 
+
+def _updateConfigurationConfigurationsClass(cls):
     def addglobalVar(self, var_type, name, location="", description=""):
         globalvars = self.getglobalVars()
         if len(globalvars) == 0:
@@ -789,8 +822,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("resource", "configuration")
+
+cls = PLCOpenParser.GetElementClass("configuration", "configurations")
 if cls:
+    _updateConfigurationConfigurationsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateResourceConfigurationClass(cls):
     def updateElementName(self, old_name, new_name):
         _updateConfigurationResourceElementName(self, old_name, new_name)
         for instance in self.getpouInstance():
@@ -830,8 +871,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("task", "resource")
+
+cls = PLCOpenParser.GetElementClass("resource", "configuration")
 if cls:
+    _updateResourceConfigurationClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateTaskResourceClass(cls):
     def updateElementName(self, old_name, new_name):
         if TextMatched(self.single, old_name):
             self.single = new_name
@@ -855,8 +904,16 @@ if cls:
                        criteria, parent_infos)
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("pouInstance")
+
+cls = PLCOpenParser.GetElementClass("task", "resource")
 if cls:
+    _updateTaskResourceClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updatePouInstanceClass(cls):
     def updateElementName(self, old_name, new_name):
         if TextMatched(self.typeName, old_name):
             self.typeName = new_name
@@ -868,8 +925,16 @@ if cls:
                        criteria, parent_infos)
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("variable", "varListPlain")
+
+cls = PLCOpenParser.GetElementClass("pouInstance")
 if cls:
+    _updatePouInstanceClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateVariableVarListPlain(cls):
     def gettypeAsText(self):
         vartype_content = self.gettype().getcontent()
         vartype_content_name = vartype_content.getLocalTag()
@@ -911,8 +976,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("types", "project")
+
+cls = PLCOpenParser.GetElementClass("variable", "varListPlain")
 if cls:
+    _updateVariableVarListPlain(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateTypesProjectClass(cls):
     def getdataTypeElements(self):
         return self.dataTypes.getdataType()
     setattr(cls, "getdataTypeElements", getdataTypeElements)
@@ -997,12 +1070,19 @@ if cls:
     setattr(cls, "Search", Search)
 
 
+cls = PLCOpenParser.GetElementClass("types", "project")
+if cls:
+    _updateTypesProjectClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 def _updateBaseTypeElementName(self, old_name, new_name):
     self.baseType.updateElementName(old_name, new_name)
 
 
-cls = PLCOpenParser.GetElementClass("dataType", "dataTypes")
-if cls:
+def _updateDataTypeDataTypesClass(cls):
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
 
     def Search(self, criteria, parent_infos=[]):
@@ -1017,9 +1097,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("dataType")
-if cls:
 
+cls = PLCOpenParser.GetElementClass("dataType", "dataTypes")
+if cls:
+    _updateDataTypeDataTypesClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateDataTypeClass(cls):
     def updateElementName(self, old_name, new_name):
         content_name = self.content.getLocalTag()
         if content_name in ["derived", "array", "subrangeSigned", "subrangeUnsigned"]:
@@ -1044,8 +1131,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("derived", "dataType")
+
+cls = PLCOpenParser.GetElementClass("dataType")
 if cls:
+    _updateDataTypeClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateDerivedDataTypeClass(cls):
     def updateElementName(self, old_name, new_name):
         if TextMatched(self.name, old_name):
             self.name = new_name
@@ -1055,8 +1150,16 @@ if cls:
         return [(tuple(parent_infos),) + result for result in TestTextElement(self.name, criteria)]
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("array", "dataType")
+
+cls = PLCOpenParser.GetElementClass("derived", "dataType")
 if cls:
+    _updateDerivedDataTypeClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateArrayDataTypeClass(cls):
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
 
     def Search(self, criteria, parent_infos=[]):
@@ -1067,6 +1170,14 @@ if cls:
                                          criteria, parent_infos + ["range", i]))
         return search_result
     setattr(cls, "Search", Search)
+
+
+cls = PLCOpenParser.GetElementClass("array", "dataType")
+if cls:
+    _updateArrayDataTypeClass(cls)
+
+
+# ----------------------------------------------------------------------
 
 
 def _SearchInSubrange(self, criteria, parent_infos=[]):
@@ -1082,14 +1193,20 @@ if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
     setattr(cls, "Search", _SearchInSubrange)
 
+
+# ----------------------------------------------------------------------
+
+
 cls = PLCOpenParser.GetElementClass("subrangeUnsigned", "dataType")
 if cls:
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
     setattr(cls, "Search", _SearchInSubrange)
 
-cls = PLCOpenParser.GetElementClass("enum", "dataType")
-if cls:
 
+# ----------------------------------------------------------------------
+
+
+def _updateEnumDataTypeClass(cls):
     def updateElementName(self, old_name, new_name):
         pass
     setattr(cls, "updateElementName", updateElementName)
@@ -1105,6 +1222,14 @@ if cls:
     setattr(cls, "Search", Search)
 
 
+cls = PLCOpenParser.GetElementClass("enum", "dataType")
+if cls:
+    _updateEnumDataTypeClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 def _getvariableTypeinfos(variable_type):
     type_content = variable_type.getcontent()
     type_content_type = type_content.getLocalTag()
@@ -1113,14 +1238,7 @@ def _getvariableTypeinfos(variable_type):
     return type_content_type.upper()
 
 
-cls = PLCOpenParser.GetElementClass("pou", "pous")
-if cls:
-
-    block_inputs_xpath = PLCOpen_XPath(
-        "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars]/ppx:variable")
-    block_outputs_xpath = PLCOpen_XPath(
-        "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable")
-
+def _updatePouPousClass(cls):
     def getblockInfos(self):
         block_infos = {
             "name": self.getname(),
@@ -1520,6 +1638,18 @@ if cls:
     setattr(cls, "Search", Search)
 
 
+cls = PLCOpenParser.GetElementClass("pou", "pous")
+if cls:
+    block_inputs_xpath = PLCOpen_XPath(
+        "ppx:interface/*[self::ppx:inputVars or self::ppx:inOutVars]/ppx:variable")
+    block_outputs_xpath = PLCOpen_XPath(
+        "ppx:interface/*[self::ppx:outputVars or self::ppx:inOutVars]/ppx:variable")
+    _updatePouPousClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 def setbodyType(self, body_type):
     if body_type in ["IL", "ST", "LD", "FBD", "SFC"]:
         self.body.setcontent(PLCOpenParser.CreateElement(body_type, "body"))
@@ -1594,8 +1724,9 @@ def updateElementAddress(self, address_model, new_leading):
     self.body.updateElementAddress(address_model, new_leading)
 
 
-cls = PLCOpenParser.GetElementClass("transition", "transitions")
-if cls:
+# ----------------------------------------------------------------------
+
+def _updateTransitionTransitionsClass(cls):
     setattr(cls, "setbodyType", setbodyType)
     setattr(cls, "getbodyType", getbodyType)
     setattr(cls, "resetexecutionOrder", resetexecutionOrder)
@@ -1622,8 +1753,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("action", "actions")
+
+cls = PLCOpenParser.GetElementClass("transition", "transitions")
 if cls:
+    _updateTransitionTransitionsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateActionActionsClass(cls):
     setattr(cls, "setbodyType", setbodyType)
     setattr(cls, "getbodyType", getbodyType)
     setattr(cls, "resetexecutionOrder", resetexecutionOrder)
@@ -1650,8 +1789,16 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("body")
+
+cls = PLCOpenParser.GetElementClass("action", "actions")
 if cls:
+    _updateActionActionsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateBodyClass(cls):
     cls.currentExecutionOrderId = 0
     cls.checkedBlocksDict = {}
 
@@ -1835,6 +1982,14 @@ if cls:
     setattr(cls, "Search", Search)
 
 
+cls = PLCOpenParser.GetElementClass("body")
+if cls:
+    _updateBodyClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 def getx(self):
     return self.position.getx()
 
@@ -2001,8 +2156,10 @@ def _initElementClass(name, parent, connectionPointInType="none"):
     return cls
 
 
-cls = _initElementClass("comment", "commonObjects")
-if cls:
+# ----------------------------------------------------------------------
+
+
+def _updateCommentCommonObjectsClass(cls):
     def setcontentText(self, text):
         self.content.setanyText(text)
     setattr(cls, "setcontentText", setcontentText)
@@ -2023,8 +2180,16 @@ if cls:
         return self.content.Search(criteria, parent_infos + ["comment", self.getlocalId(), "content"])
     setattr(cls, "Search", Search)
 
-cls = _initElementClass("block", "fbdObjects")
+
+cls = _initElementClass("comment", "commonObjects")
 if cls:
+    _updateCommentCommonObjectsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateBlockFbdObjectsClass(cls):
     def getBoundingBox(self):
         bbox = _getBoundingBox(self)
         for input in self.inputVariables.getvariable():
@@ -2069,6 +2234,15 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
+cls = _initElementClass("block", "fbdObjects")
+if cls:
+    _updateBlockFbdObjectsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 _initElementClass("leftPowerRail", "ldObjects")
 _initElementClass("rightPowerRail", "ldObjects", "multiple")
 
@@ -2088,11 +2262,18 @@ def _getSearchInLDElement(ld_element_type):
     return SearchInLDElement
 
 
+# ----------------------------------------------------------------------
+
+
 cls = _initElementClass("contact", "ldObjects", "single")
 if cls:
     setattr(cls, "updateElementName", _UpdateLDElementName)
     setattr(cls, "updateElementAddress", _UpdateLDElementAddress)
     setattr(cls, "Search", _getSearchInLDElement("contact"))
+
+
+# ----------------------------------------------------------------------
+
 
 cls = _initElementClass("coil", "ldObjects", "single")
 if cls:
@@ -2100,14 +2281,25 @@ if cls:
     setattr(cls, "updateElementAddress", _UpdateLDElementAddress)
     setattr(cls, "Search", _getSearchInLDElement("coil"))
 
-cls = _initElementClass("step", "sfcObjects", "single")
-if cls:
+
+# ----------------------------------------------------------------------
+
+
+def _updateStepSfcObjectSingleClass(cls):
     def Search(self, criteria, parent_infos=[]):
         return _Search([("name", self.getname())], criteria, parent_infos + ["step", self.getlocalId()])
     setattr(cls, "Search", Search)
 
-cls = _initElementClass("transition", "sfcObjects")
+
+cls = _initElementClass("step", "sfcObjects", "single")
 if cls:
+    _updateStepSfcObjectSingleClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateTransitionSfcObjectsClass(cls):
     def setconditionContent(self, condition_type, value):
         if self.condition is None:
             self.addcondition()
@@ -2218,19 +2410,36 @@ if cls:
         return search_result
     setattr(cls, "Search", Search)
 
+
+cls = _initElementClass("transition", "sfcObjects")
+if cls:
+    _updateTransitionSfcObjectsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 _initElementClass("selectionDivergence", "sfcObjects", "single")
 _initElementClass("selectionConvergence", "sfcObjects", "multiple")
 _initElementClass("simultaneousDivergence", "sfcObjects", "single")
 _initElementClass("simultaneousConvergence", "sfcObjects", "multiple")
 
-cls = _initElementClass("jumpStep", "sfcObjects", "single")
-if cls:
+
+def _updateJumpStepSfcObjectSingleClass(cls):
     def Search(self, criteria, parent_infos):
         return _Search([("target", self.gettargetName())], criteria, parent_infos + ["jump", self.getlocalId()])
     setattr(cls, "Search", Search)
 
-cls = PLCOpenParser.GetElementClass("action", "actionBlock")
+
+cls = _initElementClass("jumpStep", "sfcObjects", "single")
 if cls:
+    _updateJumpStepSfcObjectSingleClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateActionActionBlockClass(cls):
     def setreferenceName(self, name):
         if self.reference is not None:
             self.reference.setname(name)
@@ -2280,8 +2489,16 @@ if cls:
                        criteria, parent_infos)
     setattr(cls, "Search", Search)
 
-cls = _initElementClass("actionBlock", "commonObjects", "single")
+
+cls = PLCOpenParser.GetElementClass("action", "actionBlock")
 if cls:
+    _updateActionActionBlockClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateActionBlockCommonObjectsSingleClass(cls):
     def setactions(self, actions):
         self.action = []
         for params in actions:
@@ -2342,6 +2559,14 @@ if cls:
     setattr(cls, "Search", Search)
 
 
+cls = _initElementClass("actionBlock", "commonObjects", "single")
+if cls:
+    _updateActionBlockCommonObjectsSingleClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 def _SearchInIOVariable(self, criteria, parent_infos=[]):
     return _Search([("expression", self.expression)], criteria, parent_infos + ["io_variable", self.getlocalId()])
 
@@ -2378,26 +2603,44 @@ def _SearchInConnector(self, criteria, parent_infos=[]):
     return _Search([("name", self.getname())], criteria, parent_infos + ["connector", self.getlocalId()])
 
 
-cls = _initElementClass("continuation", "commonObjects")
-if cls:
+# ----------------------------------------------------------------------
+
+
+def _updateContinuationCommonObjectsClass(cls):
     setattr(cls, "Search", _SearchInConnector)
 
     def updateElementName(self, old_name, new_name):
         if TextMatched(self.name, old_name):
             self.name = new_name
     setattr(cls, "updateElementName", updateElementName)
+
+
+cls = _initElementClass("continuation", "commonObjects")
+if cls:
+    _updateContinuationCommonObjectsClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateConnectorCommonObjectsSingleClass(cls):
+    setattr(cls, "Search", _SearchInConnector)
+
+    def updateElementName(self, old_name, new_name):
+        if TextMatched(self.name, old_name):
+            self.name = new_name
+    setattr(cls, "updateElementName", updateElementName)
+
 
 cls = _initElementClass("connector", "commonObjects", "single")
 if cls:
-    setattr(cls, "Search", _SearchInConnector)
+    _updateConnectorCommonObjectsSingleClass(cls)
 
-    def updateElementName(self, old_name, new_name):
-        if TextMatched(self.name, old_name):
-            self.name = new_name
-    setattr(cls, "updateElementName", updateElementName)
 
-cls = PLCOpenParser.GetElementClass("connection")
-if cls:
+# ----------------------------------------------------------------------
+
+
+def _updateConnectionClass(cls):
     def setpoints(self, points):
         positions = []
         for point in points:
@@ -2415,8 +2658,16 @@ if cls:
         return points
     setattr(cls, "getpoints", getpoints)
 
-cls = PLCOpenParser.GetElementClass("connectionPointIn")
+
+cls = PLCOpenParser.GetElementClass("connection")
 if cls:
+    _updateConnectionClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateConnectionPointInClass(cls):
     def setrelPositionXY(self, x, y):
         self.relPosition = PLCOpenParser.CreateElement("relPosition", "connectionPointIn")
         self.relPosition.setx(x)
@@ -2495,6 +2746,7 @@ if cls:
         return None
     setattr(cls, "getconnectionParameter", getconnectionParameter)
 
+
 cls = PLCOpenParser.GetElementClass("connectionPointOut")
 if cls:
     def setrelPositionXY(self, x, y):
@@ -2509,8 +2761,16 @@ if cls:
         return self.relPosition
     setattr(cls, "getrelPositionXY", getrelPositionXY)
 
-cls = PLCOpenParser.GetElementClass("value")
+
+cls = PLCOpenParser.GetElementClass("connectionPointIn")
 if cls:
+    _updateConnectionPointInClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
+def _updateValueClass(cls):
     def setvalue(self, value):
         value = value.strip()
         if value.startswith("[") and value.endswith("]"):
@@ -2528,6 +2788,14 @@ if cls:
     setattr(cls, "getvalue", getvalue)
 
 
+cls = PLCOpenParser.GetElementClass("value")
+if cls:
+    _updateValueClass(cls)
+
+
+# ----------------------------------------------------------------------
+
+
 def extractValues(values):
     items = values.split(",")
     i = 1
@@ -2543,10 +2811,7 @@ def extractValues(values):
     return items
 
 
-cls = PLCOpenParser.GetElementClass("arrayValue", "value")
-if cls:
-    arrayValue_model = re.compile("([0-9]+)\((.*)\)$")
-
+def _updateArrayValueValueClass(cls):
     def setvalue(self, value):
         elements = []
         for item in extractValues(value[1:-1]):
@@ -2580,10 +2845,16 @@ if cls:
         return "[%s]" % ", ".join(values)
     setattr(cls, "getvalue", getvalue)
 
-cls = PLCOpenParser.GetElementClass("structValue", "value")
-if cls:
-    structValue_model = re.compile("(.*):=(.*)")
 
+cls = PLCOpenParser.GetElementClass("arrayValue", "value")
+if cls:
+    arrayValue_model = re.compile("([0-9]+)\((.*)\)$")
+    _updateArrayValueValueClass(cls)
+
+# ----------------------------------------------------------------------
+
+
+def _updateStructValueValueClass(cls):
     def setvalue(self, value):
         elements = []
         for item in extractValues(value[1:-1]):
@@ -2603,3 +2874,9 @@ if cls:
             values.append("%s := %s" % (element.getmember(), element.getvalue()))
         return "(%s)" % ", ".join(values)
     setattr(cls, "getvalue", getvalue)
+
+
+cls = PLCOpenParser.GetElementClass("structValue", "value")
+if cls:
+    structValue_model = re.compile("(.*):=(.*)")
+    _updateStructValueValueClass(cls)
