@@ -214,6 +214,7 @@ pylint_checks()
     enable=$enable,W0311          # (bad-indentation) Bad indentation. Found 16 spaces, expected 12
     enable=$enable,W0101          # (unreachable) Unreachable code
     enable=$enable,E0102          # (function-redefined) method already defined
+    enable=$enable,W0602          # (global-variable-not-assigned) Using global for 'X' but no assignment is done
 
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in

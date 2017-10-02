@@ -510,7 +510,6 @@ if havewx:
         wx_eval_lock.release()
 
     def evaluator(tocall, *args, **kwargs):
-        global main_thread
         if main_thread == currentThread():
             # avoid dead lock if called from the wx mainloop
             return default_evaluator(tocall, *args, **kwargs)

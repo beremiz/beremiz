@@ -23,12 +23,10 @@ def setappname(an):
 
 
 def getloadpath():
-    global loadpath
     return loadpath
 
 
 def addoverride(module_name, path):
-    global overrides
     overrides[module_name] = path
 
 
