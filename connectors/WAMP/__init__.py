@@ -44,13 +44,13 @@ _WampSessionEvent = Event()
 
 class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
-        global _WampSession, _WampSessionEvent
+        global _WampSession
         _WampSession = self
         _WampSessionEvent.set()
         print('WAMP session joined for :', self.config.extra["ID"])
 
     def onLeave(self, details):
-        global _WampSession, _WampSessionEvent
+        global _WampSession
         _WampSessionEvent.clear()
         _WampSession = None
         print('WAMP session left')
@@ -113,7 +113,6 @@ def WAMP_connector_factory(uri, confnodesroot):
         wampfuncname = '.'.join((ID, funcname))
 
         def catcher_func(*args, **kwargs):
-            global _WampSession
             if _WampSession is not None:
                 try:
                     return threads.blockingCallFromThread(
@@ -132,7 +131,7 @@ def WAMP_connector_factory(uri, confnodesroot):
 
     class WampPLCObjectProxy(object):
         def __init__(self):
-            global _WampSessionEvent, _WampConnection
+            global _WampConnection
             if not reactor.running:
                 Thread(target=ThreadProc).start()
             else:
@@ -143,7 +142,6 @@ def WAMP_connector_factory(uri, confnodesroot):
                 raise Exception(_("WAMP connection timeout"))
 
         def __del__(self):
-            global _WampConnection
             _WampConnection.disconnect()
             #
             # reactor.stop()

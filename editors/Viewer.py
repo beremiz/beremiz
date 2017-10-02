@@ -810,7 +810,6 @@ class Viewer(EditorPanel, DebugViewer):
 
     def SetCurrentCursor(self, cursor):
         if self.Mode != MODE_MOTION:
-            global CURSORS
             if self.CurrentCursor != cursor:
                 self.CurrentCursor = cursor
                 self.Editor.SetCursor(CURSORS[cursor])

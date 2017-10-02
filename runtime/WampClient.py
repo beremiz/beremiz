@@ -57,7 +57,6 @@ DoOnJoin = []
 
 def GetCallee(name):
     """ Get Callee or Subscriber corresponding to '.' spearated object path """
-    global _PySrv
     names = name.split('.')
     obj = _PySrv.plcobj
     while names:
@@ -134,7 +133,6 @@ def RegisterWampClient(wampconf):
 
 
 def GetSession():
-    global _WampSession
     return _WampSession
 
 

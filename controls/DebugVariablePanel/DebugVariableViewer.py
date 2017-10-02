@@ -83,7 +83,6 @@ class DebugVariableViewer(object):
         """
         Init global pens and brushes
         """
-        global HIGHLIGHT
         if not HIGHLIGHT:
             HIGHLIGHT['DROP_PEN'] = wx.Pen(wx.Colour(0, 128, 255))
             HIGHLIGHT['DROP_BRUSH'] = wx.Brush(wx.Colour(0, 128, 255, 128))
