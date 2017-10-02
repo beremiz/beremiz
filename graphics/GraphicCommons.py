@@ -360,10 +360,6 @@ class Graphic_Element(ToolTipProducer):
         self.SetSize(width, height)
         return self.Pos.x - posx, self.Pos.y - posy
 
-    # Refresh the element Bounding Box
-    def RefreshBoundingBox(self):
-        self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0], self.Size[1])
-
     # Refresh the element connectors position
     def RefreshConnectors(self):
         pass
