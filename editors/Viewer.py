@@ -279,7 +279,6 @@ class ViewerDropTarget(wx.TextDropTarget):
             elif values[1] == "program":
                 message = _("Programs can't be used by other POUs!")
             elif values[1] in ["function", "functionBlock"]:
-                words = tagname.split("::")
                 if pou_name == values[0]:
                     message = _("\"%s\" can't use itself!") % pou_name
                 elif pou_type == "function" and values[1] != "function":
@@ -1244,7 +1243,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.Flush()
         self.ResetView()
         self.ResetBuffer()
-        instance = {}
+
         # List of ids of already loaded blocks
         instances = self.Controler.GetEditedElementInstancesInfos(self.TagName, debug=self.Debug)
         # Load Blocks until they are all loaded
@@ -1841,7 +1840,6 @@ class Viewer(EditorPanel, DebugViewer):
             # Calculate position of connector at the right of start connector
             connector = connection.GetConnectors()["inputs"][0]
             rel_pos = connector.GetRelPosition()
-            direction = connector.GetDirection()
             start_point = start_connector.GetPosition(False)
             end_point = (start_point[0] + LD_WIRE_SIZE, start_point[1])
             connection.SetPosition(end_point[0] - rel_pos[0],
@@ -1874,7 +1872,6 @@ class Viewer(EditorPanel, DebugViewer):
             # Calculate position of connection at the left of end connector
             connector = connection.GetConnectors()["outputs"][0]
             rel_pos = connector.GetRelPosition()
-            direction = connector.GetDirection()
             end_point = end_connector.GetPosition(False)
             start_point = (end_point[0] - LD_WIRE_SIZE, end_point[1])
             connection.SetPosition(start_point[0] - rel_pos[0],
@@ -2314,7 +2311,6 @@ class Viewer(EditorPanel, DebugViewer):
     def OnViewerMotion(self, event):
         if self.Editor.HasCapture() and not event.Dragging():
             return
-        refresh = False
         dc = self.GetLogicalDC()
         pos = GetScaledEventPosition(event, dc, self.Scaling)
         if event.MiddleIsDown() or self.Mode == MODE_MOTION:
@@ -3682,7 +3678,6 @@ class Viewer(EditorPanel, DebugViewer):
                 self.RefreshVisibleElements(xp=xp)
                 self.Scroll(xp, y)
             elif event.ControlDown():
-                dc = self.GetLogicalDC()
                 self.SetScale(self.CurrentScale + rotation, mouse_event=event)
                 self.ParentWindow.RefreshDisplayMenu()
             else:

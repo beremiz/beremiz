@@ -374,9 +374,6 @@ class IDEFrame(wx.Frame):
                    kind=wx.ITEM_NORMAL, text=_(u'Undo') + '\tCTRL+Z')
         AppendMenu(parent, help='', id=wx.ID_REDO,
                    kind=wx.ITEM_NORMAL, text=_(u'Redo') + '\tCTRL+Y')
-        # AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO,
-        #      kind=wx.ITEM_CHECK, text=_(u'Enable Undo/Redo'))
-        enable_undo_redo = _(u'Enable Undo/Redo')  # Keeping text in translations for possible menu reactivation
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_CUT,
                    kind=wx.ITEM_NORMAL, text=_(u'Cut') + '\tCTRL+X')
@@ -1740,7 +1737,6 @@ class IDEFrame(wx.Frame):
 
     def OnProjectTreeItemActivated(self, event):
         selected = event.GetItem()
-        name = self.ProjectTree.GetItemText(selected)
         item_infos = self.ProjectTree.GetPyData(selected)
         if item_infos["type"] == ITEM_PROJECT:
             self.EditProjectSettings()
@@ -1753,7 +1749,6 @@ class IDEFrame(wx.Frame):
 
     def ProjectTreeItemSelect(self, select_item):
         if select_item is not None and select_item.IsOk():
-            name = self.ProjectTree.GetItemText(select_item)
             item_infos = self.ProjectTree.GetPyData(select_item)
             if item_infos["type"] in [ITEM_DATATYPE, ITEM_POU,
                                       ITEM_CONFIGURATION, ITEM_RESOURCE,
@@ -2627,14 +2622,12 @@ class GraphicPrintout(wx.Printout):
 
         # Get the size of the DC in pixels
         ppiPrinterX, ppiPrinterY = self.GetPPIPrinter()
-        ppiScreenX, ppiScreenY = self.GetPPIScreen()
         pw, ph = self.GetPageSizePixels()
         dw, dh = dc.GetSizeTuple()
         Xscale = (float(dw) * float(ppiPrinterX)) / (float(pw) * 25.4)
         Yscale = (float(dh) * float(ppiPrinterY)) / (float(ph) * 25.4)
 
         fontsize = self.FontSize * Yscale
-        text_margin = self.TextMargin * Yscale
 
         margin_left = self.Margins[0].x * Xscale
         margin_top = self.Margins[0].y * Yscale

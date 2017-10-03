@@ -185,7 +185,6 @@ def RegisterWebsite(port):
     website = WebInterface()
     site = appserver.NevowSite(website)
 
-    listening = False
     reactor.listenTCP(port, site)
     print(_('HTTP interface port :'), port)
     return website

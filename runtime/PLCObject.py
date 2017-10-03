@@ -91,7 +91,7 @@ class PLCObject(pyro.ObjBase):
                              "r").read().strip() + lib_ext
             if self.LoadPLC():
                 self.PLCStatus = "Stopped"
-        except Exception, e:
+        except Exception:
             self.PLCStatus = "Empty"
             self.CurrentPLCFilename = None
 
@@ -287,7 +287,7 @@ class PLCObject(pyro.ObjBase):
                 except KeyError:
                     raise KeyError("Try to get unknown shared global variable : %s" % name)
                 v = t()
-                r = self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
+                self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
                 return self.python_runtime_vars["_"+name+"_unpack"](v)
 
             def __setattr__(_self, name, value):
@@ -363,7 +363,6 @@ class PLCObject(pyro.ObjBase):
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
-            error = None
             res = self._startPLC(len(self.argv), c_argv(*self.argv))
             if res == 0:
                 self.PLCStatus = "Started"

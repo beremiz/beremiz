@@ -211,7 +211,6 @@ class _SlaveCTN(NodeManager):
         return result
 
     def GetVariableLocationTree(self):
-        current_location = self.GetCurrentLocation()
         return GetSlaveLocationTree(self.CurrentNode,
                                     self.GetCurrentLocation(),
                                     self.BaseParams.getName())

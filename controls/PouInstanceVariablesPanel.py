@@ -113,8 +113,6 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.TRANSPARENT_PEN)
 
-            bg_width = (r_image_w + 4) * len(rightimages) + 4
-            bg_height = r_image_h + 8
             dc.DrawRectangle(images_bbx.x, images_bbx.y,
                              images_bbx.width, images_bbx.height)
             x_pos = images_bbx.x + 4

@@ -394,7 +394,6 @@ class ProgramGenerator(object):
             resrce += [("    TASK ", ()),
                        (task.getname(), (tagname, "task", task_number, "name")),
                        ("(", ())]
-            args = []
             single = task.getsingle()
             # Single argument if exists
             if single is not None:
@@ -636,11 +635,6 @@ class PouProgramGenerator(object):
     def ComputeInterface(self, pou):
         interface = pou.getinterface()
         if interface is not None:
-            body = pou.getbody()
-            if isinstance(body, ListType):
-                body = body[0]
-            body_content = body.getcontent()
-            body_type = body_content.getLocalTag()
             if self.Type == "FUNCTION":
                 returntype_content = interface.getreturnType()[0]
                 returntype_content_type = returntype_content.getLocalTag()
@@ -1024,7 +1018,6 @@ class PouProgramGenerator(object):
         return factorized_paths
 
     def GenerateBlock(self, block, block_infos, body, link, order=False, to_inout=False):
-        body_type = body.getcontent().getLocalTag()
         name = block.getinstanceName()
         type = block.gettypeName()
         executionOrderId = block.getexecutionOrderId()

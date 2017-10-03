@@ -722,7 +722,6 @@ def GenerateElement(element_name, attributes, elements_model,
     def ExtractElement(factory, node):
         attrs = factory.ExtractNodeAttrs(element_name, node, attributes)
         children_structure = ""
-        children_infos = []
         children = []
         for child in node.childNodes:
             if child.nodeName not in ["#comment", "#text"]:
@@ -1278,7 +1277,6 @@ def generateClassCreateFunction(class_definition):
 
 def generateGetattrMethod(factory, class_definition, classinfos):
     attributes = dict([(attr["name"], attr) for attr in classinfos["attributes"] if attr["use"] != "prohibited"])
-    optional_attributes = dict([(attr["name"], True) for attr in classinfos["attributes"] if attr["use"] == "optional"])
     elements = dict([(element["name"], element) for element in classinfos["elements"]])
 
     def getattrMethod(self, name):
@@ -1579,10 +1577,6 @@ def generateInitMethod(factory, classinfos):
                 self.set(attribute["name"], attribute["attr_type"]["generate"](attribute["attr_type"]["initial"]()))
         for element in classinfos["elements"]:
             if element["type"] != CHOICE:
-                element_name = (
-                    etree.QName(factory.NSMAP["xhtml"], "p")
-                    if element["type"] == ANY
-                    else factory.etreeNamespaceFormat % element["name"])
                 initial = GetElementInitialValue(factory, element)
                 if initial is not None:
                     map(self.append, initial)

@@ -472,7 +472,6 @@ class Graphic_Element(ToolTipProducer):
 
     # Method called when a LeftDown event have been generated
     def OnLeftDown(self, event, dc, scaling):
-        pos = event.GetLogicalPosition(dc)
         # Test if an handle have been clicked
         handle = self.TestHandle(event)
         # Find which type of handle have been clicked,
@@ -1412,8 +1411,6 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         dc.SetBrush(wx.Brush(HIGHLIGHTCOLOR))
         dc.SetLogicalFunction(wx.AND)
         parent_pos = self.ParentBlock.GetPosition()
-        posx = parent_pos[0] + self.Pos.x
-        posy = parent_pos[1] + self.Pos.y
         xstart = parent_pos[0] + self.Pos.x
         ystart = parent_pos[1] + self.Pos.y
         if self.Direction[0] < 0:
@@ -2627,7 +2624,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
         self.Refresh()
 
     def HighlightPoint(self, pos):
-        refresh = False
         start, end = self.OverStart, self.OverEnd
         self.OverStart = False
         self.OverEnd = False

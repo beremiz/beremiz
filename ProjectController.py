@@ -151,7 +151,7 @@ class Iec2CSettings(object):
             status, result, err_result = ProcessLogger(None, buildcmd,
                                                        no_stdout=True,
                                                        no_stderr=True).spin()
-        except Exception, e:
+        except Exception:
             return buildopt
 
         for opt in options:
@@ -966,7 +966,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 if len(ListGroup) > 2:
                     self._Ticktime = int(ListGroup[2][0])
 
-            except Exception, e:
+            except Exception:
                 self.logger.write_error(_("Cannot open/parse VARIABLES.csv!\n"))
                 self.logger.write_error(traceback.format_exc())
                 self.ResetIECProgramsAndVariables()
@@ -1107,7 +1107,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if not builder.build():
                 self.logger.write_error(_("C Build failed.\n"))
                 return False
-        except Exception, exc:
+        except Exception:
             self.logger.write_error(_("C Build crashed !\n"))
             self.logger.write_error(traceback.format_exc())
             self.ResetBuildMD5()
@@ -1126,7 +1126,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             CTNLocationCFilesAndCFLAGS, CTNLDFLAGS, CTNExtraFiles = self._Generate_C(
                 buildpath,
                 self.PLCGeneratedLocatedVars)
-        except Exception, exc:
+        except Exception:
             self.logger.write_error(_("Runtime IO extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             self.ResetBuildMD5()
@@ -1135,7 +1135,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Generate C code and compilation params from liraries
         try:
             LibCFilesAndCFLAGS, LibLDFLAGS, LibExtraFiles = self.GetLibrariesCCode(buildpath)
-        except Exception, exc:
+        except Exception:
             self.logger.write_error(_("Runtime library extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             self.ResetBuildMD5()
@@ -1178,7 +1178,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 open(code_path, "w").write(code)
                 # Insert this file as first file to be compiled at root confnode
                 self.LocationCFilesAndCFLAGS[0][1].insert(0, (code_path, self.plcCFLAGS))
-            except Exception, exc:
+            except Exception:
                 self.logger.write_error(name+_(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
                 self.ResetBuildMD5()
@@ -1600,7 +1600,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
             if plc_status == "Started":
                 if len(Traces) > 0:
-                    Failed = False
                     self.IECdebug_lock.acquire()
                     for debug_tick, debug_buff in Traces:
                         debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
@@ -1755,7 +1754,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Get connector from uri
         try:
             self._SetConnector(connectors.ConnectorFactory(uri, self))
-        except Exception, msg:
+        except Exception:
             self.logger.write_error(_("Exception while connecting %s!\n") % uri)
             self.logger.write_error(traceback.format_exc())
 
@@ -1772,13 +1771,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             # Init with actual PLC status and print it
             self.UpdateMethodsFromPLCStatus()
-            if self.previous_plcstate is not None:
-                status = _(self.previous_plcstate)
-            else:
-                status = ""
-
-            # self.logger.write(_("PLC is %s\n")%status)
-
             if self.previous_plcstate in ["Started", "Stopped"]:
                 if self.DebugAvailable() and self.GetIECProgramsAndVariables():
                     self.logger.write(_("Debugger ready\n"))

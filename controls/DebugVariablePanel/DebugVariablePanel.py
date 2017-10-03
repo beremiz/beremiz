@@ -657,7 +657,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def OnRangeChanged(self, event):
         try:
             self.CurrentRange = RANGE_VALUES[self.CanvasRange.GetSelection()][1] / self.Ticktime
-        except ValueError, e:
+        except ValueError:
             self.CanvasRange.SetValue(str(self.CurrentRange))
         wx.CallAfter(self.RefreshRange)
         event.Skip()

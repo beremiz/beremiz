@@ -776,7 +776,6 @@ class PLCControler(object):
         return None
 
     def GetPouVariables(self, tagname, debug=False):
-        pou_type = None
         project = self.GetProject(debug)
         if project is not None:
             factory = VariablesTreeInfosFactory()
@@ -1664,7 +1663,6 @@ class PLCControler(object):
 
     # Return Block types checking for recursion
     def GetBlockTypes(self, tagname="", debug=False):
-        typename = None
         words = tagname.split("::")
         name = None
         project = self.GetProject(debug)

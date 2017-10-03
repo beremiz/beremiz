@@ -459,10 +459,6 @@ def CreateSimpleType(factory, attributes, typeinfos):
 
         # Generate extract value for new created type
         def ExtractSimpleTypeValue(attr, extract=True):
-            if extract:
-                value = GetAttributeValue(attr)
-            else:
-                value = attr
             for infos in membertypesinfos:
                 try:
                     return infos["extract"](attr, False)

@@ -45,7 +45,7 @@ class ServicePublisher(object):
     def RegisterService(self, name, ip, port):
         try:
             self._RegisterService(name, ip, port)
-        except Exception, e:
+        except Exception:
             self.retrytimer = threading.Timer(2, self.RegisterService, [name, ip, port])
             self.retrytimer.start()
 
@@ -93,6 +93,6 @@ class ServicePublisher(object):
             s.close()
             if host != '0.0.0.0':
                 return host
-        except Exception, e:
+        except Exception:
             pass
         return socket.gethostbyname(socket.gethostname())

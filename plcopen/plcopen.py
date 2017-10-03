@@ -1061,7 +1061,6 @@ def _updateTypesProjectClass(cls):
 
     def Search(self, criteria, parent_infos=[]):
         search_result = []
-        filter = criteria["filter"]
         for datatype in self.dataTypes.getdataType():
             search_result.extend(datatype.Search(criteria, parent_infos))
         for pou in self.pous.getpou():
@@ -1113,7 +1112,7 @@ def _updateDataTypeClass(cls):
             self.content.updateElementName(old_name, new_name)
         elif content_name == "struct":
             for element in self.content.getvariable():
-                element_type = element.type.updateElementName(old_name, new_name)
+                element.type.updateElementName(old_name, new_name)
     setattr(cls, "updateElementName", updateElementName)
 
     def Search(self, criteria, parent_infos=[]):

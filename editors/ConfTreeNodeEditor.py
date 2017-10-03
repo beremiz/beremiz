@@ -496,7 +496,7 @@ class ConfTreeNodeEditor(EditorPanel):
     def GetItemChannelChangedFunction(self, dir):
         def OnConfNodeTreeItemChannelChanged(event):
             confnode_IECChannel = self.Controler.BaseParams.getIEC_Channel()
-            res = self.SetConfNodeParamsAttribute("BaseParams.IEC_Channel", confnode_IECChannel + dir)
+            self.SetConfNodeParamsAttribute("BaseParams.IEC_Channel", confnode_IECChannel + dir)
             wx.CallAfter(self.RefreshIECChannelControlsState)
             wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU, PROJECTTREE)
             event.Skip()
@@ -534,7 +534,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
     def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, path):
         def OnChoiceContentChanged(event):
-            res = self.SetConfNodeParamsAttribute(path, choicectrl.GetStringSelection())
+            self.SetConfNodeParamsAttribute(path, choicectrl.GetStringSelection())
             wx.CallAfter(self.RefreshConfNodeParamsSizer)
             event.Skip()
         return OnChoiceContentChanged

@@ -663,7 +663,6 @@ class VariablePanel(wx.Panel):
         def _RefreshButtons():
             if self:
                 table_length = len(self.Table.data)
-                row_class = None
                 row_edit = True
                 row = 0
                 if table_length > 0:

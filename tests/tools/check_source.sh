@@ -200,6 +200,7 @@ pylint_checks()
     disable=$disable,C0302        # Too many lines in module
     disable=$disable,W0511        # fixme
     disable=$disable,W0110        # (deprecated-lambda) map/filter on lambda could be replaced by comprehension
+    disable=$disable,W1401        # (anomalous-backslash-in-string) Anomalous backslash in string: '\.'. String constant might be missing an r prefix.
 
     enable=
     enable=$enable,E1601          # print statement used
@@ -215,6 +216,7 @@ pylint_checks()
     enable=$enable,W0101          # (unreachable) Unreachable code
     enable=$enable,E0102          # (function-redefined) method already defined
     enable=$enable,W0602          # (global-variable-not-assigned) Using global for 'X' but no assignment is done
+    enable=$enable,W0612          # (unused-variable) Unused variable 'X'
 
     # enable=$enable,W0403        # relative import
     # enable=$enable,W0622        # (redefined-builtin) Redefining built-in
