@@ -460,7 +460,7 @@ if __name__ == "__main__":
         '--domain':   'domain',
         '--moTarget': 'moTarget',
     }
-
+    exit_code = 1
     try:
         optionList, pargs = getopt.getopt(sys.argv[1:], validOptions, validLongOptions)
     except getopt.GetoptError, e:
@@ -488,11 +488,13 @@ if __name__ == "__main__":
     if option['po']:
         try:
             makePO(appDirPath, option['domain'], option['verbose'])
+            exit_code = 0
         except IOError, e:
             printUsage(e[1] + '\n   You must write a file app.fil that contains the list of all files to parse.')
     if option['mo']:
         makeMO(appDirPath, option['moTarget'], option['domain'], option['verbose'], option['forceEnglish'])
-    sys.exit(1)
+        exit_code = 0
+    sys.exit(exit_code)
 
 
 # -----------------------------------------------------------------------------
