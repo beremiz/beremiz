@@ -92,6 +92,7 @@
 ../controls/CustomStyledTextCtrl.py
 ../controls/VariablePanel.py
 ../controls/CustomGrid.py
+../controls/CustomIntCtrl.py
 ../controls/CustomTree.py
 ../controls/CustomEditableListBox.py
 ../CodeFileTreeNode.py
@@ -103,7 +104,6 @@
 ../version.py
 ../POULibrary.py
 ../util/MiniTextControler.py
-../util/Zeroconf.py
 ../util/ExceptionHandler.py
 ../util/misc.py
 ../util/ProcessLogger.py
