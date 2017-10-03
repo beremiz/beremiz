@@ -16,4 +16,4 @@ source_list:
 	echo "../plcopen/Additional_Function_Blocks.xml" >> app.fil
 	echo "../plcopen/Standard_Function_Blocks.xml"   >> app.fil
 
-.PHONY: all, app.fil, locales, messages.pot
+.PHONY: all, template, locales, source_list
