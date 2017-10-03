@@ -460,7 +460,6 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
             if scaling is not None:
                 movex = round(float(self.Pos.x + movex) / float(scaling[0])) * scaling[0] - self.Pos.x
                 movey = round(float(self.Pos.y + movey) / float(scaling[1])) * scaling[1] - self.Pos.y
-            action_block = None
             if self.Parent.GetDrawingMode() == FREEDRAWING_MODE:
                 self.Move(movex, movey)
                 self.RefreshConnected()
@@ -857,7 +856,6 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
 
     # Align input element with this step
     def RefreshInputPosition(self):
-        wires = self.Input.GetWires()
         current_pos = self.Input.GetPosition(False)
         input = self.GetPreviousConnector()
         if input:
@@ -1351,10 +1349,7 @@ class SFC_Divergence(Graphic_Element):
                 wires = output_connector.GetWires()
                 if len(wires) != 1:
                     return
-                current_pos = output_connector.GetPosition(False)
                 output = wires[0][0].GetOtherConnected(self.Output)
-                output_pos = output.GetPosition(False)
-                diffx = current_pos.x - output_pos.x
                 output_block = output.GetParentBlock()
                 if isinstance(output_block, SFC_Step):
                     output_block.MoveActionBlock(move)

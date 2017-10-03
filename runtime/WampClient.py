@@ -73,10 +73,10 @@ class WampSession(wamp.ApplicationSession):
         ID = self.config.extra["ID"]
         print('WAMP session joined by :', ID)
         for name in ExposedCalls:
-            reg = yield self.register(GetCallee(name), '.'.join((ID, name)))
+            yield self.register(GetCallee(name), '.'.join((ID, name)))
 
         for name in SubscribedEvents:
-            reg = yield self.subscribe(GetCallee(name), name)
+            yield self.subscribe(GetCallee(name), name)
 
         for func in DoOnJoin:
             yield func(self)

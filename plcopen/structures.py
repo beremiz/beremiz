@@ -193,7 +193,6 @@ def get_standard_funtions(table):
                     section_name = fields[0]
                 Current_section = {"name": section_name, "list": []}
                 Standard_Functions_Decl.append(Current_section)
-                Function_decl_list = []
             if Current_section:
                 Function_decl = dict([(champ, val) for champ, val in zip(fonctions, fields[1:]) if champ])
                 baseinputnumber = int(Function_decl.get("baseinputnumber", 1))

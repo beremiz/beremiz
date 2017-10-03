@@ -117,8 +117,8 @@ class DurationEditorDialog(wx.Dialog):
     def GetControlValueTestFunction(self, control):
         def OnValueChanged(event):
             try:
-                value = float(control.GetValue())
-            except ValueError, e:
+                float(control.GetValue())
+            except ValueError:
                 message = wx.MessageDialog(self, _("Invalid value!\nYou must fill a numeric value."), _("Error"), wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
@@ -157,8 +157,8 @@ class DurationEditorDialog(wx.Dialog):
                               (self.Minutes, _("minutes")), (self.Seconds, _("seconds")),
                               (self.Milliseconds, _("milliseconds"))]:
             try:
-                value = float(control.GetValue())
-            except ValueError, e:
+                float(control.GetValue())
+            except ValueError:
                 errors.append(name)
         if len(errors) > 0:
             if len(errors) == 1:

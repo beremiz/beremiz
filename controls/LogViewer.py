@@ -119,7 +119,6 @@ class LogScrollBar(wx.Panel):
     def OnMotion(self, event):
         if event.Dragging() and self.ThumbScrollingStartPos is not None:
             posx, posy = event.GetPosition()
-            width, height = self.GetClientSize()
             range_rect = self.GetRangeRect()
             thumb_size = range_rect.height * THUMB_SIZE_RATIO
             thumb_range = range_rect.height - thumb_size

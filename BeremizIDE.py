@@ -559,9 +559,9 @@ class Beremiz(IDEFrame):
             result = MATIEC_ERROR_MODEL.match(line)
             if result is not None:
                 first_line, first_column, last_line, last_column, error = result.groups()
-                infos = self.CTR.ShowError(self.Log,
-                                           (int(first_line), int(first_column)),
-                                           (int(last_line),  int(last_column)))
+                self.CTR.ShowError(self.Log,
+                                   (int(first_line), int(first_column)),
+                                   (int(last_line),  int(last_column)))
 
     def CheckSaveBeforeClosing(self, title=_("Close Project")):
         """Function displaying an Error dialog in PLCOpenEditor.
@@ -1015,7 +1015,6 @@ class Beremiz(IDEFrame):
 
     def OnProjectTreeItemActivated(self, event):
         selected = event.GetItem()
-        name = self.ProjectTree.GetItemText(selected)
         item_infos = self.ProjectTree.GetPyData(selected)
         if item_infos["type"] == ITEM_CONFNODE:
             item_infos["confnode"]._OpenView()
@@ -1027,7 +1026,6 @@ class Beremiz(IDEFrame):
 
     def ProjectTreeItemSelect(self, select_item):
         if select_item is not None and select_item.IsOk():
-            name = self.ProjectTree.GetItemText(select_item)
             item_infos = self.ProjectTree.GetPyData(select_item)
             if item_infos["type"] == ITEM_CONFNODE:
                 item_infos["confnode"]._OpenView(onlyopened=True)

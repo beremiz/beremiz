@@ -398,15 +398,15 @@ class Translator:
                 default_pos -= 1
             self.printo(function_name+'.parse_kwargs = function (', ", ".join(["__kwargs"]+arg_names), ") {")
             for default_node in node.defaults:
-                default_value = self.expr(default_node, current_klass)
-#                if isinstance(default_node, ast.Const):
-#                    default_value = self._const(default_node)
-#                elif isinstance(default_node, ast.Name):
-#                    default_value = self._name(default_node)
-#                elif isinstance(default_node, ast.UnarySub):
-#                    default_value = self._unarysub(default_node, current_klass)
-#                else:
-#                    raise TranslationError("unsupported type (in _method)", default_node)
+                # default_value = self.expr(default_node, current_klass)
+                # if isinstance(default_node, ast.Const):
+                #     default_value = self._const(default_node)
+                # elif isinstance(default_node, ast.Name):
+                #     default_value = self._name(default_node)
+                # elif isinstance(default_node, ast.UnarySub):
+                #     default_value = self._unarysub(default_node, current_klass)
+                # else:
+                #     raise TranslationError("unsupported type (in _method)", default_node)
 
                 default_name = arg_names[default_pos]
                 self.printo("    if (typeof %s == 'undefined')" % (default_name))
@@ -1011,8 +1011,6 @@ class Translator:
         if debugStmt:
 
             lt = self.get_line_trace(node)
-
-            haltException = self.module_prefix + "HaltException"
             isHaltFunction = self.module_prefix + "IsHaltException"
 
             out = (
@@ -1077,7 +1075,6 @@ class Translator:
         def _lhsFromAttr(v, current_klass):
             attr_name = v.attrname
             if isinstance(v.expr, ast.Name):
-                obj = v.expr.name
                 lhs = self._name(v.expr, current_klass) + "." + attr_name
             elif isinstance(v.expr, ast.Getattr):
                 lhs = self._getattr(v, current_klass)
@@ -1318,13 +1315,21 @@ class Translator:
         lhs = "var " + assign_name
         iterator_name = "__" + assign_name
 
+        loc_dict = {
+            "iterator_name": iterator_name,
+            "list_expr": list_expr,
+            "lhs": lhs,
+            "op": op,
+            "assign_tuple": assign_tuple,
+        }
+
         self.printo("""
         var %(iterator_name)s = %(list_expr)s.__iter__();
         try {
             while (true) {
                 %(lhs)s %(op)s %(iterator_name)s.next();
                 %(assign_tuple)s
-        """ % locals())
+        """ % loc_dict)
         for node in node.body.nodes:
             self._stmt(node, current_klass)
         self.printo("""
@@ -1334,7 +1339,7 @@ class Translator:
                 throw e;
             }
         }
-        """ % locals())
+        """)
 
     def _while(self, node, current_klass):
         test = self.expr(node.test, current_klass)
@@ -1530,7 +1535,7 @@ def translate(file_name, module_name, debug=False):
     f.close()
     output = cStringIO.StringIO()
     mod = compiler.parseFile(file_name)
-    t = Translator(module_name, module_name, module_name, src, debug, mod, output)
+    Translator(module_name, module_name, module_name, src, debug, mod, output)
     return output.getvalue()
 
 

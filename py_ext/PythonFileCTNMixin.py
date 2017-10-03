@@ -146,6 +146,13 @@ _%(pyextname)sGlobalsDesc.append((
 
         globalsection = self.GetSection("globals")
 
+        loc_dict = {
+            "pyextname": pyextname,
+            "globalstubs": globalstubs,
+            "globalsection": globalsection,
+            "rtcalls": rtcalls,
+        }
+
         PyFileContent = """\
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -168,7 +175,7 @@ PLCGlobalsDesc.append(( "%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
 
 del __ext_name__
 
-""" % locals()
+""" % loc_dict
 
         # write generated content to python file
         runtimefile_path = os.path.join(buildpath,
@@ -246,6 +253,14 @@ PYTHON_POLL* __%(name)s_notifier;
                                 onchangelen=len(varinfo["onchangecode"]), **varinfo)
                             for varinfo in varinfos if varinfo["onchange"]])
 
+        loc_dict = {
+            "vardec": vardec,
+            "varinit": varinit,
+            "varret": varret,
+            "varpub": varpub,
+            "location_str": location_str,
+        }
+
         # TODO : use config name obtained from model instead of default
         # "config.h". User cannot change config name, but project imported
         # or created in older beremiz vesion could use different name.
@@ -278,7 +293,7 @@ void __retrieve_%(location_str)s(void){
 void __publish_%(location_str)s(void){
 %(varpub)s
 }
-""" % locals()
+""" % loc_dict
 
         Gen_PyCfile_path = os.path.join(buildpath, "PyCFile_%s.c" % location_str)
         pycfile = open(Gen_PyCfile_path, 'w')

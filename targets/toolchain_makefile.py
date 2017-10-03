@@ -56,7 +56,7 @@ class toolchain_makefile(object):
         self.md5key = None
         try:
             os.remove(self._GetMD5FileName())
-        except Exception, e:
+        except Exception:
             pass
 
     def GetBinaryCodeMD5(self):
@@ -65,7 +65,7 @@ class toolchain_makefile(object):
         else:
             try:
                 return open(self._GetMD5FileName(), "r").read()
-            except IOError, e:
+            except IOError:
                 return None
 
     def concat_deps(self, bn):

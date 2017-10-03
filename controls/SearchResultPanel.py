@@ -272,7 +272,6 @@ class SearchResultPanel(wx.Panel):
         return OnTextCtrlDClick
 
     def GenerateSearchResultsTreeBranch(self, root, infos):
-        to_delete = []
         if infos["name"] == "body":
             item_name = "%d:" % infos["data"][1][0]
         else:

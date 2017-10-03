@@ -97,7 +97,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
             location = newlocation
             r.close()
-        except Exception, msg:
+        except Exception:
             confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n") % location)
             confnodesroot.logger.write_error(traceback.format_exc())
             return None
@@ -105,7 +105,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
-    except Exception, msg:
+    except Exception:
         confnodesroot.logger.write_error(_("Connection to '%s' failed.\n") % location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None

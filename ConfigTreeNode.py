@@ -392,10 +392,7 @@ class ConfigTreeNode(object):
         Changes Name to DesiredName if available, Name-N if not.
         @param DesiredName: The desired Name (string)
         """
-        # Get Current Name
-        CurrentName = self.BaseParams.getName()
-        # Do nothing if no change
-        # if CurrentName == DesiredName: return CurrentName
+
         # Build a list of used Name out of parent's Children
         AllNames = []
         for CTNInstance in self.CTNParent.IterChildren():

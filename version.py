@@ -111,7 +111,6 @@ def GetAboutDialogInfo():
     # read license file
     path = paths.AbsDir(__file__)
     license_path = os.path.join(path, "COPYING")
-    license = ''
     if os.path.exists(license_path):
         with open(license_path) as f:
             info.License += f.read()

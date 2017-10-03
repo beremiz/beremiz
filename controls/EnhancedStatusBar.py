@@ -111,7 +111,6 @@ class EnhancedStatusBar(wx.StatusBar):
             widget, horizontalalignment, verticalalignment = item.widget, item.horizontalalignment, item.verticalalignment
 
             rect = self.GetFieldRect(pos)
-            widgetpos = widget.GetPosition()
             widgetsize = widget.GetSize()
 
             rect = self.GetFieldRect(pos)

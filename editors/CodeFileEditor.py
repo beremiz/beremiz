@@ -200,7 +200,6 @@ class CodeEditor(CustomStyledTextCtrl):
         except Exception:
             values = event.GetDragText()
         if isinstance(values, tuple):
-            message = None
             if values[3] == self.Controler.GetCurrentLocation():
                 self.ResetBuffer()
                 event.SetDragText(values[0])
@@ -339,8 +338,6 @@ class CodeEditor(CustomStyledTextCtrl):
             return
 
         elif key == 32 and event.ControlDown():
-            pos = self.GetCurrentPos()
-
             # Tips
             if event.ShiftDown():
                 pass
@@ -619,8 +616,6 @@ class VariablesTable(CustomTable):
         Otherwise default to the default renderer.
         """
 
-        typelist = None
-        accesslist = None
         for row in range(self.GetNumberRows()):
             for col in range(self.GetNumberCols()):
                 editor = None

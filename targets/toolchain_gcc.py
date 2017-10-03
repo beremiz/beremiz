@@ -73,7 +73,7 @@ class toolchain_gcc(object):
     def GetBinaryCode(self):
         try:
             return open(self.exe_path, "rb").read()
-        except Exception, e:
+        except Exception:
             return None
 
     def _GetMD5FileName(self):
@@ -83,7 +83,7 @@ class toolchain_gcc(object):
         self.md5key = None
         try:
             os.remove(self._GetMD5FileName())
-        except Exception, e:
+        except Exception:
             pass
 
     def GetBinaryCodeMD5(self):
@@ -92,7 +92,7 @@ class toolchain_gcc(object):
         else:
             try:
                 return open(self._GetMD5FileName(), "r").read()
-            except Exception, e:
+            except Exception:
                 return None
 
     def SetBuildPath(self, buildpath):
@@ -206,8 +206,6 @@ class toolchain_gcc(object):
         # Link all the object files into one binary file
         self.CTRInstance.logger.write(_("Linking :\n"))
         if relink:
-            objstring = []
-
             # Generate list .o files
             listobjstring = '"' + '"  "'.join(objs) + '"'
 

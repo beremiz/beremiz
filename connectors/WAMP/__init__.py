@@ -118,10 +118,10 @@ def WAMP_connector_factory(uri, confnodesroot):
                     return threads.blockingCallFromThread(
                         reactor, _WampSession.call, wampfuncname,
                         *args, **kwargs)
-                except TransportLost, e:
+                except TransportLost:
                     confnodesroot.logger.write_error(_("Connection lost!\n"))
                     confnodesroot._SetConnector(None)
-                except Exception, e:
+                except Exception:
                     errmess = traceback.format_exc()
                     confnodesroot.logger.write_error(errmess+"\n")
                     print(errmess)
@@ -156,7 +156,7 @@ def WAMP_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         return WampPLCObjectProxy()
-    except Exception, msg:
+    except Exception:
         confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n") % location)
         confnodesroot.logger.write_error(traceback.format_exc())
         return None
