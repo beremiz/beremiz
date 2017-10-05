@@ -1171,7 +1171,7 @@ class PLCControler(object):
             # Found the pou action corresponding to old name and change its name to new name
             pou = self.Project.getpou(pou_name)
             if pou is not None:
-                for type, varlist in pou.getvars():
+                for _type, varlist in pou.getvars():
                     for var in varlist.getvariable():
                         if var.getname() == old_name:
                             var.setname(new_name)
@@ -1328,7 +1328,7 @@ class PLCControler(object):
             var_type = PLCOpenParser.CreateElement("type", "variable")
             if isinstance(var.Type, TupleType):
                 if var.Type[0] == "array":
-                    array_type, base_type_name, dimensions = var.Type
+                    _array_type, base_type_name, dimensions = var.Type
                     array = PLCOpenParser.CreateElement("array", "dataType")
                     baseType = PLCOpenParser.CreateElement("baseType", "array")
                     array.setbaseType(baseType)
@@ -1417,7 +1417,7 @@ class PLCControler(object):
             if configuration is not None:
                 # Set configuration global vars
                 configuration.setglobalVars([
-                    varlist for vartype, varlist
+                    varlist for _vartype, varlist
                     in self.ExtractVarLists(vars)])
 
     # Return the configuration globalvars
@@ -1455,7 +1455,7 @@ class PLCControler(object):
             # Set resource global vars
             if resource is not None:
                 resource.setglobalVars([
-                    varlist for vartype, varlist
+                    varlist for _vartype, varlist
                     in self.ExtractVarLists(vars)])
 
     # Return the resource globalvars
@@ -1506,7 +1506,7 @@ class PLCControler(object):
                 if pou.interface is None:
                     pou.interface = PLCOpenParser.CreateElement("interface", "pou")
                 # Set Pou interface
-                pou.setvars([varlist for varlist_type, varlist in self.ExtractVarLists(vars)])
+                pou.setvars([varlist for _varlist_type, varlist in self.ExtractVarLists(vars)])
 
     # Replace the return type of the pou given by its name (only for functions)
     def SetPouInterfaceReturnType(self, name, return_type):
@@ -1631,9 +1631,9 @@ class PLCControler(object):
     # Function that returns the block definition associated to the block type given
     def GetBlockType(self, typename, inputs=None, debug=False):
         result_blocktype = None
-        for sectioname, blocktype in self.TotalTypesDict.get(typename, []):
+        for _sectioname, blocktype in self.TotalTypesDict.get(typename, []):
             if inputs is not None and inputs != "undefined":
-                block_inputs = tuple([var_type for name, var_type, modifier in blocktype["inputs"]])
+                block_inputs = tuple([var_type for _name, var_type, _modifier in blocktype["inputs"]])
                 if reduce(lambda x, y: x and y, map(lambda x: x[0] == "ANY" or self.IsOfType(*x), zip(inputs, block_inputs)), True):
                     return blocktype
             else:
@@ -1656,7 +1656,7 @@ class PLCControler(object):
                     return blocktype_infos
 
                 if inputs == tuple([var_type
-                                    for name, var_type, modifier in blocktype_infos["inputs"]]):
+                                    for _name, var_type, _modifier in blocktype_infos["inputs"]]):
                     return blocktype_infos
 
         return None
@@ -1698,7 +1698,7 @@ class PLCControler(object):
             name = words[1]
         blocktypes = []
         for blocks in self.TotalTypesDict.itervalues():
-            for sectioname, block in blocks:
+            for _sectioname, block in blocks:
                 if block["type"] == "functionBlock":
                     blocktypes.append(block["name"])
         if project is not None:
@@ -1807,7 +1807,7 @@ class PLCControler(object):
         TypeHierarchy_list has a rough order to it (e.g. SINT, INT, DINT, ...),
         which makes it easy for a user to find a type in a menu.
         '''
-        return [x for x, y in TypeHierarchy_list if not x.startswith("ANY")]
+        return [x for x, _y in TypeHierarchy_list if not x.startswith("ANY")]
 
     def IsOfType(self, typename, reference, debug=False):
         if reference is None or typename == reference:
@@ -2131,7 +2131,7 @@ class PLCControler(object):
                     element_type = PLCOpenParser.CreateElement("type", "variable")
                     if isinstance(element_infos["Type"], TupleType):
                         if element_infos["Type"][0] == "array":
-                            array_type, base_type_name, dimensions = element_infos["Type"]
+                            _array_type, base_type_name, dimensions = element_infos["Type"]
                             array = PLCOpenParser.CreateElement("array", "dataType")
                             baseType = PLCOpenParser.CreateElement("baseType", "array")
                             array.setbaseType(baseType)
@@ -2373,7 +2373,7 @@ class PLCControler(object):
 
     def PasteEditedElementInstances(self, tagname, text, new_pos, middle=False, debug=False):
         element = self.GetEditedElement(tagname, debug)
-        element_name, element_type = self.GetEditedElementType(tagname, debug)
+        _element_name, element_type = self.GetEditedElementType(tagname, debug)
         if element is not None:
             bodytype = element.getbodyType()
 

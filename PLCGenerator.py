@@ -61,7 +61,7 @@ def ReIndentText(text, nb_spaces):
             while lines[line_num][spaces] == " ":
                 spaces += 1
             indent = ""
-            for i in xrange(spaces, nb_spaces):
+            for dummy in xrange(spaces, nb_spaces):
                 indent += " "
             for line in lines:
                 if line != "":
@@ -547,8 +547,8 @@ class PouProgramGenerator(object):
 
     # Test if a variable has already been defined
     def IsAlreadyDefined(self, name):
-        for list_type, option, located, vars in self.Interface:
-            for var_type, var_name, var_address, var_initial in vars:
+        for _list_type, _option, _located, vars in self.Interface:
+            for _var_type, var_name, _var_address, _var_initial in vars:
                 if name == var_name:
                     return True
         return False
@@ -559,8 +559,8 @@ class PouProgramGenerator(object):
         current_type = None
         if len(parts) > 0:
             name = parts.pop(0)
-            for list_type, option, located, vars in self.Interface:
-                for var_type, var_name, var_address, var_initial in vars:
+            for _list_type, _option, _located, vars in self.Interface:
+                for var_type, var_name, _var_address, _var_initial in vars:
                     if name == var_name:
                         current_type = var_type
                         break
@@ -569,7 +569,7 @@ class PouProgramGenerator(object):
                 if blocktype is not None:
                     name = parts.pop(0)
                     current_type = None
-                    for var_name, var_type, var_modifier in blocktype["inputs"] + blocktype["outputs"]:
+                    for var_name, var_type, _var_modifier in blocktype["inputs"] + blocktype["outputs"]:
                         if var_name == name:
                             current_type = var_type
                             break
@@ -852,7 +852,7 @@ class PouProgramGenerator(object):
                 for connection in self.ExtractRelatedConnections(variable.connectionPointOut):
                     self.ConnectionTypes[connection] = "BOOL"
             else:
-                for oname, otype, oqualifier in block_infos["outputs"]:
+                for oname, otype, _oqualifier in block_infos["outputs"]:
                     if output_name == oname:
                         if otype.startswith("ANY"):
                             if otype not in undefined:
@@ -867,7 +867,7 @@ class PouProgramGenerator(object):
                 for connection in self.ExtractRelatedConnections(variable.connectionPointIn):
                     self.ConnectionTypes[connection] = "BOOL"
             else:
-                for iname, itype, iqualifier in block_infos["inputs"]:
+                for iname, itype, _iqualifier in block_infos["inputs"]:
                     if input_name == iname:
                         connected = self.GetConnectedConnector(variable.connectionPointIn, body)
                         if itype.startswith("ANY"):
@@ -1629,7 +1629,7 @@ class PouProgramGenerator(object):
                     format(a1=transition_infos["content"], a2=self.Name))
             self.Program += transition_infos["content"]
             self.Program += [("%sEND_TRANSITION\n\n" % self.CurrentIndent, ())]
-            for [(step_name, step_infos)] in transition_infos["to"]:
+            for [(step_name, _step_infos)] in transition_infos["to"]:
                 self.ComputeSFCStep(step_name)
 
     def GenerateProgram(self, pou):
@@ -1648,7 +1648,7 @@ class PouProgramGenerator(object):
         if len(self.Program) == 0:
             raise PLCGenException(_("No body defined in \"%s\" POU") % self.Name)
         var_number = 0
-        for list_type, option, located, variables in self.Interface:
+        for list_type, option, _located, variables in self.Interface:
             variable_type = errorVarTypes.get(list_type, "var_local")
             program += [("  %s" % list_type, ())]
             if option is not None:

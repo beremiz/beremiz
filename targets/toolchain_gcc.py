@@ -143,9 +143,9 @@ class toolchain_gcc(object):
 
     def calc_source_md5(self):
         wholesrcdata = ""
-        for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+        for _Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
-            for CFile, CFLAGS in CFilesAndCFLAGS:
+            for CFile, _CFLAGS in CFilesAndCFLAGS:
                 CFileName = os.path.basename(CFile)
                 wholesrcdata += self.concat_deps(CFileName)
         return hashlib.md5(wholesrcdata).hexdigest()
@@ -164,7 +164,7 @@ class toolchain_gcc(object):
         obns = []
         objs = []
         relink = self.GetBinaryCode() is None
-        for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+        for Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             if CFilesAndCFLAGS:
                 if Location:
                     self.CTRInstance.logger.write(".".join(map(str, Location))+" :\n")
@@ -186,7 +186,7 @@ class toolchain_gcc(object):
 
                         self.CTRInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
 
-                        status, result, err_result = ProcessLogger(
+                        status, _result, _err_result = ProcessLogger(
                             self.CTRInstance.logger,
                             "\"%s\" -c \"%s\" -o \"%s\" %s %s" %
                             (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
@@ -213,7 +213,7 @@ class toolchain_gcc(object):
 
             self.CTRInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.exe + "\n")
 
-            status, result, err_result = ProcessLogger(
+            status, _result, _err_result = ProcessLogger(
                 self.CTRInstance.logger,
                 "\"%s\" %s -o \"%s\" %s" %
                 (self.linker,

@@ -589,7 +589,7 @@ def GenerateTagInfos(infos):
 
     def GenerateTag(value, name=None, indent=0):
         if name is not None and not (infos["minOccurs"] == 0 and value is None):
-            ind1, ind2 = getIndent(indent, name)
+            ind1, _ind2 = getIndent(indent, name)
             return ind1 + "<%s/>\n" % name
         else:
             return ""
@@ -626,7 +626,7 @@ def GetElementInitialValue(factory, infos):
                     DefaultElementClass.__setattr__(value, "tag", element_name)
                     value._init_()
                 return value
-        return [initial_value() for i in xrange(infos["minOccurs"])]
+        return [initial_value() for dummy in xrange(infos["minOccurs"])]
     else:
         return []
 
@@ -689,7 +689,7 @@ def GenerateContentInfos(factory, name, choices):
         content_name, infos = choices[0]
         if content_name == "sequence":
             content_value = []
-            for i in xrange(infos["minOccurs"]):
+            for dummy in xrange(infos["minOccurs"]):
                 for element_infos in infos["elements"]:
                     content_value.extend(GetElementInitialValue(factory, element_infos))
         else:

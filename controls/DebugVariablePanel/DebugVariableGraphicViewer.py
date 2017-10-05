@@ -193,7 +193,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
                              merge_type, force=True)
 
             else:
-                width, height = self.ParentControl.GetSize()
+                _width, height = self.ParentControl.GetSize()
 
                 # Get Before which Viewer the variable has to be moved or added
                 # according to the position of mouse in Viewer.
@@ -610,7 +610,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         """
         # Get mouse position, graph Y coordinate is inverted in matplotlib
         # comparing to wx
-        width, height = self.GetSize()
+        _width, height = self.GetSize()
         x, y = event.x, height - event.y
 
         # Return immediately if mouse is over a button
@@ -679,7 +679,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         """
         # If a drag'n drop is in progress, stop it
         if self.ParentWindow.IsDragging():
-            width, height = self.GetSize()
+            _width, height = self.GetSize()
             xw, yw = self.GetPosition()
             item = self.ParentWindow.DraggingAxesPanel.ItemsDict.values()[0]
             # Give mouse position in wx coordinate of parent
@@ -692,7 +692,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             self.CanvasStartSize = None
 
             # Handle button under mouse if it exist
-            width, height = self.GetSize()
+            _width, height = self.GetSize()
             self.HandleButton(event.x, height - event.y)
 
     def OnCanvasMotion(self, event):
@@ -700,7 +700,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         Function called when a button of mouse is moved over Viewer
         @param event: Mouse event
         """
-        width, height = self.GetSize()
+        _width, height = self.GetSize()
 
         # If a drag'n drop is in progress, move canvas dragged
         if self.ParentWindow.IsDragging():
@@ -712,7 +712,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
         # If a Viewer resize is in progress, change Viewer size
         elif event.button == 1 and self.CanvasStartSize is not None:
-            width, height = self.GetSize()
+            _width, height = self.GetSize()
             self.SetCanvasHeight(
                 self.CanvasStartSize + height - event.y - self.MouseStartPos.y)
 
@@ -926,7 +926,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         @param x: X coordinate of mouse pointer
         @param y: Y coordinate of mouse pointer
         """
-        width, height = self.GetSize()
+        _width, height = self.GetSize()
 
         # Mouse is over Viewer figure and graph is not 3D
         bbox = self.GetAxesBoundingBox()
@@ -1070,7 +1070,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                               verticalalignment='top'))
 
         # Refresh position of labels according to Viewer size
-        width, height = self.GetSize()
+        _width, height = self.GetSize()
         self.RefreshLabelsPosition(height)
 
     def RefreshLabelsPosition(self, height):
@@ -1209,9 +1209,9 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                 # Get X and Y coordinates for cursor if cursor tick is defined
                 if self.CursorTick is not None:
-                    x_cursor, x_forced = items[0].GetValue(
+                    x_cursor, _x_forced = items[0].GetValue(
                                             self.CursorTick, raw=True)
-                    y_cursor, y_forced = items[1].GetValue(
+                    y_cursor, _y_forced = items[1].GetValue(
                                             self.CursorTick, raw=True)
 
                 # Get common data length so that each value has an x and y
@@ -1305,7 +1305,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                        start_tick <= self.CursorTick <= end_tick:
 
                         # Get Z coordinate for cursor
-                        z_cursor, z_forced = items[2].GetValue(
+                        z_cursor, _z_forced = items[2].GetValue(
                                                 self.CursorTick, raw=True)
 
                         # Add 3 lines parallel to x, y and z axis to display

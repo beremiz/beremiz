@@ -57,7 +57,7 @@ class BeremizIDELauncher(object):
             self.splash.Show()
             self.splash.ProcessEvent(wx.PaintEvent())
         else:
-            for i in range(0, 30):
+            for dummy in range(0, 30):
                 wx.Yield()
                 time.sleep(0.01)
 

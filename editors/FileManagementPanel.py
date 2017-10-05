@@ -148,7 +148,7 @@ class FileManagementPanel(EditorPanel):
     def OnDeleteButton(self, event):
         filepath = self.ManagedDir.GetPath()
         if os.path.isfile(filepath):
-            folder, filename = os.path.split(filepath)
+            _folder, filename = os.path.split(filepath)
 
             dialog = wx.MessageDialog(self,
                                       _("Do you really want to delete the file '%s'?") % filename,
@@ -171,9 +171,9 @@ class FileManagementPanel(EditorPanel):
 
     def CopyFile(self, src, dst):
         if os.path.isfile(src):
-            src_folder, src_filename = os.path.split(src)
+            _src_folder, src_filename = os.path.split(src)
             if os.path.isfile(dst):
-                dst_folder, dst_filename = os.path.split(dst)
+                dst_folder, _dst_filename = os.path.split(dst)
             else:
                 dst_folder = dst
 

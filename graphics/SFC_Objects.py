@@ -453,7 +453,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
 
     # Refreshes the step state according to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
-        handle_type, handle = self.Handle
+        handle_type, _handle = self.Handle
         if handle_type == HANDLE_MOVE:
             movex = max(-self.BoundingBox.x, movex)
             movey = max(-self.BoundingBox.y, movey)
@@ -1588,7 +1588,7 @@ class SFC_Jump(Graphic_Element):
 
     # Refresh the jump bounding box
     def RefreshBoundingBox(self):
-        text_width, text_height = self.Parent.GetTextExtent(self.Target)
+        text_width, _text_height = self.Parent.GetTextExtent(self.Target)
         # Calculate the bounding box size
         bbx_width = self.Size[0] + 2 + text_width
         self.BoundingBox = wx.Rect(self.Pos.x,    self.Pos.y - CONNECTOR_SIZE,
@@ -1952,7 +1952,7 @@ class SFC_ActionBlock(Graphic_Element):
     # Refreshes the action block state according to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
         if self.Parent.GetDrawingMode() != FREEDRAWING_MODE:
-            handle_type, handle = self.Handle
+            handle_type, _handle = self.Handle
             if handle_type == HANDLE_MOVE:
                 movex = max(-self.BoundingBox.x, movex)
                 if scaling is not None:

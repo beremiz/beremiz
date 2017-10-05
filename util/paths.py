@@ -43,6 +43,6 @@ def AbsNeighbourFile(file, *args):
 
 def AbsParentDir(file, level=1):
     path = AbsDir(file)
-    for i in range(0, level):
+    for dummy in range(0, level):
         path = os.path.dirname(path)
     return path

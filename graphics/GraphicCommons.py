@@ -238,7 +238,7 @@ def DrawHighlightedText(dc, text, highlights, x, y):
     dc.SetPen(wx.TRANSPARENT_PEN)
     for start, end, highlight_type in highlights:
         dc.SetBrush(wx.Brush(highlight_type[0]))
-        offset_width, offset_height = dc.GetTextExtent(text[:start[1]])
+        offset_width, _offset_height = dc.GetTextExtent(text[:start[1]])
         part = text[start[1]:end[1] + 1]
         part_width, part_height = dc.GetTextExtent(part)
         dc.DrawRectangle(x + offset_width, y, part_width, part_height)
@@ -957,7 +957,7 @@ class Graphic_Group(Graphic_Element):
 
     # Refreshes the group elements to move defined and handle selected
     def ProcessDragging(self, movex, movey, event, scaling):
-        handle_type, handle = self.Handle
+        handle_type, _handle = self.Handle
         # If it is a move handle, Move this group elements
         if handle_type == HANDLE_MOVE:
             movex = max(-self.BoundingBox.x, movex)
@@ -1055,7 +1055,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     def Flush(self):
         self.ParentBlock = None
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             wire.Flush()
         self.Wires = []
 
@@ -1128,7 +1128,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     # Returns the connector type
     def GetConnectedRedrawRect(self, movex, movey):
         rect = None
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             if rect is None:
                 rect = wire.GetRedrawRect()
             else:
@@ -1143,7 +1143,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     # Changes the connector name
     def SetType(self, type):
         self.Type = type
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             wire.SetValid(wire.IsConnectedCompatible())
 
     # Returns the connector name
@@ -1184,7 +1184,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     def RefreshForced(self):
         self.Forced = False
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             self.Forced |= wire.IsForced()
 
     def RefreshValue(self):
@@ -1192,12 +1192,12 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     def RefreshValid(self):
         self.Valid = True
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             self.Valid &= wire.GetValid()
 
     def ReceivingCurrent(self):
         current = False
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             value = wire.GetValue()
             if current != "undefined" and isinstance(value, BooleanType):
                 current |= wire.GetValue()
@@ -1206,7 +1206,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return current
 
     def SpreadCurrent(self, spreading):
-        for wire, handle in self.Wires:
+        for wire, _handle in self.Wires:
             wire.SetValue(spreading)
 
     # Changes the connector name size
@@ -1273,7 +1273,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     # Returns the index of the wire given in the list of connected
     def GetWireIndex(self, wire):
-        for i, (tmp_wire, handle) in enumerate(self.Wires):
+        for i, (tmp_wire, _handle) in enumerate(self.Wires):
             if tmp_wire == wire:
                 return i
         return None
@@ -1427,7 +1427,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     # Adds an highlight to the connector
     def AddHighlight(self, infos, start, end, highlight_type):
         if highlight_type == ERROR_HIGHLIGHT:
-            for wire, handle in self.Wires:
+            for wire, _handle in self.Wires:
                 wire.SetValid(False)
         AddHighlight(self.Highlights, (start, end, highlight_type))
 
@@ -1441,7 +1441,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 error |= highlight == ERROR_HIGHLIGHT
         self.Highlights = highlights
         if not error:
-            for wire, handle in self.Wires:
+            for wire, _handle in self.Wires:
                 wire.SetValid(wire.IsConnectedCompatible())
 
     # Removes all the highlights of one particular type from the connector
@@ -1457,7 +1457,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                     error |= highlight == ERROR_HIGHLIGHT
             self.Highlights = highlights
         if not error:
-            for wire, handle in self.Wires:
+            for wire, _handle in self.Wires:
                 wire.SetValid(wire.IsConnectedCompatible())
 
     # Draws the connector
@@ -1984,7 +1984,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 if verify and 0 < i < len(self.Points) - 2 and \
                    self.Points[i] == self.Points[i + 1] and \
                    self.Segments[-1] == vector(self.Points[i + 1], self.Points[i + 2]):
-                    for j in xrange(2):
+                    for dummy in xrange(2):
                         self.Points.pop(i)
                 else:
                     segment = vector(self.Points[i], self.Points[i + 1])
@@ -2206,7 +2206,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         i = 1
         while i < len(points) - 1:
             if points[i] == points[i + 1] and segments[i - 1] == segments[i + 1]:
-                for j in xrange(2):
+                for dummy in xrange(2):
                     points.pop(i)
                     segments.pop(i)
             else:
@@ -2431,8 +2431,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def DeleteSegment(self):
         handle_type, handle = self.Handle
         if handle_type == HANDLE_SEGMENT:
-            segment, dir = handle
-            for i in xrange(2):
+            segment, _dir = handle
+            for dummy in xrange(2):
                 self.Points.pop(segment)
                 self.Segments.pop(segment)
             self.GeneratePoints()

@@ -452,7 +452,7 @@ class Beremiz(IDEFrame):
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.CTR = ProjectController(self, self.Log)
             self.Controler = self.CTR
-            result, err = self.CTR.LoadProject(projectOpen, buildpath)
+            result, _err = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
@@ -558,7 +558,7 @@ class Beremiz(IDEFrame):
         if self.CTR is not None:
             result = MATIEC_ERROR_MODEL.match(line)
             if result is not None:
-                first_line, first_column, last_line, last_column, error = result.groups()
+                first_line, first_column, last_line, last_column, _error = result.groups()
                 self.CTR.ShowError(self.Log,
                                    (int(first_line), int(first_column)),
                                    (int(last_line),  int(last_column)))
@@ -729,7 +729,7 @@ class Beremiz(IDEFrame):
             elif kind == wx.ITEM_SEPARATOR:
                 menu.AppendSeparator()
             else:
-                text, id, help, callback = infos
+                text, id, _help, callback = infos
                 AppendMenu(menu, help='', id=id, kind=kind, text=text)
                 if callback is not None:
                     self.Bind(wx.EVT_MENU, callback, id=id)

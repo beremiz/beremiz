@@ -74,7 +74,7 @@ class UserApplicationTest(unittest.TestCase):
             raise self.exc_info[0], self.exc_info[1], self.exc_info[2]
 
     def ProcessEvents(self):
-        for i in range(0, 30):
+        for dummy in range(0, 30):
             self.CheckForErrors()
             wx.Yield()
             time.sleep(0.01)

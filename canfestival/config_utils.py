@@ -149,7 +149,7 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
         # Disable Mapping
         dcfdata += [LE_to_BE(idx + 0x200, 2) + LE_to_BE(0x00, 1) + LE_to_BE(0x01, 4) + LE_to_BE(0x00, 1)]
         # Map Variables
-        for subindex, (name, loc_infos) in enumerate(pdomapping):
+        for subindex, (_name, loc_infos) in enumerate(pdomapping):
             value = (loc_infos["index"] << 16) + (loc_infos["subindex"] << 8) + loc_infos["size"]
             dcfdata += [LE_to_BE(idx + 0x200, 2) + LE_to_BE(subindex + 1, 1) + LE_to_BE(0x04, 4) + LE_to_BE(value, 4)]
         # Re-enable Mapping

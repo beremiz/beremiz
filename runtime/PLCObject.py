@@ -271,7 +271,7 @@ class PLCObject(pyro.ObjBase):
         runtime python files, loaded when new PLC uploaded
         """
         for method in self.python_runtime_vars.get("_runtime_%s" % methodname, []):
-            res, exp = self.evaluator(method)
+            _res, exp = self.evaluator(method)
             if exp is not None:
                 self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
@@ -482,7 +482,7 @@ class PLCObject(pyro.ObjBase):
                 self._ResetDebugVariables()
                 for idx, iectype, force in idxs:
                     if force is not None:
-                        c_type, unpack_func, pack_func = \
+                        c_type, _unpack_func, pack_func = \
                             TypeTranslator.get(iectype,
                                                (None, None, None))
                         force = ctypes.byref(pack_func(c_type, force))
@@ -558,7 +558,7 @@ class PLCObject(pyro.ObjBase):
         try:
             exec script in kwargs
         except Exception:
-            e_type, e_value, e_traceback = sys.exc_info()
+            _e_type, e_value, e_traceback = sys.exc_info()
             line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
             return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
                         (line_no, e_value, script.splitlines()[line_no - 1]))

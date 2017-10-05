@@ -787,7 +787,7 @@ class IDEFrame(wx.Frame):
     # -------------------------------------------------------------------------------
 
     def GetTabInfos(self, tab):
-        for page_name, (page_ref, page_title) in self.MainTabs.iteritems():
+        for page_name, (page_ref, _page_title) in self.MainTabs.iteritems():
             if page_ref == tab:
                 return ("main", page_name)
         return None
@@ -841,7 +841,7 @@ class IDEFrame(wx.Frame):
         if "split" in tabs:
             self.LoadTabLayout(notebook, tabs["others"])
 
-            split_dir, split_ratio = tabs["split"]
+            split_dir, _split_ratio = tabs["split"]
             first_index = self.LoadTabLayout(notebook, tabs["tab"], mode="first")
             notebook.Split(first_index, split_dir)
             self.LoadTabLayout(notebook, tabs["tab"], mode="others", first_index=first_index)
@@ -866,7 +866,7 @@ class IDEFrame(wx.Frame):
             self.AUIManager.LoadPerspective(self.DefaultPerspective["perspective"])
 
             for notebook in [self.LeftNoteBook, self.BottomNoteBook, self.RightNoteBook]:
-                for idx in xrange(notebook.GetPageCount()):
+                for dummy in xrange(notebook.GetPageCount()):
                     notebook.RemovePage(0)
 
             notebooks = self.DefaultPerspective["notebooks"]
@@ -1015,7 +1015,7 @@ class IDEFrame(wx.Frame):
         """Function that fix difference in deleting all tabs between
         wx.Notebook and wx.aui.AUINotebook.
         """
-        for idx in xrange(self.TabsOpened.GetPageCount()):
+        for dummy in xrange(self.TabsOpened.GetPageCount()):
             self.TabsOpened.DeletePage(0)
         self.RefreshTabCtrlEvent()
 
@@ -2641,7 +2641,7 @@ class GraphicPrintout(wx.Printout):
         dc.SetFont(wx.Font(fontsize, wx.DEFAULT, wx.NORMAL, wx.NORMAL))
         dc.SetTextForeground(wx.BLACK)
         block_name = " - ".join(self.Viewer.GetTagName().split("::")[1:])
-        text_width, text_height = dc.GetTextExtent(block_name)
+        _text_width, text_height = dc.GetTextExtent(block_name)
         dc.DrawText(block_name, margin_left, margin_top - text_height - self.TextMargin)
         dc.DrawText(_("Page: %d") % page, margin_left, margin_top + area_height + self.TextMargin)
 

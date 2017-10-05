@@ -579,7 +579,7 @@ class SFC_Viewer(Viewer):
                     self.AddBlock(divergence)
                     self.Controler.AddEditedElementDivergence(self.TagName, id, value["type"])
                     self.RefreshDivergenceModel(divergence)
-                    for index, connector in enumerate(divergence_connectors["outputs"]):
+                    for _index, connector in enumerate(divergence_connectors["outputs"]):
                         if next:
                             wire = self.ConnectConnectors(next, connector)
                             pos = connector.GetPosition(False)
@@ -593,7 +593,7 @@ class SFC_Viewer(Viewer):
                         else:
                             transition = self.CreateTransition(connector)
                             transition_connectors = transition.GetConnectors()
-                            step = self.CreateStep("Step", transition_connectors["output"])
+                            _step = self.CreateStep("Step", transition_connectors["output"])
                 elif value["type"] == SIMULTANEOUS_DIVERGENCE:
                     if self.SelectedElement in self.Wires and isinstance(self.SelectedElement.EndConnected.GetParentBlock(), SFC_Transition):
                         self.SelectedElement.SetSelectedSegment(None)
@@ -637,7 +637,7 @@ class SFC_Viewer(Viewer):
                     self.AddBlock(divergence)
                     self.Controler.AddEditedElementDivergence(self.TagName, id, value["type"])
                     self.RefreshDivergenceModel(divergence)
-                    for index, connector in enumerate(divergence_connectors["outputs"]):
+                    for _index, connector in enumerate(divergence_connectors["outputs"]):
                         if next:
                             wire = self.ConnectConnectors(next, connector)
                             pos = connector.GetPosition(False)
@@ -649,7 +649,7 @@ class SFC_Viewer(Viewer):
                             next_block.RefreshModel()
                             next = None
                         else:
-                            step = self.CreateStep("Step", connector)
+                            _step = self.CreateStep("Step", connector)
                 elif isinstance(self.SelectedElement, Graphic_Group) and len(self.SelectedElement.GetElements()) > 1:
                     next = None
                     for element in self.SelectedElement.GetElements():
@@ -746,7 +746,7 @@ class SFC_Viewer(Viewer):
                         previous = transition_connectors["output"]
                     else:
                         previous = divergence_connectors["outputs"][-1]
-                    step = self.CreateStep("Step", previous)
+                    _step = self.CreateStep("Step", previous)
             self.RefreshBuffer()
             self.RefreshScrollBars()
             self.Refresh(False)

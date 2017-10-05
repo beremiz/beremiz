@@ -41,7 +41,7 @@ def GenerateSimpleTypeXMLText(function):
     def generateXMLTextMethod(value, name=None, indent=0):
         text = ""
         if name is not None:
-            ind1, ind2 = getIndent(indent, name)
+            ind1, _ind2 = getIndent(indent, name)
             text += ind1 + "<%s>" % name
         text += function(value)
         if name is not None:
@@ -57,7 +57,7 @@ def GenerateFloatXMLText(extra_values=[], decimal=None):
     def generateXMLTextMethod(value, name=None, indent=0):
         text = ""
         if name is not None:
-            ind1, ind2 = getIndent(indent, name)
+            ind1, _ind2 = getIndent(indent, name)
             text += ind1 + "<%s>" % name
         if isinstance(value, IntType):
             text += str(value)
@@ -99,7 +99,7 @@ def ReduceDocumentation(factory, attributes, elements):
 
 
 def ReduceAnnotation(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    _annotations, children = factory.ReduceElements(elements)
     annotation = {"type": "annotation", "appinfo": [], "documentation": {}}
     for child in children:
         if child["type"] == "appinfo":
@@ -120,7 +120,7 @@ def ReduceAnnotation(factory, attributes, elements):
 
 def GenerateFacetReducing(facetname, canbefixed):
     def ReduceFacet(factory, attributes, elements):
-        annotations, children = factory.ReduceElements(elements)
+        annotations, _children = factory.ReduceElements(elements)
         if "value" in attributes:
             facet = {"type": facetname, "value": attributes["value"], "doc": annotations}
             if canbefixed:
@@ -304,7 +304,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
         # Generate extract value for new created type
         def ExtractSimpleTypeValue(attr, extract=True):
             value = basetypeinfos["extract"](attr, extract)
-            for facetname, (facetvalue, facetfixed) in facets.items():
+            for facetname, (facetvalue, _facetfixed) in facets.items():
                 if facetvalue is not None:
                     if facetname == "enumeration" and value not in facetvalue:
                         raise ValueError("\"%s\" not in enumerated values" % value)
@@ -338,7 +338,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
             return value
 
         def CheckSimpleTypeValue(value):
-            for facetname, (facetvalue, facetfixed) in facets.items():
+            for facetname, (facetvalue, _facetfixed) in facets.items():
                 if facetvalue is not None:
                     if facetname == "enumeration" and value not in facetvalue:
                         return False
@@ -367,7 +367,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
             return True
 
         def SimpleTypeInitialValue():
-            for facetname, (facetvalue, facetfixed) in facets.items():
+            for facetname, (facetvalue, _facetfixed) in facets.items():
                 if facetvalue is not None:
                     if facetname == "enumeration":
                         return facetvalue[0]
@@ -605,7 +605,7 @@ def ReduceSimpleContent(factory, attributes, elements):
 
 
 def ReduceComplexContent(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    _annotations, children = factory.ReduceElements(elements)
     complexContent = children[0].copy()
     complexContent["type"] = "complexContent"
     return complexContent
@@ -718,7 +718,7 @@ def ReduceAttributeGroup(factory, attributes, elements):
 # Elements groups
 
 def ReduceAny(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    annotations, _children = factory.ReduceElements(elements)
 
     any = {"type": ANY, "doc": annotations}
     any.update(attributes)
@@ -878,7 +878,7 @@ def ReduceGroup(factory, attributes, elements):
 
 
 def ReduceUnique(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    _annotations, children = factory.ReduceElements(elements)
 
     unique = {"type": CONSTRAINT, "const_type": "unique", "selector": children[0], "fields": children[1:]}
     unique.update(attributes)
@@ -886,7 +886,7 @@ def ReduceUnique(factory, attributes, elements):
 
 
 def ReduceKey(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    _annotations, children = factory.ReduceElements(elements)
 
     key = {"type": CONSTRAINT, "const_type": "key", "selector": children[0], "fields": children[1:]}
     key.update(attributes)
@@ -894,7 +894,7 @@ def ReduceKey(factory, attributes, elements):
 
 
 def ReduceKeyRef(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    _annotations, children = factory.ReduceElements(elements)
 
     keyref = {"type": CONSTRAINT, "const_type": "keyref", "selector": children[0], "fields": children[1:]}
     keyref.update(attributes)
@@ -902,7 +902,7 @@ def ReduceKeyRef(factory, attributes, elements):
 
 
 def ReduceSelector(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    factory.ReduceElements(elements)
 
     selector = {"type": CONSTRAINT, "const_type": "selector"}
     selector.update(attributes)
@@ -910,7 +910,7 @@ def ReduceSelector(factory, attributes, elements):
 
 
 def ReduceField(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    factory.ReduceElements(elements)
 
     field = {"type": CONSTRAINT, "const_type": "field"}
     field.update(attributes)
@@ -920,12 +920,12 @@ def ReduceField(factory, attributes, elements):
 # Inclusion elements
 
 def ReduceImport(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    factory.ReduceElements(elements)
     raise ValueError("\"import\" element isn't supported yet!")
 
 
 def ReduceInclude(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    factory.ReduceElements(elements)
 
     if factory.FileName is None:
         raise ValueError("Include in XSD string not yet supported")
@@ -950,7 +950,7 @@ def ReduceInclude(factory, attributes, elements):
 
 
 def ReduceRedefine(factory, attributes, elements):
-    annotations, children = factory.ReduceElements(elements)
+    factory.ReduceElements(elements)
     raise ValueError("\"redefine\" element isn't supported yet!")
 
 
@@ -968,7 +968,7 @@ def ReduceSchema(factory, attributes, elements):
         factory.etreeNamespaceFormat = "{%s}%%s" % targetNamespace
     factory.Namespaces[factory.TargetNamespace] = {}
 
-    annotations, children = factory.ReduceElements(elements, True)
+    _annotations, children = factory.ReduceElements(elements, True)
 
     for child in children:
         if "name" in child:
@@ -1089,7 +1089,7 @@ class XSDClassFactory(ClassFactory):
 
     def CreateSchemaElement(self, element_name, element_type):
         for type, attributes, elements in self.Schema[2]:
-            namespace, name = DecomposeQualifiedName(type)
+            _namespace, name = DecomposeQualifiedName(type)
             if attributes.get("name", None) == element_name:
                 element_infos = None
                 if element_type in (ATTRIBUTE, None) and name == "attribute":

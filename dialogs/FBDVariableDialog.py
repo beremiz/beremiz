@@ -146,7 +146,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Refresh names in name list box by selecting variables in POU variables
         # list that can be applied to variable class
         self.VariableName.Clear()
-        for name, (var_type, value_type) in self.VariableList.iteritems():
+        for name, (var_type, _value_type) in self.VariableList.iteritems():
             if var_type != "Input" or var_class == INPUT:
                 self.VariableName.Append(name)
 

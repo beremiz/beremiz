@@ -245,7 +245,7 @@ class LibraryPanel(wx.Panel):
                         "type":       BLOCK,
                         "block_type": blocktype["type"],
                         "inputs":     tuple([type
-                                             for name, type, modifier
+                                             for _name, type, _modifier
                                              in blocktype["inputs"]]),
                         "extension":  (len(blocktype["inputs"])
                                        if blocktype["extensible"] else None),
@@ -390,7 +390,7 @@ class LibraryPanel(wx.Panel):
         # Get current selected item (for next and previous mode)
         item = self.Tree.GetSelection()
         if not item.IsOk() or mode == "first":
-            item, item_cookie = self.Tree.GetFirstChild(root)
+            item, _item_cookie = self.Tree.GetFirstChild(root)
             selected = None
         else:
             selected = item

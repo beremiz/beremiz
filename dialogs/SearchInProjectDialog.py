@@ -109,7 +109,7 @@ class SearchInProjectDialog(wx.Dialog):
 
         self.SetSizer(main_sizer)
 
-        for name, label in GetElementsChoices():
+        for _name, label in GetElementsChoices():
             self.ElementsList.Append(_(label))
 
         self.Fit()
@@ -154,7 +154,7 @@ class SearchInProjectDialog(wx.Dialog):
             infos["filter"] = "all"
         elif self.OnlyElements.GetValue():
             infos["filter"] = []
-            for index, (name, label) in enumerate(GetElementsChoices()):
+            for index, (name, _label) in enumerate(GetElementsChoices()):
                 if self.ElementsList.IsChecked(index):
                     infos["filter"].append(name)
 

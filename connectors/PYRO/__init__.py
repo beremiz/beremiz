@@ -161,7 +161,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             object is recreated meanwhile,
             so we must not keep ref to it here
             """
-            current_status, log_count = confnodesroot._connector.GetPyroProxy().GetPLCstatus()
+            current_status, _log_count = confnodesroot._connector.GetPyroProxy().GetPLCstatus()
             if current_status == "Dirty":
                 # Some bad libs with static symbols may polute PLC
                 # ask runtime to suicide and come back again

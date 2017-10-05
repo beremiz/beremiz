@@ -88,7 +88,7 @@ class toolchain_makefile(object):
         srcfiles = []
         cflags = []
         wholesrcdata = ""
-        for Location, CFilesAndCFLAGS, DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+        for _Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 CFileName = os.path.basename(CFile)
@@ -118,8 +118,8 @@ class toolchain_makefile(object):
             command = [token % beremizcommand for token in cmd.split(' ')]
 
             # Call Makefile to build PLC code and link it with target specific code
-            status, result, err_result = ProcessLogger(self.CTRInstance.logger,
-                                                       command).spin()
+            status, _result, _err_result = ProcessLogger(self.CTRInstance.logger,
+                                                         command).spin()
             if status:
                 self.md5key = None
                 self.CTRInstance.logger.write_error(_("C compilation failed.\n"))

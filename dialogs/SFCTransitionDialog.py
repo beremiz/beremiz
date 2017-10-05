@@ -196,7 +196,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         @param event: wx.RadioButtonEvent
         """
         # Refresh sensibility of control associated to transition types
-        for type, (radio, control) in self.TypeRadioButtons.iteritems():
+        for _type, (radio, control) in self.TypeRadioButtons.iteritems():
             if control is not None:
                 control.Enable(radio.GetValue())
 

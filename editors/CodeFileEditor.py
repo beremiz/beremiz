@@ -508,7 +508,7 @@ class CodeEditor(CustomStyledTextCtrl):
 
             self.SearchResults = [
                 (start, end, SEARCH_RESULT_HIGHLIGHT)
-                for start, end, text in
+                for start, end, _text in
                 TestTextElement(self.GetText(), search_params)]
             self.CurrentFindHighlight = None
 

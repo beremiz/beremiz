@@ -32,10 +32,10 @@ class JSONRPCServiceBase:
                 result = self.methods[method](*params)
                 return self.response(id, result)
             except BaseException:
-                etype, eval, etb = sys.exc_info()
+                etype, eval, _etb = sys.exc_info()
                 return self.error(id, 100, '%s: %s' % (etype.__name__, eval))
             except Exception:
-                etype, eval, etb = sys.exc_info()
+                etype, eval, _etb = sys.exc_info()
                 return self.error(id, 100, 'Exception %s: %s' % (etype, eval))
         else:
             return self.error(id, 100, 'method "%s" does not exist' % method)

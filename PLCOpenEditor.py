@@ -317,7 +317,7 @@ class PLCOpenEditor(IDEFrame):
             message_text = ""
             header, icon = _("Done"), wx.ICON_INFORMATION
             if os.path.isdir(os.path.dirname(filepath)):
-                program, errors, warnings = self.Controler.GenerateProgram(filepath)
+                _program, errors, warnings = self.Controler.GenerateProgram(filepath)
                 message_text += "".join([_("warning: %s\n") % warning for warning in warnings])
                 if len(errors) > 0:
                     message_text += "".join([_("error: %s\n") % error for error in errors])
@@ -390,7 +390,7 @@ class PLCOpenEditorApp(wx.App):
             sys.exit(2)
 
         # Extract if help has been requested
-        for o, a in opts:
+        for o, _a in opts:
             if o in ("-h", "--help"):
                 self.PrintUsage()
                 sys.exit()

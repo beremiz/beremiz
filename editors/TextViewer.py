@@ -286,7 +286,7 @@ class TextViewer(EditorPanel):
                 else:
                     event.SetDragText(blockname+"(\n    "+hint+")")
             elif values[1] == "location":
-                pou_name, pou_type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
+                _pou_name, pou_type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
                 if len(values) > 2 and pou_type == "program":
                     var_name = values[3]
                     dlg = wx.TextEntryDialog(
@@ -339,7 +339,7 @@ class TextViewer(EditorPanel):
                 else:
                     event.SetDragText("")
             elif values[1] == "NamedConstant":
-                pou_name, pou_type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
+                _pou_name, pou_type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
                 if pou_type == "program":
                     initval = values[0]
                     var_name = values[3]
@@ -497,7 +497,7 @@ class TextViewer(EditorPanel):
                 for blocktype in category["list"]:
                     blockname = blocktype["name"].upper()
                     if blocktype["type"] == "function" and blockname not in self.Keywords and blockname not in self.Variables.keys():
-                        interface = dict([(name, {}) for name, type, modifier in blocktype["inputs"] + blocktype["outputs"] if name != ''])
+                        interface = dict([(name, {}) for name, _type, _modifier in blocktype["inputs"] + blocktype["outputs"] if name != ''])
                         for param in ["EN", "ENO"]:
                             if param not in interface:
                                 interface[param] = {}
@@ -517,7 +517,7 @@ class TextViewer(EditorPanel):
              for variable in self.Controler.GetEditedElementInterfaceVars(
                 self.TagName, True, self.Debug)])
         if self.Controler.GetEditedElementType(self.TagName, self.Debug)[1] == "function" or words[0] == "T" and self.TextSyntax == "IL":
-            return_type, (var_tree, var_dimension) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, True, self.Debug)
+            return_type, (var_tree, _var_dimension) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, True, self.Debug)
             if return_type is not None:
                 self.Variables[words[-1].upper()] = self.GenerateVariableTree(var_tree)
             else:
@@ -525,7 +525,7 @@ class TextViewer(EditorPanel):
 
     def GenerateVariableTree(self, list):
         tree = {}
-        for var_name, var_type, (var_tree, var_dimension) in list:
+        for var_name, _var_type, (var_tree, _var_dimension) in list:
             tree[var_name.upper()] = self.GenerateVariableTree(var_tree)
         return tree
 
@@ -818,7 +818,7 @@ class TextViewer(EditorPanel):
             self.SearchParams = search_params
             self.SearchResults = [
                 (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)
-                for infos, start, end, text in
+                for infos, start, end, _text in
                 self.Search(search_params)]
             self.CurrentFindHighlight = None
 

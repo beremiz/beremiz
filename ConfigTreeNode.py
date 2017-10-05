@@ -303,7 +303,7 @@ class ConfigTreeNode(object):
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     def IterChildren(self):
-        for CTNType, Children in self.Children.items():
+        for _CTNType, Children in self.Children.items():
             for CTNInstance in Children:
                 yield CTNInstance
 

@@ -95,7 +95,7 @@ class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
     def OnMotion(self, event):
         if wx.Platform == '__WXMSW__':
             if not event.Dragging():
-                x, y = event.GetPosition()
+                x, _y = event.GetPosition()
                 margin_width = reduce(
                         lambda x, y: x + y,
                         [self.GetMarginWidth(i)

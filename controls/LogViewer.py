@@ -69,7 +69,7 @@ class LogScrollBar(wx.Panel):
         return wx.Rect(0, width, width, height - 2 * width)
 
     def GetThumbRect(self):
-        width, height = self.GetClientSize()
+        width, _height = self.GetClientSize()
         range_rect = self.GetRangeRect()
         thumb_size = range_rect.height * THUMB_SIZE_RATIO
         thumb_range = range_rect.height - thumb_size
@@ -118,7 +118,7 @@ class LogScrollBar(wx.Panel):
 
     def OnMotion(self, event):
         if event.Dragging() and self.ThumbScrollingStartPos is not None:
-            posx, posy = event.GetPosition()
+            _posx, posy = event.GetPosition()
             range_rect = self.GetRangeRect()
             thumb_size = range_rect.height * THUMB_SIZE_RATIO
             thumb_range = range_rect.height - thumb_size
@@ -269,7 +269,7 @@ class LogMessage(object):
         dc.DrawBitmap(self.LevelBitmap, 10 + sw, offset + (MESSAGE_INFO_SIZE - bh) / 2)
 
         text = self.Message.replace("\n", " ")
-        mw, mh = dc.GetTextExtent(text)
+        _mw, mh = dc.GetTextExtent(text)
         dc.DrawText(text, 15 + sw + bw, offset + (MESSAGE_INFO_SIZE - mh) / 2)
 
     def GetHeight(self, draw_date):
@@ -405,7 +405,7 @@ class LogViewer(DebugViewer, wx.Panel):
         if self.LogSource is not None:
             answer = self.LogSource.GetLogMessage(level, msgidx)
             if answer is not None:
-                msg, tick, tv_sec, tv_nsec = answer
+                msg, _tick, tv_sec, tv_nsec = answer
                 return LogMessage(tv_sec, tv_nsec, level, self.LevelIcons[level], msg)
         return None
 
@@ -486,12 +486,12 @@ class LogViewer(DebugViewer, wx.Panel):
             msgidx -= 1
         if len(self.LogMessages) > 0:
             message = self.LogMessages[0]
-            for idx, msg in self.OldestMessages:
+            for _idx, msg in self.OldestMessages:
                 if msg is not None and msg > message:
                     message = msg
             while message is not None:
                 level = message.Level
-                oldest_msgidx, oldest_message = self.OldestMessages[level]
+                oldest_msgidx, _oldest_message = self.OldestMessages[level]
                 if oldest_msgidx > 0:
                     message = self.GetLogMessageFromSource(oldest_msgidx - 1, level)
                     if message is not None:
@@ -518,7 +518,7 @@ class LogViewer(DebugViewer, wx.Panel):
                     self.CurrentMessage = self.LogMessages.index(current_message)
                     if message_idx == 0 and self.FilterLogMessage(message, timestamp):
                         return message, 0
-                for idx, msg in self.OldestMessages:
+                for _idx, msg in self.OldestMessages:
                     if msg is not None and (message is None or msg > message):
                         message = msg
         return None, None
@@ -562,7 +562,7 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def IsPLCLogEmpty(self):
         empty = True
-        for level, prev in zip(xrange(LogLevelsCount), self.previous_log_count):
+        for _level, prev in zip(xrange(LogLevelsCount), self.previous_log_count):
             if prev is not None:
                 empty = False
                 break
@@ -579,7 +579,7 @@ class LogViewer(DebugViewer, wx.Panel):
         if message_idx is None:
             message_idx = self.CurrentMessage
         if message_idx is not None:
-            width, height = self.MessagePanel.GetClientSize()
+            _width, height = self.MessagePanel.GetClientSize()
             offset = 5
             message = self.LogMessages[message_idx]
             draw_date = True
@@ -609,7 +609,7 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def ScrollMessagePanelByPage(self, page):
         if self.CurrentMessage is not None:
-            width, height = self.MessagePanel.GetClientSize()
+            _width, height = self.MessagePanel.GetClientSize()
             message_per_page = max(1, (height - DATE_INFO_SIZE) / MESSAGE_INFO_SIZE - 1)
             self.ScrollMessagePanel(page * message_per_page)
 
@@ -673,7 +673,7 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def GetMessageByScreenPos(self, posx, posy):
         if self.CurrentMessage is not None:
-            width, height = self.MessagePanel.GetClientSize()
+            _width, height = self.MessagePanel.GetClientSize()
             message_idx = self.CurrentMessage
             message = self.LogMessages[message_idx]
             draw_date = True
@@ -766,15 +766,15 @@ class LogViewer(DebugViewer, wx.Panel):
         event.Skip()
 
     def OnMessagePanelResize(self, event):
-        width, height = self.MessagePanel.GetClientSize()
+        width, _height = self.MessagePanel.GetClientSize()
         offset = 2
         for button in self.LeftButtons:
             button.SetPosition(offset, 2)
-            w, h = button.GetSize()
+            w, _h = button.GetSize()
             offset += w + 2
         offset = width - 2
         for button in self.RightButtons:
-            w, h = button.GetSize()
+            w, _h = button.GetSize()
             button.SetPosition(offset - w, 2)
             offset -= w + 2
         if self.IsMessagePanelBottom():
