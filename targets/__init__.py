@@ -72,7 +72,7 @@ def GetTargetChoices():
             DictXSD_toolchain["toolchain_"+toolchainname] = open(xsdfilename).read()
 
     # Get all xsd targets
-    for targetname, nfo in targets.iteritems():
+    for _targetname, nfo in targets.iteritems():
         xsd_string = open(nfo["xsd"]).read()
         targetchoices += xsd_string % DictXSD_toolchain
 
@@ -81,7 +81,7 @@ def GetTargetChoices():
 
 def GetTargetCode(targetname):
     codedesc = targets[targetname]["code"]
-    code = "\n".join([open(fpath).read() for fname, fpath in sorted(codedesc.items())])
+    code = "\n".join([open(fpath).read() for _fname, fpath in sorted(codedesc.items())])
     return code
 
 

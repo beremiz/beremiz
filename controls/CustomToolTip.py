@@ -184,7 +184,7 @@ class CustomToolTip(wx.PopupWindow):
         line_offset = 0
         for line in self.Tip:
             dc.DrawText(line, 2, line_offset + 2)
-            line_width, line_height = dc.GetTextExtent(line)
+            _line_width, line_height = dc.GetTextExtent(line)
             line_offset += line_height
 
         dc.EndDrawing()

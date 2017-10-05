@@ -252,7 +252,7 @@ class FBD_Block(Graphic_Element):
                 outputs = [output for output in blocktype["outputs"]]
                 if blocktype["extensible"]:
                     start = int(inputs[-1][0].replace("IN", ""))
-                    for i in xrange(self.Extension - len(blocktype["inputs"])):
+                    for dummy in xrange(self.Extension - len(blocktype["inputs"])):
                         start += 1
                         inputs.append(("IN%d" % start, inputs[-1][1], inputs[-1][2]))
                 comment = blocktype["comment"]
@@ -352,12 +352,12 @@ class FBD_Block(Graphic_Element):
         # Calculate the inputs maximum width
         max_input = 0
         for input in self.Inputs:
-            w, h = input.GetNameSize()
+            w, _h = input.GetNameSize()
             max_input = max(max_input, w)
         # Calculate the outputs maximum width
         max_output = 0
         for output in self.Outputs:
-            w, h = output.GetNameSize()
+            w, _h = output.GetNameSize()
             max_output = max(max_output, w)
         width = max(self.TypeSize[0] + 10, max_input + max_output + 15)
         height = (max(len(self.Inputs), len(self.Outputs)) + 1) * BLOCK_LINE_SIZE

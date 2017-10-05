@@ -875,7 +875,7 @@ class VariablePanel(wx.Panel):
     def BuildProjectTypesMenu(self, type_menu, classtype):
         # build a submenu containing function block types
         bodytype = self.Controler.GetEditedElementBodyType(self.TagName)
-        pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
+        _pouname, poutype = self.Controler.GetEditedElementType(self.TagName)
         if classtype in ["Input", "Output", "InOut", "External", "Global"] or \
            poutype != "function" and bodytype in ["ST", "IL"]:
             functionblock_menu = wx.Menu(title='')

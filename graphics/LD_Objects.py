@@ -233,7 +233,7 @@ class LD_PowerRail(Graphic_Element):
             self.Type = type
             self.Clean()
             self.Connectors = []
-            for connector in xrange(connectors):
+            for dummy in xrange(connectors):
                 self.AddConnector()
             self.RefreshSize()
 

@@ -128,7 +128,7 @@ class DebugViewer(object):
         @param inhibit: Inhibit flag
         """
         # Inhibit every data consumers in list
-        for consumer, iec_path in self.DataConsumers.iteritems():
+        for consumer, _iec_path in self.DataConsumers.iteritems():
             consumer.Inhibit(inhibit)
 
         # Save inhibit flag

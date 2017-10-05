@@ -89,7 +89,7 @@ class ServicePublisher(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect((dst, 7))
-            (host, port) = s.getsockname()
+            (host, _port) = s.getsockname()
             s.close()
             if host != '0.0.0.0':
                 return host

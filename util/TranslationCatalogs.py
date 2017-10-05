@@ -24,7 +24,9 @@
 
 import os
 import __builtin__
+import gettext
 import wx
+
 
 locale = None
 

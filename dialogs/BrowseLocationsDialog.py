@@ -147,7 +147,7 @@ class BrowseLocationsDialog(wx.Dialog):
         self.LocationsTree.SetImageList(self.TreeImageList)
 
         # Set a options for the choice
-        for option, filter in GetDirFilterChoiceOptions():
+        for option, _filter in GetDirFilterChoiceOptions():
             self.DirFilterChoice.Append(_(option))
         self.DirFilterChoice.SetStringSelection(_("All"))
         for option in GetTypeFilterChoiceOptions():

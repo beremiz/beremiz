@@ -100,7 +100,7 @@ def UnpackDebugBuffer(buff, indexes):
     buffsize = len(buff)
     buffptr = cast(ctypes.pythonapi.PyString_AsString(id(buff)), c_void_p).value
     for iectype in indexes:
-        c_type, unpack_func, pack_func = \
+        c_type, unpack_func, _pack_func = \
             TypeTranslator.get(iectype, (None, None, None))
         if c_type is not None and buffoffset < buffsize:
             cursor = c_void_p(buffptr + buffoffset)

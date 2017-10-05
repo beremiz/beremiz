@@ -397,7 +397,7 @@ class Translator:
             if arg_names and arg_names[0] == self.method_self:
                 default_pos -= 1
             self.printo(function_name+'.parse_kwargs = function (', ", ".join(["__kwargs"]+arg_names), ") {")
-            for default_node in node.defaults:
+            for _default_node in node.defaults:
                 # default_value = self.expr(default_node, current_klass)
                 # if isinstance(default_node, ast.Const):
                 #     default_value = self._const(default_node)
@@ -1664,7 +1664,7 @@ class AppTranslator:
             if os.path.isfile(full_file_name):
                 return full_file_name
 
-            fnameinit, ext = os.path.splitext(file_name)
+            fnameinit, _ext = os.path.splitext(file_name)
             fnameinit = fnameinit + "/__init__.py"
 
             full_file_name = os.path.join(

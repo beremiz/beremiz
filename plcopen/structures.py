@@ -51,7 +51,7 @@ def GetSubTypes(type):
     """
     Returns list of all types that correspont to the ANY* meta type
     """
-    return [typename for typename, parenttype in TypeHierarchy.items() if not typename.startswith("ANY") and IsOfType(typename, type)]
+    return [typename for typename, _parenttype in TypeHierarchy.items() if not typename.startswith("ANY") and IsOfType(typename, type)]
 
 
 DataTypeRange = dict(DataTypeRange_list)

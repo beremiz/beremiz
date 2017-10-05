@@ -101,7 +101,7 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
 
             # Get Before which Viewer the variable has to be moved or added
             # according to the position of mouse in Viewer.
-            width, height = self.ParentControl.GetSize()
+            _width, height = self.ParentControl.GetSize()
             target_idx = self.ParentControl.GetIndex()
             if y > height / 2:
                 target_idx += 1
@@ -237,7 +237,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         item = self.ItemsDict.values()[0]
 
         # Calculate item path bounding box
-        width, height = self.GetSize()
+        _width, height = self.GetSize()
         item_path = item.GetVariable(
                 self.ParentWindow.GetVariableNameMask())
         w, h = self.GetTextExtent(item_path)

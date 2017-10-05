@@ -408,7 +408,7 @@ class ConfTreeNodeEditor(EditorPanel):
                         if element_infos["use"] == "optional":
                             combobox.Append("")
                         if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
-                            for choice, xsdclass in element_infos["type"]:
+                            for choice, _xsdclass in element_infos["type"]:
                                 combobox.Append(choice)
                             name = element_infos["name"]
                             value = element_infos["value"]

@@ -112,7 +112,7 @@ class TestCustomIntCtrl(unittest.TestCase):
         self.assertEqual(val, val)
 
     def ProcessEvents(self):
-        for i in range(0, 10):
+        for dummy in range(0, 10):
             wx.Yield()
             time.sleep(0.01)
 

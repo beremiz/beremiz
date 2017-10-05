@@ -28,6 +28,7 @@ from __future__ import print_function
 import os
 import sys
 import getopt
+import gettext
 import threading
 from threading import Thread, currentThread, Semaphore
 import traceback
@@ -132,9 +133,6 @@ def Bpath(*args):
 
 
 def SetupI18n():
-    # Import module for internationalization
-    import gettext
-
     # Get folder containing translation files
     localedir = os.path.join(beremiz_dir, "locale")
     # Get the default language

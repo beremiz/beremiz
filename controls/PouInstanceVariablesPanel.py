@@ -66,14 +66,14 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
         height = CT.CustomTreeCtrl.GetLineHeight(self, item)
         rightimages = item.GetRightImages()
         if len(rightimages) > 0:
-            r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
+            _r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
             return max(height, r_image_h + 8)
         return height
 
     def GetItemRightImagesBBox(self, item):
         rightimages = item.GetRightImages()
         if len(rightimages) > 0:
-            w, h = self.GetClientSize()
+            w, _h = self.GetClientSize()
             total_h = self.GetLineHeight(item)
             r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
 
@@ -108,7 +108,7 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
         rightimages = item.GetRightImages()
         if len(rightimages) > 0:
             images_bbx = self.GetItemRightImagesBBox(item)
-            r_image_w, r_image_h = self._imageListRight.GetSize(rightimages[0])
+            r_image_w, _r_image_h = self._imageListRight.GetSize(rightimages[0])
 
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.TRANSPARENT_PEN)

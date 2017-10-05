@@ -237,7 +237,7 @@ class DataTypeEditor(EditorPanel):
         subrange_panel_sizer.AddWindow(self.SubrangeMinimum, 1, border=5,
                                        flag=wx.GROW | wx.ALL)
 
-        for i in xrange(2):
+        for dummy in xrange(2):
             subrange_panel_sizer.AddWindow(wx.Size(0, 0), 1)
 
         subrange_maximum_label = wx.StaticText(self.SubrangePanel,

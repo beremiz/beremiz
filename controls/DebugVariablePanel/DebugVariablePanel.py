@@ -68,7 +68,7 @@ def compute_mask(x, y):
 
 def NextTick(variables):
     next_tick = None
-    for item, data in variables:
+    for _item, data in variables:
         if len(data) == 0:
             continue
 
@@ -232,7 +232,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
         self.CanvasRange.Clear()
         default_range_idx = 0
-        for idx, (text, value) in enumerate(RANGE_VALUES):
+        for idx, (text, _value) in enumerate(RANGE_VALUES):
             self.CanvasRange.Append(text)
             if text == "1s":
                 default_range_idx = idx

@@ -219,8 +219,8 @@ class Modload:
 
 
 def get_module(module_name):
-    ev = "__mod = %s;" % module_name
-    JS("pyjs_eval(ev);")
+    _ev = "__mod = %s;" % module_name
+    JS("pyjs_eval(_ev);")
     return __mod
 
 
@@ -1408,8 +1408,8 @@ def type(clsname, bases=None, methods=None):
     JS(" var mths = {}; ")
     if methods:
         for k in methods.keys():
-            mth = methods[k]
-            JS(" mths[k] = mth; ")
+            _mth = methods[k]
+            JS(" mths[k] = _mth; ")
 
     JS(" var bss = null; ")
     if bases:

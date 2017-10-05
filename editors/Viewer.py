@@ -487,7 +487,7 @@ class DebugInstanceName(DebugDataConsumer):
     def GetRedrawRect(self):
         x, y = self.Parent.CalcUnscrolledPosition(self.x_offset, self.y_offset)
         dc = self.Parent.GetLogicalDC()
-        ipw, iph = dc.GetTextExtent(self.GetInstanceName())
+        ipw, _iph = dc.GetTextExtent(self.GetInstanceName())
         vw, vh = 0, 0
         for value in self.VALUE_TRANSLATION.itervalues():
             w, h = dc.GetTextExtent(" (%s)" % value)
@@ -505,7 +505,7 @@ class DebugInstanceName(DebugDataConsumer):
             text += " ("
 
         dc.DrawText(text, x, y)
-        tw, th = dc.GetTextExtent(text)
+        tw, _th = dc.GetTextExtent(text)
         if self.ActionState is not None:
 
             text = self.VALUE_TRANSLATION[self.ActionState]
@@ -548,7 +548,7 @@ class Viewer(EditorPanel, DebugViewer):
     # Add Block Pin Menu items to the given menu
     def AddBlockPinMenuItems(self, menu, connector):
         [ID_NO_MODIFIER, ID_NEGATED, ID_RISING_EDGE,
-         ID_FALLING_EDGE] = [wx.NewId() for i in xrange(4)]
+         ID_FALLING_EDGE] = [wx.NewId() for dummy in xrange(4)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -575,7 +575,7 @@ class Viewer(EditorPanel, DebugViewer):
         [
             ID_ALIGN_LEFT, ID_ALIGN_CENTER, ID_ALIGN_RIGHT,
             ID_ALIGN_TOP, ID_ALIGN_MIDDLE, ID_ALIGN_BOTTOM,
-        ] = [wx.NewId() for i in xrange(6)]
+        ] = [wx.NewId() for dummy in xrange(6)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -590,7 +590,7 @@ class Viewer(EditorPanel, DebugViewer):
     # Add Wire Menu items to the given menu
     def AddWireMenuItems(self, menu, delete=False, replace=False):
         [ID_ADD_SEGMENT, ID_DELETE_SEGMENT, ID_REPLACE_WIRE,
-         ] = [wx.NewId() for i in xrange(3)]
+         ] = [wx.NewId() for dummy in xrange(3)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -603,7 +603,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Divergence Menu items to the given menu
     def AddDivergenceMenuItems(self, menu, delete=False):
-        [ID_ADD_BRANCH, ID_DELETE_BRANCH] = [wx.NewId() for i in xrange(2)]
+        [ID_ADD_BRANCH, ID_DELETE_BRANCH] = [wx.NewId() for dummy in xrange(2)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -615,7 +615,7 @@ class Viewer(EditorPanel, DebugViewer):
     # Add Add Menu items to the given menu
     def AddAddMenuItems(self, menu):
         [ID_ADD_BLOCK, ID_ADD_VARIABLE, ID_ADD_CONNECTION,
-         ID_ADD_COMMENT] = [wx.NewId() for i in xrange(4)]
+         ID_ADD_COMMENT] = [wx.NewId() for dummy in xrange(4)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -627,7 +627,7 @@ class Viewer(EditorPanel, DebugViewer):
         if self.CurrentLanguage != "FBD":
             [
                 ID_ADD_POWER_RAIL, ID_ADD_CONTACT, ID_ADD_COIL,
-            ] = [wx.NewId() for i in xrange(3)]
+            ] = [wx.NewId() for dummy in xrange(3)]
 
             # Create menu items
             self.AddMenuItems(menu, [
@@ -644,7 +644,7 @@ class Viewer(EditorPanel, DebugViewer):
             [
                 ID_ADD_INITIAL_STEP, ID_ADD_STEP, ID_ADD_TRANSITION,
                 ID_ADD_ACTION_BLOCK, ID_ADD_DIVERGENCE, ID_ADD_JUMP,
-            ] = [wx.NewId() for i in xrange(6)]
+            ] = [wx.NewId() for dummy in xrange(6)]
 
             # Create menu items
             self.AddMenuItems(menu, [
@@ -662,7 +662,7 @@ class Viewer(EditorPanel, DebugViewer):
     # Add Default Menu items to the given menu
     def AddDefaultMenuItems(self, menu, edit=False, block=False):
         if block:
-            [ID_EDIT_BLOCK, ID_DELETE, ID_ADJUST_BLOCK_SIZE] = [wx.NewId() for i in xrange(3)]
+            [ID_EDIT_BLOCK, ID_DELETE, ID_ADJUST_BLOCK_SIZE] = [wx.NewId() for dummy in xrange(3)]
 
             # Create menu items
             self.AddMenuItems(menu, [
@@ -673,7 +673,7 @@ class Viewer(EditorPanel, DebugViewer):
             menu.Enable(ID_EDIT_BLOCK, edit)
 
         else:
-            [ID_CLEAR_EXEC_ORDER, ID_RESET_EXEC_ORDER] = [wx.NewId() for i in xrange(2)]
+            [ID_CLEAR_EXEC_ORDER, ID_RESET_EXEC_ORDER] = [wx.NewId() for dummy in xrange(2)]
 
             # Create menu items
             if self.CurrentLanguage == 'FBD':
@@ -688,7 +688,7 @@ class Viewer(EditorPanel, DebugViewer):
 
         menu.AppendSeparator()
 
-        [ID_CUT, ID_COPY, ID_PASTE] = [wx.NewId() for i in xrange(3)]
+        [ID_CUT, ID_COPY, ID_PASTE] = [wx.NewId() for dummy in xrange(3)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -764,12 +764,12 @@ class Viewer(EditorPanel, DebugViewer):
         dc = wx.ClientDC(self.Editor)
         font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
         dc.SetFont(font)
-        width, height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         while width > 260:
             faces["size"] -= 1
             font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
             dc.SetFont(font)
-            width, height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+            width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         self.SetFont(font)
         self.MiniTextDC = wx.MemoryDC()
         self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
@@ -1295,7 +1295,7 @@ class Viewer(EditorPanel, DebugViewer):
     def GetPreviousSteps(self, connectors):
         steps = []
         for connector in connectors:
-            for wire, handle in connector.GetWires():
+            for wire, _handle in connector.GetWires():
                 previous = wire.GetOtherConnected(connector).GetParentBlock()
                 if isinstance(previous, SFC_Step):
                     steps.append(previous.GetName())
@@ -1307,7 +1307,7 @@ class Viewer(EditorPanel, DebugViewer):
     def GetNextSteps(self, connectors):
         steps = []
         for connector in connectors:
-            for wire, handle in connector.GetWires():
+            for wire, _handle in connector.GetWires():
                 next = wire.GetOtherConnected(connector).GetParentBlock()
                 if isinstance(next, SFC_Step):
                     steps.append(next.GetName())
@@ -1559,7 +1559,7 @@ class Viewer(EditorPanel, DebugViewer):
         return None
 
     def FindBlockConnector(self, pos, direction=None, exclude=None):
-        result, error = self.FindBlockConnectorWithError(pos, direction, exclude)
+        result, _error = self.FindBlockConnectorWithError(pos, direction, exclude)
         return result
 
     def FindBlockConnectorWithError(self, pos, direction=None, exclude=None):
@@ -3565,7 +3565,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.SearchParams = search_params
             self.SearchResults = []
             blocks = []
-            for infos, start, end, text in self.Controler.SearchInPou(self.TagName, search_params, self.Debug):
+            for infos, start, end, _text in self.Controler.SearchInPou(self.TagName, search_params, self.Debug):
                 if (infos[0] == self.TagName or self.TagName.split("::")[0] in ['A', 'T']) and infos[1] is not 'name':
                     if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
                         self.SearchResults.append((infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT))

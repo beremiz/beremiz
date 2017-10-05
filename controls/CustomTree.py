@@ -114,7 +114,7 @@ class CustomTree(CT.CustomTreeCtrl):
     def OnLeftUp(self, event):
         if self.Enabled:
             pos = event.GetPosition()
-            item, flags = self.HitTest(pos)
+            _item, flags = self.HitTest(pos)
 
             bitmap_rect = self.GetBitmapRect()
             if ((bitmap_rect.InsideXY(pos.x, pos.y) or

@@ -134,7 +134,7 @@ class _SlaveCTN(NodeManager):
             dialog.Type.Enable(False)
             dialog.GenSYNC.Enable(False)
             if dialog.ShowModal() == wx.ID_OK:
-                name, id, nodetype, description = dialog.GetValues()
+                name, id, _nodetype, description = dialog.GetValues()
                 profile, filepath = dialog.GetProfile()
                 NMT = dialog.GetNMTManagement()
                 options = dialog.GetOptions()

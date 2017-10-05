@@ -71,7 +71,7 @@ ITEM_CONFNODE = 25
 
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
-    for n, d, h, c in catalog:
+    for n, d, _h, c in catalog:
         if isinstance(c, ListType):
             children_types.extend(ExtractChildrenTypesFromCatalog(c))
         else:
@@ -148,9 +148,9 @@ class Iec2CSettings(object):
         buildopt = ""
         try:
             # Invoke compiler. Output files are listed to stdout, errors to stderr
-            status, result, err_result = ProcessLogger(None, buildcmd,
-                                                       no_stdout=True,
-                                                       no_stderr=True).spin()
+            _status, result, _err_result = ProcessLogger(None, buildcmd,
+                                                         no_stdout=True,
+                                                         no_stderr=True).spin()
         except Exception:
             return buildopt
 
@@ -196,7 +196,7 @@ def GetProjectControllerXSD():
               """+"\n".join(['<xsd:attribute name=' +
                              '"Enable_' + libname + '_Library" ' +
                              'type="xsd:boolean" use="optional" default="true"/>'
-                             for libname, lib in features.libraries])+"""
+                             for libname, _lib in features.libraries])+"""
               </xsd:complexType>
             </xsd:element>""") if len(features.libraries) > 0 else '') + """
           </xsd:sequence>
@@ -724,7 +724,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         self.logger.write(_("Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"))
         # ask PLCOpenEditor controller to write ST/IL/SFC code file
-        program, errors, warnings = self.GenerateProgram(self._getIECgeneratedcodepath())
+        _program, errors, warnings = self.GenerateProgram(self._getIECgeneratedcodepath())
         if len(warnings) > 0:
             self.logger.write_warning(_("Warnings in ST/IL/SFC code generator :\n"))
             for warning in warnings:
@@ -742,7 +742,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         plc_file.close()
         plc_file = open(self._getIECcodepath(), "r")
         self.ProgramOffset = 0
-        for line in plc_file.xreadlines():
+        for dummy in plc_file.xreadlines():
             self.ProgramOffset += 1
         plc_file.close()
         plc_file = open(self._getIECcodepath(), "a")
@@ -784,7 +784,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                 m_result = MATIEC_ERROR_MODEL.match(err_line)
                 if m_result is not None:
-                    first_line, first_column, last_line, last_column, error = m_result.groups()
+                    first_line, _first_column, last_line, _last_column, _error = m_result.groups()
                     first_line, last_line = int(first_line), int(last_line)
 
                     last_section = None
@@ -1023,7 +1023,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # filter location that are related to code that will be called
         # in retreive, publish, init, cleanup
         locstrs = map(lambda x: "_".join(map(str, x)),
-                      [loc for loc, Cfiles, DoCalls in
+                      [loc for loc, _Cfiles, DoCalls in
                        self.LocationCFilesAndCFLAGS if loc and DoCalls])
 
         # Generate main, based on template
@@ -1419,7 +1419,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def SnapshotAndResetDebugValuesBuffers(self):
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
-                                            [list() for n in xrange(len(self.TracedIECPath))])
+                                            [list() for dummy in xrange(len(self.TracedIECPath))])
         ticks, self.DebugTicks = self.DebugTicks, []
         return ticks, buffers
 
@@ -1432,7 +1432,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.IECdebug_lock.acquire()
             IECPathsToPop = []
             for IECPath, data_tuple in self.IECdebug_datas.iteritems():
-                WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
+                WeakCallableDict, _data_log, _status, fvalue, _buffer_list = data_tuple
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
                     # This variable is not needed anymore!
@@ -1480,7 +1480,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.DebugTimer.start()
 
     def GetDebugIECVariableType(self, IECPath):
-        Idx, IEC_Type = self._IECPathToIdx.get(IECPath, (None, None))
+        _Idx, IEC_Type = self._IECPathToIdx.get(IECPath, (None, None))
         return IEC_Type
 
     def SubscribeDebugIECVariable(self, IECPath, callableobj, buffer_list=False):
@@ -1570,7 +1570,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def CallWeakcallables(self, IECPath, function_name, *cargs):
         data_tuple = self.IECdebug_datas.get(IECPath, None)
         if data_tuple is not None:
-            WeakCallableDict, data_log, status, fvalue, buffer_list = data_tuple
+            WeakCallableDict, _data_log, _status, _fvalue, buffer_list = data_tuple
             # data_log.append((debug_tick, value))
             for weakcallable, buffer_list in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)

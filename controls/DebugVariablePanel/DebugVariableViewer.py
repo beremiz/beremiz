@@ -248,7 +248,7 @@ class DebugVariableViewer(object):
         Function that refresh buttons position in Viewer
         """
         # Get Viewer size
-        width, height = self.GetSize()
+        width, _height = self.GetSize()
 
         # Buttons are align right so we calculate buttons positions in
         # reverse order
@@ -262,7 +262,7 @@ class DebugVariableViewer(object):
             if button.IsEnabled():
                 # Update button position according to button width and offset
                 # on x coordinate
-                w, h = button.GetSize()
+                w, _h = button.GetSize()
                 button.SetPosition(width - 5 - w - x_offset, 5)
                 # Update offset on x coordinate
                 x_offset += w + 2
@@ -372,7 +372,7 @@ class DebugVariableViewer(object):
         @param y: Y coordinate of mouse pointer
         """
         # Get Viewer size
-        width, height = self.GetSize()
+        _width, height = self.GetSize()
 
         # Mouse is in the first half of Viewer
         if y < height / 2:

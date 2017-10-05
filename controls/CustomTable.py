@@ -192,7 +192,7 @@ class CustomTable(wx.grid.PyGridTableBase):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            for row, row_highlights in self.Highlights.iteritems():
+            for _row, row_highlights in self.Highlights.iteritems():
                 row_items = row_highlights.items()
                 for col, col_highlights in row_items:
                     if highlight_type in col_highlights:

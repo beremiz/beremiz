@@ -28,6 +28,7 @@ Misc definitions
 
 import os
 import sys
+import gettext
 
 
 def CheckPathPerm(path):
@@ -56,11 +57,9 @@ def GetClassImporter(classpath):
 def InstallLocalRessources(CWD):
     from BitmapLibrary import AddBitmapFolder
     from TranslationCatalogs import AddCatalog
-    import wx
 
     # Beremiz bitmaps
     AddBitmapFolder(os.path.join(CWD, "images"))
 
     # Internationalization
     AddCatalog(os.path.join(CWD, "locale"))
-    import gettext
