@@ -206,21 +206,23 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
 
     # Refresh the step bounding box
     def RefreshBoundingBox(self):
+        # TODO: check and remove dead coded
+        #
         # Calculate the bounding box size
-        if self.Action:
-            bbx_width = self.Size[0] + CONNECTOR_SIZE
-        else:
-            bbx_width = self.Size[0]
-        if self.Initial:
-            bbx_y = self.Pos.y
-            bbx_height = self.Size[1]
-            if self.Output:
-                bbx_height += CONNECTOR_SIZE
-        else:
-            bbx_y = self.Pos.y - CONNECTOR_SIZE
-            bbx_height = self.Size[1] + CONNECTOR_SIZE
-            if self.Output:
-                bbx_height += CONNECTOR_SIZE
+        # if self.Action:
+        #     bbx_width = self.Size[0] + CONNECTOR_SIZE
+        # else:
+        #     bbx_width = self.Size[0]
+        # if self.Initial:
+        #     bbx_y = self.Pos.y
+        #     bbx_height = self.Size[1]
+        #     if self.Output:
+        #         bbx_height += CONNECTOR_SIZE
+        # else:
+        #     bbx_y = self.Pos.y - CONNECTOR_SIZE
+        #     bbx_height = self.Size[1] + CONNECTOR_SIZE
+        #     if self.Output:
+        #         bbx_height += CONNECTOR_SIZE
         # self.BoundingBox = wx.Rect(self.Pos.x, bbx_y, bbx_width + 1, bbx_height + 1)
         self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
 
