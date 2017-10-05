@@ -2000,7 +2000,7 @@ class SFC_ActionBlock(Graphic_Element):
             highlight_items = self.Highlights.items()
             for number, action_highlights in highlight_items:
                 action_highlight_items = action_highlights.items()
-                for name, attribute_highlights in action_highlights:
+                for name, attribute_highlights in action_highlight_items:
                     attribute_highlights = ClearHighlights(attribute_highlights, highlight_type)
                     if len(attribute_highlights) == 0:
                         action_highlights.pop(name)
