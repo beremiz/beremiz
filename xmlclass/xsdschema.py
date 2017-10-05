@@ -784,7 +784,7 @@ def ReduceAll(factory, attributes, elements):
     annotations, children = factory.ReduceElements(elements)
 
     for child in children:
-        if children["maxOccurs"] == "unbounded" or children["maxOccurs"] > 1:
+        if child["maxOccurs"] == "unbounded" or child["maxOccurs"] > 1:
             raise ValueError("\"all\" item can't have \"maxOccurs\" attribute greater than 1!")
 
     return {"type": "all", "elements": children, "minOccurs": attributes["minOccurs"],
