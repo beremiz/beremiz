@@ -26,7 +26,6 @@ import unittest
 import time
 
 import wx
-
 import conftest
 import controls.CustomIntCtrl
 
@@ -134,4 +133,5 @@ class TestCustomIntCtrl(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    conftest.init_environment()
     unittest.main()

@@ -24,7 +24,7 @@
 
 
 import wx
-from wx.lib.intctrl import IntCtrl
+import wx.lib.intctrl
 
 
 class CustomIntUpdatedEvent(wx.PyCommandEvent):

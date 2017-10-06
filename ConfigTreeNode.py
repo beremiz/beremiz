@@ -38,9 +38,8 @@ import shutil
 from lxml import etree
 
 from xmlclass import GenerateParserFromXSDstring
-from util.misc import GetClassImporter
 
-from PLCControler import PLCControler, LOCATION_CONFNODE
+from PLCControler import LOCATION_CONFNODE
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
 _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>

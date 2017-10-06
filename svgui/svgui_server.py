@@ -24,7 +24,7 @@
 
 import os
 
-from nevow import rend, appserver, inevow, tags, loaders, athena
+from nevow import tags, loaders
 import simplejson as json
 
 svgfile = '%(svgfile)s'

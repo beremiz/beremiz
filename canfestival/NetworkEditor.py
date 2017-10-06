@@ -24,7 +24,6 @@
 
 import wx
 
-from subindextable import EditingPanel
 from networkeditortemplate import NetworkEditorTemplate
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 

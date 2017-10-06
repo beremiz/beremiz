@@ -24,7 +24,6 @@
 
 import os
 import sys
-import time
 import subprocess
 import ctypes
 from threading import Timer, Lock, Thread, Semaphore

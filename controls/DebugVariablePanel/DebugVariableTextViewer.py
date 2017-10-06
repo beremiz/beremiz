@@ -26,7 +26,6 @@ from types import TupleType
 
 import wx
 
-from DebugVariableItem import DebugVariableItem
 from DebugVariableViewer import DebugVariableViewer
 from GraphButton import GraphButton
 

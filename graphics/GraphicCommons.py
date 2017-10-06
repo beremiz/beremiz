@@ -25,8 +25,6 @@
 
 from math import *
 from types import *
-import datetime
-from threading import Lock, Timer
 
 import wx
 from graphics.ToolTipProducer import ToolTipProducer

@@ -28,8 +28,6 @@ import wx
 import wx.lib.mixins.listctrl as listmix
 from zeroconf import ServiceBrowser, Zeroconf
 
-import connectors
-
 service_type = '_PYRO._tcp.local.'
 
 

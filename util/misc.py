@@ -27,8 +27,6 @@ Misc definitions
 """
 
 import os
-import sys
-import gettext
 
 
 def CheckPathPerm(path):

@@ -25,7 +25,7 @@
 
 import wx
 
-from graphics.GraphicCommons import LEFTRAIL, RIGHTRAIL, LD_LINE_SIZE
+from graphics.GraphicCommons import LEFTRAIL, RIGHTRAIL
 from graphics.LD_Objects import LD_PowerRail
 from BlockPreviewDialog import BlockPreviewDialog
 

@@ -26,7 +26,6 @@ import os
 import re
 import operator
 import hashlib
-import time
 
 from util.ProcessLogger import ProcessLogger
 

@@ -36,7 +36,6 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from mpl_toolkits.mplot3d import Axes3D
 
 from editors.DebugViewer import REFRESH_PERIOD
-from DebugVariableItem import DebugVariableItem
 from DebugVariableViewer import *
 from GraphButton import GraphButton
 

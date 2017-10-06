@@ -28,14 +28,13 @@ from __future__ import print_function
 import os
 import sys
 import getopt
-import gettext
 import threading
 from threading import Thread, currentThread, Semaphore
 import traceback
 import __builtin__
 import Pyro.core as pyro
 
-from runtime import PLCObject, PLCprint, ServicePublisher
+from runtime import PLCObject, ServicePublisher
 import util.paths as paths
 
 

@@ -25,7 +25,6 @@
 import wx
 
 from controls import ProjectPropertiesPanel, VariablePanel
-from EditorPanel import EditorPanel
 from ConfTreeNodeEditor import ConfTreeNodeEditor
 
 

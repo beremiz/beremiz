@@ -25,12 +25,11 @@
 
 from __future__ import print_function
 import os
-import sys
 import re
 import datetime
 from types import *
 from xml.dom import minidom
-from xml.sax.saxutils import escape, unescape, quoteattr
+from xml.sax.saxutils import unescape
 from new import classobj
 from collections import OrderedDict
 
