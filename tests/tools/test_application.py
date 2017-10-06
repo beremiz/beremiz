@@ -28,7 +28,6 @@ import os
 import sys
 import unittest
 import time
-import traceback
 
 import pytest
 import wx
@@ -222,4 +221,5 @@ class PLCOpenEditorApplicationTest(BeremizApplicationTest):
 
 
 if __name__ == '__main__':
+    conftest.init_environment()
     unittest.main()

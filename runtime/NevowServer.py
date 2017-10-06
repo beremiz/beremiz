@@ -26,9 +26,8 @@
 from __future__ import print_function
 import os
 import util.paths as paths
-from nevow import rend, appserver, inevow, tags, loaders, athena
+from nevow import appserver, inevow, tags, loaders, athena
 from nevow.page import renderer
-from twisted.python import util
 from twisted.internet import reactor
 
 xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>

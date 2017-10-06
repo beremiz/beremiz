@@ -29,9 +29,7 @@ import sys
 import tempfile
 import shutil
 import random
-import re
 import types
-import commands
 import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
@@ -43,7 +41,6 @@ import wx.stc
 
 
 import version
-from docutil import OpenHtmlFrame
 from editors.EditorPanel import EditorPanel
 from editors.Viewer import Viewer
 from editors.TextViewer import TextViewer
@@ -79,7 +76,6 @@ from IDEFrame import \
     PROJECTTREE,\
     POUINSTANCEVARIABLESPANEL,\
     LIBRARYTREE,\
-    SCALING,\
     PAGETITLES,\
     IDEFrame, \
     AppendMenu,\

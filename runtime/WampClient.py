@@ -23,7 +23,6 @@
 
 
 from __future__ import print_function
-import sys
 import json
 
 from autobahn.twisted import wamp

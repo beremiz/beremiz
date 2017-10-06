@@ -3,12 +3,10 @@
 from __future__ import print_function
 import sys
 import shutil
-import time
 import re
 import os
-from os.path import join, dirname, basename, abspath, split, isfile, isdir
+from os.path import join, basename, abspath, split, isfile, isdir
 from hashlib import md5
-from copy import copy
 from optparse import OptionParser
 from cStringIO import StringIO
 

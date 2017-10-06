@@ -24,19 +24,25 @@
 
 import os
 import sys
-import time
 
-import pytest
-import xvfbwrapper
+# import pytest
+# import xvfbwrapper
 
-# append module root directory to sys.path
-sys.path.append(
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), '..', '..')
-    )
-)
 
+def init_environment():
+    """Append module root directory to sys.path"""
+    try:
+        import Beremiz as _Beremiz
+    except ImportError:
+        sys.path.append(
+            os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__), '..', '..')
+            )
+        )
+
+
+init_environment()
 
 #
 # Something seems to be broken in Beremiz application,

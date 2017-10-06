@@ -45,8 +45,8 @@ from IDEFrame import \
     PROJECTTREE, \
     POUINSTANCEVARIABLESPANEL, \
     LIBRARYTREE, \
-    PAGETITLES
-from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
+    PAGETITLES, \
+    DecodeFileSystemPath
 from editors.Viewer import Viewer
 from PLCControler import PLCControler
 from dialogs import ProjectDialog

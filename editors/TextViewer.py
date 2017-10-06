@@ -29,9 +29,9 @@ import wx
 import wx.stc
 
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
-from plcopen.structures import ST_BLOCK_START_KEYWORDS, ST_BLOCK_END_KEYWORDS, IEC_BLOCK_START_KEYWORDS, IEC_BLOCK_END_KEYWORDS, LOCATIONDATATYPES
+from plcopen.structures import ST_BLOCK_START_KEYWORDS, IEC_BLOCK_START_KEYWORDS, LOCATIONDATATYPES
 from EditorPanel import EditorPanel
-from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
+from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
 
 # -------------------------------------------------------------------------------
 #                         Textual programs Viewer class

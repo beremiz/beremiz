@@ -23,11 +23,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from xml.dom import minidom
-from types import StringType, UnicodeType, TupleType
+
+from types import TupleType
 from copy import deepcopy
 import os
-import sys
 import re
 import datetime
 from time import localtime

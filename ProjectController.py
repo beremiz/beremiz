@@ -27,14 +27,12 @@
 Beremiz Project Controller
 """
 import os
-import sys
 import traceback
 import time
 from time import localtime
 import shutil
 import re
 import tempfile
-from math import ceil
 from types import ListType
 from threading import Timer, Lock, Thread
 from datetime import datetime
@@ -58,8 +56,7 @@ from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 import targets
-from targets.typemapping import DebugTypesSize, \
-    LogLevelsCount, LogLevels, UnpackDebugBuffer
+from targets.typemapping import DebugTypesSize, UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
 base_folder = paths.AbsParentDir(__file__)

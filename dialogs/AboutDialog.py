@@ -31,8 +31,6 @@ This module contains classes extended from wx.Dialog used by the GUI.
 """
 
 import os
-import sys
-import time
 import wx
 from wx.lib.agw.hyperlink import HyperLinkCtrl
 

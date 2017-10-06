@@ -25,7 +25,6 @@
 
 import os
 import re
-from lxml import etree
 import util.paths as paths
 
 from xmlclass import GenerateParserFromXSD

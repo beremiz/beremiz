@@ -25,15 +25,13 @@
 from threading import Timer, Thread, Lock, Semaphore, Event
 import ctypes
 import os
-import commands
-import types
 import sys
 import traceback
 from time import time
 
 import Pyro.core as pyro
 
-from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator, UnpackDebugBuffer
+from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator
 
 
 if os.name in ("nt", "ce"):
