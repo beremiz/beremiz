@@ -201,7 +201,9 @@ pylint_checks()
     disable=$disable,W0511        # fixme
     disable=$disable,W0110        # (deprecated-lambda) map/filter on lambda could be replaced by comprehension
     disable=$disable,W1401        # (anomalous-backslash-in-string) Anomalous backslash in string: '\.'. String constant might be missing an r prefix.
-
+    disable=$disable,W0613        # (unused-argument) Unused argument 'X'
+    disable=$disable,W0622        # (redefined-builtin) Redefining built-in
+    
     enable=
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword    
@@ -217,11 +219,10 @@ pylint_checks()
     enable=$enable,E0102          # (function-redefined) method already defined
     enable=$enable,W0602          # (global-variable-not-assigned) Using global for 'X' but no assignment is done
     enable=$enable,W0612          # (unused-variable) Unused variable 'X'
-    enable=$enable,W0611          # (unused-import), Unused import connectors
+    enable=$enable,W0611          # (unused-import) Unused import X
+    enable=$enable,C1001          # (old-style-class) Old-style class defined. Problem with PyJS
 
     # enable=$enable,W0403        # relative import
-    # enable=$enable,W0622        # (redefined-builtin) Redefining built-in
-    # enable=$enable,C1001        # (old-style-class) Old-style class defined. Problem with PyJS
     # enable=
 
     options=

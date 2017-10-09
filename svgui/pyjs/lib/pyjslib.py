@@ -187,6 +187,7 @@ function import_wait(proceed_fn, parent_mod, dynamic) {
 """)
 
 
+# pylint: disable=C1001
 class Object:
     pass
 
