@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import wx
 import wx.lib.buttons
 import wx.grid
@@ -29,7 +31,7 @@ import wx.grid
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
 from controls import CustomGrid, CustomTable, DurationCellEditor
 from dialogs.DurationEditorDialog import IEC_TIME_MODEL
-from EditorPanel import EditorPanel
+from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS

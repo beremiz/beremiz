@@ -26,7 +26,12 @@
 Misc definitions
 """
 
+
+from __future__ import absolute_import
 import os
+
+from util.BitmapLibrary import AddBitmapFolder
+from util.TranslationCatalogs import AddCatalog
 
 
 def CheckPathPerm(path):
@@ -53,9 +58,6 @@ def GetClassImporter(classpath):
 
 
 def InstallLocalRessources(CWD):
-    from BitmapLibrary import AddBitmapFolder
-    from TranslationCatalogs import AddCatalog
-
     # Beremiz bitmaps
     AddBitmapFolder(os.path.join(CWD, "images"))
 

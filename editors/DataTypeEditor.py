@@ -23,6 +23,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import re
 from types import TupleType
 
@@ -33,7 +35,7 @@ from plcopen.structures import IEC_KEYWORDS, TestIdentifier, DefaultType
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD
 from controls import CustomEditableListBox, CustomGrid, CustomTable, CustomIntCtrl
 from dialogs import ArrayTypeDialog
-from EditorPanel import EditorPanel
+from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
 

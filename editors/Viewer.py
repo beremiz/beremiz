@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import math
 from time import time as gettime
 from types import TupleType
@@ -35,7 +37,7 @@ from graphics.DebugDataConsumer import DebugDataConsumer
 from graphics import *
 from dialogs import *
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
-from EditorPanel import EditorPanel
+from editors.EditorPanel import EditorPanel
 
 SCROLLBAR_UNIT = 10
 WINDOW_BORDER = 10

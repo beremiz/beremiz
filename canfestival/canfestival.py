@@ -23,6 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+from __future__ import absolute_import
 import os
 import sys
 import shutil
@@ -53,9 +54,9 @@ import canfestival_config as local_canfestival_config
 
 from commondialogs import CreateNodeDialog
 from subindextable import IECTypeConversion, SizeConversion
-import config_utils
-from SlaveEditor import SlaveEditor, MasterViewer
-from NetworkEditor import NetworkEditor
+from canfestival import config_utils
+from canfestival.SlaveEditor import SlaveEditor, MasterViewer
+from canfestival.NetworkEditor import NetworkEditor
 
 
 AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))

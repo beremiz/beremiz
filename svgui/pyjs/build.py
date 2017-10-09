@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+
+from __future__ import absolute_import
 from __future__ import print_function
 import sys
 import shutil
@@ -10,7 +12,7 @@ from hashlib import md5
 from optparse import OptionParser
 from cStringIO import StringIO
 
-import pyjs
+from svgui.pyjs import pyjs
 
 
 usage = """
