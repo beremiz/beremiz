@@ -3480,7 +3480,7 @@ class Viewer(EditorPanel, DebugViewer):
             return True
         return False
 
-    def GenerateNewName(self, element=None, blocktype=None, exclude={}):
+    def GenerateNewName(self, element=None, blocktype=None, exclude=None):
         if element is not None and isinstance(element, SFC_Step):
             format = "Step%d"
         else:

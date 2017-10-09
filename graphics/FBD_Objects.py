@@ -43,7 +43,7 @@ class FBD_Block(Graphic_Element):
     """
 
     # Create a new block
-    def __init__(self, parent, type, name, id=None, extension=0, inputs=None, connectors={}, executionControl=False, executionOrder=0):
+    def __init__(self, parent, type, name, id=None, extension=0, inputs=None, connectors=None, executionControl=False, executionOrder=0):
         Graphic_Element.__init__(self, parent)
         self.Type = None
         self.Description = None
@@ -174,7 +174,7 @@ class FBD_Block(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the positions of wires connected to inputs and outputs
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         for input in self.Inputs:
             input.MoveConnected(exclude)
         for output in self.Outputs:
@@ -236,7 +236,7 @@ class FBD_Block(Graphic_Element):
         return None
 
     # Changes the block type
-    def SetType(self, type, extension, inputs=None, connectors={}, executionControl=False):
+    def SetType(self, type, extension, inputs=None, connectors=None, executionControl=False):
         if type != self.Type or self.Extension != extension or executionControl != self.ExecutionControl:
             if type != self.Type:
                 self.Type = type
@@ -259,6 +259,7 @@ class FBD_Block(Graphic_Element):
                 self.Description = _(comment) + blocktype.get("usage", "")
             else:
                 self.Colour = wx.RED
+                connectors = {} if connectors is None else connectors
                 inputs = connectors.get("inputs", [])
                 outputs = connectors.get("outputs", [])
                 self.Description = None
@@ -611,7 +612,7 @@ class FBD_Variable(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to connector
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         if self.Input:
             self.Input.MoveConnected(exclude)
         if self.Output:
@@ -883,7 +884,7 @@ class FBD_Connector(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to connector
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         if self.Connector:
             self.Connector.MoveConnected(exclude)
 

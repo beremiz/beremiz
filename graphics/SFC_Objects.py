@@ -246,7 +246,7 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to step
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         if self.Input:
             self.Input.MoveConnected(exclude)
         if self.Output:
@@ -767,7 +767,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         self.RefreshConnected()
 
     # Refresh the position of the wires connected to transition
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         self.Input.MoveConnected(exclude)
         self.Output.MoveConnected(exclude)
         if self.Type == "connection":
@@ -1211,7 +1211,7 @@ class SFC_Divergence(Graphic_Element):
                 self.Size[0] + 2 * SFC_SIMULTANEOUS_SEQUENCE_EXTRA + 1, self.Size[1] + 1)
 
     # Refresh the position of wires connected to divergence
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         for input in self.Inputs:
             input.MoveConnected(exclude)
         for output in self.Outputs:
@@ -1613,7 +1613,7 @@ class SFC_Jump(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to jump
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         if self.Input:
             self.Input.MoveConnected(exclude)
 
@@ -1785,7 +1785,7 @@ class SFC_ActionBlock(Graphic_Element):
     """
 
     # Create a new action block
-    def __init__(self, parent, actions=[], id=None):
+    def __init__(self, parent, actions=None, id=None):
         Graphic_Element.__init__(self, parent)
         self.Id = id
         self.Size = wx.Size(SFC_ACTION_MIN_SIZE[0], SFC_ACTION_MIN_SIZE[1])
@@ -1865,7 +1865,7 @@ class SFC_ActionBlock(Graphic_Element):
         self.BoundingBox = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0] + 1, self.Size[1] + 1)
 
     # Refresh the position of wires connected to action block
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         self.Input.MoveConnected(exclude)
 
     # Returns input action block connector
@@ -1893,7 +1893,8 @@ class SFC_ActionBlock(Graphic_Element):
         self.RefreshConnected()
 
     # Changes the action block actions
-    def SetActions(self, actions):
+    def SetActions(self, actions=None):
+        actions = [] if actions is None else actions
         self.Actions = actions
         self.ColSize = [0, 0, 0]
         min_height = 0

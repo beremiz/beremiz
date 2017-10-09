@@ -482,7 +482,8 @@ def _updateProjectClass(cls):
         self.types.removedataTypeElement(name)
     setattr(cls, "removedataType", removedataType)
 
-    def getpous(self, exclude=None, filter=[]):
+    def getpous(self, exclude=None, filter=None):
+        filter = [] if filter is None else filter
         return self.xpath(
             "ppx:types/ppx:pous/ppx:pou%s%s" %
             (("[@name!='%s']" % exclude) if exclude is not None else '',
@@ -615,7 +616,8 @@ def _updateProjectClass(cls):
         return [value.getname() for value in enumerated_values_xpath(self)]
     setattr(cls, "GetEnumeratedDataTypeValues", GetEnumeratedDataTypeValues)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         result = self.types.Search(criteria, parent_infos)
         for configuration in self.instances.configurations.getconfiguration():
             result.extend(configuration.Search(criteria, parent_infos))
@@ -756,7 +758,8 @@ def _removeConfigurationResourceVariableByFilter(self, address_model):
                     variables.remove(variables[i])
 
 
-def _SearchInConfigurationResource(self, criteria, parent_infos=[]):
+def _SearchInConfigurationResource(self, criteria, parent_infos=None):
+    parent_infos = [] if parent_infos is None else parent_infos
     search_result = _Search([("name", self.getname())], criteria, parent_infos)
     var_number = 0
     for varlist in self.getglobalVars():
@@ -810,7 +813,8 @@ def _updateConfigurationConfigurationsClass(cls):
     setattr(cls, "removeVariableByAddress", _removeConfigurationResourceVariableByAddress)
     setattr(cls, "removeVariableByFilter", _removeConfigurationResourceVariableByFilter)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = []
         parent_infos = parent_infos + ["C::%s" % self.getname()]
         filter = criteria["filter"]
@@ -848,7 +852,8 @@ def _updateResourceConfigurationClass(cls):
     setattr(cls, "removeVariableByAddress", _removeConfigurationResourceVariableByAddress)
     setattr(cls, "removeVariableByFilter", _removeConfigurationResourceVariableByFilter)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         parent_infos = parent_infos[:-1] + ["R::%s::%s" % (parent_infos[-1].split("::")[1], self.getname())]
         search_result = _SearchInConfigurationResource(self, criteria, parent_infos)
         task_number = 0
@@ -896,7 +901,8 @@ def _updateTaskResourceClass(cls):
             self.interval = update_address(self.interval, address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         return _Search([("single", self.getsingle()),
                         ("interval", self.getinterval()),
                         ("priority", str(self.getpriority()))],
@@ -918,7 +924,8 @@ def _updatePouInstanceClass(cls):
             self.typeName = new_name
     setattr(cls, "updateElementName", updateElementName)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         return _Search([("name", self.getname()),
                         ("type", self.gettypeName())],
                        criteria, parent_infos)
@@ -961,7 +968,8 @@ def _updateVariableVarListPlain(cls):
         return vartype_content_name
     setattr(cls, "gettypeAsText", gettypeAsText)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = _Search([("name", self.getname()),
                                  ("type", self.gettypeAsText()),
                                  ("location", self.getaddress())],
@@ -1058,7 +1066,8 @@ def _updateTypesProjectClass(cls):
             raise ValueError(_("\"%s\" POU doesn't exist !!!") % name)
     setattr(cls, "removepouElement", removepouElement)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = []
         for datatype in self.dataTypes.getdataType():
             search_result.extend(datatype.Search(criteria, parent_infos))
@@ -1083,7 +1092,8 @@ def _updateBaseTypeElementName(self, old_name, new_name):
 def _updateDataTypeDataTypesClass(cls):
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = []
         filter = criteria["filter"]
         if filter == "all" or "datatype" in filter:
@@ -1114,7 +1124,8 @@ def _updateDataTypeClass(cls):
                 element.type.updateElementName(old_name, new_name)
     setattr(cls, "updateElementName", updateElementName)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = []
         content_name = self.content.getLocalTag()
         if content_name in ["derived", "array", "enum", "subrangeSigned", "subrangeUnsigned"]:
@@ -1144,7 +1155,8 @@ def _updateDerivedDataTypeClass(cls):
             self.name = new_name
     setattr(cls, "updateElementName", updateElementName)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         return [(tuple(parent_infos),) + result for result in TestTextElement(self.name, criteria)]
     setattr(cls, "Search", Search)
 
@@ -1160,7 +1172,8 @@ if cls:
 def _updateArrayDataTypeClass(cls):
     setattr(cls, "updateElementName", _updateBaseTypeElementName)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = self.baseType.Search(criteria, parent_infos)
         for i, dimension in enumerate(self.getdimension()):
             search_result.extend(_Search([("lower", dimension.getlower()),
@@ -1178,7 +1191,8 @@ if cls:
 # ----------------------------------------------------------------------
 
 
-def _SearchInSubrange(self, criteria, parent_infos=[]):
+def _SearchInSubrange(self, criteria, parent_infos=None):
+    parent_infos = [] if parent_infos is None else parent_infos
     search_result = self.baseType.Search(criteria, parent_infos)
     search_result.extend(_Search([("lower", self.range.getlower()),
                                   ("upper", self.range.getupper())],
@@ -1211,7 +1225,8 @@ def _updateEnumDataTypeClass(cls):
 
     enumerated_datatype_values_xpath = PLCOpen_XPath("ppx:values/ppx:value")
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = []
         for i, value in enumerate(enumerated_datatype_values_xpath(self)):
             for result in TestTextElement(value.getname(), criteria):
@@ -1604,7 +1619,8 @@ def _updatePouPousClass(cls):
                             content.remove(variable)
     setattr(cls, "removeVariableByFilter", removeVariableByFilter)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         search_result = []
         filter = criteria["filter"]
         if filter == "all" or self.getpouType() in filter:
@@ -1969,7 +1985,8 @@ def _updateBodyClass(cls):
                 element.updateElementAddress(address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         if self.content.getLocalTag() in ["IL", "ST"]:
             search_result = self.content.Search(criteria, parent_infos + ["body", 0])
         else:
@@ -2117,7 +2134,7 @@ def _updateElementAddress(self, address_model, new_leading):
     pass
 
 
-def _SearchInElement(self, criteria, parent_infos=[]):
+def _SearchInElement(self, criteria, parent_infos=None):
     return []
 
 
@@ -2174,7 +2191,8 @@ def _updateCommentCommonObjectsClass(cls):
         self.content.updateElementAddress(address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         return self.content.Search(criteria, parent_infos + ["comment", self.getlocalId(), "content"])
     setattr(cls, "Search", Search)
 
@@ -2218,7 +2236,8 @@ def _updateBlockFbdObjectsClass(cls):
             _translateConnections(input.connectionPointIn, dx, dy)
     setattr(cls, "translate", translate)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         parent_infos = parent_infos + ["block", self.getlocalId()]
         search_result = _Search([("name", self.getinstanceName()),
                                  ("type", self.gettypeName())],
@@ -2255,7 +2274,8 @@ def _UpdateLDElementAddress(self, address_model, new_leading):
 
 
 def _getSearchInLDElement(ld_element_type):
-    def SearchInLDElement(self, criteria, parent_infos=[]):
+    def SearchInLDElement(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         return _Search([("reference", self.variable)], criteria, parent_infos + [ld_element_type, self.getlocalId()])
     return SearchInLDElement
 
@@ -2284,7 +2304,8 @@ if cls:
 
 
 def _updateStepSfcObjectSingleClass(cls):
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         return _Search([("name", self.getname())], criteria, parent_infos + ["step", self.getlocalId()])
     setattr(cls, "Search", Search)
 
@@ -2396,7 +2417,8 @@ def _updateTransitionSfcObjectsClass(cls):
         return None
     setattr(cls, "getconnections", getconnections)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         parent_infos = parent_infos + ["transition", self.getlocalId()]
         search_result = []
         content = self.condition.getcontent()
@@ -2475,7 +2497,8 @@ def _updateActionActionBlockClass(cls):
             self.inline.updateElementAddress(address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         qualifier = self.getqualifier()
         if qualifier is None:
             qualifier = "N"
@@ -2548,7 +2571,8 @@ def _updateActionBlockCommonObjectsSingleClass(cls):
             action.updateElementAddress(address_model, new_leading)
     setattr(cls, "updateElementAddress", updateElementAddress)
 
-    def Search(self, criteria, parent_infos=[]):
+    def Search(self, criteria, parent_infos=None):
+        parent_infos = [] if parent_infos is None else parent_infos
         parent_infos = parent_infos + ["action_block", self.getlocalId()]
         search_result = []
         for idx, action in enumerate(self.action):
@@ -2565,7 +2589,8 @@ if cls:
 # ----------------------------------------------------------------------
 
 
-def _SearchInIOVariable(self, criteria, parent_infos=[]):
+def _SearchInIOVariable(self, criteria, parent_infos=None):
+    parent_infos = [] if parent_infos is None else parent_infos
     return _Search([("expression", self.expression)], criteria, parent_infos + ["io_variable", self.getlocalId()])
 
 
@@ -2597,7 +2622,8 @@ if cls:
     setattr(cls, "Search", _SearchInIOVariable)
 
 
-def _SearchInConnector(self, criteria, parent_infos=[]):
+def _SearchInConnector(self, criteria, parent_infos=None):
+    parent_infos = [] if parent_infos is None else parent_infos
     return _Search([("name", self.getname())], criteria, parent_infos + ["connector", self.getlocalId()])
 
 

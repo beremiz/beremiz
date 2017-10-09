@@ -221,6 +221,7 @@ pylint_checks()
     enable=$enable,W0612          # (unused-variable) Unused variable 'X'
     enable=$enable,W0611          # (unused-import) Unused import X
     enable=$enable,C1001          # (old-style-class) Old-style class defined. Problem with PyJS
+    enable=$enable,W0102          # (dangerous-default-value) Dangerous default value {} as argument
 
     # enable=$enable,W0403        # relative import
     # enable=
