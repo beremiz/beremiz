@@ -196,7 +196,7 @@ class LD_PowerRail(Graphic_Element):
         self.RefreshConnected()
 
     # Refresh the position of wires connected to power rail
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         for connector in self.Connectors:
             connector.MoveConnected(exclude)
 
@@ -506,7 +506,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         return LD_ELEMENT_SIZE
 
     # Refresh the position of wire connected to contact
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         self.Input.MoveConnected(exclude)
         self.Output.MoveConnected(exclude)
 
@@ -826,7 +826,7 @@ class LD_Coil(Graphic_Element):
         return LD_ELEMENT_SIZE
 
     # Refresh the position of wire connected to coil
-    def RefreshConnected(self, exclude=[]):
+    def RefreshConnected(self, exclude=None):
         self.Input.MoveConnected(exclude)
         self.Output.MoveConnected(exclude)
 

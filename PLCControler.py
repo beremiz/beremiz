@@ -2330,8 +2330,8 @@ class PLCControler(object):
             element.remove(copy_body)
         return text
 
-    def GenerateNewName(self, tagname, name, format, start_idx=0, exclude={}, debug=False):
-        names = exclude.copy()
+    def GenerateNewName(self, tagname, name, format, start_idx=0, exclude=None, debug=False):
+        names = {} if exclude is None else exclude.copy()
         if tagname is not None:
             names.update(dict([(varname.upper(), True)
                                for varname in self.GetEditedElementVariables(tagname, debug)]))

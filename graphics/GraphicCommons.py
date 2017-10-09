@@ -548,7 +548,7 @@ class Graphic_Element(ToolTipProducer):
             return 0, 0
 
     # Moves the element
-    def Move(self, dx, dy, exclude=[]):
+    def Move(self, dx, dy, exclude=None):
         self.Pos.x += max(-self.BoundingBox.x, dx)
         self.Pos.y += max(-self.BoundingBox.y, dy)
         self.RefreshConnected(exclude)
@@ -1305,7 +1305,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return len(self.Wires) > 0
 
     # Move the wires connected
-    def MoveConnected(self, exclude=[]):
+    def MoveConnected(self, exclude=None):
         if len(self.Wires) > 0:
             # Calculate the new position of the end point
             parent_pos = self.ParentBlock.GetPosition()
@@ -1313,7 +1313,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             y = parent_pos[1] + self.Pos.y + self.Direction[1] * CONNECTOR_SIZE
             # Move the corresponding point on all the wires connected
             for wire, index in self.Wires:
-                if wire not in exclude:
+                if (exclude is None) or (wire not in exclude):
                     if index == 0:
                         wire.MoveStartPoint(wx.Point(x, y))
                     else:
@@ -1625,7 +1625,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 rect = rect.Union(wx.Rect(x, y, width, height))
         return rect
 
-    def Clone(self, parent, connectors={}, dx=0, dy=0):
+    def Clone(self, parent, connectors=None, dx=0, dy=0):
+        connectors = {} if connectors is None else connectors
         start_connector = connectors.get(self.StartConnected, None)
         end_connector = connectors.get(self.EndConnected, None)
         if start_connector is not None and end_connector is not None:

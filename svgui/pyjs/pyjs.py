@@ -1636,12 +1636,13 @@ def dotreplace(fname):
 
 class AppTranslator(object):
 
-    def __init__(self, library_dirs=[], parser=None, dynamic=False,
+    def __init__(self, library_dirs=None, parser=None, dynamic=False,
                  optimize=False, verbose=True):
         self.extension = ".py"
         self.optimize = optimize
         self.library_modules = []
         self.overrides = {}
+        library_dirs = [] if library_dirs is None else library_dirs
         self.library_dirs = path + library_dirs
         self.dynamic = dynamic
         self.verbose = verbose
@@ -1675,7 +1676,7 @@ class AppTranslator(object):
         raise Exception("file not found: " + file_name)
 
     def _translate(self, module_name, is_app=True, debug=False,
-                   imported_js=set()):
+                   imported_js=None):
         if module_name not in self.library_modules:
             self.library_modules.append(module_name)
 
@@ -1701,6 +1702,8 @@ class AppTranslator(object):
                        self.findFile)
 
         module_str = output.getvalue()
+        if imported_js is None:
+            imported_js = set()
         imported_js.update(set(t.imported_js))
         imported_modules_str = ""
         for module in t.imported_modules:
@@ -1713,27 +1716,28 @@ class AppTranslator(object):
         return imported_modules_str + module_str
 
     def translate(self, module_name, is_app=True, debug=False,
-                  library_modules=[]):
+                  library_modules=None):
         app_code = cStringIO.StringIO()
         lib_code = cStringIO.StringIO()
         imported_js = set()
         self.library_modules = []
         self.overrides = {}
-        for library in library_modules:
-            if library.endswith(".js"):
-                imported_js.add(library)
-                continue
-            self.library_modules.append(library)
-            if self.verbose:
-                print('Including LIB', library)
-            print('\n//\n// BEGIN LIB '+library+'\n//\n', file=lib_code)
-            print(self._translate(library, False, debug=debug, imported_js=imported_js),
-                  file=lib_code)
+        if library_modules is not None:
+            for library in library_modules:
+                if library.endswith(".js"):
+                    imported_js.add(library)
+                    continue
+                self.library_modules.append(library)
+                if self.verbose:
+                    print('Including LIB', library)
+                print('\n//\n// BEGIN LIB '+library+'\n//\n', file=lib_code)
+                print(self._translate(library, False, debug=debug, imported_js=imported_js),
+                      file=lib_code)
 
-            print("/* initialize static library */", file=lib_code)
-            print("%s%s();\n" % (UU, library), file=lib_code)
+                print("/* initialize static library */", file=lib_code)
+                print("%s%s();\n" % (UU, library), file=lib_code)
 
-            print('\n//\n// END LIB '+library+'\n//\n', file=lib_code)
+                print('\n//\n// END LIB '+library+'\n//\n', file=lib_code)
         if module_name:
             print(self._translate(module_name, is_app, debug=debug, imported_js=imported_js),
                   file=app_code)

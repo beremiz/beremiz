@@ -240,12 +240,14 @@ def GenerateIntegerExtraction(minInclusive=None, maxInclusive=None,
     return GetInteger
 
 
-def GenerateFloatExtraction(type, extra_values=[]):
+def GenerateFloatExtraction(type, extra_values=None):
     """
     Function that generates an extraction function for float
     @param type: name of the type of float
     @return: function generated
     """
+    extra_values = [] if extra_values is None else extra_values
+
     def GetFloat(attr, extract=True):
         """
         Function that extracts a float from a tree node or a string

@@ -52,13 +52,14 @@ class DebugVariableViewer(object):
     This class has to be inherited to effectively display variable values
     """
 
-    def __init__(self, window, items=[]):
+    def __init__(self, window, items=None):
         """
         Constructor
         @param window: Reference to the Debug Variable Panel
         @param items: List of DebugVariableItem displayed by Viewer
         """
         self.ParentWindow = window
+        items = [] if items is None else items
         self.ItemsDict = OrderedDict([(item.GetVariable(), item)
                                       for item in items])
         self.Items = self.ItemsDict.viewvalues()

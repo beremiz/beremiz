@@ -148,7 +148,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
     Class that implements a Viewer that display variable values as a text
     """
 
-    def __init__(self, parent, window, items=[]):
+    def __init__(self, parent, window, items=None):
         """
         Constructor
         @param parent: Parent wx.Window of DebugVariableText

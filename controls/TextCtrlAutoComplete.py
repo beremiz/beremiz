@@ -37,11 +37,12 @@ else:
 
 class PopupWithListbox(wx.PopupWindow):
 
-    def __init__(self, parent, choices=[]):
+    def __init__(self, parent, choices=None):
         wx.PopupWindow.__init__(self, parent, wx.BORDER_SIMPLE)
 
         self.ListBox = wx.ListBox(self, -1, style=wx.LB_HSCROLL | wx.LB_SINGLE | wx.LB_SORT)
 
+        choices = [] if choices is None else choices
         self.SetChoices(choices)
 
         self.ListBox.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
