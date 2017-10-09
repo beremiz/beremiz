@@ -136,7 +136,7 @@ def uuprefix(name, leave_alone=0):
     return '.'.join(name)
 
 
-class Klass:
+class Klass(object):
 
     klasses = {}
 
@@ -192,7 +192,7 @@ def gen_mod_import(parentName, importName, dynamic=1):
         mod_var_name_decl(importName)
 
 
-class Translator:
+class Translator(object):
 
     def __init__(self, mn, module_name, raw_module_name, src, debug, mod, output,
                  dynamic=0, optimize=False,
@@ -1539,7 +1539,7 @@ def translate(file_name, module_name, debug=False):
     return output.getvalue()
 
 
-class PlatformParser:
+class PlatformParser(object):
     def __init__(self, platform_dir="", verbose=True):
         self.platform_dir = platform_dir
         self.parse_cache = {}
@@ -1634,7 +1634,7 @@ def dotreplace(fname):
     return path.replace(".", "/") + ext
 
 
-class AppTranslator:
+class AppTranslator(object):
 
     def __init__(self, library_dirs=[], parser=None, dynamic=False,
                  optimize=False, verbose=True):
