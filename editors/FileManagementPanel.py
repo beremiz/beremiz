@@ -22,13 +22,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import os
 import shutil
 
 import wx
 import wx.lib.buttons
 
-from EditorPanel import EditorPanel
+from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from controls import FolderTree
 

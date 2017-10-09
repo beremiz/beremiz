@@ -24,9 +24,11 @@
 
 # Package initialisation
 
-from GraphicCommons import *
-from FBD_Objects import *
-from LD_Objects import *
-from SFC_Objects import *
-from RubberBand import RubberBand
-from DebugDataConsumer import DebugDataConsumer
+from __future__ import absolute_import
+
+from graphics.GraphicCommons import *
+from graphics.FBD_Objects import *
+from graphics.LD_Objects import *
+from graphics.SFC_Objects import *
+from graphics.RubberBand import RubberBand
+from graphics.DebugDataConsumer import DebugDataConsumer

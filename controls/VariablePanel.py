@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import re
 from types import TupleType, StringType, UnicodeType
 
@@ -32,9 +34,9 @@ import wx.lib.buttons
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
 from dialogs.ArrayTypeDialog import ArrayTypeDialog
-from CustomGrid import CustomGrid
-from CustomTable import CustomTable
-from LocationCellEditor import LocationCellEditor
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
+from controls.LocationCellEditor import LocationCellEditor
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
 from PLCControler import _VariableInfos

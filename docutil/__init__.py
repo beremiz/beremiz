@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from dochtml import *
-from docpdf import *
-from docsvg import *
+
+from __future__ import absolute_import
+from docutil.dochtml import *
+from docutil.docpdf import *
+from docutil.docsvg import *

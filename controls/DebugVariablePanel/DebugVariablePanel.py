@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 from types import TupleType
 import numpy
 
@@ -37,9 +39,9 @@ from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
 from editors.DebugViewer import DebugViewer
 from util.BitmapLibrary import GetBitmap
 
-from DebugVariableItem import DebugVariableItem
-from DebugVariableTextViewer import DebugVariableTextViewer
-from DebugVariableGraphicViewer import *
+from controls.DebugVariablePanel.DebugVariableItem import DebugVariableItem
+from controls.DebugVariablePanel.DebugVariableTextViewer import DebugVariableTextViewer
+from controls.DebugVariablePanel.DebugVariableGraphicViewer import *
 
 
 MILLISECOND = 1000000        # Number of nanosecond in a millisecond

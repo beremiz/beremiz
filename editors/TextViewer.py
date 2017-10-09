@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import re
 from types import *
 
@@ -30,7 +32,7 @@ import wx.stc
 
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from plcopen.structures import ST_BLOCK_START_KEYWORDS, IEC_BLOCK_START_KEYWORDS, LOCATIONDATATYPES
-from EditorPanel import EditorPanel
+from editors.EditorPanel import EditorPanel
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos
 
 # -------------------------------------------------------------------------------

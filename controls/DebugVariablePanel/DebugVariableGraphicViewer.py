@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+
+from __future__ import absolute_import
 from types import TupleType
 from time import time as gettime
 from distutils.version import LooseVersion
@@ -36,8 +38,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from mpl_toolkits.mplot3d import Axes3D
 
 from editors.DebugViewer import REFRESH_PERIOD
-from DebugVariableViewer import *
-from GraphButton import GraphButton
+from controls.DebugVariablePanel.DebugVariableViewer import *
+from controls.DebugVariablePanel.GraphButton import GraphButton
 
 
 if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):

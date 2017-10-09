@@ -22,6 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from py_ext import *
-from PythonEditor import PythonEditor
-from PythonFileCTNMixin import PythonFileCTNMixin
+from __future__ import absolute_import
+from py_ext.py_ext import *
+from py_ext.PythonEditor import PythonEditor
+from py_ext.PythonFileCTNMixin import PythonFileCTNMixin

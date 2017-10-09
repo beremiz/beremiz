@@ -23,6 +23,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+
+from __future__ import absolute_import
 import os
 import re
 import util.paths as paths
@@ -30,7 +32,7 @@ import util.paths as paths
 from xmlclass import GenerateParserFromXSD
 
 from CodeFileTreeNode import CodeFile
-from PythonEditor import PythonEditor
+from py_ext.PythonEditor import PythonEditor
 
 
 class PythonFileCTNMixin(CodeFile):
