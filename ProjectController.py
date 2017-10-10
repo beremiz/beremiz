@@ -1170,7 +1170,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # Do generate
                 code = generator()
                 if code is None:
-                    raise
+                    raise Exception
                 code_path = os.path.join(buildpath, filename)
                 open(code_path, "w").write(code)
                 # Insert this file as first file to be compiled at root confnode
