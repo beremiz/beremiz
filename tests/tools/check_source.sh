@@ -201,6 +201,8 @@ pylint_checks()
     disable=$disable,W0613        # (unused-argument) Unused argument 'X'
     disable=$disable,W0622        # (redefined-builtin) Redefining built-in
     disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)    
+    disable=$disable,W0122        # (exec-used) Use of exec
+    disable=$disable,W0123        # (eval-used) Use of eval
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -230,6 +232,7 @@ pylint_checks()
     enable=$enable,W0102          # (dangerous-default-value) Dangerous default value {} as argument
     enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y'
     enable=$enable,C0112          # (empty-docstring)
+    enable=$enable,W0631          # (undefined-loop-variable) Using possibly undefined loop variable 'X'
     # enable=
 
     options=
