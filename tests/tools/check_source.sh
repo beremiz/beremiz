@@ -239,6 +239,7 @@ pylint_checks()
     enable=$enable,C0413          # (wrong-import-position) Import "import X" should be placed at the top of the module
     enable=$enable,E1305          # (too-many-format-args) Too many arguments for format string
     enable=$enable,E0704          # (misplaced-bare-raise) The raise statement is not inside an except clause
+    enable=$enable,C0123          # (unidiomatic-typecheck) Using type() instead of isinstance() for a typecheck.
     # enable=
 
     options=
