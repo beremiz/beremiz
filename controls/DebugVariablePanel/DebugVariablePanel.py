@@ -30,6 +30,8 @@ import numpy
 import wx
 import wx.lib.buttons
 
+
+# pylint: disable=wrong-import-position
 import matplotlib
 matplotlib.use('WX')   # noqa
 import matplotlib.pyplot

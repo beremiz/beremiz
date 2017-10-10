@@ -236,6 +236,7 @@ pylint_checks()
     enable=$enable,W0104          # (pointless-statement) Statement seems to have no effect
     enable=$enable,W0107          # (unnecessary-pass) Unnecessary pass statement
     enable=$enable,W0406          # (import-self) Module import itself
+    enable=$enable,C0413          # (wrong-import-position) Import "import X" should be placed at the top of the module
     # enable=
 
     options=
