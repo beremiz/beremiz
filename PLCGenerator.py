@@ -995,7 +995,7 @@ class PouProgramGenerator(object):
         uncomputed_index = range(len(paths))
         factorized_paths = []
         for num, path in enumerate(paths):
-            if type(path) == ListType:
+            if isinstance(path, ListType):
                 if len(path) > 1:
                     str_path = str(path[-1:])
                     same_paths.setdefault(str_path, [])
@@ -1261,7 +1261,7 @@ class PouProgramGenerator(object):
                         paths.append([variable, tuple(factorized_paths)])
                     else:
                         paths.append([variable] + factorized_paths)
-                elif type(result[0]) == ListType:
+                elif isinstance(result[0], ListType):
                     paths.append([variable] + result[0])
                 elif result[0] is not None:
                     paths.append([variable, result[0]])
@@ -1272,7 +1272,7 @@ class PouProgramGenerator(object):
         return paths
 
     def ComputePaths(self, paths, first=False):
-        if type(paths) == TupleType:
+        if isinstance(paths, TupleType):
             if None in paths:
                 return [("TRUE", ())]
             else:
@@ -1281,7 +1281,7 @@ class PouProgramGenerator(object):
                     return JoinList([(" OR ", ())], vars)
                 else:
                     return [("(", ())] + JoinList([(" OR ", ())], vars) + [(")", ())]
-        elif type(paths) == ListType:
+        elif isinstance(paths, ListType):
             vars = [self.ComputePaths(path) for path in paths]
             return JoinList([(" AND ", ())], vars)
         elif paths is None:
