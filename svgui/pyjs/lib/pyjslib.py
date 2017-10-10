@@ -21,8 +21,6 @@ from __pyjamas__ import JS
 
 
 def import_module(path, parent_module, module_name, dynamic=1, async=False):
-    """
-    """
 
     JS("""
         var cache_file;

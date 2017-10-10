@@ -192,17 +192,23 @@ pylint_checks()
     export PYTHONPATH="$PWD/../CanFestival-3/objdictgen":$PYTHONPATH
 
     disable=
+    # These warnings most likely will not be fixed
+
     disable=$disable,C0103        # invalid-name
-    disable=$disable,C0111        # missing-docstring
-    disable=$disable,W0703        # broad-except
     disable=$disable,C0326        # bad whitespace
-    disable=$disable,C0301        # Line too long
-    disable=$disable,C0302        # Too many lines in module
-    disable=$disable,W0511        # fixme
     disable=$disable,W0110        # (deprecated-lambda) map/filter on lambda could be replaced by comprehension
     disable=$disable,W1401        # (anomalous-backslash-in-string) Anomalous backslash in string: '\.'. String constant might be missing an r prefix.
     disable=$disable,W0613        # (unused-argument) Unused argument 'X'
     disable=$disable,W0622        # (redefined-builtin) Redefining built-in
+    disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)    
+
+    # It'd be nice to fix warnings below some day
+    disable=$disable,C0111        # missing-docstring
+    disable=$disable,W0703        # broad-except
+    disable=$disable,C0301        # Line too long
+    disable=$disable,C0302        # Too many lines in module
+    disable=$disable,W0511        # fixme    
+
     
     enable=
     enable=$enable,E1601          # print statement used
@@ -223,6 +229,7 @@ pylint_checks()
     enable=$enable,C1001          # (old-style-class) Old-style class defined. Problem with PyJS
     enable=$enable,W0102          # (dangerous-default-value) Dangerous default value {} as argument
     enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y'
+    enable=$enable,C0112          # (empty-docstring)
     # enable=
 
     options=
