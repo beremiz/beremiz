@@ -297,6 +297,7 @@ def ComputeTabsLayout(tabs, rect):
     if len(tabs) == 1:
         return tabs[0]
     split = None
+    split_id = None
     for idx, tab in enumerate(tabs):
         if len(tab["pages"]) == 0:
             raise ValueError("Not possible")
@@ -309,6 +310,7 @@ def ComputeTabsLayout(tabs, rect):
                 split = (wx.BOTTOM, 1.0 - float(tab["size"][1]) / float(rect.height))
                 split_rect = wx.Rect(rect.x, rect.y,
                                      rect.width, rect.height - tab["size"][1] - TAB_BORDER)
+            split_id = idx
             break
         elif tab["size"][1] == rect.height:
             if tab["pos"][0] == rect.x:
@@ -319,9 +321,10 @@ def ComputeTabsLayout(tabs, rect):
                 split = (wx.RIGHT, 1.0 - float(tab["size"][0]) / float(rect.width))
                 split_rect = wx.Rect(rect.x, rect.y,
                                      rect.width - tab["size"][0] - TAB_BORDER, rect.height)
+            split_id = id
             break
     if split is not None:
-        split_tab = tabs.pop(idx)
+        split_tab = tabs.pop(split_id)
         return {"split": split,
                 "tab": split_tab,
                 "others": ComputeTabsLayout(tabs, split_rect)}
@@ -331,7 +334,7 @@ def ComputeTabsLayout(tabs, rect):
     return tabs
 
 
-UNEDITABLE_NAMES_DICT = dict([(_(name), name) for name in UNEDITABLE_NAMES])
+UNEDITABLE_NAMES_DICT = dict([(_(n), n) for n in UNEDITABLE_NAMES])
 
 
 class IDEFrame(wx.Frame):
