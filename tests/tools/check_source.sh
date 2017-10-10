@@ -233,6 +233,7 @@ pylint_checks()
     enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y'
     enable=$enable,C0112          # (empty-docstring)
     enable=$enable,W0631          # (undefined-loop-variable) Using possibly undefined loop variable 'X'
+    enable=$enable,W0104          # (pointless-statement) Statement seems to have no effect
     # enable=
 
     options=

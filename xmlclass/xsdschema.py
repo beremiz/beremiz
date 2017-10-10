@@ -152,7 +152,7 @@ def ReduceUnion(factory, attributes, elements):
 
     for child in children:
         if child["type"] == SIMPLETYPE:
-            union["memberTypes"].appendchild
+            union["memberTypes"].append(child)
     if len(union["memberTypes"]) == 0:
         raise ValueError("No base type has been defined for union!")
     return union
