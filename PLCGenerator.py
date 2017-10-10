@@ -1064,7 +1064,7 @@ class PouProgramGenerator(object):
                             if parameter in inout_variables:
                                 expression = self.ComputeExpression(body, connections, executionOrderId > 0, True)
                                 if expression is not None:
-                                    inout_variables[parameter] = value
+                                    inout_variables[parameter] = expression
                             else:
                                 expression = self.ComputeExpression(body, connections, executionOrderId > 0)
                             if expression is not None:
