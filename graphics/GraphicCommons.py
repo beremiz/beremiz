@@ -1647,9 +1647,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def SetSize(width, height):
         pass
 
-    # Forbids to et size of the group elements to their minimum size
-        pass
-
     # Moves and Resizes the element for fitting scaling
     def SetBestSize(self, scaling):
         if scaling is not None:
