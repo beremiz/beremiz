@@ -1231,7 +1231,7 @@ def ComputeMultiplicity(name, infos):
             return "(?:%s){1,%d}" % (name, infos["maxOccurs"])
     else:
         if infos["maxOccurs"] == "unbounded":
-            return "(?:%s){%d,}" % (name, infos["minOccurs"], name)
+            return "(?:%s){%d,}" % (name, infos["minOccurs"])
         else:
             return "(?:%s){%d,%d}" % (name,
                                       infos["minOccurs"],
