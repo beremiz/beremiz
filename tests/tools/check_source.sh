@@ -235,6 +235,7 @@ pylint_checks()
     enable=$enable,W0631          # (undefined-loop-variable) Using possibly undefined loop variable 'X'
     enable=$enable,W0104          # (pointless-statement) Statement seems to have no effect
     enable=$enable,W0107          # (unnecessary-pass) Unnecessary pass statement
+    enable=$enable,W0406          # (import-self) Module import itself
     # enable=
 
     options=

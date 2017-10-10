@@ -23,6 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from __future__ import absolute_import
-from py_ext.py_ext import *
-from py_ext.PythonEditor import PythonEditor
-from py_ext.PythonFileCTNMixin import PythonFileCTNMixin
+from .py_ext import *
+from .PythonEditor import PythonEditor
+from .PythonFileCTNMixin import PythonFileCTNMixin
