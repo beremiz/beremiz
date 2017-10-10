@@ -234,6 +234,7 @@ pylint_checks()
     enable=$enable,C0112          # (empty-docstring)
     enable=$enable,W0631          # (undefined-loop-variable) Using possibly undefined loop variable 'X'
     enable=$enable,W0104          # (pointless-statement) Statement seems to have no effect
+    enable=$enable,W0107          # (unnecessary-pass) Unnecessary pass statement
     # enable=
 
     options=
