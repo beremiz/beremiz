@@ -232,7 +232,7 @@ def preload_app_modules(path, app_modnames, app_imported_fn, dynamic,
 
 # as comment on line 20 says
 # import sys should be below
-import sys  # noqa # pylint: disable=C0411,W0611
+import sys  # noqa # pylint: disable=wrong-import-order,unused-import,wrong-import-position
 
 
 class BaseException:
