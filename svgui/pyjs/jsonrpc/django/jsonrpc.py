@@ -6,7 +6,7 @@ import datetime
 from django.core.serializers import serialize
 
 
-from pyjs.jsonrpc import JSONRPCServiceBase
+from svgui.pyjs.jsonrpc.jsonrpc import JSONRPCServiceBase
 # JSONRPCService and jsonremote are used in combination to drastically
 # simplify the provision of JSONRPC services.  use as follows:
 #
