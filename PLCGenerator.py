@@ -1018,6 +1018,23 @@ class PouProgramGenerator(object):
         return factorized_paths
 
     def GenerateBlock(self, block, block_infos, body, link, order=False, to_inout=False):
+
+        def _GetBlockName(name, type):
+            """function returns name of function or function block instance"""
+            if name:
+                # function blocks
+                blockname = "{a1}({a2})".format(a1=name, a2=type)
+            else:
+                # functions
+                blockname = type
+            return blockname
+
+        def _RaiseUnconnectedInOutError(name, type, parameter, place):
+            blockname = _GetBlockName(name, type)
+            raise ValueError(
+                _("InOut variable {a1} in block {a2} in POU {a3} must be connected.").
+                format(a1=parameter, a2=blockname, a3=place))
+
         name = block.getinstanceName()
         type = block.gettypeName()
         executionOrderId = block.getexecutionOrderId()
@@ -1065,6 +1082,8 @@ class PouProgramGenerator(object):
                                 expression = self.ComputeExpression(body, connections, executionOrderId > 0, True)
                                 if expression is not None:
                                     inout_variables[parameter] = expression
+                                else:
+                                    _RaiseUnconnectedInOutError(name, type, parameter, self.Name)
                             else:
                                 expression = self.ComputeExpression(body, connections, executionOrderId > 0)
                             if expression is not None:
@@ -1128,6 +1147,8 @@ class PouProgramGenerator(object):
                             if expression is not None:
                                 vars.append([(parameter, input_info),
                                              (" := ", ())] + self.ExtractModifier(variable, expression, input_info))
+                            elif parameter in inout_variables:
+                                _RaiseUnconnectedInOutError(name, type, parameter, self.Name)
                 self.Program += [(self.CurrentIndent, ()),
                                  (name, (self.TagName, "block", block.getlocalId(), "name")),
                                  ("(", ())]
@@ -1164,7 +1185,14 @@ class PouProgramGenerator(object):
             if block_infos["type"] == "function":
                 output_info = (self.TagName, "block", block.getlocalId(), "output", output_idx)
                 if output_parameter in inout_variables:
-                    output_value = inout_variables[output_parameter]
+                    for variable in input_variables:
+                        if variable.getformalParameter() == output_parameter:
+                            connections = variable.connectionPointIn.getconnections()
+                            if connections is not None:
+                                expression = self.ComputeExpression(
+                                    body, connections, executionOrderId > 0, True)
+                                output_value = expression
+                                break
                 else:
                     if output_parameter == "":
                         output_name = "%s%d" % (type, block.getlocalId())
@@ -1172,7 +1200,6 @@ class PouProgramGenerator(object):
                         output_name = "%s%d_%s" % (type, block.getlocalId(), output_parameter)
                     output_value = [(output_name, output_info)]
                 return self.ExtractModifier(output_variable, output_value, output_info)
-
             if block_infos["type"] == "functionBlock":
                 output_info = (self.TagName, "block", block.getlocalId(), "output", output_idx)
                 output_name = self.ExtractModifier(output_variable, [("%s.%s" % (name, output_parameter), output_info)], output_info)
@@ -1195,10 +1222,7 @@ class PouProgramGenerator(object):
         if link is not None:
             if output_parameter is None:
                 output_parameter = ""
-            if name:
-                blockname = "{a1}({a2})".format(a1=name, a2=type)
-            else:
-                blockname = type
+            blockname = _GetBlockName(name, type)
             raise ValueError(
                 _("No output {a1} variable found in block {a2} in POU {a3}. Connection must be broken").
                 format(a1=output_parameter, a2=blockname, a3=self.Name))
