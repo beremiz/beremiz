@@ -210,7 +210,16 @@ pylint_checks()
     disable=$disable,C0301        # Line too long
     disable=$disable,C0302        # Too many lines in module
     disable=$disable,W0511        # fixme    
-
+    disable=$disable,R0901        # (too-many-ancestors) Too many ancestors (9/7)
+    disable=$disable,R0902        # (too-many-instance-attributes) Too many instance attributes (10/7)
+    disable=$disable,R0903        # (too-few-public-methods) Too few public methods (0/2)
+    disable=$disable,R0904        # (too-many-public-methods) Too many public methods (41/20)
+    disable=$disable,R0911        # (too-many-return-statements) Too many return statements (7/6)
+    disable=$disable,R0912        # (too-many-branches) Too many branches (61/12)
+    disable=$disable,R0913        # (too-many-arguments) Too many arguments (6/5)
+    disable=$disable,R0914        # (too-many-locals) Too many local variables (18/15)
+    disable=$disable,R0915        # (too-many-statements) Too many statements (57/50)
+    disable=$disable,R0916        # (too-many-boolean-expressions) Too many boolean expressions in if statement (6/5)
     
     enable=
     enable=$enable,E1601          # print statement used
@@ -244,6 +253,7 @@ pylint_checks()
     enable=$enable,E1120          # (no-value-for-parameter) No value for argument 'X' in function call
     enable=$enable,E0701          # (bad-except-order) Bad except clauses order (X is an ancestor class of Y)
     enable=$enable,E0611          # (no-name-in-module) No name 'X' in module 'Y'
+    enable=$enable,E0213          # (no-self-argument) Method should have "self" as first argument
     # enable=
 
     options=

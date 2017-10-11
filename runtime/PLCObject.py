@@ -277,24 +277,25 @@ class PLCObject(pyro.ObjBase):
         MethodNames = ["init", "start", "stop", "cleanup"]
         self.python_runtime_vars = globals().copy()
         self.python_runtime_vars.update(self.pyruntimevars)
+        parent = self
 
         class PLCSafeGlobals(object):
-            def __getattr__(_self, name):
+            def __getattr__(self, name):
                 try:
-                    t = self.python_runtime_vars["_"+name+"_ctype"]
+                    t = parent.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
                     raise KeyError("Try to get unknown shared global variable : %s" % name)
                 v = t()
-                self.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
-                return self.python_runtime_vars["_"+name+"_unpack"](v)
+                parent.python_runtime_vars["_PySafeGetPLCGlob_"+name](ctypes.byref(v))
+                return parent.python_runtime_vars["_"+name+"_unpack"](v)
 
-            def __setattr__(_self, name, value):
+            def __setattr__(self, name, value):
                 try:
-                    t = self.python_runtime_vars["_"+name+"_ctype"]
+                    t = parent.python_runtime_vars["_"+name+"_ctype"]
                 except KeyError:
                     raise KeyError("Try to set unknown shared global variable : %s" % name)
-                v = self.python_runtime_vars["_"+name+"_pack"](t, value)
-                self.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
+                v = parent.python_runtime_vars["_"+name+"_pack"](t, value)
+                parent.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
 
         self.python_runtime_vars.update({
             "PLCGlobals":     PLCSafeGlobals(),

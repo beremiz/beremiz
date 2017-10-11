@@ -547,55 +547,54 @@ class ConfigTreeNode(object):
             This way __init__ is overloaded to ensure ConfigTreeNode.__init__ is called
             before CTNClass.__init__, and to do the file related stuff.
             """
-            def __init__(_self):
-                # self is the parent
-                _self.CTNParent = self
+            def __init__(self, parent):
+                self.CTNParent = parent
                 # Keep track of the confnode type name
-                _self.CTNType = CTNType
+                self.CTNType = CTNType
                 # remind the help string, for more fancy display
-                _self.CTNHelp = CTNHelp
+                self.CTNHelp = CTNHelp
                 # Call the base confnode template init - change XSD into class members
-                ConfigTreeNode.__init__(_self)
+                ConfigTreeNode.__init__(self)
                 # check name is unique
-                NewCTNName = _self.FindNewName(CTNName)
+                NewCTNName = self.FindNewName(CTNName)
                 # If dir have already be made, and file exist
-                if os.path.isdir(_self.CTNPath(NewCTNName)):  # and os.path.isfile(_self.ConfNodeXmlFilePath(CTNName)):
+                if os.path.isdir(self.CTNPath(NewCTNName)):  # and os.path.isfile(self.ConfNodeXmlFilePath(CTNName)):
                     # Load the confnode.xml file into parameters members
-                    _self.LoadXMLParams(NewCTNName)
+                    self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
-                    if _self.BaseParams.getName() != NewCTNName:
+                    if self.BaseParams.getName() != NewCTNName:
                         raise Exception(
                             _("Project tree layout do not match confnode.xml {a1}!={a2} ").
-                            format(a1=NewCTNName, a2=_self.BaseParams.getName()))
+                            format(a1=NewCTNName, a2=self.BaseParams.getName()))
 
                     # Now, self.CTNPath() should be OK
 
                     # Check that IEC_Channel is not already in use.
-                    _self.FindNewIEC_Channel(_self.BaseParams.getIEC_Channel())
+                    self.FindNewIEC_Channel(self.BaseParams.getIEC_Channel())
                     # Call the confnode real __init__
                     if getattr(CTNClass, "__init__", None):
-                        CTNClass.__init__(_self)
+                        CTNClass.__init__(self)
                     # Load and init all the children
-                    _self.LoadChildren()
+                    self.LoadChildren()
                     # just loaded, nothing to saved
-                    _self.ChangesToSave = False
+                    self.ChangesToSave = False
                 else:
                     # If confnode do not have corresponding file/dirs - they will be created on Save
-                    _self.CTNMakeDir()
+                    self.CTNMakeDir()
                     # Find an IEC number
-                    _self.FindNewIEC_Channel(IEC_Channel)
+                    self.FindNewIEC_Channel(IEC_Channel)
                     # Call the confnode real __init__
                     if getattr(CTNClass, "__init__", None):
-                        CTNClass.__init__(_self)
-                    _self.CTNRequestSave()
+                        CTNClass.__init__(self)
+                    self.CTNRequestSave()
                     # just created, must be saved
-                    _self.ChangesToSave = True
+                    self.ChangesToSave = True
 
-            def _getBuildPath(_self):
-                return self._getBuildPath()
+            def _getBuildPath(self):
+                return self.CTNParent._getBuildPath()
 
         # Create the object out of the resulting class
-        newConfNodeOpj = FinalCTNClass()
+        newConfNodeOpj = FinalCTNClass(self)
         # Store it in CTNgedChils
         ChildrenWithSameClass.append(newConfNodeOpj)
 

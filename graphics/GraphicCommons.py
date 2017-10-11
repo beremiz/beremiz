@@ -916,7 +916,7 @@ class Graphic_Group(Graphic_Element):
         self.Size = wx.Size(self.BoundingBox.width, self.BoundingBox.height)
 
     # Forbids to change the group position
-    def SetPosition(x, y):
+    def SetPosition(self, x, y):
         pass
 
     # Returns the position of this group
@@ -937,7 +937,7 @@ class Graphic_Group(Graphic_Element):
         return self.BoundingBox.x, self.BoundingBox.y
 
     # Forbids to change the group size
-    def SetSize(width, height):
+    def SetSize(self, width, height):
         pass
 
     # Returns the size of this group
@@ -1640,11 +1640,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
         return None
 
     # Forbids to change the wire position
-    def SetPosition(x, y):
+    def SetPosition(self, x, y):
         pass
 
     # Forbids to change the wire size
-    def SetSize(width, height):
+    def SetSize(self, width, height):
         pass
 
     # Moves and Resizes the element for fitting scaling
