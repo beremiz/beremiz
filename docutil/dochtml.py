@@ -62,7 +62,7 @@ class UrlClickHtmlWindow(wx.html.HtmlWindow):
         if event == HtmlWindowUrlClick:
             self.Connect(-1, -1, EVT_HTML_URL_CLICK, handler)
         else:
-            wx.html.HtmlWindow.Bind(event, handler, source=source, id=id, id2=id2)
+            wx.html.HtmlWindow.Bind(self, event, handler, source=source, id=id, id2=id2)
 
 
 class HtmlFrame(wx.Frame):

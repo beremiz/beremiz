@@ -537,7 +537,7 @@ class SFC_Viewer(Viewer):
 
     def AddDivergence(self):
         if self.SelectedElement in self.Wires or isinstance(self.SelectedElement, Graphic_Group) or isinstance(self.SelectedElement, SFC_Step):
-            dialog = SFCDivergenceDialog(self.ParentWindow)
+            dialog = SFCDivergenceDialog(self.ParentWindow, self.Controler, self.TagName)
             dialog.SetPreviewFont(self.GetFont())
             if dialog.ShowModal() == wx.ID_OK:
                 value = dialog.GetValues()
