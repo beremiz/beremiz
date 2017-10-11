@@ -1,4 +1,4 @@
-from pyjs.jsonrpc import JSONRPCServiceBase
+from svgui.pyjs.jsonrpc.jsonrpc import JSONRPCServiceBase
 
 
 class JSONRPCService(JSONRPCServiceBase):
