@@ -490,7 +490,7 @@ class LD_Viewer(Viewer):
     # -------------------------------------------------------------------------------
 
     def AddLadderRung(self):
-        dialog = LDElementDialog(self.ParentWindow, self.Controler, "coil")
+        dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "coil")
         dialog.SetPreviewFont(self.GetFont())
         varlist = []
         vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
@@ -590,7 +590,7 @@ class LD_Viewer(Viewer):
                 for element in self.SelectedElement.GetElements():
                     wires.append(element)
         if len(wires) > 0:
-            dialog = LDElementDialog(self.ParentWindow, self.Controler, "contact")
+            dialog = LDElementDialog(self.ParentWindow, self.Controler, self.TagName, "contact")
             dialog.SetPreviewFont(self.GetFont())
             varlist = []
             vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)
@@ -804,7 +804,7 @@ class LD_Viewer(Viewer):
                             new_wire.ConnectEndPoint(None, connectors["outputs"][index + 1])
                         right_elements.reverse()
                     elif right_powerrail:
-                        dialog = LDElementDialog(self.ParentWindow, self.Controleur, "coil")
+                        dialog = LDElementDialog(self.ParentWindow, self.Controleur, self.TagName, "coil")
                         dialog.SetPreviewFont(self.GetFont())
                         varlist = []
                         vars = self.Controler.GetEditedElementInterfaceVars(self.TagName, debug=self.Debug)

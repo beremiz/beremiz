@@ -1167,7 +1167,7 @@ def _isinstance(object_, classinfo):
     """)
 
 
-def getattr(obj, name, default_):
+def getattr(obj, name, default_=None):
     JS("""
     if ((!pyjslib.isObject(obj))||(pyjslib.isUndefined(obj[name]))){
         if (pyjslib.isUndefined(default_)){

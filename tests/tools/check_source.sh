@@ -240,7 +240,8 @@ pylint_checks()
     enable=$enable,E1305          # (too-many-format-args) Too many arguments for format string
     enable=$enable,E0704          # (misplaced-bare-raise) The raise statement is not inside an except clause
     enable=$enable,C0123          # (unidiomatic-typecheck) Using type() instead of isinstance() for a typecheck.
-    enable=$enable,E0601          # (used-before-assignment)
+    enable=$enable,E0601          # (used-before-assignment) Using variable 'X' before assignment
+    enable=$enable,E1120          # (no-value-for-parameter) No value for argument 'X' in function call
     # enable=
 
     options=

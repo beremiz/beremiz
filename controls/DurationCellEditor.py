@@ -142,4 +142,4 @@ class DurationCellEditor(wx.grid.PyGridCellEditor):
                                        wx.SIZE_ALLOW_MINUS_ONE)
 
     def Clone(self):
-        return DurationCellEditor(self.Table)
+        return DurationCellEditor(self.Table, self.Colname)
