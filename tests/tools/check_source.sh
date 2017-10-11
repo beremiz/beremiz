@@ -242,6 +242,7 @@ pylint_checks()
     enable=$enable,C0123          # (unidiomatic-typecheck) Using type() instead of isinstance() for a typecheck.
     enable=$enable,E0601          # (used-before-assignment) Using variable 'X' before assignment
     enable=$enable,E1120          # (no-value-for-parameter) No value for argument 'X' in function call
+    enable=$enable,E0701          # (bad-except-order) Bad except clauses order (X is an ancestor class of Y)
     # enable=
 
     options=
