@@ -315,10 +315,7 @@ class SearchResultPanel(wx.Panel):
             text_ctrl.SetStyle(start_idx, end_idx, style)
             self.SearchResultsTree.SetItemWindow(root, text_ctrl)
 
-        if wx.VERSION >= (2, 6, 0):
-            item, root_cookie = self.SearchResultsTree.GetFirstChild(root)
-        else:
-            item, root_cookie = self.SearchResultsTree.GetFirstChild(root, 0)
+        item, root_cookie = self.SearchResultsTree.GetFirstChild(root)
         for child in infos["children"]:
             if item is None:
                 item = self.SearchResultsTree.AppendItem(root, "")

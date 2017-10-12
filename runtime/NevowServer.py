@@ -157,7 +157,7 @@ class WebInterface(athena.LivePage):
         """
         Force content type to fit with SVG
         """
-        req = inevow.IRequest(ctx)
+        req = ctx.locate(inevow.IRequest)
         req.setHeader('Content-type', 'application/xhtml+xml')
         return super(WebInterface, self).renderHTTP(ctx)
 

@@ -255,6 +255,7 @@ pylint_checks()
     enable=$enable,E0611          # (no-name-in-module) No name 'X' in module 'Y'
     enable=$enable,E0213          # (no-self-argument) Method should have "self" as first argument
     enable=$enable,E0401          # (import-error) Unable to import 'X'
+    enable=$enable,E1121          # (too-many-function-args) Too many positional arguments for function call
     # enable=
 
     options=
