@@ -363,7 +363,7 @@ class Graphic_Element(ToolTipProducer):
         pass
 
     # Refresh the position of wires connected to element inputs and outputs
-    def RefreshConnected(self):
+    def RefreshConnected(self, exclude=None):
         pass
 
     # Change the parent
