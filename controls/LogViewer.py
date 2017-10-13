@@ -399,7 +399,7 @@ class LogViewer(DebugViewer, wx.Panel):
         self.CleanButton.Enable(self.LogSource is not None)
         if log_source is not None:
             self.ResetLogMessages()
-            self.RefreshView()
+            wx.CallAfter(self.RefreshView)
 
     def GetLogMessageFromSource(self, msgidx, level):
         if self.LogSource is not None:
