@@ -284,12 +284,18 @@ class SFC_Viewer(Viewer):
                 self.SelectedElement.OnLeftUp(event, self.GetLogicalDC(), self.Scaling)
                 self.SelectedElement.Refresh()
             wx.CallAfter(self.SetCurrentCursor, 0)
-        elif self.Mode == MODE_WIRE and self.SelectedElement:
-            self.SelectedElement.ResetPoints()
-            self.SelectedElement.OnMotion(event, self.GetLogicalDC(), self.Scaling)
-            self.SelectedElement.GeneratePoints()
-            self.SelectedElement.RefreshModel()
-            self.SelectedElement.SetSelected(True)
+        #
+        # FIXME:
+        # This code was forgotten by commit
+        # 9c74d00ce93e from plcopeneditor_history repository
+        # 'Last bugs on block and wire moving, resizing with cursor fixed'
+        #
+        # elif self.Mode == MODE_WIRE and self.SelectedElement:
+        #     self.SelectedElement.ResetPoints()
+        #     self.SelectedElement.OnMotion(event, self.GetLogicalDC(), self.Scaling)
+        #     self.SelectedElement.GeneratePoints()
+        #     self.SelectedElement.RefreshModel()
+        #     self.SelectedElement.SetSelected(True)
         event.Skip()
 
     def OnViewerRightUp(self, event):
@@ -328,11 +334,17 @@ class SFC_Viewer(Viewer):
                 if not self.IsWire(self.SelectedElement) and not isinstance(self.SelectedElement, Graphic_Group):
                     self.SelectedElement.OnMotion(event, self.GetLogicalDC(), self.Scaling)
                     self.SelectedElement.Refresh()
-            elif self.Mode == MODE_WIRE and self.SelectedElement:
-                self.SelectedElement.ResetPoints()
-                self.SelectedElement.OnMotion(event, self.GetLogicalDC(), self.Scaling)
-                self.SelectedElement.GeneratePoints()
-                self.SelectedElement.Refresh()
+            #
+            # FIXME:
+            # This code was forgotten by commit
+            # 9c74d00ce93e from plcopeneditor_history repository
+            # 'Last bugs on block and wire moving, resizing with cursor fixed'
+            #
+            # elif self.Mode == MODE_WIRE and self.SelectedElement:
+            #     self.SelectedElement.ResetPoints()
+            #     self.SelectedElement.OnMotion(event, self.GetLogicalDC(), self.Scaling)
+            #     self.SelectedElement.GeneratePoints()
+            #     self.SelectedElement.Refresh()
             self.UpdateScrollPos(event)
         event.Skip()
 

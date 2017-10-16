@@ -28,6 +28,10 @@ import os
 import sys
 import getopt
 import time
+
+import wx
+from wx.lib.agw.advancedsplash import AdvancedSplash
+
 import util.paths as paths
 
 
@@ -47,7 +51,6 @@ class BeremizIDELauncher(object):
         return os.path.join(self.app_dir, *args)
 
     def ShowSplashScreen(self):
-        from wx.lib.agw.advancedsplash import AdvancedSplash
         bmp = wx.Image(self.splashPath).ConvertToBitmap()
         self.splash = AdvancedSplash(None, bitmap=bmp)
 
@@ -110,9 +113,6 @@ class BeremizIDELauncher(object):
 
     def CreateApplication(self):
         BMZ_DBG = os.path.exists("BEREMIZ_DEBUG")
-
-        global wx
-        import wx
 
         if wx.VERSION >= (3, 0, 0):
             self.app = wx.App(redirect=BMZ_DBG)
@@ -177,6 +177,7 @@ class BeremizIDELauncher(object):
         util.ExceptionHandler.AddExceptHook(version.app_version)
 
     def ShowUI(self):
+        import BeremizIDE
         self.frame = BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
         if self.splash:
             self.splash.Close()

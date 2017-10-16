@@ -376,7 +376,7 @@ def CreateSimpleType(factory, attributes, typeinfos):
                     elif facetname == "length":
                         return " "*facetvalue
                     elif facetname == "minLength":
-                        return " "*minLength
+                        return " "*facetvalue
                     elif facetname == "minInclusive" and facetvalue > 0:
                         return facetvalue
                     elif facetname == "minExclusive" and facetvalue >= 0:
@@ -567,7 +567,7 @@ def ReduceExtension(factory, attributes, elements):
                 content["name"] = "content"
                 extension["elements"].append(content)
             elif group["type"] == "group":
-                elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
+                elmtgroup = factory.FindSchemaElement(group["ref"], ELEMENTSGROUP)
                 if "elements" in elmtgroup:
                     extension["elements"] = elmtgroup["elements"]
                     extension["order"] = elmtgroup["order"]
@@ -650,7 +650,7 @@ def ReduceComplexType(factory, attributes, elements):
                 content["name"] = "content"
                 complexType["elements"].append(content)
             elif group["type"] == "group":
-                elmtgroup = factory.FindSchemaElement(child["ref"], ELEMENTSGROUP)
+                elmtgroup = factory.FindSchemaElement(group["ref"], ELEMENTSGROUP)
                 if "elements" in elmtgroup:
                     complexType["elements"] = elmtgroup["elements"]
                     complexType["order"] = elmtgroup["order"]
@@ -758,7 +758,7 @@ def ReduceElement(factory, attributes, elements):
             element["maxOccurs"] = attributes["maxOccurs"]
             return element
         else:
-            raise ValueError("\"%s\" base type isn't defined or circular referenced!" % name)
+            raise ValueError("\"%s\" base type isn't defined or circular referenced!" % attributes["ref"])
 
     elif "name" in attributes:
         element = {"type": ELEMENT, "elmt_type": attributes.get("type", None), "constraints": constraints, "doc": annotations}

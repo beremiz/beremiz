@@ -83,12 +83,12 @@ class xml_timezone(datetime.tzinfo):
 
     def SetOffset(self, offset):
         if offset == "Z":
-            self.__offset = timedelta(minutes=0)
+            self.__offset = datetime.timedelta(minutes=0)
             self.__name = "UTC"
         else:
             sign = {"-": -1, "+": 1}[offset[0]]
             hours, minutes = [int(val) for val in offset[1:].split(":")]
-            self.__offset = timedelta(minutes=sign * (hours * 60 + minutes))
+            self.__offset = datetime.timedelta(minutes=sign * (hours * 60 + minutes))
             self.__name = ""
 
     def utcoffset(self, dt):
@@ -98,7 +98,7 @@ class xml_timezone(datetime.tzinfo):
         return self.__name
 
     def dst(self, dt):
-        return ZERO
+        return datetime.timedelta(0)
 
 
 [
@@ -600,7 +600,7 @@ def GenerateTagInfos(infos):
         "extract": ExtractTag,
         "generate": GenerateTag,
         "initial": lambda: None,
-        "check": lambda x: x is None or infos["minOccurs"] == 0 and value
+        "check": lambda x: x is None or infos["minOccurs"] == 0 and x
     }
 
 
@@ -634,15 +634,15 @@ def GetElementInitialValue(factory, infos):
 
 def GetContentInfos(name, choices):
     for choice_infos in choices:
-        if choices_infos["type"] == "sequence":
-            for element_infos in choices_infos["elements"]:
+        if choice_infos["type"] == "sequence":
+            for element_infos in choice_infos["elements"]:
                 if element_infos["type"] == CHOICE:
                     if GetContentInfos(name, element_infos["choices"]):
-                        return choices_infos
+                        return choice_infos
                 elif element_infos["name"] == name:
-                    return choices_infos
+                    return choice_infos
         elif choice_infos["name"] == name:
-            return choices_infos
+            return choice_infos
     return None
 
 
@@ -743,7 +743,7 @@ def GenerateElement(element_name, attributes, elements_model,
                     namespace, childname = DecomposeQualifiedName(child.nodeName)
                     infos = factory.GetQualifiedNameInfos(childname, namespace)
                     if infos["type"] != SYNTAXELEMENT:
-                        raise ValueError("\"%s\" can't be a member child!" % name)
+                        raise ValueError("\"%s\" can't be a member child!" % childname)
                     if element_name in infos["extract"]:
                         children.append(infos["extract"][element_name](factory, child))
                     else:
@@ -849,7 +849,7 @@ class ClassFactory(object):
                         elements = group["choices"]
                     for element in elements:
                         if element["name"] == parts[1]:
-                            return part[1], part[0]
+                            return parts[1], parts[0]
             if not canbenone:
                 raise ValueError("Unknown element \"%s\" for any defined namespaces!" % name)
         elif namespace in self.Namespaces:

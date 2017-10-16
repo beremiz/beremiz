@@ -33,7 +33,7 @@ def get_inkscape_path():
     try:
         svgexepath = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE,
                                         'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
-    except WindowsError:
+    except OSError:
         svgexepath = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE,
                                         'Software\\Classes\\inkscape.svg\\shell\\open\\command')
     svgexepath = svgexepath.replace('"%1"', '')

@@ -393,17 +393,17 @@ class CodeEditor(CustomStyledTextCtrl):
 
     def OnMarginClick(self, event):
         # fold and unfold as needed
-        if evt.GetMargin() == 2:
-            if evt.GetShift() and evt.GetControl():
+        if event.GetMargin() == 2:
+            if event.GetShift() and event.GetControl():
                 self.FoldAll()
             else:
-                lineClicked = self.LineFromPosition(evt.GetPosition())
+                lineClicked = self.LineFromPosition(event.GetPosition())
 
                 if self.GetFoldLevel(lineClicked) & stc.STC_FOLDLEVELHEADERFLAG:
-                    if evt.GetShift():
+                    if event.GetShift():
                         self.SetFoldExpanded(lineClicked, True)
                         self.Expand(lineClicked, True, True, 1)
-                    elif evt.GetControl():
+                    elif event.GetControl():
                         if self.GetFoldExpanded(lineClicked):
                             self.SetFoldExpanded(lineClicked, False)
                             self.Expand(lineClicked, False, True, 0)

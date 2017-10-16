@@ -220,7 +220,8 @@ pylint_checks()
     disable=$disable,R0914        # (too-many-locals) Too many local variables (18/15)
     disable=$disable,R0915        # (too-many-statements) Too many statements (57/50)
     disable=$disable,R0916        # (too-many-boolean-expressions) Too many boolean expressions in if statement (6/5)
-    
+    disable=$disable,R0101        # (too-many-nested-blocks) Too many nested blocks (7/5)
+
     enable=
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword    
@@ -256,6 +257,7 @@ pylint_checks()
     enable=$enable,E0213          # (no-self-argument) Method should have "self" as first argument
     enable=$enable,E0401          # (import-error) Unable to import 'X'
     enable=$enable,E1121          # (too-many-function-args) Too many positional arguments for function call
+    enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
     # enable=
 
     options=

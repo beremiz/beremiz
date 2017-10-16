@@ -563,7 +563,7 @@ installThreadExcepthook()
 if havetwisted:
     if webport is not None:
         try:
-            import runtime.NevowServer as NS  # pylint: disable=C0412
+            import runtime.NevowServer as NS  # pylint: disable=ungrouped-imports
         except Exception, e:
             print(_("Nevow/Athena import failed :"), e)
             webport = None
@@ -571,7 +571,7 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            import runtime.WampClient as WC  # pylint: disable=C0412
+            import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
         except Exception, e:
             print(_("WAMP import failed :"), e)
             wampconf = None

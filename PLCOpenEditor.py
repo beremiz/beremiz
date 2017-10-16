@@ -35,6 +35,7 @@ import version
 import util.paths as paths
 import util.ExceptionHandler
 from util.misc import InstallLocalRessources
+from docutil.docpdf import open_pdf
 from IDEFrame import IDEFrame, AppendMenu
 from IDEFrame import \
     TITLE, \

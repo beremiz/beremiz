@@ -201,7 +201,7 @@ class FBD_Block(Graphic_Element):
 
     def SetOutputValues(self, values):
         for output in self.Outputs:
-            output.SetValue(values.get(ouput.getName(), None))
+            output.SetValue(values.get(output.getName(), None))
 
     def GetConnectionResultType(self, connector, connectortype):
         if not TestConnectorName(connector.GetName(), self.Type):

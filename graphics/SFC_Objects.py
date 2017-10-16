@@ -972,7 +972,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         else:
             highlight_items = self.Highlights.items()
             for name, highlights in highlight_items:
-                highlights = ClearHighlights(highlight, highlight_type)
+                highlights = ClearHighlights(highlights, highlight_type)
                 if len(highlights) == 0:
                     self.Highlights.pop(name)
 
