@@ -240,7 +240,7 @@ class _VariablesTreeItemInfos(object):
             setattr(self, attr, value if value is not None else "")
 
     def copy(self):
-        return _VariableTreeItem(*[getattr(self, attr) for attr in self.__slots__])
+        return _VariablesTreeItemInfos(*[getattr(self, attr) for attr in self.__slots__])
 
 
 class VariablesTreeInfosFactory(object):
@@ -1592,7 +1592,7 @@ class PLCControler(object):
                  "list": [
                     datatype.getname()
                     for datatype in confnodetypes["types"].getdataTypes()
-                    if not only_locatables or self.IsLocatableDataType(datatype, debug)]}
+                    if not only_locatables or self.IsLocatableDataType(datatype)]}
                 for confnodetypes in self.ConfNodeTypes]
 
     def GetVariableLocationTree(self):

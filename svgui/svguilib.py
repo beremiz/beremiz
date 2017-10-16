@@ -23,7 +23,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-# pylint: disable=C1001
+# pylint: disable=old-style-class,undefined-variable
+
+
 class button:
 
     def __init__(self, parent, id, args):

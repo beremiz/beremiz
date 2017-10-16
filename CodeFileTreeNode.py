@@ -103,7 +103,6 @@ class CodeFile(object):
         self.CodeFileVariables = etree.XPath("variables/variable")
 
         filepath = self.CodeFileName()
-
         if os.path.isfile(filepath):
             xmlfile = open(filepath, 'r')
             codefile_xml = xmlfile.read()
@@ -124,9 +123,10 @@ class CodeFile(object):
                     self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 self.CreateCodeFileBuffer(True)
             except Exception, exc:
-                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=CTNName, a2=unicode(exc))
+                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=self.CTNName(), a2=unicode(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
+                raise Exception
         else:
             self.CodeFile = self.CodeFileParser.CreateRoot()
             self.CreateCodeFileBuffer(False)

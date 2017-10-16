@@ -26,6 +26,7 @@ import os
 
 from nevow import tags, loaders
 import simplejson as json
+import runtime.NevowServer as NS
 
 svgfile = '%(svgfile)s'
 
@@ -113,7 +114,7 @@ class SVGUI_HMI(website.PLCHMI):
     jsClass = u"LiveSVGPage.LiveSVGWidget"
 
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                         tags.xml(loaders.xmlfile(os.path.join(WorkingDir, svgfile))),
+                                         tags.xml(loaders.xmlfile(os.path.join(NS.WorkingDir, svgfile))),
                                          ])
 
     def HMIinitialisation(self):

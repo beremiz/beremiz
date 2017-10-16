@@ -2831,7 +2831,7 @@ def extractValues(values):
         elif opened == closed:
             i += 1
         else:
-            raise ValueError(_("\"%s\" is an invalid value!") % value)
+            raise ValueError(_("\"%s\" is an invalid value!") % values)
     return items
 
 

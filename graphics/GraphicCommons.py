@@ -225,7 +225,7 @@ def RemoveHighlight(highlights, infos):
     return False
 
 
-def ClearHighlight(highlights, highlight_type=None):
+def ClearHighlights(highlights, highlight_type=None):
     if highlight_type is not None:
         return [highlight for highlight in highlights if highlight[2] != highlight_type]
     return []
