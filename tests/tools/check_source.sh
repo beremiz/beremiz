@@ -203,6 +203,7 @@ pylint_checks()
     disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)    
     disable=$disable,W0122        # (exec-used) Use of exec
     disable=$disable,W0123        # (eval-used) Use of eval
+    disable=$disable,I0011        # (locally-disabled) Locally disabling ungrouped-imports (C0412)
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -258,6 +259,7 @@ pylint_checks()
     enable=$enable,E0401          # (import-error) Unable to import 'X'
     enable=$enable,E1121          # (too-many-function-args) Too many positional arguments for function call
     enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
+    enable=$enable,W0232          # (no-init) Class has no __init__ method
     # enable=
 
     options=
