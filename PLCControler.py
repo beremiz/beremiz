@@ -912,8 +912,8 @@ class PLCControler(object):
                     programfile.close()
                     self.ProgramFilePath = filepath
                 return program_text, errors, warnings
-            except PLCGenException, e:
-                errors.append(e.message)
+            except PLCGenException, ex:
+                errors.append(ex.message)
         else:
             errors.append("No project opened")
         return "", errors, warnings

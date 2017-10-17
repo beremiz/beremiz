@@ -260,6 +260,9 @@ pylint_checks()
     enable=$enable,E1121          # (too-many-function-args) Too many positional arguments for function call
     enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
     enable=$enable,W0232          # (no-init) Class has no __init__ method
+    enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
+    enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
+    enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
     # enable=
 
     options=
