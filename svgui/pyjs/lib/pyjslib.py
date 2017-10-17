@@ -186,9 +186,10 @@ function import_wait(proceed_fn, parent_mod, dynamic) {
 """)
 
 
-# pylint: disable=C1001
+# pylint: disable=old-style-class
 class Object:
-    pass
+    def __init__(self):
+        pass
 
 
 object = Object
