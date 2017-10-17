@@ -150,22 +150,21 @@ class BeremizIDELauncher(object):
 
     def CheckUpdates(self):
         if self.updateinfo_url is not None:
-            updateinfo = _("Fetching %s") % self.updateinfo_url
+            self.updateinfo = _("Fetching %s") % self.updateinfo_url
 
             def updateinfoproc():
-                global updateinfo
                 try:
                     import urllib2
-                    updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
+                    self.updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
                 except Exception:
-                    updateinfo = _("update info unavailable.")
+                    self.updateinfo = _("update info unavailable.")
 
             from threading import Thread
-            self.splash.SetText(text=updateinfo)
+            self.splash.SetText(text=self.updateinfo)
             updateinfoThread = Thread(target=updateinfoproc)
             updateinfoThread.start()
             updateinfoThread.join(2)
-            self.splash.SetText(text=updateinfo)
+            self.splash.SetText(text=self.updateinfo)
 
     def ImportModules(self):
         global BeremizIDE
