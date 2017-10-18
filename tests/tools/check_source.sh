@@ -204,6 +204,7 @@ pylint_checks()
     disable=$disable,W0122        # (exec-used) Use of exec
     disable=$disable,W0123        # (eval-used) Use of eval
     disable=$disable,I0011        # (locally-disabled) Locally disabling ungrouped-imports (C0412)
+    disable=$disable,R0204        # (redefined-variable-type) Redefinition of current type from X to Y
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -222,6 +223,7 @@ pylint_checks()
     disable=$disable,R0915        # (too-many-statements) Too many statements (57/50)
     disable=$disable,R0916        # (too-many-boolean-expressions) Too many boolean expressions in if statement (6/5)
     disable=$disable,R0101        # (too-many-nested-blocks) Too many nested blocks (7/5)
+    disable=$disable,R0801        # (duplicate-code) Similar lines in N files
 
     enable=
     enable=$enable,E1601          # print statement used
@@ -263,6 +265,7 @@ pylint_checks()
     enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
+    enable=$enable,W0106          # (expression-not-assigned)
     # enable=
 
     options=

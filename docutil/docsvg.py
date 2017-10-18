@@ -45,7 +45,7 @@ def open_win_svg(svgexepath, svgfile):
     popenargs = [svgexepath]
     if svgfile is not None:
         popenargs.append(svgfile)
-    subprocess.Popen(popenargs).pid
+    subprocess.Popen(popenargs)
 
 
 def open_lin_svg(svgexepath, svgfile):
