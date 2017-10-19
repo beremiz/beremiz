@@ -88,8 +88,18 @@ class CustomTable(wx.grid.PyGridTableBase):
         grid.CloseEditControl()
         grid.BeginBatch()
         for current, new, delmsg, addmsg in [
-            (self._rows, self.GetNumberRows(), wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED, wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED),
-            (self._cols, self.GetNumberCols(), wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED, wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED),
+                (
+                    self._rows,
+                    self.GetNumberRows(),
+                    wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                    wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED
+                ),
+                (
+                    self._cols,
+                    self.GetNumberCols(),
+                    wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
+                    wx.grid.GRIDTABLE_NOTIFY_COLS_APPENDED
+                ),
         ]:
             if new < current:
                 msg = wx.grid.GridTableMessage(self, delmsg, new, current-new)

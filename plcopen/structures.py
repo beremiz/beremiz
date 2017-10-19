@@ -180,9 +180,9 @@ def get_standard_funtions(table):
     Current_section = None
 
     translate = {
-            "extensible": lambda x: {"yes": True, "no": False}[x],
-            "inputs": lambda x: csv_input_translate(x, variables, baseinputnumber),
-            "outputs": lambda x: [("OUT", x, "none")]}
+        "extensible": lambda x: {"yes": True, "no": False}[x],
+        "inputs": lambda x: csv_input_translate(x, variables, baseinputnumber),
+        "outputs": lambda x: [("OUT", x, "none")]}
 
     for fields in table:
         if fields[1]:

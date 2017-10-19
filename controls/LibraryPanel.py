@@ -232,7 +232,7 @@ class LibraryPanel(wx.Panel):
                     # Tree item doesn't exist, add new one to category item
                     else:
                         blocktype_item = self.Tree.AppendItem(
-                                            category_item, blocktype["name"])
+                            category_item, blocktype["name"])
                         # See comment when adding category
                         if wx.Platform != '__WXMSW__':
                             blocktype_item, category_cookie = \

@@ -756,11 +756,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
         buildcmd = "\"%s\" %s -I \"%s\" -T \"%s\" \"%s\"" % (
-                         self.iec2c_cfg.getCmd(),
-                         self.iec2c_cfg.getOptions(),
-                         iec2c_libpath,
-                         buildpath,
-                         self._getIECcodepath())
+            self.iec2c_cfg.getCmd(),
+            self.iec2c_cfg.getOptions(),
+            iec2c_libpath,
+            buildpath,
+            self._getIECcodepath())
 
         try:
             # Invoke compiler. Output files are listed to stdout, errors to stderr
@@ -874,7 +874,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
 
         return ([(C_file_name, self.plcCFLAGS)
-                for C_file_name in self.PLCGeneratedCFiles],
+                 for C_file_name in self.PLCGeneratedCFiles],
                 "",  # no ldflags
                 False)  # do not expose retreive/publish calls
 
@@ -1027,22 +1027,22 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if not self.BeremizRoot.getDisable_Extensions():
             plc_main_code = targets.GetCode("plc_main_head.c") % {
                 "calls_prototypes": "\n".join([(
-                      "int __init_%(s)s(int argc,char **argv);\n" +
-                      "void __cleanup_%(s)s(void);\n" +
-                      "void __retrieve_%(s)s(void);\n" +
-                      "void __publish_%(s)s(void);") % {'s': locstr} for locstr in locstrs]),
+                    "int __init_%(s)s(int argc,char **argv);\n" +
+                    "void __cleanup_%(s)s(void);\n" +
+                    "void __retrieve_%(s)s(void);\n" +
+                    "void __publish_%(s)s(void);") % {'s': locstr} for locstr in locstrs]),
                 "retrieve_calls": "\n    ".join([
-                      "__retrieve_%s();" % locstr for locstr in locstrs]),
+                    "__retrieve_%s();" % locstr for locstr in locstrs]),
                 "publish_calls": "\n    ".join([  # Call publish in reverse order
-                      "__publish_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
+                    "__publish_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)]),
                 "init_calls": "\n    ".join([
-                      "init_level=%d; " % (i+1) +
-                      "if((res = __init_%s(argc,argv))){" % locstr +
-                      # "printf(\"%s\"); "%locstr + #for debug
-                      "return res;}" for i, locstr in enumerate(locstrs)]),
+                    "init_level=%d; " % (i+1) +
+                    "if((res = __init_%s(argc,argv))){" % locstr +
+                    # "printf(\"%s\"); "%locstr + #for debug
+                    "return res;}" for i, locstr in enumerate(locstrs)]),
                 "cleanup_calls": "\n    ".join([
-                      "if(init_level >= %d) " % i +
-                      "__cleanup_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
+                    "if(init_level >= %d) " % i +
+                    "__cleanup_%s();" % locstrs[i-1] for i in xrange(len(locstrs), 0, -1)])
                 }
         else:
             plc_main_code = targets.GetCode("plc_main_head.c") % {
@@ -1161,11 +1161,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Template based part of C code generation
         # files are stacked at the beginning, as files of confnode tree root
-        for generator, filename, name in [
-           # debugger code
-           (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
-           # init/cleanup/retrieve/publish, run and align code
-           (self.Generate_plc_main, "plc_main.c", "Common runtime")]:
+        c_source = [
+            #  debugger code
+            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
+            # init/cleanup/retrieve/publish, run and align code
+            (self.Generate_plc_main, "plc_main.c", "Common runtime")
+        ]
+
+        for generator, filename, name in c_source:
             try:
                 # Do generate
                 code = generator()
@@ -1494,11 +1497,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is None:
             IECdebug_data = [
-                    WeakKeyDictionary(),  # Callables
-                    [],                   # Data storage [(tick, data),...]
-                    "Registered",         # Variable status
-                    None,
-                    buffer_list]                # Forced value
+                WeakKeyDictionary(),  # Callables
+                [],                   # Data storage [(tick, data),...]
+                "Registered",         # Variable status
+                None,
+                buffer_list]                # Forced value
             self.IECdebug_datas[IECPath] = IECdebug_data
         else:
             IECdebug_data[4] |= buffer_list
@@ -1821,9 +1824,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                self._getProjectFilesPath()]:
 
             extrafiles.extend(
-                     [(name, open(os.path.join(extrafilespath, name),
-                                  'rb').read())
-                      for name in os.listdir(extrafilespath)])
+                [(name, open(os.path.join(extrafilespath, name),
+                             'rb').read())
+                 for name in os.listdir(extrafilespath)])
 
         # Send PLC on target
         builder = self.GetBuilder()

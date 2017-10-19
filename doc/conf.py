@@ -184,8 +184,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Beremiz.tex', u'Beremiz Documentation',
-   u'Beremiz Documentation Authors', 'manual'),
+    ('index', 'Beremiz.tex', u'Beremiz Documentation',
+     u'Beremiz Documentation Authors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -228,9 +228,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Beremiz', u'Beremiz Documentation',
-   u'Beremiz Documentation Authors', 'Beremiz', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'Beremiz', u'Beremiz Documentation',
+     u'Beremiz Documentation Authors', 'Beremiz', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

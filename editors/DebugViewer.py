@@ -148,7 +148,7 @@ class DebugViewer(object):
 
         # Subscribe data consumer to DataProducer
         result = self.DataProducer.SubscribeDebugIECVariable(
-                        iec_path, consumer, buffer_list)
+            iec_path, consumer, buffer_list)
         if result is not None and consumer != self:
 
             # Store data consumer if successfully subscribed and inform
@@ -168,8 +168,7 @@ class DebugViewer(object):
 
         # Unsubscribe consumer from DataProducer
         if iec_path is not None:
-            self.DataProducer.UnsubscribeDebugIECVariable(
-                        iec_path, consumer)
+            self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
 
     def SubscribeAllDataConsumers(self):
         """
@@ -192,8 +191,7 @@ class DebugViewer(object):
 
             # Unsubscribe all data consumers in list
             for consumer, iec_path in self.DataConsumers.iteritems():
-                self.DataProducer.UnsubscribeDebugIECVariable(
-                            iec_path, consumer)
+                self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
 
         self.DataConsumers = {}
 
@@ -207,7 +205,7 @@ class DebugViewer(object):
 
             # Search for variable informations in project compilation files
             data_type = self.DataProducer.GetDebugIECVariableType(
-                            iec_path.upper())
+                iec_path.upper())
             if data_type is not None:
                 return data_type
 

@@ -209,8 +209,8 @@ PLCOpen_v1_file = open(paths.AbsNeighbourFile(__file__, "TC6_XML_V10_B.xsd"))
 PLCOpen_v1_xml = PLCOpen_v1_file.read()
 PLCOpen_v1_file.close()
 PLCOpen_v1_xml = PLCOpen_v1_xml.replace(
-        "http://www.plcopen.org/xml/tc6.xsd",
-        "http://www.plcopen.org/xml/tc6_0201")
+    "http://www.plcopen.org/xml/tc6.xsd",
+    "http://www.plcopen.org/xml/tc6_0201")
 PLCOpen_v1_xsd = etree.XMLSchema(etree.fromstring(PLCOpen_v1_xml))
 
 # XPath for file compatibility process

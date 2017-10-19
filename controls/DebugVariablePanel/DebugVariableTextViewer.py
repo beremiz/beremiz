@@ -205,7 +205,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
 
         # Get item variable path masked according Debug Variable Panel mask
         item_path = item.GetVariable(
-                self.ParentWindow.GetVariableNameMask())
+            self.ParentWindow.GetVariableNameMask())
 
         # Draw item variable path at Viewer left side
         w, h = gc.GetTextExtent(item_path)
@@ -240,7 +240,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         # Calculate item path bounding box
         _width, height = self.GetSize()
         item_path = item.GetVariable(
-                self.ParentWindow.GetVariableNameMask())
+            self.ParentWindow.GetVariableNameMask())
         w, h = self.GetTextExtent(item_path)
 
         # Test if mouse has been pressed in this bounding box. In that case

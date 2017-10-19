@@ -419,8 +419,8 @@ class PouInstanceVariablesPanel(wx.Panel):
                     if item_infos.var_class == ITEM_RESOURCE:
                         if instance_path != "":
                             tagname = self.Controller.ComputeConfigurationResourceName(
-                                           instance_path,
-                                           item_infos.name)
+                                instance_path,
+                                item_infos.name)
                         else:
                             tagname = None
                     else:

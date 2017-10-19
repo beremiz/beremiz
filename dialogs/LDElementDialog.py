@@ -194,9 +194,9 @@ class LDElementDialog(BlockPreviewDialog):
 
         # Set graphic element displayed, creating a LD element
         self.Element = self.ElementClass(
-                self.Preview,
-                self.GetElementModifier(),
-                value)
+            self.Preview,
+            self.GetElementModifier(),
+            value)
 
         button = self.ButtonSizer.GetAffirmativeButton()
         button.Enable(value != "")

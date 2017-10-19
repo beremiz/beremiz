@@ -945,7 +945,7 @@ class ClassFactory(object):
             equivalences[self.etreeNamespaceFormat % name] = True
 
     def AddDistinctionBetweenParentsInLookupClass(
-                                    self, lookup_classes, parent, typeinfos):
+            self, lookup_classes, parent, typeinfos):
         parent = (self.etreeNamespaceFormat % parent
                   if parent is not None else None)
         parent_class = lookup_classes.get(parent)

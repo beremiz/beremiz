@@ -94,7 +94,7 @@ class SFCStepDialog(BlockPreviewDialog):
 
         # Set default name for step
         self.StepName.ChangeValue(controller.GenerateNewName(
-               tagname, None, "Step%d", 0))
+            tagname, None, "Step%d", 0))
 
         self.Fit()
 

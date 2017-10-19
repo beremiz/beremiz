@@ -173,13 +173,11 @@ class BlockPreviewDialog(wx.Dialog):
         # Get list of variables defined in POU
         self.VariableList = {
             var.Name: (var.Class, var.Type)
-            for var in self.Controller.GetEditedElementInterfaceVars(
-                                                        self.TagName)
+            for var in self.Controller.GetEditedElementInterfaceVars(self.TagName)
             if var.Edit}
 
         # Add POU name to variable list if POU is a function
-        returntype = self.Controller.GetEditedElementInterfaceReturnType(
-                                                            self.TagName)
+        returntype = self.Controller.GetEditedElementInterfaceReturnType(self.TagName)
         if returntype is not None:
             self.VariableList[
                 self.Controller.GetEditedElementName(self.TagName)] = \

@@ -512,9 +512,9 @@ class LogViewer(DebugViewer, wx.Panel):
                         current_message = message
                     self.LogMessages.insert(message_idx, message)
                     self.LogMessagesTimestamp = numpy.insert(
-                            self.LogMessagesTimestamp,
-                            [message_idx],
-                            [message.Timestamp])
+                        self.LogMessagesTimestamp,
+                        [message_idx],
+                        [message.Timestamp])
                     self.CurrentMessage = self.LogMessages.index(current_message)
                     if message_idx == 0 and self.FilterLogMessage(message, timestamp):
                         return message, 0

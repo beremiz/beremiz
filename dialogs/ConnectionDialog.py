@@ -106,7 +106,7 @@ class ConnectionDialog(BlockPreviewDialog):
         else:
             self.ConnectionName.ChangeValue(
                 controller.GenerateNewName(
-                        tagname, None, "Connection%d", 0))
+                    tagname, None, "Connection%d", 0))
         self.Fit()
 
         # Connector radio button is default control having keyboard focus

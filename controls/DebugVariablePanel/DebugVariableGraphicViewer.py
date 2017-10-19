@@ -306,15 +306,14 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
         # Add buttons for zooming on current displayed data range
         self.Buttons.append(
-                GraphButton(0, 0, "fit_graph", self.OnZoomFitButton))
+            GraphButton(0, 0, "fit_graph", self.OnZoomFitButton))
 
         # Add buttons for changing canvas size with predefined height
         for size, bitmap in zip(
                 [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI],
                 ["minimize_graph", "middle_graph", "maximize_graph"]):
-            self.Buttons.append(
-                    GraphButton(0, 0, bitmap,
-                                self.GetOnChangeSizeButton(size)))
+            self.Buttons.append(GraphButton(0, 0, bitmap,
+                                            self.GetOnChangeSizeButton(size)))
 
         # Add buttons for exporting graph values to clipboard and close graph
         for bitmap, callback in [
@@ -430,8 +429,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 ("force", self.OnForceItemButton),
                 ("export_graph_mini", self.OnExportItemGraphButton),
                 ("delete_graph", self.OnRemoveItemButton)]:
-            self.ContextualButtons.append(
-                    GraphButton(0, 0, bitmap, callback))
+            self.ContextualButtons.append(GraphButton(0, 0, bitmap, callback))
 
         # If buttons are shown at left side or upper side of rect, positions
         # will be set in reverse order
@@ -598,7 +596,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # and set cursor tick to the tick of this point
             if len(data) > 0:
                 cursor_tick = data[numpy.argmin(
-                        numpy.abs(data[:, 0] - event.xdata)), 0]
+                    numpy.abs(data[:, 0] - event.xdata)), 0]
 
         # Update cursor tick
         if cursor_tick is not None:
@@ -1117,15 +1115,15 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         else:
             # X coordinate labels are in figure lower side
             self.AxesLabels[0].set_position(
-                    (0.1, CANVAS_PADDING * graph_ratio))
+                (0.1, CANVAS_PADDING * graph_ratio))
             self.Labels[0].set_position(
-                    (0.95, CANVAS_PADDING * graph_ratio))
+                (0.95, CANVAS_PADDING * graph_ratio))
 
             # Y coordinate labels are vertical and in figure left side
             self.AxesLabels[1].set_position(
-                    (0.05, 2 * CANVAS_PADDING * graph_ratio))
+                (0.05, 2 * CANVAS_PADDING * graph_ratio))
             self.Labels[1].set_position(
-                    (0.05, 1.0 - CANVAS_PADDING * graph_ratio))
+                (0.05, 1.0 - CANVAS_PADDING * graph_ratio))
 
         # Update subplots
         self.Figure.subplots_adjust()
@@ -1149,7 +1147,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 # Get data and range for each variable displayed
                 for idx, item in enumerate(self.Items):
                     data, min_value, max_value = item.GetDataAndValueRange(
-                                start_tick, end_tick, not self.ZoomFit)
+                        start_tick, end_tick, not self.ZoomFit)
 
                     # Check that data is not empty
                     if data is not None:
@@ -1199,10 +1197,11 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                 # Get data and range for first variable (X coordinate)
                 x_data, x_min, x_max = items[0].GetDataAndValueRange(
-                                        start_tick, end_tick, not self.ZoomFit)
+                    start_tick, end_tick, not self.ZoomFit)
+
                 # Get data and range for second variable (Y coordinate)
                 y_data, y_min, y_max = items[1].GetDataAndValueRange(
-                                        start_tick, end_tick, not self.ZoomFit)
+                    start_tick, end_tick, not self.ZoomFit)
 
                 # Normalize X and Y coordinates value range
                 x_min, x_max = merge_ranges([(x_min, x_max)])
@@ -1211,9 +1210,9 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 # Get X and Y coordinates for cursor if cursor tick is defined
                 if self.CursorTick is not None:
                     x_cursor, _x_forced = items[0].GetValue(
-                                            self.CursorTick, raw=True)
+                        self.CursorTick, raw=True)
                     y_cursor, _y_forced = items[1].GetValue(
-                                            self.CursorTick, raw=True)
+                        self.CursorTick, raw=True)
 
                 # Get common data length so that each value has an x and y
                 # coordinate
@@ -1281,7 +1280,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                     # Get data and range for third variable (Z coordinate)
                     z_data, z_min, z_max = items[2].GetDataAndValueRange(
-                                    start_tick, end_tick, not self.ZoomFit)
+                        start_tick, end_tick, not self.ZoomFit)
 
                     # Normalize Z coordinate value range
                     z_min, z_max = merge_ranges([(z_min, z_max)])
@@ -1307,7 +1306,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
                         # Get Z coordinate for cursor
                         z_cursor, _z_forced = items[2].GetValue(
-                                                self.CursorTick, raw=True)
+                            self.CursorTick, raw=True)
 
                         # Add 3 lines parallel to x, y and z axis to display
                         # cursor position in 3D
@@ -1332,11 +1331,11 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Get value and forced flag for each variable displayed in graph
         # If cursor tick is not defined get value and flag of last received
         # or get value and flag of variable at cursor tick
-        values, forced = apply(zip, [
-                (item.GetValue(self.CursorTick)
-                 if self.CursorTick is not None
-                 else (item.GetValue(), item.IsForced()))
-                for item in self.Items])
+        values, forced = apply(zip, [(
+            item.GetValue(self.CursorTick)
+            if self.CursorTick is not None
+            else (item.GetValue(), item.IsForced())
+        ) for item in self.Items])
 
         # Get path of each variable displayed simplified using panel variable
         # name mask

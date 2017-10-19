@@ -50,23 +50,26 @@ class PLCHMI(athena.LiveElement):
 
 
 class DefaultPLCStartedHMI(PLCHMI):
-    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                            tags.h1["PLC IS NOW STARTED"],
-                                            ])
+    docFactory = loaders.stan(
+        tags.div(render=tags.directive('liveElement'))[
+            tags.h1["PLC IS NOW STARTED"],
+        ])
 
 
 class PLCStoppedHMI(PLCHMI):
-    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                            tags.h1["PLC IS STOPPED"],
-                                            ])
+    docFactory = loaders.stan(
+        tags.div(render=tags.directive('liveElement'))[
+            tags.h1["PLC IS STOPPED"],
+        ])
 
 
 class MainPage(athena.LiveElement):
     jsClass = u"WebInterface.PLC"
-    docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                                    tags.div(id='content')[
-                                                        tags.div(render=tags.directive('PLCElement')),
-                                                    ]])
+    docFactory = loaders.stan(
+        tags.div(render=tags.directive('liveElement'))[
+            tags.div(id='content')[
+                tags.div(render=tags.directive('PLCElement'))]
+        ])
 
     def __init__(self, *a, **kw):
         athena.LiveElement.__init__(self, *a, **kw)
