@@ -2,7 +2,7 @@
 platform = ''  # to be updated by app, on compile
 
 # a dictionary of module override names (platform-specific)
-overrides = None  # to be updated by app, on compile
+overrides = {}  # to be updated by app, on compile
 
 # the remote path for loading modules
 loadpath = None

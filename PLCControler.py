@@ -1629,14 +1629,14 @@ class PLCControler(object):
 
     # Function that returns the block definition associated to the block type given
     def GetBlockType(self, typename, inputs=None, debug=False):
-        result_blocktype = None
+        result_blocktype = {}
         for _sectioname, blocktype in self.TotalTypesDict.get(typename, []):
             if inputs is not None and inputs != "undefined":
                 block_inputs = tuple([var_type for _name, var_type, _modifier in blocktype["inputs"]])
                 if reduce(lambda x, y: x and y, map(lambda x: x[0] == "ANY" or self.IsOfType(*x), zip(inputs, block_inputs)), True):
                     return blocktype
             else:
-                if result_blocktype is not None:
+                if result_blocktype:
                     if inputs == "undefined":
                         return None
                     else:
@@ -1644,7 +1644,7 @@ class PLCControler(object):
                         result_blocktype["outputs"] = [(o[0], "ANY", o[2]) for o in result_blocktype["outputs"]]
                         return result_blocktype
                 result_blocktype = blocktype.copy()
-        if result_blocktype is not None:
+        if result_blocktype:
             return result_blocktype
         project = self.GetProject(debug)
         if project is not None:

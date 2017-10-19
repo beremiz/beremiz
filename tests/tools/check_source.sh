@@ -206,6 +206,8 @@ pylint_checks()
     disable=$disable,I0011        # (locally-disabled) Locally disabling ungrouped-imports (C0412)
     disable=$disable,R0204        # (redefined-variable-type) Redefinition of current type from X to Y
     disable=$disable,R0201        # (no-self-use) Method could be a function
+    disable=$disable,W0221        # (arguments-differ) Arguments number differs from overridden 'X' method
+    disable=$disable,C0201        # (consider-iterating-dictionary) Consider iterating the dictionary directly instead of calling .keys()
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -225,6 +227,7 @@ pylint_checks()
     disable=$disable,R0916        # (too-many-boolean-expressions) Too many boolean expressions in if statement (6/5)
     disable=$disable,R0101        # (too-many-nested-blocks) Too many nested blocks (7/5)
     disable=$disable,R0801        # (duplicate-code) Similar lines in N files
+
 
     enable=
     enable=$enable,E1601          # print statement used
@@ -268,6 +271,7 @@ pylint_checks()
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
     enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
+    enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
     # enable=
 
     options=
