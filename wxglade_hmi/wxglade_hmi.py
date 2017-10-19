@@ -124,10 +124,9 @@ class WxGladeHMI(PythonFileCTNMixin):
         declare_hmi = "\n".join(["%(name)s = None\n" % x +
                                  "\n".join(["%(class)s.%(h)s = %(h)s" %
                                             dict(x, h=h) for h in x['handlers']])
-                                for x in hmi_frames])
+                                 for x in hmi_frames])
         global_hmi = ("global %s\n" % ",".join(
-                         [x["name"] for x in hmi_frames])
-                      if len(hmi_frames) > 0 else "")
+            [x["name"] for x in hmi_frames]) if len(hmi_frames) > 0 else "")
         init_hmi = "\n".join(["""\
 def OnCloseFrame(evt):
     wx.MessageBox(_("Please stop PLC to close"))
@@ -138,7 +137,7 @@ def OnCloseFrame(evt):
 """ % x for x in hmi_frames])
         cleanup_hmi = "\n".join(
             ["if %(name)s is not None: %(name)s.Destroy()" % x
-                for x in hmi_frames])
+             for x in hmi_frames])
 
         self.PreSectionsTexts = {
             "globals": define_hmi,

@@ -281,8 +281,8 @@ class TextViewer(EditorPanel):
                         self.RefreshVariableTree()
                 blockinfo = self.Controler.GetBlockType(blocktype, blockinputs, self.Debug)
                 hint = ',\n    '.join(
-                            [" " + fctdecl[0]+" := (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["inputs"]] +
-                            [" " + fctdecl[0]+" => (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["outputs"]])
+                    [" " + fctdecl[0]+" := (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["inputs"]] +
+                    [" " + fctdecl[0]+" => (*"+fctdecl[1]+"*)" for fctdecl in blockinfo["outputs"]])
                 if values[1] == "function":
                     event.SetDragText(blocktype+"(\n    "+hint+")")
                 else:
@@ -514,10 +514,12 @@ class TextViewer(EditorPanel):
 
     def RefreshVariableTree(self):
         words = self.TagName.split("::")
-        self.Variables = self.GenerateVariableTree(
-            [(variable.Name, variable.Type, variable.Tree)
-             for variable in self.Controler.GetEditedElementInterfaceVars(
-                self.TagName, True, self.Debug)])
+        self.Variables = self.GenerateVariableTree([
+            (variable.Name, variable.Type, variable.Tree)
+            for variable in
+            self.Controler.GetEditedElementInterfaceVars(
+                self.TagName, True, self.Debug)
+        ])
         if self.Controler.GetEditedElementType(self.TagName, self.Debug)[1] == "function" or words[0] == "T" and self.TextSyntax == "IL":
             return_type, (var_tree, _var_dimension) = self.Controler.GetEditedElementInterfaceReturnType(self.TagName, True, self.Debug)
             if return_type is not None:

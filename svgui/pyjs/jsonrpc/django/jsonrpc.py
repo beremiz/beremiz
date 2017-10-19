@@ -78,20 +78,20 @@ def builderrors(form):
 
 # contains the list of arguments in each field
 field_names = {
- 'CharField': ['max_length', 'min_length'],
- 'IntegerField': ['max_value', 'min_value'],
- 'FloatField': ['max_value', 'min_value'],
- 'DecimalField': ['max_value', 'min_value', 'max_digits', 'decimal_places'],
- 'DateField': ['input_formats'],
- 'DateTimeField': ['input_formats'],
- 'TimeField': ['input_formats'],
- 'RegexField': ['max_length', 'min_length'],  # sadly we can't get the expr
- 'EmailField': ['max_length', 'min_length'],
- 'URLField': ['max_length', 'min_length', 'verify_exists', 'user_agent'],
- 'ChoiceField': ['choices'],
- 'FilePathField': ['path', 'match', 'recursive', 'choices'],
- 'IPAddressField': ['max_length', 'min_length'],
- }
+    'CharField': ['max_length', 'min_length'],
+    'IntegerField': ['max_value', 'min_value'],
+    'FloatField': ['max_value', 'min_value'],
+    'DecimalField': ['max_value', 'min_value', 'max_digits', 'decimal_places'],
+    'DateField': ['input_formats'],
+    'DateTimeField': ['input_formats'],
+    'TimeField': ['input_formats'],
+    'RegexField': ['max_length', 'min_length'],  # sadly we can't get the expr
+    'EmailField': ['max_length', 'min_length'],
+    'URLField': ['max_length', 'min_length', 'verify_exists', 'user_agent'],
+    'ChoiceField': ['choices'],
+    'FilePathField': ['path', 'match', 'recursive', 'choices'],
+    'IPAddressField': ['max_length', 'min_length'],
+}
 
 
 def describe_field_errors(field):

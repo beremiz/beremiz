@@ -307,7 +307,7 @@ class DebugVariableViewer(object):
                 srcY = srcBBox.y - (srcPos.y if destBBox.y == 0 else 0)
 
                 srcBmp = _convert_agg_to_wx_bitmap(
-                            srcPanel.get_renderer(), None)
+                    srcPanel.get_renderer(), None)
                 srcDC = wx.MemoryDC()
                 srcDC.SelectObject(srcBmp)
 
@@ -429,4 +429,4 @@ class DebugVariableViewer(object):
         @param item: Item to release value
         """
         self.ParentWindow.ReleaseDataValue(
-                item.GetVariable().upper())
+            item.GetVariable().upper())

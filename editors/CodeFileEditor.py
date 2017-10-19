@@ -142,7 +142,7 @@ class CodeEditor(CustomStyledTextCtrl):
                 self.COMMENT_HEADER * (len_headers - len_headers / 2)
 
             self.SectionsComments[section] = {
-                 "comment": section_comment,
+                "comment": section_comment,
             }
 
         for i, section in enumerate(self.Controler.SECTIONS_NAMES):
@@ -322,11 +322,9 @@ class CodeEditor(CustomStyledTextCtrl):
             newline_size = 1
 
         # Disable to type any character in section header lines
-        if (self.GetLineState(self.LineFromPosition(current_pos)) and
-            not text_selected and
-            key not in NAVIGATION_KEYS + [
-                wx.WXK_RETURN,
-                wx.WXK_NUMPAD_ENTER]):
+        if self.GetLineState(self.LineFromPosition(current_pos)) and \
+           not text_selected and \
+           key not in NAVIGATION_KEYS + [wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER]:
             return
 
         # Disable to delete line between code and header lines
@@ -706,7 +704,7 @@ class VariablesEditor(wx.Panel):
                     name = row_content["Name"]
                     start_idx = 0
                 row_content["Name"] = self.Controler.GenerateNewName(
-                        name + "%d", start_idx)
+                    name + "%d", start_idx)
             else:
                 row_content = self.VariablesDefaultValue.copy()
             self.Table.InsertRow(new_row, row_content)

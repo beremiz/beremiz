@@ -395,7 +395,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                 location = "%M" + location
                         if element_type == "functionBlock":
                             configs = self.ParentWindow.Controler.GetProjectConfigNames(
-                                                                self.ParentWindow.Debug)
+                                self.ParentWindow.Debug)
                             if len(configs) == 0:
                                 return
                             if not var_name.upper() in [
@@ -619,7 +619,7 @@ class VariablePanel(wx.Panel):
                     row_content.Class = self.Filter
 
             row_content.Name = self.Controler.GenerateNewName(
-                    self.TagName, None, name + "%d", start_idx)
+                self.TagName, None, name + "%d", start_idx)
 
             if self.Filter == "All" and len(self.Values) > 0:
                 self.Values.insert(new_row, row_content)

@@ -590,8 +590,9 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Wire Menu items to the given menu
     def AddWireMenuItems(self, menu, delete=False, replace=False):
-        [ID_ADD_SEGMENT, ID_DELETE_SEGMENT, ID_REPLACE_WIRE,
-         ] = [wx.NewId() for dummy in xrange(3)]
+        [
+            ID_ADD_SEGMENT, ID_DELETE_SEGMENT, ID_REPLACE_WIRE,
+        ] = [wx.NewId() for dummy in xrange(3)]
 
         # Create menu items
         self.AddMenuItems(menu, [
@@ -637,7 +638,7 @@ class Viewer(EditorPanel, DebugViewer):
 
             if self.CurrentLanguage != "SFC":
                 self.AddMenuItems(menu, [
-                     (ID_ADD_COIL, wx.ITEM_NORMAL, _(u'Coil'), '', self.GetAddMenuCallBack(self.AddNewCoil))])
+                    (ID_ADD_COIL, wx.ITEM_NORMAL, _(u'Coil'), '', self.GetAddMenuCallBack(self.AddNewCoil))])
 
             menu.AppendSeparator()
 
@@ -658,7 +659,7 @@ class Viewer(EditorPanel, DebugViewer):
                 None])
 
         self.AddMenuItems(menu, [
-             (ID_ADD_COMMENT, wx.ITEM_NORMAL, _(u'Comment'), '', self.GetAddMenuCallBack(self.AddNewComment))])
+            (ID_ADD_COMMENT, wx.ITEM_NORMAL, _(u'Comment'), '', self.GetAddMenuCallBack(self.AddNewComment))])
 
     # Add Default Menu items to the given menu
     def AddDefaultMenuItems(self, menu, edit=False, block=False):
@@ -667,9 +668,9 @@ class Viewer(EditorPanel, DebugViewer):
 
             # Create menu items
             self.AddMenuItems(menu, [
-                 (ID_EDIT_BLOCK, wx.ITEM_NORMAL, _(u'Edit Block'), '', self.OnEditBlockMenu),
-                 (ID_ADJUST_BLOCK_SIZE, wx.ITEM_NORMAL, _(u'Adjust Block Size'), '', self.OnAdjustBlockSizeMenu),
-                 (ID_DELETE, wx.ITEM_NORMAL, _(u'Delete'), '', self.OnDeleteMenu)])
+                (ID_EDIT_BLOCK, wx.ITEM_NORMAL, _(u'Edit Block'), '', self.OnEditBlockMenu),
+                (ID_ADJUST_BLOCK_SIZE, wx.ITEM_NORMAL, _(u'Adjust Block Size'), '', self.OnAdjustBlockSizeMenu),
+                (ID_DELETE, wx.ITEM_NORMAL, _(u'Delete'), '', self.OnDeleteMenu)])
 
             menu.Enable(ID_EDIT_BLOCK, edit)
 
@@ -693,9 +694,9 @@ class Viewer(EditorPanel, DebugViewer):
 
         # Create menu items
         self.AddMenuItems(menu, [
-             (ID_CUT, wx.ITEM_NORMAL, _(u'Cut'), '', self.GetClipboardCallBack(self.Cut)),
-             (ID_COPY, wx.ITEM_NORMAL, _(u'Copy'), '', self.GetClipboardCallBack(self.Copy)),
-             (ID_PASTE, wx.ITEM_NORMAL, _(u'Paste'), '', self.GetAddMenuCallBack(self.Paste))])
+            (ID_CUT, wx.ITEM_NORMAL, _(u'Cut'), '', self.GetClipboardCallBack(self.Cut)),
+            (ID_COPY, wx.ITEM_NORMAL, _(u'Copy'), '', self.GetClipboardCallBack(self.Copy)),
+            (ID_PASTE, wx.ITEM_NORMAL, _(u'Paste'), '', self.GetAddMenuCallBack(self.Paste))])
 
         menu.Enable(ID_CUT, block)
         menu.Enable(ID_COPY, block)
@@ -1510,9 +1511,8 @@ class Viewer(EditorPanel, DebugViewer):
                 wire.EndConnected = end_connector
                 connected.RefreshConnectors()
                 self.AddWire(wire)
-                if selection is not None and (
-                   selection[1].get((id, refLocalId), False) or
-                   selection[1].get((refLocalId, id), False)):
+                if selection is not None and (selection[1].get((id, refLocalId), False) or
+                                              selection[1].get((refLocalId, id), False)):
                     self.SelectInGroup(wire)
             else:
                 links_connected = False
@@ -1831,7 +1831,7 @@ class Viewer(EditorPanel, DebugViewer):
 
             # Get a new default connection name
             connection_name = self.Controler.GenerateNewName(
-                    self.TagName, None, "Connection%d", 0)
+                self.TagName, None, "Connection%d", 0)
 
             # Create a connector to connect to wire
             id = self.GetNewId()
@@ -2051,10 +2051,11 @@ class Viewer(EditorPanel, DebugViewer):
                         WEST: [WEST, EAST],
                         NORTH: [NORTH, SOUTH],
                         SOUTH: [SOUTH, NORTH]}[connector.GetDirection()]
-                    wire = Wire(self, *map(list, zip(
-                                           [wx.Point(pos.x, pos.y),
-                                            wx.Point(scaled_pos.x, scaled_pos.y)],
-                                           directions)))
+                    wire = Wire(self,
+                                *map(list, zip(
+                                    [wx.Point(pos.x, pos.y),
+                                     wx.Point(scaled_pos.x, scaled_pos.y)],
+                                    directions)))
                     wire.oldPos = scaled_pos
                     wire.Handle = (HANDLE_POINT, 0)
                     wire.ProcessDragging(0, 0, event, None)
@@ -2968,7 +2969,7 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.SetValues({
             "type": powerrail.GetType(),
             "pin_number": len(powerrail.GetConnectors()[
-                    ("outputs" if powerrail_type == LEFTRAIL else "inputs")])})
+                ("outputs" if powerrail_type == LEFTRAIL else "inputs")])})
         if dialog.ShowModal() == wx.ID_OK:
             values = dialog.GetValues()
             rect = powerrail.GetRedrawRect(1, 1)

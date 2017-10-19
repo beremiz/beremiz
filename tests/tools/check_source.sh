@@ -205,6 +205,7 @@ pylint_checks()
     disable=$disable,W0123        # (eval-used) Use of eval
     disable=$disable,I0011        # (locally-disabled) Locally disabling ungrouped-imports (C0412)
     disable=$disable,R0204        # (redefined-variable-type) Redefinition of current type from X to Y
+    disable=$disable,R0201        # (no-self-use) Method could be a function
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -265,7 +266,8 @@ pylint_checks()
     enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
-    enable=$enable,W0106          # (expression-not-assigned)
+    enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
+    enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     # enable=
 
     options=

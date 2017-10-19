@@ -263,11 +263,11 @@ class DataTypeEditor(EditorPanel):
         enumerated_panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         self.EnumeratedValues = CustomEditableListBox(
-                self.EnumeratedPanel,
-                label=_("Values:"),
-                style=(wx.gizmos.EL_ALLOW_NEW |
-                       wx.gizmos.EL_ALLOW_EDIT |
-                       wx.gizmos.EL_ALLOW_DELETE))
+            self.EnumeratedPanel,
+            label=_("Values:"),
+            style=(wx.gizmos.EL_ALLOW_NEW |
+                   wx.gizmos.EL_ALLOW_EDIT |
+                   wx.gizmos.EL_ALLOW_DELETE))
         setattr(self.EnumeratedValues, "_OnLabelEndEdit", self.OnEnumeratedValueEndEdit)
         for func in ["_OnAddButton", "_OnDelButton", "_OnUpButton", "_OnDownButton"]:
             setattr(self.EnumeratedValues, func, self.OnEnumeratedValuesChanged)
@@ -328,11 +328,11 @@ class DataTypeEditor(EditorPanel):
                                          flag=wx.ALL)
 
         self.ArrayDimensions = CustomEditableListBox(
-                self.ArrayPanel,
-                label=_("Dimensions:"),
-                style=(wx.gizmos.EL_ALLOW_NEW |
-                       wx.gizmos.EL_ALLOW_EDIT |
-                       wx.gizmos.EL_ALLOW_DELETE))
+            self.ArrayPanel,
+            label=_("Dimensions:"),
+            style=(wx.gizmos.EL_ALLOW_NEW |
+                   wx.gizmos.EL_ALLOW_EDIT |
+                   wx.gizmos.EL_ALLOW_DELETE))
         for func in ["_OnLabelEndEdit", "_OnAddButton", "_OnDelButton",
                      "_OnUpButton", "_OnDownButton"]:
             setattr(self.ArrayDimensions, func, self.OnDimensionsChanged)

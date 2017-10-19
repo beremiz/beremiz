@@ -114,8 +114,8 @@ class SVGUI_HMI(website.PLCHMI):
     jsClass = u"LiveSVGPage.LiveSVGWidget"
 
     docFactory = loaders.stan(tags.div(render=tags.directive('liveElement'))[
-                                         tags.xml(loaders.xmlfile(os.path.join(NS.WorkingDir, svgfile))),
-                                         ])
+        tags.xml(loaders.xmlfile(os.path.join(NS.WorkingDir, svgfile))),
+    ])
 
     def HMIinitialisation(self):
         gadgets = []

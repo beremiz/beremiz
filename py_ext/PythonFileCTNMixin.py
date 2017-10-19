@@ -99,21 +99,29 @@ class PythonFileCTNMixin(CodeFile):
         location_str = "_".join(map(str, self.GetCurrentLocation()))
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
+        def _onchangecode(var):
+            return '"' + var.getonchange() + \
+                "('" + var.getname() + "')\"" \
+                if var.getonchange() else '""'
+
+        def _onchange(var):
+            return repr(var.getonchange()) \
+                if var.getonchange() else None
+
         pyextname = self.CTNName()
-        varinfos = map(lambda variable: {
-            "name": variable.getname(),
-            "desc": repr(variable.getdesc()),
-            "onchangecode": '"' + variable.getonchange() +
-            "('" + variable.getname() + "')\""
-            if variable.getonchange() else '""',
-            "onchange": repr(variable.getonchange())
-            if variable.getonchange() else None,
-            "opts": repr(variable.getopts()),
-            "configname": configname.upper(),
-            "uppername": variable.getname().upper(),
-            "IECtype": variable.gettype(),
-            "pyextname": pyextname},
-                       self.CodeFile.variables.variable)
+        varinfos = map(
+            lambda variable: {
+                "name": variable.getname(),
+                "desc": repr(variable.getdesc()),
+                "onchangecode": _onchangecode(variable),
+                "onchange": _onchange(variable),
+                "opts": repr(variable.getopts()),
+                "configname": configname.upper(),
+                "uppername": variable.getname().upper(),
+                "IECtype": variable.gettype(),
+                "pyextname": pyextname
+            },
+            self.CodeFile.variables.variable)
         # python side PLC global variables access stub
         globalstubs = "\n".join([
             """\
@@ -250,9 +258,9 @@ PYTHON_POLL* __%(name)s_notifier;
         varpub = "\n".join([(varpubonchangefmt if varinfo["onchange"] else
                              varpubfmt) % varinfo
                             for varinfo in varinfos])
-        varinit = "\n".join([varinitonchangefmt % dict(
-                                onchangelen=len(varinfo["onchangecode"]), **varinfo)
-                            for varinfo in varinfos if varinfo["onchange"]])
+        varinit = "\n".join([varinitonchangefmt %
+                             dict(onchangelen=len(varinfo["onchangecode"]), **varinfo)
+                             for varinfo in varinfos if varinfo["onchange"]])
 
         loc_dict = {
             "vardec": vardec,

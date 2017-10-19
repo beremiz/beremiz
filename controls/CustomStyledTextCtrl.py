@@ -97,10 +97,9 @@ class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
             if not event.Dragging():
                 x, _y = event.GetPosition()
                 margin_width = reduce(
-                        lambda x, y: x + y,
-                        [self.GetMarginWidth(i)
-                         for i in xrange(3)],
-                        0)
+                    lambda x, y: x + y,
+                    [self.GetMarginWidth(i) for i in xrange(3)],
+                    0)
                 if x <= margin_width:
                     self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
                 else:

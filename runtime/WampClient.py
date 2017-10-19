@@ -36,18 +36,19 @@ from twisted.internet.protocol import ReconnectingClientFactory
 _WampSession = None
 _PySrv = None
 
-ExposedCalls = ["StartPLC",
-                "StopPLC",
-                "ForceReload",
-                "GetPLCstatus",
-                "NewPLC",
-                "MatchMD5",
-                "SetTraceVariablesList",
-                "GetTraceVariables",
-                "RemoteExec",
-                "GetLogMessage",
-                "ResetLogCount",
-                ]
+ExposedCalls = [
+    "StartPLC",
+    "StopPLC",
+    "ForceReload",
+    "GetPLCstatus",
+    "NewPLC",
+    "MatchMD5",
+    "SetTraceVariablesList",
+    "GetTraceVariables",
+    "RemoteExec",
+    "GetLogMessage",
+    "ResetLogCount",
+]
 
 SubscribedEvents = []
 

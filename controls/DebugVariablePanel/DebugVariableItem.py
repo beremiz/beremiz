@@ -342,14 +342,14 @@ class DebugVariableItem(DebugDataConsumer):
             # Get raw value if asked
             if not raw:
                 value = TYPE_TRANSLATOR.get(
-                        self.VariableType, str)(value)
+                    self.VariableType, str)(value)
 
             return value, forced
 
         # Return raw value if asked
         if not raw and self.VariableType in ["STRING", "WSTRING"]:
             return TYPE_TRANSLATOR.get(
-                    self.VariableType, str)(self.Value)
+                self.VariableType, str)(self.Value)
         return self.Value
 
     def GetNearestData(self, tick, adjust):

@@ -202,8 +202,8 @@ class VariablesInfosFactory(object):
         self.TreeStack[-1].append(var)
 
     def AddVariable(self, context, *args):
-        self.Variables.append(_VariableInfos(*(_translate_args(
-            [_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
+        self.Variables.append(_VariableInfos(*(
+            _translate_args([_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
             [self.GetType(), self.GetTree()])))
 
 # -------------------------------------------------------------------------------
@@ -1590,9 +1590,9 @@ class PLCControler(object):
     def GetConfNodeDataTypes(self, exclude=None, only_locatables=False):
         return [{"name": _("%s Data Types") % confnodetypes["name"],
                  "list": [
-                    datatype.getname()
-                    for datatype in confnodetypes["types"].getdataTypes()
-                    if not only_locatables or self.IsLocatableDataType(datatype)]}
+                     datatype.getname()
+                     for datatype in confnodetypes["types"].getdataTypes()
+                     if not only_locatables or self.IsLocatableDataType(datatype)]}
                 for confnodetypes in self.ConfNodeTypes]
 
     def GetVariableLocationTree(self):
@@ -2989,7 +2989,7 @@ class PLCControler(object):
                  SELECTION_CONVERGENCE: "selectionConvergence",
                  SIMULTANEOUS_DIVERGENCE: "simultaneousDivergence",
                  SIMULTANEOUS_CONVERGENCE: "simultaneousConvergence"}.get(
-                    divergence_type), "sfcObjects")
+                     divergence_type), "sfcObjects")
             divergence.setlocalId(id)
             element.addinstance(divergence)
 

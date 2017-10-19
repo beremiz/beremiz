@@ -48,9 +48,9 @@ def get_last_traceback(tb):
 
 
 lib_ext = {
-     "linux2": ".so",
-     "win32":  ".dll",
-     }.get(sys.platform, "")
+    "linux2": ".so",
+    "win32":  ".dll",
+}.get(sys.platform, "")
 
 
 def PLCprint(message):
@@ -85,8 +85,8 @@ class PLCObject(pyro.ObjBase):
         # Get the last transfered PLC if connector must be restart
         try:
             self.CurrentPLCFilename = open(
-                             self._GetMD5FileName(),
-                             "r").read().strip() + lib_ext
+                self._GetMD5FileName(),
+                "r").read().strip() + lib_ext
             if self.LoadPLC():
                 self.PLCStatus = "Stopped"
         except Exception:
@@ -560,5 +560,5 @@ class PLCObject(pyro.ObjBase):
             _e_type, e_value, e_traceback = sys.exc_info()
             line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
             return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
-                        (line_no, e_value, script.splitlines()[line_no - 1]))
+                    (line_no, e_value, script.splitlines()[line_no - 1]))
         return (0, kwargs.get("returnVal", None))

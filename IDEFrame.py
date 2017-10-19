@@ -1268,19 +1268,19 @@ class IDEFrame(wx.Frame):
     def SetDeleteFunctions(self):
         self.DeleteFunctions = {
             ITEM_DATATYPE: GetDeleteElementFunction(
-                    PLCControler.ProjectRemoveDataType,
-                    check_function=self.CheckDataTypeIsUsedBeforeDeletion),
+                PLCControler.ProjectRemoveDataType,
+                check_function=self.CheckDataTypeIsUsedBeforeDeletion),
             ITEM_POU: GetDeleteElementFunction(
-                    PLCControler.ProjectRemovePou,
-                    check_function=self.CheckPouIsUsedBeforeDeletion),
+                PLCControler.ProjectRemovePou,
+                check_function=self.CheckPouIsUsedBeforeDeletion),
             ITEM_TRANSITION: GetDeleteElementFunction(
-                    PLCControler.ProjectRemovePouTransition, ITEM_POU),
+                PLCControler.ProjectRemovePouTransition, ITEM_POU),
             ITEM_ACTION: GetDeleteElementFunction(
-                    PLCControler.ProjectRemovePouAction, ITEM_POU),
+                PLCControler.ProjectRemovePouAction, ITEM_POU),
             ITEM_CONFIGURATION: GetDeleteElementFunction(
-                    PLCControler.ProjectRemoveConfiguration),
+                PLCControler.ProjectRemoveConfiguration),
             ITEM_RESOURCE: GetDeleteElementFunction(
-                    PLCControler.ProjectRemoveConfigurationResource, ITEM_CONFIGURATION)
+                PLCControler.ProjectRemoveConfigurationResource, ITEM_CONFIGURATION)
         }
 
     def OnDeleteMenu(self, event):
@@ -1777,7 +1777,7 @@ class IDEFrame(wx.Frame):
                 if self.LastToolTipItem != item and \
                    item_infos["type"] in [ITEM_POU, ITEM_TRANSITION, ITEM_ACTION]:
                     bodytype = self.Controler.GetEditedElementBodyType(
-                            item_infos["tagname"])
+                        item_infos["tagname"])
                     if item_infos["type"] == ITEM_POU:
                         block_type = {
                             "program": _("Program"),

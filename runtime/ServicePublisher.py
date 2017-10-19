@@ -64,11 +64,11 @@ class ServicePublisher(object):
         self.ip_32b = socket.inet_aton(ip)
 
         self.server.register_service(
-             zeroconf.ServiceInfo(service_type,
-                                  self.service_name,
-                                  self.ip_32b,
-                                  self.port,
-                                  properties=self.serviceproperties))
+            zeroconf.ServiceInfo(service_type,
+                                 self.service_name,
+                                 self.ip_32b,
+                                 self.port,
+                                 properties=self.serviceproperties))
         self.retrytimer = None
 
     def UnRegisterService(self):

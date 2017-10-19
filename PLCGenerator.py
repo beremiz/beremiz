@@ -497,11 +497,14 @@ class ProgramGenerator(object):
 [StepClass, TransitionClass, JumpStepClass,
  SelectionConvergenceClass, SelectionDivergenceClass,
  SimultaneousConvergenceClass, SimultaneousDivergenceClass] = [
-    PLCOpenParser.GetElementClass(instance_name, "sfcObjects")
-    for instance_name in [
-            "step", "transition", "jumpStep",
-            "selectionConvergence", "selectionDivergence",
-            "simultaneousConvergence", "simultaneousDivergence"]]
+     PLCOpenParser.GetElementClass(instance_name, "sfcObjects")
+     for instance_name in ["step",
+                           "transition",
+                           "jumpStep",
+                           "selectionConvergence",
+                           "selectionDivergence",
+                           "simultaneousConvergence",
+                           "simultaneousDivergence"]]
 TransitionObjClass = PLCOpenParser.GetElementClass("transition", "transitions")
 ActionObjClass = PLCOpenParser.GetElementClass("action", "actions")
 
@@ -905,7 +908,7 @@ class PouProgramGenerator(object):
             text = body_content.getanyText()
             self.ParentGenerator.GeneratePouProgramInText(text.upper())
             self.Program = [(ReIndentText(text, len(self.CurrentIndent)),
-                            (self.TagName, "body", len(self.CurrentIndent)))]
+                             (self.TagName, "body", len(self.CurrentIndent)))]
         elif body_type == "SFC":
             self.IndentRight()
             for instance in body.getcontentInstances():

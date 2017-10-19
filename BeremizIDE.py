@@ -348,8 +348,8 @@ class Beremiz(IDEFrame):
         self.SetAcceleratorTable(wx.AcceleratorTable(accels))
 
         self.LogConsole = CustomStyledTextCtrl(
-                  name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
-                  size=wx.Size(0, 0))
+            name='LogConsole', parent=self.BottomNoteBook, pos=wx.Point(0, 0),
+            size=wx.Size(0, 0))
         self.LogConsole.Bind(wx.EVT_SET_FOCUS, self.OnLogConsoleFocusChanged)
         self.LogConsole.Bind(wx.EVT_KILL_FOCUS, self.OnLogConsoleFocusChanged)
         self.LogConsole.Bind(wx.stc.EVT_STC_UPDATEUI, self.OnLogConsoleUpdateUI)
@@ -584,12 +584,12 @@ class Beremiz(IDEFrame):
         return True
 
     def GetTabInfos(self, tab):
-        if (isinstance(tab, EditorPanel) and
-            not isinstance(tab, (Viewer,
-                                 TextViewer,
-                                 ResourceEditor,
-                                 ConfigurationEditor,
-                                 DataTypeEditor))):
+        if isinstance(tab, EditorPanel) and \
+           not isinstance(tab, (Viewer,
+                                TextViewer,
+                                ResourceEditor,
+                                ConfigurationEditor,
+                                DataTypeEditor)):
             return ("confnode", tab.Controler.CTNFullName(), tab.GetTagName())
         elif (isinstance(tab, TextViewer) and
               (tab.Controler is None or isinstance(tab.Controler, MiniTextControler))):

@@ -142,7 +142,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         """
         # Get variable class to select POU variable applicable
         var_class = VARIABLE_CLASSES_DICT_REVERSE[
-                            self.Class.GetStringSelection()]
+            self.Class.GetStringSelection()]
 
         # Refresh names in name list box by selecting variables in POU variables
         # list that can be applied to variable class
@@ -205,7 +205,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         expression = self.Expression.GetValue()
         values = {
             "class": VARIABLE_CLASSES_DICT_REVERSE[
-                        self.Class.GetStringSelection()],
+                self.Class.GetStringSelection()],
             "expression": expression,
             "var_type": self.VariableList.get(expression, (None, None))[1],
             "executionOrder": self.ExecutionOrder.GetValue()}

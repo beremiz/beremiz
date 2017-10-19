@@ -117,10 +117,10 @@ class ProcessLogger(object):
         self.endlock = Lock()
 
         popenargs = {
-               "cwd":    os.getcwd() if cwd is None else cwd,
-               "stdin":  subprocess.PIPE,
-               "stdout": subprocess.PIPE,
-               "stderr": subprocess.PIPE
+            "cwd":    os.getcwd() if cwd is None else cwd,
+            "stdin":  subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE
         }
 
         if no_gui and wx.Platform == '__WXMSW__':
@@ -139,16 +139,16 @@ class ProcessLogger(object):
         self.Proc = subprocess.Popen(self.Command, **popenargs)
 
         self.outt = outputThread(
-                      self.Proc,
-                      self.Proc.stdout,
-                      self.output,
-                      self.finish)
+            self.Proc,
+            self.Proc.stdout,
+            self.output,
+            self.finish)
         self.outt.start()
 
         self.errt = outputThread(
-                      self.Proc,
-                      self.Proc.stderr,
-                      self.errors)
+            self.Proc,
+            self.Proc.stderr,
+            self.errors)
         self.errt.start()
         self.startsem.release()
 

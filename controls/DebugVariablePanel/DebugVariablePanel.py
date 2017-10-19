@@ -847,10 +847,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             target_panel = self.GraphicPanels[target_idx]
             graph_type = target_panel.GraphType
             if target_panel != source_panel:
-                if (merge_type == GRAPH_PARALLEL and graph_type != merge_type or
-                    merge_type == GRAPH_ORTHOGONAL and
-                    (graph_type == GRAPH_PARALLEL and len(target_panel.Items) > 1 or
-                     graph_type == GRAPH_ORTHOGONAL and len(target_panel.Items) >= 3)):
+                if merge_type == GRAPH_PARALLEL and graph_type != merge_type or \
+                   merge_type == GRAPH_ORTHOGONAL and (
+                           graph_type == GRAPH_PARALLEL and len(target_panel.Items) > 1 or
+                           graph_type == GRAPH_ORTHOGONAL and len(target_panel.Items) >= 3):
                     return
 
                 if source_panel is not None:
