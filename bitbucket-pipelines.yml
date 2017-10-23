@@ -5,6 +5,7 @@ pipelines:
     checks: # The name that is displayed in the list in the Bitbucket Cloud GUI
         - step:
             script: # Modify the commands below to build your repository.
+              - ln -s /CanFestival-3 $BITBUCKET_CLONE_DIR/../CanFestival-3
               - /usr/bin/python --version
               - ./tests/tools/check_source.sh
               - ./tests/tools/run_python_tests.sh
@@ -13,7 +14,7 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
+          - ln -s /CanFestival-3 $BITBUCKET_CLONE_DIR/../CanFestival-3
           - /usr/bin/python --version
-          - ./tests/tools/check_source.sh 
-          - ./tests/tools/run_python_tests.sh         
-          
+          - ./tests/tools/check_source.sh
+          - ./tests/tools/run_python_tests.sh
