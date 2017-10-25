@@ -55,6 +55,7 @@ Latest Revision before Latest Revision before Latest Revision: 31 May 2005, 23.1
 
 """
 
+from __future__ import absolute_import
 import wx
 
 # Horizontal Alignment Constants

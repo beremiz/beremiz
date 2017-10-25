@@ -34,6 +34,8 @@ Beremiz Targets
 - The target folder's name must match to name define in the XSD for TargetType
 """
 
+
+from __future__ import absolute_import
 from os import listdir, path
 import util.paths as paths
 

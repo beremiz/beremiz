@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# pylint: disable=too-many-function-args,undefined-variable
+# pylint: disable=too-many-function-args,undefined-variable,no-absolute-import
 
 # iteration from Bob Ippolito's Iteration in JavaScript
 

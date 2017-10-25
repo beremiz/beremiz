@@ -1,6 +1,8 @@
 # jsonrpc.py
 #   original code: http://trac.pyworks.org/pyjamas/wiki/DjangoWithPyJamas
 #   also from: http://www.pimentech.fr/technologies/outils
+
+from __future__ import absolute_import
 import datetime
 
 from django.core.serializers import serialize
