@@ -25,6 +25,8 @@
 
 # Package initialisation
 
+
+from __future__ import absolute_import
 from os import listdir, path
 import util.paths as paths
 

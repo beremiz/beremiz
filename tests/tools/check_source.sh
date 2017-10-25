@@ -272,6 +272,7 @@ pylint_checks()
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
     enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
+    enable=$enable,W1618          # (no-absolute-import) import missing `from __future__ import absolute_import`
     # enable=
 
     options=

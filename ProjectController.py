@@ -26,6 +26,9 @@
 """
 Beremiz Project Controller
 """
+
+
+from __future__ import absolute_import
 import os
 import traceback
 import time
