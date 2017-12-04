@@ -177,6 +177,7 @@ class ProcessLogger(object):
     def finish(self, pid, ecode):
         # avoid running function before start is finished
         self.startsem.acquire()
+        self.startsem.release()
         if self.timeout:
             self.timeout.cancel()
         self.exitcode = ecode
