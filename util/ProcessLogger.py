@@ -78,7 +78,7 @@ class ProcessLogger(object):
                  no_stdout=False, no_stderr=False, no_gui=True,
                  timeout=None, outlimit=None, errlimit=None,
                  endlog=None, keyword=None, kill_it=False, cwd=None,
-                 encoding=None):
+                 encoding=None, output_encoding=None):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -95,6 +95,7 @@ class ProcessLogger(object):
             self.Command_str = subprocess.list2cmdline(self.Command)
 
         fsencoding = sys.getfilesystemencoding()
+        self.output_encoding = output_encoding
 
         if encoding is None:
             encoding = fsencoding
@@ -155,6 +156,8 @@ class ProcessLogger(object):
         self.startsem.release()
 
     def output(self, v):
+        if v and self.output_encoding:
+            v = v.decode(self.output_encoding)
         self.outdata.append(v)
         self.outlen += 1
         if not self.no_stdout:
@@ -163,6 +166,8 @@ class ProcessLogger(object):
             self.endlog()
 
     def errors(self, v):
+        if v and self.output_encoding:
+            v = v.decode(self.output_encoding)
         self.errdata.append(v)
         self.errlen += 1
         if not self.no_stderr:
