@@ -175,6 +175,9 @@ class SearchResultPanel(wx.Panel):
     def RefreshView(self):
         self.SearchResultsTree.DeleteAllItems()
         if self.Criteria is None:
+            self.SearchResultsTree.AddRoot("")
+            root = self.SearchResultsTree.GetRootItem()
+            root.SetHilight(False)
             self.HeaderLabel.SetLabel(_("No search results available."))
             self.ResetButton.Enable(False)
         else:

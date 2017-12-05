@@ -1514,12 +1514,13 @@ class IDEFrame(wx.Frame):
             tagname = None
 
         # Refresh treectrl items according to project infos
-        infos = self.Controler.GetProjectInfos()
-        root = self.ProjectTree.GetRootItem()
-        if root is None or not root.IsOk():
-            root = self.ProjectTree.AddRoot(infos["name"])
-        self.GenerateProjectTreeBranch(root, infos)
-        self.ProjectTree.Expand(root)
+        if self.Controler:
+            infos = self.Controler.GetProjectInfos()
+            root = self.ProjectTree.GetRootItem()
+            if root is None or not root.IsOk():
+                root = self.ProjectTree.AddRoot(infos["name"])
+            self.GenerateProjectTreeBranch(root, infos)
+            self.ProjectTree.Expand(root)
 
         # Select new item corresponding to previous selected item
         if tagname is not None:
