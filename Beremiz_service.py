@@ -319,20 +319,20 @@ if enablewx:
                                _("IP is not valid!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.ip_addr = dlg.GetValue()
-                    self.pyroserver.Stop()
+                    self.pyroserver.Restart()
 
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
                 dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
-                    self.pyroserver.Stop()
+                    self.pyroserver.Restart()
 
             def OnTaskBarChangeWorkingDir(self, evt):
                 dlg = wx.DirDialog(None, _("Choose a working directory "), self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.workdir = dlg.GetPath()
-                    self.pyroserver.Stop()
+                    self.pyroserver.Restart()
 
             def OnTaskBarChangeName(self, evt):
                 servicename = self.pyroserver.servicename
@@ -412,24 +412,26 @@ class Server(object):
 
     def Loop(self):
         while self.continueloop:
+            pyro.initServer()
+            self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
             self.Start()
+            self.daemon.requestLoop()
+            self.daemon.sock.close()
 
     def Restart(self):
-        self.Stop()
+        self._stop()
 
     def Quit(self):
         self.continueloop = False
         if self.plcobj is not None:
             self.plcobj.StopPLC()
             self.plcobj.UnLoadPLC()
-        self.Stop()
+        self._stop()
 
     def Start(self):
-        pyro.initServer()
-        self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
-                                self.statuschange, self.evaluator,
-                                self.pyruntimevars)
+                                    self.statuschange, self.evaluator,
+                                    self.pyruntimevars)
         uri = self.daemon.connect(self.plcobj, "PLCObject")
 
         print(_("Pyro port :"), self.port)
@@ -458,10 +460,8 @@ class Server(object):
 
         sys.stdout.flush()
 
-        self.daemon.requestLoop()
-        self.daemon.sock.close()
 
-    def Stop(self):
+    def _stop(self):
         if self.plcobj is not None:
             self.plcobj.StopPLC()
         if self.servicepublisher is not None:
