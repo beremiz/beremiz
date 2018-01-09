@@ -85,17 +85,17 @@ class WampSession(wamp.ApplicationSession):
     def onLeave(self, details):
         global _WampSession
         _WampSession = None
-        print('WAMP session left')
+        print(_('WAMP session left'))
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
-        print("WAMP Client connection failed .. retrying ..")
         self.retry(connector)
+        print(_("WAMP Client connection failed .. retrying .."))
 
     def clientConnectionLost(self, connector, reason):
-        print("WAMP Client connection lost .. retrying ..")
         self.retry(connector)
+        print(_("WAMP Client connection lost .. retrying .."))
 
 
 def LoadWampClientConf(wampconf):
@@ -129,7 +129,7 @@ def RegisterWampClient(wampconf):
 
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
-    print("WAMP client connecting to :", WSClientConf["url"])
+    print(_("WAMP client connecting to :"), _WSClientConf["url"])
     return conn
 
 
