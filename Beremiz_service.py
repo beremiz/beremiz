@@ -52,6 +52,7 @@ Usage of Beremiz PLC execution service :\n
            -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
            -w        - web server port or "off" (default:8009)
            -c        - WAMP client config file or "off" (default:wampconf.json)
+           -s        - WAMP client secret, given as a file or "off"
            -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
@@ -70,7 +71,8 @@ except getopt.GetoptError, err:
 given_ip = None
 port = 3000
 webport = 8009
-wampconf = "wampconf.json"
+wampsecret = None
+wampconf = None
 servicename = None
 autostart = False
 enablewx = True
@@ -105,6 +107,8 @@ for o, a in opts:
         webport = None if a == "off" else int(a)
     elif o == "-c":
         wampconf = None if a == "off" else a
+    elif o == "-s":
+        wampsecret = None if a == "off" else a
     elif o == "-e":
         extensions.append(a)
     else:
@@ -596,9 +600,21 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            WC.RegisterWampClient(wampconf)
-            pyruntimevars["wampsession"] = WC.GetSession
-            WC.SetServer(pyroserver)
+            wampconf_project = os.path.join(WorkingDir, "wampconf.json")
+            _wampconf = WC.LoadWampClientConf(wampconf_project) # if project WAMP config is added
+
+            if not _wampconf:
+                # loaded wamp config file path forced parameter -c
+                _wampconf = WC.LoadWampClientConf(wampconf)
+            else:
+                wampconf = wampconf_project
+
+            if _wampconf and _wampconf["url"]:
+                WC.RegisterWampClient(wampconf, wampsecret)
+                pyruntimevars["wampsession"] = WC.GetSession
+                WC.SetServer(pyroserver)
+            else:
+                print(_("WAMP config is not defined."))
         except Exception, e:
             print(_("WAMP client startup failed. "), e)
 
