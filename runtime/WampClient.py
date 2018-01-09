@@ -26,10 +26,13 @@ from __future__ import absolute_import
 from __future__ import print_function
 import json
 
+import os
+import json
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
-from autobahn.wamp import types
+from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
+from autobahn.wamp.exception import ApplicationError
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 
@@ -66,6 +69,21 @@ def GetCallee(name):
 
 
 class WampSession(wamp.ApplicationSession):
+    def onConnect(self):
+        secret = self.config.extra["secret"]
+        if secret:
+            user = self.config.extra["ID"].encode('utf8')
+            self.join(u"Automation", [u"wampcra"], user)
+        else:
+            self.join(u"Automation")
+
+    def onChallenge(self, challenge):
+        if challenge.method == u"wampcra":
+            secret = self.config.extra["secret"].encode('utf8')
+            signature = auth.compute_wcs(secret, challenge.extra['challenge'].encode('utf8'))
+            return signature.decode("ascii")
+        else:
+            raise Exception("don't know how to handle authmethod {}".format(challenge.method))
 
     @inlineCallbacks
     def onJoin(self, details):
@@ -100,22 +118,40 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
 
 
 def LoadWampClientConf(wampconf):
+    try:
+        WSClientConf = json.load(open(wampconf))
+        return WSClientConf
+    except ValueError, ve:
+        print(_("WAMP load error: "), ve)
+        return None
+    except Exception:
+        return None
 
-    WSClientConf = json.load(open(wampconf))
-    return WSClientConf
+def LoadWampSecret(secretfname):
+    try:
+        WSClientWampSecret = open(secretfname, 'rb').read()
+        return WSClientWampSecret
+    except ValueError, ve:
+        print(_("Wamp secret load error:"), ve)
+        return None
+    except Exception:
+        return None
 
 
-def RegisterWampClient(wampconf):
+def RegisterWampClient(wampconf, secretfname):
 
     WSClientConf = LoadWampClientConf(wampconf)
 
-    # start logging to console
-    # log.startLogging(sys.stdout)
+    if not WSClientConf:
+        print _("WAMP client connection not established!")
+        return
+
+    WampSecret = LoadWampSecret(secretfname)
 
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
         realm=WSClientConf["realm"],
-        extra={"ID": WSClientConf["ID"]})
+        extra=WSClientConf)
     session_factory = wamp.ApplicationSessionFactory(
         config=component_config)
     session_factory.session = WampSession
@@ -124,9 +160,7 @@ def RegisterWampClient(wampconf):
     transport_factory = ReconnectingWampWebSocketClientFactory(
         session_factory,
         url=WSClientConf["url"],
-        serializers=[MsgPackSerializer()],
-        debug=False,
-        debug_wamp=False)
+        serializers=[MsgPackSerializer()])
 
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
