@@ -432,8 +432,9 @@ class Server(object):
 
     def Start(self):
         self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
-                                    self.statuschange, self.evaluator,
-                                    self.pyruntimevars)
+                                self.statuschange, self.evaluator,
+                                self.pyruntimevars)
+
         uri = self.daemon.connect(self.plcobj, "PLCObject")
 
         print(_("Pyro port :"), self.port)
@@ -491,7 +492,6 @@ pyruntimevars = {}
 statuschange = []
 
 if havetwisted:
-
     if havewx:
         reactor.registerWxApp(app)
 
