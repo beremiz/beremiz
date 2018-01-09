@@ -90,12 +90,12 @@ class WampSession(wamp.ApplicationSession):
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
-        self.retry(connector)
         print(_("WAMP Client connection failed .. retrying .."))
+        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        self.retry(connector)
         print(_("WAMP Client connection lost .. retrying .."))
+        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
 def LoadWampClientConf(wampconf):
