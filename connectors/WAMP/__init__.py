@@ -83,7 +83,7 @@ def WAMP_connector_factory(uri, confnodesroot):
 
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
-            realm=realm,
+            realm=unicode(realm),
             extra={"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
             config=component_config)
@@ -93,9 +93,7 @@ def WAMP_connector_factory(uri, confnodesroot):
         transport_factory = WampWebSocketClientFactory(
             session_factory,
             url=url,
-            serializers=[MsgPackSerializer()],
-            debug=False,
-            debug_wamp=False)
+            serializers=[MsgPackSerializer()])
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory)
@@ -111,7 +109,7 @@ def WAMP_connector_factory(uri, confnodesroot):
         reactor.run(installSignalHandlers=False)
 
     def WampSessionProcMapper(funcname):
-        wampfuncname = '.'.join((ID, funcname))
+        wampfuncname = unicode('.'.join((ID, funcname)))
 
         def catcher_func(*args, **kwargs):
             if _WampSession is not None:

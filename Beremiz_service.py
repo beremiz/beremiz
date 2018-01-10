@@ -576,6 +576,11 @@ if havetwisted:
             webport = None
         NS.WorkingDir = WorkingDir
 
+    if wampconf is None:
+        _wampconf = os.path.join(WorkingDir, "wampconf.json")
+        if os.path.exists(_wampconf) :
+            wampconf = _wampconf
+
     if wampconf is not None:
         try:
             import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
@@ -600,21 +605,16 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            wampconf_project = os.path.join(WorkingDir, "wampconf.json")
-            _wampconf = WC.LoadWampClientConf(wampconf_project) # if project WAMP config is added
-
-            if not _wampconf:
-                # loaded wamp config file path forced parameter -c
-                _wampconf = WC.LoadWampClientConf(wampconf)
+            _wampconf = WC.LoadWampClientConf(wampconf) # if project WAMP config is added
+            if _wampconf :
+                if _wampconf["url"]: #TODO : test more ?
+                    WC.RegisterWampClient(wampconf, wampsecret)
+                    pyruntimevars["wampsession"] = WC.GetSession
+                    WC.SetServer(pyroserver)
+                else:
+                    print(_("WAMP config is incomplete."))
             else:
-                wampconf = wampconf_project
-
-            if _wampconf and _wampconf["url"]:
-                WC.RegisterWampClient(wampconf, wampsecret)
-                pyruntimevars["wampsession"] = WC.GetSession
-                WC.SetServer(pyroserver)
-            else:
-                print(_("WAMP config is not defined."))
+                print(_("WAMP config is missing."))
         except Exception, e:
             print(_("WAMP client startup failed. "), e)
 

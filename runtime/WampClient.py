@@ -70,8 +70,7 @@ def GetCallee(name):
 
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
-        secret = self.config.extra["secret"]
-        if secret:
+        if self.config.extra.has_key("secret"):
             user = self.config.extra["ID"].encode('utf8')
             self.join(u"Automation", [u"wampcra"], user)
         else:
@@ -143,7 +142,7 @@ def RegisterWampClient(wampconf, secretfname):
     WSClientConf = LoadWampClientConf(wampconf)
 
     if not WSClientConf:
-        print _("WAMP client connection not established!")
+        print(_("WAMP client connection not established!"))
         return
 
     WampSecret = LoadWampSecret(secretfname)
@@ -164,7 +163,7 @@ def RegisterWampClient(wampconf, secretfname):
 
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
-    print(_("WAMP client connecting to :"), _WSClientConf["url"])
+    print(_("WAMP client connecting to :"), WSClientConf["url"])
     return conn
 
 
