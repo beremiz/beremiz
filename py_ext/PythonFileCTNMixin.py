@@ -119,6 +119,7 @@ class PythonFileCTNMixin(CodeFile):
                 "configname": configname.upper(),
                 "uppername": variable.getname().upper(),
                 "IECtype": variable.gettype(),
+                "initial" : repr(variable.getinitial()),
                 "pyextname": pyextname
             },
             self.CodeFile.variables.variable)
@@ -136,6 +137,7 @@ _PySafeSetPLCGlob_%(name)s.argtypes = [ctypes.POINTER(_%(name)s_ctype)]
 _%(pyextname)sGlobalsDesc.append((
     "%(name)s",
     "%(IECtype)s",
+    %(initial)s,
     %(desc)s,
     %(onchange)s,
     %(opts)s))
