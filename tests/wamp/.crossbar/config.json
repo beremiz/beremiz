@@ -1,43 +1,54 @@
-
 {
-   "controller": {
-   },
-   "workers": [
-      {
-         "type": "router",
-         "options": {
-            "pythonpath": [".."]
-         },
-         "realms": [
-            {
-               "name": "Automation",
-               "roles": [
-                  {
-                     "name": "anonymous",
-                     "permissions": [
+    "version": 2,
+    "controller": {},
+    "workers": [
+        {
+            "type": "router",
+            "options": {
+                "pythonpath": [
+                    ".."
+                ]
+            },
+            "realms": [
+                {
+                    "name": "Automation",
+                    "roles": [
                         {
-                           "uri": "*",
-                           "publish": true,
-                           "subscribe": true,
-                           "call": true,
-                           "register": true
+                            "name": "anonymous",
+                            "permissions": [
+                                {
+                                    "uri": "",
+                                    "match": "prefix",
+                                    "allow": {
+                                        "call": true,
+                                        "register": true,
+                                        "publish": true,
+                                        "subscribe": true
+                                    },
+                                    "disclose": {
+                                        "caller": false,
+                                        "publisher": false
+                                    },
+                                    "cache": true
+                                }
+                            ]
                         }
-                     ]
-                  }
-               ]
-            }
-         ],
-         "transports": [
-            {
-               "type": "websocket",
-               "endpoint": {
-                  "type": "tcp",
-                  "port": 8888
-               },
-               "url": "ws://127.0.0.1:8888/",
-               "serializers" : ["msgpack"]
-            }
-         ]
-      }
-   ]
+                    ]
+                }
+            ],
+            "transports": [
+                {
+                    "type": "websocket",
+                    "endpoint": {
+                        "type": "tcp",
+                        "port": 8888
+                    },
+                    "url": "ws://127.0.0.1:8888/",
+                    "serializers": [
+                        "msgpack"
+                    ]
+                }
+            ]
+        }
+    ]
 }
