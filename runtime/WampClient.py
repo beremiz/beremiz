@@ -54,8 +54,13 @@ ExposedCalls = [
     "ResetLogCount",
 ]
 
+# Those two lists are meant to be filled by customized runtime
+# or User python code. 
+
+""" crossbar Events to register to """  
 SubscribedEvents = []
 
+""" things to do on join (callables) """  
 DoOnJoin = []
 
 
@@ -88,14 +93,14 @@ class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
         global _WampSession
         _WampSession = self
-        ID = self.config.extra["ID"]
+        ID = self.config.extra["ID"] # this is unicode
         print('WAMP session joined by :', ID)
         for name in ExposedCalls:
             regoption = types.RegisterOptions(u'exact',u'last',None, None)
-            yield self.register(GetCallee(name), '.'.join((ID, name)), regoption)
+            yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
 
         for name in SubscribedEvents:
-            yield self.subscribe(GetCallee(name), name)
+            yield self.subscribe(GetCallee(name), unicode(name))
 
         for func in DoOnJoin:
             yield func(self)
@@ -150,7 +155,7 @@ def RegisterWampClient(wampconf, secretfname):
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
         realm=WSClientConf["realm"],
-        extra=WSClientConf)
+        extra=WSClientConf) # pass a dict containing unicode values
     session_factory = wamp.ApplicationSessionFactory(
         config=component_config)
     session_factory.session = WampSession
