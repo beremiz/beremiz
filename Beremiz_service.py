@@ -418,8 +418,8 @@ class Server(object):
         while self.continueloop:
             pyro.initServer()
             self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
-            # pyro never frees memory after connection close if no timeout set 
-            self.daemon.setTimeout(1);
+            # pyro never frees memory after connection close if no timeout set
+            self.daemon.setTimeout(1)
             self.Start()
             self.daemon.requestLoop()
             self.daemon.sock.close()
@@ -466,7 +466,6 @@ class Server(object):
         self.plcobj.StatusChange()
 
         sys.stdout.flush()
-
 
     def _stop(self):
         if self.plcobj is not None:
@@ -578,7 +577,7 @@ if havetwisted:
 
     if wampconf is None:
         _wampconf = os.path.join(WorkingDir, "wampconf.json")
-        if os.path.exists(_wampconf) :
+        if os.path.exists(_wampconf):
             wampconf = _wampconf
 
     if wampconf is not None:
@@ -605,9 +604,9 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            _wampconf = WC.LoadWampClientConf(wampconf) # if project WAMP config is added
-            if _wampconf :
-                if _wampconf["url"]: #TODO : test more ?
+            _wampconf = WC.LoadWampClientConf(wampconf)
+            if _wampconf:
+                if _wampconf["url"]:  # TODO : test more ?
                     WC.RegisterWampClient(wampconf, wampsecret)
                     pyruntimevars["wampsession"] = WC.GetSession
                     WC.SetServer(pyroserver)
