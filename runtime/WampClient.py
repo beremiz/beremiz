@@ -25,7 +25,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import json
-
+import time
 import os
 import json
 from autobahn.twisted import wamp
@@ -113,11 +113,11 @@ class WampSession(wamp.ApplicationSession):
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
-        print(_("WAMP Client connection failed .. retrying .."))
+        print _("WAMP Client connection failed (%s) .. retrying .." %time.ctime())
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        print(_("WAMP Client connection lost .. retrying .."))
+        print _("WAMP Client connection lost (%s) .. retrying .." %time.ctime())
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
