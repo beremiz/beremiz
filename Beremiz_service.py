@@ -60,7 +60,7 @@ Usage of Beremiz PLC execution service :\n
 
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:h")
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:h")
 except getopt.GetoptError, err:
     # print help information and exit:
     print(str(err))  # will print something like "option -a not recognized"

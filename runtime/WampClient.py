@@ -152,6 +152,9 @@ def RegisterWampClient(wampconf, secretfname):
 
     WampSecret = LoadWampSecret(secretfname)
 
+    if WampSecret is not None:
+        WSClientConf["secret"] = WampSecret
+
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
         realm=WSClientConf["realm"],
