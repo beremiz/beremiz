@@ -119,7 +119,7 @@ class PythonFileCTNMixin(CodeFile):
                 "configname": configname.upper(),
                 "uppername": variable.getname().upper(),
                 "IECtype": variable.gettype(),
-                "initial" : repr(variable.getinitial()),
+                "initial": repr(variable.getinitial()),
                 "pyextname": pyextname
             },
             self.CodeFile.variables.variable)

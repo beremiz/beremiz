@@ -24,15 +24,12 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
-import json
 import time
-import os
 import json
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
-from autobahn.wamp.exception import ApplicationError
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 
@@ -55,12 +52,12 @@ ExposedCalls = [
 ]
 
 # Those two lists are meant to be filled by customized runtime
-# or User python code. 
+# or User python code.
 
-""" crossbar Events to register to """  
+""" crossbar Events to register to """
 SubscribedEvents = []
 
-""" things to do on join (callables) """  
+""" things to do on join (callables) """
 DoOnJoin = []
 
 
@@ -75,7 +72,7 @@ def GetCallee(name):
 
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
-        if self.config.extra.has_key("secret"):
+        if "secret" in self.config.extra:
             user = self.config.extra["ID"].encode('utf8')
             self.join(u"Automation", [u"wampcra"], user)
         else:
@@ -93,10 +90,10 @@ class WampSession(wamp.ApplicationSession):
     def onJoin(self, details):
         global _WampSession
         _WampSession = self
-        ID = self.config.extra["ID"] # this is unicode
+        ID = self.config.extra["ID"]
         print('WAMP session joined by :', ID)
         for name in ExposedCalls:
-            regoption = types.RegisterOptions(u'exact',u'last',None, None)
+            regoption = types.RegisterOptions(u'exact', u'last', None, None)
             yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
 
         for name in SubscribedEvents:
@@ -113,11 +110,11 @@ class WampSession(wamp.ApplicationSession):
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
     def clientConnectionFailed(self, connector, reason):
-        print _("WAMP Client connection failed (%s) .. retrying .." %time.ctime())
+        print(_("WAMP Client connection failed (%s) .. retrying .." % time.ctime()))
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        print _("WAMP Client connection lost (%s) .. retrying .." %time.ctime())
+        print(_("WAMP Client connection lost (%s) .. retrying .." % time.ctime()))
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
 
@@ -130,6 +127,7 @@ def LoadWampClientConf(wampconf):
         return None
     except Exception:
         return None
+
 
 def LoadWampSecret(secretfname):
     try:
@@ -158,7 +156,7 @@ def RegisterWampClient(wampconf, secretfname):
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
         realm=WSClientConf["realm"],
-        extra=WSClientConf) # pass a dict containing unicode values
+        extra=WSClientConf)
     session_factory = wamp.ApplicationSessionFactory(
         config=component_config)
     session_factory.session = WampSession
