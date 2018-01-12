@@ -54,7 +54,7 @@ def _t(t, u=lambda x: x.value, p=lambda t, x: t(x)):
 
 def _ttime():
     return (IEC_TIME,
-            lambda x: td(0, x.s, x.ns/1000),
+            lambda x: td(0, x.s, x.ns/1000.0),
             lambda t, x: t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000))
 
 
