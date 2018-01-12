@@ -52,7 +52,7 @@ GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
 # Canvas height
 [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI] = [0, 100, 200]
 
-CANVAS_BORDER = (20., 10.)  # Border height on at bottom and top of graph
+CANVAS_BORDER = (30., 20.)  # Border height on at bottom and top of graph
 CANVAS_PADDING = 8.5        # Border inside graph where no label is drawn
 VALUE_LABEL_HEIGHT = 17.    # Height of variable label in graph
 AXES_LABEL_HEIGHT = 12.75   # Height of variable value in graph
