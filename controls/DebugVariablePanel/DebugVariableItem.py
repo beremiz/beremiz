@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 import binascii
 import numpy
+from datetime import timedelta
 from graphics.DebugDataConsumer import DebugDataConsumer, TYPE_TRANSLATOR
 
 # -------------------------------------------------------------------------------
@@ -219,18 +220,20 @@ class DebugVariableItem(DebugDataConsumer):
 
         else:
             self.Data = None
-
+            self.MinValue = None
+            self.MaxValue = None
         # Init variable value
         self.Value = ""
 
     def IsNumVariable(self):
         """
         Return if variable data type is numeric. String variables are
-        considered as numeric (string CRC)
+        considered as numeric (string CRC). Time variables are considered
+        as number of seconds
         @return: True if data type is numeric
         """
         return (self.Parent.IsNumType(self.VariableType) or
-                self.VariableType in ["STRING", "WSTRING"])
+                self.VariableType in ["STRING", "WSTRING", "TIME", "TOD", "DT", "DATE"])
 
     def NewValues(self, ticks, values):
         """
@@ -253,10 +256,15 @@ class DebugVariableItem(DebugDataConsumer):
                 # Translate forced flag to float for storing in Data table
                 forced_value = float(forced)
 
-                # String data value is CRC
-                num_value = (binascii.crc32(value) & STRING_CRC_MASK
-                             if self.VariableType in ["STRING", "WSTRING"]
-                             else float(value))
+                if self.VariableType in ["STRING", "WSTRING"]:
+                    # String data value is CRC
+                    num_value = (binascii.crc32(value) & STRING_CRC_MASK)
+                elif self.VariableType in ["TIME", "TOD", "DT", "DATE"]:
+                    # Numeric value of time type variables
+                    # is represented in seconds
+                    num_value = float(value.total_seconds())
+                else:
+                    num_value = float(value)
 
                 # Update variable range values
                 self.MinValue = (min(self.MinValue, num_value)
@@ -340,6 +348,9 @@ class DebugVariableItem(DebugDataConsumer):
                 self.RawData[int(self.Data[idx, 2])] \
                 if self.VariableType in ["STRING", "WSTRING"] \
                 else self.Data[idx, 1:3]
+
+            if self.VariableType in ["TIME", "TOD", "DT", "DATE"]:
+                value = timedelta(seconds=value)
 
             # Get raw value if asked
             if not raw:
