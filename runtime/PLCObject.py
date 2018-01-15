@@ -32,7 +32,8 @@ from time import time
 
 import Pyro.core as pyro
 
-from targets.typemapping import LogLevelsDefault, LogLevelsCount, TypeTranslator
+from runtime.typemapping import TypeTranslator
+from runtime.loglevels import LogLevelsDefault, LogLevelsCount
 
 
 if os.name in ("nt", "ce"):

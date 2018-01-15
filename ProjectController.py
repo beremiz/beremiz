@@ -59,7 +59,7 @@ from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 import targets
-from targets.typemapping import DebugTypesSize, UnpackDebugBuffer
+from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
 base_folder = paths.AbsParentDir(__file__)
