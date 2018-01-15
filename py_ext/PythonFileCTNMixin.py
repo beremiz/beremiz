@@ -171,7 +171,7 @@ _%(pyextname)sGlobalsDesc.append((
 ##
 
 ## Code for PLC global variable access
-from targets.typemapping import TypeTranslator
+from runtime.typemapping import TypeTranslator
 import ctypes
 _%(pyextname)sGlobalsDesc = []
 __ext_name__ = "%(pyextname)s"
