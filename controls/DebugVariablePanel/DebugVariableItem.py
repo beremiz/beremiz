@@ -24,9 +24,9 @@
 
 
 from __future__ import absolute_import
+from datetime import timedelta
 import binascii
 import numpy
-from datetime import timedelta
 from graphics.DebugDataConsumer import DebugDataConsumer, TYPE_TRANSLATOR
 
 # -------------------------------------------------------------------------------
