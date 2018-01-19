@@ -363,6 +363,7 @@ void UnLockPython(void)
     }    /* as plc does not wait for lock. */
 }
 
+#ifndef HAVE_RETAIN
 int CheckRetainBuffer(void)
 {
 	return 1;
@@ -391,3 +392,4 @@ void CleanupRetain(void)
 void InitRetain(void)
 {
 }
+#endif // !HAVE_RETAIN

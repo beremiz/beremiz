@@ -241,6 +241,7 @@ void LockPython(void)
 	WaitForSingleObject(python_sem, INFINITE);
 }
 
+#ifndef HAVE_RETAIN
 void InitRetain(void)
 {
 }
@@ -275,6 +276,7 @@ void Retain(unsigned int offset, unsigned int count, void * p)
 void Remind(unsigned int offset, unsigned int count, void *p)
 {
 }
+#endif // !HAVE_RETAIN
 
 static void __attribute__((constructor))
 beremiz_dll_init(void)
