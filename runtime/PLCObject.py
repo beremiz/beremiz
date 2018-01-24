@@ -106,7 +106,10 @@ class PLCObject(pyro.ObjBase):
         else:
             level = LogLevelsDefault
             msg, = args
-        return self._LogMessage(level, msg, len(msg))
+        PLCprint(msg)
+        if self._LogMessage is not None:
+            return self._LogMessage(level, msg, len(msg))
+        return None
 
     def ResetLogCount(self):
         if self._ResetLogCount is not None:
@@ -254,7 +257,7 @@ class PLCObject(pyro.ObjBase):
         self._resumeDebug = lambda: None
         self._PythonIterator = lambda: ""
         self._GetLogCount = None
-        self._LogMessage = lambda l, m, s: PLCprint("OFF LOG :"+m)
+        self._LogMessage = None
         self._GetLogMessage = None
         self.PLClibraryHandle = None
         # Unload library explicitely

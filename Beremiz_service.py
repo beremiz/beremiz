@@ -538,12 +538,18 @@ else:
 # Exception hooks s
 
 
-def LogException(*exp):
+
+def LogMessageAndException(msg, exp=None):
+    if exp is None:
+        exp = sys.exc_info()
     if pyroserver.plcobj is not None:
-        pyroserver.plcobj.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
+        pyroserver.plcobj.LogMessage(0, msg + '\n'.join(traceback.format_exception(*exp)))
     else:
+        print(msg)
         traceback.print_exception(*exp)
 
+def LogException(*exp):
+    LogExceptionAndMessage("",exp)
 
 sys.excepthook = LogException
 
@@ -600,8 +606,8 @@ if havetwisted:
             website = NS.RegisterWebsite(webport)
             pyruntimevars["website"] = website
             statuschange.append(NS.website_statuslistener_factory(website))
-        except Exception, e:
-            print(_("Nevow Web service failed. "), e)
+        except Exception:
+            LogMessageAndException(_("Nevow Web service failed. "))
 
     if wampconf is not None:
         try:
@@ -612,11 +618,11 @@ if havetwisted:
                     pyruntimevars["wampsession"] = WC.GetSession
                     WC.SetServer(pyroserver)
                 else:
-                    print(_("WAMP config is incomplete."))
+                    raise Exception(_("WAMP config is incomplete."))
             else:
-                print(_("WAMP config is missing."))
-        except Exception, e:
-            print(_("WAMP client startup failed. "), e)
+                raise Exception(_("WAMP config is missing."))
+        except Exception:
+            LogMessageAndException(_("WAMP client startup failed. "))
 
 
 if havetwisted or havewx:
@@ -630,7 +636,7 @@ if havetwisted or havewx:
 else:
     try:
         pyroserver.Loop()
-    except KeyboardInterrupt, e:
+    except KeyboardInterrupt:
         pass
 pyroserver.Quit()
 sys.exit(0)
