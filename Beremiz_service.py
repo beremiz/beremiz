@@ -110,7 +110,7 @@ for o, a in opts:
     elif o == "-s":
         wampsecret = None if a == "off" else a
     elif o == "-e":
-        l = os.path.split(os.path.realpath(a))
+        l = list(os.path.split(os.path.realpath(a)))
         l.reverse()
         extensions.append(l)
     else:
