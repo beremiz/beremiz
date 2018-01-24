@@ -110,7 +110,9 @@ for o, a in opts:
     elif o == "-s":
         wampsecret = None if a == "off" else a
     elif o == "-e":
-        extensions.append(a)
+        l = os.path.split(os.path.realpath(a))
+        l.reverse()
+        extensions.append(l)
     else:
         usage()
         sys.exit()
@@ -588,10 +590,9 @@ if havetwisted:
             wampconf = None
 
 # Load extensions
-for extfilename in extensions:
-    extension_folder = os.path.split(os.path.realpath(extfilename))[0]
+for extention_file, extension_folder in extensions:
     sys.path.append(extension_folder)
-    execfile(extfilename, locals())
+    execfile(os.path.join(extension_folder, extention_file), locals())
 
 if havetwisted:
     if webport is not None:
