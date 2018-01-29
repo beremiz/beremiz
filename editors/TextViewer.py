@@ -424,7 +424,6 @@ class TextViewer(EditorPanel):
     def RefreshJumpList(self):
         if self.TextSyntax == "IL":
             self.Jumps = [jump.upper() for jump in LABEL_MODEL.findall(self.GetText())]
-            self.Colourise(0, -1)
 
     # Buffer the last model state
     def RefreshBuffer(self):
@@ -848,6 +847,7 @@ class TextViewer(EditorPanel):
 
     def RefreshModel(self):
         self.RefreshJumpList()
+        self.Colourise(0, -1)
         self.Controler.SetEditedElementText(self.TagName, self.GetText())
         self.ResetSearchResults()
 
