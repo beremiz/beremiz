@@ -206,16 +206,11 @@ static int __write_outbits (void *mem_map, u16 start_addr, u16 bit_count, u8  *d
 
 
 static int __read_inwords  (void *mem_map, u16 start_addr, u16 word_count, u16 *data_words) {
-  u16 count;
-  // return -ERR_ILLEGAL_FUNCTION; /* function not yet supported *//* ERR_ILLEGAL_FUNCTION defined in mb_util.h */
-  
+
   if ((start_addr + word_count) > MEM_AREA_SIZE)
     return -ERR_ILLEGAL_DATA_ADDRESS; /* ERR_ILLEGAL_DATA_ADDRESS defined in mb_util.h */
-  
-  /* use memcpy() as it is more efficient...
-  for (count = 0; count < word_count ; count++)
-    data_words[count] = ((server_mem_t *)mem_map)->ro_words[count + start_addr];
-  */
+
+  /* use memcpy() because loop with pointers (u16 *) caused alignment problems */
   memcpy(/* dest */ (void *)data_words,
          /* src  */ (void *)&(((server_mem_t *)mem_map)->ro_words[start_addr]),
          /* size */ word_count * 2);
@@ -225,16 +220,11 @@ static int __read_inwords  (void *mem_map, u16 start_addr, u16 word_count, u16 *
 
 
 static int __read_outwords (void *mem_map, u16 start_addr, u16 word_count, u16 *data_words) {
-  u16 count;
-  // return -ERR_ILLEGAL_FUNCTION; /* function not yet supported *//* ERR_ILLEGAL_FUNCTION defined in mb_util.h */
-  
+
   if ((start_addr + word_count) > MEM_AREA_SIZE)
     return -ERR_ILLEGAL_DATA_ADDRESS; /* ERR_ILLEGAL_DATA_ADDRESS defined in mb_util.h */
-  
-  /* use memcpy() as it is more efficient...
-  for (count = 0; count < word_count ; count++)
-    data_words[count] = ((server_mem_t *)mem_map)->rw_words[count + start_addr];
-  */
+
+  /* use memcpy() because loop with pointers (u16 *) caused alignment problems */
   memcpy(/* dest */ (void *)data_words,
          /* src  */ (void *)&(((server_mem_t *)mem_map)->rw_words[start_addr]),
          /* size */ word_count * 2);
@@ -245,9 +235,7 @@ static int __read_outwords (void *mem_map, u16 start_addr, u16 word_count, u16 *
 
 
 static int __write_outwords(void *mem_map, u16 start_addr, u16 word_count, u16 *data_words) {
-  u16 count;
-  // return -ERR_ILLEGAL_FUNCTION; /* function not yet supported *//* ERR_ILLEGAL_FUNCTION defined in mb_util.h */
-  
+
   if ((start_addr + word_count) > MEM_AREA_SIZE)
     return -ERR_ILLEGAL_DATA_ADDRESS; /* ERR_ILLEGAL_DATA_ADDRESS defined in mb_util.h */
 
@@ -397,7 +385,7 @@ static void *__mb_client_thread(void *_index)  {
 }
 
 
-
+int __cleanup_%(locstr)s ();
 int __init_%(locstr)s (int argc, char **argv){
 	int index;
 

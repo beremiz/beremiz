@@ -779,7 +779,8 @@ class RootClass:
         #LDFLAGS.append("\"" + os.path.join(ModbusPath, "mb_rtu.o")    + "\"")
         #LDFLAGS.append("\"" + os.path.join(ModbusPath, "mb_ascii.o")    + "\"")
         #LDFLAGS.append("\"" + os.path.join(ModbusPath, "sin_util.o")  + "\"")
-        if os.name == 'nt':   # other possible values: 'posix' 'os2' 'ce' 'java' 'riscos'
-            LDFLAGS.append(" -lws2_32 ")  # on windows we need to load winsock library!
+        # Target is ARM with linux and not win on x86 so winsock2 (ws2_32) library is useless !!!
+        #if os.name == 'nt':   # other possible values: 'posix' 'os2' 'ce' 'java' 'riscos'
+        #    LDFLAGS.append(" -lws2_32 ")  # on windows we need to load winsock library!        
 
         return [(Gen_MB_c_path, ' -I"'+ModbusPath+'"')], LDFLAGS, True
