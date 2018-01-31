@@ -26,9 +26,7 @@
 
 from __future__ import absolute_import
 import util.paths as paths
-from POULibrary import POULibrary
+from POULibrary import SimplePOULibraryFactory
 
-
-class NativeLibrary(POULibrary):
-    def GetLibraryPath(self):
-        return paths.AbsNeighbourFile(__file__, "NativeLib.xml")
+NativeLibrary = SimplePOULibraryFactory(
+    paths.AbsNeighbourFile(__file__, "NativeLib.xml"))
