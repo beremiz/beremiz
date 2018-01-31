@@ -124,9 +124,6 @@ class BeremizIDELauncher(object):
         if wx.VERSION < (3, 0, 0):
             wx.InitAllImageHandlers()
 
-        self.ShowSplashScreen()
-        self.BackgroundInitialization()
-
     def BackgroundInitialization(self):
         self.InitI18n()
         self.CheckUpdates()
@@ -186,6 +183,8 @@ class BeremizIDELauncher(object):
     def PreStart(self):
         self.ProcessCommandLineArgs()
         self.CreateApplication()
+        self.ShowSplashScreen()
+        self.BackgroundInitialization()
 
     def MainLoop(self):
         self.app.MainLoop()
