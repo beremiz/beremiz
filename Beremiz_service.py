@@ -535,8 +535,7 @@ else:
                         statuschange, pyruntimevars=pyruntimevars)
 
 
-# Exception hooks s
-
+# Exception hooks
 
 
 def LogMessageAndException(msg, exp=None):
@@ -548,8 +547,9 @@ def LogMessageAndException(msg, exp=None):
         print(msg)
         traceback.print_exception(*exp)
 
+
 def LogException(*exp):
-    LogExceptionAndMessage("",exp)
+    LogExceptionAndMessage("", exp)
 
 sys.excepthook = LogException
 
