@@ -144,7 +144,7 @@ class BeremizIDELauncher(object):
             sys.path.append(extension_folder)
             AddCatalog(os.path.join(extension_folder, "locale"))
             AddBitmapFolder(os.path.join(extension_folder, "images"))
-            execfile(extfilename, locals())
+            execfile(extfilename, globals())
 
     def CheckUpdates(self):
         if self.updateinfo_url is not None:
