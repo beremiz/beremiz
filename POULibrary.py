@@ -58,3 +58,10 @@ class POULibrary(object):
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
         # Pure python or IEC libs doesn't produce C code
         return ((""), [], False), ""
+
+
+def SimplePOULibraryFactory(path):
+    class SimplePOULibrary(POULibrary):
+        def GetLibraryPath(self):
+            return path
+    return SimplePOULibrary
