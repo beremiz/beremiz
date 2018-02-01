@@ -28,8 +28,8 @@ import os
 import sys
 import shutil
 import wx
-from gnosis.xml.pickle import *
-from gnosis.xml.pickle.util import setParanoia
+from gnosis.xml.pickle import *  # pylint: disable=import-error
+from gnosis.xml.pickle.util import setParanoia  # pylint: disable=import-error
 
 import util.paths as paths
 from util.TranslationCatalogs import AddCatalog
@@ -50,7 +50,7 @@ except ImportError:
 from nodemanager import NodeManager
 import gen_cfile
 import eds_utils
-import canfestival_config as local_canfestival_config
+import canfestival_config as local_canfestival_config  # pylint: disable=import-error
 
 from commondialogs import CreateNodeDialog
 from subindextable import IECTypeConversion, SizeConversion
@@ -463,7 +463,9 @@ class _NodeListCTN(NodeList):
             raise Exception(res)
 
         file = open(os.path.join(buildpath, "MasterGenerated.od"), "w")
-        dump(master, file)
+        # linter disabled here, undefined variable happens
+        # here because gnosis isn't impored while linting
+        dump(master, file)  # pylint: disable=undefined-variable
         file.close()
 
         return [(Gen_OD_path, local_canfestival_config.getCFLAGS(CanFestivalPath))], "", False

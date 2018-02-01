@@ -23,13 +23,12 @@
 # used in safety-critical situations without a full and competent review.
 
 
+from __future__ import absolute_import
 import os
-import sys
-from mb_utils import *
+from modbus.mb_utils import *
 
-import wx
 from ConfigTreeNode import ConfigTreeNode
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 
 base_folder = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 base_folder = os.path.join(base_folder, "..")
@@ -45,7 +44,7 @@ ModbusPath = os.path.join(base_folder, "Modbus")
 #
 
 
-class _RequestPlug:
+class _RequestPlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusRequest">
@@ -110,7 +109,7 @@ class _RequestPlug:
         # 1 or 16
         datasize = modbus_function_dict[function][4]
         # 'Q' for coils and holding registers, 'I' for input discretes and input registers
-        datazone = modbus_function_dict[function][5]
+        # datazone = modbus_function_dict[function][5]
         # 'X' for bits, 'W' for words
         datatacc = modbus_function_dict[function][6]
         # 'Coil', 'Holding Register', 'Input Discrete' or 'Input Register'
@@ -166,7 +165,7 @@ modbus_memtype_dict = {
 }
 
 
-class _MemoryAreaPlug:
+class _MemoryAreaPlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="MemoryArea">
@@ -215,7 +214,7 @@ class _MemoryAreaPlug:
         # 1 or 16
         datasize = modbus_memtype_dict[function][4]
         # 'Q' for coils and holding registers, 'I' for input discretes and input registers
-        datazone = modbus_memtype_dict[function][5]
+        # datazone = modbus_memtype_dict[function][5]
         # 'X' for bits, 'W' for words
         datatacc = modbus_memtype_dict[function][6]
         # 'Coil', 'Holding Register', 'Input Discrete' or 'Input Register'
@@ -260,7 +259,7 @@ class _MemoryAreaPlug:
 #
 #
 
-class _ModbusTCPclientPlug:
+class _ModbusTCPclientPlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusTCPclient">
@@ -314,7 +313,7 @@ class _ModbusTCPclientPlug:
 #
 #
 
-class _ModbusTCPserverPlug:
+class _ModbusTCPserverPlug(object):
     # NOTE: the Port number is a 'string' and not an 'integer'!
     # This is because the underlying modbus library accepts strings
     # (e.g.: well known port names!)
@@ -376,7 +375,7 @@ class _ModbusTCPserverPlug:
 #
 #
 
-class _ModbusRTUclientPlug:
+class _ModbusRTUclientPlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusRTUclient">
@@ -446,7 +445,7 @@ class _ModbusRTUclientPlug:
 #
 
 
-class _ModbusRTUslavePlug:
+class _ModbusRTUslavePlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusRTUslave">
@@ -516,7 +515,7 @@ def _lt_to_str(loctuple):
 #
 #
 #
-class RootClass:
+class RootClass(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusRoot">
@@ -533,8 +532,10 @@ class RootClass:
       </xsd:element>
     </xsd:schema>
     """
-    CTNChildrenTypes = [("ModbusTCPclient", _ModbusTCPclientPlug, "Modbus TCP Client"), ("ModbusTCPserver", _ModbusTCPserverPlug, "Modbus TCP Server"), ("ModbusRTUclient", _ModbusRTUclientPlug, "Modbus RTU Client"), ("ModbusRTUslave", _ModbusRTUslavePlug,  "Modbus RTU Slave")
-                        ]
+    CTNChildrenTypes = [("ModbusTCPclient", _ModbusTCPclientPlug, "Modbus TCP Client"),
+                        ("ModbusTCPserver", _ModbusTCPserverPlug, "Modbus TCP Server"),
+                        ("ModbusRTUclient", _ModbusRTUclientPlug, "Modbus RTU Client"),
+                        ("ModbusRTUslave", _ModbusRTUslavePlug,  "Modbus RTU Slave")]
 
     # Return the number of (modbus library) nodes this specific instance of the modbus plugin will need
     #   return type: (tcp nodes, rtu nodes, ascii nodes)
@@ -567,8 +568,7 @@ class RootClass:
         # print type(self.CTNType)
         # print "#############"
 
-        loc_dict = {"locstr": "_".join(map(str, self.GetCurrentLocation())),
-                    }
+        loc_dict = {"locstr": "_".join(map(str, self.GetCurrentLocation()))}
 
         # Determine the number of (modbus library) nodes ALL instances of the modbus plugin will need
         #   total_node_count: (tcp nodes, rtu nodes, ascii nodes)
@@ -663,10 +663,10 @@ class RootClass:
                     for iecvar in subchild.GetLocations():
                         # print repr(iecvar)
                         absloute_address = iecvar["LOC"][3]
-                        start_address = int(GetCTVal(child, 2))
+                        start_address = int(GetCTVal(subchild, 2))
                         relative_addr = absloute_address - start_address
                         # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(child, 1))):
+                        if relative_addr in xrange(int(GetCTVal(subchild, 1))):
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
                                     server_id, memarea, absloute_address))
@@ -693,10 +693,10 @@ class RootClass:
                     for iecvar in subchild.GetLocations():
                         # print repr(iecvar)
                         absloute_address = iecvar["LOC"][3]
-                        start_address = int(GetCTVal(child, 2))
+                        start_address = int(GetCTVal(subchild, 2))
                         relative_addr = absloute_address - start_address
                         # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(child, 1))):
+                        if relative_addr in xrange(int(GetCTVal(subchild, 1))):
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
                                     server_id, memarea, absloute_address))
@@ -717,9 +717,9 @@ class RootClass:
                     client_request_list.append(new_req)
                     for iecvar in subchild.GetLocations():
                         # absloute address - start address
-                        relative_addr = iecvar["LOC"][3] - int(GetCTVal(child, 3))
+                        relative_addr = iecvar["LOC"][3] - int(GetCTVal(subchild, 3))
                         # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(child, 2))):
+                        if relative_addr in xrange(int(GetCTVal(subchild, 2))):
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append(
                                     "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
@@ -742,9 +742,9 @@ class RootClass:
                     client_request_list.append(new_req)
                     for iecvar in subchild.GetLocations():
                         # absloute address - start address
-                        relative_addr = iecvar["LOC"][3] - int(GetCTVal(child, 3))
+                        relative_addr = iecvar["LOC"][3] - int(GetCTVal(subchild, 3))
                         # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(child, 2))):
+                        if relative_addr in xrange(int(GetCTVal(subchild, 2))):
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append(
                                     "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))

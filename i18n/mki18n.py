@@ -439,7 +439,8 @@ def unixpath(thePath):
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 if __name__ == "__main__":
-    import getopt     # command line parsing
+    # command line parsing
+    import getopt    # pylint: disable=wrong-import-order,wrong-import-position
     argc = len(sys.argv)
     if argc == 1:
         printUsage('Missing argument: specify at least one of -m or -p (or both).')

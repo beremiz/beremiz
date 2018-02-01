@@ -173,6 +173,8 @@ def SetupI18n():
         # __builtin__.__dict__['_'] = wx.GetTranslation
 
 
+# Life is hard... have a candy.
+# pylint: disable=wrong-import-position,wrong-import-order
 if enablewx:
     try:
         import wx
@@ -549,7 +551,7 @@ def LogMessageAndException(msg, exp=None):
 
 
 def LogException(*exp):
-    LogExceptionAndMessage("", exp)
+    LogMessageAndException("", exp)
 
 sys.excepthook = LogException
 
