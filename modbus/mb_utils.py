@@ -70,8 +70,7 @@ def GetTCPServerNodePrinted(self, child):
     node_dict = {"locnodestr": location,
                  "host": host,
                  "port": port,
-                 "slaveid": slaveid,
-                 }
+                 "slaveid": slaveid}
     return node_init_template % node_dict
 
 
@@ -128,8 +127,7 @@ def GetRTUSlaveNodePrinted(self, child):
                  "baud": baud,
                  "parity": modbus_serial_parity_dict[parity],
                  "stopbits": stopbits,
-                 "slaveid": slaveid
-                 }
+                 "slaveid": slaveid}
     return node_init_template % node_dict
 
 
@@ -149,8 +147,7 @@ def GetRTUClientNodePrinted(self, child):
                  "baud": baud,
                  "parity": modbus_serial_parity_dict[parity],
                  "stopbits": stopbits,
-                 "coms_period": coms_period
-                 }
+                 "coms_period": coms_period}
     return node_init_template % node_dict
 
 
@@ -168,8 +165,7 @@ def GetTCPClientNodePrinted(self, child):
     node_dict = {"locnodestr": location,
                  "host": host,
                  "port": port,
-                 "coms_period": coms_period
-                 }
+                 "coms_period": coms_period}
     return node_init_template % node_dict
 
 

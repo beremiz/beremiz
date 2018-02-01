@@ -21,6 +21,3 @@
 #
 # This code is made available on the understanding that it will not be
 # used in safety-critical situations without a full and competent review.
-
-
-from modbus import *

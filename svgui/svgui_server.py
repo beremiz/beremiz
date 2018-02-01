@@ -27,7 +27,7 @@ from __future__ import absolute_import
 import os
 
 from nevow import tags, loaders
-import simplejson as json
+import simplejson as json  # pylint: disable=import-error
 import runtime.NevowServer as NS
 
 svgfile = '%(svgfile)s'

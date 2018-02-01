@@ -76,7 +76,7 @@ def PYRO_connector_factory(uri, confnodesroot):
 
         def _settimeout(self, timeout):
             self.timeout = timeout
-        from M2Crypto.SSL import Connection
+        from M2Crypto.SSL import Connection  # pylint: disable=import-error
         Connection.timeout = None
         Connection.gettimeout = _gettimeout
         Connection.settimeout = _settimeout

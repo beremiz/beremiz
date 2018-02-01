@@ -26,7 +26,7 @@
 from __future__ import absolute_import
 from types import TupleType
 from time import time as gettime
-from distutils.version import LooseVersion
+from cycler import cycler
 
 import numpy
 import wx
@@ -40,10 +40,6 @@ from mpl_toolkits.mplot3d import Axes3D
 from editors.DebugViewer import REFRESH_PERIOD
 from controls.DebugVariablePanel.DebugVariableViewer import *
 from controls.DebugVariablePanel.GraphButton import GraphButton
-
-
-if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
-    from cycler import cycler
 
 
 # Graph variable display type
@@ -983,10 +979,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         return AddText
 
     def SetAxesColor(self, color):
-        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.5.0"):
-            self.Axes.set_prop_cycle(cycler('color', color))
-        else:
-            self.Axes.set_color_cycle(color)
+        self.Axes.set_prop_cycle(cycler('color', color))
 
     def ResetGraphics(self):
         """

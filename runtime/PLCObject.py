@@ -25,22 +25,22 @@
 from __future__ import absolute_import
 from threading import Timer, Thread, Lock, Semaphore, Event
 import ctypes
+import _ctypes
 import os
 import sys
 import traceback
 from time import time
-
 import Pyro.core as pyro
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
 
-
 if os.name in ("nt", "ce"):
-    from _ctypes import LoadLibrary as dlopen
-    from _ctypes import FreeLibrary as dlclose
+    dlopen = _ctypes.LoadLibrary
+    dlclose = _ctypes.FreeLibrary
 elif os.name == "posix":
-    from _ctypes import dlopen, dlclose
+    dlopen = _ctypes.dlopen
+    dlclose = _ctypes.dlclose
 
 
 def get_last_traceback(tb):

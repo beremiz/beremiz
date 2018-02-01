@@ -697,7 +697,7 @@ def LocalODPointers(locations, current_location, slave):
     return pointers
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pylint: disable=all
     def usage():
         print("""
 Usage of config_utils.py test :

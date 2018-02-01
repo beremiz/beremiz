@@ -29,9 +29,7 @@ import sys
 import subprocess
 import ctypes
 from threading import Timer, Lock, Thread, Semaphore
-import wx
-if os.name == 'posix':
-    from signal import SIGTERM, SIGKILL
+import signal
 
 
 class outputThread(Thread):
@@ -126,11 +124,11 @@ class ProcessLogger(object):
             "stderr": subprocess.PIPE
         }
 
-        if no_gui and wx.Platform == '__WXMSW__':
+        if no_gui and os.name in ("nt", "ce"):
             self.startupinfo = subprocess.STARTUPINFO()
             self.startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             popenargs["startupinfo"] = self.startupinfo
-        elif wx.Platform == '__WXGTK__':
+        elif os.name == 'posix':
             popenargs["shell"] = False
 
         if timeout:
@@ -200,16 +198,16 @@ class ProcessLogger(object):
 
         self.outt.killed = True
         self.errt.killed = True
-        if wx.Platform == '__WXMSW__':
+        if os.name in ("nt", "ce"):
             PROCESS_TERMINATE = 1
             handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, self.Proc.pid)
             ctypes.windll.kernel32.TerminateProcess(handle, -1)
             ctypes.windll.kernel32.CloseHandle(handle)
         else:
             if gently:
-                sig = SIGTERM
+                sig = signal.SIGTERM
             else:
-                sig = SIGKILL
+                sig = signal.SIGKILL
             try:
                 os.kill(self.Proc.pid, sig)
             except Exception:
