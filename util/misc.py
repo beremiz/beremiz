@@ -46,21 +46,26 @@ def CheckPathPerm(path):
                 return False
     return True
 
-def GetClassImporter(classpath):
+def GetClassImporter(param):
     """
     is used to resolve library class names in features.py
-    returns a callable that return the class pointed by classpath string
-    if a class is given instead of string, then returns a callable returning it.
+    if param is a string, returns a callable that return the class pointed by param
+    if a class is given, then returns a callable that returns the given class.
     """
 
-    if isinstance(classpath, str):
+    if isinstance(param, str):
         def factory():
             # on-demand import, only when using class
-            mod = __import__(classpath.rsplit('.', 1)[0])
-            return reduce(getattr, classpath.split('.')[1:], mod)
+            mod = __import__(param.rsplit('.', 1)[0])
+            return reduce(getattr, param.split('.')[1:], mod)
         return factory
+    elif isinstance(param,types.ClassType):
+        return lambda : param
     else:
-        return classpath
+        # backward compatibility 
+        # for old extensions that pass some callables
+        # deprecated, should not be used anymore
+        return param
 
 
 def InstallLocalRessources(CWD):
