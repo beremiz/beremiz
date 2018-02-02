@@ -47,6 +47,7 @@ class BeremizIDELauncher(object):
         self.buildpath = None
         self.splash = None
         self.splashPath = self.Bpath("images", "splash.png")
+        self.modules= ["BeremizIDE"]
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
@@ -171,20 +172,23 @@ class BeremizIDELauncher(object):
             self.splash.SetText(text=self.updateinfo)
 
     def ImportModules(self):
-        import BeremizIDE
-        self.frame_class = BeremizIDE.Beremiz
+        for modname in self.modules:
+            mod = __import__(modname)
+            setattr(self, modname, mod)
 
     def InstallExceptionHandler(self):
         import version
         import util.ExceptionHandler
         util.ExceptionHandler.AddExceptHook(version.app_version)
 
-    def CreateUI(self,**kwargs):
-        self.frame = self.frame_class(None, self.projectOpen, self.buildpath, **kwargs)
+    def CreateUI(self):
+        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
 
-    def ShowUI(self):
+    def CloseSplash(self):
         if self.splash:
             self.splash.Close()
+
+    def ShowUI(self):
         self.frame.Show()
 
     def PreStart(self):
@@ -192,13 +196,14 @@ class BeremizIDELauncher(object):
         self.CreateApplication()
         self.ShowSplashScreen()
         self.BackgroundInitialization()
+        self.CreateUI()
+        self.CloseSplash()
 
     def MainLoop(self):
         self.app.MainLoop()
 
-    def Start(self,**kwargs):
+    def Start(self):
         self.PreStart()
-        self.CreateUI(**kwargs)
         self.ShowUI()
         self.MainLoop()
 
