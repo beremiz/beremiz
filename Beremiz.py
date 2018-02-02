@@ -130,7 +130,6 @@ class BeremizIDELauncher(object):
         self.LoadExtensions()
         self.ImportModules()
         self.InstallExceptionHandler()
-        self.ShowUI()
 
     def InitI18n(self):
         from util.misc import InstallLocalRessources
@@ -172,17 +171,18 @@ class BeremizIDELauncher(object):
             self.splash.SetText(text=self.updateinfo)
 
     def ImportModules(self):
-        global BeremizIDE
         import BeremizIDE
+        self.frame_class = BeremizIDE.Beremiz
 
     def InstallExceptionHandler(self):
         import version
         import util.ExceptionHandler
         util.ExceptionHandler.AddExceptHook(version.app_version)
 
+    def CreateUI(self,**kwargs):
+        self.frame = self.frame_class(None, self.projectOpen, self.buildpath, **kwargs)
+
     def ShowUI(self):
-        import BeremizIDE
-        self.frame = BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
         if self.splash:
             self.splash.Close()
         self.frame.Show()
@@ -196,8 +196,10 @@ class BeremizIDELauncher(object):
     def MainLoop(self):
         self.app.MainLoop()
 
-    def Start(self):
+    def Start(self,**kwargs):
         self.PreStart()
+        self.CreateUI(**kwargs)
+        self.ShowUI()
         self.MainLoop()
 
 
