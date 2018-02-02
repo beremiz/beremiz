@@ -46,13 +46,19 @@ def CheckPathPerm(path):
                 return False
     return True
 
-
 def GetClassImporter(classpath):
+    """
+    is used to resolve library class names in features.py
+    returns a callable that return the class pointed by classpath string
+    if a class is given instead of string, then returns a callable returning it.
+    """
+
     if isinstance(classpath, str):
-        def fac():
+        def factory():
+            # on-demand import, only when using class
             mod = __import__(classpath.rsplit('.', 1)[0])
             return reduce(getattr, classpath.split('.')[1:], mod)
-        return fac
+        return factory
     else:
         return classpath
 
