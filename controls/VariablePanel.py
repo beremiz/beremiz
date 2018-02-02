@@ -105,7 +105,6 @@ CheckOptionForClass = {
 }
 
 LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
-VARIABLE_NAME_SUFFIX_MODEL = re.compile("([0-9]*)$")
 
 
 # -------------------------------------------------------------------------------
@@ -514,7 +513,7 @@ class VariablePanel(wx.Panel):
         self.FilterChoices = []
         self.FilterChoiceTransfer = GetFilterChoiceTransfer()
 
-        self.DefaultValue = _VariableInfos("", "", "", "", "", True, "", DefaultType, ([], []), 0)
+        self.DefaultValue = _VariableInfos("LocalVar0", "", "", "", "", True, "", DefaultType, ([], []), 0)
 
         if element_type in ["config", "resource"]:
             self.DefaultTypes = {"All": "Global"}
@@ -590,36 +589,16 @@ class VariablePanel(wx.Panel):
         self.VariablesGrid.SetEditable(not self.Debug)
 
         def _AddVariable(new_row):
+            row_content = self.DefaultValue.copy()
             if new_row > 0:
-                row_content = self.Values[new_row - 1].copy()
-
-                result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content.Name)
-                if result is not None:
-                    name = row_content.Name[:result.start(1)]
-                    suffix = result.group(1)
-                    if suffix != "":
-                        start_idx = int(suffix)
-                    else:
-                        start_idx = 0
-                else:
-                    name = row_content.Name
-                    start_idx = 0
-            else:
-                row_content = None
-                start_idx = 0
-                name = "LocalVar"
-
-            if row_content is not None and row_content.Edit:
-                row_content = self.Values[new_row - 1].copy()
-            else:
-                row_content = self.DefaultValue.copy()
-                if self.Filter in self.DefaultTypes:
-                    row_content.Class = self.DefaultTypes[self.Filter]
-                else:
-                    row_content.Class = self.Filter
-
-            row_content.Name = self.Controler.GenerateNewName(
-                self.TagName, None, name + "%d", start_idx)
+                # doesn't copy values of previous var if it's non-editable (like a FB)
+                if self.Values[new_row-1].Edit:
+                    row_content = self.Values[new_row-1].copy()
+                old_name = self.Values[new_row-1].Name
+                row_content.Name = self.Controler.GenerateNewName(
+                    self.TagName, old_name, old_name+'%d')
+            if not row_content.Class:
+                row_content.Class = self.DefaultTypes.get(self.Filter, self.Filter)
 
             if self.Filter == "All" and len(self.Values) > 0:
                 self.Values.insert(new_row, row_content)
