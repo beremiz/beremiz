@@ -139,11 +139,11 @@ class CodeFile(object):
     def GetDataTypes(self, basetypes=False):
         return self.GetCTRoot().GetDataTypes(basetypes=basetypes)
 
-    def GenerateNewName(self, format, start_idx):
+    def GenerateNewName(self, name, format):
         return self.GetCTRoot().GenerateNewName(
-            None, None, format, start_idx,
-            dict([(var.getname().upper(), True)
-                  for var in self.CodeFile.variables.getvariable()]))
+            None, name, format,
+            exclude=dict([(var.getname().upper(), True)
+                          for var in self.CodeFile.variables.getvariable()]))
 
     def SetVariables(self, variables):
         self.CodeFile.variables.setvariable([])

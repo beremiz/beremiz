@@ -35,7 +35,6 @@ from plcopen.plcopen import TestTextElement
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS, DefaultType
 from controls import CustomGrid, CustomTable
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
-from controls.VariablePanel import VARIABLE_NAME_SUFFIX_MODEL
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
@@ -674,7 +673,7 @@ class VariablesEditor(wx.Panel):
         self.Controler = controler
 
         self.VariablesDefaultValue = {
-            "Name":        "",
+            "Name":        "LocalVar0",
             "Type":        DefaultType,
             "Initial":     "",
             "Description": "",
@@ -694,19 +693,9 @@ class VariablesEditor(wx.Panel):
         def _AddVariable(new_row):
             if new_row > 0:
                 row_content = self.Table.data[new_row - 1].copy()
-                result = VARIABLE_NAME_SUFFIX_MODEL.search(row_content["Name"])
-                if result is not None:
-                    name = row_content["Name"][:result.start(1)]
-                    suffix = result.group(1)
-                    if suffix != "":
-                        start_idx = int(suffix)
-                    else:
-                        start_idx = 0
-                else:
-                    name = row_content["Name"]
-                    start_idx = 0
-                row_content["Name"] = self.Controler.GenerateNewName(
-                    name + "%d", start_idx)
+                old_name = row_content['Name']
+                row_content['Name'] =\
+                    self.Controler.GenerateNewName(old_name, old_name+'%d')
             else:
                 row_content = self.VariablesDefaultValue.copy()
             self.Table.InsertRow(new_row, row_content)
