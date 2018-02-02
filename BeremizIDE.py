@@ -823,7 +823,6 @@ class Beremiz(IDEFrame):
 
     def ResetView(self):
         IDEFrame.ResetView(self)
-        self.ConfNodeInfos = {}
         if self.CTR is not None:
             self.CTR.CloseProject()
         self.CTR = None
