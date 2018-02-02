@@ -136,6 +136,13 @@ class BeremizIDELauncher(object):
         from util.misc import InstallLocalRessources
         InstallLocalRessources(self.app_dir)
 
+    def globals(self):
+        """
+        allows customizations to specify what globals
+        are passed to extensions
+        """
+        return globals()
+
     def LoadExtensions(self):
         for extfilename in self.extensions:
             from util.TranslationCatalogs import AddCatalog
@@ -144,7 +151,7 @@ class BeremizIDELauncher(object):
             sys.path.append(extension_folder)
             AddCatalog(os.path.join(extension_folder, "locale"))
             AddBitmapFolder(os.path.join(extension_folder, "images"))
-            execfile(extfilename, globals())
+            execfile(extfilename, self.globals())
 
     def CheckUpdates(self):
         if self.updateinfo_url is not None:
