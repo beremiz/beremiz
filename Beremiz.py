@@ -48,6 +48,7 @@ class BeremizIDELauncher(object):
         self.splash = None
         self.splashPath = self.Bpath("images", "splash.png")
         self.modules= ["BeremizIDE"]
+        self.debug = os.path.exists("BEREMIZ_DEBUG")
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
@@ -114,12 +115,10 @@ class BeremizIDELauncher(object):
             self.buildpath = args[1]
 
     def CreateApplication(self):
-        BMZ_DBG = os.path.exists("BEREMIZ_DEBUG")
-
         if wx.VERSION >= (3, 0, 0):
-            self.app = wx.App(redirect=BMZ_DBG)
+            self.app = wx.App(redirect=self.debug)
         else:
-            self.app = wx.PySimpleApp(redirect=BMZ_DBG)
+            self.app = wx.PySimpleApp(redirect=self.debug)
 
         self.app.SetAppName('beremiz')
         if wx.VERSION < (3, 0, 0):
