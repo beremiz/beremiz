@@ -935,6 +935,10 @@ class Beremiz(IDEFrame):
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         self.RefreshAll()
 
+    def RefreshAfterSave(self):
+        self.RefreshAll()
+        self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
+
     def OnSaveProjectMenu(self, event):
         selected = self.TabsOpened.GetSelection()
         if selected != -1:
@@ -942,8 +946,7 @@ class Beremiz(IDEFrame):
             window.Save()
         if self.CTR is not None:
             self.CTR.SaveProject()
-            self.RefreshAll()
-            self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
+            self.RefreshAfterSave()
 
     def OnSaveProjectAsMenu(self, event):
         selected = self.TabsOpened.GetSelection()
@@ -952,9 +955,8 @@ class Beremiz(IDEFrame):
             window.SaveAs()
         if self.CTR is not None:
             self.CTR.SaveProjectAs()
-            self.RefreshAll()
+            self.RefreshAfterSave()
             self.RefreshConfigRecentProjects(self.CTR.ProjectPath)
-            self._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
 
     def OnQuitMenu(self, event):
         self.Close()
