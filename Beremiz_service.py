@@ -423,7 +423,9 @@ class Server(object):
             pyro.initServer()
             self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
             # pyro never frees memory after connection close if no timeout set
-            self.daemon.setTimeout(1)
+            # taking too small timeout value may cause
+            # unwanted diconnection when IDE is kept busy for long periods
+            self.daemon.setTimeout(60);
             self.Start()
             self.daemon.requestLoop()
             self.daemon.sock.close()
