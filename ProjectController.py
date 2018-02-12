@@ -1808,6 +1808,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._SetConnector(None)
 
     def _Transfer(self):
+        if self.IsPLCStarted():
+            dialog = wx.MessageDialog(
+                self.AppFrame, 
+                _("Cannot transfer while PLC is running. Stop it now?"), 
+                style=wx.YES_NO|wx.CENTRE)
+            if dialog.ShowModal() == wx.ID_YES:
+                self._Stop()
+            else:
+                return
+
         # Get the last build PLC's
         MD5 = self.GetLastBuildMD5()
 
