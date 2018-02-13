@@ -59,13 +59,8 @@ def GetClassImporter(param):
             mod = __import__(param.rsplit('.', 1)[0])
             return reduce(getattr, param.split('.')[1:], mod)
         return factory
-    elif isinstance(param,types.ClassType):
-        return lambda : param
     else:
-        # backward compatibility 
-        # for old extensions that pass some callables
-        # deprecated, should not be used anymore
-        return param
+        return lambda : param
 
 
 def InstallLocalRessources(CWD):
