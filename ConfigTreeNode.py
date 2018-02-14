@@ -410,15 +410,16 @@ class ConfigTreeNode(object):
             res = "%s_%d" % (BaseDesiredName, suffix)
             suffix += 1
 
-        # Get old path
-        oldname = self.CTNPath()
         # Check previous confnode existance
         dontexist = self.BaseParams.getName() == "__unnamed__"
+        if not dontexist:
+            # Get old path
+            oldpath = self.CTNPath()
         # Set the new name
         self.BaseParams.setName(res)
         # Rename confnode dir if exist
         if not dontexist:
-            shutil.move(oldname, self.CTNPath())
+            shutil.move(oldpath, self.CTNPath())
         # warn user he has two left hands
         if DesiredName != res:
             msg = _("A child named \"{a1}\" already exists -> \"{a2}\"\n").format(a1=DesiredName, a2=res)
