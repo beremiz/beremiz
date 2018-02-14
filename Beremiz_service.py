@@ -50,9 +50,9 @@ Usage of Beremiz PLC execution service :\n
            -a        - autostart PLC (0:disable 1:enable) (default:0)
            -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
            -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
-           -w        - web server port or "off" (default:8009)
-           -c        - WAMP client config file or "off" (default:wampconf.json)
-           -s        - WAMP client secret, given as a file or "off"
+           -w        - web server port or "off" to disable web server (default:8009)
+           -c        - WAMP client default config file (default:wampconf.json)
+           -s        - WAMP client secret, given as a file
            -e        - python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
@@ -587,10 +587,12 @@ if havetwisted:
             webport = None
         NS.WorkingDir = WorkingDir
 
-    if wampconf is None:
-        _wampconf = os.path.join(WorkingDir, "wampconf.json")
-        if os.path.exists(_wampconf):
-            wampconf = _wampconf
+    # Find pre-existing project WAMP config file
+    _wampconf = os.path.join(WorkingDir, "wampconf.json")
+
+    # If project's WAMP config file exits, override default (-c) 
+    if os.path.exists(_wampconf):
+        wampconf = _wampconf
 
     if wampconf is not None:
         try:
