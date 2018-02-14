@@ -455,7 +455,7 @@ class Beremiz(IDEFrame):
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(os.path.abspath(projectOpen))
-                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                self.RefreshAfterLoad()
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
@@ -463,10 +463,11 @@ class Beremiz(IDEFrame):
             self.CTR = ctr
             self.Controler = ctr
             if ctr is not None:
+                ctr.SetAppFrame(self, self.Log)
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
-                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                self.RefreshAfterLoad()
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.CTR)
 
@@ -876,7 +877,7 @@ class Beremiz(IDEFrame):
                 self.RefreshConfigRecentProjects(projectpath)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
-                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                self.RefreshAfterLoad()
                 IDEFrame.OnAddNewProject(self, event)
             else:
                 self.ResetView()
@@ -915,7 +916,7 @@ class Beremiz(IDEFrame):
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 if self.EnableDebug:
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
-                self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                self.RefreshAfterLoad()
             else:
                 self.ResetView()
                 self.ShowErrorMessage(result)
@@ -934,6 +935,9 @@ class Beremiz(IDEFrame):
         self.ResetView()
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
         self.RefreshAll()
+
+    def RefreshAfterLoad(self):
+        self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
 
     def RefreshAfterSave(self):
         self.RefreshAll()
