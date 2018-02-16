@@ -271,11 +271,10 @@ class InstancesPathCollector(object):
     """ object for collecting instances path list"""
     def __init__(self, controller):
         self.Instances = []
-        
+        self.controller = controller
         parser = etree.XMLParser()
         # arbitrary set debug to false, updated later
-        self.resolver = LibraryResolver(controller, debug=False)
-        parser.resolvers.add(self.resolver)
+        self.debug = False
 
         # TODO compile XSLT once for all at __init__
         self.instances_path_xslt_tree = etree.XSLT(
@@ -283,13 +282,25 @@ class InstancesPathCollector(object):
                 os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"),
                 parser),
             extensions={
-                ("instances_ns", "AddInstance"): self.AddInstance})
+                ("instances_ns", "AddInstance"): self.AddInstance,
+                ("instances_ns", "GetProject"): self.GetProject,
+                ("instances_ns", "GetStdLibs"): self.GetStdLibs,
+                ("instances_ns", "GetExtensions"): self.GetExtensions})
 
     def AddInstance(self, context, *args):
         self.Instances.append(args[0][0])
 
+    def GetProject(self, context, *args):
+        return self.controller.GetProject(self.debug)
+
+    def GetStdLibs(self, context, *args):
+        return [lib for lib in StdBlckLibs.values()]
+
+    def GetExtensions(self, context, *args):
+        return [ctn["types"] for ctn in self.controller.ConfNodeTypes]
+
     def Collect(self, root, name, debug):
-        self.resolver.debug = debug
+        self.debug = debug
         self.instances_path_xslt_tree(
             root, instance_type=etree.XSLT.strparam(name))
         res = self.Instances

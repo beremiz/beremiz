@@ -9,16 +9,13 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "text()";
     
-    variable "project" {
-        copy "document('project')/project/*";
-    }
+    variable "project", "ns:GetProject()";
     
-    variable "stdlib" {
-        copy "document('stdlib')/stdlib/*";
-    }
-    variable "extensions" {
-        copy "document('extensions')/extensions/*";
-    }
+    variable "stdlib", "ns:GetStdLibs()";
+
+    variable "extensions", "ns:GetExtensions()";
+
+    variable "all", "$project | $stdlib | $extensions";
     
     template "ppx:project" {
         instances {
@@ -49,12 +46,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             }
             otherwise {
                 variable "type_name" > «@typeName»
-                apply """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
+                apply """$all/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
+                         $all/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
                     with "instance_path" > «$pou_instance_path»
                 }
             }
@@ -91,12 +84,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             }
             otherwise {
                 variable "type_name" > «@name»
-                apply """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
+                apply """$all/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
+                         $all/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
                     with "instance_path" > «$variable_path»
                 }
             }
