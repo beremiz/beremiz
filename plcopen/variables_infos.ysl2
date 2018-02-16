@@ -1,5 +1,5 @@
-include yslt.yml2
-estylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
+include yslt_noindent.yml2
+istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
             xmlns:ns="var_infos_ns" 
             extension-element-prefixes="ns" 

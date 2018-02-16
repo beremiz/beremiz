@@ -6,7 +6,7 @@ xsltfiles := $(patsubst %.ysl2, %.xslt, $(ysl2files))
 
 all:$(xsltfiles)
 
-%.xslt: %.ysl2
+%.xslt: %.ysl2 yslt_noindent.yml2
 	$(yml)/yml2c -I $(yml) $< -o $@.tmp
 	xmlstarlet fo $@.tmp > $@
 	rm $@.tmp
