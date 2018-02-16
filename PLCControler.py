@@ -122,6 +122,7 @@ class LibraryResolver(etree.Resolver):
         self.Debug = debug
 
     def resolve(self, url, pubid, context):
+        # TODO stop deepcopy
         lib_name = os.path.basename(url)
         if lib_name in ["project", "stdlib", "extensions"]:
             lib_el = etree.Element(lib_name)
@@ -266,13 +267,34 @@ class VariablesTreeInfosFactory(object):
                     [_BoolValue] * 2, args) + [[]])))
 
 
-class InstancesPathFactory(object):
-    """Helpers object for generating instances path list"""
-    def __init__(self, instances):
-        self.Instances = instances
+class InstancesPathCollector(object):
+    """ object for collecting instances path list"""
+    def __init__(self, controller):
+        self.Instances = []
+        
+        parser = etree.XMLParser()
+        # arbitrary set debug to false, updated later
+        self.resolver = LibraryResolver(controller, debug=False)
+        parser.resolvers.add(self.resolver)
+
+        # TODO compile XSLT once for all at __init__
+        self.instances_path_xslt_tree = etree.XSLT(
+            etree.parse(
+                os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"),
+                parser),
+            extensions={
+                ("instances_ns", "AddInstance"): self.AddInstance})
 
     def AddInstance(self, context, *args):
         self.Instances.append(args[0][0])
+
+    def Collect(self, root, name, debug):
+        self.resolver.debug = debug
+        self.instances_path_xslt_tree(
+            root, instance_type=etree.XSLT.strparam(name))
+        res = self.Instances
+        self.Instances = []
+        return res
 
 
 class InstanceTagName(object):
@@ -556,6 +578,7 @@ class PLCControler(object):
     def __init__(self):
         self.LastNewIndex = 0
         self.Reset()
+        self.InstancesPathCollector = InstancesPathCollector(self)
 
     # Reset PLCControler internal variables
     def Reset(self):
@@ -803,25 +826,10 @@ class PLCControler(object):
         return None
 
     def GetInstanceList(self, root, name, debug=False):
-        instances = []
         project = self.GetProject(debug)
         if project is not None:
-            factory = InstancesPathFactory(instances)
-
-            parser = etree.XMLParser()
-            parser.resolvers.add(LibraryResolver(self, debug))
-
-            instances_path_xslt_tree = etree.XSLT(
-                etree.parse(
-                    os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"),
-                    parser),
-                extensions={
-                    ("instances_ns", "AddInstance"): factory.AddInstance})
-
-            instances_path_xslt_tree(
-                root, instance_type=etree.XSLT.strparam(name))
-
-        return instances
+            return self.InstancesPathCollector.Collect(root, name, debug)
+        return []
 
     def SearchPouInstances(self, tagname, debug=False):
         project = self.GetProject(debug)
