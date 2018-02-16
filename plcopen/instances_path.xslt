@@ -8,9 +8,7 @@
   <xsl:variable name="extensions" select="ns:GetExtensions()"/>
   <xsl:variable name="all" select="$project | $stdlib | $extensions"/>
   <xsl:template match="ppx:project">
-    <instances>
-      <xsl:apply-templates select="ppx:instances/ppx:configurations/ppx:configuration"/>
-    </instances>
+    <xsl:apply-templates select="ppx:instances/ppx:configurations/ppx:configuration"/>
   </xsl:template>
   <xsl:template match="ppx:configuration">
     <xsl:apply-templates select="ppx:globalVars/ppx:variable[ppx:type/ppx:derived] | ppx:resource">
