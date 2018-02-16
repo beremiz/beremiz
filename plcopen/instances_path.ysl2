@@ -18,9 +18,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     variable "all", "$project | $stdlib | $extensions";
     
     template "ppx:project" {
-        instances {
-            apply "ppx:instances/ppx:configurations/ppx:configuration";
-        }
+        apply "ppx:instances/ppx:configurations/ppx:configuration";
     }
     
     template "ppx:configuration" {
