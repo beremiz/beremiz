@@ -3,15 +3,10 @@
   <xsl:output method="xml"/>
   <xsl:param name="instance_type"/>
   <xsl:template match="text()"/>
-  <xsl:variable name="project">
-    <xsl:copy-of select="document('project')/project/*"/>
-  </xsl:variable>
-  <xsl:variable name="stdlib">
-    <xsl:copy-of select="document('stdlib')/stdlib/*"/>
-  </xsl:variable>
-  <xsl:variable name="extensions">
-    <xsl:copy-of select="document('extensions')/extensions/*"/>
-  </xsl:variable>
+  <xsl:variable name="project" select="ns:GetProject()"/>
+  <xsl:variable name="stdlib" select="ns:GetStdLibs()"/>
+  <xsl:variable name="extensions" select="ns:GetExtensions()"/>
+  <xsl:variable name="all" select="$project | $stdlib | $extensions"/>
   <xsl:template match="ppx:project">
     <instances>
       <xsl:apply-templates select="ppx:instances/ppx:configurations/ppx:configuration"/>
@@ -52,7 +47,7 @@
         <xsl:variable name="type_name">
           <xsl:value-of select="@typeName"/>
         </xsl:variable>
-        <xsl:apply-templates select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+        <xsl:apply-templates select="$all/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         $all/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
           <xsl:with-param name="instance_path">
             <xsl:value-of select="$pou_instance_path"/>
           </xsl:with-param>
@@ -99,7 +94,7 @@
         <xsl:variable name="type_name">
           <xsl:value-of select="@name"/>
         </xsl:variable>
-        <xsl:apply-templates select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+        <xsl:apply-templates select="$all/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         $all/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
           <xsl:with-param name="instance_path">
             <xsl:value-of select="$variable_path"/>
           </xsl:with-param>
