@@ -37,7 +37,7 @@ import wx
 Max_Traceback_List_Size = 20
 
 
-def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path):
+def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path, exit):
     trcbck_lst = []
     for i, line in enumerate(traceback.extract_tb(e_tb)):
         trcbck = " " + str(i+1) + ". "
@@ -73,6 +73,8 @@ Traceback:
         res = (dlg.ShowModal() == wx.ID_OK)
     finally:
         dlg.Destroy()
+
+    if exit : sys.exit() #wx.Exit()
 
     return res
 
@@ -125,7 +127,7 @@ def AddExceptHook(app_version='[No version]'):
             output.write(a + ":\n" + str(info[a]) + "\n\n")
         output.close()
 
-    def handle_exception(e_type, e_value, e_traceback):
+    def handle_exception(e_type, e_value, e_traceback, exit = False):
         traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
@@ -135,7 +137,7 @@ def AddExceptHook(app_version='[No version]'):
             path = tempfile.gettempdir()+os.sep+wx.GetApp().GetAppName()
             bug_report_path = path + os.sep + "bug_report_" + time.strftime("%Y_%m_%d__%H-%M-%S") + ".txt"
             save_bug_report(e_type, e_value, e_traceback, bug_report_path, date)
-            Display_Exception_Dialog(e_type, e_value, e_traceback, bug_report_path)
+            wx.CallAfter(Display_Exception_Dialog, e_type, e_value, e_traceback, bug_report_path, exit)
     # sys.excepthook = lambda *args: wx.CallAfter(handle_exception, *args)
     sys.excepthook = handle_exception
 
@@ -154,3 +156,5 @@ def AddExceptHook(app_version='[No version]'):
                 sys.excepthook(*sys.exc_info())
         self.run = run_with_except_hook
     threading.Thread.__init__ = init
+
+    return handle_exception

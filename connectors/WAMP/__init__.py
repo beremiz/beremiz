@@ -27,7 +27,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 import traceback
-import atexit
 from threading import Thread, Event
 
 from twisted.internet import reactor, threads
