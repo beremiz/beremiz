@@ -47,7 +47,7 @@ class BeremizIDELauncher(object):
         self.buildpath = None
         self.splash = None
         self.splashPath = self.Bpath("images", "splash.png")
-        self.modules= ["BeremizIDE"]
+        self.modules = ["BeremizIDE"]
         self.debug = os.path.exists("BEREMIZ_DEBUG")
 
     def Bpath(self, *args):
