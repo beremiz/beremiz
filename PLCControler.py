@@ -267,46 +267,50 @@ class VariablesTreeInfosFactory(object):
                     [_BoolValue] * 2, args) + [[]])))
 
 
-class InstancesPathCollector(object):
-    """ object for collecting instances path list"""
-    def __init__(self, controller):
-        self.Instances = []
-        self.controller = controller
-        parser = etree.XMLParser()
+class XSLTModelQuery(object):
+    """ a class to handle XSLT queries on project and libs """
+    def __init__(self, controller, xsltpath, ext = []):
         # arbitrary set debug to false, updated later
         self.debug = False
 
-        # TODO compile XSLT once for all at __init__
-        self.instances_path_xslt_tree = etree.XSLT(
+        # merge xslt extensions for library access to query specific ones
+        xsltext = [
+            ("GetProject", lambda *_ignored: 
+                controller.GetProject(self.debug)),
+            ("GetStdLibs", lambda *_ignored: 
+                [lib for lib in StdBlckLibs.values()]),
+            ("GetExtensions", lambda *_ignored: 
+                [ctn["types"] for ctn in controller.ConfNodeTypes])
+        ] + ext
+
+        # parse and compile. "beremiz" arbitrary namespace for extensions 
+        self.xslt = etree.XSLT(
             etree.parse(
-                os.path.join(ScriptDirectory, "plcopen", "instances_path.xslt"),
-                parser),
-            extensions={
-                ("instances_ns", "AddInstance"): self.AddInstance,
-                ("instances_ns", "GetProject"): self.GetProject,
-                ("instances_ns", "GetStdLibs"): self.GetStdLibs,
-                ("instances_ns", "GetExtensions"): self.GetExtensions})
+                os.path.join(ScriptDirectory, "plcopen", xsltpath),
+                etree.XMLParser()),
+            extensions={ ("beremiz", name):call for name, call in xsltext})
+
+    def _process_xslt(self, root, debug, **kwargs):
+        self.debug = debug
+        return self.xslt(root,**{k:etree.XSLT.strparam(v) for k,v in kwargs.iteritems()})
+
+class InstancesPathCollector(XSLTModelQuery):
+    """ object for collecting instances path list"""
+    def __init__(self, controller):
+        self.Instances = []
+        XSLTModelQuery.__init__(self,
+                                controller,
+                                "instances_path.xslt",
+                                [("AddInstance", self.AddInstance)])
 
     def AddInstance(self, context, *args):
         self.Instances.append(args[0][0])
 
-    def GetProject(self, context, *args):
-        return self.controller.GetProject(self.debug)
-
-    def GetStdLibs(self, context, *args):
-        return [lib for lib in StdBlckLibs.values()]
-
-    def GetExtensions(self, context, *args):
-        return [ctn["types"] for ctn in self.controller.ConfNodeTypes]
-
     def Collect(self, root, name, debug):
-        self.debug = debug
-        self.instances_path_xslt_tree(
-            root, instance_type=etree.XSLT.strparam(name))
+        self._process_xslt(root, debug, instance_type = name)
         res = self.Instances
         self.Instances = []
         return res
-
 
 class InstanceTagName(object):
     """Helpers object for generating instance tagname"""
@@ -837,10 +841,7 @@ class PLCControler(object):
         return None
 
     def GetInstanceList(self, root, name, debug=False):
-        project = self.GetProject(debug)
-        if project is not None:
-            return self.InstancesPathCollector.Collect(root, name, debug)
-        return []
+        return self.InstancesPathCollector.Collect(root, name, debug)
 
     def SearchPouInstances(self, tagname, debug=False):
         project = self.GetProject(debug)
