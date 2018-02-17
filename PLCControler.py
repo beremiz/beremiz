@@ -38,7 +38,7 @@ from lxml import etree
 import util.paths as paths
 from util.TranslationCatalogs import NoTranslate
 from plcopen import *
-from plcopen.XSLTModelQuery import XSLTModelQuery
+from plcopen.InstancesPathCollector import InstancesPathCollector
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -267,24 +267,6 @@ class VariablesTreeInfosFactory(object):
                     [_StringValue, class_extraction, _StringValue] +
                     [_BoolValue] * 2, args) + [[]])))
 
-
-class InstancesPathCollector(XSLTModelQuery):
-    """ object for collecting instances path list"""
-    def __init__(self, controller):
-        self.Instances = []
-        XSLTModelQuery.__init__(self,
-                                controller,
-                                "instances_path.xslt",
-                                [("AddInstance", self.AddInstance)])
-
-    def AddInstance(self, context, *args):
-        self.Instances.append(args[0][0])
-
-    def Collect(self, root, name, debug):
-        self._process_xslt(root, debug, instance_type = name)
-        res = self.Instances
-        self.Instances = []
-        return res
 
 class InstanceTagName(object):
     """Helpers object for generating instance tagname"""
