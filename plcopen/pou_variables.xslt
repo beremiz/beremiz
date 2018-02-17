@@ -1,20 +1,14 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ppx="http://www.plcopen.org/xml/tc6_0201" xmlns:ns="pou_vars_ns" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" extension-element-prefixes="ns" version="1.0" exclude-result-prefixes="ns">
+<xsl:stylesheet xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ppx="http://www.plcopen.org/xml/tc6_0201" xmlns:ns="beremiz" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" extension-element-prefixes="ns" version="1.0" exclude-result-prefixes="ns">
   <xsl:output method="xml"/>
   <xsl:template match="text()"/>
   <xsl:template mode="var_class" match="text()"/>
   <xsl:template mode="var_type" match="text()"/>
   <xsl:template mode="var_edit" match="text()"/>
   <xsl:template mode="var_debug" match="text()"/>
-  <xsl:variable name="project">
-    <xsl:copy-of select="document('project')/project/*"/>
-  </xsl:variable>
-  <xsl:variable name="stdlib">
-    <xsl:copy-of select="document('stdlib')/stdlib/*"/>
-  </xsl:variable>
-  <xsl:variable name="extensions">
-    <xsl:copy-of select="document('extensions')/extensions/*"/>
-  </xsl:variable>
+  <xsl:variable name="project" select="ns:GetProject()"/>
+  <xsl:variable name="stdlib" select="ns:GetStdLibs()"/>
+  <xsl:variable name="extensions" select="ns:GetExtensions()"/>
   <xsl:template name="add_root">
     <xsl:param name="class"/>
     <xsl:param name="type"/>
@@ -210,12 +204,10 @@
   <xsl:template mode="var_class" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
     <xsl:param name="default_class"/>
     <xsl:variable name="type_name" select="@name"/>
-    <xsl:variable name="pou_infos">
-      <xsl:copy-of select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                    exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                    exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
-    </xsl:variable>
+    <xsl:variable name="pou_infos" select="($project|$stdlib|$extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
     <xsl:choose>
-      <xsl:when test="$pou_infos != ''">
-        <xsl:apply-templates mode="var_class" select="exsl:node-set($pou_infos)"/>
+      <xsl:when test="$pou_infos">
+        <xsl:apply-templates mode="var_class" select="$pou_infos"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:value-of select="$default_class"/>
@@ -253,11 +245,9 @@
   </xsl:template>
   <xsl:template mode="var_edit" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
     <xsl:variable name="type_name" select="@name"/>
-    <xsl:variable name="pou_infos">
-      <xsl:copy-of select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
-    </xsl:variable>
+    <xsl:variable name="pou_infos" select="$project/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
     <xsl:choose>
-      <xsl:when test="$pou_infos != ''">
+      <xsl:when test="$pou_infos">
         <xsl:text>true</xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -273,12 +263,10 @@
   </xsl:template>
   <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
     <xsl:variable name="type_name" select="@name"/>
-    <xsl:variable name="datatype_infos">
-      <xsl:copy-of select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                    exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                    exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                    exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]"/>
-    </xsl:variable>
+    <xsl:variable name="datatype_infos" select="($project|$stdlib|$extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
     <xsl:choose>
       <xsl:when test="$datatype_infos != ''">
-        <xsl:apply-templates mode="var_debug" select="exsl:node-set($datatype_infos)"/>
+        <xsl:apply-templates mode="var_debug" select="$datatype_infos"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>false</xsl:text>

@@ -39,6 +39,7 @@ import util.paths as paths
 from util.TranslationCatalogs import NoTranslate
 from plcopen import *
 from plcopen.InstancesPathCollector import InstancesPathCollector
+from plcopen.POUVariablesCollector import POUVariablesCollector
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -208,65 +209,6 @@ class VariablesInfosFactory(object):
         self.Variables.append(_VariableInfos(*(
             _translate_args([_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
             [self.GetType(), self.GetTree()])))
-
-# -------------------------------------------------------------------------------
-#            Helpers object for generating pou variable instance list
-# -------------------------------------------------------------------------------
-
-
-def class_extraction(value):
-    class_type = {
-        "configuration": ITEM_CONFIGURATION,
-        "resource": ITEM_RESOURCE,
-        "action": ITEM_ACTION,
-        "transition": ITEM_TRANSITION,
-        "program": ITEM_PROGRAM}.get(value)
-    if class_type is not None:
-        return class_type
-
-    pou_type = POU_TYPES.get(value)
-    if pou_type is not None:
-        return pou_type
-
-    var_type = VAR_CLASS_INFOS.get(value)
-    if var_type is not None:
-        return var_type[1]
-
-    return None
-
-
-class _VariablesTreeItemInfos(object):
-    __slots__ = ["name", "var_class", "type", "edit", "debug", "variables"]
-
-    def __init__(self, *args):
-        for attr, value in zip(self.__slots__, args):
-            setattr(self, attr, value if value is not None else "")
-
-    def copy(self):
-        return _VariablesTreeItemInfos(*[getattr(self, attr) for attr in self.__slots__])
-
-
-class VariablesTreeInfosFactory(object):
-
-    def __init__(self):
-        self.Root = None
-
-    def GetRoot(self):
-        return self.Root
-
-    def SetRoot(self, context, *args):
-        self.Root = _VariablesTreeItemInfos(
-            *([''] + _translate_args(
-                [class_extraction, _StringValue] + [_BoolValue] * 2,
-                args) + [[]]))
-
-    def AddVariable(self, context, *args):
-        if self.Root is not None:
-            self.Root.variables.append(_VariablesTreeItemInfos(
-                *(_translate_args(
-                    [_StringValue, class_extraction, _StringValue] +
-                    [_BoolValue] * 2, args) + [[]])))
-
 
 class InstanceTagName(object):
     """Helpers object for generating instance tagname"""
@@ -550,6 +492,7 @@ class PLCControler(object):
         self.LastNewIndex = 0
         self.Reset()
         self.InstancesPathCollector = InstancesPathCollector(self)
+        self.POUVariablesCollector = POUVariablesCollector(self)
 
     # Reset PLCControler internal variables
     def Reset(self):
@@ -772,18 +715,6 @@ class PLCControler(object):
     def GetPouVariables(self, tagname, debug=False):
         project = self.GetProject(debug)
         if project is not None:
-            factory = VariablesTreeInfosFactory()
-
-            parser = etree.XMLParser()
-            parser.resolvers.add(LibraryResolver(self, debug))
-
-            pou_variable_xslt_tree = etree.XSLT(
-                etree.parse(
-                    os.path.join(ScriptDirectory, "plcopen", "pou_variables.xslt"),
-                    parser),
-                extensions={("pou_vars_ns", name): getattr(factory, name)
-                            for name in ["SetRoot", "AddVariable"]})
-
             obj = None
             words = tagname.split("::")
             if words[0] == "P":
@@ -791,8 +722,7 @@ class PLCControler(object):
             elif words[0] != "D":
                 obj = self.GetEditedElement(tagname, debug)
             if obj is not None:
-                pou_variable_xslt_tree(obj)
-                return factory.GetRoot()
+                return self.POUVariablesCollector.Collect(obj, debug)
 
         return None
 

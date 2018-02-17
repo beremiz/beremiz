@@ -36,4 +36,6 @@ class XSLTModelQuery(object):
 
     def _process_xslt(self, root, debug, **kwargs):
         self.debug = debug
-        return self.xslt(root,**{k:etree.XSLT.strparam(v) for k,v in kwargs.iteritems()})
+        res = self.xslt(root,**{k:etree.XSLT.strparam(v) for k,v in kwargs.iteritems()})
+        # print(self.xslt.error_log)
+        return res
