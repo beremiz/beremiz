@@ -16,6 +16,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     variable "stdlib", "ns:GetStdLibs()";
 
     variable "extensions", "ns:GetExtensions()";
+
+    variable "all", "$project | $stdlib | $extensions";
     
     function "add_root" {
         param "class";
@@ -171,7 +173,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     template "*[self::ppx:type or self::ppx:baseType]/ppx:derived", mode="var_class" {
         param "default_class";
         variable "type_name", "@name";
-        variable "pou_infos", "($project|$stdlib|$extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]";
+        variable "pou_infos", "$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name]";
         choose {
             when "$pou_infos" {
                 apply "$pou_infos", mode="var_class";
@@ -218,7 +220,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "*[self::ppx:type or self::ppx:baseType]/ppx:derived", mode="var_edit" {
         variable "type_name", "@name";
-        variable "pou_infos", "$project/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]";
+        variable "pou_infos", "$project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]";
         choose {
             when "$pou_infos" > true
             otherwise > false
@@ -235,9 +237,12 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "*[self::ppx:type or self::ppx:baseType]/ppx:derived", mode="var_debug" {
         variable "type_name", "@name";
-        variable "datatype_infos", "($project|$stdlib|$extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]";
+        variable "datatype_infos", """
+            $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
+            $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]
+        """;
         choose {
-            when "$datatype_infos != ''" {
+            when "$datatype_infos" {
                 apply "$datatype_infos", mode="var_debug";
             }
             otherwise > false

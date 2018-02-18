@@ -45,8 +45,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             }
             otherwise {
                 variable "type_name" > «@typeName»
-                apply """$all/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         $all/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
+                apply """$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
+                         $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
                     with "instance_path" > «$pou_instance_path»
                 }
             }
@@ -83,8 +83,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             }
             otherwise {
                 variable "type_name" > «@name»
-                apply """$all/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         $all/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
+                apply """$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
+                         $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
                     with "instance_path" > «$variable_path»
                 }
             }

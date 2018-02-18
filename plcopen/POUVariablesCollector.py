@@ -63,8 +63,13 @@ class POUVariablesCollector(XSLTModelQuery):
         XSLTModelQuery.__init__(self,
                                 controller,
                                 "pou_variables.xslt",
-                                [(name, lambda *x : getattr(self.factory, name)(*x)) 
+                                [(name, self.FactoryCaller(name)) 
                                     for name in ["SetRoot", "AddVariable"]])
+
+    def FactoryCaller(self, funcname):
+        def CallFactory(*args):
+            return getattr(self.factory, funcname)(*args)
+        return CallFactory
 
     def Collect(self, root, debug):
         self.factory = VariablesTreeInfosFactory()
