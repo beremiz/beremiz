@@ -4,15 +4,11 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
-from plcopen.XSLTModelQuery import XSLTModelQuery
+from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+from plcopen.types_enums import CLASS_TYPES, POU_TYPES, VAR_CLASS_INFOS
 
 def class_extraction(value):
-    class_type = {
-        "configuration": ITEM_CONFIGURATION,
-        "resource": ITEM_RESOURCE,
-        "action": ITEM_ACTION,
-        "transition": ITEM_TRANSITION,
-        "program": ITEM_PROGRAM}.get(value)
+    class_type = CLASS_TYPES.get(value)
     if class_type is not None:
         return class_type
 

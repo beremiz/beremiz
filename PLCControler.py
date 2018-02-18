@@ -38,6 +38,8 @@ from lxml import etree
 import util.paths as paths
 from util.TranslationCatalogs import NoTranslate
 from plcopen import *
+from plcopen.types_enums import *
+from plcopen.XSLTModelQuery import  _StringValue, _BoolValue, _translate_args
 from plcopen.InstancesPathCollector import InstancesPathCollector
 from plcopen.POUVariablesCollector import POUVariablesCollector
 from graphics.GraphicCommons import *
@@ -45,76 +47,7 @@ from PLCGenerator import *
 
 duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
 
-ITEMS_EDITABLE = [
-    ITEM_PROJECT,
-    ITEM_POU,
-    ITEM_VARIABLE,
-    ITEM_TRANSITION,
-    ITEM_ACTION,
-    ITEM_CONFIGURATION,
-    ITEM_RESOURCE,
-    ITEM_DATATYPE
-] = range(8)
-
-ITEMS_UNEDITABLE = [
-    ITEM_DATATYPES,
-    ITEM_FUNCTION,
-    ITEM_FUNCTIONBLOCK,
-    ITEM_PROGRAM,
-    ITEM_TRANSITIONS,
-    ITEM_ACTIONS,
-    ITEM_CONFIGURATIONS,
-    ITEM_RESOURCES,
-    ITEM_PROPERTIES
-] = range(8, 17)
-
-ITEMS_VARIABLE = [
-    ITEM_VAR_LOCAL,
-    ITEM_VAR_GLOBAL,
-    ITEM_VAR_EXTERNAL,
-    ITEM_VAR_TEMP,
-    ITEM_VAR_INPUT,
-    ITEM_VAR_OUTPUT,
-    ITEM_VAR_INOUT
-] = range(17, 24)
-
-VAR_CLASS_INFOS = {
-    "Local":    ("localVars",    ITEM_VAR_LOCAL),
-    "Global":   ("globalVars",   ITEM_VAR_GLOBAL),
-    "External": ("externalVars", ITEM_VAR_EXTERNAL),
-    "Temp":     ("tempVars",     ITEM_VAR_TEMP),
-    "Input":    ("inputVars",    ITEM_VAR_INPUT),
-    "Output":   ("outputVars",   ITEM_VAR_OUTPUT),
-    "InOut":    ("inOutVars",    ITEM_VAR_INOUT)}
-
-POU_TYPES = {
-    "program": ITEM_PROGRAM,
-    "functionBlock": ITEM_FUNCTIONBLOCK,
-    "function": ITEM_FUNCTION,
-}
-
-LOCATIONS_ITEMS = [LOCATION_CONFNODE,
-                   LOCATION_MODULE,
-                   LOCATION_GROUP,
-                   LOCATION_VAR_INPUT,
-                   LOCATION_VAR_OUTPUT,
-                   LOCATION_VAR_MEMORY] = range(6)
-
 ScriptDirectory = paths.AbsDir(__file__)
-
-
-def GetUneditableNames():
-    _ = NoTranslate
-    return [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
-            _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
-            _("Configurations"), _("Resources"), _("Properties")]
-
-
-UNEDITABLE_NAMES = GetUneditableNames()
-[USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS,
- DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS,
- RESOURCES, PROPERTIES] = UNEDITABLE_NAMES
-
 
 class LibraryResolver(etree.Resolver):
     """Helper object for loading library in xslt stylesheets"""
@@ -138,24 +71,6 @@ class LibraryResolver(etree.Resolver):
                     lib_el.append(deepcopy(ctn["types"]))
             return self.resolve_string(etree.tostring(lib_el), context)
 
-# -------------------------------------------------------------------------------
-#           Helpers functions for translating list of arguments
-#                       from xslt to valid arguments
-# -------------------------------------------------------------------------------
-
-
-def _StringValue(x):
-    return x
-
-
-def _BoolValue(x):
-    return x in ["true", "0"]
-
-
-def _translate_args(translations, args):
-    return [translate(arg[0]) if len(arg) > 0 else None
-            for translate, arg in
-            zip(translations, args)]
 
 # -------------------------------------------------------------------------------
 #                 Helpers object for generating pou var list
