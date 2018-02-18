@@ -45,7 +45,7 @@
         <xsl:variable name="type_name">
           <xsl:value-of select="@typeName"/>
         </xsl:variable>
-        <xsl:apply-templates select="$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+        <xsl:apply-templates select="$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |                          $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
           <xsl:with-param name="instance_path">
             <xsl:value-of select="$pou_instance_path"/>
           </xsl:with-param>
@@ -92,7 +92,7 @@
         <xsl:variable name="type_name">
           <xsl:value-of select="@name"/>
         </xsl:variable>
-        <xsl:apply-templates select="$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                         $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+        <xsl:apply-templates select="$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |                          $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
           <xsl:with-param name="instance_path">
             <xsl:value-of select="$variable_path"/>
           </xsl:with-param>

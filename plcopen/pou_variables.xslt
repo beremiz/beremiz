@@ -264,7 +264,7 @@
   </xsl:template>
   <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
     <xsl:variable name="type_name" select="@name"/>
-    <xsl:variable name="datatype_infos" select="&#10;            $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;            $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]&#10;        "/>
+    <xsl:variable name="datatype_infos" select="             $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |             $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]         "/>
     <xsl:choose>
       <xsl:when test="$datatype_infos">
         <xsl:apply-templates mode="var_debug" select="$datatype_infos"/>

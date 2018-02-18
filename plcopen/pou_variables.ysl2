@@ -237,9 +237,9 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "*[self::ppx:type or self::ppx:baseType]/ppx:derived", mode="var_debug" {
         variable "type_name", "@name";
-        variable "datatype_infos", """
-            $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-            $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]
+        variable "datatype_infos", """ \
+            $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] | \
+            $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] \
         """;
         choose {
             when "$datatype_infos" {
