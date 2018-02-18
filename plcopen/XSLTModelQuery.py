@@ -11,6 +11,7 @@ from plcopen.structures import StdBlckLibs
 
 ScriptDirectory = paths.AbsDir(__file__)
 
+
 class XSLTModelQuery(object):
     """ a class to handle XSLT queries on project and libs """
     def __init__(self, controller, xsltpath, ext = []):
@@ -39,3 +40,24 @@ class XSLTModelQuery(object):
         res = self.xslt(root,**{k:etree.XSLT.strparam(v) for k,v in kwargs.iteritems()})
         # print(self.xslt.error_log)
         return res
+
+
+# -------------------------------------------------------------------------------
+#           Helpers functions for translating list of arguments
+#                       from xslt to valid arguments
+# -------------------------------------------------------------------------------
+
+
+def _StringValue(x):
+    return x
+
+
+def _BoolValue(x):
+    return x in ["true", "0"]
+
+
+def _translate_args(translations, args):
+    return [translate(arg[0]) if len(arg) > 0 else None
+            for translate, arg in
+            zip(translations, args)]
+
