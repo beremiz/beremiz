@@ -21,7 +21,7 @@ class XSLTModelQuery(object):
         # merge xslt extensions for library access to query specific ones
         xsltext = [
             ("GetProject", lambda *_ignored: 
-                controller.GetProject(self.debug)),
+                [controller.GetProject(self.debug)]),
             ("GetStdLibs", lambda *_ignored: 
                 [lib for lib in StdBlckLibs.values()]),
             ("GetExtensions", lambda *_ignored: 
