@@ -52,11 +52,6 @@ class BeremizIDELauncher(object):
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
 
-    def ShowSplashScreen(self):
-        bmp = wx.Image(self.splashPath).ConvertToBitmap()
-        self.splash = AdvancedSplash(None, bitmap=bmp, agwStyle=AS_NOTIMEOUT | AS_CENTER_ON_SCREEN)
-
-
     def Usage(self):
         print("Usage:")
         print("%s [Options] [Projectpath] [Buildpath]" % sys.argv[0])
@@ -110,13 +105,23 @@ class BeremizIDELauncher(object):
         class BeremizApp(BeremizAppType):
             def OnInit(_self):
                 self.ShowSplashScreen()
-                wx.CallAfter(self.AppStart)
                 return True
 
         self.app = BeremizApp(redirect=self.debug)
         self.app.SetAppName('beremiz')
         if wx.VERSION < (3, 0, 0):
             wx.InitAllImageHandlers()
+
+    def ShowSplashScreen(self):
+        class Splash(AdvancedSplash):
+            def OnPaint(_self, event):
+                AdvancedSplash.OnPaint(_self, event)
+                wx.CallAfter(self.AppStart)
+        bmp = wx.Image(self.splashPath).ConvertToBitmap()
+        self.splash = Splash(None, 
+                             bitmap=bmp, 
+                             agwStyle=AS_NOTIMEOUT | AS_CENTER_ON_SCREEN)
+
 
     def BackgroundInitialization(self):
         self.InitI18n()
