@@ -285,7 +285,7 @@ class ProjectPropertiesPanel(wx.Notebook):
             if self.Controller is not None and self.Values is not None:
                 old_value = self.Values.get(name)
                 new_value = textctrl.GetValue()
-                if name not in REQUIRED_PARAMS and new_value == "":
+                if name in REQUIRED_PARAMS and new_value == "":
                     new_value = None
                 if name == 'companyURL':
                     if not URI_model.match(new_value):
