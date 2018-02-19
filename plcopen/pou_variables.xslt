@@ -9,7 +9,7 @@
   <xsl:variable name="project" select="ns:GetProject()"/>
   <xsl:variable name="stdlib" select="ns:GetStdLibs()"/>
   <xsl:variable name="extensions" select="ns:GetExtensions()"/>
-  <xsl:variable name="all" select="$project | $stdlib | $extensions"/>
+  <xsl:variable name="all_types" select="($project | $stdlib | $extensions)/ppx:types"/>
   <xsl:template name="add_root">
     <xsl:param name="class"/>
     <xsl:param name="type"/>
@@ -205,7 +205,7 @@
   <xsl:template mode="var_class" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
     <xsl:param name="default_class"/>
     <xsl:variable name="type_name" select="@name"/>
-    <xsl:variable name="pou_infos" select="$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name]"/>
+    <xsl:variable name="pou_infos" select="$all_types/ppx:pous/ppx:pou[@name=$type_name]"/>
     <xsl:choose>
       <xsl:when test="$pou_infos">
         <xsl:apply-templates mode="var_class" select="$pou_infos"/>
@@ -264,7 +264,7 @@
   </xsl:template>
   <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
     <xsl:variable name="type_name" select="@name"/>
-    <xsl:variable name="datatype_infos" select="             $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |             $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]         "/>
+    <xsl:variable name="datatype_infos" select="             $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |             $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name]         "/>
     <xsl:choose>
       <xsl:when test="$datatype_infos">
         <xsl:apply-templates mode="var_debug" select="$datatype_infos"/>
