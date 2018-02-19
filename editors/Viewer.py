@@ -32,6 +32,7 @@ from threading import Lock
 import wx
 
 from plcopen.structures import *
+from plcopen.types_enums import ComputePouName
 from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
 from graphics.DebugDataConsumer import DebugDataConsumer
 
@@ -2285,7 +2286,7 @@ class Viewer(EditorPanel, DebugViewer):
                             self.ParentWindow.OpenDebugViewer(
                                 pou_type,
                                 "%s.%s" % (self.GetInstancePath(True), self.SelectedElement.GetName()),
-                                self.Controler.ComputePouName(instance_type))
+                                ComputePouName(instance_type))
                 else:
                     iec_path = self.GetElementIECPath(self.SelectedElement)
                     if iec_path is not None:
@@ -2305,7 +2306,7 @@ class Viewer(EditorPanel, DebugViewer):
                     if instance_type in self.Controler.GetProjectPouNames(self.Debug):
                         self.ParentWindow.EditProjectElement(
                             ITEM_POU,
-                            self.Controler.ComputePouName(instance_type))
+                            ComputePouName(instance_type))
                     else:
                         self.SelectedElement.OnLeftDClick(event, self.GetLogicalDC(), self.Scaling)
             elif event.ControlDown() and event.ShiftDown():

@@ -32,6 +32,7 @@ import wx.lib.agw.customtreectrl as CT
 
 from PLCControler import *
 from util.BitmapLibrary import GetBitmap
+from plcopen.types_enums import GetElementType
 
 
 def GenerateName(infos):
@@ -196,7 +197,7 @@ class SearchResultPanel(wx.Panel):
 
                 words = tagname.split("::")
 
-                element_type = self.ParentWindow.Controler.GetElementType(tagname)
+                element_type = GetElementType(tagname)
                 if element_type == ITEM_POU:
                     element_type = self.ParentWindow.Controler.GetPouType(words[1])
 

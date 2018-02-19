@@ -40,6 +40,8 @@ ITEMS_VARIABLE = [
     ITEM_VAR_INOUT
 ] = range(17, 24)
 
+ITEM_CONFNODE = 25
+
 VAR_CLASS_INFOS = {
     "Local":    ("localVars",    ITEM_VAR_LOCAL),
     "Global":   ("globalVars",   ITEM_VAR_GLOBAL),
@@ -77,6 +79,46 @@ UNEDITABLE_NAMES = [_("User-defined POUs"), _("Functions"), _("Function Blocks")
 [USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS,
  DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS,
  RESOURCES, PROPERTIES] = UNEDITABLE_NAMES
+
+# -------------------------------------------------------------------------------
+#                   Project Element tag name computation functions
+# -------------------------------------------------------------------------------
+
+# Compute a data type name
+def ComputeDataTypeName(datatype):
+    return "D::%s" % datatype
+
+# Compute a pou name
+def ComputePouName(pou):
+    return "P::%s" % pou
+
+# Compute a pou transition name
+def ComputePouTransitionName(pou, transition):
+    return "T::%s::%s" % (pou, transition)
+
+# Compute a pou action name
+def ComputePouActionName(pou, action):
+    return "A::%s::%s" % (pou, action)
+
+# Compute a pou  name
+def ComputeConfigurationName(config):
+    return "C::%s" % config
+
+# Compute a pou  name
+def ComputeConfigurationResourceName(config, resource):
+    return "R::%s::%s" % (config, resource)
+
+def GetElementType(tagname):
+    words = tagname.split("::")
+    return {
+        "D": ITEM_DATATYPE,
+        "P": ITEM_POU,
+        "T": ITEM_TRANSITION,
+        "A": ITEM_ACTION,
+        "C": ITEM_CONFIGURATION,
+        "R": ITEM_RESOURCE
+    }[words[0]]
+
 
 # remove gettext override
 del _

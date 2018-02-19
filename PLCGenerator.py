@@ -28,6 +28,7 @@ from types import *
 import re
 from plcopen import PLCOpenParser
 from plcopen.structures import *
+from plcopen.types_enums import *
 
 
 # Dictionary associating PLCOpen variable categories to the corresponding
@@ -134,7 +135,7 @@ class ProgramGenerator(object):
 
             # Getting datatype model from project
             datatype = self.Project.getdataType(datatype_name)
-            tagname = self.Controler.ComputeDataTypeName(datatype.getname())
+            tagname = ComputeDataTypeName(datatype.getname())
             datatype_def = [("  ", ()),
                             (datatype.getname(), (tagname, "name")),
                             (" : ", ())]
@@ -268,7 +269,7 @@ class ProgramGenerator(object):
 
     # Generate a configuration from its model
     def GenerateConfiguration(self, configuration):
-        tagname = self.Controler.ComputeConfigurationName(configuration.getname())
+        tagname = ComputeConfigurationName(configuration.getname())
         config = [("\nCONFIGURATION ", ()),
                   (configuration.getname(), (tagname, "name")),
                   ("\n", ())]
@@ -342,7 +343,7 @@ class ProgramGenerator(object):
 
     # Generate a resource from its model
     def GenerateResource(self, resource, config_name):
-        tagname = self.Controler.ComputeConfigurationResourceName(config_name, resource.getname())
+        tagname = ComputeConfigurationResourceName(config_name, resource.getname())
         resrce = [("\n  RESOURCE ", ()),
                   (resource.getname(), (tagname, "name")),
                   (" ON PLC\n", ())]
@@ -518,7 +519,7 @@ class PouProgramGenerator(object):
         self.ParentGenerator = parent
         self.Name = name
         self.Type = type
-        self.TagName = self.ParentGenerator.Controler.ComputePouName(name)
+        self.TagName = ComputePouName(name)
         self.CurrentIndent = "  "
         self.ReturnType = None
         self.Interface = []
@@ -578,7 +579,7 @@ class PouProgramGenerator(object):
                             current_type = var_type
                             break
                 else:
-                    tagname = self.ParentGenerator.Controler.ComputeDataTypeName(current_type)
+                    tagname = ComputeDataTypeName(current_type)
                     infos = self.ParentGenerator.Controler.GetDataTypeInfos(tagname)
                     if infos is not None and infos["type"] == "Structure":
                         name = parts.pop(0)
@@ -841,10 +842,10 @@ class PouProgramGenerator(object):
             if body_type == "SFC":
                 previous_tagname = self.TagName
                 for action in pou.getactionList():
-                    self.TagName = self.ParentGenerator.Controler.ComputePouActionName(self.Name, action.getname())
+                    self.TagName = ComputePouActionName(self.Name, action.getname())
                     self.ComputeConnectionTypes(action)
                 for transition in pou.gettransitionList():
-                    self.TagName = self.ParentGenerator.Controler.ComputePouTransitionName(self.Name, transition.getname())
+                    self.TagName = ComputePouTransitionName(self.Name, transition.getname())
                     self.ComputeConnectionTypes(transition)
                 self.TagName = previous_tagname
 
@@ -1497,7 +1498,7 @@ class PouProgramGenerator(object):
             actionContent = pou.getaction(action_name)
             if actionContent is not None:
                 previous_tagname = self.TagName
-                self.TagName = self.ParentGenerator.Controler.ComputePouActionName(self.Name, action_name)
+                self.TagName = ComputePouActionName(self.Name, action_name)
                 self.ComputeProgram(actionContent)
                 self.SFCNetworks["Actions"][action_name] = (self.Program, (self.TagName, "name"))
                 self.Program = []
@@ -1540,7 +1541,7 @@ class PouProgramGenerator(object):
                 transitionType = transitionContent.getbodyType()
                 transitionBody = transitionContent.getbody()
                 previous_tagname = self.TagName
-                self.TagName = self.ParentGenerator.Controler.ComputePouTransitionName(self.Name, transitionValues["value"])
+                self.TagName = ComputePouTransitionName(self.Name, transitionValues["value"])
                 if transitionType == "IL":
                     transition_infos["content"] = [(":\n", ()),
                                                    (ReIndentText(transitionBody.getcontent().getanyText(), len(self.CurrentIndent)), (self.TagName, "body", len(self.CurrentIndent)))]

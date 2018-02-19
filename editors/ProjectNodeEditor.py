@@ -28,6 +28,7 @@ import wx
 
 from controls import ProjectPropertiesPanel, VariablePanel
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from plcopen.types_enums import ComputeConfigurationName
 
 
 class ProjectNodeEditor(ConfTreeNodeEditor):
@@ -50,9 +51,9 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         return self.ProjectProperties
 
     def __init__(self, parent, controler, window):
-        configuration = controler.GetProjectMainConfigurationName()
+        configuration = GetProjectMainConfigurationName()
         if configuration is not None:
-            tagname = controler.ComputeConfigurationName(configuration)
+            tagname = ComputeConfigurationName(configuration)
         else:
             tagname = ""
 

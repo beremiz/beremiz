@@ -58,6 +58,7 @@ from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from dialogs import DiscoveryDialog
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
+from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
 from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
@@ -66,7 +67,6 @@ base_folder = paths.AbsParentDir(__file__)
 
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
-ITEM_CONFNODE = 25
 
 
 def ExtractChildrenTypesFromCatalog(catalog):
@@ -420,7 +420,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         config = self.Project.getconfiguration(self.GetProjectMainConfigurationName())
         resource = config.getresource()[0].getname()
         config = config.getname()
-        resource_tagname = self.ComputeConfigurationResourceName(config, resource)
+        resource_tagname = ComputeConfigurationResourceName(config, resource)
         def_task = [
             {'Priority': '0', 'Single': '', 'Interval': 'T#20ms', 'Name': 'task0', 'Triggering': 'Cyclic'}]
         def_instance = [
