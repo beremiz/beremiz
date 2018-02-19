@@ -1,22 +1,19 @@
 include yslt_noindent.yml2
 istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
-            xmlns:ns="instance_tagname_ns" 
+            xmlns:ns="beremiz" 
             extension-element-prefixes="ns" 
             exclude-result-prefixes="ns" {
     
     param "instance_path";
     
-    variable "project" {
-        copy "document('project')/project/*";
-    }
+    variable "project", "ns:GetProject()";
     
-    variable "stdlib" {
-        copy "document('stdlib')/stdlib/*";
-    }
-    variable "extensions" {
-        copy "document('extensions')/extensions/*";
-    }
+    variable "stdlib", "ns:GetStdLibs()";
+
+    variable "extensions", "ns:GetExtensions()";
+
+    variable "all_types", "($project | $stdlib | $extensions)/ppx:types";
     
     function "element_name" {
         param "path";
@@ -97,12 +94,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     template "ppx:pouInstance" {
         param "element_path";
         variable "type_name" > «@typeName»
-        apply """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                 exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
+        apply """$all_types/ppx:pous/ppx:pou[@name=$type_name] | \
+                 $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
             with "element_path", "$element_path";
         }
     }
@@ -150,12 +143,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     template "ppx:derived" {
         param "element_path";
         variable "type_name" > «@name»
-        apply """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                 exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
+        apply """$all_types/ppx:pous/ppx:pou[@name=$type_name] | \
+                 $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name]""" {
             with "element_path", "$element_path";
         }
     }

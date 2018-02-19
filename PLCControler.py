@@ -42,6 +42,7 @@ from plcopen.types_enums import *
 from plcopen.XSLTModelQuery import  _StringValue, _BoolValue, _translate_args
 from plcopen.InstancesPathCollector import InstancesPathCollector
 from plcopen.POUVariablesCollector import POUVariablesCollector
+from plcopen.InstanceTagnameCollector import InstanceTagnameCollector
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -124,31 +125,6 @@ class VariablesInfosFactory(object):
         self.Variables.append(_VariableInfos(*(
             _translate_args([_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
             [self.GetType(), self.GetTree()])))
-
-class InstanceTagName(object):
-    """Helpers object for generating instance tagname"""
-
-    def __init__(self, controller):
-        self.Controller = controller
-        self.TagName = None
-
-    def GetTagName(self):
-        return self.TagName
-
-    def ConfigTagName(self, context, *args):
-        self.TagName = ComputeConfigurationName(args[0][0])
-
-    def ResourceTagName(self, context, *args):
-        self.TagName = ComputeConfigurationResourceName(args[0][0], args[1][0])
-
-    def PouTagName(self, context, *args):
-        self.TagName = ComputePouName(args[0][0])
-
-    def ActionTagName(self, context, *args):
-        self.TagName = ComputePouActionName(args[0][0], args[0][1])
-
-    def TransitionTagName(self, context, *args):
-        self.TagName = ComputePouTransitionName(args[0][0], args[0][1])
 
 
 # -------------------------------------------------------------------------------
@@ -408,6 +384,7 @@ class PLCControler(object):
         self.Reset()
         self.InstancesPathCollector = InstancesPathCollector(self)
         self.POUVariablesCollector = POUVariablesCollector(self)
+        self.InstanceTagnameCollector = InstanceTagnameCollector(self)
 
     # Reset PLCControler internal variables
     def Reset(self):
@@ -662,26 +639,10 @@ class PLCControler(object):
 
     def GetPouInstanceTagName(self, instance_path, debug=False):
         project = self.GetProject(debug)
-        factory = InstanceTagName(self)
-
-        parser = etree.XMLParser()
-        parser.resolvers.add(LibraryResolver(self, debug))
-
-        instance_tagname_xslt_tree = etree.XSLT(
-            etree.parse(
-                os.path.join(ScriptDirectory, "plcopen", "instance_tagname.xslt"),
-                parser),
-            extensions={("instance_tagname_ns", name): getattr(factory, name)
-                        for name in ["ConfigTagName",
-                                     "ResourceTagName",
-                                     "PouTagName",
-                                     "ActionTagName",
-                                     "TransitionTagName"]})
-
-        instance_tagname_xslt_tree(
-            project, instance_path=etree.XSLT.strparam(instance_path))
-
-        return factory.GetTagName()
+        if project is not None :
+            return self.InstanceTagnameCollector.Collect(project,
+                                                         debug,
+                                                         instance_path)
 
     def GetInstanceInfos(self, instance_path, debug=False):
         tagname = self.GetPouInstanceTagName(instance_path)
