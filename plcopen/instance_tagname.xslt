@@ -1,16 +1,11 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ppx="http://www.plcopen.org/xml/tc6_0201" xmlns:ns="instance_tagname_ns" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" extension-element-prefixes="ns" version="1.0" exclude-result-prefixes="ns">
+<xsl:stylesheet xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ppx="http://www.plcopen.org/xml/tc6_0201" xmlns:ns="beremiz" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" extension-element-prefixes="ns" version="1.0" exclude-result-prefixes="ns">
   <xsl:output method="xml"/>
   <xsl:param name="instance_path"/>
-  <xsl:variable name="project">
-    <xsl:copy-of select="document('project')/project/*"/>
-  </xsl:variable>
-  <xsl:variable name="stdlib">
-    <xsl:copy-of select="document('stdlib')/stdlib/*"/>
-  </xsl:variable>
-  <xsl:variable name="extensions">
-    <xsl:copy-of select="document('extensions')/extensions/*"/>
-  </xsl:variable>
+  <xsl:variable name="project" select="ns:GetProject()"/>
+  <xsl:variable name="stdlib" select="ns:GetStdLibs()"/>
+  <xsl:variable name="extensions" select="ns:GetExtensions()"/>
+  <xsl:variable name="all_types" select="($project | $stdlib | $extensions)/ppx:types"/>
   <xsl:template name="element_name">
     <xsl:param name="path"/>
     <xsl:choose>
@@ -95,7 +90,7 @@
     <xsl:variable name="type_name">
       <xsl:value-of select="@typeName"/>
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                 exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+    <xsl:apply-templates select="$all_types/ppx:pous/ppx:pou[@name=$type_name] |                  $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
       <xsl:with-param name="element_path" select="$element_path"/>
     </xsl:apply-templates>
   </xsl:template>
@@ -142,7 +137,7 @@
     <xsl:variable name="type_name">
       <xsl:value-of select="@name"/>
     </xsl:variable>
-    <xsl:apply-templates select="exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                 exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                 exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |&#10;                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |&#10;                 exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
+    <xsl:apply-templates select="$all_types/ppx:pous/ppx:pou[@name=$type_name] |                  $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name]">
       <xsl:with-param name="element_path" select="$element_path"/>
     </xsl:apply-templates>
   </xsl:template>
