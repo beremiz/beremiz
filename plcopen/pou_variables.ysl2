@@ -17,7 +17,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
 
     variable "extensions", "ns:GetExtensions()";
 
-    variable "all", "$project | $stdlib | $extensions";
+    variable "all_types", "($project | $stdlib | $extensions)/ppx:types";
     
     function "add_root" {
         param "class";
@@ -173,7 +173,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     template "*[self::ppx:type or self::ppx:baseType]/ppx:derived", mode="var_class" {
         param "default_class";
         variable "type_name", "@name";
-        variable "pou_infos", "$all/ppx:types/ppx:pous/ppx:pou[@name=$type_name]";
+        variable "pou_infos", "$all_types/ppx:pous/ppx:pou[@name=$type_name]";
         choose {
             when "$pou_infos" {
                 apply "$pou_infos", mode="var_class";
@@ -239,7 +239,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "type_name", "@name";
         variable "datatype_infos", """ \
             $project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] | \
-            $all/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] \
+            $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name] \
         """;
         choose {
             when "$datatype_infos" {
