@@ -136,19 +136,19 @@ class InstanceTagName(object):
         return self.TagName
 
     def ConfigTagName(self, context, *args):
-        self.TagName = self.Controller.ComputeConfigurationName(args[0][0])
+        self.TagName = ComputeConfigurationName(args[0][0])
 
     def ResourceTagName(self, context, *args):
-        self.TagName = self.Controller.ComputeConfigurationResourceName(args[0][0], args[1][0])
+        self.TagName = ComputeConfigurationResourceName(args[0][0], args[1][0])
 
     def PouTagName(self, context, *args):
-        self.TagName = self.Controller.ComputePouName(args[0][0])
+        self.TagName = ComputePouName(args[0][0])
 
     def ActionTagName(self, context, *args):
-        self.TagName = self.Controller.ComputePouActionName(args[0][0], args[0][1])
+        self.TagName = ComputePouActionName(args[0][0], args[0][1])
 
     def TransitionTagName(self, context, *args):
-        self.TagName = self.Controller.ComputePouTransitionName(args[0][0], args[0][1])
+        self.TagName = ComputePouTransitionName(args[0][0], args[0][1])
 
 
 # -------------------------------------------------------------------------------
@@ -559,7 +559,7 @@ class PLCControler(object):
                 datatypes["values"].append({
                     "name": datatype.getname(),
                     "type": ITEM_DATATYPE,
-                    "tagname": self.ComputeDataTypeName(datatype.getname()),
+                    "tagname": ComputeDataTypeName(datatype.getname()),
                     "values": []})
             pou_types = {
                 "function": {
@@ -581,7 +581,7 @@ class PLCControler(object):
             for pou in project.getpous():
                 pou_type = pou.getpouType()
                 pou_infos = {"name": pou.getname(), "type": ITEM_POU,
-                             "tagname": self.ComputePouName(pou.getname())}
+                             "tagname": ComputePouName(pou.getname())}
                 pou_values = []
                 if pou.getbodyType() == "SFC":
                     transitions = []
@@ -589,7 +589,7 @@ class PLCControler(object):
                         transitions.append({
                             "name": transition.getname(),
                             "type": ITEM_TRANSITION,
-                            "tagname": self.ComputePouTransitionName(pou.getname(), transition.getname()),
+                            "tagname": ComputePouTransitionName(pou.getname(), transition.getname()),
                             "values": []})
                     pou_values.append({"name": TRANSITIONS, "type": ITEM_TRANSITIONS, "values": transitions})
                     actions = []
@@ -597,7 +597,7 @@ class PLCControler(object):
                         actions.append({
                             "name": action.getname(),
                             "type": ITEM_ACTION,
-                            "tagname": self.ComputePouActionName(pou.getname(), action.getname()),
+                            "tagname": ComputePouActionName(pou.getname(), action.getname()),
                             "values": []})
                     pou_values.append({"name": ACTIONS, "type": ITEM_ACTIONS, "values": actions})
                 if pou_type in pou_types:
@@ -609,7 +609,7 @@ class PLCControler(object):
                 config_infos = {
                     "name": config_name,
                     "type": ITEM_CONFIGURATION,
-                    "tagname": self.ComputeConfigurationName(config.getname()),
+                    "tagname": ComputeConfigurationName(config.getname()),
                     "values": []}
                 resources = {"name": RESOURCES, "type": ITEM_RESOURCES, "values": []}
                 for resource in config.getresource():
@@ -617,7 +617,7 @@ class PLCControler(object):
                     resource_infos = {
                         "name": resource_name,
                         "type": ITEM_RESOURCE,
-                        "tagname": self.ComputeConfigurationResourceName(config.getname(), resource.getname()),
+                        "tagname": ComputeConfigurationResourceName(config.getname(), resource.getname()),
                         "values": []}
                     resources["values"].append(resource_infos)
                 config_infos["values"] = [resources]
@@ -657,7 +657,7 @@ class PLCControler(object):
             elif words[0] in ['T', 'A']:
                 return ["%s.%s" % (instance, words[2])
                         for instance in self.SearchPouInstances(
-                            self.ComputePouName(words[1]), debug)]
+                            ComputePouName(words[1]), debug)]
         return []
 
     def GetPouInstanceTagName(self, instance_path, debug=False):
@@ -780,7 +780,7 @@ class PLCControler(object):
             # Add the datatype to project
             self.Project.appenddataType(datatype_name)
             self.BufferProject()
-            return self.ComputeDataTypeName(datatype_name)
+            return ComputeDataTypeName(datatype_name)
         return None
 
     # Remove a Data Type from project
@@ -797,7 +797,7 @@ class PLCControler(object):
             if pou_type == "function":
                 self.SetPouInterfaceReturnType(pou_name, "BOOL")
             self.BufferProject()
-            return self.ComputePouName(pou_name)
+            return ComputePouName(pou_name)
         return None
 
     def ProjectChangePouType(self, name, pou_type):
@@ -855,7 +855,7 @@ class PLCControler(object):
         self.Project.insertpou(0, new_pou)
         self.BufferProject()
 
-        return self.ComputePouName(new_name),
+        return ComputePouName(new_name),
 
     # Remove a Pou from project
     def ProjectRemovePou(self, pou_name):
@@ -879,7 +879,7 @@ class PLCControler(object):
                 config_name = self.GenerateNewName(None, None, "configuration%d")
             self.Project.addconfiguration(config_name)
             self.BufferProject()
-            return self.ComputeConfigurationName(config_name)
+            return ComputeConfigurationName(config_name)
         return None
 
     # Remove a configuration from project
@@ -895,7 +895,7 @@ class PLCControler(object):
                 resource_name = self.GenerateNewName(None, None, "resource%d")
             self.Project.addconfigurationResource(config_name, resource_name)
             self.BufferProject()
-            return self.ComputeConfigurationResourceName(config_name, resource_name)
+            return ComputeConfigurationResourceName(config_name, resource_name)
         return None
 
     # Remove a resource from a configuration of the project
@@ -911,7 +911,7 @@ class PLCControler(object):
             if pou is not None:
                 pou.addtransition(transition_name, transition_type)
                 self.BufferProject()
-                return self.ComputePouTransitionName(pou_name, transition_name)
+                return ComputePouTransitionName(pou_name, transition_name)
         return None
 
     # Remove a Transition from a Project Pou
@@ -930,7 +930,7 @@ class PLCControler(object):
             if pou is not None:
                 pou.addaction(action_name, action_type)
                 self.BufferProject()
-                return self.ComputePouActionName(pou_name, action_name)
+                return ComputePouActionName(pou_name, action_name)
         return None
 
     # Remove an Action from a Project Pou
@@ -1760,45 +1760,6 @@ class PLCControler(object):
             for confnodetype in self.ConfNodeTypes:
                 values.extend(confnodetype["types"].GetEnumeratedDataTypeValues())
         return values
-
-    # -------------------------------------------------------------------------------
-    #                   Project Element tag name computation functions
-    # -------------------------------------------------------------------------------
-
-    # Compute a data type name
-    def ComputeDataTypeName(self, datatype):
-        return "D::%s" % datatype
-
-    # Compute a pou name
-    def ComputePouName(self, pou):
-        return "P::%s" % pou
-
-    # Compute a pou transition name
-    def ComputePouTransitionName(self, pou, transition):
-        return "T::%s::%s" % (pou, transition)
-
-    # Compute a pou action name
-    def ComputePouActionName(self, pou, action):
-        return "A::%s::%s" % (pou, action)
-
-    # Compute a pou  name
-    def ComputeConfigurationName(self, config):
-        return "C::%s" % config
-
-    # Compute a pou  name
-    def ComputeConfigurationResourceName(self, config, resource):
-        return "R::%s::%s" % (config, resource)
-
-    def GetElementType(self, tagname):
-        words = tagname.split("::")
-        return {
-            "D": ITEM_DATATYPE,
-            "P": ITEM_POU,
-            "T": ITEM_TRANSITION,
-            "A": ITEM_ACTION,
-            "C": ITEM_CONFIGURATION,
-            "R": ITEM_RESOURCE
-        }[words[0]]
 
     # -------------------------------------------------------------------------------
     #                    Project opened Data types management functions

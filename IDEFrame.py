@@ -44,6 +44,7 @@ from controls import CustomTree, LibraryPanel, PouInstanceVariablesPanel, Search
 from controls.DebugVariablePanel import DebugVariablePanel
 from dialogs import ProjectDialog, PouDialog, PouTransitionDialog, PouActionDialog, FindInPouDialog, SearchInProjectDialog
 from util.BitmapLibrary import GetBitmap
+from plcopen.types_enums import *
 
 # Define PLCOpenEditor controls id
 [
@@ -824,7 +825,7 @@ class IDEFrame(wx.Frame):
                 return notebook.GetPageIndex(page_ref)
         elif page_infos[0] == "editor":
             tagname = page_infos[1]
-            page_ref = self.EditProjectElement(self.Controler.GetElementType(tagname), tagname)
+            page_ref = self.EditProjectElement(GetElementType(tagname), tagname)
             if page_ref is not None:
                 page_ref.RefreshView()
                 return notebook.GetPageIndex(page_ref)
@@ -1646,8 +1647,8 @@ class IDEFrame(wx.Frame):
                         abort = True
                     if not abort:
                         self.Controler.ChangeDataTypeName(old_name, new_name)
-                        self.RefreshEditorNames(self.Controler.ComputeDataTypeName(old_name),
-                                                self.Controler.ComputeDataTypeName(new_name))
+                        self.RefreshEditorNames(ComputeDataTypeName(old_name),
+                                                ComputeDataTypeName(new_name))
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_POU:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectPouNames() if name != old_name]:
@@ -1660,8 +1661,8 @@ class IDEFrame(wx.Frame):
                         messageDialog.Destroy()
                     if not abort:
                         self.Controler.ChangePouName(old_name, new_name)
-                        self.RefreshEditorNames(self.Controler.ComputePouName(old_name),
-                                                self.Controler.ComputePouName(new_name))
+                        self.RefreshEditorNames(ComputePouName(old_name),
+                                                ComputePouName(new_name))
                         self.RefreshLibraryPanel()
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_TRANSITION:
@@ -1674,8 +1675,8 @@ class IDEFrame(wx.Frame):
                     else:
                         words = item_infos["tagname"].split("::")
                         self.Controler.ChangePouTransitionName(words[1], old_name, new_name)
-                        self.RefreshEditorNames(self.Controler.ComputePouTransitionName(words[1], old_name),
-                                                self.Controler.ComputePouTransitionName(words[1], new_name))
+                        self.RefreshEditorNames(ComputePouTransitionName(words[1], old_name),
+                                                ComputePouTransitionName(words[1], new_name))
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_ACTION:
                     pou_item = self.ProjectTree.GetItemParent(event.GetItem())
@@ -1687,8 +1688,8 @@ class IDEFrame(wx.Frame):
                     else:
                         words = item_infos["tagname"].split("::")
                         self.Controler.ChangePouActionName(words[1], old_name, new_name)
-                        self.RefreshEditorNames(self.Controler.ComputePouActionName(words[1], old_name),
-                                                self.Controler.ComputePouActionName(words[1], new_name))
+                        self.RefreshEditorNames(ComputePouActionName(words[1], old_name),
+                                                ComputePouActionName(words[1], new_name))
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_CONFIGURATION:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectConfigNames() if name != old_name]:
@@ -1706,8 +1707,8 @@ class IDEFrame(wx.Frame):
                         messageDialog.Destroy()
                     if not abort:
                         self.Controler.ChangeConfigurationName(old_name, new_name)
-                        self.RefreshEditorNames(self.Controler.ComputeConfigurationName(old_name),
-                                                self.Controler.ComputeConfigurationName(new_name))
+                        self.RefreshEditorNames(ComputeConfigurationName(old_name),
+                                                ComputeConfigurationName(new_name))
                         self.RefreshPageTitles()
                 elif item_infos["type"] == ITEM_RESOURCE:
                     if new_name.upper() in [name.upper() for name in self.Controler.GetProjectConfigNames()]:
@@ -1726,8 +1727,8 @@ class IDEFrame(wx.Frame):
                     if not abort:
                         words = item_infos["tagname"].split("::")
                         self.Controler.ChangeConfigurationResourceName(words[1], old_name, new_name)
-                        self.RefreshEditorNames(self.Controler.ComputeConfigurationResourceName(words[1], old_name),
-                                                self.Controler.ComputeConfigurationResourceName(words[1], new_name))
+                        self.RefreshEditorNames(ComputeConfigurationResourceName(words[1], old_name),
+                                                ComputeConfigurationResourceName(words[1], new_name))
                         self.RefreshPageTitles()
             if message or abort:
                 if message:
@@ -2465,7 +2466,7 @@ class IDEFrame(wx.Frame):
             name = self.ProjectTree.GetItemText(selected)
             if self.CheckDataTypeIsUsedBeforeDeletion(name):
                 self.Controler.ProjectRemoveDataType(name)
-                tagname = self.Controler.ComputeDataTypeName(name)
+                tagname = ComputeDataTypeName(name)
                 idx = self.IsOpened(tagname)
                 if idx is not None:
                     self.TabsOpened.DeletePage(idx)
@@ -2482,7 +2483,7 @@ class IDEFrame(wx.Frame):
             name = self.ProjectTree.GetItemText(selected)
             if self.CheckPouIsUsedBeforeDeletion(name):
                 self.Controler.ProjectRemovePou(name)
-                tagname = self.Controler.ComputePouName(name)
+                tagname = ComputePouName(name)
                 idx = self.IsOpened(tagname)
                 if idx is not None:
                     self.TabsOpened.DeletePage(idx)
@@ -2495,7 +2496,7 @@ class IDEFrame(wx.Frame):
             transition = self.ProjectTree.GetItemText(selected)
             pou_name = item_infos["tagname"].split("::")[1]
             self.Controler.ProjectRemovePouTransition(pou_name, transition)
-            tagname = self.Controler.ComputePouTransitionName(pou_name, transition)
+            tagname = ComputePouTransitionName(pou_name, transition)
             idx = self.IsOpened(tagname)
             if idx is not None:
                 self.TabsOpened.DeletePage(idx)
@@ -2508,7 +2509,7 @@ class IDEFrame(wx.Frame):
             action = self.ProjectTree.GetItemText(selected)
             pou_name = item_infos["tagname"].split("::")[1]
             self.Controler.ProjectRemovePouAction(pou_name, action)
-            tagname = self.Controler.ComputePouActionName(pou_name, action)
+            tagname = ComputePouActionName(pou_name, action)
             idx = self.IsOpened(tagname)
             if idx is not None:
                 self.TabsOpened.DeletePage(idx)
@@ -2519,7 +2520,7 @@ class IDEFrame(wx.Frame):
         if self.ProjectTree.GetPyData(selected)["type"] == ITEM_CONFIGURATION:
             name = self.ProjectTree.GetItemText(selected)
             self.Controler.ProjectRemoveConfiguration(name)
-            tagname = self.Controler.ComputeConfigurationName(name)
+            tagname = ComputeConfigurationName(name)
             idx = self.IsOpened(tagname)
             if idx is not None:
                 self.TabsOpened.DeletePage(idx)
@@ -2532,7 +2533,7 @@ class IDEFrame(wx.Frame):
             resource = self.ProjectTree.GetItemText(selected)
             config_name = item_infos["tagname"].split("::")[1]
             self.Controler.ProjectRemoveConfigurationResource(config_name, resource)
-            tagname = self.Controler.ComputeConfigurationResourceName(config_name, selected)
+            tagname = ComputeConfigurationResourceName(config_name, selected)
             idx = self.IsOpened(tagname)
             if idx is not None:
                 self.TabsOpened.DeletePage(idx)
@@ -2549,7 +2550,7 @@ class IDEFrame(wx.Frame):
             self.RefreshProjectTree()
             self.ProjectTree.Unselect()
         else:
-            self.EditProjectElement(self.Controler.GetElementType(infos[0]), infos[0])
+            self.EditProjectElement(GetElementType(infos[0]), infos[0])
             selected = self.TabsOpened.GetSelection()
             if selected != -1:
                 viewer = self.TabsOpened.GetPage(selected)

@@ -56,7 +56,8 @@ from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
 from controls import EnhancedStatusBar as esb
 from dialogs.AboutDialog import ShowAboutDialog
 
-from PLCControler import \
+from plcopen.types_enums import \
+    ComputeConfigurationName, \
     LOCATION_CONFNODE, \
     LOCATION_MODULE, \
     LOCATION_GROUP, \
@@ -64,9 +65,10 @@ from PLCControler import \
     LOCATION_VAR_OUTPUT, \
     LOCATION_VAR_MEMORY, \
     ITEM_PROJECT, \
-    ITEM_RESOURCE
+    ITEM_RESOURCE, \
+    ITEM_CONFNODE
 
-from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ITEM_CONFNODE
+from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL
 
 from IDEFrame import \
     TITLE,\
@@ -1093,7 +1095,7 @@ class Beremiz(IDEFrame):
 
     def ShowHighlight(self, infos, start, end, highlight_type):
         config_name = self.Controler.GetProjectMainConfigurationName()
-        if config_name is not None and infos[0] == self.Controler.ComputeConfigurationName(config_name):
+        if config_name is not None and infos[0] == ComputeConfigurationName(config_name):
             self.CTR._OpenView()
             selected = self.TabsOpened.GetSelection()
             if selected != -1:

@@ -30,13 +30,7 @@ import wx
 import wx.lib.agw.customtreectrl as CT
 import wx.lib.buttons
 
-from PLCControler import \
-    ITEMS_VARIABLE, \
-    ITEM_CONFIGURATION, \
-    ITEM_RESOURCE, \
-    ITEM_POU, \
-    ITEM_TRANSITION, \
-    ITEM_ACTION
+from plcopen.types_enums import *
 
 from util.BitmapLibrary import GetBitmap
 
@@ -220,7 +214,7 @@ class PouInstanceVariablesPanel(wx.Panel):
             if tagname == "Project":
                 config_name = self.Controller.GetProjectMainConfigurationName()
                 if config_name is not None:
-                    tagname = self.Controller.ComputeConfigurationName(config_name)
+                    tagname = ComputeConfigurationName(config_name)
             if pou_instance is not None:
                 self.PouInstance = pou_instance
 
@@ -316,20 +310,20 @@ class PouInstanceVariablesPanel(wx.Panel):
     def EditButtonCallback(self, infos):
         var_class = infos.var_class
         if var_class == ITEM_RESOURCE:
-            tagname = self.Controller.ComputeConfigurationResourceName(
+            tagname = ComputeConfigurationResourceName(
                 self.InstanceChoice.GetStringSelection(),
                 infos.name)
         elif var_class == ITEM_TRANSITION:
-            tagname = self.Controller.ComputePouTransitionName(
+            tagname = ComputePouTransitionName(
                 self.PouTagName.split("::")[1],
                 infos.name)
         elif var_class == ITEM_ACTION:
-            tagname = self.Controller.ComputePouActionName(
+            tagname = ComputePouActionName(
                 self.PouTagName.split("::")[1],
                 infos.name)
         else:
             var_class = ITEM_POU
-            tagname = self.Controller.ComputePouName(infos.type)
+            tagname = ComputePouName(infos.type)
         self.ParentWindow.EditProjectElement(var_class, tagname)
 
     def DebugButtonCallback(self, infos):
@@ -346,21 +340,21 @@ class PouInstanceVariablesPanel(wx.Panel):
                 self.ParentWindow.OpenDebugViewer(
                     var_class,
                     var_path,
-                    self.Controller.ComputePouTransitionName(
+                    ComputePouTransitionName(
                         self.PouTagName.split("::")[1],
                         infos.name))
             elif var_class == ITEM_ACTION:
                 self.ParentWindow.OpenDebugViewer(
                     var_class,
                     var_path,
-                    self.Controller.ComputePouActionName(
+                    ComputePouActionName(
                         self.PouTagName.split("::")[1],
                         infos.name))
             else:
                 self.ParentWindow.OpenDebugViewer(
                     var_class,
                     var_path,
-                    self.Controller.ComputePouName(infos.type))
+                    ComputePouName(infos.type))
 
     def DebugButtonDClickCallback(self, infos):
         if self.InstanceChoice.GetSelection() != -1:
@@ -420,7 +414,7 @@ class PouInstanceVariablesPanel(wx.Panel):
                     instance_path = self.InstanceChoice.GetStringSelection()
                     if item_infos.var_class == ITEM_RESOURCE:
                         if instance_path != "":
-                            tagname = self.Controller.ComputeConfigurationResourceName(
+                            tagname = ComputeConfigurationResourceName(
                                 instance_path,
                                 item_infos.name)
                         else:
@@ -428,11 +422,11 @@ class PouInstanceVariablesPanel(wx.Panel):
                     else:
                         parent_infos = self.VariablesList.GetPyData(selected_item.GetParent())
                         if item_infos.var_class == ITEM_ACTION:
-                            tagname = self.Controller.ComputePouActionName(parent_infos.type, item_infos.name)
+                            tagname = ComputePouActionName(parent_infos.type, item_infos.name)
                         elif item_infos.var_class == ITEM_TRANSITION:
-                            tagname = self.Controller.ComputePouTransitionName(parent_infos.type, item_infos.name)
+                            tagname = ComputePouTransitionName(parent_infos.type, item_infos.name)
                         else:
-                            tagname = self.Controller.ComputePouName(item_infos.type)
+                            tagname = ComputePouName(item_infos.type)
                     if tagname is not None:
                         if instance_path != "":
                             item_path = "%s.%s" % (instance_path, item_infos.name)
