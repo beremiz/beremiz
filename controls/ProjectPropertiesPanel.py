@@ -26,6 +26,8 @@
 from __future__ import absolute_import
 import wx
 
+from xmlclass.xmlclass import URI_model
+
 # -------------------------------------------------------------------------------
 #                                 Helpers
 # -------------------------------------------------------------------------------
@@ -285,6 +287,14 @@ class ProjectPropertiesPanel(wx.Notebook):
                 new_value = textctrl.GetValue()
                 if name not in REQUIRED_PARAMS and new_value == "":
                     new_value = None
+                if name == 'companyURL':
+                    if not URI_model.match(new_value):
+                        new_value = None
+                        dialog = wx.MessageDialog(self, _('Invalid URL!\n'
+                                                          'Please enter correct URL address.'),
+                                                  _("Error"), wx.OK | wx.ICON_ERROR)
+                        dialog.ShowModal()
+                        dialog.Destroy()
                 if old_value != new_value:
                     self.Controller.SetProjectProperties(properties={name: new_value})
                     self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU,
