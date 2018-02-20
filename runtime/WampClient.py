@@ -93,7 +93,7 @@ class WampSession(wamp.ApplicationSession):
         ID = self.config.extra["ID"]
         print('WAMP session joined by :', ID)
         for name in ExposedCalls:
-            regoption = types.RegisterOptions(u'exact', u'last', None, None)
+            regoption = types.RegisterOptions(u'exact', u'last')
             yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
 
         for name in SubscribedEvents:

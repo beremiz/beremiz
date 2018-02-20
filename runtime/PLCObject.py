@@ -25,7 +25,7 @@
 from __future__ import absolute_import
 from threading import Timer, Thread, Lock, Semaphore, Event
 import ctypes
-import _ctypes
+import _ctypes  # pylint: disable=wrong-import-order
 import os
 import sys
 import traceback
