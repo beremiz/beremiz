@@ -50,30 +50,6 @@ duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{
 
 ScriptDirectory = paths.AbsDir(__file__)
 
-
-class LibraryResolver(etree.Resolver):
-    """Helper object for loading library in xslt stylesheets"""
-
-    def __init__(self, controller, debug=False):
-        self.Controller = controller
-        self.Debug = debug
-
-    def resolve(self, url, pubid, context):
-        # TODO stop deepcopy
-        lib_name = os.path.basename(url)
-        if lib_name in ["project", "stdlib", "extensions"]:
-            lib_el = etree.Element(lib_name)
-            if lib_name == "project":
-                lib_el.append(deepcopy(self.Controller.GetProject(self.Debug)))
-            elif lib_name == "stdlib":
-                for lib in StdBlckLibs.values():
-                    lib_el.append(deepcopy(lib))
-            else:
-                for ctn in self.Controller.ConfNodeTypes:
-                    lib_el.append(deepcopy(ctn["types"]))
-            return self.resolve_string(etree.tostring(lib_el), context)
-
-
 # -------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
 # -------------------------------------------------------------------------------
