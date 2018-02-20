@@ -1,7 +1,7 @@
 include yslt_noindent.yml2
 istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
-            xmlns:ns="var_infos_ns" 
+            xmlns:ns="beremiz" 
             extension-element-prefixes="ns" 
             exclude-result-prefixes="ns" {
     
@@ -9,17 +9,14 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "text()";
     
-    variable "project" {
-        copy "document('project')/project/*";
-    }
+    variable "project", "ns:GetProject()";
     
-    variable "stdlib" {
-        copy "document('stdlib')/stdlib/*";
-    }
-    variable "extensions" {
-        copy "document('extensions')/extensions/*";
-    }
-    
+    variable "stdlib", "ns:GetStdLibs()";
+
+    variable "extensions", "ns:GetExtensions()";
+
+    variable "all_types", "($project | $stdlib | $extensions)/ppx:types";
+
     template "ppx:configuration" {
         apply "ppx:globalVars";
     }
@@ -129,12 +126,8 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         variable "type_name" > «@name»
         choose {
             when "$tree='True'" {
-                apply """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($project)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                         exsl:node-set($extensions)/ppx:project/ppx:types/ppx:dataTypes/ppx:dataType[@name=$type_name]""", mode="var_type";
+                apply """$all_types/ppx:pous/ppx:pou[@name=$type_name] | \
+                         $all_types/ppx:dataTypes/ppx:dataType[@name=$type_name]""", mode="var_type";
             }
         }
         value "ns:SetType($type_name)";
@@ -166,11 +159,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived", mode="var_edit" {
         variable "type_name" > «@name»
-        variable "pou_infos" {
-            copy """exsl:node-set($project)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                    exsl:node-set($stdlib)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name] |
-                    exsl:node-set($extensions)/ppx:project/ppx:types/ppx:pous/ppx:pou[@name=$type_name]""";
-        }
+        variable "pou_infos", "$all_types/ppx:pous/ppx:pou[@name=$type_name]";
         choose {
             when "$pou_infos != ''" > false
             otherwise > true
