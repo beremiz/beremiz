@@ -110,9 +110,9 @@ for o, a in opts:
     elif o == "-s":
         wampsecret = None if a == "off" else a
     elif o == "-e":
-        l = list(os.path.split(os.path.realpath(a)))
-        l.reverse()
-        extensions.append(l)
+        fnameanddirname = list(os.path.split(os.path.realpath(a)))
+        fnameanddirname.reverse()
+        extensions.append(fnameanddirname)
     else:
         usage()
         sys.exit()
@@ -554,6 +554,7 @@ def LogMessageAndException(msg, exp=None):
 
 def LogException(*exp):
     LogMessageAndException("", exp)
+
 
 sys.excepthook = LogException
 
