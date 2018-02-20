@@ -36,10 +36,9 @@ from collections import OrderedDict, namedtuple
 from lxml import etree
 
 import util.paths as paths
-from util.TranslationCatalogs import NoTranslate
 from plcopen import *
 from plcopen.types_enums import *
-from plcopen.XSLTModelQuery import  _StringValue, _BoolValue, _translate_args
+from plcopen.XSLTModelQuery import _StringValue, _BoolValue, _translate_args
 from plcopen.InstancesPathCollector import InstancesPathCollector
 from plcopen.POUVariablesCollector import POUVariablesCollector
 from plcopen.InstanceTagnameCollector import InstanceTagnameCollector
@@ -50,6 +49,7 @@ from PLCGenerator import *
 duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
 
 ScriptDirectory = paths.AbsDir(__file__)
+
 
 class LibraryResolver(etree.Resolver):
     """Helper object for loading library in xslt stylesheets"""
@@ -587,7 +587,7 @@ class PLCControler(object):
 
     def GetPouInstanceTagName(self, instance_path, debug=False):
         project = self.GetProject(debug)
-        if project is not None :
+        if project is not None:
             return self.InstanceTagnameCollector.Collect(project,
                                                          debug,
                                                          instance_path)
@@ -1110,8 +1110,8 @@ class PLCControler(object):
 
     def GetVariableDictionary(self, object_with_vars, tree=False, debug=False):
         variables = []
-        factory = self.VariableInfoCollector.Collect(object_with_vars,
-                                                     debug, variables, tree)
+        self.VariableInfoCollector.Collect(object_with_vars,
+                                           debug, variables, tree)
         return variables
 
     # Add a global var to configuration to configuration
@@ -1264,7 +1264,7 @@ class PLCControler(object):
             # Return the return type if there is one
             return_type = pou.interface.getreturnType()
             if return_type is not None:
-                factory = self.VariableInfoCollector.Collect(return_type, 
+                factory = self.VariableInfoCollector.Collect(return_type,
                                                              debug, [], tree)
                 if tree:
                     return [factory.GetType(), factory.GetTree()]

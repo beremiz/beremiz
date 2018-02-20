@@ -7,6 +7,7 @@ from __future__ import absolute_import
 from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
 from plcopen.types_enums import CLASS_TYPES, POU_TYPES, VAR_CLASS_INFOS
 
+
 def class_extraction(value):
     class_type = CLASS_TYPES.get(value)
     if class_type is not None:
@@ -56,14 +57,13 @@ class VariablesTreeInfosFactory(object):
                     [_BoolValue] * 2, args) + [[]])))
 
 
-
 class POUVariablesCollector(XSLTModelQuery):
     def __init__(self, controller):
         XSLTModelQuery.__init__(self,
                                 controller,
                                 "pou_variables.xslt",
-                                [(name, self.FactoryCaller(name)) 
-                                    for name in ["SetRoot", "AddVariable"]])
+                                [(name, self.FactoryCaller(name))
+                                 for name in ["SetRoot", "AddVariable"]])
 
     def FactoryCaller(self, funcname):
         def CallFactory(*args):
@@ -76,4 +76,3 @@ class POUVariablesCollector(XSLTModelQuery):
         res = self.factory.GetRoot()
         self.factory = None
         return res
-

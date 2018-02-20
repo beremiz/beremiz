@@ -4,8 +4,9 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
-from plcopen.XSLTModelQuery import XSLTModelQuery 
+from plcopen.XSLTModelQuery import XSLTModelQuery
 from plcopen.types_enums import *
+
 
 class InstanceTagName(object):
     """Helpers object for generating instance tagname"""
@@ -38,12 +39,12 @@ class InstanceTagnameCollector(XSLTModelQuery):
         XSLTModelQuery.__init__(self,
                                 controller,
                                 "instance_tagname.xslt",
-                                [(name, self.FactoryCaller(name)) 
-                                    for name in ["ConfigTagName",
-                                                 "ResourceTagName",
-                                                 "PouTagName",
-                                                 "ActionTagName",
-                                                 "TransitionTagName"]])
+                                [(name, self.FactoryCaller(name))
+                                 for name in ["ConfigTagName",
+                                              "ResourceTagName",
+                                              "PouTagName",
+                                              "ActionTagName",
+                                              "TransitionTagName"]])
 
     def FactoryCaller(self, funcname):
         def CallFactory(*args):

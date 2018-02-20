@@ -10,6 +10,7 @@ from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _tr
 #                 Helpers object for generating pou var list
 # -------------------------------------------------------------------------------
 
+
 class _VariableInfos(object):
     __slots__ = ["Name", "Class", "Option", "Location", "InitialValue",
                  "Edit", "Documentation", "Type", "Tree", "Number"]
@@ -65,13 +66,13 @@ class VariableInfoCollector(XSLTModelQuery):
         XSLTModelQuery.__init__(self,
                                 controller,
                                 "variables_infos.xslt",
-                                [(name, self.FactoryCaller(name)) 
-                                    for name in [
-                                        "SetType",
-                                        "AddDimension",
-                                        "AddTree",
-                                        "AddVarToTree",
-                                        "AddVariable"]])
+                                [(name, self.FactoryCaller(name))
+                                 for name in [
+                                     "SetType",
+                                     "AddDimension",
+                                     "AddTree",
+                                     "AddVarToTree",
+                                     "AddVariable"]])
 
     def FactoryCaller(self, funcname):
         def CallFactory(*args):
@@ -84,4 +85,3 @@ class VariableInfoCollector(XSLTModelQuery):
         res = self.factory
         self.factory = None
         return res
-

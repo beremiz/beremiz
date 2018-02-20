@@ -68,7 +68,6 @@ base_folder = paths.AbsParentDir(__file__)
 MATIEC_ERROR_MODEL = re.compile(".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
 
-
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
     for n, d, _h, c in catalog:
@@ -1810,9 +1809,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _Transfer(self):
         if self.IsPLCStarted():
             dialog = wx.MessageDialog(
-                self.AppFrame, 
-                _("Cannot transfer while PLC is running. Stop it now?"), 
-                style=wx.YES_NO|wx.CENTRE)
+                self.AppFrame,
+                _("Cannot transfer while PLC is running. Stop it now?"),
+                style=wx.YES_NO | wx.CENTRE)
             if dialog.ShowModal() == wx.ID_YES:
                 self._Stop()
             else:

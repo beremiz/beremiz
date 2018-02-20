@@ -28,12 +28,12 @@ from __future__ import print_function
 import os
 import sys
 import getopt
-import time
 
 import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
+
 
 class BeremizIDELauncher(object):
     def __init__(self):
@@ -102,8 +102,9 @@ class BeremizIDELauncher(object):
     def CreateApplication(self):
 
         BeremizAppType = wx.App if wx.VERSION >= (3, 0, 0) else wx.PySimpleApp
+
         class BeremizApp(BeremizAppType):
-            def OnInit(_self):
+            def OnInit(_self):  # pylint: disable=no-self-argument
                 self.ShowSplashScreen()
                 return True
 
@@ -114,14 +115,13 @@ class BeremizIDELauncher(object):
 
     def ShowSplashScreen(self):
         class Splash(AdvancedSplash):
-            def OnPaint(_self, event):
+            def OnPaint(_self, event):  # pylint: disable=no-self-argument
                 AdvancedSplash.OnPaint(_self, event)
                 wx.CallAfter(self.AppStart)
         bmp = wx.Image(self.splashPath).ConvertToBitmap()
-        self.splash = Splash(None, 
-                             bitmap=bmp, 
+        self.splash = Splash(None,
+                             bitmap=bmp,
                              agwStyle=AS_NOTIMEOUT | AS_CENTER_ON_SCREEN)
-
 
     def BackgroundInitialization(self):
         self.InitI18n()
@@ -191,7 +191,7 @@ class BeremizIDELauncher(object):
     def PreStart(self):
         self.ProcessCommandLineArgs()
         self.CreateApplication()
-        
+
     def AppStart(self):
         try:
             self.BackgroundInitialization()
@@ -201,7 +201,7 @@ class BeremizIDELauncher(object):
         # except (KeyboardInterrupt, SystemExit):
         #     raise
         except Exception:
-            self.handle_exception(*sys.exc_info(), exit = True)
+            self.handle_exception(*sys.exc_info(), exit=True)
 
     def MainLoop(self):
         self.app.MainLoop()

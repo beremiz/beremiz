@@ -34,7 +34,6 @@ import wx
 from plcopen.structures import *
 from plcopen.types_enums import ComputePouName
 from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
-from graphics.DebugDataConsumer import DebugDataConsumer
 
 from graphics.GraphicCommons import *
 from graphics.FBD_Objects import *

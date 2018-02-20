@@ -73,8 +73,8 @@ LOCATIONS_ITEMS = [LOCATION_CONFNODE,
                    LOCATION_VAR_MEMORY] = range(6)
 
 UNEDITABLE_NAMES = [_("User-defined POUs"), _("Functions"), _("Function Blocks"),
-            _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
-            _("Configurations"), _("Resources"), _("Properties")]
+                    _("Programs"), _("Data Types"), _("Transitions"), _("Actions"),
+                    _("Configurations"), _("Resources"), _("Properties")]
 
 [USER_DEFINED_POUS, FUNCTIONS, FUNCTION_BLOCKS, PROGRAMS,
  DATA_TYPES, TRANSITIONS, ACTIONS, CONFIGURATIONS,
@@ -84,29 +84,36 @@ UNEDITABLE_NAMES = [_("User-defined POUs"), _("Functions"), _("Function Blocks")
 #                   Project Element tag name computation functions
 # -------------------------------------------------------------------------------
 
+
 # Compute a data type name
 def ComputeDataTypeName(datatype):
     return "D::%s" % datatype
+
 
 # Compute a pou name
 def ComputePouName(pou):
     return "P::%s" % pou
 
+
 # Compute a pou transition name
 def ComputePouTransitionName(pou, transition):
     return "T::%s::%s" % (pou, transition)
+
 
 # Compute a pou action name
 def ComputePouActionName(pou, action):
     return "A::%s::%s" % (pou, action)
 
+
 # Compute a pou  name
 def ComputeConfigurationName(config):
     return "C::%s" % config
 
+
 # Compute a pou  name
 def ComputeConfigurationResourceName(config, resource):
     return "R::%s::%s" % (config, resource)
+
 
 def GetElementType(tagname):
     words = tagname.split("::")

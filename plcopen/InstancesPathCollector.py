@@ -6,6 +6,7 @@
 from __future__ import absolute_import
 from plcopen.XSLTModelQuery import XSLTModelQuery
 
+
 class InstancesPathCollector(XSLTModelQuery):
     """ object for collecting instances path list"""
     def __init__(self, controller):
@@ -19,8 +20,7 @@ class InstancesPathCollector(XSLTModelQuery):
         self.Instances.append(args[0][0])
 
     def Collect(self, root, name, debug):
-        self._process_xslt(root, debug, instance_type = name)
+        self._process_xslt(root, debug, instance_type=name)
         res = self.Instances
         self.Instances = []
         return res
-
