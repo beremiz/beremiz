@@ -74,7 +74,8 @@ Traceback:
     finally:
         dlg.Destroy()
 
-    if exit : sys.exit() #wx.Exit()
+    if exit:
+        sys.exit()  # wx.Exit()
 
     return res
 
@@ -127,7 +128,7 @@ def AddExceptHook(app_version='[No version]'):
             output.write(a + ":\n" + str(info[a]) + "\n\n")
         output.close()
 
-    def handle_exception(e_type, e_value, e_traceback, exit = False):
+    def handle_exception(e_type, e_value, e_traceback, exit=False):
         traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
         ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)

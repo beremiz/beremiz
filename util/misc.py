@@ -46,6 +46,7 @@ def CheckPathPerm(path):
                 return False
     return True
 
+
 def GetClassImporter(param):
     """
     is used to resolve library class names in features.py
@@ -60,7 +61,7 @@ def GetClassImporter(param):
             return reduce(getattr, param.split('.')[1:], mod)
         return factory
     else:
-        return lambda : param
+        return lambda: param
 
 
 def InstallLocalRessources(CWD):

@@ -425,7 +425,7 @@ class Server(object):
             # pyro never frees memory after connection close if no timeout set
             # taking too small timeout value may cause
             # unwanted diconnection when IDE is kept busy for long periods
-            self.daemon.setTimeout(60);
+            self.daemon.setTimeout(60)
             self.Start()
             self.daemon.requestLoop()
             self.daemon.sock.close()
@@ -590,7 +590,7 @@ if havetwisted:
     # Find pre-existing project WAMP config file
     _wampconf = os.path.join(WorkingDir, "wampconf.json")
 
-    # If project's WAMP config file exits, override default (-c) 
+    # If project's WAMP config file exits, override default (-c)
     if os.path.exists(_wampconf):
         wampconf = _wampconf
 
