@@ -43,6 +43,7 @@ from plcopen.XSLTModelQuery import  _StringValue, _BoolValue, _translate_args
 from plcopen.InstancesPathCollector import InstancesPathCollector
 from plcopen.POUVariablesCollector import POUVariablesCollector
 from plcopen.InstanceTagnameCollector import InstanceTagnameCollector
+from plcopen.VariableInfoCollector import VariableInfoCollector
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
@@ -71,60 +72,6 @@ class LibraryResolver(etree.Resolver):
                 for ctn in self.Controller.ConfNodeTypes:
                     lib_el.append(deepcopy(ctn["types"]))
             return self.resolve_string(etree.tostring(lib_el), context)
-
-
-# -------------------------------------------------------------------------------
-#                 Helpers object for generating pou var list
-# -------------------------------------------------------------------------------
-
-
-class _VariableInfos(object):
-    __slots__ = ["Name", "Class", "Option", "Location", "InitialValue",
-                 "Edit", "Documentation", "Type", "Tree", "Number"]
-
-    def __init__(self, *args):
-        for attr, value in zip(self.__slots__, args):
-            setattr(self, attr, value if value is not None else "")
-
-    def copy(self):
-        return _VariableInfos(*[getattr(self, attr) for attr in self.__slots__])
-
-
-class VariablesInfosFactory(object):
-
-    def __init__(self, variables):
-        self.Variables = variables
-        self.TreeStack = []
-        self.Type = None
-        self.Dimensions = None
-
-    def SetType(self, context, *args):
-        self.Type = args[0][0]
-
-    def GetType(self):
-        if len(self.Dimensions) > 0:
-            return ("array", self.Type, self.Dimensions)
-        return self.Type
-
-    def GetTree(self):
-        return (self.TreeStack.pop(-1), self.Dimensions)
-
-    def AddDimension(self, context, *args):
-        self.Dimensions.append(tuple(
-            _translate_args([_StringValue] * 2, args)))
-
-    def AddTree(self, context, *args):
-        self.TreeStack.append([])
-        self.Dimensions = []
-
-    def AddVarToTree(self, context, *args):
-        var = (args[0][0], self.Type, self.GetTree())
-        self.TreeStack[-1].append(var)
-
-    def AddVariable(self, context, *args):
-        self.Variables.append(_VariableInfos(*(
-            _translate_args([_StringValue] * 5 + [_BoolValue] + [_StringValue], args) +
-            [self.GetType(), self.GetTree()])))
 
 
 # -------------------------------------------------------------------------------
@@ -385,6 +332,7 @@ class PLCControler(object):
         self.InstancesPathCollector = InstancesPathCollector(self)
         self.POUVariablesCollector = POUVariablesCollector(self)
         self.InstanceTagnameCollector = InstanceTagnameCollector(self)
+        self.VariableInfoCollector = VariableInfoCollector(self)
 
     # Reset PLCControler internal variables
     def Reset(self):
@@ -1162,21 +1110,8 @@ class PLCControler(object):
 
     def GetVariableDictionary(self, object_with_vars, tree=False, debug=False):
         variables = []
-        factory = VariablesInfosFactory(variables)
-
-        parser = etree.XMLParser()
-        parser.resolvers.add(LibraryResolver(self, debug))
-
-        variables_infos_xslt_tree = etree.XSLT(
-            etree.parse(
-                os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
-                parser),
-            extensions={("var_infos_ns", name): getattr(factory, name)
-                        for name in ["SetType", "AddDimension", "AddTree",
-                                     "AddVarToTree", "AddVariable"]})
-        variables_infos_xslt_tree(
-            object_with_vars, tree=etree.XSLT.strparam(str(tree)))
-
+        factory = self.VariableInfoCollector.Collect(object_with_vars,
+                                                     debug, variables, tree)
         return variables
 
     # Add a global var to configuration to configuration
@@ -1329,20 +1264,8 @@ class PLCControler(object):
             # Return the return type if there is one
             return_type = pou.interface.getreturnType()
             if return_type is not None:
-                factory = VariablesInfosFactory([])
-
-                parser = etree.XMLParser()
-                parser.resolvers.add(LibraryResolver(self))
-
-                return_type_infos_xslt_tree = etree.XSLT(
-                    etree.parse(
-                        os.path.join(ScriptDirectory, "plcopen", "variables_infos.xslt"),
-                        parser),
-                    extensions={("var_infos_ns", name): getattr(factory, name)
-                                for name in ["SetType", "AddDimension",
-                                             "AddTree", "AddVarToTree"]})
-                return_type_infos_xslt_tree(
-                    return_type, tree=etree.XSLT.strparam(str(tree)))
+                factory = self.VariableInfoCollector.Collect(return_type, 
+                                                             debug, [], tree)
                 if tree:
                     return [factory.GetType(), factory.GetTree()]
                 return factory.GetType()

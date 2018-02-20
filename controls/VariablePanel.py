@@ -39,7 +39,7 @@ from controls.CustomTable import CustomTable
 from controls.LocationCellEditor import LocationCellEditor
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
-from PLCControler import _VariableInfos
+from plcopen.VariableInfoCollector import _VariableInfos
 
 
 # -------------------------------------------------------------------------------
