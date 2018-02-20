@@ -4,7 +4,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
-from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+from plcopen.XSLTModelQuery import XSLTModelQuery 
 from plcopen.types_enums import *
 
 class InstanceTagName(object):
