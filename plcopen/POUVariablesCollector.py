@@ -58,7 +58,6 @@ class VariablesTreeInfosFactory(object):
 
 
 class POUVariablesCollector(XSLTModelQuery):
-    """ object for collecting instances path list"""
     def __init__(self, controller):
         XSLTModelQuery.__init__(self,
                                 controller,
