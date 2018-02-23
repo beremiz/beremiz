@@ -1,7 +1,7 @@
 include yslt_noindent.yml2
 istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
-            xmlns:ns="pou_block_instances_ns" 
+            xmlns:ns="beremiz" 
             extension-element-prefixes="ns" 
             exclude-result-prefixes="ns" {
     
