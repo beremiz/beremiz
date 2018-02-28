@@ -51,7 +51,7 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         return self.ProjectProperties
 
     def __init__(self, parent, controler, window):
-        configuration = self.Controler.GetProjectMainConfigurationName()
+        configuration = controler.GetProjectMainConfigurationName()
         if configuration is not None:
             tagname = ComputeConfigurationName(configuration)
         else:
