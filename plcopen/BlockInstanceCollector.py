@@ -4,8 +4,8 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
-from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
 from collections import OrderedDict, namedtuple
+from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
 
 # -------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
