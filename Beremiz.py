@@ -48,6 +48,7 @@ class BeremizIDELauncher(object):
         self.splashPath = self.Bpath("images", "splash.png")
         self.modules = ["BeremizIDE"]
         self.debug = os.path.exists("BEREMIZ_DEBUG")
+        self.handle_exception = None
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
@@ -198,10 +199,13 @@ class BeremizIDELauncher(object):
             self.CreateUI()
             self.CloseSplash()
             self.ShowUI()
-        # except (KeyboardInterrupt, SystemExit):
-        #     raise
+        except (KeyboardInterrupt, SystemExit):
+            raise
         except Exception:
-            self.handle_exception(*sys.exc_info(), exit=True)
+            if self.handle_exception is not None:
+                self.handle_exception(*sys.exc_info(), exit=True)
+            else:
+                raise
 
     def MainLoop(self):
         self.app.MainLoop()
