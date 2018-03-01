@@ -41,7 +41,7 @@ import PLCOpenEditor
 
 class UserApplicationTest(unittest.TestCase):
     def InstallExceptionHandler(self):
-        def handle_exception(e_type, e_value, e_traceback):
+        def handle_exception(e_type, e_value, e_traceback, exit=False):
             # traceback.print_exception(e_type, e_value, e_traceback)
             self.exc_info = [e_type, e_value, e_traceback]
         self.exc_info = None
@@ -89,7 +89,9 @@ class BeremizApplicationTest(UserApplicationTest):
         # disable default exception handler in Beremiz
         self.app.InstallExceptionHandler = lambda: None
         self.InstallExceptionHandler()
+        self.app.handle_exception = sys.excepthook
         self.app.PreStart()
+        self.ProcessEvents()
         self.app.frame.Show()
         self.ProcessEvents()
         self.app.frame.ShowFullScreen(True)
