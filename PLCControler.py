@@ -35,7 +35,6 @@ from time import localtime
 import util.paths as paths
 from plcopen import *
 from plcopen.types_enums import *
-from plcopen.XSLTModelQuery import _StringValue, _BoolValue, _translate_args
 from plcopen.InstancesPathCollector import InstancesPathCollector
 from plcopen.POUVariablesCollector import POUVariablesCollector
 from plcopen.InstanceTagnameCollector import InstanceTagnameCollector
@@ -47,8 +46,6 @@ from PLCGenerator import *
 duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
 
 ScriptDirectory = paths.AbsDir(__file__)
-
-
 
 # Length of the buffer
 UNDO_BUFFER_LENGTH = 20
