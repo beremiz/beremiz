@@ -67,7 +67,7 @@ NMTokens_model = re.compile('([\w\.\-\:]*(?: [\w\.\-\:]*)*)$')
 QName_model = re.compile('((?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*)$')
 QNames_model = re.compile('((?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*(?: (?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*)*)$')
 NCName_model = re.compile('([a-zA-Z_][\w]*)$')
-URI_model = re.compile('((?:http://|/)?(?:[\w.-]*/?)*)$')
+URI_model = re.compile('((?:htt(p|ps)://|/)?(?:[\w.-]*/?)*)$')
 LANGUAGE_model = re.compile('([a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*)$')
 
 ONLY_ANNOTATION = re.compile("((?:annotation )?)")

@@ -27,6 +27,8 @@ from __future__ import absolute_import
 import wx
 from wx.lib.scrolledpanel import ScrolledPanel
 
+from xmlclass.xmlclass import URI_model
+
 # -------------------------------------------------------------------------------
 #                                 Helpers
 # -------------------------------------------------------------------------------
@@ -294,8 +296,16 @@ class ProjectPropertiesPanel(wx.Notebook):
             if self.Controller is not None and self.Values is not None:
                 old_value = self.Values.get(name)
                 new_value = textctrl.GetValue()
-                if name not in REQUIRED_PARAMS and new_value == "":
+                if name in REQUIRED_PARAMS and new_value == "":
                     new_value = None
+                if name == 'companyURL':
+                    if not URI_model.match(new_value):
+                        new_value = None
+                        dialog = wx.MessageDialog(self, _('Invalid URL!\n'
+                                                          'Please enter correct URL address.'),
+                                                  _("Error"), wx.OK | wx.ICON_ERROR)
+                        dialog.ShowModal()
+                        dialog.Destroy()
                 if old_value != new_value:
                     self.Controller.SetProjectProperties(properties={name: new_value})
                     self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU,

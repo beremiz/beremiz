@@ -152,12 +152,12 @@ def TestTextElement(text, criteria):
     test_result = []
     result = criteria["pattern"].search(text)
     while result is not None:
-        prev_pos = result.endpos
+        prev_pos = result.span()[1]
         start = TextLenInRowColumn(text[:result.start()])
         end = TextLenInRowColumn(text[:result.end() - 1])
         test_result.append((start, end, "\n".join(lines[start[0]:end[0] + 1])))
         result = criteria["pattern"].search(text, result.end())
-        if result is not None and prev_pos == result.endpos:
+        if result is not None and prev_pos == result.end():
             break
     return test_result
 
@@ -441,7 +441,7 @@ def _updateProjectClass(cls):
                     "authorName": contentheader_obj.setauthor,
                     "pageSize": lambda v: contentheader_obj.setpageSize(*v),
                     "scaling": contentheader_obj.setscaling}.get(attr)
-            if func is not None:
+            if func is not None and value is not None:
                 func(value)
             elif attr in ["modificationDateTime", "organization", "language"]:
                 setattr(contentheader_obj, attr, value)
