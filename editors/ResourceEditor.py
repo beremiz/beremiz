@@ -303,7 +303,8 @@ class ResourceEditor(EditorPanel):
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
 
-        self.TasksDefaultValue = {"Name": "", "Triggering": "", "Single": "", "Interval": "", "Priority": 0}
+        self.TasksDefaultValue = {"Name": "task0", "Triggering": "Cyclic",
+                                  "Single": "", "Interval": "T#20ms", "Priority": 0}
         self.TasksTable = ResourceTable(self, [], GetTasksTableColnames())
         self.TasksTable.SetColAlignements([wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_RIGHT, wx.ALIGN_RIGHT])
         self.TasksTable.SetColSizes([200, 100, 100, 150, 100])
@@ -314,7 +315,15 @@ class ResourceEditor(EditorPanel):
                                    "Down": self.DownTaskButton})
 
         def _AddTask(new_row):
-            self.TasksTable.InsertRow(new_row, self.TasksDefaultValue.copy())
+            if new_row > 0:
+                row_content = self.TasksTable.data[new_row-1].copy()
+                old_name = row_content['Name']
+                row_content['Name'] =\
+                    self.Controler.GenerateNewName(self.TagName, old_name, old_name+'%d')
+            else:
+                row_content = self.TasksDefaultValue.copy()
+
+            self.TasksTable.InsertRow(new_row, row_content)
             self.RefreshModel()
             self.RefreshView()
             return new_row
@@ -338,7 +347,7 @@ class ResourceEditor(EditorPanel):
         self.TasksTable.ResetView(self.TasksGrid)
         self.TasksGrid.RefreshButtons()
 
-        self.InstancesDefaultValue = {"Name": "", "Type": "", "Task": ""}
+        self.InstancesDefaultValue = {"Name": "instance0", "Type": "", "Task": ""}
         self.InstancesTable = ResourceTable(self, [], GetInstancesTableColnames())
         self.InstancesTable.SetColAlignements([wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT])
         self.InstancesTable.SetColSizes([200, 150, 150])
@@ -349,7 +358,15 @@ class ResourceEditor(EditorPanel):
                                        "Down": self.DownInstanceButton})
 
         def _AddInstance(new_row):
-            self.InstancesTable.InsertRow(new_row, self.InstancesDefaultValue.copy())
+            if new_row > 0:
+                row_content = self.InstancesTable.data[new_row - 1].copy()
+                old_name = row_content['Name']
+                row_content['Name'] =\
+                    self.Controler.GenerateNewName(self.TagName, old_name, old_name+'%d')
+            else:
+                row_content = self.InstancesDefaultValue.copy()
+
+            self.InstancesTable.InsertRow(new_row, row_content)
             self.RefreshModel()
             self.RefreshView()
             return new_row

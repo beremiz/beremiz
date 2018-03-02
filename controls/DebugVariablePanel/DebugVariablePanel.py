@@ -237,7 +237,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         default_range_idx = 0
         for idx, (text, _value) in enumerate(RANGE_VALUES):
             self.CanvasRange.Append(text)
-            if text == "1s":
+            if _value == 1000000000:
                 default_range_idx = idx
         self.CanvasRange.SetSelection(default_range_idx)
 
