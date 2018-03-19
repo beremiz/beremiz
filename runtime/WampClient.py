@@ -109,6 +109,10 @@ class WampSession(wamp.ApplicationSession):
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
+    def buildProtocol(self, addr):
+        self.resetDelay()
+        return ReconnectingClientFactory.buildProtocol(self, addr)
+
     def clientConnectionFailed(self, connector, reason):
         print(_("WAMP Client connection failed (%s) .. retrying .." % time.ctime()))
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
