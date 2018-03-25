@@ -11,10 +11,10 @@
 #include <sys/mman.h>
 #include <sys/fcntl.h>
 
-#include <native/task.h>
-#include <native/timer.h>
-#include <native/sem.h>
-#include <native/pipe.h>
+#include <alchemy/task.h>
+#include <alchemy/timer.h>
+#include <alchemy/sem.h>
+#include <alchemy/pipe.h>
 
 unsigned int PLC_state = 0;
 #define PLC_STATE_TASK_CREATED                 1
