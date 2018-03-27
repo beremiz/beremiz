@@ -1,25 +1,26 @@
-Crossbar test router configuration is available in .crossbar directory.
-
-Starting command:
-crossbar start
-
-This project contains wamp client config to be loaded at runtime startup.
-
-project_files/wampconf.json
+/* This project contains wamp client config to be loaded at runtime startup. */
+./project_files/wampconf.json
 
 wampconf.json is in "Project Files", so it is copied to runtime's working directory, and then loaded after program transfer + runtime restart.
 
 Otherwise, wamp config file path can be forced :
 ./Beremiz_service.py -c /path/to/my/wampconf.json /working/dir
 
-Otherwise, path for CRA secret can be forced :
-./Beremiz_service.py -s /path/to/my/secret /working/dir
+/* Crossbar install */
+#sudo apt-get update
+#sudo apt-get -y dist-upgrade
+sudo apt-get -y install build-essential libssl-dev libffi-dev libreadline-dev libbz2-dev libsqlite3-dev libncurses5-dev
+sudo python -m pip install -U pip
+sudo pip install crossbar
+crossbar version
 
+/* Start Crossbar command: */
+crossbar start
+
+/* Crossbar test router configuration is available in .crossbar directory. */
 Tested on version:
- Crossbar.io        : 17.12.1 (Crossbar.io COMMUNITY)
-   Autobahn         : 17.10.1 (with JSON, MessagePack, CBOR, UBJSON)
+ Crossbar.io        : 18.3.1 (Crossbar.io COMMUNITY)
+   Autobahn         : 18.3.1 (with JSON, MessagePack, CBOR, UBJSON)
    Twisted          : 17.9.0-EPollReactor
    LMDB             : 0.93/lmdb-0.9.18
    Python           : 2.7.12/CPython
-
-

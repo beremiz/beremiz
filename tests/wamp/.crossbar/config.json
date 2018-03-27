@@ -39,13 +39,15 @@
             "transports": [
                 {
                     "type": "websocket",
+                    "debug": true,
                     "endpoint": {
                         "type": "tcp",
                         "port": 8888
                     },
                     "url": "ws://127.0.0.1:8888/",
                     "serializers": [
-                        "msgpack"
+                        "msgpack",
+                        "json"
                     ]
                 }
             ]
