@@ -73,7 +73,7 @@ def GetCallee(name):
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
         if "secret" in self.config.extra:
-            user = self.config.extra["ID"].encode('utf8')
+            user = self.config.extra["ID"]
             self.join(u"Automation", [u"wampcra"], user)
         else:
             self.join(u"Automation")
@@ -91,7 +91,6 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
-        print('WAMP session joined by :', ID)
         for name in ExposedCalls:
             regoption = types.RegisterOptions(u'exact', u'last')
             yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
@@ -101,6 +100,8 @@ class WampSession(wamp.ApplicationSession):
 
         for func in DoOnJoin:
             yield func(self)
+
+        print(_('WAMP session joined (%s) by:' % time.ctime()), ID)
 
     def onLeave(self, details):
         global _WampSession
