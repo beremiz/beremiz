@@ -116,9 +116,12 @@ class BeremizIDELauncher(object):
 
     def ShowSplashScreen(self):
         class Splash(AdvancedSplash):
+            Painted = False
             def OnPaint(_self, event):  # pylint: disable=no-self-argument
                 AdvancedSplash.OnPaint(_self, event)
-                wx.CallAfter(self.AppStart)
+                if not _self.Painted:  # trigger app start only once
+                    _self.Painted = True
+                    wx.CallAfter(self.AppStart)
         bmp = wx.Image(self.splashPath).ConvertToBitmap()
         self.splash = Splash(None,
                              bitmap=bmp,
