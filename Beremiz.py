@@ -117,6 +117,7 @@ class BeremizIDELauncher(object):
     def ShowSplashScreen(self):
         class Splash(AdvancedSplash):
             Painted = False
+
             def OnPaint(_self, event):  # pylint: disable=no-self-argument
                 AdvancedSplash.OnPaint(_self, event)
                 if not _self.Painted:  # trigger app start only once
