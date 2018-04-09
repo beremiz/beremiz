@@ -26,6 +26,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import time
 import json
+import inspect
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
@@ -110,6 +111,25 @@ class WampSession(wamp.ApplicationSession):
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
+    def __init__(self, config, *args, **kwargs):
+        WampWebSocketClientFactory.__init__(self, *args, **kwargs)
+
+        arguments = inspect.getargspec(self.setProtocolOptions).args
+        protocolOptions = config.extra.get('protocolOptions', None)
+
+        validProtocolOptions = {}
+
+        for key in protocolOptions:
+            if key in arguments:
+                validProtocolOptions[key] = protocolOptions[key]
+
+        if len(validProtocolOptions) > 0:
+            self.setProtocolOptions(**validProtocolOptions)
+            print(_("Added custom protocol options"))
+
+        del validProtocolOptions
+        del protocolOptions
+
     def buildProtocol(self, addr):
         self.resetDelay()
         return ReconnectingClientFactory.buildProtocol(self, addr)
@@ -168,6 +188,7 @@ def RegisterWampClient(wampconf, secretfname):
 
     # create a WAMP-over-WebSocket transport client factory
     transport_factory = ReconnectingWampWebSocketClientFactory(
+        component_config,
         session_factory,
         url=WSClientConf["url"],
         serializers=[MsgPackSerializer()])
