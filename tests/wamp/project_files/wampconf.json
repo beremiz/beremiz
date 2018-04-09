@@ -3,5 +3,6 @@
     "realm":"Automation",
     "ID":"wamptest",
     "password":"1234567890",
-    "key":"ABCDEFGHIJ"
+    "key":"ABCDEFGHIJ",
+    "protocolOptions":{"autoPingTimeout":20, "autoPingInterval":60}
 }
