@@ -101,17 +101,16 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
-        regoption = None
 
         registerOptions = self.config.extra.get('registerOptions', None)
         arguments = inspect.getargspec(types.RegisterOptions.__init__).args
         validRegisterOptions = getValidOptins(registerOptions, arguments)
         if validRegisterOptions:
-            regoption = types.RegisterOptions(**validRegisterOptions)
+            registerOptions = types.RegisterOptions(**validRegisterOptions)
             #print(_("Added custom register options"))
 
         for name in ExposedCalls:
-            yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
+            yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
             yield self.subscribe(GetCallee(name), unicode(name))
