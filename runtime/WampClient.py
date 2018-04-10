@@ -70,6 +70,15 @@ def GetCallee(name):
         obj = getattr(obj, names.pop(0))
     return obj
 
+def getValidOptins(options, arguments):
+    validOptions = {}
+    for key in options:
+        if key in arguments:
+            validOptions[key] = options[key]
+    if len(validOptions) > 0:
+        return validOptions
+    else:
+        return None
 
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
@@ -92,8 +101,16 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
+        regoption = None
+
+        registerOptions = self.config.extra.get('registerOptions', None)
+        arguments = inspect.getargspec(types.RegisterOptions.__init__).args
+        validRegisterOptions = getValidOptins(registerOptions, arguments)
+        if validRegisterOptions:
+            regoption = types.RegisterOptions(**validRegisterOptions)
+            #print(_("Added custom register options"))
+
         for name in ExposedCalls:
-            regoption = types.RegisterOptions(u'exact', u'last')
             yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
 
         for name in SubscribedEvents:
@@ -114,21 +131,12 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
     def __init__(self, config, *args, **kwargs):
         WampWebSocketClientFactory.__init__(self, *args, **kwargs)
 
-        arguments = inspect.getargspec(self.setProtocolOptions).args
         protocolOptions = config.extra.get('protocolOptions', None)
-
-        validProtocolOptions = {}
-
-        for key in protocolOptions:
-            if key in arguments:
-                validProtocolOptions[key] = protocolOptions[key]
-
-        if len(validProtocolOptions) > 0:
+        arguments = inspect.getargspec(self.setProtocolOptions).args
+        validProtocolOptions = getValidOptins(protocolOptions, arguments)
+        if validProtocolOptions:
             self.setProtocolOptions(**validProtocolOptions)
-            print(_("Added custom protocol options"))
-
-        del validProtocolOptions
-        del protocolOptions
+            #print(_("Added custom protocol options"))
 
     def buildProtocol(self, addr):
         self.resetDelay()
