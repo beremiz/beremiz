@@ -4,5 +4,6 @@
     "ID":"wamptest",
     "password":"1234567890",
     "key":"ABCDEFGHIJ",
-    "protocolOptions":{"autoPingTimeout":20, "autoPingInterval":60}
+    "protocolOptions":{"autoPingTimeout":20, "autoPingInterval":60},
+    "registerOptions":{"match":"exact", "invoke":"last", "concurrency": 2}
 }
