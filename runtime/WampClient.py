@@ -52,6 +52,8 @@ ExposedCalls = [
     "ResetLogCount",
 ]
 
+ExposedProgressCalls = []
+
 # Those two lists are meant to be filled by customized runtime
 # or User python code.
 
@@ -111,6 +113,13 @@ class WampSession(wamp.ApplicationSession):
 
         for name in ExposedCalls:
             yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
+
+        if ExposedProgressCalls:
+            validRegisterOptions["details_arg"] = 'details'
+            registerOptions = types.RegisterOptions(**validRegisterOptions)
+            # using progress, details argument must be added
+            for name in ExposedProgressCalls:
+                yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
             yield self.subscribe(GetCallee(name), unicode(name))
