@@ -103,13 +103,15 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
+        validRegisterOptions = {}
 
         registerOptions = self.config.extra.get('registerOptions', None)
-        arguments = inspect.getargspec(types.RegisterOptions.__init__).args
-        validRegisterOptions = getValidOptins(registerOptions, arguments)
-        if validRegisterOptions:
-            registerOptions = types.RegisterOptions(**validRegisterOptions)
-            #print(_("Added custom register options"))
+        if registerOptions:
+            arguments = inspect.getargspec(types.RegisterOptions.__init__).args
+            validRegisterOptions = getValidOptins(registerOptions, arguments)
+            if validRegisterOptions:
+                registerOptions = types.RegisterOptions(**validRegisterOptions)
+                #print(_("Added custom register options"))
 
         for name in ExposedCalls:
             yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
@@ -140,11 +142,12 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         WampWebSocketClientFactory.__init__(self, *args, **kwargs)
 
         protocolOptions = config.extra.get('protocolOptions', None)
-        arguments = inspect.getargspec(self.setProtocolOptions).args
-        validProtocolOptions = getValidOptins(protocolOptions, arguments)
-        if validProtocolOptions:
-            self.setProtocolOptions(**validProtocolOptions)
-            #print(_("Added custom protocol options"))
+        if protocolOptions:
+            arguments = inspect.getargspec(self.setProtocolOptions).args
+            validProtocolOptions = getValidOptins(protocolOptions, arguments)
+            if validProtocolOptions:
+                self.setProtocolOptions(**validProtocolOptions)
+                #print(_("Added custom protocol options"))
 
     def buildProtocol(self, addr):
         self.resetDelay()
