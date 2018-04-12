@@ -417,10 +417,30 @@ class Server(object):
         self.evaluator = evaluator
         self.pyruntimevars = pyruntimevars
 
+    def _to_be_published(self):
+        return self.servicename is not None and \
+               self.ip_addr is not None and \
+               self.ip_addr != "localhost" and \
+               self.ip_addr != "127.0.0.1"
+
+    def PrintServerInfo(self):
+        print(_("Pyro port :"), self.port)
+
+        # Beremiz IDE detects LOCAL:// runtime is ready by looking
+        # for self.workdir in the daemon's stdout.
+        print(_("Current working directory :"), self.workdir)
+
+        if self._to_be_published():
+            print(_("Publishing service on local network"))
+
+        sys.stdout.flush()
+
+
     def PyroLoop(self):
         while self.continueloop:
             pyro.initServer()
             self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
+
             # pyro never frees memory after connection close if no timeout set
             # taking too small timeout value may cause
             # unwanted diconnection when IDE is kept busy for long periods
@@ -428,21 +448,7 @@ class Server(object):
 
             uri = self.daemon.connect(self.plcobj, "PLCObject")
 
-            print(_("Pyro port :"), self.port)
-            print(_("Pyro object's uri :"), uri)
-
-            # Beremiz IDE detects daemon start by looking
-            # for self.workdir in the daemon's stdout.
-            # Therefore don't delete the following line
-            print(_("Current working directory :"), self.workdir)
-
-            # Configure and publish service
-            # Not publish service if localhost in address params
-            if self.servicename is not None and \
-               self.ip_addr is not None and \
-               self.ip_addr != "localhost" and \
-               self.ip_addr != "127.0.0.1":
-                print(_("Publishing service on local network"))
+            if self._to_be_published():
                 self.servicepublisher = ServicePublisher.ServicePublisher()
                 self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
@@ -631,7 +637,7 @@ plcobj.StatusChange()
 pyro_thread = Thread(target=pyroserver.PyroLoop)
 pyro_thread.start()
 
-sys.stdout.flush()
+pyroserver.PrintServerInfo()
 
 if havetwisted or havewx:
     if havetwisted:
