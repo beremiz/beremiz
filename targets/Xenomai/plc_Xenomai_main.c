@@ -171,8 +171,8 @@ int startPLC(int argc,char **argv)
 
     /*** RT Pipes creation and opening ***/
     /* create Debug_pipe */
-    if(rt_pipe_create(&Debug_pipe, "Debug_pipe", DEBUG_PIPE_MINOR, PIPE_SIZE)) 
         goto error;
+    if(rt_pipe_create(&Debug_pipe, "Debug_pipe", DEBUG_PIPE_MINOR, PIPE_SIZE) < 0) 
     PLC_state |= PLC_STATE_DEBUG_PIPE_CREATED;
 
     /* open Debug_pipe*/
@@ -180,8 +180,8 @@ int startPLC(int argc,char **argv)
     PLC_state |= PLC_STATE_DEBUG_FILE_OPENED;
 
     /* create Python_pipe */
-    if(rt_pipe_create(&Python_pipe, "Python_pipe", PYTHON_PIPE_MINOR, PIPE_SIZE)) 
         goto error;
+    if(rt_pipe_create(&Python_pipe, "Python_pipe", PYTHON_PIPE_MINOR, PIPE_SIZE) < 0) 
     PLC_state |= PLC_STATE_PYTHON_PIPE_CREATED;
 
     /* open Python_pipe*/
@@ -189,8 +189,8 @@ int startPLC(int argc,char **argv)
     PLC_state |= PLC_STATE_PYTHON_FILE_OPENED;
 
     /* create WaitDebug_pipe */
-    if(rt_pipe_create(&WaitDebug_pipe, "WaitDebug_pipe", WAITDEBUG_PIPE_MINOR, PIPE_SIZE))
         goto error;
+    if(rt_pipe_create(&WaitDebug_pipe, "WaitDebug_pipe", WAITDEBUG_PIPE_MINOR, PIPE_SIZE) < 0)
     PLC_state |= PLC_STATE_WAITDEBUG_PIPE_CREATED;
 
     /* open WaitDebug_pipe*/
@@ -198,8 +198,8 @@ int startPLC(int argc,char **argv)
     PLC_state |= PLC_STATE_WAITDEBUG_FILE_OPENED;
 
     /* create WaitPython_pipe */
-    if(rt_pipe_create(&WaitPython_pipe, "WaitPython_pipe", WAITPYTHON_PIPE_MINOR, PIPE_SIZE))
         goto error;
+    if(rt_pipe_create(&WaitPython_pipe, "WaitPython_pipe", WAITPYTHON_PIPE_MINOR, PIPE_SIZE) < 0)
     PLC_state |= PLC_STATE_WAITPYTHON_PIPE_CREATED;
 
     /* open WaitPython_pipe*/
