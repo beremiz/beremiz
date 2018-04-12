@@ -35,7 +35,7 @@ import traceback
 import __builtin__
 import Pyro.core as pyro
 
-from runtime import PLCObject, ServicePublisher
+from runtime import PLCObject, ServicePublisher, MainWorker
 import util.paths as paths
 
 
@@ -401,7 +401,7 @@ def default_evaluator(tocall, *args, **kwargs):
 
 class Server(object):
     def __init__(self, servicename, ip_addr, port,
-                 workdir, argv, autostart=False,
+                 workdir, argv,
                  statuschange=None, evaluator=default_evaluator,
                  pyruntimevars=None):
         self.continueloop = True
@@ -413,12 +413,11 @@ class Server(object):
         self.argv = argv
         self.plcobj = None
         self.servicepublisher = None
-        self.autostart = autostart
         self.statuschange = statuschange
         self.evaluator = evaluator
         self.pyruntimevars = pyruntimevars
 
-    def Loop(self):
+    def PyroLoop(self):
         while self.continueloop:
             pyro.initServer()
             self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
@@ -426,7 +425,27 @@ class Server(object):
             # taking too small timeout value may cause
             # unwanted diconnection when IDE is kept busy for long periods
             self.daemon.setTimeout(60)
-            self.Start()
+
+            uri = self.daemon.connect(self.plcobj, "PLCObject")
+
+            print(_("Pyro port :"), self.port)
+            print(_("Pyro object's uri :"), uri)
+
+            # Beremiz IDE detects daemon start by looking
+            # for self.workdir in the daemon's stdout.
+            # Therefore don't delete the following line
+            print(_("Current working directory :"), self.workdir)
+
+            # Configure and publish service
+            # Not publish service if localhost in address params
+            if self.servicename is not None and \
+               self.ip_addr is not None and \
+               self.ip_addr != "localhost" and \
+               self.ip_addr != "127.0.0.1":
+                print(_("Publishing service on local network"))
+                self.servicepublisher = ServicePublisher.ServicePublisher()
+                self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
+
             self.daemon.requestLoop()
             self.daemon.sock.close()
 
@@ -440,38 +459,8 @@ class Server(object):
             self.plcobj.UnLoadPLC()
         self._stop()
 
-    def Start(self):
-        self.plcobj = PLCObject(self.workdir, self.daemon, self.argv,
-                                self.statuschange, self.evaluator,
-                                self.pyruntimevars)
-
-        uri = self.daemon.connect(self.plcobj, "PLCObject")
-
-        print(_("Pyro port :"), self.port)
-        print(_("Pyro object's uri :"), uri)
-
-        # Beremiz IDE detects daemon start by looking
-        # for self.workdir in the daemon's stdout.
-        # Therefore don't delete the following line
-        print(_("Current working directory :"), self.workdir)
-
-        # Configure and publish service
-        # Not publish service if localhost in address params
-        if self.servicename is not None and \
-           self.ip_addr is not None and \
-           self.ip_addr != "localhost" and \
-           self.ip_addr != "127.0.0.1":
-            print(_("Publishing service on local network"))
-            self.servicepublisher = ServicePublisher.ServicePublisher()
-            self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
-
-        self.plcobj.AutoLoad()
-        if self.plcobj.GetPLCstatus()[0] != "Empty":
-            if self.autostart:
-                self.plcobj.StartPLC()
-        self.plcobj.StatusChange()
-
-        sys.stdout.flush()
+    def RegisterPLCObject(self, plcobj):
+        self.plcobj = plcobj
 
     def _stop(self):
         if self.plcobj is not None:
@@ -529,13 +518,13 @@ if havewx:
             return o.res
 
     pyroserver = Server(servicename, given_ip, port,
-                        WorkingDir, argv, autostart,
+                        WorkingDir, argv,
                         statuschange, evaluator, pyruntimevars)
 
     taskbar_instance = BeremizTaskBarIcon(pyroserver, enablewx)
 else:
     pyroserver = Server(servicename, given_ip, port,
-                        WorkingDir, argv, autostart,
+                        WorkingDir, argv,
                         statuschange, pyruntimevars=pyruntimevars)
 
 
@@ -631,19 +620,36 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
+plcobj = PLCObject(pyroserver)
+
+plcobj.AutoLoad()
+if plcobj.GetPLCstatus()[0] == "Stopped":
+    if autostart:
+        plcobj.StartPLC()
+plcobj.StatusChange()
+
+pyro_thread = Thread(target=pyroserver.PyroLoop)
+pyro_thread.start()
+
+sys.stdout.flush()
 
 if havetwisted or havewx:
-    pyro_thread = Thread(target=pyroserver.Loop)
-    pyro_thread.start()
-
     if havetwisted:
-        reactor.run()
-    elif havewx:
-        app.MainLoop()
-else:
-    try:
-        pyroserver.Loop()
-    except KeyboardInterrupt:
-        pass
+        # reactor._installSignalHandlersAgain()
+        def ui_thread_target():
+            # FIXME: had to disable SignaHandlers install because 
+            # signal not working in non-main thread
+            reactor.run(installSignalHandlers=False)
+    else :
+        ui_thread_target = app.MainLoop
+
+    ui_thread = Thread(target = ui_thread_target)
+    ui_thread.start()
+
+try:
+    MainWorker.runloop()
+except KeyboardInterrupt:
+    pass
+
 pyroserver.Quit()
 sys.exit(0)
