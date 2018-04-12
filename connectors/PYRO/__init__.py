@@ -148,41 +148,17 @@ def PYRO_connector_factory(uri, confnodesroot):
             # for safe use in from debug thread, must create a copy
             self.RemotePLCObjectProxyCopy = None
 
-        def GetPyroProxy(self):
-            """
-            This func returns the real Pyro Proxy.
-            Use this if you musn't keep reference to it.
-            """
-            return RemotePLCObjectProxy
-
         def _PyroStartPLC(self, *args, **kwargs):
-            """
-            confnodesroot._connector.GetPyroProxy() is used
-            rather than RemotePLCObjectProxy because
-            object is recreated meanwhile,
-            so we must not keep ref to it here
-            """
-            current_status, _log_count = confnodesroot._connector.GetPyroProxy().GetPLCstatus()
-            if current_status == "Dirty":
-                # Some bad libs with static symbols may polute PLC
-                # ask runtime to suicide and come back again
-
-                confnodesroot.logger.write(_("Force runtime reload\n"))
-                confnodesroot._connector.GetPyroProxy().ForceReload()
-                confnodesroot._Disconnect()
-                # let remote PLC time to resurect.(freeze app)
-                sleep(0.5)
-                confnodesroot._Connect()
-            self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
-            return confnodesroot._connector.GetPyroProxy().StartPLC(*args, **kwargs)
+            return RemotePLCObjectProxy.StartPLC(*args, **kwargs)
         StartPLC = PyroCatcher(_PyroStartPLC, False)
 
         def _PyroGetTraceVariables(self):
             """
-            for safe use in from debug thread, must use the copy
+            for use from debug thread, use a copy
+            pyro creates a new thread on server end proxy object is copied
             """
             if self.RemotePLCObjectProxyCopy is None:
-                self.RemotePLCObjectProxyCopy = copy.copy(confnodesroot._connector.GetPyroProxy())
+                self.RemotePLCObjectProxyCopy = copy.copy(RemotePLCObjectProxy)
             return self.RemotePLCObjectProxyCopy.GetTraceVariables()
         GetTraceVariables = PyroCatcher(_PyroGetTraceVariables, ("Broken", None))
 
