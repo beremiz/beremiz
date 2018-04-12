@@ -38,14 +38,11 @@ from PLCControler import \
     LOCATION_CONFNODE, \
     LOCATION_VAR_MEMORY
 
-try:
-    from nodelist import NodeList
-except ImportError:
-    base_folder = paths.AbsParentDir(__file__, 2)
-    CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
-    sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
+base_folder = paths.AbsParentDir(__file__, 2)
+CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
+sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
 
-    from nodelist import NodeList
+from nodelist import NodeList
 
 from nodemanager import NodeManager
 import gen_cfile
