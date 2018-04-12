@@ -159,6 +159,15 @@ void catch_signal(int sig)
     exit(0);
 }
 
+#define _startPLCLog(text) \
+    {\
+    	char mstr[] = text;\
+        LogMessage(LOG_CRITICAL, mstr, sizeof(mstr));\
+        goto error;\
+    }
+
+#define FO "Failed opening "
+
 #define max_val(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
@@ -171,49 +180,55 @@ int startPLC(int argc,char **argv)
 
     /*** RT Pipes creation and opening ***/
     /* create Debug_pipe */
-        goto error;
     if(rt_pipe_create(&Debug_pipe, "Debug_pipe", DEBUG_PIPE_MINOR, PIPE_SIZE) < 0) 
+        _startPLCLog(FO "Debug_pipe real-time end");
     PLC_state |= PLC_STATE_DEBUG_PIPE_CREATED;
 
     /* open Debug_pipe*/
-    if((Debug_pipe_fd = open(DEBUG_PIPE_DEVICE, O_RDWR)) == -1) goto error;
+    if((Debug_pipe_fd = open(DEBUG_PIPE_DEVICE, O_RDWR)) == -1)
+        _startPLCLog(FO DEBUG_PIPE_DEVICE);
     PLC_state |= PLC_STATE_DEBUG_FILE_OPENED;
 
     /* create Python_pipe */
-        goto error;
     if(rt_pipe_create(&Python_pipe, "Python_pipe", PYTHON_PIPE_MINOR, PIPE_SIZE) < 0) 
+        _startPLCLog(FO "Python_pipe real-time end");
     PLC_state |= PLC_STATE_PYTHON_PIPE_CREATED;
 
     /* open Python_pipe*/
-    if((Python_pipe_fd = open(PYTHON_PIPE_DEVICE, O_RDWR)) == -1) goto error;
+    if((Python_pipe_fd = open(PYTHON_PIPE_DEVICE, O_RDWR)) == -1)
+        _startPLCLog(FO PYTHON_PIPE_DEVICE);
     PLC_state |= PLC_STATE_PYTHON_FILE_OPENED;
 
     /* create WaitDebug_pipe */
-        goto error;
     if(rt_pipe_create(&WaitDebug_pipe, "WaitDebug_pipe", WAITDEBUG_PIPE_MINOR, PIPE_SIZE) < 0)
+        _startPLCLog(FO "WaitDebug_pipe real-time end");
     PLC_state |= PLC_STATE_WAITDEBUG_PIPE_CREATED;
 
     /* open WaitDebug_pipe*/
-    if((WaitDebug_pipe_fd = open(WAITDEBUG_PIPE_DEVICE, O_RDWR)) == -1) goto error;
+    if((WaitDebug_pipe_fd = open(WAITDEBUG_PIPE_DEVICE, O_RDWR)) == -1)
+        _startPLCLog(FO WAITDEBUG_PIPE_DEVICE);
     PLC_state |= PLC_STATE_WAITDEBUG_FILE_OPENED;
 
     /* create WaitPython_pipe */
-        goto error;
     if(rt_pipe_create(&WaitPython_pipe, "WaitPython_pipe", WAITPYTHON_PIPE_MINOR, PIPE_SIZE) < 0)
+        _startPLCLog(FO "WaitPython_pipe real-time end");
     PLC_state |= PLC_STATE_WAITPYTHON_PIPE_CREATED;
 
     /* open WaitPython_pipe*/
-    if((WaitPython_pipe_fd = open(WAITPYTHON_PIPE_DEVICE, O_RDWR)) == -1) goto error;
+    if((WaitPython_pipe_fd = open(WAITPYTHON_PIPE_DEVICE, O_RDWR)) == -1)
+        _startPLCLog(FO WAITPYTHON_PIPE_DEVICE);
     PLC_state |= PLC_STATE_WAITPYTHON_FILE_OPENED;
 
     /*** create PLC task ***/
-    if(rt_task_create(&PLC_task, "PLC_task", 0, 50, T_JOINABLE)) goto error;
+    if(rt_task_create(&PLC_task, "PLC_task", 0, 50, T_JOINABLE))
+        _startPLCLog("Failed creating PLC task");
     PLC_state |= PLC_STATE_TASK_CREATED;
 
     if(__init(argc,argv)) goto error;
 
     /* start PLC task */
-    if(rt_task_start(&PLC_task, &PLC_task_proc, NULL)) goto error;
+    if(rt_task_start(&PLC_task, &PLC_task_proc, NULL))
+        _startPLCLog("Failed starting PLC task");
 
     return 0;
 
