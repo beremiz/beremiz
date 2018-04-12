@@ -397,18 +397,6 @@ class PLCObject(pyro.ObjBase):
             return True
         return False
 
-    def _Reload(self):
-        self.daemon.shutdown(True)
-        self.daemon.sock.close()
-        os.execv(sys.executable, [sys.executable]+sys.argv[:])
-        # never reached
-        return 0
-
-    def ForceReload(self):
-        # respawn python interpreter
-        Timer(0.1, self._Reload).start()
-        return True
-
     def GetPLCstatus(self):
         return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
 
