@@ -111,7 +111,6 @@ class worker(object):
         self.mutex.release()
     
     def call(self, *args, **kwargs):
-        print("call", args, kwargs)
         """
         creates a job, execute it in worker thread, and deliver result.
         if job execution raise exception, re-raise same exception 
