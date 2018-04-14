@@ -97,11 +97,14 @@ class worker(object):
         self.done = Condition(self.mutex)
         self.job = None
 
-    def runloop(self):
+    def runloop(self,*args,**kwargs):
         """
         meant to be called by worker thread (blocking)
         """
         self._threadID = thread.get_ident()
+        if args or kwargs:
+            job(*args,**kwargs).do()
+            # result is ignored
         self.mutex.acquire()
         while not self._finish:
             self.todo.wait()
@@ -186,7 +189,6 @@ class PLCObject(pyro.ObjBase):
         self.TraceLock = Lock()
         self.TraceWakeup = Event()
         self.Traces = []
-        server.RegisterPLCObject(self)
 
     def AutoLoad(self):
         # Get the last transfered PLC if connector must be restart
@@ -273,6 +275,7 @@ class PLCObject(pyro.ObjBase):
             self._stopPLC_real.restype = None
 
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
+            print(self._PythonIterator)
             if self._PythonIterator is not None:
                 self._PythonIterator.restype = ctypes.c_char_p
                 self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
@@ -480,6 +483,7 @@ class PLCObject(pyro.ObjBase):
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
 
+    @RunInMain
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
             c_argv = ctypes.c_char_p * len(self.argv)
@@ -498,6 +502,7 @@ class PLCObject(pyro.ObjBase):
                 self.PLCStatus = "Broken"
                 self.StatusChange()
 
+    @RunInMain
     def StopPLC(self):
         if self.PLCStatus == "Started":
             self.LogMessage("PLC stopped")
@@ -516,6 +521,7 @@ class PLCObject(pyro.ObjBase):
     def GetPLCstatus(self):
         return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
 
+    @RunInMain
     def NewPLC(self, md5sum, data, extrafiles):
         if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
             NewFileName = md5sum + lib_ext

@@ -411,11 +411,11 @@ class Server(object):
         self.port = port
         self.workdir = workdir
         self.argv = argv
-        self.plcobj = None
         self.servicepublisher = None
         self.statuschange = statuschange
         self.evaluator = evaluator
         self.pyruntimevars = pyruntimevars
+        self.plcobj = PLCObject(self)
 
     def _to_be_published(self):
         return self.servicename is not None and \
@@ -465,9 +465,6 @@ class Server(object):
             self.plcobj.UnLoadPLC()
         self._stop()
 
-    def RegisterPLCObject(self, plcobj):
-        self.plcobj = plcobj
-
     def _stop(self):
         if self.plcobj is not None:
             self.plcobj.StopPLC()
@@ -475,6 +472,14 @@ class Server(object):
             self.servicepublisher.UnRegisterService()
             self.servicepublisher = None
         self.daemon.shutdown(True)
+
+    def AutoLoad(self):
+        self.plcobj.AutoLoad()
+        if self.plcobj.GetPLCstatus()[0] == "Stopped":
+            if autostart:
+                self.plcobj.StartPLC()
+        self.plcobj.StatusChange()
+
 
 
 if enabletwisted:
@@ -626,14 +631,6 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
-plcobj = PLCObject(pyroserver)
-
-plcobj.AutoLoad()
-if plcobj.GetPLCstatus()[0] == "Stopped":
-    if autostart:
-        plcobj.StartPLC()
-plcobj.StatusChange()
-
 pyro_thread = Thread(target=pyroserver.PyroLoop)
 pyro_thread.start()
 
@@ -653,7 +650,7 @@ if havetwisted or havewx:
     ui_thread.start()
 
 try:
-    MainWorker.runloop()
+    MainWorker.runloop(pyroserver.AutoLoad)
 except KeyboardInterrupt:
     pass
 
