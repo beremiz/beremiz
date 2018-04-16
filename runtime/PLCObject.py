@@ -459,10 +459,8 @@ class PLCObject(pyro.ObjBase):
         res, cmd, blkid = "None", "None", ctypes.c_void_p()
         compile_cache = {}
         while True:
-            # print "_PythonIterator(", res, ")",
             cmd = self._PythonIterator(res, blkid)
             FBID = blkid.value
-            # print " -> ", cmd, blkid
             if cmd is None:
                 break
             try:
@@ -655,13 +653,18 @@ class PLCObject(pyro.ObjBase):
             buff = ctypes.c_void_p()
             TraceBuffer = None
             if self.PLClibraryLock.acquire(False):
-                if self._GetDebugData(ctypes.byref(tick),
-                                      ctypes.byref(size),
-                                      ctypes.byref(buff)) == 0:
+                res = self._GetDebugData(ctypes.byref(tick),
+                                         ctypes.byref(size),
+                                         ctypes.byref(buff)) 
+                if res == 0:
                     if size.value:
                         TraceBuffer = ctypes.string_at(buff.value, size.value)
                     self._FreeDebugData()
                 self.PLClibraryLock.release()
+                
+                if res != 0:
+                    break
+
             if TraceBuffer is not None:
                 self._TracesPush((tick.value, TraceBuffer))
             self._TracesAutoSuspend()

@@ -37,6 +37,15 @@ unsigned int PLC_state = 0;
 #define PYTHON_PIPE_MINOR            3
 #define PIPE_SIZE                    1 
 
+// rt-pipes commands
+
+#define PYTHON_PENDING_COMMAND 1
+#define PYTHON_FINISH 2
+
+#define DEBUG_FINISH 2
+
+#define DEBUG_PENDING_DATA 1
+#define DEBUG_UNLOCK 1
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
@@ -81,6 +90,18 @@ void PLC_task_proc(void *arg)
         __run();
         if (PLC_shutdown) break;
         rt_task_wait_period(NULL);
+    }
+    /* since xenomai 3 it is not enough to close() 
+       file descriptor to unblock read()... */
+    {
+        /* explicitely finish python thread */
+        char msg = PYTHON_FINISH;
+        rt_pipe_write(&WaitPython_pipe, &msg, sizeof(msg), P_NORMAL);
+    }
+    {
+        /* explicitely finish debug thread */
+        char msg = DEBUG_FINISH;
+        rt_pipe_write(&WaitDebug_pipe, &msg, sizeof(msg), P_NORMAL);
     }
 }
 
@@ -256,7 +277,6 @@ int TryEnterDebugSection(void)
     return 0;
 }
 
-#define DEBUG_UNLOCK 1
 void LeaveDebugSection(void)
 {
     if(AtomicCompareExchange( &debug_state, 
@@ -269,7 +289,6 @@ void LeaveDebugSection(void)
 
 extern unsigned long __tick;
 
-#define DEBUG_PENDING_DATA 1
 int WaitDebugData(unsigned long *tick)
 {
     char cmd;
@@ -318,8 +337,6 @@ void resumeDebug(void)
 {
     AtomicCompareExchange( &debug_state, DEBUG_BUSY, DEBUG_FREE);
 }
-
-#define PYTHON_PENDING_COMMAND 1
 
 #define PYTHON_FREE 0
 #define PYTHON_BUSY 1
