@@ -275,7 +275,6 @@ class PLCObject(pyro.ObjBase):
             self._stopPLC_real.restype = None
 
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
-            print(self._PythonIterator)
             if self._PythonIterator is not None:
                 self._PythonIterator.restype = ctypes.c_char_p
                 self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
