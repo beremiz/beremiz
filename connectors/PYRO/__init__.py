@@ -145,6 +145,7 @@ def PYRO_connector_factory(uri, confnodesroot):
         "GetPLCstatus": ("Broken", None),
         "RemoteExec": (-1, "RemoteExec script failed!")
     }
+
     class PyroProxyProxy(object):
         """
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.

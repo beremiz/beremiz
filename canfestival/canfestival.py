@@ -38,17 +38,16 @@ from PLCControler import \
     LOCATION_CONFNODE, \
     LOCATION_VAR_MEMORY
 
-base_folder = paths.AbsParentDir(__file__, 2)
-CanFestivalPath = os.path.join(base_folder, "CanFestival-3")
-sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))
+base_folder = paths.AbsParentDir(__file__, 2)  # noqa
+CanFestivalPath = os.path.join(base_folder, "CanFestival-3")  # noqa
+sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))  # noqa
 
+# pylint: disable=wrong-import-position
 from nodelist import NodeList
-
 from nodemanager import NodeManager
 import gen_cfile
 import eds_utils
 import canfestival_config as local_canfestival_config  # pylint: disable=import-error
-
 from commondialogs import CreateNodeDialog
 from subindextable import IECTypeConversion, SizeConversion
 from canfestival import config_utils
