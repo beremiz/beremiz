@@ -489,6 +489,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             textctrl.ChangeValue(str(element_infos["value"]))
                         callback = self.GetTextCtrlCallBackFunction(textctrl, element_path)
                         textctrl.Bind(wx.EVT_TEXT_ENTER, callback)
+                        textctrl.Bind(wx.EVT_TEXT, callback)
                         textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
             first = False
         sizer.Layout()
