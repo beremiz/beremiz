@@ -139,43 +139,23 @@ def PYRO_connector_factory(uri, confnodesroot):
         confnodesroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
         return None
 
+    _special_return_funcs = {
+        "StartPLC": False,
+        "GetTraceVariables": ("Broken", None),
+        "GetPLCstatus": ("Broken", None),
+        "RemoteExec": (-1, "RemoteExec script failed!")
+    }
     class PyroProxyProxy(object):
         """
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
         And to put Pyro exception catcher in between caller and Pyro proxy
         """
-        def __init__(self):
-            # for safe use in from debug thread, must create a copy
-            self.RemotePLCObjectProxyCopy = None
-
-        def _PyroStartPLC(self, *args, **kwargs):
-            return RemotePLCObjectProxy.StartPLC(*args, **kwargs)
-        StartPLC = PyroCatcher(_PyroStartPLC, False)
-
-        def _PyroGetTraceVariables(self):
-            """
-            for use from debug thread, use a copy
-            pyro creates a new thread on server end proxy object is copied
-            """
-            if self.RemotePLCObjectProxyCopy is None:
-                self.RemotePLCObjectProxyCopy = copy.copy(RemotePLCObjectProxy)
-            return self.RemotePLCObjectProxyCopy.GetTraceVariables()
-        GetTraceVariables = PyroCatcher(_PyroGetTraceVariables, ("Broken", None))
-
-        def _PyroGetPLCstatus(self):
-            return RemotePLCObjectProxy.GetPLCstatus()
-        GetPLCstatus = PyroCatcher(_PyroGetPLCstatus, ("Broken", None))
-
-        def _PyroRemoteExec(self, script, **kwargs):
-            return RemotePLCObjectProxy.RemoteExec(script, **kwargs)
-        RemoteExec = PyroCatcher(_PyroRemoteExec, (-1, "RemoteExec script failed!"))
-
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:
                 def my_local_func(*args, **kwargs):
                     return RemotePLCObjectProxy.__getattr__(attrName)(*args, **kwargs)
-                member = PyroCatcher(my_local_func, None)
+                member = PyroCatcher(my_local_func, _special_return_funcs.get(attrName, None))
                 self.__dict__[attrName] = member
             return member
 
