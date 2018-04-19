@@ -37,7 +37,7 @@ import shutil
 import re
 import tempfile
 from types import ListType
-from threading import Timer, Lock, Thread
+from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from itertools import izip
@@ -1439,7 +1439,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                         values_buffer.append((value, forced))
                             self.DebugTicks.append(debug_tick)
 
-
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
                                             [list() for dummy in xrange(len(self.TracedIECPath))])
 
@@ -1556,12 +1555,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if IECPath not in self.IECdebug_datas:
             return
 
-
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         IECdebug_data[2] = "Forced"
         IECdebug_data[3] = fvalue
-
 
         self.ReArmDebugRegisterTimer()
 
@@ -1569,12 +1566,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if IECPath not in self.IECdebug_datas:
             return
 
-
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         IECdebug_data[2] = "Registered"
         IECdebug_data[3] = None
-
 
         self.ReArmDebugRegisterTimer()
 
@@ -1598,7 +1593,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self._connector is None:
             return -1, "No runtime connected!"
         return self._connector.RemoteExec(script, **kwargs)
-
 
     def DispatchDebugValuesProc(self, event):
         debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()

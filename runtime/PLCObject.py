@@ -24,7 +24,7 @@
 
 from __future__ import absolute_import
 import thread
-from threading import Timer, Thread, Lock, Semaphore, Event, Condition
+from threading import Thread, Lock, Semaphore, Event, Condition
 import ctypes
 import os
 import sys
@@ -65,19 +65,19 @@ class job(object):
     """
     job to be executed by a worker
     """
-    def __init__(self,call,*args,**kwargs):
-        self.job = (call,args,kwargs)
+    def __init__(self, call, *args, **kwargs):
+        self.job = (call, args, kwargs)
         self.result = None
         self.success = False
         self.exc_info = None
 
     def do(self):
         """
-        do the job by executing the call, and deal with exceptions 
+        do the job by executing the call, and deal with exceptions
         """
-        try :
+        try:
             call, args, kwargs = self.job
-            self.result = call(*args,**kwargs)
+            self.result = call(*args, **kwargs)
             self.success = True
         except Exception:
             self.success = False
@@ -98,13 +98,13 @@ class worker(object):
         self.free = Condition(self.mutex)
         self.job = None
 
-    def runloop(self,*args,**kwargs):
+    def runloop(self, *args, **kwargs):
         """
         meant to be called by worker thread (blocking)
         """
         self._threadID = thread.get_ident()
         if args or kwargs:
-            job(*args,**kwargs).do()
+            job(*args, **kwargs).do()
             # result is ignored
         self.mutex.acquire()
         while not self._finish:
@@ -115,16 +115,16 @@ class worker(object):
             else:
                 self.free.notify()
         self.mutex.release()
-    
+
     def call(self, *args, **kwargs):
         """
         creates a job, execute it in worker thread, and deliver result.
-        if job execution raise exception, re-raise same exception 
+        if job execution raise exception, re-raise same exception
         meant to be called by non-worker threads, but this is accepted.
         blocking until job done
         """
 
-        _job = job(*args,**kwargs)
+        _job = job(*args, **kwargs)
 
         if self._threadID == thread.get_ident() or self._threadID is None:
             # if caller is worker thread execute immediately
@@ -147,7 +147,7 @@ class worker(object):
             return _job.result
         else:
             raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
-        
+
     def quit(self):
         """
         unblocks main thread, and terminate execution of runloop()
@@ -164,10 +164,10 @@ MainWorker = worker()
 
 
 def RunInMain(func):
-    def func_wrapper(*args,**kwargs):
+    def func_wrapper(*args, **kwargs):
         return MainWorker.call(func, *args, **kwargs)
     return func_wrapper
-    
+
 
 class PLCObject(pyro.ObjBase):
     def __init__(self, server):
@@ -193,7 +193,7 @@ class PLCObject(pyro.ObjBase):
 
     # First task of worker -> no @RunInMain
     def AutoLoad(self):
-        # Get the last transfered PLC 
+        # Get the last transfered PLC
         try:
             self.CurrentPLCFilename = open(
                 self._GetMD5FileName(),
@@ -226,7 +226,7 @@ class PLCObject(pyro.ObjBase):
         if self._ResetLogCount is not None:
             self._ResetLogCount()
 
-    # used internaly 
+    # used internaly
     def GetLogCount(self, level):
         if self._GetLogCount is not None:
             return int(self._GetLogCount(level))
@@ -414,7 +414,7 @@ class PLCObject(pyro.ObjBase):
             if exp is not None:
                 self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
-    # used internaly 
+    # used internaly
     def PythonRuntimeInit(self):
         MethodNames = ["init", "start", "stop", "cleanup"]
         self.python_runtime_vars = globals().copy()
@@ -466,7 +466,7 @@ class PLCObject(pyro.ObjBase):
 
         self.PythonRuntimeCall("init")
 
-    # used internaly 
+    # used internaly
     def PythonRuntimeCleanup(self):
         if self.python_runtime_vars is not None:
             self.PythonRuntimeCall("cleanup")
@@ -544,10 +544,9 @@ class PLCObject(pyro.ObjBase):
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir, "extra_files.txt")
 
-            old_PLC_filename = os.path.join(self.workingdir, \
-                                            self.CurrentPLCFilename) \
-                               if self.CurrentPLCFilename is not None \
-                               else None
+            old_PLC_filename = os.path.join(self.workingdir, self.CurrentPLCFilename) \
+                if self.CurrentPLCFilename is not None \
+                else None
             new_PLC_filename = os.path.join(self.workingdir, NewFileName)
 
             # Some platform (i.e. Xenomai) don't like reloading same .so file
@@ -558,7 +557,6 @@ class PLCObject(pyro.ObjBase):
 
             self.LogMessage("NewPLC (%s)" % md5sum)
             self.PLCStatus = "Empty"
-
 
             try:
                 if replace_PLC_shared_object:
@@ -635,7 +633,6 @@ class PLCObject(pyro.ObjBase):
         else:
             self._suspendDebug(True)
 
-
     def _TracesSwap(self):
         self.LastSwapTrace = time()
         if self.TraceThread is None and self.PLCStatus == "Started":
@@ -666,14 +663,14 @@ class PLCObject(pyro.ObjBase):
 
             res = self._GetDebugData(ctypes.byref(tick),
                                      ctypes.byref(size),
-                                     ctypes.byref(buff)) 
+                                     ctypes.byref(buff))
             if res == 0:
                 if size.value:
                     TraceBuffer = ctypes.string_at(buff.value, size.value)
                 self._FreeDebugData()
 
             self.PLClibraryLock.release()
-                
+
             # leave thread if GetDebugData isn't happy.
             if res != 0:
                 break

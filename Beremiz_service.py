@@ -400,7 +400,6 @@ def default_evaluator(tocall, *args, **kwargs):
     return res
 
 
-
 class Server(object):
     def __init__(self, servicename, ip_addr, port,
                  workdir, argv,
@@ -437,7 +436,6 @@ class Server(object):
 
         sys.stdout.flush()
 
-
     def PyroLoop(self, when_ready):
         while self.continueloop:
             Pyro.config.PYRO_MULTITHREADED = 0
@@ -449,7 +447,7 @@ class Server(object):
             # unwanted diconnection when IDE is kept busy for long periods
             self.daemon.setTimeout(60)
 
-            uri = self.daemon.connect(self.plcobj, "PLCObject")
+            self.daemon.connect(self.plcobj, "PLCObject")
 
             if self._to_be_published():
                 self.servicepublisher = ServicePublisher.ServicePublisher()
@@ -483,8 +481,6 @@ class Server(object):
             if autostart:
                 self.plcobj.StartPLC()
         self.plcobj.StatusChange()
-
-
 
 if enabletwisted:
     import warnings
@@ -652,19 +648,19 @@ if havetwisted or havewx:
     if havetwisted:
         # reactor._installSignalHandlersAgain()
         def ui_thread_target():
-            # FIXME: had to disable SignaHandlers install because 
+            # FIXME: had to disable SignaHandlers install because
             # signal not working in non-main thread
             reactor.run(installSignalHandlers=False)
-    else :
+    else:
         ui_thread_target = app.MainLoop
 
-    ui_thread = Thread(target = ui_thread_target)
+    ui_thread = Thread(target=ui_thread_target)
     ui_thread.start()
 
     # This order ui loop to unblock main thread when ready.
     if havetwisted:
-        reactor.callLater(0,ui_thread_started.release)
-    else :
+        reactor.callLater(0, ui_thread_started.release)
+    else:
         wx.CallAfter(ui_thread_started.release)
 
     # Wait for ui thread to be effective
