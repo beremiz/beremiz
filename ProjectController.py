@@ -1418,25 +1418,26 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.UpdateMethodsFromPLCStatus()
 
     def SnapshotAndResetDebugValuesBuffers(self):
-        plc_status, Traces = self._connector.GetTraceVariables()
-        # print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
-        if plc_status == "Started":
-            if len(Traces) > 0:
-                for debug_tick, debug_buff in Traces:
-                    debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
-                    if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
-                        for IECPath, values_buffer, value in izip(
-                                self.TracedIECPath,
-                                self.DebugValuesBuffers,
-                                debug_vars):
-                            IECdebug_data = self.IECdebug_datas.get(IECPath, None)
-                            if IECdebug_data is not None and value is not None:
-                                forced = IECdebug_data[2:4] == ["Forced", value]
-                                if not IECdebug_data[4] and len(values_buffer) > 0:
-                                    values_buffer[-1] = (value, forced)
-                                else:
-                                    values_buffer.append((value, forced))
-                        self.DebugTicks.append(debug_tick)
+        if self._connector is not None:
+            plc_status, Traces = self._connector.GetTraceVariables()
+            # print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
+            if plc_status == "Started":
+                if len(Traces) > 0:
+                    for debug_tick, debug_buff in Traces:
+                        debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
+                        if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
+                            for IECPath, values_buffer, value in izip(
+                                    self.TracedIECPath,
+                                    self.DebugValuesBuffers,
+                                    debug_vars):
+                                IECdebug_data = self.IECdebug_datas.get(IECPath, None)
+                                if IECdebug_data is not None and value is not None:
+                                    forced = IECdebug_data[2:4] == ["Forced", value]
+                                    if not IECdebug_data[4] and len(values_buffer) > 0:
+                                        values_buffer[-1] = (value, forced)
+                                    else:
+                                        values_buffer.append((value, forced))
+                            self.DebugTicks.append(debug_tick)
 
 
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
