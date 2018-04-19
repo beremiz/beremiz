@@ -242,7 +242,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Setup debug information
         self.IECdebug_datas = {}
-        self.IECdebug_lock = Lock()
 
         self.DebugTimer = None
         self.ResetIECProgramsAndVariables()
@@ -258,7 +257,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # After __init__ root confnode is not valid
         self.ProjectPath = None
         self._setBuildPath(None)
-        self.DebugThread = None
         self.debug_break = False
         self.previous_plcstate = None
         # copy ConfNodeMethods so that it can be later customized
@@ -1420,9 +1418,32 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.UpdateMethodsFromPLCStatus()
 
     def SnapshotAndResetDebugValuesBuffers(self):
+        plc_status, Traces = self._connector.GetTraceVariables()
+        # print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
+        if plc_status == "Started":
+            if len(Traces) > 0:
+                for debug_tick, debug_buff in Traces:
+                    debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
+                    if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
+                        for IECPath, values_buffer, value in izip(
+                                self.TracedIECPath,
+                                self.DebugValuesBuffers,
+                                debug_vars):
+                            IECdebug_data = self.IECdebug_datas.get(IECPath, None)
+                            if IECdebug_data is not None and value is not None:
+                                forced = IECdebug_data[2:4] == ["Forced", value]
+                                if not IECdebug_data[4] and len(values_buffer) > 0:
+                                    values_buffer[-1] = (value, forced)
+                                else:
+                                    values_buffer.append((value, forced))
+                        self.DebugTicks.append(debug_tick)
+
+
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
                                             [list() for dummy in xrange(len(self.TracedIECPath))])
+
         ticks, self.DebugTicks = self.DebugTicks, []
+
         return ticks, buffers
 
     def RegisterDebugVarToConnector(self):
@@ -1431,7 +1452,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.TracedIECPath = []
         self.TracedIECTypes = []
         if self._connector is not None:
-            self.IECdebug_lock.acquire()
             IECPathsToPop = []
             for IECPath, data_tuple in self.IECdebug_datas.iteritems():
                 WeakCallableDict, _data_log, _status, fvalue, _buffer_list = data_tuple
@@ -1462,7 +1482,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
             self.SnapshotAndResetDebugValuesBuffers()
-            self.IECdebug_lock.release()
 
     def IsPLCStarted(self):
         return self.previous_plcstate == "Started"
@@ -1494,7 +1513,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if IECPath != "__tick__" and IECPath not in self._IECPathToIdx:
             return None
 
-        self.IECdebug_lock.acquire()
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is None:
@@ -1510,14 +1528,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         IECdebug_data[0][callableobj] = buffer_list
 
-        self.IECdebug_lock.release()
-
         self.ReArmDebugRegisterTimer()
 
         return IECdebug_data[1]
 
     def UnsubscribeDebugIECVariable(self, IECPath, callableobj):
-        self.IECdebug_lock.acquire()
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         if IECdebug_data is not None:
             IECdebug_data[0].pop(callableobj, None)
@@ -1528,14 +1543,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     lambda x, y: x | y,
                     IECdebug_data[0].itervalues(),
                     False)
-        self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
 
     def UnsubscribeAllDebugIECVariable(self):
-        self.IECdebug_lock.acquire()
         self.IECdebug_datas = {}
-        self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
 
@@ -1543,14 +1555,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if IECPath not in self.IECdebug_datas:
             return
 
-        self.IECdebug_lock.acquire()
 
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         IECdebug_data[2] = "Forced"
         IECdebug_data[3] = fvalue
 
-        self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
 
@@ -1558,14 +1568,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if IECPath not in self.IECdebug_datas:
             return
 
-        self.IECdebug_lock.acquire()
 
         # If no entry exist, create a new one with a fresh WeakKeyDictionary
         IECdebug_data = self.IECdebug_datas.get(IECPath, None)
         IECdebug_data[2] = "Registered"
         IECdebug_data[3] = None
 
-        self.IECdebug_lock.release()
 
         self.ReArmDebugRegisterTimer()
 
@@ -1590,51 +1598,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return -1, "No runtime connected!"
         return self._connector.RemoteExec(script, **kwargs)
 
-    def DebugThreadProc(self):
-        """
-        This thread waid PLC debug data, and dispatch them to subscribers
-        """
-        self.debug_break = False
-        debug_getvar_retry = 0
-        while (not self.debug_break) and (self._connector is not None):
-            plc_status, Traces = self._connector.GetTraceVariables()
-            debug_getvar_retry += 1
-            # print [dict.keys() for IECPath, (dict, log, status, fvalue) in self.IECdebug_datas.items()]
-            if plc_status == "Started":
-                if len(Traces) > 0:
-                    self.IECdebug_lock.acquire()
-                    for debug_tick, debug_buff in Traces:
-                        debug_vars = UnpackDebugBuffer(debug_buff, self.TracedIECTypes)
-                        if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
-                            for IECPath, values_buffer, value in izip(
-                                    self.TracedIECPath,
-                                    self.DebugValuesBuffers,
-                                    debug_vars):
-                                IECdebug_data = self.IECdebug_datas.get(IECPath, None)  # FIXME get
-                                if IECdebug_data is not None and value is not None:
-                                    forced = IECdebug_data[2:4] == ["Forced", value]
-                                    if not IECdebug_data[4] and len(values_buffer) > 0:
-                                        values_buffer[-1] = (value, forced)
-                                    else:
-                                        values_buffer.append((value, forced))
-                            self.DebugTicks.append(debug_tick)
-                            debug_getvar_retry = 0
-                    self.IECdebug_lock.release()
-
-                if debug_getvar_retry != 0:
-                    # Be patient, tollerate PLC to come with fresh samples
-                    time.sleep(0.1)
-            else:
-                self.debug_break = True
-        self.logger.write(_("Debugger disabled\n"))
-        self.DebugThread = None
-        if self.DispatchDebugValuesTimer is not None:
-            self.DispatchDebugValuesTimer.Stop()
 
     def DispatchDebugValuesProc(self, event):
-        self.IECdebug_lock.acquire()
         debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
-        self.IECdebug_lock.release()
         start_time = time.time()
         if len(self.TracedIECPath) == len(buffers):
             for IECPath, values in izip(self.TracedIECPath, buffers):
@@ -1645,22 +1611,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         delay = time.time() - start_time
         next_refresh = max(REFRESH_PERIOD - delay, 0.2 * delay)
-        if self.DispatchDebugValuesTimer is not None and self.DebugThread is not None:
+        if self.DispatchDebugValuesTimer is not None:
             self.DispatchDebugValuesTimer.Start(
                 int(next_refresh * 1000), oneShot=True)
         event.Skip()
 
     def KillDebugThread(self):
-        tmp_debugthread = self.DebugThread
-        self.debug_break = True
-        if tmp_debugthread is not None:
-            self.logger.writeyield(_("Stopping debugger...\n"))
-            tmp_debugthread.join(timeout=5)
-            if tmp_debugthread.isAlive() and self.logger:
-                self.logger.write_warning(_("Couldn't stop debugger.\n"))
-            else:
-                self.logger.write(_("Debugger stopped.\n"))
-        self.DebugThread = None
         if self.DispatchDebugValuesTimer is not None:
             self.DispatchDebugValuesTimer.Stop()
 
@@ -1672,9 +1628,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self.DispatchDebugValuesTimer is not None:
             self.DispatchDebugValuesTimer.Start(
                 int(REFRESH_PERIOD * 1000), oneShot=True)
-        if self.DebugThread is None:
-            self.DebugThread = Thread(target=self.DebugThreadProc)
-            self.DebugThread.start()
 
     def _Run(self):
         """
