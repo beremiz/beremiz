@@ -39,6 +39,8 @@ from twisted.internet.protocol import ReconnectingClientFactory
 _transportFactory = None
 _WampSession = None
 _PySrv = None
+_WampConf = None
+_WampSecret = None
 
 ExposedCalls = [
     "StartPLC",
@@ -184,6 +186,31 @@ def LoadWampClientConf(wampconf):
     except Exception:
         return None
 
+def SaveWampClientConf(wampconf, url, active):
+    try:
+        WSClientConf = LoadWampClientConf(wampconf)
+        change = False
+        if url:
+            oldUrl = WSClientConf.get('url', None)
+            if oldUrl != url:
+                WSClientConf['url'] = url
+                change = True
+
+        oldActive = WSClientConf.get('active', False)
+        if oldActive != active:
+            WSClientConf['active'] = active
+            change = True
+
+        if change:
+            with open(os.path.realpath(wampconf), 'w') as f:
+                json.dump(WSClientConf, f)
+
+        return WSClientConf
+    except ValueError, ve:
+        print(_("WAMP load error: "), ve)
+        return None
+    except Exception:
+        return None
 
 def LoadWampSecret(secretfname):
     try:
@@ -203,8 +230,11 @@ def IsCorrectUri(uri):
         return False
 
 
-def RegisterWampClient(wampconf, secretfname):
-    WSClientConf = LoadWampClientConf(wampconf)
+def RegisterWampClient(wampconf = None, secretfname = None):
+    if wampconf:
+        WSClientConf = LoadWampClientConf(wampconf)
+    else:
+        WSClientConf = LoadWampClientConf(_WampConf)
 
     if not WSClientConf:
         print(_("WAMP client connection not established!"))
@@ -214,7 +244,10 @@ def RegisterWampClient(wampconf, secretfname):
         print(_("WAMP url {} is not correct!".format(WSClientConf["url"])))
         return False
 
-    WampSecret = LoadWampSecret(secretfname)
+    if secretfname:
+        WampSecret = LoadWampSecret(secretfname)
+    else:
+        WampSecret = LoadWampSecret(_WampSecret)
 
     if WampSecret is not None:
         WSClientConf["secret"] = WampSecret
@@ -240,16 +273,32 @@ def RegisterWampClient(wampconf, secretfname):
     return True # conn
 
 
-def GetTransportFactory():
-    global _transportFactory
-    return _transportFactory
+def ReconnectWampClient(active, url):
+    SaveWampClientConf(_WampConf, url, active)
 
+    if not active and _WampSession:
+        # crossbar connection active is off, retry connection off
+        _transportFactory.stopTrying()
+        return _WampSession.leave()
+    elif _WampSession and active:
+        # do reconnecting
+        _WampSession.disconnect()
+        return True
+    elif not _WampSession and active:
+        # crossbar connection active is on, do connect
+        RegisterWampClient()
+        return True
+    else:
+        return False
 
 def GetSession():
-    global _WampSession
     return _WampSession
 
+def StatusWampClient():
+    return _WampSession and _WampSession.is_attached()
 
-def SetServer(pysrv):
-    global _PySrv
+def SetServer(pysrv, wampconf = None, wampsecret = None):
+    global _PySrv, _WampConf, _WampSecret
     _PySrv = pysrv
+    _WampConf = wampconf
+    _WampSecret = wampsecret

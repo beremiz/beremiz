@@ -620,11 +620,11 @@ if havetwisted:
         try:
             _wampconf = WC.LoadWampClientConf(wampconf)
             if _wampconf:
-                WC.SetServer(pyroserver)
-                if _wampconf.get("url", None):  # TODO : test more ?
-                    WC.RegisterWampClient(wampconf, wampsecret)
+                WC.SetServer(pyroserver, wampconf, wampsecret)
+                if _wampconf.get("url", False) and _wampconf.get("active", False):  # TODO : test more ?
+                    WC.RegisterWampClient()
                 else:
-                    raise Exception(_("WAMP config is incomplete."))
+                    raise Exception(_("WAMP config is incomplete or active is false."))
             else:
                 raise Exception(_("WAMP config is missing."))
         except Exception:
