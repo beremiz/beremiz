@@ -30,9 +30,10 @@ import os
 import sys
 import getopt
 import threading
-from threading import Thread, currentThread, Semaphore
+from threading import Thread, currentThread, Semaphore, Lock
 import traceback
 import __builtin__
+import Pyro
 import Pyro.core as pyro
 
 from runtime import PLCObject, ServicePublisher, MainWorker
@@ -399,6 +400,7 @@ def default_evaluator(tocall, *args, **kwargs):
     return res
 
 
+
 class Server(object):
     def __init__(self, servicename, ip_addr, port,
                  workdir, argv,
@@ -436,8 +438,9 @@ class Server(object):
         sys.stdout.flush()
 
 
-    def PyroLoop(self):
+    def PyroLoop(self, when_ready):
         while self.continueloop:
+            Pyro.config.PYRO_MULTITHREADED = 0
             pyro.initServer()
             self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
 
@@ -452,6 +455,7 @@ class Server(object):
                 self.servicepublisher = ServicePublisher.ServicePublisher()
                 self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
 
+            when_ready()
             self.daemon.requestLoop()
             self.daemon.sock.close()
 
@@ -631,12 +635,20 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
-pyro_thread = Thread(target=pyroserver.PyroLoop)
+pyro_thread_started = Lock()
+pyro_thread_started.acquire()
+pyro_thread = Thread(target=pyroserver.PyroLoop,
+                     kwargs=dict(when_ready=pyro_thread_started.release))
 pyro_thread.start()
+
+# Wait for pyro thread to be effective
+pyro_thread_started.acquire()
 
 pyroserver.PrintServerInfo()
 
 if havetwisted or havewx:
+    ui_thread_started = Lock()
+    ui_thread_started.acquire()
     if havetwisted:
         # reactor._installSignalHandlersAgain()
         def ui_thread_target():
@@ -648,6 +660,16 @@ if havetwisted or havewx:
 
     ui_thread = Thread(target = ui_thread_target)
     ui_thread.start()
+
+    # This order ui loop to unblock main thread when ready.
+    if havetwisted:
+        reactor.callLater(0,ui_thread_started.release)
+    else :
+        wx.CallAfter(ui_thread_started.release)
+
+    # Wait for ui thread to be effective
+    ui_thread_started.acquire()
+    print("UI thread started successfully.")
 
 try:
     MainWorker.runloop(pyroserver.AutoLoad)
