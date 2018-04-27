@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -37,6 +38,7 @@ import Pyro
 import Pyro.core as pyro
 
 from runtime import PLCObject, ServicePublisher, MainWorker
+from runtime.xenomai import TryPreloadXenomai
 import util.paths as paths
 
 
@@ -133,6 +135,8 @@ elif len(argv) == 0:
 
 if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
+    # TODO: add a cmdline parameter if Trying Preloading Xenomai makes problem
+    TryPreloadXenomai()
 
 
 def Bpath(*args):
@@ -675,3 +679,4 @@ except KeyboardInterrupt:
 
 pyroserver.Quit()
 sys.exit(0)
+ys.exit(0)

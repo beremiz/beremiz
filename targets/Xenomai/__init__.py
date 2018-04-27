@@ -37,7 +37,7 @@ class Xenomai_target(toolchain_gcc):
         if xeno_config:
             from util.ProcessLogger import ProcessLogger
             status, result, _err_result = ProcessLogger(self.CTRInstance.logger,
-                                                        xeno_config + " --skin=native --"+flagsname,
+                                                        xeno_config + " --skin=posix --skin=alchemy --no-auto-init --"+flagsname,
                                                         no_stdout=True).spin()
             if status:
                 self.CTRInstance.logger.write_error(_("Unable to get Xenomai's %s \n") % flagsname)
