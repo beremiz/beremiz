@@ -5,9 +5,6 @@ from connectors import connectors_dialog, ConnectorDialog, GetConnectorFromURI
 
 
 [ID_URIWIZARDDIALOG,ID_URITYPECHOICE] = [wx.NewId() for _init_ctrls in range(2)]
-URITYPES = ["- Select URI type -"]
-URITYPES.extend([key for key, value in connectors_dialog.iteritems()])
-
 
 class IConnectorPanel(Interface):
     """This is interface for panel of seperate connector type"""
@@ -26,8 +23,7 @@ class UriLocationEditor(wx.Dialog):
         wx.Dialog.__init__(self, id=ID_URIWIZARDDIALOG,
               name='UriLocationEditor', parent=parent,
               title='Uri location')
-        self.UriTypeChoice = wx.Choice(parent=self, id=ID_URIWIZARDDIALOG,
-             choices = URITYPES)
+        self.UriTypeChoice = wx.Choice(parent=self, id=ID_URIWIZARDDIALOG, choices = self.URITYPES)
         self.UriTypeChoice.SetSelection(0)
         self.Bind(wx.EVT_CHOICE, self.OnTypeChoice, self.UriTypeChoice)
         self.PanelSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -35,10 +31,6 @@ class UriLocationEditor(wx.Dialog):
 
     def _init_sizers(self):
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
-        # self.mainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
-        # self.mainSizer.AddGrowableCol(0)
-        # self.mainSizer.AddGrowableRow(0)
-
         typeSizer = wx.BoxSizer(wx.HORIZONTAL)
         typeSizer.Add(wx.StaticText(self,wx.ID_ANY,"URI type:"), border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
         typeSizer.Add(self.UriTypeChoice, border=5, flag=wx.ALL)
@@ -49,6 +41,14 @@ class UriLocationEditor(wx.Dialog):
         self.SetSizer(self.mainSizer)
 
     def __init__(self, parent, uri):
+        self.URITYPES = ["- Select URI type -"]
+        for connector_type, connector_function in connectors_dialog.iteritems():
+            try:
+                connector_function['function']()
+                self.URITYPES.append(connector_type)
+            except Exception as e:
+                pass
+
         self.selected = None
         self.parrent = parent
         self.logger = self.parrent.CTR.logger
