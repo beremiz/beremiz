@@ -1,7 +1,7 @@
 import wx
 from zope.interface import Interface, Attribute
 from zope.interface.verify import verifyObject
-from connectors import connectors_dialog, ConnectorDialog, GetConnectorFromURI
+from connectors_dialog import connectors_dialog, ConnectorDialog, GetConnectorFromURI
 
 
 [ID_URIWIZARDDIALOG,ID_URITYPECHOICE] = [wx.NewId() for _init_ctrls in range(2)]
