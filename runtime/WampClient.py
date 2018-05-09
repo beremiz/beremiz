@@ -26,6 +26,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import time
 import json
+import os
 import inspect
 import re
 from autobahn.twisted import wamp
@@ -207,9 +208,10 @@ def SaveWampClientConf(wampconf, url, active):
 
         return WSClientConf
     except ValueError, ve:
-        print(_("WAMP load error: "), ve)
+        print(_("WAMP save error: "), ve)
         return None
-    except Exception:
+    except Exception, e:
+        print(_("WAMP save error: "), e)
         return None
 
 def LoadWampSecret(secretfname):
@@ -272,24 +274,33 @@ def RegisterWampClient(wampconf = None, secretfname = None):
     print(_("WAMP client connecting to :"), WSClientConf["url"])
     return True # conn
 
+def StopReconnectWampClient():
+    _transportFactory.stopTrying()
+    return _WampSession.leave()
 
-def ReconnectWampClient(active, url):
-    SaveWampClientConf(_WampConf, url, active)
-
-    if not active and _WampSession:
-        # crossbar connection active is off, retry connection off
-        _transportFactory.stopTrying()
-        return _WampSession.leave()
-    elif _WampSession and active:
-        # do reconnecting
+def StartReconnectWampClient():
+    if _WampSession:
+        # do reconnect
         _WampSession.disconnect()
         return True
-    elif not _WampSession and active:
-        # crossbar connection active is on, do connect
+    elif not _WampSession:
+        # do connect
         RegisterWampClient()
         return True
-    else:
-        return False
+
+def ReconnectionWampClient(active, url):
+    """ReconnectionWampClient function used for reconnecting to Crossbar router.
+
+    Args:
+        active (bool): Value in wampconf.json file. True: using Wamp connection. False: not using Wamp connection.
+        url (str): Value in wampconf.json file. Url of Crossbar router.
+    """
+    SaveWampClientConf(_WampConf, url, active)
+
+    if active:
+        StartReconnectWampClient()
+    elif not active and _WampSession:
+        StopReconnectWampClient()
 
 def GetSession():
     return _WampSession
