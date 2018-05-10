@@ -499,7 +499,10 @@ class ConfigTreeNode(object):
         # Call the OnCloseMethod
         CTNInstance.OnCTNClose()
         # Delete confnode dir
-        shutil.rmtree(CTNInstance.CTNPath())
+        try:
+            shutil.rmtree(CTNInstance.CTNPath())
+        except:
+            pass
         # Remove child of Children
         self.Children[CTNInstance.CTNType].remove(CTNInstance)
         if len(self.Children[CTNInstance.CTNType]) == 0:
