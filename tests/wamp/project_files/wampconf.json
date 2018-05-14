@@ -1,10 +1,17 @@
 {
-    "active": true,
-    "url":"ws://127.0.0.1:8888",
-    "realm":"Automation",
-    "ID":"wamptest",
-    "password":"1234567890",
-    "key":"ABCDEFGHIJ",
-    "protocolOptions":{"autoPingTimeout":20, "autoPingInterval":60},
-    "registerOptions":{"match":"exact", "invoke":"last", "concurrency": 2}
+    "ID": "wamptest", 
+    "active": true, 
+    "key": "ABCDEFGHIJ", 
+    "password": "1234567890", 
+    "protocolOptions": {
+        "autoPingInterval": 60, 
+        "autoPingTimeout": 20
+    }, 
+    "realm": "Automation", 
+    "registerOptions": {
+        "concurrency": 2, 
+        "invoke": "last", 
+        "match": "exact"
+    }, 
+    "url": "ws://127.0.0.1:8888"
 }

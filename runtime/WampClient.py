@@ -177,34 +177,43 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             del connector
 
 
-def LoadWampClientConf(wampconf):
+def LoadWampClientConf(items=None):
     try:
-        WSClientConf = json.load(open(wampconf))
+        WSClientConf = json.load(open(_WampConf))
+        if items and isinstance(items, list):
+            WSClientConfItems = {}
+            for item in items:
+                wampconf_value = WSClientConf.get(item, None)
+                if wampconf_value is not None:
+                    WSClientConfItems[item] = wampconf_value
+            if WSClientConfItems:
+                return WSClientConfItems
         return WSClientConf
     except ValueError, ve:
         print(_("WAMP load error: "), ve)
         return None
-    except Exception:
+    except Exception, e:
+        print(_("WAMP load error: "), e)
         return None
 
-def SaveWampClientConf(wampconf, url, active):
+def SaveWampClientConf(items):
     try:
-        WSClientConf = LoadWampClientConf(wampconf)
-        change = False
-        if url:
-            oldUrl = WSClientConf.get('url', None)
-            if oldUrl != url:
-                WSClientConf['url'] = url
-                change = True
+        WSClientConf = LoadWampClientConf()
+        saveChanges = False
+        if items:
+            for itemKey in items.keys():
+                wampconf_value = WSClientConf.get(itemKey, None)
+                if (wampconf_value is not None) and (items[itemKey] is not None) and (wampconf_value != items[itemKey]):
+                    WSClientConf[itemKey] = items[itemKey]
+                    saveChanges = True
 
-        oldActive = WSClientConf.get('active', False)
-        if oldActive != active:
-            WSClientConf['active'] = active
-            change = True
-
-        if change:
-            with open(os.path.realpath(wampconf), 'w') as f:
-                json.dump(WSClientConf, f)
+        if saveChanges:
+            with open(os.path.realpath(_WampConf), 'w') as f:
+                json.dump(WSClientConf, f, sort_keys=True, indent=4)
+            if 'active' in WSClientConf and WSClientConf['active']:
+                StartReconnectWampClient()
+            else:
+                StopReconnectWampClient()
 
         return WSClientConf
     except ValueError, ve:
@@ -232,11 +241,13 @@ def IsCorrectUri(uri):
         return False
 
 
-def RegisterWampClient(wampconf = None, secretfname = None):
+def RegisterWampClient(wampconf=None, secretfname=None):
+    global _WampConf
     if wampconf:
-        WSClientConf = LoadWampClientConf(wampconf)
+        _WampConf = wampconf
+        WSClientConf = LoadWampClientConf()
     else:
-        WSClientConf = LoadWampClientConf(_WampConf)
+        WSClientConf = LoadWampClientConf()
 
     if not WSClientConf:
         print(_("WAMP client connection not established!"))
@@ -272,43 +283,34 @@ def RegisterWampClient(wampconf = None, secretfname = None):
     # start the client from a Twisted endpoint
     conn = connectWS(transport_factory)
     print(_("WAMP client connecting to :"), WSClientConf["url"])
-    return True # conn
+    return True
+
 
 def StopReconnectWampClient():
     _transportFactory.stopTrying()
     return _WampSession.leave()
+
 
 def StartReconnectWampClient():
     if _WampSession:
         # do reconnect
         _WampSession.disconnect()
         return True
-    elif not _WampSession:
+    else:
         # do connect
         RegisterWampClient()
         return True
 
-def ReconnectionWampClient(active, url):
-    """ReconnectionWampClient function used for reconnecting to Crossbar router.
-
-    Args:
-        active (bool): Value in wampconf.json file. True: using Wamp connection. False: not using Wamp connection.
-        url (str): Value in wampconf.json file. Url of Crossbar router.
-    """
-    SaveWampClientConf(_WampConf, url, active)
-
-    if active:
-        StartReconnectWampClient()
-    elif not active and _WampSession:
-        StopReconnectWampClient()
 
 def GetSession():
     return _WampSession
 
+
 def StatusWampClient():
     return _WampSession and _WampSession.is_attached()
 
-def SetServer(pysrv, wampconf = None, wampsecret = None):
+
+def SetServer(pysrv, wampconf=None, wampsecret=None):
     global _PySrv, _WampConf, _WampSecret
     _PySrv = pysrv
     _WampConf = wampconf
