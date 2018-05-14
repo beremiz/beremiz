@@ -618,9 +618,9 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            _wampconf = WC.LoadWampClientConf(wampconf)
+            WC.SetServer(pyroserver, wampconf, wampsecret)
+            _wampconf = WC.LoadWampClientConf()
             if _wampconf:
-                WC.SetServer(pyroserver, wampconf, wampsecret)
                 if _wampconf.get("url", False) and _wampconf.get("active", False):  # TODO : test more ?
                     WC.RegisterWampClient()
                 else:
