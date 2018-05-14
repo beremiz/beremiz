@@ -177,7 +177,7 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             del connector
 
 
-def LoadWampClientConf(items=None):
+def GetConfiguration(items=None):
     try:
         WSClientConf = json.load(open(_WampConf))
         if items and isinstance(items, list):
@@ -196,9 +196,9 @@ def LoadWampClientConf(items=None):
         print(_("WAMP load error: "), e)
         return None
 
-def SaveWampClientConf(items):
+def SetConfiguration(items):
     try:
-        WSClientConf = LoadWampClientConf()
+        WSClientConf = json.load(open(_WampConf))
         saveChanges = False
         if items:
             for itemKey in items.keys():
@@ -245,9 +245,9 @@ def RegisterWampClient(wampconf=None, secretfname=None):
     global _WampConf
     if wampconf:
         _WampConf = wampconf
-        WSClientConf = LoadWampClientConf()
+        WSClientConf = GetConfiguration()
     else:
-        WSClientConf = LoadWampClientConf()
+        WSClientConf = GetConfiguration()
 
     if not WSClientConf:
         print(_("WAMP client connection not established!"))
