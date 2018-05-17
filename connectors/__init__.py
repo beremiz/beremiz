@@ -36,12 +36,24 @@ _base_path = paths.AbsDir(__file__)
 def _GetLocalConnectorClassFactory(name):
     return lambda: getattr(__import__(name, globals(), locals()), name + "_connector_factory")
 
+def _GetLocalConnectorClassDialog(name):
+    return lambda: getattr(__import__(name + '.dialog', globals(), locals(), fromlist=['dialog']), name + "_connector_dialog")
+
+def _GetLocalConnectorURITypes(name):
+    return lambda: getattr(__import__(name + '.dialog', globals(), locals(), fromlist=['dialog']), "URITypes", None)
+
 
 connectors = {name:
               _GetLocalConnectorClassFactory(name)
               for name in listdir(_base_path)
               if (path.isdir(path.join(_base_path, name)) and
                   not name.startswith("__"))}
+
+connectors_dialog = {name:
+                     {"function":_GetLocalConnectorClassDialog(name), "URITypes": _GetLocalConnectorURITypes(name)}
+                     for name in listdir(_base_path)
+                     if (path.isdir(path.join(_base_path, name)) and
+                         not name.startswith("__"))}
 
 
 def ConnectorFactory(uri, confnodesroot):
@@ -68,3 +80,20 @@ def ConnectorFactory(uri, confnodesroot):
     # import module according to uri type
     connectorclass = connectors[servicetype]()
     return connectorclass(uri, confnodesroot)
+
+def ConnectorDialog(conn_type, confnodesroot):
+    if conn_type not in connectors_dialog:
+        return None
+
+    connectorclass = connectors_dialog[conn_type]["function"]()
+    return connectorclass(confnodesroot)
+
+def GetConnectorFromURI(uri):
+    typeOfConnector = None
+    for conn_type in connectors_dialog:
+        connectorTypes = connectors_dialog[conn_type]["URITypes"]()
+        if connectorTypes and uri in connectorTypes:
+            typeOfConnector = conn_type
+            break
+
+    return typeOfConnector

@@ -33,7 +33,7 @@ from editors.EditorPanel import EditorPanel
 
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE, PAGETITLES
 
-from controls import TextCtrlAutoComplete
+from controls import TextCtrlAutoComplete, UriLocationEditor
 from dialogs import BrowseValuesLibraryDialog
 from util.BitmapLibrary import GetBitmap
 
@@ -338,6 +338,28 @@ class ConfTreeNodeEditor(EditorPanel):
                 msizer.AddWindow(button, flag=wx.ALIGN_CENTER)
         return msizer
 
+    def UriOptions(self, event):
+        CTR = self.ParentWindow.CTR
+        CTR_BeremizRoot = CTR.BeremizRoot
+        CTR_AppFrame = CTR.AppFrame
+
+        # Get connector uri
+        uri = CTR_BeremizRoot.getURI_location().strip()
+        dialog = UriLocationEditor.UriLocationEditor(CTR_AppFrame, uri)
+
+        if dialog.ShowModal() == wx.ID_OK:
+            CTR_BeremizRoot.setURI_location(dialog.GetURI())
+            if CTR._View is not None:
+                CTR._View.RefreshView()
+            if CTR_AppFrame is not None:
+                CTR_AppFrame.RefreshTitle()
+                CTR_AppFrame.RefreshFileMenu()
+                CTR_AppFrame.RefreshEditMenu()
+                CTR_AppFrame.RefreshPageTitles()
+
+        dialog.Destroy()
+
+
     def GenerateSizerElements(self, sizer, elements, path, clean=True):
         if clean:
             sizer.Clear(True)
@@ -484,7 +506,21 @@ class ConfTreeNodeEditor(EditorPanel):
                                                         element_path=element_path,
                                                         size=wx.Size(300, -1))
 
-                        boxsizer.AddWindow(textctrl)
+                        if element_infos["name"] == "URI_location":
+                            uriSizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
+                            uriSizer.AddGrowableCol(0)
+                            uriSizer.AddGrowableRow(0)
+
+                            self.EditButton = wx.Button(self.ParamsEditor, label='...', size=wx.Size(30, -1))
+                            self.Bind(wx.EVT_BUTTON, self.UriOptions, self.EditButton)
+
+                            uriSizer.AddWindow(textctrl, flag=wx.GROW)
+                            uriSizer.AddWindow(self.EditButton, flag=wx.GROW)
+
+                            boxsizer.AddWindow(uriSizer)
+                        else:
+                            boxsizer.AddWindow(textctrl)
+
                         if element_infos["value"] is not None:
                             textctrl.ChangeValue(str(element_infos["value"]))
                         callback = self.GetTextCtrlCallBackFunction(textctrl, element_path)
