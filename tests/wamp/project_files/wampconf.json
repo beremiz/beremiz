@@ -8,10 +8,5 @@
         "autoPingTimeout": 20
     }, 
     "realm": "Automation", 
-    "registerOptions": {
-        "concurrency": 2, 
-        "invoke": "last", 
-        "match": "exact"
-    }, 
     "url": "ws://127.0.0.1:8888"
 }

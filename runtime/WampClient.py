@@ -44,20 +44,18 @@ _WampConf = None
 _WampSecret = None
 
 ExposedCalls = [
-    "StartPLC",
-    "StopPLC",
-    "ForceReload",
-    "GetPLCstatus",
-    "NewPLC",
-    "MatchMD5",
-    "SetTraceVariablesList",
-    "GetTraceVariables",
-    "RemoteExec",
-    "GetLogMessage",
-    "ResetLogCount",
+    ("StartPLC", {}),
+    ("StopPLC", {}),
+    ("ForceReload", {}),
+    ("GetPLCstatus", {}),
+    ("NewPLC", {}),
+    ("MatchMD5", {}),
+    ("SetTraceVariablesList", {}),
+    ("GetTraceVariables", {}),
+    ("RemoteExec", {}),
+    ("GetLogMessage", {}),
+    ("ResetLogCount", {})
 ]
-
-ExposedProgressCalls = []
 
 # Those two lists are meant to be filled by customized runtime
 # or User python code.
@@ -108,25 +106,15 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
-        validRegisterOptions = {}
 
-        registerOptions = self.config.extra.get('registerOptions', None)
-        if registerOptions:
-            arguments = inspect.getargspec(types.RegisterOptions.__init__).args
-            validRegisterOptions = getValidOptins(registerOptions, arguments)
-            if validRegisterOptions:
-                registerOptions = types.RegisterOptions(**validRegisterOptions)
-                #print(_("Added custom register options"))
+        for name, kwargs in ExposedCalls:
+            try:
+                registerOptions = types.RegisterOptions(**kwargs)
+            except TypeError as e:
+                registerOptions = None
+                print(_("TypeError register option: {}".format(e)))
 
-        for name in ExposedCalls:
             yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
-
-        if ExposedProgressCalls:
-            validRegisterOptions["details_arg"] = 'details'
-            registerOptions = types.RegisterOptions(**validRegisterOptions)
-            # using progress, details argument must be added
-            for name in ExposedProgressCalls:
-                yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
             yield self.subscribe(GetCallee(name), unicode(name))
