@@ -492,12 +492,13 @@ void __publish_%(locstr)s (){
 	for (index=0; index < NUMBER_OF_CLIENT_REQTS; index ++){
 		/*just do the output requests */
 		if (client_requests[index].req_type == req_output){
-			pthread_mutex_lock(&(client_requests[index].coms_buf_mutex));
-			// copy from plcv_buffer to coms_buffer
-			memcpy((void *)client_requests[index].coms_buffer /* destination */,
-			       (void *)client_requests[index].plcv_buffer /* source */,
-			       REQ_BUF_SIZE * sizeof(u16) /* size in bytes */);
-			pthread_mutex_unlock(&(client_requests[index].coms_buf_mutex));
+			if(pthread_mutex_trylock(&(client_requests[index].coms_buf_mutex)) == 0){
+                // copy from plcv_buffer to coms_buffer
+                memcpy((void *)client_requests[index].coms_buffer /* destination */,
+                       (void *)client_requests[index].plcv_buffer /* source */,
+                       REQ_BUF_SIZE * sizeof(u16) /* size in bytes */);
+                pthread_mutex_unlock(&(client_requests[index].coms_buf_mutex));
+            }
 		}
 	}
 }
@@ -512,12 +513,13 @@ void __retrieve_%(locstr)s (){
 	for (index=0; index < NUMBER_OF_CLIENT_REQTS; index ++){
 		/*just do the input requests */
 		if (client_requests[index].req_type == req_input){
-			pthread_mutex_lock(&(client_requests[index].coms_buf_mutex));
-			// copy from coms_buffer to plcv_buffer
-			memcpy((void *)client_requests[index].plcv_buffer /* destination */,
-			       (void *)client_requests[index].coms_buffer /* source */,
-			       REQ_BUF_SIZE * sizeof(u16) /* size in bytes */);
-			pthread_mutex_unlock(&(client_requests[index].coms_buf_mutex));
+			if(pthread_mutex_trylock(&(client_requests[index].coms_buf_mutex)) == 0){
+                // copy from coms_buffer to plcv_buffer
+                memcpy((void *)client_requests[index].plcv_buffer /* destination */,
+                       (void *)client_requests[index].coms_buffer /* source */,
+                       REQ_BUF_SIZE * sizeof(u16) /* size in bytes */);
+                pthread_mutex_unlock(&(client_requests[index].coms_buf_mutex));
+            }
 		}
 	}
 }
