@@ -34,8 +34,10 @@ set_exit_error()
 
 compile_checks()
 {
-    echo "Syntax checking..."
+    echo "Syntax checking using python ..."
     py_files=$(find . -name '*.py')
+
+    python --version
 
     # remove compiled Python files
     find . -name '*.pyc' -exec rm -f {} \;
@@ -48,6 +50,8 @@ compile_checks()
             set_exit_error
         fi
     done
+    echo "DONE"
+    echo ""
 }
 
 # pep8 was renamed to pycodestyle
@@ -60,6 +64,8 @@ pep8_detect()
         echo "pep8/pycodestyle is not found"
         set_exit_error
     fi
+    echo -n "pep8 version: "
+    $pep8 --version
 }
 
 pep8_checks_default()
@@ -91,6 +97,9 @@ pep8_checks_default()
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
+
+    echo "DONE"
+    echo ""
 }
 
 
@@ -159,6 +168,9 @@ pep8_checks_selected()
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
+
+    echo "DONE"
+    echo ""
 }
 
 flake8_checks()
@@ -172,10 +184,16 @@ flake8_checks()
         return
     fi
 
+    echo -n "flake8 version: "
+    flake8 --version
+
     flake8 --max-line-length=300  --exclude=build --builtins="_" ./
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
+
+    echo "DONE"
+    echo ""
 }
 
 pylint_checks()
@@ -188,6 +206,7 @@ pylint_checks()
         set_exit_error
         return
     fi
+    pylint --version
 
     export PYTHONPATH="$PWD/../CanFestival-3/objdictgen":$PYTHONPATH
 
@@ -291,6 +310,9 @@ pylint_checks()
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
+
+    echo "DONE"
+    echo ""
 }
 
 main()
