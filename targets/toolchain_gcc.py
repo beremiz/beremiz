@@ -190,7 +190,7 @@ class toolchain_gcc(object):
 
                         status, _result, _err_result = ProcessLogger(
                             self.CTRInstance.logger,
-                            "\"%s\" -c \"%s\" -o \"%s\" %s %s" %
+                            "\"%s\" -c \"%s\" -o \"%s\" -O2 %s %s" %
                             (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
                         ).spin()
 
