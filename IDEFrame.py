@@ -323,7 +323,7 @@ def ComputeTabsLayout(tabs, rect):
                 split = (wx.RIGHT, 1.0 - float(tab["size"][0]) / float(rect.width))
                 split_rect = wx.Rect(rect.x, rect.y,
                                      rect.width - tab["size"][0] - TAB_BORDER, rect.height)
-            split_id = id
+            split_id = idx
             break
     if split is not None:
         split_tab = tabs.pop(split_id)
