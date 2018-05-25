@@ -953,11 +953,14 @@ class IDEFrame(wx.Frame):
             return data
         else:
             wx.TheClipboard.UsePrimarySelection(primary_selection)
-        if wx.TheClipboard.Open():
+
+        if not wx.TheClipboard.IsOpened():
             dataobj = wx.TextDataObject()
-            if wx.TheClipboard.GetData(dataobj):
-                data = dataobj.GetText()
-            wx.TheClipboard.Close()
+            if wx.TheClipboard.Open():
+                success = wx.TheClipboard.GetData(dataobj)
+                wx.TheClipboard.Close()
+                if success:
+                    data = dataobj.GetText()
         return data
 
     def SetCopyBuffer(self, text, primary_selection=False):
@@ -965,12 +968,13 @@ class IDEFrame(wx.Frame):
             return
         else:
             wx.TheClipboard.UsePrimarySelection(primary_selection)
-        if wx.TheClipboard.Open():
+        if not wx.TheClipboard.IsOpened():
             data = wx.TextDataObject()
             data.SetText(text)
-            wx.TheClipboard.SetData(data)
-            wx.TheClipboard.Flush()
-            wx.TheClipboard.Close()
+            if wx.TheClipboard.Open():
+                wx.TheClipboard.SetData(data)
+                wx.TheClipboard.Flush()
+                wx.TheClipboard.Close()
         self.RefreshEditMenu()
 
     def GetDrawingMode(self):
