@@ -117,7 +117,7 @@ int startPLC(int argc,char **argv)
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
 
-    timer_create (CLOCK_REALTIME, &sigev, &PLC_timer);
+    timer_create (CLOCK_MONOTONIC, &sigev, &PLC_timer);
     if(  __init(argc,argv) == 0 ){
         PLC_SetTimer(common_ticktime__,common_ticktime__);
 
