@@ -211,6 +211,31 @@ void RetainIterator(dbgvardsc_t *dsc){
     BufferIterator(dsc, 0);
 }
 
+
+unsigned int retain_size = 0;
+
+/* GetRetainSizeIterator */
+void GetRetainSizeIterator(dbgvardsc_t *dsc)
+{
+    void *real_value_p = NULL;
+    char flags = 0;
+    UnpackVar(dsc, &real_value_p, &flags);
+
+    if(flags & __IEC_RETAIN_FLAG){
+        USINT size = __get_type_enum_size(dsc->type);
+        /* Calc retain buffer size */
+        retain_size += size;
+    }
+}
+
+/* Return size of all retain variables */
+unsigned int GetRetainSize(void)
+{
+    __for_each_variable_do(GetRetainSizeIterator);
+    return retain_size;
+}
+
+
 extern void PLC_GetTime(IEC_TIME*);
 extern int TryEnterDebugSection(void);
 extern long AtomicCompareExchange(long*, long, long);
