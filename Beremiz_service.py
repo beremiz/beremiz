@@ -510,7 +510,7 @@ if havetwisted:
 
 if havewx:
     wx_eval_lock = Semaphore(0)
-    main_thread = currentThread()
+    # main_thread = currentThread()
 
     def statuschangeTskBar(status):
         wx.CallAfter(taskbar_instance.UpdateIcon, status)
@@ -523,14 +523,14 @@ if havewx:
         wx_eval_lock.release()
 
     def evaluator(tocall, *args, **kwargs):
-        if main_thread == currentThread():
-            # avoid dead lock if called from the wx mainloop
-            return default_evaluator(tocall, *args, **kwargs)
-        else:
-            o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
-            wx.CallAfter(wx_evaluator, o)
-            wx_eval_lock.acquire()
-            return o.res
+        # if main_thread == currentThread():
+        #     # avoid dead lock if called from the wx mainloop
+        #     return default_evaluator(tocall, *args, **kwargs)
+        # else:
+        o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
+        wx.CallAfter(wx_evaluator, o)
+        wx_eval_lock.acquire()
+        return o.res
 
     pyroserver = Server(servicename, given_ip, port,
                         WorkingDir, argv,
