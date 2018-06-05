@@ -27,7 +27,6 @@ from __future__ import print_function
 import time
 import json
 import os
-import inspect
 import re
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
@@ -137,14 +136,14 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         global _transportFactory
         WampWebSocketClientFactory.__init__(self, *args, **kwargs)
 
-        protocolOptions = config.extra.get('protocolOptions', None)
-        if protocolOptions:
-            arguments = inspect.getargspec(self.setProtocolOptions).args
-            validProtocolOptions = getValidOptins(protocolOptions, arguments)
-            if validProtocolOptions:
-                self.setProtocolOptions(**validProtocolOptions)
-                #print(_("Added custom protocol options"))
-        _transportFactory = self
+        try:
+            protocolOptions = config.extra.get('protocolOptions', None)
+            if protocolOptions:
+                self.setProtocolOptions(**protocolOptions)
+            _transportFactory = self
+        except Exception, e:
+            print(_("Custom protocol options failed :"), e)
+            _transportFactory = None
 
     def buildProtocol(self, addr):
         self.resetDelay()
@@ -199,6 +198,8 @@ def SetConfiguration(items):
             with open(os.path.realpath(_WampConf), 'w') as f:
                 json.dump(WSClientConf, f, sort_keys=True, indent=4)
             if 'active' in WSClientConf and WSClientConf['active']:
+                if _transportFactory and _WampSession:
+                    StopReconnectWampClient()
                 StartReconnectWampClient()
             else:
                 StopReconnectWampClient()
@@ -262,16 +263,20 @@ def RegisterWampClient(wampconf=None, secretfname=None):
     session_factory.session = WampSession
 
     # create a WAMP-over-WebSocket transport client factory
-    transport_factory = ReconnectingWampWebSocketClientFactory(
+    ReconnectingWampWebSocketClientFactory(
         component_config,
         session_factory,
         url=WSClientConf["url"],
         serializers=[MsgPackSerializer()])
 
     # start the client from a Twisted endpoint
-    conn = connectWS(transport_factory)
-    print(_("WAMP client connecting to :"), WSClientConf["url"])
-    return True
+    if _transportFactory:
+        conn = connectWS(_transportFactory)
+        print(_("WAMP client connecting to :"), WSClientConf["url"])
+        return True
+    else:
+        print(_("WAMP client can not connect to :"), WSClientConf["url"])
+        return False
 
 
 def StopReconnectWampClient():
