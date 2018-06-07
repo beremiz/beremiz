@@ -82,6 +82,10 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int PLC_shutdown = 0;
 
+int ForceSaveRetainReq(void) {
+    return PLC_shutdown;
+}
+
 void PLC_thread_proc(void *arg)
 {
     while (!PLC_shutdown) {
@@ -231,34 +235,3 @@ void LockPython(void)
 {
     pthread_mutex_lock(&python_mutex);
 }
-
-#ifndef HAVE_RETAIN
-void InitRetain(void)
-{
-}
-
-void CleanupRetain(void)
-{
-}
-
-int CheckRetainBuffer(void)
-{
-	return 1;
-}
-
-void ValidateRetainBuffer(void)
-{
-}
-
-void InValidateRetainBuffer(void)
-{
-}
-
-void Retain(unsigned int offset, unsigned int count, void *p)
-{
-}
-
-void Remind(unsigned int offset, unsigned int count, void *p)
-{
-}
-#endif // !HAVE_RETAIN
