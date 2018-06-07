@@ -58,13 +58,6 @@ def GenerateName(infos):
 
 class SearchResultPanel(wx.Panel):
 
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id=None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
-
     def _init_coll_MainSizer_Items(self, parent):
         parent.AddSizer(self.HeaderSizer, 0, border=0, flag=wx.GROW)
         parent.AddWindow(self.SearchResultsTree, 1, border=0, flag=wx.GROW)

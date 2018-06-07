@@ -211,13 +211,7 @@ def DecodeFileSystemPath(path, is_base64=True):
 
 
 def AppendMenu(parent, help, id, kind, text):
-    """
-    Compatibility function for wx versions < 2.6
-    """
-    if wx.VERSION >= (2, 6, 0):
-        parent.Append(help=help, id=id, kind=kind, text=text)
-    else:
-        parent.Append(helpString=help, id=id, kind=kind, item=text)
+    parent.Append(help=help, id=id, kind=kind, text=text)
 
 
 [
@@ -341,13 +335,6 @@ UNEDITABLE_NAMES_DICT = dict([(_(n), n) for n in UNEDITABLE_NAMES])
 
 class IDEFrame(wx.Frame):
     """IDEFrame Base Class"""
-    # Compatibility function for wx versions < 2.6
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id=None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
 
     def _init_coll_MenuBar_Menus(self, parent):
         parent.Append(menu=self.FileMenu, title=_(u'&File'))
@@ -2129,10 +2116,7 @@ class IDEFrame(wx.Frame):
         EditorToolBar = self.Panes["EditorToolBar"]
 
         for item in self.CurrentEditorToolBar:
-            if wx.VERSION >= (2, 6, 0):
-                self.Unbind(wx.EVT_MENU, id=item)
-            else:
-                self.Disconnect(id=item, eventType=wx.wxEVT_COMMAND_MENU_SELECTED)
+            self.Unbind(wx.EVT_MENU, id=item)
 
             if EditorToolBar:
                 EditorToolBar.DeleteTool(item)
