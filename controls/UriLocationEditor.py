@@ -32,7 +32,7 @@ class UriLocationEditor(wx.Dialog):
     def _init_sizers(self):
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         typeSizer = wx.BoxSizer(wx.HORIZONTAL)
-        typeSizer.Add(wx.StaticText(self,wx.ID_ANY,"URI type:"), border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
+        typeSizer.Add(wx.StaticText(self,wx.ID_ANY, _("URI type:")), border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
         typeSizer.Add(self.UriTypeChoice, border=5, flag=wx.ALL)
         self.mainSizer.Add(typeSizer)
 
@@ -43,7 +43,7 @@ class UriLocationEditor(wx.Dialog):
         self.Fit()
 
     def __init__(self, parent, uri):
-        self.URITYPES = ["- Select URI type -"]
+        self.URITYPES = [_("- Select URI type -")]
         for connector_type, connector_function in connectors_dialog.iteritems():
             try:
                 connector_function['function']()
