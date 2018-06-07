@@ -39,12 +39,12 @@ def PYRO_connector_dialog(confnodesroot):
             self.uriSizer = wx.BoxSizer(wx.HORIZONTAL)
             self.portSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-            self.uriSizer.Add(wx.StaticText(self, wx.ID_ANY, "URI host:", size = wx.Size(70, -1)), proportion=0, flag=wx.ALIGN_CENTER_VERTICAL)
+            self.uriSizer.Add(wx.StaticText(self, wx.ID_ANY, _("URI host:"), size = wx.Size(70, -1)), proportion=0, flag=wx.ALIGN_CENTER_VERTICAL)
             self.uriSizer.AddSpacer((0,0))
             self.uriSizer.Add(self.IpText, proportion=1, flag=wx.ALIGN_RIGHT)
             self.mainSizer.Add(self.uriSizer, border=2, flag=wx.ALL)
 
-            self.portSizer.Add(wx.StaticText(self, wx.ID_ANY, "URI port:", size = wx.Size(70, -1)), proportion=0, flag=wx.ALIGN_CENTER_VERTICAL)
+            self.portSizer.Add(wx.StaticText(self, wx.ID_ANY, _("URI port:"), size = wx.Size(70, -1)), proportion=0, flag=wx.ALIGN_CENTER_VERTICAL)
             self.portSizer.AddSpacer((0,0))
             self.portSizer.Add(self.PortText, proportion=1, flag=wx.ALIGN_RIGHT)
             self.mainSizer.Add(self.portSizer, border=2, flag=wx.ALL)
