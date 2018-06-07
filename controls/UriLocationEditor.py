@@ -39,6 +39,8 @@ class UriLocationEditor(wx.Dialog):
         self.mainSizer.Add(self.PanelSizer, border=5, flag=wx.ALL)
         self.mainSizer.Add(self.ButtonSizer, border=5, flag=wx.BOTTOM|wx.ALIGN_CENTER_HORIZONTAL)
         self.SetSizer(self.mainSizer)
+        self.Layout()
+        self.Fit()
 
     def __init__(self, parent, uri):
         self.URITYPES = ["- Select URI type -"]
