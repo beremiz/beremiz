@@ -9,6 +9,12 @@
 #define LOG_DEBUG 3
 
 extern unsigned long long common_ticktime__;
-int LogMessage(uint8_t level, char* buf, uint32_t size);
+
+#ifdef TARGET_LOGGING_DISABLE
+#define LogMessage(level, buf, size)
+#else
+int     LogMessage(uint8_t level, char* buf, uint32_t size);
+#endif
+
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
 
