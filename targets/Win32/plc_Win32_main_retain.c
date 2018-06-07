@@ -1,3 +1,14 @@
+/*
+  This file is part of Beremiz, a Integrated Development Environment for
+  programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+
+  See COPYING.runtime
+
+  Copyright (C) 2018: Sergey Surkov <surkov.sv@summatechnology.ru>
+  Copyright (C) 2018: Andrey Skvortsov <andrej.skvortzov@gmail.com>
+
+*/
+
 #ifndef HAVE_RETAIN
 #include <stdio.h>
 #include <stdint.h>
