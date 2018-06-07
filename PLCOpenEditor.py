@@ -70,14 +70,6 @@ beremiz_dir = paths.AbsDir(__file__)
 
 class PLCOpenEditor(IDEFrame):
 
-    # Compatibility function for wx versions < 2.6
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id=None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
-
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
                    kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')

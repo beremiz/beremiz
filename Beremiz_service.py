@@ -205,24 +205,13 @@ if enablewx:
         stopicon = wx.Image(Bpath("images", "icostop24.png"))
 
         class ParamsEntryDialog(wx.TextEntryDialog):
-            if wx.VERSION < (2, 6, 0):
-                def Bind(self, event, function, id=None):
-                    if id is not None:
-                        event(self, id, function)
-                    else:
-                        event(self, function)
 
             def __init__(self, parent, message, caption=_("Please enter text"), defaultValue="",
                          style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition):
                 wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 
                 self.Tests = []
-                if wx.VERSION >= (2, 8, 0):
-                    self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
-                elif wx.VERSION >= (2, 6, 0):
-                    self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetAffirmativeButton().GetId())
-                else:
-                    self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetSizer().GetItem(3).GetSizer().GetChildren()[0].GetSizer().GetChildren()[0].GetWindow().GetId())
+                self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
 
             def OnOK(self, event):
                 value = self.GetValue()

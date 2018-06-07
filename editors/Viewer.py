@@ -66,10 +66,7 @@ def ResetCursors():
 
 
 def AppendMenu(parent, help, id, kind, text):
-    if wx.VERSION >= (2, 6, 0):
-        parent.Append(help=help, id=id, kind=kind, text=text)
-    else:
-        parent.Append(helpString=help, id=id, kind=kind, item=text)
+    parent.Append(help=help, id=id, kind=kind, text=text)
 
 
 if wx.Platform == '__WXMSW__':
@@ -535,13 +532,6 @@ class Viewer(EditorPanel, DebugViewer):
     manipulating graphic elements
     """
 
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id=None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
-
     # Add list of menu items to the given menu
     def AddMenuItems(self, menu, items):
         for item in items:
@@ -900,10 +890,7 @@ class Viewer(EditorPanel, DebugViewer):
         else:
             dc = wx.ClientDC(self.Editor)
         dc.SetFont(self.GetFont())
-        if wx.VERSION >= (2, 6, 0):
-            self.Editor.DoPrepareDC(dc)
-        else:
-            self.Editor.PrepareDC(dc)
+        self.Editor.DoPrepareDC(dc)
         dc.SetUserScale(self.ViewScale[0], self.ViewScale[1])
         return dc
 

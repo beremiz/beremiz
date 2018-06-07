@@ -79,13 +79,6 @@ class TextViewer(EditorPanel):
 
     ID = ID_TEXTVIEWER
 
-    if wx.VERSION < (2, 6, 0):
-        def Bind(self, event, function, id=None):
-            if id is not None:
-                event(self, id, function)
-            else:
-                event(self, function)
-
     def _init_Editor(self, prnt):
         self.Editor = CustomStyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL,
                                            parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
