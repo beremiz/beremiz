@@ -322,7 +322,11 @@ get_files_to_check()
             echo "Only changes will be checked"
             echo ""
             py_files=$(hg status -m -a -n -I '**.py')
-        fi
+            if [ -z "$py_files" ]; then
+                echo "No files to check"
+                exit 0;
+            fi
+       fi
     fi
 }
 
