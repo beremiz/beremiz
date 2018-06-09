@@ -10,15 +10,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import wx
-from controls.UriLocationEditor import IConnectorPanel
 from zope.interface import implementer
+
+from controls.UriLocationEditor import IConnectorPanel
 
 URITypes = ["LOCAL", "PYRO", "PYROS"]
 
 
 def PYRO_connector_dialog(confnodesroot):
     [ID_IPTEXT, ID_PORTTEXT] = [wx.NewId() for _init_ctrls in range(2)]
-
 
     @implementer(IConnectorPanel)
     class PYROConnectorPanel(wx.Panel):
@@ -31,8 +31,8 @@ def PYRO_connector_dialog(confnodesroot):
             self.uri = None
 
         def _init_ctrls(self):
-            self.IpText = wx.TextCtrl(parent=self, id=ID_IPTEXT, size = wx.Size(200, -1))
-            self.PortText = wx.TextCtrl(parent=self, id=ID_PORTTEXT, size = wx.Size(200, -1))
+            self.IpText = wx.TextCtrl(parent=self, id=ID_IPTEXT, size=wx.Size(200, -1))
+            self.PortText = wx.TextCtrl(parent=self, id=ID_PORTTEXT, size=wx.Size(200, -1))
 
         def _init_sizers(self):
             self.mainSizer = wx.FlexGridSizer(cols=2, hgap=10, rows=5, vgap=10)
@@ -54,7 +54,6 @@ def PYRO_connector_dialog(confnodesroot):
                 self.PortText.SetValue(uri_list[2])
             elif length == 2:
                 self.IpText.SetValue(uri_list[1].strip("/"))
-
 
         def GetURI(self):
             self.uri = self.type+"://"+self.IpText.GetValue()+":"+self.PortText.GetValue()

@@ -501,7 +501,7 @@ class ConfigTreeNode(object):
         # Delete confnode dir
         try:
             shutil.rmtree(CTNInstance.CTNPath())
-        except:
+        except Exception:
             pass
         # Remove child of Children
         self.Children[CTNInstance.CTNType].remove(CTNInstance)

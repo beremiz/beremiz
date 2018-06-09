@@ -598,7 +598,7 @@ class RootClass(object):
             for j in range(i + 1, len(IPServer_port_numbers)):
                 if IPServer_port_numbers[i][1] == IPServer_port_numbers[j][1]:
                     self.GetCTRoot().logger.write_warning(
-                        _("Error: Modbus/IP Servers %{a1}.x and %{a2}.x use the same port number {a3}.\n").\
+                        _("Error: Modbus/IP Servers %{a1}.x and %{a2}.x use the same port number {a3}.\n").
                         format(
                             a1=_lt_to_str(IPServer_port_numbers[i][0]),
                             a2=_lt_to_str(IPServer_port_numbers[j][0]),
