@@ -8,16 +8,17 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+
 import wx
-from controls.UriLocationEditor import IConnectorPanel
 from zope.interface import implementer
+
+from controls.UriLocationEditor import IConnectorPanel
 
 URITypes = ["WAMP", "WAMPS"]
 
 
 def WAMP_connector_dialog(confnodesroot):
     [ID_IPTEXT, ID_PORTTEXT, ID_REALMTEXT, ID_WAMPIDTEXT, ID_SECURECHECKBOX] = [wx.NewId() for _init_ctrls in range(5)]
-
 
     @implementer(IConnectorPanel)
     class WAMPConnectorPanel(wx.Panel):
@@ -30,10 +31,10 @@ def WAMP_connector_dialog(confnodesroot):
             self.uri = None
 
         def _init_ctrls(self):
-            self.IpText = wx.TextCtrl(parent=self, id=ID_IPTEXT, size = wx.Size(200, -1))
-            self.PortText = wx.TextCtrl(parent=self, id=ID_PORTTEXT, size = wx.Size(200, -1))
-            self.RealmText = wx.TextCtrl(parent=self, id=ID_REALMTEXT, size = wx.Size(200, -1))
-            self.WAMPIDText = wx.TextCtrl(parent=self, id=ID_WAMPIDTEXT, size = wx.Size(200, -1))
+            self.IpText = wx.TextCtrl(parent=self, id=ID_IPTEXT, size=wx.Size(200, -1))
+            self.PortText = wx.TextCtrl(parent=self, id=ID_PORTTEXT, size=wx.Size(200, -1))
+            self.RealmText = wx.TextCtrl(parent=self, id=ID_REALMTEXT, size=wx.Size(200, -1))
+            self.WAMPIDText = wx.TextCtrl(parent=self, id=ID_WAMPIDTEXT, size=wx.Size(200, -1))
             self.SecureCheckbox = wx.CheckBox(self, ID_SECURECHECKBOX, _("Is connection secure?"))
 
         def _init_sizers(self):

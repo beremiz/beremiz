@@ -359,7 +359,6 @@ class ConfTreeNodeEditor(EditorPanel):
 
         dialog.Destroy()
 
-
     def GenerateSizerElements(self, sizer, elements, path, clean=True):
         if clean:
             sizer.Clear(True)

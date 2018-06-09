@@ -1,54 +1,57 @@
+from __future__ import absolute_import
+
 import wx
 from zope.interface import Interface, Attribute
 from zope.interface.verify import verifyObject
 from connectors import connectors_dialog, ConnectorDialog, GetConnectorFromURI
 
 
-[ID_URIWIZARDDIALOG,ID_URITYPECHOICE] = [wx.NewId() for _init_ctrls in range(2)]
+[ID_URIWIZARDDIALOG, ID_URITYPECHOICE] = [wx.NewId() for _init_ctrls in range(2)]
+
 
 class IConnectorPanel(Interface):
     """This is interface for panel of seperate connector type"""
     uri = Attribute("""uri of connections""")
     type = Attribute("""type of connector""")
 
-    def SetURI(uri):
+    def SetURI(uri):     # pylint: disable=no-self-argument
         """methode for set uri"""
 
-    def GetURI():
+    def GetURI():        # pylint: disable=no-self-argument
         """metohde for get uri"""
 
 
 class UriLocationEditor(wx.Dialog):
     def _init_ctrls(self, parent):
-        wx.Dialog.__init__(self, id=ID_URIWIZARDDIALOG,
-              name='UriLocationEditor', parent=parent,
-              title='Uri location')
-        self.UriTypeChoice = wx.Choice(parent=self, id=ID_URIWIZARDDIALOG, choices = self.URITYPES)
+        self.UriTypeChoice = wx.Choice(parent=self, id=ID_URIWIZARDDIALOG, choices=self.URITYPES)
         self.UriTypeChoice.SetSelection(0)
         self.Bind(wx.EVT_CHOICE, self.OnTypeChoice, self.UriTypeChoice)
         self.PanelSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
 
     def _init_sizers(self):
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         typeSizer = wx.BoxSizer(wx.HORIZONTAL)
-        typeSizer.Add(wx.StaticText(self,wx.ID_ANY, _("URI type:")), border=5, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL)
+        typeSizer.Add(wx.StaticText(self, wx.ID_ANY, _("URI type:")), border=5, flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
         typeSizer.Add(self.UriTypeChoice, border=5, flag=wx.ALL)
         self.mainSizer.Add(typeSizer)
 
         self.mainSizer.Add(self.PanelSizer, border=5, flag=wx.ALL)
-        self.mainSizer.Add(self.ButtonSizer, border=5, flag=wx.BOTTOM|wx.ALIGN_CENTER_HORIZONTAL)
+        self.mainSizer.Add(self.ButtonSizer, border=5, flag=wx.BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
         self.SetSizer(self.mainSizer)
         self.Layout()
         self.Fit()
 
     def __init__(self, parent, uri):
+        wx.Dialog.__init__(self, id=ID_URIWIZARDDIALOG,
+                           name='UriLocationEditor', parent=parent,
+                           title='Uri location')
         self.URITYPES = [_("- Select URI type -")]
         for connector_type, connector_function in connectors_dialog.iteritems():
             try:
                 connector_function['function']()
                 self.URITYPES.append(connector_type)
-            except Exception as e:
+            except Exception:
                 pass
 
         self.selected = None

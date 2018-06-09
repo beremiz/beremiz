@@ -217,7 +217,7 @@ pylint_checks()
     disable=$disable,W1401        # (anomalous-backslash-in-string) Anomalous backslash in string: '\.'. String constant might be missing an r prefix.
     disable=$disable,W0613        # (unused-argument) Unused argument 'X'
     disable=$disable,W0622        # (redefined-builtin) Redefining built-in
-    disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)    
+    disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)
     disable=$disable,W0122        # (exec-used) Use of exec
     disable=$disable,W0123        # (eval-used) Use of eval
     disable=$disable,I0011        # (locally-disabled) Locally disabling ungrouped-imports (C0412)
@@ -231,7 +231,7 @@ pylint_checks()
     disable=$disable,W0703        # broad-except
     disable=$disable,C0301        # Line too long
     disable=$disable,C0302        # Too many lines in module
-    disable=$disable,W0511        # fixme    
+    disable=$disable,W0511        # fixme
     disable=$disable,R0901        # (too-many-ancestors) Too many ancestors (9/7)
     disable=$disable,R0902        # (too-many-instance-attributes) Too many instance attributes (10/7)
     disable=$disable,R0903        # (too-few-public-methods) Too few public methods (0/2)
@@ -248,14 +248,14 @@ pylint_checks()
 
     enable=
     enable=$enable,E1601          # print statement used
-    enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword    
-    enable=$enable,W0404          # reimported module    
+    enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword
+    enable=$enable,W0404          # reimported module
     enable=$enable,C0411          # (wrong-import-order) standard import "import x" comes before "import y"
     enable=$enable,W0108          # (unnecessary-lambda) Lambda may not be necessary
     enable=$enable,C0412          # (ungrouped-imports) Imports from package X are not grouped
     enable=$enable,C0321          # (multiple-statements) More than one statement on a single line
     enable=$enable,W0231          # (super-init-not-called) __init__ method from base class is not called
-    enable=$enable,W0105          # (pointless-string-statement) String statement has no effect    
+    enable=$enable,W0105          # (pointless-string-statement) String statement has no effect
     enable=$enable,W0311          # (bad-indentation) Bad indentation. Found 16 spaces, expected 12
     enable=$enable,W0101          # (unreachable) Unreachable code
     enable=$enable,E0102          # (function-redefined) method already defined
@@ -304,7 +304,7 @@ pylint_checks()
     fi
     # echo $options
 
-    echo $py_files | xargs pylint $options 
+    echo $py_files | xargs pylint $options
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -316,7 +316,7 @@ pylint_checks()
 
 get_files_to_check()
 {
-    py_files=$(find . -name '*.py' -not -path '*/build/*')    
+    py_files=$(find . -name '*.py' -not -path '*/build/*')
     if [ "$1" = "--only-changes" ]; then
         if which hg > /dev/null; then
             echo "Only changes will be checked"
