@@ -35,8 +35,6 @@ set_exit_error()
 compile_checks()
 {
     echo "Syntax checking using python ..."
-    py_files=$(find . -name '*.py')
-
     python --version
 
     # remove compiled Python files
@@ -93,7 +91,7 @@ pep8_checks_default()
     ignore=$user_ignore,$default_ignore
 
     # $pep8 --ignore $ignore --exclude build ./
-    $pep8 --max-line-length 300 --exclude build ./
+    $pep8 --max-line-length 300 --exclude build $py_files
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -164,7 +162,7 @@ pep8_checks_selected()
     user_select=$user_select,E402   # E402 module level import not at top of file
     user_select=$user_select,W503   # W503 line break before binary operator
 
-    $pep8 --select $user_select --exclude=build .
+    $pep8 --select $user_select --exclude=build $py_files
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -187,7 +185,7 @@ flake8_checks()
     echo -n "flake8 version: "
     flake8 --version
 
-    flake8 --max-line-length=300  --exclude=build --builtins="_" ./
+    flake8 --max-line-length=300  --exclude=build --builtins="_" $py_files
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -306,7 +304,7 @@ pylint_checks()
     fi
     # echo $options
 
-    find ./ -name '*.py' | grep -v '/build/' | xargs pylint $options 
+    echo $py_files | xargs pylint $options 
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -315,8 +313,22 @@ pylint_checks()
     echo ""
 }
 
+
+get_files_to_check()
+{
+    py_files=$(find . -name '*.py' -not -path '*/build/*')    
+    if [ "$1" = "--only-changes" ]; then
+        if which hg > /dev/null; then
+            echo "Only changes will be checked"
+            echo ""
+            py_files=$(hg status -m -a -n -I '**.py')
+        fi
+    fi
+}
+
 main()
 {
+    get_files_to_check $1
     compile_checks
     pep8_checks_default
     # pep8_checks_selected
@@ -325,4 +337,4 @@ main()
     exit $exit_code
 }
 
-main
+main $1
