@@ -319,26 +319,66 @@ get_files_to_check()
     py_files=$(find . -name '*.py' -not -path '*/build/*')
     if [ "$1" = "--only-changes" ]; then
         if which hg > /dev/null; then
-            echo "Only changes will be checked"
+            if [ ! -z "$HG_NODE" ]; then
+                hg_change="--change $HG_NODE"
+                msg="for commit $HG_NODE"
+            else
+                hg_change=""
+                msg="in local repository"
+            fi
+            echo "Only changes ${msg} will be checked"
             echo ""
-            py_files=$(hg status -m -a -n -I '**.py')
-            if [ -z "$py_files" ]; then
-                echo "No files to check"
-                exit 0;
+            py_files=$(hg status -m -a -n -I '**.py' $hg_change)
+            if [ $? -ne 0 ]; then
+                exit 1;
             fi
        fi
     fi
+    if [ "$1" = "--files-to-check" ]; then
+        list="$2"
+        if [ -z "$list" ]; then
+            echo "--files-to-check requires filename as argument"
+            print_help
+        fi
+        if [ -e "$list" ]; then
+            py_files=$(cat $2 | grep '\.py$')
+        fi
+    fi
+    if [ -z "$py_files" ]; then
+        echo "No files to check"
+        exit 0;
+    fi
+}
+
+
+print_help()
+{
+    echo "Usage: check_source.sh [--only-changes | --files-to-check <filename> ]"
+    echo ""
+    echo "By default without arguments script checks all python source files"
+    echo ""
+    echo "--only-changes"
+    echo "                only files with local changes are checked. "
+    echo "                If script is called from mercurial pretxncommit hook,"
+    echo "                then only commited files are checked"
+    echo ""
+    echo "--files-to-check <file.lst>"
+    echo "                script read list of files to check from file.lst"
+
+    exit 1
 }
 
 main()
 {
-    get_files_to_check $1
+    get_files_to_check $@
     compile_checks
     pep8_checks_default
     # pep8_checks_selected
+
     # flake8_checks
     pylint_checks
     exit $exit_code
 }
 
-main $1
+[ "$1" = "--help" -o "$1" = "-h" ] && print_help
+main $@
