@@ -90,7 +90,10 @@ class WxGladeHMI(PythonFileCTNMixin):
 
     def CTNGenerate_C(self, buildpath, locations):
 
-        hmi_frames = []
+        # list containing description of all objects declared in wxglade
+        hmi_objects = []
+        # list containing only description of the main frame object 
+        main_frames = []
 
         wxgfile_path = self._getWXGLADEpath()
         if os.path.exists(wxgfile_path):
@@ -100,12 +103,17 @@ class WxGladeHMI(PythonFileCTNMixin):
 
             for node in wxgtree.childNodes[1].childNodes:
                 if node.nodeType == wxgtree.ELEMENT_NODE:
-                    hmi_frames.append({
-                        "name": node.getAttribute("name"),
+                    name = node.getAttribute("name")
+                    wxglade_object_desc = {
+                        "name": name,
                         "class": node.getAttribute("class"),
                         "handlers": [
                             hnode.firstChild.data for hnode in
-                            node.getElementsByTagName("handler")]})
+                            node.getElementsByTagName("handler")]}
+
+                    hmi_objects.append(wxglade_object_desc)
+                    if name == self.CTNName() :
+                        main_frames.append(wxglade_object_desc)
 
             hmipyfile_path = os.path.join(self._getBuildPath(), "hmi.py")
             if wx.Platform == '__WXMSW__':
@@ -122,12 +130,12 @@ class WxGladeHMI(PythonFileCTNMixin):
         else:
             define_hmi = ""
 
-        declare_hmi = "\n".join(["%(name)s = None\n" % x +
-                                 "\n".join(["%(class)s.%(h)s = %(h)s" %
+        declare_hmi = "\n".join(["%(name)s = None\n" % x for x in main_frames])
+        declare_hmi += "\n".join(["\n".join(["%(class)s.%(h)s = %(h)s" %
                                             dict(x, h=h) for h in x['handlers']])
-                                 for x in hmi_frames])
+                                 for x in hmi_objects])
         global_hmi = ("global %s\n" % ",".join(
-            [x["name"] for x in hmi_frames]) if len(hmi_frames) > 0 else "")
+            [x["name"] for x in main_frames]) if len(main_frames) > 0 else "")
         init_hmi = "\n".join(["""\
 def OnCloseFrame(evt):
     wx.MessageBox(_("Please stop PLC to close"))
@@ -135,10 +143,10 @@ def OnCloseFrame(evt):
 %(name)s = %(class)s(None)
 %(name)s.Bind(wx.EVT_CLOSE, OnCloseFrame)
 %(name)s.Show()
-""" % x for x in hmi_frames])
+""" % x for x in main_frames])
         cleanup_hmi = "\n".join(
             ["if %(name)s is not None: %(name)s.Destroy()" % x
-             for x in hmi_frames])
+             for x in main_frames])
 
         self.PreSectionsTexts = {
             "globals": define_hmi,
@@ -150,6 +158,11 @@ def OnCloseFrame(evt):
             "start":   init_hmi,
         }
 
+        if len(main_frames) == 0 and \
+           len(getattr(self.CodeFile, "start").getanyText().strip()) == 0:
+                self.GetCTRoot().logger.write_warning(
+                    _("Warning: WxGlade HMI has no object with name identical to extension name, and no python code is provided in start section to create object.\n"))
+            
         return PythonFileCTNMixin.CTNGenerate_C(self, buildpath, locations)
 
     def _editWXGLADE(self):
