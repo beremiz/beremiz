@@ -36,8 +36,10 @@
 ../graphics/SFC_Objects.py
 ../graphics/GraphicCommons.py
 ../connectors/PYRO/__init__.py
+../connectors/PYRO/dialog.py
 ../connectors/__init__.py
 ../connectors/WAMP/__init__.py
+../connectors/WAMP/dialog.py
 ../targets/Generic/XSD
 ../targets/XSD_toolchain_makefile
 ../targets/Xenomai/__init__.py
@@ -53,7 +55,9 @@
 ../py_ext/PythonEditor.py
 ../py_ext/PythonFileCTNMixin.py
 ../wxglade_hmi/wxglade_hmi.py
+../modbus/modbus.py
 ../runtime/NevowServer.py
+../runtime/WampClient.py
 ../runtime/PLCObject.py
 ../runtime/ServicePublisher.py
 ../ConfigTreeNode.py
@@ -77,6 +81,7 @@
 ../controls/CustomTable.py
 ../controls/EnhancedStatusBar.py
 ../controls/LibraryPanel.py
+../controls/UriLocationEditor.py
 ../controls/CustomToolTip.py
 ../controls/LogViewer.py
 ../controls/FolderTree.py
@@ -111,8 +116,15 @@
 ../svgui/svgui.py
 ../svgui/svgui_server.py
 ../svgui/svguilib.py
+../plcopen/InstancesPathCollector.py
+../plcopen/types_enums.py
+../plcopen/InstanceTagnameCollector.py
+../plcopen/BlockInstanceCollector.py
 ../plcopen/iec_std.csv
 ../plcopen/structures.py
+../plcopen/XSLTModelQuery.py
+../plcopen/POUVariablesCollector.py
+../plcopen/VariableInfoCollector.py
 ../plcopen/plcopen.py
 ../plcopen/definitions.py
 ../IDEFrame.py
