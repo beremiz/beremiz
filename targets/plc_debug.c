@@ -61,7 +61,7 @@ static dbgvardsc_t dbgvardsc[] = {
 typedef void(*__for_each_variable_do_fp)(dbgvardsc_t*);
 void __for_each_variable_do(__for_each_variable_do_fp fp)
 {
-    int i;
+    unsigned int i;
     for(i = 0; i < sizeof(dbgvardsc)/sizeof(dbgvardsc_t); i++){
         dbgvardsc_t *dsc = &dbgvardsc[i];
         if(dsc->type != UNKNOWN_ENUM) 
@@ -299,7 +299,7 @@ void __publish_debug(void)
              *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
             }\
             break;
-void RegisterDebugVariable(int idx, void* force)
+void RegisterDebugVariable(unsigned int idx, void* force)
 {
     if(idx  < sizeof(dbgvardsc)/sizeof(dbgvardsc_t)){
         unsigned char flags = force ?
