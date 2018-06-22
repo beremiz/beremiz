@@ -31,6 +31,7 @@ from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
 from formless import annotate
 from formless import webform
+from formless import configurable
 
 from twisted.internet import reactor
 import util.paths as paths
@@ -140,6 +141,36 @@ def defaultVal(category):
     return _defaultVal
 
 
+class ConfigurableBindings(configurable.Configurable):
+
+    def __init__(self):
+        configurable.Configurable.__init__(self, None)
+        self.bindingsNames = []
+
+    def getBindingNames(self, ctx):
+        return self.bindingsNames
+
+    def addExtension(self, name, desc, fields, callback):
+        print(name, fields, callback)
+        def _bind(ctx):
+            return annotate.MethodBinding(
+                'action_'+name,
+                annotate.Method(arguments=[
+                    annotate.Argument(name, fieldtype)
+                    for fieldname,fieldtype in fields],
+                    label = desc),
+                action = _("Set"))
+        setattr(self, 'bind_'+name, _bind)
+            
+        def _action(**kw):
+           callback(**kw) 
+
+        setattr(self, 'action_'+name, _action)
+
+        self.bindingsNames.append(name)
+
+ConfigurableSettings = ConfigurableBindings()
+
 class ISettings(annotate.TypedInterface):
     def networkConfig(
         ctx = annotate.Context(),
@@ -154,7 +185,7 @@ class ISettings(annotate.TypedInterface):
         DNS = annotate.String(label=_("DNS address"),default=defaultVal('net'))):
             pass
 
-    networkConfig = annotate.autocallable(networkConfig, label=_("Network settings"), action="Set", )
+    networkConfig = annotate.autocallable(networkConfig, label=_("Network settings"), action=_("Set"))
 
 
 class SettingsPage(rend.Page):
@@ -166,10 +197,6 @@ class SettingsPage(rend.Page):
 
     implements(ISettings)
 
-    def networkConfig(*args, **kwargs):
-        # TODO do the settings
-        print(kwargs)
-        lastKnownConfig['net'] = kwargs
 
     docFactory = loaders.stan([tags.html[
                                    tags.head[
@@ -179,9 +206,30 @@ class SettingsPage(rend.Page):
                                                  href=url.here.child("webform_css"))
                                    ],
                                    tags.body[ 
-                                       webform.renderForms()
+                                       tags.h1["Runtime settings:"],
+                                       webform.renderForms('staticSettings'),
+                                       tags.h2["Extensions settings:"],
+                                       webform.renderForms('dynamicSettings'),
                                    ]]])
 
+    def __init__(self):
+        rend.Page.__init__(self)
+
+    def configurable_staticSettings(self, ctx):
+        return configurable.TypedInterfaceConfigurable(self)
+
+    def configurable_dynamicSettings(self, ctx):
+        return ConfigurableSettings
+
+    def networkConfig(self, *args, **kwargs):
+        # TODO do the settings
+        print(kwargs)
+        lastKnownConfig['net'] = kwargs
+        ConfigurableSettings.addExtension(
+            "wamp", 
+            "wamp DEscription", 
+            [("Host",annotate.String(label=_("IP address")))], 
+            lambda**k:print(k))
 
 
 class WebInterface(athena.LivePage):
