@@ -26,10 +26,16 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
-from nevow import appserver, inevow, tags, loaders, athena
+from zope.interface import implements
+from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
+from formless import annotate
+from formless import webform
+
 from twisted.internet import reactor
 import util.paths as paths
+
+PAGE_TITLE = 'Beremiz Runtime Web Interface'
 
 xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -48,7 +54,6 @@ class PLCHMI(athena.LiveElement):
 
     def HMIinitialisation(self):
         self.HMIinitialised(None)
-
 
 class DefaultPLCStartedHMI(PLCHMI):
     docFactory = loaders.stan(
@@ -119,18 +124,85 @@ class MainPage(athena.LiveElement):
         for child in self.liveFragmentChildren[:]:
             child.detach()
 
+lastKnownConfig = {
+    'net': {
+        'mode': 'DHCP',
+        'IP': '192.168.1.42',
+        'gateway': '192.168.1.1',
+        'mask': '255.255.255.0',
+        'DNS': '8.8.8.8'},
+    'wamp': {}
+}
+
+def defaultVal(category):
+    def _defaultVal(ctx,argument):
+        return lastKnownConfig[category].get(argument.name, None)
+    return _defaultVal
+
+
+class ISettings(annotate.TypedInterface):
+    def networkConfig(
+        ctx = annotate.Context(),
+        mode = annotate.Choice(["DHCP", "Static"],
+                               required=True, 
+                               label=_("Configuration type"), 
+                               default=defaultVal('net')),
+        IP = annotate.String(label=_("IP address"),default=defaultVal('net')),
+        gateway = annotate.String(label=_("Gateway address"),
+                                  default=defaultVal('net')),
+        mask = annotate.String(label=_("Network mask"),default=defaultVal('net')),
+        DNS = annotate.String(label=_("DNS address"),default=defaultVal('net'))):
+            pass
+
+    networkConfig = annotate.autocallable(networkConfig, label=_("Network settings"), action="Set", )
+
+
+class SettingsPage(rend.Page):
+    # We deserve a slash
+    addSlash = True
+    
+    # This makes webform_css url answer some default CSS
+    child_webform_css = webform.defaultCSS
+
+    implements(ISettings)
+
+    def networkConfig(*args, **kwargs):
+        # TODO do the settings
+        print(kwargs)
+        lastKnownConfig['net'] = kwargs
+
+    docFactory = loaders.stan([tags.html[
+                                   tags.head[
+                                       tags.title[_("Beremiz Runtime Settings")],
+                                       tags.link(rel='stylesheet',
+                                                 type='text/css', 
+                                                 href=url.here.child("webform_css"))
+                                   ],
+                                   tags.body[ 
+                                       webform.renderForms()
+                                   ]]])
+
+
 
 class WebInterface(athena.LivePage):
 
     docFactory = loaders.stan([tags.raw(xhtml_header),
                                tags.html(xmlns="http://www.w3.org/1999/xhtml")[
-                                   tags.head(render=tags.directive('liveglue')),
+                                   tags.head(render=tags.directive('liveglue'))[
+                                       tags.title[PAGE_TITLE],
+                                       tags.link(rel='stylesheet',
+                                                 type='text/css', 
+                                                 href=url.here.child("webform_css"))
+                                   ],
                                    tags.body[
                                        tags.div[
-                                           tags.div(render=tags.directive("MainPage"))
+                                           tags.div(render=tags.directive("MainPage")),
                                        ]]]])
     MainPage = MainPage()
     PLCHMI = PLCHMI
+
+    def child_settings(self, context):
+        return SettingsPage()
 
     def __init__(self, plcState=False, *a, **kw):
         super(WebInterface, self).__init__(*a, **kw)
@@ -184,6 +256,7 @@ class WebInterface(athena.LivePage):
         # print "We will be called back when the client disconnects"
 
 
+
 def RegisterWebsite(port):
     website = WebInterface()
     site = appserver.NevowSite(website)
@@ -191,7 +264,6 @@ def RegisterWebsite(port):
     reactor.listenTCP(port, site)
     print(_('HTTP interface port :'), port)
     return website
-
 
 class statuslistener(object):
     def __init__(self, site):
@@ -209,3 +281,7 @@ class statuslistener(object):
 
 def website_statuslistener_factory(site):
     return statuslistener(site).listen
+
+
+
+
