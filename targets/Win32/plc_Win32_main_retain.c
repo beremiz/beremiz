@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include "iec_types.h"
 
-int GetRetainSize();
+int GetRetainSize(void);
 
 /* Retain buffer.  */
 FILE *retain_buffer;
@@ -79,7 +79,7 @@ int CheckFileCRC(FILE* file_buffer)
 
 	while(!feof(file_buffer)){
 		if (fread(&data_block, sizeof(data_block), 1, file_buffer))
-			calc_crc32 = GenerateCRC32Sum(&data_block, sizeof(char), calc_crc32);
+			calc_crc32 = GenerateCRC32Sum(&data_block, sizeof(data_block), calc_crc32);
 	}
 
 	/* Compare crc result with a magic number.  */
@@ -89,7 +89,7 @@ int CheckFileCRC(FILE* file_buffer)
 /* Compare current hash with hash from file byte by byte.  */
 int CheckFilehash(void)
 {
-	int k;
+	unsigned int k;
 	int offset = sizeof(retain_info.retain_size);
 
 	rewind(retain_buffer);
@@ -102,7 +102,7 @@ int CheckFilehash(void)
 
 	for(k = 0; k < retain_info.hash_size; k++){
 		uint8_t file_digit;
-		fread(&file_digit, sizeof(char), 1, retain_buffer);
+		fread(&file_digit, sizeof(file_digit), 1, retain_buffer);
 		if (file_digit != *(retain_info.hash+k))
 			return 0;
 	}
@@ -112,7 +112,7 @@ int CheckFilehash(void)
 
 void InitRetain(void)
 {
-	int i;
+	unsigned int i;
 
 	/* Generate CRC32 lookup table.  */
 	GenerateCRC32Table();
@@ -249,7 +249,7 @@ void ValidateRetainBuffer(void)
 
 	/* Add retain data CRC to the end of buffer file.  */
 	fseek(retain_buffer, 0, SEEK_END);
-	fwrite(&retain_crc, sizeof(uint32_t), 1, retain_buffer);
+	fwrite(&retain_crc, sizeof(retain_crc), 1, retain_buffer);
 
 	/* Sync file buffer and close file.  */
 #ifdef __WIN32
