@@ -770,7 +770,7 @@ class Viewer(EditorPanel, DebugViewer):
             dc.SetFont(font)
             width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
         self.SetFont(font)
-        self.MiniTextDC = wx.MemoryDC()
+        self.MiniTextDC = wx.MemoryDC(wx.EmptyBitmap(1, 1))
         self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
         self.CurrentScale = None
