@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include "iec_types.h"
 
-int GetRetainSize();
+int GetRetainSize(void);
 
 /* Retain buffer.  */
 FILE *retain_buffer;
