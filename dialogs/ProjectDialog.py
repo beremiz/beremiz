@@ -41,9 +41,7 @@ class ProjectDialog(wx.Dialog):
         main_sizer.AddGrowableRow(0)
 
         self.ProjectProperties = ProjectPropertiesPanel(
-            self,
-            enable_required=enable_required)
-
+            self, enable_required=enable_required, scrolling=False)
         main_sizer.AddWindow(self.ProjectProperties, flag=wx.GROW)
 
         self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
