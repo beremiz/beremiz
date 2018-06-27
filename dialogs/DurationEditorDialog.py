@@ -147,7 +147,7 @@ class DurationEditorDialog(wx.Dialog):
                 duration += format % value
                 not_null = True
 
-        duration += "%gms" % (milliseconds % SECOND)
+        duration += ("%f" % (milliseconds % SECOND)).rstrip("0").rstrip(".") + "ms"
         return duration
 
     def OnOK(self, event):
