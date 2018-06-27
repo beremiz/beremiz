@@ -944,7 +944,11 @@ class IDEFrame(wx.Frame):
         if not wx.TheClipboard.IsOpened():
             dataobj = wx.TextDataObject()
             if wx.TheClipboard.Open():
-                success = wx.TheClipboard.GetData(dataobj)
+                success = False
+                try:
+                    success = wx.TheClipboard.GetData(dataobj)
+                except wx._core.PyAssertionError:
+                    pass
                 wx.TheClipboard.Close()
                 if success:
                     data = dataobj.GetText()
