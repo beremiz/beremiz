@@ -500,6 +500,8 @@ class ResourceEditor(EditorPanel):
                     name = self.InstancesTable.GetValueByName(i, "Task").upper()
                     if old_name == name:
                         self.InstancesTable.SetValueByName(i, "Task", new_name)
+        if self.TasksTable.GetColLabelValue(col, False) == "Triggering":
+            self.TasksTable.SetValueByName(row, "Interval", "T#20ms")
         self.RefreshModel()
         colname = self.TasksTable.GetColLabelValue(col, False)
         if colname in ["Triggering", "Name", "Single", "Interval"]:
