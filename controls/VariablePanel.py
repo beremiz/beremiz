@@ -105,6 +105,7 @@ CheckOptionForClass = {
 }
 
 LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
+LOCATION_MODEL_SET = re.compile("((?:%[IQM](?:[XBWLD]?[0-9]+(?:\.[0-9]+)*))?)$")
 
 
 # -------------------------------------------------------------------------------
@@ -597,6 +598,15 @@ class VariablePanel(wx.Panel):
                 old_name = self.Values[new_row-1].Name
                 row_content.Name = self.Controler.GenerateNewName(
                     self.TagName, old_name, old_name+'%d')
+
+                # increment location address
+                if row_content.Location != "" and LOCATION_MODEL_SET.match(row_content.Location):
+                    old_location = row_content.Location
+                    model = re.compile("%[IQM][XBWLD]?(.*\.|)")
+                    prefix = model.match(old_location).group(0)
+                    addr = int(re.split(model, old_location)[-1]) + 1
+                    row_content.Location = prefix + unicode(addr)
+
             if not row_content.Class:
                 row_content.Class = self.DefaultTypes.get(self.Filter, self.Filter)
 
