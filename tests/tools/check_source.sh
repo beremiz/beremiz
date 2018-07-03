@@ -317,6 +317,10 @@ pylint_checks()
 get_files_to_check()
 {
     py_files=$(find . -name '*.py' -not -path '*/build/*')
+    if [ -e .hg/skiphook ]; then
+	echo "Skipping checks in the hook ..."
+	exit 0
+    fi
     if [ "$1" = "--only-changes" ]; then
         if which hg > /dev/null; then
             if [ ! -z "$HG_NODE" ]; then
