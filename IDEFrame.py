@@ -72,7 +72,8 @@ from plcopen.types_enums import *
 [
     ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
     ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
-] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(2)]
+    ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN,
+] = [wx.NewId() for _init_coll_DisplayMenu_Items in range(3)]
 
 # -------------------------------------------------------------------------------
 #                            EditorToolBar definitions
@@ -427,7 +428,8 @@ class IDEFrame(wx.Frame):
                                (wx.ID_COPY, "copy", _(u'Copy'), None),
                                (wx.ID_PASTE, "paste", _(u'Paste'), None),
                                None,
-                               (ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, "find", _(u'Search in Project'), None)])
+                               (ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, "find", _(u'Search in Project'), None),
+                               (ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN, "fullscreen", _(u'Toggle fullscreen mode'), None)])
 
     def _init_coll_DisplayMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_REFRESH,
@@ -447,7 +449,11 @@ class IDEFrame(wx.Frame):
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
                    kind=wx.ITEM_NORMAL, text=_(u'Switch perspective') + '\tF12')
-        self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
+        self.Bind(wx.EVT_MENU, self.SwitchPerspective, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
+
+        AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN,
+                   kind=wx.ITEM_NORMAL, text=_(u'Full screen') + '\tShift-F12')
+        self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN)
 
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
                    kind=wx.ITEM_NORMAL, text=_(u'Reset Perspective'))
@@ -1484,17 +1490,21 @@ class IDEFrame(wx.Frame):
         def OnTabsOpenedDClick(event):
             pos = event.GetPosition()
             if tabctrl.TabHitTest(pos.x, pos.y, None):
-                self.SwitchFullScrMode(event)
+                self.SwitchPerspective(event)
             event.Skip()
         return OnTabsOpenedDClick
 
-    def SwitchFullScrMode(self, evt):
+    def SwitchPerspective(self, evt):
         pane = self.AUIManager.GetPane(self.TabsOpened)
         if pane.IsMaximized():
             self.AUIManager.RestorePane(pane)
         else:
             self.AUIManager.MaximizePane(pane)
         self.AUIManager.Update()
+
+    def SwitchFullScrMode(self, evt):
+        show = not self.IsFullScreen()
+        self.ShowFullScreen(show)
 
     # -------------------------------------------------------------------------------
     #                         Types Tree Management Functions
