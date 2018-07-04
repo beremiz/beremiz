@@ -623,14 +623,13 @@ if havetwisted:
 
     if wampconf is not None:
         try:
-            _wampconf = WC.LoadWampClientConf(wampconf)
+            WC.SetServer(pyroserver, wampconf, wampsecret)
+            _wampconf = WC.GetConfiguration()
             if _wampconf:
-                if _wampconf["url"]:  # TODO : test more ?
-                    WC.RegisterWampClient(wampconf, wampsecret)
-                    pyruntimevars["wampsession"] = WC.GetSession
-                    WC.SetServer(pyroserver)
+                if _wampconf.get("url", False) and _wampconf.get("active", False):  # TODO : test more ?
+                    WC.RegisterWampClient()
                 else:
-                    raise Exception(_("WAMP config is incomplete."))
+                    raise Exception(_("WAMP config is incomplete or active is false."))
             else:
                 raise Exception(_("WAMP config is missing."))
         except Exception:

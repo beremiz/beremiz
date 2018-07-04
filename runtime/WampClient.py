@@ -26,6 +26,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 import time
 import json
+import os
+import re
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
@@ -34,21 +36,24 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 
 
+_transportFactory = None
 _WampSession = None
 _PySrv = None
+_WampConf = None
+_WampSecret = None
 
 ExposedCalls = [
-    "StartPLC",
-    "StopPLC",
-    "ForceReload",
-    "GetPLCstatus",
-    "NewPLC",
-    "MatchMD5",
-    "SetTraceVariablesList",
-    "GetTraceVariables",
-    "RemoteExec",
-    "GetLogMessage",
-    "ResetLogCount",
+    ("StartPLC", {}),
+    ("StopPLC", {}),
+    ("ForceReload", {}),
+    ("GetPLCstatus", {}),
+    ("NewPLC", {}),
+    ("MatchMD5", {}),
+    ("SetTraceVariablesList", {}),
+    ("GetTraceVariables", {}),
+    ("RemoteExec", {}),
+    ("GetLogMessage", {}),
+    ("ResetLogCount", {})
 ]
 
 # Those two lists are meant to be filled by customized runtime
@@ -69,11 +74,20 @@ def GetCallee(name):
         obj = getattr(obj, names.pop(0))
     return obj
 
+def getValidOptins(options, arguments):
+    validOptions = {}
+    for key in options:
+        if key in arguments:
+            validOptions[key] = options[key]
+    if len(validOptions) > 0:
+        return validOptions
+    else:
+        return None
 
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
         if "secret" in self.config.extra:
-            user = self.config.extra["ID"].encode('utf8')
+            user = self.config.extra["ID"]
             self.join(u"Automation", [u"wampcra"], user)
         else:
             self.join(u"Automation")
@@ -91,10 +105,15 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         ID = self.config.extra["ID"]
-        print('WAMP session joined by :', ID)
-        for name in ExposedCalls:
-            regoption = types.RegisterOptions(u'exact', u'last')
-            yield self.register(GetCallee(name), u'.'.join((ID, name)), regoption)
+
+        for name, kwargs in ExposedCalls:
+            try:
+                registerOptions = types.RegisterOptions(**kwargs)
+            except TypeError as e:
+                registerOptions = None
+                print(_("TypeError register option: {}".format(e)))
+
+            yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
             yield self.subscribe(GetCallee(name), unicode(name))
@@ -102,32 +121,96 @@ class WampSession(wamp.ApplicationSession):
         for func in DoOnJoin:
             yield func(self)
 
+        print(_('WAMP session joined (%s) by:' % time.ctime()), ID)
+
     def onLeave(self, details):
-        global _WampSession
+        global _WampSession, _transportFactory
+        super(WampSession, self).onLeave(details)
         _WampSession = None
+        _transportFactory = None
         print(_('WAMP session left'))
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
+    def __init__(self, config, *args, **kwargs):
+        global _transportFactory
+        WampWebSocketClientFactory.__init__(self, *args, **kwargs)
+
+        try:
+            protocolOptions = config.extra.get('protocolOptions', None)
+            if protocolOptions:
+                self.setProtocolOptions(**protocolOptions)
+            _transportFactory = self
+        except Exception, e:
+            print(_("Custom protocol options failed :"), e)
+            _transportFactory = None
+
+    def buildProtocol(self, addr):
+        self.resetDelay()
+        return ReconnectingClientFactory.buildProtocol(self, addr)
+
     def clientConnectionFailed(self, connector, reason):
-        print(_("WAMP Client connection failed (%s) .. retrying .." % time.ctime()))
-        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
+        if self.continueTrying:
+            print(_("WAMP Client connection failed (%s) .. retrying .." % time.ctime()))
+            super(ReconnectingWampWebSocketClientFactory, self).clientConnectionFailed(connector, reason)
+        else:
+            del connector
 
     def clientConnectionLost(self, connector, reason):
-        print(_("WAMP Client connection lost (%s) .. retrying .." % time.ctime()))
-        ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
+        if self.continueTrying:
+            print(_("WAMP Client connection lost (%s) .. retrying .." % time.ctime()))
+            super(ReconnectingWampWebSocketClientFactory, self).clientConnectionFailed(connector, reason)
+        else:
+            del connector
 
 
-def LoadWampClientConf(wampconf):
+def GetConfiguration(items=None):
     try:
-        WSClientConf = json.load(open(wampconf))
+        WSClientConf = json.load(open(_WampConf))
+        if items and isinstance(items, list):
+            WSClientConfItems = {}
+            for item in items:
+                wampconf_value = WSClientConf.get(item, None)
+                if wampconf_value is not None:
+                    WSClientConfItems[item] = wampconf_value
+            if WSClientConfItems:
+                return WSClientConfItems
         return WSClientConf
     except ValueError, ve:
         print(_("WAMP load error: "), ve)
         return None
-    except Exception:
+    except Exception, e:
+        print(_("WAMP load error: "), e)
         return None
 
+def SetConfiguration(items):
+    try:
+        WSClientConf = json.load(open(_WampConf))
+        saveChanges = False
+        if items:
+            for itemKey in items.keys():
+                wampconf_value = WSClientConf.get(itemKey, None)
+                if (wampconf_value is not None) and (items[itemKey] is not None) and (wampconf_value != items[itemKey]):
+                    WSClientConf[itemKey] = items[itemKey]
+                    saveChanges = True
+
+        if saveChanges:
+            with open(os.path.realpath(_WampConf), 'w') as f:
+                json.dump(WSClientConf, f, sort_keys=True, indent=4)
+            if 'active' in WSClientConf and WSClientConf['active']:
+                if _transportFactory and _WampSession:
+                    StopReconnectWampClient()
+                StartReconnectWampClient()
+            else:
+                StopReconnectWampClient()
+
+        return WSClientConf
+    except ValueError, ve:
+        print(_("WAMP save error: "), ve)
+        return None
+    except Exception, e:
+        print(_("WAMP save error: "), e)
+        return None
 
 def LoadWampSecret(secretfname):
     try:
@@ -140,15 +223,33 @@ def LoadWampSecret(secretfname):
         return None
 
 
-def RegisterWampClient(wampconf, secretfname):
+def IsCorrectUri(uri):
+    if re.match(r'w{1}s{1,2}:{1}/{2}.+:{1}[0-9]+/{1}.+', uri):
+        return True
+    else:
+        return False
 
-    WSClientConf = LoadWampClientConf(wampconf)
+
+def RegisterWampClient(wampconf=None, secretfname=None):
+    global _WampConf
+    if wampconf:
+        _WampConf = wampconf
+        WSClientConf = GetConfiguration()
+    else:
+        WSClientConf = GetConfiguration()
 
     if not WSClientConf:
         print(_("WAMP client connection not established!"))
-        return
+        return False
 
-    WampSecret = LoadWampSecret(secretfname)
+    if not IsCorrectUri(WSClientConf["url"]):
+        print(_("WAMP url {} is not correct!".format(WSClientConf["url"])))
+        return False
+
+    if secretfname:
+        WampSecret = LoadWampSecret(secretfname)
+    else:
+        WampSecret = LoadWampSecret(_WampSecret)
 
     if WampSecret is not None:
         WSClientConf["secret"] = WampSecret
@@ -162,21 +263,48 @@ def RegisterWampClient(wampconf, secretfname):
     session_factory.session = WampSession
 
     # create a WAMP-over-WebSocket transport client factory
-    transport_factory = ReconnectingWampWebSocketClientFactory(
+    ReconnectingWampWebSocketClientFactory(
+        component_config,
         session_factory,
         url=WSClientConf["url"],
         serializers=[MsgPackSerializer()])
 
     # start the client from a Twisted endpoint
-    conn = connectWS(transport_factory)
-    print(_("WAMP client connecting to :"), WSClientConf["url"])
-    return conn
+    if _transportFactory:
+        conn = connectWS(_transportFactory)
+        print(_("WAMP client connecting to :"), WSClientConf["url"])
+        return True
+    else:
+        print(_("WAMP client can not connect to :"), WSClientConf["url"])
+        return False
+
+
+def StopReconnectWampClient():
+    _transportFactory.stopTrying()
+    return _WampSession.leave()
+
+
+def StartReconnectWampClient():
+    if _WampSession:
+        # do reconnect
+        _WampSession.disconnect()
+        return True
+    else:
+        # do connect
+        RegisterWampClient()
+        return True
 
 
 def GetSession():
     return _WampSession
 
 
-def SetServer(pysrv):
-    global _PySrv
+def StatusWampClient():
+    return _WampSession and _WampSession.is_attached()
+
+
+def SetServer(pysrv, wampconf=None, wampsecret=None):
+    global _PySrv, _WampConf, _WampSecret
     _PySrv = pysrv
+    _WampConf = wampconf
+    _WampSecret = wampsecret
