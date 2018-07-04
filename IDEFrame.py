@@ -404,8 +404,6 @@ class IDEFrame(wx.Frame):
                   id=ID_PLCOPENEDITOREDITMENUFINDPREVIOUS)
         self.Bind(wx.EVT_MENU, self.OnSearchInProjectMenu,
                   id=ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT)
-        self.Bind(wx.EVT_MENU, self.OnSearchInProjectMenu,
-                  id=ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT)
         self.Bind(wx.EVT_MENU, self.OnAddDataTypeMenu,
                   id=ID_PLCOPENEDITOREDITMENUADDDATATYPE)
         self.Bind(wx.EVT_MENU, self.GenerateAddPouFunction("function"),
