@@ -616,6 +616,7 @@ if havetwisted:
         try:
             website = NS.RegisterWebsite(webport)
             pyruntimevars["website"] = website
+            NS.SetServer(pyroserver)
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception:
             LogMessageAndException(_("Nevow Web service failed. "))

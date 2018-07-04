@@ -32,9 +32,10 @@ from nevow.page import renderer
 from formless import annotate
 from formless import webform
 from formless import configurable
-
 from twisted.internet import reactor
+
 import util.paths as paths
+from runtime.loglevels import LogLevels, LogLevelsDict
 
 PAGE_TITLE = 'Beremiz Runtime Web Interface'
 
@@ -44,6 +45,7 @@ xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 '''
 
 WorkingDir = None
+_PySrv = None
 
 
 class PLCHMI(athena.LiveElement):
@@ -125,22 +127,6 @@ class MainPage(athena.LiveElement):
         for child in self.liveFragmentChildren[:]:
             child.detach()
 
-lastKnownConfig = {
-    'net': {
-        'mode': 'DHCP',
-        'IP': '192.168.1.42',
-        'gateway': '192.168.1.1',
-        'mask': '255.255.255.0',
-        'DNS': '8.8.8.8'},
-    'wamp': {}
-}
-
-def defaultVal(category):
-    def _defaultVal(ctx,argument):
-        return lastKnownConfig[category].get(argument.name, None)
-    return _defaultVal
-
-
 class ConfigurableBindings(configurable.Configurable):
 
     def __init__(self):
@@ -150,8 +136,7 @@ class ConfigurableBindings(configurable.Configurable):
     def getBindingNames(self, ctx):
         return self.bindingsNames
 
-    def addExtension(self, name, desc, fields, callback):
-        print(name, fields, callback)
+    def addExtension(self, name, desc, fields, btnlabel, callback):
         def _bind(ctx):
             return annotate.MethodBinding(
                 'action_'+name,
@@ -159,33 +144,26 @@ class ConfigurableBindings(configurable.Configurable):
                     annotate.Argument(name, fieldtype)
                     for fieldname,fieldtype in fields],
                     label = desc),
-                action = _("Set"))
+                action = btnlabel))
         setattr(self, 'bind_'+name, _bind)
             
-        def _action(**kw):
-           callback(**kw) 
-
-        setattr(self, 'action_'+name, _action)
+        setattr(self, 'action_'+name, callback)
 
         self.bindingsNames.append(name)
 
 ConfigurableSettings = ConfigurableBindings()
 
 class ISettings(annotate.TypedInterface):
-    def networkConfig(
+    def sendLogMessage(
         ctx = annotate.Context(),
-        mode = annotate.Choice(["DHCP", "Static"],
-                               required=True, 
-                               label=_("Configuration type"), 
-                               default=defaultVal('net')),
-        IP = annotate.String(label=_("IP address"),default=defaultVal('net')),
-        gateway = annotate.String(label=_("Gateway address"),
-                                  default=defaultVal('net')),
-        mask = annotate.String(label=_("Network mask"),default=defaultVal('net')),
-        DNS = annotate.String(label=_("DNS address"),default=defaultVal('net'))):
+        level = annotate.Choice(LogLevels,
+                                required=True, 
+                                label=_("Log message level")),
+        message = annotate.String(label=_("Message text"))):
             pass
-
-    networkConfig = annotate.autocallable(networkConfig, label=_("Network settings"), action=_("Set"))
+    sendLogMessage = annotate.autocallable(sendLogMessage, 
+                                           label=_("Send a message to the log"),
+                                           action=_("Send"))
 
 
 class SettingsPage(rend.Page):
@@ -220,16 +198,11 @@ class SettingsPage(rend.Page):
 
     def configurable_dynamicSettings(self, ctx):
         return ConfigurableSettings
-
-    def networkConfig(self, *args, **kwargs):
-        # TODO do the settings
-        print(kwargs)
-        lastKnownConfig['net'] = kwargs
-        ConfigurableSettings.addExtension(
-            "wamp", 
-            "wamp DEscription", 
-            [("Host",annotate.String(label=_("IP address")))], 
-            lambda**k:print(k))
+    
+    def sendLogMessage(self, level, message, **kwargs):
+        level = LogLevelsDict[level]
+        if _PySrv.plcobj is not None:
+            _PySrv.plcobj.LogMessage(level, "Web form log message: " + message )
 
 
 class WebInterface(athena.LivePage):
@@ -313,6 +286,7 @@ def RegisterWebsite(port):
     print(_('HTTP interface port :'), port)
     return website
 
+
 class statuslistener(object):
     def __init__(self, site):
         self.oldstate = None
@@ -331,5 +305,7 @@ def website_statuslistener_factory(site):
     return statuslistener(site).listen
 
 
-
+def SetServer(pysrv):
+    global _PySrv
+    _PySrv = pysrv
 
