@@ -144,7 +144,7 @@ class ConfigurableBindings(configurable.Configurable):
                     annotate.Argument(name, fieldtype)
                     for fieldname,fieldtype in fields],
                     label = desc),
-                action = btnlabel))
+                action = btnlabel)
         setattr(self, 'bind_'+name, _bind)
             
         setattr(self, 'action_'+name, callback)
