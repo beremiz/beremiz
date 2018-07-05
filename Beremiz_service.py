@@ -588,7 +588,7 @@ if havetwisted:
         try:
             import runtime.NevowServer as NS  # pylint: disable=ungrouped-imports
         except Exception, e:
-            print(_("Nevow/Athena import failed :"), e)
+            LogMessageAndException(_("Nevow/Athena import failed :"))
             webport = None
         NS.WorkingDir = WorkingDir
 
