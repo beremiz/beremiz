@@ -36,6 +36,8 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 
 
+mandatoryConfigItems = ["ID", "active", "realm", "url"]
+
 _transportFactory = None
 _WampSession = None
 _PySrv = None
@@ -74,15 +76,6 @@ def GetCallee(name):
         obj = getattr(obj, names.pop(0))
     return obj
 
-def getValidOptins(options, arguments):
-    validOptions = {}
-    for key in options:
-        if key in arguments:
-            validOptions[key] = options[key]
-    if len(validOptions) > 0:
-        return validOptions
-    else:
-        return None
 
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
@@ -164,45 +157,25 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             del connector
 
 
-def GetConfiguration(items=None):
-    try:
-        WSClientConf = json.load(open(_WampConf))
-        if items and isinstance(items, list):
-            WSClientConfItems = {}
-            for item in items:
-                wampconf_value = WSClientConf.get(item, None)
-                if wampconf_value is not None:
-                    WSClientConfItems[item] = wampconf_value
-            if WSClientConfItems:
-                return WSClientConfItems
-        return WSClientConf
-    except ValueError, ve:
-        print(_("WAMP load error: "), ve)
-        return None
-    except Exception, e:
-        print(_("WAMP load error: "), e)
-        return None
+def GetConfiguration():
+    WSClientConf = json.load(open(_WampConf))
+    for itemName in mandatoryConfigItems:
+        if WSClientConf.get(itemName, None) is None :
+            raise Exception(_("WAMP configuration error : missing '{}' parameter.").format(itemName))
 
-def SetConfiguration(items):
-    try:
-        WSClientConf = json.load(open(_WampConf))
-        saveChanges = False
-        if items:
-            for itemKey in items.keys():
-                wampconf_value = WSClientConf.get(itemKey, None)
-                if (wampconf_value is not None) and (items[itemKey] is not None) and (wampconf_value != items[itemKey]):
-                    WSClientConf[itemKey] = items[itemKey]
-                    saveChanges = True
+    return WSClientConf
 
-        if saveChanges:
-            with open(os.path.realpath(_WampConf), 'w') as f:
-                json.dump(WSClientConf, f, sort_keys=True, indent=4)
-            if 'active' in WSClientConf and WSClientConf['active']:
-                if _transportFactory and _WampSession:
-                    StopReconnectWampClient()
-                StartReconnectWampClient()
-            else:
+
+def SetConfiguration(WSClientConf):
+    try:
+        with open(os.path.realpath(_WampConf), 'w') as f:
+            json.dump(WSClientConf, f, sort_keys=True, indent=4)
+        if 'active' in WSClientConf and WSClientConf['active']:
+            if _transportFactory and _WampSession:
                 StopReconnectWampClient()
+            StartReconnectWampClient()
+        else:
+            StopReconnectWampClient()
 
         return WSClientConf
     except ValueError, ve:
@@ -211,6 +184,7 @@ def SetConfiguration(items):
     except Exception, e:
         print(_("WAMP save error: "), e)
         return None
+
 
 def LoadWampSecret(secretfname):
     try:
@@ -230,26 +204,23 @@ def IsCorrectUri(uri):
         return False
 
 
-def RegisterWampClient(wampconf=None, secretfname=None):
-    global _WampConf
+def RegisterWampClient(wampconf=None, wampsecret=None):
+    global _WampConf, _WampSecret
+    if wampsecret:
+        _WampSecret = wampsecret
     if wampconf:
         _WampConf = wampconf
-        WSClientConf = GetConfiguration()
-    else:
-        WSClientConf = GetConfiguration()
 
-    if not WSClientConf:
-        print(_("WAMP client connection not established!"))
-        return False
+    WSClientConf = GetConfiguration()
 
     if not IsCorrectUri(WSClientConf["url"]):
-        print(_("WAMP url {} is not correct!".format(WSClientConf["url"])))
-        return False
+        raise Exception(_("WAMP url {} is not correct!").format(WSClientConf["url"]))
 
-    if secretfname:
-        WampSecret = LoadWampSecret(secretfname)
-    else:
-        WampSecret = LoadWampSecret(_WampSecret)
+    if not WSClientConf["active"]:
+        print(_("WAMP deactivated in configuration"))
+        return
+
+    WampSecret = LoadWampSecret(_WampSecret)
 
     if WampSecret is not None:
         WSClientConf["secret"] = WampSecret
@@ -303,8 +274,5 @@ def StatusWampClient():
     return _WampSession and _WampSession.is_attached()
 
 
-def SetServer(pysrv, wampconf=None, wampsecret=None):
-    global _PySrv, _WampConf, _WampSecret
+def SetServer(pysrv):
     _PySrv = pysrv
-    _WampConf = wampconf
-    _WampSecret = wampsecret
