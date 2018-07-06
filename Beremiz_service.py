@@ -587,7 +587,7 @@ if havetwisted:
     if webport is not None:
         try:
             import runtime.NevowServer as NS  # pylint: disable=ungrouped-imports
-        except Exception, e:
+        except Exception:
             LogMessageAndException(_("Nevow/Athena import failed :"))
             webport = None
         NS.WorkingDir = WorkingDir
@@ -602,8 +602,8 @@ if havetwisted:
     if wampconf is not None:
         try:
             import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
-        except Exception, e:
-            print(_("WAMP import failed :"), e)
+        except Exception:
+            LogMessageAndException(_("WAMP import failed :"))
             wampconf = None
 
 # Load extensions
