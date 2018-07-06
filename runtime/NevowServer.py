@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
+import platform
 from zope.interface import implements
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
@@ -141,8 +142,8 @@ class ConfigurableBindings(configurable.Configurable):
             return annotate.MethodBinding(
                 'action_'+name,
                 annotate.Method(arguments=[
-                    annotate.Argument(name, fieldtype)
-                    for fieldname,fieldtype in fields],
+                    annotate.Argument(*field)
+                    for field in fields],
                     label = desc),
                 action = btnlabel)
         setattr(self, 'bind_'+name, _bind)
@@ -154,6 +155,11 @@ class ConfigurableBindings(configurable.Configurable):
 ConfigurableSettings = ConfigurableBindings()
 
 class ISettings(annotate.TypedInterface):
+    platform = annotate.String(label = _("Platform"),
+                           default = platform.system() + " " + platform.release(),
+                           immutable = True)
+    # TODO version ?
+
     def sendLogMessage(
         ctx = annotate.Context(),
         level = annotate.Choice(LogLevels,
