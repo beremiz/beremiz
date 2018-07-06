@@ -35,6 +35,9 @@ from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 
+import runtime.NevowServer as NS
+
+from formless import annotate
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
@@ -67,6 +70,7 @@ SubscribedEvents = []
 """ things to do on join (callables) """
 DoOnJoin = []
 
+lastKnownConfig = None
 
 def GetCallee(name):
     """ Get Callee or Subscriber corresponding to '.' spearated object path """
@@ -87,9 +91,12 @@ class WampSession(wamp.ApplicationSession):
 
     def onChallenge(self, challenge):
         if challenge.method == u"wampcra":
-            secret = self.config.extra["secret"].encode('utf8')
-            signature = auth.compute_wcs(secret, challenge.extra['challenge'].encode('utf8'))
-            return signature.decode("ascii")
+            if "secret" in self.config.extra:
+                secret = self.config.extra["secret"].encode('utf8')
+                signature = auth.compute_wcs(secret, challenge.extra['challenge'].encode('utf8'))
+                return signature.decode("ascii")
+            else:
+                raise Exception("no secret given for authentication")
         else:
             raise Exception("don't know how to handle authmethod {}".format(challenge.method))
 
@@ -157,51 +164,55 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             del connector
 
 
+def CheckConfiguration(WSClientConf):
+    url = WSClientConf["url"]
+    if not IsCorrectUri(url):
+        raise annotate.ValidateError(
+            {"url":"Invalid URL: {}".format(url)},
+            _("WAMP confiuration error:"))
+
 def GetConfiguration():
+    global lastKnownConfig
+
     WSClientConf = json.load(open(_WampConf))
     for itemName in mandatoryConfigItems:
         if WSClientConf.get(itemName, None) is None :
             raise Exception(_("WAMP configuration error : missing '{}' parameter.").format(itemName))
 
+    CheckConfiguration(WSClientConf)
+
+    lastKnownConfig = WSClientConf.copy()
     return WSClientConf
 
 
 def SetConfiguration(WSClientConf):
-    try:
-        with open(os.path.realpath(_WampConf), 'w') as f:
-            json.dump(WSClientConf, f, sort_keys=True, indent=4)
-        if 'active' in WSClientConf and WSClientConf['active']:
-            if _transportFactory and _WampSession:
-                StopReconnectWampClient()
-            StartReconnectWampClient()
-        else:
-            StopReconnectWampClient()
+    global lastKnownConfig
 
-        return WSClientConf
-    except ValueError, ve:
-        print(_("WAMP save error: "), ve)
-        return None
-    except Exception, e:
-        print(_("WAMP save error: "), e)
-        return None
+    CheckConfiguration(WSClientConf)
+
+    lastKnownConfig = WSClientConf.copy()
+    
+    with open(os.path.realpath(_WampConf), 'w') as f:
+        json.dump(WSClientConf, f, sort_keys=True, indent=4)
+    if 'active' in WSClientConf and WSClientConf['active']:
+        if _transportFactory and _WampSession:
+            StopReconnectWampClient()
+        StartReconnectWampClient()
+    else:
+        StopReconnectWampClient()
+
+    return WSClientConf
 
 
 def LoadWampSecret(secretfname):
-    try:
-        WSClientWampSecret = open(secretfname, 'rb').read()
-        return WSClientWampSecret
-    except ValueError, ve:
-        print(_("Wamp secret load error:"), ve)
-        return None
-    except Exception:
-        return None
+    WSClientWampSecret = open(secretfname, 'rb').read()
+    if len(WSClientWampSecret) == 0 :
+        raise Exception(_("WAMP secret empty"))
+    return WSClientWampSecret
 
 
 def IsCorrectUri(uri):
-    if re.match(r'w{1}s{1,2}:{1}/{2}.+:{1}[0-9]+/{1}.+', uri):
-        return True
-    else:
-        return False
+    return re.match(r'wss?://[^\s?:#-]+(:[0-9]+)?(/[^\s]*)?$', uri) is not None
 
 
 def RegisterWampClient(wampconf=None, wampsecret=None):
@@ -213,17 +224,12 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
     WSClientConf = GetConfiguration()
 
-    if not IsCorrectUri(WSClientConf["url"]):
-        raise Exception(_("WAMP url {} is not correct!").format(WSClientConf["url"]))
-
     if not WSClientConf["active"]:
         print(_("WAMP deactivated in configuration"))
         return
 
-    WampSecret = LoadWampSecret(_WampSecret)
-
-    if WampSecret is not None:
-        WSClientConf["secret"] = WampSecret
+    if _WampSecret is not None:
+        WSClientConf["secret"] = LoadWampSecret(_WampSecret)
 
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
@@ -251,8 +257,10 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
 
 def StopReconnectWampClient():
-    _transportFactory.stopTrying()
-    return _WampSession.leave()
+    if _transportFactory is not None :
+        _transportFactory.stopTrying()
+    if _WampSession is not None :
+        _WampSession.leave()
 
 
 def StartReconnectWampClient():
@@ -269,10 +277,54 @@ def StartReconnectWampClient():
 def GetSession():
     return _WampSession
 
-
-def StatusWampClient():
-    return _WampSession and _WampSession.is_attached()
+def getWampStatus():
+    if _transportFactory is not None :
+        if _WampSession is not None :
+            if _WampSession.is_attached() :
+                return "Attached"
+            return "Established"
+        return "Connecting"
+    return "Disconnected"
 
 
 def SetServer(pysrv):
     _PySrv = pysrv
+
+
+#### WEB CONFIGURATION INTERFACE ####
+
+webExposedConfigItems = ['active', 'url', 'ID']
+
+def wampConfigDefault(ctx,argument):
+    if lastKnownConfig is not None :
+        return lastKnownConfig.get(argument.name, None)
+
+def wampConfig(**kwargs):
+    newConfig = lastKnownConfig.copy()
+    for argname in webExposedConfigItems:
+        newConfig[argname] = kwargs[argname]
+
+    SetConfiguration(newConfig)
+
+webFormInterface = [
+    ("status",
+       annotate.String(label=_("Current status"),
+                       immutable = True,
+                       default = lambda *k:getWampStatus())),
+    ("ID",
+       annotate.String(label=_("ID"),
+                       default = wampConfigDefault)),
+    ("active",
+       annotate.Boolean(label=_("Enable WAMP connection"),
+                        default=wampConfigDefault)),
+    ("url",
+       annotate.String(label=_("WAMP Server URL"),
+                       default=wampConfigDefault))]
+
+
+NS.ConfigurableSettings.addExtension(
+    "wamp", 
+    _("Wamp Settings"),
+    webFormInterface,
+    _("Set"),
+    wampConfig)
