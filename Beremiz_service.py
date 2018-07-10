@@ -592,19 +592,11 @@ if havetwisted:
             webport = None
         NS.WorkingDir = WorkingDir
 
-    # Find pre-existing project WAMP config file
-    _wampconf = os.path.join(WorkingDir, "wampconf.json")
-
-    # If project's WAMP config file exits, override default (-c)
-    if os.path.exists(_wampconf):
-        wampconf = _wampconf
-
-    if wampconf is not None:
-        try:
-            import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
-        except Exception:
-            LogMessageAndException(_("WAMP import failed :"))
-            wampconf = None
+    try:
+        import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
+        WC.WorkingDir = WorkingDir
+    except Exception:
+        LogMessageAndException(_("WAMP import failed :"))
 
 # Load extensions
 for extention_file, extension_folder in extensions:
@@ -621,12 +613,11 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("Nevow Web service failed. "))
 
-    if wampconf is not None:
-        try:
-            WC.SetServer(pyroserver)
-            WC.RegisterWampClient(wampconf, wampsecret)
-        except Exception:
-            LogMessageAndException(_("WAMP client startup failed. "))
+    try:
+        WC.SetServer(pyroserver)
+        WC.RegisterWampClient(wampconf, wampsecret)
+    except Exception:
+        LogMessageAndException(_("WAMP client startup failed. "))
 
 pyro_thread_started = Lock()
 pyro_thread_started.acquire()

@@ -34,16 +34,22 @@ from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
+from twisted.python.components import registerAdapter
 
 import runtime.NevowServer as NS
 
-from formless import annotate
+from formless import annotate, webform
+import formless
+from nevow import tags, url, static
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
 _transportFactory = None
 _WampSession = None
 _PySrv = None
+WorkingDir = None
+
+# Find pre-existing project WAMP config file
 _WampConf = None
 _WampSecret = None
 
@@ -60,6 +66,14 @@ ExposedCalls = [
     ("GetLogMessage", {}),
     ("ResetLogCount", {})
 ]
+
+# de-activated dumb wamp config
+defaultWampConfig = {
+    "ID": "wamptest", 
+    "active": False, 
+    "realm": "Automation", 
+    "url": "ws://127.0.0.1:8888"
+}
 
 # Those two lists are meant to be filled by customized runtime
 # or User python code.
@@ -164,8 +178,8 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             del connector
 
 
-def CheckConfiguration(WSClientConf):
-    url = WSClientConf["url"]
+def CheckConfiguration(WampClientConf):
+    url = WampClientConf["url"]
     if not IsCorrectUri(url):
         raise annotate.ValidateError(
             {"url":"Invalid URL: {}".format(url)},
@@ -174,34 +188,42 @@ def CheckConfiguration(WSClientConf):
 def GetConfiguration():
     global lastKnownConfig
 
-    WSClientConf = json.load(open(_WampConf))
+    if os.path.exists(_WampConf):
+        WampClientConf = json.load(open(_WampConf))
+    else: 
+        WampClientConf = defaultWampConfig
+
     for itemName in mandatoryConfigItems:
-        if WSClientConf.get(itemName, None) is None :
+        if WampClientConf.get(itemName, None) is None :
             raise Exception(_("WAMP configuration error : missing '{}' parameter.").format(itemName))
 
-    CheckConfiguration(WSClientConf)
+    CheckConfiguration(WampClientConf)
 
-    lastKnownConfig = WSClientConf.copy()
-    return WSClientConf
+    lastKnownConfig = WampClientConf.copy()
+    return WampClientConf
 
 
-def SetConfiguration(WSClientConf):
+def SetWampSecret(wampSecret):
+    with open(os.path.realpath(_WampSecret), 'w') as f:
+        f.write(wampSecret)
+
+def SetConfiguration(WampClientConf):
     global lastKnownConfig
 
-    CheckConfiguration(WSClientConf)
+    CheckConfiguration(WampClientConf)
 
-    lastKnownConfig = WSClientConf.copy()
+    lastKnownConfig = WampClientConf.copy()
     
     with open(os.path.realpath(_WampConf), 'w') as f:
-        json.dump(WSClientConf, f, sort_keys=True, indent=4)
-    if 'active' in WSClientConf and WSClientConf['active']:
+        json.dump(WampClientConf, f, sort_keys=True, indent=4)
+    if 'active' in WampClientConf and WampClientConf['active']:
         if _transportFactory and _WampSession:
             StopReconnectWampClient()
         StartReconnectWampClient()
     else:
         StopReconnectWampClient()
 
-    return WSClientConf
+    return WampClientConf
 
 
 def LoadWampSecret(secretfname):
@@ -217,24 +239,35 @@ def IsCorrectUri(uri):
 
 def RegisterWampClient(wampconf=None, wampsecret=None):
     global _WampConf, _WampSecret
-    if wampsecret:
-        _WampSecret = wampsecret
-    if wampconf:
+    _WampConfDefault = os.path.join(WorkingDir, "wampconf.json")
+    _WampSecretDefault = os.path.join(WorkingDir, "wamp.secret")
+
+    # default project's wampconf has precedance over commandline given
+    if os.path.exists(_WampConfDefault) or wampconf is None:
+        _WampConf = _WampConfDefault
+    else :
         _WampConf = wampconf
 
-    WSClientConf = GetConfiguration()
+    WampClientConf = GetConfiguration()
 
-    if not WSClientConf["active"]:
+    if wampsecret is not None:
+        WampClientConf["secret"] = LoadWampSecret(wampsecret)
+        _WampSecret = wampsecret
+    else :
+        if os.path.exists(_WampSecretDefault):
+            WampClientConf["secret"] = LoadWampSecret(_WampSecretDefault)
+        else :
+            print(_("WAMP authentication has no secret configured"))
+        _WampSecret = _WampSecretDefault
+
+    if not WampClientConf["active"]:
         print(_("WAMP deactivated in configuration"))
         return
 
-    if _WampSecret is not None:
-        WSClientConf["secret"] = LoadWampSecret(_WampSecret)
-
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
-        realm=WSClientConf["realm"],
-        extra=WSClientConf)
+        realm=WampClientConf["realm"],
+        extra=WampClientConf)
     session_factory = wamp.ApplicationSessionFactory(
         config=component_config)
     session_factory.session = WampSession
@@ -243,16 +276,16 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
     ReconnectingWampWebSocketClientFactory(
         component_config,
         session_factory,
-        url=WSClientConf["url"],
+        url=WampClientConf["url"],
         serializers=[MsgPackSerializer()])
 
     # start the client from a Twisted endpoint
     if _transportFactory:
         conn = connectWS(_transportFactory)
-        print(_("WAMP client connecting to :"), WSClientConf["url"])
+        print(_("WAMP client connecting to :"), WampClientConf["url"])
         return True
     else:
-        print(_("WAMP client can not connect to :"), WSClientConf["url"])
+        print(_("WAMP client can not connect to :"), WampClientConf["url"])
         return False
 
 
@@ -292,7 +325,7 @@ def SetServer(pysrv):
 
 
 #### WEB CONFIGURATION INTERFACE ####
-
+WAMP_SECRET_URL = "secret"
 webExposedConfigItems = ['active', 'url', 'ID']
 
 def wampConfigDefault(ctx,argument):
@@ -300,11 +333,36 @@ def wampConfigDefault(ctx,argument):
         return lastKnownConfig.get(argument.name, None)
 
 def wampConfig(**kwargs):
+    secretfile_field = kwargs["secretfile"]
+    if secretfile_field is not None:
+        secret = secretfile_field.file.read()
+        SetWampSecret(secret)
+
     newConfig = lastKnownConfig.copy()
     for argname in webExposedConfigItems:
         newConfig[argname] = kwargs[argname]
 
     SetConfiguration(newConfig)
+
+class FileUploadDownload(annotate.FileUpload):
+    pass
+
+
+class FileUploadDownloadRenderer(webform.FileUploadRenderer):
+    def input(self, context, slot, data, name, value):
+        slot[_("Upload:")]
+        slot = webform.FileUploadRenderer.input(self, context, slot, data, name, value)
+        download_url = data.typedValue.getAttribute('download_url')
+        return slot[tags.a(href=download_url)[_("Download")]]
+
+registerAdapter(FileUploadDownloadRenderer, FileUploadDownload, formless.iformless.ITypedRenderer)
+           
+def getDownloadUrl(ctx, argument):
+    if lastKnownConfig is not None :
+        currentID = lastKnownConfig.get("ID", None)
+        return url.URL.fromContext(ctx).\
+            child(WAMP_SECRET_URL).\
+            child(lastKnownConfig["ID"]+".secret")
 
 webFormInterface = [
     ("status",
@@ -314,6 +372,11 @@ webFormInterface = [
     ("ID",
        annotate.String(label=_("ID"),
                        default = wampConfigDefault)),
+    ("secretfile",
+       FileUploadDownload(
+           label = _("File containing secret for that ID"),
+           download_url = getDownloadUrl,
+       )),
     ("active",
        annotate.Boolean(label=_("Enable WAMP connection"),
                         default=wampConfigDefault)),
@@ -328,3 +391,13 @@ NS.ConfigurableSettings.addExtension(
     webFormInterface,
     _("Set"),
     wampConfig)
+
+
+def deliverWampSecret(ctx, segments):
+    filename = segments[1].decode('utf-8')
+    # TODO : SECURITY compare filename to ID and blah...
+    secret = LoadWampSecret(_WampSecret)
+    return static.Data(secret, 'application/octet-stream'),()
+
+NS.customSettingsURLs[WAMP_SECRET_URL] = deliverWampSecret
+
