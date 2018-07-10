@@ -171,6 +171,8 @@ class ISettings(annotate.TypedInterface):
                                            label=_("Send a message to the log"),
                                            action=_("Send"))
 
+customSettingsURLs = {
+}
 
 class SettingsPage(rend.Page):
     # We deserve a slash
@@ -196,9 +198,6 @@ class SettingsPage(rend.Page):
                                        webform.renderForms('dynamicSettings'),
                                    ]]])
 
-    def __init__(self):
-        rend.Page.__init__(self)
-
     def configurable_staticSettings(self, ctx):
         return configurable.TypedInterfaceConfigurable(self)
 
@@ -209,6 +208,11 @@ class SettingsPage(rend.Page):
         level = LogLevelsDict[level]
         if _PySrv.plcobj is not None:
             _PySrv.plcobj.LogMessage(level, "Web form log message: " + message )
+
+    def locateChild(self, ctx, segments):
+        if segments[0] in customSettingsURLs :
+            return customSettingsURLs[segments[0]](ctx, segments)
+        return super(SettingsPage, self).locateChild(ctx, segments)
 
 
 class WebInterface(athena.LivePage):
