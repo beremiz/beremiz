@@ -45,17 +45,17 @@ def usage():
     print("""
 Usage of Beremiz PLC execution service :\n
 %s {[-n servicename] [-i IP] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
-           -n        - zeroconf service name (default:disabled)
-           -i        - IP address of interface to bind to (default:localhost)
-           -p        - port number default:3000
-           -h        - print this help text and quit
-           -a        - autostart PLC (0:disable 1:enable) (default:0)
-           -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
-           -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
-           -w        - web server port or "off" to disable web server (default:8009)
-           -c        - WAMP client default config file (default:wampconf.json)
-           -s        - WAMP client secret, given as a file
-           -e        - python extension (absolute path .py)
+  -n  zeroconf service name (default:disabled)
+  -i  IP address of interface to bind to (default:localhost)
+  -p  port number default:3000
+  -h  print this help text and quit
+  -a  autostart PLC (0:disable 1:enable) (default:0)
+  -x  enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
+  -t  enable/disable Twisted web interface (0:disable 1:enable) (default:1)
+  -w  web server port or "off" to disable web server (default:8009)
+  -c  WAMP client config file (can be overriden by wampconf.json in project)
+  -s  WAMP client secret, given as a file (can be overriden by wamp.secret in project)
+  -e  python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
 """ % sys.argv[0])
@@ -616,6 +616,7 @@ if havetwisted:
     try:
         WC.SetServer(pyroserver)
         WC.RegisterWampClient(wampconf, wampsecret)
+        WC.RegisterWebSettings(NS)
     except Exception:
         LogMessageAndException(_("WAMP client startup failed. "))
 
