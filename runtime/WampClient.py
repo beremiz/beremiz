@@ -36,8 +36,6 @@ from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
 
-import runtime.NevowServer as NS
-
 from formless import annotate, webform
 import formless
 from nevow import tags, url, static
@@ -191,7 +189,7 @@ def GetConfiguration():
     if os.path.exists(_WampConf):
         WampClientConf = json.load(open(_WampConf))
     else: 
-        WampClientConf = defaultWampConfig
+        WampClientConf = defaultWampConfig.copy()
 
     for itemName in mandatoryConfigItems:
         if WampClientConf.get(itemName, None) is None :
@@ -242,22 +240,28 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
     _WampConfDefault = os.path.join(WorkingDir, "wampconf.json")
     _WampSecretDefault = os.path.join(WorkingDir, "wamp.secret")
 
-    # default project's wampconf has precedance over commandline given
-    if os.path.exists(_WampConfDefault) or wampconf is None:
-        _WampConf = _WampConfDefault
-    else :
-        _WampConf = wampconf
+    # set config file path only if not already set
+    if _WampConf is None:
+        # default project's wampconf has precedance over commandline given
+        if os.path.exists(_WampConfDefault) or wampconf is None:
+            _WampConf = _WampConfDefault
+        else:
+            _WampConf = wampconf
 
     WampClientConf = GetConfiguration()
 
-    if wampsecret is not None:
-        WampClientConf["secret"] = LoadWampSecret(wampsecret)
-        _WampSecret = wampsecret
-    else :
+    # set secret file path only if not already set
+    if _WampSecret is None:
+        # default project's wamp secret also has precedance over commandline given
         if os.path.exists(_WampSecretDefault):
-            WampClientConf["secret"] = LoadWampSecret(_WampSecretDefault)
-        else :
-            print(_("WAMP authentication has no secret configured"))
+            _WampSecret = _WampSecretDefault
+        else:
+            _WampSecret = wampsecret
+
+    if _WampSecret is not None:
+        WampClientConf["secret"] = LoadWampSecret(_WampSecret)
+    else :
+        print(_("WAMP authentication has no secret configured"))
         _WampSecret = _WampSecretDefault
 
     if not WampClientConf["active"]:
@@ -335,12 +339,16 @@ def wampConfigDefault(ctx,argument):
 def wampConfig(**kwargs):
     secretfile_field = kwargs["secretfile"]
     if secretfile_field is not None:
-        secret = secretfile_field.file.read()
-        SetWampSecret(secret)
+        secretfile = getattr(secretfile_field, "file", None)
+        if secretfile is not None:
+            secret = secretfile_field.file.read()
+            SetWampSecret(secret)
 
     newConfig = lastKnownConfig.copy()
     for argname in webExposedConfigItems:
-        newConfig[argname] = kwargs[argname]
+        arg = kwargs.get(argname, None)
+        if arg is not None :
+            newConfig[argname] = arg
 
     SetConfiguration(newConfig)
 
@@ -359,7 +367,6 @@ registerAdapter(FileUploadDownloadRenderer, FileUploadDownload, formless.iformle
            
 def getDownloadUrl(ctx, argument):
     if lastKnownConfig is not None :
-        currentID = lastKnownConfig.get("ID", None)
         return url.URL.fromContext(ctx).\
             child(WAMP_SECRET_URL).\
             child(lastKnownConfig["ID"]+".secret")
@@ -385,19 +392,24 @@ webFormInterface = [
                        default=wampConfigDefault))]
 
 
-NS.ConfigurableSettings.addExtension(
-    "wamp", 
-    _("Wamp Settings"),
-    webFormInterface,
-    _("Set"),
-    wampConfig)
-
-
 def deliverWampSecret(ctx, segments):
     filename = segments[1].decode('utf-8')
-    # TODO : SECURITY compare filename to ID and blah...
+    # FIXME: compare filename to ID+".secret"
+    # for now all url under /secret returns the secret
+
+    # TODO: make beutifull message in case of exception 
+    # while loading secret (if empty or dont exist)
     secret = LoadWampSecret(_WampSecret)
     return static.Data(secret, 'application/octet-stream'),()
 
-NS.customSettingsURLs[WAMP_SECRET_URL] = deliverWampSecret
+def RegisterWebSettings(NS):
+    NS.ConfigurableSettings.addExtension(
+        "wamp", 
+        _("Wamp Settings"),
+        webFormInterface,
+        _("Set"),
+        wampConfig)
+
+
+    NS.customSettingsURLs[WAMP_SECRET_URL] = deliverWampSecret
 
