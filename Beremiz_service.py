@@ -582,6 +582,7 @@ def installThreadExcepthook():
 
 
 installThreadExcepthook()
+havewamp = False
 
 if havetwisted:
     if webport is not None:
@@ -595,6 +596,7 @@ if havetwisted:
     try:
         import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
         WC.WorkingDir = WorkingDir
+        havewamp = True
     except Exception:
         LogMessageAndException(_("WAMP import failed :"))
 
@@ -613,12 +615,13 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("Nevow Web service failed. "))
 
-    try:
-        WC.SetServer(pyroserver)
-        WC.RegisterWampClient(wampconf, wampsecret)
-        WC.RegisterWebSettings(NS)
-    except Exception:
-        LogMessageAndException(_("WAMP client startup failed. "))
+    if havewamp:
+        try:
+            WC.SetServer(pyroserver)
+            WC.RegisterWampClient(wampconf, wampsecret)
+            WC.RegisterWebSettings(NS)
+        except Exception:
+            LogMessageAndException(_("WAMP client startup failed. "))
 
 pyro_thread_started = Lock()
 pyro_thread_started.acquire()
