@@ -181,7 +181,7 @@ def CheckConfiguration(WampClientConf):
     if not IsCorrectUri(url):
         raise annotate.ValidateError(
             {"url":"Invalid URL: {}".format(url)},
-            _("WAMP confiuration error:"))
+            _("WAMP configuration error:"))
 
 def GetConfiguration():
     global lastKnownConfig
