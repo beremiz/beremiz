@@ -1,7 +1,10 @@
 {
-    "url":"ws://127.0.0.1:8888",
-    "realm":"Automation",
-    "ID":"wamptest",
-    "password":"1234567890",
-    "key":"ABCDEFGHIJ"
+    "ID": "wamptest", 
+    "active": true, 
+    "protocolOptions": {
+        "autoPingInterval": 60, 
+        "autoPingTimeout": 20
+    }, 
+    "realm": "Automation", 
+    "url": "ws://127.0.0.1:8888"
 }
