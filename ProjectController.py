@@ -1354,6 +1354,31 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self.AppFrame is not None:
                 self.AppFrame.LogViewer.SetLogCounters(log_count)
 
+    DefaultMethods = {
+        "_Run": False,
+        "_Stop": False,
+        "_Transfer": False,
+        "_Connect": True,
+        "_Disconnect": False
+    }
+
+    MethodsFromStatus = {
+        "Started":      {"_Stop": True,
+                         "_Transfer": True,
+                         "_Connect": False,
+                         "_Disconnect": True},
+        "Stopped":      {"_Run": True,
+                         "_Transfer": True,
+                         "_Connect": False,
+                         "_Disconnect": True},
+        "Empty":        {"_Transfer": True,
+                         "_Connect": False,
+                         "_Disconnect": True},
+        "Broken":       {"_Connect": False,
+                         "_Disconnect": True},
+        "Disconnected": {},
+    }
+
     def UpdateMethodsFromPLCStatus(self):
         updated = False
         status = None
@@ -1366,21 +1391,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._SetConnector(None, False)
             status = "Disconnected"
         if self.previous_plcstate != status:
-            for args in {
-                    "Started":      [("_Run", False),
-                                     ("_Stop", True)],
-                    "Stopped":      [("_Run", True),
-                                     ("_Stop", False)],
-                    "Empty":        [("_Run", False),
-                                     ("_Stop", False)],
-                    "Broken":       [],
-                    "Disconnected": [("_Run", False),
-                                     ("_Stop", False),
-                                     ("_Transfer", False),
-                                     ("_Connect", True),
-                                     ("_Disconnect", False)],
-            }.get(status, []):
-                self.ShowMethod(*args)
+            allmethods = self.DefaultMethods.copy()
+            allmethods.update(
+                self.MethodsFromStatus.get(status, {}))
+            for method, active in allmethods.items():
+                self.ShowMethod(method,active)
             self.previous_plcstate = status
             if self.AppFrame is not None:
                 updated = True
@@ -1715,10 +1730,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # Oups.
             self.logger.write_error(_("Connection failed to %s!\n") % uri)
         else:
-            self.ShowMethod("_Connect", False)
-            self.ShowMethod("_Disconnect", True)
-            self.ShowMethod("_Transfer", True)
-
             self.CompareLocalAndRemotePLC()
 
             # Init with actual PLC status and print it
