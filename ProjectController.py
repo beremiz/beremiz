@@ -194,8 +194,9 @@ def GetProjectControllerXSD():
               <xsd:complexType>
               """+"\n".join(['<xsd:attribute name=' +
                              '"Enable_' + libname + '_Library" ' +
-                             'type="xsd:boolean" use="optional" default="false"/>'
-                             for libname, _lib in features.libraries])+"""
+                             'type="xsd:boolean" use="optional" default="' + 
+                                ('true' if default else 'false') + '"/>'
+                             for libname, _lib, default in features.libraries])+"""
               </xsd:complexType>
             </xsd:element>""") if len(features.libraries) > 0 else '') + """
           </xsd:sequence>
@@ -205,6 +206,7 @@ def GetProjectControllerXSD():
       </xsd:element>
     </xsd:schema>
     """
+    print XSD
     return XSD
 
 
@@ -270,7 +272,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def LoadLibraries(self):
         self.Libraries = []
         TypeStack = []
-        for libname, clsname in features.libraries:
+        for libname, clsname, default in features.libraries:
             if self.BeremizRoot.Libraries is not None and getattr(self.BeremizRoot.Libraries, "Enable_"+libname+"_Library"):
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
