@@ -26,7 +26,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
-import platform
+import platform as platform_module
 from zope.interface import implements
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
@@ -143,9 +143,10 @@ class ConfigurableBindings(configurable.Configurable):
         def _bind(ctx):
             return annotate.MethodBinding(
                 'action_' + name,
-                annotate.Method(arguments=[
-                    annotate.Argument(*field)
-                    for field in fields],
+                annotate.Method(
+                    arguments=[
+                        annotate.Argument(*field)
+                        for field in fields],
                     label=desc),
                 action=btnlabel)
         setattr(self, 'bind_' + name, _bind)
@@ -159,18 +160,21 @@ ConfigurableSettings = ConfigurableBindings()
 
 class ISettings(annotate.TypedInterface):
     platform = annotate.String(label=_("Platform"),
-                               default=platform.system(
-    ) + " " + platform.release(),
-        immutable=True)
+                               default=platform_module.system() +
+                               " " + platform_module.release(),
+                               immutable=True)
+
     # TODO version ?
 
+    # pylint: disable=no-self-argument
     def sendLogMessage(
-        ctx=annotate.Context(),
-        level=annotate.Choice(LogLevels,
-                              required=True,
-                              label=_("Log message level")),
+            ctx=annotate.Context(),
+            level=annotate.Choice(LogLevels,
+                                  required=True,
+                                  label=_("Log message level")),
             message=annotate.String(label=_("Message text"))):
-            pass
+        pass
+
     sendLogMessage = annotate.autocallable(sendLogMessage,
                                            label=_(
                                                "Send a message to the log"),
