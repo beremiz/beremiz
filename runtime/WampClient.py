@@ -67,9 +67,9 @@ ExposedCalls = [
 
 # de-activated dumb wamp config
 defaultWampConfig = {
-    "ID": "wamptest", 
-    "active": False, 
-    "realm": "Automation", 
+    "ID": "wamptest",
+    "active": False,
+    "realm": "Automation",
     "url": "ws://127.0.0.1:8888"
 }
 
@@ -84,6 +84,7 @@ DoOnJoin = []
 
 lastKnownConfig = None
 
+
 def GetCallee(name):
     """ Get Callee or Subscriber corresponding to '.' spearated object path """
     names = name.split('.')
@@ -94,6 +95,7 @@ def GetCallee(name):
 
 
 class WampSession(wamp.ApplicationSession):
+
     def onConnect(self):
         if "secret" in self.config.extra:
             user = self.config.extra["ID"]
@@ -105,12 +107,14 @@ class WampSession(wamp.ApplicationSession):
         if challenge.method == u"wampcra":
             if "secret" in self.config.extra:
                 secret = self.config.extra["secret"].encode('utf8')
-                signature = auth.compute_wcs(secret, challenge.extra['challenge'].encode('utf8'))
+                signature = auth.compute_wcs(
+                    secret, challenge.extra['challenge'].encode('utf8'))
                 return signature.decode("ascii")
             else:
                 raise Exception("no secret given for authentication")
         else:
-            raise Exception("don't know how to handle authmethod {}".format(challenge.method))
+            raise Exception(
+                "don't know how to handle authmethod {}".format(challenge.method))
 
     @inlineCallbacks
     def onJoin(self, details):
@@ -144,6 +148,7 @@ class WampSession(wamp.ApplicationSession):
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
+
     def __init__(self, config, *args, **kwargs):
         global _transportFactory
         WampWebSocketClientFactory.__init__(self, *args, **kwargs)
@@ -163,15 +168,19 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
 
     def clientConnectionFailed(self, connector, reason):
         if self.continueTrying:
-            print(_("WAMP Client connection failed (%s) .. retrying ..") % time.ctime())
-            super(ReconnectingWampWebSocketClientFactory, self).clientConnectionFailed(connector, reason)
+            print(_("WAMP Client connection failed (%s) .. retrying ..") %
+                  time.ctime())
+            super(ReconnectingWampWebSocketClientFactory,
+                  self).clientConnectionFailed(connector, reason)
         else:
             del connector
 
     def clientConnectionLost(self, connector, reason):
         if self.continueTrying:
-            print(_("WAMP Client connection lost (%s) .. retrying ..") % time.ctime())
-            super(ReconnectingWampWebSocketClientFactory, self).clientConnectionFailed(connector, reason)
+            print(_("WAMP Client connection lost (%s) .. retrying ..") %
+                  time.ctime())
+            super(ReconnectingWampWebSocketClientFactory,
+                  self).clientConnectionFailed(connector, reason)
         else:
             del connector
 
@@ -180,20 +189,22 @@ def CheckConfiguration(WampClientConf):
     url = WampClientConf["url"]
     if not IsCorrectUri(url):
         raise annotate.ValidateError(
-            {"url":"Invalid URL: {}".format(url)},
+            {"url": "Invalid URL: {}".format(url)},
             _("WAMP configuration error:"))
+
 
 def GetConfiguration():
     global lastKnownConfig
 
     if os.path.exists(_WampConf):
         WampClientConf = json.load(open(_WampConf))
-    else: 
+    else:
         WampClientConf = defaultWampConfig.copy()
 
     for itemName in mandatoryConfigItems:
-        if WampClientConf.get(itemName, None) is None :
-            raise Exception(_("WAMP configuration error : missing '{}' parameter.").format(itemName))
+        if WampClientConf.get(itemName, None) is None:
+            raise Exception(
+                _("WAMP configuration error : missing '{}' parameter.").format(itemName))
 
     CheckConfiguration(WampClientConf)
 
@@ -205,13 +216,14 @@ def SetWampSecret(wampSecret):
     with open(os.path.realpath(_WampSecret), 'w') as f:
         f.write(wampSecret)
 
+
 def SetConfiguration(WampClientConf):
     global lastKnownConfig
 
     CheckConfiguration(WampClientConf)
 
     lastKnownConfig = WampClientConf.copy()
-    
+
     with open(os.path.realpath(_WampConf), 'w') as f:
         json.dump(WampClientConf, f, sort_keys=True, indent=4)
     if 'active' in WampClientConf and WampClientConf['active']:
@@ -226,7 +238,7 @@ def SetConfiguration(WampClientConf):
 
 def LoadWampSecret(secretfname):
     WSClientWampSecret = open(secretfname, 'rb').read()
-    if len(WSClientWampSecret) == 0 :
+    if len(WSClientWampSecret) == 0:
         raise Exception(_("WAMP secret empty"))
     return WSClientWampSecret
 
@@ -252,7 +264,8 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
     # set secret file path only if not already set
     if _WampSecret is None:
-        # default project's wamp secret also has precedance over commandline given
+        # default project's wamp secret also
+        # has precedance over commandline given
         if os.path.exists(_WampSecretDefault):
             _WampSecret = _WampSecretDefault
         else:
@@ -260,7 +273,7 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
     if _WampSecret is not None:
         WampClientConf["secret"] = LoadWampSecret(_WampSecret)
-    else :
+    else:
         print(_("WAMP authentication has no secret configured"))
         _WampSecret = _WampSecretDefault
 
@@ -285,7 +298,7 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
     # start the client from a Twisted endpoint
     if _transportFactory:
-        conn = connectWS(_transportFactory)
+        connectWS(_transportFactory)
         print(_("WAMP client connecting to :"), WampClientConf["url"])
         return True
     else:
@@ -294,9 +307,9 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
 
 def StopReconnectWampClient():
-    if _transportFactory is not None :
+    if _transportFactory is not None:
         _transportFactory.stopTrying()
-    if _WampSession is not None :
+    if _WampSession is not None:
         _WampSession.leave()
 
 
@@ -314,10 +327,11 @@ def StartReconnectWampClient():
 def GetSession():
     return _WampSession
 
+
 def getWampStatus():
-    if _transportFactory is not None :
-        if _WampSession is not None :
-            if _WampSession.is_attached() :
+    if _transportFactory is not None:
+        if _WampSession is not None:
+            if _WampSession.is_attached():
                 return "Attached"
             return "Established"
         return "Connecting"
@@ -328,13 +342,15 @@ def SetServer(pysrv):
     _PySrv = pysrv
 
 
-#### WEB CONFIGURATION INTERFACE ####
+# WEB CONFIGURATION INTERFACE
 WAMP_SECRET_URL = "secret"
 webExposedConfigItems = ['active', 'url', 'ID']
 
-def wampConfigDefault(ctx,argument):
-    if lastKnownConfig is not None :
+
+def wampConfigDefault(ctx, argument):
+    if lastKnownConfig is not None:
         return lastKnownConfig.get(argument.name, None)
+
 
 def wampConfig(**kwargs):
     secretfile_field = kwargs["secretfile"]
@@ -347,69 +363,73 @@ def wampConfig(**kwargs):
     newConfig = lastKnownConfig.copy()
     for argname in webExposedConfigItems:
         arg = kwargs.get(argname, None)
-        if arg is not None :
+        if arg is not None:
             newConfig[argname] = arg
 
     SetConfiguration(newConfig)
+
 
 class FileUploadDownload(annotate.FileUpload):
     pass
 
 
 class FileUploadDownloadRenderer(webform.FileUploadRenderer):
+
     def input(self, context, slot, data, name, value):
+        # pylint: disable=expression-not-assigned
         slot[_("Upload:")]
-        slot = webform.FileUploadRenderer.input(self, context, slot, data, name, value)
+        slot = webform.FileUploadRenderer.input(
+            self, context, slot, data, name, value)
         download_url = data.typedValue.getAttribute('download_url')
         return slot[tags.a(href=download_url)[_("Download")]]
 
-registerAdapter(FileUploadDownloadRenderer, FileUploadDownload, formless.iformless.ITypedRenderer)
-           
+registerAdapter(FileUploadDownloadRenderer, FileUploadDownload,
+                formless.iformless.ITypedRenderer)
+
+
 def getDownloadUrl(ctx, argument):
-    if lastKnownConfig is not None :
+    if lastKnownConfig is not None:
         return url.URL.fromContext(ctx).\
             child(WAMP_SECRET_URL).\
-            child(lastKnownConfig["ID"]+".secret")
+            child(lastKnownConfig["ID"] + ".secret")
 
 webFormInterface = [
     ("status",
-       annotate.String(label=_("Current status"),
-                       immutable = True,
-                       default = lambda *k:getWampStatus())),
+     annotate.String(label=_("Current status"),
+                     immutable=True,
+                     default=lambda *k:getWampStatus())),
     ("ID",
-       annotate.String(label=_("ID"),
-                       default = wampConfigDefault)),
+     annotate.String(label=_("ID"),
+                     default=wampConfigDefault)),
     ("secretfile",
-       FileUploadDownload(
-           label = _("File containing secret for that ID"),
-           download_url = getDownloadUrl,
-       )),
+     FileUploadDownload(label=_("File containing secret for that ID"),
+                        download_url=getDownloadUrl)),
     ("active",
-       annotate.Boolean(label=_("Enable WAMP connection"),
-                        default=wampConfigDefault)),
+     annotate.Boolean(label=_("Enable WAMP connection"),
+                      default=wampConfigDefault)),
     ("url",
-       annotate.String(label=_("WAMP Server URL"),
-                       default=wampConfigDefault))]
+     annotate.String(label=_("WAMP Server URL"),
+                     default=wampConfigDefault))]
 
 
 def deliverWampSecret(ctx, segments):
-    filename = segments[1].decode('utf-8')
+    # filename = segments[1].decode('utf-8')
+
     # FIXME: compare filename to ID+".secret"
     # for now all url under /secret returns the secret
 
-    # TODO: make beutifull message in case of exception 
+    # TODO: make beautifull message in case of exception
     # while loading secret (if empty or dont exist)
     secret = LoadWampSecret(_WampSecret)
-    return static.Data(secret, 'application/octet-stream'),()
+    return static.Data(secret, 'application/octet-stream'), ()
+
 
 def RegisterWebSettings(NS):
     NS.ConfigurableSettings.addExtension(
-        "wamp", 
+        "wamp",
         _("Wamp Settings"),
         webFormInterface,
         _("Set"),
         wampConfig)
 
-
     NS.customSettingsURLs[WAMP_SECRET_URL] = deliverWampSecret
-
