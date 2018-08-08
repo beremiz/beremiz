@@ -900,6 +900,42 @@ class PouProgramGenerator(object):
                 for connection in related:
                     self.ConnectionTypes[connection] = var_type
 
+    def GetUsedEno(self, body, connections):
+        """
+            Function checks whether value on given connection
+            comes from block, that has used EN input and
+            returns variable name for ENO output.
+
+            This is needed to avoid value propagation from blocks
+            with false signal on EN input.
+
+        :param body:
+            body of the block for that program is currently generated
+        :param connections:
+            connection, that's source is checked for EN/ENO usage
+        :return:
+            if EN/ENO are not used, then None is returned
+            Otherwise BOOL variable corresponding to ENO
+            output is returned.
+        """
+
+        if len(connections) != 1:
+            return None
+        ref_local_id = connections[0].getrefLocalId()
+        blk = body.getcontentInstance(ref_local_id)
+        if blk is None:
+            return None
+
+        for invar in blk.inputVariables.getvariable():
+            if invar.getformalParameter() == "EN":
+                if len(invar.getconnectionPointIn().getconnections()) > 0:
+                    if blk.getinstanceName() is None:
+                        var_name = "%s%d_ENO" % (blk.gettypeName(), blk.getlocalId())
+                    else:
+                        var_name = "%s.ENO" % blk.getinstanceName()
+                    return var_name
+        return None
+
     def ComputeProgram(self, pou):
         body = pou.getbody()
         if isinstance(body, ListType):
@@ -958,11 +994,21 @@ class PouProgramGenerator(object):
                     if connections is not None:
                         expression = self.ComputeExpression(body, connections)
                         if expression is not None:
+                            eno_var = self.GetUsedEno(body, connections)
+                            if eno_var is not None:
+                                self.Program += [(self.CurrentIndent + "IF %s" % eno_var, ())]
+                                self.Program += [(" THEN\n  ", ())]
+                                self.IndentRight()
+
                             self.Program += [(self.CurrentIndent, ()),
                                              (instance.getexpression(), (self.TagName, "io_variable", instance.getlocalId(), "expression")),
                                              (" := ", ())]
                             self.Program += expression
                             self.Program += [(";\n", ())]
+
+                            if eno_var is not None:
+                                self.IndentLeft()
+                                self.Program += [(self.CurrentIndent + "END_IF;\n", ())]
                 elif isinstance(instance, BlockClass):
                     block_type = instance.gettypeName()
                     self.ParentGenerator.GeneratePouProgram(block_type)
