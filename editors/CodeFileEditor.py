@@ -602,6 +602,7 @@ class AllGridCellEditor(wx.grid.GridCellTextEditor):
     def __init__(self, table, row, col):
         wx.grid.GridCellTextEditor.__init__(self)
 
+
 class ClassGridCellEditor(wx.grid.GridCellChoiceEditor):
     def __init__(self, table, row, col):
         wx.grid.GridCellChoiceEditor.__init__(self)
@@ -610,9 +611,9 @@ class ClassGridCellEditor(wx.grid.GridCellChoiceEditor):
 
 class VariablesTable(CustomTable):
     __defaultColumnType = dict(
-            [(name, AllGridCellEditor) for name in
-             ["Name", "Initial", "Description", "OnChange", "Options"]] +
-            [('Class', ClassGridCellEditor), ('Type', None)])
+        [(name, AllGridCellEditor) for name in
+         ["Name", "Initial", "Description", "OnChange", "Options"]] +
+        [('Class', ClassGridCellEditor), ('Type', None)])
 
     def __init__(self, *args, **kwargs):
         my_columns = kwargs.pop("additional_columns")

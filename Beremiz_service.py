@@ -30,7 +30,7 @@ import os
 import sys
 import getopt
 import threading
-from threading import Thread, currentThread, Semaphore, Lock
+from threading import Thread, Semaphore, Lock
 import traceback
 import __builtin__
 import Pyro
@@ -499,6 +499,7 @@ if havetwisted:
 
 if havewx:
     wx_eval_lock = Semaphore(0)
+    # FIXME : beware wx mainloop is _not_ running in main thread
     # main_thread = currentThread()
 
     def statuschangeTskBar(status):
@@ -512,6 +513,7 @@ if havewx:
         wx_eval_lock.release()
 
     def evaluator(tocall, *args, **kwargs):
+        # FIXME : should implement anti-deadlock
         # if main_thread == currentThread():
         #     # avoid dead lock if called from the wx mainloop
         #     return default_evaluator(tocall, *args, **kwargs)
