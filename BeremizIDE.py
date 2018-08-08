@@ -739,6 +739,7 @@ class Beremiz(IDEFrame):
     def RefreshStatusToolBar(self):
         StatusToolBar = self.Panes["StatusToolBar"]
         StatusToolBar.ClearTools()
+        StatusToolBar.SetMinSize(StatusToolBar.GetToolBitmapSize())
 
         if self.CTR is not None:
 
