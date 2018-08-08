@@ -18,9 +18,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#    
+#
 # This code is made available on the understanding that it will not be
 # used in safety-critical situations without a full and competent review.
 
 
-from bacnet import *
+from __future__ import absolute_import
+
+from bacnet.bacnet import *
