@@ -45,11 +45,11 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 * Build CanFestival (optional)  
   Only needed for CANopen support. Please read CanFestival manual to choose CAN interface other than 'virtual'.
 
-        cd ~/Beremiz
-        hg clone http://dev.automforge.net/CanFestival-3
-        cd ~/Beremiz/CanFestival-3
-        ./configure --can=virtual
-        make
+		cd ~/Beremiz
+		hg clone http://dev.automforge.net/CanFestival-3
+		cd ~/Beremiz/CanFestival-3
+		./configure --can=virtual
+		make
 
 * Build Modbus library (optional)
   Only needed for Modbus support.
@@ -58,6 +58,14 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 		hg clone https://bitbucket.org/mjsousa/modbus Modbus
 		cd ~/Beremiz/Modbus
 		make
+
+* Build BACnet (optional)
+  Only needed for BACnet support.
+
+		cd ~/Beremiz
+		svn checkout https://svn.code.sf.net/p/bacnet/code/trunk/bacnet-stack/ BACnet
+		cd BACnet
+		make MAKE_DEFINE='-fPIC' all
 
 * Launch Beremiz IDE
 
