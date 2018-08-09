@@ -383,6 +383,7 @@ class FileUploadDownloadRenderer(webform.FileUploadRenderer):
         download_url = data.typedValue.getAttribute('download_url')
         return slot[tags.a(href=download_url)[_("Download")]]
 
+
 registerAdapter(FileUploadDownloadRenderer, FileUploadDownload,
                 formless.iformless.ITypedRenderer)
 
@@ -392,6 +393,7 @@ def getDownloadUrl(ctx, argument):
         return url.URL.fromContext(ctx).\
             child(WAMP_SECRET_URL).\
             child(lastKnownConfig["ID"] + ".secret")
+
 
 webFormInterface = [
     ("status",

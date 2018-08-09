@@ -155,6 +155,7 @@ class ConfigurableBindings(configurable.Configurable):
 
         self.bindingsNames.append(name)
 
+
 ConfigurableSettings = ConfigurableBindings()
 
 
@@ -179,6 +180,7 @@ class ISettings(annotate.TypedInterface):
                                            label=_(
                                                "Send a message to the log"),
                                            action=_("Send"))
+
 
 customSettingsURLs = {
 }
