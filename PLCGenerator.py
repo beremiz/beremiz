@@ -926,6 +926,9 @@ class PouProgramGenerator(object):
         if blk is None:
             return None
 
+        if not hasattr(blk, "inputVariables"):
+            return None
+
         for invar in blk.inputVariables.getvariable():
             if invar.getformalParameter() == "EN":
                 if len(invar.getconnectionPointIn().getconnections()) > 0:
