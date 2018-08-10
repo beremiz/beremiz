@@ -1346,7 +1346,7 @@ class PouProgramGenerator(object):
                 else:
                     paths.append(variable)
             elif isinstance(next, CoilClass):
-                paths.append(str(self.GeneratePaths(next.connectionPointIn.getconnections(), body, order)))
+                paths.append(self.GeneratePaths(next.connectionPointIn.getconnections(), body, order))
         return paths
 
     def ComputePaths(self, paths, first=False):
