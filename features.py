@@ -9,10 +9,10 @@
 # See COPYING file for copyrights details.
 
 libraries = [
-    ('Native', 'NativeLib.NativeLibrary'),
-    ('Python', 'py_ext.PythonLibrary'),
-    ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary'),
-    ('SVGUI', 'svgui.SVGUILibrary')]
+    ('Native', 'NativeLib.NativeLibrary', True),
+    ('Python', 'py_ext.PythonLibrary', True),
+    ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
+    ('SVGUI', 'svgui.SVGUILibrary', False)]
 
 catalog = [
     ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),

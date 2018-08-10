@@ -598,7 +598,31 @@ class CodeEditor(CustomStyledTextCtrl):
 #                         Helper for VariablesGrid values
 # -------------------------------------------------------------------------------
 
+class AllGridCellEditor(wx.grid.GridCellTextEditor):
+    def __init__(self, table, row, col):
+        wx.grid.GridCellTextEditor.__init__(self)
+
+
+class ClassGridCellEditor(wx.grid.GridCellChoiceEditor):
+    def __init__(self, table, row, col):
+        wx.grid.GridCellChoiceEditor.__init__(self)
+        self.SetParameters("input,memory,output")
+
+
 class VariablesTable(CustomTable):
+    __defaultColumnType = dict(
+        [(name, AllGridCellEditor) for name in
+         ["Name", "Initial", "Description", "OnChange", "Options"]] +
+        [('Class', ClassGridCellEditor), ('Type', None)])
+
+    def __init__(self, *args, **kwargs):
+        my_columns = kwargs.pop("additional_columns")
+        super(VariablesTable, self).__init__(*args, **kwargs)
+        self.columnTypes = dict(self.__defaultColumnType)
+        if my_columns is not None:
+            for key in my_columns.keys():
+                if key in self.columnTypes.keys():
+                    self.columnTypes[key] = my_columns[key]
 
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
@@ -621,15 +645,9 @@ class VariablesTable(CustomTable):
                 renderer = None
                 colname = self.GetColLabelValue(col, False)
 
-                if colname in ["Name", "Initial", "Description", "OnChange", "Options"]:
-                    editor = wx.grid.GridCellTextEditor()
-                elif colname == "Class":
-                    editor = wx.grid.GridCellChoiceEditor()
-                    editor.SetParameters("input,memory,output")
-                elif colname == "Type":
-                    pass
-                else:
-                    grid.SetReadOnly(row, col, True)
+                editortype = self.columnTypes.get(colname, None)
+                if editortype is not None:
+                    editor = editortype(self, row, col)
 
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
@@ -640,7 +658,7 @@ class VariablesTable(CustomTable):
 
 class VariablesEditor(wx.Panel):
 
-    def __init__(self, parent, window, controler):
+    def __init__(self, parent, window, controler, additional_columns=None):
         wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
 
         main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=4)
@@ -680,7 +698,8 @@ class VariablesEditor(wx.Panel):
             "OnChange":    "",
             "Options":     ""
         }
-        self.Table = VariablesTable(self, [], self.GetVariableTableColnames())
+
+        self.Table = VariablesTable(self, [], self.GetVariableTableColnames(), additional_columns=additional_columns)
         self.ColAlignements = [wx.ALIGN_RIGHT] +  \
                               [wx.ALIGN_LEFT]*(len(self.VariablesDefaultValue))
         self.ColSizes = [20, 150] + [130]*(len(self.VariablesDefaultValue)-1)
@@ -845,6 +864,7 @@ class CodeFileEditor(ConfTreeNodeEditor):
 
     CONFNODEEDITOR_TABS = []
     CODE_EDITOR = None
+    COLUMNS_TYPE = None
 
     def _create_CodePanel(self, prnt):
         self.CodeEditorPanel = wx.SplitterWindow(prnt)
@@ -852,7 +872,8 @@ class CodeFileEditor(ConfTreeNodeEditor):
 
         self.VariablesPanel = VariablesEditor(self.CodeEditorPanel,
                                               self.ParentWindow,
-                                              self.Controler)
+                                              self.Controler,
+                                              self.COLUMNS_TYPE)
 
         if self.CODE_EDITOR is not None:
             self.CodeEditor = self.CODE_EDITOR(self.CodeEditorPanel,

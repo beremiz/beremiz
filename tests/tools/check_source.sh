@@ -316,7 +316,7 @@ pylint_checks()
 
 get_files_to_check()
 {
-    py_files=$(find . -name '*.py' -not -path '*/build/*')
+    py_files=$(find . -name '*.py' -not -path '*/build/*' -not -path './etherlab/*')
     if [ -e .hg/skiphook ]; then
 	echo "Skipping checks in the hook ..."
 	exit 0
