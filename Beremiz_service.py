@@ -30,7 +30,7 @@ import os
 import sys
 import getopt
 import threading
-from threading import Thread, currentThread, Semaphore, Lock
+from threading import Thread, Semaphore, Lock
 import traceback
 import __builtin__
 import Pyro
@@ -45,17 +45,17 @@ def usage():
     print("""
 Usage of Beremiz PLC execution service :\n
 %s {[-n servicename] [-i IP] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
-           -n        - zeroconf service name (default:disabled)
-           -i        - IP address of interface to bind to (default:localhost)
-           -p        - port number default:3000
-           -h        - print this help text and quit
-           -a        - autostart PLC (0:disable 1:enable) (default:0)
-           -x        - enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
-           -t        - enable/disable Twisted web interface (0:disable 1:enable) (default:1)
-           -w        - web server port or "off" to disable web server (default:8009)
-           -c        - WAMP client default config file (default:wampconf.json)
-           -s        - WAMP client secret, given as a file
-           -e        - python extension (absolute path .py)
+  -n  zeroconf service name (default:disabled)
+  -i  IP address of interface to bind to (default:localhost)
+  -p  port number default:3000
+  -h  print this help text and quit
+  -a  autostart PLC (0:disable 1:enable) (default:0)
+  -x  enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
+  -t  enable/disable Twisted web interface (0:disable 1:enable) (default:1)
+  -w  web server port or "off" to disable web server (default:8009)
+  -c  WAMP client config file (can be overriden by wampconf.json in project)
+  -s  WAMP client secret, given as a file (can be overriden by wamp.secret in project)
+  -e  python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
 """ % sys.argv[0])
@@ -499,6 +499,7 @@ if havetwisted:
 
 if havewx:
     wx_eval_lock = Semaphore(0)
+    # FIXME : beware wx mainloop is _not_ running in main thread
     # main_thread = currentThread()
 
     def statuschangeTskBar(status):
@@ -512,6 +513,7 @@ if havewx:
         wx_eval_lock.release()
 
     def evaluator(tocall, *args, **kwargs):
+        # FIXME : should implement anti-deadlock
         # if main_thread == currentThread():
         #     # avoid dead lock if called from the wx mainloop
         #     return default_evaluator(tocall, *args, **kwargs)
@@ -571,29 +573,23 @@ def installThreadExcepthook():
 
 
 installThreadExcepthook()
+havewamp = False
 
 if havetwisted:
     if webport is not None:
         try:
             import runtime.NevowServer as NS  # pylint: disable=ungrouped-imports
-        except Exception, e:
-            print(_("Nevow/Athena import failed :"), e)
+        except Exception:
+            LogMessageAndException(_("Nevow/Athena import failed :"))
             webport = None
         NS.WorkingDir = WorkingDir
 
-    # Find pre-existing project WAMP config file
-    _wampconf = os.path.join(WorkingDir, "wampconf.json")
-
-    # If project's WAMP config file exits, override default (-c)
-    if os.path.exists(_wampconf):
-        wampconf = _wampconf
-
-    if wampconf is not None:
-        try:
-            import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
-        except Exception, e:
-            print(_("WAMP import failed :"), e)
-            wampconf = None
+    try:
+        import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
+        WC.WorkingDir = WorkingDir
+        havewamp = True
+    except Exception:
+        LogMessageAndException(_("WAMP import failed :"))
 
 # Load extensions
 for extention_file, extension_folder in extensions:
@@ -605,22 +601,16 @@ if havetwisted:
         try:
             website = NS.RegisterWebsite(webport)
             pyruntimevars["website"] = website
+            NS.SetServer(pyroserver)
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception:
             LogMessageAndException(_("Nevow Web service failed. "))
 
-    if wampconf is not None:
+    if havewamp:
         try:
-            _wampconf = WC.LoadWampClientConf(wampconf)
-            if _wampconf:
-                if _wampconf["url"]:  # TODO : test more ?
-                    WC.RegisterWampClient(wampconf, wampsecret)
-                    pyruntimevars["wampsession"] = WC.GetSession
-                    WC.SetServer(pyroserver)
-                else:
-                    raise Exception(_("WAMP config is incomplete."))
-            else:
-                raise Exception(_("WAMP config is missing."))
+            WC.SetServer(pyroserver)
+            WC.RegisterWampClient(wampconf, wampsecret)
+            WC.RegisterWebSettings(NS)
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
