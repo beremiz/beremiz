@@ -427,7 +427,8 @@ def deliverWampSecret(ctx, segments):
 
 
 def RegisterWebSettings(NS):
-    NS.ConfigurableSettings.addExtension(
+
+    NS.ConfigurableSettings.addSettings(
         "wamp",
         _("Wamp Settings"),
         webFormInterface,

@@ -135,11 +135,34 @@ class ConfigurableBindings(configurable.Configurable):
     def __init__(self):
         configurable.Configurable.__init__(self, None)
         self.bindingsNames = []
+        self.infostringcount = 0
 
     def getBindingNames(self, ctx):
         return self.bindingsNames
 
-    def addExtension(self, name, desc, fields, btnlabel, callback):
+    def addInfoString(self, label, value, name=None):
+        if type(value) is str:
+            def default(*k):
+                return value
+        else:
+            def default(*k):
+                return value()
+
+        if name is None:
+            name = "_infostring_" + str(self.infostringcount)
+            self.infostringcount = self.infostringcount + 1
+
+        def _bind(ctx):
+            return annotate.Property(
+                name,
+                annotate.String(
+                    label=label,
+                    default=default,
+                    immutable=True))
+        setattr(self, 'bind_' + name, _bind)
+        self.bindingsNames.append(name)
+
+    def addSettings(self, name, desc, fields, btnlabel, callback):
         def _bind(ctx):
             return annotate.MethodBinding(
                 'action_' + name,
