@@ -338,6 +338,7 @@ def getWampStatus():
 
 
 def SetServer(pysrv):
+    global _PySrv
     _PySrv = pysrv
 
 
