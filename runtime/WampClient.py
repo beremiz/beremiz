@@ -54,7 +54,6 @@ _WampSecret = None
 ExposedCalls = [
     ("StartPLC", {}),
     ("StopPLC", {}),
-    ("ForceReload", {}),
     ("GetPLCstatus", {}),
     ("NewPLC", {}),
     ("MatchMD5", {}),
