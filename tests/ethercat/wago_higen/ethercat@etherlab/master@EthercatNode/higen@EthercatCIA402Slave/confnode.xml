@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<CIA402SlaveParams EnableDigitalInputs="true" RatioNumerator="65536" RatioDenominator="360" PositionOffset="0" LimitSwitchNC="false" HomingLimitWindow="10" HomingVelocity="360" TorqueRatioNumerator="10" TorqueRatioDenominator="1"/>
