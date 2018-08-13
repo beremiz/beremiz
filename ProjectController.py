@@ -267,7 +267,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._setBuildPath(None)
         self.debug_break = False
         self.previous_plcstate = None
-        # copy ConfNodeMethods so that it can be later customized
+        # copy StatusMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
 
     def __del__(self):
