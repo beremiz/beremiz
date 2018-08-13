@@ -49,7 +49,7 @@
 #include "net.h"
 #include "txbuf.h"
 #include "version.h"
-#include "timesync.h"
+
 
 
 /* A utility function used by most (all?) implementations of BACnet Objects */
@@ -517,7 +517,7 @@ int bn_server_run(server_node_t *server_node) {
         if (elapsed_seconds) {
             last_seconds = current_seconds;
             dcc_timer_seconds(elapsed_seconds);
-            bvlc_maintenance_timer(elapsed_seconds);
+            //bvlc_maintenance_timer(elapsed_seconds); // already called by dlenv_maintenance_timer() => do _not_ call here!
             dlenv_maintenance_timer(elapsed_seconds);
             elapsed_milliseconds = elapsed_seconds * 1000;
             tsm_timer_milliseconds(elapsed_milliseconds);
