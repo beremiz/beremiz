@@ -398,7 +398,7 @@ static const int Device_Properties_Required[] = {
     PROP_OBJECT_TYPE,                      /* R  R ( 79) */
     PROP_SYSTEM_STATUS,                    /* R  R (112) */
     PROP_VENDOR_NAME,                      /* R  R (121) */
-    PROP_VENDOR_IDENTIFIER,                /* W  R (120) */
+    PROP_VENDOR_IDENTIFIER,                /* R  R (120) */
     PROP_MODEL_NAME,                       /* W  R ( 70) */
     PROP_FIRMWARE_REVISION,                /* R  R ( 44) */
     PROP_APPLICATION_SOFTWARE_VERSION,     /* R  R ( 12) */
@@ -1366,16 +1366,16 @@ bool Device_Write_Property_Local(
                 apdu_timeout_set((uint16_t) value.type.Unsigned_Int);
             }
             break;
-        case PROP_VENDOR_IDENTIFIER:
-            status =
-                WPValidateArgType(&value, BACNET_APPLICATION_TAG_UNSIGNED_INT,
-                &wp_data->error_class, &wp_data->error_code);
-            if (status) {
-                /* FIXME: bounds check? */
-                Device_Set_Vendor_Identifier((uint16_t) value.
-                    type.Unsigned_Int);
-            }
-            break;
+//         case PROP_VENDOR_IDENTIFIER:
+//             status =
+//                 WPValidateArgType(&value, BACNET_APPLICATION_TAG_UNSIGNED_INT,
+//                 &wp_data->error_class, &wp_data->error_code);
+//             if (status) {
+//                 /* FIXME: bounds check? */
+//                 Device_Set_Vendor_Identifier((uint16_t) value.
+//                     type.Unsigned_Int);
+//             }
+//             break;
 //       case PROP_SYSTEM_STATUS:
 //           status =
 //               WPValidateArgType(&value, BACNET_APPLICATION_TAG_ENUMERATED,
@@ -1453,6 +1453,7 @@ bool Device_Write_Property_Local(
         case PROP_OBJECT_TYPE:
         case PROP_SYSTEM_STATUS:
         case PROP_VENDOR_NAME:
+        case PROP_VENDOR_IDENTIFIER:
         case PROP_FIRMWARE_REVISION:
         case PROP_APPLICATION_SOFTWARE_VERSION:
         case PROP_LOCAL_TIME:
