@@ -10,6 +10,7 @@ runtime/WampClient.py
 runtime/PLCObject.py
 runtime/NevowServer.py
 runtime/webinterface.js
+runtime/webinterface.css
 runtime/__init__.py
 runtime/ServicePublisher.py
 runtime/typemapping.py 
