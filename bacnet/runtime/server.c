@@ -49,7 +49,7 @@
 #include "net.h"
 #include "txbuf.h"
 #include "version.h"
-
+#include "timesync.h"
 
 
 /* A utility function used by most (all?) implementations of BACnet Objects */
