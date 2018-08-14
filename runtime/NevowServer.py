@@ -30,6 +30,7 @@ import platform as platform_module
 from zope.interface import implements
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
+from nevow.static import File
 from formless import annotate
 from formless import webform
 from formless import configurable
@@ -77,10 +78,12 @@ class PLCStoppedHMI(PLCHMI):
 class MainPage(athena.LiveElement):
     jsClass = u"WebInterface.PLC"
     docFactory = loaders.stan(
-        tags.div(render=tags.directive('liveElement'))[
-            tags.div(id='content')[
-                tags.div(render=tags.directive('PLCElement'))]
-        ])
+        tags.invisible[
+            tags.div(render=tags.directive('liveElement'))[
+                tags.div(id='content')[
+                    tags.div(render=tags.directive('PLCElement'))]
+            ],
+            tags.a(href='settings')['Settings']])
 
     def __init__(self, *a, **kw):
         athena.LiveElement.__init__(self, *a, **kw)
@@ -141,7 +144,7 @@ class ConfigurableBindings(configurable.Configurable):
         return self.bindingsNames
 
     def addInfoString(self, label, value, name=None):
-        if type(value) is str:
+        if isinstance(value, str):
             def default(*k):
                 return value
         else:
@@ -215,25 +218,27 @@ class SettingsPage(rend.Page):
 
     # This makes webform_css url answer some default CSS
     child_webform_css = webform.defaultCSS
+    child_webinterface_css = File(paths.AbsNeighbourFile(__file__, 'webinterface.css'), 'text/css')
 
     implements(ISettings)
 
-    docFactory = loaders.stan([
-        tags.html[
-            tags.head[
-                tags.title[_("Beremiz Runtime Settings")],
-                tags.link(rel='stylesheet',
-                          type='text/css',
-                          href=url.here.child("webform_css"))
-            ],
-            tags.body[
-                tags.h1["Runtime settings:"],
-                webform.renderForms('staticSettings'),
-                tags.h2["Extensions settings:"],
-                webform.renderForms('dynamicSettings'),
-            ]
-        ]
-    ])
+    docFactory = loaders.stan([tags.html[
+        tags.head[
+            tags.title[_("Beremiz Runtime Settings")],
+            tags.link(rel='stylesheet',
+                      type='text/css',
+                      href=url.here.child("webform_css")),
+            tags.link(rel='stylesheet',
+                      type='text/css',
+                      href=url.here.child("webinterface_css"))
+        ],
+        tags.body[
+            tags.a(href='/')['Back'],
+            tags.h1["Runtime settings:"],
+            webform.renderForms('staticSettings'),
+            tags.h1["Extensions settings:"],
+            webform.renderForms('dynamicSettings'),
+        ]]])
 
     def configurable_staticSettings(self, ctx):
         return configurable.TypedInterfaceConfigurable(self)
