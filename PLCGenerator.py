@@ -926,14 +926,15 @@ class PouProgramGenerator(object):
         if blk is None:
             return None
 
-        for invar in blk.inputVariables.getvariable():
-            if invar.getformalParameter() == "EN":
-                if len(invar.getconnectionPointIn().getconnections()) > 0:
-                    if blk.getinstanceName() is None:
-                        var_name = "%s%d_ENO" % (blk.gettypeName(), blk.getlocalId())
-                    else:
-                        var_name = "%s.ENO" % blk.getinstanceName()
-                    return var_name
+        if not isinstance(blk, (InVariableClass, InOutVariableClass)):
+            for invar in blk.inputVariables.getvariable():
+                if invar.getformalParameter() == "EN":
+                    if len(invar.getconnectionPointIn().getconnections()) > 0:
+                        if blk.getinstanceName() is None:
+                            var_name = "%s%d_ENO" % (blk.gettypeName(), blk.getlocalId())
+                        else:
+                            var_name = "%s.ENO" % blk.getinstanceName()
+                        return var_name
         return None
 
     def ComputeProgram(self, pou):
