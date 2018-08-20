@@ -23,6 +23,7 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 		sudo apt-get install build-essential bison flex autoconf
 		sudo apt-get install python-wxgtk3.0 pyro mercurial
 		sudo apt-get install python-nevow python-matplotlib python-lxml python-zeroconf python-cycler
+		sudo apt-get install python-autobahn python-u-msgpack
 
 * Prepare
 
