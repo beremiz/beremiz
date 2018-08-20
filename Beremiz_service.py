@@ -41,7 +41,13 @@ from runtime.xenomai import TryPreloadXenomai
 import util.paths as paths
 
 
+def version():
+    from version import app_version
+    print("Beremiz_service: ", app_version)
+
+
 def usage():
+    version()
     print("""
 Usage of Beremiz PLC execution service :\n
 %s {[-n servicename] [-i IP] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
@@ -62,7 +68,7 @@ Usage of Beremiz PLC execution service :\n
 
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:h")
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:h", ["help", "version"])
 except getopt.GetoptError, err:
     # print help information and exit:
     print(str(err))  # will print something like "option -a not recognized"
@@ -85,8 +91,11 @@ havetwisted = False
 extensions = []
 
 for o, a in opts:
-    if o == "-h":
+    if o == "-h" or o == "--help":
         usage()
+        sys.exit()
+    if o == "--version":
+        version()
         sys.exit()
     elif o == "-i":
         if len(a.split(".")) == 4 or a == "localhost":
@@ -136,6 +145,7 @@ if __name__ == '__main__':
     __builtin__.__dict__['_'] = lambda x: x
     # TODO: add a cmdline parameter if Trying Preloading Xenomai makes problem
     TryPreloadXenomai()
+    version()
 
 
 def Bpath(*args):
