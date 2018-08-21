@@ -31,13 +31,12 @@ import sys
 import getopt
 import threading
 from threading import Thread, Semaphore, Lock
-import traceback
 import __builtin__
-import Pyro
-import Pyro.core as pyro
 
-from runtime import PLCObject, ServicePublisher, MainWorker
+import runtime
+from runtime.PyroServer import Server
 from runtime.xenomai import TryPreloadXenomai
+from runtime import LogMessageAndException
 import util.paths as paths
 
 
@@ -242,12 +241,11 @@ if enablewx:
             TBMENU_CHANGE_WD = wx.NewId()
             TBMENU_QUIT = wx.NewId()
 
-            def __init__(self, pyroserver, level):
+            def __init__(self, pyroserver):
                 wx.TaskBarIcon.__init__(self)
                 self.pyroserver = pyroserver
                 # Set the image
                 self.UpdateIcon(None)
-                self.level = level
 
                 # bind some events
                 self.Bind(wx.EVT_MENU, self.OnTaskBarStartPLC, id=self.TBMENU_START)
@@ -270,15 +268,14 @@ if enablewx:
                 menu = wx.Menu()
                 menu.Append(self.TBMENU_START, _("Start PLC"))
                 menu.Append(self.TBMENU_STOP, _("Stop PLC"))
-                if self.level == 1:
-                    menu.AppendSeparator()
-                    menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
-                    menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
-                    menu.Append(self.TBMENU_CHANGE_PORT, _("Change Port Number"))
-                    menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
-                    menu.AppendSeparator()
-                    menu.Append(self.TBMENU_LIVE_SHELL, _("Launch a live Python shell"))
-                    menu.Append(self.TBMENU_WXINSPECTOR, _("Launch WX GUI inspector"))
+                menu.AppendSeparator()
+                menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
+                menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
+                menu.Append(self.TBMENU_CHANGE_PORT, _("Change Port Number"))
+                menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
+                menu.AppendSeparator()
+                menu.Append(self.TBMENU_LIVE_SHELL, _("Launch a live Python shell"))
+                menu.Append(self.TBMENU_WXINSPECTOR, _("Launch WX GUI inspector"))
                 menu.AppendSeparator()
                 menu.Append(self.TBMENU_QUIT, _("Quit"))
                 return menu
@@ -297,19 +294,10 @@ if enablewx:
                 return icon
 
             def OnTaskBarStartPLC(self, evt):
-                if self.pyroserver.plcobj is not None:
-                    plcstatus = self.pyroserver.plcobj.GetPLCstatus()[0]
-                    if plcstatus is "Stopped":
-                        self.pyroserver.plcobj.StartPLC()
-                    else:
-                        print(_("PLC is empty or already started."))
+                runtime.GetPLCObjectSingleton().StartPLC()
 
             def OnTaskBarStopPLC(self, evt):
-                if self.pyroserver.plcobj is not None:
-                    if self.pyroserver.plcobj.GetPLCstatus()[0] == "Started":
-                        Thread(target=self.pyroserver.plcobj.StopPLC).start()
-                    else:
-                        print(_("PLC is not started."))
+                runtime.GetPLCObjectSingleton().StopPLC()
 
             def OnTaskBarChangeInterface(self, evt):
                 ip_addr = self.pyroserver.ip_addr
@@ -345,10 +333,7 @@ if enablewx:
                     self.pyroserver.Restart()
 
             def _LiveShellLocals(self):
-                if self.pyroserver.plcobj is not None:
-                    return {"locals": self.pyroserver.plcobj.python_runtime_vars}
-                else:
-                    return {}
+                return {"locals": runtime.GetPLCObjectSingleton().python_runtime_vars}
 
             def OnTaskBarLiveShell(self, evt):
                 from wx import py
@@ -390,90 +375,6 @@ def default_evaluator(tocall, *args, **kwargs):
     except Exception:
         res = (None, sys.exc_info())
     return res
-
-
-class Server(object):
-    def __init__(self, servicename, ip_addr, port,
-                 workdir, argv,
-                 statuschange=None, evaluator=default_evaluator,
-                 pyruntimevars=None):
-        self.continueloop = True
-        self.daemon = None
-        self.servicename = servicename
-        self.ip_addr = ip_addr
-        self.port = port
-        self.workdir = workdir
-        self.argv = argv
-        self.servicepublisher = None
-        self.statuschange = statuschange
-        self.evaluator = evaluator
-        self.pyruntimevars = pyruntimevars
-        self.plcobj = PLCObject(self)
-
-    def _to_be_published(self):
-        return self.servicename is not None and \
-               self.ip_addr is not None and \
-               self.ip_addr != "localhost" and \
-               self.ip_addr != "127.0.0.1"
-
-    def PrintServerInfo(self):
-        print(_("Pyro port :"), self.port)
-
-        # Beremiz IDE detects LOCAL:// runtime is ready by looking
-        # for self.workdir in the daemon's stdout.
-        print(_("Current working directory :"), self.workdir)
-
-        if self._to_be_published():
-            print(_("Publishing service on local network"))
-
-        sys.stdout.flush()
-
-    def PyroLoop(self, when_ready):
-        while self.continueloop:
-            Pyro.config.PYRO_MULTITHREADED = 0
-            pyro.initServer()
-            self.daemon = pyro.Daemon(host=self.ip_addr, port=self.port)
-
-            # pyro never frees memory after connection close if no timeout set
-            # taking too small timeout value may cause
-            # unwanted diconnection when IDE is kept busy for long periods
-            self.daemon.setTimeout(60)
-
-            self.daemon.connect(self.plcobj, "PLCObject")
-
-            if self._to_be_published():
-                self.servicepublisher = ServicePublisher.ServicePublisher()
-                self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
-
-            when_ready()
-            self.daemon.requestLoop()
-            self.daemon.sock.close()
-
-    def Restart(self):
-        self._stop()
-
-    def Quit(self):
-        self.continueloop = False
-        if self.plcobj is not None:
-            self.plcobj.StopPLC()
-            self.plcobj.UnLoadPLC()
-        self._stop()
-
-    def _stop(self):
-        if self.plcobj is not None:
-            self.plcobj.StopPLC()
-        if self.servicepublisher is not None:
-            self.servicepublisher.UnRegisterService()
-            self.servicepublisher = None
-        self.daemon.shutdown(True)
-
-    def AutoLoad(self):
-        self.plcobj.AutoLoad()
-        if self.plcobj.GetPLCstatus()[0] == "Stopped":
-            if autostart:
-                self.plcobj.StartPLC()
-        self.plcobj.StatusChange()
-
 
 if enabletwisted:
     import warnings
@@ -522,30 +423,10 @@ if havewx:
         wx.CallAfter(wx_evaluator, o)
         wx_eval_lock.acquire()
         return o.res
-
-    pyroserver = Server(servicename, given_ip, port,
-                        WorkingDir, argv,
-                        statuschange, evaluator, pyruntimevars)
-
-    taskbar_instance = BeremizTaskBarIcon(pyroserver, enablewx)
 else:
-    pyroserver = Server(servicename, given_ip, port,
-                        WorkingDir, argv,
-                        statuschange, pyruntimevars=pyruntimevars)
-
+    evaluator = default_evaluator
 
 # Exception hooks
-
-
-def LogMessageAndException(msg, exp=None):
-    if exp is None:
-        exp = sys.exc_info()
-    if pyroserver.plcobj is not None:
-        pyroserver.plcobj.LogMessage(0, msg + '\n'.join(traceback.format_exception(*exp)))
-    else:
-        print(msg)
-        traceback.print_exception(*exp)
-
 
 def LogException(*exp):
     LogMessageAndException("", exp)
@@ -596,6 +477,15 @@ for extention_file, extension_folder in extensions:
     sys.path.append(extension_folder)
     execfile(os.path.join(extension_folder, extention_file), locals())
 
+
+runtime.CreatePLCObjectSingleton(
+    WorkingDir, argv, statuschange, evaluator, pyruntimevars)
+
+pyroserver = Server(servicename, given_ip, port)
+
+if havewx:
+    taskbar_instance = BeremizTaskBarIcon(pyroserver)
+
 if havetwisted:
     if webport is not None:
         try:
@@ -625,6 +515,11 @@ pyro_thread_started.acquire()
 
 pyroserver.PrintServerInfo()
 
+# Beremiz IDE detects LOCAL:// runtime is ready by looking
+# for self.workdir in the daemon's stdout.
+print(_("Current working directory :"), WorkingDir)
+
+
 if havetwisted or havewx:
     ui_thread_started = Lock()
     ui_thread_started.acquire()
@@ -651,9 +546,15 @@ if havetwisted or havewx:
     print("UI thread started successfully.")
 
 try:
-    MainWorker.runloop(pyroserver.AutoLoad)
+    runtime.MainWorker.runloop(
+        runtime.GetPLCObjectSingleton().AutoLoad, autostart)
 except KeyboardInterrupt:
     pass
 
 pyroserver.Quit()
+
+plcobj = runtime.GetPLCObjectSingleton()
+plcobj.StopPLC()
+plcobj.UnLoadPLC()
+
 sys.exit(0)

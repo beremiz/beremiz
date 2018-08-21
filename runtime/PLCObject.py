@@ -23,7 +23,6 @@
 
 
 from __future__ import absolute_import
-import thread
 from threading import Thread, Lock, Semaphore, Event, Condition
 import ctypes
 import os
@@ -31,10 +30,10 @@ import sys
 import traceback
 from time import time
 import _ctypes  # pylint: disable=wrong-import-order
-import Pyro.core as pyro
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
+from runtime import MainWorker
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -61,107 +60,6 @@ def PLCprint(message):
     sys.stdout.flush()
 
 
-class job(object):
-    """
-    job to be executed by a worker
-    """
-    def __init__(self, call, *args, **kwargs):
-        self.job = (call, args, kwargs)
-        self.result = None
-        self.success = False
-        self.exc_info = None
-
-    def do(self):
-        """
-        do the job by executing the call, and deal with exceptions
-        """
-        try:
-            call, args, kwargs = self.job
-            self.result = call(*args, **kwargs)
-            self.success = True
-        except Exception:
-            self.success = False
-            self.exc_info = sys.exc_info()
-
-
-class worker(object):
-    """
-    serialize main thread load/unload of PLC shared objects
-    """
-    def __init__(self):
-        # Only one job at a time
-        self._finish = False
-        self._threadID = None
-        self.mutex = Lock()
-        self.todo = Condition(self.mutex)
-        self.done = Condition(self.mutex)
-        self.free = Condition(self.mutex)
-        self.job = None
-
-    def runloop(self, *args, **kwargs):
-        """
-        meant to be called by worker thread (blocking)
-        """
-        self._threadID = thread.get_ident()
-        if args or kwargs:
-            job(*args, **kwargs).do()
-            # result is ignored
-        self.mutex.acquire()
-        while not self._finish:
-            self.todo.wait()
-            if self.job is not None:
-                self.job.do()
-                self.done.notify()
-            else:
-                self.free.notify()
-        self.mutex.release()
-
-    def call(self, *args, **kwargs):
-        """
-        creates a job, execute it in worker thread, and deliver result.
-        if job execution raise exception, re-raise same exception
-        meant to be called by non-worker threads, but this is accepted.
-        blocking until job done
-        """
-
-        _job = job(*args, **kwargs)
-
-        if self._threadID == thread.get_ident() or self._threadID is None:
-            # if caller is worker thread execute immediately
-            _job.do()
-        else:
-            # otherwise notify and wait for completion
-            self.mutex.acquire()
-
-            while self.job is not None:
-                self.free.wait()
-
-            self.job = _job
-            self.todo.notify()
-            self.done.wait()
-            _job = self.job
-            self.job = None
-            self.mutex.release()
-
-        if _job.success:
-            return _job.result
-        else:
-            raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
-
-    def quit(self):
-        """
-        unblocks main thread, and terminate execution of runloop()
-        """
-        # mark queue
-        self._finish = True
-        self.mutex.acquire()
-        self.job = None
-        self.todo.notify()
-        self.mutex.release()
-
-
-MainWorker = worker()
-
 
 def RunInMain(func):
     def func_wrapper(*args, **kwargs):
@@ -169,22 +67,19 @@ def RunInMain(func):
     return func_wrapper
 
 
-class PLCObject(pyro.ObjBase):
-    def __init__(self, server):
-        pyro.ObjBase.__init__(self)
-        self.evaluator = server.evaluator
-        self.argv = [server.workdir] + server.argv  # force argv[0] to be "path" to exec...
-        self.workingdir = server.workdir
+class PLCObject(object):
+    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars):
+        self.workingdir = WorkingDir
+        # FIXME : is argv of any use nowadays ?
+        self.argv = [WorkingDir] + argv  # force argv[0] to be "path" to exec...
+        self.statuschange = statuschange
+        self.evaluator = evaluator
+        self.pyruntimevars = pyruntimevars
         self.PLCStatus = "Empty"
         self.PLClibraryHandle = None
         self.PLClibraryLock = Lock()
-        self.DummyIteratorLock = None
         # Creates fake C funcs proxies
         self._InitPLCStubCalls()
-        self.daemon = server.daemon
-        self.statuschange = server.statuschange
-        self.hmi_frame = None
-        self.pyruntimevars = server.pyruntimevars
         self._loading_error = None
         self.python_runtime_vars = None
         self.TraceThread = None
@@ -192,7 +87,7 @@ class PLCObject(pyro.ObjBase):
         self.Traces = []
 
     # First task of worker -> no @RunInMain
-    def AutoLoad(self):
+    def AutoLoad(self, autostart):
         # Get the last transfered PLC
         try:
             self.CurrentPLCFilename = open(
@@ -200,9 +95,14 @@ class PLCObject(pyro.ObjBase):
                 "r").read().strip() + lib_ext
             if self.LoadPLC():
                 self.PLCStatus = "Stopped"
+                if autostart:
+                    self.StartPLC()
+                    return
         except Exception:
             self.PLCStatus = "Empty"
             self.CurrentPLCFilename = None
+
+        self.StatusChange()
 
     def StatusChange(self):
         if self.statuschange is not None:
