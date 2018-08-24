@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2014-01-19T11:14:47" contentDescription="This example shows how you can customize build process by using 'make'.&#10;"/>
-  <contentHeader name="Makefile Example" modificationDateTime="2016-10-14T14:00:01">
+  <contentHeader name="Makefile Example" modificationDateTime="2018-08-24T13:12:10">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -34,25 +34,25 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="27" width="77" negated="false">
-              <position x="52" y="368"/>
+            <inVariable localId="1" executionOrderId="0" height="30" width="77" negated="false">
+              <position x="52" y="424"/>
               <connectionPointOut>
-                <relPosition x="77" y="13"/>
+                <relPosition x="77" y="15"/>
               </connectionPointOut>
               <expression>LocalVara</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="27" width="77" negated="false">
-              <position x="167" y="368"/>
+            <outVariable localId="2" executionOrderId="0" height="30" width="77" negated="false">
+              <position x="167" y="424"/>
               <connectionPointIn>
-                <relPosition x="0" y="13"/>
+                <relPosition x="0" y="15"/>
                 <connection refLocalId="1">
-                  <position x="167" y="381"/>
-                  <position x="129" y="381"/>
+                  <position x="167" y="439"/>
+                  <position x="129" y="439"/>
                 </connection>
               </connectionPointIn>
               <expression>LocalVarb</expression>
             </outVariable>
-            <comment localId="3" height="310" width="760">
+            <comment localId="3" height="385" width="760">
               <position x="32" y="23"/>
               <content>
                 <xhtml:p><![CDATA[This example shows how you can customize build process by using 'make'.
