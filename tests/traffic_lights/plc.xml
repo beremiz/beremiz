@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Unnamed" productVersion="1" creationDateTime="2012-09-04T16:16:33"/>
-  <contentHeader name="traffic_lights" modificationDateTime="2016-10-20T13:08:53">
+  <contentHeader name="traffic_lights" modificationDateTime="2018-08-24T13:21:35">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -120,10 +120,10 @@
           <action name="BLINK_ORANGE_LIGHT">
             <body>
               <LD>
-                <leftPowerRail localId="1" height="40" width="2">
+                <leftPowerRail localId="1" height="40" width="3">
                   <position x="54" y="123"/>
                   <connectionPointOut formalParameter="">
-                    <relPosition x="2" y="20"/>
+                    <relPosition x="3" y="20"/>
                   </connectionPointOut>
                 </leftPowerRail>
                 <contact localId="2" height="15" width="21" negated="true">
@@ -176,10 +176,10 @@
                     </variable>
                   </outputVariables>
                 </block>
-                <inVariable localId="4" height="27" width="72">
+                <inVariable localId="4" height="30" width="72" negated="false">
                   <position x="79" y="171"/>
                   <connectionPointOut>
-                    <relPosition x="72" y="13"/>
+                    <relPosition x="72" y="15"/>
                   </connectionPointOut>
                   <expression>T#500ms</expression>
                 </inVariable>
@@ -233,7 +233,7 @@
                   </connectionPointOut>
                   <variable>ORANGE_LIGHT</variable>
                 </coil>
-                <rightPowerRail localId="7" height="40" width="2">
+                <rightPowerRail localId="7" height="40" width="3">
                   <position x="598" y="123"/>
                   <connectionPointIn>
                     <relPosition x="0" y="20"/>
@@ -257,13 +257,13 @@
                   </connectionPointOut>
                   <variable>ORANGE_LIGHT</variable>
                 </coil>
-                <comment localId="9" height="39" width="308">
-                  <position x="54" y="26"/>
+                <comment localId="9" height="52" width="318">
+                  <position x="51" y="11"/>
                   <content>
                     <xhtml:p><![CDATA[This action makes the orange light blink]]></xhtml:p>
                   </content>
                 </comment>
-                <block localId="10" width="57" height="40" typeName="R_TRIG" instanceName="R_TRIG0">
+                <block localId="10" width="58" height="40" typeName="R_TRIG" instanceName="R_TRIG0">
                   <position x="370" y="262"/>
                   <inputVariables>
                     <variable formalParameter="CLK">
@@ -280,12 +280,12 @@
                   <outputVariables>
                     <variable formalParameter="Q">
                       <connectionPointOut>
-                        <relPosition x="57" y="30"/>
+                        <relPosition x="58" y="30"/>
                       </connectionPointOut>
                     </variable>
                   </outputVariables>
                 </block>
-                <block localId="11" width="57" height="40" typeName="R_TRIG" instanceName="R_TRIG1">
+                <block localId="11" width="58" height="40" typeName="R_TRIG" instanceName="R_TRIG1">
                   <position x="371" y="113"/>
                   <inputVariables>
                     <variable formalParameter="CLK">
@@ -302,12 +302,12 @@
                   <outputVariables>
                     <variable formalParameter="Q">
                       <connectionPointOut>
-                        <relPosition x="57" y="30"/>
+                        <relPosition x="58" y="30"/>
                       </connectionPointOut>
                     </variable>
                   </outputVariables>
                 </block>
-                <rightPowerRail localId="12" height="40" width="2">
+                <rightPowerRail localId="12" height="40" width="3">
                   <position x="597" y="272"/>
                   <connectionPointIn>
                     <relPosition x="0" y="20"/>
@@ -317,10 +317,10 @@
                     </connection>
                   </connectionPointIn>
                 </rightPowerRail>
-                <leftPowerRail localId="13" height="40" width="2">
+                <leftPowerRail localId="13" height="40" width="3">
                   <position x="67" y="272"/>
                   <connectionPointOut formalParameter="">
-                    <relPosition x="2" y="20"/>
+                    <relPosition x="3" y="20"/>
                   </connectionPointOut>
                 </leftPowerRail>
                 <contact localId="14" height="15" width="21">
@@ -337,10 +337,10 @@
                   </connectionPointOut>
                   <variable>ORANGE_LIGHT</variable>
                 </contact>
-                <inVariable localId="15" height="27" width="72">
+                <inVariable localId="15" height="30" width="72" negated="false">
                   <position x="90" y="322"/>
                   <connectionPointOut>
-                    <relPosition x="72" y="13"/>
+                    <relPosition x="72" y="15"/>
                   </connectionPointOut>
                   <expression>T#500ms</expression>
                 </inVariable>
@@ -374,19 +374,21 @@
                     </variable>
                   </outputVariables>
                 </block>
-                <inVariable localId="43" height="27" width="156">
+                <inVariable localId="43" height="30" width="156" executionOrderId="0" negated="false">
                   <position x="46" y="57"/>
                   <connectionPointOut>
-                    <relPosition x="156" y="13"/>
+                    <relPosition x="156" y="15"/>
                   </connectionPointOut>
                   <expression>SWITCH_BUTTON</expression>
                 </inVariable>
-                <outVariable localId="44" height="27" width="46">
+                <outVariable localId="44" height="30" width="46" executionOrderId="0" negated="false">
                   <position x="351" y="57"/>
                   <connectionPointIn>
-                    <relPosition x="0" y="13"/>
+                    <relPosition x="0" y="15"/>
                     <connection refLocalId="42" formalParameter="OUT">
-                      <position x="351" y="70"/>
+                      <position x="351" y="72"/>
+                      <position x="320" y="72"/>
+                      <position x="320" y="70"/>
                       <position x="289" y="70"/>
                     </connection>
                   </connectionPointIn>
@@ -438,7 +440,7 @@
                 </inline>
               </condition>
             </transition>
-            <step localId="3" height="27" width="69" name="ORANGE">
+            <step localId="3" height="30" width="69" name="ORANGE">
               <position x="535" y="252"/>
               <connectionPointIn>
                 <relPosition x="34" y="0"/>
@@ -448,10 +450,10 @@
                 </connection>
               </connectionPointIn>
               <connectionPointOut formalParameter="">
-                <relPosition x="34" y="27"/>
+                <relPosition x="34" y="30"/>
               </connectionPointOut>
               <connectionPointOutAction formalParameter="">
-                <relPosition x="69" y="13"/>
+                <relPosition x="69" y="15"/>
               </connectionPointOutAction>
             </step>
             <transition localId="6" height="2" width="20">
@@ -680,7 +682,7 @@
                 <relPosition x="159" y="1"/>
               </connectionPointOut>
             </selectionDivergence>
-            <step localId="18" height="27" width="148" name="PEDESTRIAN_GREEN">
+            <step localId="18" height="30" width="148" name="PEDESTRIAN_GREEN">
               <position x="495" y="575"/>
               <connectionPointIn>
                 <relPosition x="74" y="0"/>
@@ -690,19 +692,21 @@
                 </connection>
               </connectionPointIn>
               <connectionPointOut formalParameter="">
-                <relPosition x="74" y="27"/>
+                <relPosition x="74" y="30"/>
               </connectionPointOut>
               <connectionPointOutAction formalParameter="">
-                <relPosition x="148" y="13"/>
+                <relPosition x="148" y="15"/>
               </connectionPointOutAction>
             </step>
-            <actionBlock localId="19" width="236" height="110">
+            <actionBlock localId="19" width="247" height="110">
               <position x="708" y="573"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="18">
                   <position x="708" y="588"/>
-                  <position x="643" y="588"/>
+                  <position x="675" y="588"/>
+                  <position x="675" y="590"/>
+                  <position x="643" y="590"/>
                 </connection>
               </connectionPointIn>
               <action localId="0" qualifier="S">
@@ -784,7 +788,7 @@
                 </inline>
               </condition>
             </transition>
-            <step localId="24" height="27" width="148" name="PEDESTRIAN_RED">
+            <step localId="24" height="30" width="148" name="PEDESTRIAN_RED">
               <position x="495" y="750"/>
               <connectionPointIn>
                 <relPosition x="74" y="0"/>
@@ -794,19 +798,21 @@
                 </connection>
               </connectionPointIn>
               <connectionPointOut formalParameter="">
-                <relPosition x="74" y="27"/>
+                <relPosition x="74" y="30"/>
               </connectionPointOut>
               <connectionPointOutAction formalParameter="">
-                <relPosition x="148" y="13"/>
+                <relPosition x="148" y="15"/>
               </connectionPointOutAction>
             </step>
-            <actionBlock localId="25" width="233" height="110">
+            <actionBlock localId="25" width="239" height="110">
               <position x="708" y="748"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="24">
                   <position x="708" y="763"/>
-                  <position x="643" y="763"/>
+                  <position x="675" y="763"/>
+                  <position x="675" y="765"/>
+                  <position x="643" y="765"/>
                 </connection>
               </connectionPointIn>
               <action localId="0" qualifier="S">
@@ -889,7 +895,7 @@
                 </inline>
               </condition>
             </transition>
-            <step localId="30" height="27" width="56" name="GREEN">
+            <step localId="30" height="30" width="56" name="GREEN">
               <position x="541" y="933"/>
               <connectionPointIn>
                 <relPosition x="28" y="0"/>
@@ -899,10 +905,10 @@
                 </connection>
               </connectionPointIn>
               <connectionPointOut formalParameter="">
-                <relPosition x="28" y="27"/>
+                <relPosition x="28" y="30"/>
               </connectionPointOut>
               <connectionPointOutAction formalParameter="">
-                <relPosition x="56" y="13"/>
+                <relPosition x="56" y="15"/>
               </connectionPointOutAction>
             </step>
             <actionBlock localId="31" width="227" height="110">
@@ -965,17 +971,17 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="33" height="27" width="159">
+            <inVariable localId="33" height="30" width="159" negated="false">
               <position x="24" y="1052"/>
               <connectionPointOut>
-                <relPosition x="159" y="13"/>
+                <relPosition x="159" y="15"/>
               </connectionPointOut>
               <expression>PEDESTRIAN_BUTTON</expression>
             </inVariable>
-            <inVariable localId="34" height="27" width="43">
+            <inVariable localId="34" height="30" width="43" negated="false">
               <position x="227" y="1115"/>
               <connectionPointOut>
-                <relPosition x="43" y="13"/>
+                <relPosition x="43" y="15"/>
               </connectionPointOut>
               <expression>T#2s</expression>
             </inVariable>
@@ -1012,10 +1018,10 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="36" height="27" width="97">
+            <inVariable localId="36" height="30" width="97" negated="false">
               <position x="163" y="1182"/>
               <connectionPointOut>
-                <relPosition x="97" y="13"/>
+                <relPosition x="97" y="15"/>
               </connectionPointOut>
               <expression>WARN_CARS</expression>
             </inVariable>
@@ -1086,7 +1092,7 @@
                 </connection>
               </connectionPointIn>
             </jumpStep>
-            <block localId="44" width="50" height="60" typeName="SR" instanceName="SR0">
+            <block localId="44" width="51" height="60" typeName="SR" instanceName="SR0">
               <position x="224" y="1035"/>
               <inputVariables>
                 <variable formalParameter="S1">
@@ -1094,7 +1100,9 @@
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="33">
                       <position x="224" y="1065"/>
-                      <position x="183" y="1065"/>
+                      <position x="203" y="1065"/>
+                      <position x="203" y="1067"/>
+                      <position x="183" y="1067"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1116,12 +1124,12 @@
               <outputVariables>
                 <variable formalParameter="Q1">
                   <connectionPointOut>
-                    <relPosition x="50" y="30"/>
+                    <relPosition x="51" y="30"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <comment localId="45" height="681" width="645">
+            <comment localId="45" height="907" width="645">
               <position x="1021" y="21"/>
               <content>
                 <xhtml:p><![CDATA[*** Description of SFC action qualifiers ***
@@ -1168,7 +1176,7 @@ inactive as soon as the action is reset.
 ]]></xhtml:p>
               </content>
             </comment>
-            <comment localId="46" height="160" width="375">
+            <comment localId="46" height="224" width="375">
               <position x="8" y="326"/>
               <content>
                 <xhtml:p><![CDATA[Conditions can be written in any IEC 61131-3 language.
@@ -1200,7 +1208,7 @@ See below examples of all these types.]]></xhtml:p>
               </connectionPointOut>
               <variable>SWITCH_BUTTON</variable>
             </contact>
-            <comment localId="13" height="66" width="375">
+            <comment localId="13" height="86" width="379">
               <position x="9" y="28"/>
               <content>
                 <xhtml:p><![CDATA[
@@ -1257,7 +1265,7 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
         </interface>
         <body>
           <FBD>
-            <block localId="1" width="349" height="836" typeName="traffic_light_sequence" instanceName="trafic_light_sequence0" executionOrderId="0">
+            <block localId="1" width="350" height="836" typeName="traffic_light_sequence" instanceName="trafic_light_sequence0" executionOrderId="0">
               <position x="470" y="406"/>
               <inputVariables>
                 <variable formalParameter="SWITCH_BUTTON">
@@ -1285,27 +1293,27 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
               <outputVariables>
                 <variable formalParameter="RED_LIGHT">
                   <connectionPointOut>
-                    <relPosition x="349" y="101"/>
+                    <relPosition x="350" y="101"/>
                   </connectionPointOut>
                 </variable>
                 <variable formalParameter="ORANGE_LIGHT">
                   <connectionPointOut>
-                    <relPosition x="349" y="264"/>
+                    <relPosition x="350" y="264"/>
                   </connectionPointOut>
                 </variable>
                 <variable formalParameter="GREEN_LIGHT">
                   <connectionPointOut>
-                    <relPosition x="349" y="427"/>
+                    <relPosition x="350" y="427"/>
                   </connectionPointOut>
                 </variable>
                 <variable formalParameter="PEDESTRIAN_RED_LIGHT">
                   <connectionPointOut>
-                    <relPosition x="349" y="590"/>
+                    <relPosition x="350" y="590"/>
                   </connectionPointOut>
                 </variable>
                 <variable formalParameter="PEDESTRIAN_GREEN_LIGHT">
                   <connectionPointOut>
-                    <relPosition x="349" y="753"/>
+                    <relPosition x="350" y="753"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
@@ -1406,38 +1414,38 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="4" height="27" width="18" executionOrderId="0" negated="false">
+            <inVariable localId="4" height="30" width="18" executionOrderId="0" negated="false">
               <position x="118" y="558"/>
               <connectionPointOut>
-                <relPosition x="18" y="13"/>
+                <relPosition x="18" y="15"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <inVariable localId="5" height="27" width="105" executionOrderId="0" negated="false">
+            <inVariable localId="5" height="30" width="105" executionOrderId="0" negated="false">
               <position x="31" y="494"/>
               <connectionPointOut>
-                <relPosition x="105" y="13"/>
+                <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>'SWITCH_OFF'</expression>
             </inVariable>
-            <inVariable localId="6" height="27" width="105" executionOrderId="0" negated="false">
+            <inVariable localId="6" height="30" width="105" executionOrderId="0" negated="false">
               <position x="31" y="526"/>
               <connectionPointOut>
-                <relPosition x="105" y="13"/>
+                <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>'SWITCH_ON'</expression>
             </inVariable>
-            <inVariable localId="7" height="27" width="137" executionOrderId="0" negated="false">
+            <inVariable localId="7" height="30" width="137" executionOrderId="0" negated="false">
               <position x="22" y="708"/>
               <connectionPointOut>
-                <relPosition x="137" y="13"/>
+                <relPosition x="137" y="15"/>
               </connectionPointOut>
               <expression>'PEDESTRIAN_OFF'</expression>
             </inVariable>
-            <inVariable localId="8" height="27" width="137" executionOrderId="0" negated="false">
+            <inVariable localId="8" height="30" width="137" executionOrderId="0" negated="false">
               <position x="22" y="743"/>
               <connectionPointOut>
-                <relPosition x="137" y="13"/>
+                <relPosition x="137" y="15"/>
               </connectionPointOut>
               <expression>'PEDESTRIAN_ON'</expression>
             </inVariable>
@@ -1475,17 +1483,17 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="10" height="27" width="79" executionOrderId="0" negated="false">
+            <inVariable localId="10" height="30" width="79" executionOrderId="0" negated="false">
               <position x="931" y="420"/>
               <connectionPointOut>
-                <relPosition x="79" y="13"/>
+                <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>'RED_OFF'</expression>
             </inVariable>
-            <inVariable localId="11" height="27" width="79" executionOrderId="0" negated="false">
+            <inVariable localId="11" height="30" width="79" executionOrderId="0" negated="false">
               <position x="931" y="457"/>
               <connectionPointOut>
-                <relPosition x="79" y="13"/>
+                <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>'RED_ON'</expression>
             </inVariable>
@@ -1523,17 +1531,17 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="13" height="27" width="111" executionOrderId="0" negated="false">
+            <inVariable localId="13" height="30" width="111" executionOrderId="0" negated="false">
               <position x="899" y="583"/>
               <connectionPointOut>
-                <relPosition x="111" y="13"/>
+                <relPosition x="111" y="15"/>
               </connectionPointOut>
               <expression>'ORANGE_OFF'</expression>
             </inVariable>
-            <inVariable localId="14" height="27" width="106" executionOrderId="0" negated="false">
+            <inVariable localId="14" height="30" width="106" executionOrderId="0" negated="false">
               <position x="904" y="620"/>
               <connectionPointOut>
-                <relPosition x="106" y="13"/>
+                <relPosition x="106" y="15"/>
               </connectionPointOut>
               <expression>'ORANGE_ON'</expression>
             </inVariable>
@@ -1571,17 +1579,17 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="16" height="27" width="111" executionOrderId="0" negated="false">
+            <inVariable localId="16" height="30" width="111" executionOrderId="0" negated="false">
               <position x="899" y="746"/>
               <connectionPointOut>
-                <relPosition x="111" y="13"/>
+                <relPosition x="111" y="15"/>
               </connectionPointOut>
               <expression>'GREEN_OFF'</expression>
             </inVariable>
-            <inVariable localId="17" height="27" width="106" executionOrderId="0" negated="false">
+            <inVariable localId="17" height="30" width="106" executionOrderId="0" negated="false">
               <position x="904" y="783"/>
               <connectionPointOut>
-                <relPosition x="106" y="13"/>
+                <relPosition x="106" y="15"/>
               </connectionPointOut>
               <expression>'GREEN_ON'</expression>
             </inVariable>
@@ -1619,17 +1627,17 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="19" height="27" width="171" executionOrderId="0" negated="false">
+            <inVariable localId="19" height="30" width="171" executionOrderId="0" negated="false">
               <position x="849" y="909"/>
               <connectionPointOut>
-                <relPosition x="171" y="13"/>
+                <relPosition x="171" y="15"/>
               </connectionPointOut>
               <expression>'PEDESTRIAN_RED_OFF'</expression>
             </inVariable>
-            <inVariable localId="20" height="27" width="166" executionOrderId="0" negated="false">
+            <inVariable localId="20" height="30" width="166" executionOrderId="0" negated="false">
               <position x="854" y="946"/>
               <connectionPointOut>
-                <relPosition x="166" y="13"/>
+                <relPosition x="166" y="15"/>
               </connectionPointOut>
               <expression>'PEDESTRIAN_RED_ON'</expression>
             </inVariable>
@@ -1667,21 +1675,21 @@ Sequential function chart (SFC) is commonly used to describe state machines.]]><
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="22" height="27" width="190" executionOrderId="0" negated="false">
+            <inVariable localId="22" height="30" width="190" executionOrderId="0" negated="false">
               <position x="845" y="1072"/>
               <connectionPointOut>
-                <relPosition x="190" y="13"/>
+                <relPosition x="190" y="15"/>
               </connectionPointOut>
               <expression>'PEDESTRIAN_GREEN_OFF'</expression>
             </inVariable>
-            <inVariable localId="23" height="27" width="185" executionOrderId="0" negated="false">
+            <inVariable localId="23" height="30" width="185" executionOrderId="0" negated="false">
               <position x="850" y="1109"/>
               <connectionPointOut>
-                <relPosition x="185" y="13"/>
+                <relPosition x="185" y="15"/>
               </connectionPointOut>
               <expression>'PEDESTRIAN_GREEN_ON'</expression>
             </inVariable>
-            <comment localId="24" height="262" width="804">
+            <comment localId="24" height="287" width="1008">
               <position x="22" y="13"/>
               <content>
                 <xhtml:p><![CDATA[This example implements control of traffic lights.
@@ -1703,8 +1711,8 @@ Inkscape is a free and open-source vector graphics editor. It's not part of Bere
 ]]></xhtml:p>
               </content>
             </comment>
-            <comment localId="102" height="126" width="411">
-              <position x="20" y="319"/>
+            <comment localId="102" height="144" width="444">
+              <position x="20" y="303"/>
               <content>
                 <xhtml:p><![CDATA[In this example FB like 'Button', 'Led' and 'Text' are used. 
 Back_id and sele_id inputs of these blocks are IDs  of 
