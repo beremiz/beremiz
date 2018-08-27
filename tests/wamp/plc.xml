@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="1" creationDateTime="2015-02-05T11:44:55" contentDescription=" &#10;&#10;"/>
-  <contentHeader name="WAMPTest" modificationDateTime="2018-08-16T16:14:30">
+  <contentHeader name="WAMPTest" modificationDateTime="2018-08-27T11:11:30">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -91,7 +91,7 @@
               </connectionPointOut>
               <expression>LocalVar0</expression>
             </inVariable>
-            <comment localId="5" height="478" width="646">
+            <comment localId="5" height="459" width="788">
               <position x="23" y="10"/>
               <content>
                 <xhtml:p><![CDATA[Communication between Beremiz and PLC runtime isn't bound to any specific protocol and could be extended by writing corresponding connector (see 'connectors' directory).
