@@ -31,28 +31,26 @@ from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 from util.TranslationCatalogs import NoTranslate
 
 
-def GetPouTypes():
-    _ = NoTranslate
-    return [_("function"), _("functionBlock"), _("program")]
-
-
-POU_TYPES_DICT = dict([(_(pou_type), pou_type) for pou_type in GetPouTypes()])
-
-
-def GetPouLanguages():
-    _ = NoTranslate
-    return [_("IL"), _("ST"), _("LD"), _("FBD"), _("SFC")]
-
-
 class PouDialog(wx.Dialog):
+    """
+    Dialog to create new POU.
+    It allows selection of POU type, name and
+    used IEC 61131-3 programming language
+    """
 
-    POU_LANGUAGES = GetPouLanguages()
-    POU_LANGUAGES_DICT = dict([(_(language), language) for language in POU_LANGUAGES])
+    POU_TYPES = None
+    POU_TYPES_DICT = None
+    POU_LANGUAGES = None
+    POU_LANGUAGES_DICT = None
 
     def __init__(self, parent, pou_type=None, type_readonly=False):
         wx.Dialog.__init__(self, id=-1, parent=parent,
                            name='PouDialog', title=_('Create a new POU'),
                            style=wx.DEFAULT_DIALOG_STYLE)
+
+        if PouDialog.POU_TYPES_DICT is None:
+            self.InitPouTypesDict()
+            self.InitPouLanguagesDict()
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -92,7 +90,7 @@ class PouDialog(wx.Dialog):
 
         self.SetSizer(main_sizer)
 
-        for option in GetPouTypes():
+        for option in self.POU_TYPES:
             if not type_readonly or _(option) == _(pou_type):
                 self.PouType.Append(_(option))
         if pou_type is not None:
@@ -101,6 +99,43 @@ class PouDialog(wx.Dialog):
         self.Fit()
         self.PouNames = []
         self.PouElementNames = []
+
+    def InitPouTypes(self):
+        """
+        Initialize POU_TYPES class list.
+        This list contains not translated POU types used in PLCopen XML.
+        _() are necessary so mk18n.py could find these string for localization.
+        """
+        _ = NoTranslate
+        self.__class__.POU_TYPES = [_("function"), _("functionBlock"), _("program")]
+
+    def InitPouTypesDict(self):
+        """
+        Initialize POU_TYPES_DICT class dictionary and POU_TYPE list
+        Dictionary contains localized POU types and they are shown in UI.
+        """
+        self.InitPouTypes()
+        self.__class__.POU_TYPES_DICT = dict([(_(pou_type), pou_type)
+                                              for pou_type in self.POU_TYPES])
+
+    def InitPouLanguages(self):
+        """
+        Initialize POU_LANGUAGES class list.
+        This list contains not translated programming languages used in PLCopen XML.
+        _() are necessary so mk18n.py could find these string for localization.
+        """
+        _ = NoTranslate
+        self.__class__.POU_LANGUAGES = [_("IL"), _("ST"), _("LD"), _("FBD"), _("SFC")]
+
+    def InitPouLanguagesDict(self):
+        """
+        Initialize POU_LANGUAGES_DICT class dictionary and POU_LANGUAGES list
+        Dictionary contains localized names for programming languages
+        as they are shown in UI.
+        """
+        self.InitPouLanguages()
+        self.__class__.POU_LANGUAGES_DICT = dict([(_(language), language)
+                                                  for language in self.POU_LANGUAGES])
 
     def OnOK(self, event):
         error = []
@@ -150,7 +185,7 @@ class PouDialog(wx.Dialog):
         selection = self.POU_LANGUAGES_DICT.get(self.Language.GetStringSelection(), "")
         self.Language.Clear()
         for language in self.POU_LANGUAGES:
-            if language != "SFC" or POU_TYPES_DICT[self.PouType.GetStringSelection()] != "function":
+            if language != "SFC" or self.POU_TYPES_DICT[self.PouType.GetStringSelection()] != "function":
                 self.Language.Append(_(language))
         if self.Language.FindString(_(selection)) != wx.NOT_FOUND:
             self.Language.SetStringSelection(_(selection))
@@ -177,6 +212,6 @@ class PouDialog(wx.Dialog):
     def GetValues(self):
         values = {}
         values["pouName"] = self.PouName.GetValue()
-        values["pouType"] = POU_TYPES_DICT[self.PouType.GetStringSelection()]
+        values["pouType"] = self.POU_TYPES_DICT[self.PouType.GetStringSelection()]
         values["language"] = self.POU_LANGUAGES_DICT[self.Language.GetStringSelection()]
         return values
