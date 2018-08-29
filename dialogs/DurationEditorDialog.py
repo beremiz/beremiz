@@ -42,14 +42,6 @@ DAY = 24 * HOUR
 
 IEC_TIME_MODEL = re.compile("(?:T|TIME)#(-)?(?:(%(float)s)D_?)?(?:(%(float)s)H_?)?(?:(%(float)s)M(?!S)_?)?(?:(%(float)s)S_?)?(?:(%(float)s)MS)?$" % {"float": "[0-9]+(?:\.[0-9]+)?"})
 
-CONTROLS = [
-    ("Days", _('Days:')),
-    ("Hours", _('Hours:')),
-    ("Minutes", _('Minutes:')),
-    ("Seconds", _('Seconds:')),
-    ("Milliseconds", _('Milliseconds:')),
-    ("Microseconds", _('Microseconds:')),
-]
 
 # -------------------------------------------------------------------------------
 #                         Edit Duration Value Dialog
@@ -60,6 +52,15 @@ class DurationEditorDialog(wx.Dialog):
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Edit Duration'))
+
+        CONTROLS = [
+            ("Days", _('Days:')),
+            ("Hours", _('Hours:')),
+            ("Minutes", _('Minutes:')),
+            ("Seconds", _('Seconds:')),
+            ("Milliseconds", _('Milliseconds:')),
+            ("Microseconds", _('Microseconds:')),
+        ]
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)

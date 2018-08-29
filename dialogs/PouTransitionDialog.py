@@ -40,13 +40,12 @@ def GetTransitionLanguages():
     return [_("IL"), _("ST"), _("LD"), _("FBD")]
 
 
-TRANSITION_LANGUAGES_DICT = dict([(_(language), language) for language in GetTransitionLanguages()])
-
-
 class PouTransitionDialog(wx.Dialog):
-
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Create a new transition'))
+
+        self.TRANSITION_LANGUAGES_DICT = dict([(_(language), language)
+                                               for language in GetTransitionLanguages()])
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -133,5 +132,5 @@ class PouTransitionDialog(wx.Dialog):
     def GetValues(self):
         values = {}
         values["transitionName"] = self.TransitionName.GetValue()
-        values["language"] = TRANSITION_LANGUAGES_DICT[self.Language.GetStringSelection()]
+        values["language"] = self.TRANSITION_LANGUAGES_DICT[self.Language.GetStringSelection()]
         return values

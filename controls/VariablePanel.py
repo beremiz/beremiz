@@ -80,9 +80,6 @@ def GetOptions(constant=True, retain=True, non_retain=True):
     return options
 
 
-OPTIONS_DICT = dict([(_(option), option) for option in GetOptions()])
-
-
 def GetFilterChoiceTransfer():
     _ = NoTranslate
     return {_("All"): _("All"), _("Interface"): _("Interface"),
@@ -90,9 +87,6 @@ def GetFilterChoiceTransfer():
             _("   External"): _("External"), _("Variables"): _("Variables"), _("   Local"): _("Local"),
             _("   Temp"): _("Temp"), _("Global"): _("Global")}  # , _("Access") : _("Access")}
 
-
-VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().iterkeys()])
-VARIABLE_CLASSES_DICT = dict([(_(_class), _class) for _class in GetFilterChoiceTransfer().itervalues()])
 
 CheckOptionForClass = {
     "Local": lambda x: x,
@@ -122,6 +116,10 @@ class VariableTable(CustomTable):
         # The base class must be initialized *first*
         CustomTable.__init__(self, parent, data, colnames)
         self.old_value = None
+        self.OPTIONS_DICT = dict([(_(option), option)
+                                  for option in GetOptions()])
+        self.VARIABLE_CLASSES_DICT = dict([(_(_class), _class)
+                                           for _class in GetFilterChoiceTransfer().itervalues()])
 
     def GetValueByName(self, row, colname):
         if row < self.GetNumberRows():
@@ -154,12 +152,12 @@ class VariableTable(CustomTable):
             if colname == "Name":
                 self.old_value = getattr(self.data[row], colname)
             elif colname == "Class":
-                value = VARIABLE_CLASSES_DICT[value]
+                value = self.VARIABLE_CLASSES_DICT[value]
                 self.SetValueByName(row, "Option", CheckOptionForClass[value](self.GetValueByName(row, "Option")))
                 if value == "External":
                     self.SetValueByName(row, "InitialValue", "")
             elif colname == "Option":
-                value = OPTIONS_DICT[value]
+                value = self.OPTIONS_DICT[value]
             elif colname == "Initial Value":
                 colname = "InitialValue"
             setattr(self.data[row], colname, value)
@@ -443,6 +441,9 @@ class VariablePanel(wx.Panel):
 
     def __init__(self, parent, window, controler, element_type, debug=False):
         wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
+
+        self.VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for
+                                           _class in GetFilterChoiceTransfer().iterkeys()])
 
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=0)
         self.MainSizer.AddGrowableCol(0)
@@ -763,7 +764,7 @@ class VariablePanel(wx.Panel):
         event.Skip()
 
     def OnClassFilter(self, event):
-        self.Filter = self.FilterChoiceTransfer[VARIABLE_CHOICES_DICT[self.ClassFilter.GetStringSelection()]]
+        self.Filter = self.FilterChoiceTransfer[self.VARIABLE_CHOICES_DICT[self.ClassFilter.GetStringSelection()]]
         self.RefreshTypeList()
         self.RefreshValues()
         self.VariablesGrid.RefreshButtons()

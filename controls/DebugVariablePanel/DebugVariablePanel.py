@@ -50,14 +50,6 @@ MINUTE = 60 * SECOND         # Number of nanosecond in a minute
 HOUR = 60 * MINUTE           # Number of nanosecond in a hour
 DAY = 24 * HOUR              # Number of nanosecond in a day
 
-# List of values possible for graph range
-# Format is [(time_in_plain_text, value_in_nanosecond),...]
-RANGE_VALUES = \
-    [(_("%dms") % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
-    [(_("%ds") % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
-    [(_("%dm") % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
-    [(_("%dh") % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
-
 # Scrollbar increment in pixel
 SCROLLBAR_UNIT = 10
 
@@ -189,6 +181,13 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         """
         wx.Panel.__init__(self, parent, style=wx.SP_3D | wx.TAB_TRAVERSAL)
 
+        # List of values possible for graph range
+        # Format is [(time_in_plain_text, value_in_nanosecond),...]
+        self.RANGE_VALUES = [(_("%dms") % i, i * MILLISECOND) for i in (10, 20, 50, 100, 200, 500)] + \
+                            [(_("%ds") % i, i * SECOND) for i in (1, 2, 5, 10, 20, 30)] + \
+                            [(_("%dm") % i, i * MINUTE) for i in (1, 2, 5, 10, 20, 30)] + \
+                            [(_("%dh") % i, i * HOUR) for i in (1, 2, 3, 6, 12, 24)]
+
         # Save Reference to Beremiz frame
         self.ParentWindow = window
 
@@ -233,7 +232,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
         self.CanvasRange.Clear()
         default_range_idx = 0
-        for idx, (text, _value) in enumerate(RANGE_VALUES):
+        for idx, (text, _value) in enumerate(self.RANGE_VALUES):
             self.CanvasRange.Append(text)
             if _value == 1000000000:
                 default_range_idx = idx
@@ -307,7 +306,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             self.Ticktime = MILLISECOND
 
         # Calculate range to apply to data
-        self.CurrentRange = RANGE_VALUES[
+        self.CurrentRange = self.RANGE_VALUES[
             self.CanvasRange.GetSelection()][1] / self.Ticktime
 
     def SetDataProducer(self, producer):
@@ -614,10 +613,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
     def ChangeRange(self, dir, tick=None):
         current_range = self.CurrentRange
         current_range_idx = self.CanvasRange.GetSelection()
-        new_range_idx = max(0, min(current_range_idx + dir, len(RANGE_VALUES) - 1))
+        new_range_idx = max(0, min(current_range_idx + dir, len(self.RANGE_VALUES) - 1))
         if new_range_idx != current_range_idx:
             self.CanvasRange.SetSelection(new_range_idx)
-            self.CurrentRange = RANGE_VALUES[new_range_idx][1] / self.Ticktime
+            self.CurrentRange = self.RANGE_VALUES[new_range_idx][1] / self.Ticktime
             if len(self.Ticks) > 0:
                 if tick is None:
                     tick = self.StartTick + self.CurrentRange / 2.
@@ -639,7 +638,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
     def OnRangeChanged(self, event):
         try:
-            self.CurrentRange = RANGE_VALUES[self.CanvasRange.GetSelection()][1] / self.Ticktime
+            self.CurrentRange = self.RANGE_VALUES[self.CanvasRange.GetSelection()][1] / self.Ticktime
         except ValueError:
             self.CanvasRange.SetValue(str(self.CurrentRange))
         wx.CallAfter(self.RefreshRange)
