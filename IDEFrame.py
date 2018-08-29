@@ -2172,6 +2172,7 @@ class IDEFrame(wx.Frame):
                 self.AUIManager.GetPane("EditorToolBar").Show()
                 self.AUIManager.Update()
                 self.AUIManager.GetPane("EditorToolBar").BestSize(EditorToolBar.GetBestSize())
+                self.AUIManager.Update()
         elif menu is None:
             self.ResetEditorToolBar()
             self.CurrentMenu = menu
