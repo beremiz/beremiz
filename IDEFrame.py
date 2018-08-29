@@ -93,106 +93,6 @@ from plcopen.types_enums import *
 ] = [wx.NewId() for _init_coll_DefaultEditorToolBar_Items in range(18)]
 
 
-# Define behaviour of each Toolbar item according to current POU body type
-# Informations meaning are in this order:
-#  - Item is toggled
-#  - PLCOpenEditor mode where item is displayed (could be more then one)
-#  - Item id
-#  - Item callback function name
-#  - Item icon filename
-#  - Item tooltip text
-EditorToolBarItems = {
-    "FBD":   [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
-               "move", _("Move the view")),
-              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
-               "add_comment", _("Create a new comment")),
-              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
-               "add_variable", _("Create a new variable")),
-              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
-               "add_block", _("Create a new block")),
-              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
-               "add_connection", _("Create a new connection"))],
-    "LD":    [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
-               "move", _("Move the view")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
-               "add_comment", _("Create a new comment")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARPOWERRAIL, "OnPowerRailTool",
-               "add_powerrail", _("Create a new power rail")),
-              (False, DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARRUNG, "OnRungTool",
-               "add_rung", _("Create a new rung")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCOIL, "OnCoilTool",
-               "add_coil", _("Create a new coil")),
-              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCONTACT, "OnContactTool",
-               "add_contact", _("Create a new contact")),
-              (False, DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARBRANCH, "OnBranchTool",
-               "add_branch", _("Create a new branch")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
-               "add_variable", _("Create a new variable")),
-              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
-               "add_block", _("Create a new block")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
-               "add_connection", _("Create a new connection"))],
-    "SFC":   [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
-               "move", _("Move the view")),
-              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
-               "add_comment", _("Create a new comment")),
-              (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARINITIALSTEP, "OnInitialStepTool",
-               "add_initial_step", _("Create a new initial step")),
-              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARSTEP, "OnStepTool",
-               "add_step", _("Create a new step")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARTRANSITION, "OnTransitionTool",
-               "add_transition", _("Create a new transition")),
-              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARACTIONBLOCK, "OnActionBlockTool",
-               "add_action", _("Create a new action block")),
-              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARDIVERGENCE, "OnDivergenceTool",
-               "add_divergence", _("Create a new divergence")),
-              (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARJUMP, "OnJumpTool",
-               "add_jump", _("Create a new jump")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
-               "add_variable", _("Create a new variable")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
-               "add_block", _("Create a new block")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
-               "add_connection", _("Create a new connection")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARPOWERRAIL, "OnPowerRailTool",
-               "add_powerrail", _("Create a new power rail")),
-              (True, FREEDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARCONTACT, "OnContactTool",
-               "add_contact", _("Create a new contact"))],
-    "ST":    [],
-    "IL":    [],
-    "debug": [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
-               ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
-               "move", _("Move the view"))],
-}
-
 # -------------------------------------------------------------------------------
 #                               Helper Functions
 # -------------------------------------------------------------------------------
@@ -331,11 +231,113 @@ def ComputeTabsLayout(tabs, rect):
     return tabs
 
 
-UNEDITABLE_NAMES_DICT = dict([(_(n), n) for n in UNEDITABLE_NAMES])
-
-
 class IDEFrame(wx.Frame):
     """IDEFrame Base Class"""
+
+    def InitEditorToolbarItems(self):
+        """
+        Initialize dictionary with lists of elements that need to be shown
+        if POU in particular programming language is edited.
+        """
+        # Define behaviour of each Toolbar item according to current POU body type
+        # Informations meaning are in this order:
+        #  - Item is toggled
+        #  - PLCOpenEditor mode where item is displayed (could be more then one)
+        #  - Item id
+        #  - Item callback function name
+        #  - Item icon filename
+        #  - Item tooltip text
+        self.EditorToolBarItems = {
+            "FBD":   [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
+                       "move", _("Move the view")),
+                      (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
+                       "add_comment", _("Create a new comment")),
+                      (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
+                       "add_variable", _("Create a new variable")),
+                      (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
+                       "add_block", _("Create a new block")),
+                      (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
+                       "add_connection", _("Create a new connection"))],
+            "LD":    [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
+                       "move", _("Move the view")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
+                       "add_comment", _("Create a new comment")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARPOWERRAIL, "OnPowerRailTool",
+                       "add_powerrail", _("Create a new power rail")),
+                      (False, DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARRUNG, "OnRungTool",
+                       "add_rung", _("Create a new rung")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCOIL, "OnCoilTool",
+                       "add_coil", _("Create a new coil")),
+                      (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCONTACT, "OnContactTool",
+                       "add_contact", _("Create a new contact")),
+                      (False, DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARBRANCH, "OnBranchTool",
+                       "add_branch", _("Create a new branch")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
+                       "add_variable", _("Create a new variable")),
+                      (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
+                       "add_block", _("Create a new block")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
+                       "add_connection", _("Create a new connection"))],
+            "SFC":   [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
+                       "move", _("Move the view")),
+                      (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCOMMENT, "OnCommentTool",
+                       "add_comment", _("Create a new comment")),
+                      (True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARINITIALSTEP, "OnInitialStepTool",
+                       "add_initial_step", _("Create a new initial step")),
+                      (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARSTEP, "OnStepTool",
+                       "add_step", _("Create a new step")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARTRANSITION, "OnTransitionTool",
+                       "add_transition", _("Create a new transition")),
+                      (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARACTIONBLOCK, "OnActionBlockTool",
+                       "add_action", _("Create a new action block")),
+                      (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARDIVERGENCE, "OnDivergenceTool",
+                       "add_divergence", _("Create a new divergence")),
+                      (False, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARJUMP, "OnJumpTool",
+                       "add_jump", _("Create a new jump")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARVARIABLE, "OnVariableTool",
+                       "add_variable", _("Create a new variable")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARBLOCK, "OnBlockTool",
+                       "add_block", _("Create a new block")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCONNECTION, "OnConnectionTool",
+                       "add_connection", _("Create a new connection")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARPOWERRAIL, "OnPowerRailTool",
+                       "add_powerrail", _("Create a new power rail")),
+                      (True, FREEDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARCONTACT, "OnContactTool",
+                       "add_contact", _("Create a new contact"))],
+            "ST":    [],
+            "IL":    [],
+            "debug": [(True, FREEDRAWING_MODE | DRIVENDRAWING_MODE,
+                       ID_PLCOPENEDITOREDITORTOOLBARMOTION, "OnMotionTool",
+                       "move", _("Move the view"))],
+        }
 
     def _init_coll_MenuBar_Menus(self, parent):
         parent.Append(menu=self.FileMenu, title=_(u'&File'))
@@ -672,10 +674,13 @@ class IDEFrame(wx.Frame):
                           size=wx.Size(1000, 600),
                           style=wx.DEFAULT_FRAME_STYLE)
 
+        self.UNEDITABLE_NAMES_DICT = dict([(_(n), n) for n in UNEDITABLE_NAMES])
+
         self.Controler = None
         self.Config = wx.ConfigBase.Get()
         self.EnableDebug = enable_debug
 
+        self.InitEditorToolbarItems()
         self._init_ctrls(parent)
 
         # Define Tree item icon list
@@ -1891,7 +1896,7 @@ class IDEFrame(wx.Frame):
             if item_infos["type"] == ITEM_PROJECT:
                 name = "Project"
             else:
-                name = UNEDITABLE_NAMES_DICT[name]
+                name = self.UNEDITABLE_NAMES_DICT[name]
 
             if name == "Data Types":
                 menu = wx.Menu(title='')
@@ -2155,7 +2160,7 @@ class IDEFrame(wx.Frame):
             self.CurrentEditorToolBar = []
             EditorToolBar = self.Panes["EditorToolBar"]
             if EditorToolBar:
-                for radio, modes, id, method, picture, help in EditorToolBarItems[menu]:
+                for radio, modes, id, method, picture, help in self.EditorToolBarItems[menu]:
                     if modes & self.DrawingMode:
                         if radio or self.DrawingMode == FREEDRAWING_MODE:
                             EditorToolBar.AddRadioTool(id, GetBitmap(picture), wx.NullBitmap, help)
@@ -2420,7 +2425,7 @@ class IDEFrame(wx.Frame):
 
         if self.ProjectTree.GetPyData(selected)["type"] != ITEM_PROJECT:
             pou_type = self.ProjectTree.GetItemText(selected)
-            pou_type = UNEDITABLE_NAMES_DICT[pou_type]  # one of 'Functions', 'Function Blocks' or 'Programs'
+            pou_type = self.UNEDITABLE_NAMES_DICT[pou_type]  # one of 'Functions', 'Function Blocks' or 'Programs'
             pou_type = {'Functions': 'function', 'Function Blocks': 'functionBlock', 'Programs': 'program'}[pou_type]
         else:
             pou_type = None
