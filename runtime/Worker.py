@@ -76,7 +76,7 @@ class worker(object):
 
         _job = job(*args, **kwargs)
 
-        if self._threadID == thread.get_ident() or self._threadID is None:
+        if self._threadID == thread.get_ident():
             # if caller is worker thread execute immediately
             _job.do()
         else:
