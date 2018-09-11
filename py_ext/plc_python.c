@@ -89,6 +89,10 @@ void __publish_py_ext()
  */
 void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 {
+    if(!__GET_VAR(data__->TRIG)){
+        /* ACK is False when TRIG is false, except a pulse when receiving result */
+        __SET_VAR(data__->, ACK,, 0);
+    }
 	/* detect rising edge on TRIG to trigger evaluation */
 	if(((__GET_VAR(data__->TRIG) && !__GET_VAR(data__->TRIGM1)) ||
 	   /* polling is equivalent to trig on value rather than on rising edge*/
@@ -109,7 +113,7 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 		if(__GET_VAR(data__->STATE) == PYTHON_FB_ANSWERED){
 			/* Copy buffer content into result*/
 			__SET_VAR(data__->, RESULT,, __GET_VAR(data__->BUFFER));
-			/* signal result presece to PLC*/
+			/* signal result presence to PLC*/
 			__SET_VAR(data__->, ACK,, 1);
 			/* Mark as free */
 			__SET_VAR(data__->, STATE,, PYTHON_FB_FREE);
