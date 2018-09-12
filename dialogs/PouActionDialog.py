@@ -36,13 +36,13 @@ def GetActionLanguages():
     return [_("IL"), _("ST"), _("LD"), _("FBD")]
 
 
-ACTION_LANGUAGES_DICT = dict([(_(language), language) for language in GetActionLanguages()])
-
-
 class PouActionDialog(wx.Dialog):
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, title=_('Create a new action'))
+
+        self.ACTION_LANGUAGES_DICT = dict([(_(language), language)
+                                           for language in GetActionLanguages()])
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
@@ -131,5 +131,5 @@ class PouActionDialog(wx.Dialog):
     def GetValues(self):
         values = {}
         values["actionName"] = self.ActionName.GetValue()
-        values["language"] = ACTION_LANGUAGES_DICT[self.Language.GetStringSelection()]
+        values["language"] = self.ACTION_LANGUAGES_DICT[self.Language.GetStringSelection()]
         return values
