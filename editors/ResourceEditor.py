@@ -81,9 +81,6 @@ def GetTaskTriggeringOptions():
     return [_("Interrupt"), _("Cyclic")]
 
 
-TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option) for option in GetTaskTriggeringOptions()])
-
-
 def SingleCellEditor(*x):
     return wx.grid.GridCellChoiceEditor()
 
@@ -98,7 +95,6 @@ def GetInstancesTableColnames():
 
 
 class ResourceTable(CustomTable):
-
     """
     A custom wx.grid.Grid Table using user supplied data
     """
@@ -107,6 +103,8 @@ class ResourceTable(CustomTable):
         CustomTable.__init__(self, parent, data, colnames)
         self.ColAlignements = []
         self.ColSizes = []
+        self.TASKTRIGGERINGOPTIONS_DICT = dict([(_(option), option)
+                                                for option in GetTaskTriggeringOptions()])
 
     def GetColAlignements(self):
         return self.ColAlignements
@@ -132,7 +130,7 @@ class ResourceTable(CustomTable):
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
             if colname == "Triggering":
-                value = TASKTRIGGERINGOPTIONS_DICT[value]
+                value = self.TASKTRIGGERINGOPTIONS_DICT[value]
             self.data[row][colname] = value
 
     def _updateColAttrs(self, grid):
