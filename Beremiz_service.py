@@ -517,8 +517,8 @@ pyroserver.PrintServerInfo()
 
 # Beremiz IDE detects LOCAL:// runtime is ready by looking
 # for self.workdir in the daemon's stdout.
-print(_("Current working directory :"), WorkingDir)
-
+sys.stdout.write(_("Current working directory :") + WorkingDir + "\n")
+sys.stdout.flush()
 
 if havetwisted or havewx:
     ui_thread_started = Lock()
