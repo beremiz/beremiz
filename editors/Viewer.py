@@ -2658,11 +2658,8 @@ class Viewer(EditorPanel, DebugViewer):
             self.AddNewElement(connection, bbox, wire)
 
     def AddNewComment(self, bbox):
-        dialog = wx.TextEntryDialog(self.ParentWindow,
-                                    _("Edit comment"),
-                                    _("Please enter comment text"),
-                                    "", wx.OK | wx.CANCEL | wx.TE_MULTILINE)
-        dialog.SetClientSize(wx.Size(400, 200))
+        dialog = CommentEditDialog(self.ParentWindow,
+                                   self.GetFont())
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
             id = self.GetNewId()
@@ -3100,14 +3097,10 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditCommentContent(self, comment):
-        dialog = wx.TextEntryDialog(self.ParentWindow,
-                                    _("Edit comment"),
-                                    _("Please enter comment text"),
-                                    comment.GetContent(),
-                                    wx.OK | wx.CANCEL | wx.TE_MULTILINE)
-        width, height = comment.GetSize()
-        dialogSize = wx.Size(max(width + 30, 400), max(height + 60, 200))
-        dialog.SetClientSize(dialogSize)
+        dialog = CommentEditDialog(self.ParentWindow,
+                                   self.GetFont(),
+                                   comment.GetContent(),
+                                   comment.GetSize())
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
             rect = comment.GetRedrawRect(1, 1)
