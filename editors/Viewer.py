@@ -83,7 +83,7 @@ else:
         'mono':  'Courier',
         'helv':  'Helvetica',
         'other': 'new century schoolbook',
-        'size':  12,
+        'size':  10,
     }
 
 if wx.Platform == '__WXMSW__':
