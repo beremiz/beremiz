@@ -764,15 +764,14 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList_lock = Lock()
 
         dc = wx.ClientDC(self.Editor)
-        font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
-        dc.SetFont(font)
-        width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        while width > 260:
-            faces["size"] -= 1
+        while True:
             font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
             dc.SetFont(font)
             width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        self.SetFont(font)
+            if width < 260:
+                break
+            faces["size"] -= 1
+        self.Editor.SetFont(font)
         self.MiniTextDC = wx.MemoryDC(wx.EmptyBitmap(1, 1))
         self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
