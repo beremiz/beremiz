@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Beremiz" productVersion="1" creationDateTime="2012-09-12T23:30:19"/>
-  <contentHeader name="extended wxHMI example" modificationDateTime="2017-06-06T13:13:18">
+  <contentHeader name="extended wxHMI example" modificationDateTime="2018-09-26T14:07:02">
     <coordinateInfo>
       <pageSize x="1050" y="1485"/>
       <fbd>
@@ -280,7 +280,7 @@ Happy hacking!]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="298" executionOrderId="0" height="35" width="70" negated="false">
+            <outVariable localId="298" executionOrderId="0" height="35" width="74" negated="false">
               <position x="435" y="800"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -288,7 +288,7 @@ Happy hacking!]]></xhtml:p>
                   <position x="435" y="815"/>
                   <position x="375" y="815"/>
                   <position x="375" y="815"/>
-                  <position x="400" y="815"/>
+                  <position x="416" y="815"/>
                 </connection>
               </connectionPointIn>
               <expression>XaxisPos</expression>
@@ -300,10 +300,10 @@ Happy hacking!]]></xhtml:p>
               </connectionPointOut>
               <expression>power</expression>
             </inVariable>
-            <inVariable localId="299" executionOrderId="0" height="35" width="85" negated="false">
+            <inVariable localId="299" executionOrderId="0" height="35" width="90" negated="false">
               <position x="25" y="890"/>
               <connectionPointOut>
-                <relPosition x="85" y="15"/>
+                <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>XAxisMinus</expression>
             </inVariable>
@@ -412,7 +412,7 @@ Happy hacking!]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="6" executionOrderId="0" height="35" width="70" negated="false">
+            <outVariable localId="6" executionOrderId="0" height="35" width="74" negated="false">
               <position x="955" y="795"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -423,10 +423,10 @@ Happy hacking!]]></xhtml:p>
               </connectionPointIn>
               <expression>YaxisPos</expression>
             </outVariable>
-            <inVariable localId="7" executionOrderId="0" height="35" width="85" negated="false">
+            <inVariable localId="7" executionOrderId="0" height="35" width="90" negated="false">
               <position x="560" y="885"/>
               <connectionPointOut>
-                <relPosition x="85" y="15"/>
+                <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>YAxisMinus</expression>
             </inVariable>
@@ -535,7 +535,7 @@ Happy hacking!]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="14" executionOrderId="0" height="35" width="70" negated="false">
+            <outVariable localId="14" executionOrderId="0" height="35" width="74" negated="false">
               <position x="960" y="1035"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -604,7 +604,7 @@ Happy hacking!]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="18" executionOrderId="0" height="35" width="70" negated="false">
+            <outVariable localId="18" executionOrderId="0" height="35" width="74" negated="false">
               <position x="435" y="1040"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -615,10 +615,10 @@ Happy hacking!]]></xhtml:p>
               </connectionPointIn>
               <expression>ZaxisPos</expression>
             </outVariable>
-            <inVariable localId="19" executionOrderId="0" height="35" width="85" negated="false">
+            <inVariable localId="19" executionOrderId="0" height="35" width="90" negated="false">
               <position x="25" y="1130"/>
               <connectionPointOut>
-                <relPosition x="85" y="15"/>
+                <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>ZAxisMinus</expression>
             </inVariable>
@@ -706,10 +706,10 @@ Happy hacking!]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="23" executionOrderId="0" height="35" width="85" negated="false">
+            <inVariable localId="23" executionOrderId="0" height="35" width="90" negated="false">
               <position x="560" y="1125"/>
               <connectionPointOut>
-                <relPosition x="85" y="15"/>
+                <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>TAxisMinus</expression>
             </inVariable>
@@ -800,10 +800,10 @@ Happy hacking!]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="29" executionOrderId="0" height="30" width="95" negated="false">
+            <inVariable localId="29" executionOrderId="0" height="30" width="98" negated="false">
               <position x="40" y="485"/>
               <connectionPointOut>
-                <relPosition x="95" y="15"/>
+                <relPosition x="98" y="15"/>
               </connectionPointOut>
               <expression>DrawTestBtn</expression>
             </inVariable>
@@ -967,13 +967,13 @@ Happy hacking!]]></xhtml:p>
         <body>
           <FBD>
             <block localId="220" typeName="python_poll" instanceName="python_poll0" executionOrderId="0" height="85" width="104">
-              <position x="295" y="130"/>
+              <position x="338" y="130"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
                   <connectionPointIn>
                     <relPosition x="0" y="35"/>
                     <connection refLocalId="221">
-                      <position x="295" y="165"/>
+                      <position x="338" y="165"/>
                       <position x="268" y="165"/>
                     </connection>
                   </connectionPointIn>
@@ -982,8 +982,8 @@ Happy hacking!]]></xhtml:p>
                   <connectionPointIn>
                     <relPosition x="0" y="70"/>
                     <connection refLocalId="222">
-                      <position x="295" y="200"/>
-                      <position x="271" y="200"/>
+                      <position x="338" y="200"/>
+                      <position x="296" y="200"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1009,10 +1009,10 @@ Happy hacking!]]></xhtml:p>
               </connectionPointOut>
               <expression>BOOL#TRUE</expression>
             </inVariable>
-            <inVariable localId="222" executionOrderId="0" height="30" width="161" negated="false">
+            <inVariable localId="222" executionOrderId="0" height="30" width="186" negated="false">
               <position x="110" y="185"/>
               <connectionPointOut>
-                <relPosition x="161" y="15"/>
+                <relPosition x="186" y="15"/>
               </connectionPointOut>
               <expression>'wxglade_hmi.UpdPos()'</expression>
             </inVariable>
@@ -1053,25 +1053,25 @@ Happy hacking!]]></xhtml:p>
         </interface>
         <body>
           <FBD>
-            <inVariable localId="127" executionOrderId="0" height="30" width="72" negated="false">
+            <inVariable localId="127" executionOrderId="0" height="30" width="82" negated="false">
               <position x="60" y="180"/>
               <connectionPointOut>
-                <relPosition x="72" y="15"/>
+                <relPosition x="82" y="15"/>
               </connectionPointOut>
               <expression>InitValue</expression>
             </inVariable>
-            <outVariable localId="128" executionOrderId="0" height="30" width="145" negated="false">
+            <outVariable localId="128" executionOrderId="0" height="30" width="235" negated="false">
               <position x="180" y="180"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="127">
                   <position x="180" y="195"/>
-                  <position x="132" y="195"/>
+                  <position x="142" y="195"/>
                 </connection>
               </connectionPointIn>
               <expression>NotInitializedVariable</expression>
             </outVariable>
-            <comment localId="129" height="90" width="360">
+            <comment localId="129" height="90" width="395">
               <position x="65" y="40"/>
               <content>
                 <xhtml:p><![CDATA[This program called only once at start.
@@ -1079,18 +1079,18 @@ See task configuration in config.resource1.]]></xhtml:p>
               </content>
             </comment>
             <block localId="131" typeName="ADD" executionOrderId="0" height="95" width="70">
-              <position x="135" y="340"/>
+              <position x="160" y="340"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
                     <relPosition x="0" y="40"/>
                     <connection refLocalId="130">
-                      <position x="135" y="380"/>
+                      <position x="160" y="380"/>
                       <position x="125" y="380"/>
                       <position x="125" y="325"/>
-                      <position x="350" y="325"/>
-                      <position x="350" y="380"/>
-                      <position x="335" y="380"/>
+                      <position x="380" y="325"/>
+                      <position x="380" y="380"/>
+                      <position x="365" y="380"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1098,9 +1098,7 @@ See task configuration in config.resource1.]]></xhtml:p>
                   <connectionPointIn>
                     <relPosition x="0" y="75"/>
                     <connection refLocalId="1">
-                      <position x="135" y="415"/>
-                      <position x="130" y="415"/>
-                      <position x="130" y="415"/>
+                      <position x="160" y="415"/>
                       <position x="120" y="415"/>
                     </connection>
                   </connectionPointIn>
@@ -1122,21 +1120,21 @@ See task configuration in config.resource1.]]></xhtml:p>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <inOutVariable localId="130" executionOrderId="0" height="35" width="60" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="130" executionOrderId="0" height="35" width="90" negatedOut="false" negatedIn="false">
               <position x="275" y="365"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="131" formalParameter="OUT">
                   <position x="275" y="380"/>
-                  <position x="205" y="380"/>
+                  <position x="230" y="380"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="60" y="15"/>
+                <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>counter</expression>
             </inOutVariable>
-            <comment localId="2" height="75" width="355">
+            <comment localId="2" height="75" width="390">
               <position x="70" y="240"/>
               <content>
                 <xhtml:p><![CDATA[Counts how many times the program is called.
@@ -1193,10 +1191,10 @@ Check counter value in debugger.]]></xhtml:p>
                     <relPosition x="0" y="40"/>
                     <connection refLocalId="2" formalParameter="Q">
                       <position x="260" y="110"/>
-                      <position x="245" y="110"/>
-                      <position x="245" y="10"/>
-                      <position x="520" y="10"/>
-                      <position x="520" y="110"/>
+                      <position x="225" y="110"/>
+                      <position x="225" y="10"/>
+                      <position x="550" y="10"/>
+                      <position x="550" y="110"/>
                       <position x="510" y="110"/>
                     </connection>
                   </connectionPointIn>
@@ -1207,8 +1205,8 @@ Check counter value in debugger.]]></xhtml:p>
                     <connection refLocalId="16" formalParameter="OUT">
                       <position x="260" y="150"/>
                       <position x="225" y="150"/>
-                      <position x="225" y="250"/>
-                      <position x="190" y="250"/>
+                      <position x="225" y="255"/>
+                      <position x="190" y="255"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1245,8 +1243,8 @@ Check counter value in debugger.]]></xhtml:p>
                     <connection refLocalId="16" formalParameter="OUT">
                       <position x="460" y="150"/>
                       <position x="350" y="150"/>
-                      <position x="350" y="250"/>
-                      <position x="190" y="250"/>
+                      <position x="350" y="255"/>
+                      <position x="190" y="255"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1278,24 +1276,24 @@ Check counter value in debugger.]]></xhtml:p>
               </connectionPointIn>
               <expression>Out</expression>
             </outVariable>
-            <block localId="16" typeName="DIV" executionOrderId="0" height="80" width="70">
+            <block localId="16" typeName="DIV" executionOrderId="0" height="95" width="70">
               <position x="120" y="215"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
-                    <relPosition x="0" y="35"/>
+                    <relPosition x="0" y="40"/>
                     <connection refLocalId="1">
-                      <position x="120" y="250"/>
-                      <position x="75" y="250"/>
+                      <position x="120" y="255"/>
+                      <position x="78" y="255"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
                   <connectionPointIn>
-                    <relPosition x="0" y="65"/>
+                    <relPosition x="0" y="75"/>
                     <connection refLocalId="4">
-                      <position x="120" y="280"/>
-                      <position x="75" y="280"/>
+                      <position x="120" y="290"/>
+                      <position x="75" y="290"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1304,20 +1302,20 @@ Check counter value in debugger.]]></xhtml:p>
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="70" y="35"/>
+                    <relPosition x="70" y="40"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="1" executionOrderId="0" height="30" width="55" negated="false">
-              <position x="20" y="235"/>
+            <inVariable localId="1" executionOrderId="0" height="30" width="58" negated="false">
+              <position x="20" y="240"/>
               <connectionPointOut>
-                <relPosition x="55" y="15"/>
+                <relPosition x="58" y="15"/>
               </connectionPointOut>
               <expression>Period</expression>
             </inVariable>
             <inVariable localId="4" executionOrderId="0" height="30" width="55" negated="false">
-              <position x="20" y="265"/>
+              <position x="20" y="275"/>
               <connectionPointOut>
                 <relPosition x="55" y="15"/>
               </connectionPointOut>
@@ -1450,7 +1448,7 @@ Check counter value in debugger.]]></xhtml:p>
               </connectionPointIn>
               <expression>Out</expression>
             </outVariable>
-            <block localId="299" typeName="clock" instanceName="clock0" executionOrderId="0" height="70" width="85">
+            <block localId="299" typeName="clock" instanceName="clock0" executionOrderId="0" height="70" width="87">
               <position x="165" y="270"/>
               <inputVariables>
                 <variable formalParameter="Period">
@@ -1467,7 +1465,7 @@ Check counter value in debugger.]]></xhtml:p>
               <outputVariables>
                 <variable formalParameter="Out">
                   <connectionPointOut>
-                    <relPosition x="85" y="45"/>
+                    <relPosition x="87" y="45"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
