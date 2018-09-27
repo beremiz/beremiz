@@ -16,4 +16,12 @@ source_list:
 	echo "../plcopen/Additional_Function_Blocks.xml" >> app.fil
 	echo "../plcopen/Standard_Function_Blocks.xml"   >> app.fil
 
+transifex_init:
+	tx init --skipsetup
+
+transifex_pull:
+	tx pull --all
+	find . -name '*.po' -exec sed -i 's/charset=CHARSET/charset=UTF-8/' {} \;
+
+
 .PHONY: all, template, locales, source_list
