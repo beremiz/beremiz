@@ -863,8 +863,8 @@ class _CommonSlave:
         eeprom = []
         self.Strings = []
         data = ""
-        count = 0 # string counter
-        padflag = False # padding flag if category length is odd
+        count = 0        # string counter
+        padflag = False  # padding flag if category length is odd
 
         # index information for General Category in EEPROM
         self.GroupIdx = 0
@@ -1173,11 +1173,11 @@ class _CommonSlave:
         eeprom.append("{:0>2x}".format(self.NameIdx))
 
         # word 3 : Physical Layer Port info. and CoE Details
-        eeprom.append("01") # Physical Layer Port info - assume 01
+        eeprom.append("01")  # Physical Layer Port info - assume 01
         #  CoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>
         coe_details = 0
         mb = device.getMailbox()
-        coe_details = 1 # sdo enabled
+        coe_details = 1  # sdo enabled
         if mb is not None :
             coe = mb.getCoE()
             if coe is not None:
@@ -1214,7 +1214,7 @@ class _CommonSlave:
         eeprom.append("01" if ds402ch in [True,1] else "00")
 
         # word 6 : SysmanClass(reserved) and Flags
-        eeprom.append("00") # reserved
+        eeprom.append("00")  # reserved
         #  Flags
         en_safeop = False
         en_lrw = False
@@ -1261,7 +1261,7 @@ class _CommonSlave:
         """
         eeprom = []
         data = ""
-        count = 0 # number of FMMU
+        count = 0  # number of FMMU
         padflag = False
 
         for fmmu in device.getFmmu():
