@@ -192,7 +192,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
 
-        location_str = "_".join(map(lambda x:str(x), current_location))
+        location_str = "_".join(map(lambda x: str(x), current_location))
         slave_pos = self.GetSlavePos()
         MCL_headers = Headers
 
@@ -331,4 +331,4 @@ __%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % locals()
         cia402nodefile.write(plc_cia402node_code % locals())
         cia402nodefile.close()
 
-        return [(Gen_CIA402Nodefile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],"",True
+        return [(Gen_CIA402Nodefile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))], "", True

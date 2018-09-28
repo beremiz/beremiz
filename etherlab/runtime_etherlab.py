@@ -47,7 +47,7 @@ def SDOThreadProc(*params):
     if res != 0 :
         PLCObject.LogMessage(
             LogLevelsDict["WARNING"],
-            "%s : %s" % (command,output))
+            "%s : %s" % (command, output))
 
 
 def EthercatSDOUpload(pos, index, subindex, var_type):
@@ -85,19 +85,19 @@ def KMSGPollThreadProc():
     s=ctypes.create_string_buffer(4*1024)
     last = None
     while not StopKMSGThread:
-        l = klog(3,s,len(s)-1)
+        l = klog(3, s, len(s)-1)
         log = s.value[:l-1]
         if last :
             log = log.rpartition(last)[2]
         if log :
             last = log.rpartition('\n')[2]
-            for lvl,msg in re.findall(
+            for lvl, msg in re.findall(
                             r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
                             log, re.MULTILINE):
                 PLCObject.LogMessage(
                     LogLevelsDict[{
-                        "4":"WARNING",
-                        "3":"CRITICAL"}.get(lvl,"DEBUG")],
+                        "4": "WARNING",
+                        "3": "CRITICAL"}.get(lvl, "DEBUG")],
                     msg)
         time.sleep(0.5)
 

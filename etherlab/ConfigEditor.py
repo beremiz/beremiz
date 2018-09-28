@@ -237,7 +237,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                     else:
                         dir = "%Q"
                     location = "%s%s" % (dir, data_size) + \
-                               ".".join(map(lambda x:str(x), location + (entry_index, entry_subindex)))
+                               ".".join(map(lambda x: str(x), location + (entry_index, entry_subindex)))
 
                     data = wx.TextDataObject(str((location, "location", data_type, var_name, "", access)))
                     dragSource = wx.DropSource(self.VariablesGrid)
@@ -995,7 +995,7 @@ class MasterEditor(ConfTreeNodeEditor):
             data_size = self.Controler.GetSizeOfType(var_type)
             number = self.ProcessVariablesTable.GetValueByName(row, "Number")
             location = "%%M%s" % data_size + \
-                       ".".join(map(lambda x:str(x), self.Controler.GetCurrentLocation() + (number,)))
+                       ".".join(map(lambda x: str(x), self.Controler.GetCurrentLocation() + (number,)))
 
             data = wx.TextDataObject(str((location, "location", var_type, var_name, "")))
             dragSource = wx.DropSource(self.ProcessVariablesGrid)
