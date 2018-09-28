@@ -444,14 +444,14 @@ class _EthercatCTN:
             dialog = wx.MessageDialog(app_frame,
                 _("The current network configuration will be deleted.\nDo you want to continue?"),
                 _("Scan Network"),
-                wx.YES_NO|wx.ICON_QUESTION)
+                wx.YES_NO | wx.ICON_QUESTION)
             execute = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
 
         if execute:
             error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
             if error != 0:
-                dialog = wx.MessageDialog(app_frame, returnVal, "Error", wx.OK|wx.ICON_ERROR)
+                dialog = wx.MessageDialog(app_frame, returnVal, "Error", wx.OK | wx.ICON_ERROR)
                 dialog.ShowModal()
                 dialog.Destroy()
             elif returnVal is not None:

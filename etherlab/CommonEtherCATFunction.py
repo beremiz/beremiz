@@ -787,7 +787,7 @@ class _CommonSlave:
             if mb is not None :
                 for bit, mbprot in enumerate(mailbox_protocols):
                     if getattr(mb, "get%s" % mbprot)() is not None:
-                        data += 1<<bit
+                        data += 1 << bit
             data = "{:0>4x}".format(data)
             eeprom.append(data[2:4])
             eeprom.append(data[0:2])
@@ -1184,7 +1184,7 @@ class _CommonSlave:
                 for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
                                            "PdoUpload", "CompleteAccess"]):
                     if getattr(coe, "get%s" % flag)() is not None:
-                        coe_details += 1<<bit
+                        coe_details += 1 << bit
         eeprom.append("{:0>2x}".format(coe_details))
 
         # word 4 : FoE Details and EoE Details

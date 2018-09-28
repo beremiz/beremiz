@@ -535,7 +535,7 @@ class SlaveSDOTable(wx.grid.Grid):
         @param data: SDO data after parsing "SDOParser" method
         """
         wx.grid.Grid.__init__(self, parent, -1, size=(830, 490),
-                              style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
+                              style=wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
 
         self.Controler = parent.Controler
         self.parent = parent
@@ -809,7 +809,7 @@ class PDOEntryTable(wx.grid.Grid):
         @param count : page number
         """
         wx.grid.Grid.__init__(self, parent, -1, size=(500, 400), pos=wx.Point(0, 0),
-                              style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
+                              style=wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
 
         self.Controler = parent.Controler
 
@@ -988,7 +988,7 @@ class SlaveSiiSmartView(wx.Panel):
             self.SetEEPROMData()
             dialog = wx.FileDialog(self, _("Save as..."), os.getcwd(),
                                    "slave0.bin",  _("bin files (*.bin)|*.bin|All files|*.*"),
-                                   wx.SAVE|wx.OVERWRITE_PROMPT)
+                                   wx.SAVE | wx.OVERWRITE_PROMPT)
 
             if dialog.ShowModal() == wx.ID_OK:
                 filepath = dialog.GetPath()
@@ -1334,7 +1334,7 @@ class HexView(wx.Panel):
         @param event : wx.EVT_BUTTON object
         """
         dialog = wx.FileDialog(self, _("Save as..."), os.getcwd(), "slave0.bin",
-                               _("bin files (*.bin)|*.bin|All files|*.*"), wx.SAVE|wx.OVERWRITE_PROMPT)
+                               _("bin files (*.bin)|*.bin|All files|*.*"), wx.SAVE | wx.OVERWRITE_PROMPT)
 
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
@@ -1398,7 +1398,7 @@ class SiiGridTable(wx.grid.Grid):
         self.Col = col
 
         wx.grid.Grid.__init__(self, parent, -1, size=(830, 450),
-                              style=wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
+                              style=wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
 
     def SetValue(self, value):
         """
@@ -1924,7 +1924,7 @@ class RegisterMainTable(wx.grid.Grid):
         self.RegisterAccessPanel = self.parent.parent.parent
 
         wx.grid.Grid.__init__(self, parent, -1, size=(820, 300),
-                              style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
+                              style=wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
 
         for evt, mapping_method in [(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
                                     (gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
@@ -2016,7 +2016,7 @@ class RegisterMainTable(wx.grid.Grid):
         # user can enter a value in case that user double-clicked 'Dec' or 'Hex' value.
         if event.GetCol() == 1 or event.GetCol() == 2:
             dlg = wx.TextEntryDialog(self, "Enter hex(0xnnnn) or dec(n) value",
-                                     "Register Modify Dialog", style=wx.OK|wx.CANCEL)
+                                     "Register Modify Dialog", style=wx.OK | wx.CANCEL)
 
             # Setting value in initial dialog value
             start_value = self.GetCellValue(event.GetRow(), event.GetCol())
@@ -2072,7 +2072,7 @@ class RegisterSubTable(wx.grid.Grid):
         self.Col = col
 
         wx.grid.Grid.__init__(self, parent, -1, size=(820, 150),
-                              style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
+                              style=wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
 
     def SetValue(self, parent, data):
         """
