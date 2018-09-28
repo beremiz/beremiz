@@ -159,10 +159,11 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                          ("%s Axis Ref", "AXIS_REF", "%s", "%%IW%s.402")]]
         children.extend(self.CTNParent.GetDeviceLocationTree(
                             self.GetSlavePos(), current_location, axis_name))
-        return  {"name": axis_name,
-                 "type": LOCATION_CONFNODE,
-                 "location": self.GetFullIEC_Channel(),
-                 "children": children,
+        return {
+            "name": axis_name,
+            "type": LOCATION_CONFNODE,
+            "location": self.GetFullIEC_Channel(),
+            "children": children,
         }
 
     def CTNGlobalInstances(self):
