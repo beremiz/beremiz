@@ -100,7 +100,7 @@ def _runtime_etherlab_cleanup():
     global KMSGPollThread, StopKMSGThread, SDOProc, SDOThread
     try:
         os.kill(SDOProc.pid, SIGTERM)
-    except:
+    except Exception:
         pass
     SDOThread = None
     StopKMSGThread = True
