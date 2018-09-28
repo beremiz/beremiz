@@ -17,12 +17,12 @@ def SDOThreadProc(*params):
         cmdfmt = "ethercat upload -p %d -t %s 0x%.4x 0x%.2x"
     else:
         cmdfmt = "ethercat download -p %d -t %s 0x%.4x 0x%.2x %s"
-    
+
     command = cmdfmt % params[1:]
     SDOProc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     res = SDOProc.wait()
     output = SDOProc.communicate()[0]
-    
+
     if params[0] == "upload":
         Result = None
         if res == 0:
@@ -36,18 +36,18 @@ def SDOThreadProc(*params):
                     Result = int(dec_value)
     else:
         Result = res == 0
-    
+
     SDOAnswered()
     if res != 0 :
         PLCObject.LogMessage(
-            LogLevelsDict["WARNING"], 
+            LogLevelsDict["WARNING"],
             "%s : %s"%(command,output))
-    
+
 def EthercatSDOUpload(pos, index, subindex, var_type):
     global SDOThread
     SDOThread = Thread(target=SDOThreadProc, args=["upload", pos, var_type, index, subindex])
     SDOThread.start()
-    
+
 def EthercatSDODownload(pos, index, subindex, var_type, value):
     global SDOThread
     SDOThread = Thread(target=SDOThreadProc, args=["download", pos, var_type, index, subindex, value])
@@ -63,7 +63,7 @@ def KMSGPollThreadProc():
     """
     Logs Kernel messages starting with EtherCAT
     Uses GLibc wrapper to Linux syscall "klogctl"
-    Last 4 KB are polled, and lines compared to last 
+    Last 4 KB are polled, and lines compared to last
     captured line to detect new lines
     """
     global StopKMSGThread
@@ -78,7 +78,7 @@ def KMSGPollThreadProc():
         log = s.value[:l-1]
         if last :
             log = log.rpartition(last)[2]
-        if log : 
+        if log :
             last = log.rpartition('\n')[2]
             for lvl,msg in re.findall(
                             r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
@@ -88,7 +88,7 @@ def KMSGPollThreadProc():
                         "4":"WARNING",
                         "3":"CRITICAL"}.get(lvl,"DEBUG")],
                     msg)
-        time.sleep(0.5) 
+        time.sleep(0.5)
 
 def _runtime_etherlab_init():
     global KMSGPollThread, StopKMSGThread
@@ -105,4 +105,3 @@ def _runtime_etherlab_cleanup():
     SDOThread = None
     StopKMSGThread = True
     KMSGPollThread = None
-
