@@ -26,9 +26,9 @@ from ConfigEditor import LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCA
 
 ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 
-#--------------------------------------------------
+# --------------------------------------------------
 #                 Ethercat ConfNode
-#--------------------------------------------------
+# --------------------------------------------------
 
 EtherCATInfoParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd"))
 EtherCATInfo_XPath = lambda xpath: etree.XPath(xpath)
@@ -223,9 +223,9 @@ for mapping needed location variables
                             {"name": ExtractName(group.getName(), group_type),
                              "parent": group.getParentGroup(),
                              "order": group.getSortOrder(),
-                             #"value": group.getcontent()["value"],
+                             # "value": group.getcontent()["value"],
                              "devices": []})
-
+                             
                     for device in self.devices_xpath(self.modules_infos):
                         device_group = device.getGroupType()
                         if not vendor_category["groups"].has_key(device_group):

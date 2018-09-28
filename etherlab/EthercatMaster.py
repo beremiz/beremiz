@@ -34,9 +34,9 @@ try:
 except Exception:
     HAS_MCL = False
 
-#--------------------------------------------------
+# --------------------------------------------------
 #         Remote Exec Etherlab Commands
-#--------------------------------------------------
+# --------------------------------------------------
 
 SCAN_COMMAND = """
 import commands
@@ -64,9 +64,9 @@ for slave_line in result.splitlines():
 returnVal = slaves
 """
 
-#--------------------------------------------------
+# --------------------------------------------------
 #      Etherlab Specific Blocks Library
-#--------------------------------------------------
+# --------------------------------------------------
 
 def GetLocalPath(filename):
     return os.path.join(os.path.split(__file__)[0], filename)
@@ -89,9 +89,9 @@ class EtherlabLibrary(POULibrary):
         return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "",
                 ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
 
-#--------------------------------------------------
+# --------------------------------------------------
 #                 Ethercat MASTER
-#--------------------------------------------------
+# --------------------------------------------------
 
 EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd"))
 
@@ -571,7 +571,6 @@ class _EthercatCTN:
                 device, module_extra_params = self.GetModuleInfos(type_infos)
         if device is not None:
             entries = device.GetEntriesList(limits)
-            #print entries
             entries_list = entries.items()
             entries_list.sort()
             entries = []
@@ -770,9 +769,9 @@ class _EthercatCTN:
 
         return [],"",False
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                      Current Buffering Management Functions
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
     """
     Return a copy of the config

@@ -21,11 +21,11 @@ from controls import CustomGrid, CustomTable
 # ------------ for SDO Management --------------------
 import string
 import wx.grid as gridlib
-#-------------------------------------------------------------
+# -------------------------------------------------------------
 
 # ------------ for register management ---------------
 from xml.dom import minidom
-#-------------------------------------------------------------
+# -------------------------------------------------------------
 
 # ----------------------------- For Sync Manager Table -----------------------------------
 def GetSyncManagersTableColnames():
@@ -35,9 +35,9 @@ def GetSyncManagersTableColnames():
     _ = lambda x : x
     return ["#", _("Name"), _("Start Address"), _("Default Size"), _("Control Byte"), _("Enable")]
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    Sync Managers Table
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SyncManagersTable(CustomTable):
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
@@ -45,9 +45,9 @@ class SyncManagersTable(CustomTable):
                 return row
             return self.data[row].get(self.GetColLabelValue(col, False), "")
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    EtherCAT Management Treebook
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class EtherCATManagementTreebook(wx.Treebook):
     def __init__(self, parent, controler, node_editor):
         """
@@ -91,9 +91,9 @@ class EtherCATManagementTreebook(wx.Treebook):
         sel = event.GetSelection()
         event.Skip()
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For SlaveState Panel
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SlaveStatePanelClass(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -306,9 +306,9 @@ class SlaveStatePanelClass(wx.Panel):
         except Exception:
             pass
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For SDO Management Panel
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SDOPanelClass(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -446,8 +446,8 @@ class SDOPanelClass(wx.Panel):
         @return result : output data after check
         """
         # string.printable is print this result
-        #'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
-        #!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c
+        # '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ
+        # !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c
         allow_range = string.printable
         result = check_string
         for i in range(0, len(check_string)):
@@ -458,9 +458,9 @@ class SDOPanelClass(wx.Panel):
         return result
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For SDO Notebook (divide category)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SDONoteBook(wx.Notebook):
     def __init__(self, parent, controler):
         """
@@ -518,9 +518,9 @@ class SDONoteBook(wx.Notebook):
         sel = self.GetSelection()
         event.Skip()
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For SDO Grid (fill index, subindex, etc...)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SlaveSDOTable(wx.grid.Grid):
     def __init__(self, parent, data):
         """
@@ -664,11 +664,11 @@ class SlaveSDOTable(wx.grid.Grid):
                     self.Controler.CommonMethod.CreateErrorDialog('You can input only hex, dec value')
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                 For PDO Monitoring Panel
 # PDO Class UI  : Panel -> Choicebook (RxPDO, TxPDO) ->
 #                 Notebook (PDO Index) -> Grid (PDO entry)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class PDOPanelClass(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -699,9 +699,9 @@ class PDOPanelClass(wx.Panel):
         self.Refresh()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For PDO Choicebook (divide Tx, Rx PDO)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class PDOChoicebook(wx.Choicebook):
     def __init__(self, parent, controler):
         """
@@ -733,9 +733,9 @@ class PDOChoicebook(wx.Choicebook):
         event.Skip()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For PDO Notebook (divide PDO index)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class PDONoteBook(wx.Notebook):
     def __init__(self, parent, name, controler):
         """
@@ -790,9 +790,9 @@ class PDONoteBook(wx.Notebook):
         event.Skip()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For PDO Grid (fill entry index, subindex etc...)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class PDOEntryTable(wx.grid.Grid):
     def __init__(self, parent, info, entry, count):
         """
@@ -862,10 +862,10 @@ class PDOEntryTable(wx.grid.Grid):
             start_value += 1
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For EEPROM Access Main Panel
 #                 (This class explain EEPROM Access)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class EEPROMAccessPanel(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -885,9 +885,9 @@ class EEPROMAccessPanel(wx.Panel):
         self.SetSizer(sizer)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Smart View Panel
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SlaveSiiSmartView(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -1163,9 +1163,9 @@ class SlaveSiiSmartView(wx.Panel):
             ''.join(data)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Smart View TreeListCtrl
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SmartViewTreeListCtrl(wx.Panel):
     def __init__(self, parent, Controler):
         """
@@ -1229,10 +1229,10 @@ class SmartViewTreeListCtrl(wx.Panel):
             self.Tree.Expand(tree)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                         For Hex View Panel
 #            shows EEPROM binary as hex data and characters.
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class HexView(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -1370,9 +1370,9 @@ class HexView(wx.Panel):
         self.SiiGrid.Update()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Hex View grid (fill hex data)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class SiiGridTable(wx.grid.Grid):
     def __init__(self, parent, controler, row, col):
         """
@@ -1422,9 +1422,9 @@ class SiiGridTable(wx.grid.Grid):
             row = row + 1
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Register Access Panel
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class RegisterAccessPanel(wx.Panel):
     def __init__(self, parent, controler):
         """
@@ -1494,9 +1494,9 @@ class RegisterAccessPanel(wx.Panel):
         Get data from the register.
         """
         self.Controler.CommonMethod.RegData = ""
-        #ethercat reg_read
-        #ex : ethercat reg_read -p 0 0x0000 0x0001
-        #return value : 0x11
+        # ethercat reg_read
+        # ex : ethercat reg_read -p 0 0x0000 0x0001
+        # return value : 0x11
         for index in range(4):
             self.Controler.CommonMethod.RegData = self.Controler.CommonMethod.RegData + " " + self.Controler.CommonMethod.RegRead("0x"+"{:0>4x}".format(index*1024), "0x0400")
 
@@ -1783,9 +1783,9 @@ class RegisterAccessPanel(wx.Panel):
                                                                       self.RegMonitorData)
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Register Access Notebook (divide index range)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class RegisterNotebook(wx.Notebook):
     def __init__(self, parent, controler):
         """
@@ -1825,10 +1825,10 @@ class RegisterNotebook(wx.Notebook):
         event.Skip()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Register Access Notebook Panel
 #                  (Main UI : including main, sub table)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class RegisterNotebookPanel(wx.Panel):
     def __init__(self, parent, controler, row, col):
         """
@@ -1894,9 +1894,9 @@ class RegisterNotebookPanel(wx.Panel):
         self.SubTable.Update()
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Register Access Notebook Panel (Main Table)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class RegisterMainTable(wx.grid.Grid):
     def __init__(self, parent, row, col, controler):
         """
@@ -2045,9 +2045,9 @@ class RegisterMainTable(wx.grid.Grid):
                     self.Controler.CommonMethod.CreateErrorDialog('You entered wrong value. You can enter dec or hex value only.')
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Register Access Notebook Panel (Sub Table)
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class RegisterSubTable(wx.grid.Grid):
     def __init__(self, parent, row, col):
         """
@@ -2091,9 +2091,9 @@ class RegisterSubTable(wx.grid.Grid):
             row = row + 1
 
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 #                    For Master State Panel
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 class MasterStatePanelClass(wx.Panel):
     def __init__(self, parent, controler):
         """

@@ -1054,7 +1054,7 @@ class MasterEditor(ConfTreeNodeEditor):
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
 
-    #def OnButtonClick(self, event):
+    # def OnButtonClick(self, event):
     #    self.MasterState = self.Controler.getMasterState()
     #    if self.MasterState:
     #        self.Phase.SetValue(self.MasterState["phase"])
