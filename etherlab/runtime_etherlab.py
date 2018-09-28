@@ -105,7 +105,7 @@ def KMSGPollThreadProc():
 def _runtime_etherlab_init():
     global KMSGPollThread, StopKMSGThread
     StopKMSGThread = False
-    KMSGPollThread = Thread(target = KMSGPollThreadProc)
+    KMSGPollThread = Thread(target=KMSGPollThreadProc)
     KMSGPollThread.start()
 
 

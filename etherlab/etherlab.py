@@ -102,7 +102,7 @@ if cls:
         factory = EntryListFactory(entries)
 
         entries_list_xslt_tree = etree.XSLT(
-            entries_list_xslt, extensions = {
+            entries_list_xslt, extensions={
                 ("entries_list_ns", "AddEntry"): factory.AddEntry,
                 ("entries_list_ns", "HexDecValue"): HexDecValue,
                 ("entries_list_ns", "EntryName"): EntryName})

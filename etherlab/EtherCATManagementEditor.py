@@ -105,7 +105,7 @@ class SlaveStatePanelClass(wx.Panel):
         @param parent: Reference to the parent EtherCATManagementTreebook class
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
-        wx.Panel.__init__(self, parent, -1, (0, 0), size=wx.DefaultSize, style = wx.SUNKEN_BORDER)
+        wx.Panel.__init__(self, parent, -1, (0, 0), size=wx.DefaultSize, style=wx.SUNKEN_BORDER)
         self.Controler = controler
         self.parent = parent
 
@@ -370,10 +370,10 @@ class SDOPanelClass(wx.Panel):
         """
 
         slaveSDO_progress = wx.ProgressDialog("Slave SDO Monitoring", "Now Uploading...",
-                               maximum = len(self.SDOs.splitlines()), parent=self,
-                               style = wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME |
-                                       wx.PD_ESTIMATED_TIME | wx.PD_REMAINING_TIME |
-                                       wx.PD_AUTO_HIDE | wx.PD_SMOOTH)
+                               maximum=len(self.SDOs.splitlines()), parent=self,
+                               style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME |
+                                     wx.PD_ESTIMATED_TIME | wx.PD_REMAINING_TIME |
+                                     wx.PD_AUTO_HIDE | wx.PD_SMOOTH)
 
         # If keep_going flag is False, SDOParser method is stop and return "False".
         keep_going = True
@@ -473,7 +473,7 @@ class SDONoteBook(wx.Notebook):
         @param parent: Reference to the parent SDOPanelClass class
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
-        wx.Notebook.__init__(self, parent, id = -1, size=(850, 500))
+        wx.Notebook.__init__(self, parent, id=-1, size=(850, 500))
         self.Controler = controler
         self.parent = parent
 
@@ -648,7 +648,7 @@ class SlaveSDOTable(wx.grid.Grid):
         # CheckSDODataAccess is checking that OD(Object Dictionary) has "w"
         if event.GetCol() == 7 and self.CheckSDODataAccess(event.GetRow()) :
             dlg = wx.TextEntryDialog (self, "Enter hex or dec value (if enter dec value, it automatically conversed hex value)",
-                                      "SDOModifyDialog", style = wx.OK | wx.CANCEL)
+                                      "SDOModifyDialog", style=wx.OK | wx.CANCEL)
 
             start_value = self.GetCellValue(event.GetRow(), event.GetCol())
             dlg.SetValue(start_value)
@@ -1804,7 +1804,7 @@ class RegisterNotebook(wx.Notebook):
         @param parent: RegisterAccessPanel object
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
-        wx.Notebook.__init__(self, parent, id = -1)
+        wx.Notebook.__init__(self, parent, id=-1)
 
         self.parent = parent
         self.Controler = controler
@@ -2016,7 +2016,7 @@ class RegisterMainTable(wx.grid.Grid):
         # user can enter a value in case that user double-clicked 'Dec' or 'Hex' value.
         if event.GetCol() == 1 or event.GetCol() == 2:
             dlg = wx.TextEntryDialog(self, "Enter hex(0xnnnn) or dec(n) value",
-                                     "Register Modify Dialog", style = wx.OK|wx.CANCEL)
+                                     "Register Modify Dialog", style=wx.OK|wx.CANCEL)
 
             # Setting value in initial dialog value
             start_value = self.GetCellValue(event.GetRow(), event.GetCol())
@@ -2113,7 +2113,7 @@ class MasterStatePanelClass(wx.Panel):
         @Param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
         wx.Panel.__init__(self, parent, -1, (0, 0),
-                          size=wx.DefaultSize, style = wx.SUNKEN_BORDER)
+                          size=wx.DefaultSize, style=wx.SUNKEN_BORDER)
         self.Controler = controler
         self.parent = parent
         self.StaticBox = {}
