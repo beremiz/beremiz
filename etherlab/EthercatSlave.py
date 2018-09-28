@@ -152,10 +152,11 @@ class _EthercatSlaveCTN:
         return self.CTNParent.GetSlaveVariables(self.GetSlavePos(), limits)
 
     def GetVariableLocationTree(self):
-        return  {"name": self.BaseParams.getName(),
-                 "type": LOCATION_CONFNODE,
-                 "location": self.GetFullIEC_Channel(),
-                 "children": self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), self.GetCurrentLocation(), self.BaseParams.getName())
+        return {
+            "name": self.BaseParams.getName(),
+            "type": LOCATION_CONFNODE,
+            "location": self.GetFullIEC_Channel(),
+            "children": self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(), self.GetCurrentLocation(), self.BaseParams.getName())
         }
 
     def CTNGenerate_C(self, buildpath, locations):
