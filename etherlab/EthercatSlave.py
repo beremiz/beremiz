@@ -34,11 +34,11 @@ VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": L
 def ExtractHexDecValue(value):
     try:
         return int(value)
-    except:
+    except Exception:
         pass
     try:
         return int(value.replace("#", "0"), 16)
-    except:
+    except Exception:
         raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
 
 def GenerateHexDecValue(value, base=10):

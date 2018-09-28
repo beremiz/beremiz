@@ -21,12 +21,12 @@ def ExtractHexDecValue(value):
     """
     try:
         return int(value)
-    except:
+    except Exception:
         pass
     try:
         return int(value.replace("#", "0"), 16)
         
-    except:
+    except Exception:
         raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
 
 def ExtractName(names, default=None):

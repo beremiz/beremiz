@@ -31,7 +31,7 @@ from POULibrary import POULibrary
 try:
     from EthercatCIA402Slave import _EthercatCIA402SlaveCTN
     HAS_MCL = True
-except:
+except Exception:
     HAS_MCL = False
 
 #--------------------------------------------------

@@ -267,7 +267,7 @@ class SlaveStatePanelClass(wx.Panel):
             line = returnVal.split("\n")
             try :
                 self.SetCurrentState(line[self.Controler.GetSlavePos()])
-            except :
+            except Exception:
                 pass  
             
     def SetCurrentState(self, line):
@@ -282,7 +282,7 @@ class SlaveStatePanelClass(wx.Panel):
             token = line.split("  ")
             if token[2] in state_array:
                 self.TextCtrlDic["CurrentState"].SetValue(token[2])           
-        except :
+        except Exception:
             pass     
         
     def StartTimer(self, event):
@@ -303,7 +303,7 @@ class SlaveStatePanelClass(wx.Panel):
         """
         try:
             self.SlaveStateThread.Stop()
-        except:
+        except Exception:
             pass
         
 #-------------------------------------------------------------------------------
@@ -402,7 +402,7 @@ class SDOPanelClass(wx.Panel):
                 # SDO data is not return "dec value"
                 # line example : 
                 # 0x1702:01,rwr-r-,uint32,32 bit," 1st mapping", ---- 
-                except :
+                except Exception:
                     empty, hex_val = token_tail
                 
                 name_after_check = self.StringTest(name)
@@ -965,7 +965,7 @@ class SlaveSiiSmartView(wx.Panel):
                         # for fast loading when slave plugin node is reopened.
                         self.Controler.CommonMethod.SiiData = self.SiiBinary
                         self.SetEEPROMData()
-                    except:
+                    except Exception:
                         self.Controler.CommonMethod.CreateErrorDialog('The file does not exist!')
                         dialog.Destroy()
     
@@ -1349,10 +1349,10 @@ class HexView(wx.Panel):
                 binfile = open(filepath, "rb")
                 self.SiiBinary = binfile.read()
                 self.HexCode, self.HexRow, self.HexCol = self.Controler.CommonMethod.HexRead(self.SiiBinary)
-                self.UpdateSiiGridTable(self.HexRow, self.HexCol)
+                self.UpdateSiiGridTable(self.HexRow, self.HexCol)
                 self.SiiGrid.SetValue(self.HexCode)
                 self.SiiGrid.Update()
-            except:
+            except Exception:
                 self.Controler.CommonMethod.CreateErrorDialog('The file does not exist!')
             
         dialog.Destroy()

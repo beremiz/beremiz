@@ -183,7 +183,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                     self.CurrentFilter = (index, index)
                     self.VariablesFilter.SetValue(VARIABLE_INDEX_FILTER_FORMAT % index)
                 self.RefreshView()
-            except:
+            except Exception:
                 if self.CurrentFilter in self.Filters:
                     self.VariablesFilter.SetSelection(self.Filters.index(self.CurrentFilter))
                 else:
@@ -400,7 +400,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
         message = None
         try:
             values = eval(data)
-        except:
+        except Exception:
             message = _("Invalid value \"%s\" for process variable")%data
             values = None
         if not isinstance(values, TupleType):
@@ -460,7 +460,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
         message = None
         try:
             values = eval(data)
-        except:
+        except Exception:
             message = _("Invalid value \"%s\" for startup command")%data
             values = None
         if not isinstance(values, TupleType):
@@ -854,7 +854,7 @@ class MasterEditor(ConfTreeNodeEditor):
             try:
                 int(value)
                 self.NodesFilter.SetValue(value)
-            except:
+            except Exception:
                 self.NodesFilter.SetSelection(0)
         self.RefreshCurrentNodesFilter()
     
@@ -872,7 +872,7 @@ class MasterEditor(ConfTreeNodeEditor):
                     position = int(self.NodesFilter.GetValue())
                     self.CurrentNodesFilter = {"slave_pos": position}
                     self.NodesFilter.SetValue(NODE_POSITION_FILTER_FORMAT % position)
-            except:
+            except Exception:
                 if self.CurrentNodesFilter in self.NodesFilterValues:
                     self.NodesFilter.SetSelection(self.NodesFilterValues.index(self.CurrentNodesFilter))
                 else:
