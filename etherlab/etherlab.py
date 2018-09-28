@@ -125,7 +125,7 @@ if cls:
                                 ("Control Byte", sync_manager.getControlByte()),
                                 ("Enable", sync_manager.getEnable())]:
                 if value is None:
-                    value =""
+                    value = ""
                 sync_manager_infos[name] = value
             sync_managers.append(sync_manager_infos)
         return sync_managers

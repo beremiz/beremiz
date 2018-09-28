@@ -66,8 +66,8 @@ def GetResult():
     global Result
     return Result
 
-KMSGPollThread=None
-StopKMSGThread=False
+KMSGPollThread = None
+StopKMSGThread = False
 
 
 def KMSGPollThreadProc():
@@ -78,11 +78,11 @@ def KMSGPollThreadProc():
     captured line to detect new lines
     """
     global StopKMSGThread
-    libc=ctypes.CDLL("libc.so.6")
+    libc = ctypes.CDLL("libc.so.6")
     klog = libc.klogctl
     klog.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int]
     klog.restype = ctypes.c_int
-    s=ctypes.create_string_buffer(4*1024)
+    s = ctypes.create_string_buffer(4*1024)
     last = None
     while not StopKMSGThread:
         l = klog(3, s, len(s)-1)
