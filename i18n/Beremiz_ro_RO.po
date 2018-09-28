@@ -10,13 +10,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-15 16:39+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Adhir Dutta <likhon52@gmail.com>, 2017\n"
-"Language-Team: Bengali (Bangladesh) (https://www.transifex.com/beremiz/teams/75746/bn_BD/)\n"
+"Last-Translator: Emil Saracutu <emil_saracutu@yahoo.com>, 2018\n"
+"Language-Team: Romanian (Romania) (https://www.transifex.com/beremiz/teams/75746/ro_RO/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: bn_BD\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: ro_RO\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
 
 #: ../util/ExceptionHandler.py:58
 #, python-format
@@ -32,80 +32,70 @@ msgid ""
 "\n"
 "Traceback:\n"
 msgstr ""
-"\n"
-"একটি ব্যতিক্রমী অসঙ্গতির (বাগ) প্রাদুর্ভাব ঘটেছে। সংরক্ষিত অসঙ্গতির নথিটিঃ\n"
-"(%s)\n"
-"\n"
-"এই ঠিকানায় অনুগ্রহপূর্বক নথিটি প্রেরণ করুনঃ\n"
-"beremiz-devel@lists.sourceforge.net\n"
-"\n"
-"আপনাকে প্রোগ্রামটি পুনঃআরম্ভ করতে হবে.\n"
-"\n"
-"উপাত্তসমূহ:\n"
 
 #: ../controls/VariablePanel.py:90
 msgid "   External"
-msgstr "বাহ্যিক"
+msgstr "Extern"
 
 #: ../controls/VariablePanel.py:89
 msgid "   InOut"
-msgstr "ইনআউট"
+msgstr ""
 
 #: ../controls/VariablePanel.py:89
 msgid "   Input"
-msgstr "ইনপুট"
+msgstr "Intrare"
 
 #: ../controls/VariablePanel.py:90
 msgid "   Local"
-msgstr "স্থানীয়"
+msgstr "Local"
 
 #: ../controls/VariablePanel.py:89
 msgid "   Output"
-msgstr "আউটপুট"
+msgstr "Ieșire"
 
 #: ../controls/VariablePanel.py:91
 msgid "   Temp"
-msgstr "সাময়িক"
+msgstr "Temporar"
 
 #: ../dialogs/PouTransitionDialog.py:101 ../dialogs/ProjectDialog.py:74
 #: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:122
 #, python-format
 msgid " and %s"
-msgstr "এবং %s"
+msgstr "și%s"
 
 #: ../ProjectController.py:1182
 msgid " generation failed !\n"
-msgstr "উত্পাদন ব্যর্থ !\n"
+msgstr "generare eșuată\n"
 
 #: ../plcopen/plcopen.py:1029
 #, python-format
 msgid "\"%s\" Data Type doesn't exist !!!"
-msgstr "\"%s\" Data Type অস্তিত্বহীন !!!"
+msgstr "\"%s\" Tipul de dată nu există !"
 
 #: ../plcopen/plcopen.py:1047
 #, python-format
 msgid "\"%s\" POU already exists !!!"
-msgstr "\"%s\"  POU ইতিমধ্যেই বিদ্যমান !!!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1068
 #, python-format
 msgid "\"%s\" POU doesn't exist !!!"
-msgstr "\"%s\" POU এর অস্তিত্ব নেই !!!"
+msgstr ""
 
 #: ../editors/Viewer.py:288
 #, python-format
 msgid "\"%s\" can't use itself!"
-msgstr "\"%s\" স্বীয়কার্যে ব্যবহার অযোগ্য! "
+msgstr ""
 
 #: ../IDEFrame.py:1688 ../IDEFrame.py:1707
 #, python-format
 msgid "\"%s\" config already exists!"
-msgstr "\"%s\"  config ইতিমধ্যেই বিদ্যমান!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:531
 #, python-format
 msgid "\"%s\" configuration already exists !!!"
-msgstr "\"%s\" configuration ইতিমধ্যেই বিদ্যমান !!!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:540
 #, python-format
@@ -115,7 +105,7 @@ msgstr ""
 #: ../IDEFrame.py:1638
 #, python-format
 msgid "\"%s\" data type already exists!"
-msgstr "\"%s\" data type ইতিমধ্যেই বিদ্যমান!  "
+msgstr ""
 
 #: ../dialogs/PouTransitionDialog.py:112 ../dialogs/BlockPreviewDialog.py:220
 #: ../dialogs/PouActionDialog.py:110 ../editors/Viewer.py:304
@@ -124,12 +114,12 @@ msgstr "\"%s\" data type ইতিমধ্যেই বিদ্যমান!  
 #: ../controls/VariablePanel.py:425
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
-msgstr "\"%s\" এই pou এর উপাদান ইতিমধ্যেই বিদ্যমান!"
+msgstr ""
 
 #: ../BeremizIDE.py:928
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
-msgstr "\"%s\" ফোল্ডারটিতে বেরিমিজ প্রকল্প নেই\n"
+msgstr ""
 
 #: ../dialogs/SFCStepNameDialog.py:56 ../dialogs/PouTransitionDialog.py:108
 #: ../dialogs/BlockPreviewDialog.py:209 ../dialogs/PouNameDialog.py:54
@@ -140,17 +130,17 @@ msgstr "\"%s\" ফোল্ডারটিতে বেরিমিজ প্র
 #: ../IDEFrame.py:1629
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
-msgstr "\"%s\" একটি কি-ওয়ার্ড। তাই ব্যবহার অযোগ্য!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:2836
 #, python-format
 msgid "\"%s\" is an invalid value!"
-msgstr "\"%s\" একটি অযৌক্তিক সংখ্যা!"
+msgstr ""
 
 #: ../PLCOpenEditor.py:323 ../PLCOpenEditor.py:365
 #, python-format
 msgid "\"%s\" is not a valid folder!"
-msgstr "\"%s\" যৌক্তিক ফ্লোল্ডার নয়!"
+msgstr ""
 
 #: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:106
 #: ../dialogs/BlockPreviewDialog.py:205 ../dialogs/PouNameDialog.py:52
@@ -160,12 +150,12 @@ msgstr "\"%s\" যৌক্তিক ফ্লোল্ডার নয়!"
 #: ../controls/VariablePanel.py:785 ../IDEFrame.py:1627
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
-msgstr "\"%s\" একটি অযৌক্তিক শনাক্তকারী!"
+msgstr ""
 
 #: ../IDEFrame.py:2436
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
-msgstr "\"%s\" এক বা একাধিক POU তে ব্যবহৃত। আপনি কি কাজ করবেন?"
+msgstr ""
 
 #: ../dialogs/BlockPreviewDialog.py:213 ../dialogs/PouDialog.py:131
 #: ../editors/Viewer.py:302 ../editors/Viewer.py:359 ../editors/Viewer.py:389
@@ -175,22 +165,22 @@ msgstr "\"%s\" এক বা একাধিক POU তে ব্যবহৃত
 #: ../IDEFrame.py:1647
 #, python-format
 msgid "\"%s\" pou already exists!"
-msgstr "\"%s\" POU ইতিমধ্যেই বিদ্যমান!"
+msgstr ""
 
 #: ../dialogs/SFCStepNameDialog.py:62
 #, python-format
 msgid "\"%s\" step already exists!"
-msgstr "\"%s\" step ইতিমধ্যেই বিদ্যমান!"
+msgstr ""
 
 #: ../editors/DataTypeEditor.py:566
 #, python-format
 msgid "\"%s\" value already defined!"
-msgstr "\"%s\" মান ইতিমধ্যেই সংজ্ঞায়িত!"
+msgstr ""
 
 #: ../dialogs/ArrayTypeDialog.py:105 ../editors/DataTypeEditor.py:759
 #, python-format
 msgid "\"%s\" value isn't a valid array dimension!"
-msgstr "\"%s\" সাংখ্যমানটি অ্যারের জন্য অযৌক্তিক মাত্রা!"
+msgstr ""
 
 #: ../dialogs/ArrayTypeDialog.py:109 ../editors/DataTypeEditor.py:766
 #, python-format
@@ -198,89 +188,87 @@ msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
 msgstr ""
-"\"%s\" সাংখ্যমানটি অ্যারের জন্য অযৌক্তিক মাত্রা!\n"
-"ডানের সাংখ্যমান অবশ্যই বামের চেয়ে বড় হতে হবে."
 
 #: ../PLCGenerator.py:1133
 #, python-brace-format
 msgid "\"{a1}\" function cancelled in \"{a2}\" POU: No input connected"
-msgstr "\"{a1}\" ফাংশন বাতিল \"{a2}\" তে POU: কোনও ইনপুট প্রযুক্ত হয়নি"
+msgstr ""
 
 #: ../editors/Viewer.py:292
 #, python-brace-format
 msgid "\"{a1}\" is already used by \"{a2}\"!"
-msgstr "\"{a1}\" ইতিমধ্যেই \"{a2}\" দ্বারা ব্যবহৃত!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:557
 #, python-brace-format
 msgid "\"{a1}\" resource already exists in \"{a2}\" configuration !!!"
-msgstr "\"{a1}\" এর সম্পদ ইতিমধ্যেই \"{a2}\" এর configuration এ বিদ্যমান !!!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:577
 #, python-brace-format
 msgid "\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!"
-msgstr "\"{a1}\" এর সম্পদ \"{a2}\" এর configuration এ ব্যবহৃত হয়নি !!!"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:580
 #, python-format
 msgid "%03gms"
-msgstr "%03gমিসে"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:571
 #, python-format
 msgid "%dd"
-msgstr "%dদি"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:61
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:572
 #, python-format
 msgid "%dh"
-msgstr "%dঘ"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:60
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:573
 #, python-format
 msgid "%dm"
-msgstr "%dমি"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:58
 #, python-format
 msgid "%dms"
-msgstr "%dমিসে"
+msgstr ""
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:59
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:574
 #, python-format
 msgid "%ds"
-msgstr "%dসে"
+msgstr ""
 
 #: ../PLCControler.py:1114
 #, python-format
 msgid "%s Data Types"
-msgstr "%s Data Types"
+msgstr ""
 
 #: ../PLCControler.py:1097
 #, python-format
 msgid "%s POUs"
-msgstr "%sPOUs"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:73 ../canfestival/NetworkEditor.py:97
 #, python-format
 msgid "%s Profile"
-msgstr "%s Profile"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1901 ../plcopen/plcopen.py:1908
 #: ../plcopen/plcopen.py:1921 ../plcopen/plcopen.py:1929
 #: ../plcopen/plcopen.py:1939 ../plcopen/plcopen.py:1950
 #, python-format
 msgid "%s body don't have instances!"
-msgstr "%sপ্রধান অংশে প্রতিলিপি নেই!"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1957 ../plcopen/plcopen.py:1964
 #: ../plcopen/plcopen.py:1971
 #, python-format
 msgid "%s body don't have text!"
-msgstr "%sপ্রধান অংশে  text নেই!"
+msgstr ""
 
 #: ../IDEFrame.py:388
 msgid "&Add Element"
