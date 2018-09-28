@@ -1,6 +1,11 @@
-import os,subprocess,sys,ctypes
+import os
+import subprocess
+import sys
+import ctypes
 from threading import Thread
-import ctypes,time,re
+import ctypes
+import time
+import re
 from targets.typemapping import LogLevelsDict
 
 SDOAnswered = PLCBinary.SDOAnswered
