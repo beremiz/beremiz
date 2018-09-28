@@ -1467,7 +1467,7 @@ class RegisterAccessPanel(wx.Panel):
             self.CompactViewCheckbox.Disable()
             for index in range(4):
                 self.RegisterNotebook.RegPage[index].MainTable.SetValue(self, 0, index*512, (index+1)*512)
-        else: # If data was saved,
+        else:  # If data was saved,
             self.BasicSetData()
             self.ParseData()
             for index in range(4):
@@ -1561,7 +1561,7 @@ class RegisterAccessPanel(wx.Panel):
                                 if register.attributes[property].value == value:
                                     self.GetRegisterInfo(reg_info_tree, register)
                                     break
-                            else: # type == "number"
+                            else:  # type == "number"
                                 if register.attributes[property].value < value:
                                     self.GetRegisterInfo(reg_info_tree, register)
                                     break
@@ -1608,7 +1608,7 @@ class RegisterAccessPanel(wx.Panel):
                                     if detail.attributes[property].value == value:
                                         self.GetRegisterDetailInfo(reg_info_tree, reg_index, detail)
                                         break
-                                else: # type == "number"
+                                else:  # type == "number"
                                     if detail.attributes[property].value < value:
                                         self.GetRegisterDetailInfo(reg_info_tree, reg_index, detail)
                                         break
@@ -1705,7 +1705,7 @@ class RegisterAccessPanel(wx.Panel):
                 row_data.append(char_data)
 
                 self.RegMonitorData.append(row_data)
-                reg_word = "" # initialize regWord
+                reg_word = ""  # initialize regWord
                 row_data = []
 
     def OnReloadButton(self, event):
