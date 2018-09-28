@@ -17,16 +17,16 @@ from ConfigTreeNode import ConfigTreeNode
 from ConfigEditor import NodeEditor
 
 #------------------------------------------
-from CommonEtherCATFunction import _CommonSlave 
+from CommonEtherCATFunction import _CommonSlave
 #------------------------------------------
 
 
 TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
-    "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L", 
+    "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L",
     "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L"}
 
 DATATYPECONVERSION = {"BOOL" : "BIT", "SINT" : "S8", "INT" : "S16", "DINT" : "S32", "LINT" : "S64",
-    "USINT" : "U8", "UINT" : "U16", "UDINT" : "U32", "ULINT" : "U64", 
+    "USINT" : "U8", "UINT" : "U16", "UDINT" : "U32", "ULINT" : "U64",
     "BYTE" : "U8", "WORD" : "U16", "DWORD" : "U32", "LWORD" : "U64"}
 
 VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
@@ -66,23 +66,23 @@ def ExtractName(names, default=None):
 class _EthercatSlaveCTN:
     NODE_PROFILE = None
     EditorType = NodeEditor
-    
+
     def __init__(self):
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
-    
+
     def GetIconName(self):
         return "Slave"
-    
+
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
-    
+
     def GetSizeOfType(self, type):
         return TYPECONVERSION.get(self.GetCTRoot().GetBaseType(type), None)
-    
+
     def GetSlavePos(self):
         return self.BaseParams.getIEC_Channel()
-    
+
     def GetParamsAttributes(self, path = None):
         if path:
             parts = path.split(".", 1)
@@ -96,30 +96,30 @@ class _EthercatSlaveCTN:
                 params.append(self.CTNParams[1].getElementInfos(self.CTNParams[0]))
             else:
                 params.append({
-                    'use': 'required', 
-                    'type': 'element', 
-                    'name': 'SlaveParams', 
-                    'value': None, 
+                    'use': 'required',
+                    'type': 'element',
+                    'name': 'SlaveParams',
+                    'value': None,
                     'children': []
                 })
-            
+
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             params[0]['children'].insert(0,
-                   {'use': 'optional', 
-                    'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE), 
-                    'name': 'Type', 
-                    'value': (slave_type["device_type"], slave_type)}) 
+                   {'use': 'optional',
+                    'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE),
+                    'name': 'Type',
+                    'value': (slave_type["device_type"], slave_type)})
             params[0]['children'].insert(1,
-                   {'use': 'optional', 
-                    'type': 'unsignedLong', 
-                    'name': 'Alias', 
+                   {'use': 'optional',
+                    'type': 'unsignedLong',
+                    'name': 'Alias',
                     'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())})
             return params
-        
+
     def SetParamsAttribute(self, path, value):
         self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
-        
+
         if path == "SlaveParams.Type":
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
@@ -133,21 +133,21 @@ class _EthercatSlaveCTN:
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)
             return value, True
-        
+
         value, refresh = ConfigTreeNode.SetParamsAttribute(self, path, value)
-        
+
         # Filter IEC_Channel, Slave_Type and Alias that have specific behavior
         if path == "BaseParams.IEC_Channel" and value != position:
             self.CTNParent.SetSlavePosition(position, value)
-        
+
         return value, refresh
-        
+
     def GetSlaveInfos(self):
         return self.CTNParent.GetSlaveInfos(self.GetSlavePos())
-    
+
     def GetSlaveVariables(self, limits):
         return self.CTNParent.GetSlaveVariables(self.GetSlavePos(), limits)
-    
+
     def GetVariableLocationTree(self):
         return  {"name": self.BaseParams.getName(),
                  "type": LOCATION_CONFNODE,

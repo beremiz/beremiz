@@ -30,14 +30,14 @@ ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 #                 Ethercat ConfNode
 #--------------------------------------------------
 
-EtherCATInfoParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd")) 
+EtherCATInfoParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd"))
 EtherCATInfo_XPath = lambda xpath: etree.XPath(xpath)
 
 def HexDecValue(context, *args):
     return str(ExtractHexDecValue(args[0][0]))
 
 def EntryName(context, *args):
-    return ExtractName(args[0], 
+    return ExtractName(args[0],
         args[1][0] if len(args) > 1 else None)
 
 ENTRY_INFOS_KEYS = [
@@ -56,14 +56,14 @@ class EntryListFactory:
 
     def __init__(self, entries):
         self.Entries = entries
-    
+
     def AddEntry(self, context, *args):
         index, subindex = map(lambda x: int(x[0]), args[:2])
         new_entry_infos = {
             key: translate(arg[0]) if len(arg) > 0 else default
             for (key, translate, default), arg
             in zip(ENTRY_INFOS_KEYS, args)}
-        
+
         if (index, subindex) != (0, 0):
             entry_infos = self.Entries.get((index, subindex))
             if entry_infos is not None:
@@ -79,12 +79,12 @@ entries_list_xslt = etree.parse(
 
 cls = EtherCATInfoParser.GetElementClass("DeviceType")
 if cls:
-    
+
     profile_numbers_xpath = EtherCATInfo_XPath("Profile/ProfileNo")
     def GetProfileNumbers(self):
         return [number.text for number in profile_numbers_xpath(self)]
     setattr(cls, "GetProfileNumbers", GetProfileNumbers)
-    
+
     def getCoE(self):
         mailbox = self.getMailbox()
         if mailbox is not None:
@@ -94,20 +94,20 @@ if cls:
 
     def GetEntriesList(self, limits=None):
         entries = {}
-        
+
         factory = EntryListFactory(entries)
-        
+
         entries_list_xslt_tree = etree.XSLT(
             entries_list_xslt, extensions = {
                 ("entries_list_ns", "AddEntry"): factory.AddEntry,
                 ("entries_list_ns", "HexDecValue"): HexDecValue,
                 ("entries_list_ns", "EntryName"): EntryName})
         entries_list_xslt_tree(self, **dict(zip(
-            ["min_index", "max_index"], 
+            ["min_index", "max_index"],
             map(lambda x: etree.XSLT.strparam(str(x)),
                 limits if limits is not None else [0x0000, 0xFFFF])
             )))
-        
+
         return entries
     setattr(cls, "GetEntriesList", GetEntriesList)
 
@@ -147,7 +147,7 @@ class ModulesLibrary:
 
     MODULES_EXTRA_PARAMS = [
         ("pdo_alignment", {
-            "column_label": _("PDO alignment"), 
+            "column_label": _("PDO alignment"),
             "column_size": 150,
             "default": 8,
             "description": _(
@@ -160,7 +160,7 @@ class ModulesLibrary:
 """Maximal number of entries mapped in a PDO
 including empty entries used for PDO alignment""")}),
         ("add_pdo", {
-            "column_label": _("Creating new PDO"), 
+            "column_label": _("Creating new PDO"),
             "column_size": 150,
             "default": 0,
             "description": _(
@@ -168,36 +168,36 @@ including empty entries used for PDO alignment""")}),
 for mapping needed location variables
 (1 if possible)""")})
     ]
-    
+
     def __init__(self, path, parent_library=None):
         self.Path = path
         if not os.path.exists(self.Path):
             os.makedirs(self.Path)
         self.ParentLibrary = parent_library
-        
+
         if parent_library is not None:
             self.LoadModules()
         else:
             self.Library = None
         self.LoadModulesExtraParams()
-    
+
     def GetPath(self):
         return self.Path
-    
+
     def GetModulesExtraParamsFilePath(self):
         return os.path.join(self.Path, "modules_extra_params.cfg")
-    
+
     groups_xpath = EtherCATInfo_XPath("Descriptions/Groups/Group")
     devices_xpath = EtherCATInfo_XPath("Descriptions/Devices/Device")
     def LoadModules(self):
         self.Library = {}
-        
+
         files = os.listdir(self.Path)
         for file in files:
             filepath = os.path.join(self.Path, file)
             if os.path.isfile(filepath) and os.path.splitext(filepath)[-1] == ".xml":
                 self.modules_infos = None
-                
+
                 xmlfile = open(filepath, 'r')
                 try:
                     self.modules_infos, error = EtherCATInfoParser.LoadXMLString(xmlfile.read())
@@ -207,37 +207,37 @@ for mapping needed location variables
                 except Exception, exc:
                     self.modules_infos, error = None, unicode(exc)
                 xmlfile.close()
-                
+
                 if self.modules_infos is not None:
                     vendor = self.modules_infos.getVendor()
-                    
+
                     vendor_category = self.Library.setdefault(
-                        ExtractHexDecValue(vendor.getId()), 
-                        {"name": ExtractName(vendor.getName(), _("Miscellaneous")), 
+                        ExtractHexDecValue(vendor.getId()),
+                        {"name": ExtractName(vendor.getName(), _("Miscellaneous")),
                          "groups": {}})
-                    
+
                     for group in self.groups_xpath(self.modules_infos):
                         group_type = group.getType()
-                        
-                        vendor_category["groups"].setdefault(group_type, 
-                            {"name": ExtractName(group.getName(), group_type), 
+
+                        vendor_category["groups"].setdefault(group_type,
+                            {"name": ExtractName(group.getName(), group_type),
                              "parent": group.getParentGroup(),
-                             "order": group.getSortOrder(), 
+                             "order": group.getSortOrder(),
                              #"value": group.getcontent()["value"],
                              "devices": []})
-                    
+
                     for device in self.devices_xpath(self.modules_infos):
                         device_group = device.getGroupType()
                         if not vendor_category["groups"].has_key(device_group):
                             raise ValueError, "Not such group \"%\"" % device_group
                         vendor_category["groups"][device_group]["devices"].append(
                             (device.getType().getcontent(), device))
-                
+
                 else:
-                        
+
                     self.GetCTRoot().logger.write_error(
                         _("Couldn't load %s XML file:\n%s") % (filepath, error))
-                
+
         return self.Library
 
     def GetModulesLibrary(self, profile_filter=None):
@@ -290,7 +290,7 @@ for mapping needed location variables
 
     def GetVendors(self):
         return [(vendor_id, vendor["name"]) for vendor_id, vendor in self.Library.items()]
-    
+
     def GetModuleInfos(self, module_infos):
         vendor = ExtractHexDecValue(module_infos["vendor"])
         vendor_infos = self.Library.get(vendor)
@@ -301,21 +301,21 @@ for mapping needed location variables
                     revision_number = ExtractHexDecValue(device_infos.getType().getRevisionNo())
                     if (product_code == ExtractHexDecValue(module_infos["product_code"]) and
                         revision_number == ExtractHexDecValue(module_infos["revision_number"])):
-                        self.cntdevice = device_infos 
-                        self.cntdeviceType = device_type  
+                        self.cntdevice = device_infos
+                        self.cntdeviceType = device_type
                         return device_infos, self.GetModuleExtraParams(vendor, product_code, revision_number)
         return None, None
-    
+
     def ImportModuleLibrary(self, filepath):
         if os.path.isfile(filepath):
             shutil.copy(filepath, self.Path)
             self.LoadModules()
             return True
         return False
-    
+
     def LoadModulesExtraParams(self):
         self.ModulesExtraParams = {}
-        
+
         csvfile_path = self.GetModulesExtraParamsFilePath()
         if os.path.exists(csvfile_path):
             csvfile = open(csvfile_path, "rb")
@@ -336,44 +336,44 @@ for mapping needed location variables
                     self.ModulesExtraParams[
                         tuple(map(int, row[:3]))] = params_values
             csvfile.close()
-    
+
     def SaveModulesExtraParams(self):
         csvfile = open(self.GetModulesExtraParamsFilePath(), "wb")
         extra_params = [param for param, params_infos in self.MODULES_EXTRA_PARAMS]
         writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(['Vendor', 'product_code', 'revision_number'] + extra_params)
         for (vendor, product_code, revision_number), module_extra_params in self.ModulesExtraParams.iteritems():
-            writer.writerow([vendor, product_code, revision_number] + 
-                            [module_extra_params.get(param, '') 
+            writer.writerow([vendor, product_code, revision_number] +
+                            [module_extra_params.get(param, '')
                              for param in extra_params])
         csvfile.close()
-    
+
     def SetModuleExtraParam(self, vendor, product_code, revision_number, param, value):
         vendor = ExtractHexDecValue(vendor)
         product_code = ExtractHexDecValue(product_code)
         revision_number = ExtractHexDecValue(revision_number)
-        
+
         module_infos = (vendor, product_code, revision_number)
         self.ModulesExtraParams.setdefault(module_infos, {})
         self.ModulesExtraParams[module_infos][param] = value
-        
+
         self.SaveModulesExtraParams()
-    
+
     def GetModuleExtraParams(self, vendor, product_code, revision_number):
         vendor = ExtractHexDecValue(vendor)
         product_code = ExtractHexDecValue(product_code)
         revision_number = ExtractHexDecValue(revision_number)
-        
+
         if self.ParentLibrary is not None:
             extra_params = self.ParentLibrary.GetModuleExtraParams(vendor, product_code, revision_number)
         else:
             extra_params = {}
-        
+
         extra_params.update(self.ModulesExtraParams.get((vendor, product_code, revision_number), {}))
-        
+
         for param, param_infos in self.MODULES_EXTRA_PARAMS:
             extra_params.setdefault(param, param_infos["default"])
-        
+
         return extra_params
 
 USERDATA_DIR = wx.StandardPaths.Get().GetUserDataDir()
@@ -384,50 +384,49 @@ ModulesDatabase = ModulesLibrary(
     os.path.join(USERDATA_DIR, "ethercat_modules"))
 
 class RootClass:
-    
+
     CTNChildrenTypes = [("EthercatNode",_EthercatCTN,"Ethercat Master")]
     EditorType = LibraryEditor
-       
-    
+
+
     def __init__(self):
         self.ModulesLibrary = None
         self.LoadModulesLibrary()
-    
+
     def GetIconName(self):
         return "Ethercat"
-    
+
     def GetModulesLibraryPath(self, project_path=None):
         if project_path is None:
             project_path = self.CTNPath()
-        return os.path.join(project_path, "modules") 
-    
+        return os.path.join(project_path, "modules")
+
     def OnCTNSave(self, from_project_path=None):
         if from_project_path is not None:
             shutil.copytree(self.GetModulesLibraryPath(from_project_path),
                             self.GetModulesLibraryPath())
         return True
-    
+
     def CTNGenerate_C(self, buildpath, locations):
         return [],"",False
-    
+
     def LoadModulesLibrary(self):
         if self.ModulesLibrary is None:
             self.ModulesLibrary = ModulesLibrary(self.GetModulesLibraryPath(), ModulesDatabase)
         else:
             self.ModulesLibrary.LoadModulesLibrary()
-    
+
     def GetModulesDatabaseInstance(self):
         return ModulesDatabase
-    
+
     def GetModulesLibraryInstance(self):
         return self.ModulesLibrary
-    
+
     def GetModulesLibrary(self, profile_filter=None):
         return self.ModulesLibrary.GetModulesLibrary(profile_filter)
-    
+
     def GetVendors(self):
         return self.ModulesLibrary.GetVendors()
-    
+
     def GetModuleInfos(self, module_infos):
         return self.ModulesLibrary.GetModuleInfos(module_infos)
-
