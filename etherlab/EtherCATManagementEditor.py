@@ -1349,7 +1349,7 @@ class HexView(wx.Panel):
                 binfile = open(filepath, "rb")
                 self.SiiBinary = binfile.read()
                 self.HexCode, self.HexRow, self.HexCol = self.Controler.CommonMethod.HexRead(self.SiiBinary)
-                self.UpdateSiiGridTable(self.HexRow, self.HexCol)
+                self.UpdateSiiGridTable(self.HexRow, self.HexCol)
                 self.SiiGrid.SetValue(self.HexCode)
                 self.SiiGrid.Update()
             except Exception:
