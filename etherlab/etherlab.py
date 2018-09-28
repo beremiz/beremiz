@@ -396,7 +396,6 @@ class RootClass:
     CTNChildrenTypes = [("EthercatNode", _EthercatCTN, "Ethercat Master")]
     EditorType = LibraryEditor
 
-
     def __init__(self):
         self.ModulesLibrary = None
         self.LoadModulesLibrary()

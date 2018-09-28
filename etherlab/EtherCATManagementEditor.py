@@ -2130,7 +2130,6 @@ class MasterStatePanelClass(wx.Panel):
             ("innerFrameInfo",      [4, 10, 5, 10])]:
             self.MasterStateSizer[key] = wx.FlexGridSizer(cols=attr[0], hgap=attr[1], rows=attr[2], vgap=attr[3])
 
-
         self.UpdateButton = wx.Button(self, label=_('Update'))
         self.UpdateButton.Bind(wx.EVT_BUTTON, self.OnButtonClick)
 
@@ -2140,7 +2139,6 @@ class MasterStatePanelClass(wx.Panel):
             ('frameInfo', 'Network Frame Information')]:
             self.StaticBox[key] = wx.StaticBox(self, label=_(label))
             self.MasterStateSizer[key] = wx.StaticBoxSizer(self.StaticBox[key])
-
 
         # ----------------------- Master State -----------------------------------------------------------
         for key, label in [
