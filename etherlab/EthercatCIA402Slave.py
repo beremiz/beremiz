@@ -228,7 +228,6 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                     for input in blocktype_infos["inputs"]]
                 ])
 
-
             return_outputs = "\n".join(["""\
     __SET_VAR(data__->,%(output_name)s,,
               __GET_VAR(%(blockname)s->%(output_name)s));""" % locals()
