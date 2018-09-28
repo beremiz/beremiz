@@ -66,6 +66,7 @@ def GetResult():
     global Result
     return Result
 
+
 KMSGPollThread = None
 StopKMSGThread = False
 
