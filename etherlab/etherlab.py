@@ -393,7 +393,7 @@ ModulesDatabase = ModulesLibrary(
 
 class RootClass:
 
-    CTNChildrenTypes = [("EthercatNode",_EthercatCTN,"Ethercat Master")]
+    CTNChildrenTypes = [("EthercatNode", _EthercatCTN, "Ethercat Master")]
     EditorType = LibraryEditor
 
 
@@ -416,7 +416,7 @@ class RootClass:
         return True
 
     def CTNGenerate_C(self, buildpath, locations):
-        return [],"",False
+        return [], "", False
 
     def LoadModulesLibrary(self):
         if self.ModulesLibrary is None:

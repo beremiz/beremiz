@@ -83,7 +83,7 @@ class EtherlabLibrary(POULibrary):
         etherlab_ext_file.close()
 
         Gen_etherlabfile_path = os.path.join(buildpath, "etherlab_ext.c")
-        ethelabfile = open(Gen_etherlabfile_path,'w')
+        ethelabfile = open(Gen_etherlabfile_path, 'w')
         ethelabfile.write(etherlab_ext_code)
         ethelabfile.close()
 
@@ -462,7 +462,7 @@ class _EthercatCTN:
                     type_infos = {
                         "vendor": slave["vendor_id"],
                         "product_code": slave["product_code"],
-                        "revision_number":slave["revision_number"],
+                        "revision_number": slave["revision_number"],
                     }
                     device, module_extra_params = self.GetModuleInfos(type_infos)
                     if device is not None:
@@ -678,7 +678,7 @@ class _EthercatCTN:
     def OnCTNSave(self, from_project_path=None):
         config_filepath = self.ConfigFileName()
 
-        config_xmlfile = open(config_filepath,"w")
+        config_xmlfile = open(config_filepath, "w")
         config_xmlfile.write(etree.tostring(
             self.Config,
             pretty_print=True,
@@ -688,7 +688,7 @@ class _EthercatCTN:
 
         process_filepath = self.ProcessVariablesFileName()
 
-        process_xmlfile = open(process_filepath,"w")
+        process_xmlfile = open(process_filepath, "w")
         process_xmlfile.write(etree.tostring(
             self.ProcessVariables,
             pretty_print=True,
@@ -705,7 +705,7 @@ class _EthercatCTN:
     def _Generate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x:str(x), current_location))
+        location_str = "_".join(map(lambda x: str(x), current_location))
 
         Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c" % location_str)
 
@@ -771,7 +771,7 @@ class _EthercatCTN:
                 self.FileGenerator.DeclareVariable(
                     slave_pos, loc[1], loc[2], location["IEC_TYPE"], location["DIR"], location["NAME"])
 
-        return [],"",False
+        return [], "", False
 
 # -------------------------------------------------------------------------------
 #                      Current Buffering Management Functions

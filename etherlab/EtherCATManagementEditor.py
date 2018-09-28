@@ -145,7 +145,7 @@ class SlaveStatePanelClass(wx.Panel):
 
         self.SizerDic["SlaveInfosDetailsBox"].AddSizer(self.SizerDic["SlaveInfosDetailsInnerSizer"])
 
-        self.SyncManagersGrid = CustomGrid(self, size=wx.Size(605,155), style=wx.VSCROLL)
+        self.SyncManagersGrid = CustomGrid(self, size=wx.Size(605, 155), style=wx.VSCROLL)
 
         self.SizerDic["SyncManagerInnerSizer"].Add(self.SyncManagersGrid)
         self.SizerDic["SyncManagerBox"].Add(self.SizerDic["SyncManagerInnerSizer"])
@@ -157,7 +157,7 @@ class SlaveStatePanelClass(wx.Panel):
                 ("SafeOPButton", 2, "SAFEOP", "State Transition to \"SafeOP\" State", self.OnButtonClick, []),
                 ("OPButton",     3, "OP",  "State Transition to \"OP\" State",        self.OnButtonClick, [
                         ("CurrentStateLabel", "Current State:", "CurrentState")])]:
-            self.ButtonDic[button_name] = wx.Button(self, id=button_id ,label=_(button_label))
+            self.ButtonDic[button_name] = wx.Button(self, id=button_id, label=_(button_label))
             self.ButtonDic[button_name].Bind(wx.EVT_BUTTON, event_method)
             self.ButtonDic[button_name].SetToolTipString(button_tooltipstring)
             self.SizerDic["SlaveState_up_sizer"].Add(self.ButtonDic[button_name])
@@ -419,9 +419,9 @@ class SDOPanelClass(wx.Panel):
                     hex_val = ' ---- '
 
                 # SResult of SlaveSDO data parsing. (data type : dictionary)
-                self.Data = {'idx':idx.strip(), 'subIdx':sub_idx.strip(), 'access':access.strip(),
-                             'type':type.strip(), 'size':size.strip(),  'name':name_after_check.strip("\""),
-                             'value':hex_val.strip(), "category":title_name.strip("\"")}
+                self.Data = {'idx': idx.strip(), 'subIdx': sub_idx.strip(), 'access': access.strip(),
+                             'type': type.strip(), 'size': size.strip(),  'name': name_after_check.strip("\""),
+                             'value': hex_val.strip(), "category": title_name.strip("\"")}
 
                 category_divide_value = [0x1000, 0x2000, 0x6000, 0xa000, 0xffff]
 
@@ -473,7 +473,7 @@ class SDONoteBook(wx.Notebook):
         @param parent: Reference to the parent SDOPanelClass class
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
-        wx.Notebook.__init__(self, parent, id = -1, size=(850,500))
+        wx.Notebook.__init__(self, parent, id = -1, size=(850, 500))
         self.Controler = controler
         self.parent = parent
 
@@ -534,7 +534,7 @@ class SlaveSDOTable(wx.grid.Grid):
         @param parent: Reference to the parent SDOPanelClass class
         @param data: SDO data after parsing "SDOParser" method
         """
-        wx.grid.Grid.__init__(self, parent, -1, size=(830,490),
+        wx.grid.Grid.__init__(self, parent, -1, size=(830, 490),
                               style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
 
         self.Controler = parent.Controler
@@ -568,7 +568,7 @@ class SlaveSDOTable(wx.grid.Grid):
         self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.SDOModifyDialog)
 
         for i in range(7):
-            self.SetColAttr(i,attr)
+            self.SetColAttr(i, attr)
 
         self.SetColLabelAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
 
@@ -808,7 +808,7 @@ class PDOEntryTable(wx.grid.Grid):
         @param entry : data structure including index, name, entry number
         @param count : page number
         """
-        wx.grid.Grid.__init__(self, parent, -1, size=(500, 400), pos=wx.Point(0,0),
+        wx.grid.Grid.__init__(self, parent, -1, size=(500, 400), pos=wx.Point(0, 0),
                               style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
 
         self.Controler = parent.Controler
@@ -880,7 +880,7 @@ class EEPROMAccessPanel(wx.Panel):
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
         wx.Panel.__init__(self, parent, -1)
-        sizer = wx.FlexGridSizer(cols=1, hgap=20,rows=3, vgap=20)
+        sizer = wx.FlexGridSizer(cols=1, hgap=20, rows=3, vgap=20)
 
         line = wx.StaticText(self, -1, "\n  EEPROM Access is composed to SmartView and HexView. \
                                               \n\n   - SmartView shows Config Data, Device Identity, Mailbox settings, etc. \
@@ -905,21 +905,22 @@ class SlaveSiiSmartView(wx.Panel):
         self.parent = parent
         self.Controler = controler
 
-        self.PDIType = {0  :['none', '00000000'],
-                        4  :['Digital I/O', '00000100'],
-                        5  :['SPI Slave', '00000101'],
-                        7  :['EtherCAT Bridge (port3)', '00000111'],
-                        8  :['uC async. 16bit', '00001000'],
-                        9  :['uC async. 8bit', '00001001'],
-                        10 :['uC sync. 16bit', '00001010'],
-                        11 :['uC sync. 8bit', '00001011'],
-                        16 :['32 Digtal Input and 0 Digital Output', '00010000'],
-                        17 :['24 Digtal Input and 8 Digital Output', '00010001'],
-                        18 :['16 Digtal Input and 16 Digital Output','00010010'],
-                        19 :['8 Digtal Input and 24 Digital Output', '00010011'],
-                        20 :['0 Digtal Input and 32 Digital Output', '00010100'],
-                        128:['On-chip bus', '11111111']
-                        }
+        self.PDIType = {
+            0  : ['none', '00000000'],
+            4  : ['Digital I/O', '00000100'],
+            5  : ['SPI Slave', '00000101'],
+            7  : ['EtherCAT Bridge (port3)', '00000111'],
+            8  : ['uC async. 16bit', '00001000'],
+            9  : ['uC async. 8bit', '00001001'],
+            10 : ['uC sync. 16bit', '00001010'],
+            11 : ['uC sync. 8bit', '00001011'],
+            16 : ['32 Digtal Input and 0 Digital Output', '00010000'],
+            17 : ['24 Digtal Input and 8 Digital Output', '00010001'],
+            18 : ['16 Digtal Input and 16 Digital Output', '00010010'],
+            19 : ['8 Digtal Input and 24 Digital Output', '00010011'],
+            20 : ['0 Digtal Input and 32 Digital Output', '00010100'],
+            128: ['On-chip bus', '11111111']
+        }
 
         sizer = wx.FlexGridSizer(cols=1, hgap=5, rows=2, vgap=5)
         button_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=1, vgap=5)
@@ -960,7 +961,7 @@ class SlaveSiiSmartView(wx.Panel):
                 if dialog.ShowModal() == wx.ID_OK:
                     filepath = dialog.GetPath()
                     try:
-                        binfile = open(filepath,"rb")
+                        binfile = open(filepath, "rb")
                         self.SiiBinary = binfile.read()
                         dialog.Destroy()
 
@@ -991,7 +992,7 @@ class SlaveSiiSmartView(wx.Panel):
 
             if dialog.ShowModal() == wx.ID_OK:
                 filepath = dialog.GetPath()
-                binfile = open(filepath,"wb")
+                binfile = open(filepath, "wb")
                 binfile.write(self.SiiBinary)
                 binfile.close()
 
@@ -1080,15 +1081,15 @@ class SlaveSiiSmartView(wx.Panel):
 
         # Config Data: EEPROM Size, PDI Type, Device Emulation
         # EEPROM's data in address '0x003f' is Size of EEPROM in KBit-1
-        eeprom_size = str((int(self.GetWordAddressData( sii_dict.get('Size'),10 ))+1)/8*1024)
+        eeprom_size = str((int(self.GetWordAddressData( sii_dict.get('Size'), 10 ))+1)/8*1024)
         # Find PDI Type in pdiType dictionary
-        cnt_pdi_type = int(self.GetWordAddressData( sii_dict.get('PDIControl'),16 ).split('x')[1][2:4], 16)
+        cnt_pdi_type = int(self.GetWordAddressData( sii_dict.get('PDIControl'), 16 ).split('x')[1][2:4], 16)
         for i in self.PDIType.keys():
             if cnt_pdi_type == i:
                 cnt_pdi_type = self.PDIType[i][0]
                 break
         #  Get Device Emulation
-        device_emulation = str(bool(int("{:0>16b}".format(int(self.GetWordAddressData( sii_dict.get('PDIControl'),16 ), 16))[7])))
+        device_emulation = str(bool(int("{:0>16b}".format(int(self.GetWordAddressData( sii_dict.get('PDIControl'), 16 ), 16))[7])))
         #  Set Config Data
         for treelist, data in [("EEPROM Size (Bytes)", eeprom_size),
                                ("PDI Type", cnt_pdi_type),
@@ -1097,10 +1098,11 @@ class SlaveSiiSmartView(wx.Panel):
 
         # Device Identity: Vendor ID, Product Code, Revision No., Serial No.
         #  Set Device Identity
-        for treelist, data in [("Vendor ID", self.GetWordAddressData( sii_dict.get('VendorID'),16 )),
-                               ("Product Code", self.GetWordAddressData( sii_dict.get('ProductCode'),16 )),
-                               ("Revision No.", self.GetWordAddressData( sii_dict.get('RevisionNumber'),16 )),
-                               ("Serial No.", self.GetWordAddressData( sii_dict.get('SerialNumber'),16 ))]:
+        for treelist, data in [
+                ("Vendor ID", self.GetWordAddressData( sii_dict.get('VendorID'), 16 )),
+                ("Product Code", self.GetWordAddressData( sii_dict.get('ProductCode'), 16 )),
+                ("Revision No.", self.GetWordAddressData( sii_dict.get('RevisionNumber'), 16 )),
+                ("Serial No.", self.GetWordAddressData( sii_dict.get('SerialNumber'), 16 ))]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.DeviceIdentity[treelist], data, 1)
 
         # Mailbox
@@ -1109,7 +1111,7 @@ class SlaveSiiSmartView(wx.Panel):
         # VoE(0x0020), SoE(0x0010), FoE(0x0008), CoE(0x0004), EoE(0x0002), AoE(0x0001)
         supported_mailbox = ""
         mailbox_protocol=["VoE,  ", "SoE,  ", "FoE,  ", "CoE,  ", "EoE,  ", "AoE,  "]
-        mailbox_data = "{:0>8b}".format(int(self.GetWordAddressData( sii_dict.get('MailboxProtocol'),16 ), 16))
+        mailbox_data = "{:0>8b}".format(int(self.GetWordAddressData( sii_dict.get('MailboxProtocol'), 16 ), 16))
         for protocol in range(6):
             if mailbox_data[protocol+2] == '1':
                 supported_mailbox += mailbox_protocol[protocol]
@@ -1120,16 +1122,18 @@ class SlaveSiiSmartView(wx.Panel):
                                ("Standard Configuration", "")]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.Mailbox[treelist], data, 1)
         #  Set Bootstrap Configuration: Receive Offset, Receive Size, Send Offset, Send Size
-        for treelist, data in [("Receive Offset", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxOffset'),10 )),
-                               ("Receive Size", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxSize'),10 )),
-                               ("Send Offset", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxOffset'),10 )),
-                               ("Send Size", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxSize'),10 ))]:
+        for treelist, data in [
+                ("Receive Offset", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxOffset'), 10 )),
+                ("Receive Size", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxSize'), 10 )),
+                ("Send Offset", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxOffset'), 10 )),
+                ("Send Size", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxSize'), 10 ))]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.BootstrapConfig[treelist], data, 1)
         #  Set Standard Configuration: Receive Offset, Receive Size, Send Offset, Send Size
-        for treelist, data in [("Receive Offset", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxOffset'),10 )),
-                               ("Receive Size", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxSize'),10 )),
-                               ("Send Offset", self.GetWordAddressData( sii_dict.get('StandardSendMailboxOffset'),10 )),
-                               ("Send Size", self.GetWordAddressData( sii_dict.get('StandardSendMailboxSize'),10 ))]:
+        for treelist, data in [
+                ("Receive Offset", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxOffset'), 10 )),
+                ("Receive Size", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxSize'), 10 )),
+                ("Send Offset", self.GetWordAddressData( sii_dict.get('StandardSendMailboxOffset'), 10 )),
+                ("Send Size", self.GetWordAddressData( sii_dict.get('StandardSendMailboxSize'), 10 ))]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.StandardConfig[treelist], data, 1)
 
     def MakeStaticBoxSizer(self, boxlabel):
@@ -1333,7 +1337,7 @@ class HexView(wx.Panel):
 
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
-            binfile = open(filepath,"wb")
+            binfile = open(filepath, "wb")
             binfile.write(self.SiiBinary)
             binfile.close()
 
@@ -1392,7 +1396,7 @@ class SiiGridTable(wx.grid.Grid):
         self.Row = row
         self.Col = col
 
-        wx.grid.Grid.__init__(self, parent, -1, size=(830,450),
+        wx.grid.Grid.__init__(self, parent, -1, size=(830, 450),
                               style=wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
 
     def SetValue(self, value):
@@ -1508,7 +1512,7 @@ class RegisterAccessPanel(wx.Panel):
 
         # store previous value
         # (ESC type, port number of FMMU, port number of SM, and PDI type))
-        for reg_spec in ["ESCType","FMMUNumber","SMNumber", "PDIType"]:
+        for reg_spec in ["ESCType", "FMMUNumber", "SMNumber", "PDIType"]:
             self.PreRegSpec[reg_spec] = self.Controler.CommonMethod.CrtRegSpec[reg_spec]
 
         # update registers' description
@@ -1918,7 +1922,7 @@ class RegisterMainTable(wx.grid.Grid):
         self.Controler = controler
         self.RegisterAccessPanel = self.parent.parent.parent
 
-        wx.grid.Grid.__init__(self, parent, -1, size=(820,300),
+        wx.grid.Grid.__init__(self, parent, -1, size=(820, 300),
                               style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
 
         for evt, mapping_method in [(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
@@ -2066,7 +2070,7 @@ class RegisterSubTable(wx.grid.Grid):
         self.Row = row
         self.Col = col
 
-        wx.grid.Grid.__init__(self, parent, -1, size=(820,150),
+        wx.grid.Grid.__init__(self, parent, -1, size=(820, 150),
                               style=wx.EXPAND|wx.ALIGN_CENTRE_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL)
 
     def SetValue(self, parent, data):

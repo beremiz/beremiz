@@ -491,7 +491,7 @@ class _CommonSlave:
             mb = device.getMailbox()
             if mb is not None:
                 for mailbox_protocol in mailbox_protocols:
-                    if getattr(mb,"get%s" % mailbox_protocol)() is not None:
+                    if getattr(mb, "get%s" % mailbox_protocol)() is not None:
                         smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
             smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(",  ")
 
@@ -785,8 +785,8 @@ class _CommonSlave:
             data = 0
             mb = device.getMailbox()
             if mb is not None :
-                for bit,mbprot in enumerate(mailbox_protocols):
-                    if getattr(mb,"get%s" % mbprot)() is not None:
+                for bit, mbprot in enumerate(mailbox_protocols):
+                    if getattr(mb, "get%s" % mbprot)() is not None:
                         data += 1<<bit
             data = "{:0>4x}".format(data)
             eeprom.append(data[2:4])
@@ -1181,9 +1181,9 @@ class _CommonSlave:
         if mb is not None :
             coe = mb.getCoE()
             if coe is not None:
-                for bit,flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
+                for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
                                            "PdoUpload", "CompleteAccess"]):
-                    if getattr(coe,"get%s" % flag)() is not None:
+                    if getattr(coe, "get%s" % flag)() is not None:
                         coe_details += 1<<bit
         eeprom.append("{:0>2x}".format(coe_details))
 
@@ -1211,7 +1211,7 @@ class _CommonSlave:
             coe = mb.getCoE()
             if coe is not None :
                 ds402ch = coe.getDS402Channels()
-        eeprom.append("01" if ds402ch in [True,1] else "00")
+        eeprom.append("01" if ds402ch in [True, 1] else "00")
 
         # word 6 : SysmanClass(reserved) and Flags
         eeprom.append("00")  # reserved
@@ -1306,7 +1306,7 @@ class _CommonSlave:
         """
         eeprom = []
         data = ""
-        number = {"MBoxOut":"01", "MBoxIn":"02", "Outputs":"03", "Inputs":"04"}
+        number = {"MBoxOut": "01", "MBoxIn": "02", "Outputs": "03", "Inputs": "04"}
 
         for sm in device.getSm():
             for attr in [sm.getStartAddress(),

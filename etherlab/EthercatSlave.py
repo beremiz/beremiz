@@ -160,4 +160,4 @@ class _EthercatSlaveCTN:
         }
 
     def CTNGenerate_C(self, buildpath, locations):
-        return [],"",False
+        return [], "", False
