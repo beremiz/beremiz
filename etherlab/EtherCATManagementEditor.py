@@ -1082,15 +1082,15 @@ class SlaveSiiSmartView(wx.Panel):
 
         # Config Data: EEPROM Size, PDI Type, Device Emulation
         # EEPROM's data in address '0x003f' is Size of EEPROM in KBit-1
-        eeprom_size = str((int(self.GetWordAddressData( sii_dict.get('Size'), 10 ))+1)/8*1024)
+        eeprom_size = str((int(self.GetWordAddressData( sii_dict.get('Size'), 10))+1)/8*1024)
         # Find PDI Type in pdiType dictionary
-        cnt_pdi_type = int(self.GetWordAddressData( sii_dict.get('PDIControl'), 16 ).split('x')[1][2:4], 16)
+        cnt_pdi_type = int(self.GetWordAddressData( sii_dict.get('PDIControl'), 16).split('x')[1][2:4], 16)
         for i in self.PDIType.keys():
             if cnt_pdi_type == i:
                 cnt_pdi_type = self.PDIType[i][0]
                 break
         #  Get Device Emulation
-        device_emulation = str(bool(int("{:0>16b}".format(int(self.GetWordAddressData( sii_dict.get('PDIControl'), 16 ), 16))[7])))
+        device_emulation = str(bool(int("{:0>16b}".format(int(self.GetWordAddressData( sii_dict.get('PDIControl'), 16), 16))[7])))
         #  Set Config Data
         for treelist, data in [("EEPROM Size (Bytes)", eeprom_size),
                                ("PDI Type", cnt_pdi_type),
@@ -1100,10 +1100,10 @@ class SlaveSiiSmartView(wx.Panel):
         # Device Identity: Vendor ID, Product Code, Revision No., Serial No.
         #  Set Device Identity
         for treelist, data in [
-                ("Vendor ID", self.GetWordAddressData( sii_dict.get('VendorID'), 16 )),
-                ("Product Code", self.GetWordAddressData( sii_dict.get('ProductCode'), 16 )),
-                ("Revision No.", self.GetWordAddressData( sii_dict.get('RevisionNumber'), 16 )),
-                ("Serial No.", self.GetWordAddressData( sii_dict.get('SerialNumber'), 16 ))]:
+                ("Vendor ID", self.GetWordAddressData( sii_dict.get('VendorID'), 16)),
+                ("Product Code", self.GetWordAddressData( sii_dict.get('ProductCode'), 16)),
+                ("Revision No.", self.GetWordAddressData( sii_dict.get('RevisionNumber'), 16)),
+                ("Serial No.", self.GetWordAddressData( sii_dict.get('SerialNumber'), 16))]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.DeviceIdentity[treelist], data, 1)
 
         # Mailbox
@@ -1112,7 +1112,7 @@ class SlaveSiiSmartView(wx.Panel):
         # VoE(0x0020), SoE(0x0010), FoE(0x0008), CoE(0x0004), EoE(0x0002), AoE(0x0001)
         supported_mailbox = ""
         mailbox_protocol = ["VoE,  ", "SoE,  ", "FoE,  ", "CoE,  ", "EoE,  ", "AoE,  "]
-        mailbox_data = "{:0>8b}".format(int(self.GetWordAddressData( sii_dict.get('MailboxProtocol'), 16 ), 16))
+        mailbox_data = "{:0>8b}".format(int(self.GetWordAddressData( sii_dict.get('MailboxProtocol'), 16), 16))
         for protocol in range(6):
             if mailbox_data[protocol+2] == '1':
                 supported_mailbox += mailbox_protocol[protocol]
@@ -1124,17 +1124,17 @@ class SlaveSiiSmartView(wx.Panel):
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.Mailbox[treelist], data, 1)
         #  Set Bootstrap Configuration: Receive Offset, Receive Size, Send Offset, Send Size
         for treelist, data in [
-                ("Receive Offset", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxOffset'), 10 )),
-                ("Receive Size", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxSize'), 10 )),
-                ("Send Offset", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxOffset'), 10 )),
-                ("Send Size", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxSize'), 10 ))]:
+                ("Receive Offset", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxOffset'), 10)),
+                ("Receive Size", self.GetWordAddressData( sii_dict.get('BootstrapReceiveMailboxSize'), 10)),
+                ("Send Offset", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxOffset'), 10)),
+                ("Send Size", self.GetWordAddressData( sii_dict.get('BootstrapSendMailboxSize'), 10))]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.BootstrapConfig[treelist], data, 1)
         #  Set Standard Configuration: Receive Offset, Receive Size, Send Offset, Send Size
         for treelist, data in [
-                ("Receive Offset", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxOffset'), 10 )),
-                ("Receive Size", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxSize'), 10 )),
-                ("Send Offset", self.GetWordAddressData( sii_dict.get('StandardSendMailboxOffset'), 10 )),
-                ("Send Size", self.GetWordAddressData( sii_dict.get('StandardSendMailboxSize'), 10 ))]:
+                ("Receive Offset", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxOffset'), 10)),
+                ("Receive Size", self.GetWordAddressData( sii_dict.get('StandardReceiveMailboxSize'), 10)),
+                ("Send Offset", self.GetWordAddressData( sii_dict.get('StandardSendMailboxOffset'), 10)),
+                ("Send Size", self.GetWordAddressData( sii_dict.get('StandardSendMailboxSize'), 10))]:
             self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.StandardConfig[treelist], data, 1)
 
     def MakeStaticBoxSizer(self, boxlabel):
