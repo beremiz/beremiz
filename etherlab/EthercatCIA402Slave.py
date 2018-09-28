@@ -324,9 +324,9 @@ __%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % locals()
 
         # Write generated content to CIA402 node file
         Gen_CIA402Nodefile_path = os.path.join(buildpath,
-                                "cia402node_%s.c"%location_str)
+                                "cia402node_%s.c" % location_str)
         cia402nodefile = open(Gen_CIA402Nodefile_path, 'w')
         cia402nodefile.write(plc_cia402node_code % locals())
         cia402nodefile.close()
 
-        return [(Gen_CIA402Nodefile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))],"",True
+        return [(Gen_CIA402Nodefile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],"",True

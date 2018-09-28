@@ -216,7 +216,7 @@ class _CommonSlave:
         Command example : "ethercat states -p 0 PREOP" (target slave position and target state are given.)
         @param command : target slave state
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_STATE%(self.Controler.GetSlavePos(), command), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SLAVE_STATE % (self.Controler.GetSlavePos(), command), return_val = None)
 
     def GetSlaveStateFromSlave(self):
         """
@@ -237,7 +237,7 @@ class _CommonSlave:
         Command example : "ethercat sdos -p 0"
         @return return_val : execution results of "ethercat sdos" command (need to be parsed later)
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_SDO%(self.Controler.GetSlavePos()), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SLAVE_SDO % (self.Controler.GetSlavePos()), return_val = None)
         return return_val
 
     def SDODownload(self, data_type, idx, sub_idx, value):
@@ -249,7 +249,7 @@ class _CommonSlave:
         @param sub_idx : subindex of the SDO entry
         @param value : value of SDO entry
         """
-        error, return_val = self.Controler.RemoteExec(SDO_DOWNLOAD%(data_type, self.Controler.GetSlavePos(), idx, sub_idx, value), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SDO_DOWNLOAD % (data_type, self.Controler.GetSlavePos(), idx, sub_idx, value), return_val = None)
 
     def BackupSDODataSet(self):
         """
@@ -488,8 +488,8 @@ class _CommonSlave:
             mb = device.getMailbox()
             if mb is not None:
                 for mailbox_protocol in mailbox_protocols:
-                    if getattr(mb,"get%s"%mailbox_protocol)() is not None:
-                        smartview_infos["supported_mailbox"] += "%s,  "%mailbox_protocol
+                    if getattr(mb,"get%s" % mailbox_protocol)() is not None:
+                        smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
             smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(",  ")
 
             # get standard configuration of mailbox; <Device>-<Sm>
@@ -554,7 +554,7 @@ class _CommonSlave:
         Command example : "ethercat sii_read -p 0"
         @return return_val : result of "ethercat sii_read" (binary data)
         """
-        error, return_val = self.Controler.RemoteExec(SII_READ%(self.Controler.GetSlavePos()), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val = None)
         self.SiiData = return_val
         return return_val
 
@@ -565,7 +565,7 @@ class _CommonSlave:
         @param binary : EEPROM contents in binary data format
         @return return_val : result of "ethercat sii_write" (If it succeeds, the return value is NULL.)
         """
-        error, return_val = self.Controler.RemoteExec(SII_WRITE%(self.Controler.GetSlavePos()), return_val = None, sii_data = binary)
+        error, return_val = self.Controler.RemoteExec(SII_WRITE % (self.Controler.GetSlavePos()), return_val = None, sii_data = binary)
         return return_val
 
     def LoadData(self):
@@ -783,7 +783,7 @@ class _CommonSlave:
             mb = device.getMailbox()
             if mb is not None :
                 for bit,mbprot in enumerate(mailbox_protocols):
-                    if getattr(mb,"get%s"%mbprot)() is not None:
+                    if getattr(mb,"get%s" % mbprot)() is not None:
                         data += 1<<bit
             data = "{:0>4x}".format(data)
             eeprom.append(data[2:4])
@@ -1119,10 +1119,10 @@ class _CommonSlave:
         eeprom.append("00")
         #  category length (word); 1 word is 4 bytes. "+2" is the length of string's total number
         length = len(vendor_specific_data + dc_related_elements + input_elements + output_elements) + 2
-        if length%4 == 0:
+        if length % 4 == 0:
             pass
         else:
-            length +=length%4
+            length +=length % 4
             padflag = True
         eeprom.append("{:0>4x}".format(length/4)[2:4])
         eeprom.append("{:0>4x}".format(length/4)[0:2])
@@ -1180,7 +1180,7 @@ class _CommonSlave:
             if coe is not None:
                 for bit,flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
                                            "PdoUpload", "CompleteAccess"]):
-                    if getattr(coe,"get%s"%flag)() is not None:
+                    if getattr(coe,"get%s" % flag)() is not None:
                         coe_details += 1<<bit
         eeprom.append("{:0>2x}".format(coe_details))
 
@@ -1276,7 +1276,7 @@ class _CommonSlave:
             eeprom.append("28")
             eeprom.append("00")
             #  category length
-            if count%2 == 1:
+            if count % 2 == 1:
                 padflag = True
                 eeprom.append("{:0>4x}".format((count+1)/2)[2:4])
                 eeprom.append("{:0>4x}".format((count+1)/2)[0:2])
@@ -1350,7 +1350,7 @@ class _CommonSlave:
         en_mandatory = False
         en_virtual = False
 
-        for element in eval("device.get%s()"%pdotype):
+        for element in eval("device.get%s()" % pdotype):
             #  PDO Index
             data += "{:0>4x}".format(ExtractHexDecValue(element.getIndex().getcontent()))[2:4]
             data += "{:0>4x}".format(ExtractHexDecValue(element.getIndex().getcontent()))[0:2]
@@ -1530,7 +1530,7 @@ class _CommonSlave:
         @param length : register length
         @return return_val : register data
         """
-        error, return_val = self.Controler.RemoteExec(REG_READ%(self.Controler.GetSlavePos(), offset, length), return_val = None)
+        error, return_val = self.Controler.RemoteExec(REG_READ % (self.Controler.GetSlavePos(), offset, length), return_val = None)
         return return_val
 
     def RegWrite(self, address, data):
@@ -1541,7 +1541,7 @@ class _CommonSlave:
         @param data : data to write
         @return return_val : the execution result of "ethercat reg_write" (for error check)
         """
-        error, return_val = self.Controler.RemoteExec(REG_WRITE%(self.Controler.GetSlavePos(), address, data), return_val = None)
+        error, return_val = self.Controler.RemoteExec(REG_WRITE % (self.Controler.GetSlavePos(), address, data), return_val = None)
         return return_val
 
     def Rescan(self):
@@ -1549,7 +1549,7 @@ class _CommonSlave:
         Synchronize EEPROM data in master controller with the data in slave device after EEPROM write.
         Command example : "ethercat rescan -p 0"
         """
-        error, return_val = self.Controler.RemoteExec(RESCAN%(self.Controler.GetSlavePos()), return_val = None)
+        error, return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val = None)
 
     # -------------------------------------------------------------------------------
     #                        Common Use Methods
@@ -1563,7 +1563,7 @@ class _CommonSlave:
         if self.Controler.GetCTRoot()._connector is not None:
             # Check connection between the master and the slave.
             # Command example : "ethercat xml -p 0"
-            error, return_val = self.Controler.RemoteExec(SLAVE_XML%(self.Controler.GetSlavePos()), return_val = None)
+            error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val = None)
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2 :  # No slave connected to the master controller
                 if not cyclic_flag :

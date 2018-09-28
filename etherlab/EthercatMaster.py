@@ -661,7 +661,7 @@ class _EthercatCTN:
                                          "size": var_size,
                                          "IEC_type": entry["Type"],
                                          "var_name": "%s_%4.4x_%2.2x" % ("_".join(device_name.split()), index, subindex),
-                                         "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location +
+                                         "location": "%s%s%s" % (var_dir, var_size, ".".join(map(str, current_location +
                                                                                                     (index, subindex)))),
                                          "description": "",
                                          "children": []})
@@ -703,7 +703,7 @@ class _EthercatCTN:
         # define a unique name for the generated C file
         location_str = "_".join(map(lambda x:str(x), current_location))
 
-        Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c"%location_str)
+        Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c" % location_str)
 
         self.FileGenerator = _EthercatCFileGenerator(self)
 
@@ -738,7 +738,7 @@ class _EthercatCTN:
 
         LocationCFilesAndCFLAGS.insert(0,
             (current_location,
-             [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
+             [(Gen_Ethercatfile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
              True))
         LDFLAGS.append("-lethercat_rtdm -lrtdm")
 

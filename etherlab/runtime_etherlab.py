@@ -46,7 +46,7 @@ def SDOThreadProc(*params):
     if res != 0 :
         PLCObject.LogMessage(
             LogLevelsDict["WARNING"],
-            "%s : %s"%(command,output))
+            "%s : %s" % (command,output))
 
 def EthercatSDOUpload(pos, index, subindex, var_type):
     global SDOThread
