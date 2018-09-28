@@ -68,8 +68,10 @@ returnVal = slaves
 #      Etherlab Specific Blocks Library
 # --------------------------------------------------
 
+
 def GetLocalPath(filename):
     return os.path.join(os.path.split(__file__)[0], filename)
+
 
 class EtherlabLibrary(POULibrary):
     def GetLibraryPath(self):
@@ -94,6 +96,7 @@ class EtherlabLibrary(POULibrary):
 # --------------------------------------------------
 
 EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd"))
+
 
 def sort_commands(x, y):
     if x["Index"] == y["Index"]:
@@ -219,6 +222,7 @@ ProcessVariablesXSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 """
 
 ProcessVariablesParser = GenerateParserFromXSDstring(ProcessVariablesXSD)
+
 
 class _EthercatCTN:
 

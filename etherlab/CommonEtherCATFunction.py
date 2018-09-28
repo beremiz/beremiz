@@ -13,6 +13,7 @@ import wx
 
 mailbox_protocols =  ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
 
+
 def ExtractHexDecValue(value):
     """
      convert numerical value in string format into decimal or hex format.
@@ -28,6 +29,7 @@ def ExtractHexDecValue(value):
 
     except Exception:
         raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
+
 
 def ExtractName(names, default=None):
     """
@@ -135,6 +137,7 @@ import commands
 result = commands.getoutput("ethercat rescan -p %d")
 returnVal =result
 """
+
 
 # --------------------------------------------------
 #    Common Method For EtherCAT Management

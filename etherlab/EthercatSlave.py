@@ -31,6 +31,7 @@ DATATYPECONVERSION = {"BOOL" : "BIT", "SINT" : "S8", "INT" : "S16", "DINT" : "S3
 
 VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
 
+
 def ExtractHexDecValue(value):
     try:
         return int(value)
@@ -41,6 +42,7 @@ def ExtractHexDecValue(value):
     except Exception:
         raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
 
+
 def GenerateHexDecValue(value, base=10):
     if base == 10:
         return str(value)
@@ -48,6 +50,7 @@ def GenerateHexDecValue(value, base=10):
         return "#x%.8x" % value
     else:
         raise ValueError, "Not supported base"
+
 
 def ExtractName(names, default=None):
     if len(names) == 1:

@@ -68,6 +68,7 @@ SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
     }
 """
 
+
 def ConfigureVariable(entry_infos, str_completion):
     entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if entry_infos["data_type"] is None:
@@ -124,6 +125,7 @@ def ConfigureVariable(entry_infos, str_completion):
                 ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " +
                  "%(real_var)s);") % entry_infos)
 
+
 def ExclusionSortFunction(x, y):
     if x["matching"] == y["matching"]:
         if x["assigned"] and not y["assigned"]:
@@ -132,6 +134,7 @@ def ExclusionSortFunction(x, y):
             return 1
         return cmp(x["count"], y["count"])
     return -cmp(x["matching"], y["matching"])
+
 
 class _EthercatCFileGenerator:
 

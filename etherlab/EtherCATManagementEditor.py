@@ -27,6 +27,7 @@ import wx.grid as gridlib
 from xml.dom import minidom
 # -------------------------------------------------------------
 
+
 # ----------------------------- For Sync Manager Table -----------------------------------
 def GetSyncManagersTableColnames():
     """
@@ -34,6 +35,7 @@ def GetSyncManagersTableColnames():
     """
     _ = lambda x : x
     return ["#", _("Name"), _("Start Address"), _("Default Size"), _("Control Byte"), _("Enable")]
+
 
 # -------------------------------------------------------------------------------
 #                    Sync Managers Table
@@ -44,6 +46,7 @@ class SyncManagersTable(CustomTable):
             if col == 0:
                 return row
             return self.data[row].get(self.GetColLabelValue(col, False), "")
+
 
 # -------------------------------------------------------------------------------
 #                    EtherCAT Management Treebook
@@ -90,6 +93,7 @@ class EtherCATManagementTreebook(wx.Treebook):
         new = event.GetSelection()
         sel = event.GetSelection()
         event.Skip()
+
 
 # -------------------------------------------------------------------------------
 #                    For SlaveState Panel
@@ -306,6 +310,7 @@ class SlaveStatePanelClass(wx.Panel):
         except Exception:
             pass
 
+
 # -------------------------------------------------------------------------------
 #                    For SDO Management Panel
 # -------------------------------------------------------------------------------
@@ -517,6 +522,7 @@ class SDONoteBook(wx.Notebook):
         new = event.GetSelection()
         sel = self.GetSelection()
         event.Skip()
+
 
 # -------------------------------------------------------------------------------
 #                    For SDO Grid (fill index, subindex, etc...)

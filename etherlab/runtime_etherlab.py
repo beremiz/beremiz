@@ -16,6 +16,7 @@ SDOThread = None
 SDOProc = None
 Result = None
 
+
 def SDOThreadProc(*params):
     global Result, SDOProc
     if params[0] == "upload":
@@ -48,15 +49,18 @@ def SDOThreadProc(*params):
             LogLevelsDict["WARNING"],
             "%s : %s" % (command,output))
 
+
 def EthercatSDOUpload(pos, index, subindex, var_type):
     global SDOThread
     SDOThread = Thread(target=SDOThreadProc, args=["upload", pos, var_type, index, subindex])
     SDOThread.start()
 
+
 def EthercatSDODownload(pos, index, subindex, var_type, value):
     global SDOThread
     SDOThread = Thread(target=SDOThreadProc, args=["download", pos, var_type, index, subindex, value])
     SDOThread.start()
+
 
 def GetResult():
     global Result
@@ -64,6 +68,8 @@ def GetResult():
 
 KMSGPollThread=None
 StopKMSGThread=False
+
+
 def KMSGPollThreadProc():
     """
     Logs Kernel messages starting with EtherCAT
@@ -95,11 +101,13 @@ def KMSGPollThreadProc():
                     msg)
         time.sleep(0.5)
 
+
 def _runtime_etherlab_init():
     global KMSGPollThread, StopKMSGThread
     StopKMSGThread = False
     KMSGPollThread = Thread(target = KMSGPollThreadProc)
     KMSGPollThread.start()
+
 
 def _runtime_etherlab_cleanup():
     global KMSGPollThread, StopKMSGThread, SDOProc, SDOThread
