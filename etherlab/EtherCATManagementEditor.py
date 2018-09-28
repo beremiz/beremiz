@@ -604,7 +604,7 @@ class SlaveSDOTable(wx.grid.Grid):
         if check[3:4] == 'w' :
             self.Controler.CommonMethod.Check_SAFEOP = True
             write_flag = True
-        if check[5:] =='w' :
+        if check[5:] == 'w' :
             self.Controler.CommonMethod.Check_OP = True
             write_flag = True
 
@@ -1050,34 +1050,35 @@ class SlaveSiiSmartView(wx.Panel):
         Set data based on slave EEPROM.
         """
         # sii_dict = { Parameter : (WordAddress, WordSize) }
-        sii_dict= { 'PDIControl' :                          ( '0', 1),
-                    'PDIConfiguration' :                    ( '1', 1),
-                    'PulseLengthOfSYNCSignals' :            ( '2', 1),
-                    'ExtendedPDIConfiguration' :            ( '3', 1),
-                    'ConfiguredStationAlias' :              ( '4', 1),
-                    'Checksum' :                            ( '7', 1),
-                    'VendorID' :                            ( '8', 2),
-                    'ProductCode' :                         ( 'a', 2),
-                    'RevisionNumber' :                      ( 'c', 2),
-                    'SerialNumber' :                        ( 'e', 2),
-                    'Execution Delay' :                     ('10', 1),
-                    'Port0Delay' :                          ('11', 1),
-                    'Port1Delay' :                          ('12', 1),
-                    'BootstrapReceiveMailboxOffset' :       ('14', 1),
-                    'BootstrapReceiveMailboxSize' :         ('15', 1),
-                    'BootstrapSendMailboxOffset' :          ('16', 1),
-                    'BootstrapSendMailboxSize' :            ('17', 1),
-                    'StandardReceiveMailboxOffset' :        ('18', 1),
-                    'StandardReceiveMailboxSize' :          ('19', 1),
-                    'StandardSendMailboxOffset' :           ('1a', 1),
-                    'StandardSendMailboxSize' :             ('1b', 1),
-                    'MailboxProtocol' :                     ('1c', 1),
-                    'Size' :                                ('3e', 1),
-                    'Version' :                             ('3f', 1),
-                    'First Category Type/Vendor Specific' : ('40', 1),
-                    'Following Category Word Size' :        ('41', 1),
-                    'Category Data' :                       ('42', 1),
-                }
+        sii_dict = {
+            'PDIControl' :                          ( '0', 1),
+            'PDIConfiguration' :                    ( '1', 1),
+            'PulseLengthOfSYNCSignals' :            ( '2', 1),
+            'ExtendedPDIConfiguration' :            ( '3', 1),
+            'ConfiguredStationAlias' :              ( '4', 1),
+            'Checksum' :                            ( '7', 1),
+            'VendorID' :                            ( '8', 2),
+            'ProductCode' :                         ( 'a', 2),
+            'RevisionNumber' :                      ( 'c', 2),
+            'SerialNumber' :                        ( 'e', 2),
+            'Execution Delay' :                     ('10', 1),
+            'Port0Delay' :                          ('11', 1),
+            'Port1Delay' :                          ('12', 1),
+            'BootstrapReceiveMailboxOffset' :       ('14', 1),
+            'BootstrapReceiveMailboxSize' :         ('15', 1),
+            'BootstrapSendMailboxOffset' :          ('16', 1),
+            'BootstrapSendMailboxSize' :            ('17', 1),
+            'StandardReceiveMailboxOffset' :        ('18', 1),
+            'StandardReceiveMailboxSize' :          ('19', 1),
+            'StandardSendMailboxOffset' :           ('1a', 1),
+            'StandardSendMailboxSize' :             ('1b', 1),
+            'MailboxProtocol' :                     ('1c', 1),
+            'Size' :                                ('3e', 1),
+            'Version' :                             ('3f', 1),
+            'First Category Type/Vendor Specific' : ('40', 1),
+            'Following Category Word Size' :        ('41', 1),
+            'Category Data' :                       ('42', 1),
+        }
 
         # Config Data: EEPROM Size, PDI Type, Device Emulation
         # EEPROM's data in address '0x003f' is Size of EEPROM in KBit-1
@@ -1110,7 +1111,7 @@ class SlaveSiiSmartView(wx.Panel):
         # each value of mailbox protocol :
         # VoE(0x0020), SoE(0x0010), FoE(0x0008), CoE(0x0004), EoE(0x0002), AoE(0x0001)
         supported_mailbox = ""
-        mailbox_protocol=["VoE,  ", "SoE,  ", "FoE,  ", "CoE,  ", "EoE,  ", "AoE,  "]
+        mailbox_protocol = ["VoE,  ", "SoE,  ", "FoE,  ", "CoE,  ", "EoE,  ", "AoE,  "]
         mailbox_data = "{:0>8b}".format(int(self.GetWordAddressData( sii_dict.get('MailboxProtocol'), 16 ), 16))
         for protocol in range(6):
             if mailbox_data[protocol+2] == '1':
@@ -1188,10 +1189,10 @@ class SmartViewTreeListCtrl(wx.Panel):
 
         self.Tree = wx.gizmos.TreeListCtrl(self, -1, size=(350, 500),
                                            style=wx.TR_DEFAULT_STYLE
-                                                |wx.TR_FULL_ROW_HIGHLIGHT
-                                                |wx.TR_HIDE_ROOT
-                                                |wx.TR_COLUMN_LINES
-                                                |wx.TR_ROW_LINES)
+                                               | wx.TR_FULL_ROW_HIGHLIGHT
+                                               | wx.TR_HIDE_ROOT
+                                               | wx.TR_COLUMN_LINES
+                                               | wx.TR_ROW_LINES)
 
         self.Tree.AddColumn("Description", width=200)
         self.Tree.AddColumn("Value", width=140)
@@ -1702,7 +1703,7 @@ class RegisterAccessPanel(wx.Panel):
                 # append ASCII value
                 char_data = ""
                 for iter in range(2):
-                    if int(reg_word[iter*2:iter*2+2], 16)>=32 and int(reg_word[iter*2:iter*2+2], 16)<=126:
+                    if int(reg_word[iter*2:iter*2+2], 16) >= 32 and int(reg_word[iter*2:iter*2+2], 16) <= 126:
                         char_data = char_data + chr(int(reg_word[iter*2:iter*2+2], 16))
                     else:
                         char_data = char_data + "."
@@ -1743,7 +1744,7 @@ class RegisterAccessPanel(wx.Panel):
 
         # If "Compact View" Checkbox is True
         ## 'event' is argument of this method or event of checkbox.
-        if event==True or event.GetEventObject().GetValue():
+        if event == True or event.GetEventObject().GetValue():
             self.CompactFlag = True
 
             reg_compact_data = []
@@ -1988,7 +1989,7 @@ class RegisterMainTable(wx.grid.Grid):
         # and create data structure for the detail description table ; sub grid
         if address in self.RegisterAccessPanel.RegisterSubGridDict:
             for element in self.RegisterAccessPanel.RegisterSubGridDict[address]:
-                row_data =[]
+                row_data = []
                 row_data.append(element[BIT_RANGE])
                 row_data.append(element[NAME])
                 bin_data = "{:0>16b}".format(int(self.GetCellValue(event.GetRow(), 1)))
@@ -2031,7 +2032,7 @@ class RegisterMainTable(wx.grid.Grid):
                     # ex) ethercat reg_write -p 0 -t uint16 0x0000 0x0000
                     return_val = self.Controler.CommonMethod.RegWrite('0x'+self.GetRowLabelValue(event.GetRow()), dlg.GetValue())
 
-                    if len(return_val)==0:
+                    if len(return_val) == 0:
                         # set dec
                         self.SetCellValue(event.GetRow(), 1, str(int(dlg.GetValue(), 0)))
                         # set hex
@@ -2041,7 +2042,7 @@ class RegisterMainTable(wx.grid.Grid):
                         char_data = ""
                         # If hex_data is been able to convert to ascii code, append ascii code.
                         for iter in range(2):
-                            if int(hex_data[(iter+1)*2:(iter+2)*2], 16)>=32 and int(hex_data[(iter+1)*2:(iter+2)*2], 16)<=126:
+                            if int(hex_data[(iter+1)*2:(iter+2)*2], 16) >= 32 and int(hex_data[(iter+1)*2:(iter+2)*2], 16) <= 126:
                                 char_data = char_data + chr(int(hex_data[(iter+1)*2:(iter+2)*2], 16))
                             else:
                                 char_data = char_data + "."

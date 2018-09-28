@@ -582,7 +582,7 @@ class _CommonSlave:
 
         # append zero-filled padding data up to EEPROM size
         for index in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
-            self.BinaryCode = self.BinaryCode +'ff'.decode('hex')
+            self.BinaryCode = self.BinaryCode + 'ff'.decode('hex')
 
         return self.BinaryCode
 
@@ -611,7 +611,7 @@ class _CommonSlave:
                     tempvar2 = "0" + tempvar2
                 row_code.append(tempvar2)
 
-                if int(digithexstr, 16)>=32 and int(digithexstr, 16)<=126:
+                if int(digithexstr, 16) >= 32 and int(digithexstr, 16) <= 126:
                     row_text = row_text + chr(int(digithexstr, 16))
                 else:
                     row_text = row_text + "."
@@ -973,7 +973,7 @@ class _CommonSlave:
 
         #  element4; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Name(LcId is "1033" or "1"?)>
         for element in device.getName():
-            if element.getLcId() == 1 or element.getLcId()==1033:
+            if element.getLcId() == 1 or element.getLcId() == 1033:
                 data = element.getcontent()
         if data is not "" and type(data) == unicode:
             for vendor_spec_string in vendor_spec_strings:
@@ -1125,7 +1125,7 @@ class _CommonSlave:
         if length % 4 == 0:
             pass
         else:
-            length +=length % 4
+            length += length % 4
             padflag = True
         eeprom.append("{:0>4x}".format(length/4)[2:4])
         eeprom.append("{:0>4x}".format(length/4)[0:2])
