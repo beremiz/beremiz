@@ -449,7 +449,7 @@ class _EthercatCTN:
             dialog.Destroy()
 
         if execute:
-            error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal = None)
+            error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
             if error != 0:
                 dialog = wx.MessageDialog(app_frame, returnVal, "Error", wx.OK|wx.ICON_ERROR)
                 dialog.ShowModal()

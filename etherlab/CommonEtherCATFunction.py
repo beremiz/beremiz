@@ -194,7 +194,7 @@ class _CommonSlave:
         """
 
         # exectute "ethercat master" command
-        error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val = None)
+        error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val=None)
         master_state = {}
         # parse the reslut
         for each_line in return_val.splitlines():
@@ -219,7 +219,7 @@ class _CommonSlave:
         Command example : "ethercat states -p 0 PREOP" (target slave position and target state are given.)
         @param command : target slave state
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_STATE % (self.Controler.GetSlavePos(), command), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SLAVE_STATE % (self.Controler.GetSlavePos(), command), return_val=None)
 
     def GetSlaveStateFromSlave(self):
         """
@@ -227,7 +227,7 @@ class _CommonSlave:
         (self.SlaveState) for "Slave State"
         return_val example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
         """
-        error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val = None)
+        error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val=None)
         self.SlaveState = return_val
         return return_val
 
@@ -240,7 +240,7 @@ class _CommonSlave:
         Command example : "ethercat sdos -p 0"
         @return return_val : execution results of "ethercat sdos" command (need to be parsed later)
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_SDO % (self.Controler.GetSlavePos()), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SLAVE_SDO % (self.Controler.GetSlavePos()), return_val=None)
         return return_val
 
     def SDODownload(self, data_type, idx, sub_idx, value):
@@ -252,7 +252,7 @@ class _CommonSlave:
         @param sub_idx : subindex of the SDO entry
         @param value : value of SDO entry
         """
-        error, return_val = self.Controler.RemoteExec(SDO_DOWNLOAD % (data_type, self.Controler.GetSlavePos(), idx, sub_idx, value), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SDO_DOWNLOAD % (data_type, self.Controler.GetSlavePos(), idx, sub_idx, value), return_val=None)
 
     def BackupSDODataSet(self):
         """
@@ -557,7 +557,7 @@ class _CommonSlave:
         Command example : "ethercat sii_read -p 0"
         @return return_val : result of "ethercat sii_read" (binary data)
         """
-        error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val = None)
+        error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val=None)
         self.SiiData = return_val
         return return_val
 
@@ -568,7 +568,7 @@ class _CommonSlave:
         @param binary : EEPROM contents in binary data format
         @return return_val : result of "ethercat sii_write" (If it succeeds, the return value is NULL.)
         """
-        error, return_val = self.Controler.RemoteExec(SII_WRITE % (self.Controler.GetSlavePos()), return_val = None, sii_data = binary)
+        error, return_val = self.Controler.RemoteExec(SII_WRITE % (self.Controler.GetSlavePos()), return_val=None, sii_data=binary)
         return return_val
 
     def LoadData(self):
@@ -1533,7 +1533,7 @@ class _CommonSlave:
         @param length : register length
         @return return_val : register data
         """
-        error, return_val = self.Controler.RemoteExec(REG_READ % (self.Controler.GetSlavePos(), offset, length), return_val = None)
+        error, return_val = self.Controler.RemoteExec(REG_READ % (self.Controler.GetSlavePos(), offset, length), return_val=None)
         return return_val
 
     def RegWrite(self, address, data):
@@ -1544,7 +1544,7 @@ class _CommonSlave:
         @param data : data to write
         @return return_val : the execution result of "ethercat reg_write" (for error check)
         """
-        error, return_val = self.Controler.RemoteExec(REG_WRITE % (self.Controler.GetSlavePos(), address, data), return_val = None)
+        error, return_val = self.Controler.RemoteExec(REG_WRITE % (self.Controler.GetSlavePos(), address, data), return_val=None)
         return return_val
 
     def Rescan(self):
@@ -1552,7 +1552,7 @@ class _CommonSlave:
         Synchronize EEPROM data in master controller with the data in slave device after EEPROM write.
         Command example : "ethercat rescan -p 0"
         """
-        error, return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val = None)
+        error, return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val=None)
 
     # -------------------------------------------------------------------------------
     #                        Common Use Methods
@@ -1566,7 +1566,7 @@ class _CommonSlave:
         if self.Controler.GetCTRoot()._connector is not None:
             # Check connection between the master and the slave.
             # Command example : "ethercat xml -p 0"
-            error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val = None)
+            error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val=None)
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2 :  # No slave connected to the master controller
                 if not cyclic_flag :

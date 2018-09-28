@@ -86,7 +86,7 @@ class _EthercatSlaveCTN:
     def GetSlavePos(self):
         return self.BaseParams.getIEC_Channel()
 
-    def GetParamsAttributes(self, path = None):
+    def GetParamsAttributes(self, path=None):
         if path:
             parts = path.split(".", 1)
             if self.MandatoryParams and parts[0] == self.MandatoryParams[0]:
