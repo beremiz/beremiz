@@ -10,13 +10,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-06-15 16:39+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Adhir Dutta <likhon52@gmail.com>, 2017\n"
-"Language-Team: Bengali (Bangladesh) (https://www.transifex.com/beremiz/teams/75746/bn_BD/)\n"
+"Last-Translator: Adam B <adisz.pl@gmail.com>, 2018\n"
+"Language-Team: Polish (https://www.transifex.com/beremiz/teams/75746/pl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: bn_BD\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: pl\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
 
 #: ../util/ExceptionHandler.py:58
 #, python-format
@@ -33,89 +33,89 @@ msgid ""
 "Traceback:\n"
 msgstr ""
 "\n"
-"একটি ব্যতিক্রমী অসঙ্গতির (বাগ) প্রাদুর্ভাব ঘটেছে। সংরক্ষিত অসঙ্গতির নথিটিঃ\n"
+"Wystąpił nieobsługiwany wyjątek (błąd). Raport błędu zapisano w:\n"
 "(%s)\n"
 "\n"
-"এই ঠিকানায় অনুগ্রহপূর্বক নথিটি প্রেরণ করুনঃ\n"
+"Proszę o przesłanie go na adres:\n"
 "beremiz-devel@lists.sourceforge.net\n"
 "\n"
-"আপনাকে প্রোগ্রামটি পুনঃআরম্ভ করতে হবে.\n"
+"Zaleca się zrestartowanie programu.\n"
 "\n"
-"উপাত্তসমূহ:\n"
+"Przegląd:\n"
 
 #: ../controls/VariablePanel.py:90
 msgid "   External"
-msgstr "বাহ্যিক"
+msgstr "Zewnętrzny"
 
 #: ../controls/VariablePanel.py:89
 msgid "   InOut"
-msgstr "ইনআউট"
+msgstr "WeWyj"
 
 #: ../controls/VariablePanel.py:89
 msgid "   Input"
-msgstr "ইনপুট"
+msgstr "Wejście"
 
 #: ../controls/VariablePanel.py:90
 msgid "   Local"
-msgstr "স্থানীয়"
+msgstr "Lokalny"
 
 #: ../controls/VariablePanel.py:89
 msgid "   Output"
-msgstr "আউটপুট"
+msgstr "Wyjście"
 
 #: ../controls/VariablePanel.py:91
 msgid "   Temp"
-msgstr "সাময়িক"
+msgstr "Tymczasowe"
 
 #: ../dialogs/PouTransitionDialog.py:101 ../dialogs/ProjectDialog.py:74
 #: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:122
 #, python-format
 msgid " and %s"
-msgstr "এবং %s"
+msgstr "i %s"
 
 #: ../ProjectController.py:1182
 msgid " generation failed !\n"
-msgstr "উত্পাদন ব্যর্থ !\n"
+msgstr "generowanie nieudane!\n"
 
 #: ../plcopen/plcopen.py:1029
 #, python-format
 msgid "\"%s\" Data Type doesn't exist !!!"
-msgstr "\"%s\" Data Type অস্তিত্বহীন !!!"
+msgstr "\"%s\" Typ danych nie istnieje !!!"
 
 #: ../plcopen/plcopen.py:1047
 #, python-format
 msgid "\"%s\" POU already exists !!!"
-msgstr "\"%s\"  POU ইতিমধ্যেই বিদ্যমান !!!"
+msgstr "\"%s\" POU już istnieje!"
 
 #: ../plcopen/plcopen.py:1068
 #, python-format
 msgid "\"%s\" POU doesn't exist !!!"
-msgstr "\"%s\" POU এর অস্তিত্ব নেই !!!"
+msgstr "\"POU %s\" nie istnieje !!!"
 
 #: ../editors/Viewer.py:288
 #, python-format
 msgid "\"%s\" can't use itself!"
-msgstr "\"%s\" স্বীয়কার্যে ব্যবহার অযোগ্য! "
+msgstr "\"%s\" nie może używać samego siebie!"
 
 #: ../IDEFrame.py:1688 ../IDEFrame.py:1707
 #, python-format
 msgid "\"%s\" config already exists!"
-msgstr "\"%s\"  config ইতিমধ্যেই বিদ্যমান!"
+msgstr "Konfiguracja \"%s\" już istnieje!"
 
 #: ../plcopen/plcopen.py:531
 #, python-format
 msgid "\"%s\" configuration already exists !!!"
-msgstr "\"%s\" configuration ইতিমধ্যেই বিদ্যমান !!!"
+msgstr "Konfiguracja \"%s\" już istnieje !!!"
 
 #: ../plcopen/plcopen.py:540
 #, python-format
 msgid "\"%s\" configuration doesn't exist !!!"
-msgstr ""
+msgstr "Konfiguracja \"%s\" nie istnieje !!!"
 
 #: ../IDEFrame.py:1638
 #, python-format
 msgid "\"%s\" data type already exists!"
-msgstr "\"%s\" data type ইতিমধ্যেই বিদ্যমান!  "
+msgstr "Typ danych \"%s\" już istnieje!"
 
 #: ../dialogs/PouTransitionDialog.py:112 ../dialogs/BlockPreviewDialog.py:220
 #: ../dialogs/PouActionDialog.py:110 ../editors/Viewer.py:304
@@ -124,12 +124,12 @@ msgstr "\"%s\" data type ইতিমধ্যেই বিদ্যমান!  
 #: ../controls/VariablePanel.py:425
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
-msgstr "\"%s\" এই pou এর উপাদান ইতিমধ্যেই বিদ্যমান!"
+msgstr "Element \"%s\" dla tego pou już istnieje!"
 
 #: ../BeremizIDE.py:928
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
-msgstr "\"%s\" ফোল্ডারটিতে বেরিমিজ প্রকল্প নেই\n"
+msgstr "Folder \"%s\" nie jest prawidłowym projektem Beremiz\n"
 
 #: ../dialogs/SFCStepNameDialog.py:56 ../dialogs/PouTransitionDialog.py:108
 #: ../dialogs/BlockPreviewDialog.py:209 ../dialogs/PouNameDialog.py:54
@@ -140,17 +140,17 @@ msgstr "\"%s\" ফোল্ডারটিতে বেরিমিজ প্র
 #: ../IDEFrame.py:1629
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
-msgstr "\"%s\" একটি কি-ওয়ার্ড। তাই ব্যবহার অযোগ্য!"
+msgstr "\"%s\" jest słowem kluczowym. Nie można go użyć!"
 
 #: ../plcopen/plcopen.py:2836
 #, python-format
 msgid "\"%s\" is an invalid value!"
-msgstr "\"%s\" একটি অযৌক্তিক সংখ্যা!"
+msgstr "\"%s\" jest nieprawidłową wartością!"
 
 #: ../PLCOpenEditor.py:323 ../PLCOpenEditor.py:365
 #, python-format
 msgid "\"%s\" is not a valid folder!"
-msgstr "\"%s\" যৌক্তিক ফ্লোল্ডার নয়!"
+msgstr "\"%s\" nie jest prawidłowym folderem!"
 
 #: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:106
 #: ../dialogs/BlockPreviewDialog.py:205 ../dialogs/PouNameDialog.py:52
@@ -160,12 +160,12 @@ msgstr "\"%s\" যৌক্তিক ফ্লোল্ডার নয়!"
 #: ../controls/VariablePanel.py:785 ../IDEFrame.py:1627
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
-msgstr "\"%s\" একটি অযৌক্তিক শনাক্তকারী!"
+msgstr "\"%s\" nie jest prawidłowym identyfikatorem!"
 
 #: ../IDEFrame.py:2436
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
-msgstr "\"%s\" এক বা একাধিক POU তে ব্যবহৃত। আপনি কি কাজ করবেন?"
+msgstr "\"%s\" jest używane przez jeden lub więcej POU. Czy chcesz kontynuować?"
 
 #: ../dialogs/BlockPreviewDialog.py:213 ../dialogs/PouDialog.py:131
 #: ../editors/Viewer.py:302 ../editors/Viewer.py:359 ../editors/Viewer.py:389
@@ -175,22 +175,22 @@ msgstr "\"%s\" এক বা একাধিক POU তে ব্যবহৃত
 #: ../IDEFrame.py:1647
 #, python-format
 msgid "\"%s\" pou already exists!"
-msgstr "\"%s\" POU ইতিমধ্যেই বিদ্যমান!"
+msgstr "\"%s\" pou już istnieje!"
 
 #: ../dialogs/SFCStepNameDialog.py:62
 #, python-format
 msgid "\"%s\" step already exists!"
-msgstr "\"%s\" step ইতিমধ্যেই বিদ্যমান!"
+msgstr "Krok \"%s\" już istnieje!"
 
 #: ../editors/DataTypeEditor.py:566
 #, python-format
 msgid "\"%s\" value already defined!"
-msgstr "\"%s\" মান ইতিমধ্যেই সংজ্ঞায়িত!"
+msgstr "\"%s\" wartość już zdefiniowana!"
 
 #: ../dialogs/ArrayTypeDialog.py:105 ../editors/DataTypeEditor.py:759
 #, python-format
 msgid "\"%s\" value isn't a valid array dimension!"
-msgstr "\"%s\" সাংখ্যমানটি অ্যারের জন্য অযৌক্তিক মাত্রা!"
+msgstr "\"%s\" wartość nie jest prawidłowym wymiarem tablicy!"
 
 #: ../dialogs/ArrayTypeDialog.py:109 ../editors/DataTypeEditor.py:766
 #, python-format
@@ -198,196 +198,196 @@ msgid ""
 "\"%s\" value isn't a valid array dimension!\n"
 "Right value must be greater than left value."
 msgstr ""
-"\"%s\" সাংখ্যমানটি অ্যারের জন্য অযৌক্তিক মাত্রা!\n"
-"ডানের সাংখ্যমান অবশ্যই বামের চেয়ে বড় হতে হবে."
+"\"%s\" wartość nie jest prawidłowym wymiarem tablicy!\n"
+"Prawa wartość musi być większa od lewej."
 
 #: ../PLCGenerator.py:1133
 #, python-brace-format
 msgid "\"{a1}\" function cancelled in \"{a2}\" POU: No input connected"
-msgstr "\"{a1}\" ফাংশন বাতিল \"{a2}\" তে POU: কোনও ইনপুট প্রযুক্ত হয়নি"
+msgstr "Funkcja \"{a1}\" anulowana w \"{a2}\" POU: brak podłączonego wejścia"
 
 #: ../editors/Viewer.py:292
 #, python-brace-format
 msgid "\"{a1}\" is already used by \"{a2}\"!"
-msgstr "\"{a1}\" ইতিমধ্যেই \"{a2}\" দ্বারা ব্যবহৃত!"
+msgstr "\"{a1}\" jest już używane przez \"{a2}\"!"
 
 #: ../plcopen/plcopen.py:557
 #, python-brace-format
 msgid "\"{a1}\" resource already exists in \"{a2}\" configuration !!!"
-msgstr "\"{a1}\" এর সম্পদ ইতিমধ্যেই \"{a2}\" এর configuration এ বিদ্যমান !!!"
+msgstr "Zasób \"{a1}\" już istnieje w konfiguracji \"{a2}\" !!!"
 
 #: ../plcopen/plcopen.py:577
 #, python-brace-format
 msgid "\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!"
-msgstr "\"{a1}\" এর সম্পদ \"{a2}\" এর configuration এ ব্যবহৃত হয়নি !!!"
+msgstr "Zasób \"{a1}\" nie istnieje w konfiguracji \"{a2}\" !!!"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:580
 #, python-format
 msgid "%03gms"
-msgstr "%03gমিসে"
+msgstr "%03gms"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:571
 #, python-format
 msgid "%dd"
-msgstr "%dদি"
+msgstr "%dd"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:61
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:572
 #, python-format
 msgid "%dh"
-msgstr "%dঘ"
+msgstr "%dh"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:60
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:573
 #, python-format
 msgid "%dm"
-msgstr "%dমি"
+msgstr "%dm"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:58
 #, python-format
 msgid "%dms"
-msgstr "%dমিসে"
+msgstr "%dms"
 
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:59
 #: ../controls/DebugVariablePanel/DebugVariablePanel.py:574
 #, python-format
 msgid "%ds"
-msgstr "%dসে"
+msgstr "%ds"
 
 #: ../PLCControler.py:1114
 #, python-format
 msgid "%s Data Types"
-msgstr "%s Data Types"
+msgstr "%s Typy danych"
 
 #: ../PLCControler.py:1097
 #, python-format
 msgid "%s POUs"
-msgstr "%sPOUs"
+msgstr "%s POU"
 
 #: ../canfestival/SlaveEditor.py:73 ../canfestival/NetworkEditor.py:97
 #, python-format
 msgid "%s Profile"
-msgstr "%s Profile"
+msgstr "%s Profil"
 
 #: ../plcopen/plcopen.py:1901 ../plcopen/plcopen.py:1908
 #: ../plcopen/plcopen.py:1921 ../plcopen/plcopen.py:1929
 #: ../plcopen/plcopen.py:1939 ../plcopen/plcopen.py:1950
 #, python-format
 msgid "%s body don't have instances!"
-msgstr "%sপ্রধান অংশে প্রতিলিপি নেই!"
+msgstr "%s 'body' nie ma instancji!"
 
 #: ../plcopen/plcopen.py:1957 ../plcopen/plcopen.py:1964
 #: ../plcopen/plcopen.py:1971
 #, python-format
 msgid "%s body don't have text!"
-msgstr "%sপ্রধান অংশে  text নেই!"
+msgstr "%s 'body' nie ma tekstu!"
 
 #: ../IDEFrame.py:388
 msgid "&Add Element"
-msgstr ""
+msgstr "&Dodaj element"
 
 #: ../dialogs/AboutDialog.py:71 ../dialogs/AboutDialog.py:117
 #: ../dialogs/AboutDialog.py:152
 msgid "&Close"
-msgstr ""
+msgstr "&Zamknij"
 
 #: ../IDEFrame.py:361
 msgid "&Configuration"
-msgstr ""
+msgstr "&Konfiguracja"
 
 #: ../IDEFrame.py:350
 msgid "&Data Type"
-msgstr ""
+msgstr "&Typ danych"
 
 #: ../IDEFrame.py:392
 msgid "&Delete"
-msgstr ""
+msgstr "&Usuń"
 
 #: ../IDEFrame.py:342
 msgid "&Display"
-msgstr ""
+msgstr "&Wyświetlanie"
 
 #: ../IDEFrame.py:341
 msgid "&Edit"
-msgstr ""
+msgstr "&Edytuj"
 
 #: ../IDEFrame.py:340
 msgid "&File"
-msgstr ""
+msgstr "&Plik"
 
 #: ../IDEFrame.py:352
 msgid "&Function"
-msgstr ""
+msgstr "&Funkcja"
 
 #: ../IDEFrame.py:343
 msgid "&Help"
-msgstr ""
+msgstr "&Pomoc"
 
 #: ../dialogs/AboutDialog.py:70
 msgid "&License"
-msgstr ""
+msgstr "&Licencja"
 
 #: ../IDEFrame.py:356
 msgid "&Program"
-msgstr ""
+msgstr "&Program"
 
 #: ../PLCOpenEditor.py:98
 msgid "&Properties"
-msgstr ""
+msgstr "&Właściwości"
 
 #: ../BeremizIDE.py:244
 msgid "&Recent Projects"
-msgstr ""
+msgstr "&Ostatnie projekty"
 
 #: ../IDEFrame.py:358
 msgid "&Resource"
-msgstr ""
+msgstr "&Zasoby"
 
 #: ../controls/SearchResultPanel.py:247
 #, python-brace-format
 msgid "'{a1}' - {a2} match in project"
-msgstr ""
+msgstr "\"{a1}\" - {a2} powiązanie w projekcie"
 
 #: ../controls/SearchResultPanel.py:249
 #, python-brace-format
 msgid "'{a1}' - {a2} matches in project"
-msgstr ""
+msgstr "\"{a1}\" - {a2} powiązań w projekcie"
 
 #: ../connectors/PYRO/__init__.py:98
 #, python-brace-format
 msgid "'{a1}' is located at {a2}\n"
-msgstr ""
+msgstr "\"{a1}\" znajduje się w {a2}\n"
 
 #: ../controls/SearchResultPanel.py:298
 #, python-format
 msgid "(%d matches)"
-msgstr ""
+msgstr "(%d powiązań)"
 
 #: ../dialogs/PouTransitionDialog.py:103 ../dialogs/PouActionDialog.py:101
 #: ../dialogs/PouDialog.py:124
 #, python-format
 msgid ", %s"
-msgstr ""
+msgstr ", %s"
 
 #: ../controls/UriLocationEditor.py:49
 msgid "- Select URI type -"
-msgstr ""
+msgstr "- Wybierz typ URI -"
 
 #: ../controls/LogViewer.py:287
 msgid "1d"
-msgstr ""
+msgstr "1d"
 
 #: ../controls/LogViewer.py:288
 msgid "1h"
-msgstr ""
+msgstr "1h"
 
 #: ../controls/LogViewer.py:289
 msgid "1m"
-msgstr ""
+msgstr "1m"
 
 #: ../controls/LogViewer.py:290
 msgid "1s"
-msgstr ""
+msgstr "1s"
 
 #: ../dialogs/PouDialog.py:133 ../IDEFrame.py:1650 ../IDEFrame.py:1696
 #: ../IDEFrame.py:1715
@@ -396,87 +396,89 @@ msgid ""
 "A POU has an element named \"%s\". This could cause a conflict. Do you wish "
 "to continue?"
 msgstr ""
+"POU ma element o nazwie \"%s\". Może to spowodować konflikt. Czy chcesz "
+"kontynuować?"
 
 #: ../dialogs/SFCStepNameDialog.py:58 ../dialogs/PouTransitionDialog.py:110
 #: ../dialogs/PouNameDialog.py:56 ../dialogs/PouActionDialog.py:108
 #: ../controls/VariablePanel.py:789 ../IDEFrame.py:1664 ../IDEFrame.py:1677
 #, python-format
 msgid "A POU named \"%s\" already exists!"
-msgstr ""
+msgstr "POU o nazwie \"%s\" już istnieje!"
 
 #: ../ConfigTreeNode.py:424
 #, python-brace-format
 msgid "A child named \"{a1}\" already exists -> \"{a2}\"\n"
-msgstr ""
+msgstr "Podobiekt o nazwie \"{a1}\" już istnieje -> \"{a2}\"\n"
 
 #: ../dialogs/BrowseLocationsDialog.py:229
 msgid "A location must be selected!"
-msgstr ""
+msgstr "Lokalizacja musi być wybrana!"
 
 #: ../editors/ResourceEditor.py:485
 msgid "A task with the same name already exists!"
-msgstr ""
+msgstr "Zadanie o tej samej nazwie już istnieje!"
 
 #: ../dialogs/SFCStepNameDialog.py:60 ../controls/VariablePanel.py:791
 #: ../IDEFrame.py:1666 ../IDEFrame.py:1679
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
-msgstr ""
+msgstr "Zmienna o nazwie \"%s\" już istnieje w tym pou!"
 
 #: ../editors/CodeFileEditor.py:778
 #, python-format
 msgid "A variable with \"%s\" as name already exists!"
-msgstr ""
+msgstr "Zmienna o nazwie \"%s\" już istnieje!"
 
 #: ../BeremizIDE.py:311 ../dialogs/AboutDialog.py:46 ../PLCOpenEditor.py:142
 msgid "About"
-msgstr ""
+msgstr "O programie"
 
 #: ../plcopen/iec_std.csv:22
 msgid "Absolute number"
-msgstr ""
+msgstr "Liczba bezwzględna"
 
 #: ../dialogs/SFCStepDialog.py:75 ../dialogs/ActionBlockDialog.py:47
 msgid "Action"
-msgstr ""
+msgstr "Akcja"
 
 #: ../editors/Viewer.py:653 ../editors/Viewer.py:2427
 msgid "Action Block"
-msgstr ""
+msgstr "Blok akcji"
 
 #: ../dialogs/PouActionDialog.py:89
 msgid "Action Name"
-msgstr ""
+msgstr "Nazwa akcji"
 
 #: ../dialogs/PouActionDialog.py:56
 msgid "Action Name:"
-msgstr ""
+msgstr "Nazwa akcji:"
 
 #: ../plcopen/plcopen.py:1567
 #, python-format
 msgid "Action with name %s doesn't exist!"
-msgstr ""
+msgstr "Akcja o nazwie %s nie istnieje!"
 
 #: ../plcopen/types_enums.py:76
 msgid "Actions"
-msgstr ""
+msgstr "Akcje"
 
 #: ../dialogs/ActionBlockDialog.py:139
 msgid "Actions:"
-msgstr ""
+msgstr "Akcje:"
 
 #: ../editors/Viewer.py:473
 msgid "Active"
-msgstr ""
+msgstr "Aktywny"
 
 #: ../canfestival/SlaveEditor.py:84 ../canfestival/NetworkEditor.py:108
 #: ../BeremizIDE.py:1001 ../editors/Viewer.py:686
 msgid "Add"
-msgstr ""
+msgstr "Dodaj"
 
 #: ../IDEFrame.py:1924 ../IDEFrame.py:1959
 msgid "Add Action"
-msgstr ""
+msgstr "Dodaj akcję"
 
 #: ../features.py:33
 msgid "Add C code accessing located variables synchronously"

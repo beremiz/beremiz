@@ -79,8 +79,8 @@ def GetAboutDialogInfo():
     info.Version = app_version
 
     info.Copyright = ""
-    info.Copyright += "(C) 2016-2017 Andrey Skvortsov\n"
-    info.Copyright += "(C) 2008-2015 Eduard Tisserant\n"
+    info.Copyright += "(C) 2016-2018 Andrey Skvortsov\n"
+    info.Copyright += "(C) 2008-2018 Eduard Tisserant\n"
     info.Copyright += "(C) 2008-2015 Laurent Bessard"
 
     info.WebSite = ("http://beremiz.org", "beremiz.org")
@@ -126,20 +126,29 @@ def GetAboutDialogInfo():
         "",
 
         "Chinese",
-        "  Frank Guan <gpfrank@163.com>, 2017",
+        "  Frank Guan <gpfrank@163.com>, 2018",
+        "  Tango Wu <wuyangtang@live.com>, 2017",
+        "  Yiwei Yan <523136664@qq.com>, 2018",
+        "",
+
+        "Dutch (Netherlands)",
+        "  Jordy van der Heijden <jordyvanderheijden@gmail.com>, 2018",
         "",
 
         "French",
+        "  Edouard Tisserant <edouard.tisserant@gmail.com>, 2018",
         "  Fabien Marteau <mail@fabienm.eu>, 2017",
         "  Laurent Bessard <laurent.bessard@gmail.com>, 2008",
         "",
 
         "German",
         "  Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017",
+        "  Hendrik Knackstedt <h.knackstedt@stud.uni-hannover.de>, 2017 ",
         "  Mark Muzenhardt <mark.muzenhardt@gmail.com>, 2012",
         "",
 
         "Hungarian",
+        "  Krisztián Veress <krive001@gmail.com>, 2018",
         "  Gábor Véninger <veninger.gabor@gmail.com>, 2017",
         "",
 
@@ -149,28 +158,44 @@ def GetAboutDialogInfo():
         "",
 
         "Korean",
+        "  Ikhwan Kim <duo821228@gmail.com>, 2018",
         "  Reinhard Lee <lij3105@gmail.com>, 2012",
         "",
 
-        "Portuguese (Portugal)",
+        "Portuguese",
         "  Pedro Coimbra <pcoimbra310@gmail.com>, 2017",
         "",
 
         "Portuguese (Brazil)",
+        "  Rodrigo Rolle <ro_pita@hotmail.com>, 2018",
         "  Thiago Alves <thiagoralves@gmail.com>, 2017",
         "",
 
+        "Romanian",
+        "  Emil Saracutu <emil_saracutu@yahoo.com>, 2018",
+        "",
+
         "Russian",
-        "  Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017",
+        "  Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2018",
+        "  Sergey Surkov <surkov.sv@summatechnology.ru>, 2018",
+        "  zx_alexis <zxalexis@gmail.com>, 2017",
         "",
 
         "Slovenian",
-        "  Janez Pregelj <janezpregelj@gmail.com>, 2017",
+        "  Janez Pregelj <janezpregelj@gmail.com>, 2018",
+        "  Andraz Gregorcic <andraz.gregorcic@smarteh.si>, 2017",
         "",
 
         "Spanish",
+        "  Carlos Guilarte <guilartec@gmail.com>, 2018",
+        "  Yegor Yefremov <yegorslists@googlemail.com>, 2018",
+        "  Jorge Rojas, 2018",
         "  Marcial González de Armas <mgacod@gmail.com>, 2017",
-        "  Carlos Guilarte <guilartec@gmail.com>, 2017",
+        "  Nelson Mambre <nmambre@gmail.com>, 2017",
+        "",
+
+        "Turkish",
+        "  Ibrahim Kilicarslan <ibrahimhalilkilicarslan@outlook.com>, 2018",
         "",
 
     )
