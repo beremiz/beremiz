@@ -34,8 +34,10 @@ ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 EtherCATInfoParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd"))
 EtherCATInfo_XPath = lambda xpath: etree.XPath(xpath)
 
+
 def HexDecValue(context, *args):
     return str(ExtractHexDecValue(args[0][0]))
+
 
 def EntryName(context, *args):
     return ExtractName(args[0],
@@ -52,6 +54,7 @@ ENTRY_INFOS_KEYS = [
     ("PDO index", str, ""),
     ("PDO name", str, ""),
     ("PDO type", str, "")]
+
 
 class EntryListFactory:
 
@@ -128,6 +131,7 @@ if cls:
         return sync_managers
     setattr(cls, "GetSyncManagers", GetSyncManagers)
 
+
 def GroupItemCompare(x, y):
     if x["type"] == y["type"]:
         if x["type"] == ETHERCAT_GROUP:
@@ -138,11 +142,13 @@ def GroupItemCompare(x, y):
         return -1
     return 1
 
+
 def SortGroupItems(group):
     for item in group["children"]:
         if item["type"] == ETHERCAT_GROUP:
             SortGroupItems(item)
     group["children"].sort(GroupItemCompare)
+
 
 class ModulesLibrary:
 
@@ -383,6 +389,7 @@ if wx.Platform != '__WXMSW__':
 
 ModulesDatabase = ModulesLibrary(
     os.path.join(USERDATA_DIR, "ethercat_modules"))
+
 
 class RootClass:
 

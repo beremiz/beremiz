@@ -30,11 +30,13 @@ from EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePane
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
+
 def AppendMenu(parent, help, id, kind, text):
     if wx.VERSION >= (2, 6, 0):
         parent.Append(help=help, id=id, kind=kind, text=text)
     else:
         parent.Append(helpString=help, id=id, kind=kind, item=text)
+
 
 def GetVariablesTableColnames(position=False):
     _ = lambda x : x
@@ -47,6 +49,7 @@ ACCESS_TYPES = {
     'ro': 'R',
     'wo': 'W',
     'rw': 'R/W'}
+
 
 def GetAccessValue(access, pdo_mapping):
     value = "SDO: %s" % ACCESS_TYPES.get(access, "")
@@ -65,6 +68,7 @@ VARIABLE_INDEX_FILTER_FORMAT = _("Variable Index: #x%4.4X")
 ETHERCAT_INDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,4})$")
 ETHERCAT_SUBINDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,2})$")
 LOCATION_MODEL = re.compile("(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
+
 
 class NodeVariablesSizer(wx.FlexGridSizer):
 
@@ -252,6 +256,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
 
         event.Skip()
 
+
 class NodeEditor(ConfTreeNodeEditor):
 
     CONFNODEEDITOR_TABS = [
@@ -333,6 +338,7 @@ def GetProcessVariablesTableColnames():
             _("Write to (nodeid, index, subindex)"),
             _("Description")]
 
+
 class ProcessVariablesTable(CustomTable):
 
     def GetValue(self, row, col):
@@ -385,6 +391,7 @@ class ProcessVariablesTable(CustomTable):
                 grid.SetCellRenderer(row, col, renderer)
 
             self.ResizeRow(grid, row)
+
 
 class ProcessVariableDropTarget(wx.TextDropTarget):
 
@@ -445,9 +452,11 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
         message.ShowModal()
         message.Destroy()
 
+
 def GetStartupCommandsTableColnames():
     _ = lambda x : x
     return [_("Position"), _("Index"), _("Subindex"), _("Value"), _("Description")]
+
 
 class StartupCommandDropTarget(wx.TextDropTarget):
 
@@ -494,6 +503,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
         message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK|wx.ICON_ERROR)
         message.ShowModal()
         message.Destroy()
+
 
 class StartupCommandsTable(CustomTable):
 
@@ -567,6 +577,7 @@ class StartupCommandsTable(CustomTable):
                 return row
         return None
 
+
 class MasterNodesVariablesSizer(NodeVariablesSizer):
 
     def __init__(self, parent, controler):
@@ -585,6 +596,7 @@ class MasterNodesVariablesSizer(NodeVariablesSizer):
             self.RefreshVariablesGrid(entries)
 
 NODE_POSITION_FILTER_FORMAT = _("Node Position: %d")
+
 
 class MasterEditor(ConfTreeNodeEditor):
 
@@ -1081,6 +1093,7 @@ class MasterEditor(ConfTreeNodeEditor):
     #        self.FrameLoss2.SetValue(self.MasterState["frameloss2"])
     #        self.FrameLoss3.SetValue(self.MasterState["frameloss3"])
 
+
 class LibraryEditorSizer(wx.FlexGridSizer):
 
     def __init__(self, parent, module_library, buttons):
@@ -1316,6 +1329,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                          param_infos["description"])
         event.Skip()
 
+
 class DatabaseManagementDialog(wx.Dialog):
 
     def __init__(self, parent, database):
@@ -1346,6 +1360,7 @@ class DatabaseManagementDialog(wx.Dialog):
 
     def GetValue(self):
         return self.DatabaseSizer.GetSelectedFilePath()
+
 
 class LibraryEditor(ConfTreeNodeEditor):
 

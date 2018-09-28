@@ -93,6 +93,7 @@ FIELDBUS_INTERFACE_GLOBAL_INSTANCES = [
 #                 Ethercat CIA402 Node
 # --------------------------------------------------
 
+
 class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
