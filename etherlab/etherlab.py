@@ -226,7 +226,7 @@ for mapping needed location variables
                              "order": group.getSortOrder(),
                              # "value": group.getcontent()["value"],
                              "devices": []})
-                             
+
                     for device in self.devices_xpath(self.modules_infos):
                         device_group = device.getGroupType()
                         if not vendor_category["groups"].has_key(device_group):
