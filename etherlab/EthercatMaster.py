@@ -95,6 +95,7 @@ class EtherlabLibrary(POULibrary):
 #                 Ethercat MASTER
 # --------------------------------------------------
 
+
 EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd"))
 
 
@@ -102,6 +103,7 @@ def sort_commands(x, y):
     if x["Index"] == y["Index"]:
         return cmp(x["Subindex"], y["Subindex"])
     return cmp(x["Index"], y["Index"])
+
 
 cls = EtherCATConfigParser.GetElementClass("Slave", "Config")
 if cls:

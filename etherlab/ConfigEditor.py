@@ -45,6 +45,7 @@ def GetVariablesTableColnames(position=False):
         colname.append(_("Position"))
     return colname + [_("Name"), _("Index"), _("SubIndex"), _("Type"), _("Access")]
 
+
 ACCESS_TYPES = {
     'ro': 'R',
     'wo': 'W',
@@ -56,6 +57,7 @@ def GetAccessValue(access, pdo_mapping):
     if pdo_mapping != "":
         value += ", PDO: %s" % pdo_mapping
     return value
+
 
 VARIABLES_FILTERS = [
     (_("All"), (0x0000, 0xffff)),
@@ -328,6 +330,7 @@ class NodeEditor(ConfTreeNodeEditor):
         event.Skip()
     # -------------------------------------------------------------------------------------------------------
 
+
 CIA402NodeEditor = NodeEditor
 
 
@@ -594,6 +597,7 @@ class MasterNodesVariablesSizer(NodeVariablesSizer):
             args["limits"] = self.CurrentFilter
             entries = self.Controler.GetNodesVariables(**args)
             self.RefreshVariablesGrid(entries)
+
 
 NODE_POSITION_FILTER_FORMAT = _("Node Position: %d")
 

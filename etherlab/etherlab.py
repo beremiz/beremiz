@@ -43,6 +43,7 @@ def EntryName(context, *args):
     return ExtractName(args[0],
         args[1][0] if len(args) > 1 else None)
 
+
 ENTRY_INFOS_KEYS = [
     ("Index", lambda x: "#x%4.4X" % int(x), "#x0000"),
     ("SubIndex", str, "0"),
@@ -77,6 +78,7 @@ class EntryListFactory:
                         entry_infos[param] = value
             else:
                 self.Entries[(index, subindex)] = new_entry_infos
+
 
 entries_list_xslt = etree.parse(
     os.path.join(ScriptDirectory, "entries_list.xslt"))
@@ -382,6 +384,7 @@ for mapping needed location variables
             extra_params.setdefault(param, param_infos["default"])
 
         return extra_params
+
 
 USERDATA_DIR = wx.StandardPaths.Get().GetUserDataDir()
 if wx.Platform != '__WXMSW__':
