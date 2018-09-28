@@ -1401,7 +1401,7 @@ class SiiGridTable(wx.grid.Grid):
                 self.SetColLabelValue(16, "Text View")
                 self.SetColSize(16, (self.GetSize().x-120)*4/20)
             else:
-                self.SetColLabelValue(col, '%s'%col)
+                self.SetColLabelValue(col, '%s' % col)
                 self.SetColSize(col, (self.GetSize().x-120)/20)
 
         # set data into table
@@ -1672,7 +1672,7 @@ class RegisterAccessPanel(wx.Panel):
         for address in range(0x1000):
             # arrange 2 Bytes of register data
             reg_word = reg_data[address].split('x')[1] + reg_word
-            if (address%2) == 1:
+            if (address % 2) == 1:
                 # append address
                 hex_address = "{:0>4x}".format(address-1)
                 row_data.append(hex_address)

@@ -401,10 +401,10 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
         except Exception:
-            message = _("Invalid value \"%s\" for process variable")%data
+            message = _("Invalid value \"%s\" for process variable") % data
             values = None
         if not isinstance(values, TupleType):
-            message = _("Invalid value \"%s\" for process variable")%data
+            message = _("Invalid value \"%s\" for process variable") % data
             values = None
         if values is not None and col != wx.NOT_FOUND and row != wx.NOT_FOUND and 2 <= col <= 3:
             location = None
@@ -435,7 +435,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
                     else:
                         message = _("'Read from' and 'Write to' variables types are not compatible")
                 else:
-                    message = _("Invalid value \"%s\" for process variable")%data
+                    message = _("Invalid value \"%s\" for process variable") % data
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
@@ -461,10 +461,10 @@ class StartupCommandDropTarget(wx.TextDropTarget):
         try:
             values = eval(data)
         except Exception:
-            message = _("Invalid value \"%s\" for startup command")%data
+            message = _("Invalid value \"%s\" for startup command") % data
             values = None
         if not isinstance(values, TupleType):
-            message = _("Invalid value \"%s\" for startup command")%data
+            message = _("Invalid value \"%s\" for startup command") % data
             values = None
         if values is not None:
             location = None
@@ -485,7 +485,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
                     else:
                         message = _("Entry can't be write through SDO")
                 else:
-                    message = _("Invalid value \"%s\" for startup command")%data
+                    message = _("Invalid value \"%s\" for startup command") % data
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
