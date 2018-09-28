@@ -9,7 +9,8 @@
 #
 # See COPYING file for copyrights details.
 
-import os, shutil
+import os
+import shutil
 from lxml import etree
 
 import wx
