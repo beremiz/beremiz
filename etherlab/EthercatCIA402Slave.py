@@ -9,6 +9,7 @@
 #
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
 import os
 
 import wx
@@ -16,8 +17,8 @@ import wx
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
 from MotionLibrary import Headers, AxisXSD
-from EthercatSlave import _EthercatSlaveCTN, _CommonSlave
-from ConfigEditor import CIA402NodeEditor
+from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave
+from etherlab.ConfigEditor import CIA402NodeEditor
 
 # Definition of node variables that have to be mapped in PDO
 # [(name, index, subindex, type,

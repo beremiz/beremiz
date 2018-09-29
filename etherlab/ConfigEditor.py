@@ -9,6 +9,7 @@
 #
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
 import os
 import re
 from types import TupleType
@@ -26,7 +27,7 @@ from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
 
 # -----------------------------------------------------------------------
-from EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePanelClass
+from etherlab.EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePanelClass
 # -----------------------------------------------------------------------
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
