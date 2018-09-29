@@ -887,7 +887,7 @@ class _CommonSlave(object):
         vendor_spec_strings = []
         for element in device.getType().getcontent():
             data += element
-        if data is not "" and type(data) == unicode:
+        if data is not "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.OrderIdx = vendor_spec_strings.index(data)+1
@@ -906,7 +906,7 @@ class _CommonSlave(object):
 
         #  element2-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<GroupType>
         data = device.getGroupType()
-        if data is not None and type(data) == unicode:
+        if data is not None and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.GroupIdx = vendor_spec_strings.index(data)+1
@@ -931,7 +931,7 @@ class _CommonSlave(object):
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_type
-                if data is not None and type(data) == unicode:
+                if data is not None and isinstance(data, unicode):
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
                             self.GroupIdx = vendor_spec_strings.index(data)+1
@@ -956,7 +956,7 @@ class _CommonSlave(object):
                     for device_item in group_etc["devices"]:
                         if device == device_item[1]:
                             data = group_etc["name"]
-        if data is not "" and type(data) == unicode:
+        if data is not "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     groupnameflag = True
@@ -975,7 +975,7 @@ class _CommonSlave(object):
         for element in device.getName():
             if element.getLcId() == 1 or element.getLcId() == 1033:
                 data = element.getcontent()
-        if data is not "" and type(data) == unicode:
+        if data is not "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.NameIdx = vendor_spec_strings.index(data)+1
@@ -995,7 +995,7 @@ class _CommonSlave(object):
         #  element5-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Image16x14>
         if device.getcontent() is not None:
             data = device.getcontent()
-            if data is not None and type(data) == unicode:
+            if data is not None and isinstance(data, unicode):
                 for vendor_spec_string in vendor_spec_strings:
                     if data == vendor_spec_string:
                         self.ImgIdx = vendor_spec_strings.index(data)+1
@@ -1019,7 +1019,7 @@ class _CommonSlave(object):
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_etc
-                if data is not None and type(data) == unicode:
+                if data is not None and isinstance(data, unicode):
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
                             self.ImgIdx = vendor_spec_strings.index(data)+1
