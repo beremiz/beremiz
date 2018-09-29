@@ -4,7 +4,7 @@ import ctypes
 from threading import Thread
 import time
 import re
-from targets.typemapping import LogLevelsDict
+from runtime.loglevels import LogLevelsDict
 
 SDOAnswered = PLCBinary.SDOAnswered
 SDOAnswered.restype = None
