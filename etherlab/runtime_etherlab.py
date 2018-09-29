@@ -3,7 +3,6 @@ import subprocess
 import sys
 import ctypes
 from threading import Thread
-import ctypes
 import time
 import re
 from targets.typemapping import LogLevelsDict

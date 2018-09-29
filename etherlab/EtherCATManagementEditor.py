@@ -20,7 +20,6 @@ from controls import CustomGrid, CustomTable
 
 # ------------ for SDO Management --------------------
 import string
-import wx.grid as gridlib
 # -------------------------------------------------------------
 
 # ------------ for register management ---------------
@@ -571,7 +570,7 @@ class SlaveSDOTable(wx.grid.Grid):
         attr = wx.grid.GridCellAttr()
 
         # for SDO download
-        self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.SDOModifyDialog)
+        self.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.SDOModifyDialog)
 
         for i in range(7):
             self.SetColAttr(i, attr)
@@ -647,7 +646,7 @@ class SlaveSDOTable(wx.grid.Grid):
         """
         Create dialog for SDO value modify
         if user enter data, perform command "ethercat download"
-        @param event : gridlib.EVT_GRID_CELL_LEFT_DCLICK object
+        @param event : wx.grid.EVT_GRID_CELL_LEFT_DCLICK object
         """
         self.ClearStateFlag()
 
@@ -1947,9 +1946,9 @@ class RegisterMainTable(wx.grid.Grid):
         wx.grid.Grid.__init__(self, parent, -1, size=(820, 300),
                               style=wx.EXPAND | wx.ALIGN_CENTRE_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL)
 
-        for evt, mapping_method in [(gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
-                                    (gridlib.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
-                                    (gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnRegModifyDialog)]:
+        for evt, mapping_method in [(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
+                                    (wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnSelectCell),
+                                    (wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnRegModifyDialog)]:
             self.Bind(evt, mapping_method)
 
     def SetValue(self, parent, reg_monitor_data, low_index, high_index):
@@ -1990,7 +1989,7 @@ class RegisterMainTable(wx.grid.Grid):
     def OnSelectCell(self, event):
         """
             Handles the event of the cell of the main table.
-            @param event: gridlib object (left click)
+            @param event: wx.grid object (left click)
             """
         # if reg_monitor_data is 0, it is initialization of register access.
         if self.RegMonitorData == 0:
@@ -2032,7 +2031,7 @@ class RegisterMainTable(wx.grid.Grid):
         """
         Handle the event of the cell of the main table.
         Display the window where the user modifies the value of the cell.
-        @param event: gridlib object (double click)
+        @param event: wx.grid object (double click)
             """
         # user can enter a value in case that user double-clicked 'Dec' or 'Hex' value.
         if event.GetCol() == 1 or event.GetCol() == 2:
