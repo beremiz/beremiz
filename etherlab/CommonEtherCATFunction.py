@@ -11,7 +11,7 @@
 import os
 import wx
 
-mailbox_protocols =  ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
+mailbox_protocols = ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
 
 
 def ExtractHexDecValue(value):
