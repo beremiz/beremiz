@@ -133,6 +133,8 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 # --------------------------------------------------
 
     def __init__(self):
+        _EthercatSlaveCTN.__init__(self)
+
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
 
