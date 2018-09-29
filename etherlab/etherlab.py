@@ -89,6 +89,7 @@ cls = EtherCATInfoParser.GetElementClass("DeviceType")
 if cls:
 
     profile_numbers_xpath = EtherCATInfo_XPath("Profile/ProfileNo")
+
     def GetProfileNumbers(self):
         return [number.text for number in profile_numbers_xpath(self)]
     setattr(cls, "GetProfileNumbers", GetProfileNumbers)
@@ -209,6 +210,7 @@ for mapping needed location variables
 
     groups_xpath = EtherCATInfo_XPath("Descriptions/Groups/Group")
     devices_xpath = EtherCATInfo_XPath("Descriptions/Devices/Device")
+
     def LoadModules(self):
         self.Library = {}
 
