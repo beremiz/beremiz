@@ -149,18 +149,22 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     def GetVariableLocationTree(self):
         axis_name = self.CTNName()
         current_location = self.GetCurrentLocation()
-        children = [{"name": name_frmt % (axis_name),
-                     "type": LOCATION_VAR_INPUT,
-                     "size": "W",
-                     "IEC_type": iec_type,
-                     "var_name": var_name_frmt % axis_name,
-                     "location": location_frmt % (
-                            ".".join(map(str, current_location))),
-                     "description": "",
-                     "children": []}
-                    for name_frmt, iec_type, var_name_frmt, location_frmt in
-                        [("%s Network Position", "UINT", "%s_pos", "%%IW%s"),
-                         ("%s Axis Ref", "AXIS_REF", "%s", "%%IW%s.402")]]
+        children = [
+            {
+                "name": name_frmt % (axis_name),
+                "type": LOCATION_VAR_INPUT,
+                "size": "W",
+                "IEC_type": iec_type,
+                "var_name": var_name_frmt % axis_name,
+                "location": location_frmt % (".".join(map(str, current_location))),
+                "description": "",
+                "children": []
+            }
+            for name_frmt, iec_type, var_name_frmt, location_frmt in [
+                    ("%s Network Position", "UINT", "%s_pos", "%%IW%s"),
+                    ("%s Axis Ref", "AXIS_REF", "%s", "%%IW%s.402")
+            ]
+        ]
         children.extend(self.CTNParent.GetDeviceLocationTree(
                             self.GetSlavePos(), current_location, axis_name))
         return {

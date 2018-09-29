@@ -170,7 +170,7 @@ class SlaveStatePanelClass(wx.Panel):
                 self.StaticTextDic[statictext_name] = wx.StaticText(self, label=_(statictext_label))
                 self.TextCtrlDic[textctrl_name] = wx.TextCtrl(self, size=wx.DefaultSize, style=wx.TE_READONLY)
                 self.SizerDic["SlaveState_up_sizer"].AddMany([self.StaticTextDic[statictext_name],
-                                                               self.TextCtrlDic[textctrl_name]])
+                                                              self.TextCtrlDic[textctrl_name]])
 
         for button_name, button_label, button_tooltipstring, event_method in [
                 ("StartTimerButton", "Start State Monitoring", "Slave State Update Restart", self.StartTimer),
@@ -552,7 +552,7 @@ class SlaveSDOTable(wx.grid.Grid):
 
         self.CreateGrid(len(self.SDOs), 8)
         SDOCellSize = [(0, 65), (1, 65), (2, 50), (3, 55),
-                         (4, 40), (5, 200), (6, 250), (7, 85)]
+                       (4, 40), (5, 200), (6, 250), (7, 85)]
 
         for (index, size) in SDOCellSize:
             self.SetColSize(index, size)
@@ -1193,11 +1193,11 @@ class SmartViewTreeListCtrl(wx.Panel):
         wx.Panel.__init__(self, parent, -1, size=(350, 500))
 
         self.Tree = wx.gizmos.TreeListCtrl(self, -1, size=(350, 500),
-                                           style=wx.TR_DEFAULT_STYLE
-                                               | wx.TR_FULL_ROW_HIGHLIGHT
-                                               | wx.TR_HIDE_ROOT
-                                               | wx.TR_COLUMN_LINES
-                                               | wx.TR_ROW_LINES)
+                                           style=(wx.TR_DEFAULT_STYLE
+                                                  | wx.TR_FULL_ROW_HIGHLIGHT
+                                                  | wx.TR_HIDE_ROOT
+                                                  | wx.TR_COLUMN_LINES
+                                                  | wx.TR_ROW_LINES))
 
         self.Tree.AddColumn("Description", width=200)
         self.Tree.AddColumn("Value", width=140)
@@ -1672,7 +1672,8 @@ class RegisterAccessPanel(wx.Panel):
         # add a description to register sub table description dictionary
         if reg_bit_range is not "" and reg_sub_description is not "":
             self.RegisterSubGridDict[reg_index].append([reg_bit_range,
-                                                         reg_sub_description, reg_enum_dictionary])
+                                                        reg_sub_description,
+                                                        reg_enum_dictionary])
 
     def ParseData(self):
         """
@@ -1778,9 +1779,12 @@ class RegisterAccessPanel(wx.Panel):
 
             # Update table
             for index in range(4):
-                self.RegisterNotebook.RegPage[index].UpdateMainTable(self.MainRow[index], self.MainCol,
-                                                                      self.PageRange[index][0], self.PageRange[index][1],
-                                                                      reg_compact_data)
+                self.RegisterNotebook.RegPage[index].UpdateMainTable(
+                    self.MainRow[index],
+                    self.MainCol,
+                    self.PageRange[index][0],
+                    self.PageRange[index][1],
+                    reg_compact_data)
 
         # Compact View Checkbox is False
         else:
@@ -1794,9 +1798,12 @@ class RegisterAccessPanel(wx.Panel):
 
             # Update table
             for index in range(4):
-                self.RegisterNotebook.RegPage[index].UpdateMainTable(self.MainRow[index], self.MainCol,
-                                                                      self.PageRange[index][0], self.PageRange[index][1],
-                                                                      self.RegMonitorData)
+                self.RegisterNotebook.RegPage[index].UpdateMainTable(
+                    self.MainRow[index],
+                    self.MainCol,
+                    self.PageRange[index][0],
+                    self.PageRange[index][1],
+                    self.RegMonitorData)
 
 
 # -------------------------------------------------------------------------------
@@ -2087,7 +2094,7 @@ class RegisterSubTable(wx.grid.Grid):
 	    """
         # lset label name and size
         Register_SubTable_Label = [(0, "Bits"), (1, "Name"),
-                                    (2, "Value"), (3, "Enum")]
+                                   (2, "Value"), (3, "Enum")]
 
         for (index, label) in Register_SubTable_Label:
             self.SetColLabelValue(index, label)
