@@ -1692,7 +1692,7 @@ class RegisterAccessPanel(wx.Panel):
                 row_data.append(hex_address)
 
                 # append description
-                if self.RegisterDescriptionDict.has_key(hex_address):
+                if hex_address in self.RegisterDescriptionDict:
                     row_data.append(self.RegisterDescriptionDict[hex_address])
                 else:
                     row_data.append("")
