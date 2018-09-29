@@ -786,10 +786,8 @@ class _EthercatCTN:
 #                      Current Buffering Management Functions
 # -------------------------------------------------------------------------------
 
-    """
-    Return a copy of the config
-    """
     def Copy(self, model):
+        """Return a copy of the config"""
         return deepcopy(model)
 
     def CreateBuffer(self, saved):
