@@ -761,7 +761,7 @@ class PDONoteBook(wx.Notebook):
         if name == "Tx" :
             # obtain pdo_info and pdo_entry
             # pdo_info include (PDO index, name, number of entry)
-            pdo_info =  self.Controler.CommonMethod.GetTxPDOCategory()
+            pdo_info = self.Controler.CommonMethod.GetTxPDOCategory()
             pdo_entry = self.Controler.CommonMethod.GetTxPDOInfo()
             for tmp in pdo_info :
                 title = str(hex(tmp['pdo_index']))
