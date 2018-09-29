@@ -258,8 +258,8 @@ class _CommonSlave:
     def BackupSDODataSet(self):
         """
         Back-up current SDO entry information to restore the SDO data
-         in case that the user cancels SDO update operation.
-    	"""
+        in case that the user cancels SDO update operation.
+        """
         self.BackupDatatypeDescription = self.SaveDatatypeDescription
         self.BackupCommunicationObject = self.SaveCommunicationObject
         self.BackupManufacturerSpecific = self.SaveManufacturerSpecific
