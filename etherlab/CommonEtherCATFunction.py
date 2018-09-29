@@ -1588,8 +1588,8 @@ class _CommonSlave:
         @param mention : Error String
         """
         app_frame = self.Controler.GetCTRoot().AppFrame
-        dlg = wx.MessageDialog (app_frame, mention,
-                                ' Warning...',
-                                wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(app_frame, mention,
+                               ' Warning...',
+                               wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
