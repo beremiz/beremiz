@@ -1201,11 +1201,11 @@ class SmartViewTreeListCtrl(wx.Panel):
         wx.Panel.__init__(self, parent, -1, size=(350, 500))
 
         self.Tree = wx.gizmos.TreeListCtrl(self, -1, size=(350, 500),
-                                           style=(wx.TR_DEFAULT_STYLE
-                                                  | wx.TR_FULL_ROW_HIGHLIGHT
-                                                  | wx.TR_HIDE_ROOT
-                                                  | wx.TR_COLUMN_LINES
-                                                  | wx.TR_ROW_LINES))
+                                           style=(wx.TR_DEFAULT_STYLE |
+                                                  wx.TR_FULL_ROW_HIGHLIGHT |
+                                                  wx.TR_HIDE_ROOT |
+                                                  wx.TR_COLUMN_LINES |
+                                                  wx.TR_ROW_LINES))
 
         self.Tree.AddColumn("Description", width=200)
         self.Tree.AddColumn("Value", width=140)
