@@ -2127,12 +2127,10 @@ class MasterStatePanelClass(wx.Panel):
 
         # --------------------------------- Main Sizer ----------------------------------------------------
         for key, sub, in [
-            ('innerTopHalf', [
-                    'masterState', 'deviceInfo']),
-            ('innerBottomHalf', [
-                    'frameInfo']),
-            ('innerMain', [
-                    'innerTopHalf', 'innerBottomHalf'])]:
+                ('innerTopHalf', ['masterState', 'deviceInfo']),
+                ('innerBottomHalf', ['frameInfo']),
+                ('innerMain', ['innerTopHalf', 'innerBottomHalf'])
+        ]:
             for key2 in sub:
                 self.MasterStateSizer[key].AddSizer(self.MasterStateSizer[key2])
 

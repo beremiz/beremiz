@@ -95,8 +95,8 @@ def KMSGPollThreadProc():
         if log:
             last = log.rpartition('\n')[2]
             for lvl, msg in re.findall(
-                            r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
-                            log, re.MULTILINE):
+                    r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',
+                    log, re.MULTILINE):
                 PLCObject.LogMessage(
                     LogLevelsDict[{
                         "4": "WARNING",
