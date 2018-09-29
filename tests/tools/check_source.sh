@@ -246,7 +246,6 @@ pylint_checks()
     disable=$disable,R0101        # (too-many-nested-blocks) Too many nested blocks (7/5)
     disable=$disable,R0801        # (duplicate-code) Similar lines in N files
 
-
     enable=
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword
@@ -261,11 +260,9 @@ pylint_checks()
     enable=$enable,W0101          # (unreachable) Unreachable code
     enable=$enable,E0102          # (function-redefined) method already defined
     enable=$enable,W0602          # (global-variable-not-assigned) Using global for 'X' but no assignment is done
-    enable=$enable,W0612          # (unused-variable) Unused variable 'X'
     enable=$enable,W0611          # (unused-import) Unused import X
     enable=$enable,C1001          # (old-style-class) Old-style class defined. Problem with PyJS
     enable=$enable,W0102          # (dangerous-default-value) Dangerous default value {} as argument
-    enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y'
     enable=$enable,C0112          # (empty-docstring)
     enable=$enable,W0631          # (undefined-loop-variable) Using possibly undefined loop variable 'X'
     enable=$enable,W0104          # (pointless-statement) Statement seems to have no effect
@@ -282,15 +279,17 @@ pylint_checks()
     enable=$enable,E0213          # (no-self-argument) Method should have "self" as first argument
     enable=$enable,E0401          # (import-error) Unable to import 'X'
     enable=$enable,E1121          # (too-many-function-args) Too many positional arguments for function call
-    enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
     enable=$enable,W0232          # (no-init) Class has no __init__ method
     enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
-    enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
+    enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
     enable=$enable,W1618          # (no-absolute-import) import missing `from __future__ import absolute_import`
+    enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y '
+    enable=$enable,W0612          # (unused-variable) Unused variable 'X'
+    enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     # enable=
 
     options=
@@ -317,7 +316,7 @@ pylint_checks()
 
 get_files_to_check()
 {
-    py_files=$(find . -name '*.py' -not -path '*/build/*' -not -path './etherlab/*')
+    py_files=$(find . -name '*.py' -not -path '*/build/*')
     if [ -e .hg/skiphook ]; then
 	echo "Skipping checks in the hook ..."
 	exit 0
