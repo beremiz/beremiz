@@ -357,7 +357,8 @@ class _EthercatCFileGenerator:
                     if exclusion_scope[0]["matching"] > 0:
                         selected_pdos.append(exclusion_scope[0]["index"])
                         start_excluding_index = 1
-                    excluded_pdos.extend([pdo["index"]
+                    excluded_pdos.extend([
+                        pdo["index"]
                         for pdo in exclusion_scope[start_excluding_index:]
                         if PdoAssign or not pdo["assigned"]])
 

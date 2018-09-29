@@ -43,8 +43,7 @@ def HexDecValue(context, *args):
 
 
 def EntryName(context, *args):
-    return ExtractName(args[0],
-        args[1][0] if len(args) > 1 else None)
+    return ExtractName(args[0], args[1][0] if len(args) > 1 else None)
 
 
 ENTRY_INFOS_KEYS = [
@@ -231,12 +230,15 @@ for mapping needed location variables
                     for group in self.groups_xpath(self.modules_infos):
                         group_type = group.getType()
 
-                        vendor_category["groups"].setdefault(group_type,
-                            {"name": ExtractName(group.getName(), group_type),
-                             "parent": group.getParentGroup(),
-                             "order": group.getSortOrder(),
-                             # "value": group.getcontent()["value"],
-                             "devices": []})
+                        vendor_category["groups"].setdefault(
+                            group_type,
+                            {
+                                "name": ExtractName(group.getName(), group_type),
+                                "parent": group.getParentGroup(),
+                                "order": group.getSortOrder(),
+                                # "value": group.getcontent()["value"],
+                                "devices": [],
+                            })
 
                     for device in self.devices_xpath(self.modules_infos):
                         device_group = device.getGroupType()

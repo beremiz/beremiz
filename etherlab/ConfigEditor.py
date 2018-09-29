@@ -90,13 +90,13 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         self.AddWindow(self.VariablesFilter, flag=wx.GROW)
 
         self.VariablesGrid = wx.gizmos.TreeListCtrl(parent,
-                style=wx.TR_DEFAULT_STYLE |
-                      wx.TR_ROW_LINES |
-                      wx.TR_COLUMN_LINES |
-                      wx.TR_HIDE_ROOT |
-                      wx.TR_FULL_ROW_HIGHLIGHT)
+                                                    style=wx.TR_DEFAULT_STYLE |
+                                                    wx.TR_ROW_LINES |
+                                                    wx.TR_COLUMN_LINES |
+                                                    wx.TR_HIDE_ROOT |
+                                                    wx.TR_FULL_ROW_HIGHLIGHT)
         self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN,
-            self.OnVariablesGridLeftClick)
+                                                self.OnVariablesGridLeftClick)
         self.AddWindow(self.VariablesGrid, flag=wx.GROW)
 
         self.Filters = []
@@ -276,12 +276,12 @@ class NodeEditor(ConfTreeNodeEditor):
         main_sizer.AddGrowableRow(1)
 
         variables_label = wx.StaticText(self.EthercatNodeEditor,
-              label=_('Variable entries:'))
+                                        label=_('Variable entries:'))
         main_sizer.AddWindow(variables_label, border=10, flag=wx.TOP | wx.LEFT | wx.RIGHT)
 
         self.NodeVariables = NodeVariablesSizer(self.EthercatNodeEditor, self.Controler)
         main_sizer.AddSizer(self.NodeVariables, border=10,
-            flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.EthercatNodeEditor.SetSizer(main_sizer)
 
@@ -304,7 +304,7 @@ class NodeEditor(ConfTreeNodeEditor):
     # -------------------For EtherCAT Management ----------------------------------------------
     def _create_EtherCATManagementEditor(self, prnt):
         self.EtherCATManagementEditor = wx.ScrolledWindow(prnt,
-            style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
+                                                          style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
         self.EtherCATManagementEditor.Bind(wx.EVT_SIZE, self.OnResize)
 
         self.EtherCATManagermentEditor_Main_Sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
@@ -327,7 +327,9 @@ class NodeEditor(ConfTreeNodeEditor):
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
         self.EtherCATManagementEditor.Scroll(posx, posy)
         self.EtherCATManagementEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+                                                    maxx / SCROLLBAR_UNIT,
+                                                    maxy / SCROLLBAR_UNIT,
+                                                    posx, posy)
         event.Skip()
     # -------------------------------------------------------------------------------------------------------
 
@@ -634,18 +636,20 @@ class MasterEditor(ConfTreeNodeEditor):
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
         self.MasterStateEditor.Scroll(posx, posy)
         self.MasterStateEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+                                             maxx / SCROLLBAR_UNIT,
+                                             maxy / SCROLLBAR_UNIT,
+                                             posx, posy)
         event.Skip()
 
     def _create_EthercatMasterEditor(self, prnt):
         self.EthercatMasterEditor = wx.ScrolledWindow(prnt,
-            style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
+                                                      style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
         self.EthercatMasterEditor.Bind(wx.EVT_SIZE, self.OnResize)
 
         self.EthercatMasterEditorSizer = wx.BoxSizer(wx.VERTICAL)
 
         self.NodesFilter = wx.ComboBox(self.EthercatMasterEditor,
-            style=wx.TE_PROCESS_ENTER)
+                                       style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_COMBOBOX, self.OnNodesFilterChanged, self.NodesFilter)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnNodesFilterChanged, self.NodesFilter)
         self.NodesFilter.Bind(wx.EVT_CHAR, self.OnNodesFilterKeyDown)
@@ -653,9 +657,9 @@ class MasterEditor(ConfTreeNodeEditor):
         process_variables_header = wx.BoxSizer(wx.HORIZONTAL)
 
         process_variables_label = wx.StaticText(self.EthercatMasterEditor,
-              label=_("Process variables mapped between nodes:"))
+                                                label=_("Process variables mapped between nodes:"))
         process_variables_header.AddWindow(process_variables_label, 1,
-              flag=wx.ALIGN_CENTER_VERTICAL)
+                                           flag=wx.ALIGN_CENTER_VERTICAL)
 
         for name, bitmap, help in [
                 ("AddVariableButton", "add_element", _("Add process variable")),
@@ -663,7 +667,7 @@ class MasterEditor(ConfTreeNodeEditor):
                 ("UpVariableButton", "up", _("Move process variable up")),
                 ("DownVariableButton", "down", _("Move process variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self.EthercatMasterEditor, bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             process_variables_header.AddWindow(button, border=5, flag=wx.LEFT)
@@ -672,23 +676,23 @@ class MasterEditor(ConfTreeNodeEditor):
         self.ProcessVariablesGrid.SetMinSize(wx.Size(0, 150))
         self.ProcessVariablesGrid.SetDropTarget(ProcessVariableDropTarget(self))
         self.ProcessVariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
-              self.OnProcessVariablesGridCellChange)
+                                       self.OnProcessVariablesGridCellChange)
         self.ProcessVariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,
-              self.OnProcessVariablesGridCellLeftClick)
+                                       self.OnProcessVariablesGridCellLeftClick)
         self.ProcessVariablesGrid.Bind(wx.EVT_KEY_DOWN, self.OnProcessVariablesGridKeyDown)
 
         startup_commands_header = wx.BoxSizer(wx.HORIZONTAL)
 
         startup_commands_label = wx.StaticText(self.EthercatMasterEditor,
-              label=_("Startup service variables assignments:"))
+                                               label=_("Startup service variables assignments:"))
         startup_commands_header.AddWindow(startup_commands_label, 1,
-              flag=wx.ALIGN_CENTER_VERTICAL)
+                                          flag=wx.ALIGN_CENTER_VERTICAL)
 
         for name, bitmap, help in [
                 ("AddCommandButton", "add_element", _("Add startup service variable")),
                 ("DeleteCommandButton", "remove_element", _("Remove startup service variable"))]:
             button = wx.lib.buttons.GenBitmapButton(self.EthercatMasterEditor, bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    size=wx.Size(28, 28), style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             startup_commands_header.AddWindow(button, border=5, flag=wx.LEFT)
@@ -697,9 +701,9 @@ class MasterEditor(ConfTreeNodeEditor):
         self.StartupCommandsGrid.SetDropTarget(StartupCommandDropTarget(self))
         self.StartupCommandsGrid.SetMinSize(wx.Size(0, 150))
         self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
-              self.OnStartupCommandsGridCellChange)
+                                      self.OnStartupCommandsGridCellChange)
         self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
-              self.OnStartupCommandsGridEditorShow)
+                                      self.OnStartupCommandsGridEditorShow)
 
         self.NodesVariables = MasterNodesVariablesSizer(self.EthercatMasterEditor, self.Controler)
 
@@ -715,20 +719,20 @@ class MasterEditor(ConfTreeNodeEditor):
         staticbox_sizer.AddSizer(main_staticbox_sizer, 1, flag=wx.GROW)
         main_staticbox_sizer.AddWindow(self.NodesFilter, border=5, flag=wx.GROW | wx.ALL)
         main_staticbox_sizer.AddSizer(process_variables_header, border=5,
-              flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
+                                      flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
         main_staticbox_sizer.AddWindow(self.ProcessVariablesGrid, 1,
-              border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
+                                       border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
         main_staticbox_sizer.AddSizer(startup_commands_header,
-              border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
+                                      border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
         main_staticbox_sizer.AddWindow(self.StartupCommandsGrid, 1,
-              border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
+                                       border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
 
         second_staticbox = wx.StaticBox(self.EthercatMasterEditor, label=_("Nodes variables filter:"))
         second_staticbox_sizer = wx.StaticBoxSizer(second_staticbox, wx.VERTICAL)
         second_staticbox_sizer.AddSizer(self.NodesVariables, 1, border=5, flag=wx.GROW | wx.ALL)
 
         main_staticbox_sizer.AddSizer(second_staticbox_sizer, 1,
-            border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
+                                      border=5, flag=wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
 
         self.EthercatMasterEditor.SetSizer(self.EthercatMasterEditorSizer)
 
@@ -1069,7 +1073,9 @@ class MasterEditor(ConfTreeNodeEditor):
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
         self.EthercatMasterEditor.Scroll(posx, posy)
         self.EthercatMasterEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+                                                maxx / SCROLLBAR_UNIT,
+                                                maxy / SCROLLBAR_UNIT,
+                                                posx, posy)
         event.Skip()
 
     # def OnButtonClick(self, event):
@@ -1113,15 +1119,15 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         self.AddGrowableRow(3)
 
         ESI_files_label = wx.StaticText(parent,
-            label=_("ESI Files:"))
+                                        label=_("ESI Files:"))
         self.AddWindow(ESI_files_label, border=10,
-            flag=wx.TOP | wx.LEFT | wx.RIGHT)
+                       flag=wx.TOP | wx.LEFT | wx.RIGHT)
 
         folder_tree_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=1, vgap=0)
         folder_tree_sizer.AddGrowableCol(0)
         folder_tree_sizer.AddGrowableRow(0)
         self.AddSizer(folder_tree_sizer, border=10,
-            flag=wx.GROW | wx.LEFT | wx.RIGHT)
+                      flag=wx.GROW | wx.LEFT | wx.RIGHT)
 
         self.ESIFiles = FolderTree(parent, self.GetPath(), editable=False)
         self.ESIFiles.SetFilter(".xml")
@@ -1129,12 +1135,13 @@ class LibraryEditorSizer(wx.FlexGridSizer):
 
         buttons_sizer = wx.BoxSizer(wx.VERTICAL)
         folder_tree_sizer.AddSizer(buttons_sizer,
-            flag=wx.ALIGN_CENTER_VERTICAL)
+                                   flag=wx.ALIGN_CENTER_VERTICAL)
 
         for idx, (name, bitmap, help, callback) in enumerate(buttons):
             button = wx.lib.buttons.GenBitmapButton(parent,
-                  bitmap=GetBitmap(bitmap),
-                  size=wx.Size(28, 28), style=wx.NO_BORDER)
+                                                    bitmap=GetBitmap(bitmap),
+                                                    size=wx.Size(28, 28),
+                                                    style=wx.NO_BORDER)
             button.SetToolTipString(help)
             setattr(self, name, button)
             if idx > 0:
@@ -1148,26 +1155,26 @@ class LibraryEditorSizer(wx.FlexGridSizer):
             buttons_sizer.AddWindow(button, border=10, flag=flag)
 
         modules_label = wx.StaticText(parent,
-            label=_("Modules library:"))
+                                      label=_("Modules library:"))
         self.AddSizer(modules_label, border=10,
-            flag=wx.LEFT | wx.RIGHT)
+                      flag=wx.LEFT | wx.RIGHT)
 
         self.ModulesGrid = wx.gizmos.TreeListCtrl(parent,
-              style=wx.TR_DEFAULT_STYLE |
-                    wx.TR_ROW_LINES |
-                    wx.TR_COLUMN_LINES |
-                    wx.TR_HIDE_ROOT |
-                    wx.TR_FULL_ROW_HIGHLIGHT)
+                                                  style=wx.TR_DEFAULT_STYLE |
+                                                  wx.TR_ROW_LINES |
+                                                  wx.TR_COLUMN_LINES |
+                                                  wx.TR_HIDE_ROOT |
+                                                  wx.TR_FULL_ROW_HIGHLIGHT)
         self.ModulesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN,
-            self.OnModulesGridLeftDown)
+                                              self.OnModulesGridLeftDown)
         self.ModulesGrid.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT,
-            self.OnModulesGridBeginLabelEdit)
+                              self.OnModulesGridBeginLabelEdit)
         self.ModulesGrid.Bind(wx.EVT_TREE_END_LABEL_EDIT,
-            self.OnModulesGridEndLabelEdit)
+                              self.OnModulesGridEndLabelEdit)
         self.ModulesGrid.GetHeaderWindow().Bind(wx.EVT_MOTION,
-            self.OnModulesGridHeaderMotion)
+                                                self.OnModulesGridHeaderMotion)
         self.AddWindow(self.ModulesGrid, border=10,
-            flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                       flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         for colname, colsize, colalign in zip(
                 [_("Name")] + [param_infos["column_label"]
@@ -1202,8 +1209,8 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         if not root.IsOk():
             root = self.ModulesGrid.AddRoot("Modules")
         self.GenerateModulesGridBranch(root,
-            self.ModuleLibrary.GetModulesLibrary(),
-            GetVariablesTableColnames())
+                                       self.ModuleLibrary.GetModulesLibrary(),
+                                       GetVariablesTableColnames())
         self.ModulesGrid.Expand(root)
 
     def GenerateModulesGridBranch(self, root, modules, colnames):
@@ -1237,9 +1244,10 @@ class LibraryEditorSizer(wx.FlexGridSizer):
 
     def OnImportButton(self, event):
         dialog = wx.FileDialog(self.ParentWindow,
-             _("Choose an XML file"),
-             os.getcwd(), "",
-             _("XML files (*.xml)|*.xml|All files|*.*"), wx.OPEN)
+                               _("Choose an XML file"),
+                               os.getcwd(), "",
+                               _("XML files (*.xml)|*.xml|All files|*.*"),
+                               wx.OPEN)
 
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
@@ -1247,8 +1255,9 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                 wx.CallAfter(self.RefreshView)
             else:
                 message = wx.MessageDialog(self,
-                    _("No such XML file: %s\n") % filepath,
-                    _("Error"), wx.OK | wx.ICON_ERROR)
+                                           _("No such XML file: %s\n") % filepath,
+                                           _("Error"),
+                                           wx.OK | wx.ICON_ERROR)
                 message.ShowModal()
                 message.Destroy()
         dialog.Destroy()
@@ -1261,8 +1270,9 @@ class LibraryEditorSizer(wx.FlexGridSizer):
             folder, filename = os.path.split(filepath)
 
             dialog = wx.MessageDialog(self.ParentWindow,
-                  _("Do you really want to delete the file '%s'?") % filename,
-                  _("Delete File"), wx.YES_NO | wx.ICON_QUESTION)
+                                      _("Do you really want to delete the file '%s'?") % filename,
+                                      _("Delete File"),
+                                      wx.YES_NO | wx.ICON_QUESTION)
             remove = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
 
@@ -1313,8 +1323,9 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                     event.Skip()
                 except ValueError:
                     message = wx.MessageDialog(self,
-                        _("Module %s must be an integer!") % stripped_column_label,
-                        _("Error"), wx.OK | wx.ICON_ERROR)
+                                               _("Module %s must be an integer!") % stripped_column_label,
+                                               _("Error"),
+                                               wx.OK | wx.ICON_ERROR)
                     message.ShowModal()
                     message.Destroy()
                     event.Veto()
@@ -1340,25 +1351,29 @@ class DatabaseManagementDialog(wx.Dialog):
 
     def __init__(self, parent, database):
         wx.Dialog.__init__(self, parent,
-              size=wx.Size(700, 500), title=_('ESI Files Database management'),
-              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+                           size=wx.Size(700, 500),
+                           title=_('ESI Files Database management'),
+                           style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
 
-        self.DatabaseSizer = LibraryEditorSizer(self, database,
-            [("ImportButton", "ImportESI", _("Import file to ESI files database"), None),
-             ("DeleteButton", "remove_element", _("Remove file from database"), None)])
+        self.DatabaseSizer = LibraryEditorSizer(
+            self, database,
+            [
+                ("ImportButton", "ImportESI", _("Import file to ESI files database"), None),
+                ("DeleteButton", "remove_element", _("Remove file from database"), None)
+            ])
         self.DatabaseSizer.SetControlMinSize(wx.Size(0, 0))
         main_sizer.AddSizer(self.DatabaseSizer, border=10,
-            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+                            flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         button_sizer.GetAffirmativeButton().SetLabel(_("Add file to project"))
         button_sizer.GetCancelButton().SetLabel(_("Close"))
         main_sizer.AddSizer(button_sizer, border=10,
-              flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                            flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
 
@@ -1375,14 +1390,17 @@ class LibraryEditor(ConfTreeNodeEditor):
 
     def _create_ModuleLibraryEditor(self, prnt):
         self.ModuleLibraryEditor = wx.ScrolledWindow(prnt,
-            style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
+                                                     style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
         self.ModuleLibraryEditor.Bind(wx.EVT_SIZE, self.OnResize)
 
-        self.ModuleLibrarySizer = LibraryEditorSizer(self.ModuleLibraryEditor,
+        self.ModuleLibrarySizer = LibraryEditorSizer(
+            self.ModuleLibraryEditor,
             self.Controler.GetModulesLibraryInstance(),
-            [("ImportButton", "ImportESI", _("Import ESI file"), None),
-             ("AddButton", "ImportDatabase", _("Add file from ESI files database"), self.OnAddButton),
-             ("DeleteButton", "remove_element", _("Remove file from library"), None)])
+            [
+                ("ImportButton", "ImportESI", _("Import ESI file"), None),
+                ("AddButton", "ImportDatabase", _("Add file from ESI files database"), self.OnAddButton),
+                ("DeleteButton", "remove_element", _("Remove file from library"), None)
+            ])
         self.ModuleLibrarySizer.SetControlMinSize(wx.Size(0, 200))
         self.ModuleLibraryEditor.SetSizer(self.ModuleLibrarySizer)
 
@@ -1399,7 +1417,7 @@ class LibraryEditor(ConfTreeNodeEditor):
 
     def OnAddButton(self, event):
         dialog = DatabaseManagementDialog(self,
-            self.Controler.GetModulesDatabaseInstance())
+                                          self.Controler.GetModulesDatabaseInstance())
 
         if dialog.ShowModal() == wx.ID_OK:
             module_library = self.Controler.GetModulesLibraryInstance()
@@ -1420,5 +1438,7 @@ class LibraryEditor(ConfTreeNodeEditor):
         posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
         self.ModuleLibraryEditor.Scroll(posx, posy)
         self.ModuleLibraryEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
+                                               maxx / SCROLLBAR_UNIT,
+                                               maxy / SCROLLBAR_UNIT,
+                                               posx, posy)
         event.Skip()
