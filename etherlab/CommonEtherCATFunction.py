@@ -1219,10 +1219,10 @@ class _CommonSlave:
         #  Flags
         en_safeop = False
         en_lrw = False
-        if device.getType().getTcCfgModeSafeOp() == True \
+        if device.getType().getTcCfgModeSafeOp() is True \
         or device.getType().getTcCfgModeSafeOp() == 1:
             en_safeop = True
-        if device.getType().getUseLrdLwr() == True \
+        if device.getType().getUseLrdLwr() is True \
         or device.getType().getUseLrdLwr() == 1:
             en_lrw = True
 
@@ -1318,7 +1318,7 @@ class _CommonSlave:
                     data += "{:0>4x}".format(ExtractHexDecValue(attr))[0:2]
                 else:
                     data += "0000"
-            if sm.getEnable() == "1" or sm.getEnable() == True:
+            if sm.getEnable() == "1" or sm.getEnable() is True:
                 data += "01"
             else:
                 data += "00"
@@ -1381,11 +1381,11 @@ class _CommonSlave:
                 data += "{:0>2x}".format(count)
             count = 0
             #  Flags; by Fixed, Mandatory, Virtual attributes ?
-            if element.getFixed() == True or 1:
+            if element.getFixed() is True or 1:
                 en_fixed = True
-            if element.getMandatory() == True or 1:
+            if element.getMandatory() is True or 1:
                 en_mandatory = True
-            if element.getVirtual() == True or element.getVirtual():
+            if element.getVirtual() is True or element.getVirtual():
                 en_virtual = True
             data += str(int(en_fixed)) + str(int(en_mandatory)) + str(int(en_virtual)) + "0"
 
@@ -1423,7 +1423,7 @@ class _CommonSlave:
                     data += "00"
                 #   Flags; by Fixed attributes ?
                 en_fixed = False
-                if entry.getFixed() == True or entry.getFixed() == 1:
+                if entry.getFixed() is True or entry.getFixed() == 1:
                     en_fixed = True
                 data += str(int(en_fixed)) + "000"
 
