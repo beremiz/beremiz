@@ -58,7 +58,7 @@ ENTRY_INFOS_KEYS = [
     ("PDO type", str, "")]
 
 
-class EntryListFactory:
+class EntryListFactory(object):
 
     def __init__(self, entries):
         self.Entries = entries
@@ -154,7 +154,7 @@ def SortGroupItems(group):
     group["children"].sort(GroupItemCompare)
 
 
-class ModulesLibrary:
+class ModulesLibrary(object):
 
     MODULES_EXTRA_PARAMS = [
         (
@@ -409,7 +409,7 @@ ModulesDatabase = ModulesLibrary(
     os.path.join(USERDATA_DIR, "ethercat_modules"))
 
 
-class RootClass:
+class RootClass(object):
 
     CTNChildrenTypes = [("EthercatNode", _EthercatCTN, "Ethercat Master")]
     EditorType = LibraryEditor

@@ -142,7 +142,7 @@ returnVal =result
 # --------------------------------------------------
 #    Common Method For EtherCAT Management
 # --------------------------------------------------
-class _CommonSlave:
+class _CommonSlave(object):
 
     # ----- Data Structure for ethercat management ----
     SlaveState = ""

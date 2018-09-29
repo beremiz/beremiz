@@ -225,7 +225,7 @@ ProcessVariablesXSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 ProcessVariablesParser = GenerateParserFromXSDstring(ProcessVariablesXSD)
 
 
-class _EthercatCTN:
+class _EthercatCTN(object):
 
     CTNChildrenTypes = [("EthercatSlave", _EthercatSlaveCTN, "Ethercat Slave")]
     if HAS_MCL:
