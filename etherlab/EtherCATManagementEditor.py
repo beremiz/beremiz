@@ -643,7 +643,7 @@ class SlaveSDOTable(wx.grid.Grid):
         self.Controler.CommonMethod.Check_SAFEOP = False
         self.Controler.CommonMethod.Check_OP = False
 
-    def SDOModifyDialog (self, event):
+    def SDOModifyDialog(self, event):
         """
         Create dialog for SDO value modify
         if user enter data, perform command "ethercat download"
@@ -653,8 +653,11 @@ class SlaveSDOTable(wx.grid.Grid):
 
         # CheckSDODataAccess is checking that OD(Object Dictionary) has "w"
         if event.GetCol() == 7 and self.CheckSDODataAccess(event.GetRow()):
-            dlg = wx.TextEntryDialog (self, "Enter hex or dec value (if enter dec value, it automatically conversed hex value)",
-                                      "SDOModifyDialog", style=wx.OK | wx.CANCEL)
+            dlg = wx.TextEntryDialog(
+                self,
+                _("Enter hex or dec value (if enter dec value, it automatically conversed hex value)"),
+                "SDOModifyDialog",
+                style=wx.OK | wx.CANCEL)
 
             start_value = self.GetCellValue(event.GetRow(), event.GetCol())
             dlg.SetValue(start_value)
