@@ -106,7 +106,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     """ % ("\n".join(["""\
           <xsd:attribute name="Enable%s" type="xsd:boolean"
                          use="optional" default="false"/>""" % category
-                for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
+                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
 
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor
@@ -236,13 +236,14 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                     for input in blocktype_infos["inputs"]]
                 ])
 
-            return_outputs = "\n".join(["""\
+            return_outputs = "\n".join([
+                """\
     __SET_VAR(data__->,%(output_name)s,,
               __GET_VAR(%(blockname)s->%(output_name)s));""" % locals()
-                    for output_name in ["DONE", "BUSY", "ERROR"] + [
+                for output_name in ["DONE", "BUSY", "ERROR"] + [
                         output["name"].upper()
                         for output in blocktype_infos["outputs"]]
-                ])
+            ])
 
             fieldbus_interface_declaration.append("""
 extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s* data__);
@@ -333,7 +334,7 @@ __%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % locals()
 
         # Write generated content to CIA402 node file
         Gen_CIA402Nodefile_path = os.path.join(buildpath,
-                                "cia402node_%s.c" % location_str)
+                                               "cia402node_%s.c" % location_str)
         cia402nodefile = open(Gen_CIA402Nodefile_path, 'w')
         cia402nodefile.write(plc_cia402node_code % locals())
         cia402nodefile.close()

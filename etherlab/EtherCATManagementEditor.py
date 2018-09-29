@@ -144,7 +144,7 @@ class SlaveStatePanelClass(wx.Panel):
             self.StaticTextDic[statictext_name] = wx.StaticText(self, label=_(statictext_label))
             self.TextCtrlDic[textctrl_name] = wx.TextCtrl(self, size=wx.Size(130, 24), style=wx.TE_READONLY)
             self.SizerDic["SlaveInfosDetailsInnerSizer"].AddMany([self.StaticTextDic[statictext_name],
-                                                               self.TextCtrlDic[textctrl_name]])
+                                                                  self.TextCtrlDic[textctrl_name]])
 
         self.SizerDic["SlaveInfosDetailsBox"].AddSizer(self.SizerDic["SlaveInfosDetailsInnerSizer"])
 
@@ -181,7 +181,7 @@ class SlaveStatePanelClass(wx.Panel):
             self.SizerDic["SlaveState_down_sizer"].Add(self.ButtonDic[button_name])
 
         self.SizerDic["SlaveState_sizer"].AddMany([self.SizerDic["SlaveState_up_sizer"],
-            self.SizerDic["SlaveState_down_sizer"]])
+                                                   self.SizerDic["SlaveState_down_sizer"]])
 
         self.SizerDic["SlaveStateBox"].Add(self.SizerDic["SlaveState_sizer"])
 
@@ -375,10 +375,11 @@ class SDOPanelClass(wx.Panel):
         """
 
         slaveSDO_progress = wx.ProgressDialog("Slave SDO Monitoring", "Now Uploading...",
-                               maximum=len(self.SDOs.splitlines()), parent=self,
-                               style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME |
-                                     wx.PD_ESTIMATED_TIME | wx.PD_REMAINING_TIME |
-                                     wx.PD_AUTO_HIDE | wx.PD_SMOOTH)
+                                              maximum=len(self.SDOs.splitlines()),
+                                              parent=self,
+                                              style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME |
+                                              wx.PD_ESTIMATED_TIME | wx.PD_REMAINING_TIME |
+                                              wx.PD_AUTO_HIDE | wx.PD_SMOOTH)
 
         # If keep_going flag is False, SDOParser method is stop and return "False".
         keep_going = True
@@ -496,11 +497,11 @@ class SDONoteBook(wx.Notebook):
         count = 1
 
         page_texts = [("all", self.parent.AllSDOData),
-                     ("0x0000 - 0x0ff", self.parent.DatatypeDescription),
-                     ("0x1000 - 0x1fff", self.parent.CommunicationObject),
-                     ("0x2000 - 0x5fff", self.parent.ManufacturerSpecific),
-                     ("0x6000 - 0x9fff", self.parent.ProfileSpecific),
-                     ("0xa000 - 0xffff", self.parent.Reserved)]
+                      ("0x0000 - 0x0ff", self.parent.DatatypeDescription),
+                      ("0x1000 - 0x1fff", self.parent.CommunicationObject),
+                      ("0x2000 - 0x5fff", self.parent.ManufacturerSpecific),
+                      ("0x6000 - 0x9fff", self.parent.ProfileSpecific),
+                      ("0xa000 - 0xffff", self.parent.Reserved)]
 
         page_tooltip_string = ["SDO Index 0x0000 - 0x0fff : Data Type Description",
                                "SDO Index 0x1000 - 0x1fff : Communication object",
@@ -664,8 +665,12 @@ class SlaveSDOTable(wx.grid.Grid):
                     # check "Access" field
                     if self.DecideSDODownload(self.Controler.CommonMethod.SlaveState[self.Controler.GetSlavePos()]):
                         # Request "SDODownload"
-                        self.Controler.CommonMethod.SDODownload(self.SDOs[event.GetRow()]['type'], self.SDOs[event.GetRow()]['idx'],
-                                                   self.SDOs[event.GetRow()]['subIdx'], dlg.GetValue())
+                        self.Controler.CommonMethod.SDODownload(
+                            self.SDOs[event.GetRow()]['type'],
+                            self.SDOs[event.GetRow()]['idx'],
+                            self.SDOs[event.GetRow()]['subIdx'],
+                            dlg.GetValue())
+
                         self.SetCellValue(event.GetRow(), event.GetCol(), hex(int(dlg.GetValue(), 0)))
                     else:
                         self.Controler.CommonMethod.CreateErrorDialog('You cannot SDO download this state')
@@ -1267,11 +1272,12 @@ class HexView(wx.Panel):
                              "siiButton": wx.BoxSizer()}
         self.HexViewButton = {}
 
-        for key, evt_handler in [("Sii Upload", self.OnButtonSiiUpload),
-                                ("Sii Download", self.OnButtonSiiDownload),
-                                ("Write to File", self.OnButtonWriteToBinFile),
-                                ("Read from File", self.OnButtonReadFromBinFile),
-                                ("XML to EEPROM Image", self.OnButtonXmlToEEPROMImg)]:
+        for key, evt_handler in [
+                ("Sii Upload", self.OnButtonSiiUpload),
+                ("Sii Download", self.OnButtonSiiDownload),
+                ("Write to File", self.OnButtonWriteToBinFile),
+                ("Read from File", self.OnButtonReadFromBinFile),
+                ("XML to EEPROM Image", self.OnButtonXmlToEEPROMImg)]:
             self.HexViewButton[key] = wx.Button(self, -1, key)
             self.HexViewButton[key].Bind(wx.EVT_BUTTON, evt_handler)
             self.HexViewSizer["siiButton"].Add(self.HexViewButton[key])
@@ -1828,7 +1834,7 @@ class RegisterNotebook(wx.Notebook):
 
         for index in range(4):
             self.RegPage[index] = RegisterNotebookPanel(self, self.Controler,
-                                                    parent.MainRow[index], parent.MainCol)
+                                                        parent.MainRow[index], parent.MainCol)
             self.AddPage(self.RegPage[index],
                          "0x"+"{:0>4x}".format(index*1024)+" - 0x"+"{:0>4x}".format((index+1)*1024-1))
 

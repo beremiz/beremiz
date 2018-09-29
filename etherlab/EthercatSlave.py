@@ -22,12 +22,12 @@ from CommonEtherCATFunction import _CommonSlave
 
 
 TYPECONVERSION = {"BOOL": "X", "SINT": "B", "INT": "W", "DINT": "D", "LINT": "L",
-    "USINT": "B", "UINT": "W", "UDINT": "D", "ULINT": "L",
-    "BYTE": "B", "WORD": "W", "DWORD": "D", "LWORD": "L"}
+                  "USINT": "B", "UINT": "W", "UDINT": "D", "ULINT": "L",
+                  "BYTE": "B", "WORD": "W", "DWORD": "D", "LWORD": "L"}
 
 DATATYPECONVERSION = {"BOOL": "BIT", "SINT": "S8", "INT": "S16", "DINT": "S32", "LINT": "S64",
-    "USINT": "U8", "UINT": "U16", "UDINT": "U32", "ULINT": "U64",
-    "BYTE": "U8", "WORD": "U16", "DWORD": "U32", "LWORD": "U64"}
+                      "USINT": "U8", "UINT": "U16", "UDINT": "U32", "ULINT": "U64",
+                      "BYTE": "U8", "WORD": "U16", "DWORD": "U32", "LWORD": "U64"}
 
 VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
 
@@ -107,16 +107,22 @@ class _EthercatSlaveCTN:
                 })
 
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
-            params[0]['children'].insert(0,
-                   {'use': 'optional',
+            params[0]['children'].insert(
+                0,
+                {
+                    'use': 'optional',
                     'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE),
                     'name': 'Type',
-                    'value': (slave_type["device_type"], slave_type)})
-            params[0]['children'].insert(1,
-                   {'use': 'optional',
+                    'value': (slave_type["device_type"], slave_type)
+                })
+            params[0]['children'].insert(
+                1,
+                {
+                    'use': 'optional',
                     'type': 'unsignedLong',
                     'name': 'Alias',
-                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())})
+                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())
+                })
             return params
 
     def SetParamsAttribute(self, path, value):

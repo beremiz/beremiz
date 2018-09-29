@@ -294,7 +294,8 @@ class _EthercatCTN:
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
         dialog = BrowseValuesLibraryDialog(app_frame,
-            "Ethercat Slave Type", self.GetSlaveTypesLibrary())
+                                           "Ethercat Slave Type",
+                                           self.GetSlaveTypesLibrary())
         if dialog.ShowModal() == wx.ID_OK:
             type_infos = dialog.GetValueInfos()
             device, module_extra_params = self.GetModuleInfos(type_infos)
@@ -443,7 +444,8 @@ class _EthercatCTN:
 
         execute = True
         if len(self.Children) > 0:
-            dialog = wx.MessageDialog(app_frame,
+            dialog = wx.MessageDialog(
+                app_frame,
                 _("The current network configuration will be deleted.\nDo you want to continue?"),
                 _("Scan Network"),
                 wx.YES_NO | wx.ICON_QUESTION)
@@ -744,7 +746,8 @@ class _EthercatCTN:
 
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
 
-        LocationCFilesAndCFLAGS.insert(0,
+        LocationCFilesAndCFLAGS.insert(
+            0,
             (current_location,
              [(Gen_Ethercatfile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
              True))
