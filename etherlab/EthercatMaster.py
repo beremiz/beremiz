@@ -711,7 +711,7 @@ class _EthercatCTN:
     def _Generate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x: str(x), current_location))
+        location_str = "_".join(map(str, current_location))
 
         Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c" % location_str)
 
