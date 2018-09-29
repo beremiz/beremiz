@@ -249,7 +249,7 @@ class _EthercatCTN(object):
 
             if error is not None:
                 self.GetCTRoot().logger.write_error(
-                    _("Couldn't load %s network configuration file.") % CTNName)
+                    _("Couldn't load %s network configuration file.") % self.CTNName())
 
         if self.Config is None:
             self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
@@ -270,7 +270,7 @@ class _EthercatCTN(object):
 
             if error is not None:
                 self.GetCTRoot().logger.write_error(
-                    _("Couldn't load %s network process variables file.") % CTNName)
+                    _("Couldn't load %s network process variables file.") % self.CTNName())
 
         if self.ProcessVariables is None:
             self.ProcessVariables = ProcessVariablesParser.CreateElement("ProcessVariables")
