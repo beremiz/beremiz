@@ -9,6 +9,7 @@
 #
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
 import os
 import shutil
 import csv
@@ -20,9 +21,9 @@ from xmlclass import *
 
 from ConfigTreeNode import XSDSchemaErrorMessage
 
-from EthercatSlave import ExtractHexDecValue, ExtractName
-from EthercatMaster import _EthercatCTN
-from ConfigEditor import LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
+from etherlab.EthercatSlave import ExtractHexDecValue, ExtractName
+from etherlab.EthercatMaster import _EthercatCTN
+from etherlab.ConfigEditor import LibraryEditor, ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE
 
 ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 

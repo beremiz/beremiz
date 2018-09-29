@@ -9,6 +9,7 @@
 #
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
 import os
 from copy import deepcopy
 from lxml import etree
@@ -23,12 +24,18 @@ from dialogs import BrowseValuesLibraryDialog
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE
 from POULibrary import POULibrary
 
-from ConfigEditor import MasterEditor
-from EthercatCFileGenerator import _EthercatCFileGenerator
-from EthercatSlave import _EthercatSlaveCTN, ExtractHexDecValue, GenerateHexDecValue, TYPECONVERSION, VARCLASSCONVERSION, _CommonSlave
+from etherlab.ConfigEditor import MasterEditor
+from etherlab.EthercatCFileGenerator import _EthercatCFileGenerator
+from etherlab.EthercatSlave import \
+    _EthercatSlaveCTN, \
+    ExtractHexDecValue, \
+    GenerateHexDecValue, \
+    TYPECONVERSION, \
+    VARCLASSCONVERSION, \
+    _CommonSlave
 
 try:
-    from EthercatCIA402Slave import _EthercatCIA402SlaveCTN
+    from etherlab.EthercatCIA402Slave import _EthercatCIA402SlaveCTN
     HAS_MCL = True
 except Exception:
     HAS_MCL = False

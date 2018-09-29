@@ -9,9 +9,10 @@
 #
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
 import os
 
-from EthercatSlave import ExtractHexDecValue, DATATYPECONVERSION, ExtractName
+from etherlab.EthercatSlave import ExtractHexDecValue, DATATYPECONVERSION, ExtractName
 
 SLAVE_PDOS_CONFIGURATION_DECLARATION = """
 /* Slave %(slave)d, "%(device_type)s"
