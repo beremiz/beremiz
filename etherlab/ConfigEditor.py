@@ -777,6 +777,7 @@ class MasterEditor(ConfTreeNodeEditor):
         setattr(self.ProcessVariablesGrid, "_MoveRow", _MoveVariablesElement)
 
         _refresh_buttons = getattr(self.ProcessVariablesGrid, "RefreshButtons")
+
         def _RefreshButtons():
             if self.NodesFilter.GetSelection() == 0:
                 _refresh_buttons()
