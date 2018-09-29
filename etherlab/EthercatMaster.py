@@ -582,7 +582,7 @@ class _EthercatCTN(object):
             entries_list.sort()
             entries = []
             current_index = None
-            current_entry = None
+            current_entry = {}
             for (index, subindex), entry in entries_list:
                 entry["children"] = []
                 if slave_pos is not None:
@@ -591,7 +591,7 @@ class _EthercatCTN(object):
                     current_index = index
                     current_entry = entry
                     entries.append(entry)
-                elif current_entry is not None:
+                elif current_entry:
                     current_entry["children"].append(entry)
                 else:
                     entries.append(entry)
