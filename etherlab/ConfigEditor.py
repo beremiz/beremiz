@@ -627,20 +627,6 @@ class MasterEditor(ConfTreeNodeEditor):
         self.MasterStateEditor.SetSizer(self.MasterStateEditor_Panel_Main_Sizer)
         return self.MasterStateEditor
 
-    def OnResize(self, event):
-        self.MasterStateEditor.GetBestSize()
-        xstart, ystart = self.MasterStateEditor.GetViewStart()
-        window_size = self.MasterStateEditor.GetClientSize()
-        maxx, maxy = self.MasterStateEditor.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
-        self.MasterStateEditor.Scroll(posx, posy)
-        self.MasterStateEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                             maxx / SCROLLBAR_UNIT,
-                                             maxy / SCROLLBAR_UNIT,
-                                             posx, posy)
-        event.Skip()
-
     def _create_EthercatMasterEditor(self, prnt):
         self.EthercatMasterEditor = wx.ScrolledWindow(prnt,
                                                       style=wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL)
