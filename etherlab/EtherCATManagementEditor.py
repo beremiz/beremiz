@@ -8,6 +8,8 @@
 # See COPYING file for copyrights details.
 
 import os
+import string
+from xml.dom import minidom
 
 import wx
 import wx.grid
@@ -18,12 +20,8 @@ import wx.lib.buttons
 from controls import CustomGrid, CustomTable
 # --------------------------------------------------------------------
 
-# ------------ for SDO Management --------------------
-import string
-# -------------------------------------------------------------
-
 # ------------ for register management ---------------
-from xml.dom import minidom
+
 from util.TranslationCatalogs import NoTranslate
 # -------------------------------------------------------------
 

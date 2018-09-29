@@ -11,8 +11,8 @@
 
 import os
 import cPickle
-from lxml import etree
 from copy import deepcopy
+from lxml import etree
 
 import wx
 

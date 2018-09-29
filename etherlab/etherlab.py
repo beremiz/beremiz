@@ -11,10 +11,10 @@
 
 import os
 import shutil
+import csv
 from lxml import etree
 
 import wx
-import csv
 
 from xmlclass import *
 
