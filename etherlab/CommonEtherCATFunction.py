@@ -8,7 +8,6 @@
 #
 # See COPYING file for copyrights details.
 
-import os
 import wx
 
 mailbox_protocols = ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]

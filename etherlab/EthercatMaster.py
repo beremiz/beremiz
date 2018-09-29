@@ -10,7 +10,6 @@
 # See COPYING file for copyrights details.
 
 import os
-import cPickle
 from copy import deepcopy
 from lxml import etree
 
@@ -18,7 +17,7 @@ import wx
 
 from xmlclass import *
 
-from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import UndoBuffer, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
 from ConfigTreeNode import ConfigTreeNode
 from dialogs import BrowseValuesLibraryDialog
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE

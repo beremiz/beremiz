@@ -9,9 +9,7 @@
 #
 # See COPYING file for copyrights details.
 
-import wx
-
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigTreeNode import ConfigTreeNode
 
 from ConfigEditor import NodeEditor

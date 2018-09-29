@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 import ctypes
 from threading import Thread
 import time
