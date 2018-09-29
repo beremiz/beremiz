@@ -72,7 +72,8 @@ SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
 def ConfigureVariable(entry_infos, str_completion):
     entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if entry_infos["data_type"] is None:
-        raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
+        msg = _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
+        raise ValueError(msg)
 
     if not entry_infos.get("no_decl", False):
         if "real_var" in entry_infos:
@@ -165,9 +166,11 @@ class _EthercatCFileGenerator:
                     entry_infos["infos"][4].append(name)
                     return entry_infos["infos"][2]
                 else:
-                    raise ValueError, _("Output variables can't be defined with different locations (%s and %s)") % (entry_infos["infos"][2], name)
+                    msg = _("Output variables can't be defined with different locations (%s and %s)") \
+                          % (entry_infos["infos"][2], name)
+                    raise ValueError(msg)
         else:
-            raise ValueError, _("Definition conflict for location \"%s\"") % name
+            raise ValueError(_("Definition conflict for location \"%s\"") % name)
 
     def GenerateCFile(self, filepath, location_str, master_number):
 
@@ -217,7 +220,9 @@ class _EthercatCFileGenerator:
             # Extract slave device informations
             device, module_extra_params = self.Controler.GetModuleInfos(type_infos)
             if device is None:
-                raise ValueError, _("No informations found for device %s!") % (type_infos["device_type"])
+                msg = _("No informations found for device %s!") \
+                      % (type_infos["device_type"])
+                raise ValueError(msg)
 
             # Extract slaves variables to be mapped
             slave_variables = self.UsedVariables.get(slave_idx, {})
@@ -393,13 +398,13 @@ class _EthercatCFileGenerator:
                                 message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
                                 if (self.Controler.GetSizeOfType(entry_infos["var_type"]) !=
                                     self.Controler.GetSizeOfType(entry_type)):
-                                    raise ValueError, message
+                                    raise ValueError(message)
                                 else:
                                     self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
 
                             if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or
                                 entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
-                                raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                                raise ValueError(_("Wrong direction for location \"%s\"!") % entry_infos["var_name"])
 
                             ConfigureVariable(entry_infos, str_completion)
 
@@ -428,7 +433,7 @@ class _EthercatCFileGenerator:
                                 if sync_manager["name"] == pdo_type:
                                     sm = sm_idx
                         if sm is None:
-                            raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
+                            raise ValueError(_("No sync manager available for %s pdo!") % pdo_type)
 
                         sync_managers[sm]["pdos_number"] += 1
                         sync_managers[sm]["pdos"].append(
@@ -460,8 +465,9 @@ class _EthercatCFileGenerator:
                         if not entry_declaration["mapped"]:
                             entry = device_entries.get((index, subindex), None)
                             if entry is None:
-                                raise ValueError, _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") % \
-                                                 (index, subindex, type_infos["device_type"])
+                                msg = _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") \
+                                      % (index, subindex, type_infos["device_type"])
+                                raise ValueError(msg)
 
                             entry_infos = {
                                 "index": index,
@@ -479,7 +485,7 @@ class _EthercatCFileGenerator:
                                 message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
                                 if (self.Controler.GetSizeOfType(entry_infos["var_type"]) !=
                                     self.Controler.GetSizeOfType(entry["Type"])):
-                                    raise ValueError, message
+                                    raise ValueError(message)
                                 else:
                                     self.Controler.GetCTRoot().logger.write_warning(message + "\n")
 
@@ -488,10 +494,13 @@ class _EthercatCFileGenerator:
                             elif entry_infos["dir"] == "Q" and entry["PDOMapping"] in ["R", "RT"]:
                                 pdo_type = "Outputs"
                             else:
-                                raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
+                                msg = _("Wrong direction for location \"%s\"!") \
+                                      % entry_infos["var_name"]
+                                raise ValueError(msg)
 
                             if pdo_type not in dynamic_pdos:
-                                raise ValueError, _("No Sync manager defined for %s!") % pdo_type
+                                msg = _("No Sync manager defined for %s!") % pdo_type
+                                raise ValueError(msg)
 
                             ConfigureVariable(entry_infos, str_completion)
 
@@ -501,7 +510,7 @@ class _EthercatCFileGenerator:
                                 while dynamic_pdos[pdo_type]["current_index"] in pdos_index:
                                     dynamic_pdos[pdo_type]["current_index"] += 1
                                 if dynamic_pdos[pdo_type]["current_index"] >= dynamic_pdos[pdo_type]["max_index"]:
-                                    raise ValueError, _("No more free PDO index available for %s!") % pdo_type
+                                    raise ValueError(_("No more free PDO index available for %s!") % pdo_type)
                                 pdos_index.append(dynamic_pdos[pdo_type]["current_index"])
 
                                 dynamic_pdos_number += 1

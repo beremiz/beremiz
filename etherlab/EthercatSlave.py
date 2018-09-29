@@ -40,7 +40,7 @@ def ExtractHexDecValue(value):
     try:
         return int(value.replace("#", "0"), 16)
     except Exception:
-        raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
+        raise ValueError("Invalid value for HexDecValue \"%s\"" % value)
 
 
 def GenerateHexDecValue(value, base=10):
@@ -49,7 +49,7 @@ def GenerateHexDecValue(value, base=10):
     elif base == 16:
         return "#x%.8x" % value
     else:
-        raise ValueError, "Not supported base"
+        raise ValueError("Not supported base")
 
 
 def ExtractName(names, default=None):
