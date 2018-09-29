@@ -64,7 +64,7 @@ def ExtractName(names, default=None):
 #                    Ethercat Node
 # --------------------------------------------------
 
-class _EthercatSlaveCTN:
+class _EthercatSlaveCTN(object):
     NODE_PROFILE = None
     EditorType = NodeEditor
 

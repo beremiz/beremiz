@@ -137,7 +137,7 @@ def ExclusionSortFunction(x, y):
     return -cmp(x["matching"], y["matching"])
 
 
-class _EthercatCFileGenerator:
+class _EthercatCFileGenerator(object):
 
     def __init__(self, controler):
         self.Controler = controler
