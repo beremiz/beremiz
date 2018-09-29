@@ -215,7 +215,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
             event.Skip()
 
     def OnVariablesGridLeftClick(self, event):
-        item, flags, col = self.VariablesGrid.HitTest(event.GetPosition())
+        item, _flags, col = self.VariablesGrid.HitTest(event.GetPosition())
         if item.IsOk():
             entry = self.VariablesGrid.GetItemPyData(item)
             data_type = entry.get("Type", "")
@@ -1165,10 +1165,10 @@ class LibraryEditorSizer(wx.FlexGridSizer):
 
         for colname, colsize, colalign in zip(
                 [_("Name")] + [param_infos["column_label"]
-                               for param, param_infos in
+                               for _param, param_infos in
                                self.ModuleLibrary.MODULES_EXTRA_PARAMS],
                 [400] + [param_infos["column_size"]
-                         for param, param_infos in
+                         for _param, param_infos in
                          self.ModuleLibrary.MODULES_EXTRA_PARAMS],
                 [wx.ALIGN_LEFT] + [wx.ALIGN_RIGHT] * len(self.ModuleLibrary.MODULES_EXTRA_PARAMS)):
             self.ModulesGrid.AddColumn(_(colname), colsize, colalign, edit=True)
@@ -1209,7 +1209,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                 item = self.ModulesGrid.AppendItem(root, "")
             self.ModulesGrid.SetItemText(item, module["name"], 0)
             if module["infos"] is not None:
-                for param_idx, (param, param_infos) in enumerate(self.ModuleLibrary.MODULES_EXTRA_PARAMS):
+                for param_idx, (param, _param_infos) in enumerate(self.ModuleLibrary.MODULES_EXTRA_PARAMS):
                     self.ModulesGrid.SetItemText(item,
                                                  str(module["infos"][param]),
                                                  param_idx + 1)
@@ -1254,7 +1254,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
     def OnDeleteButton(self, event):
         filepath = self.GetSelectedFilePath()
         if os.path.isfile(filepath):
-            folder, filename = os.path.split(filepath)
+            _folder, filename = os.path.split(filepath)
 
             dialog = wx.MessageDialog(self.ParentWindow,
                                       _("Do you really want to delete the file '%s'?") % filename,
@@ -1270,7 +1270,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
         event.Skip()
 
     def OnModulesGridLeftDown(self, event):
-        item, flags, col = self.ModulesGrid.HitTest(event.GetPosition())
+        item, _flags, col = self.ModulesGrid.HitTest(event.GetPosition())
         if item.IsOk():
             entry_infos = self.ModulesGrid.GetItemPyData(item)
             if entry_infos is not None and col > 0:
@@ -1322,13 +1322,13 @@ class LibraryEditorSizer(wx.FlexGridSizer):
             event.Veto()
 
     def OnModulesGridHeaderMotion(self, event):
-        item, flags, col = self.ModulesGrid.HitTest(event.GetPosition())
+        _item, _flags, col = self.ModulesGrid.HitTest(event.GetPosition())
         if col != self.LastToolTipCol and self.LastToolTipCol is not None:
             self.ModulesGrid.GetHeaderWindow().SetToolTip(None)
             self.LastToolTipCol = None
         if col > 0 and self.LastToolTipCol != col:
             self.LastToolTipCol = col
-            param, param_infos = self.ModuleLibrary.MODULES_EXTRA_PARAMS[col - 1]
+            _param, param_infos = self.ModuleLibrary.MODULES_EXTRA_PARAMS[col - 1]
             wx.CallAfter(self.ModulesGrid.GetHeaderWindow().SetToolTipString,
                          param_infos["description"])
         event.Skip()

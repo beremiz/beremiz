@@ -16,7 +16,7 @@ import wx
 
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
-from MotionLibrary import Headers, AxisXSD
+from MotionLibrary import AxisXSD
 from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave
 from etherlab.ConfigEditor import CIA402NodeEditor
 
@@ -205,7 +205,6 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 
         location_str = "_".join(map(str, current_location))
         slave_pos = self.GetSlavePos()
-        MCL_headers = Headers
 
         # Open CIA402 node code template file
         plc_cia402node_filepath = os.path.join(os.path.split(__file__)[0],
@@ -241,12 +240,24 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 
             return_outputs = "\n".join([
                 """\
-    __SET_VAR(data__->,%(output_name)s,,
-              __GET_VAR(%(blockname)s->%(output_name)s));""" % locals()
+                __SET_VAR(data__->,%(output_name)s,,
+                __GET_VAR(%(blockname)s->%(output_name)s));""" % {
+                    "output_name": output_name,
+                    "blockname": blockname
+                }
                 for output_name in ["DONE", "BUSY", "ERROR"] + [
                         output["name"].upper()
                         for output in blocktype_infos["outputs"]]
             ])
+
+            loc_dict = {
+                "ucase_blocktype": ucase_blocktype,
+                "blocktype": blocktype,
+                "blockname": blockname,
+                "location_str": location_str,
+                "extract_inputs": extract_inputs,
+                "return_outputs": return_outputs,
+            }
 
             fieldbus_interface_declaration.append("""
 extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s* data__);
@@ -257,11 +268,11 @@ __SET_VAR(%(blockname)s->, POS,, AxsPub.axis->NetworkPosition);
 %(extract_inputs)s
 ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
 %(return_outputs)s
-}""" % locals())
+}""" % loc_dict)
 
             fieldbus_interface_definition.append("""\
         AxsPub.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location_str)s;\
-""" % locals())
+""" % loc_dict)
 
         # Get a copy list of default variables to map
         variables = NODE_VARIABLES[:]
@@ -288,14 +299,16 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
                     variables.append(variable_infos["description"])
 
                     # Add code to publish or retrive variable
-                    for var_exchange_dir, str_list, default_template in [
-                         ("retrieve", extra_variables_retrieve,
-                          "    AxsPub.axis->%(var_name)s = *(AxsPub.%(var_name)s);"),
-                         ("publish", extra_variables_publish,
-                          "    *(AxsPub.%(var_name)s) = AxsPub.axis->%(var_name)s;")]:
-
-                        template = variable_infos.get(var_exchange_dir,
-                                                      default_template)
+                    coded = [
+                        ("retrieve",
+                         extra_variables_retrieve,
+                         "    AxsPub.axis->%(var_name)s = *(AxsPub.%(var_name)s);"),
+                        ("publish",
+                         extra_variables_publish,
+                         "    *(AxsPub.%(var_name)s) = AxsPub.axis->%(var_name)s;")
+                    ]
+                    for var_exchange_dir, _str_list, default_template in coded:
+                        template = variable_infos.get(var_exchange_dir, default_template)
                         if template is not None:
                             extra_variables_publish.append(template % locals())
 
@@ -306,21 +319,30 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
                                else str(param["value"]))
 
                 init_axis_params.append("""\
-        AxsPub.axis->%(param_name)s = %(param_value)s;""" % locals())
+        AxsPub.axis->%(param_name)s = %(param_value)s;""" % {"param_value": param_value})
 
         # Add each variable in list of variables to map to master list of
         # variables to add to network configuration
         for name, index, subindex, var_type, dir in variables:
             var_size = self.GetSizeOfType(var_type)
+            loc_dict = {
+                "var_size": var_size,
+                "var_type": var_type,
+                "name:": name,
+                "location_str": location_str,
+                "index": index,
+                "subindex": subindex,
+            }
             var_name = """\
-__%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % locals()
+__%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % loc_dict
+            loc_dict["var_name"] = var_name
 
             extern_located_variables_declaration.append(
-                    "IEC_%(var_type)s *%(var_name)s;" % locals())
+                    "IEC_%(var_type)s *%(var_name)s;" % loc_dict)
             entry_variables.append(
-                    "    IEC_%(var_type)s *%(name)s;" % locals())
+                    "    IEC_%(var_type)s *%(name)s;" % loc_dict)
             init_entry_variables.append(
-                    "    AxsPub.%(name)s = %(var_name)s;" % locals())
+                    "    AxsPub.%(name)s = %(var_name)s;" % loc_dict)
 
             self.CTNParent.FileGenerator.DeclareVariable(
                     slave_pos, index, subindex, var_type, dir, var_name)

@@ -80,21 +80,6 @@ class EtherCATManagementTreebook(wx.Treebook):
             for spname, spclass in subs:
                 self.AddSubPage(spclass(self, self.Controler), spname)
 
-        self.Bind(wx.EVT_TREEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Bind(wx.EVT_TREEBOOK_PAGE_CHANGING, self.OnPageChanging)
-
-    def OnPageChanged(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = event.GetSelection()
-        event.Skip()
-
-    def OnPageChanging(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = event.GetSelection()
-        event.Skip()
-
 
 # -------------------------------------------------------------------------------
 #                    For SlaveState Panel
@@ -256,7 +241,7 @@ class SlaveStatePanelClass(wx.Panel):
             #  (1) If current PLC status is "Started", then request slave state transition
             #  (2) Otherwise, show error message and return
             else:
-                status, count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
+                status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
                 if status == "Started":
                     self.Controler.CommonMethod.RequestSlaveState("OP")
                     self.TextCtrlDic["TargetState"].SetValue("OP")
@@ -399,20 +384,20 @@ class SDOPanelClass(wx.Panel):
 
                 # token_head = ['0x1000:00', 'r-r-r-', 'uint32', '32 bit', '']
                 token_head = token_head.split(",")
-                ful_idx, access, type, size, empty = token_head
+                ful_idx, access, type, size, _empty = token_head
                 # ful_idx.split(":") = ['0x1000', '00']
                 idx, sub_idx = ful_idx.split(":")
 
                 # token_tail = ['', '0x00020192', '131474']
                 token_tail = token_tail.split(",")
                 try:
-                    empty, hex_val, dec_val = token_tail
+                    _empty, hex_val, _dec_val = token_tail
 
                 # SDO data is not return "dec value"
                 # line example :
                 # 0x1702:01,rwr-r-,uint32,32 bit," 1st mapping", ----
                 except Exception:
-                    empty, hex_val = token_tail
+                    _empty, hex_val = token_tail
 
                 name_after_check = self.StringTest(name)
 
@@ -437,9 +422,9 @@ class SDOPanelClass(wx.Panel):
                 self.Controler.CommonMethod.SaveSDOData[self.AllSDOData].append(self.Data)
 
             if count >= len(self.SDOs.splitlines()) / 2:
-                (keep_going, skip) = slaveSDO_progress.Update(count, "Please waiting a moment!!")
+                (keep_going, _skip) = slaveSDO_progress.Update(count, "Please waiting a moment!!")
             else:
-                (keep_going, skip) = slaveSDO_progress.Update(count)
+                (keep_going, _skip) = slaveSDO_progress.Update(count)
 
             # If user click "Cancel" loop suspend immediately
             if not keep_going:
@@ -483,9 +468,6 @@ class SDONoteBook(wx.Notebook):
 
         self.CreateNoteBook()
 
-        self.Bind(wx.EVT_CHOICEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Bind(wx.EVT_CHOICEBOOK_PAGE_CHANGING, self.OnPageChanging)
-
     def CreateNoteBook(self):
         """
         Create each NoteBook page, divided SDO index
@@ -501,12 +483,12 @@ class SDONoteBook(wx.Notebook):
                       ("0x6000 - 0x9fff", self.parent.ProfileSpecific),
                       ("0xa000 - 0xffff", self.parent.Reserved)]
 
-        page_tooltip_string = ["SDO Index 0x0000 - 0x0fff : Data Type Description",
-                               "SDO Index 0x1000 - 0x1fff : Communication object",
-                               "SDO Index 0x2000 - 0x5fff : Manufacturer specific",
-                               "SDO Index 0x6000 - 0x9fff : Profile specific",
-                               "SDO Index 0xa000 - 0xffff : Reserved",
-                               "All SDO Object"]
+        # page_tooltip_string = ["SDO Index 0x0000 - 0x0fff : Data Type Description",
+        #                        "SDO Index 0x1000 - 0x1fff : Communication object",
+        #                        "SDO Index 0x2000 - 0x5fff : Manufacturer specific",
+        #                        "SDO Index 0x6000 - 0x9fff : Profile specific",
+        #                        "SDO Index 0xa000 - 0xffff : Reserved",
+        #                        "All SDO Object"]
 
         self.DeleteAllPages()
 
@@ -514,18 +496,6 @@ class SDONoteBook(wx.Notebook):
             self.Data = self.Controler.CommonMethod.SaveSDOData[count]
             self.Win = SlaveSDOTable(self, self.Data)
             self.AddPage(self.Win, txt)
-
-    def OnPageChanged(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
-
-    def OnPageChanging(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
 
 
 # -------------------------------------------------------------------------------
@@ -734,21 +704,6 @@ class PDOChoicebook(wx.Choicebook):
         self.AddPage(RxWin, "RxPDO")
         self.AddPage(TxWin, "TxPDO")
 
-        self.Bind(wx.EVT_CHOICEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Bind(wx.EVT_CHOICEBOOK_PAGE_CHANGING, self.OnPageChanging)
-
-    def OnPageChanged(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
-
-    def OnPageChanging(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
-
 
 # -------------------------------------------------------------------------------
 #                    For PDO Notebook (divide PDO index)
@@ -790,21 +745,6 @@ class PDONoteBook(wx.Notebook):
             win = PDOEntryTable(self, pdo_info, pdo_entry, count)
             self.AddPage(win, txt)
             count += 1
-
-        self.Bind(wx.EVT_CHOICEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Bind(wx.EVT_CHOICEBOOK_PAGE_CHANGING, self.OnPageChanging)
-
-    def OnPageChanged(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
-
-    def OnPageChanging(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
 
 
 # -------------------------------------------------------------------------------
@@ -965,7 +905,7 @@ class SlaveSiiSmartView(wx.Panel):
         # Check whether beremiz connected or not, and whether status is "Started" or not.
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(False)
         if check_connect_flag:
-            status, count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
+            status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
             if status is not "Started":
                 dialog = wx.FileDialog(self, _("Choose a binary file"), os.getcwd(), "",  _("bin files (*.bin)|*.bin"), wx.OPEN)
 
@@ -1334,7 +1274,7 @@ class HexView(wx.Panel):
         # and whether status is "Started" or not.
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(False)
         if check_connect_flag:
-            status, count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
+            status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
             if status is not "Started":
                 self.Controler.CommonMethod.SiiWrite(self.SiiBinary)
                 self.Controler.CommonMethod.Rescan()
@@ -1830,29 +1770,15 @@ class RegisterNotebook(wx.Notebook):
 
         # Initialize pages
         self.RegPage = []
-        for iter in range(4):
+        pages = 4
+        for dummy in range(pages):
             self.RegPage.append(None)
 
-        for index in range(4):
+        for index in range(pages):
             self.RegPage[index] = RegisterNotebookPanel(self, self.Controler,
                                                         parent.MainRow[index], parent.MainCol)
             self.AddPage(self.RegPage[index],
                          "0x"+"{:0>4x}".format(index*1024)+" - 0x"+"{:0>4x}".format((index+1)*1024-1))
-
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.OnPageChanging)
-
-    def OnPageChanged(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
-
-    def OnPageChanging(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
 
 
 # -------------------------------------------------------------------------------
