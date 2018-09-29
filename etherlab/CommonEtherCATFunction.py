@@ -199,11 +199,11 @@ class _CommonSlave:
         master_state = {}
         # parse the reslut
         for each_line in return_val.splitlines():
-            if len(each_line) > 0 :
+            if len(each_line) > 0:
                 chunks = each_line.strip().split(':', 1)
                 key = chunks[0]
                 value = []
-                if len(chunks) > 1 :
+                if len(chunks) > 1:
                     value = chunks[1].split()
                 if '(attached)' in value:
                     value.remove('(attached)')
@@ -290,7 +290,7 @@ class _CommonSlave:
         self.ClearDataSet()
 
         # if 'device' object is valid, call SavePDOData() to parse PDO data
-        if device is not None :
+        if device is not None:
             self.SavePDOData(device)
 
     def SavePDOData(self, device):
@@ -316,18 +316,18 @@ class _CommonSlave:
                 index = ExtractHexDecValue(entry.getIndex().getcontent())
                 subindex = ExtractHexDecValue(entry.getSubIndex())
                 # if entry name exists, save entry data
-                if ExtractName(entry.getName()) is not None :
+                if ExtractName(entry.getName()) is not None:
                     entry_infos = {
-                                "entry_index" : index,
-                                "subindex" : subindex,
-                                "name" : ExtractName(entry.getName()),
-                                "bitlen" : entry.getBitLen(),
-                                "type" : entry.getDataType().getcontent()
+                                "entry_index": index,
+                                "subindex": subindex,
+                                "name": ExtractName(entry.getName()),
+                                "bitlen": entry.getBitLen(),
+                                "type": entry.getDataType().getcontent()
                                     }
                     self.TxPDOInfo.append(entry_infos)
                     count += 1
 
-            categorys = {"pdo_index" : pdo_index, "name" : pdo_name, "number_of_entry" : count}
+            categorys = {"pdo_index": pdo_index, "name": pdo_name, "number_of_entry": count}
             self.TxPDOCategory.append(categorys)
 
         # Parsing RxPDO entries
@@ -346,18 +346,18 @@ class _CommonSlave:
                 index = ExtractHexDecValue(entry.getIndex().getcontent())
                 subindex = ExtractHexDecValue(entry.getSubIndex())
                 # if entry name exists, save entry data
-                if ExtractName(entry.getName()) is not None :
+                if ExtractName(entry.getName()) is not None:
                     entry_infos = {
-                                "entry_index" : index,
-                                "subindex" : subindex,
-                                "name" : ExtractName(entry.getName()),
-                                "bitlen" : str(entry.getBitLen()),
-                                "type" : entry.getDataType().getcontent()
+                                "entry_index": index,
+                                "subindex": subindex,
+                                "name": ExtractName(entry.getName()),
+                                "bitlen": str(entry.getBitLen()),
+                                "type": entry.getDataType().getcontent()
                                     }
                     self.RxPDOInfo.append(entry_infos)
                     count += 1
 
-            categorys = {"pdo_index" : pdo_index, "name" : pdo_name, "number_of_entry" : count}
+            categorys = {"pdo_index": pdo_index, "name": pdo_name, "number_of_entry": count}
             self.RxPDOCategory.append(categorys)
 
     def GetTxPDOCategory(self):
@@ -601,7 +601,7 @@ class _CommonSlave:
 
         hexview_table_col = 17
 
-        for index in range(0, len(binary)) :
+        for index in range(0, len(binary)):
             if len(binary[index]) != 1:
                 break
             else:
@@ -617,7 +617,7 @@ class _CommonSlave:
                 else:
                     row_text = row_text + "."
 
-                if index != 0 :
+                if index != 0:
                     if len(row_code) == (hexview_table_col - 1):
                         row_code.append(row_text)
                         hex_code.append(row_code)
@@ -785,7 +785,7 @@ class _CommonSlave:
             # get supported mailbox protocols for EEPROM offset 0x0038-0x0039;
             data = 0
             mb = device.getMailbox()
-            if mb is not None :
+            if mb is not None:
                 for bit, mbprot in enumerate(mailbox_protocols):
                     if getattr(mb, "get%s" % mbprot)() is not None:
                         data += 1 << bit
@@ -1179,7 +1179,7 @@ class _CommonSlave:
         coe_details = 0
         mb = device.getMailbox()
         coe_details = 1  # sdo enabled
-        if mb is not None :
+        if mb is not None:
             coe = mb.getCoE()
             if coe is not None:
                 for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
@@ -1208,9 +1208,9 @@ class _CommonSlave:
             eeprom.append("00")
         #  DS402Channels; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>: DS402Channels
         ds402ch = False
-        if mb is not None :
+        if mb is not None:
             coe = mb.getCoE()
-            if coe is not None :
+            if coe is not None:
                 ds402ch = coe.getDS402Channels()
         eeprom.append("01" if ds402ch in [True, 1] else "00")
 
@@ -1569,16 +1569,16 @@ class _CommonSlave:
             # Command example : "ethercat xml -p 0"
             error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val=None)
             number_of_lines = return_val.split("\n")
-            if len(number_of_lines) <= 2 :  # No slave connected to the master controller
-                if not cyclic_flag :
+            if len(number_of_lines) <= 2:  # No slave connected to the master controller
+                if not cyclic_flag:
                     self.CreateErrorDialog('No connected slaves')
                 return False
 
-            elif len(number_of_lines) > 2 :
+            elif len(number_of_lines) > 2:
                 return True
         else:
             # The master controller is not connected to Beremiz host
-            if not cyclic_flag :
+            if not cyclic_flag:
                 self.CreateErrorDialog('PLC not connected!')
             return False
 

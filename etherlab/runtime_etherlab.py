@@ -44,7 +44,7 @@ def SDOThreadProc(*params):
         Result = res == 0
 
     SDOAnswered()
-    if res != 0 :
+    if res != 0:
         PLCObject.LogMessage(
             LogLevelsDict["WARNING"],
             "%s : %s" % (command, output))
@@ -88,9 +88,9 @@ def KMSGPollThreadProc():
     while not StopKMSGThread:
         bytes_to_read = klog(3, s, len(s)-1)
         log = s.value[:bytes_to_read-1]
-        if last :
+        if last:
             log = log.rpartition(last)[2]
-        if log :
+        if log:
             last = log.rpartition('\n')[2]
             for lvl, msg in re.findall(
                             r'<(\d)>\[\s*\d*\.\d*\]\s*(EtherCAT\s*.*)$',

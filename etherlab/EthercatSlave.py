@@ -21,13 +21,13 @@ from CommonEtherCATFunction import _CommonSlave
 # ------------------------------------------
 
 
-TYPECONVERSION = {"BOOL" : "X", "SINT" : "B", "INT" : "W", "DINT" : "D", "LINT" : "L",
-    "USINT" : "B", "UINT" : "W", "UDINT" : "D", "ULINT" : "L",
-    "BYTE" : "B", "WORD" : "W", "DWORD" : "D", "LWORD" : "L"}
+TYPECONVERSION = {"BOOL": "X", "SINT": "B", "INT": "W", "DINT": "D", "LINT": "L",
+    "USINT": "B", "UINT": "W", "UDINT": "D", "ULINT": "L",
+    "BYTE": "B", "WORD": "W", "DWORD": "D", "LWORD": "L"}
 
-DATATYPECONVERSION = {"BOOL" : "BIT", "SINT" : "S8", "INT" : "S16", "DINT" : "S32", "LINT" : "S64",
-    "USINT" : "U8", "UINT" : "U16", "UDINT" : "U32", "ULINT" : "U64",
-    "BYTE" : "U8", "WORD" : "U16", "DWORD" : "U32", "LWORD" : "U64"}
+DATATYPECONVERSION = {"BOOL": "BIT", "SINT": "S8", "INT": "S16", "DINT": "S32", "LINT": "S64",
+    "USINT": "U8", "UINT": "U16", "UDINT": "U32", "ULINT": "U64",
+    "BYTE": "U8", "WORD": "U16", "DWORD": "U32", "LWORD": "U64"}
 
 VARCLASSCONVERSION = {"T": LOCATION_VAR_INPUT, "R": LOCATION_VAR_OUTPUT, "RT": LOCATION_VAR_MEMORY}
 

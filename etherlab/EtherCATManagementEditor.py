@@ -25,6 +25,7 @@ import wx.grid as gridlib
 
 # ------------ for register management ---------------
 from xml.dom import minidom
+from util.TranslationCatalogs import NoTranslate
 # -------------------------------------------------------------
 
 
@@ -33,7 +34,7 @@ def GetSyncManagersTableColnames():
     """
     Returns column names of SyncManager Table in Slave state panel.
     """
-    _ = lambda x : x
+    _ = NoTranslate
     return ["#", _("Name"), _("Start Address"), _("Default Size"), _("Control Byte"), _("Enable")]
 
 
@@ -117,13 +118,13 @@ class SlaveStatePanelClass(wx.Panel):
 
         # iniitalize BoxSizer and FlexGridSizer
         self.SizerDic = {
-            "SlaveState_main_sizer" : wx.BoxSizer(wx.VERTICAL),
-            "SlaveState_inner_main_sizer" : wx.FlexGridSizer(cols=1, hgap=50, rows=3, vgap=10),
-            "SlaveInfosDetailsInnerSizer" : wx.FlexGridSizer(cols=4, hgap=10, rows=2, vgap=10),
-            "SyncManagerInnerSizer" : wx.FlexGridSizer(cols=1, hgap=5, rows=1, vgap=5),
-            "SlaveState_sizer" : wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=10),
-            "SlaveState_up_sizer" : wx.FlexGridSizer(cols=4, hgap=10, rows=2, vgap=10),
-            "SlaveState_down_sizer" : wx.FlexGridSizer(cols=2, hgap=10, rows=1, vgap=10)}
+            "SlaveState_main_sizer": wx.BoxSizer(wx.VERTICAL),
+            "SlaveState_inner_main_sizer": wx.FlexGridSizer(cols=1, hgap=50, rows=3, vgap=10),
+            "SlaveInfosDetailsInnerSizer": wx.FlexGridSizer(cols=4, hgap=10, rows=2, vgap=10),
+            "SyncManagerInnerSizer": wx.FlexGridSizer(cols=1, hgap=5, rows=1, vgap=5),
+            "SlaveState_sizer": wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=10),
+            "SlaveState_up_sizer": wx.FlexGridSizer(cols=4, hgap=10, rows=2, vgap=10),
+            "SlaveState_down_sizer": wx.FlexGridSizer(cols=2, hgap=10, rows=1, vgap=10)}
 
         # initialize StaticBox and StaticBoxSizer
         for box_name, box_label in [
@@ -150,18 +151,20 @@ class SlaveStatePanelClass(wx.Panel):
         self.SizerDic["SyncManagerInnerSizer"].Add(self.SyncManagersGrid)
         self.SizerDic["SyncManagerBox"].Add(self.SizerDic["SyncManagerInnerSizer"])
 
-        for button_name, button_id, button_label, button_tooltipstring, event_method, sub_item in [
-                ("InitButton",   0, "INIT", "State Transition to \"Init\" State",     self.OnButtonClick, []),
-                ("PreOPButton",  1, "PREOP", "State Transition to \"PreOP\" State",   self.OnButtonClick, [
-                        ("TargetStateLabel", "Target State:" , "TargetState")]),
-                ("SafeOPButton", 2, "SAFEOP", "State Transition to \"SafeOP\" State", self.OnButtonClick, []),
-                ("OPButton",     3, "OP",  "State Transition to \"OP\" State",        self.OnButtonClick, [
-                        ("CurrentStateLabel", "Current State:", "CurrentState")])]:
+        buttons = [
+            ("InitButton",   0, "INIT", "State Transition to \"Init\" State",     self.OnButtonClick, []),
+            ("PreOPButton",  1, "PREOP", "State Transition to \"PreOP\" State",   self.OnButtonClick, [
+                ("TargetStateLabel", "Target State:", "TargetState")]),
+            ("SafeOPButton", 2, "SAFEOP", "State Transition to \"SafeOP\" State", self.OnButtonClick, []),
+            ("OPButton",     3, "OP",  "State Transition to \"OP\" State",        self.OnButtonClick, [
+                ("CurrentStateLabel", "Current State:", "CurrentState")])
+        ]
+        for button_name, button_id, button_label, button_tooltipstring, event_method, sub_item in buttons:
             self.ButtonDic[button_name] = wx.Button(self, id=button_id, label=_(button_label))
             self.ButtonDic[button_name].Bind(wx.EVT_BUTTON, event_method)
             self.ButtonDic[button_name].SetToolTipString(button_tooltipstring)
             self.SizerDic["SlaveState_up_sizer"].Add(self.ButtonDic[button_name])
-            for statictext_name, statictext_label, textctrl_name in sub_item :
+            for statictext_name, statictext_label, textctrl_name in sub_item:
                 self.StaticTextDic[statictext_name] = wx.StaticText(self, label=_(statictext_label))
                 self.TextCtrlDic[textctrl_name] = wx.TextCtrl(self, size=wx.DefaultSize, style=wx.TE_READONLY)
                 self.SizerDic["SlaveState_up_sizer"].AddMany([self.StaticTextDic[statictext_name],
@@ -241,23 +244,23 @@ class SlaveStatePanelClass(wx.Panel):
         @param event : wx.EVT_BUTTON object
         """
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(False)
-        if check_connect_flag :
+        if check_connect_flag:
             state_dic = ["INIT", "PREOP", "SAFEOP", "OP"]
 
             # If target state is one of {INIT, PREOP, SAFEOP}, request slave state transition immediately.
-            if event.GetId() < 3 :
+            if event.GetId() < 3:
                 self.Controler.CommonMethod.RequestSlaveState(state_dic[event.GetId()])
                 self.TextCtrlDic["TargetState"].SetValue(state_dic[event.GetId()])
 
             # If target state is OP, first check "PLC status".
             #  (1) If current PLC status is "Started", then request slave state transition
             #  (2) Otherwise, show error message and return
-            else :
+            else:
                 status, count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
-                if status == "Started" :
+                if status == "Started":
                     self.Controler.CommonMethod.RequestSlaveState("OP")
                     self.TextCtrlDic["TargetState"].SetValue("OP")
-                else :
+                else:
                     self.Controler.CommonMethod.CreateErrorDialog("PLC is Not Started")
 
     def GetCurrentState(self, event):
@@ -269,7 +272,7 @@ class SlaveStatePanelClass(wx.Panel):
         if check_connect_flag:
             returnVal = self.Controler.CommonMethod.GetSlaveStateFromSlave()
             line = returnVal.split("\n")
-            try :
+            try:
                 self.SetCurrentState(line[self.Controler.GetSlavePos()])
             except Exception:
                 pass
@@ -280,7 +283,7 @@ class SlaveStatePanelClass(wx.Panel):
         @param line : result of "ethercat slaves" command
         """
         state_array = ["INIT", "PREOP", "SAFEOP", "OP"]
-        try :
+        try:
             # parse the execution result of  "ethercat slaves" command
             # Result example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
             token = line.split("  ")
@@ -359,7 +362,7 @@ class SDOPanelClass(wx.Panel):
             # SDOFlag is "False", user click "Cancel" button
             self.SDOFlag = self.SDOParser()
 
-            if self.SDOFlag :
+            if self.SDOFlag:
                 self.CallSDONoteBook.CreateNoteBook()
                 self.Refresh()
 
@@ -389,7 +392,7 @@ class SDOPanelClass(wx.Panel):
             if len(line_token[2]) == 0:
                 title_name = line_token[1]
             # else case : 0x1000:00,r-r-r-,uint32,32 bit,"Device type",0x00020192, 131474
-            else :
+            else:
                 # line_token = ['0x1000:00,r-r-r-,uint32,32 bit,', 'Device type', ',0x00020192, 131474']
                 token_head, name, token_tail = line_token
 
@@ -401,7 +404,7 @@ class SDOPanelClass(wx.Panel):
 
                 # token_tail = ['', '0x00020192', '131474']
                 token_tail = token_tail.split(",")
-                try :
+                try:
                     empty, hex_val, dec_val = token_tail
 
                 # SDO data is not return "dec value"
@@ -425,7 +428,7 @@ class SDOPanelClass(wx.Panel):
 
                 category_divide_value = [0x1000, 0x2000, 0x6000, 0xa000, 0xffff]
 
-                for count in range(len(category_divide_value)) :
+                for count in range(len(category_divide_value)):
                     if int(idx, 0) < category_divide_value[count]:
                         self.Controler.CommonMethod.SaveSDOData[count].append(self.Data)
                         break
@@ -457,7 +460,7 @@ class SDOPanelClass(wx.Panel):
         result = check_string
         for i in range(0, len(check_string)):
             # string.isalnum() is check whether string is alphanumeric or not
-            if check_string[len(check_string)-1-i:len(check_string)-i] in allow_range :
+            if check_string[len(check_string)-1-i:len(check_string)-i] in allow_range:
                 result = check_string[:len(check_string) - i]
                 break
         return result
@@ -540,9 +543,9 @@ class SlaveSDOTable(wx.grid.Grid):
         self.Controler = parent.Controler
         self.parent = parent
         self.SDOFlag = True
-        if data is None :
+        if data is None:
             self.SDOs = []
-        else :
+        else:
             self.SDOs = data
 
         self.CreateGrid(len(self.SDOs), 8)
@@ -583,7 +586,7 @@ class SlaveSDOTable(wx.grid.Grid):
             for col_idx in range(len(self.SDOs[row_idx])):
                 self.SetCellValue(row_idx, col_idx, self.SDOs[row_idx][sdo_list[col_idx]])
                 self.SetReadOnly(row_idx, col_idx, True)
-                if col_idx < 5 :
+                if col_idx < 5:
                     self.SetCellAlignment(row_idx, col_idx, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 
     def CheckSDODataAccess(self, row):
@@ -598,13 +601,13 @@ class SlaveSDOTable(wx.grid.Grid):
         """
         write_flag = False
         check = self.SDOs[row]['access']
-        if check[1:2] == 'w' :
+        if check[1:2] == 'w':
             self.Controler.CommonMethod.Check_PREOP = True
             write_flag = True
-        if check[3:4] == 'w' :
+        if check[3:4] == 'w':
             self.Controler.CommonMethod.Check_SAFEOP = True
             write_flag = True
-        if check[5:] == 'w' :
+        if check[5:] == 'w':
             self.Controler.CommonMethod.Check_OP = True
             write_flag = True
 
@@ -619,11 +622,11 @@ class SlaveSDOTable(wx.grid.Grid):
         """
         # Example of 'state' parameter : "0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)"
         state = state[self.Controler.GetSlavePos()].split("  ")[2]
-        if state == "PREOP" and self.Controler.CommonMethod.Check_PREOP :
+        if state == "PREOP" and self.Controler.CommonMethod.Check_PREOP:
             return True
-        elif state == "SAFEOP" and self.Controler.CommonMethod.Check_SAFEOP :
+        elif state == "SAFEOP" and self.Controler.CommonMethod.Check_SAFEOP:
             return True
-        elif state == "OP" and self.Controler.CommonMethod.Check_OP :
+        elif state == "OP" and self.Controler.CommonMethod.Check_OP:
             return True
 
         return False
@@ -646,7 +649,7 @@ class SlaveSDOTable(wx.grid.Grid):
         self.ClearStateFlag()
 
         # CheckSDODataAccess is checking that OD(Object Dictionary) has "w"
-        if event.GetCol() == 7 and self.CheckSDODataAccess(event.GetRow()) :
+        if event.GetCol() == 7 and self.CheckSDODataAccess(event.GetRow()):
             dlg = wx.TextEntryDialog (self, "Enter hex or dec value (if enter dec value, it automatically conversed hex value)",
                                       "SDOModifyDialog", style=wx.OK | wx.CANCEL)
 
@@ -654,15 +657,15 @@ class SlaveSDOTable(wx.grid.Grid):
             dlg.SetValue(start_value)
 
             if dlg.ShowModal() == wx.ID_OK:
-                try :
+                try:
                     int(dlg.GetValue(), 0)
                     # check "Access" field
-                    if self.DecideSDODownload(self.Controler.CommonMethod.SlaveState[self.Controler.GetSlavePos()]) :
+                    if self.DecideSDODownload(self.Controler.CommonMethod.SlaveState[self.Controler.GetSlavePos()]):
                         # Request "SDODownload"
                         self.Controler.CommonMethod.SDODownload(self.SDOs[event.GetRow()]['type'], self.SDOs[event.GetRow()]['idx'],
                                                    self.SDOs[event.GetRow()]['subIdx'], dlg.GetValue())
                         self.SetCellValue(event.GetRow(), event.GetCol(), hex(int(dlg.GetValue(), 0)))
-                    else :
+                    else:
                         self.Controler.CommonMethod.CreateErrorDialog('You cannot SDO download this state')
                 # Error occured process of "int(variable)"
                 # User input is not hex, dec value
@@ -758,19 +761,19 @@ class PDONoteBook(wx.Notebook):
 
         self.Controler.CommonMethod.RequestPDOInfo()
 
-        if name == "Tx" :
+        if name == "Tx":
             # obtain pdo_info and pdo_entry
             # pdo_info include (PDO index, name, number of entry)
             pdo_info = self.Controler.CommonMethod.GetTxPDOCategory()
             pdo_entry = self.Controler.CommonMethod.GetTxPDOInfo()
-            for tmp in pdo_info :
+            for tmp in pdo_info:
                 title = str(hex(tmp['pdo_index']))
                 page_texts.append(title)
         # RX PDO case
-        else :
+        else:
             pdo_info = self.Controler.CommonMethod.GetRxPDOCategory()
             pdo_entry = self.Controler.CommonMethod.GetRxPDOInfo()
-            for tmp in pdo_info :
+            for tmp in pdo_info:
                 title = str(hex(tmp['pdo_index']))
                 page_texts.append(title)
 
@@ -846,7 +849,7 @@ class PDOEntryTable(wx.grid.Grid):
         """
         list_index = 0
         # number of entry
-        for i in range(self.Count + 1) :
+        for i in range(self.Count + 1):
             list_index += self.PDOInfo[i]['number_of_entry']
 
         start_value = list_index - self.PDOInfo[self.Count]['number_of_entry']
@@ -855,13 +858,13 @@ class PDOEntryTable(wx.grid.Grid):
         for row_idx in range(self.PDOInfo[self.Count]['number_of_entry']):
             for col_idx in range(len(self.PDOEntry[row_idx])):
                 # entry index is converted hex value.
-                if col_idx == 0 :
+                if col_idx == 0:
                     self.SetCellValue(row_idx, col_idx, hex(self.PDOEntry[start_value][pdo_list[col_idx]]))
-                else :
+                else:
                     self.SetCellValue(row_idx, col_idx, str(self.PDOEntry[start_value][pdo_list[col_idx]]))
-                if col_idx != 4 :
+                if col_idx != 4:
                     self.SetCellAlignment(row_idx, col_idx, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
-                else :
+                else:
                     self.SetCellAlignment(row_idx, col_idx, wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
                 self.SetReadOnly(row_idx, col_idx, True)
                 self.SetRowSize(row_idx, 25)
@@ -906,19 +909,19 @@ class SlaveSiiSmartView(wx.Panel):
         self.Controler = controler
 
         self.PDIType = {
-            0  : ['none', '00000000'],
-            4  : ['Digital I/O', '00000100'],
-            5  : ['SPI Slave', '00000101'],
-            7  : ['EtherCAT Bridge (port3)', '00000111'],
-            8  : ['uC async. 16bit', '00001000'],
-            9  : ['uC async. 8bit', '00001001'],
-            10 : ['uC sync. 16bit', '00001010'],
-            11 : ['uC sync. 8bit', '00001011'],
-            16 : ['32 Digtal Input and 0 Digital Output', '00010000'],
-            17 : ['24 Digtal Input and 8 Digital Output', '00010001'],
-            18 : ['16 Digtal Input and 16 Digital Output', '00010010'],
-            19 : ['8 Digtal Input and 24 Digital Output', '00010011'],
-            20 : ['0 Digtal Input and 32 Digital Output', '00010100'],
+            0: ['none', '00000000'],
+            4: ['Digital I/O', '00000100'],
+            5: ['SPI Slave', '00000101'],
+            7: ['EtherCAT Bridge (port3)', '00000111'],
+            8: ['uC async. 16bit', '00001000'],
+            9: ['uC async. 8bit', '00001001'],
+            10: ['uC sync. 16bit', '00001010'],
+            11: ['uC sync. 8bit', '00001011'],
+            16: ['32 Digtal Input and 0 Digital Output', '00010000'],
+            17: ['24 Digtal Input and 8 Digital Output', '00010001'],
+            18: ['16 Digtal Input and 16 Digital Output', '00010010'],
+            19: ['8 Digtal Input and 24 Digital Output', '00010011'],
+            20: ['0 Digtal Input and 32 Digital Output', '00010100'],
             128: ['On-chip bus', '11111111']
         }
 
@@ -1051,33 +1054,33 @@ class SlaveSiiSmartView(wx.Panel):
         """
         # sii_dict = { Parameter : (WordAddress, WordSize) }
         sii_dict = {
-            'PDIControl' :                          ('0', 1),
-            'PDIConfiguration' :                    ('1', 1),
-            'PulseLengthOfSYNCSignals' :            ('2', 1),
-            'ExtendedPDIConfiguration' :            ('3', 1),
-            'ConfiguredStationAlias' :              ('4', 1),
-            'Checksum' :                            ('7', 1),
-            'VendorID' :                            ('8', 2),
-            'ProductCode' :                         ('a', 2),
-            'RevisionNumber' :                      ('c', 2),
-            'SerialNumber' :                        ('e', 2),
-            'Execution Delay' :                     ('10', 1),
-            'Port0Delay' :                          ('11', 1),
-            'Port1Delay' :                          ('12', 1),
-            'BootstrapReceiveMailboxOffset' :       ('14', 1),
-            'BootstrapReceiveMailboxSize' :         ('15', 1),
-            'BootstrapSendMailboxOffset' :          ('16', 1),
-            'BootstrapSendMailboxSize' :            ('17', 1),
-            'StandardReceiveMailboxOffset' :        ('18', 1),
-            'StandardReceiveMailboxSize' :          ('19', 1),
-            'StandardSendMailboxOffset' :           ('1a', 1),
-            'StandardSendMailboxSize' :             ('1b', 1),
-            'MailboxProtocol' :                     ('1c', 1),
-            'Size' :                                ('3e', 1),
-            'Version' :                             ('3f', 1),
-            'First Category Type/Vendor Specific' : ('40', 1),
-            'Following Category Word Size' :        ('41', 1),
-            'Category Data' :                       ('42', 1),
+            'PDIControl':                          ('0', 1),
+            'PDIConfiguration':                    ('1', 1),
+            'PulseLengthOfSYNCSignals':            ('2', 1),
+            'ExtendedPDIConfiguration':            ('3', 1),
+            'ConfiguredStationAlias':              ('4', 1),
+            'Checksum':                            ('7', 1),
+            'VendorID':                            ('8', 2),
+            'ProductCode':                         ('a', 2),
+            'RevisionNumber':                      ('c', 2),
+            'SerialNumber':                        ('e', 2),
+            'Execution Delay':                     ('10', 1),
+            'Port0Delay':                          ('11', 1),
+            'Port1Delay':                          ('12', 1),
+            'BootstrapReceiveMailboxOffset':       ('14', 1),
+            'BootstrapReceiveMailboxSize':         ('15', 1),
+            'BootstrapSendMailboxOffset':          ('16', 1),
+            'BootstrapSendMailboxSize':            ('17', 1),
+            'StandardReceiveMailboxOffset':        ('18', 1),
+            'StandardReceiveMailboxSize':          ('19', 1),
+            'StandardSendMailboxOffset':           ('1a', 1),
+            'StandardSendMailboxSize':             ('1b', 1),
+            'MailboxProtocol':                     ('1c', 1),
+            'Size':                                ('3e', 1),
+            'Version':                             ('3f', 1),
+            'First Category Type/Vendor Specific': ('40', 1),
+            'Following Category Word Size':        ('41', 1),
+            'Category Data':                       ('42', 1),
         }
 
         # Config Data: EEPROM Size, PDI Type, Device Emulation
@@ -1258,8 +1261,8 @@ class HexView(wx.Panel):
         self.HexRow = 8
         self.HexCol = 17
 
-        self.HexViewSizer = {"view" : wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=10),
-                             "siiButton" : wx.BoxSizer()}
+        self.HexViewSizer = {"view": wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=10),
+                             "siiButton": wx.BoxSizer()}
         self.HexViewButton = {}
 
         for key, evt_handler in [("Sii Upload", self.OnButtonSiiUpload),
@@ -1728,7 +1731,7 @@ class RegisterAccessPanel(wx.Panel):
             # set data into UI
             if self.CompactFlag:
                 self.ToggleCompactViewCheckbox(True)
-            else :
+            else:
                 for index in range(4):
                     self.RegisterNotebook.RegPage[index].UpdateMainTable(self.MainRow[index], self.MainCol,
                                                                          self.PageRange[index][0], self.PageRange[index][1],
@@ -2121,7 +2124,7 @@ class MasterStatePanelClass(wx.Panel):
         self.TextCtrl = {}
 
         # ----------------------- Main Sizer and Update Button --------------------------------------------
-        self.MasterStateSizer = {"main" : wx.BoxSizer(wx.VERTICAL)}
+        self.MasterStateSizer = {"main": wx.BoxSizer(wx.VERTICAL)}
         for key, attr in [
             ("innerMain",           [1, 10, 2, 10]),
             ("innerTopHalf",        [2, 10, 1, 10]),
@@ -2212,5 +2215,5 @@ class MasterStatePanelClass(wx.Panel):
                             self.TextCtrl[key][index].SetValue(self.MasterState[key][int(index)])
                     else:
                         self.TextCtrl[key].SetValue(self.MasterState[key][0])
-        else :
+        else:
             self.Controler.CommonMethod.CreateErrorDialog('PLC not connected!')
