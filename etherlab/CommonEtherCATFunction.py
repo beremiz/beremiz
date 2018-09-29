@@ -28,7 +28,7 @@ def ExtractHexDecValue(value):
         return int(value.replace("#", "0"), 16)
 
     except Exception:
-        raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
+        raise ValueError("Invalid value for HexDecValue \"%s\"" % value)
 
 
 def ExtractName(names, default=None):
