@@ -13,7 +13,7 @@ import os
 
 import wx
 
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
 from MotionLibrary import Headers, AxisXSD
 from EthercatSlave import _EthercatSlaveCTN, _CommonSlave

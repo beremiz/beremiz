@@ -18,8 +18,7 @@ import wx
 
 from xmlclass import *
 
-from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
-from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from ConfigTreeNode import XSDSchemaErrorMessage
 
 from EthercatSlave import ExtractHexDecValue, ExtractName
 from EthercatMaster import _EthercatCTN
