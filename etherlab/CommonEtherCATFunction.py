@@ -330,7 +330,7 @@ class _CommonSlave(object):
             self.TxPDOCategory.append(categorys)
 
         # Parsing RxPDO entries
-        for pdo, pdo_info in ([(pdo, "Outputs") for pdo in device.getRxPdo()]):
+        for pdo, pdo_info in ([(rxpdo, "Outputs") for rxpdo in device.getRxPdo()]):
             # Save pdo_index, entry, and name of each entry
             pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
             entries = pdo.getEntry()
