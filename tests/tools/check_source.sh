@@ -116,6 +116,7 @@ pep8_checks_selected()
     user_select=$user_select,E228   # E228 missing whitespace around modulo operator
     user_select=$user_select,W293   # W293 blank line contains whitespace
     user_select=$user_select,E302   # E302 expected 2 blank lines, found 1
+    user_select=$user_select,E301   # E301 expected 2 blank lines, found 1
     user_select=$user_select,E261   # E261 at least two spaces before inline comment
     user_select=$user_select,E271   # E271 multiple spaces after keyword
     user_select=$user_select,E231   # E231 missing whitespace after ','
