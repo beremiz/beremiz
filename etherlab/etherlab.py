@@ -311,8 +311,8 @@ for mapping needed location variables
                 for device_type, device_infos in group_infos["devices"]:
                     product_code = ExtractHexDecValue(device_infos.getType().getProductCode())
                     revision_number = ExtractHexDecValue(device_infos.getType().getRevisionNo())
-                    if (product_code == ExtractHexDecValue(module_infos["product_code"]) and
-                        revision_number == ExtractHexDecValue(module_infos["revision_number"])):
+                    if product_code == ExtractHexDecValue(module_infos["product_code"]) and \
+                       revision_number == ExtractHexDecValue(module_infos["revision_number"]):
                         self.cntdevice = device_infos
                         self.cntdeviceType = device_type
                         return device_infos, self.GetModuleExtraParams(vendor, product_code, revision_number)
@@ -342,7 +342,7 @@ for mapping needed location variables
                 else:
                     params_values = {}
                     for (param, param_infos), value in zip(
-                        self.MODULES_EXTRA_PARAMS, row[3:]):
+                            self.MODULES_EXTRA_PARAMS, row[3:]):
                         if value != "":
                             params_values[param] = int(value)
                     self.ModulesExtraParams[
