@@ -200,7 +200,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
 
-        location_str = "_".join(map(lambda x: str(x), current_location))
+        location_str = "_".join(map(str, current_location))
         slave_pos = self.GetSlavePos()
         MCL_headers = Headers
 
@@ -326,7 +326,7 @@ __%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % locals()
         [fieldbus_interface_declaration, fieldbus_interface_definition,
          init_axis_params, extra_variables_retrieve, extra_variables_publish,
          extern_located_variables_declaration, entry_variables,
-         init_entry_variables] = map(lambda l: "\n".join(l), [
+         init_entry_variables] = map("\n".join, [
             fieldbus_interface_declaration, fieldbus_interface_definition,
             init_axis_params, extra_variables_retrieve, extra_variables_publish,
             extern_located_variables_declaration, entry_variables,
