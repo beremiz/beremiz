@@ -75,7 +75,7 @@ def ConfigureVariable(entry_infos, str_completion):
         raise ValueError, _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
 
     if not entry_infos.get("no_decl", False):
-        if entry_infos.has_key("real_var"):
+        if "real_var" in entry_infos:
             str_completion["located_variables_declaration"].append(
                 "IEC_%(var_type)s %(real_var)s;" % entry_infos)
         else:
@@ -87,7 +87,7 @@ def ConfigureVariable(entry_infos, str_completion):
             entry_infos["extra_decl"] = declaration
             str_completion["located_variables_declaration"].append(
                  "IEC_%(var_type)s *%(extra_decl)s = &%(real_var)s;" % entry_infos)
-    elif not entry_infos.has_key("real_var"):
+    elif "real_var" not in entry_infos:
         entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
 
     str_completion["used_pdo_entry_offset_variables_declaration"].append(
@@ -490,7 +490,7 @@ class _EthercatCFileGenerator:
                             else:
                                 raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
 
-                            if not dynamic_pdos.has_key(pdo_type):
+                            if pdo_type not in dynamic_pdos:
                                 raise ValueError, _("No Sync manager defined for %s!") % pdo_type
 
                             ConfigureVariable(entry_infos, str_completion)
