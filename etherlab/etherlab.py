@@ -320,7 +320,7 @@ for mapping needed location variables
         vendor = ExtractHexDecValue(module_infos["vendor"])
         vendor_infos = self.Library.get(vendor)
         if vendor_infos is not None:
-            for group_name, group_infos in vendor_infos["groups"].iteritems():
+            for _group_name, group_infos in vendor_infos["groups"].iteritems():
                 for device_type, device_infos in group_infos["devices"]:
                     product_code = ExtractHexDecValue(device_infos.getType().getProductCode())
                     revision_number = ExtractHexDecValue(device_infos.getType().getRevisionNo())
@@ -354,7 +354,7 @@ for mapping needed location variables
                     has_header = False
                 else:
                     params_values = {}
-                    for (param, param_infos), value in zip(
+                    for (param, _param_infos), value in zip(
                             self.MODULES_EXTRA_PARAMS, row[3:]):
                         if value != "":
                             params_values[param] = int(value)
@@ -364,7 +364,7 @@ for mapping needed location variables
 
     def SaveModulesExtraParams(self):
         csvfile = open(self.GetModulesExtraParamsFilePath(), "wb")
-        extra_params = [param for param, params_infos in self.MODULES_EXTRA_PARAMS]
+        extra_params = [param for param, _params_infos in self.MODULES_EXTRA_PARAMS]
         writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(['Vendor', 'product_code', 'revision_number'] + extra_params)
         for (vendor, product_code, revision_number), module_extra_params in self.ModulesExtraParams.iteritems():

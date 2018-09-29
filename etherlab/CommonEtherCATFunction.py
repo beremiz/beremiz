@@ -195,7 +195,7 @@ class _CommonSlave(object):
         """
 
         # exectute "ethercat master" command
-        error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val=None)
+        _error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val=None)
         master_state = {}
         # parse the reslut
         for each_line in return_val.splitlines():
@@ -220,7 +220,9 @@ class _CommonSlave(object):
         Command example : "ethercat states -p 0 PREOP" (target slave position and target state are given.)
         @param command : target slave state
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_STATE % (self.Controler.GetSlavePos(), command), return_val=None)
+        _error, _return_val = self.Controler.RemoteExec(
+            SLAVE_STATE % (self.Controler.GetSlavePos(), command),
+            return_val=None)
 
     def GetSlaveStateFromSlave(self):
         """
@@ -228,7 +230,7 @@ class _CommonSlave(object):
         (self.SlaveState) for "Slave State"
         return_val example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
         """
-        error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val=None)
+        _error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val=None)
         self.SlaveState = return_val
         return return_val
 
@@ -241,7 +243,7 @@ class _CommonSlave(object):
         Command example : "ethercat sdos -p 0"
         @return return_val : execution results of "ethercat sdos" command (need to be parsed later)
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_SDO % (self.Controler.GetSlavePos()), return_val=None)
+        _error, return_val = self.Controler.RemoteExec(SLAVE_SDO % (self.Controler.GetSlavePos()), return_val=None)
         return return_val
 
     def SDODownload(self, data_type, idx, sub_idx, value):
@@ -253,7 +255,9 @@ class _CommonSlave(object):
         @param sub_idx : subindex of the SDO entry
         @param value : value of SDO entry
         """
-        error, return_val = self.Controler.RemoteExec(SDO_DOWNLOAD % (data_type, self.Controler.GetSlavePos(), idx, sub_idx, value), return_val=None)
+        _error, _return_val = self.Controler.RemoteExec(
+            SDO_DOWNLOAD % (data_type, self.Controler.GetSlavePos(), idx, sub_idx, value),
+            return_val=None)
 
     def BackupSDODataSet(self):
         """
@@ -271,7 +275,7 @@ class _CommonSlave(object):
         """
         Clear the specified SDO entry information.
         """
-        for count in range(6):
+        for dummy in range(6):
             self.SaveSDOData.append([])
 
     # -------------------------------------------------------------------------------
@@ -285,7 +289,7 @@ class _CommonSlave(object):
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
 
         type_infos = slave.getType()
-        device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
+        device, _alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
         # Initialize PDO data set
         self.ClearDataSet()
 
@@ -301,7 +305,7 @@ class _CommonSlave(object):
         @param device : Slave information extracted from ESI XML file
         """
         # Parsing TXPDO entries
-        for pdo, pdo_info in ([(pdo, "Inputs") for pdo in device.getTxPdo()]):
+        for pdo, _pdo_info in ([(pdo, "Inputs") for pdo in device.getTxPdo()]):
             # Save pdo_index, entry, and name of each entry
             pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
             entries = pdo.getEntry()
@@ -331,7 +335,7 @@ class _CommonSlave(object):
             self.TxPDOCategory.append(categorys)
 
         # Parsing RxPDO entries
-        for pdo, pdo_info in ([(rxpdo, "Outputs") for rxpdo in device.getRxPdo()]):
+        for pdo, _pdo_info in ([(rxpdo, "Outputs") for rxpdo in device.getRxPdo()]):
             # Save pdo_index, entry, and name of each entry
             pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
             entries = pdo.getEntry()
@@ -462,7 +466,7 @@ class _CommonSlave(object):
 
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
         type_infos = slave.getType()
-        device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
+        device, _alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
 
         # 'device' represents current slave device selected by user
         if device is not None:
@@ -558,7 +562,7 @@ class _CommonSlave(object):
         Command example : "ethercat sii_read -p 0"
         @return return_val : result of "ethercat sii_read" (binary data)
         """
-        error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val=None)
+        _error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val=None)
         self.SiiData = return_val
         return return_val
 
@@ -569,7 +573,10 @@ class _CommonSlave(object):
         @param binary : EEPROM contents in binary data format
         @return return_val : result of "ethercat sii_write" (If it succeeds, the return value is NULL.)
         """
-        error, return_val = self.Controler.RemoteExec(SII_WRITE % (self.Controler.GetSlavePos()), return_val=None, sii_data=binary)
+        _error, return_val = self.Controler.RemoteExec(
+            SII_WRITE % (self.Controler.GetSlavePos()),
+            return_val=None,
+            sii_data=binary)
         return return_val
 
     def LoadData(self):
@@ -582,7 +589,7 @@ class _CommonSlave(object):
         self.Controler.SiiData = self.BinaryCode
 
         # append zero-filled padding data up to EEPROM size
-        for index in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
+        for dummy in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
             self.BinaryCode = self.BinaryCode + 'ff'.decode('hex')
 
         return self.BinaryCode
@@ -642,7 +649,7 @@ class _CommonSlave(object):
         eeprom_list = []
 
         if direction is 0 or 1:
-            for i in range(length/2):
+            for dummy in range(length/2):
                 if data == "":
                     eeprom_list.append("00")
                 else:
@@ -671,7 +678,7 @@ class _CommonSlave(object):
         # 'device' is the slave device of the current EtherCAT slave plugin
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
         type_infos = slave.getType()
-        device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
+        device, _alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
 
         if device is not None:
             # get ConfigData for EEPROM offset 0x0000-0x000d; <Device>-<Eeprom>-<ConfigData>
@@ -688,7 +695,7 @@ class _CommonSlave(object):
                     crc = (crc << 1) | ((int(segment, 16) >> (7 - i)) & 0x01)
                     if bit:
                         crc ^= 0x07
-            for k in range(8):
+            for dummy in range(8):
                 bit = crc & 0x80
                 crc <<= 1
                 if bit:
@@ -914,7 +921,6 @@ class _CommonSlave(object):
                     grouptypeflag = True
                     break
             if grouptypeflag is False:
-                grouptype = data
                 count += 1
                 self.Strings.append(data)
                 vendor_spec_strings.append(data)
@@ -927,7 +933,7 @@ class _CommonSlave(object):
         #  element2-2; <EtherCATInfo>-<Groups>-<Group>-<Type>
         if grouptypeflag is False:
             if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-                for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
                     for group_type, group_etc in vendor["groups"].iteritems():
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
@@ -939,7 +945,6 @@ class _CommonSlave(object):
                             grouptypeflag = True
                             break
                     if grouptypeflag is False:
-                        grouptype = data
                         count += 1
                         self.Strings.append(data)
                         vendor_spec_strings.append(data)
@@ -952,7 +957,7 @@ class _CommonSlave(object):
 
         #  element3; <EtherCATInfo>-<Descriptions>-<Groups>-<Group>-<Name(LcId is "1033")>
         if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-            for vendorId, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+            for _vendorId, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
                 for group_type, group_etc in vendor["groups"].iteritems():
                     for device_item in group_etc["devices"]:
                         if device == device_item[1]:
@@ -1015,7 +1020,7 @@ class _CommonSlave(object):
         #  element5-2; <EtherCATInfo>-<Descriptions>-<Groups>-<Group>-<Image16x14>
         if imageflag is False:
             if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-                for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
                     for group_type, group_etc in vendor["groups"].iteritems():
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
@@ -1136,7 +1141,7 @@ class _CommonSlave(object):
                         dc_related_elements,
                         input_elements,
                         output_elements]:
-            for iter in range(len(element)/2):
+            for dummy in range(len(element)/2):
                 if element == "":
                     eeprom.append("00")
                 else:
@@ -1155,7 +1160,6 @@ class _CommonSlave(object):
         @return eeprom : "Strings" category EEPROM image data
         """
         eeprom = []
-        data = ""
 
         # category header
         eeprom.append("1e")
@@ -1287,7 +1291,7 @@ class _CommonSlave(object):
             else:
                 eeprom.append("{:0>4x}".format((count)/2)[2:4])
                 eeprom.append("{:0>4x}".format((count)/2)[0:2])
-            for i in range(count):
+            for dummy in range(count):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1331,7 +1335,7 @@ class _CommonSlave(object):
             #  category length
             eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
             eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
-            for i in range(len(data)/2):
+            for dummy in range(len(data)/2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1440,7 +1444,7 @@ class _CommonSlave(object):
             eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
             eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
             data = str(data.lower())
-            for i in range(len(data)/2):
+            for dummy in range(len(data)/2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1514,7 +1518,7 @@ class _CommonSlave(object):
             eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
             eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
             data = str(data.lower())
-            for i in range(len(data)/2):
+            for dummy in range(len(data)/2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1534,7 +1538,9 @@ class _CommonSlave(object):
         @param length : register length
         @return return_val : register data
         """
-        error, return_val = self.Controler.RemoteExec(REG_READ % (self.Controler.GetSlavePos(), offset, length), return_val=None)
+        _error, return_val = self.Controler.RemoteExec(
+            REG_READ % (self.Controler.GetSlavePos(), offset, length),
+            return_val=None)
         return return_val
 
     def RegWrite(self, address, data):
@@ -1545,7 +1551,9 @@ class _CommonSlave(object):
         @param data : data to write
         @return return_val : the execution result of "ethercat reg_write" (for error check)
         """
-        error, return_val = self.Controler.RemoteExec(REG_WRITE % (self.Controler.GetSlavePos(), address, data), return_val=None)
+        _error, return_val = self.Controler.RemoteExec(
+            REG_WRITE % (self.Controler.GetSlavePos(), address, data),
+            return_val=None)
         return return_val
 
     def Rescan(self):
@@ -1553,7 +1561,7 @@ class _CommonSlave(object):
         Synchronize EEPROM data in master controller with the data in slave device after EEPROM write.
         Command example : "ethercat rescan -p 0"
         """
-        error, return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val=None)
+        _error, _return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val=None)
 
     # -------------------------------------------------------------------------------
     #                        Common Use Methods
@@ -1567,7 +1575,7 @@ class _CommonSlave(object):
         if self.Controler.GetCTRoot()._connector is not None:
             # Check connection between the master and the slave.
             # Command example : "ethercat xml -p 0"
-            error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val=None)
+            _error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val=None)
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2:  # No slave connected to the master controller
                 if not cyclic_flag:
