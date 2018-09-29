@@ -1758,7 +1758,7 @@ class RegisterAccessPanel(wx.Panel):
         """
 
         # If "Compact View" Checkbox is True
-        ## 'event' is argument of this method or event of checkbox.
+        # 'event' is argument of this method or event of checkbox.
         if event is True or event.GetEventObject().GetValue():
             self.CompactFlag = True
 
