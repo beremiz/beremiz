@@ -22,11 +22,11 @@ from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATIO
 from ConfigTreeNode import ConfigTreeNode
 from dialogs import BrowseValuesLibraryDialog
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE
-
-from EthercatSlave import _EthercatSlaveCTN, ExtractHexDecValue, GenerateHexDecValue, TYPECONVERSION, VARCLASSCONVERSION, _CommonSlave
-from EthercatCFileGenerator import _EthercatCFileGenerator
-from ConfigEditor import MasterEditor
 from POULibrary import POULibrary
+
+from ConfigEditor import MasterEditor
+from EthercatCFileGenerator import _EthercatCFileGenerator
+from EthercatSlave import _EthercatSlaveCTN, ExtractHexDecValue, GenerateHexDecValue, TYPECONVERSION, VARCLASSCONVERSION, _CommonSlave
 
 try:
     from EthercatCIA402Slave import _EthercatCIA402SlaveCTN
