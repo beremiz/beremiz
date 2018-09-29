@@ -1453,10 +1453,10 @@ class SiiGridTable(wx.grid.Grid):
 class RegisterAccessPanel(wx.Panel):
     def __init__(self, parent, controler):
         """
-	    Constructor
-	    @param parent: EEPROMAccessPanel object
-	    @param controler: _EthercatSlaveCTN class in EthercatSlave.py
-	    """
+        Constructor
+        @param parent: EEPROMAccessPanel object
+        @param controler: _EthercatSlaveCTN class in EthercatSlave.py
+        """
         self.parent = parent
         self.Controler = controler
         self.__init_data()
@@ -1494,8 +1494,8 @@ class RegisterAccessPanel(wx.Panel):
 
     def __init_data(self):
         """
-	    Declare initial data.
-	    """
+        Declare initial data.
+        """
         # flag for compact view
         self.CompactFlag = False
 
@@ -1868,7 +1868,7 @@ class RegisterNotebookPanel(wx.Panel):
         @param parent: RegisterAccessPanel object
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         @param row, col: size of the table
-    	"""
+        """
         wx.Panel.__init__(self, parent, -1)
 
         self.parent = parent
@@ -1898,7 +1898,7 @@ class RegisterNotebookPanel(wx.Panel):
         @param low_index: the lowest index of the page
         @param high_index: the highest index of the page
         @param data: data
-    	"""
+        """
         self.MainTable.Destroy()
         self.MainTable = RegisterMainTable(self, row, col, self.Controler)
         self.Sizer.Detach(self.SubTable)
@@ -1914,7 +1914,7 @@ class RegisterNotebookPanel(wx.Panel):
         It's done by deleting the sub table and creating it again.
         @param row, col: size of the table
         @param data: data
-    	"""
+        """
         self.SubTable.Destroy()
         self.SubTable = RegisterSubTable(self, row, col)
         self.Sizer.Detach(self.MainTable)
@@ -1932,11 +1932,11 @@ class RegisterNotebookPanel(wx.Panel):
 class RegisterMainTable(wx.grid.Grid):
     def __init__(self, parent, row, col, controler):
         """
-	    Constructor
-	    @param parent: RegisterNotebook object
-	    @param row, col: size of the table
-	    @param controler: _EthercatSlaveCTN class in EthercatSlave.py
-	    """
+            Constructor
+            @param parent: RegisterNotebook object
+            @param row, col: size of the table
+            @param controler: _EthercatSlaveCTN class in EthercatSlave.py
+            """
         self.parent = parent
         self.Data = {}
         self.Row = row
@@ -1954,12 +1954,12 @@ class RegisterMainTable(wx.grid.Grid):
 
     def SetValue(self, parent, reg_monitor_data, low_index, high_index):
         """
-	    Set the RegMonitorData into the main table.
-	    @param parent: RegisterNotebook object
-	    @param reg_monitor_data: data
-	    @param low_index: the lowest index of the page
-	    @param high_index: the highest index of the page
-	    """
+            Set the RegMonitorData into the main table.
+            @param parent: RegisterNotebook object
+            @param reg_monitor_data: data
+            @param low_index: the lowest index of the page
+            @param high_index: the highest index of the page
+            """
         self.RegMonitorData = reg_monitor_data
 
         # set label name and size
@@ -1989,9 +1989,9 @@ class RegisterMainTable(wx.grid.Grid):
 
     def OnSelectCell(self, event):
         """
-	    Handles the event of the cell of the main table.
-	    @param event: gridlib object (left click)
-	    """
+            Handles the event of the cell of the main table.
+            @param event: gridlib object (left click)
+            """
         # if reg_monitor_data is 0, it is initialization of register access.
         if self.RegMonitorData == 0:
             event.Skip()
@@ -2033,7 +2033,7 @@ class RegisterMainTable(wx.grid.Grid):
         Handle the event of the cell of the main table.
         Display the window where the user modifies the value of the cell.
         @param event: gridlib object (double click)
-	    """
+            """
         # user can enter a value in case that user double-clicked 'Dec' or 'Hex' value.
         if event.GetCol() == 1 or event.GetCol() == 2:
             dlg = wx.TextEntryDialog(self, "Enter hex(0xnnnn) or dec(n) value",
@@ -2083,10 +2083,10 @@ class RegisterMainTable(wx.grid.Grid):
 class RegisterSubTable(wx.grid.Grid):
     def __init__(self, parent, row, col):
         """
-    	 Constructor
-    	 @param parent: RegisterNotebook object
-    	 @param row, col: size of the table
-    	"""
+         Constructor
+         @param parent: RegisterNotebook object
+         @param row, col: size of the table
+        """
         self.parent = parent
         self.Data = {}
         self.Row = row
@@ -2097,10 +2097,10 @@ class RegisterSubTable(wx.grid.Grid):
 
     def SetValue(self, parent, data):
         """
-	    Set the data into the subtable.
-	    @param parent: RegisterNotebook object
-	    @param data: data
-	    """
+            Set the data into the subtable.
+            @param parent: RegisterNotebook object
+            @param data: data
+            """
         # lset label name and size
         Register_SubTable_Label = [(0, "Bits"), (1, "Name"),
                                    (2, "Value"), (3, "Enum")]
