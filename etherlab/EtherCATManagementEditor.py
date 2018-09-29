@@ -329,7 +329,7 @@ class SDOPanelClass(wx.Panel):
         wx.Panel.__init__(self, parent, -1)
 
         self.DatatypeDescription, self.CommunicationObject, self.ManufacturerSpecific, \
-        self.ProfileSpecific, self.Reserved, self.AllSDOData = range(6)
+            self.ProfileSpecific, self.Reserved, self.AllSDOData = range(6)
 
         self.Controler = controler
 

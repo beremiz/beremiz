@@ -157,27 +157,36 @@ def SortGroupItems(group):
 class ModulesLibrary:
 
     MODULES_EXTRA_PARAMS = [
-        ("pdo_alignment", {
-            "column_label": _("PDO alignment"),
-            "column_size": 150,
-            "default": 8,
-            "description": _(
-"Minimal size in bits between 2 pdo entries")}),
-        ("max_pdo_size", {
-            "column_label": _("Max entries by PDO"),
-            "column_size": 150,
-            "default": 255,
-            "description": _(
-"""Maximal number of entries mapped in a PDO
-including empty entries used for PDO alignment""")}),
-        ("add_pdo", {
-            "column_label": _("Creating new PDO"),
-            "column_size": 150,
-            "default": 0,
-            "description": _(
-"""Adding a PDO not defined in default configuration
+        (
+            "pdo_alignment",
+            {
+                "column_label": _("PDO alignment"),
+                "column_size": 150,
+                "default": 8,
+                "description": _("Minimal size in bits between 2 pdo entries")
+            }
+        ),
+        (
+            "max_pdo_size",
+            {
+                "column_label": _("Max entries by PDO"),
+                "column_size": 150,
+                "default": 255,
+                "description": _("""Maximal number of entries mapped in a PDO
+including empty entries used for PDO alignment""")
+            }
+        ),
+        (
+            "add_pdo",
+            {
+                "column_label": _("Creating new PDO"),
+                "column_size": 150,
+                "default": 0,
+                "description": _("""Adding a PDO not defined in default configuration
 for mapping needed location variables
-(1 if possible)""")})
+(1 if possible)""")
+            }
+        )
     ]
 
     def __init__(self, path, parent_library=None):

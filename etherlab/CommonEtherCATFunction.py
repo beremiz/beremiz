@@ -150,7 +150,7 @@ class _CommonSlave:
 
     # category of SDO data
     DatatypeDescription, CommunicationObject, ManufacturerSpecific, \
-    ProfileSpecific, Reserved, AllSDOData = range(6)
+        ProfileSpecific, Reserved, AllSDOData = range(6)
 
     # store the execution result of "ethercat sdos" command into SaveSDOData.
     SaveSDOData = []
@@ -1220,10 +1220,10 @@ class _CommonSlave:
         en_safeop = False
         en_lrw = False
         if device.getType().getTcCfgModeSafeOp() is True \
-        or device.getType().getTcCfgModeSafeOp() == 1:
+           or device.getType().getTcCfgModeSafeOp() == 1:
             en_safeop = True
         if device.getType().getUseLrdLwr() is True \
-        or device.getType().getUseLrdLwr() == 1:
+           or device.getType().getUseLrdLwr() == 1:
             en_lrw = True
 
         flags = "0b"+"000000"+str(int(en_lrw))+str(int(en_safeop))
