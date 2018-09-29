@@ -1,9 +1,12 @@
 import os
+import signal
 import subprocess
 import ctypes
 from threading import Thread
 import time
 import re
+
+import runtime.PLCObject as PLCObject
 from runtime.loglevels import LogLevelsDict
 
 SDOAnswered = PLCBinary.SDOAnswered
@@ -111,7 +114,7 @@ def _runtime_etherlab_init():
 def _runtime_etherlab_cleanup():
     global KMSGPollThread, StopKMSGThread, SDOProc, SDOThread
     try:
-        os.kill(SDOProc.pid, SIGTERM)
+        os.kill(SDOProc.pid, signal.SIGTERM)
     except Exception:
         pass
     SDOThread = None
