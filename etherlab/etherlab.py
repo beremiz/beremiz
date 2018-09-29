@@ -32,7 +32,10 @@ ScriptDirectory = os.path.split(os.path.realpath(__file__))[0]
 # --------------------------------------------------
 
 EtherCATInfoParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATInfo.xsd"))
-EtherCATInfo_XPath = lambda xpath: etree.XPath(xpath)
+
+
+def EtherCATInfo_XPath(xpath):
+    return etree.XPath(xpath)
 
 
 def HexDecValue(context, *args):
