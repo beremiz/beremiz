@@ -112,16 +112,20 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     EditorType = CIA402NodeEditor
 
     ConfNodeMethods = [
-        {"bitmap" : "CIA402AxisRef",
-         "name" : _("Axis Ref"),
-         "tooltip" : _("Initiate Drag'n drop of Axis ref located variable"),
-         "method" : "_getCIA402AxisRef",
-         "push": True},
-        {"bitmap" : "CIA402NetPos",
-         "name" : _("Axis Pos"),
-         "tooltip" : _("Initiate Drag'n drop of Network position located variable"),
-         "method" : "_getCIA402NetworkPosition",
-         "push": True},
+        {
+            "bitmap": "CIA402AxisRef",
+            "name": _("Axis Ref"),
+            "tooltip": _("Initiate Drag'n drop of Axis ref located variable"),
+            "method": "_getCIA402AxisRef",
+            "push": True,
+        },
+        {
+            "bitmap": "CIA402NetPos",
+            "name": _("Axis Pos"),
+            "tooltip": _("Initiate Drag'n drop of Network position located variable"),
+            "method": "_getCIA402NetworkPosition",
+            "push": True,
+        },
     ]
 
 # --------------------------------------------------

@@ -751,10 +751,12 @@ class _EthercatCTN:
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     ConfNodeMethods = [
-        {"bitmap" : "ScanNetwork",
-         "name" : _("Scan Network"),
-         "tooltip" : _("Scan Network"),
-         "method" : "_ScanNetwork"},
+        {
+            "bitmap": "ScanNetwork",
+            "name": _("Scan Network"),
+            "tooltip": _("Scan Network"),
+            "method": "_ScanNetwork",
+        },
     ]
 
     def CTNGenerate_C(self, buildpath, locations):

@@ -26,6 +26,7 @@ from controls.CustomStyledTextCtrl import NAVIGATION_KEYS
 
 # -----------------------------------------------------------------------
 from EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePanelClass
+from util.TranslationCatalogs import NoTranslate
 # -----------------------------------------------------------------------
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
@@ -39,7 +40,7 @@ def AppendMenu(parent, help, id, kind, text):
 
 
 def GetVariablesTableColnames(position=False):
-    _ = lambda x : x
+    _ = NoTranslate
     colname = ["#"]
     if position:
         colname.append(_("Position"))
@@ -335,7 +336,7 @@ CIA402NodeEditor = NodeEditor
 
 
 def GetProcessVariablesTableColnames():
-    _ = lambda x : x
+    _ = NoTranslate
     return ["#", _("Name"),
             _("Read from (nodeid, index, subindex)"),
             _("Write to (nodeid, index, subindex)"),
@@ -457,7 +458,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
 
 
 def GetStartupCommandsTableColnames():
-    _ = lambda x : x
+    _ = NoTranslate
     return [_("Position"), _("Index"), _("Subindex"), _("Value"), _("Description")]
 
 
