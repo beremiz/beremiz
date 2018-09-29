@@ -86,8 +86,8 @@ def KMSGPollThreadProc():
     s = ctypes.create_string_buffer(4*1024)
     last = None
     while not StopKMSGThread:
-        l = klog(3, s, len(s)-1)
-        log = s.value[:l-1]
+        bytes_to_read = klog(3, s, len(s)-1)
+        log = s.value[:bytes_to_read-1]
         if last :
             log = log.rpartition(last)[2]
         if log :
