@@ -322,12 +322,12 @@ class _CommonSlave(object):
                 # if entry name exists, save entry data
                 if ExtractName(entry.getName()) is not None:
                     entry_infos = {
-                                "entry_index": index,
-                                "subindex": subindex,
-                                "name": ExtractName(entry.getName()),
-                                "bitlen": entry.getBitLen(),
-                                "type": entry.getDataType().getcontent()
-                                    }
+                        "entry_index": index,
+                        "subindex": subindex,
+                        "name": ExtractName(entry.getName()),
+                        "bitlen": entry.getBitLen(),
+                        "type": entry.getDataType().getcontent()
+                    }
                     self.TxPDOInfo.append(entry_infos)
                     count += 1
 
@@ -352,12 +352,12 @@ class _CommonSlave(object):
                 # if entry name exists, save entry data
                 if ExtractName(entry.getName()) is not None:
                     entry_infos = {
-                                "entry_index": index,
-                                "subindex": subindex,
-                                "name": ExtractName(entry.getName()),
-                                "bitlen": str(entry.getBitLen()),
-                                "type": entry.getDataType().getcontent()
-                                    }
+                        "entry_index": index,
+                        "subindex": subindex,
+                        "name": ExtractName(entry.getName()),
+                        "bitlen": str(entry.getBitLen()),
+                        "type": entry.getDataType().getcontent()
+                    }
                     self.RxPDOInfo.append(entry_infos)
                     count += 1
 
@@ -1187,7 +1187,7 @@ class _CommonSlave(object):
             coe = mb.getCoE()
             if coe is not None:
                 for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
-                                           "PdoUpload", "CompleteAccess"]):
+                                            "PdoUpload", "CompleteAccess"]):
                     if getattr(coe, "get%s" % flag)() is not None:
                         coe_details += 1 << bit
         eeprom.append("{:0>2x}".format(coe_details))

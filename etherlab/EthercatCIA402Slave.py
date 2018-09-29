@@ -164,12 +164,13 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 "children": []
             }
             for name_frmt, iec_type, var_name_frmt, location_frmt in [
-                    ("%s Network Position", "UINT", "%s_pos", "%%IW%s"),
-                    ("%s Axis Ref", "AXIS_REF", "%s", "%%IW%s.402")
+                ("%s Network Position", "UINT", "%s_pos", "%%IW%s"),
+                ("%s Axis Ref", "AXIS_REF", "%s", "%%IW%s.402")
             ]
         ]
-        children.extend(self.CTNParent.GetDeviceLocationTree(
-                            self.GetSlavePos(), current_location, axis_name))
+        children.extend(self.CTNParent.GetDeviceLocationTree(self.GetSlavePos(),
+                                                             current_location,
+                                                             axis_name))
         return {
             "name": axis_name,
             "type": LOCATION_CONFNODE,
@@ -229,14 +230,15 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             ucase_blocktype = blocktype.upper()
             blockname = "_".join([ucase_blocktype, location_str])
 
-            extract_inputs = "\n".join(["""\
-    __SET_VAR(%s->, %s,, %s);""" % (blockname, input_name, input_value)
-                for (input_name, input_value) in [
-                    ("EXECUTE", "__GET_VAR(data__->EXECUTE)")] + [
+            extract_inputs = "\n".join([
+                """\
+                __SET_VAR(%s->, %s,, %s);""" % (blockname, input_name, input_value)
+                for (input_name, input_value) in
+                [("EXECUTE", "__GET_VAR(data__->EXECUTE)")] + [
                     (input["name"].upper(),
                      "__GET_VAR(data__->%s)" % input["name"].upper())
-                    for input in blocktype_infos["inputs"]]
-                ])
+                    for input in blocktype_infos["inputs"]
+                ]])
 
             return_outputs = "\n".join([
                 """\
@@ -246,8 +248,8 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                     "blockname": blockname
                 }
                 for output_name in ["DONE", "BUSY", "ERROR"] + [
-                        output["name"].upper()
-                        for output in blocktype_infos["outputs"]]
+                    output["name"].upper()
+                    for output in blocktype_infos["outputs"]]
             ])
 
             loc_dict = {
@@ -338,24 +340,24 @@ __%(dir)s%(var_size)s%(location_str)s_%(index)d_%(subindex)d""" % loc_dict
             loc_dict["var_name"] = var_name
 
             extern_located_variables_declaration.append(
-                    "IEC_%(var_type)s *%(var_name)s;" % loc_dict)
+                "IEC_%(var_type)s *%(var_name)s;" % loc_dict)
             entry_variables.append(
-                    "    IEC_%(var_type)s *%(name)s;" % loc_dict)
+                "    IEC_%(var_type)s *%(name)s;" % loc_dict)
             init_entry_variables.append(
-                    "    AxsPub.%(name)s = %(var_name)s;" % loc_dict)
+                "    AxsPub.%(name)s = %(var_name)s;" % loc_dict)
 
             self.CTNParent.FileGenerator.DeclareVariable(
-                    slave_pos, index, subindex, var_type, dir, var_name)
+                slave_pos, index, subindex, var_type, dir, var_name)
 
         # Add newline between string in list of generated strings for sections
         [fieldbus_interface_declaration, fieldbus_interface_definition,
          init_axis_params, extra_variables_retrieve, extra_variables_publish,
          extern_located_variables_declaration, entry_variables,
          init_entry_variables] = map("\n".join, [
-            fieldbus_interface_declaration, fieldbus_interface_definition,
-            init_axis_params, extra_variables_retrieve, extra_variables_publish,
-            extern_located_variables_declaration, entry_variables,
-            init_entry_variables])
+             fieldbus_interface_declaration, fieldbus_interface_definition,
+             init_axis_params, extra_variables_retrieve, extra_variables_publish,
+             extern_located_variables_declaration, entry_variables,
+             init_entry_variables])
 
         # Write generated content to CIA402 node file
         Gen_CIA402Nodefile_path = os.path.join(buildpath,

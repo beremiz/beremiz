@@ -734,9 +734,9 @@ class _EthercatCTN(object):
                 subindex = read_from.getSubIndex()
                 location = current_location + (idx, )
                 var_type = self.GetSlaveVariableDataType(pos, index, subindex)
-                name = self.FileGenerator.DeclareVariable(
-                            pos, index, subindex, var_type, "I",
-                            self.GetProcessVariableName(location, var_type))
+                name = self.FileGenerator.DeclareVariable(pos, index, subindex,
+                                                          var_type, "I",
+                                                          self.GetProcessVariableName(location, var_type))
             if write_to is not None:
                 pos = write_to.getPosition()
                 index = write_to.getIndex()
@@ -745,8 +745,7 @@ class _EthercatCTN(object):
                     location = current_location + (idx, )
                     var_type = self.GetSlaveVariableDataType(pos, index, subindex)
                     name = self.GetProcessVariableName(location, var_type)
-                self.FileGenerator.DeclareVariable(
-                            pos, index, subindex, var_type, "Q", name, True)
+                self.FileGenerator.DeclareVariable(pos, index, subindex, var_type, "Q", name, True)
 
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
 

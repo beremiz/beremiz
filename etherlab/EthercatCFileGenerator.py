@@ -88,7 +88,7 @@ def ConfigureVariable(entry_infos, str_completion):
         for declaration in entry_infos.get("extra_declarations", []):
             entry_infos["extra_decl"] = declaration
             str_completion["located_variables_declaration"].append(
-                 "IEC_%(var_type)s *%(extra_decl)s = &%(real_var)s;" % entry_infos)
+                "IEC_%(var_type)s *%(extra_decl)s = &%(real_var)s;" % entry_infos)
     elif "real_var" not in entry_infos:
         entry_infos["real_var"] = "beremiz" + entry_infos["var_name"]
 
@@ -100,18 +100,18 @@ def ConfigureVariable(entry_infos, str_completion):
             "unsigned int slave%(slave)d_%(index).4x_%(subindex).2x_bit;" % entry_infos)
 
         str_completion["used_pdo_entry_configuration"].append(
-             ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, " +
-              "0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, " +
-              "&slave%(slave)d_%(index).4x_%(subindex).2x_bit},") % entry_infos)
+            ("    {%(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x, " +
+             "0x%(index).4x, %(subindex)d, &slave%(slave)d_%(index).4x_%(subindex).2x, " +
+             "&slave%(slave)d_%(index).4x_%(subindex).2x_bit},") % entry_infos)
 
         if entry_infos["dir"] == "I":
             str_completion["retrieve_variables"].append(
-              ("    %(real_var)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " +
-               "slave%(slave)d_%(index).4x_%(subindex).2x_bit);") % entry_infos)
+                ("    %(real_var)s = EC_READ_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " +
+                 "slave%(slave)d_%(index).4x_%(subindex).2x_bit);") % entry_infos)
         elif entry_infos["dir"] == "Q":
             str_completion["publish_variables"].append(
-              ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " +
-               "slave%(slave)d_%(index).4x_%(subindex).2x_bit, %(real_var)s);") % entry_infos)
+                ("    EC_WRITE_BIT(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " +
+                 "slave%(slave)d_%(index).4x_%(subindex).2x_bit, %(real_var)s);") % entry_infos)
 
     else:
         str_completion["used_pdo_entry_configuration"].append(
@@ -532,7 +532,7 @@ class _EthercatCFileGenerator(object):
                             pdo["entries"].append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                             if entry_infos["bitlen"] < module_extra_params["pdo_alignment"]:
                                 pdo["entries"].append("    {0x0000, 0x00, %d}, /* None */" % (
-                                        module_extra_params["pdo_alignment"] - entry_infos["bitlen"]))
+                                    module_extra_params["pdo_alignment"] - entry_infos["bitlen"]))
                             pdo["entries_number"] += 1
 
                             if pdo["entries_number"] == module_extra_params["max_pdo_size"]:
