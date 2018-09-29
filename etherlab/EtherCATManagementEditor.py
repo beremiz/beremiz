@@ -68,17 +68,19 @@ class EtherCATManagementTreebook(wx.Treebook):
         self.EtherCATManagementClassObject = {}
 
         # fill EtherCAT Management Treebook
-        for pname, pclass, subs in [
+        panels = [
             ("Slave State",        SlaveStatePanelClass, []),
             ("SDO Management",     SDOPanelClass, []),
             ("PDO Monitoring",     PDOPanelClass, []),
             ("ESC Management",     EEPROMAccessPanel, [
-                    ("Smart View", SlaveSiiSmartView),
-                    ("Hex View", HexView)]),
-            ("Register Access",     RegisterAccessPanel, [])]:
-                self.AddPage(pclass(self, self.Controler), pname)
-                for spname, spclass in subs:
-                    self.AddSubPage(spclass(self, self.Controler), spname)
+                ("Smart View", SlaveSiiSmartView),
+                ("Hex View", HexView)]),
+            ("Register Access",     RegisterAccessPanel, [])
+        ]
+        for pname, pclass, subs in panels:
+            self.AddPage(pclass(self, self.Controler), pname)
+            for spname, spclass in subs:
+                self.AddSubPage(spclass(self, self.Controler), spname)
 
         self.Bind(wx.EVT_TREEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Bind(wx.EVT_TREEBOOK_PAGE_CHANGING, self.OnPageChanging)
@@ -2126,29 +2128,29 @@ class MasterStatePanelClass(wx.Panel):
         # ----------------------- Main Sizer and Update Button --------------------------------------------
         self.MasterStateSizer = {"main": wx.BoxSizer(wx.VERTICAL)}
         for key, attr in [
-            ("innerMain",           [1, 10, 2, 10]),
-            ("innerTopHalf",        [2, 10, 1, 10]),
-            ("innerBottomHalf",     [2, 10, 1, 10]),
-            ("innerMasterState",    [2, 10, 3, 10]),
-            ("innerDeviceInfo",     [4, 10, 3, 10]),
-            ("innerFrameInfo",      [4, 10, 5, 10])]:
+                ("innerMain",           [1, 10, 2, 10]),
+                ("innerTopHalf",        [2, 10, 1, 10]),
+                ("innerBottomHalf",     [2, 10, 1, 10]),
+                ("innerMasterState",    [2, 10, 3, 10]),
+                ("innerDeviceInfo",     [4, 10, 3, 10]),
+                ("innerFrameInfo",      [4, 10, 5, 10])]:
             self.MasterStateSizer[key] = wx.FlexGridSizer(cols=attr[0], hgap=attr[1], rows=attr[2], vgap=attr[3])
 
         self.UpdateButton = wx.Button(self, label=_('Update'))
         self.UpdateButton.Bind(wx.EVT_BUTTON, self.OnButtonClick)
 
         for key, label in [
-            ('masterState', 'EtherCAT Master State'),
-            ('deviceInfo', 'Ethernet Network Card Information'),
-            ('frameInfo', 'Network Frame Information')]:
+                ('masterState', 'EtherCAT Master State'),
+                ('deviceInfo', 'Ethernet Network Card Information'),
+                ('frameInfo', 'Network Frame Information')]:
             self.StaticBox[key] = wx.StaticBox(self, label=_(label))
             self.MasterStateSizer[key] = wx.StaticBoxSizer(self.StaticBox[key])
 
         # ----------------------- Master State -----------------------------------------------------------
         for key, label in [
-            ('Phase', 'Phase:'),
-            ('Active', 'Active:'),
-            ('Slaves', 'Slave Count:')]:
+                ('Phase', 'Phase:'),
+                ('Active', 'Active:'),
+                ('Slaves', 'Slave Count:')]:
             self.StaticText[key] = wx.StaticText(self, label=_(label))
             self.TextCtrl[key] = wx.TextCtrl(self, size=wx.Size(130, 24), style=wx.TE_READONLY)
             self.MasterStateSizer['innerMasterState'].AddMany([self.StaticText[key], self.TextCtrl[key]])
@@ -2157,11 +2159,11 @@ class MasterStatePanelClass(wx.Panel):
 
         # ----------------------- Ethernet Network Card Information ---------------------------------------
         for key, label in [
-            ('Main', 'MAC Address:'),
-            ('Link', 'Link State:'),
-            ('Tx frames', 'Tx Frames:'),
-            ('Rx frames', 'Rx Frames:'),
-            ('Lost frames', 'Lost Frames:')]:
+                ('Main', 'MAC Address:'),
+                ('Link', 'Link State:'),
+                ('Tx frames', 'Tx Frames:'),
+                ('Rx frames', 'Rx Frames:'),
+                ('Lost frames', 'Lost Frames:')]:
             self.StaticText[key] = wx.StaticText(self, label=_(label))
             self.TextCtrl[key] = wx.TextCtrl(self, size=wx.Size(130, 24), style=wx.TE_READONLY)
             self.MasterStateSizer['innerDeviceInfo'].AddMany([self.StaticText[key], self.TextCtrl[key]])
@@ -2170,10 +2172,10 @@ class MasterStatePanelClass(wx.Panel):
 
         # ----------------------- Network Frame Information -----------------------------------------------
         for key, label in [
-            ('Tx frame rate [1/s]', 'Tx Frame Rate [1/s]:'),
-            ('Rx frame rate [1/s]', 'Tx Rate [kByte/s]:'),
-            ('Loss rate [1/s]', 'Loss Rate [1/s]:'),
-            ('Frame loss [%]', 'Frame Loss [%]:')]:
+                ('Tx frame rate [1/s]', 'Tx Frame Rate [1/s]:'),
+                ('Rx frame rate [1/s]', 'Tx Rate [kByte/s]:'),
+                ('Loss rate [1/s]', 'Loss Rate [1/s]:'),
+                ('Frame loss [%]', 'Frame Loss [%]:')]:
             self.StaticText[key] = wx.StaticText(self, label=_(label))
             self.MasterStateSizer['innerFrameInfo'].Add(self.StaticText[key])
             self.TextCtrl[key] = {}

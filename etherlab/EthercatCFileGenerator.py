@@ -396,14 +396,14 @@ class _EthercatCFileGenerator:
                             entry_type = entry.getDataType().getcontent()
                             if entry_infos["var_type"] != entry_type:
                                 message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                if (self.Controler.GetSizeOfType(entry_infos["var_type"]) !=
-                                    self.Controler.GetSizeOfType(entry_type)):
+                                if self.Controler.GetSizeOfType(entry_infos["var_type"]) != \
+                                   self.Controler.GetSizeOfType(entry_type):
                                     raise ValueError(message)
                                 else:
                                     self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
 
-                            if (entry_infos["dir"] == "I" and pdo_type != "Inputs" or
-                                entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
+                            if (entry_infos["dir"] == "I" and pdo_type != "Inputs") or \
+                               (entry_infos["dir"] == "Q" and pdo_type != "Outputs"):
                                 raise ValueError(_("Wrong direction for location \"%s\"!") % entry_infos["var_name"])
 
                             ConfigureVariable(entry_infos, str_completion)
@@ -483,8 +483,8 @@ class _EthercatCFileGenerator:
 
                             if entry_infos["var_type"] != entry["Type"]:
                                 message = _("Wrong type for location \"%s\"!") % entry_infos["var_name"]
-                                if (self.Controler.GetSizeOfType(entry_infos["var_type"]) !=
-                                    self.Controler.GetSizeOfType(entry["Type"])):
+                                if self.Controler.GetSizeOfType(entry_infos["var_type"]) != \
+                                   self.Controler.GetSizeOfType(entry["Type"]):
                                     raise ValueError(message)
                                 else:
                                     self.Controler.GetCTRoot().logger.write_warning(message + "\n")

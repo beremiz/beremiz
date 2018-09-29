@@ -424,8 +424,8 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
                 if result is not None:
                     location = map(int, result.group(1).split('.'))
                 master_location = self.ParentWindow.GetMasterLocation()
-                if (master_location == tuple(location[:len(master_location)]) and
-                    len(location) - len(master_location) == 3):
+                if master_location == tuple(location[:len(master_location)]) and \
+                   len(location) - len(master_location) == 3:
                     values = tuple(location[len(master_location):])
                     var_type = self.ParentWindow.Controler.GetSlaveVariableDataType(*values)
                     if col == 2:
@@ -491,8 +491,8 @@ class StartupCommandDropTarget(wx.TextDropTarget):
                 access = values[2]
             if location is not None:
                 master_location = self.ParentWindow.GetMasterLocation()
-                if (master_location == tuple(location[:len(master_location)]) and
-                    len(location) - len(master_location) == 3):
+                if master_location == tuple(location[:len(master_location)]) and \
+                   len(location) - len(master_location) == 3:
                     if access in ["wo", "rw"]:
                         self.ParentWindow.AddStartupCommand(*location[len(master_location):])
                     else:
@@ -904,8 +904,8 @@ class MasterEditor(ConfTreeNodeEditor):
             slaves = self.Controler.GetSlaves(**self.CurrentNodesFilter)
             data = []
             for variable in self.ProcessVariables:
-                if (variable["ReadFrom"] == "" or variable["ReadFrom"][0] in slaves or
-                    variable["WriteTo"] == "" or variable["WriteTo"][0] in slaves):
+                if variable["ReadFrom"] == "" or variable["ReadFrom"][0] in slaves or \
+                   variable["WriteTo"] == "" or variable["WriteTo"][0] in slaves:
                     data.append(variable)
             self.ProcessVariablesTable.SetData(data)
             self.ProcessVariablesTable.ResetView(self.ProcessVariablesGrid)
@@ -1014,8 +1014,8 @@ class MasterEditor(ConfTreeNodeEditor):
         col = self.ProcessVariablesGrid.GetGridCursorCol()
         row = self.ProcessVariablesGrid.GetGridCursorRow()
         colname = self.ProcessVariablesTable.GetColLabelValue(col, False)
-        if (keycode in (wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE) and
-            (colname.startswith("Read from") or colname.startswith("Write to"))):
+        if keycode in (wx.WXK_DELETE, wx.WXK_NUMPAD_DELETE) and \
+           (colname.startswith("Read from") or colname.startswith("Write to")):
             self.ProcessVariablesTable.SetValue(row, col, "")
             self.SaveProcessVariables()
             wx.CallAfter(self.ProcessVariablesTable.ResetView, self.ProcessVariablesGrid)
