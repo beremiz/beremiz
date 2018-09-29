@@ -587,7 +587,6 @@ class _EthercatCTN(object):
                 entry["children"] = []
                 if slave_pos is not None:
                     entry["Position"] = str(slave_pos)
-                entry
                 if index != current_index:
                     current_index = index
                     current_entry = entry
