@@ -20,13 +20,13 @@ import wx.lib.buttons
 
 from plcopen.structures import IEC_KEYWORDS, TestIdentifier
 from controls import CustomGrid, CustomTable, FolderTree
+from controls.CustomStyledTextCtrl import NAVIGATION_KEYS
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 from util.BitmapLibrary import GetBitmap
-from controls.CustomStyledTextCtrl import NAVIGATION_KEYS
+from util.TranslationCatalogs import NoTranslate
 
 # -----------------------------------------------------------------------
 from EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePanelClass
-from util.TranslationCatalogs import NoTranslate
 # -----------------------------------------------------------------------
 
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
@@ -240,7 +240,7 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                     else:
                         dir = "%Q"
                     location = "%s%s" % (dir, data_size) + \
-                               ".".join(map(lambda x: str(x), location + (entry_index, entry_subindex)))
+                               ".".join(map(str, location + (entry_index, entry_subindex)))
 
                     data = wx.TextDataObject(str((location, "location", data_type, var_name, "", access)))
                     dragSource = wx.DropSource(self.VariablesGrid)
@@ -1005,7 +1005,7 @@ class MasterEditor(ConfTreeNodeEditor):
             data_size = self.Controler.GetSizeOfType(var_type)
             number = self.ProcessVariablesTable.GetValueByName(row, "Number")
             location = "%%M%s" % data_size + \
-                       ".".join(map(lambda x: str(x), self.Controler.GetCurrentLocation() + (number,)))
+                       ".".join(map(str, self.Controler.GetCurrentLocation() + (number,)))
 
             data = wx.TextDataObject(str((location, "location", var_type, var_name, "")))
             dragSource = wx.DropSource(self.ProcessVariablesGrid)
