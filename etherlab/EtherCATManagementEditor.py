@@ -438,7 +438,7 @@ class SDOPanelClass(wx.Panel):
                 (keep_going, skip) = slaveSDO_progress.Update(count)
 
             # If user click "Cancel" loop suspend immediately
-            if (keep_going == False):
+            if not keep_going:
                 break
 
         slaveSDO_progress.Destroy()
@@ -1744,7 +1744,7 @@ class RegisterAccessPanel(wx.Panel):
 
         # If "Compact View" Checkbox is True
         ## 'event' is argument of this method or event of checkbox.
-        if event == True or event.GetEventObject().GetValue():
+        if event is True or event.GetEventObject().GetValue():
             self.CompactFlag = True
 
             reg_compact_data = []
