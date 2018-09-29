@@ -430,8 +430,8 @@ class _EthercatCTN:
             write_to = variable.getWriteTo()
             if write_to is not None:
                 var["WriteTo"] = (write_to.getPosition(),
-                                   write_to.getIndex(),
-                                   write_to.getSubIndex())
+                                  write_to.getIndex(),
+                                  write_to.getSubIndex())
             else:
                 var["WriteTo"] = ""
             variables.append(var)
@@ -662,15 +662,17 @@ class _EthercatCTN:
                             else:
                                 var_dir = "%Q"
 
-                            vars.append({"name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
-                                         "type": var_class,
-                                         "size": var_size,
-                                         "IEC_type": entry["Type"],
-                                         "var_name": "%s_%4.4x_%2.2x" % ("_".join(device_name.split()), index, subindex),
-                                         "location": "%s%s%s" % (var_dir, var_size, ".".join(map(str, current_location +
-                                                                                                    (index, subindex)))),
-                                         "description": "",
-                                         "children": []})
+                            vars.append({
+                                "name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
+                                "type": var_class,
+                                "size": var_size,
+                                "IEC_type": entry["Type"],
+                                "var_name": "%s_%4.4x_%2.2x" % ("_".join(device_name.split()), index, subindex),
+                                "location": "%s%s%s" % (var_dir, var_size, ".".join(map(str, current_location +
+                                                                                        (index, subindex)))),
+                                "description": "",
+                                "children": [],
+                            })
 
         return vars
 
