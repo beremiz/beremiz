@@ -296,6 +296,7 @@ pylint_checks()
     enable=$enable,E1300          # (bad-format-character) Unsupported format character '"' (0x22) at index 17
     enable=$enable,E1304          # (missing-format-string-key) Missing key 'X_name' in format string dictionary
     enable=$enable,R1701          # (consider-merging-isinstance) Consider merging these isinstance calls to isinstance(CTNLDFLAGS, (str, unicode))
+    enable=$enable,R1704          # (redefined-argument-from-local) Redefining argument with the local name 'Y'
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
     enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'

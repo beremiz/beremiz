@@ -1323,7 +1323,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
 
                 extensions = []
-                for extension, name, editor in features.file_editors:
+                for extension, _name, _editor in features.file_editors:
                     if extension not in extensions:
                         extensions.append(extension)
                 self._ProjectFilesView.SetEditableFileExtensions(extensions)
