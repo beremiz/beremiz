@@ -291,6 +291,7 @@ pylint_checks()
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
     enable=$enable,E1310          # (bad-str-strip-call) Suspicious argument in str.strip call
     enable=$enable,E1300          # (bad-format-character) Unsupported format character '"' (0x22) at index 17
+    enable=$enable,E1304          # (missing-format-string-key) Missing key 'X_name' in format string dictionary
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
     enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'

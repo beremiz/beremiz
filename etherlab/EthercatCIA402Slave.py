@@ -321,7 +321,10 @@ ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
                                else str(param["value"]))
 
                 init_axis_params.append("""\
-        AxsPub.axis->%(param_name)s = %(param_value)s;""" % {"param_value": param_value})
+                AxsPub.axis->%(param_name)s = %(param_value)s;""" % {
+                    "param_value": param_value,
+                    "param_name": param_name,
+                })
 
         # Add each variable in list of variables to map to master list of
         # variables to add to network configuration
