@@ -963,4 +963,5 @@ class TextViewer(EditorPanel):
                 self.StartStyling(highlight_start_pos, 0xff)
                 self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
                 self.StartStyling(highlight_start_pos, 0x00)
-                self.SetStyling(len(self.Editor.GetText()) - highlight_end_pos, wx.stc.STC_STYLE_DEFAULT)
+                until_end = max(0, len(self.Editor.GetText()) - highlight_end_pos)
+                self.SetStyling(until_end, wx.stc.STC_STYLE_DEFAULT)
