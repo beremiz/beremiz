@@ -498,7 +498,7 @@ class _CommonSlave(object):
                 for mailbox_protocol in mailbox_protocols:
                     if getattr(mb, "get%s" % mailbox_protocol)() is not None:
                         smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
-            smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(",  ")
+            smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(", ")
 
             # get standard configuration of mailbox; <Device>-<Sm>
             for sm_element in device.getSm():

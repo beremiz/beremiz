@@ -226,6 +226,7 @@ pylint_checks()
     disable=$disable,R0201        # (no-self-use) Method could be a function
     disable=$disable,W0221        # (arguments-differ) Arguments number differs from overridden 'X' method
     disable=$disable,C0201        # (consider-iterating-dictionary) Consider iterating the dictionary directly instead of calling .keys()
+    disable=$disable,W0201        # (attribute-defined-outside-init) Attribute 'X' defined outside __init__
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -245,7 +246,11 @@ pylint_checks()
     disable=$disable,R0916        # (too-many-boolean-expressions) Too many boolean expressions in if statement (6/5)
     disable=$disable,R0101        # (too-many-nested-blocks) Too many nested blocks (7/5)
     disable=$disable,R0801        # (duplicate-code) Similar lines in N files
-
+    disable=$disable,W0401        # (wildcard-import) Wildcard import 
+    disable=$disable,W0614        # (unused-wildcard-import), ] Unused import X from wildcard import
+    disable=$disable,W0212        # (protected-access) Access to a protected member X of a Y class
+    disable=$disable,E1101        # (no-member) Instance of 'X' has no 'Y' member
+    
     enable=
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword
@@ -283,6 +288,7 @@ pylint_checks()
     enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
+    enable=$enable,E1310          # (bad-str-strip-call) Suspicious argument in str.strip call
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
     enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
