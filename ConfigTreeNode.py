@@ -277,7 +277,7 @@ class ConfigTreeNode(object):
         LDFLAGS = []
         if CTNLDFLAGS is not None:
             # LDFLAGS can be either string
-            if isinstance(CTNLDFLAGS, str) or isinstance(CTNLDFLAGS, unicode):
+            if isinstance(CTNLDFLAGS, (str, unicode)):
                 LDFLAGS += [CTNLDFLAGS]
             # or list of strings
             elif isinstance(CTNLDFLAGS, list):
