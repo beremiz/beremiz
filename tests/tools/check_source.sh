@@ -287,6 +287,7 @@ pylint_checks()
     enable=$enable,W0232          # (no-init) Class has no __init__ method
     enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
+    enable=$enable,W0111          # (assign-to-new-keyword) Name async will become a keyword in Python 3.7
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
     enable=$enable,E1310          # (bad-str-strip-call) Suspicious argument in str.strip call
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
