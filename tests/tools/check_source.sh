@@ -227,6 +227,9 @@ pylint_checks()
     disable=$disable,W0221        # (arguments-differ) Arguments number differs from overridden 'X' method
     disable=$disable,C0201        # (consider-iterating-dictionary) Consider iterating the dictionary directly instead of calling .keys()
     disable=$disable,W0201        # (attribute-defined-outside-init) Attribute 'X' defined outside __init__
+    disable=$disable,I1101        # (c-extension-no-member) Module 'lxml.etree' has not 'X' member,
+                                  # but source is unavailable. Consider adding this module to extension-pkg-whitelist
+                                  # if you want to perform analysis based on run-time introspection of living objects.
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -292,6 +295,7 @@ pylint_checks()
     enable=$enable,E1310          # (bad-str-strip-call) Suspicious argument in str.strip call
     enable=$enable,E1300          # (bad-format-character) Unsupported format character '"' (0x22) at index 17
     enable=$enable,E1304          # (missing-format-string-key) Missing key 'X_name' in format string dictionary
+    enable=$enable,R1701          # (consider-merging-isinstance) Consider merging these isinstance calls to isinstance(CTNLDFLAGS, (str, unicode))
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
     enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
