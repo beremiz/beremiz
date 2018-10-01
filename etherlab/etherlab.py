@@ -254,7 +254,7 @@ for mapping needed location variables
                     for device in self.devices_xpath(self.modules_infos):
                         device_group = device.getGroupType()
                         if device_group not in vendor_category["groups"]:
-                            raise ValueError("Not such group \"%\"" % device_group)
+                            raise ValueError("Not such group \"%s\"" % device_group)
                         vendor_category["groups"][device_group]["devices"].append(
                             (device.getType().getcontent(), device))
 
