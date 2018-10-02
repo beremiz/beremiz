@@ -3557,7 +3557,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.SearchResults = []
             blocks = []
             for infos, start, end, _text in self.Controler.SearchInPou(self.TagName, search_params, self.Debug):
-                if (infos[0] == self.TagName or self.TagName.split("::")[0] in ['A', 'T']) and infos[1] is not 'name':
+                if (infos[0] == self.TagName or self.TagName.split("::")[0] in ['A', 'T']) and infos[1] != 'name':
                     if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
                         self.SearchResults.append((infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT))
                     else:

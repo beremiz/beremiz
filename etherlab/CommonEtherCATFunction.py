@@ -895,7 +895,7 @@ class _CommonSlave(object):
         vendor_spec_strings = []
         for element in device.getType().getcontent():
             data += element
-        if data is not "" and isinstance(data, unicode):
+        if data != "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.OrderIdx = vendor_spec_strings.index(data)+1
@@ -962,7 +962,7 @@ class _CommonSlave(object):
                     for device_item in group_etc["devices"]:
                         if device == device_item[1]:
                             data = group_etc["name"]
-        if data is not "" and isinstance(data, unicode):
+        if data != "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     groupnameflag = True
@@ -981,7 +981,7 @@ class _CommonSlave(object):
         for element in device.getName():
             if element.getLcId() == 1 or element.getLcId() == 1033:
                 data = element.getcontent()
-        if data is not "" and isinstance(data, unicode):
+        if data != "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.NameIdx = vendor_spec_strings.index(data)+1
@@ -1048,7 +1048,7 @@ class _CommonSlave(object):
         if device.getDc() is not None:
             for element in device.getDc().getOpMode():
                 data = element.getName()
-                if data is not "":
+                if data != "":
                     count += 1
                     self.Strings.append(data)
                     dc_related_elements += "{:0>2x}".format(len(data))
@@ -1066,7 +1066,7 @@ class _CommonSlave(object):
             for input in inputs:
                 if data == input:
                     data = ""
-            if data is not "":
+            if data != "":
                 count += 1
                 self.Strings.append(data)
                 inputs.append(data)
@@ -1080,7 +1080,7 @@ class _CommonSlave(object):
                 for input in inputs:
                     if data == input:
                         data = ""
-                if data is not "":
+                if data != "":
                     count += 1
                     self.Strings.append(data)
                     inputs.append(data)
@@ -1099,7 +1099,7 @@ class _CommonSlave(object):
             for output in outputs:
                 if data == output:
                     data = ""
-            if data is not "":
+            if data != "":
                 count += 1
                 self.Strings.append(data)
                 outputs.append(data)
@@ -1113,7 +1113,7 @@ class _CommonSlave(object):
                 for output in outputs:
                     if data == output:
                         data = ""
-                if data is not "":
+                if data != "":
                     count += 1
                     self.Strings.append(data)
                     outputs.append(data)
@@ -1279,7 +1279,7 @@ class _CommonSlave(object):
                 data += "03"
 
         # construct of EEPROM data
-        if data is not "":
+        if data != "":
             #  category header
             eeprom.append("28")
             eeprom.append("00")
@@ -1328,7 +1328,7 @@ class _CommonSlave(object):
                 data += "00"
             data += number[sm.getcontent()]
 
-        if data is not "":
+        if data != "":
             #  category header
             eeprom.append("29")
             eeprom.append("00")
@@ -1431,7 +1431,7 @@ class _CommonSlave(object):
                     en_fixed = True
                 data += str(int(en_fixed)) + "000"
 
-        if data is not "":
+        if data != "":
             #  category header
             if pdotype == "TxPdo":
                 eeprom.append("32")
@@ -1510,7 +1510,7 @@ class _CommonSlave(object):
                 data += "0000"
                 data += "0000"
 
-        if data is not "":
+        if data != "":
             #  category header
             eeprom.append("3c")
             eeprom.append("00")
