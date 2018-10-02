@@ -32,13 +32,13 @@ from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
-from twisted.internet.defer import inlineCallbacks
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
 
 from formless import annotate, webform
 import formless
 from nevow import tags, url, static
+from runtime import GetPLCObjectSingleton
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
@@ -87,7 +87,7 @@ lastKnownConfig = None
 def GetCallee(name):
     """ Get Callee or Subscriber corresponding to '.' spearated object path """
     names = name.split('.')
-    obj = _PySrv.plcobj
+    obj = GetPLCObjectSingleton()
     while names:
         obj = getattr(obj, names.pop(0))
     return obj
@@ -115,7 +115,6 @@ class WampSession(wamp.ApplicationSession):
             raise Exception(
                 "don't know how to handle authmethod {}".format(challenge.method))
 
-    @inlineCallbacks
     def onJoin(self, details):
         global _WampSession
         _WampSession = self
@@ -128,13 +127,13 @@ class WampSession(wamp.ApplicationSession):
                 registerOptions = None
                 print(_("TypeError register option: {}".format(e)))
 
-            yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
+            self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
-            yield self.subscribe(GetCallee(name), unicode(name))
+            self.subscribe(GetCallee(name), unicode(name))
 
         for func in DoOnJoin:
-            yield func(self)
+            func(self)
 
         print(_('WAMP session joined (%s) by:' % time.ctime()), ID)
 
@@ -145,6 +144,9 @@ class WampSession(wamp.ApplicationSession):
         _transportFactory = None
         print(_('WAMP session left'))
 
+    def publishWithOwnID(eventID, value):
+        ID = self.config.extra["ID"]
+        self.publish(unicode(ID+'.'+eventID), value)
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
 
@@ -341,6 +343,13 @@ def SetServer(pysrv):
     global _PySrv
     _PySrv = pysrv
 
+def PublishEvent(eventID, value):
+    if getWampStatus() == "Attached":
+         _WampSession.publish(eventID, value)
+
+def PublishEventWithOwnID(eventID, value):
+    if getWampStatus() == "Attached":
+         _WampSession.publishWithOwnID(eventID, value)
 
 # WEB CONFIGURATION INTERFACE
 WAMP_SECRET_URL = "secret"
