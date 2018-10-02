@@ -36,6 +36,7 @@ from autobahn.wamp import types
 from autobahn.wamp.exception import TransportLost
 from autobahn.wamp.serializer import MsgPackSerializer
 
+from runtime import PlcStatus
 
 _WampSession = None
 _WampConnection = None
@@ -59,7 +60,7 @@ class WampSession(wamp.ApplicationSession):
 PLCObjDefaults = {
     "StartPLC":          False,
     "GetTraceVariables": ("Broken", None),
-    "GetPLCstatus":      ("Broken", None),
+    "GetPLCstatus":      (PlcStatus.Broken, None),
     "RemoteExec":        (-1, "RemoteExec script failed!")
 }
 
