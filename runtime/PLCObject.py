@@ -497,7 +497,7 @@ class PLCObject(pyro.ObjBase):
                 else:
                     res = str(result)
                 self.python_runtime_vars["FBID"] = None
-            except Exception, e:
+            except Exception as e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
 

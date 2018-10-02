@@ -226,7 +226,7 @@ for mapping needed location variables
                     if error is not None:
                         self.GetCTRoot().logger.write_warning(
                             XSDSchemaErrorMessage % (filepath + error))
-                except Exception, exc:
+                except Exception as exc:
                     self.modules_infos, error = None, unicode(exc)
                 xmlfile.close()
 

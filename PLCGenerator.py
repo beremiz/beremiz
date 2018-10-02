@@ -1024,7 +1024,7 @@ class PouProgramGenerator(object):
                             format(a1=block_type, a2=self.Name))
                     try:
                         self.GenerateBlock(instance, block_infos, body, None)
-                    except ValueError, e:
+                    except ValueError as e:
                         raise PLCGenException(e.message)
                 elif isinstance(instance, ConnectorClass):
                     connector = instance.getname()
@@ -1302,7 +1302,7 @@ class PouProgramGenerator(object):
                         format(a1=block_type, a2=self.Name))
                 try:
                     paths.append(str(self.GenerateBlock(next, block_infos, body, connection, order, to_inout)))
-                except ValueError, e:
+                except ValueError as e:
                     raise PLCGenException(e.message)
             elif isinstance(next, ContinuationClass):
                 name = next.getname()
