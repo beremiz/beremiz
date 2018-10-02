@@ -23,9 +23,8 @@ def LogMessageAndException(msg, exp=None):
         exp = sys.exc_info()
     if _PLCObjectSingleton is not None:
         _PLCObjectSingleton.LogMessage(0, msg + '\n'.join(traceback.format_exception(*exp)))
-    else:
-        print(msg)
-        traceback.print_exception(*exp)
+    print(msg)
+    traceback.print_exception(*exp)
 
 def CreatePLCObjectSingleton(*args):
     global _PLCObjectSingleton
