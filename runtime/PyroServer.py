@@ -9,12 +9,15 @@
 
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 
 import Pyro
 import Pyro.core as pyro
 import runtime
 from runtime.ServicePublisher import ServicePublisher
+
 
 class Server(object):
     def __init__(self, servicename, ip_addr, port):
@@ -49,8 +52,8 @@ class Server(object):
             # taking too small timeout value may cause
             # unwanted diconnection when IDE is kept busy for long periods
             self.daemon.setTimeout(60)
-	
-            pyro_obj=Pyro.core.ObjBase()
+
+            pyro_obj = Pyro.core.ObjBase()
             pyro_obj.delegateTo(runtime.GetPLCObjectSingleton())
 
             self.daemon.connect(pyro_obj, "PLCObject")
@@ -75,6 +78,3 @@ class Server(object):
             self.servicepublisher.UnRegisterService()
             self.servicepublisher = None
         self.daemon.shutdown(True)
-
-
-

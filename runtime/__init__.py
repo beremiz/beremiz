@@ -2,23 +2,25 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import
+from __future__ import print_function
 import traceback
+import sys
 
 from runtime.Worker import worker
 MainWorker = worker()
 
-from runtime.PLCObject import PLCObject
+from runtime.PLCObject import PLCObject  # noqa # pylint: disable=wrong-import-position
+
 
 _PLCObjectSingleton = None
 
+
 def GetPLCObjectSingleton():
-    global _PLCObjectSingleton
-    assert(_PLCObjectSingleton is not None)
+    assert _PLCObjectSingleton is not None
     return _PLCObjectSingleton
 
 
 def LogMessageAndException(msg, exp=None):
-    global _PLCObjectSingleton
     if exp is None:
         exp = sys.exc_info()
     if _PLCObjectSingleton is not None:
@@ -26,6 +28,7 @@ def LogMessageAndException(msg, exp=None):
     print(msg)
     traceback.print_exception(*exp)
 
-def CreatePLCObjectSingleton(*args):
+
+def CreatePLCObjectSingleton(*args, **kwargs):
     global _PLCObjectSingleton
-    _PLCObjectSingleton = PLCObject(*args)
+    _PLCObjectSingleton = PLCObject(*args, **kwargs)
