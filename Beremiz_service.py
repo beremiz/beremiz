@@ -386,6 +386,7 @@ def default_evaluator(tocall, *args, **kwargs):
         res = (None, sys.exc_info())
     return res
 
+
 if enabletwisted:
     import warnings
     with warnings.catch_warnings():
@@ -437,6 +438,7 @@ else:
     evaluator = default_evaluator
 
 # Exception hooks
+
 
 def LogException(*exp):
     LogMessageAndException("", exp)

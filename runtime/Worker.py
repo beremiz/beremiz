@@ -12,6 +12,7 @@ import sys
 import thread
 from threading import Lock, Condition
 
+
 class job(object):
     """
     job to be executed by a worker

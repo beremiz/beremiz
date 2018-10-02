@@ -416,7 +416,7 @@ class RootClass(object):
             self.ObjTables["MSO_Obj"].ChangesToSave = False
             self.ObjTables["MSI_Obj"].ChangesToSave = False
             return True
-        except:
+        except Exception:
             return _("Unable to save to file \"%s\"!") % filepath
 
     def LoadFromFile(self, filepath):
@@ -426,7 +426,7 @@ class RootClass(object):
             self.ObjTablesData = pickle.load(fd)
             fd.close()
             return True
-        except:
+        except Exception:
             return _("Unable to load file \"%s\"!") % filepath
 
     def _ExportBacnetSlave(self):

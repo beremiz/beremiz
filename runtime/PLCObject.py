@@ -23,7 +23,7 @@
 
 
 from __future__ import absolute_import
-from threading import Thread, Lock, Semaphore, Event, Condition
+from threading import Thread, Lock, Semaphore, Event
 import ctypes
 import os
 import sys
@@ -58,7 +58,6 @@ lib_ext = {
 def PLCprint(message):
     sys.stdout.write("PLCobject : "+message+"\n")
     sys.stdout.flush()
-
 
 
 def RunInMain(func):

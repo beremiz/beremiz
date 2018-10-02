@@ -144,9 +144,10 @@ class WampSession(wamp.ApplicationSession):
         _transportFactory = None
         print(_('WAMP session left'))
 
-    def publishWithOwnID(eventID, value):
+    def publishWithOwnID(self, eventID, value):
         ID = self.config.extra["ID"]
         self.publish(unicode(ID+'.'+eventID), value)
+
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
 
@@ -343,13 +344,16 @@ def SetServer(pysrv):
     global _PySrv
     _PySrv = pysrv
 
+
 def PublishEvent(eventID, value):
     if getWampStatus() == "Attached":
-         _WampSession.publish(eventID, value)
+        _WampSession.publish(eventID, value)
+
 
 def PublishEventWithOwnID(eventID, value):
     if getWampStatus() == "Attached":
-         _WampSession.publishWithOwnID(eventID, value)
+        _WampSession.publishWithOwnID(eventID, value)
+
 
 # WEB CONFIGURATION INTERFACE
 WAMP_SECRET_URL = "secret"
