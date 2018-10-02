@@ -249,7 +249,7 @@ class _EthercatCTN(object):
                     EtherCATConfigParser.LoadXMLString(config_xmlfile.read())
                 if error is None:
                     config_is_saved = True
-            except Exception, e:
+            except Exception as e:
                 error = e.message
             config_xmlfile.close()
 
@@ -270,7 +270,7 @@ class _EthercatCTN(object):
                     ProcessVariablesParser.LoadXMLString(process_xmlfile.read())
                 if error is None:
                     process_is_saved = True
-            except Exception, e:
+            except Exception as e:
                 error = e.message
             process_xmlfile.close()
 

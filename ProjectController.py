@@ -799,7 +799,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             status, result, err_result = ProcessLogger(self.logger, buildcmd,
                                                        no_stdout=True,
                                                        no_stderr=True).spin()
-        except Exception, e:
+        except Exception as e:
             self.logger.write_error(buildcmd + "\n")
             self.logger.write_error(repr(e) + "\n")
             return False
