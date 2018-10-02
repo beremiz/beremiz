@@ -45,9 +45,6 @@ def GetDirFilterChoiceOptions():
             (_("Memory"), [LOCATION_VAR_MEMORY])]
 
 
-DIRFILTERCHOICE_OPTIONS = dict([(_(option), filter) for option, filter in GetDirFilterChoiceOptions()])
-
-
 def GetTypeFilterChoiceOptions():
     _ = NoTranslate
     return [_("All"),
@@ -72,6 +69,8 @@ class BrowseLocationsDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, title=_('Browse Locations'),
                            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 
+        self.DIRFILTERCHOICE_OPTIONS = dict(
+            [(_(option), filter) for option, filter in GetDirFilterChoiceOptions()])
         main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(1)
@@ -159,7 +158,7 @@ class BrowseLocationsDialog(wx.Dialog):
         self.Fit()
 
     def RefreshFilters(self):
-        self.DirFilter = DIRFILTERCHOICE_OPTIONS[self.DirFilterChoice.GetStringSelection()]
+        self.DirFilter = self.DIRFILTERCHOICE_OPTIONS[self.DirFilterChoice.GetStringSelection()]
         self.TypeFilter = self.TypeFilterChoice.GetSelection()
 
     def RefreshLocationsTree(self):

@@ -91,13 +91,21 @@ Class_wxglade_hmi.UpdPos = UpdPos
 
 #Class_wxglade_hmi.UpdatePositions = UpdatePositions
 
+def CleanSizer(sizer):
+    sizer_len = sizer.GetItemCount()
+    if sizer_len > 0:
+        for i in reversed(range(sizer_len)):
+            sizer.Remove(i)
+
 initorig = Class_wxglade_hmi.__init__
 def Init(self,*args,**kargs):
     initorig(self,*args,**kargs)
     sizer = self.GetSizer().GetItem(1).GetSizer().GetItem(0).GetSizer()
+    CleanSizer(sizer)
     self.main_buttons = map(
         lambda btname: MakeButtonFunc(self, sizer, btname), PwrButtons)
     sizer = self.GetSizer().GetItem(1).GetSizer().GetItem(1).GetSizer()
+    CleanSizer(sizer)
     self.main_buttons = map(
         lambda btname: MakeButtonFunc(self, sizer, btname), ActionButtons)
     self.axis_buttons = map(

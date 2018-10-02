@@ -470,7 +470,7 @@ class ViewerDropTarget(wx.TextDropTarget):
 
 
 class DebugInstanceName(DebugDataConsumer):
-    VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
+    VALUE_TRANSLATION = None
 
     def __init__(self, parent):
         DebugDataConsumer.__init__(self)
@@ -479,6 +479,9 @@ class DebugInstanceName(DebugDataConsumer):
         self.ActionState = None
         self.x_offset = 2
         self.y_offset = 2
+
+        if self.VALUE_TRANSLATION is None:
+            self.__class__.VALUE_TRANSLATION = {True: _("Active"), False: _("Inactive")}
 
     def SetValue(self, value):
         self.ActionState = value

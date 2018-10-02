@@ -618,8 +618,9 @@ def GetElementInitialValue(factory, infos):
         element_name = factory.etreeNamespaceFormat % infos["name"]
         if infos["elmt_type"]["type"] == SIMPLETYPE:
             def initial_value():
-                value = etree.Element(element_name)
+                value = factory.Parser.makeelement(element_name)
                 value.text = (infos["elmt_type"]["generate"](infos["elmt_type"]["initial"]()))
+                value._init_()
                 return value
         else:
             def initial_value():
@@ -776,6 +777,7 @@ class ClassFactory(object):
         self.SchemaNamespace = None
         self.TargetNamespace = None
         self.etreeNamespaceFormat = "%s"
+        self.Parser = None
 
         self.CurrentCompilations = []
 
@@ -1173,9 +1175,8 @@ class ClassFactory(object):
         class_infos = {
             "type": COMPILEDCOMPLEXTYPE,
             "name": classname,
-            "initial": generateClassCreateFunction(class_definition),
+            "initial": generateClassCreateFunction(self, class_definition),
         }
-
         if self.FileName is not None:
             self.ComputedClasses[self.FileName][classname] = class_definition
         else:
@@ -1268,12 +1269,12 @@ def GetStructurePattern(classinfos):
         raise ValueError("XSD structure not yet supported!")
 
 
-def generateClassCreateFunction(class_definition):
+def generateClassCreateFunction(factory, class_definition):
     """
     Method that generate the method for creating a class instance
     """
     def classCreatefunction():
-        return class_definition()
+        return factory.Parser.CreateElementFromClass(class_definition)
     return classCreatefunction
 
 
@@ -1386,7 +1387,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
 
                     for element in reversed(value):
                         if element_infos["elmt_type"]["type"] == SIMPLETYPE:
-                            tmp_element = etree.Element(factory.etreeNamespaceFormat % name)
+                            tmp_element = factory.Parser.makeelement(factory.etreeNamespaceFormat % name)
                             tmp_element.text = element_infos["elmt_type"]["generate"](element)
                             element = tmp_element
                         self.insert(insertion_point, element)
@@ -1742,6 +1743,8 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
     def __init__(self, classes, *args, **kwargs):
         etree.PythonElementClassLookup.__init__(self, *args, **kwargs)
         self.LookUpClasses = classes
+        self.ElementTag = None
+        self.ElementClass = None
 
     def GetElementClass(self, element_tag, parent_tag=None, default=DefaultElementClass):
         element_class = self.LookUpClasses.get(element_tag, (default, None))
@@ -1755,7 +1758,56 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
             return self.GetElementClass(element_with_parent_class, default=default)
         return element_with_parent_class
 
+    def SetLookupResult(self, element, element_class):
+        """
+        Set lookup result for the next 'lookup' callback made by lxml backend.
+        Lookup result is used only if element matches with tag's name submited to 'lookup'.
+        This is done, because there is no way to submit extra search parameters for
+        etree.PythonElementClassLookup.lookup() from etree.XMLParser.makeelement()
+        It's valid only for a signle 'lookup' call.
+
+        :param element:
+            element's tag name
+        :param element_class:
+            element class that should be returned on
+            match in the next 'lookup' call.
+        :return:
+            Nothing
+        """
+        self.ElementTag = element
+        self.ElementClass = element_class
+
+    def ResetLookupResult(self):
+        """Reset lookup result, so it don't influence next lookups"""
+        self.ElementTag = None
+        self.ElementClass = None
+
+    def GetLookupResult(self, element):
+        """Returns previously set SetLookupResult() lookup result"""
+        element_class = None
+        if self.ElementTag is not None and self.ElementTag == element.tag:
+            element_class = self.ElementClass
+        self.ResetLookupResult()
+        return element_class
+
     def lookup(self, document, element):
+        """
+        Lookup for element class for given element tag.
+        If return None from this method, the fallback is called.
+
+        :param document:
+            opaque document instance that contains the Element
+        :param element:
+            lightweight Element proxy implementation that is only valid during the lookup.
+            Do not try to keep a reference to it.
+            Once the lookup is done, the proxy will be invalid.
+        :return:
+            Returns element class corresponding to given element.
+        """
+        element_class = self.GetLookupResult(element)
+        if element_class is not None:
+            return element_class
+
         parent = element.getparent()
         element_class = self.GetElementClass(
             element.tag, parent.tag if parent is not None else None)
@@ -1773,9 +1825,10 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
 
 class XMLClassParser(etree.XMLParser):
-
-    def __init__(self, namespaces, default_namespace_format, base_class, xsd_schema, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         etree.XMLParser.__init__(self, *args, **kwargs)
+
+    def initMembers(self, namespaces, default_namespace_format, base_class, xsd_schema):
         self.DefaultNamespaceFormat = default_namespace_format
         self.NSMAP = namespaces
         targetNamespace = etree.QName(default_namespace_format % "d").namespace
@@ -1822,14 +1875,53 @@ class XMLClassParser(etree.XMLParser):
             None)
 
     def CreateElement(self, element_tag, parent_tag=None, class_idx=None):
+        """
+        Create XML element based on elements and parent's tag names.
+
+        :param element_tag:
+            element's tag name
+        :param parent_tag:
+            optional parent's tag name. Default value is None.
+        :param class_idx:
+            optional index of class in list of founded classes
+            with same element and parent. Default value is None.
+        :return:
+            created XML element
+            (subclass of lxml.etree._Element created by class factory)
+        """
         element_class = self.GetElementClass(element_tag, parent_tag)
         if isinstance(element_class, ListType):
             if class_idx is not None and class_idx < len(element_class):
-                new_element = element_class[class_idx]()
+                element_class = element_class[class_idx]
             else:
                 raise ValueError("No corresponding class found!")
-        else:
-            new_element = element_class()
+        return self.CreateElementFromClass(element_class, element_tag)
+
+    def CreateElementFromClass(self, element_class, element_tag=None):
+        """
+        Create XML element instance of submitted element's class.
+        Submitted class should be subclass of lxml.etree._Element.
+
+        element_class shouldn't be used to create XML element
+        directly using element_class(), because lxml backend
+        should be aware what class handles what xml element,
+        otherwise default lxml.etree._Element will be used.
+
+        :param element_class:
+            element class
+        :param element_tag:
+            optional element's tag name.
+            If omitted it's calculated from element_class instance.
+        :return:
+            created XML element
+            (subclass of lxml.etree._Element created by class factory)
+        """
+        if element_tag is None:
+            element_tag = element_class().tag
+        etag = self.DefaultNamespaceFormat % element_tag
+        self.ClassLookup.SetLookupResult(etag, element_class)
+        new_element = self.makeelement(etag)
+        self.ClassLookup.ResetLookupResult()
         DefaultElementClass.__setattr__(new_element, "tag", self.DefaultNamespaceFormat % element_tag)
         new_element._init_()
         return new_element
@@ -1840,18 +1932,20 @@ def GenerateParser(factory, xsdstring):
     This function generate a xml parser from a class factory
     """
 
-    ComputedClasses = factory.CreateClasses()
+    parser = XMLClassParser(strip_cdata=False, remove_blank_text=True)
+    factory.Parser = parser
 
+    ComputedClasses = factory.CreateClasses()
     if factory.FileName is not None:
         ComputedClasses = ComputedClasses[factory.FileName]
     BaseClass = [(name, XSDclass) for name, XSDclass in ComputedClasses.items() if XSDclass.IsBaseClass]
 
-    parser = XMLClassParser(
+    parser.initMembers(
         factory.NSMAP,
         factory.etreeNamespaceFormat,
         BaseClass[0] if len(BaseClass) == 1 else None,
-        etree.XMLSchema(etree.fromstring(xsdstring)),
-        strip_cdata=False, remove_blank_text=True)
+        etree.XMLSchema(etree.fromstring(xsdstring)))
+
     class_lookup = XMLElementClassLookUp(factory.ComputedClassesLookUp)
     parser.set_element_class_lookup(class_lookup)
 
