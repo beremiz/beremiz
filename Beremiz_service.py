@@ -38,6 +38,7 @@ import Pyro.core as pyro
 
 from runtime import PLCObject, ServicePublisher, MainWorker
 from runtime.xenomai import TryPreloadXenomai
+from runtime import PlcStatus
 import util.paths as paths
 
 
@@ -311,14 +312,14 @@ if enablewx:
             def OnTaskBarStartPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
                     plcstatus = self.pyroserver.plcobj.GetPLCstatus()[0]
-                    if plcstatus is "Stopped":
+                    if plcstatus is PlcStatus.Stopped:
                         self.pyroserver.plcobj.StartPLC()
                     else:
                         print(_("PLC is empty or already started."))
 
             def OnTaskBarStopPLC(self, evt):
                 if self.pyroserver.plcobj is not None:
-                    if self.pyroserver.plcobj.GetPLCstatus()[0] == "Started":
+                    if self.pyroserver.plcobj.GetPLCstatus()[0] == PlcStatus.Started:
                         Thread(target=self.pyroserver.plcobj.StopPLC).start()
                     else:
                         print(_("PLC is not started."))
@@ -383,9 +384,9 @@ if enablewx:
                 wx.CallAfter(wx.GetApp().ExitMainLoop)
 
             def UpdateIcon(self, plcstatus):
-                if plcstatus is "Started":
+                if plcstatus is PlcStatus.Started:
                     currenticon = self.MakeIcon(starticon)
-                elif plcstatus is "Stopped":
+                elif plcstatus is PlcStatus.Stopped:
                     currenticon = self.MakeIcon(stopicon)
                 else:
                     currenticon = self.MakeIcon(defaulticon)
@@ -481,7 +482,7 @@ class Server(object):
 
     def AutoLoad(self):
         self.plcobj.AutoLoad()
-        if self.plcobj.GetPLCstatus()[0] == "Stopped":
+        if self.plcobj.GetPLCstatus()[0] == PlcStatus.Stopped:
             if autostart:
                 self.plcobj.StartPLC()
         self.plcobj.StatusChange()

@@ -36,6 +36,7 @@ import Pyro.core
 import Pyro.util
 from Pyro.errors import PyroError
 
+from runtime import PlcStatus
 
 service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
@@ -142,7 +143,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     _special_return_funcs = {
         "StartPLC": False,
         "GetTraceVariables": ("Broken", None),
-        "GetPLCstatus": ("Broken", None),
+        "GetPLCstatus": (PlcStatus.Broken, None),
         "RemoteExec": (-1, "RemoteExec script failed!")
     }
 

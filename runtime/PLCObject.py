@@ -35,6 +35,7 @@ import Pyro.core as pyro
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
+from runtime import PlcStatus
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -175,7 +176,7 @@ class PLCObject(pyro.ObjBase):
         self.evaluator = server.evaluator
         self.argv = [server.workdir] + server.argv  # force argv[0] to be "path" to exec...
         self.workingdir = server.workdir
-        self.PLCStatus = "Empty"
+        self.PLCStatus = PlcStatus.Empty
         self.PLClibraryHandle = None
         self.PLClibraryLock = Lock()
         self.DummyIteratorLock = None
@@ -199,9 +200,9 @@ class PLCObject(pyro.ObjBase):
                 self._GetMD5FileName(),
                 "r").read().strip() + lib_ext
             if self.LoadPLC():
-                self.PLCStatus = "Stopped"
+                self.PLCStatus = PlcStatus.Stopped
         except Exception:
-            self.PLCStatus = "Empty"
+            self.PLCStatus = PlcStatus.Empty
             self.CurrentPLCFilename = None
 
     def StatusChange(self):
@@ -502,11 +503,11 @@ class PLCObject(pyro.ObjBase):
 
     @RunInMain
     def StartPLC(self):
-        if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
+        if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
             c_argv = ctypes.c_char_p * len(self.argv)
             res = self._startPLC(len(self.argv), c_argv(*self.argv))
             if res == 0:
-                self.PLCStatus = "Started"
+                self.PLCStatus = PlcStatus.Started
                 self.StatusChange()
                 self.PythonRuntimeCall("start")
                 self.StartSem = Semaphore(0)
@@ -516,16 +517,16 @@ class PLCObject(pyro.ObjBase):
                 self.LogMessage("PLC started")
             else:
                 self.LogMessage(0, _("Problem starting PLC : error %d" % res))
-                self.PLCStatus = "Broken"
+                self.PLCStatus = PlcStatus.Broken
                 self.StatusChange()
 
     @RunInMain
     def StopPLC(self):
-        if self.PLCStatus == "Started":
+        if self.PLCStatus == PlcStatus.Started:
             self.LogMessage("PLC stopped")
             self._stopPLC()
             self.PythonThread.join()
-            self.PLCStatus = "Stopped"
+            self.PLCStatus = PlcStatus.Stopped
             self.StatusChange()
             self.PythonRuntimeCall("stop")
             if self.TraceThread is not None:
@@ -540,7 +541,7 @@ class PLCObject(pyro.ObjBase):
 
     @RunInMain
     def NewPLC(self, md5sum, data, extrafiles):
-        if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
+        if self.PLCStatus in [PlcStatus.Stopped, PlcStatus.Empty, PlcStatus.Broken]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir, "extra_files.txt")
 
@@ -556,7 +557,7 @@ class PLCObject(pyro.ObjBase):
                 self.UnLoadPLC()
 
             self.LogMessage("NewPLC (%s)" % md5sum)
-            self.PLCStatus = "Empty"
+            self.PLCStatus = PlcStatus.Empty
 
             try:
                 if replace_PLC_shared_object:
@@ -587,20 +588,20 @@ class PLCObject(pyro.ObjBase):
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName
             except Exception:
-                self.PLCStatus = "Broken"
+                self.PLCStatus = PlcStatus.Broken
                 self.StatusChange()
                 PLCprint(traceback.format_exc())
                 return False
 
             if not replace_PLC_shared_object:
-                self.PLCStatus = "Stopped"
+                self.PLCStatus = PlcStatus.Stopped
             elif self.LoadPLC():
-                self.PLCStatus = "Stopped"
+                self.PLCStatus = PlcStatus.Stopped
             else:
-                self.PLCStatus = "Broken"
+                self.PLCStatus = PlcStatus.Broken
             self.StatusChange()
 
-            return self.PLCStatus == "Stopped"
+            return self.PLCStatus == PlcStatus.Stopped
         return False
 
     def MatchMD5(self, MD5):
@@ -635,7 +636,7 @@ class PLCObject(pyro.ObjBase):
 
     def _TracesSwap(self):
         self.LastSwapTrace = time()
-        if self.TraceThread is None and self.PLCStatus == "Started":
+        if self.TraceThread is None and self.PLCStatus == PlcStatus.Started:
             self.TraceThread = Thread(target=self.TraceThreadProc)
             self.TraceThread.start()
         self.TraceLock.acquire()
@@ -653,7 +654,7 @@ class PLCObject(pyro.ObjBase):
         Return a list of traces, corresponding to the list of required idx
         """
         self._resumeDebug()  # Re-enable debugger
-        while self.PLCStatus == "Started":
+        while self.PLCStatus == PlcStatus.Started:
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buff = ctypes.c_void_p()

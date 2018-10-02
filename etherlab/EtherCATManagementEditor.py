@@ -19,6 +19,7 @@ import wx.lib.buttons
 
 # --------------------------------------------------------------------
 from controls import CustomGrid, CustomTable
+from runtime import PlcStatus
 # --------------------------------------------------------------------
 
 # ------------ for register management ---------------
@@ -242,7 +243,7 @@ class SlaveStatePanelClass(wx.Panel):
             #  (2) Otherwise, show error message and return
             else:
                 status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
-                if status == "Started":
+                if status == PlcStatus.Started:
                     self.Controler.CommonMethod.RequestSlaveState("OP")
                     self.TextCtrlDic["TargetState"].SetValue("OP")
                 else:
@@ -906,7 +907,7 @@ class SlaveSiiSmartView(wx.Panel):
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(False)
         if check_connect_flag:
             status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
-            if status is not "Started":
+            if status is not PlcStatus.Started:
                 dialog = wx.FileDialog(self, _("Choose a binary file"), os.getcwd(), "",  _("bin files (*.bin)|*.bin"), wx.OPEN)
 
                 if dialog.ShowModal() == wx.ID_OK:
@@ -1275,7 +1276,7 @@ class HexView(wx.Panel):
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(False)
         if check_connect_flag:
             status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
-            if status is not "Started":
+            if status is not PlcStatus.Started:
                 self.Controler.CommonMethod.SiiWrite(self.SiiBinary)
                 self.Controler.CommonMethod.Rescan()
 
