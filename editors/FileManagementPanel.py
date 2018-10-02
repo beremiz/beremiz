@@ -34,8 +34,6 @@ from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from controls import FolderTree
 
-FILTER = _("All files (*.*)|*.*|CSV files (*.csv)|*.csv")
-
 
 class FileManagementPanel(EditorPanel):
 
@@ -50,6 +48,7 @@ class FileManagementPanel(EditorPanel):
         managed_dir_label = wx.StaticText(self.Editor, label=_(self.TagName) + ":")
         left_sizer.AddWindow(managed_dir_label, border=5, flag=wx.GROW | wx.BOTTOM)
 
+        FILTER = _("All files (*.*)|*.*|CSV files (*.csv)|*.csv")
         self.ManagedDir = FolderTree(self.Editor, self.Folder, FILTER)
         left_sizer.AddWindow(self.ManagedDir, 1, flag=wx.GROW)
 

@@ -34,16 +34,6 @@ from dialogs.BlockPreviewDialog import BlockPreviewDialog
 #                                    Helpers
 # -------------------------------------------------------------------------------
 
-# Dictionaries containing correspondence between variable block class and string
-# to be shown in Class combo box in both sense
-VARIABLE_CLASSES_DICT = {
-    INPUT:  _("Input"),
-    INOUT:  _("InOut"),
-    OUTPUT: _("Output")
-}
-
-VARIABLE_CLASSES_DICT_REVERSE = dict(
-    [(value, key) for key, value in VARIABLE_CLASSES_DICT.iteritems()])
 
 # -------------------------------------------------------------------------------
 #                        Set Variable Parameters Dialog
@@ -66,6 +56,17 @@ class FBDVariableDialog(BlockPreviewDialog):
         """
         BlockPreviewDialog.__init__(self, parent, controller, tagname,
                                     title=_('Variable Properties'))
+
+        # Dictionaries containing correspondence between variable block class and string
+        # to be shown in Class combo box in both sense
+        self.VARIABLE_CLASSES_DICT = {
+            INPUT:  _("Input"),
+            INOUT:  _("InOut"),
+            OUTPUT: _("Output")
+        }
+
+        self.VARIABLE_CLASSES_DICT_REVERSE = dict(
+            [(value, key) for key, value in self.VARIABLE_CLASSES_DICT.iteritems()])
 
         # Init common sizers
         self._init_sizers(4, 2, 4, None, 3, 2)
@@ -119,7 +120,7 @@ class FBDVariableDialog(BlockPreviewDialog):
             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Set options that can be selected in class combo box
-        for var_class, choice in VARIABLE_CLASSES_DICT.iteritems():
+        for var_class, choice in self.VARIABLE_CLASSES_DICT.iteritems():
             if not exclude_input or var_class != INPUT:
                 self.Class.Append(choice)
         self.Class.SetSelection(0)
@@ -141,7 +142,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         Called to refresh names in name list box
         """
         # Get variable class to select POU variable applicable
-        var_class = VARIABLE_CLASSES_DICT_REVERSE[
+        var_class = self.VARIABLE_CLASSES_DICT_REVERSE[
             self.Class.GetStringSelection()]
 
         # Refresh names in name list box by selecting variables in POU variables
@@ -172,7 +173,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         var_class = values.get("class", None)
         if var_class is not None:
             # Set class selected in class combo box
-            self.Class.SetStringSelection(VARIABLE_CLASSES_DICT[var_class])
+            self.Class.SetStringSelection(self.VARIABLE_CLASSES_DICT[var_class])
             # Refresh names in name list box according to var class
             self.RefreshNameList()
 
@@ -204,7 +205,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         """
         expression = self.Expression.GetValue()
         values = {
-            "class": VARIABLE_CLASSES_DICT_REVERSE[
+            "class": self.VARIABLE_CLASSES_DICT_REVERSE[
                 self.Class.GetStringSelection()],
             "expression": expression,
             "var_type": self.VariableList.get(expression, (None, None))[1],
@@ -288,7 +289,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Set graphic element displayed, creating a FBD variable element
         self.Element = FBD_Variable(
             self.Preview,
-            VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()],
+            self.VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()],
             name,
             self.VariableList.get(name, ("", ""))[1],
             executionOrder=self.ExecutionOrder.GetValue())

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="beremiz" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:21:19"/>
-  <contentHeader name="Beremiz SVGUI Test" modificationDateTime="2016-10-20T12:38:31">
+  <contentHeader name="Beremiz SVGUI Test" modificationDateTime="2018-08-24T13:19:27">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -264,7 +264,7 @@
               <outputVariables/>
             </block>
             <inVariable localId="1" height="30" width="88" executionOrderId="0" negated="false">
-              <position x="59" y="220"/>
+              <position x="59" y="228"/>
               <connectionPointOut>
                 <relPosition x="88" y="15"/>
               </connectionPointOut>
@@ -305,18 +305,18 @@
               <outputVariables/>
             </block>
             <block localId="96" width="80" height="65" typeName="AND" executionOrderId="0">
-              <position x="200" y="182"/>
+              <position x="200" y="190"/>
               <inputVariables>
                 <variable formalParameter="IN1" negated="true">
                   <connectionPointIn>
                     <relPosition x="0" y="31"/>
                     <connection refLocalId="96" formalParameter="OUT">
-                      <position x="200" y="213"/>
-                      <position x="175" y="213"/>
-                      <position x="175" y="167"/>
-                      <position x="305" y="167"/>
-                      <position x="305" y="213"/>
-                      <position x="280" y="213"/>
+                      <position x="200" y="221"/>
+                      <position x="175" y="221"/>
+                      <position x="175" y="175"/>
+                      <position x="305" y="175"/>
+                      <position x="305" y="221"/>
+                      <position x="280" y="221"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -324,8 +324,8 @@
                   <connectionPointIn>
                     <relPosition x="0" y="53"/>
                     <connection refLocalId="1">
-                      <position x="200" y="235"/>
-                      <position x="147" y="235"/>
+                      <position x="200" y="243"/>
+                      <position x="147" y="243"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -340,12 +340,12 @@
               </outputVariables>
             </block>
             <connector name="CLOCK" localId="97" height="30" width="90">
-              <position x="345" y="198"/>
+              <position x="345" y="206"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="96" formalParameter="OUT">
-                  <position x="345" y="213"/>
-                  <position x="280" y="213"/>
+                  <position x="345" y="221"/>
+                  <position x="280" y="221"/>
                 </connection>
               </connectionPointIn>
             </connector>
@@ -443,7 +443,7 @@
                 <relPosition x="122" y="15"/>
               </connectionPointOut>
             </continuation>
-            <comment localId="101" height="152" width="816">
+            <comment localId="101" height="164" width="977">
               <position x="27" y="8"/>
               <content>
                 <xhtml:p><![CDATA[This example shows how IEC program in PLC can interact with web interface. 
@@ -458,8 +458,8 @@ Inkscape is a free and open-source vector graphics editor. It's not part of Bere
 ]]></xhtml:p>
               </content>
             </comment>
-            <comment localId="102" height="101" width="544">
-              <position x="17" y="409"/>
+            <comment localId="102" height="126" width="641">
+              <position x="17" y="397"/>
               <content>
                 <xhtml:p><![CDATA[In this example basic elements like 'Button', 'Led' and 'Text' are used. 
 Back_id and sele_id inputs of these blocks are IDs  of graphic primitives in SVG file. 
