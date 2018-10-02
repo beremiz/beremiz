@@ -1547,7 +1547,7 @@ class RegisterAccessPanel(wx.Panel):
                     reg_main_description = description.nodeValue
 
             # Add description for register main table
-            if reg_index is not "" and reg_main_description is not "":
+            if reg_index != "" and reg_main_description != "":
                 self.RegisterDescriptionDict[reg_index] = reg_main_description
 
             if data.nodeType == reg_info_tree.ELEMENT_NODE and data.nodeName == "Details":
@@ -1614,11 +1614,11 @@ class RegisterAccessPanel(wx.Panel):
                                     reg_sub_value_description = description.nodeValue
 
                             # Add a description of each value to register enum dictionary
-                            if reg_sub_value is not "" and reg_sub_value_description is not "":
+                            if reg_sub_value != "" and reg_sub_value_description != "":
                                 reg_enum_dictionary[reg_sub_value] = reg_sub_value_description
 
         # add a description to register sub table description dictionary
-        if reg_bit_range is not "" and reg_sub_description is not "":
+        if reg_bit_range != "" and reg_sub_description != "":
             self.RegisterSubGridDict[reg_index].append([reg_bit_range,
                                                         reg_sub_description,
                                                         reg_enum_dictionary])
@@ -1707,7 +1707,7 @@ class RegisterAccessPanel(wx.Panel):
                 self.PageRange[index] = [0, 0]
 
             for reg_row_data in self.RegMonitorData:
-                if reg_row_data[1] is not "":
+                if reg_row_data[1] != "":
                     # data structure for "compact view"
                     reg_compact_data.append(reg_row_data)
                     # count for each register notebooks' row

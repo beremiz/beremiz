@@ -304,6 +304,7 @@ pylint_checks()
     enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y '
     enable=$enable,W0612          # (unused-variable) Unused variable 'X'
     enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
+    enable=$enable,R0123          # (literal-comparison) Comparison to literal
     # enable=
 
     options=
