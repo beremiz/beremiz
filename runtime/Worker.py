@@ -8,6 +8,7 @@
 # See COPYING.Runtime file for copyrights details.
 
 from __future__ import absolute_import
+import sys
 import thread
 from threading import Lock, Condition
 
@@ -54,8 +55,13 @@ class worker(object):
         """
         self._threadID = thread.get_ident()
         if args or kwargs:
-            job(*args, **kwargs).do()
-            # result is ignored
+            _job = job(*args, **kwargs)
+            _job.do()
+            if _job.success:
+                # result is ignored
+                pass
+            else:
+                raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
         self.mutex.acquire()
         while not self._finish:
             self.todo.wait()
