@@ -318,6 +318,7 @@ pylint_checks()
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
     enable=$enable,W0111          # (assign-to-new-keyword) Name async will become a keyword in Python 3.7
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
+    enable=$enable,W0109          # (duplicate-key) Duplicate key 'X' in dictionary
     enable=$enable,E1310          # (bad-str-strip-call) Suspicious argument in str.strip call
     enable=$enable,E1300          # (bad-format-character) Unsupported format character '"' (0x22) at index 17
     enable=$enable,E1304          # (missing-format-string-key) Missing key 'X_name' in format string dictionary
