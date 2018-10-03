@@ -77,6 +77,21 @@ python3_compile_checks()
     echo ""
 }
 
+localization_checks()
+{
+    echo "Check correct localization formats"
+    xgettext --version
+    
+    for i in $py_files; do
+        xgettext -s --language=Python --package-name Beremiz --output=/tmp/m.pot $i 2>&1 | grep 'warning'
+        if [ $? -eq 0 ]; then
+            echo "Syntax error in $i"
+            set_exit_error
+        fi
+    done
+    echo "DONE"
+    echo ""
+}
 
 # pep8 was renamed to pycodestyle
 # detect existed version
@@ -419,6 +434,7 @@ main()
     get_files_to_check $@
     python3_compile_checks
     compile_checks
+    localization_checks
     pep8_checks_default
     # pep8_checks_selected
 
