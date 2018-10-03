@@ -65,7 +65,6 @@ def EthercatSDODownload(pos, index, subindex, var_type, value):
 
 
 def GetResult():
-    global Result
     return Result
 
 
@@ -80,7 +79,6 @@ def KMSGPollThreadProc():
     Last 4 KB are polled, and lines compared to last
     captured line to detect new lines
     """
-    global StopKMSGThread
     libc = ctypes.CDLL("libc.so.6")
     klog = libc.klogctl
     klog.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int]
@@ -113,7 +111,7 @@ def _runtime_etherlab_init():
 
 
 def _runtime_etherlab_cleanup():
-    global KMSGPollThread, StopKMSGThread, SDOProc, SDOThread
+    global KMSGPollThread, StopKMSGThread, SDOThread
     try:
         os.kill(SDOProc.pid, signal.SIGTERM)
     except Exception:
