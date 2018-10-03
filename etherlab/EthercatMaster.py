@@ -294,12 +294,12 @@ class _EthercatCTN(object):
         return "Ethercat"
 
     def GetContextualMenuItems(self):
-        return [("Add Ethercat Slave", "Add Ethercat Slave to Master", self.OnAddEthercatSlave)]
+        return [(_("Add Ethercat Slave"), _("Add Ethercat Slave to Master"), self.OnAddEthercatSlave)]
 
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
         dialog = BrowseValuesLibraryDialog(app_frame,
-                                           "Ethercat Slave Type",
+                                           _("Ethercat Slave Type"),
                                            self.GetSlaveTypesLibrary())
         if dialog.ShowModal() == wx.ID_OK:
             type_infos = dialog.GetValueInfos()
@@ -460,7 +460,7 @@ class _EthercatCTN(object):
         if execute:
             error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
             if error != 0:
-                dialog = wx.MessageDialog(app_frame, returnVal, "Error", wx.OK | wx.ICON_ERROR)
+                dialog = wx.MessageDialog(app_frame, returnVal, _("Error"), wx.OK | wx.ICON_ERROR)
                 dialog.ShowModal()
                 dialog.Destroy()
             elif returnVal is not None:
