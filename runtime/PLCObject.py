@@ -32,6 +32,7 @@ import traceback
 from time import time
 import _ctypes  # pylint: disable=wrong-import-order
 import Pyro.core as pyro
+import six
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
@@ -147,7 +148,10 @@ class worker(object):
         if _job.success:
             return _job.result
         else:
-            raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
+            exc_type = _job.exc_info[0]
+            exc_value = _job.exc_info[1]
+            exc_traceback = _job.exc_info[2]
+            six.reraise(exc_type, exc_value, exc_traceback)
 
     def quit(self):
         """
@@ -697,7 +701,7 @@ class PLCObject(pyro.ObjBase):
 
     def RemoteExec(self, script, *kwargs):
         try:
-            exec script in kwargs
+            exec(script, kwargs)
         except Exception:
             _e_type, e_value, e_traceback = sys.exc_info()
             line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
