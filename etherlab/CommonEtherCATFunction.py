@@ -428,7 +428,6 @@ class _CommonSlave(object):
                         "UINT48": "19",
                         "UINT56": "1a",
                         "ULINT": "1b",
-                        "USINT": "1e",
                         "BITARR8": "2d",
                         "BITARR16": "2e",
                         "BITARR32": "2f",
