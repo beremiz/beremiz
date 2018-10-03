@@ -28,7 +28,7 @@ def ExtractHexDecValue(value):
         return int(value.replace("#", "0"), 16)
 
     except Exception:
-        raise ValueError("Invalid value for HexDecValue \"%s\"" % value)
+        raise ValueError(_("Invalid value for HexDecValue \"%s\"") % value)
 
 
 def ExtractName(names, default=None):
@@ -1578,7 +1578,7 @@ class _CommonSlave(object):
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2:  # No slave connected to the master controller
                 if not cyclic_flag:
-                    self.CreateErrorDialog('No connected slaves')
+                    self.CreateErrorDialog(_('No connected slaves'))
                 return False
 
             elif len(number_of_lines) > 2:
@@ -1586,7 +1586,7 @@ class _CommonSlave(object):
         else:
             # The master controller is not connected to Beremiz host
             if not cyclic_flag:
-                self.CreateErrorDialog('PLC not connected!')
+                self.CreateErrorDialog(_('PLC not connected!'))
             return False
 
     def CreateErrorDialog(self, mention):
@@ -1596,7 +1596,7 @@ class _CommonSlave(object):
         """
         app_frame = self.Controler.GetCTRoot().AppFrame
         dlg = wx.MessageDialog(app_frame, mention,
-                               ' Warning...',
+                               _(' Warning...'),
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()

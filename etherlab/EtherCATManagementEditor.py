@@ -247,7 +247,7 @@ class SlaveStatePanelClass(wx.Panel):
                     self.Controler.CommonMethod.RequestSlaveState("OP")
                     self.TextCtrlDic["TargetState"].SetValue("OP")
                 else:
-                    self.Controler.CommonMethod.CreateErrorDialog("PLC is Not Started")
+                    self.Controler.CommonMethod.CreateErrorDialog(_("PLC is Not Started"))
 
     def GetCurrentState(self, event):
         """
@@ -358,7 +358,7 @@ class SDOPanelClass(wx.Panel):
         @return True or False
         """
 
-        slaveSDO_progress = wx.ProgressDialog("Slave SDO Monitoring", "Now Uploading...",
+        slaveSDO_progress = wx.ProgressDialog(_("Slave SDO Monitoring"), _("Now Uploading..."),
                                               maximum=len(self.SDOs.splitlines()),
                                               parent=self,
                                               style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL | wx.PD_ELAPSED_TIME |
@@ -645,11 +645,11 @@ class SlaveSDOTable(wx.grid.Grid):
 
                         self.SetCellValue(event.GetRow(), event.GetCol(), hex(int(dlg.GetValue(), 0)))
                     else:
-                        self.Controler.CommonMethod.CreateErrorDialog('You cannot SDO download this state')
+                        self.Controler.CommonMethod.CreateErrorDialog(_('You cannot SDO download this state'))
                 # Error occured process of "int(variable)"
                 # User input is not hex, dec value
                 except ValueError:
-                    self.Controler.CommonMethod.CreateErrorDialog('You can input only hex, dec value')
+                    self.Controler.CommonMethod.CreateErrorDialog(_('You can input only hex, dec value'))
 
 
 # -------------------------------------------------------------------------------
@@ -925,7 +925,7 @@ class SlaveSiiSmartView(wx.Panel):
                         self.Controler.CommonMethod.SiiData = self.SiiBinary
                         self.SetEEPROMData()
                     except Exception:
-                        self.Controler.CommonMethod.CreateErrorDialog('The file does not exist!')
+                        self.Controler.CommonMethod.CreateErrorDialog(_('The file does not exist!'))
                         dialog.Destroy()
 
     def ReadFromEEPROM(self, event):
@@ -1317,7 +1317,7 @@ class HexView(wx.Panel):
                 self.SiiGrid.SetValue(self.HexCode)
                 self.SiiGrid.Update()
             except Exception:
-                self.Controler.CommonMethod.CreateErrorDialog('The file does not exist!')
+                self.Controler.CommonMethod.CreateErrorDialog(_('The file does not exist!'))
 
         dialog.Destroy()
 
@@ -1961,8 +1961,8 @@ class RegisterMainTable(wx.grid.Grid):
             """
         # user can enter a value in case that user double-clicked 'Dec' or 'Hex' value.
         if event.GetCol() == 1 or event.GetCol() == 2:
-            dlg = wx.TextEntryDialog(self, "Enter hex(0xnnnn) or dec(n) value",
-                                     "Register Modify Dialog", style=wx.OK | wx.CANCEL)
+            dlg = wx.TextEntryDialog(self, _("Enter hex(0xnnnn) or dec(n) value"),
+                                     _("Register Modify Dialog"), style=wx.OK | wx.CANCEL)
 
             # Setting value in initial dialog value
             start_value = self.GetCellValue(event.GetRow(), event.GetCol())
@@ -1996,10 +1996,10 @@ class RegisterMainTable(wx.grid.Grid):
                         self.SetCellValue(event.GetRow(), 3, char_data)
 
                     else:
-                        self.Controler.CommonMethod.CreateErrorDialog('You can\'t modify it. This register is read-only or it\'s not connected.')
+                        self.Controler.CommonMethod.CreateErrorDialog(_('You can\'t modify it. This register is read-only or it\'s not connected.'))
 
                 except ValueError:
-                    self.Controler.CommonMethod.CreateErrorDialog('You entered wrong value. You can enter dec or hex value only.')
+                    self.Controler.CommonMethod.CreateErrorDialog(_('You entered wrong value. You can enter dec or hex value only.'))
 
 
 # -------------------------------------------------------------------------------
@@ -2157,4 +2157,4 @@ class MasterStatePanelClass(wx.Panel):
                     else:
                         self.TextCtrl[key].SetValue(self.MasterState[key][0])
         else:
-            self.Controler.CommonMethod.CreateErrorDialog('PLC not connected!')
+            self.Controler.CommonMethod.CreateErrorDialog(_('PLC not connected!'))
