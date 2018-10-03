@@ -261,7 +261,7 @@ for mapping needed location variables
                 else:
 
                     self.GetCTRoot().logger.write_error(
-                        _("Couldn't load %s XML file:\n%s") % (filepath, error))
+                        _("Couldn't load {a1} XML file:\n{a2}").format(a1=filepath, a2=error))
 
         return self.Library
 

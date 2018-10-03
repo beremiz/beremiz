@@ -167,8 +167,8 @@ class _EthercatCFileGenerator(object):
                     entry_infos["infos"][4].append(name)
                     return entry_infos["infos"][2]
                 else:
-                    msg = _("Output variables can't be defined with different locations (%s and %s)") \
-                          % (entry_infos["infos"][2], name)
+                    msg = _("Output variables can't be defined with different locations ({a1} and {a2})").\
+                          format(a1=entry_infos["infos"][2], a2=name)
                     raise ValueError(msg)
         else:
             raise ValueError(_("Definition conflict for location \"%s\"") % name)
@@ -467,8 +467,8 @@ class _EthercatCFileGenerator(object):
                         if not entry_declaration["mapped"]:
                             entry = device_entries.get((index, subindex), None)
                             if entry is None:
-                                msg = _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") \
-                                      % (index, subindex, type_infos["device_type"])
+                                msg = _("Unknown entry index 0x{a1:.4x}, subindex 0x{a2:.2x} for device {a3}").\
+                                      format(a1=index, a2=subindex, a3=type_infos["device_type"])
                                 raise ValueError(msg)
 
                             entry_infos = {
@@ -566,8 +566,8 @@ class _EthercatCFileGenerator(object):
 
             for (index, subindex), entry_declaration in slave_variables.iteritems():
                 if not entry_declaration["mapped"]:
-                    message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
-                                    (index, subindex, type_infos["device_type"])
+                    message = _("Entry index 0x{a1:.4x}, subindex 0x{a2:.2x} not mapped for device {a3}").\
+                              format(a1=index, a2=subindex, a3=type_infos["device_type"])
                     self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
 
         for element in ["used_pdo_entry_offset_variables_declaration",
