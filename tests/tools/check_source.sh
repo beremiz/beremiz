@@ -52,6 +52,32 @@ compile_checks()
     echo ""
 }
 
+
+python3_compile_checks()
+{
+    echo "Syntax checking using python3 ..."
+    python3 --version
+
+    # remove compiled Python files
+    find . -name '*.pyc' -exec rm -f {} \;
+
+    for i in $py_files; do
+        # echo $i
+        python3 -m py_compile $i
+        if [ $? -ne 0 ]; then
+            echo "Syntax error in $i"
+            set_exit_error
+        fi
+    done
+
+    # remove compiled Python files
+    find . -name '*.pyc' -exec rm -f {} \;
+
+    echo "DONE"
+    echo ""
+}
+
+
 # pep8 was renamed to pycodestyle
 # detect existed version
 pep8_detect()
@@ -390,6 +416,7 @@ print_help()
 main()
 {
     get_files_to_check $@
+    python3_compile_checks
     compile_checks
     pep8_checks_default
     # pep8_checks_selected
