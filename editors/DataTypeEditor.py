@@ -27,6 +27,7 @@
 from __future__ import absolute_import
 import re
 from types import TupleType
+from six.moves import xrange
 
 import wx
 import wx.grid

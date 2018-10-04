@@ -41,6 +41,7 @@ from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from itertools import izip
+from six.moves import xrange
 
 import wx
 

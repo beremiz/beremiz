@@ -26,6 +26,8 @@
 from __future__ import absolute_import
 from types import *
 import re
+from six.moves import xrange
+
 from plcopen import PLCOpenParser
 from plcopen.structures import *
 from plcopen.types_enums import *

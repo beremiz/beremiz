@@ -30,6 +30,7 @@ from types import TupleType
 from threading import Lock
 
 import wx
+from six.moves import xrange
 
 from plcopen.structures import *
 from plcopen.types_enums import ComputePouName

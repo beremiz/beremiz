@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import
 import wx
+from six.moves import xrange
 
 from graphics.GraphicCommons import *
 from graphics.DebugDataConsumer import DebugDataConsumer

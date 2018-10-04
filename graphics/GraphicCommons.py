@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from math import *
 from types import *
+from six.moves import xrange
 
 import wx
 from graphics.ToolTipProducer import ToolTipProducer

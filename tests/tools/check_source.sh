@@ -350,6 +350,7 @@ pylint_checks()
 
     # python3 compatibility checks
     enable=$enable,W1648          # (bad-python3-import) Module moved in Python 3
+    enable=$enable,W1613          # (xrange-builtin) xrange built-in referenced
     # enable=
 
     options=

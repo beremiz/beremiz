@@ -30,6 +30,7 @@ import wx
 import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
+from six.moves import xrange
 
 from plcopen.plcopen import TestTextElement
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS, DefaultType

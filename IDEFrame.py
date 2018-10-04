@@ -30,7 +30,7 @@ import base64
 import wx
 import wx.grid
 import wx.aui
-from six.moves import cPickle
+from six.moves import cPickle, xrange
 
 from editors.EditorPanel import EditorPanel
 from editors.SFCViewer import SFC_Viewer

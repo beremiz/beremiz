@@ -27,6 +27,7 @@ from __future__ import absolute_import
 import wx
 import wx.lib.buttons
 import wx.grid
+from six.moves import xrange
 
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
 from controls import CustomGrid, CustomTable, DurationCellEditor

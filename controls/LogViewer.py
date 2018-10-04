@@ -30,6 +30,7 @@ from weakref import proxy
 
 import numpy
 import wx
+from six.moves import xrange
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
