@@ -32,7 +32,7 @@ from types import *
 from xml.dom import minidom
 from xml.sax.saxutils import unescape
 from collections import OrderedDict
-
+from six.moves import xrange
 from lxml import etree
 
 

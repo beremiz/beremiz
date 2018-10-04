@@ -32,7 +32,7 @@ from time import time
 import _ctypes  # pylint: disable=wrong-import-order
 import Pyro.core as pyro
 import six
-from six.moves import _thread
+from six.moves import _thread, xrange
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount

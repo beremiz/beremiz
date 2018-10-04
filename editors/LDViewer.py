@@ -27,6 +27,7 @@ from __future__ import absolute_import
 from types import *
 
 import wx
+from six.moves import xrange
 
 from editors.Viewer import *
 

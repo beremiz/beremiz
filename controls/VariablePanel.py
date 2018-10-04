@@ -30,6 +30,7 @@ from types import TupleType, StringType, UnicodeType
 import wx
 import wx.grid
 import wx.lib.buttons
+from six.moves import xrange
 
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from plcopen.VariableInfoCollector import _VariableInfos

@@ -29,6 +29,7 @@ from types import *
 import re
 from collections import OrderedDict
 
+from six.moves import xrange
 from lxml import etree
 
 from xmlclass import *
