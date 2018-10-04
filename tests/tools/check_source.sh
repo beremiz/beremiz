@@ -347,6 +347,9 @@ pylint_checks()
     enable=$enable,W0612          # (unused-variable) Unused variable 'X'
     enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     enable=$enable,R0123          # (literal-comparison) Comparison to literal
+
+    # python3 compatibility checks
+    enable=$enable,W1648          # (bad-python3-import) Module moved in Python 3
     # enable=
 
     options=

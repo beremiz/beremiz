@@ -32,7 +32,7 @@ import getopt
 import threading
 from threading import Thread, Semaphore, Lock
 import traceback
-import __builtin__
+from six.moves import builtins
 import Pyro
 import Pyro.core as pyro
 
@@ -143,7 +143,7 @@ elif len(argv) == 0:
     argv = [WorkingDir]
 
 if __name__ == '__main__':
-    __builtin__.__dict__['_'] = lambda x: x
+    builtins.__dict__['_'] = lambda x: x
     # TODO: add a cmdline parameter if Trying Preloading Xenomai makes problem
     TryPreloadXenomai()
     version()
@@ -162,12 +162,12 @@ def SetupI18n():
     domain = "Beremiz"
 
     # Define locale for wx
-    loc = __builtin__.__dict__.get('loc', None)
+    loc = builtins.__dict__.get('loc', None)
     if loc is None:
         wx.LogGui.EnableLogging(False)
         loc = wx.Locale(langid)
         wx.LogGui.EnableLogging(True)
-        __builtin__.__dict__['loc'] = loc
+        builtins.__dict__['loc'] = loc
         # Define location for searching translation files
     loc.AddCatalogLookupPathPrefix(localedir)
     # Define locale domain
@@ -186,8 +186,8 @@ def SetupI18n():
         return wx.GetTranslation(message).encode(default_locale)
 
     if __name__ == '__main__':
-        __builtin__.__dict__['_'] = unicode_translation
-        # __builtin__.__dict__['_'] = wx.GetTranslation
+        builtins.__dict__['_'] = unicode_translation
+        # builtins.__dict__['_'] = wx.GetTranslation
 
 
 # Life is hard... have a candy.

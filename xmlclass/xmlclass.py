@@ -31,7 +31,6 @@ import datetime
 from types import *
 from xml.dom import minidom
 from xml.sax.saxutils import unescape
-from new import classobj
 from collections import OrderedDict
 
 from lxml import etree
@@ -1168,7 +1167,7 @@ class ClassFactory(object):
         classmembers["getElementInfos"] = generateGetElementInfos(self, classinfos)
         classmembers["setElementValue"] = generateSetElementValue(self, classinfos)
 
-        class_definition = classobj(str(name), bases, classmembers)
+        class_definition = type(str(name), bases, classmembers)
         setattr(class_definition, "__getattr__", generateGetattrMethod(self, class_definition, classinfos))
         setattr(class_definition, "__setattr__", generateSetattrMethod(self, class_definition, classinfos))
         class_infos = {
