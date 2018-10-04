@@ -31,6 +31,11 @@ set_exit_error()
     fi
 }
 
+version_gt()
+{
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+}
+
 
 compile_checks()
 {
@@ -237,6 +242,7 @@ flake8_checks()
 }
 
 pylint_checks()
+
 {
     echo "Check for problems using pylint ..."
 
@@ -354,6 +360,12 @@ pylint_checks()
     # enable=
 
     options=
+
+    ver=$(pylint --version 2>&1 | grep pylint  | awk '{ print $2 }')
+    if version_gt $ver '1.6.8'; then
+	echo "Use multiple threads for pylint"
+	options="$options --jobs=0 "
+    fi
     options="$options --rcfile=.pylint"
     # options="$options --py3k"   # report errors for Python 3 porting
 
