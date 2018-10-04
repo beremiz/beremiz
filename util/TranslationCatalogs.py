@@ -25,14 +25,14 @@
 
 from __future__ import absolute_import
 import os
-import __builtin__
+from six.moves import builtins
 import wx
 
 
 locale = None
 
 
-__builtin__.__dict__['_'] = wx.GetTranslation
+builtins.__dict__['_'] = wx.GetTranslation
 
 
 def GetDomain(path):

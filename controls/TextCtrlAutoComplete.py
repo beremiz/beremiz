@@ -24,7 +24,7 @@
 
 
 from __future__ import absolute_import
-import cPickle
+from six.moves import cPickle
 import wx
 
 MAX_ITEM_COUNT = 10

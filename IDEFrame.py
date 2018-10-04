@@ -24,13 +24,13 @@
 
 from __future__ import absolute_import
 import sys
-import cPickle
 from types import TupleType
 import base64
 
 import wx
 import wx.grid
 import wx.aui
+from six.moves import cPickle
 
 from editors.EditorPanel import EditorPanel
 from editors.SFCViewer import SFC_Viewer

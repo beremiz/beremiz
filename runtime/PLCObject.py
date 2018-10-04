@@ -23,7 +23,6 @@
 
 
 from __future__ import absolute_import
-import thread
 from threading import Thread, Lock, Semaphore, Event, Condition
 import ctypes
 import os
@@ -33,6 +32,7 @@ from time import time
 import _ctypes  # pylint: disable=wrong-import-order
 import Pyro.core as pyro
 import six
+from six.moves import _thread
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
@@ -104,7 +104,7 @@ class worker(object):
         """
         meant to be called by worker thread (blocking)
         """
-        self._threadID = thread.get_ident()
+        self._threadID = _thread.get_ident()
         if args or kwargs:
             job(*args, **kwargs).do()
             # result is ignored
@@ -128,7 +128,7 @@ class worker(object):
 
         _job = job(*args, **kwargs)
 
-        if self._threadID == thread.get_ident() or self._threadID is None:
+        if self._threadID == _thread.get_ident() or self._threadID is None:
             # if caller is worker thread execute immediately
             _job.do()
         else:

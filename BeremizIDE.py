@@ -35,7 +35,7 @@ import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
 
-import cPickle
+from six.moves import cPickle
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
