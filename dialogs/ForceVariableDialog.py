@@ -25,6 +25,7 @@
 from __future__ import absolute_import
 import re
 import datetime
+from builtins import str as text
 
 import wx
 
@@ -200,7 +201,7 @@ class ForceVariableDialog(wx.TextEntryDialog):
 
     def ToggleBoolValue(self, event):
         value = self.ToggleButton.GetValue()
-        self.ValueTextCtrl.SetValue(unicode(value))
+        self.ValueTextCtrl.SetValue(text(value))
 
     def OnOK(self, event):
         message = None

@@ -32,6 +32,8 @@ from types import *
 from xml.dom import minidom
 from xml.sax.saxutils import unescape
 from collections import OrderedDict
+from builtins import str as text
+
 from six.moves import xrange
 from lxml import etree
 
@@ -50,9 +52,9 @@ def NodeRenameAttr(node, old_name, new_name):
 
 def NodeSetAttr(node, name, value):
     attr = minidom.Attr(name)
-    text = minidom.Text()
-    text.data = value
-    attr.childNodes[0] = text
+    txt = minidom.Text()
+    txt.data = value
+    attr.childNodes[0] = txt
     node._attrs[name] = attr
 
 
@@ -138,13 +140,13 @@ def GetAttributeValue(attr, extract=True):
     if not extract:
         return attr
     if len(attr.childNodes) == 1:
-        return unicode(unescape(attr.childNodes[0].data))
+        return text(unescape(attr.childNodes[0].data))
     else:
         # content is a CDATA
-        text = u''
+        txt = u''
         for node in attr.childNodes:
             if not (node.nodeName == "#text" and node.data.strip() == u''):
-                text += unicode(unescape(node.data))
+                txt += text(unescape(node.data))
         return text
 
 

@@ -13,8 +13,9 @@ from __future__ import absolute_import
 import os
 import shutil
 import csv
-from lxml import etree
+from builtins import str as text
 
+from lxml import etree
 import wx
 
 from xmlclass import *
@@ -227,7 +228,7 @@ for mapping needed location variables
                         self.GetCTRoot().logger.write_warning(
                             XSDSchemaErrorMessage % (filepath + error))
                 except Exception as exc:
-                    self.modules_infos, error = None, unicode(exc)
+                    self.modules_infos, error = None, text(exc)
                 xmlfile.close()
 
                 if self.modules_infos is not None:

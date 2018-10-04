@@ -28,6 +28,7 @@ from __future__ import print_function
 import sys
 import traceback
 from threading import Thread, Event
+from builtins import str as text
 
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
@@ -83,7 +84,7 @@ def WAMP_connector_factory(uri, confnodesroot):
 
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
-            realm=unicode(realm),
+            realm=text(realm),
             extra={"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
             config=component_config)
@@ -109,7 +110,7 @@ def WAMP_connector_factory(uri, confnodesroot):
         reactor.run(installSignalHandlers=False)
 
     def WampSessionProcMapper(funcname):
-        wampfuncname = unicode('.'.join((ID, funcname)))
+        wampfuncname = text('.'.join((ID, funcname)))
 
         def catcher_func(*args, **kwargs):
             if _WampSession is not None:

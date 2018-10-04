@@ -22,6 +22,7 @@ import compiler
 from compiler import ast
 import os
 import copy
+from builtins import str as text
 from six.moves import cStringIO
 
 # the standard location for builtins (e.g. pyjslib) can be
@@ -1359,7 +1360,7 @@ class Translator(object):
             return str(node.value)
         elif isinstance(node.value, basestring):
             v = node.value
-            if isinstance(node.value, unicode):
+            if isinstance(node.value, text):
                 v = v.encode('utf-8')
             return "String('%s')" % escapejs(v)
         elif node.value is None:
