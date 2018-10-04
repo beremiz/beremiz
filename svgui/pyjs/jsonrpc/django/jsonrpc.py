@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 import datetime
+from builtins import str as text
 
 from django.core.serializers import serialize
 
@@ -74,7 +75,7 @@ def builderrors(form):
         if error not in d:
             d[error] = []
         for errorval in form.errors[error]:
-            d[error].append(unicode(errorval))
+            d[error].append(text(errorval))
     return d
 
 
@@ -101,7 +102,7 @@ def describe_field_errors(field):
     field_type = field.__class__.__name__
     msgs = {}
     for n, m in field.error_messages.items():
-        msgs[n] = unicode(m)
+        msgs[n] = text(m)
     res['error_messages'] = msgs
     if field_type in ['ComboField', 'MultiValueField', 'SplitDateTimeField']:
         res['fields'] = map(describe_field, field.fields)

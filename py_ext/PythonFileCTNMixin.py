@@ -27,8 +27,9 @@
 from __future__ import absolute_import
 import os
 import re
-import util.paths as paths
+from builtins import str as text
 
+import util.paths as paths
 from xmlclass import GenerateParserFromXSD
 
 from CodeFileTreeNode import CodeFile
@@ -74,7 +75,7 @@ class PythonFileCTNMixin(CodeFile):
                     self.CreateCodeFileBuffer(False)
                     self.OnCTNSave()
             except Exception as exc:
-                error = unicode(exc)
+                error = text(exc)
 
             if error is not None:
                 self.GetCTRoot().logger.write_error(

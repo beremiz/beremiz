@@ -28,6 +28,7 @@ import time
 import json
 import os
 import re
+from builtins import str as text
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
@@ -131,7 +132,7 @@ class WampSession(wamp.ApplicationSession):
             yield self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
-            yield self.subscribe(GetCallee(name), unicode(name))
+            yield self.subscribe(GetCallee(name), text(name))
 
         for func in DoOnJoin:
             yield func(self)

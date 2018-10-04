@@ -26,11 +26,12 @@
 from __future__ import absolute_import
 import os
 import sys
+from builtins import str as text
 
 
 def AbsFile(file):
     if isinstance(file, str):
-        file = unicode(file, sys.getfilesystemencoding())
+        file = text(file, sys.getfilesystemencoding())
     return file
 
 

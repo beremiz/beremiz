@@ -26,6 +26,7 @@ from __future__ import absolute_import
 import sys
 from types import TupleType
 import base64
+from builtins import str as text
 
 import wx
 import wx.grid
@@ -108,7 +109,7 @@ def EncodeFileSystemPath(path, use_base64=True):
 def DecodeFileSystemPath(path, is_base64=True):
     if is_base64:
         path = base64.decodestring(path)
-    return unicode(path, sys.getfilesystemencoding())
+    return text(path, sys.getfilesystemencoding())
 
 
 def AppendMenu(parent, help, id, kind, text):

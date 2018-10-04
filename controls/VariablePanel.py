@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 import re
 from types import TupleType, StringType, UnicodeType
+from builtins import str as text
 
 import wx
 import wx.grid
@@ -607,7 +608,7 @@ class VariablePanel(wx.Panel):
                     model = re.compile("%[IQM][XBWLD]?(.*\.|)")
                     prefix = model.match(old_location).group(0)
                     addr = int(re.split(model, old_location)[-1]) + 1
-                    row_content.Location = prefix + unicode(addr)
+                    row_content.Location = prefix + text(addr)
 
             if not row_content.Class:
                 row_content.Class = self.DefaultTypes.get(self.Filter, self.Filter)
