@@ -56,6 +56,7 @@ Latest Revision before Latest Revision before Latest Revision: 31 May 2005, 23.1
 """
 
 from __future__ import absolute_import
+from __future__ import division
 import wx
 
 # Horizontal Alignment Constants
@@ -145,7 +146,7 @@ class EnhancedStatusBar(wx.StatusBar):
                     widget.SetPosition((xpos, rect.y-1))
                 elif verticalalignment == ESB_ALIGN_CENTER_VERTICAL:
                     if widgetsize[1] < rect.height - 1:
-                        diffs = (rect.height - widgetsize[1])/2
+                        diffs = (rect.height - widgetsize[1]) // 2
                         widget.SetPosition((xpos, rect.y+diffs))
                     else:
                         widget.SetSize((widgetsize[0], rect.height-2))
@@ -163,7 +164,7 @@ class EnhancedStatusBar(wx.StatusBar):
                     widget.SetPosition((xpos, rect.y-1))
                 elif verticalalignment == ESB_ALIGN_CENTER_VERTICAL:
                     if widgetsize[1] < rect.height - 1:
-                        diffs = (rect.height - widgetsize[1])/2
+                        diffs = (rect.height - widgetsize[1]) // 2
                         widget.SetPosition((xpos, rect.y+diffs))
                     else:
                         widget.SetSize((widgetsize[0], rect.height-2))
@@ -175,13 +176,13 @@ class EnhancedStatusBar(wx.StatusBar):
 
             elif horizontalalignment == ESB_ALIGN_CENTER_HORIZONTAL:
 
-                xpos = rect.x + (rect.width - widgetsize[0])/2 - 1
+                xpos = rect.x + (rect.width - widgetsize[0]) // 2 - 1
                 if verticalalignment == ESB_EXACT_FIT:
                     widget.SetSize((widgetsize[0], rect.height))
                     widget.SetPosition((xpos, rect.y))
                 elif verticalalignment == ESB_ALIGN_CENTER_VERTICAL:
                     if widgetsize[1] < rect.height - 1:
-                        diffs = (rect.height - widgetsize[1])/2
+                        diffs = (rect.height - widgetsize[1]) // 2
                         widget.SetPosition((xpos, rect.y+diffs))
                     else:
                         widget.SetSize((widgetsize[0], rect.height-1))

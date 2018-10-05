@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from types import TupleType
 
 import wx
@@ -104,7 +105,7 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
             # according to the position of mouse in Viewer.
             _width, height = self.ParentControl.GetSize()
             target_idx = self.ParentControl.GetIndex()
-            if y > height / 2:
+            if y > height // 2:
                 target_idx += 1
 
             # Drag'n Drop is an internal is an internal move inside Debug
@@ -209,7 +210,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
 
         # Draw item variable path at Viewer left side
         w, h = gc.GetTextExtent(item_path)
-        gc.DrawText(item_path, 20, (height - h) / 2)
+        gc.DrawText(item_path, 20, (height - h) // 2)
 
         # Update 'Release' button state and text color according to item forced
         # flag value
@@ -222,7 +223,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         # Draw item current value at right side of Viewer
         item_value = item.GetValue()
         w, h = gc.GetTextExtent(item_value)
-        gc.DrawText(item_value, width - 40 - w, (height - h) / 2)
+        gc.DrawText(item_value, width - 40 - w, (height - h) // 2)
 
         # Draw other Viewer common elements
         self.DrawCommonElements(gc)

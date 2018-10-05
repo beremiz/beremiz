@@ -25,6 +25,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from types import *
 import re
 from collections import OrderedDict
@@ -262,9 +263,9 @@ def LoadProjectXML(project_xml):
                                 text += "%ds" % time_values[2]
                             if time_values[3] != 0:
                                 if time_values[3] % 1000 != 0:
-                                    text += "%.3fms" % (float(time_values[3]) / 1000)
+                                    text += "%.3fms" % (time_values[3] / 1000)
                                 else:
-                                    text += "%dms" % (time_values[3] / 1000)
+                                    text += "%dms" % (time_values[3] // 1000)
                             task.set("interval", text)
 
                 # Update resources pou instance attributes

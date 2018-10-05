@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from types import TupleType
 from time import time as gettime
 from cycler import cycler
@@ -195,7 +196,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
 
                 # Get Before which Viewer the variable has to be moved or added
                 # according to the position of mouse in Viewer.
-                if y > height / 2:
+                if y > height // 2:
                     target_idx += 1
 
                 # Drag'n Drop is an internal is an internal move inside Debug
@@ -443,10 +444,10 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 x = rect.x + (- w - offset
                               if direction == wx.LEFT
                               else rect.width + offset)
-                y = rect.y + (rect.height - h) / 2
+                y = rect.y + (rect.height - h) // 2
                 offset += w
             else:
-                x = rect.x + (rect.width - w) / 2
+                x = rect.x + (rect.width - w) // 2
                 y = rect.y + (- h - offset
                               if direction == wx.TOP
                               else rect.height + offset)
@@ -801,7 +802,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 self.ParentWindow.SetCanvasPosition(
                     self.StartCursorTick +
                     (self.MouseStartPos.x - event.x) *
-                    (end_tick - start_tick) / rect.width)
+                    (end_tick - start_tick) // rect.width)
 
     def OnCanvasScroll(self, event):
         """
@@ -819,7 +820,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 tick = (start_tick + end_tick) / 2.
             else:
                 tick = event.xdata
-            self.ParentWindow.ChangeRange(int(-event.step) / 3, tick)
+            self.ParentWindow.ChangeRange(int(-event.step) // 3, tick)
 
             # Vetoing event to prevent parent panel to be scrolled
             self.ParentWindow.VetoScrollEvent = True
@@ -927,7 +928,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Mouse is over Viewer figure and graph is not 3D
         bbox = self.GetAxesBoundingBox()
         if bbox.InsideXY(x, y) and not self.Is3DCanvas():
-            rect = wx.Rect(bbox.x, bbox.y, bbox.width / 2, bbox.height)
+            rect = wx.Rect(bbox.x, bbox.y, bbox.width // 2, bbox.height)
             # Mouse is over Viewer left part of figure
             if rect.InsideXY(x, y):
                 self.SetHighlight(HIGHLIGHT_LEFT)
@@ -937,7 +938,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 self.SetHighlight(HIGHLIGHT_RIGHT)
 
         # Mouse is over upper part of Viewer
-        elif y < height / 2:
+        elif y < height // 2:
             # Viewer is upper one in Debug Variable Panel, show highlight
             if self.ParentWindow.IsViewerFirst(self):
                 self.SetHighlight(HIGHLIGHT_BEFORE)
@@ -1400,11 +1401,11 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             destGC.SetPen(HIGHLIGHT['DROP_PEN'])
             destGC.SetBrush(HIGHLIGHT['DROP_BRUSH'])
 
-            x_offset = (bbox.width / 2
+            x_offset = (bbox.width // 2
                         if self.Highlight == HIGHLIGHT_RIGHT
                         else 0)
             destGC.DrawRectangle(bbox.x + x_offset, bbox.y,
-                                 bbox.width / 2, bbox.height)
+                                 bbox.width // 2, bbox.height)
 
         # Draw other Viewer common elements
         self.DrawCommonElements(destGC, self.GetButtons())
