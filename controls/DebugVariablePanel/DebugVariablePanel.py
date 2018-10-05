@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from types import TupleType
 import numpy
 
@@ -307,7 +308,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
         # Calculate range to apply to data
         self.CurrentRange = self.RANGE_VALUES[
-            self.CanvasRange.GetSelection()][1] / self.Ticktime
+            self.CanvasRange.GetSelection()][1] // self.Ticktime
 
     def SetDataProducer(self, producer):
         """
@@ -390,7 +391,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             cursor_tick_idx = numpy.argmin(numpy.abs(self.Ticks - cursor_tick))
             if self.Ticks[cursor_tick_idx] == self.CursorTick:
                 cursor_tick_idx = max(0,
-                                      min(cursor_tick_idx + abs(move) / move,
+                                      min(cursor_tick_idx + abs(move) // move,
                                           len(self.Ticks) - 1))
             self.CursorTick = self.Ticks[cursor_tick_idx]
             self.StartTick = max(
@@ -488,18 +489,18 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                 panel.ShowButtons(True)
                 merge_type = GRAPH_PARALLEL
                 if isinstance(panel, DebugVariableTextViewer) or panel.Is3DCanvas():
-                    if y_mouse > yw + height / 2:
+                    if y_mouse > yw + height // 2:
                         idx += 1
                     wx.CallAfter(self.MoveValue, variable, idx, True)
                 else:
                     rect = panel.GetAxesBoundingBox(True)
                     if rect.InsideXY(x_mouse, y_mouse):
-                        merge_rect = wx.Rect(rect.x, rect.y, rect.width / 2., rect.height)
+                        merge_rect = wx.Rect(rect.x, rect.y, rect.width // 2, rect.height)
                         if merge_rect.InsideXY(x_mouse, y_mouse):
                             merge_type = GRAPH_ORTHOGONAL
                         wx.CallAfter(self.MergeGraphs, variable, idx, merge_type, force=True)
                     else:
-                        if y_mouse > yw + height / 2:
+                        if y_mouse > yw + height // 2:
                             idx += 1
                         wx.CallAfter(self.MoveValue, variable, idx, True)
                 self.ForceRefresh()
@@ -547,16 +548,16 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
             tick_duration = int(tick * self.Ticktime)
             not_null = False
             duration = ""
-            for value, format in [(tick_duration / DAY, _("%dd")),
-                                  ((tick_duration % DAY) / HOUR, _("%dh")),
-                                  ((tick_duration % HOUR) / MINUTE, _("%dm")),
-                                  ((tick_duration % MINUTE) / SECOND, _("%ds"))]:
+            for value, format in [(tick_duration // DAY, _("%dd")),
+                                  ((tick_duration % DAY) // HOUR, _("%dh")),
+                                  ((tick_duration % HOUR) // MINUTE, _("%dm")),
+                                  ((tick_duration % MINUTE) // SECOND, _("%ds"))]:
 
                 if value > 0 or not_null:
                     duration += format % value
                     not_null = True
 
-            duration += _("%03gms") % (float(tick_duration % SECOND) / MILLISECOND)
+            duration += _("%03gms") % ((tick_duration % SECOND) / MILLISECOND)
             self.TickTimeLabel.SetLabel("t: %s" % duration)
         else:
             self.TickLabel.SetLabel("")
@@ -638,7 +639,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
     def OnRangeChanged(self, event):
         try:
-            self.CurrentRange = self.RANGE_VALUES[self.CanvasRange.GetSelection()][1] / self.Ticktime
+            self.CurrentRange = self.RANGE_VALUES[self.CanvasRange.GetSelection()][1] // self.Ticktime
         except ValueError:
             self.CanvasRange.SetValue(str(self.CurrentRange))
         wx.CallAfter(self.RefreshRange)
@@ -909,11 +910,12 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         xstart, ystart = self.GraphicsWindow.GetViewStart()
         window_size = self.GraphicsWindow.GetClientSize()
         vwidth, vheight = self.GraphicsSizer.GetMinSize()
-        posx = max(0, min(xstart, (vwidth - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (vheight - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (vwidth - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (vheight - window_size[1]) // SCROLLBAR_UNIT))
         self.GraphicsWindow.Scroll(posx, posy)
         self.GraphicsWindow.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                          vwidth / SCROLLBAR_UNIT, vheight / SCROLLBAR_UNIT,
+                                          vwidth // SCROLLBAR_UNIT,
+                                          vheight // SCROLLBAR_UNIT,
                                           posx, posy)
 
     def OnGraphicsWindowEraseBackground(self, event):

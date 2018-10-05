@@ -23,6 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from __future__ import absolute_import
+from __future__ import division
 import sys
 from types import TupleType
 import base64
@@ -201,22 +202,22 @@ def ComputeTabsLayout(tabs, rect):
             raise ValueError("Not possible")
         if tab["size"][0] == rect.width:
             if tab["pos"][1] == rect.y:
-                split = (wx.TOP, float(tab["size"][1]) / float(rect.height))
+                split = (wx.TOP, tab["size"][1] / rect.height)
                 split_rect = wx.Rect(rect.x, rect.y + tab["size"][1] + TAB_BORDER,
                                      rect.width, rect.height - tab["size"][1] - TAB_BORDER)
             elif tab["pos"][1] == rect.height + 1 - tab["size"][1]:
-                split = (wx.BOTTOM, 1.0 - float(tab["size"][1]) / float(rect.height))
+                split = (wx.BOTTOM, 1.0 - tab["size"][1] / rect.height)
                 split_rect = wx.Rect(rect.x, rect.y,
                                      rect.width, rect.height - tab["size"][1] - TAB_BORDER)
             split_id = idx
             break
         elif tab["size"][1] == rect.height:
             if tab["pos"][0] == rect.x:
-                split = (wx.LEFT, float(tab["size"][0]) / float(rect.width))
+                split = (wx.LEFT, tab["size"][0] / rect.width)
                 split_rect = wx.Rect(rect.x + tab["size"][0] + TAB_BORDER, rect.y,
                                      rect.width - tab["size"][0] - TAB_BORDER, rect.height)
             elif tab["pos"][0] == rect.width + 1 - tab["size"][0]:
-                split = (wx.RIGHT, 1.0 - float(tab["size"][0]) / float(rect.width))
+                split = (wx.RIGHT, 1.0 - tab["size"][0] / rect.width)
                 split_rect = wx.Rect(rect.x, rect.y,
                                      rect.width - tab["size"][0] - TAB_BORDER, rect.height)
             split_id = idx
@@ -2592,7 +2593,7 @@ class IDEFrame(wx.Frame):
 
 
 def UPPER_DIV(x, y):
-    return (x / y) + {True: 0, False: 1}[(x % y) == 0]
+    return (x // y) + {True: 0, False: 1}[(x % y) == 0]
 
 
 class GraphicPrintout(wx.Printout):
@@ -2639,8 +2640,8 @@ class GraphicPrintout(wx.Printout):
         ppiPrinterX, ppiPrinterY = self.GetPPIPrinter()
         pw, ph = self.GetPageSizePixels()
         dw, dh = dc.GetSizeTuple()
-        Xscale = (float(dw) * float(ppiPrinterX)) / (float(pw) * 25.4)
-        Yscale = (float(dh) * float(ppiPrinterY)) / (float(ph) * 25.4)
+        Xscale = (dw * ppiPrinterX) / (pw * 25.4)
+        Yscale = (dh * ppiPrinterY) / (ph * 25.4)
 
         fontsize = self.FontSize * Yscale
 
@@ -2662,10 +2663,10 @@ class GraphicPrintout(wx.Printout):
 
         # Calculate the position on the DC for centering the graphic
         posX = area_width * ((page - 1) % self.PageGrid[0])
-        posY = area_height * ((page - 1) / self.PageGrid[0])
+        posY = area_height * ((page - 1) // self.PageGrid[0])
 
-        scaleX = float(area_width) / float(self.PageSize[0])
-        scaleY = float(area_height) / float(self.PageSize[1])
+        scaleX = area_width / self.PageSize[0]
+        scaleY = area_height / self.PageSize[1]
         scale = min(scaleX, scaleY)
 
         # Set the scale and origin

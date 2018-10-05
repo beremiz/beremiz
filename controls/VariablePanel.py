@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import re
 from types import TupleType, StringType, UnicodeType
 from builtins import str as text
@@ -684,7 +685,7 @@ class VariablePanel(wx.Panel):
             self.VariablesGrid.SetColAttr(col, attr)
             self.VariablesGrid.SetColMinimalWidth(col, self.ColSettings["size"][col])
             if (panel_width > self.PanelWidthMin) and not self.ColSettings["fixed_size"][col]:
-                self.VariablesGrid.SetColSize(col, int((float(self.ColSettings["size"][col])/stretch_cols_sum)*stretch_cols_width))
+                self.VariablesGrid.SetColSize(col, int((self.ColSettings["size"][col]/stretch_cols_sum)*stretch_cols_width))
             else:
                 self.VariablesGrid.SetColSize(col, self.ColSettings["size"][col])
 

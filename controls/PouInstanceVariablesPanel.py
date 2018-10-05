@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from collections import namedtuple
 
 import wx
@@ -76,7 +77,7 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
             bbox_width = (r_image_w + 4) * len(rightimages) + 4
             bbox_height = r_image_h + 8
             bbox_x = w - bbox_width
-            bbox_y = item.GetY() + ((total_h > r_image_h) and [(total_h-r_image_h)/2] or [0])[0]
+            bbox_y = item.GetY() + ((total_h > r_image_h) and [(total_h-r_image_h)//2] or [0])[0]
 
             return wx.Rect(bbox_x, bbox_y, bbox_width, bbox_height)
 
@@ -369,8 +370,8 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.InstanceChoice.SetFocusFromKbd()
         size = self.InstanceChoice.GetSize()
         event = wx.MouseEvent(wx.EVT_LEFT_DOWN._getEvtType())
-        event.x = size.width / 2
-        event.y = size.height / 2
+        event.x = size.width // 2
+        event.y = size.height // 2
         event.SetEventObject(self.InstanceChoice)
         # event = wx.KeyEvent(wx.EVT_KEY_DOWN._getEvtType())
         # event.m_keyCode = wx.WXK_SPACE

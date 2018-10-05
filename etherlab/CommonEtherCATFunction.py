@@ -9,6 +9,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from __future__ import division
 from builtins import str as text
 import wx
 
@@ -551,7 +552,7 @@ class _CommonSlave(object):
         if (value_len % 2) == 0:
             hex_len = value_len
         else:
-            hex_len = (value_len / 2) * 2 + 2
+            hex_len = (value_len // 2) * 2 + 2
 
         hex_data = ("{:0>"+str(hex_len)+"x}").format(decnum)
 
@@ -650,7 +651,7 @@ class _CommonSlave(object):
         eeprom_list = []
 
         if direction is 0 or 1:
-            for dummy in range(length/2):
+            for dummy in range(length//2):
                 if data == "":
                     eeprom_list.append("00")
                 else:
@@ -810,7 +811,7 @@ class _CommonSlave(object):
             for eeprom_element in device.getEeprom().getcontent():
                 if eeprom_element["name"] == "ByteSize":
                     eeprom_size = int(str(eeprom_element))
-                    data = "{:0>4x}".format(int(eeprom_element)/1024*8-1)
+                    data = "{:0>4x}".format(int(eeprom_element)//1024*8-1)
 
             if data == "":
                 eeprom.append("00")
@@ -1134,15 +1135,15 @@ class _CommonSlave(object):
         else:
             length += length % 4
             padflag = True
-        eeprom.append("{:0>4x}".format(length/4)[2:4])
-        eeprom.append("{:0>4x}".format(length/4)[0:2])
+        eeprom.append("{:0>4x}".format(length//4)[2:4])
+        eeprom.append("{:0>4x}".format(length//4)[0:2])
         #  total numbers of strings
         eeprom.append("{:0>2x}".format(count))
         for element in [vendor_specific_data,
                         dc_related_elements,
                         input_elements,
                         output_elements]:
-            for dummy in range(len(element)/2):
+            for dummy in range(len(element)//2):
                 if element == "":
                     eeprom.append("00")
                 else:
@@ -1287,11 +1288,11 @@ class _CommonSlave(object):
             #  category length
             if count % 2 == 1:
                 padflag = True
-                eeprom.append("{:0>4x}".format((count+1)/2)[2:4])
-                eeprom.append("{:0>4x}".format((count+1)/2)[0:2])
+                eeprom.append("{:0>4x}".format((count+1)//2)[2:4])
+                eeprom.append("{:0>4x}".format((count+1)//2)[0:2])
             else:
-                eeprom.append("{:0>4x}".format((count)/2)[2:4])
-                eeprom.append("{:0>4x}".format((count)/2)[0:2])
+                eeprom.append("{:0>4x}".format((count)//2)[2:4])
+                eeprom.append("{:0>4x}".format((count)//2)[0:2])
             for dummy in range(count):
                 if data == "":
                     eeprom.append("00")
@@ -1334,9 +1335,9 @@ class _CommonSlave(object):
             eeprom.append("29")
             eeprom.append("00")
             #  category length
-            eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
-            eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
-            for dummy in range(len(data)/2):
+            eeprom.append("{:0>4x}".format(len(data)//4)[2:4])
+            eeprom.append("{:0>4x}".format(len(data)//4)[0:2])
+            for dummy in range(len(data)//2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1442,10 +1443,10 @@ class _CommonSlave(object):
                 eeprom.append("00")
             eeprom.append("00")
             #  category length
-            eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
-            eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
+            eeprom.append("{:0>4x}".format(len(data)//4)[2:4])
+            eeprom.append("{:0>4x}".format(len(data)//4)[0:2])
             data = str(data.lower())
-            for dummy in range(len(data)/2):
+            for dummy in range(len(data)//2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1516,10 +1517,10 @@ class _CommonSlave(object):
             eeprom.append("3c")
             eeprom.append("00")
             #  category length
-            eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
-            eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
+            eeprom.append("{:0>4x}".format(len(data)//4)[2:4])
+            eeprom.append("{:0>4x}".format(len(data)//4)[0:2])
             data = str(data.lower())
-            for dummy in range(len(data)/2):
+            for dummy in range(len(data)//2):
                 if data == "":
                     eeprom.append("00")
                 else:

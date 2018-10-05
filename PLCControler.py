@@ -25,6 +25,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from types import TupleType
 from copy import deepcopy
 import os
@@ -1939,8 +1940,8 @@ class PLCControler(object):
 
             x, y, width, height = bbox.bounding_box()
             if middle:
-                new_pos[0] -= width / 2
-                new_pos[1] -= height / 2
+                new_pos[0] -= width // 2
+                new_pos[1] -= height // 2
             else:
                 new_pos = map(lambda x: x + 30, new_pos)
             if scaling[0] != 0 and scaling[1] != 0:

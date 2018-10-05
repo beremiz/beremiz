@@ -25,6 +25,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import types
 
 import wx
@@ -100,11 +101,11 @@ class GenBitmapTextButton(wx.lib.buttons.GenBitmapTextButton):
         if not self.up:
             dw = dy = self.labelDelta
 
-        pos_x = (width-bw)/2+dw      # adjust for bitmap and text to centre
-        pos_y = (height-bh-th)/2+dy
+        pos_x = (width - bw) // 2 + dw      # adjust for bitmap and text to centre
+        pos_y = (height - bh - th) // 2 + dy
         if bmp is not None:
             dc.DrawBitmap(bmp, pos_x, pos_y, hasMask)  # draw bitmap if available
-            pos_x = (width-tw)/2+dw      # adjust for bitmap and text to centre
+            pos_x = (width-tw)//2+dw      # adjust for bitmap and text to centre
             pos_y += bh + 2
 
         dc.DrawText(label, pos_x, pos_y)      # draw the text
@@ -305,8 +306,8 @@ class ConfTreeNodeEditor(EditorPanel):
         self.Thaw()
 
     def GenerateMethodButtonSizer(self):
-        normal_bt_font = wx.Font(faces["size"] / 3,    wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"])
-        mouseover_bt_font = wx.Font(faces["size"] / 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"], underline=True)
+        normal_bt_font = wx.Font(faces["size"] // 3,    wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"])
+        mouseover_bt_font = wx.Font(faces["size"] // 3, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName=faces["helv"], underline=True)
 
         msizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -615,11 +616,12 @@ class ConfTreeNodeEditor(EditorPanel):
         xstart, ystart = self.ParamsEditor.GetViewStart()
         window_size = self.ParamsEditor.GetClientSize()
         maxx, maxy = self.ParamsEditorSizer.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.ParamsEditor.Scroll(posx, posy)
         self.ParamsEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                        maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT,
+                                        maxx // SCROLLBAR_UNIT,
+                                        maxy // SCROLLBAR_UNIT,
                                         posx, posy)
 
     def OnParamsEditorResize(self, event):

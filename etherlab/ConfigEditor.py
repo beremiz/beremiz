@@ -10,6 +10,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from __future__ import division
 import os
 import re
 from types import TupleType
@@ -324,12 +325,12 @@ class NodeEditor(ConfTreeNodeEditor):
         xstart, ystart = self.EtherCATManagementEditor.GetViewStart()
         window_size = self.EtherCATManagementEditor.GetClientSize()
         maxx, maxy = self.EtherCATManagementEditor.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.EtherCATManagementEditor.Scroll(posx, posy)
         self.EtherCATManagementEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                                    maxx / SCROLLBAR_UNIT,
-                                                    maxy / SCROLLBAR_UNIT,
+                                                    maxx // SCROLLBAR_UNIT,
+                                                    maxy // SCROLLBAR_UNIT,
                                                     posx, posy)
         event.Skip()
     # -------------------------------------------------------------------------------------------------------
@@ -1056,12 +1057,12 @@ class MasterEditor(ConfTreeNodeEditor):
         xstart, ystart = self.EthercatMasterEditor.GetViewStart()
         window_size = self.EthercatMasterEditor.GetClientSize()
         maxx, maxy = self.EthercatMasterEditorSizer.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.EthercatMasterEditor.Scroll(posx, posy)
         self.EthercatMasterEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                                maxx / SCROLLBAR_UNIT,
-                                                maxy / SCROLLBAR_UNIT,
+                                                maxx // SCROLLBAR_UNIT,
+                                                maxy // SCROLLBAR_UNIT,
                                                 posx, posy)
         event.Skip()
 
@@ -1421,11 +1422,11 @@ class LibraryEditor(ConfTreeNodeEditor):
         xstart, ystart = self.ModuleLibraryEditor.GetViewStart()
         window_size = self.ModuleLibraryEditor.GetClientSize()
         maxx, maxy = self.ModuleLibraryEditor.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.ModuleLibraryEditor.Scroll(posx, posy)
         self.ModuleLibraryEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                               maxx / SCROLLBAR_UNIT,
-                                               maxy / SCROLLBAR_UNIT,
+                                               maxx // SCROLLBAR_UNIT,
+                                               maxy // SCROLLBAR_UNIT,
                                                posx, posy)
         event.Skip()

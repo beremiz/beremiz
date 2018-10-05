@@ -25,6 +25,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import wx
 
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS
@@ -282,13 +283,13 @@ class BlockPreviewDialog(wx.Dialog):
         k = 1.1 if (bbox.width * 1.1 > client_size.width or
                     bbox.height * 1.1 > client_size.height) \
             else 1.0
-        scale = (max(float(bbox.width) / client_size.width,
-                     float(bbox.height) / client_size.height) * k)
+        scale = (max(bbox.width / client_size.width,
+                     bbox.height / client_size.height) * k)
         dc.SetUserScale(1.0 / scale, 1.0 / scale)
 
         # Center graphic element in preview panel
-        x = int(client_size.width * scale - bbox.width) / 2 + posx - bbox.x
-        y = int(client_size.height * scale - bbox.height) / 2 + posy - bbox.y
+        x = int(client_size.width * scale - bbox.width) // 2 + posx - bbox.x
+        y = int(client_size.height * scale - bbox.height) // 2 + posy - bbox.y
         self.Element.SetPosition(x, y)
 
         # Draw graphic element

@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import re
 from builtins import str as text
 
@@ -141,9 +142,9 @@ class CodeEditor(CustomStyledTextCtrl):
             section_comment = " %s section " % (section)
             len_headers = EDGE_COLUMN - len(section_comment)
             section_comment = \
-                self.COMMENT_HEADER * (len_headers / 2) + \
+                self.COMMENT_HEADER * (len_headers // 2) + \
                 section_comment + \
-                self.COMMENT_HEADER * (len_headers - len_headers / 2)
+                self.COMMENT_HEADER * (len_headers - len_headers // 2)
 
             self.SectionsComments[section] = {
                 "comment": section_comment,

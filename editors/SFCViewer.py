@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from types import *
 
 import wx
@@ -534,7 +535,7 @@ class SFC_Viewer(Viewer):
                     pos = connectors["action"].GetPosition(False)
                     id = self.GetNewId()
                     actionblock = SFC_ActionBlock(self, [], id)
-                    actionblock.SetPosition(pos.x + SFC_WIRE_MIN_SIZE, pos.y - SFC_STEP_DEFAULT_SIZE[1] / 2)
+                    actionblock.SetPosition(pos.x + SFC_WIRE_MIN_SIZE, pos.y - SFC_STEP_DEFAULT_SIZE[1] // 2)
                     actionblock_connector = actionblock.GetConnector()
                     wire = self.ConnectConnectors(actionblock_connector, connectors["action"])
                     wire.SetPoints([wx.Point(pos.x + SFC_WIRE_MIN_SIZE, pos.y), wx.Point(pos.x, pos.y)])

@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import wx
 from six.moves import xrange
 
@@ -49,7 +50,7 @@ class LD_PowerRail(Graphic_Element):
         self.Connectors = []
         self.RealConnectors = None
         self.Id = id
-        self.Extensions = [LD_LINE_SIZE / 2, LD_LINE_SIZE / 2]
+        self.Extensions = [LD_LINE_SIZE // 2, LD_LINE_SIZE // 2]
         self.SetType(type, connectors)
 
     def Flush(self):
@@ -184,14 +185,14 @@ class LD_PowerRail(Graphic_Element):
     def RefreshConnectors(self):
         scaling = self.Parent.GetScaling()
         height = self.Size[1] - self.Extensions[0] - self.Extensions[1]
-        interval = float(height) / float(max(len(self.Connectors) - 1, 1))
+        interval = height / max(len(self.Connectors) - 1, 1)
         for i, connector in enumerate(self.Connectors):
             if self.RealConnectors:
                 position = self.Extensions[0] + int(round(self.RealConnectors[i] * height))
             else:
                 position = self.Extensions[0] + int(round(i * interval))
             if scaling is not None:
-                position = round(float(self.Pos.y + position) / float(scaling[1])) * scaling[1] - self.Pos.y
+                position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
             if self.Type == LEFTRAIL:
                 connector.SetPosition(wx.Point(self.Size[0], position))
             elif self.Type == RIGHTRAIL:
@@ -251,7 +252,7 @@ class LD_PowerRail(Graphic_Element):
         if height > 0:
             for connector in self.Connectors:
                 position = connector.GetRelPosition()
-                self.RealConnectors.append(max(0., min(float(position.y - self.Extensions[0]) / float(height), 1.)))
+                self.RealConnectors.append(max(0., min((position.y - self.Extensions[0]) / height, 1.)))
         elif len(self.Connectors) > 1:
             self.RealConnectors = map(lambda x: x * 1 / (len(self.Connectors) - 1), xrange(len(self.Connectors)))
         else:
@@ -312,7 +313,7 @@ class LD_PowerRail(Graphic_Element):
             movey = max(-self.BoundingBox.y, movey)
             if scaling is not None:
                 position = handle.GetRelPosition()
-                movey = round(float(self.Pos.y + position.y + movey) / float(scaling[1])) * scaling[1] - self.Pos.y - position.y
+                movey = round((self.Pos.y + position.y + movey) / scaling[1]) * scaling[1] - self.Pos.y - position.y
             self.MoveConnector(handle, movey)
             return 0, movey
         elif self.Parent.GetDrawingMode() == FREEDRAWING_MODE:
@@ -363,8 +364,8 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         self.Size = wx.Size(LD_ELEMENT_SIZE[0], LD_ELEMENT_SIZE[1])
         self.Highlights = {}
         # Create an input and output connector
-        self.Input = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] / 2 + 1), WEST)
-        self.Output = Connector(self, "", "BOOL", wx.Point(self.Size[0], self.Size[1] / 2 + 1), EAST)
+        self.Input = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] // 2 + 1), WEST)
+        self.Output = Connector(self, "", "BOOL", wx.Point(self.Size[0], self.Size[1] // 2 + 1), EAST)
         self.PreviousValue = False
         self.PreviousSpreading = False
         self.RefreshNameSize()
@@ -493,7 +494,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         text_width, text_height = self.Parent.GetTextExtent(self.Name)
         # Calculate the bounding box size
         if self.Name != "":
-            bbx_x = self.Pos.x - max(0, (text_width - self.Size[0]) / 2)
+            bbx_x = self.Pos.x - max(0, (text_width - self.Size[0]) // 2)
             bbx_width = max(self.Size[0], text_width)
             bbx_y = self.Pos.y - (text_height + 2)
             bbx_height = self.Size[1] + (text_height + 2)
@@ -541,9 +542,9 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
     # Refresh the positions of the block connectors
     def RefreshConnectors(self):
         scaling = self.Parent.GetScaling()
-        position = self.Size[1] / 2 + 1
+        position = self.Size[1] // 2 + 1
         if scaling is not None:
-            position = round(float(self.Pos.y + position) / float(scaling[1])) * scaling[1] - self.Pos.y
+            position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
         self.Input.SetPosition(wx.Point(0, position))
         self.Output.SetPosition(wx.Point(self.Size[0], position))
         self.RefreshConnected()
@@ -670,13 +671,13 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         dc.DrawRectangle(self.Pos.x, self.Pos.y, 2, self.Size[1] + 1)
         dc.DrawRectangle(self.Pos.x + self.Size[0] - 1, self.Pos.y, 2, self.Size[1] + 1)
         # Draw contact name
-        name_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2,
+        name_pos = (self.Pos.x + (self.Size[0] - name_size[0]) // 2,
                     self.Pos.y - (name_size[1] + 2))
         dc.DrawText(self.Name, name_pos[0], name_pos[1])
         # Draw the modifier symbol in the middle of contact
         if typetext != "":
-            type_pos = (self.Pos.x + (self.Size[0] - type_size[0]) / 2 + 1,
-                        self.Pos.y + (self.Size[1] - type_size[1]) / 2)
+            type_pos = (self.Pos.x + (self.Size[0] - type_size[0]) // 2 + 1,
+                        self.Pos.y + (self.Size[1] - type_size[1]) // 2)
             dc.DrawText(typetext, type_pos[0], type_pos[1])
         # Draw input and output connectors
         self.Input.Draw(dc)
@@ -709,8 +710,8 @@ class LD_Coil(Graphic_Element):
         self.Size = wx.Size(LD_ELEMENT_SIZE[0], LD_ELEMENT_SIZE[1])
         self.Highlights = {}
         # Create an input and output connector
-        self.Input = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] / 2 + 1), WEST)
-        self.Output = Connector(self, "", "BOOL", wx.Point(self.Size[0], self.Size[1] / 2 + 1), EAST)
+        self.Input = Connector(self, "", "BOOL", wx.Point(0, self.Size[1] // 2 + 1), WEST)
+        self.Output = Connector(self, "", "BOOL", wx.Point(self.Size[0], self.Size[1] // 2 + 1), EAST)
         self.Value = None
         self.PreviousValue = False
         self.RefreshNameSize()
@@ -813,7 +814,7 @@ class LD_Coil(Graphic_Element):
         text_width, text_height = self.Parent.GetTextExtent(self.Name)
         # Calculate the bounding box size
         if self.Name != "":
-            bbx_x = self.Pos.x - max(0, (text_width - self.Size[0]) / 2)
+            bbx_x = self.Pos.x - max(0, (text_width - self.Size[0]) // 2)
             bbx_width = max(self.Size[0], text_width)
             bbx_y = self.Pos.y - (text_height + 2)
             bbx_height = self.Size[1] + (text_height + 2)
@@ -861,9 +862,9 @@ class LD_Coil(Graphic_Element):
     # Refresh the positions of the block connectors
     def RefreshConnectors(self):
         scaling = self.Parent.GetScaling()
-        position = self.Size[1] / 2 + 1
+        position = self.Size[1] // 2 + 1
         if scaling is not None:
-            position = round(float(self.Pos.y + position) / float(scaling[1])) * scaling[1] - self.Pos.y
+            position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
         self.Input.SetPosition(wx.Point(0, position))
         self.Output.SetPosition(wx.Point(self.Size[0], position))
         self.RefreshConnected()
@@ -993,19 +994,19 @@ class LD_Coil(Graphic_Element):
                     dc.SetPen(MiterPen(wx.GREEN))
                 else:
                     dc.SetPen(MiterPen(wx.BLACK))
-                dc.DrawPoint(self.Pos.x + 1, self.Pos.y + self.Size[1] / 2 + 1)
+                dc.DrawPoint(self.Pos.x + 1, self.Pos.y + self.Size[1] // 2 + 1)
             name_size = self.NameSize
             if typetext != "":
                 type_size = self.TypeSize
 
         # Draw coil name
-        name_pos = (self.Pos.x + (self.Size[0] - name_size[0]) / 2,
+        name_pos = (self.Pos.x + (self.Size[0] - name_size[0]) // 2,
                     self.Pos.y - (name_size[1] + 2))
         dc.DrawText(self.Name, name_pos[0], name_pos[1])
         # Draw the modifier symbol in the middle of coil
         if typetext != "":
-            type_pos = (self.Pos.x + (self.Size[0] - type_size[0]) / 2 + 1,
-                        self.Pos.y + (self.Size[1] - type_size[1]) / 2)
+            type_pos = (self.Pos.x + (self.Size[0] - type_size[0]) // 2 + 1,
+                        self.Pos.y + (self.Size[1] - type_size[1]) // 2)
             dc.DrawText(typetext, type_pos[0], type_pos[1])
         # Draw input and output connectors
         self.Input.Draw(dc)
