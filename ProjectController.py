@@ -771,7 +771,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         plc_file.close()
         plc_file = open(self._getIECcodepath(), "r")
         self.ProgramOffset = 0
-        for dummy in plc_file.xreadlines():
+        for dummy in plc_file.readlines():
             self.ProgramOffset += 1
         plc_file.close()
         plc_file = open(self._getIECcodepath(), "a")
@@ -953,7 +953,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                 # Separate sections
                 ListGroup = []
-                for line in open(csvfile, 'r').xreadlines():
+                for line in open(csvfile, 'r').readlines():
                     strippedline = line.strip()
                     if strippedline.startswith("//"):
                         # Start new section
