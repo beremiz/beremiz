@@ -120,8 +120,7 @@ pep8_checks_default()
     test -z $pep8 && return
 
     user_ignore=
-    # user_ignore=$user_ignore,E265  # E265 block comment should start with '# '
-    user_ignore=$user_ignore,E501  # E501 line too long (80 > 79 characters)
+    user_ignore=$user_ignore,W606  # W606 'async' and 'await' are reserved keywords starting with Python 3.7
 
     # ignored by default,
     default_ignore=
@@ -134,10 +133,11 @@ pep8_checks_default()
     default_ignore=$default_ignore,E242  # E242 tab after ‘,’
     default_ignore=$default_ignore,E704  # E704 multiple statements on one line (def)
     default_ignore=$default_ignore,W503  # W503 line break occurred before a binary operator
+    default_ignore=$default_ignore,W504  # W504 line break occurred after a binary operator
+    default_ignore=$default_ignore,W505  # W505 doc line too long (82 > 79 characters)
     ignore=$user_ignore,$default_ignore
 
-    # $pep8 --ignore $ignore --exclude build ./
-    $pep8 --max-line-length 300 --exclude build $py_files
+    $pep8 --max-line-length 300 --ignore=$ignore --exclude build $py_files
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
