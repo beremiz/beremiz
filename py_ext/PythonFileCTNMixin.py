@@ -318,4 +318,4 @@ void __publish_%(location_str)s(void){
         return ([(Gen_PyCfile_path, matiec_CFLAGS)],
                 "",
                 True,
-                ("runtime_%s.py" % location_str, file(runtimefile_path, "rb")))
+                ("runtime_%s.py" % location_str, open(runtimefile_path, "rb")))

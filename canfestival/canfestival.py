@@ -617,6 +617,6 @@ class RootClass(object):
         if can_driver is not None:
             can_driver_path = os.path.join(CanFestivalPath, "drivers", can_driver, can_driver_name)
             if os.path.exists(can_driver_path):
-                res += ((can_driver_name, file(can_driver_path, "rb")),)
+                res += ((can_driver_name, open(can_driver_path, "rb")),)
 
         return res

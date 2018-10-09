@@ -1532,7 +1532,7 @@ class Translator(object):
 
 
 def translate(file_name, module_name, debug=False):
-    f = file(file_name, "r")
+    f = open(file_name, "r")
     src = f.read()
     f.close()
     output = cStringIO()
@@ -1686,7 +1686,7 @@ class AppTranslator(object):
 
         output = cStringIO()
 
-        f = file(file_name, "r")
+        f = open(file_name, "r")
         src = f.read()
         f.close()
 
@@ -1749,7 +1749,7 @@ class AppTranslator(object):
                 if self.verbose:
                     print('Including JS', js)
                 print('\n//\n// BEGIN JS '+js+'\n//\n', file=lib_code)
-                print(file(path).read(), file=lib_code)
+                print(open(path).read(), file=lib_code)
                 print('\n//\n// END JS '+js+'\n//\n', file=lib_code)
             else:
                 print('Warning: Unable to find imported javascript:', js, file=sys.stderr)
