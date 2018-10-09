@@ -79,7 +79,7 @@ QualifierList = OrderedDict([
     ("SL", True)])
 
 
-FILTER_ADDRESS_MODEL = "(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)"
+FILTER_ADDRESS_MODEL = r"(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)"
 
 
 def update_address(address, address_model, new_leading):
@@ -231,8 +231,8 @@ def LoadProjectXML(project_xml):
         "http://www.plcopen.org/xml/tc6.xsd",
         "http://www.plcopen.org/xml/tc6_0201")
     for cre, repl in [
-            (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-            (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+            (re.compile(r"(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+            (re.compile(r"(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
         project_xml = cre.sub(repl, project_xml)
 
     try:
@@ -2876,7 +2876,7 @@ def _updateArrayValueValueClass(cls):
 
 cls = PLCOpenParser.GetElementClass("arrayValue", "value")
 if cls:
-    arrayValue_model = re.compile("([0-9]+)\((.*)\)$")
+    arrayValue_model = re.compile(r"([0-9]+)\((.*)\)$")
     _updateArrayValueValueClass(cls)
 
 # ----------------------------------------------------------------------

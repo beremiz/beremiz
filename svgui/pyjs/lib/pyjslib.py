@@ -285,7 +285,7 @@ class AttributeError(StandardError):
         return "AttributeError: %s of %s" % (self.args[1], self.args[0])
 
 
-JS("""
+JS(r"""
 pyjslib.StopIteration = function () { };
 pyjslib.StopIteration.prototype = new Error();
 pyjslib.StopIteration.name = 'StopIteration';

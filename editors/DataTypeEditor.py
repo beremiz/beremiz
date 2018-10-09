@@ -44,7 +44,7 @@ from util.TranslationCatalogs import NoTranslate
 #                                    Helpers
 # -------------------------------------------------------------------------------
 
-DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
+DIMENSION_MODEL = re.compile(r"([0-9]+)\.\.([0-9]+)$")
 
 
 def AppendMenu(parent, help, id, kind, text):

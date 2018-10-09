@@ -72,7 +72,7 @@ VARIABLE_INDEX_FILTER_FORMAT = _("Variable Index: #x%4.4X")
 
 ETHERCAT_INDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,4})$")
 ETHERCAT_SUBINDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,2})$")
-LOCATION_MODEL = re.compile("(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
+LOCATION_MODEL = re.compile(r"(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
 
 
 class NodeVariablesSizer(wx.FlexGridSizer):

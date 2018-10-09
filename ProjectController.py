@@ -68,7 +68,7 @@ from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 base_folder = paths.AbsParentDir(__file__)
 
 MATIEC_ERROR_MODEL = re.compile(
-    ".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
+    r".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
 
 def ExtractChildrenTypesFromCatalog(catalog):
@@ -713,7 +713,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             lines = [line.strip() for line in location_file.readlines()]
             # This regular expression parses the lines genereated by IEC2C
             LOCATED_MODEL = re.compile(
-                "__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWDL]))?,(?P<LOC>[,0-9]*)\)")
+                r"__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWDL]))?,(?P<LOC>[,0-9]*)\)")
             for line in lines:
                 # If line match RE,
                 result = LOCATED_MODEL.match(line)

@@ -44,8 +44,8 @@ from plcopen.VariableInfoCollector import VariableInfoCollector
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
-duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
-VARIABLE_NAME_SUFFIX_MODEL = re.compile('(\d+)$')
+duration_model = re.compile(r"(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
+VARIABLE_NAME_SUFFIX_MODEL = re.compile(r'(\d+)$')
 
 ScriptDirectory = paths.AbsDir(__file__)
 

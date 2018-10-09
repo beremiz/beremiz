@@ -101,8 +101,8 @@ CheckOptionForClass = {
     "External": lambda x: {"Constant": "Constant"}.get(x, "")
 }
 
-LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
-LOCATION_MODEL_SET = re.compile("((?:%[IQM](?:[XBWLD]?[0-9]+(?:\.[0-9]+)*))?)$")
+LOCATION_MODEL = re.compile(r"((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
+LOCATION_MODEL_SET = re.compile(r"((?:%[IQM](?:[XBWLD]?[0-9]+(?:\.[0-9]+)*))?)$")
 
 
 # -------------------------------------------------------------------------------
@@ -606,7 +606,7 @@ class VariablePanel(wx.Panel):
                 # increment location address
                 if row_content.Location != "" and LOCATION_MODEL_SET.match(row_content.Location):
                     old_location = row_content.Location
-                    model = re.compile("%[IQM][XBWLD]?(.*\.|)")
+                    model = re.compile(r"%[IQM][XBWLD]?(.*\.|)")
                     prefix = model.match(old_location).group(0)
                     addr = int(re.split(model, old_location)[-1]) + 1
                     row_content.Location = prefix + text(addr)
