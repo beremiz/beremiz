@@ -70,10 +70,10 @@ MINUTE = 60 * SECOND
 HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 
-IEC_TIME_MODEL = re.compile("(?:(?:T|TIME)#)?(-)?(?:(%(float)s)D_?)?(?:(%(float)s)H_?)?(?:(%(float)s)M(?!S)_?)?(?:(%(float)s)S_?)?(?:(%(float)s)MS)?$" % {"float": "[0-9]+(?:\.[0-9]+)?"})
-IEC_DATE_MODEL = re.compile("(?:(?:D|DATE)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})$")
-IEC_DATETIME_MODEL = re.compile("(?:(?:DT|DATE_AND_TIME)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})-([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
-IEC_TIMEOFDAY_MODEL = re.compile("(?:(?:TOD|TIME_OF_DAY)#)?([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
+IEC_TIME_MODEL = re.compile(r"(?:(?:T|TIME)#)?(-)?(?:(%(float)s)D_?)?(?:(%(float)s)H_?)?(?:(%(float)s)M(?!S)_?)?(?:(%(float)s)S_?)?(?:(%(float)s)MS)?$" % {"float": r"[0-9]+(?:\.[0-9]+)?"})
+IEC_DATE_MODEL = re.compile(r"(?:(?:D|DATE)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})$")
+IEC_DATETIME_MODEL = re.compile(r"(?:(?:DT|DATE_AND_TIME)#)?([0-9]{4})-([0-9]{2})-([0-9]{2})-([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
+IEC_TIMEOFDAY_MODEL = re.compile(r"(?:(?:TOD|TIME_OF_DAY)#)?([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]+)?)$")
 
 
 def gettime(v):

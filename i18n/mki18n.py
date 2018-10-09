@@ -214,10 +214,10 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     verbosePrint(verbose, cmd)
     os.system(cmd)
 
-    XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
+    XSD_STRING_MODEL = re.compile(r"<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
     processCustomFiles(filelist, fileout, XSD_STRING_MODEL, 'Extra XSD strings')
 
-    XML_TC6_STRING_MODEL = re.compile("<documentation>\s*<xhtml\:p><!\[CDATA\[([^\]]*)\]\]></xhtml\:p>\s*</documentation>", re.MULTILINE | re.DOTALL)
+    XML_TC6_STRING_MODEL = re.compile(r"<documentation>\s*<xhtml\:p><!\[CDATA\[([^\]]*)\]\]></xhtml\:p>\s*</documentation>", re.MULTILINE | re.DOTALL)
     processCustomFiles(filelist, fileout, XML_TC6_STRING_MODEL, 'Extra TC6 documentation strings')
 
     # generate messages.po

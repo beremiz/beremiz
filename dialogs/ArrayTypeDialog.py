@@ -34,7 +34,7 @@ from controls import CustomEditableListBox
 #                                  Helpers
 # -------------------------------------------------------------------------------
 
-DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
+DIMENSION_MODEL = re.compile(r"([0-9]+)\.\.([0-9]+)$")
 
 # -------------------------------------------------------------------------------
 #                             Array Type Dialog

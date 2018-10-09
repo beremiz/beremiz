@@ -61,24 +61,24 @@ def NodeSetAttr(node, name, value):
 # Regular expression models for checking all kind of
 # string values defined in XML standard
 
-Name_model = re.compile('([a-zA-Z_\:][\w\.\-\:]*)$')
-Names_model = re.compile('([a-zA-Z_\:][\w\.\-\:]*(?: [a-zA-Z_\:][\w\.\-\:]*)*)$')
-NMToken_model = re.compile('([\w\.\-\:]*)$')
-NMTokens_model = re.compile('([\w\.\-\:]*(?: [\w\.\-\:]*)*)$')
-QName_model = re.compile('((?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*)$')
-QNames_model = re.compile('((?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*(?: (?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*)*)$')
-NCName_model = re.compile('([a-zA-Z_][\w]*)$')
-URI_model = re.compile('((?:htt(p|ps)://|/)?(?:[\w.-]*/?)*)$')
-LANGUAGE_model = re.compile('([a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*)$')
+Name_model = re.compile(r'([a-zA-Z_\:][\w\.\-\:]*)$')
+Names_model = re.compile(r'([a-zA-Z_\:][\w\.\-\:]*(?: [a-zA-Z_\:][\w\.\-\:]*)*)$')
+NMToken_model = re.compile(r'([\w\.\-\:]*)$')
+NMTokens_model = re.compile(r'([\w\.\-\:]*(?: [\w\.\-\:]*)*)$')
+QName_model = re.compile(r'((?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*)$')
+QNames_model = re.compile(r'((?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*(?: (?:[a-zA-Z_][\w]*:)?[a-zA-Z_][\w]*)*)$')
+NCName_model = re.compile(r'([a-zA-Z_][\w]*)$')
+URI_model = re.compile(r'((?:htt(p|ps)://|/)?(?:[\w.-]*/?)*)$')
+LANGUAGE_model = re.compile(r'([a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*)$')
 
-ONLY_ANNOTATION = re.compile("((?:annotation )?)")
+ONLY_ANNOTATION = re.compile(r"((?:annotation )?)")
 
 """
 Regular expression models for extracting dates and times from a string
 """
-time_model = re.compile('([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]*)?)(?:Z)?$')
-date_model = re.compile('([0-9]{4})-([0-9]{2})-([0-9]{2})((?:[\-\+][0-9]{2}:[0-9]{2})|Z)?$')
-datetime_model = re.compile('([0-9]{4})-([0-9]{2})-([0-9]{2})[ T]([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]*)?)((?:[\-\+][0-9]{2}:[0-9]{2})|Z)?$')
+time_model = re.compile(r'([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]*)?)(?:Z)?$')
+date_model = re.compile(r'([0-9]{4})-([0-9]{2})-([0-9]{2})((?:[\-\+][0-9]{2}:[0-9]{2})|Z)?$')
+datetime_model = re.compile(r'([0-9]{4})-([0-9]{2})-([0-9]{2})[ T]([0-9]{2}):([0-9]{2}):([0-9]{2}(?:\.[0-9]*)?)((?:[\-\+][0-9]{2}:[0-9]{2})|Z)?$')
 
 
 class xml_timezone(datetime.tzinfo):
@@ -1249,7 +1249,7 @@ def GetStructurePattern(classinfos):
         if element["type"] == ANY:
             infos = element.copy()
             infos["minOccurs"] = 0
-            elements.append(ComputeMultiplicity("#text |#cdata-section |\w* ", infos))
+            elements.append(ComputeMultiplicity(r"#text |#cdata-section |\w* ", infos))
         elif element["type"] == CHOICE:
             choices = []
             for infos in element["choices"]:
@@ -1721,7 +1721,7 @@ def generateCountMethod(attr):
     return countMethod
 
 
-NAMESPACE_PATTERN = re.compile("xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
+NAMESPACE_PATTERN = re.compile(r"xmlns(?:\:[^\=]*)?=\"[^\"]*\" ")
 
 
 class DefaultElementClass(etree.ElementBase):

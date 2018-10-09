@@ -45,7 +45,7 @@ _data_dir = os.path.join(pyjs.prefix, "share/pyjamas")
 
 
 # .cache.html files produces look like this
-CACHE_HTML_PAT = re.compile('^[a-z]*.[0-9a-f]{32}\.cache\.html$')
+CACHE_HTML_PAT = re.compile(r'^[a-z]*.[0-9a-f]{32}\.cache\.html$')
 
 # ok these are the three "default" library directories, containing
 # the builtins (str, List, Dict, ord, round, len, range etc.)
