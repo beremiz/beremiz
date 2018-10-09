@@ -94,7 +94,7 @@ class EtherlabLibrary(POULibrary):
         ethelabfile.close()
 
         return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "",
-                ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
+                ("runtime_etherlab.py", open(GetLocalPath("runtime_etherlab.py"))))
 
 # --------------------------------------------------
 #                 Ethercat MASTER

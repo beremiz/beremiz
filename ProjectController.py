@@ -859,9 +859,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         H_files = map(
             lambda filename: os.path.join(buildpath, filename), H_files)
         for H_file in H_files:
-            with file(H_file, 'r') as original:
+            with open(H_file, 'r') as original:
                 data = original.read()
-            with file(H_file, 'w') as modified:
+            with open(H_file, 'w') as modified:
                 modified.write('#include "beremiz.h"\n' + data)
 
         self.logger.write(_("Extracting Located Variables...\n"))
@@ -1289,7 +1289,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
-                    text = file(plc_file).read()
+                    text = open(plc_file).read()
                 except Exception:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text=text)

@@ -566,7 +566,7 @@ class PLCObject(pyro.ObjBase):
             try:
                 if replace_PLC_shared_object:
                     os.remove(old_PLC_filename)
-                for filename in file(extra_files_log, "r").readlines() + [extra_files_log]:
+                for filename in open(extra_files_log, "rt").readlines() + [extra_files_log]:
                     try:
                         os.remove(os.path.join(self.workingdir, filename.strip()))
                     except Exception:
@@ -583,7 +583,7 @@ class PLCObject(pyro.ObjBase):
                 open(self._GetMD5FileName(), "w").write(md5sum)
 
                 # Then write the files
-                log = file(extra_files_log, "w")
+                log = open(extra_files_log, "w")
                 for fname, fdata in extrafiles:
                     fpath = os.path.join(self.workingdir, fname)
                     open(fpath, "wb").write(fdata)
