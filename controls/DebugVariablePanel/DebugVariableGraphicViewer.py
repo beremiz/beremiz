@@ -1326,11 +1326,11 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Get value and forced flag for each variable displayed in graph
         # If cursor tick is not defined get value and flag of last received
         # or get value and flag of variable at cursor tick
-        values, forced = apply(zip, [(
+        args = [(
             item.GetValue(self.CursorTick)
             if self.CursorTick is not None
-            else (item.GetValue(), item.IsForced())
-        ) for item in self.Items])
+            else (item.GetValue(), item.IsForced())) for item in self.Items]
+        values, forced = zip(*args)
 
         # Get path of each variable displayed simplified using panel variable
         # name mask
