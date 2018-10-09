@@ -149,7 +149,7 @@ def processCustomFiles(filein, fileout, regexp, prefix=''):
     messages_file.write('\n')
 
     words_found = {}
-    for filepath in appfil_file.xreadlines():
+    for filepath in appfil_file.readlines():
         code_file = open(filepath.strip(), 'r')
         for match in regexp.finditer(code_file.read()):
             word = match.group(1)

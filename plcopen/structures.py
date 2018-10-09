@@ -104,7 +104,7 @@ def csv_file_to_table(file):
     """
     take a .csv file and translate it it a "csv_table"
     """
-    return [map(string.strip, line.split(';')) for line in file.xreadlines()]
+    return [map(string.strip, line.split(';')) for line in file.readlines()]
 
 
 def find_section(section_name, table):

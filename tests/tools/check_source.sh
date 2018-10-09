@@ -360,6 +360,7 @@ pylint_checks()
     enable=$enable,W1612          # (unicode-builtin) unicode built-in referenced
     enable=$enable,W1619          # (old-division) division w/o __future__ statement
     enable=$enable,W1601          # (apply-builtin) apply built-in referenced
+    enable=$enable,W1659          # (xreadlines-attribute) Accessing a removed xreadlines attribute
     # enable=
 
     options=
