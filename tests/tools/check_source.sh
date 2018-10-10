@@ -363,6 +363,7 @@ pylint_checks()
     enable=$enable,W1659          # (xreadlines-attribute) Accessing a removed xreadlines attribute
     enable=$enable,W1607          # (file-builtin) file built-in referenced
     enable=$enable,W1606          # (execfile-builtin) execfile built-in referenced
+    enable=$enable,W1629          # (nonzero-method) __nonzero__ method defined
     # enable=
 
     options=
