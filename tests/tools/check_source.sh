@@ -365,6 +365,7 @@ pylint_checks()
     enable=$enable,W1606          # (execfile-builtin) execfile built-in referenced
     enable=$enable,W1629          # (nonzero-method) __nonzero__ method defined
     enable=$enable,W1602          # (basestring-builtin) basestring built-in referenced
+    enable=$enable,W1646          # (invalid-str-codec) non-text encoding used in str.decode
     # enable=
 
     options=

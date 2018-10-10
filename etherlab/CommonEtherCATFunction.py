@@ -11,6 +11,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from builtins import str as text
+import codecs
 import wx
 
 
@@ -185,7 +186,7 @@ class _CommonSlave(object):
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
         self.Controler = controler
-
+        self.HexDecode = codecs.getdecoder("hex_codec")
         self.ClearSDODataSet()
 
     # -------------------------------------------------------------------------------
@@ -592,7 +593,7 @@ class _CommonSlave(object):
 
         # append zero-filled padding data up to EEPROM size
         for dummy in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
-            self.BinaryCode = self.BinaryCode + 'ff'.decode('hex')
+            self.BinaryCode = self.BinaryCode + self.HexDecode('ff')[0]
 
         return self.BinaryCode
 
@@ -860,7 +861,7 @@ class _CommonSlave(object):
 
             # convert binary code
             for index in range(eeprom_size):
-                eeprom_binary = eeprom_binary + eeprom[index].decode('hex')
+                eeprom_binary = eeprom_binary + self.HexDecode(eeprom[index])[0]
 
             return eeprom_binary
 
