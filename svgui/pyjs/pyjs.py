@@ -23,6 +23,7 @@ from compiler import ast
 import os
 import copy
 from builtins import str as text
+from past.builtins import basestring
 from six.moves import cStringIO
 
 # the standard location for builtins (e.g. pyjslib) can be
