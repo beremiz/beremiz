@@ -37,6 +37,7 @@ import traceback
 import types
 import shutil
 from builtins import str as text
+from past.builtins import execfile
 
 from lxml import etree
 
