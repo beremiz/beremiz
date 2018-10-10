@@ -30,6 +30,7 @@ import sys
 import traceback
 from time import time
 import _ctypes  # pylint: disable=wrong-import-order
+from past.builtins import execfile
 import Pyro.core as pyro
 import six
 from six.moves import _thread, xrange

@@ -32,6 +32,7 @@ import getopt
 import threading
 from threading import Thread, Semaphore, Lock
 import traceback
+from past.builtins import execfile
 from six.moves import builtins
 import Pyro
 import Pyro.core as pyro
