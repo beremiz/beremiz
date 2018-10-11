@@ -24,7 +24,6 @@
 
 
 from __future__ import absolute_import
-import string
 import re
 from collections import OrderedDict
 
@@ -104,7 +103,10 @@ def csv_file_to_table(file):
     """
     take a .csv file and translate it it a "csv_table"
     """
-    return [map(string.strip, line.split(';')) for line in file.readlines()]
+    table = [[column.strip()
+              for column in line.split(';')]
+             for line in file.readlines()]
+    return table
 
 
 def find_section(section_name, table):
