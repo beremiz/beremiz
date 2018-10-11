@@ -24,7 +24,6 @@
 
 
 from __future__ import absolute_import
-from types import TupleType
 
 import wx
 import wx.lib.buttons
@@ -324,7 +323,7 @@ class SearchResultPanel(wx.Panel):
 
     def ShowSearchResults(self, item):
         data = self.SearchResultsTree.GetPyData(item)
-        if isinstance(data, TupleType):
+        if isinstance(data, tuple):
             search_results = [data]
         else:
             search_results = self.SearchResults.get(data, [])

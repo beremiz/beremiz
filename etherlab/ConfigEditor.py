@@ -13,7 +13,6 @@ from __future__ import absolute_import
 from __future__ import division
 import os
 import re
-from types import TupleType
 
 import wx
 import wx.grid
@@ -418,7 +417,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for process variable") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for process variable") % data
             values = None
         if values is not None and col != wx.NOT_FOUND and row != wx.NOT_FOUND and 2 <= col <= 3:
@@ -480,7 +479,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for startup command") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for startup command") % data
             values = None
         if values is not None:

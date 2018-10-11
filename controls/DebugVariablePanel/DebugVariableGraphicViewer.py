@@ -25,7 +25,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from types import TupleType
 from time import time as gettime
 from cycler import cycler
 
@@ -158,7 +157,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
         # Check that data is valid regarding DebugVariablePanel
         try:
             values = eval(data)
-            if not isinstance(values, TupleType):
+            if not isinstance(values, tuple):
                 raise ValueError
         except Exception:
             message = _("Invalid value \"%s\" for debug variable") % data

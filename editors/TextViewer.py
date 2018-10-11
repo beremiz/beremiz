@@ -26,7 +26,6 @@
 from __future__ import absolute_import
 from __future__ import division
 import re
-from types import *
 
 import wx
 import wx.stc

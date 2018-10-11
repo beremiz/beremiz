@@ -28,7 +28,7 @@ from __future__ import print_function
 import os
 import sys
 import getopt
-from types import *
+from past.builtins import long
 
 # Translation between IEC types and Can Open types
 IECToCOType = {
@@ -465,7 +465,7 @@ class ConciseDCFGenerator(object):
 
                 # Indicate that this PDO entry must be saved
                 if locationinfos["bit"] is not None:
-                    if not isinstance(self.MasterMapping[cobid]["mapping"][subindex], ListType):
+                    if not isinstance(self.MasterMapping[cobid]["mapping"][subindex], list):
                         self.MasterMapping[cobid]["mapping"][subindex] = [1] * self.MasterMapping[cobid]["mapping"][subindex]
                     if locationinfos["bit"] < len(self.MasterMapping[cobid]["mapping"][subindex]):
                         self.MasterMapping[cobid]["mapping"][subindex][locationinfos["bit"]] = (locationinfos["type"], name)
@@ -557,7 +557,7 @@ class ConciseDCFGenerator(object):
 
             mapping = []
             for item in pdo_infos["mapping"]:
-                if isinstance(item, ListType):
+                if isinstance(item, list):
                     mapping.extend(item)
                 else:
                     mapping.append(item)
@@ -572,7 +572,7 @@ class ConciseDCFGenerator(object):
                     continue
                 new_index = False
 
-                if isinstance(variable, (IntType, LongType)):
+                if isinstance(variable, (int, long)):
                     # If variable is an integer then variable is unexpected
                     self.MasterNode.SetEntry(current_idx + 0x200, subindex, self.TrashVariables[variable])
                 else:

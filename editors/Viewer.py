@@ -27,7 +27,6 @@ from __future__ import absolute_import
 from __future__ import division
 import math
 from time import time as gettime
-from types import TupleType
 from threading import Lock
 
 import wx
@@ -277,7 +276,7 @@ class ViewerDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for viewer block") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if values is not None:
@@ -3454,7 +3453,7 @@ class Viewer(EditorPanel, DebugViewer):
                 middle = True
                 new_pos = [bbx.x, bbx.y]
             result = self.Controler.PasteEditedElementInstances(self.TagName, element, new_pos, middle, self.Debug)
-            if not isinstance(result, (StringType, UnicodeType)):
+            if not isinstance(result, string_types):
                 self.RefreshBuffer()
                 self.RefreshView(selection=result)
                 self.RefreshVariablePanel()
