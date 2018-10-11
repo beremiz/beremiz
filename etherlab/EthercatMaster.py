@@ -250,7 +250,7 @@ class _EthercatCTN(object):
                 if error is None:
                     config_is_saved = True
             except Exception as e:
-                error = e.message
+                error = str(e)
             config_xmlfile.close()
 
             if error is not None:
@@ -271,7 +271,7 @@ class _EthercatCTN(object):
                 if error is None:
                     process_is_saved = True
             except Exception as e:
-                error = e.message
+                error = str(e)
             process_xmlfile.close()
 
             if error is not None:

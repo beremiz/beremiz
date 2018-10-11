@@ -1027,7 +1027,7 @@ class PouProgramGenerator(object):
                     try:
                         self.GenerateBlock(instance, block_infos, body, None)
                     except ValueError as e:
-                        raise PLCGenException(e.message)
+                        raise PLCGenException(str(e))
                 elif isinstance(instance, ConnectorClass):
                     connector = instance.getname()
                     if self.ComputedConnectors.get(connector, None):
@@ -1305,7 +1305,7 @@ class PouProgramGenerator(object):
                 try:
                     paths.append(str(self.GenerateBlock(next, block_infos, body, connection, order, to_inout)))
                 except ValueError as e:
-                    raise PLCGenException(e.message)
+                    raise PLCGenException(str(e))
             elif isinstance(next, ContinuationClass):
                 name = next.getname()
                 computed_value = self.ComputedConnectors.get(name, None)
