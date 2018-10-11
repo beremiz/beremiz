@@ -26,7 +26,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from math import *
-from types import *
+from six import string_types
 from six.moves import xrange
 
 import wx
@@ -1081,7 +1081,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 y -= 5
                 height += 5
         rect = wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
-        if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+        if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
@@ -1163,7 +1163,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 self.Parent.ElementNeedRefresh(self)
 
     def GetComputedValue(self):
-        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
+        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, bool):
             return self.Value
         return None
 
@@ -1200,7 +1200,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         current = False
         for wire, _handle in self.Wires:
             value = wire.GetValue()
-            if current != "undefined" and isinstance(value, BooleanType):
+            if current != "undefined" and isinstance(value, bool):
                 current |= wire.GetValue()
             elif value == "undefined":
                 current = "undefined"
@@ -1472,7 +1472,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         else:
             if not self.Valid:
                 dc.SetPen(MiterPen(wx.RED))
-            elif isinstance(self.Value, BooleanType) and self.Value:
+            elif isinstance(self.Value, bool) and self.Value:
                 if self.Forced:
                     dc.SetPen(MiterPen(wx.CYAN))
                 else:
@@ -1536,10 +1536,10 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, xtext, ytext)
 
-        if self.Value is not None and not isinstance(self.Value, BooleanType) and self.Value != "undefined":
+        if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.ParentBlock.Parent.GetMiniFont())
             dc.SetTextForeground(wx.NamedColour("purple"))
-            if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+            if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
                 self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize
@@ -1607,7 +1607,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             rect = rect.Union(self.StartConnected.GetRedrawRect(movex, movey))
         if self.EndConnected:
             rect = rect.Union(self.EndConnected.GetRedrawRect(movex, movey))
-        if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+        if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
             self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
@@ -1756,7 +1756,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.Parent.ElementNeedRefresh(self)
 
     def GetComputedValue(self):
-        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
+        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, bool):
             return self.Value
         return None
 
@@ -1788,7 +1788,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.EndConnected.RefreshValue()
             if self.Visible:
                 self.Parent.ElementNeedRefresh(self)
-            if isinstance(value, BooleanType) and self.StartConnected is not None:
+            if isinstance(value, bool) and self.StartConnected is not None:
                 block = self.StartConnected.GetParentBlock()
                 block.SpreadCurrent()
 
@@ -2681,7 +2681,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if not self.Valid:
             dc.SetPen(MiterPen(wx.RED))
             dc.SetBrush(wx.RED_BRUSH)
-        elif isinstance(self.Value, BooleanType) and self.Value:
+        elif isinstance(self.Value, bool) and self.Value:
             if self.Forced:
                 dc.SetPen(MiterPen(wx.CYAN))
                 dc.SetBrush(wx.CYAN_BRUSH)
@@ -2719,10 +2719,10 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 end = 1
             dc.DrawLine(self.Points[self.SelectedSegment].x - 1, self.Points[self.SelectedSegment].y,
                         self.Points[self.SelectedSegment + 1].x + end, self.Points[self.SelectedSegment + 1].y)
-        if self.Value is not None and not isinstance(self.Value, BooleanType) and self.Value != "undefined":
+        if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.Parent.GetMiniFont())
             dc.SetTextForeground(wx.NamedColour("purple"))
-            if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+            if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
                 self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize

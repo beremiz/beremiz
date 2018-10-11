@@ -369,6 +369,7 @@ pylint_checks()
     enable=$enable,W1645          # (exception-message-attribute) Exception.message removed in Python 3
     enable=$enable,W1649          # (deprecated-string-function) Accessing a deprecated function on the string module
     enable=$enable,W1651          # (deprecated-itertools-function) Accessing a deprecated function on the itertools module
+    enable=$enable,W1652          # (deprecated-types-field) Accessing a deprecated fields on the types module
     # enable=
 
     options=

@@ -26,7 +26,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from types import *
 import re
 from collections import OrderedDict
 

@@ -28,12 +28,12 @@ from __future__ import print_function
 import os
 import re
 import datetime
-from types import *
 from xml.dom import minidom
 from xml.sax.saxutils import unescape
 from collections import OrderedDict
 from builtins import str as text
 
+from six import string_types
 from six.moves import xrange
 from lxml import etree
 
@@ -575,7 +575,7 @@ def GenerateAnyInfos(infos):
         "extract": ExtractAny,
         "generate": GenerateAny,
         "initial": InitialAny,
-        "check": lambda x: isinstance(x, (StringType, UnicodeType, etree.ElementBase))
+        "check": lambda x: isinstance(x, (string_types, etree.ElementBase))
     }
 
 
@@ -607,7 +607,7 @@ def GenerateTagInfos(infos):
 
 
 def FindTypeInfos(factory, infos):
-    if isinstance(infos, (UnicodeType, StringType)):
+    if isinstance(infos, string_types):
         namespace, name = DecomposeQualifiedName(infos)
         return factory.GetQualifiedNameInfos(name, namespace)
     return infos
@@ -953,7 +953,7 @@ class ClassFactory(object):
                   if parent is not None else None)
         parent_class = lookup_classes.get(parent)
         if parent_class is not None:
-            if isinstance(parent_class, ListType):
+            if isinstance(parent_class, list):
                 if typeinfos not in parent_class:
                     lookup_classes[parent].append(typeinfos)
             elif parent_class != typeinfos:
@@ -963,13 +963,13 @@ class ClassFactory(object):
 
     def AddToLookupClass(self, name, parent, typeinfos):
         lookup_name = self.etreeNamespaceFormat % name
-        if isinstance(typeinfos, (StringType, UnicodeType)):
+        if isinstance(typeinfos, string_types):
             self.AddEquivalentClass(name, typeinfos)
             typeinfos = self.etreeNamespaceFormat % typeinfos
         lookup_classes = self.ComputedClassesLookUp.get(lookup_name)
         if lookup_classes is None:
             self.ComputedClassesLookUp[lookup_name] = (typeinfos, parent)
-        elif isinstance(lookup_classes, DictType):
+        elif isinstance(lookup_classes, dict):
             self.AddDistinctionBetweenParentsInLookupClass(
                 lookup_classes, parent, typeinfos)
         else:
@@ -981,7 +981,7 @@ class ClassFactory(object):
             self.ComputedClassesLookUp[lookup_name] = lookup_classes
 
     def ExtractTypeInfos(self, name, parent, typeinfos):
-        if isinstance(typeinfos, (StringType, UnicodeType)):
+        if isinstance(typeinfos, string_types):
             namespace, type_name = DecomposeQualifiedName(typeinfos)
             infos = self.GetQualifiedNameInfos(type_name, namespace)
             if name != "base":
@@ -992,13 +992,13 @@ class ClassFactory(object):
             if infos["type"] == COMPLEXTYPE:
                 type_name, parent = self.SplitQualifiedName(type_name, namespace)
                 result = self.CreateClass(type_name, parent, infos)
-                if result is not None and not isinstance(result, (UnicodeType, StringType)):
+                if result is not None and not isinstance(result, string_types):
                     self.Namespaces[self.TargetNamespace][result["name"]] = result
                 return result
             elif infos["type"] == ELEMENT and infos["elmt_type"]["type"] == COMPLEXTYPE:
                 type_name, parent = self.SplitQualifiedName(type_name, namespace)
                 result = self.CreateClass(type_name, parent, infos["elmt_type"])
-                if result is not None and not isinstance(result, (UnicodeType, StringType)):
+                if result is not None and not isinstance(result, string_types):
                     self.Namespaces[self.TargetNamespace][result["name"]] = result
                 return result
             else:
@@ -1020,19 +1020,19 @@ class ClassFactory(object):
         self.ParseSchema()
         for name, infos in self.Namespaces[self.TargetNamespace].items():
             if infos["type"] == ELEMENT:
-                if not isinstance(infos["elmt_type"], (UnicodeType, StringType)) and \
+                if not isinstance(infos["elmt_type"], string_types) and \
                    infos["elmt_type"]["type"] == COMPLEXTYPE:
                     self.ComputeAfter.append((name, None, infos["elmt_type"], True))
                     while len(self.ComputeAfter) > 0:
                         result = self.CreateClass(*self.ComputeAfter.pop(0))
-                        if result is not None and not isinstance(result, (UnicodeType, StringType)):
+                        if result is not None and not isinstance(result, string_types):
                             self.Namespaces[self.TargetNamespace][result["name"]] = result
             elif infos["type"] == COMPLEXTYPE:
                 self.ComputeAfter.append((name, None, infos))
                 while len(self.ComputeAfter) > 0:
                     result = self.CreateClass(*self.ComputeAfter.pop(0))
                     if result is not None and \
-                       not isinstance(result, (UnicodeType, StringType)):
+                       not isinstance(result, string_types):
                         self.Namespaces[self.TargetNamespace][result["name"]] = result
             elif infos["type"] == ELEMENTSGROUP:
                 elements = []
@@ -1041,17 +1041,17 @@ class ClassFactory(object):
                 elif "choices" in infos:
                     elements = infos["choices"]
                 for element in elements:
-                    if not isinstance(element["elmt_type"], (UnicodeType, StringType)) and \
+                    if not isinstance(element["elmt_type"], string_types) and \
                        element["elmt_type"]["type"] == COMPLEXTYPE:
                         self.ComputeAfter.append((element["name"], infos["name"], element["elmt_type"]))
                         while len(self.ComputeAfter) > 0:
                             result = self.CreateClass(*self.ComputeAfter.pop(0))
                             if result is not None and \
-                               not isinstance(result, (UnicodeType, StringType)):
+                               not isinstance(result, string_types):
                                 self.Namespaces[self.TargetNamespace][result["name"]] = result
 
         for name, parents in self.ComputedClassesLookUp.iteritems():
-            if isinstance(parents, DictType):
+            if isinstance(parents, dict):
                 computed_classes = parents.items()
             elif parents[1] is not None:
                 computed_classes = [(self.etreeNamespaceFormat % parents[1], parents[0])]
@@ -1059,7 +1059,7 @@ class ClassFactory(object):
                 computed_classes = []
             for parent, computed_class in computed_classes:
                 for equivalent_parent in self.GetEquivalentParents(parent):
-                    if not isinstance(parents, DictType):
+                    if not isinstance(parents, dict):
                         parents = dict(computed_classes)
                         self.ComputedClassesLookUp[name] = parents
                     parents[equivalent_parent] = computed_class
@@ -1382,7 +1382,7 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                     else:
                         insertion_point = 0
 
-                    if not isinstance(value, ListType):
+                    if not isinstance(value, list):
                         value = [value]
 
                     for element in reversed(value):
@@ -1748,13 +1748,13 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
     def GetElementClass(self, element_tag, parent_tag=None, default=DefaultElementClass):
         element_class = self.LookUpClasses.get(element_tag, (default, None))
-        if not isinstance(element_class, DictType):
-            if isinstance(element_class[0], (StringType, UnicodeType)):
+        if not isinstance(element_class, dict):
+            if isinstance(element_class[0], string_types):
                 return self.GetElementClass(element_class[0], default=default)
             return element_class[0]
 
         element_with_parent_class = element_class.get(parent_tag, default)
-        if isinstance(element_with_parent_class, (StringType, UnicodeType)):
+        if isinstance(element_with_parent_class, string_types):
             return self.GetElementClass(element_with_parent_class, default=default)
         return element_with_parent_class
 
@@ -1811,12 +1811,12 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
         parent = element.getparent()
         element_class = self.GetElementClass(
             element.tag, parent.tag if parent is not None else None)
-        if isinstance(element_class, ListType):
+        if isinstance(element_class, list):
             children = "".join([
                 "%s " % etree.QName(child.tag).localname
                 for child in element])
             for possible_class in element_class:
-                if isinstance(possible_class, (StringType, UnicodeType)):
+                if isinstance(possible_class, string_types):
                     possible_class = self.GetElementClass(possible_class)
                 if possible_class.StructurePattern.match(children) is not None:
                     return possible_class
@@ -1890,7 +1890,7 @@ class XMLClassParser(etree.XMLParser):
             (subclass of lxml.etree._Element created by class factory)
         """
         element_class = self.GetElementClass(element_tag, parent_tag)
-        if isinstance(element_class, ListType):
+        if isinstance(element_class, list):
             if class_idx is not None and class_idx < len(element_class):
                 element_class = element_class[class_idx]
             else:

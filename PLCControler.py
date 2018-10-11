@@ -26,7 +26,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-from types import TupleType
 from copy import deepcopy
 import os
 import re
@@ -874,7 +873,7 @@ class PLCControler(object):
             tempvar.setname(var.Name)
 
             var_type = PLCOpenParser.CreateElement("type", "variable")
-            if isinstance(var.Type, TupleType):
+            if isinstance(var.Type, tuple):
                 if var.Type[0] == "array":
                     _array_type, base_type_name, dimensions = var.Type
                     array = PLCOpenParser.CreateElement("array", "dataType")
@@ -1367,7 +1366,7 @@ class PLCControler(object):
         return True
 
     def IsLocatableType(self, typename, debug=False):
-        if isinstance(typename, TupleType) or self.GetBlockType(typename) is not None:
+        if isinstance(typename, tuple) or self.GetBlockType(typename) is not None:
             return False
 
         # the size of these types is implementation dependend
@@ -1380,7 +1379,7 @@ class PLCControler(object):
         return True
 
     def IsEnumeratedType(self, typename, debug=False):
-        if isinstance(typename, TupleType):
+        if isinstance(typename, tuple):
             typename = typename[1]
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
@@ -1394,7 +1393,7 @@ class PLCControler(object):
     def IsSubrangeType(self, typename, exclude=None, debug=False):
         if typename == exclude:
             return False
-        if isinstance(typename, TupleType):
+        if isinstance(typename, tuple):
             typename = typename[1]
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
@@ -1613,7 +1612,7 @@ class PLCControler(object):
                     element = PLCOpenParser.CreateElement("variable", "struct")
                     element.setname(element_infos["Name"])
                     element_type = PLCOpenParser.CreateElement("type", "variable")
-                    if isinstance(element_infos["Type"], TupleType):
+                    if isinstance(element_infos["Type"], tuple):
                         if element_infos["Type"][0] == "array":
                             _array_type, base_type_name, dimensions = element_infos["Type"]
                             array = PLCOpenParser.CreateElement("array", "dataType")

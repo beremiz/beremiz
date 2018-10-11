@@ -26,7 +26,6 @@
 
 from __future__ import absolute_import
 from __future__ import division
-import types
 
 import wx
 
@@ -403,8 +402,8 @@ class ConfTreeNodeEditor(EditorPanel):
                 boxsizer.AddWindow(statictext, border=5,
                                    flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT)
 
-                if isinstance(element_infos["type"], types.ListType):
-                    if isinstance(element_infos["value"], types.TupleType):
+                if isinstance(element_infos["type"], list):
+                    if isinstance(element_infos["value"], tuple):
                         browse_boxsizer = wx.BoxSizer(wx.HORIZONTAL)
                         boxsizer.AddSizer(browse_boxsizer)
 
@@ -430,7 +429,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
                         if element_infos["use"] == "optional":
                             combobox.Append("")
-                        if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], types.TupleType):
+                        if len(element_infos["type"]) > 0 and isinstance(element_infos["type"][0], tuple):
                             for choice, _xsdclass in element_infos["type"]:
                                 combobox.Append(choice)
                             name = element_infos["name"]
@@ -453,7 +452,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             combobox.SetStringSelection(element_infos["value"])
                         combobox.Bind(wx.EVT_COMBOBOX, callback, combobox)
 
-                elif isinstance(element_infos["type"], types.DictType):
+                elif isinstance(element_infos["type"], dict):
                     scmin = -(2**31)
                     scmax = 2**31-1
                     if "min" in element_infos["type"]:

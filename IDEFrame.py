@@ -25,7 +25,6 @@
 from __future__ import absolute_import
 from __future__ import division
 import sys
-from types import TupleType
 import base64
 from builtins import str as text
 
@@ -835,7 +834,7 @@ class IDEFrame(wx.Frame):
         return None
 
     def LoadTabLayout(self, notebook, tabs, mode="all", first_index=None):
-        if isinstance(tabs, ListType):
+        if isinstance(tabs, list):
             if len(tabs) == 0:
                 return
             raise ValueError("Not supported")
@@ -2437,7 +2436,7 @@ class IDEFrame(wx.Frame):
 
         result = self.Controler.PastePou(pou_type, pou_xml)
 
-        if not isinstance(result, TupleType):
+        if not isinstance(result, tuple):
             self.ShowErrorMessage(result)
         else:
             self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, PROJECTTREE, LIBRARYTREE)

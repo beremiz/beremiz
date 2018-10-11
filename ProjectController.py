@@ -36,7 +36,6 @@ from time import localtime
 import shutil
 import re
 import tempfile
-from types import ListType
 from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
@@ -73,7 +72,7 @@ MATIEC_ERROR_MODEL = re.compile(
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
     for n, d, _h, c in catalog:
-        if isinstance(c, ListType):
+        if isinstance(c, list):
             children_types.extend(ExtractChildrenTypesFromCatalog(c))
         else:
             children_types.append((n, GetClassImporter(c), d))
@@ -83,7 +82,7 @@ def ExtractChildrenTypesFromCatalog(catalog):
 def ExtractMenuItemsFromCatalog(catalog):
     menu_items = []
     for n, d, h, c in catalog:
-        if isinstance(c, ListType):
+        if isinstance(c, list):
             children = ExtractMenuItemsFromCatalog(c)
         else:
             children = []

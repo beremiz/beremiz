@@ -17,7 +17,6 @@
 
 from __future__ import print_function
 import sys
-from types import StringType
 import compiler
 from compiler import ast
 import os
@@ -1388,7 +1387,7 @@ class Translator(object):
         return self.expr(node.left, current_klass) + " * " + self.expr(node.right, current_klass)
 
     def _mod(self, node, current_klass):
-        if isinstance(node.left, ast.Const) and isinstance(node.left.value, StringType):
+        if isinstance(node.left, ast.Const) and isinstance(node.left.value, str):
             self.imported_js.add("sprintf.js")  # Include the sprintf functionality if it is used
             return "sprintf("+self.expr(node.left, current_klass) + ", " + self.expr(node.right, current_klass)+")"
         return self.expr(node.left, current_klass) + " % " + self.expr(node.right, current_klass)

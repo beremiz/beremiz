@@ -32,6 +32,7 @@ import getopt
 import threading
 from threading import Thread, Semaphore, Lock
 import traceback
+from builtins import str as text
 from past.builtins import execfile
 from six.moves import builtins
 import Pyro
@@ -203,7 +204,6 @@ if enablewx:
 
     if havewx:
         import re
-        from types import *
 
         if wx.VERSION >= (3, 0, 0):
             app = wx.App(redirect=False)
@@ -338,7 +338,7 @@ if enablewx:
 
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
-                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
+                dlg.SetTests([(text.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Restart()
