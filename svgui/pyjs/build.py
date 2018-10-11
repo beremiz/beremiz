@@ -184,7 +184,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
         try:
             print("Creating output directory")
             os.mkdir(output)
-        except StandardError as e:
+        except OSError as e:
             print("Exception creating output directory %s: %s" % (output, e), file=sys.stderr)
 
     # public dir

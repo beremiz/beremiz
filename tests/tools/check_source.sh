@@ -370,6 +370,7 @@ pylint_checks()
     enable=$enable,W1649          # (deprecated-string-function) Accessing a deprecated function on the string module
     enable=$enable,W1651          # (deprecated-itertools-function) Accessing a deprecated function on the itertools module
     enable=$enable,W1652          # (deprecated-types-field) Accessing a deprecated fields on the types module
+    enable=$enable,W1611          # (standarderror-builtin) StandardError built-in referenced
     # enable=
 
     options=
