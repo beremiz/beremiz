@@ -301,7 +301,7 @@ def LoadProjectXML(project_xml):
         return tree, error
 
     except Exception as e:
-        return None, e.message
+        return None, str(e)
 
 
 def LoadProject(filepath):
