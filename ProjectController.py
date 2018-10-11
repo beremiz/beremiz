@@ -40,7 +40,6 @@ from types import ListType
 from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
-from itertools import izip
 from six.moves import xrange
 
 import wx
@@ -1499,7 +1498,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         debug_vars = UnpackDebugBuffer(
                             debug_buff, self.TracedIECTypes)
                         if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
-                            for IECPath, values_buffer, value in izip(
+                            for IECPath, values_buffer, value in zip(
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,
                                     debug_vars):
@@ -1678,7 +1677,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
         start_time = time.time()
         if len(self.TracedIECPath) == len(buffers):
-            for IECPath, values in izip(self.TracedIECPath, buffers):
+            for IECPath, values in zip(self.TracedIECPath, buffers):
                 if len(values) > 0:
                     self.CallWeakcallables(
                         IECPath, "NewValues", debug_ticks, values)
