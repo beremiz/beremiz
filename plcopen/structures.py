@@ -266,7 +266,7 @@ def get_standard_funtions(table):
                             Function_decl_copy = Function_decl.copy()
                             Current_section["list"].append(Function_decl_copy)
             else:
-                raise "First function must be in a category"
+                raise ValueError("First function must be in a category")
 
     return Standard_Functions_Decl
 
