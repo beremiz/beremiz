@@ -371,6 +371,7 @@ pylint_checks()
     enable=$enable,W1652          # (deprecated-types-field) Accessing a deprecated fields on the types module
     enable=$enable,W1611          # (standarderror-builtin) StandardError built-in referenced
     enable=$enable,W1624          # (indexing-exception) Indexing exceptions will not work on Python 3
+    enable=$enable,W1625          # (raising-string) Raising a string exception
     # enable=
 
     options=

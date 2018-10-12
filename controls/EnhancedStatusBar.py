@@ -222,19 +222,20 @@ class EnhancedStatusBar(wx.StatusBar):
             self._curPos += 1
 
         if self.GetFieldsCount() <= pos:
-            raise "\nERROR: EnhancedStatusBar has a max of %d items, you tried to set item #%d" % (self.GetFieldsCount(), pos)
+            raise ValueError("\nERROR: EnhancedStatusBar has a max of %d items, you tried to set item #%d" %
+                             (self.GetFieldsCount(), pos))
 
         if horizontalalignment not in [ESB_ALIGN_CENTER_HORIZONTAL, ESB_EXACT_FIT,
                                        ESB_ALIGN_LEFT, ESB_ALIGN_RIGHT]:
-            raise '\nERROR: Parameter "horizontalalignment" Should Be One Of '\
-                  '"ESB_ALIGN_CENTER_HORIZONTAL", "ESB_ALIGN_LEFT", "ESB_ALIGN_RIGHT"' \
-                  '"ESB_EXACT_FIT"'
+            raise ValueError('\nERROR: Parameter "horizontalalignment" Should Be One Of '
+                             '"ESB_ALIGN_CENTER_HORIZONTAL", "ESB_ALIGN_LEFT", "ESB_ALIGN_RIGHT"'
+                             '"ESB_EXACT_FIT"')
 
         if verticalalignment not in [ESB_ALIGN_CENTER_VERTICAL, ESB_EXACT_FIT,
                                      ESB_ALIGN_TOP, ESB_ALIGN_BOTTOM]:
-            raise '\nERROR: Parameter "verticalalignment" Should Be One Of '\
-                  '"ESB_ALIGN_CENTER_VERTICAL", "ESB_ALIGN_TOP", "ESB_ALIGN_BOTTOM"' \
-                  '"ESB_EXACT_FIT"'
+            raise ValueError('\nERROR: Parameter "verticalalignment" Should Be One Of '
+                             '"ESB_ALIGN_CENTER_VERTICAL", "ESB_ALIGN_TOP", "ESB_ALIGN_BOTTOM"'
+                             '"ESB_EXACT_FIT"')
 
         try:
             self.RemoveChild(self._items[pos].widget)
