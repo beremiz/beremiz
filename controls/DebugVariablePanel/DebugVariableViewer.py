@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from collections import OrderedDict
+from functools import reduce
 
 import wx
 from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap

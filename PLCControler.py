@@ -31,6 +31,7 @@ import os
 import re
 import datetime
 from time import localtime
+from functools import reduce
 
 import util.paths as paths
 from plcopen import *

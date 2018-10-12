@@ -374,6 +374,7 @@ pylint_checks()
     enable=$enable,W1625          # (raising-string) Raising a string exception
     enable=$enable,W1622          # (next-method-called) Called a next() method on an object
     enable=$enable,W1653          # (next-method-defined) next method defined
+    enable=$enable,W1610          # (reduce-builtin) reduce built-in referenced
     # enable=
 
     options=

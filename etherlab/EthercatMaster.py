@@ -12,6 +12,7 @@
 from __future__ import absolute_import
 import os
 from copy import deepcopy
+from functools import reduce
 from lxml import etree
 
 import wx

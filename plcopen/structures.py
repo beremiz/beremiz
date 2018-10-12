@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 import re
 from collections import OrderedDict
+from functools import reduce
 
 from plcopen.plcopen import LoadProject
 from plcopen.definitions import *

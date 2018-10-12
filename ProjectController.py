@@ -39,6 +39,7 @@ import tempfile
 from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
+from functools import reduce
 from six.moves import xrange
 
 import wx
