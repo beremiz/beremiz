@@ -28,7 +28,7 @@ import os
 import re
 import operator
 import hashlib
-
+from functools import reduce
 from util.ProcessLogger import ProcessLogger
 
 

@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import
 import re
+from functools import reduce
 from six.moves import xrange
 
 from plcopen import PLCOpenParser

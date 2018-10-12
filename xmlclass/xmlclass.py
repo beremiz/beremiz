@@ -32,6 +32,7 @@ from xml.dom import minidom
 from xml.sax.saxutils import unescape
 from collections import OrderedDict
 from builtins import str as text
+from functools import reduce
 
 from six import string_types
 from six.moves import xrange

@@ -29,6 +29,7 @@ Misc definitions
 
 from __future__ import absolute_import
 import os
+from functools import reduce
 
 from util.BitmapLibrary import AddBitmapFolder
 from util.TranslationCatalogs import AddCatalog
