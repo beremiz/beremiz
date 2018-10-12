@@ -262,7 +262,6 @@ pylint_checks()
     disable=$disable,C0103        # invalid-name
     disable=$disable,C0326        # bad whitespace
     disable=$disable,W0110        # (deprecated-lambda) map/filter on lambda could be replaced by comprehension
-    disable=$disable,W1401        # (anomalous-backslash-in-string) Anomalous backslash in string: '\.'. String constant might be missing an r prefix.
     disable=$disable,W0613        # (unused-argument) Unused argument 'X'
     disable=$disable,W0622        # (redefined-builtin) Redefining built-in
     disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)
@@ -371,6 +370,7 @@ pylint_checks()
     enable=$enable,W1651          # (deprecated-itertools-function) Accessing a deprecated function on the itertools module
     enable=$enable,W1652          # (deprecated-types-field) Accessing a deprecated fields on the types module
     enable=$enable,W1611          # (standarderror-builtin) StandardError built-in referenced
+    enable=$enable,W1624          # (indexing-exception) Indexing exceptions will not work on Python 3
     # enable=
 
     options=
