@@ -28,6 +28,7 @@ from __future__ import division
 import math
 from time import time as gettime
 from threading import Lock
+from future.builtins import round
 
 import wx
 from six.moves import xrange

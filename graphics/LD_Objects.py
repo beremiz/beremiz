@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from __future__ import division
 import wx
+from future.builtins import round
 from six.moves import xrange
 
 from graphics.GraphicCommons import *

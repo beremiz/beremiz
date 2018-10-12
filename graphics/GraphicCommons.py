@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from math import *
+from future.builtins import round
 from six import string_types
 from six.moves import xrange
 

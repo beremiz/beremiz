@@ -25,6 +25,8 @@
 
 from __future__ import absolute_import
 from __future__ import division
+from future.builtins import round
+
 import wx
 from six.moves import xrange
 
