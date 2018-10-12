@@ -30,6 +30,7 @@ import re
 import datetime
 from types import FunctionType
 from xml.dom import minidom
+from future.builtins import round
 from six import string_types
 from past.builtins import long
 

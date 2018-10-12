@@ -26,7 +26,9 @@ from __future__ import absolute_import
 from __future__ import division
 import sys
 import base64
-from builtins import str as text
+from future.builtins import \
+    round, \
+    str as text
 
 import wx
 import wx.grid

@@ -32,6 +32,7 @@ import re
 import datetime
 from time import localtime
 from functools import reduce
+from future.builtins import round
 
 import util.paths as paths
 from plcopen import *
