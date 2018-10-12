@@ -373,6 +373,7 @@ pylint_checks()
     enable=$enable,W1624          # (indexing-exception) Indexing exceptions will not work on Python 3
     enable=$enable,W1625          # (raising-string) Raising a string exception
     enable=$enable,W1622          # (next-method-called) Called a next() method on an object
+    enable=$enable,W1653          # (next-method-defined) next method defined
     # enable=
 
     options=
