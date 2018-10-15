@@ -32,7 +32,6 @@ import util.paths as paths
 
 _base_path = paths.AbsDir(__file__)
 
-
 def _GetLocalConnectorClassFactory(name):
     return lambda: getattr(__import__(name, globals(), locals()), name + "_connector_factory")
 
