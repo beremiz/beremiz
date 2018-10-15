@@ -144,7 +144,7 @@ class WampSession(wamp.ApplicationSession):
         _transportFactory = None
         print(_('WAMP session left'))
 
-    def publishWithOwnID(eventID, value):
+    def publishWithOwnID(self, eventID, value):
         ID = self.config.extra["ID"]
         self.publish(unicode(ID+'.'+eventID), value)
 
