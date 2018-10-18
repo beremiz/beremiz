@@ -2,8 +2,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import socket
+import re
 import sslpsk
 import Pyro
+from Pyro.core import PyroURI
 from Pyro.protocol import _connect_socket,TCPConnection,PYROAdapter
 from Pyro.errors import ConnectionDeniedError, ProtocolError
 from Pyro.util import Log
@@ -45,8 +47,8 @@ class PYROPSKAdapter(PYROAdapter):
                     self.conn=conn
                     self.conn.connected=1
                     Log.msg('PYROAdapter','connected to',str(URI))
-                    if URI.protocol=='PYROLOC':
-                        self.resolvePYROLOC_URI("PYRO") # updates self.URI
+                    if URI.protocol=='PYROLOCPSK':
+                        self.resolvePYROLOC_URI("PYROPSK") # updates self.URI
                 elif msg[:len(self.denyMSG)]==self.denyMSG:
                     try:
                         raise ConnectionDeniedError(Pyro.constants.deniedReasons[int(msg[-1])])
@@ -64,3 +66,18 @@ def getProtocolAdapter(protocol):
 
 Pyro.protocol.getProtocolAdapter = getProtocolAdapter
 
+_processStringURI = Pyro.core.processStringURI
+def processStringURI(URI):
+    x=re.match(r'(?P<protocol>PYROLOCPSK)://(?P<hostname>[^\s:]+):?(?P<port>\d+)?/(?P<name>\S*)',URI)
+    if x:
+        protocol=x.group('protocol')
+        hostname=x.group('hostname')
+        port=x.group('port')
+        if port:
+            port=int(port)
+        else:
+            port=0
+        name=x.group('name')
+        return PyroURI(hostname,name,port,protocol)
+    return _processStringURI(URI)
+Pyro.core.processStringURI = processStringURI

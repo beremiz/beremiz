@@ -53,7 +53,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     servicetype, location = uri.split("://")
     if servicetype == "PYROS":
         import connectors.PYRO.PSK_Adapter
-        schemename = "PYROPSK"
+        schemename = "PYROLOCPSK"
         url, ID = location.split('#')
         # load PSK from project
         secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
