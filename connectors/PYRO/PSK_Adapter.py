@@ -1,4 +1,7 @@
+from __future__ import absolute_import
+from __future__ import print_function
 
+import socket
 import sslpsk
 import Pyro
 from Pyro.protocol import _connect_socket,TCPConnection,PYROAdapter
@@ -22,7 +25,8 @@ class PYROPSKAdapter(PYROAdapter):
                 raw_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 _connect_socket(raw_sock, URI.address, URI.port, self.timeout)
                 sock = sslpsk.wrap_socket(
-                    raw_sock, psk=Pyro.config.PYROPSK, server_side=False)
+                    raw_sock, psk=Pyro.config.PYROPSK, server_side=False,
+                    ciphers="PSK-AES256-GCM-SHA384:PSK-AES256-CBC-SHA")
                 # all the rest is the same as in Pyro/protocol.py 
 
                 conn=TCPConnection(sock, sock.getpeername())

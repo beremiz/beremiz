@@ -36,7 +36,7 @@ import Pyro.core
 import Pyro.util
 from Pyro.errors import PyroError
 
-service_type = '_PYRO._tcp.local.'
+zeroconf_service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
 #
@@ -53,23 +53,25 @@ def PYRO_connector_factory(uri, confnodesroot):
     servicetype, location = uri.split("://")
     if servicetype == "PYROS":
         import connectors.PYRO.PSK_Adapter
-        schemename = "PYROLOCPSK"
-        urlpath, ID = location.split('#')
+        schemename = "PYROPSK"
+        url, ID = location.split('#')
         # load PSK from project
         secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
         if not os.path.exists(secpath):
             confnodesroot.logger.write_error(
                 'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
             return None
-        Pyro.config.PYROPSK = open(secpath).read()
+        Pyro.config.PYROPSK = (open(secpath).read(), ID)
+        # strip ID from URL, so that pyro can understand it.
+        location = url
     else:
         schemename = "PYROLOC"
 
-    if location.find(service_type) != -1:
+    if location.find(zeroconf_service_type) != -1:
         try:
             from zeroconf import Zeroconf
             r = Zeroconf()
-            i = r.get_service_info(service_type, location)
+            i = r.get_service_info(zeroconf_service_type, location)
             if i is None:
                 raise Exception("'%s' not found" % location)
             ip = str(socket.inet_ntoa(i.address))
