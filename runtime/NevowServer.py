@@ -333,11 +333,11 @@ class WebInterface(athena.LivePage):
         # print "We will be called back when the client disconnects"
 
 
-def RegisterWebsite(port):
+def RegisterWebsite(iface, port):
     website = WebInterface()
     site = appserver.NevowSite(website)
 
-    reactor.listenTCP(port, site)
+    reactor.listenTCP(port, site, interface=iface)
     print(_('HTTP interface port :'), port)
     return website
 

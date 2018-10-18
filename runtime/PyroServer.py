@@ -30,9 +30,7 @@ class Server(object):
 
     def _to_be_published(self):
         return self.servicename is not None and \
-               self.ip_addr is not None and \
-               self.ip_addr != "localhost" and \
-               self.ip_addr != "127.0.0.1"
+               self.ip_addr not in ["", "localhost", "127.0.0.1"]
 
     def PrintServerInfo(self):
         print(_("Pyro port :"), self.port)

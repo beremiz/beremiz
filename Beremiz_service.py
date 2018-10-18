@@ -75,7 +75,7 @@ except getopt.GetoptError as err:
     sys.exit(2)
 
 # default values
-given_ip = None
+interface = ''
 port = 3000
 webport = 8009
 wampsecret = None
@@ -97,8 +97,10 @@ for o, a in opts:
         version()
         sys.exit()
     elif o == "-i":
-        if len(a.split(".")) == 4 or a == "localhost":
-            given_ip = a
+        if len(a.split(".")) == 4:
+            interface = a
+        elif a == "localhost":
+            interface = '127.0.0.1'
         else:
             usage()
             sys.exit()
@@ -493,7 +495,7 @@ for extention_file, extension_folder in extensions:
 runtime.CreatePLCObjectSingleton(
     WorkingDir, argv, statuschange, evaluator, pyruntimevars)
 
-pyroserver = Server(servicename, given_ip, port)
+pyroserver = Server(servicename, interface, port)
 
 if havewx:
     taskbar_instance = BeremizTaskBarIcon(pyroserver)
@@ -501,7 +503,7 @@ if havewx:
 if havetwisted:
     if webport is not None:
         try:
-            website = NS.RegisterWebsite(webport)
+            website = NS.RegisterWebsite(interface, webport)
             pyruntimevars["website"] = website
             NS.SetServer(pyroserver)
             statuschange.append(NS.website_statuslistener_factory(website))
