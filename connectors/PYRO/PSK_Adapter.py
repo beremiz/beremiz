@@ -4,6 +4,7 @@ from __future__ import print_function
 import socket
 import re
 import sslpsk
+import ssl
 import Pyro
 from Pyro.core import PyroURI
 from Pyro.protocol import _connect_socket,TCPConnection,PYROAdapter
@@ -63,7 +64,7 @@ _getProtocolAdapter = Pyro.protocol.getProtocolAdapter
 def getProtocolAdapter(protocol):
     if protocol in ('PYROPSK', 'PYROLOCPSK'):
         return PYROPSKAdapter()
-    _getProtocolAdapter(protocol)
+    return _getProtocolAdapter(protocol)
 
 Pyro.protocol.getProtocolAdapter = getProtocolAdapter
 
