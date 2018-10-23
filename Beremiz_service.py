@@ -50,7 +50,7 @@ def usage():
     print("""
 Usage of Beremiz PLC execution service :\n
 %s {[-n servicename] [-i IP] [-p port] [-x enabletaskbar] [-a autostart]|-h|--help} working_dir
-  -n  zeroconf service name (default:disabled)
+  -n  service name (default:None, zeroconf discovery disabled)
   -i  IP address of interface to bind to (default:localhost)
   -p  port number default:3000
   -h  print this help text and quit
@@ -59,7 +59,7 @@ Usage of Beremiz PLC execution service :\n
   -t  enable/disable Twisted web interface (0:disable 1:enable) (default:1)
   -w  web server port or "off" to disable web server (default:8009)
   -c  WAMP client config file (can be overriden by wampconf.json in project)
-  -s  WAMP client secret, given as a file (can be overriden by wamp.secret in project)
+  -s  PSK secret path (default:PSK disabled)
   -e  python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
@@ -78,7 +78,7 @@ except getopt.GetoptError as err:
 interface = ''
 port = 3000
 webport = 8009
-wampsecret = None
+pskpath = None
 wampconf = None
 servicename = None
 autostart = False
@@ -120,7 +120,7 @@ for o, a in opts:
     elif o == "-c":
         wampconf = None if a == "off" else a
     elif o == "-s":
-        wampsecret = None if a == "off" else a
+        pskpath = None if a == "off" else a
     elif o == "-e":
         fnameanddirname = list(os.path.split(os.path.realpath(a)))
         fnameanddirname.reverse()
@@ -489,6 +489,12 @@ for extention_file, extension_folder in extensions:
     sys.path.append(extension_folder)
     execfile(os.path.join(extension_folder, extention_file), locals())
 
+# Service name is used as an ID for stunnel's PSK
+# Some extension may set 'servicename' to a computed ID or Serial Number
+# instead of using commandline '-n'
+if servicename is not None and pskpath is not None:
+    from runtime.Stunnel import ensurepsk
+    ensurepsk(servicename, pskpath)
 
 runtime.CreatePLCObjectSingleton(
     WorkingDir, argv, statuschange, evaluator, pyruntimevars)
@@ -511,7 +517,7 @@ if havetwisted:
     if havewamp:
         try:
             WC.SetServer(pyroserver)
-            WC.RegisterWampClient(wampconf, wampsecret)
+            WC.RegisterWampClient(wampconf, pskpath)
             WC.RegisterWebSettings(NS)
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
