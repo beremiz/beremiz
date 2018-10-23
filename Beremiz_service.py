@@ -142,11 +142,10 @@ elif len(argv) == 0:
     WorkingDir = os.getcwd()
     argv = [WorkingDir]
 
-if __name__ == '__main__':
-    __builtin__.__dict__['_'] = lambda x: x
-    # TODO: add a cmdline parameter if Trying Preloading Xenomai makes problem
-    TryPreloadXenomai()
-    version()
+__builtin__.__dict__['_'] = lambda x: x
+# TODO: add a cmdline parameter if Trying Preloading Xenomai makes problem
+TryPreloadXenomai()
+version()
 
 
 def Bpath(*args):
@@ -183,9 +182,8 @@ def SetupI18n():
     def unicode_translation(message):
         return wx.GetTranslation(message).encode(default_locale)
 
-    if __name__ == '__main__':
-        __builtin__.__dict__['_'] = unicode_translation
-        # __builtin__.__dict__['_'] = wx.GetTranslation
+    __builtin__.__dict__['_'] = unicode_translation
+    # __builtin__.__dict__['_'] = wx.GetTranslation
 
 
 # Life is hard... have a candy.
