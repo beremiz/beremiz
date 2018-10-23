@@ -56,11 +56,15 @@ class ServicePublisher(object):
         self.name = name
         self.port = port
 
-        self.server = zeroconf.Zeroconf()
-        print("MDNS brodcasting on :" + ip)
-
         if ip == "0.0.0.0":
+            print("MDNS brodcasted on all interfaces")
+            interfaces=zeroconf.InterfaceChoice.All
             ip = self.gethostaddr()
+        else:
+            interfaces=[ip]
+
+        self.server = zeroconf.Zeroconf(interfaces=interfaces)
+        
         print("MDNS brodcasted service address :" + ip)
         self.ip_32b = socket.inet_aton(ip)
 
