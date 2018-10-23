@@ -334,9 +334,9 @@ if enablewx:
                     self.pyroserver.Restart()
 
             def OnTaskBarChangeName(self, evt):
-                servicename = self.pyroserver.servicename
-                servicename = '' if servicename is None else servicename
-                dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=servicename)
+                _servicename = self.pyroserver.servicename
+                _servicename = '' if _servicename is None else _servicename
+                dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=_servicename)
                 dlg.SetTests([(lambda name: len(name) is not 0, _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.servicename = dlg.GetValue()
