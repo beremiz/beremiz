@@ -36,6 +36,7 @@ import Pyro.core
 import Pyro.util
 from Pyro.errors import PyroError
 
+
 zeroconf_service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
@@ -54,14 +55,15 @@ def PYRO_connector_factory(uri, confnodesroot):
     if servicetype == "PYROS":
         import connectors.PYRO.PSK_Adapter
         schemename = "PYROLOCPSK"
-        url, ID = location.split('#')
+        url, ID = location.split('#') #TODO fix exception when # not found
         # load PSK from project
         secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
         if not os.path.exists(secpath):
             confnodesroot.logger.write_error(
                 'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
             return None
-        Pyro.config.PYROPSK = (open(secpath).read(), ID)
+        secret = open(secpath).read().partition(':')[2].rstrip('\n\r')
+        Pyro.config.PYROPSK = (secret, ID)
         # strip ID from URL, so that pyro can understand it.
         location = url
     else:
@@ -88,9 +90,9 @@ def PYRO_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
-    except Exception:
-        confnodesroot.logger.write_error(_("Connection to '%s' failed.\n") % location)
-        confnodesroot.logger.write_error(traceback.format_exc())
+    except Exception,e:
+        confnodesroot.logger.write_error(_("Connection to '%s' failed with exception '%s'\n") % (location, str(e)))
+        #confnodesroot.logger.write_error(traceback.format_exc())
         return None
 
     def PyroCatcher(func, default=None):
@@ -117,9 +119,16 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     # Check connection is effective.
     # lambda is for getattr of GetPLCstatus to happen inside catcher
-    if PyroCatcher(RemotePLCObjectProxy.GetPLCstatus)() is None:
-        confnodesroot.logger.write_error(_("Cannot get PLC status - connection failed.\n"))
+    IDPSK = PyroCatcher(RemotePLCObjectProxy.GetPLCID)()
+    if IDPSK is None:
+        confnodesroot.logger.write_error(_("Cannot get PLC ID - connection failed.\n"))
         return None
+
+    if servicetype != "PYROS":
+        ID,PSK = IDPSK
+        secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
+        with open(secpath, 'w') as f:
+            f.write(ID+":"+PSK)
 
     _special_return_funcs = {
         "StartPLC": False,

@@ -33,6 +33,7 @@ import _ctypes  # pylint: disable=wrong-import-order
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
+from runtime.Stunnel import getPSKID
 from runtime import MainWorker
 
 if os.name in ("nt", "ce"):
@@ -436,6 +437,10 @@ class PLCObject(object):
     @RunInMain
     def GetPLCstatus(self):
         return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
+
+    @RunInMain
+    def GetPLCID(self):
+        return getPSKID()
 
     @RunInMain
     def NewPLC(self, md5sum, data, extrafiles):

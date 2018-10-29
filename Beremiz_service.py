@@ -78,7 +78,7 @@ except getopt.GetoptError as err:
 interface = ''
 port = 3000
 webport = 8009
-pskpath = None
+PSKpath = None
 wampconf = None
 servicename = None
 autostart = False
@@ -120,7 +120,7 @@ for o, a in opts:
     elif o == "-c":
         wampconf = None if a == "off" else a
     elif o == "-s":
-        pskpath = None if a == "off" else a
+        PSKpath = None if a == "off" else a
     elif o == "-e":
         fnameanddirname = list(os.path.split(os.path.realpath(a)))
         fnameanddirname.reverse()
@@ -492,9 +492,9 @@ for extention_file, extension_folder in extensions:
 # Service name is used as an ID for stunnel's PSK
 # Some extension may set 'servicename' to a computed ID or Serial Number
 # instead of using commandline '-n'
-if servicename is not None and pskpath is not None:
-    from runtime.Stunnel import ensurepsk
-    ensurepsk(servicename, pskpath)
+if servicename is not None and PSKpath is not None:
+    from runtime.Stunnel import ensurePSK
+    ensurePSK(servicename, PSKpath)
 
 runtime.CreatePLCObjectSingleton(
     WorkingDir, argv, statuschange, evaluator, pyruntimevars)
@@ -517,7 +517,7 @@ if havetwisted:
     if havewamp:
         try:
             WC.SetServer(pyroserver)
-            WC.RegisterWampClient(wampconf, pskpath)
+            WC.RegisterWampClient(wampconf, PSKpath)
             WC.RegisterWebSettings(NS)
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
