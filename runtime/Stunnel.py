@@ -1,23 +1,17 @@
 import os
-#from binascii import hexlify
+from binascii import b2a_hqx
 from runtime.spawn_subprocess import call
 
 restart_stunnel_cmdline = ["/etc/init.d/S50stunnel","restart"]
-
-# stunnel takes no encoding for PSK, so we try to lose minimum entropy 
-# by using all possible chars except '\0\n\r' (checked stunnel parser to be sure)
-translator = ''.join([(lambda c: '#' if c in '\0\n\r' else c)(chr(i)) for i in xrange(256)])
 
 _PSKpath = None
 
 def PSKgen(ID, PSKpath):
 
-    # 236 bytes is empirical maximum when using :
-    #  - stunnel 5.36 on server with openssl 1.0.2k
-    #  - python-sslpsk 1.0.0 on client with openssl 1.0.2k
-    secret = os.urandom(236) 
+    # b2a_hqx output len is 4/3 input len
+    secret = os.urandom(192) # int(256/1.3333)
+    secretstring = b2a_hqx(secret)
 
-    secretstring = secret.translate(translator)
     PSKstring = ID+":"+secretstring
     with open(PSKpath, 'w') as f:
         f.write(PSKstring)
