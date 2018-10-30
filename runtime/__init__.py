@@ -9,9 +9,6 @@ import sys
 from runtime.Worker import worker
 MainWorker = worker()
 
-from runtime.PLCObject import PLCObject  # noqa # pylint: disable=wrong-import-position
-
-
 _PLCObjectSingleton = None
 
 
@@ -31,4 +28,5 @@ def LogMessageAndException(msg, exp=None):
 
 def CreatePLCObjectSingleton(*args, **kwargs):
     global _PLCObjectSingleton
+    from runtime.PLCObject import PLCObject  # noqa # pylint: disable=wrong-import-position
     _PLCObjectSingleton = PLCObject(*args, **kwargs)
