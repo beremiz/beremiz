@@ -347,12 +347,12 @@ def SetServer(pysrv):
 
 def PublishEvent(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publish(eventID, value)
+        _WampSession.publish(unicode(eventID), value)
 
 
 def PublishEventWithOwnID(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publishWithOwnID(eventID, value)
+        _WampSession.publishWithOwnID(unicode(eventID), value)
 
 
 # WEB CONFIGURATION INTERFACE
