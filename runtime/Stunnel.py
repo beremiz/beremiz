@@ -11,11 +11,11 @@ translator = ''.join([(lambda c: '#' if c in '\0\n\r' else c)(chr(i)) for i in x
 _PSKpath = None
 
 def PSKgen(ID, PSKpath):
-    secret = os.urandom(256) # 2048 bits is still safe nowadays
 
-    # following makes 512 length string, rejected by stunnel
-    # using binascii hexlify loses 50% entropy
-    # secretstring = hexlify(secret)
+    # 236 bytes is empirical maximum when using :
+    #  - stunnel 5.36 on server with openssl 1.0.2k
+    #  - python-sslpsk 1.0.0 on client with openssl 1.0.2k
+    secret = os.urandom(236) 
 
     secretstring = secret.translate(translator)
     PSKstring = ID+":"+secretstring
