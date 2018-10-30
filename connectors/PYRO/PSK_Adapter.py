@@ -29,7 +29,7 @@ class PYROPSKAdapter(PYROAdapter):
                 _connect_socket(raw_sock, URI.address, URI.port, self.timeout)
                 sock = sslpsk.wrap_socket(
                     raw_sock, psk=Pyro.config.PYROPSK, server_side=False,
-                    ciphers="PSK-AES256-GCM-SHA384:PSK-AES256-CBC-SHA",
+                    ciphers="PSK-AES256-CBC-SHA", # available in openssl 1.0.2 
                     ssl_version=ssl.PROTOCOL_TLSv1)
                 # all the rest is the same as in Pyro/protocol.py 
 
