@@ -55,7 +55,7 @@ from editors.FileManagementPanel import FileManagementPanel
 from editors.ProjectNodeEditor import ProjectNodeEditor
 from editors.IECCodeViewer import IECCodeViewer
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
-from dialogs import DiscoveryDialog
+from dialogs import UriEditor 
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
@@ -1768,7 +1768,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if uri == "":
             try:
                 # Launch Service Discovery dialog
-                dialog = DiscoveryDialog(self.AppFrame)
+                dialog = UriEditor(self.AppFrame)
                 answer = dialog.ShowModal()
                 uri = dialog.GetURI()
                 dialog.Destroy()
