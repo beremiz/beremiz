@@ -3,12 +3,9 @@ from __future__ import absolute_import
 import wx
 from connectors import ConnectorSchemes, EditorClassFromScheme
 
-
-[ID_URIWIZARDDIALOG, ID_URITYPECHOICE] = [wx.NewId() for _init_ctrls in range(2)]
-
 class UriEditor(wx.Dialog):
     def _init_ctrls(self, parent):
-        self.UriTypeChoice = wx.Choice(parent=self, id=ID_URIWIZARDDIALOG, choices=self.URITYPES)
+        self.UriTypeChoice = wx.Choice(parent=self, choices=self.URITYPES)
         self.UriTypeChoice.SetSelection(0)
         self.Bind(wx.EVT_CHOICE, self.OnTypeChoice, self.UriTypeChoice)
         self.editor_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -17,18 +14,20 @@ class UriEditor(wx.Dialog):
     def _init_sizers(self):
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         typeSizer = wx.BoxSizer(wx.HORIZONTAL)
-        typeSizer.Add(wx.StaticText(self, wx.ID_ANY, _("Scheme :")), border=5, flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+        typeSizer.Add(wx.StaticText(self, wx.ID_ANY, _("Scheme :")), border=5,
+                                    flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
         typeSizer.Add(self.UriTypeChoice, border=5, flag=wx.ALL)
         self.mainSizer.Add(typeSizer)
 
         self.mainSizer.Add(self.editor_sizer, border=5, flag=wx.ALL)
-        self.mainSizer.Add(self.ButtonSizer, border=5, flag=wx.BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
+        self.mainSizer.Add(self.ButtonSizer, border=5,
+                           flag=wx.BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
         self.SetSizer(self.mainSizer)
         self.Layout()
         self.Fit()
 
     def __init__(self, parent, uri):
-        wx.Dialog.__init__(self, id=ID_URIWIZARDDIALOG,
+        wx.Dialog.__init__(self,
                            name='UriEditor', parent=parent,
                            title=_('URI Editor'))
         self.URITYPES = [_("- Select URI Scheme -")] + ConnectorSchemes()
