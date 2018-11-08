@@ -33,8 +33,8 @@ from editors.EditorPanel import EditorPanel
 
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE, PAGETITLES
 
-from controls import TextCtrlAutoComplete, UriLocationEditor
-from dialogs import BrowseValuesLibraryDialog
+from controls import TextCtrlAutoComplete
+from dialogs import BrowseValuesLibraryDialog, UriEditor
 from util.BitmapLibrary import GetBitmap
 
 if wx.Platform == '__WXMSW__':
@@ -345,7 +345,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
         # Get connector uri
         uri = CTR_BeremizRoot.getURI_location().strip()
-        dialog = UriLocationEditor.UriLocationEditor(CTR_AppFrame, uri)
+        dialog = UriEditor(CTR_AppFrame, uri)
 
         if dialog.ShowModal() == wx.ID_OK:
             CTR_BeremizRoot.setURI_location(dialog.GetURI())

@@ -49,3 +49,4 @@ from dialogs.PouActionDialog import PouActionDialog
 from dialogs.FindInPouDialog import FindInPouDialog
 from dialogs.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 from dialogs.DiscoveryDialog import DiscoveryDialog
+from dialogs.UriEditor import UriEditor
