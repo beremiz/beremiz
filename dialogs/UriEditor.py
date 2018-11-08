@@ -6,7 +6,7 @@ from connectors import ConnectorSchemes, EditorClassFromScheme
 
 [ID_URIWIZARDDIALOG, ID_URITYPECHOICE] = [wx.NewId() for _init_ctrls in range(2)]
 
-class UriLocationEditor(wx.Dialog):
+class UriEditor(wx.Dialog):
     def _init_ctrls(self, parent):
         self.UriTypeChoice = wx.Choice(parent=self, id=ID_URIWIZARDDIALOG, choices=self.URITYPES)
         self.UriTypeChoice.SetSelection(0)
@@ -29,7 +29,7 @@ class UriLocationEditor(wx.Dialog):
 
     def __init__(self, parent, uri):
         wx.Dialog.__init__(self, id=ID_URIWIZARDDIALOG,
-                           name='UriLocationEditor', parent=parent,
+                           name='UriEditor', parent=parent,
                            title=_('URI Editor'))
         self.URITYPES = [_("- Select URI Scheme -")] + ConnectorSchemes()
         self._init_ctrls(parent)
