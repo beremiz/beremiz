@@ -39,15 +39,7 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
         wx.ListCtrl.__init__(self, parent, id, pos, size, style, name=name)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
 
-
-[
-    ID_DISCOVERYDIALOG, ID_DISCOVERYDIALOGSTATICTEXT1,
-    ID_DISCOVERYDIALOGSERVICESLIST, ID_DISCOVERYDIALOGREFRESHBUTTON,
-    ID_DISCOVERYDIALOGLOCALBUTTON, ID_DISCOVERYDIALOGIPBUTTON,
-] = [wx.NewId() for _init_ctrls in range(6)]
-
-
-class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
+class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def _init_coll_MainSizer_Items(self, parent):
         parent.AddWindow(self.staticText1,    0, border=20, flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
@@ -60,18 +52,15 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def _init_coll_ButtonGridSizer_Items(self, parent):
         parent.AddWindow(self.RefreshButton, 0, border=0, flag=0)
-        parent.AddWindow(self.LocalButton, 0, border=0, flag=0)
-        parent.AddWindow(self.IpButton, 0, border=0, flag=0)
-        parent.AddSizer(self.ButtonSizer, 0, border=0, flag=0)
+        parent.AddWindow(self.ByIPCheck, 0, border=0, flag=0)
 
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
-        parent.AddGrowableCol(1)
         parent.AddGrowableRow(0)
 
     def _init_sizers(self):
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
-        self.ButtonGridSizer = wx.FlexGridSizer(cols=4, hgap=5, rows=1, vgap=0)
+        self.ButtonGridSizer = wx.FlexGridSizer(cols=2, hgap=5, rows=1, vgap=0)
 
         self._init_coll_MainSizer_Items(self.MainSizer)
         self._init_coll_MainSizer_Growables(self.MainSizer)
@@ -82,8 +71,9 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
 
     def _init_list_ctrl(self):
         # Set up list control
+        listID = wx.NewId()
         self.ServicesList = AutoWidthListCtrl(
-            id=ID_DISCOVERYDIALOGSERVICESLIST,
+            id=listID,
             name='ServicesList', parent=self, pos=wx.Point(0, 0), size=wx.Size(0, 0),
             style=wx.LC_REPORT | wx.LC_EDIT_LABELS | wx.LC_SORT_ASCENDING | wx.LC_SINGLE_SEL)
         self.ServicesList.InsertColumn(0, _('NAME'))
@@ -95,44 +85,28 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.ServicesList.SetColumnWidth(2, 150)
         self.ServicesList.SetColumnWidth(3, 150)
         self.ServicesList.SetInitialSize(wx.Size(-1, 300))
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, id=ID_DISCOVERYDIALOGSERVICESLIST)
-        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, id=ID_DISCOVERYDIALOGSERVICESLIST)
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnItemSelected, id=listID)
+        self.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.OnItemActivated, id=listID)
 
     def _init_ctrls(self, prnt):
         self.staticText1 = wx.StaticText(
-            id=ID_DISCOVERYDIALOGSTATICTEXT1,
             label=_('Services available:'), name='staticText1', parent=self,
             pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
 
+        refreshID = wx.NewId()
         self.RefreshButton = wx.Button(
-            id=ID_DISCOVERYDIALOGREFRESHBUTTON,
+            id=refreshID,
             label=_('Refresh'), name='RefreshButton', parent=self,
             pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, id=ID_DISCOVERYDIALOGREFRESHBUTTON)
+        self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, id=refreshID)
 
-        self.LocalButton = wx.Button(
-            id=ID_DISCOVERYDIALOGLOCALBUTTON,
-            label=_('Local'), name='LocalButton', parent=self,
-            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnLocalButton, id=ID_DISCOVERYDIALOGLOCALBUTTON)
-
-        self.IpButton = wx.Button(
-            id=ID_DISCOVERYDIALOGIPBUTTON,
-            label=_('Add IP'), name='IpButton', parent=self,
-            pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnIpButton, id=ID_DISCOVERYDIALOGIPBUTTON)
-
-        self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTER)
+        self.ByIPCheck = wx.CheckBox(self, label=_("Use IP instead of Service Name"))
 
         self._init_sizers()
         self.Fit()
 
     def __init__(self, parent):
-        wx.Dialog.__init__(
-            self, id=ID_DISCOVERYDIALOG,
-            name='DiscoveryDialog', parent=parent,
-            style=wx.DEFAULT_DIALOG_STYLE,
-            title=_('Service Discovery'))
+        wx.Panel.__init__(self, parent)
 
         self._init_list_ctrl()
         listmix.ColumnSorterMixin.__init__(self, 4)
@@ -162,20 +136,6 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
     def OnRefreshButton(self, event):
         self.ServicesList.DeleteAllItems()
         self.RefreshList()
-
-    def OnLocalButton(self, event):
-        self.URI = "LOCAL://"
-        self.EndModal(wx.ID_OK)
-        event.Skip()
-
-    def OnIpButton(self, event):
-        def GetColText(col):
-            return self.getColumnText(self.LatestSelection, col)
-
-        if self.LatestSelection is not None:
-            self.URI = "%s://%s:%s" % tuple(map(GetColText, (1, 2, 3)))
-            self.EndModal(wx.ID_OK)
-        event.Skip()
 
     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
     def GetListCtrl(self):
@@ -208,7 +168,14 @@ class DiscoveryDialog(wx.Dialog, listmix.ColumnSorterMixin):
         self.URI = "%s://%s" % (connect_type, svcname + '.' + service_type)
 
     def GetURI(self):
-        return self.URI
+        if self.LatestSelection is not None:
+            if self.ByIPCheck.IsChecked():
+                self.URI = "%s://%s:%s" % tuple(
+                    map(lambda col:self.getColumnText(self.LatestSelection, col),
+                        (1, 2, 3)))
+
+            return self.URI
+        return None
 
     def remove_service(self, zeroconf, _type, name):
         wx.CallAfter(self._removeService, name)

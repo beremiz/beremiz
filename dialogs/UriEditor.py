@@ -2,10 +2,11 @@ from __future__ import absolute_import
 
 import wx
 from connectors import ConnectorSchemes, EditorClassFromScheme
+from controls.DiscoveryPanel import DiscoveryPanel
 
 class UriEditor(wx.Dialog):
     def _init_ctrls(self, parent):
-        self.UriTypeChoice = wx.Choice(parent=self, choices=self.URITYPES)
+        self.UriTypeChoice = wx.Choice(parent=self, choices=self.choices)
         self.UriTypeChoice.SetSelection(0)
         self.Bind(wx.EVT_CHOICE, self.OnTypeChoice, self.UriTypeChoice)
         self.editor_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -26,11 +27,11 @@ class UriEditor(wx.Dialog):
         self.Layout()
         self.Fit()
 
-    def __init__(self, parent, uri):
+    def __init__(self, parent, uri=''):
         wx.Dialog.__init__(self,
                            name='UriEditor', parent=parent,
                            title=_('URI Editor'))
-        self.URITYPES = [_("- Select URI Scheme -")] + ConnectorSchemes()
+        self.choices = [_("- Search local network -")] + ConnectorSchemes()
         self._init_ctrls(parent)
         self._init_sizers()
         self.scheme = None
@@ -45,17 +46,24 @@ class UriEditor(wx.Dialog):
     def SetURI(self, uri):
         try:
             scheme, loc = uri.strip().split("://",1)
+            scheme = scheme.upper()
         except:
-            return None
-        scheme = scheme.upper()
+            scheme = None
+
         if scheme in ConnectorSchemes():
             self.UriTypeChoice.SetStringSelection(scheme)
-            self._replaceSchemeEditor(scheme)
+        else:
+            self.UriTypeChoice.SetSelection(0)
+
+        self._replaceSchemeEditor(scheme)
+
+        if scheme is not None:
             self.scheme_editor.SetLoc(loc)
 
+
     def GetURI(self):
-        if self.scheme_editor is None:
-            return None
+        if self.scheme is None:
+            return self.scheme_editor.GetURI()
         else:
             return self.scheme+"://"+self.scheme_editor.GetLoc()
 
@@ -67,11 +75,16 @@ class UriEditor(wx.Dialog):
             self.scheme_editor.Destroy()
             self.scheme_editor = None
 
-        EditorClass = EditorClassFromScheme(scheme)
-        if EditorClass is not None:
+        if scheme is not None :
+            EditorClass = EditorClassFromScheme(scheme)
             self.scheme_editor = EditorClass(scheme,self)
-            self.editor_sizer.Add(self.scheme_editor)
-            self.scheme_editor.Refresh()
+        else :
+            # None is for searching local network
+            self.scheme_editor = DiscoveryPanel(self) 
+
+        self.editor_sizer.Add(self.scheme_editor)
+        self.scheme_editor.Refresh()
+            
         self.editor_sizer.Layout()
         self.mainSizer.Layout()
         self.Fit()
