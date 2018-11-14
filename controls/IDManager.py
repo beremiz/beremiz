@@ -109,13 +109,15 @@ class IDManagerModel(dv.PyDataViewIndexListModel):
         self._saveData()
 
 colflags = dv.DATAVIEW_COL_RESIZABLE|dv.DATAVIEW_COL_SORTABLE
+COL_ID,COL_URI,COL_DESC,COL_LAST = range(4)
 
 class IDManager(wx.Panel):
-    def __init__(self, parent, ctr, SelectURICallBack, *args, **kwargs):
+    def __init__(self, parent, ctr, SelectURICallBack=None, SelectIDCallBack=None, **kwargs):
         wx.Panel.__init__(self, parent, -1, size=(400,200))
 
-        self.isManager = SelectURICallBack is None 
+        self.isManager = SelectURICallBack is None and SelectIDCallBack is None 
         self.SelectURICallBack = SelectURICallBack
+        self.SelectIDCallBack = SelectIDCallBack
 
         dvStyle = wx.BORDER_THEME | dv.DV_ROW_LINES
         if self.isManager :
@@ -126,13 +128,13 @@ class IDManager(wx.Panel):
         args = lambda *a,**k:(a,k)
 
         ColumnsDesc = [
-            args(_("ID"), 0, width = 100),
-            args(_("Last URI"), 1, width = 80),
-            args(_("Description"), 2, width = 200, 
+            args(_("ID"), COL_ID, width = 100),
+            args(_("Last URI"), COL_URI, width = 80),
+            args(_("Description"), COL_DESC, width = 200, 
                 mode = dv.DATAVIEW_CELL_EDITABLE 
                        if self.isManager 
                        else dv.DATAVIEW_CELL_INERT),
-            args(_("Last connection"),  3, width = 100),
+            args(_("Last connection"),  COL_LAST, width = 100),
         ]
 
         self.model = IDManagerModel(
@@ -172,11 +174,14 @@ class IDManager(wx.Panel):
             # selector mode
             # use last known URI button
             # TODO : disable use URI button until something selected
-            selectButton = wx.Button(self, label=_("Use last URI"))
-            self.Bind(wx.EVT_BUTTON, self.OnSelectButton, selectButton)
-            btnbox.Add(selectButton, 0, wx.LEFT|wx.RIGHT, 5)
+            self.useURIButton = wx.Button(self, label=_("Use last URI"))
+            self.Bind(wx.EVT_BUTTON, self.OnUseURIButton, self.useURIButton)
+            self.useURIButton.Disable()
+            btnbox.Add(self.useURIButton, 0, wx.LEFT|wx.RIGHT, 5)
 
         self.Sizer.Add(btnbox, 0, wx.TOP|wx.BOTTOM, 5)
+        self.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.OnSelectionChanged, self.dvc)
+
 
     def OnDeleteButton(self, evt):
         items = self.dvc.GetSelections()
@@ -190,11 +195,22 @@ class IDManager(wx.Panel):
 
         self.model.DeleteRows(rows)
 
-    def OnSelectButton(self, evt):
-        # TODO : call SetURICallback with URI from curent selection.
-        wx.MessageBox(_('?'),
-                      _('Mhe'),
-                      wx.YES_NO | wx.CENTRE | wx.NO_DEFAULT)
+    def OnSelectionChanged(self, evt):
+        if not self.isManager :
+            items = self.dvc.GetSelections()
+            somethingSelected = len(items) > 0
+            self.useURIButton.Enable(somethingSelected)
+            if somethingSelected:
+                row = self.model.GetRow(items[0])
+                ID = self.model.GetValueByRow(row, COL_ID)
+                self.SelectIDCallBack(ID)
+
+
+    def OnUseURIButton(self, evt):
+        row = self.model.GetRow(self.dvc.GetSelections()[0])
+        URI = self.model.GetValueByRow(row, COL_URI)
+        if URI:
+            self.SelectURICallBack(URI)
 
     def OnExportButton(self, evt):
         # TODO 
