@@ -36,7 +36,9 @@ class SchemeEditor(wx.Panel):
             self.mainsizer.AddSizer(self.fieldsizer)
             self.idselector = IDManager(
                 self, parent.ctr,
-                partial(wx.CallAfter, parent.SetURI))
+                # use a callafter, as editor can be deleted by calling SetURI
+                partial(wx.CallAfter, parent.SetURI),
+                self.txtctrls[tag].SetValue)
             self.mainsizer.AddWindow(self.idselector)
             self.SetSizer(self.mainsizer)
         else:
