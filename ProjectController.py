@@ -1768,7 +1768,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if uri == "":
             try:
                 # Launch Service Discovery dialog
-                dialog = UriEditor(self.AppFrame)
+                dialog = UriEditor(self.AppFrame, self)
                 answer = dialog.ShowModal()
                 uri = dialog.GetURI()
                 dialog.Destroy()

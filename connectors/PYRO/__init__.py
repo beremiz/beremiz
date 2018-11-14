@@ -126,7 +126,10 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     if servicetype != "PYROS":
         ID,PSK = IDPSK
-        secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
+        secdir = os.path.join(str(confnodesroot.ProjectPath), 'psk')
+        if not os.path.exists(secdir):
+            os.mkdir(secdir)
+        secpath = os.path.join(secdir, ID+'.secret')
         with open(secpath, 'w') as f:
             f.write(ID+":"+PSK)
 

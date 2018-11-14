@@ -14,12 +14,12 @@ Schemes = ["WAMP", "WAMPS"]
 
 model = [('host',_("Host:")),
          ('port',_("Port:")),
-         ('realm',_("Realm:")),
-         ('ID',_("ID:"))]
+         ('realm',_("Realm:"))]
 
 class WAMP_dialog(SchemeEditor):
     def __init__(self, *args, **kwargs):
         self.model = model
+        self.EnableIDSelector = True
         SchemeEditor.__init__(self, *args, **kwargs)
 
     def SetLoc(self, loc):
