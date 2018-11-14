@@ -14,17 +14,19 @@ from connectors.SchemeEditor import SchemeEditor
 model = [('host',_("Host:")),
          ('port',_("Port:"))]
 
-secure_model = model + [('ID',_("ID:"))]
-
-models = [("LOCAL", []), ("PYRO",model), ("PYROS",secure_model)]
+# (scheme, model, secure)
+models = [("LOCAL", [], False), ("PYRO", model, False), ("PYROS", model, True)]
 
 Schemes = list(zip(*models)[0])
 
-ModelsDict = dict(models)
+_PerSchemeConf = {sch : (mod,sec) for sch,mod,sec in models}
 
 class PYRO_dialog(SchemeEditor):
     def __init__(self, scheme, *args, **kwargs):
-        self.model = ModelsDict[scheme]
+       
+        # ID selector is enabled only on PYROS (secure)
+        self.model, self.EnableIDSelector = _PerSchemeConf[scheme]
+
         SchemeEditor.__init__(self, scheme, *args, **kwargs)
 
     def SetLoc(self, loc):
@@ -38,6 +40,8 @@ class PYRO_dialog(SchemeEditor):
             template = "{host}"
             if fields['port']:
                 template += ":{port}" 
+            if fields['ID']:
+                template += "#{ID}" 
 
             return template.format(**fields)
         return ''

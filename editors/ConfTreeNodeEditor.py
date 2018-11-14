@@ -345,7 +345,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
         # Get connector uri
         uri = CTR_BeremizRoot.getURI_location().strip()
-        dialog = UriEditor(CTR_AppFrame, uri)
+        dialog = UriEditor(CTR_AppFrame, CTR, uri)
 
         if dialog.ShowModal() == wx.ID_OK:
             CTR_BeremizRoot.setURI_location(dialog.GetURI())

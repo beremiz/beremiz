@@ -27,7 +27,8 @@ class UriEditor(wx.Dialog):
         self.Layout()
         self.Fit()
 
-    def __init__(self, parent, uri=''):
+    def __init__(self, parent, ctr, uri=''):
+        self.ctr = ctr
         wx.Dialog.__init__(self,
                            name='UriEditor', parent=parent,
                            title=_('URI Editor'))
