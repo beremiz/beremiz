@@ -9,7 +9,7 @@ from itertools import repeat, izip_longest
 from functools import partial
 import wx
 
-from controls.IDManager import IDManager
+from controls.IDBrowser import IDBrowser
 
 class SchemeEditor(wx.Panel):
     def __init__(self, scheme, parent, *args, **kwargs):
@@ -34,7 +34,7 @@ class SchemeEditor(wx.Panel):
         if self.EnableIDSelector:
             self.mainsizer = wx.FlexGridSizer(cols=2, hgap=10, vgap=10)
             self.mainsizer.AddSizer(self.fieldsizer)
-            self.idselector = IDManager(
+            self.idselector = IDBrowser(
                 self, parent.ctr,
                 # use a callafter, as editor can be deleted by calling SetURI
                 partial(wx.CallAfter, parent.SetURI),
