@@ -49,7 +49,7 @@ def _SaveData(psk_path, data):
     with open(data_path, 'w') as f:
         f.write(json.dumps(to_store))
 
-class IDManagerModel(dv.PyDataViewIndexListModel):
+class IDBrowserModel(dv.PyDataViewIndexListModel):
     def __init__(self, psk_path, columncount):
         self.psk_path = psk_path
         self.columncount = columncount
@@ -111,7 +111,7 @@ class IDManagerModel(dv.PyDataViewIndexListModel):
 colflags = dv.DATAVIEW_COL_RESIZABLE|dv.DATAVIEW_COL_SORTABLE
 COL_ID,COL_URI,COL_DESC,COL_LAST = range(4)
 
-class IDManager(wx.Panel):
+class IDBrowser(wx.Panel):
     def __init__(self, parent, ctr, SelectURICallBack=None, SelectIDCallBack=None, **kwargs):
         wx.Panel.__init__(self, parent, -1, size=(400,200))
 
@@ -137,7 +137,7 @@ class IDManager(wx.Panel):
             args(_("Last connection"),  COL_LAST, width = 100),
         ]
 
-        self.model = IDManagerModel(
+        self.model = IDBrowserModel(
             os.path.join(str(ctr.ProjectPath), 'psk'),
             len(ColumnsDesc))
         self.dvc.AssociateModel(self.model)
