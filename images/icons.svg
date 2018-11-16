@@ -15,7 +15,7 @@
    height="1052.3622"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="icons.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
   <metadata
@@ -31,8 +31,8 @@
     </rdf:RDF>
   </metadata>
   <sodipodi:namedview
-     inkscape:window-height="1136"
-     inkscape:window-width="1920"
+     inkscape:window-height="874"
+     inkscape:window-width="1600"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0"
      guidetolerance="10.0"
@@ -43,11 +43,11 @@
      pagecolor="#ffffff"
      id="base"
      showgrid="false"
-     inkscape:zoom="2.5873931"
-     inkscape:cx="986.14665"
-     inkscape:cy="698.07857"
+     inkscape:zoom="16"
+     inkscape:cx="754.13513"
+     inkscape:cy="907.03479"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="24"
      inkscape:current-layer="svg2"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -89942,12 +89942,13 @@
      y="121.52582"
      id="text16266"
      xml:space="preserve"
-     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"><tspan
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans';-inkscape-font-specification:'Bitstream Vera Sans';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     sodipodi:linespacing="0%"><tspan
        sodipodi:role="line"
        id="tspan16268"
        x="73.295929"
        y="121.52582"
-       style="font-size:12.76095104px;line-height:1.25">%% editIECrawcode editWXGLADE editPYTHONcode EditCfile Transfer Connect Disconnect Debug %%</tspan></text>
+       style="font-size:12.76095104px;line-height:1.25">%% editIECrawcode editWXGLADE editPYTHONcode EditCfile Transfer Connect Disconnect Debug IDManager %%</tspan></text>
   <rect
      width="24"
      height="24"
@@ -93315,4 +93316,37 @@
        id="tspan16195-3-6"
        sodipodi:role="line"
        style="font-size:12.76000023px;line-height:1.25">%% fullscreen %%</tspan></text>
+  <rect
+     width="24"
+     height="24"
+     x="730"
+     y="131.36218"
+     id="IDManager"
+     style="display:inline;overflow:visible;visibility:visible;fill:#000000;fill-opacity:0;fill-rule:evenodd;stroke:none;stroke-width:1;marker:none;enable-background:accumulate"
+     inkscape:label="#rect16270" />
+  <g
+     id="g19473"
+     transform="matrix(1.3198788,0,0,1.3198788,-237.35005,-42.92225)"
+     style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#3d993d;fill-opacity:1;fill-rule:nonzero;stroke:#3d993d;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.43299961;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;filter-blend-mode:normal;filter-gaussianBlur-deviation:0;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate">
+    <rect
+       y="140.41789"
+       x="736.44702"
+       height="8.1489973"
+       width="11.106004"
+       id="rect18652"
+       style="fill:#3d993d;fill-opacity:1;fill-rule:nonzero;stroke:#3d993d;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.43299961;stroke-dasharray:none;stroke-opacity:1;color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;stroke-dashoffset:0;marker:none;filter-blend-mode:normal;filter-gaussianBlur-deviation:0;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
+    <path
+       style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#3d993d;fill-opacity:1;fill-rule:nonzero;stroke:#3d993d;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10.43299961;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate;marker:none;filter-blend-mode:normal;filter-gaussianBlur-deviation:0"
+       d="m 741.99023,134.18555 c -1.03169,0.0327 -2.08009,0.38311 -2.90625,1.11328 -0.82615,0.73017 -1.38416,1.85745 -1.41796,3.20898 l -0.002,0.0117 0,2.03516 2,0 0,-1.99805 c 0.0216,-0.86174 0.3173,-1.38252 0.74414,-1.75976 0.42684,-0.37725 1.03088,-0.59378 1.64649,-0.61329 0.61561,-0.0195 1.21879,0.1637 1.62304,0.47461 0.40425,0.31092 0.64912,0.70425 0.65821,1.37305 l 0,2.66211 2,0 0,-2.68359 0,-0.006 c -0.0168,-1.23751 -0.60543,-2.28823 -1.43946,-2.92969 -0.83402,-0.64146 -1.87455,-0.92136 -2.90625,-0.88867 z"
+       id="path18654"
+       inkscape:connector-curvature="0" />
+  </g>
+  <rect
+     inkscape:label="#rect16270"
+     style="display:inline;overflow:visible;visibility:visible;fill:#000000;fill-opacity:0;fill-rule:evenodd;stroke:#6e6e6e;stroke-width:0.1;marker:none;enable-background:accumulate;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+     id="rect19460"
+     y="131.36218"
+     x="730"
+     height="24"
+     width="24" />
 </svg>
