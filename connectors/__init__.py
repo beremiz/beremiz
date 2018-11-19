@@ -64,25 +64,25 @@ def ConnectorFactory(uri, confnodesroot):
     Return a connector corresponding to the URI
     or None if cannot connect to URI
     """
-    servicetype = uri.split("://")[0].upper()
-    if servicetype == "LOCAL":
+    scheme = uri.split("://")[0].upper()
+    if scheme == "LOCAL":
         # Local is special case
         # pyro connection to local runtime
         # started on demand, listening on random port
-        servicetype = "PYRO"
+        scheme = "PYRO"
         runtime_port = confnodesroot.AppFrame.StartLocalRuntime(
             taskbaricon=True)
         uri = "PYROLOC://127.0.0.1:" + str(runtime_port)
-    elif servicetype in connectors:
+    elif scheme in connectors:
         pass
-    elif servicetype[-1] == 'S' and servicetype[:-1] in connectors:
-        servicetype = servicetype[:-1]
+    elif scheme[-1] == 'S' and scheme[:-1] in connectors:
+        scheme = scheme[:-1]
     else:
         return None
 
     # import module according to uri type
-    connectorclass = connectors[servicetype]()
     return connectorclass(uri, confnodesroot)
+    connectorclass = connectors[scheme]()
 
 
 def EditorClassFromScheme(scheme):

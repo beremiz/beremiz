@@ -51,8 +51,8 @@ def PYRO_connector_factory(uri, confnodesroot):
     """
     confnodesroot.logger.write(_("PYRO connecting to URI : %s\n") % uri)
 
-    servicetype, location = uri.split("://")
-    if servicetype == "PYROS":
+    scheme, location = uri.split("://")
+    if scheme == "PYROS":
         import connectors.PYRO.PSK_Adapter
         schemename = "PYROLOCPSK"
         url, ID = location.split('#') #TODO fix exception when # not found
@@ -124,7 +124,7 @@ def PYRO_connector_factory(uri, confnodesroot):
         confnodesroot.logger.write_error(_("Cannot get PLC ID - connection failed.\n"))
         return None
 
-    if servicetype != "PYROS":
+    if scheme != "PYROS":
         ID,PSK = IDPSK
         secdir = os.path.join(str(confnodesroot.ProjectPath), 'psk')
         if not os.path.exists(secdir):
