@@ -7,57 +7,18 @@ from __future__ import absolute_import
 import os
 import wx
 import wx.dataview as dv
-import json
-
-def _GetInitialData(psk_path):
-    # [(ID, Desc, LastKnownURI, LastConnect)
-    data = []
-
-    data_path = os.path.join(psk_path, 'management.json')
-
-    if os.path.isdir(psk_path):
-        # load known keys metadata
-        # {ID:(Desc, LastKnownURI, LastConnect)}
-        recovered_data = json.loads(open(data_path).read()) \
-                         if os.path.exists(data_path) else {}
-
-        # go through all secret files available an build data
-        # out of data recoverd from json and list of secret.
-        # this implicitly filters IDs out of metadata who's
-        # secret is missing
-        psk_files = os.listdir(psk_path)
-        for filename in psk_files:
-           if filename.endswith('.secret'):
-               ID = filename[:-7]  # strip filename extension
-               meta = recovered_data.get(ID, 
-                   ['', # default description
-                    None, # last known URI
-                    None])  # last connection date
-                   
-               data.append([ID]+meta)
-    return data
-
-def _DeleteID(psk_path, ID):
-    secret_path = os.path.join(psk_path, ID+'.secret')
-    os.remove(secret_path)
-
-def _SaveData(psk_path, data):
-    if not os.path.isdir(psk_path):
-        os.mkdir(psk_path)
-    data_path = os.path.join(psk_path, 'management.json')
-    to_store = {row[0]:row[1:] for row in data}
-    with open(data_path, 'w') as f:
-        f.write(json.dumps(to_store))
+import PSKManagement as PSK
+from PSKManagement import COL_ID,COL_URI,COL_DESC,COL_LAST
 
 class IDBrowserModel(dv.PyDataViewIndexListModel):
     def __init__(self, psk_path, columncount):
         self.psk_path = psk_path
         self.columncount = columncount
-        self.data = _GetInitialData(psk_path)
+        self.data = PSK.GetData(psk_path)
         dv.PyDataViewIndexListModel.__init__(self, len(self.data))
 
     def _saveData(self):
-        _SaveData(self.psk_path, self.data)
+        PSK.SaveData(self.psk_path, self.data)
 
     def GetColumnType(self, col):
         return "string"
@@ -98,8 +59,8 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
         rows.sort(reverse=True)
         
         for row in rows:
+            PSK.DeleteID(self.psk_path, self.data[row][COL_ID])
             del self.data[row]
-            _DeleteID(self.psk_path, ID)
             self.RowDeleted(row)
         self._saveData()
             
@@ -109,7 +70,6 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
         self._saveData()
 
 colflags = dv.DATAVIEW_COL_RESIZABLE|dv.DATAVIEW_COL_SORTABLE
-COL_ID,COL_URI,COL_DESC,COL_LAST = range(4)
 
 class IDBrowser(wx.Panel):
     def __init__(self, parent, ctr, SelectURICallBack=None, SelectIDCallBack=None, **kwargs):
@@ -137,9 +97,7 @@ class IDBrowser(wx.Panel):
             args(_("Last connection"),  COL_LAST, width = 100),
         ]
 
-        self.model = IDBrowserModel(
-            os.path.join(str(ctr.ProjectPath), 'psk'),
-            len(ColumnsDesc))
+        self.model = IDBrowserModel(ctr.ProjectPath, len(ColumnsDesc))
         self.dvc.AssociateModel(self.model)
 
         for a,k in ColumnsDesc:

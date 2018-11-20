@@ -151,6 +151,9 @@ def WAMP_connector_factory(uri, confnodesroot):
                 self.__dict__[attrName] = member
             return member
 
+    # TODO : GetPLCID()
+    # TODO : PSK.UpdateID()
+
     # Try to get the proxy object
     try:
         return WampPLCObjectProxy()
