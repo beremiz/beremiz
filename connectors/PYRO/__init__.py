@@ -36,6 +36,7 @@ import Pyro.core
 import Pyro.util
 from Pyro.errors import PyroError
 
+import PSKManagement as PSK
 
 zeroconf_service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
@@ -124,14 +125,8 @@ def PYRO_connector_factory(uri, confnodesroot):
         confnodesroot.logger.write_error(_("Cannot get PLC ID - connection failed.\n"))
         return None
 
-    if scheme != "PYROS":
-        ID,PSK = IDPSK
-        secdir = os.path.join(str(confnodesroot.ProjectPath), 'psk')
-        if not os.path.exists(secdir):
-            os.mkdir(secdir)
-        secpath = os.path.join(secdir, ID+'.secret')
-        with open(secpath, 'w') as f:
-            f.write(ID+":"+PSK)
+    ID,secret = IDPSK
+    PSK.UpdateID(confnodesroot.ProjectPath, ID, secret, uri)
 
     _special_return_funcs = {
         "StartPLC": False,
@@ -145,6 +140,7 @@ def PYRO_connector_factory(uri, confnodesroot):
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
         And to put Pyro exception catcher in between caller and Pyro proxy
         """
+
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:

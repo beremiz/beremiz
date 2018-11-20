@@ -81,8 +81,8 @@ def ConnectorFactory(uri, confnodesroot):
         return None
 
     # import module according to uri type
-    return connectorclass(uri, confnodesroot)
     connectorclass = connectors[scheme]()
+    return connectorclass(uri, confnodesroot)
 
 
 def EditorClassFromScheme(scheme):

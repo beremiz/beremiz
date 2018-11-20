@@ -1,6 +1,9 @@
 import os
 from binascii import b2a_hqx
-from runtime.spawn_subprocess import call
+try:
+    from runtime.spawn_subprocess import call
+except ImportError:
+    from subprocess import call
 
 restart_stunnel_cmdline = ["/etc/init.d/S50stunnel","restart"]
 
