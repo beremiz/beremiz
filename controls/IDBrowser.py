@@ -11,14 +11,14 @@ import PSKManagement as PSK
 from PSKManagement import COL_ID,COL_URI,COL_DESC,COL_LAST
 
 class IDBrowserModel(dv.PyDataViewIndexListModel):
-    def __init__(self, psk_path, columncount):
-        self.psk_path = psk_path
+    def __init__(self, project_path, columncount):
+        self.project_path = project_path
         self.columncount = columncount
-        self.data = PSK.GetData(psk_path)
+        self.data = PSK.GetData(project_path)
         dv.PyDataViewIndexListModel.__init__(self, len(self.data))
 
     def _saveData(self):
-        PSK.SaveData(self.psk_path, self.data)
+        PSK.SaveData(self.project_path, self.data)
 
     def GetColumnType(self, col):
         return "string"
@@ -59,7 +59,7 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
         rows.sort(reverse=True)
         
         for row in rows:
-            PSK.DeleteID(self.psk_path, self.data[row][COL_ID])
+            PSK.DeleteID(self.project_path, self.data[row][COL_ID])
             del self.data[row]
             self.RowDeleted(row)
         self._saveData()
@@ -69,13 +69,20 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
         self.RowAppended()
         self._saveData()
 
+    def Import(self, filepath, sircb):
+        PSK.ImportIDs(self.project_path, filepath, sircb)
+
+    def Export(self, filepath):
+        PSK.ExportIDs(self.project_path, filepath)
+
 colflags = dv.DATAVIEW_COL_RESIZABLE|dv.DATAVIEW_COL_SORTABLE
 
 class IDBrowser(wx.Panel):
     def __init__(self, parent, ctr, SelectURICallBack=None, SelectIDCallBack=None, **kwargs):
-        wx.Panel.__init__(self, parent, -1, size=(400,200))
+        big = self.isManager = SelectURICallBack is None and SelectIDCallBack is None 
+        wx.Panel.__init__(self, parent, -1, size=(800 if big else 400,
+                                                  600 if big else 200))
 
-        self.isManager = SelectURICallBack is None and SelectIDCallBack is None 
         self.SelectURICallBack = SelectURICallBack
         self.SelectIDCallBack = SelectIDCallBack
 
@@ -89,12 +96,12 @@ class IDBrowser(wx.Panel):
 
         ColumnsDesc = [
             args(_("ID"), COL_ID, width = 100),
-            args(_("Last URI"), COL_URI, width = 80),
+            args(_("Last URI"), COL_URI, width = 160 if big else 80),
             args(_("Description"), COL_DESC, width = 200, 
                 mode = dv.DATAVIEW_CELL_EDITABLE 
                        if self.isManager 
                        else dv.DATAVIEW_CELL_INERT),
-            args(_("Last connection"),  COL_LAST, width = 100),
+            args(_("Last connection"),  COL_LAST, width = 120),
         ]
 
         self.model = IDBrowserModel(ctr.ProjectPath, len(ColumnsDesc))
@@ -171,14 +178,22 @@ class IDBrowser(wx.Panel):
             self.SelectURICallBack(URI)
 
     def OnExportButton(self, evt):
-        # TODO 
-        wx.MessageBox(_('?'),
-                      _('Mhe'),
-                      wx.YES_NO | wx.CENTRE | wx.NO_DEFAULT)
+        dialog = wx.FileDialog(self, _("Choose a file"),
+                               wildcard = _("PSK ZIP files (*.zip)|*.zip"), 
+                               style = wx.SAVE | wx.OVERWRITE_PROMPT)
+        if dialog.ShowModal() == wx.ID_OK:
+            self.model.Export(dialog.GetPath())
+
+    def ShouldIReplaceCallback(self,some,stuff):
+        # TODO
+        wx.MessageBox("TODO : ShouldIReplaceCallback")
+        return True
 
     def OnImportButton(self, evt):
-        # TODO 
-        wx.MessageBox(_('?'),
-                      _('Mhe'),
-                      wx.YES_NO | wx.CENTRE | wx.NO_DEFAULT)
+        dialog = wx.FileDialog(self, _("Choose a file"),
+                               wildcard = _("PSK ZIP files (*.zip)|*.zip"), 
+                               style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        if dialog.ShowModal() == wx.ID_OK:
+            self.model.Import(dialog.GetPath(),
+                              self.ShouldIReplaceCallback)
 
