@@ -123,11 +123,11 @@ def PYRO_connector_factory(uri, confnodesroot):
     # lambda is for getattr of GetPLCstatus to happen inside catcher
     IDPSK = PyroCatcher(RemotePLCObjectProxy.GetPLCID)()
     if IDPSK is None:
-        confnodesroot.logger.write_error(_("Cannot get PLC ID - connection failed.\n"))
-        return None
+        confnodesroot.logger.write_warning(_("PLC did not provide identity and security infomation.\n"))
+    else:
+        ID,secret = IDPSK
+        PSK.UpdateID(confnodesroot.ProjectPath, ID, secret, uri)
 
-    ID,secret = IDPSK
-    PSK.UpdateID(confnodesroot.ProjectPath, ID, secret, uri)
 
     _special_return_funcs = {
         "StartPLC": False,
