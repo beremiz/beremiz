@@ -110,7 +110,7 @@ dummy-variables-rgx=_+$|(_[a-zA-Z0-9_]*[a-zA-Z0-9]+?$)|dummy
 
 # List of additional names supposed to be defined in builtins. Remember that
 # you should avoid to define new builtins when possible.
-additional-builtins=_,website,JS,cobalt
+additional-builtins=_,website,JS,cobalt,PLCBinary
 
 # List of strings which can identify a callback function by name. A callback
 # name must start or end with one of those strings.
@@ -270,7 +270,7 @@ ignore-mixin-members=yes
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=_ctypes,_winreg,winreg,django.core.serializers,__pyjamas__,gluon.contrib.simplejson
+ignored-modules=_ctypes,_winreg,winreg,django.core.serializers,__pyjamas__,gluon.contrib.simplejson,MotionLibrary
 
 # List of class names for which member attributes should not be checked (useful
 # for classes with dynamically set attributes). This supports the use of

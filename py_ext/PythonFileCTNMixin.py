@@ -73,7 +73,7 @@ class PythonFileCTNMixin(CodeFile):
                     os.remove(filepath)
                     self.CreateCodeFileBuffer(False)
                     self.OnCTNSave()
-            except Exception, exc:
+            except Exception as exc:
                 error = unicode(exc)
 
             if error is not None:

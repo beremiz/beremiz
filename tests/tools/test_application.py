@@ -30,6 +30,7 @@ import sys
 import unittest
 import time
 
+import six
 import pytest
 import wx
 import ddt
@@ -71,7 +72,10 @@ class UserApplicationTest(unittest.TestCase):
     def CheckForErrors(self):
         if self.exc_info is not None:
             # reraise catched previously exception
-            raise self.exc_info[0], self.exc_info[1], self.exc_info[2]
+            exc_type = self.exc_info[0]
+            exc_value = self.exc_info[1]
+            exc_traceback = self.exc_info[2]
+            six.reraise(exc_type, exc_value, exc_traceback)
 
     def ProcessEvents(self):
         for dummy in range(0, 30):

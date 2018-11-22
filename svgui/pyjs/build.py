@@ -99,7 +99,7 @@ def copytree_exists(src, dst, symlinks=False):
                 copytree_exists(srcname, dstname, symlinks)
             else:
                 shutil.copy2(srcname, dstname)
-        except (IOError, os.error), why:
+        except (IOError, os.error) as why:
             errors.append((srcname, dstname, why))
     if errors:
         print(errors)
@@ -184,7 +184,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
         try:
             print("Creating output directory")
             os.mkdir(output)
-        except StandardError, e:
+        except StandardError as e:
             print("Exception creating output directory %s: %s" % (output, e), file=sys.stderr)
 
     # public dir

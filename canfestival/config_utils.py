@@ -765,7 +765,7 @@ Options:
     # Generate MasterNode configuration
     try:
         masternode, pointedvariables = GenerateConciseDCF(locations, (0, 1), nodelist, True, "TestNode")
-    except ValueError, message:
+    except ValueError as message:
         print("%s\nTest Failed!" % message)
         sys.exit()
 

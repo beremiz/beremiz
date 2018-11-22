@@ -37,6 +37,7 @@ import Pyro.util
 from Pyro.errors import PyroError
 
 import PSKManagement as PSK
+from runtime import PlcStatus
 
 zeroconf_service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
@@ -91,7 +92,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
-    except Exception,e:
+    except Exception:
         confnodesroot.logger.write_error(_("Connection to '%s' failed with exception '%s'\n") % (location, str(e)))
         #confnodesroot.logger.write_error(traceback.format_exc())
         return None
@@ -104,12 +105,12 @@ def PYRO_connector_factory(uri, confnodesroot):
         def catcher_func(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except Pyro.errors.ConnectionClosedError, e:
+            except Pyro.errors.ConnectionClosedError as e:
                 confnodesroot.logger.write_error(_("Connection lost!\n"))
                 confnodesroot._SetConnector(None)
-            except Pyro.errors.ProtocolError, e:
+            except Pyro.errors.ProtocolError as e:
                 confnodesroot.logger.write_error(_("Pyro exception: %s\n") % e)
-            except Exception, e:
+            except Exception as e:
                 # confnodesroot.logger.write_error(traceback.format_exc())
                 errmess = ''.join(Pyro.util.getPyroTraceback(e))
                 confnodesroot.logger.write_error(errmess + "\n")
@@ -130,8 +131,8 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     _special_return_funcs = {
         "StartPLC": False,
-        "GetTraceVariables": ("Broken", None),
-        "GetPLCstatus": ("Broken", None),
+        "GetTraceVariables": (PlcStatus.Broken, None),
+        "GetPLCstatus": (PlcStatus.Broken, None),
         "RemoteExec": (-1, "RemoteExec script failed!")
     }
 
@@ -140,7 +141,6 @@ def PYRO_connector_factory(uri, confnodesroot):
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
         And to put Pyro exception catcher in between caller and Pyro proxy
         """
-
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:
@@ -151,4 +151,3 @@ def PYRO_connector_factory(uri, confnodesroot):
             return member
 
     return PyroProxyProxy()
-

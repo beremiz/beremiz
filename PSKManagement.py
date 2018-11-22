@@ -52,8 +52,10 @@ def _filterData(psk_files, data_input):
 
 def GetData(project_path):
     loaded_data = _LoadData(project_path)
-    psk_files = os.listdir(_pskpath(project_path))
-    return _filterData(psk_files, loaded_data)
+    if loaded_data:
+        psk_files = os.listdir(_pskpath(project_path))
+        return _filterData(psk_files, loaded_data)
+    return []
 
 def DeleteID(project_path, ID):
     secret_path = os.path.join(_pskpath(project_path), ID+'.secret')

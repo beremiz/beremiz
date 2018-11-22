@@ -61,6 +61,7 @@ from plcopen.structures import IEC_KEYWORDS
 from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
 from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
+from runtime import PlcStatus
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 
 base_folder = paths.AbsParentDir(__file__)
@@ -798,7 +799,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             status, result, err_result = ProcessLogger(self.logger, buildcmd,
                                                        no_stdout=True,
                                                        no_stderr=True).spin()
-        except Exception, e:
+        except Exception as e:
             self.logger.write_error(buildcmd + "\n")
             self.logger.write_error(repr(e) + "\n")
             return False
@@ -1328,7 +1329,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
 
                 extensions = []
-                for extension, name, editor in features.file_editors:
+                for extension, _name, _editor in features.file_editors:
                     if extension not in extensions:
                         extensions.append(extension)
                 self._ProjectFilesView.SetEditableFileExtensions(extensions)
@@ -1427,20 +1428,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
     }
 
     MethodsFromStatus = {
-        "Started":      {"_Stop": True,
-                         "_Transfer": True,
-                         "_Connect": False,
-                         "_Disconnect": True},
-        "Stopped":      {"_Run": True,
-                         "_Transfer": True,
-                         "_Connect": False,
-                         "_Disconnect": True},
-        "Empty":        {"_Transfer": True,
-                         "_Connect": False,
-                         "_Disconnect": True},
-        "Broken":       {"_Connect": False,
-                         "_Disconnect": True},
-        "Disconnected": {},
+        PlcStatus.Started:      {"_Stop": True,
+                                 "_Transfer": True,
+                                 "_Connect": False,
+                                 "_Disconnect": True},
+        PlcStatus.Stopped:      {"_Run": True,
+                                 "_Transfer": True,
+                                 "_Connect": False,
+                                 "_Disconnect": True},
+        PlcStatus.Empty:        {"_Transfer": True,
+                                 "_Connect": False,
+                                 "_Disconnect": True},
+        PlcStatus.Broken:       {"_Connect": False,
+                                 "_Disconnect": True},
+        PlcStatus.Disconnected: {},
     }
 
     def UpdateMethodsFromPLCStatus(self):
@@ -1453,7 +1454,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.UpdatePLCLog(log_count)
         if status is None:
             self._SetConnector(None, False)
-            status = "Disconnected"
+            status = PlcStatus.Disconnected
         if self.previous_plcstate != status:
             allmethods = self.DefaultMethods.copy()
             allmethods.update(
@@ -1464,31 +1465,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self.AppFrame is not None:
                 updated = True
                 self.AppFrame.RefreshStatusToolBar()
-                if status == "Disconnected":
+                if status == PlcStatus.Disconnected:
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        self.GetTextStatus(status), 1)
+                        _(status), 1)
                     self.AppFrame.ConnectionStatusBar.SetStatusText('', 2)
                 else:
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
                         _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
                     self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        self.GetTextStatus(status), 2)
+                        _(status), 2)
         return updated
-
-    def GetTextStatus(self, status):
-        msgs = {
-            "Started":      _("Started"),
-            "Stopped":      _("Stopped"),
-            "Empty":        _("Empty"),
-            "Broken":       _("Broken"),
-            "Disconnected": _("Disconnected")
-        }
-        return msgs.get(status, status)
 
     def ShowPLCProgress(self, status="", progress=0):
         self.AppFrame.ProgressStatusBar.Show()
         self.AppFrame.ConnectionStatusBar.SetStatusText(
-            self.GetTextStatus(status), 1)
+            _(status), 1)
         self.AppFrame.ProgressStatusBar.SetValue(progress)
 
     def HidePLCProgress(self):
@@ -1506,7 +1497,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             plc_status, Traces = self._connector.GetTraceVariables()
             # print [dict.keys() for IECPath, (dict, log, status, fvalue) in
             # self.IECdebug_datas.items()]
-            if plc_status == "Started":
+            if plc_status == PlcStatus.Started:
                 if len(Traces) > 0:
                     for debug_tick, debug_buff in Traces:
                         debug_vars = UnpackDebugBuffer(
@@ -1575,7 +1566,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.SnapshotAndResetDebugValuesBuffers()
 
     def IsPLCStarted(self):
-        return self.previous_plcstate == "Started"
+        return self.previous_plcstate == PlcStatus.Started
 
     def ReArmDebugRegisterTimer(self):
         if self.DebugTimer is not None:
@@ -1814,7 +1805,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             # Init with actual PLC status and print it
             self.UpdateMethodsFromPLCStatus()
-            if self.previous_plcstate in ["Started", "Stopped"]:
+            if self.previous_plcstate in [PlcStatus.Started, PlcStatus.Stopped]:
                 if self.DebugAvailable() and self.GetIECProgramsAndVariables():
                     self.logger.write(_("Debugger ready\n"))
                     self._connect_debug()

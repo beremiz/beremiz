@@ -163,7 +163,9 @@ def SetupI18n():
     # Define locale for wx
     loc = __builtin__.__dict__.get('loc', None)
     if loc is None:
+        wx.LogGui.EnableLogging(False)
         loc = wx.Locale(langid)
+        wx.LogGui.EnableLogging(True)
         __builtin__.__dict__['loc'] = loc
         # Define location for searching translation files
     loc.AddCatalogLookupPathPrefix(localedir)

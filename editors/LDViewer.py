@@ -1062,17 +1062,17 @@ class LD_Viewer(Viewer):
                 rungindex = self.FindRung(wires[0])
                 rung = self.Rungs[rungindex]
                 old_bbox = rung.GetBoundingBox()
-                for wire in wires:
-                    connections = wire.GetSelectedSegmentConnections()
-                    left_block = wire.EndConnected.GetParentBlock()
-                    if wire.EndConnected not in left_elements:
-                        left_elements.append(wire.EndConnected)
-                    if wire.StartConnected not in right_elements:
-                        right_elements.append(wire.StartConnected)
+                for w in wires:
+                    connections = w.GetSelectedSegmentConnections()
+                    left_block = w.EndConnected.GetParentBlock()
+                    if w.EndConnected not in left_elements:
+                        left_elements.append(w.EndConnected)
+                    if w.StartConnected not in right_elements:
+                        right_elements.append(w.StartConnected)
                     if connections == (False, False) or connections == (False, True) and isinstance(left_block, LD_PowerRail):
-                        wire.Clean()
-                        self.RemoveWire(wire)
-                        rung.SelectElement(wire)
+                        w.Clean()
+                        self.RemoveWire(w)
+                        rung.SelectElement(w)
                 for left_element in left_elements:
                     left_block = left_element.GetParentBlock()
                     if isinstance(left_block, LD_PowerRail):
@@ -1082,8 +1082,8 @@ class LD_Viewer(Viewer):
                     else:
                         connectors = left_block.GetConnectors()
                         for connector in connectors["outputs"]:
-                            for wire, _handle in connector.GetWires():
-                                self.RefreshPosition(wire.StartConnected.GetParentBlock())
+                            for lwire, _handle in connector.GetWires():
+                                self.RefreshPosition(lwire.StartConnected.GetParentBlock())
                 for right_element in right_elements:
                     self.RefreshPosition(right_element.GetParentBlock())
                 rung.RefreshBoundingBox()

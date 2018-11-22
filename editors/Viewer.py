@@ -83,7 +83,7 @@ else:
         'mono':  'Courier',
         'helv':  'Helvetica',
         'other': 'new century schoolbook',
-        'size':  12,
+        'size':  10,
     }
 
 if wx.Platform == '__WXMSW__':
@@ -764,15 +764,14 @@ class Viewer(EditorPanel, DebugViewer):
         self.ElementRefreshList_lock = Lock()
 
         dc = wx.ClientDC(self.Editor)
-        font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
-        dc.SetFont(font)
-        width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        while width > 260:
-            faces["size"] -= 1
+        while True:
             font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
             dc.SetFont(font)
             width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-        self.SetFont(font)
+            if width < 260:
+                break
+            faces["size"] -= 1
+        self.Editor.SetFont(font)
         self.MiniTextDC = wx.MemoryDC(wx.EmptyBitmap(1, 1))
         self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
@@ -2659,11 +2658,8 @@ class Viewer(EditorPanel, DebugViewer):
             self.AddNewElement(connection, bbox, wire)
 
     def AddNewComment(self, bbox):
-        dialog = wx.TextEntryDialog(self.ParentWindow,
-                                    _("Edit comment"),
-                                    _("Please enter comment text"),
-                                    "", wx.OK | wx.CANCEL | wx.TE_MULTILINE)
-        dialog.SetClientSize(wx.Size(400, 200))
+        dialog = CommentEditDialog(self.ParentWindow,
+                                   self.GetFont())
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
             id = self.GetNewId()
@@ -3101,14 +3097,10 @@ class Viewer(EditorPanel, DebugViewer):
         dialog.Destroy()
 
     def EditCommentContent(self, comment):
-        dialog = wx.TextEntryDialog(self.ParentWindow,
-                                    _("Edit comment"),
-                                    _("Please enter comment text"),
-                                    comment.GetContent(),
-                                    wx.OK | wx.CANCEL | wx.TE_MULTILINE)
-        width, height = comment.GetSize()
-        dialogSize = wx.Size(max(width + 30, 400), max(height + 60, 200))
-        dialog.SetClientSize(dialogSize)
+        dialog = CommentEditDialog(self.ParentWindow,
+                                   self.GetFont(),
+                                   comment.GetContent(),
+                                   comment.GetSize())
         if dialog.ShowModal() == wx.ID_OK:
             value = dialog.GetValue()
             rect = comment.GetRedrawRect(1, 1)
@@ -3565,7 +3557,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.SearchResults = []
             blocks = []
             for infos, start, end, _text in self.Controler.SearchInPou(self.TagName, search_params, self.Debug):
-                if (infos[0] == self.TagName or self.TagName.split("::")[0] in ['A', 'T']) and infos[1] is not 'name':
+                if (infos[0] == self.TagName or self.TagName.split("::")[0] in ['A', 'T']) and infos[1] != 'name':
                     if infos[1] in ["var_local", "var_input", "var_output", "var_inout"]:
                         self.SearchResults.append((infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT))
                     else:
@@ -3717,12 +3709,14 @@ class Viewer(EditorPanel, DebugViewer):
             dc.SetPen(self.PagePen)
             xstart, ystart = self.GetViewStart()
             window_size = self.Editor.GetClientSize()
-            for x in xrange(self.PageSize[0] - (xstart * SCROLLBAR_UNIT) % self.PageSize[0], int(window_size[0] / self.ViewScale[0]), self.PageSize[0]):
-                dc.DrawLine(xstart * SCROLLBAR_UNIT + x + 1, int(ystart * SCROLLBAR_UNIT / self.ViewScale[0]),
-                            xstart * SCROLLBAR_UNIT + x + 1, int((ystart * SCROLLBAR_UNIT + window_size[1]) / self.ViewScale[0]))
-            for y in xrange(self.PageSize[1] - (ystart * SCROLLBAR_UNIT) % self.PageSize[1], int(window_size[1] / self.ViewScale[1]), self.PageSize[1]):
-                dc.DrawLine(int(xstart * SCROLLBAR_UNIT / self.ViewScale[0]), ystart * SCROLLBAR_UNIT + y + 1,
-                            int((xstart * SCROLLBAR_UNIT + window_size[0]) / self.ViewScale[1]), ystart * SCROLLBAR_UNIT + y + 1)
+            if self.PageSize[0] != 0:
+                for x in xrange(self.PageSize[0] - (xstart * SCROLLBAR_UNIT) % self.PageSize[0], int(window_size[0] / self.ViewScale[0]), self.PageSize[0]):
+                    dc.DrawLine(xstart * SCROLLBAR_UNIT + x + 1, int(ystart * SCROLLBAR_UNIT / self.ViewScale[0]),
+                                xstart * SCROLLBAR_UNIT + x + 1, int((ystart * SCROLLBAR_UNIT + window_size[1]) / self.ViewScale[0]))
+            if self.PageSize[1] != 0:
+                for y in xrange(self.PageSize[1] - (ystart * SCROLLBAR_UNIT) % self.PageSize[1], int(window_size[1] / self.ViewScale[1]), self.PageSize[1]):
+                    dc.DrawLine(int(xstart * SCROLLBAR_UNIT / self.ViewScale[0]), ystart * SCROLLBAR_UNIT + y + 1,
+                                int((xstart * SCROLLBAR_UNIT + window_size[0]) / self.ViewScale[1]), ystart * SCROLLBAR_UNIT + y + 1)
 
         # Draw all elements
         for comment in self.Comments.itervalues():

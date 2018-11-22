@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="1" creationDateTime="2016-10-24T18:09:22"/>
-  <contentHeader name="First Steps" modificationDateTime="2018-08-24T13:11:30">
+  <contentHeader name="First Steps" modificationDateTime="2018-09-26T12:52:51">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -163,21 +163,21 @@
               </outputVariables>
             </block>
             <inVariable localId="2" executionOrderId="0" height="30" width="79" negated="false">
-              <position x="35" y="81"/>
+              <position x="35" y="78"/>
               <connectionPointOut>
                 <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
             <block localId="4" typeName="CounterFBD" instanceName="CounterFBD0" executionOrderId="0" height="54" width="121">
-              <position x="211" y="145"/>
+              <position x="211" y="146"/>
               <inputVariables>
                 <variable formalParameter="Reset">
                   <connectionPointIn>
                     <relPosition x="0" y="37"/>
                     <connection refLocalId="13">
-                      <position x="211" y="182"/>
-                      <position x="115" y="182"/>
+                      <position x="211" y="183"/>
+                      <position x="115" y="183"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -191,7 +191,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <comment localId="6" height="344" width="434">
+            <comment localId="6" height="365" width="569">
               <position x="620" y="130"/>
               <content>
                 <xhtml:p><![CDATA[In this example function block with the same functionality 
@@ -257,35 +257,35 @@ If reset is False, counter is incremented every cycle.
               </outputVariables>
             </block>
             <inVariable localId="10" executionOrderId="0" height="30" width="67" negated="false">
-              <position x="34" y="351"/>
+              <position x="34" y="348"/>
               <connectionPointOut>
                 <relPosition x="67" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
             <inVariable localId="12" executionOrderId="0" height="30" width="67" negated="false">
-              <position x="36" y="261"/>
+              <position x="36" y="258"/>
               <connectionPointOut>
                 <relPosition x="67" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
             <inVariable localId="13" executionOrderId="0" height="30" width="79" negated="false">
-              <position x="36" y="170"/>
+              <position x="36" y="168"/>
               <connectionPointOut>
                 <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
             <block localId="14" typeName="CounterLD" instanceName="CounterLD0" executionOrderId="0" height="62" width="124">
-              <position x="210" y="411"/>
+              <position x="210" y="412"/>
               <inputVariables>
                 <variable formalParameter="Reset">
                   <connectionPointIn>
                     <relPosition x="0" y="41"/>
                     <connection refLocalId="16">
-                      <position x="210" y="452"/>
-                      <position x="100" y="452"/>
+                      <position x="210" y="453"/>
+                      <position x="100" y="453"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -300,13 +300,13 @@ If reset is False, counter is incremented every cycle.
               </outputVariables>
             </block>
             <inVariable localId="16" executionOrderId="0" height="30" width="64" negated="false">
-              <position x="36" y="440"/>
+              <position x="36" y="438"/>
               <connectionPointOut>
                 <relPosition x="64" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <block localId="17" typeName="AverageVal" executionOrderId="0" height="470" width="90">
+            <block localId="17" typeName="AverageVal" executionOrderId="0" height="470" width="100">
               <position x="514" y="28"/>
               <inputVariables>
                 <variable formalParameter="Cnt1">
@@ -323,9 +323,7 @@ If reset is False, counter is incremented every cycle.
                     <relPosition x="0" y="155"/>
                     <connection refLocalId="5">
                       <position x="514" y="183"/>
-                      <position x="497" y="183"/>
-                      <position x="497" y="182"/>
-                      <position x="473" y="182"/>
+                      <position x="473" y="183"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -352,9 +350,7 @@ If reset is False, counter is incremented every cycle.
                     <relPosition x="0" y="425"/>
                     <connection refLocalId="15">
                       <position x="514" y="453"/>
-                      <position x="495" y="453"/>
-                      <position x="495" y="452"/>
-                      <position x="469" y="452"/>
+                      <position x="469" y="453"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -363,18 +359,18 @@ If reset is False, counter is incremented every cycle.
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="90" y="65"/>
+                    <relPosition x="100" y="65"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="18" executionOrderId="0" height="30" width="50" negated="false">
+            <outVariable localId="18" executionOrderId="0" height="30" width="55" negated="false">
               <position x="649" y="78"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="17" formalParameter="OUT">
                   <position x="649" y="93"/>
-                  <position x="604" y="93"/>
+                  <position x="614" y="93"/>
                 </connection>
               </connectionPointIn>
               <expression>AVCnt</expression>
@@ -394,12 +390,12 @@ If reset is False, counter is incremented every cycle.
               <expression>Cnt1</expression>
             </inOutVariable>
             <inOutVariable localId="5" executionOrderId="0" height="30" width="103" negatedOut="false" negatedIn="false">
-              <position x="370" y="167"/>
+              <position x="370" y="168"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="4" formalParameter="OUT">
-                  <position x="370" y="182"/>
-                  <position x="332" y="182"/>
+                  <position x="370" y="183"/>
+                  <position x="332" y="183"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -436,12 +432,12 @@ If reset is False, counter is incremented every cycle.
               <expression>Cnt4</expression>
             </inOutVariable>
             <inOutVariable localId="15" executionOrderId="0" height="30" width="88" negatedOut="false" negatedIn="false">
-              <position x="381" y="437"/>
+              <position x="381" y="438"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="14" formalParameter="Out">
-                  <position x="381" y="452"/>
-                  <position x="334" y="452"/>
+                  <position x="381" y="453"/>
+                  <position x="334" y="453"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -546,23 +542,23 @@ Out := Cnt;]]></xhtml:p>
               </connectionPointIn>
               <expression>OUT</expression>
             </outVariable>
-            <inOutVariable localId="3" executionOrderId="0" height="30" width="32" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="3" executionOrderId="0" height="30" width="37" negatedOut="false" negatedIn="false">
               <position x="557" y="137"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="7" formalParameter="OUT">
                   <position x="557" y="152"/>
-                  <position x="525" y="152"/>
-                  <position x="525" y="130"/>
-                  <position x="515" y="130"/>
+                  <position x="527" y="152"/>
+                  <position x="527" y="130"/>
+                  <position x="517" y="130"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="32" y="15"/>
+                <relPosition x="37" y="15"/>
               </connectionPointOut>
               <expression>Cnt</expression>
             </inOutVariable>
-            <block localId="4" typeName="ADD" executionOrderId="0" height="80" width="67">
+            <block localId="4" typeName="ADD" executionOrderId="0" height="80" width="69">
               <position x="328" y="115"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -570,9 +566,7 @@ Out := Cnt;]]></xhtml:p>
                     <relPosition x="0" y="35"/>
                     <connection refLocalId="6">
                       <position x="328" y="150"/>
-                      <position x="301" y="150"/>
-                      <position x="301" y="153"/>
-                      <position x="275" y="153"/>
+                      <position x="275" y="150"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -583,9 +577,9 @@ Out := Cnt;]]></xhtml:p>
                       <position x="328" y="180"/>
                       <position x="317" y="180"/>
                       <position x="317" y="213"/>
-                      <position x="599" y="213"/>
-                      <position x="599" y="152"/>
-                      <position x="589" y="152"/>
+                      <position x="604" y="213"/>
+                      <position x="604" y="152"/>
+                      <position x="594" y="152"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -594,26 +588,26 @@ Out := Cnt;]]></xhtml:p>
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="67" y="35"/>
+                    <relPosition x="69" y="35"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="5" executionOrderId="0" height="30" width="158" negated="false">
+            <inVariable localId="5" executionOrderId="0" height="30" width="163" negated="false">
               <position x="222" y="256"/>
               <connectionPointOut>
-                <relPosition x="158" y="15"/>
+                <relPosition x="163" y="15"/>
               </connectionPointOut>
               <expression>ResetCounterValue</expression>
             </inVariable>
             <inVariable localId="6" executionOrderId="0" height="30" width="21" negated="false">
-              <position x="254" y="138"/>
+              <position x="254" y="135"/>
               <connectionPointOut>
                 <relPosition x="21" y="15"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <block localId="7" typeName="SEL" executionOrderId="0" height="80" width="67">
+            <block localId="7" typeName="SEL" executionOrderId="0" height="80" width="69">
               <position x="448" y="100"/>
               <inputVariables>
                 <variable formalParameter="G">
@@ -632,7 +626,7 @@ Out := Cnt;]]></xhtml:p>
                     <relPosition x="0" y="50"/>
                     <connection refLocalId="4" formalParameter="OUT">
                       <position x="448" y="150"/>
-                      <position x="395" y="150"/>
+                      <position x="397" y="150"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -643,7 +637,7 @@ Out := Cnt;]]></xhtml:p>
                       <position x="448" y="170"/>
                       <position x="414" y="170"/>
                       <position x="414" y="271"/>
-                      <position x="380" y="271"/>
+                      <position x="385" y="271"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -652,7 +646,7 @@ Out := Cnt;]]></xhtml:p>
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="67" y="30"/>
+                    <relPosition x="69" y="30"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
@@ -756,29 +750,29 @@ Out := Cnt;]]></xhtml:p>
                 </inline>
               </condition>
             </transition>
-            <step localId="5" name="ResetCounter" initialStep="false" height="30" width="104">
-              <position x="449" y="190"/>
+            <step localId="5" name="ResetCounter" initialStep="false" height="30" width="134">
+              <position x="434" y="190"/>
               <connectionPointIn>
-                <relPosition x="52" y="0"/>
+                <relPosition x="67" y="0"/>
                 <connection refLocalId="3">
                   <position x="501" y="190"/>
                   <position x="501" y="134"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut formalParameter="">
-                <relPosition x="52" y="30"/>
+                <relPosition x="67" y="30"/>
               </connectionPointOut>
               <connectionPointOutAction formalParameter="">
-                <relPosition x="104" y="15"/>
+                <relPosition x="134" y="15"/>
               </connectionPointOutAction>
             </step>
-            <actionBlock localId="6" height="63" width="222">
-              <position x="600" y="187"/>
+            <actionBlock localId="6" height="63" width="254">
+              <position x="641" y="190"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="5">
-                  <position x="600" y="202"/>
-                  <position x="553" y="202"/>
+                  <position x="641" y="205"/>
+                  <position x="568" y="205"/>
                 </connection>
               </connectionPointIn>
               <action localId="0">
@@ -814,13 +808,13 @@ Out := Cnt;]]></xhtml:p>
                 <relPosition x="85" y="15"/>
               </connectionPointOutAction>
             </step>
-            <actionBlock localId="8" height="52" width="148" executionOrderId="0">
-              <position x="135" y="188"/>
+            <actionBlock localId="8" height="52" width="164" executionOrderId="0">
+              <position x="154" y="191"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="7">
-                  <position x="135" y="203"/>
-                  <position x="113" y="203"/>
+                  <position x="154" y="206"/>
+                  <position x="113" y="206"/>
                 </connection>
               </connectionPointIn>
               <action localId="0">
@@ -896,7 +890,7 @@ Out := Cnt;]]></xhtml:p>
                 <relPosition x="10" y="0"/>
                 <connection refLocalId="5">
                   <position x="501" y="248"/>
-                  <position x="501" y="214"/>
+                  <position x="501" y="220"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -1000,29 +994,27 @@ ST Out
         <body>
           <LD>
             <outVariable localId="2" executionOrderId="0" height="30" width="34" negated="false">
-              <position x="527" y="90"/>
+              <position x="527" y="87"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="3">
-                  <position x="527" y="105"/>
-                  <position x="441" y="105"/>
+                  <position x="527" y="102"/>
+                  <position x="443" y="102"/>
                 </connection>
               </connectionPointIn>
               <expression>Out</expression>
             </outVariable>
-            <inOutVariable localId="3" executionOrderId="0" height="30" width="32" negatedOut="false" negatedIn="false">
-              <position x="409" y="90"/>
+            <inOutVariable localId="3" executionOrderId="0" height="30" width="34" negatedOut="false" negatedIn="false">
+              <position x="409" y="87"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
                 <connection refLocalId="7" formalParameter="OUT">
-                  <position x="409" y="105"/>
-                  <position x="388" y="105"/>
-                  <position x="388" y="102"/>
+                  <position x="409" y="102"/>
                   <position x="367" y="102"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="32" y="15"/>
+                <relPosition x="34" y="15"/>
               </connectionPointOut>
               <expression>Cnt</expression>
             </inOutVariable>
@@ -1034,9 +1026,7 @@ ST Out
                     <relPosition x="0" y="35"/>
                     <connection refLocalId="6">
                       <position x="180" y="122"/>
-                      <position x="153" y="122"/>
-                      <position x="153" y="125"/>
-                      <position x="127" y="125"/>
+                      <position x="127" y="122"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1047,9 +1037,9 @@ ST Out
                       <position x="180" y="152"/>
                       <position x="169" y="152"/>
                       <position x="169" y="185"/>
-                      <position x="451" y="185"/>
-                      <position x="451" y="105"/>
-                      <position x="441" y="105"/>
+                      <position x="453" y="185"/>
+                      <position x="453" y="102"/>
+                      <position x="443" y="102"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1071,7 +1061,7 @@ ST Out
               <expression>ResetCounterValue</expression>
             </inVariable>
             <inVariable localId="6" executionOrderId="0" height="30" width="21" negated="false">
-              <position x="106" y="110"/>
+              <position x="106" y="107"/>
               <connectionPointOut>
                 <relPosition x="21" y="15"/>
               </connectionPointOut>

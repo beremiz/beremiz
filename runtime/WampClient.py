@@ -160,7 +160,7 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             if protocolOptions:
                 self.setProtocolOptions(**protocolOptions)
             _transportFactory = self
-        except Exception, e:
+        except Exception as e:
             print(_("Custom protocol options failed :"), e)
             _transportFactory = None
 

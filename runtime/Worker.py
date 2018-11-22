@@ -103,7 +103,10 @@ class worker(object):
         if _job.success:
             return _job.result
         else:
-            raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
+            exc_type = _job.exc_info[0]
+            exc_value = _job.exc_info[1]
+            exc_traceback = _job.exc_info[2]
+            six.reraise(exc_type, exc_value, exc_traceback)
 
     def quit(self):
         """

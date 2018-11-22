@@ -277,7 +277,7 @@ class ConfigTreeNode(object):
         LDFLAGS = []
         if CTNLDFLAGS is not None:
             # LDFLAGS can be either string
-            if isinstance(CTNLDFLAGS, str) or isinstance(CTNLDFLAGS, unicode):
+            if isinstance(CTNLDFLAGS, (str, unicode)):
                 LDFLAGS += [CTNLDFLAGS]
             # or list of strings
             elif isinstance(CTNLDFLAGS, list):
@@ -626,7 +626,7 @@ class ConfigTreeNode(object):
                     self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
-            except Exception, exc:
+            except Exception as exc:
                 msg = _("Couldn't load confnode base parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=unicode(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
@@ -643,7 +643,7 @@ class ConfigTreeNode(object):
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
                 xmlfile.close()
-            except Exception, exc:
+            except Exception as exc:
                 msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=unicode(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
@@ -656,7 +656,7 @@ class ConfigTreeNode(object):
                 pname, ptype = CTNDir.split(NameTypeSeparator)
                 try:
                     self.CTNAddChild(pname, ptype)
-                except Exception, exc:
+                except Exception as exc:
                     msg = _("Could not add child \"{a1}\", type {a2} :\n{a3}\n").format(a1=pname, a2=ptype, a3=unicode(exc))
                     self.GetCTRoot().logger.write_error(msg)
                     self.GetCTRoot().logger.write_error(traceback.format_exc())

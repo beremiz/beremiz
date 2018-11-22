@@ -8,10 +8,11 @@
 #
 # See COPYING file for copyrights details.
 
-import os
+from __future__ import absolute_import
 import wx
 
-mailbox_protocols =  ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
+mailbox_protocols = ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
+
 
 def ExtractHexDecValue(value):
     """
@@ -21,13 +22,14 @@ def ExtractHexDecValue(value):
     """
     try:
         return int(value)
-    except:
+    except Exception:
         pass
     try:
         return int(value.replace("#", "0"), 16)
-        
-    except:
-        raise ValueError, "Invalid value for HexDecValue \"%s\"" % value
+
+    except Exception:
+        raise ValueError(_("Invalid value for HexDecValue \"%s\"") % value)
+
 
 def ExtractName(names, default=None):
     """
@@ -44,15 +46,16 @@ def ExtractName(names, default=None):
                 return name.getcontent()
     return default
 
-#--------------------------------------------------
+# --------------------------------------------------
 #         Remote Exec Etherlab Commands
-#--------------------------------------------------
+# --------------------------------------------------
+
 
 # --------------------- for master ---------------------------
 MASTER_STATE = """
 import commands
 result = commands.getoutput("ethercat master")
-returnVal =result 
+returnVal =result
 """
 
 # --------------------- for slave ----------------------------
@@ -60,98 +63,99 @@ returnVal =result
 SLAVE_STATE = """
 import commands
 result = commands.getoutput("ethercat state -p %d %s")
-returnVal = result 
+returnVal = result
 """
 
 # ethercat slave
 GET_SLAVE = """
 import commands
 result = commands.getoutput("ethercat slaves")
-returnVal =result 
+returnVal =result
 """
 
 # ethercat xml -p (slave position)
 SLAVE_XML = """
 import commands
 result = commands.getoutput("ethercat xml -p %d")
-returnVal = result 
+returnVal = result
 """
 
 # ethercat sdos -p (slave position)
 SLAVE_SDO = """
 import commands
 result = commands.getoutput("ethercat sdos -p %d")
-returnVal =result 
+returnVal =result
 """
 
 # ethercat upload -p (slave position) (main index) (sub index)
 GET_SLOW_SDO = """
 import commands
 result = commands.getoutput("ethercat upload -p %d %s %s")
-returnVal =result 
+returnVal =result
 """
 
 # ethercat download -p (slave position) (main index) (sub index) (value)
 SDO_DOWNLOAD = """
 import commands
 result = commands.getoutput("ethercat download --type %s -p %d %s %s %s")
-returnVal =result 
+returnVal =result
 """
 
 # ethercat sii_read -p (slave position)
 SII_READ = """
 import commands
 result = commands.getoutput("ethercat sii_read -p %d")
-returnVal =result 
+returnVal =result
 """
 
 # ethercat reg_read -p (slave position) (address) (size)
 REG_READ = """
 import commands
 result = commands.getoutput("ethercat reg_read -p %d %s %s")
-returnVal =result 
+returnVal =result
 """
 
 # ethercat sii_write -p (slave position) - (contents)
-SII_WRITE = """ 
-import subprocess 
+SII_WRITE = """
+import subprocess
 process = subprocess.Popen(
     ["ethercat", "-f", "sii_write", "-p", "%d", "-"],
     stdin=subprocess.PIPE)
 process.communicate(sii_data)
-returnVal = process.returncode 
+returnVal = process.returncode
 """
 
 # ethercat reg_write -p (slave position) -t (uinit16) (address) (data)
-REG_WRITE = """ 
+REG_WRITE = """
 import commands
 result = commands.getoutput("ethercat reg_write -p %d -t uint16 %s %s")
-returnVal =result 
-""" 
-
-# ethercat rescan -p (slave position)
-RESCAN = """ 
-import commands
-result = commands.getoutput("ethercat rescan -p %d")
-returnVal =result 
+returnVal =result
 """
 
-#--------------------------------------------------
-#    Common Method For EtherCAT Management 
-#--------------------------------------------------
-class _CommonSlave:
+# ethercat rescan -p (slave position)
+RESCAN = """
+import commands
+result = commands.getoutput("ethercat rescan -p %d")
+returnVal =result
+"""
+
+
+# --------------------------------------------------
+#    Common Method For EtherCAT Management
+# --------------------------------------------------
+class _CommonSlave(object):
 
     # ----- Data Structure for ethercat management ----
     SlaveState = ""
 
     # category of SDO data
     DatatypeDescription, CommunicationObject, ManufacturerSpecific, \
-    ProfileSpecific, Reserved, AllSDOData = range(6)
-    
+        ProfileSpecific, Reserved, AllSDOData = range(6)
+
     # store the execution result of "ethercat sdos" command into SaveSDOData.
     SaveSDOData = []
-    
-    # Flags for checking "write" permission of OD entries 
+
+    # Flags for checking "write" permission of OD entries
     CheckPREOP = False
     CheckSAFEOP = False
     CheckOP = False
@@ -161,7 +165,7 @@ class _CommonSlave:
     TxPDOCategory = []
     RxPDOInfo = []
     RxPDOCategory = []
-    
+
     # Save EEPROM Data
     SiiData = ""
 
@@ -171,75 +175,77 @@ class _CommonSlave:
                   "FMMUNumber": "",
                   "SMNumber": "",
                   "PDIType": ""}
-    
+
     def __init__(self, controler):
         """
         Constructor
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
         self.Controler = controler
-         
+
         self.ClearSDODataSet()
-    
-    #-------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------
     #                        Used Master State
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def GetMasterState(self):
         """
         Execute "ethercat master" command and parse the execution result
-        @return MasterState 
+        @return MasterState
         """
 
-        # exectute "ethercat master" command 
-        error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val = None)
+        # exectute "ethercat master" command
+        _error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val=None)
         master_state = {}
         # parse the reslut
         for each_line in return_val.splitlines():
-            if len(each_line) > 0 :
+            if len(each_line) > 0:
                 chunks = each_line.strip().split(':', 1)
                 key = chunks[0]
                 value = []
-                if len(chunks) > 1 :
+                if len(chunks) > 1:
                     value = chunks[1].split()
                 if '(attached)' in value:
                     value.remove('(attached)')
                 master_state[key] = value
-         
-        return master_state     
-    
-    #-------------------------------------------------------------------------------
+
+        return master_state
+
+    # -------------------------------------------------------------------------------
     #                        Used Slave State
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def RequestSlaveState(self, command):
         """
         Set slave state to the specified one using "ethercat states -p %d %s" command.
         Command example : "ethercat states -p 0 PREOP" (target slave position and target state are given.)
-        @param command : target slave state 
+        @param command : target slave state
         """
-        error, return_val = self.Controler.RemoteExec(SLAVE_STATE%(self.Controler.GetSlavePos(), command), return_val = None)
-    
-    def GetSlaveStateFromSlave(self):  
-        """
-        Get slave information using "ethercat slaves" command and store the information into internal data structure 
-        (self.SlaveState) for "Slave State" 
-        return_val example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
-        """ 
-        error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val = None)
-        self.SlaveState = return_val
-        return return_val 
+        _error, _return_val = self.Controler.RemoteExec(
+            SLAVE_STATE % (self.Controler.GetSlavePos(), command),
+            return_val=None)
 
-    #-------------------------------------------------------------------------------
+    def GetSlaveStateFromSlave(self):
+        """
+        Get slave information using "ethercat slaves" command and store the information into internal data structure
+        (self.SlaveState) for "Slave State"
+        return_val example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
+        """
+        _error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val=None)
+        self.SlaveState = return_val
+        return return_val
+
+    # -------------------------------------------------------------------------------
     #                        Used SDO Management
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def GetSlaveSDOFromSlave(self):
         """
         Get SDO objects information of current slave using "ethercat sdos -p %d" command.
         Command example : "ethercat sdos -p 0"
         @return return_val : execution results of "ethercat sdos" command (need to be parsed later)
-        """  
-        error, return_val = self.Controler.RemoteExec(SLAVE_SDO%(self.Controler.GetSlavePos()), return_val = None)
-        return return_val   
-        
+        """
+        _error, return_val = self.Controler.RemoteExec(SLAVE_SDO % (self.Controler.GetSlavePos()), return_val=None)
+        return return_val
+
     def SDODownload(self, data_type, idx, sub_idx, value):
         """
         Set an SDO object value to user-specified value using "ethercat download" command.
@@ -248,158 +254,160 @@ class _CommonSlave:
         @param idx : index of the SDO entry
         @param sub_idx : subindex of the SDO entry
         @param value : value of SDO entry
-        """  
-        error, return_val = self.Controler.RemoteExec(SDO_DOWNLOAD%(data_type, self.Controler.GetSlavePos(), idx, sub_idx, value), return_val = None)
-    
+        """
+        _error, _return_val = self.Controler.RemoteExec(
+            SDO_DOWNLOAD % (data_type, self.Controler.GetSlavePos(), idx, sub_idx, value),
+            return_val=None)
+
     def BackupSDODataSet(self):
         """
-        Back-up current SDO entry information to restore the SDO data 
-         in case that the user cancels SDO update operation.
-    	"""  
+        Back-up current SDO entry information to restore the SDO data
+        in case that the user cancels SDO update operation.
+        """
         self.BackupDatatypeDescription = self.SaveDatatypeDescription
         self.BackupCommunicationObject = self.SaveCommunicationObject
         self.BackupManufacturerSpecific = self.SaveManufacturerSpecific
         self.BackupProfileSpecific = self.SaveProfileSpecific
         self.BackupReserved = self.SaveReserved
         self.BackupAllSDOData = self.SaveAllSDOData
-    
+
     def ClearSDODataSet(self):
         """
         Clear the specified SDO entry information.
-        """ 
-        for count in range(6):
+        """
+        for dummy in range(6):
             self.SaveSDOData.append([])
-    
-    #-------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------
     #                        Used PDO Monitoring
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def RequestPDOInfo(self):
         """
         Load slave information from RootClass (XML data) and parse the information (calling SlavePDOData() method).
-        """ 
+        """
         # Load slave information from ESI XML file (def EthercatMaster.py)
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
-        
+
         type_infos = slave.getType()
-        device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
+        device, _alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
         # Initialize PDO data set
         self.ClearDataSet()
-        
-        # if 'device' object is valid, call SavePDOData() to parse PDO data 
-        if device is not None :
+
+        # if 'device' object is valid, call SavePDOData() to parse PDO data
+        if device is not None:
             self.SavePDOData(device)
-    
+
     def SavePDOData(self, device):
         """
         Parse PDO data and store the results in TXPDOCategory and RXPDOCategory
         Tx(Rx)PDOCategory : index, name, entry number
         Tx(Rx)Info : entry index, sub index, name, length, type
         @param device : Slave information extracted from ESI XML file
-        """ 
+        """
         # Parsing TXPDO entries
-        for pdo, pdo_info in ([(pdo, "Inputs") for pdo in device.getTxPdo()]):
+        for pdo, _pdo_info in ([(pdo, "Inputs") for pdo in device.getTxPdo()]):
             # Save pdo_index, entry, and name of each entry
             pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
             entries = pdo.getEntry()
             pdo_name = ExtractName(pdo.getName())
-            
+
             # Initialize entry number count
             count = 0
-            
+
             # Parse entries
             for entry in entries:
                 # Save index and subindex
                 index = ExtractHexDecValue(entry.getIndex().getcontent())
                 subindex = ExtractHexDecValue(entry.getSubIndex())
                 # if entry name exists, save entry data
-                if ExtractName(entry.getName()) is not None :
+                if ExtractName(entry.getName()) is not None:
                     entry_infos = {
-                                "entry_index" : index,
-                                "subindex" : subindex,
-                                "name" : ExtractName(entry.getName()),
-                                "bitlen" : entry.getBitLen(),
-                                "type" : entry.getDataType().getcontent()
-                                    }
+                        "entry_index": index,
+                        "subindex": subindex,
+                        "name": ExtractName(entry.getName()),
+                        "bitlen": entry.getBitLen(),
+                        "type": entry.getDataType().getcontent()
+                    }
                     self.TxPDOInfo.append(entry_infos)
                     count += 1
-              
-            categorys = {"pdo_index" : pdo_index, "name" : pdo_name, "number_of_entry" : count}  
+
+            categorys = {"pdo_index": pdo_index, "name": pdo_name, "number_of_entry": count}
             self.TxPDOCategory.append(categorys)
 
         # Parsing RxPDO entries
-        for pdo, pdo_info in ([(pdo, "Outputs") for pdo in device.getRxPdo()]):
+        for pdo, _pdo_info in ([(rxpdo, "Outputs") for rxpdo in device.getRxPdo()]):
             # Save pdo_index, entry, and name of each entry
             pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
             entries = pdo.getEntry()
             pdo_name = ExtractName(pdo.getName())
-            
-            # Initialize entry number count
-            count = 0          
 
-            # Parse entries          
+            # Initialize entry number count
+            count = 0
+
+            # Parse entries
             for entry in entries:
                 # Save index and subindex
                 index = ExtractHexDecValue(entry.getIndex().getcontent())
                 subindex = ExtractHexDecValue(entry.getSubIndex())
                 # if entry name exists, save entry data
-                if ExtractName(entry.getName()) is not None :
+                if ExtractName(entry.getName()) is not None:
                     entry_infos = {
-                                "entry_index" : index,
-                                "subindex" : subindex,
-                                "name" : ExtractName(entry.getName()),
-                                "bitlen" : str(entry.getBitLen()),
-                                "type" : entry.getDataType().getcontent()
-                                    }
+                        "entry_index": index,
+                        "subindex": subindex,
+                        "name": ExtractName(entry.getName()),
+                        "bitlen": str(entry.getBitLen()),
+                        "type": entry.getDataType().getcontent()
+                    }
                     self.RxPDOInfo.append(entry_infos)
                     count += 1
-    
-            categorys = {"pdo_index" : pdo_index, "name" : pdo_name, "number_of_entry" : count}  
-            self.RxPDOCategory.append(categorys) 
+
+            categorys = {"pdo_index": pdo_index, "name": pdo_name, "number_of_entry": count}
+            self.RxPDOCategory.append(categorys)
 
     def GetTxPDOCategory(self):
         """
         Get TxPDOCategory data structure (Meta informaton of TxPDO).
         TxPDOCategorys : index, name, number of entries
         @return TxPDOCategorys
-        """ 
+        """
         return self.TxPDOCategory
-        
+
     def GetRxPDOCategory(self):
         """
         Get RxPDOCategory data structure (Meta information of RxPDO).
         RxPDOCategorys : index, name, number of entries
         @return RxPDOCategorys
-        """ 
+        """
         return self.RxPDOCategory
-        
+
     def GetTxPDOInfo(self):
         """
-        Get TxPDOInfo data structure (Detailed information on TxPDO entries). 
+        Get TxPDOInfo data structure (Detailed information on TxPDO entries).
         TxPDOInfos : entry index, sub index, name, length, type
         @return TxPDOInfos
-        """ 
+        """
         return self.TxPDOInfo
-        
+
     def GetRxPDOInfo(self):
         """
-        Get RxPDOInfo data structure (Detailed information on RxPDO entries). 
+        Get RxPDOInfo data structure (Detailed information on RxPDO entries).
         RxPDOInfos : entry index, sub index, name, length, type
         @return RxPDOInfos
-        """ 
+        """
         return self.RxPDOInfo
-        
+
     def ClearDataSet(self):
         """
         Initialize PDO management data structure.
-        """ 
+        """
         self.TxPDOInfos = []
         self.TxPDOCategorys = []
         self.RxPDOInfos = []
         self.RxPDOCategorys = []
-               
-    #-------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------
     #                        Used EEPROM Management
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     # Base data types in ETG2000; format = {"Name": "BitSize"}
     BaseDataTypeDict = {"BOOL": "01",
                         "SINT": "02",
@@ -420,7 +428,6 @@ class _CommonSlave:
                         "UINT48": "19",
                         "UINT56": "1a",
                         "ULINT": "1b",
-                        "USINT": "1e",
                         "BITARR8": "2d",
                         "BITARR16": "2e",
                         "BITARR32": "2f",
@@ -431,13 +438,13 @@ class _CommonSlave:
                         "BIT5": "34",
                         "BIT6": "35",
                         "BIT7": "36",
-                        "BIT8": "37"}        
-        
+                        "BIT8": "37"}
+
     def GetSmartViewInfos(self):
         """
         Parse XML data for "Smart View" of EEPROM contents.
         @return smartview_infos : EEPROM contents dictionary
-        """ 
+        """
 
         smartview_infos = {"eeprom_size": 128,
                            "pdi_type": 0,
@@ -455,10 +462,10 @@ class _CommonSlave:
                            "mailbox_standardconf_outlength": '0',
                            "mailbox_standardconf_instart": '0',
                            "mailbox_standardconf_inlength": '0'}
-        
+
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
         type_infos = slave.getType()
-        device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
+        device, _alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
 
         # 'device' represents current slave device selected by user
         if device is not None:
@@ -466,7 +473,7 @@ class _CommonSlave:
                 # get EEPROM size; <Device>-<Eeprom>-<ByteSize>
                 if eeprom_element["name"] == "ByteSize":
                     smartview_infos["eeprom_size"] = eeprom_element
-                        
+
                 elif eeprom_element["name"] == "ConfigData":
                     configData_data = self.DecimalToHex(eeprom_element)
                     # get PDI type; <Device>-<Eeprom>-<ConfigData> address 0x00
@@ -478,20 +485,20 @@ class _CommonSlave:
                 elif eeprom_element["name"] == "BootStrap":
                     bootstrap_data = "{:0>16x}".format(eeprom_element)
                     # get bootstrap configuration; <Device>-<Eeprom>-<BootStrap>
-                    for cfg, iter in [("mailbox_bootstrapconf_outstart", 0), 
+                    for cfg, iter in [("mailbox_bootstrapconf_outstart", 0),
                                       ("mailbox_bootstrapconf_outlength", 1),
                                       ("mailbox_bootstrapconf_instart", 2),
                                       ("mailbox_bootstrapconf_inlength", 3)]:
                         smartview_infos[cfg] = str(int(bootstrap_data[4*iter+2:4*(iter+1)]+bootstrap_data[4*iter:4*iter+2], 16))
-            
+
             # get protocol (profile) types supported by mailbox; <Device>-<Mailbox>
             mb = device.getMailbox()
             if mb is not None:
                 for mailbox_protocol in mailbox_protocols:
-                    if getattr(mb,"get%s"%mailbox_protocol)() is not None:
-                        smartview_infos["supported_mailbox"] += "%s,  "%mailbox_protocol
-            smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(",  ")
-                
+                    if getattr(mb, "get%s" % mailbox_protocol)() is not None:
+                        smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
+            smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(", ")
+
             # get standard configuration of mailbox; <Device>-<Sm>
             for sm_element in device.getSm():
                 if sm_element.getcontent() == "MBoxOut":
@@ -510,42 +517,42 @@ class _CommonSlave:
                 for available_device in vendor["groups"][vendor["groups"].keys()[0]]["devices"]:
                     if available_device[0] == type_infos["device_type"]:
                         smartview_infos["vendor_id"] = "0x" + "{:0>8x}".format(vendor_id)
-                        
-            #  product code; 
+
+            #  product code;
             if device.getType().getProductCode() is not None:
                 product_code = device.getType().getProductCode()
                 smartview_infos["product_code"] = "0x"+"{:0>8x}".format(ExtractHexDecValue(product_code))
-                
-            #  revision number; 
+
+            #  revision number;
             if device.getType().getRevisionNo() is not None:
                 revision_no = device.getType().getRevisionNo()
                 smartview_infos["revision_no"] = "0x"+"{:0>8x}".format(ExtractHexDecValue(revision_no))
-                
+
             #  serial number;
             if device.getType().getSerialNo() is not None:
                 serial_no = device.getType().getSerialNo()
                 smartview_infos["serial_no"] = "0x"+"{:0>8x}".format(ExtractHexDecValue(serial_no))
-                                            
+
             return smartview_infos
-        
+
         else:
             return None
-        
+
     def DecimalToHex(self, decnum):
         """
-        Convert decimal value into hexadecimal representation. 
+        Convert decimal value into hexadecimal representation.
         @param decnum : decimal value
         @return hex_data : hexadecimal representation of input value in decimal
-        """ 
+        """
         value = "%x" % decnum
         value_len = len(value)
         if (value_len % 2) == 0:
             hex_len = value_len
         else:
             hex_len = (value_len / 2) * 2 + 2
-        
+
         hex_data = ("{:0>"+str(hex_len)+"x}").format(decnum)
-        
+
         return hex_data
 
     def SiiRead(self):
@@ -553,8 +560,8 @@ class _CommonSlave:
         Get slave EEPROM contents maintained by master device using "ethercat sii_read -p %d" command.
         Command example : "ethercat sii_read -p 0"
         @return return_val : result of "ethercat sii_read" (binary data)
-        """ 
-        error, return_val = self.Controler.RemoteExec(SII_READ%(self.Controler.GetSlavePos()), return_val = None)
+        """
+        _error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val=None)
         self.SiiData = return_val
         return return_val
 
@@ -564,23 +571,26 @@ class _CommonSlave:
         Command example : "ethercat sii_write -p 0 - (binary contents)"
         @param binary : EEPROM contents in binary data format
         @return return_val : result of "ethercat sii_write" (If it succeeds, the return value is NULL.)
-        """ 
-        error, return_val = self.Controler.RemoteExec(SII_WRITE%(self.Controler.GetSlavePos()), return_val = None, sii_data = binary)
-        return return_val 
+        """
+        _error, return_val = self.Controler.RemoteExec(
+            SII_WRITE % (self.Controler.GetSlavePos()),
+            return_val=None,
+            sii_data=binary)
+        return return_val
 
     def LoadData(self):
         """
         Loading data from EEPROM use Sii_Read Method
         @return self.BinaryCode : slave EEPROM data in binary format (zero-padded)
-        """ 
+        """
         return_val = self.Controler.CommonMethod.SiiRead()
         self.BinaryCode = return_val
         self.Controler.SiiData = self.BinaryCode
 
         # append zero-filled padding data up to EEPROM size
-        for index in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
-            self.BinaryCode = self.BinaryCode +'ff'.decode('hex')
-              
+        for dummy in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
+            self.BinaryCode = self.BinaryCode + 'ff'.decode('hex')
+
         return self.BinaryCode
 
     def HexRead(self, binary):
@@ -589,42 +599,42 @@ class _CommonSlave:
         @param binary : binary digits
         @return hexCode : hexadecimal digits
         @return hexview_table_row, hexview_table_col : Grid size for "Hex View" UI
-        """ 
+        """
         row_code = []
         row_text = ""
         row = 0
         hex_code = []
 
         hexview_table_col = 17
-        
-        for index in range(0, len(binary)) :
+
+        for index in range(0, len(binary)):
             if len(binary[index]) != 1:
                 break
             else:
-                digithexstr = hex(ord(binary[index])) 
+                digithexstr = hex(ord(binary[index]))
 
                 tempvar2 = digithexstr[2:4]
                 if len(tempvar2) == 1:
                     tempvar2 = "0" + tempvar2
-                row_code.append(tempvar2) 
-                
-                if int(digithexstr, 16)>=32 and int(digithexstr, 16)<=126:
+                row_code.append(tempvar2)
+
+                if int(digithexstr, 16) >= 32 and int(digithexstr, 16) <= 126:
                     row_text = row_text + chr(int(digithexstr, 16))
                 else:
                     row_text = row_text + "."
-                
-                if index != 0 : 
+
+                if index != 0:
                     if len(row_code) == (hexview_table_col - 1):
                         row_code.append(row_text)
                         hex_code.append(row_code)
                         row_text = ""
                         row_code = []
-                        row = row + 1        
-                                        
+                        row = row + 1
+
         hexview_table_row = row
-        
+
         return hex_code, hexview_table_row, hexview_table_col
-    
+
     def GenerateEEPROMList(self, data, direction, length):
         """
         Generate EEPROM data list by reconstructing 'data' string.
@@ -634,11 +644,11 @@ class _CommonSlave:
         @param direction : endianness
         @param length : data length
         @return eeprom_list : reconstructed list data structure
-        """ 
+        """
         eeprom_list = []
 
         if direction is 0 or 1:
-            for i in range(length/2):
+            for dummy in range(length/2):
                 if data == "":
                     eeprom_list.append("00")
                 else:
@@ -646,7 +656,7 @@ class _CommonSlave:
                 data = data[(1-direction)*2:length-direction*2]
                 length -= 2
         return eeprom_list
-    
+
     def XmlToEeprom(self):
         """
         Extract slave EEPROM contents using slave ESI XML file.
@@ -657,8 +667,8 @@ class _CommonSlave:
           - SyncM category : ExtractEEPROMSyncMCategory()
           - Tx/RxPDO category : ExtractEEPROMPDOCategory()
           - DC category : ExtractEEPROMDCCategory()
-        @return eeprom_binary 
-        """ 
+        @return eeprom_binary
+        """
         eeprom = []
         data = ""
         eeprom_size = 0
@@ -667,15 +677,15 @@ class _CommonSlave:
         # 'device' is the slave device of the current EtherCAT slave plugin
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
         type_infos = slave.getType()
-        device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
-        
+        device, _alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
+
         if device is not None:
             # get ConfigData for EEPROM offset 0x0000-0x000d; <Device>-<Eeprom>-<ConfigData>
             for eeprom_element in device.getEeprom().getcontent():
                 if eeprom_element["name"] == "ConfigData":
                     data = self.DecimalToHex(eeprom_element)
             eeprom += self.GenerateEEPROMList(data, 0, 28)
-            
+
             # calculate CRC for EEPROM offset 0x000e-0x000f
             crc = 0x48
             for segment in eeprom:
@@ -683,15 +693,15 @@ class _CommonSlave:
                     bit = crc & 0x80
                     crc = (crc << 1) | ((int(segment, 16) >> (7 - i)) & 0x01)
                     if bit:
-                        crc ^= 0x07   
-            for k in range(8):
+                        crc ^= 0x07
+            for dummy in range(8):
                 bit = crc & 0x80
                 crc <<= 1
                 if bit:
-                    crc ^= 0x07      
+                    crc ^= 0x07
             eeprom.append(hex(crc)[len(hex(crc))-3:len(hex(crc))-1])
             eeprom.append("00")
-            
+
             # get VendorID for EEPROM offset 0x0010-0x0013;
             data = ""
             for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
@@ -699,35 +709,35 @@ class _CommonSlave:
                     if available_device[0] == type_infos["device_type"]:
                         data = "{:0>8x}".format(vendor_id)
             eeprom += self.GenerateEEPROMList(data, 1, 8)
-            
+
             # get Product Code for EEPROM offset 0x0014-0x0017;
             data = ""
             if device.getType().getProductCode() is not None:
                 data = "{:0>8x}".format(ExtractHexDecValue(device.getType().getProductCode()))
             eeprom += self.GenerateEEPROMList(data, 1, 8)
-            
+
             # get Revision Number for EEPROM offset 0x0018-0x001b;
             data = ""
             if device.getType().getRevisionNo() is not None:
                 data = "{:0>8x}".format(ExtractHexDecValue(device.getType().getRevisionNo()))
-            eeprom += self.GenerateEEPROMList(data, 1, 8)  
-            
+            eeprom += self.GenerateEEPROMList(data, 1, 8)
+
             # get Serial Number for EEPROM 0x001c-0x001f;
             data = ""
             if device.getType().getSerialNo() is not None:
                 data = "{:0>8x}".format(ExtractHexDecValue(device.getType().getSerialNo()))
             eeprom += self.GenerateEEPROMList(data, 1, 8)
-                
+
             # get Execution Delay for EEPROM 0x0020-0x0021; not analyzed yet
             eeprom.append("00")
             eeprom.append("00")
-            
+
             # get Port0/1 Delay for EEPROM offset 0x0022-0x0025; not analyzed yet
             eeprom.append("00")
             eeprom.append("00")
             eeprom.append("00")
             eeprom.append("00")
-            
+
             # reserved for EEPROM offset 0x0026-0x0027;
             eeprom.append("00")
             eeprom.append("00")
@@ -738,7 +748,7 @@ class _CommonSlave:
                 if eeprom_element["name"] == "BootStrap":
                     data = "{:0>16x}".format(eeprom_element)
             eeprom += self.GenerateEEPROMList(data, 0, 16)
-            
+
             # get Standard Mailbox for EEPROM offset 0x0030-0x0037; <Device>-<sm>
             data = ""
             standard_send_mailbox_offset = None
@@ -752,7 +762,7 @@ class _CommonSlave:
                 elif sm_element.getcontent() == "MBoxIn":
                     standard_send_mailbox_offset = "{:0>4x}".format(ExtractHexDecValue(sm_element.getStartAddress()))
                     standard_send_mailbox_size = "{:0>4x}".format(ExtractHexDecValue(sm_element.getDefaultSize()))
-                    
+
             if standard_receive_mailbox_offset is None:
                 eeprom.append("00")
                 eeprom.append("00")
@@ -777,22 +787,22 @@ class _CommonSlave:
             else:
                 eeprom.append(standard_send_mailbox_size[2:4])
                 eeprom.append(standard_send_mailbox_size[0:2])
-            
+
             # get supported mailbox protocols for EEPROM offset 0x0038-0x0039;
             data = 0
             mb = device.getMailbox()
-            if mb is not None :
-                for bit,mbprot in enumerate(mailbox_protocols):
-                    if getattr(mb,"get%s"%mbprot)() is not None:
-                        data += 1<<bit
+            if mb is not None:
+                for bit, mbprot in enumerate(mailbox_protocols):
+                    if getattr(mb, "get%s" % mbprot)() is not None:
+                        data += 1 << bit
             data = "{:0>4x}".format(data)
             eeprom.append(data[2:4])
             eeprom.append(data[0:2])
-            
+
             # resereved for EEPROM offset 0x003a-0x007b;
             for i in range(0x007b-0x003a+0x0001):
                 eeprom.append("00")
-            
+
             # get EEPROM size for EEPROM offset 0x007c-0x007d;
             data = ""
             for eeprom_element in device.getEeprom().getcontent():
@@ -806,76 +816,76 @@ class _CommonSlave:
             else:
                 eeprom.append(data[2:4])
                 eeprom.append(data[0:2])
-                
-            # Version for EEPROM 0x007e-0x007f; 
+
+            # Version for EEPROM 0x007e-0x007f;
             #  According to "EtherCAT Slave Device Description(V0.3.0)"
             eeprom.append("01")
             eeprom.append("00")
-            
+
             # append String Category data
             for data in self.ExtractEEPROMStringCategory(device):
                 eeprom.append(data)
-                
+
             # append General Category data
             for data in self.ExtractEEPROMGeneralCategory(device):
                 eeprom.append(data)
-                
+
             # append FMMU Category data
             for data in self.ExtractEEPROMFMMUCategory(device):
                 eeprom.append(data)
-            
+
             # append SyncM Category data
             for data in self.ExtractEEPROMSyncMCategory(device):
                 eeprom.append(data)
-                
+
             # append TxPDO Category data
             for data in self.ExtractEEPROMPDOCategory(device, "TxPdo"):
                 eeprom.append(data)
-                
+
             # append RxPDO Category data
             for data in self.ExtractEEPROMPDOCategory(device, "RxPdo"):
                 eeprom.append(data)
-                
+
             # append DC Category data
             for data in self.ExtractEEPROMDCCategory(device):
                 eeprom.append(data)
-            
+
             # append padding
             padding = eeprom_size-len(eeprom)
             for i in range(padding):
                 eeprom.append("ff")
-            
+
             # convert binary code
             for index in range(eeprom_size):
                 eeprom_binary = eeprom_binary + eeprom[index].decode('hex')
-            
+
             return eeprom_binary
-    
+
     def ExtractEEPROMStringCategory(self, device):
         """
         Extract "Strings" category data from slave ESI XML and generate EEPROM image data.
         @param device : 'device' object in the slave ESI XML
         @return eeprom : "Strings" category EEPROM image data
-        """ 
+        """
         eeprom = []
         self.Strings = []
-        data = "" 
-        count = 0 # string counter
-        padflag = False # padding flag if category length is odd
-        
+        data = ""
+        count = 0        # string counter
+        padflag = False  # padding flag if category length is odd
+
         # index information for General Category in EEPROM
         self.GroupIdx = 0
         self.ImgIdx = 0
         self.OrderIdx = 0
         self.NameIdx = 0
-        
-        # flag for preventing duplicated vendor specific data 
+
+        # flag for preventing duplicated vendor specific data
         typeflag = False
         grouptypeflag = False
         groupnameflag = False
         devnameflag = False
         imageflag = False
-        
+
         # vendor specific data
         #   element1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Type>
         #   vendor_specific_data : vendor specific data (binary type)
@@ -884,8 +894,8 @@ class _CommonSlave:
         vendor_spec_strings = []
         for element in device.getType().getcontent():
             data += element
-        if data is not "" and type(data) == unicode:
-            for vendor_spec_string in vendor_spec_strings: 
+        if data != "" and isinstance(data, unicode):
+            for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.OrderIdx = vendor_spec_strings.index(data)+1
                     typeflag = True
@@ -900,17 +910,16 @@ class _CommonSlave:
                 for character in range(len(data)):
                     vendor_specific_data += "{:0>2x}".format(ord(data[character]))
         data = ""
-        
+
         #  element2-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<GroupType>
         data = device.getGroupType()
-        if data is not None and type(data) == unicode:
+        if data is not None and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.GroupIdx = vendor_spec_strings.index(data)+1
                     grouptypeflag = True
                     break
             if grouptypeflag is False:
-                grouptype = data
                 count += 1
                 self.Strings.append(data)
                 vendor_spec_strings.append(data)
@@ -919,23 +928,22 @@ class _CommonSlave:
                 vendor_specific_data += "{:0>2x}".format(len(data))
                 for character in range(len(data)):
                     vendor_specific_data += "{:0>2x}".format(ord(data[character]))
-        
-        #  element2-2; <EtherCATInfo>-<Groups>-<Group>-<Type>            
-        if grouptypeflag is False: 
+
+        #  element2-2; <EtherCATInfo>-<Groups>-<Group>-<Type>
+        if grouptypeflag is False:
             if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-                for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
                     for group_type, group_etc in vendor["groups"].iteritems():
                         for device_item in group_etc["devices"]:
-                            if device == device_item[1]: 
+                            if device == device_item[1]:
                                 data = group_type
-                if data is not None and type(data) == unicode:
+                if data is not None and isinstance(data, unicode):
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
                             self.GroupIdx = vendor_spec_strings.index(data)+1
                             grouptypeflag = True
                             break
                     if grouptypeflag is False:
-                        grouptype = data
                         count += 1
                         self.Strings.append(data)
                         vendor_spec_strings.append(data)
@@ -945,15 +953,15 @@ class _CommonSlave:
                         for character in range(len(data)):
                             vendor_specific_data += "{:0>2x}".format(ord(data[character]))
         data = ""
-        
+
         #  element3; <EtherCATInfo>-<Descriptions>-<Groups>-<Group>-<Name(LcId is "1033")>
         if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-            for vendorId, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+            for _vendorId, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
                 for group_type, group_etc in vendor["groups"].iteritems():
                     for device_item in group_etc["devices"]:
                         if device == device_item[1]:
                             data = group_etc["name"]
-        if data is not "" and type(data) == unicode:
+        if data != "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     groupnameflag = True
@@ -967,12 +975,12 @@ class _CommonSlave:
                 for character in range(len(data)):
                     vendor_specific_data += "{:0>2x}".format(ord(data[character]))
         data = ""
-        
+
         #  element4; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Name(LcId is "1033" or "1"?)>
         for element in device.getName():
-            if element.getLcId() == 1 or element.getLcId()==1033:
+            if element.getLcId() == 1 or element.getLcId() == 1033:
                 data = element.getcontent()
-        if data is not "" and type(data) == unicode:
+        if data != "" and isinstance(data, unicode):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.NameIdx = vendor_spec_strings.index(data)+1
@@ -988,11 +996,11 @@ class _CommonSlave:
                 for character in range(len(data)):
                     vendor_specific_data += "{:0>2x}".format(ord(data[character]))
         data = ""
-        
+
         #  element5-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Image16x14>
         if device.getcontent() is not None:
             data = device.getcontent()
-            if data is not None and type(data) == unicode:
+            if data is not None and isinstance(data, unicode):
                 for vendor_spec_string in vendor_spec_strings:
                     if data == vendor_spec_string:
                         self.ImgIdx = vendor_spec_strings.index(data)+1
@@ -1007,16 +1015,16 @@ class _CommonSlave:
                     vendor_specific_data += "{:0>2x}".format(len(data))
                     for character in range(len(data)):
                         vendor_specific_data += "{:0>2x}".format(ord(data[character]))
-                        
+
         #  element5-2; <EtherCATInfo>-<Descriptions>-<Groups>-<Group>-<Image16x14>
         if imageflag is False:
             if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-                for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
                     for group_type, group_etc in vendor["groups"].iteritems():
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_etc
-                if data is not None and type(data) == unicode:
+                if data is not None and isinstance(data, unicode):
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
                             self.ImgIdx = vendor_spec_strings.index(data)+1
@@ -1032,21 +1040,21 @@ class _CommonSlave:
                         for character in range(len(data)):
                             vendor_specific_data += "{:0>2x}".format(ord(data[character]))
         data = ""
-        
+
         # DC related elements
         #  <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Dc>-<OpMode>-<Name>
         dc_related_elements = ""
         if device.getDc() is not None:
             for element in device.getDc().getOpMode():
                 data = element.getName()
-                if data is not "":
+                if data != "":
                     count += 1
                     self.Strings.append(data)
                     dc_related_elements += "{:0>2x}".format(len(data))
                     for character in range(len(data)):
                         dc_related_elements += "{:0>2x}".format(ord(data[character]))
                     data = ""
-        
+
         # Input elements(TxPDO)
         #  <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<TxPdo>; Name
         input_elements = ""
@@ -1055,23 +1063,23 @@ class _CommonSlave:
             for name in element.getName():
                 data = name.getcontent()
             for input in inputs:
-                if data == input: 
+                if data == input:
                     data = ""
-            if data is not "":
+            if data != "":
                 count += 1
                 self.Strings.append(data)
                 inputs.append(data)
                 input_elements += "{:0>2x}".format(len(data))
                 for character in range(len(data)):
                     input_elements += "{:0>2x}".format(ord(data[character]))
-                data = ""            
+                data = ""
             for entry in element.getEntry():
                 for name in entry.getName():
                     data = name.getcontent()
                 for input in inputs:
-                    if data == input: 
+                    if data == input:
                         data = ""
-                if data is not "":
+                if data != "":
                     count += 1
                     self.Strings.append(data)
                     inputs.append(data)
@@ -1079,7 +1087,7 @@ class _CommonSlave:
                     for character in range(len(data)):
                         input_elements += "{:0>2x}".format(ord(data[character]))
                     data = ""
-        
+
         # Output elements(RxPDO)
         #  <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<RxPdo>; Name
         output_elements = ""
@@ -1088,41 +1096,41 @@ class _CommonSlave:
             for name in element.getName():
                 data = name.getcontent()
             for output in outputs:
-                if data == output: 
+                if data == output:
                     data = ""
-            if data is not "":
+            if data != "":
                 count += 1
                 self.Strings.append(data)
                 outputs.append(data)
                 output_elements += "{:0>2x}".format(len(data))
                 for character in range(len(data)):
                     output_elements += "{:0>2x}".format(ord(data[character]))
-                data = ""            
+                data = ""
             for entry in element.getEntry():
                 for name in entry.getName():
                     data = name.getcontent()
                 for output in outputs:
-                    if data == output: 
+                    if data == output:
                         data = ""
-                if data is not "":
+                if data != "":
                     count += 1
                     self.Strings.append(data)
                     outputs.append(data)
                     output_elements += "{:0>2x}".format(len(data))
                     for character in range(len(data)):
                         output_elements += "{:0>2x}".format(ord(data[character]))
-                    data = ""     
-        
+                    data = ""
+
         # form eeprom data
         #  category header
         eeprom.append("0a")
         eeprom.append("00")
         #  category length (word); 1 word is 4 bytes. "+2" is the length of string's total number
         length = len(vendor_specific_data + dc_related_elements + input_elements + output_elements) + 2
-        if length%4 == 0:
+        if length % 4 == 0:
             pass
         else:
-            length +=length%4
+            length += length % 4
             padflag = True
         eeprom.append("{:0>4x}".format(length/4)[2:4])
         eeprom.append("{:0>4x}".format(length/4)[0:2])
@@ -1132,58 +1140,57 @@ class _CommonSlave:
                         dc_related_elements,
                         input_elements,
                         output_elements]:
-            for iter in range(len(element)/2):
+            for dummy in range(len(element)/2):
                 if element == "":
                     eeprom.append("00")
                 else:
                     eeprom.append(element[0:2])
-                element = element[2:len(element)]     
-        # padding if length is odd bytes 
+                element = element[2:len(element)]
+        # padding if length is odd bytes
         if padflag is True:
             eeprom.append("ff")
-        
+
         return eeprom
-    
+
     def ExtractEEPROMGeneralCategory(self, device):
         """
         Extract "General" category data from slave ESI XML and generate EEPROM image data.
         @param device : 'device' object in the slave ESI XML
         @return eeprom : "Strings" category EEPROM image data
-        """ 
+        """
         eeprom = []
-        data = ""
-        
+
         # category header
         eeprom.append("1e")
         eeprom.append("00")
-        
+
         # category length
         eeprom.append("10")
         eeprom.append("00")
-        
+
         # word 1 : Group Type index and Image index in STRINGS Category
         eeprom.append("{:0>2x}".format(self.GroupIdx))
         eeprom.append("{:0>2x}".format(self.ImgIdx))
-        
+
         # word 2 : Device Type index and Device Name index in STRINGS Category
         eeprom.append("{:0>2x}".format(self.OrderIdx))
         eeprom.append("{:0>2x}".format(self.NameIdx))
-        
+
         # word 3 : Physical Layer Port info. and CoE Details
-        eeprom.append("01") # Physical Layer Port info - assume 01
+        eeprom.append("01")  # Physical Layer Port info - assume 01
         #  CoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>
         coe_details = 0
         mb = device.getMailbox()
-        coe_details = 1 # sdo enabled
-        if mb is not None :
+        coe_details = 1  # sdo enabled
+        if mb is not None:
             coe = mb.getCoE()
             if coe is not None:
-                for bit,flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig", 
-                                           "PdoUpload", "CompleteAccess"]):
-                    if getattr(coe,"get%s"%flag)() is not None:
-                        coe_details += 1<<bit        
+                for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
+                                            "PdoUpload", "CompleteAccess"]):
+                    if getattr(coe, "get%s" % flag)() is not None:
+                        coe_details += 1 << bit
         eeprom.append("{:0>2x}".format(coe_details))
-        
+
         # word 4 : FoE Details and EoE Details
         #  FoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<FoE>
         if mb is not None and mb.getFoE() is not None:
@@ -1195,7 +1202,7 @@ class _CommonSlave:
             eeprom.append("01")
         else:
             eeprom.append("00")
-            
+
         # word 5 : SoE Channels(reserved) and DS402 Channels
         #  SoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<SoE>
         if mb is not None and mb.getSoE() is not None:
@@ -1204,27 +1211,27 @@ class _CommonSlave:
             eeprom.append("00")
         #  DS402Channels; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>: DS402Channels
         ds402ch = False
-        if mb is not None :
+        if mb is not None:
             coe = mb.getCoE()
-            if coe is not None :
+            if coe is not None:
                 ds402ch = coe.getDS402Channels()
-        eeprom.append("01" if ds402ch in [True,1] else "00")
-            
+        eeprom.append("01" if ds402ch in [True, 1] else "00")
+
         # word 6 : SysmanClass(reserved) and Flags
-        eeprom.append("00") # reserved
-        #  Flags 
+        eeprom.append("00")  # reserved
+        #  Flags
         en_safeop = False
         en_lrw = False
-        if device.getType().getTcCfgModeSafeOp() == True \
-        or device.getType().getTcCfgModeSafeOp() == 1:
+        if device.getType().getTcCfgModeSafeOp() is True \
+           or device.getType().getTcCfgModeSafeOp() == 1:
             en_safeop = True
-        if device.getType().getUseLrdLwr() == True \
-        or device.getType().getUseLrdLwr() == 1:
+        if device.getType().getUseLrdLwr() is True \
+           or device.getType().getUseLrdLwr() == 1:
             en_lrw = True
-        
+
         flags = "0b"+"000000"+str(int(en_lrw))+str(int(en_safeop))
         eeprom.append("{:0>2x}".format(int(flags, 2)))
-            
+
         # word 7 : Current On EBus (assume 0x0000)
         eeprom.append("00")
         eeprom.append("00")
@@ -1247,20 +1254,20 @@ class _CommonSlave:
         eeprom.append("00")
         eeprom.append("00")
         eeprom.append("00")
-        
+
         return eeprom
-    
+
     def ExtractEEPROMFMMUCategory(self, device):
         """
         Extract "FMMU" category data from slave ESI XML and generate EEPROM image data.
         @param device : 'device' object in the slave ESI XML
         @return eeprom : "Strings" category EEPROM image data
-        """ 
+        """
         eeprom = []
         data = ""
-        count = 0 # number of FMMU
+        count = 0  # number of FMMU
         padflag = False
-        
+
         for fmmu in device.getFmmu():
             count += 1
             if fmmu.getcontent() == "Outputs":
@@ -1269,42 +1276,42 @@ class _CommonSlave:
                 data += "02"
             if fmmu.getcontent() == "MBoxState":
                 data += "03"
-        
+
         # construct of EEPROM data
-        if data is not "":
+        if data != "":
             #  category header
             eeprom.append("28")
             eeprom.append("00")
             #  category length
-            if count%2 == 1:
+            if count % 2 == 1:
                 padflag = True
                 eeprom.append("{:0>4x}".format((count+1)/2)[2:4])
                 eeprom.append("{:0>4x}".format((count+1)/2)[0:2])
-            else: 
+            else:
                 eeprom.append("{:0>4x}".format((count)/2)[2:4])
                 eeprom.append("{:0>4x}".format((count)/2)[0:2])
-            for i in range(count):
+            for dummy in range(count):
                 if data == "":
                     eeprom.append("00")
                 else:
                     eeprom.append(data[0:2])
                 data = data[2:len(data)]
-            #  padding if length is odd bytes 
+            #  padding if length is odd bytes
             if padflag is True:
-                eeprom.append("ff")       
-            
+                eeprom.append("ff")
+
         return eeprom
-    
+
     def ExtractEEPROMSyncMCategory(self, device):
         """
         Extract "SyncM" category data from slave ESI XML and generate EEPROM image data.
         @param device : 'device' object in the slave ESI XML
         @return eeprom : "Strings" category EEPROM image data
-        """ 
+        """
         eeprom = []
         data = ""
-        number = {"MBoxOut":"01", "MBoxIn":"02", "Outputs":"03", "Inputs":"04"}
-        
+        number = {"MBoxOut": "01", "MBoxIn": "02", "Outputs": "03", "Inputs": "04"}
+
         for sm in device.getSm():
             for attr in [sm.getStartAddress(),
                          sm.getDefaultSize(),
@@ -1313,21 +1320,21 @@ class _CommonSlave:
                     data += "{:0>4x}".format(ExtractHexDecValue(attr))[2:4]
                     data += "{:0>4x}".format(ExtractHexDecValue(attr))[0:2]
                 else:
-                    data += "0000"  
-            if sm.getEnable() == "1" or sm.getEnable() == True:
+                    data += "0000"
+            if sm.getEnable() == "1" or sm.getEnable() is True:
                 data += "01"
             else:
                 data += "00"
             data += number[sm.getcontent()]
-            
-        if data is not "":
+
+        if data != "":
             #  category header
             eeprom.append("29")
             eeprom.append("00")
-            #  category length 
+            #  category length
             eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
             eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
-            for i in range(len(data)/2):
+            for dummy in range(len(data)/2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1335,22 +1342,22 @@ class _CommonSlave:
                 data = data[2:len(data)]
 
         return eeprom
-    
+
     def ExtractEEPROMPDOCategory(self, device, pdotype):
         """
         Extract ""PDO (Tx, Rx)"" category data from slave ESI XML and generate EEPROM image data.
         @param device : 'device' object in the slave ESI XML
         @param pdotype : identifier whether "TxPDO" or "RxPDO".
         @return eeprom : "Strings" category EEPROM image data
-        """ 
+        """
         eeprom = []
         data = ""
         count = 0
         en_fixed = False
         en_mandatory = False
         en_virtual = False
-        
-        for element in eval("device.get%s()"%pdotype):
+
+        for element in eval("device.get%s()" % pdotype):
             #  PDO Index
             data += "{:0>4x}".format(ExtractHexDecValue(element.getIndex().getcontent()))[2:4]
             data += "{:0>4x}".format(ExtractHexDecValue(element.getIndex().getcontent()))[0:2]
@@ -1377,14 +1384,14 @@ class _CommonSlave:
                 data += "{:0>2x}".format(count)
             count = 0
             #  Flags; by Fixed, Mandatory, Virtual attributes ?
-            if element.getFixed() == True or 1:
+            if element.getFixed() is True or 1:
                 en_fixed = True
-            if element.getMandatory() == True or 1:
+            if element.getMandatory() is True or 1:
                 en_mandatory = True
-            if element.getVirtual() == True or element.getVirtual():
+            if element.getVirtual() is True or element.getVirtual():
                 en_virtual = True
             data += str(int(en_fixed)) + str(int(en_mandatory)) + str(int(en_virtual)) + "0"
-            
+
             for entry in element.getEntry():
                 #   Entry Index
                 data += "{:0>4x}".format(ExtractHexDecValue(entry.getIndex().getcontent()))[2:4]
@@ -1419,11 +1426,11 @@ class _CommonSlave:
                     data += "00"
                 #   Flags; by Fixed attributes ?
                 en_fixed = False
-                if entry.getFixed() == True or entry.getFixed() == 1:
+                if entry.getFixed() is True or entry.getFixed() == 1:
                     en_fixed = True
                 data += str(int(en_fixed)) + "000"
-        
-        if data is not "":
+
+        if data != "":
             #  category header
             if pdotype == "TxPdo":
                 eeprom.append("32")
@@ -1432,30 +1439,30 @@ class _CommonSlave:
             else:
                 eeprom.append("00")
             eeprom.append("00")
-            #  category length 
+            #  category length
             eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
             eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
             data = str(data.lower())
-            for i in range(len(data)/2):
+            for dummy in range(len(data)/2):
                 if data == "":
                     eeprom.append("00")
                 else:
                     eeprom.append(data[0:2])
                 data = data[2:len(data)]
-        
+
         return eeprom
-    
+
     def ExtractEEPROMDCCategory(self, device):
         """
         Extract "DC(Distributed Clock)" category data from slave ESI XML and generate EEPROM image data.
         @param device : 'device' object in the slave ESI XML
         @return eeprom : "Strings" category EEPROM image data
-        """ 
+        """
         eeprom = []
         data = ""
         count = 0
         namecount = 0
-        
+
         if device.getDc() is not None:
             for element in device.getDc().getOpMode():
                 count += 1
@@ -1501,27 +1508,27 @@ class _CommonSlave:
                 #  assume that word 11-12 are 0x0000
                 data += "0000"
                 data += "0000"
-                
-        if data is not "":
+
+        if data != "":
             #  category header
             eeprom.append("3c")
             eeprom.append("00")
-            #  category length 
+            #  category length
             eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
             eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
             data = str(data.lower())
-            for i in range(len(data)/2):
+            for dummy in range(len(data)/2):
                 if data == "":
                     eeprom.append("00")
                 else:
                     eeprom.append(data[0:2])
                 data = data[2:len(data)]
-    
+
         return eeprom
-    
-    #-------------------------------------------------------------------------------
+
+    # -------------------------------------------------------------------------------
     #                        Used Register Access
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def RegRead(self, offset, length):
         """
         Read slave ESC register content using "ethercat reg_read -p %d %s %s" command.
@@ -1529,10 +1536,12 @@ class _CommonSlave:
         @param offset : register address
         @param length : register length
         @return return_val : register data
-        """ 
-        error, return_val = self.Controler.RemoteExec(REG_READ%(self.Controler.GetSlavePos(), offset, length), return_val = None)
-        return return_val   
-    
+        """
+        _error, return_val = self.Controler.RemoteExec(
+            REG_READ % (self.Controler.GetSlavePos(), offset, length),
+            return_val=None)
+        return return_val
+
     def RegWrite(self, address, data):
         """
         Write data to slave ESC register using "ethercat reg_write -p %d %s %s" command.
@@ -1540,52 +1549,54 @@ class _CommonSlave:
         @param address : register address
         @param data : data to write
         @return return_val : the execution result of "ethercat reg_write" (for error check)
-        """ 
-        error, return_val = self.Controler.RemoteExec(REG_WRITE%(self.Controler.GetSlavePos(), address, data), return_val = None)
-        return return_val 
-    
+        """
+        _error, return_val = self.Controler.RemoteExec(
+            REG_WRITE % (self.Controler.GetSlavePos(), address, data),
+            return_val=None)
+        return return_val
+
     def Rescan(self):
         """
         Synchronize EEPROM data in master controller with the data in slave device after EEPROM write.
         Command example : "ethercat rescan -p 0"
-        """ 
-        error, return_val = self.Controler.RemoteExec(RESCAN%(self.Controler.GetSlavePos()), return_val = None)
-    
-    #-------------------------------------------------------------------------------
+        """
+        _error, _return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val=None)
+
+    # -------------------------------------------------------------------------------
     #                        Common Use Methods
-    #-------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------
     def CheckConnect(self, cyclic_flag):
         """
-        Check connection status (1) between Beremiz and the master (2) between the master and the slave. 
+        Check connection status (1) between Beremiz and the master (2) between the master and the slave.
         @param cyclic_flag: 0 - one shot, 1 - periodic
         @return True or False
-        """ 
+        """
         if self.Controler.GetCTRoot()._connector is not None:
-            # Check connection between the master and the slave. 
+            # Check connection between the master and the slave.
             # Command example : "ethercat xml -p 0"
-            error, return_val = self.Controler.RemoteExec(SLAVE_XML%(self.Controler.GetSlavePos()), return_val = None)
+            _error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val=None)
             number_of_lines = return_val.split("\n")
-            if len(number_of_lines) <= 2 :  # No slave connected to the master controller
-                if not cyclic_flag :
-                    self.CreateErrorDialog('No connected slaves')
+            if len(number_of_lines) <= 2:  # No slave connected to the master controller
+                if not cyclic_flag:
+                    self.CreateErrorDialog(_('No connected slaves'))
                 return False
-        
-            elif len(number_of_lines) > 2 :
+
+            elif len(number_of_lines) > 2:
                 return True
-        else:                               
+        else:
             # The master controller is not connected to Beremiz host
-            if not cyclic_flag :
-                self.CreateErrorDialog('PLC not connected!')
+            if not cyclic_flag:
+                self.CreateErrorDialog(_('PLC not connected!'))
             return False
-        
+
     def CreateErrorDialog(self, mention):
         """
         Create a dialog to indicate error or warning.
         @param mention : Error String
-        """ 
+        """
         app_frame = self.Controler.GetCTRoot().AppFrame
-        dlg = wx.MessageDialog (app_frame, mention, 
-                                ' Warning...', 
-                                wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(app_frame, mention,
+                               _(' Warning...'),
+                               wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
-        dlg.Destroy()             
+        dlg.Destroy()

@@ -97,9 +97,29 @@ __version__ = "$Revision: 1.5 $"
 # -----------------------------------------------------------------------------
 
 
+def getSupportedLanguageDict(appname):
+    """
+    Returns dictionary with languages already supported
+    by given application
+
+    param: appname:
+        name of application
+    """
+    languageDict = {}
+    ext = '.po'
+    files = [x for x in os.listdir('.')
+             if x.startswith(appname) and x.endswith(ext)]
+
+    langs = [x.split(appname + '_')[1].split(ext)[0] for x in files]
+    for lang in langs:
+        languageDict[lang] = lang
+
+    return languageDict
+
+
 def getlanguageDict():
     languageDict = {}
-
+    getSupportedLanguageDict('Beremiz')
     if wx.VERSION >= (3, 0, 0):
         _app = wx.App()
     else:
@@ -205,7 +225,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     verbosePrint(verbose, cmd)
     os.system(cmd)
 
-    languageDict = getlanguageDict()
+    languageDict = getSupportedLanguageDict(applicationName)
 
     for langCode in languageDict.keys():
         if langCode == 'en':
@@ -230,7 +250,7 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
     currentDir = os.getcwd()
     os.chdir(applicationDirectoryPath)
 
-    languageDict = getlanguageDict()
+    languageDict = getSupportedLanguageDict(applicationName)
 
     for langCode in languageDict.keys():
         if langCode == 'en':
@@ -284,7 +304,7 @@ def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=Non
     currentDir = os.getcwd()
     os.chdir(applicationDirectoryPath)
 
-    languageDict = getlanguageDict()
+    languageDict = getSupportedLanguageDict(applicationName)
 
     for langCode in languageDict.keys():
         if (langCode == 'en') and (forceEnglish == 0):
@@ -466,7 +486,7 @@ if __name__ == "__main__":
     exit_code = 1
     try:
         optionList, pargs = getopt.getopt(sys.argv[1:], validOptions, validLongOptions)
-    except getopt.GetoptError, e:
+    except getopt.GetoptError as e:
         printUsage(e[0])
         sys.exit(1)
     for (opt, val) in optionList:
@@ -492,7 +512,7 @@ if __name__ == "__main__":
         try:
             makePO(appDirPath, option['domain'], option['verbose'])
             exit_code = 0
-        except IOError, e:
+        except IOError as e:
             printUsage(e[1] + '\n   You must write a file app.fil that contains the list of all files to parse.')
     if option['mo']:
         makeMO(appDirPath, option['moTarget'], option['domain'], option['verbose'], option['forceEnglish'])
