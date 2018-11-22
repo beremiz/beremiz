@@ -34,6 +34,7 @@ import _ctypes  # pylint: disable=wrong-import-order
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
 from runtime.Stunnel import getPSKID
+from runtime import PlcStatus
 from runtime import MainWorker
 
 if os.name in ("nt", "ce"):
@@ -75,7 +76,7 @@ class PLCObject(object):
         self.statuschange = statuschange
         self.evaluator = evaluator
         self.pyruntimevars = pyruntimevars
-        self.PLCStatus = "Empty"
+        self.PLCStatus = PlcStatus.Empty
         self.PLClibraryHandle = None
         self.PLClibraryLock = Lock()
         # Creates fake C funcs proxies
@@ -396,17 +397,17 @@ class PLCObject(object):
                 else:
                     res = str(result)
                 self.python_runtime_vars["FBID"] = None
-            except Exception, e:
+            except Exception as e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
 
     @RunInMain
     def StartPLC(self):
-        if self.CurrentPLCFilename is not None and self.PLCStatus == "Stopped":
+        if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
             c_argv = ctypes.c_char_p * len(self.argv)
             res = self._startPLC(len(self.argv), c_argv(*self.argv))
             if res == 0:
-                self.PLCStatus = "Started"
+                self.PLCStatus = PlcStatus.Started
                 self.StatusChange()
                 self.PythonRuntimeCall("start")
                 self.StartSem = Semaphore(0)
@@ -416,16 +417,16 @@ class PLCObject(object):
                 self.LogMessage("PLC started")
             else:
                 self.LogMessage(0, _("Problem starting PLC : error %d" % res))
-                self.PLCStatus = "Broken"
+                self.PLCStatus = PlcStatus.Broken
                 self.StatusChange()
 
     @RunInMain
     def StopPLC(self):
-        if self.PLCStatus == "Started":
+        if self.PLCStatus == PlcStatus.Started:
             self.LogMessage("PLC stopped")
             self._stopPLC()
             self.PythonThread.join()
-            self.PLCStatus = "Stopped"
+            self.PLCStatus = PlcStatus.Stopped
             self.StatusChange()
             self.PythonRuntimeCall("stop")
             if self.TraceThread is not None:
@@ -444,7 +445,7 @@ class PLCObject(object):
 
     @RunInMain
     def NewPLC(self, md5sum, data, extrafiles):
-        if self.PLCStatus in ["Stopped", "Empty", "Broken"]:
+        if self.PLCStatus in [PlcStatus.Stopped, PlcStatus.Empty, PlcStatus.Broken]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir, "extra_files.txt")
 
@@ -460,7 +461,7 @@ class PLCObject(object):
                 self.UnLoadPLC()
 
             self.LogMessage("NewPLC (%s)" % md5sum)
-            self.PLCStatus = "Empty"
+            self.PLCStatus = PlcStatus.Empty
 
             try:
                 if replace_PLC_shared_object:
@@ -491,20 +492,20 @@ class PLCObject(object):
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName
             except Exception:
-                self.PLCStatus = "Broken"
+                self.PLCStatus = PlcStatus.Broken
                 self.StatusChange()
                 PLCprint(traceback.format_exc())
                 return False
 
             if not replace_PLC_shared_object:
-                self.PLCStatus = "Stopped"
+                self.PLCStatus = PlcStatus.Stopped
             elif self.LoadPLC():
-                self.PLCStatus = "Stopped"
+                self.PLCStatus = PlcStatus.Stopped
             else:
-                self.PLCStatus = "Broken"
+                self.PLCStatus = PlcStatus.Broken
             self.StatusChange()
 
-            return self.PLCStatus == "Stopped"
+            return self.PLCStatus == PlcStatus.Stopped
         return False
 
     def MatchMD5(self, MD5):
@@ -539,7 +540,7 @@ class PLCObject(object):
 
     def _TracesSwap(self):
         self.LastSwapTrace = time()
-        if self.TraceThread is None and self.PLCStatus == "Started":
+        if self.TraceThread is None and self.PLCStatus == PlcStatus.Started:
             self.TraceThread = Thread(target=self.TraceThreadProc)
             self.TraceThread.start()
         self.TraceLock.acquire()
@@ -557,7 +558,7 @@ class PLCObject(object):
         Return a list of traces, corresponding to the list of required idx
         """
         self._resumeDebug()  # Re-enable debugger
-        while self.PLCStatus == "Started":
+        while self.PLCStatus == PlcStatus.Started:
             tick = ctypes.c_uint32()
             size = ctypes.c_uint32()
             buff = ctypes.c_void_p()
@@ -600,7 +601,7 @@ class PLCObject(object):
 
     def RemoteExec(self, script, *kwargs):
         try:
-            exec script in kwargs
+            exec(script, kwargs)
         except Exception:
             _e_type, e_value, e_traceback = sys.exc_info()
             line_no = traceback.tb_lineno(get_last_traceback(e_traceback))

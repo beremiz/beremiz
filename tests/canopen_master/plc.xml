@@ -1,15 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://www.plcopen.org/xml/tc6.xsd"
-         xmlns:xhtml="http://www.w3.org/1999/xhtml"
-         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd">
-  <fileHeader companyName="beremiz"
-              productName="beremiz"
-              productVersion="1"
-              creationDateTime="2008-06-24T18:44:00"/>
-  <contentHeader name="canopen_master"
-                 modificationDateTime="2009-10-07T18:45:11"
-                 language="en-US">
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="beremiz" productName="beremiz" productVersion="1" creationDateTime="2008-06-24T18:44:00"/>
+  <contentHeader name="canopen_master" modificationDateTime="2018-09-26T13:31:52" language="en-US">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -42,14 +34,12 @@
         </interface>
         <body>
           <FBD>
-            <outVariable localId="1" height="29" width="80">
-              <position x="362" y="140"/>
+            <outVariable localId="1" height="29" width="80" executionOrderId="0" negated="false">
+              <position x="362" y="139"/>
               <connectionPointIn>
                 <relPosition x="0" y="14"/>
                 <connection refLocalId="4" formalParameter="OUT">
-                  <position x="362" y="154"/>
-                  <position x="330" y="154"/>
-                  <position x="330" y="153"/>
+                  <position x="362" y="153"/>
                   <position x="299" y="153"/>
                 </connection>
               </connectionPointIn>

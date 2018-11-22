@@ -451,7 +451,7 @@ class _NodeListCTN(NodeList):
         # Create a new copy of the model with DCF loaded with PDO mappings for desired location
         try:
             master, pointers = config_utils.GenerateConciseDCF(locations, current_location, self, self.CanFestivalNode.getSync_TPDOs(), "OD_%s" % prefix)
-        except config_utils.PDOmappingException, e:
+        except config_utils.PDOmappingException as e:
             raise Exception(e.message)
         # Do generate C file.
         res = gen_cfile.GenerateFile(Gen_OD_path, master, pointers)

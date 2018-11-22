@@ -1331,8 +1331,8 @@ class Translator(object):
                 %(lhs)s %(op)s %(iterator_name)s.next();
                 %(assign_tuple)s
         """ % loc_dict)
-        for node in node.body.nodes:
-            self._stmt(node, current_klass)
+        for n in node.body.nodes:
+            self._stmt(n, current_klass)
         self.printo("""
             }
         } catch (e) {

@@ -1,6 +1,9 @@
 .project
 
 .directory
+.pytest_cache
+.cache
+.coverage_full
 
 syntax: regexp
 ^tests/.*/build$

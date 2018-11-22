@@ -570,14 +570,16 @@ class RootClass(object):
         # the GUI) are valid...
         if self.HasDuplicateObjectNames():
             self.GetCTRoot().logger.write_warning(
-                _("Error: BACnet server '%s.x: %s' contains objects with duplicate object names.\n") % (locstr, self.CTNName()))
+                _("Error: BACnet server '{a1}.x:{a2}' contains objects with duplicate object names.\n").
+                format(a1=locstr, a2=self.CTNName()))
             raise Exception(False)
             # TODO: return an error code instead of raising an exception
             # (currently unsupported by Beremiz)
 
         if self.HasDuplicateObjectIDs():
             self.GetCTRoot().logger.write_warning(
-                _("Error: BACnet server '%s.x: %s' contains objects with duplicate object identifiers.\n") % (locstr, self.CTNName()))
+                _("Error: BACnet server '{a1}.x: {a2}' contains objects with duplicate object identifiers.\n").
+                format(a1=locstr, a2=self.CTNName()))
             raise Exception(False)
             # TODO: return an error code instead of raising an exception
             # (currently unsupported by Beremiz)

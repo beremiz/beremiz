@@ -52,6 +52,47 @@ compile_checks()
     echo ""
 }
 
+
+python3_compile_checks()
+{
+    echo "Syntax checking using python3 ..."
+    python3 --version
+
+    # remove compiled Python files
+    find . -name '*.pyc' -exec rm -f {} \;
+
+    for i in $py_files; do
+        # echo $i
+        python3 -m py_compile $i
+        if [ $? -ne 0 ]; then
+            echo "Syntax error in $i"
+            set_exit_error
+        fi
+    done
+
+    # remove compiled Python files
+    find . -name '*.pyc' -exec rm -f {} \;
+
+    echo "DONE"
+    echo ""
+}
+
+localization_checks()
+{
+    echo "Check correct localization formats"
+    xgettext --version
+    
+    for i in $py_files; do
+        xgettext -s --language=Python --package-name Beremiz --output=/tmp/m.pot $i 2>&1 | grep 'warning'
+        if [ $? -eq 0 ]; then
+            echo "Syntax error in $i"
+            set_exit_error
+        fi
+    done
+    echo "DONE"
+    echo ""
+}
+
 # pep8 was renamed to pycodestyle
 # detect existed version
 pep8_detect()
@@ -116,6 +157,7 @@ pep8_checks_selected()
     user_select=$user_select,E228   # E228 missing whitespace around modulo operator
     user_select=$user_select,W293   # W293 blank line contains whitespace
     user_select=$user_select,E302   # E302 expected 2 blank lines, found 1
+    user_select=$user_select,E301   # E301 expected 2 blank lines, found 1
     user_select=$user_select,E261   # E261 at least two spaces before inline comment
     user_select=$user_select,E271   # E271 multiple spaces after keyword
     user_select=$user_select,E231   # E231 missing whitespace after ','
@@ -225,6 +267,10 @@ pylint_checks()
     disable=$disable,R0201        # (no-self-use) Method could be a function
     disable=$disable,W0221        # (arguments-differ) Arguments number differs from overridden 'X' method
     disable=$disable,C0201        # (consider-iterating-dictionary) Consider iterating the dictionary directly instead of calling .keys()
+    disable=$disable,W0201        # (attribute-defined-outside-init) Attribute 'X' defined outside __init__
+    disable=$disable,I1101        # (c-extension-no-member) Module 'lxml.etree' has not 'X' member,
+                                  # but source is unavailable. Consider adding this module to extension-pkg-whitelist
+                                  # if you want to perform analysis based on run-time introspection of living objects.
 
     # It'd be nice to fix warnings below some day
     disable=$disable,C0111        # missing-docstring
@@ -244,8 +290,11 @@ pylint_checks()
     disable=$disable,R0916        # (too-many-boolean-expressions) Too many boolean expressions in if statement (6/5)
     disable=$disable,R0101        # (too-many-nested-blocks) Too many nested blocks (7/5)
     disable=$disable,R0801        # (duplicate-code) Similar lines in N files
-
-
+    disable=$disable,W0401        # (wildcard-import) Wildcard import 
+    disable=$disable,W0614        # (unused-wildcard-import), ] Unused import X from wildcard import
+    disable=$disable,W0212        # (protected-access) Access to a protected member X of a Y class
+    disable=$disable,E1101        # (no-member) Instance of 'X' has no 'Y' member
+    
     enable=
     enable=$enable,E1601          # print statement used
     enable=$enable,C0325          # (superfluous-parens) Unnecessary parens after keyword
@@ -260,11 +309,9 @@ pylint_checks()
     enable=$enable,W0101          # (unreachable) Unreachable code
     enable=$enable,E0102          # (function-redefined) method already defined
     enable=$enable,W0602          # (global-variable-not-assigned) Using global for 'X' but no assignment is done
-    enable=$enable,W0612          # (unused-variable) Unused variable 'X'
     enable=$enable,W0611          # (unused-import) Unused import X
     enable=$enable,C1001          # (old-style-class) Old-style class defined. Problem with PyJS
     enable=$enable,W0102          # (dangerous-default-value) Dangerous default value {} as argument
-    enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y'
     enable=$enable,C0112          # (empty-docstring)
     enable=$enable,W0631          # (undefined-loop-variable) Using possibly undefined loop variable 'X'
     enable=$enable,W0104          # (pointless-statement) Statement seems to have no effect
@@ -281,15 +328,25 @@ pylint_checks()
     enable=$enable,E0213          # (no-self-argument) Method should have "self" as first argument
     enable=$enable,E0401          # (import-error) Unable to import 'X'
     enable=$enable,E1121          # (too-many-function-args) Too many positional arguments for function call
-    enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
     enable=$enable,W0232          # (no-init) Class has no __init__ method
     enable=$enable,W0233          # (non-parent-init-called) __init__ method from a non direct base class 'X' is called
     enable=$enable,W0601          # (global-variable-undefined) Global variable 'X' undefined at the module level
+    enable=$enable,W0111          # (assign-to-new-keyword) Name async will become a keyword in Python 3.7
     enable=$enable,W0623          # (redefine-in-handler) Redefining name 'X' from outer scope (line Y) in exception handler
+    enable=$enable,W0109          # (duplicate-key) Duplicate key 'X' in dictionary
+    enable=$enable,E1310          # (bad-str-strip-call) Suspicious argument in str.strip call
+    enable=$enable,E1300          # (bad-format-character) Unsupported format character '"' (0x22) at index 17
+    enable=$enable,E1304          # (missing-format-string-key) Missing key 'X_name' in format string dictionary
+    enable=$enable,R1701          # (consider-merging-isinstance) Consider merging these isinstance calls to isinstance(CTNLDFLAGS, (str, unicode))
+    enable=$enable,R1704          # (redefined-argument-from-local) Redefining argument with the local name 'Y'
     enable=$enable,W0106          # (expression-not-assigned) Expression "X" is assigned to nothing
-    enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     enable=$enable,E1136          # (unsubscriptable-object) Value 'X' is unsubscriptable
+    enable=$enable,E0602          # (undefined-variable) Undefined variable 'X'
     enable=$enable,W1618          # (no-absolute-import) import missing `from __future__ import absolute_import`
+    enable=$enable,W0403          # (relative-import) Relative import 'Y', should be 'X.Y '
+    enable=$enable,W0612          # (unused-variable) Unused variable 'X'
+    enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
+    enable=$enable,R0123          # (literal-comparison) Comparison to literal
     # enable=
 
     options=
@@ -316,7 +373,7 @@ pylint_checks()
 
 get_files_to_check()
 {
-    py_files=$(find . -name '*.py' -not -path '*/build/*' -not -path './etherlab/*')
+    py_files=$(find . -name '*.py' -not -path '*/build/*')
     if [ -e .hg/skiphook ]; then
 	echo "Skipping checks in the hook ..."
 	exit 0
@@ -375,7 +432,9 @@ print_help()
 main()
 {
     get_files_to_check $@
+    python3_compile_checks
     compile_checks
+    localization_checks
     pep8_checks_default
     # pep8_checks_selected
 

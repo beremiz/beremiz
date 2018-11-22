@@ -123,7 +123,7 @@ class CodeFile(object):
                     (fname, lnum, src) = ((self.CODEFILE_NAME,) + error)
                     self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 self.CreateCodeFileBuffer(True)
-            except Exception, exc:
+            except Exception as exc:
                 msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=self.CTNName(), a2=unicode(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())

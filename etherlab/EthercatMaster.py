@@ -9,34 +9,40 @@
 #
 # See COPYING file for copyrights details.
 
+from __future__ import absolute_import
 import os
-import cPickle
-from lxml import etree
 from copy import deepcopy
+from lxml import etree
 
 import wx
 
 from xmlclass import *
 
-from PLCControler import UndoBuffer, LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from PLCControler import UndoBuffer, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
 from ConfigTreeNode import ConfigTreeNode
 from dialogs import BrowseValuesLibraryDialog
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE
-
-from EthercatSlave import _EthercatSlaveCTN, ExtractHexDecValue, GenerateHexDecValue, TYPECONVERSION, VARCLASSCONVERSION, _CommonSlave
-from EthercatCFileGenerator import _EthercatCFileGenerator
-from ConfigEditor import MasterEditor
 from POULibrary import POULibrary
 
+from etherlab.ConfigEditor import MasterEditor
+from etherlab.EthercatCFileGenerator import _EthercatCFileGenerator
+from etherlab.EthercatSlave import \
+    _EthercatSlaveCTN, \
+    ExtractHexDecValue, \
+    GenerateHexDecValue, \
+    TYPECONVERSION, \
+    VARCLASSCONVERSION, \
+    _CommonSlave
+
 try:
-    from EthercatCIA402Slave import _EthercatCIA402SlaveCTN
+    from etherlab.EthercatCIA402Slave import _EthercatCIA402SlaveCTN
     HAS_MCL = True
-except:
+except Exception:
     HAS_MCL = False
 
-#--------------------------------------------------
+# --------------------------------------------------
 #         Remote Exec Etherlab Commands
-#--------------------------------------------------
+# --------------------------------------------------
 
 SCAN_COMMAND = """
 import commands
@@ -64,12 +70,14 @@ for slave_line in result.splitlines():
 returnVal = slaves
 """
 
-#--------------------------------------------------
+# --------------------------------------------------
 #      Etherlab Specific Blocks Library
-#--------------------------------------------------
+# --------------------------------------------------
+
 
 def GetLocalPath(filename):
     return os.path.join(os.path.split(__file__)[0], filename)
+
 
 class EtherlabLibrary(POULibrary):
     def GetLibraryPath(self):
@@ -79,30 +87,32 @@ class EtherlabLibrary(POULibrary):
         etherlab_ext_file = open(GetLocalPath("etherlab_ext.c"), 'r')
         etherlab_ext_code = etherlab_ext_file.read()
         etherlab_ext_file.close()
-        
+
         Gen_etherlabfile_path = os.path.join(buildpath, "etherlab_ext.c")
-        ethelabfile = open(Gen_etherlabfile_path,'w')
+        ethelabfile = open(Gen_etherlabfile_path, 'w')
         ethelabfile.write(etherlab_ext_code)
         ethelabfile.close()
-        
-        runtimefile_path = os.path.join(os.path.split(__file__)[0], "runtime_etherlab.py")
-        return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "", 
-                ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
-    
-#--------------------------------------------------
-#                 Ethercat MASTER
-#--------------------------------------------------
 
-EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd")) 
+        return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "",
+                ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
+
+# --------------------------------------------------
+#                 Ethercat MASTER
+# --------------------------------------------------
+
+
+EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file__), "EtherCATConfig.xsd"))
+
 
 def sort_commands(x, y):
     if x["Index"] == y["Index"]:
         return cmp(x["Subindex"], y["Subindex"])
     return cmp(x["Index"], y["Index"])
 
+
 cls = EtherCATConfigParser.GetElementClass("Slave", "Config")
 if cls:
-    
+
     def getType(self):
         slave_info = self.getInfo()
         return {"device_type": slave_info.getName(),
@@ -118,7 +128,7 @@ if cls:
         slave_info.setProductCode(ExtractHexDecValue(type_infos["product_code"]))
         slave_info.setRevisionNo(ExtractHexDecValue(type_infos["revision_number"]))
     setattr(cls, "setType", setType)
-    
+
     def getInitCmds(self, create_default=False):
         Mailbox = self.getMailbox()
         if Mailbox is None:
@@ -140,7 +150,7 @@ if cls:
             InitCmds = CoE.getInitCmds()
         return InitCmds
     setattr(cls, "getInitCmds", getInitCmds)
-    
+
     def getStartupCommands(self):
         pos = self.getInfo().getPhysAddr()
         InitCmds = self.getInitCmds()
@@ -161,7 +171,7 @@ if cls:
         commands.sort(sort_commands)
         return commands
     setattr(cls, "getStartupCommands", getStartupCommands)
-    
+
     def appendStartupCommand(self, command_infos):
         InitCmds = self.getInitCmds(True)
         command = EtherCATConfigParser.CreateElement("InitCmd", "InitCmds", 1)
@@ -172,7 +182,7 @@ if cls:
         command.setComment(command_infos["Description"])
         return len(InitCmds.getInitCmd()) - 1
     setattr(cls, "appendStartupCommand", appendStartupCommand)
-    
+
     def setStartupCommand(self, command_infos):
         InitCmds = self.getInitCmds()
         if InitCmds is not None:
@@ -184,7 +194,7 @@ if cls:
                 command.setData(command_infos["Value"])
                 command.setComment(command_infos["Description"])
     setattr(cls, "setStartupCommand", setStartupCommand)
-    
+
     def removeStartupCommand(self, command_idx):
         InitCmds = self.getInitCmds()
         if InitCmds is not None:
@@ -218,15 +228,16 @@ ProcessVariablesXSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     </xsd:schema>
 """
 
-ProcessVariablesParser = GenerateParserFromXSDstring(ProcessVariablesXSD) 
+ProcessVariablesParser = GenerateParserFromXSDstring(ProcessVariablesXSD)
 
-class _EthercatCTN:
+
+class _EthercatCTN(object):
 
     CTNChildrenTypes = [("EthercatSlave", _EthercatSlaveCTN, "Ethercat Slave")]
     if HAS_MCL:
         CTNChildrenTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlaveCTN, "Ethercat CIA402 Slave"))
     EditorType = MasterEditor
-    
+
     def __init__(self):
         config_filepath = self.ConfigFileName()
         config_is_saved = False
@@ -238,17 +249,17 @@ class _EthercatCTN:
                     EtherCATConfigParser.LoadXMLString(config_xmlfile.read())
                 if error is None:
                     config_is_saved = True
-            except Exception, e:
+            except Exception as e:
                 error = e.message
             config_xmlfile.close()
-            
+
             if error is not None:
                 self.GetCTRoot().logger.write_error(
-                    _("Couldn't load %s network configuration file.") % CTNName)    
-            
+                    _("Couldn't load %s network configuration file.") % self.CTNName())
+
         if self.Config is None:
             self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
-        
+
         process_filepath = self.ProcessVariablesFileName()
         process_is_saved = False
         self.ProcessVariables = None
@@ -259,39 +270,40 @@ class _EthercatCTN:
                     ProcessVariablesParser.LoadXMLString(process_xmlfile.read())
                 if error is None:
                     process_is_saved = True
-            except Exception, e:
+            except Exception as e:
                 error = e.message
             process_xmlfile.close()
-            
+
             if error is not None:
                 self.GetCTRoot().logger.write_error(
-                    _("Couldn't load %s network process variables file.") % CTNName)    
-            
+                    _("Couldn't load %s network process variables file.") % self.CTNName())
+
         if self.ProcessVariables is None:
             self.ProcessVariables = ProcessVariablesParser.CreateElement("ProcessVariables")
-        
+
         if config_is_saved and process_is_saved:
             self.CreateBuffer(True)
         else:
             self.CreateBuffer(False)
             self.OnCTNSave()
-         
+
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
-    
+
     def GetIconName(self):
         return "Ethercat"
-    
+
     def GetContextualMenuItems(self):
-        return [("Add Ethercat Slave", "Add Ethercat Slave to Master", self.OnAddEthercatSlave)]
-    
+        return [(_("Add Ethercat Slave"), _("Add Ethercat Slave to Master"), self.OnAddEthercatSlave)]
+
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
-        dialog = BrowseValuesLibraryDialog(app_frame, 
-            "Ethercat Slave Type", self.GetSlaveTypesLibrary())
+        dialog = BrowseValuesLibraryDialog(app_frame,
+                                           _("Ethercat Slave Type"),
+                                           self.GetSlaveTypesLibrary())
         if dialog.ShowModal() == wx.ID_OK:
             type_infos = dialog.GetValueInfos()
-            device, module_extra_params = self.GetModuleInfos(type_infos)
+            device, _module_extra_params = self.GetModuleInfos(type_infos)
             if device is not None:
                 if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
                     ConfNodeType = "EthercatCIA402Slave"
@@ -303,7 +315,7 @@ class _EthercatCTN:
                 new_child._OpenView()
                 app_frame._Refresh(TITLE, FILEMENU, PROJECTTREE)
         dialog.Destroy()
-    
+
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
 
@@ -312,17 +324,17 @@ class _EthercatCTN:
 
     def ConfigFileName(self):
         return os.path.join(self.CTNPath(), "config.xml")
-    
+
     def ProcessVariablesFileName(self):
         return os.path.join(self.CTNPath(), "process_variables.xml")
-    
+
     def FilterSlave(self, slave, vendor=None, slave_pos=None, slave_profile=None):
         if slave_pos is not None and slave.getInfo().getPhysAddr() != slave_pos:
             return False
         type_infos = slave.getType()
         if vendor is not None and ExtractHexDecValue(type_infos["vendor"]) != vendor:
             return False
-        device, module_extra_params = self.GetModuleInfos(type_infos)
+        device, _module_extra_params = self.GetModuleInfos(type_infos)
         if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
             return False
         return True
@@ -355,7 +367,7 @@ class _EthercatCTN:
                 commands.append((slave.getInfo().getPhysAddr(), slave.getStartupCommands()))
         commands.sort()
         return reduce(lambda x, y: x + y[1], commands, [])
-    
+
     def AppendStartupCommand(self, command_infos):
         slave = self.GetSlave(command_infos["Position"])
         if slave is not None:
@@ -363,20 +375,20 @@ class _EthercatCTN:
             self.BufferModel()
             return command_idx
         return None
-    
+
     def SetStartupCommandInfos(self, command_infos):
         slave = self.GetSlave(command_infos["Position"])
         if slave is not None:
             slave.setStartupCommand(command_infos)
             self.BufferModel()
-    
+
     def RemoveStartupCommand(self, slave_pos, command_idx, buffer=True):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave.removeStartupCommand(command_idx)
             if buffer:
                 self.BufferModel()
-    
+
     def SetProcessVariables(self, variables):
         vars = []
         for var in variables:
@@ -406,7 +418,7 @@ class _EthercatCTN:
             vars.append(variable)
         self.ProcessVariables.setvariable(vars)
         self.BufferModel()
-        
+
     def GetProcessVariables(self):
         variables = []
         idx = 0
@@ -424,43 +436,44 @@ class _EthercatCTN:
             write_to = variable.getWriteTo()
             if write_to is not None:
                 var["WriteTo"] = (write_to.getPosition(),
-                                   write_to.getIndex(),
-                                   write_to.getSubIndex())
+                                  write_to.getIndex(),
+                                  write_to.getSubIndex())
             else:
                 var["WriteTo"] = ""
             variables.append(var)
             idx += 1
         return variables
-    
+
     def _ScanNetwork(self):
         app_frame = self.GetCTRoot().AppFrame
-        
+
         execute = True
         if len(self.Children) > 0:
-            dialog = wx.MessageDialog(app_frame, 
-                _("The current network configuration will be deleted.\nDo you want to continue?"), 
-                _("Scan Network"), 
-                wx.YES_NO|wx.ICON_QUESTION)
+            dialog = wx.MessageDialog(
+                app_frame,
+                _("The current network configuration will be deleted.\nDo you want to continue?"),
+                _("Scan Network"),
+                wx.YES_NO | wx.ICON_QUESTION)
             execute = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
-        
+
         if execute:
-            error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal = None)
+            error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
             if error != 0:
-                dialog = wx.MessageDialog(app_frame, returnVal, "Error", wx.OK|wx.ICON_ERROR)
+                dialog = wx.MessageDialog(app_frame, returnVal, _("Error"), wx.OK | wx.ICON_ERROR)
                 dialog.ShowModal()
                 dialog.Destroy()
             elif returnVal is not None:
                 for child in self.IECSortedChildren():
                     self._doRemoveChild(child)
-                
+
                 for slave in returnVal:
                     type_infos = {
                         "vendor": slave["vendor_id"],
                         "product_code": slave["product_code"],
-                        "revision_number":slave["revision_number"],
+                        "revision_number": slave["revision_number"],
                     }
-                    device, module_extra_params = self.GetModuleInfos(type_infos)
+                    device, _module_extra_params = self.GetModuleInfos(type_infos)
                     if device is not None:
                         if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
                             CTNType = "EthercatCIA402Slave"
@@ -470,10 +483,10 @@ class _EthercatCTN:
                         self.SetSlaveAlias(slave["idx"], slave["alias"])
                         type_infos["device_type"] = device.getType().getcontent()
                         self.SetSlaveType(slave["idx"], type_infos)
-            
+
                 if app_frame:
                     app_frame.RefreshProjectTree()
-            
+
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """
         Create the confnodes that may be added as child to this node self
@@ -481,7 +494,7 @@ class _EthercatCTN:
         @param CTNName: string for the name of the confnode instance
         """
         newConfNodeOpj = ConfigTreeNode.CTNAddChild(self, CTNName, CTNType, IEC_Channel)
-        
+
         slave = self.GetSlave(newConfNodeOpj.BaseParams.getIEC_Channel())
         if slave is None:
             slave = EtherCATConfigParser.CreateElement("Slave", "Config")
@@ -492,7 +505,7 @@ class _EthercatCTN:
             slave_infos.setAutoIncAddr(0)
             self.BufferModel()
             self.OnCTNSave()
-        
+
         return newConfNodeOpj
 
     def _doRemoveChild(self, CTNInstance):
@@ -523,38 +536,38 @@ class _EthercatCTN:
             if self._View is not None:
                 self._View.RefreshView()
                 self._View.RefreshBuffer()
-    
+
     def GetSlaveAlias(self, slave_pos):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave_info = slave.getInfo()
             return slave_info.getAutoIncAddr()
         return None
-    
+
     def SetSlaveAlias(self, slave_pos, alias):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave_info = slave.getInfo()
             slave_info.setAutoIncAddr(alias)
             self.BufferModel()
-    
+
     def GetSlaveType(self, slave_pos):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             return slave.getType()
         return None
-    
+
     def SetSlaveType(self, slave_pos, type_infos):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             slave.setType(type_infos)
             self.BufferModel()
-    
+
     def GetSlaveInfos(self, slave_pos):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
             type_infos = slave.getType()
-            device, module_extra_params = self.GetModuleInfos(type_infos)
+            device, _module_extra_params = self.GetModuleInfos(type_infos)
             if device is not None:
                 infos = type_infos.copy()
                 infos.update({"physics": device.getPhysics(),
@@ -562,48 +575,46 @@ class _EthercatCTN:
                               "entries": self.GetSlaveVariables(device)})
                 return infos
         return None
-    
+
     def GetSlaveVariables(self, slave_pos=None, limits=None, device=None):
         if device is None and slave_pos is not None:
             slave = self.GetSlave(slave_pos)
             if slave is not None:
                 type_infos = slave.getType()
-                device, module_extra_params = self.GetModuleInfos(type_infos)
+                device, _module_extra_params = self.GetModuleInfos(type_infos)
         if device is not None:
             entries = device.GetEntriesList(limits)
-            #print entries
             entries_list = entries.items()
             entries_list.sort()
             entries = []
             current_index = None
-            current_entry = None
-            for (index, subindex), entry in entries_list:
+            current_entry = {}
+            for (index, _subindex), entry in entries_list:
                 entry["children"] = []
                 if slave_pos is not None:
                     entry["Position"] = str(slave_pos)
-                entry
                 if index != current_index:
                     current_index = index
                     current_entry = entry
                     entries.append(entry)
-                elif current_entry is not None:
+                elif current_entry:
                     current_entry["children"].append(entry)
                 else:
                     entries.append(entry)
             return entries
         return []
-    
+
     def GetSlaveVariableDataType(self, slave_pos, index, subindex):
         slave = self.GetSlave(slave_pos)
         if slave is not None:
-            device, module_extra_params = self.GetModuleInfos(slave.getType())
+            device, _module_extra_params = self.GetModuleInfos(slave.getType())
             if device is not None:
                 entries = device.GetEntriesList()
                 entry_infos = entries.get((index, subindex))
                 if entry_infos is not None:
                     return entry_infos["Type"]
         return None
-    
+
     def GetNodesVariables(self, vendor=None, slave_pos=None, slave_profile=None, limits=None):
         entries = []
         for slave_position in self.GetSlaves():
@@ -613,28 +624,28 @@ class _EthercatCTN:
             type_infos = slave.getType()
             if vendor is not None and ExtractHexDecValue(type_infos["vendor"]) != vendor:
                 continue
-            device, module_extra_params = self.GetModuleInfos(type_infos)
+            device, _module_extra_params = self.GetModuleInfos(type_infos)
             if slave_profile is not None and slave_profile not in device.GetProfileNumbers():
                 continue
             entries.extend(self.GetSlaveVariables(slave_position, limits, device))
         return entries
-     
+
     def GetModuleInfos(self, type_infos):
         return self.CTNParent.GetModuleInfos(type_infos)
-    
+
     def GetSlaveTypesLibrary(self, profile_filter=None):
         return self.CTNParent.GetModulesLibrary(profile_filter)
-    
+
     def GetLibraryVendors(self):
         return self.CTNParent.GetVendors()
-    
+
     def GetDeviceLocationTree(self, slave_pos, current_location, device_name):
         slave = self.GetSlave(slave_pos)
-        vars = []    
+        vars = []
         if slave is not None:
             type_infos = slave.getType()
-        
-            device, module_extra_params = self.GetModuleInfos(type_infos)
+
+            device, _module_extra_params = self.GetModuleInfos(type_infos)
             if device is not None:
                 sync_managers = []
                 for sync_manager in device.getSm():
@@ -644,7 +655,7 @@ class _EthercatCTN:
                         sync_managers.append(LOCATION_VAR_OUTPUT)
                     else:
                         sync_managers.append(LOCATION_VAR_INPUT)
-                
+
                 entries = device.GetEntriesList().items()
                 entries.sort()
                 for (index, subindex), entry in entries:
@@ -655,44 +666,46 @@ class _EthercatCTN:
                             if var_class == LOCATION_VAR_INPUT:
                                 var_dir = "%I"
                             else:
-                                var_dir = "%Q"    
-                        
-                            vars.append({"name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
-                                         "type": var_class,
-                                         "size": var_size,
-                                         "IEC_type": entry["Type"],
-                                         "var_name": "%s_%4.4x_%2.2x" % ("_".join(device_name.split()), index, subindex),
-                                         "location": "%s%s%s"%(var_dir, var_size, ".".join(map(str, current_location + 
-                                                                                                    (index, subindex)))),
-                                         "description": "",
-                                         "children": []})
-        
+                                var_dir = "%Q"
+
+                            vars.append({
+                                "name": "0x%4.4x-0x%2.2x: %s" % (index, subindex, entry["Name"]),
+                                "type": var_class,
+                                "size": var_size,
+                                "IEC_type": entry["Type"],
+                                "var_name": "%s_%4.4x_%2.2x" % ("_".join(device_name.split()), index, subindex),
+                                "location": "%s%s%s" % (var_dir, var_size, ".".join(map(str, current_location +
+                                                                                        (index, subindex)))),
+                                "description": "",
+                                "children": [],
+                            })
+
         return vars
-    
+
     def CTNTestModified(self):
-        return self.ChangesToSave or not self.ModelIsSaved()    
+        return self.ChangesToSave or not self.ModelIsSaved()
 
     def OnCTNSave(self, from_project_path=None):
         config_filepath = self.ConfigFileName()
-        
-        config_xmlfile = open(config_filepath,"w")
+
+        config_xmlfile = open(config_filepath, "w")
         config_xmlfile.write(etree.tostring(
-            self.Config, 
-            pretty_print=True, 
-            xml_declaration=True, 
+            self.Config,
+            pretty_print=True,
+            xml_declaration=True,
             encoding='utf-8'))
         config_xmlfile.close()
-        
+
         process_filepath = self.ProcessVariablesFileName()
-        
-        process_xmlfile = open(process_filepath,"w")
+
+        process_xmlfile = open(process_filepath, "w")
         process_xmlfile.write(etree.tostring(
-            self.ProcessVariables, 
-            pretty_print=True, 
-            xml_declaration=True, 
+            self.ProcessVariables,
+            pretty_print=True,
+            xml_declaration=True,
             encoding='utf-8'))
         process_xmlfile.close()
-        
+
         self.Buffer.CurrentSaved()
         return True
 
@@ -702,14 +715,14 @@ class _EthercatCTN:
     def _Generate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         # define a unique name for the generated C file
-        location_str = "_".join(map(lambda x:str(x), current_location))
-        
-        Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c"%location_str)
-        
+        location_str = "_".join(map(str, current_location))
+
+        Gen_Ethercatfile_path = os.path.join(buildpath, "ethercat_%s.c" % location_str)
+
         self.FileGenerator = _EthercatCFileGenerator(self)
-        
+
         LocationCFilesAndCFLAGS, LDFLAGS, extra_files = ConfigTreeNode._Generate_C(self, buildpath, locations)
-        
+
         for idx, variable in enumerate(self.ProcessVariables.getvariable()):
             name = None
             var_type = None
@@ -721,9 +734,9 @@ class _EthercatCTN:
                 subindex = read_from.getSubIndex()
                 location = current_location + (idx, )
                 var_type = self.GetSlaveVariableDataType(pos, index, subindex)
-                name = self.FileGenerator.DeclareVariable(
-                            pos, index, subindex, var_type, "I",
-                            self.GetProcessVariableName(location, var_type))
+                name = self.FileGenerator.DeclareVariable(pos, index, subindex,
+                                                          var_type, "I",
+                                                          self.GetProcessVariableName(location, var_type))
             if write_to is not None:
                 pos = write_to.getPosition()
                 index = write_to.getIndex()
@@ -732,65 +745,65 @@ class _EthercatCTN:
                     location = current_location + (idx, )
                     var_type = self.GetSlaveVariableDataType(pos, index, subindex)
                     name = self.GetProcessVariableName(location, var_type)
-                self.FileGenerator.DeclareVariable(
-                            pos, index, subindex, var_type, "Q", name, True)
-        
+                self.FileGenerator.DeclareVariable(pos, index, subindex, var_type, "Q", name, True)
+
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
-        
-        LocationCFilesAndCFLAGS.insert(0, 
-            (current_location, 
-             [(Gen_Ethercatfile_path, '"-I%s"'%os.path.abspath(self.GetCTRoot().GetIECLibPath()))], 
+
+        LocationCFilesAndCFLAGS.insert(
+            0,
+            (current_location,
+             [(Gen_Ethercatfile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
              True))
         LDFLAGS.append("-lethercat_rtdm -lrtdm")
-        
+
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     ConfNodeMethods = [
-        {"bitmap" : "ScanNetwork",
-         "name" : _("Scan Network"), 
-         "tooltip" : _("Scan Network"),
-         "method" : "_ScanNetwork"},
+        {
+            "bitmap": "ScanNetwork",
+            "name": _("Scan Network"),
+            "tooltip": _("Scan Network"),
+            "method": "_ScanNetwork",
+        },
     ]
 
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
-        
+
         slaves = self.GetSlaves()
         for slave_pos in slaves:
             slave = self.GetSlave(slave_pos)
             if slave is not None:
                 self.FileGenerator.DeclareSlave(slave_pos, slave)
-        
+
         for location in locations:
             loc = location["LOC"][len(current_location):]
             slave_pos = loc[0]
             if slave_pos in slaves and len(loc) == 3 and location["DIR"] != "M":
                 self.FileGenerator.DeclareVariable(
                     slave_pos, loc[1], loc[2], location["IEC_TYPE"], location["DIR"], location["NAME"])
-        
-        return [],"",False
-        
-#-------------------------------------------------------------------------------
-#                      Current Buffering Management Functions
-#-------------------------------------------------------------------------------
 
-    """
-    Return a copy of the config
-    """
+        return [], "", False
+
+# -------------------------------------------------------------------------------
+#                      Current Buffering Management Functions
+# -------------------------------------------------------------------------------
+
     def Copy(self, model):
+        """Return a copy of the config"""
         return deepcopy(model)
-    
+
     def CreateBuffer(self, saved):
         self.Buffer = UndoBuffer(
-            (EtherCATConfigParser.Dumps(self.Config), 
-             ProcessVariablesParser.Dumps(self.ProcessVariables)), 
+            (EtherCATConfigParser.Dumps(self.Config),
+             ProcessVariablesParser.Dumps(self.ProcessVariables)),
             saved)
-        
+
     def BufferModel(self):
         self.Buffer.Buffering(
-            (EtherCATConfigParser.Dumps(self.Config), 
+            (EtherCATConfigParser.Dumps(self.Config),
              ProcessVariablesParser.Dumps(self.ProcessVariables)))
-    
+
     def ModelIsSaved(self):
         if self.Buffer is not None:
             return self.Buffer.IsCurrentSaved()
@@ -801,14 +814,13 @@ class _EthercatCTN:
         config, process_variables = self.Buffer.Previous()
         self.Config = EtherCATConfigParser.Loads(config)
         self.ProcessVariables = ProcessVariablesParser.Loads(process_variables)
-    
+
     def LoadNext(self):
         config, process_variables = self.Buffer.Next()
         self.Config = EtherCATConfigParser.Loads(config)
         self.ProcessVariables = ProcessVariablesParser.Loads(process_variables)
-    
+
     def GetBufferState(self):
         first = self.Buffer.IsFirst()
         last = self.Buffer.IsLast()
         return not first, not last
-

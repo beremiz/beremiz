@@ -55,7 +55,9 @@ def AddCatalog(locale_dir):
             global locale
             if locale is None:
                 # Define locale for wx
+                wx.LogGui.EnableLogging(False)
                 locale = wx.Locale(wx.LANGUAGE_DEFAULT)
+                wx.LogGui.EnableLogging(True)
 
             locale.AddCatalogLookupPathPrefix(locale_dir)
             locale.AddCatalog(domain)

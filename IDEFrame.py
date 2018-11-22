@@ -2628,6 +2628,8 @@ class GraphicPrintout(wx.Printout):
 
     def OnPrintPage(self, page):
         dc = self.GetDC()
+        dc.SetBackground(wx.WHITE_BRUSH)
+        dc.Clear()
         dc.SetUserScale(1.0, 1.0)
         dc.SetDeviceOrigin(0, 0)
         dc.printing = not self.Preview

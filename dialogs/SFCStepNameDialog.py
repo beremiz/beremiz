@@ -34,7 +34,7 @@ from plcopen.structures import TestIdentifier, IEC_KEYWORDS
 
 class SFCStepNameDialog(wx.TextEntryDialog):
 
-    def __init__(self, parent, message, caption="Please enter text", defaultValue="",
+    def __init__(self, parent, message, caption=_("Please enter text"), defaultValue="",
                  style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition):
         wx.TextEntryDialog.__init__(self, parent, message, caption, defaultValue, style, pos)
 

@@ -627,7 +627,6 @@ def GetElementInitialValue(factory, infos):
                 value = infos["elmt_type"]["initial"]()
                 if infos["type"] != ANY:
                     DefaultElementClass.__setattr__(value, "tag", element_name)
-                    value._init_()
                 return value
         return [initial_value() for dummy in xrange(infos["minOccurs"])]
     else:
