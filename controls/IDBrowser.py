@@ -8,7 +8,8 @@ import os
 import wx
 import wx.dataview as dv
 import PSKManagement as PSK
-from PSKManagement import COL_ID,COL_URI,COL_DESC,COL_LAST
+from PSKManagement import *
+from dialogs.IDMergeDialog import IDMergeDialog
 
 class IDBrowserModel(dv.PyDataViewIndexListModel):
     def __init__(self, project_path, columncount):
@@ -70,7 +71,10 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
         self._saveData()
 
     def Import(self, filepath, sircb):
-        PSK.ImportIDs(self.project_path, filepath, sircb)
+        data = PSK.ImportIDs(self.project_path, filepath, sircb)
+        if data is not None:
+            self.data = data
+            self.Reset(len(self.data)) 
 
     def Export(self, filepath):
         PSK.ExportIDs(self.project_path, filepath)
@@ -184,10 +188,35 @@ class IDBrowser(wx.Panel):
         if dialog.ShowModal() == wx.ID_OK:
             self.model.Export(dialog.GetPath())
 
-    def ShouldIReplaceCallback(self,some,stuff):
-        # TODO
-        wx.MessageBox("TODO : ShouldIReplaceCallback")
-        return True
+    def ShouldIReplaceCallback(self,existing,replacement):
+        ID,URI,DESC,LAST = existing
+        _ID,_URI,_DESC,_LAST = replacement
+        dlg = IDMergeDialog(self, 
+            _("Import IDs"), 
+            (_("Replace information for ID {ID} ?") + "\n\n" +
+             _("Existing:") + "\n    " +
+             _("Description:") + " {DESC}\n    " +
+             _("Last known URI:") + " {URI}\n    " +
+             _("Last connection:") + " {LAST}\n\n" +
+             _("Replacement:") + "\n    " +
+             _("Description:") + " {_DESC}\n    " +
+             _("Last known URI:") + " {_URI}\n    " +
+             _("Last connection:") + " {_LAST}\n").format(**locals()),
+            _("Do the same for following IDs"),
+            [_("Replace"), _("Keep"),_("Cancel")])
+
+        answer = dlg.ShowModal() # return value ignored as we have "Ok" only anyhow
+        if answer == wx.ID_CANCEL:
+            return CANCEL
+
+        if dlg.OptionChecked():
+            if answer == wx.ID_YES:
+                return REPLACE_ALL
+            return KEEP_ALL
+        else:
+            if answer == wx.ID_YES:
+                return REPLACE
+            return KEEP
 
     def OnImportButton(self, evt):
         dialog = wx.FileDialog(self, _("Choose a file"),

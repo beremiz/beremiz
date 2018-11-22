@@ -11,7 +11,8 @@ from zipfile import ZipFile
 
 # PSK Management Data model :
 # [[ID,Desc, LastKnownURI, LastConnect]]
-COL_ID,COL_URI,COL_DESC,COL_LAST = range(4)
+COL_ID, COL_URI, COL_DESC, COL_LAST = range(4)
+REPLACE, REPLACE_ALL, KEEP, KEEP_ALL, CANCEL = range(5)
 
 def _pskpath(project_path):
     return os.path.join(project_path, 'psk')
@@ -93,13 +94,17 @@ def ExportIDs(project_path, export_zip):
                 zf.write(os.path.join(path, nm), nm)
 
 def ImportIDs(project_path, import_zip, should_I_replace_callback):
+    zf = ZipFile(import_zip, 'r')
     data = GetData(project_path)
 
     zip_loaded_data = json.loads(zf.open('management.json').read())
     name_list = zf.namelist()
-    zip_filtered_data = _filterData(name_list, loaded_data)
+    zip_filtered_data = _filterData(name_list, zip_loaded_data)
 
     idata = _dataByID(data)
+
+    keys_to_import = []
+    result = None
 
     for imported_row in zip_filtered_data:
         ID = imported_row[COL_ID]
@@ -108,16 +113,23 @@ def ImportIDs(project_path, import_zip, should_I_replace_callback):
             data.append(imported_row)
         else:
             # callback returns the selected list for merge or none if canceled
-            result = should_I_replace_callback(existing_row, imported_row)
-            if result is None:
-                break
+            if result not in [REPLACE_ALL, KEEP_ALL]:
+                result = should_I_replace_callback(existing_row, imported_row)
+
+            if result == CANCEL:
+                return
             
-            if result: 
+            if result in [REPLACE_ALL, REPLACE]:
                 # replace with imported
                 existing_row[:] = imported_row
                 # copy the key of selected
-                self.extract(ID+".secret", _pskpath(project_path))
+                keys_to_import.append(ID)
+    
+    for ID in keys_to_import:
+        zf.extract(ID+".secret", _pskpath(project_path))
 
     SaveData(project_path, data)
+
+    return data
 
 
