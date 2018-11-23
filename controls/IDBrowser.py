@@ -37,14 +37,6 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
     def GetCount(self):
         return len(self.data)
     
-    def GetAttrByRow(self, row, col, attr):
-        if col == 3:
-            attr.SetColour('blue')
-            attr.SetBold(True)
-            return True
-        return False
-
-
     def Compare(self, item1, item2, col, ascending):
         if not ascending: # swap sort order?
             item2, item1 = item1, item2
@@ -84,7 +76,7 @@ colflags = dv.DATAVIEW_COL_RESIZABLE|dv.DATAVIEW_COL_SORTABLE
 class IDBrowser(wx.Panel):
     def __init__(self, parent, ctr, SelectURICallBack=None, SelectIDCallBack=None, **kwargs):
         big = self.isManager = SelectURICallBack is None and SelectIDCallBack is None 
-        wx.Panel.__init__(self, parent, -1, size=(800 if big else 400,
+        wx.Panel.__init__(self, parent, -1, size=(800 if big else 450,
                                                   600 if big else 200))
 
         self.SelectURICallBack = SelectURICallBack
@@ -99,9 +91,9 @@ class IDBrowser(wx.Panel):
         args = lambda *a,**k:(a,k)
 
         ColumnsDesc = [
-            args(_("ID"), COL_ID, width = 100),
-            args(_("Last URI"), COL_URI, width = 160 if big else 80),
-            args(_("Description"), COL_DESC, width = 200, 
+            args(_("ID"), COL_ID, width = 70),
+            args(_("Last URI"), COL_URI, width = 300 if big else 80),
+            args(_("Description"), COL_DESC, width = 300 if big else 200, 
                 mode = dv.DATAVIEW_CELL_EDITABLE 
                        if self.isManager 
                        else dv.DATAVIEW_CELL_INERT),
@@ -111,12 +103,13 @@ class IDBrowser(wx.Panel):
         self.model = IDBrowserModel(ctr.ProjectPath, len(ColumnsDesc))
         self.dvc.AssociateModel(self.model)
 
+        col_list = []
         for a,k in ColumnsDesc:
-            self.dvc.AppendTextColumn(*a,**dict(k, flags = colflags))
+            col_list.append(
+                self.dvc.AppendTextColumn(*a,**dict(k, flags = colflags)))
+        col_list[COL_LAST].SetSortOrder(False)
 
-        # TODO : when select,
-        #  - update ID field of scheme editor
-        #  - enable use URI button
+        # TODO : sort by last bvisit by default
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL) 
         self.Sizer.Add(self.dvc, 1, wx.EXPAND)
@@ -141,8 +134,6 @@ class IDBrowser(wx.Panel):
 
         else :
             # selector mode
-            # use last known URI button
-            # TODO : disable use URI button until something selected
             self.useURIButton = wx.Button(self, label=_("Use last URI"))
             self.Bind(wx.EVT_BUTTON, self.OnUseURIButton, self.useURIButton)
             self.useURIButton.Disable()
