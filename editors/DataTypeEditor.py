@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import
 import re
-from types import TupleType
+from six.moves import xrange
 
 import wx
 import wx.grid
@@ -43,7 +43,7 @@ from util.TranslationCatalogs import NoTranslate
 #                                    Helpers
 # -------------------------------------------------------------------------------
 
-DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
+DIMENSION_MODEL = re.compile(r"([0-9]+)\.\.([0-9]+)$")
 
 
 def AppendMenu(parent, help, id, kind, text):
@@ -82,7 +82,7 @@ class ElementsTable(CustomTable):
             colname = self.GetColLabelValue(col, False)
             value = self.data[row].get(colname, "")
 
-            if colname == "Type" and isinstance(value, TupleType):
+            if colname == "Type" and isinstance(value, tuple):
                 if value[0] == "array":
                     return "ARRAY [%s] OF %s" % (",".join(map("..".join, value[2])), value[1])
             return value

@@ -24,12 +24,14 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from datetime import datetime
 from time import time as gettime
 from weakref import proxy
 
 import numpy
 import wx
+from six.moves import xrange
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
@@ -43,11 +45,11 @@ THUMB_SIZE_RATIO = 1. / 8.
 def ArrowPoints(direction, width, height, xoffset, yoffset):
     if direction == wx.TOP:
         return [wx.Point(xoffset + 1, yoffset + height - 2),
-                wx.Point(xoffset + width / 2, yoffset + 1),
+                wx.Point(xoffset + width // 2, yoffset + 1),
                 wx.Point(xoffset + width - 1, yoffset + height - 2)]
     else:
         return [wx.Point(xoffset + 1, yoffset - height + 1),
-                wx.Point(xoffset + width / 2, yoffset - 2),
+                wx.Point(xoffset + width // 2, yoffset - 2),
                 wx.Point(xoffset + width - 1, yoffset - height + 1)]
 
 
@@ -124,7 +126,7 @@ class LogScrollBar(wx.Panel):
             thumb_size = range_rect.height * THUMB_SIZE_RATIO
             thumb_range = range_rect.height - thumb_size
             self.RefreshThumbPosition(
-                max(-1., min((posy - self.ThumbScrollingStartPos.y) * 2. / thumb_range, 1.)))
+                max(-1., min((posy - self.ThumbScrollingStartPos.y) * 2. // thumb_range, 1.)))
         event.Skip()
 
     def OnResize(self, event):
@@ -146,11 +148,11 @@ class LogScrollBar(wx.Panel):
         gc.SetPen(wx.Pen(wx.NamedColour("GREY"), 3))
         gc.SetBrush(wx.GREY_BRUSH)
 
-        gc.DrawLines(ArrowPoints(wx.TOP, width * 0.75, width * 0.5, 2, (width + height) / 4 - 3))
-        gc.DrawLines(ArrowPoints(wx.TOP, width * 0.75, width * 0.5, 2, (width + height) / 4 + 3))
+        gc.DrawLines(ArrowPoints(wx.TOP, width * 0.75, width * 0.5, 2, (width + height) // 4 - 3))
+        gc.DrawLines(ArrowPoints(wx.TOP, width * 0.75, width * 0.5, 2, (width + height) // 4 + 3))
 
-        gc.DrawLines(ArrowPoints(wx.BOTTOM, width * 0.75, width * 0.5, 2, (height * 3 - width) / 4 + 3))
-        gc.DrawLines(ArrowPoints(wx.BOTTOM, width * 0.75, width * 0.5, 2, (height * 3 - width) / 4 - 3))
+        gc.DrawLines(ArrowPoints(wx.BOTTOM, width * 0.75, width * 0.5, 2, (height * 3 - width) // 4 + 3))
+        gc.DrawLines(ArrowPoints(wx.BOTTOM, width * 0.75, width * 0.5, 2, (height * 3 - width) // 4 - 3))
 
         thumb_rect = self.GetThumbRect()
         exclusion_rect = wx.Rect(thumb_rect.x, thumb_rect.y,
@@ -222,8 +224,8 @@ class LogButton(object):
 
         w, h = dc.GetTextExtent(self.Label)
         dc.DrawText(self.Label,
-                    self.Position.x + (self.Size.width - w) / 2,
-                    self.Position.y + (self.Size.height - h) / 2)
+                    self.Position.x + (self.Size.width - w) // 2,
+                    self.Position.y + (self.Size.height - h) // 2)
 
 
 DATE_INFO_SIZE = 10
@@ -259,19 +261,19 @@ class LogMessage(object):
         if draw_date:
             datetime_text = self.Date.strftime("%d/%m/%y %H:%M")
             dw, dh = dc.GetTextExtent(datetime_text)
-            dc.DrawText(datetime_text, (width - dw) / 2, offset + (DATE_INFO_SIZE - dh) / 2)
+            dc.DrawText(datetime_text, (width - dw) // 2, offset + (DATE_INFO_SIZE - dh) // 2)
             offset += DATE_INFO_SIZE
 
         seconds_text = "%12.9f" % self.Seconds
         sw, sh = dc.GetTextExtent(seconds_text)
-        dc.DrawText(seconds_text, 5, offset + (MESSAGE_INFO_SIZE - sh) / 2)
+        dc.DrawText(seconds_text, 5, offset + (MESSAGE_INFO_SIZE - sh) // 2)
 
         bw, bh = self.LevelBitmap.GetWidth(), self.LevelBitmap.GetHeight()
-        dc.DrawBitmap(self.LevelBitmap, 10 + sw, offset + (MESSAGE_INFO_SIZE - bh) / 2)
+        dc.DrawBitmap(self.LevelBitmap, 10 + sw, offset + (MESSAGE_INFO_SIZE - bh) // 2)
 
         text = self.Message.replace("\n", " ")
         _mw, mh = dc.GetTextExtent(text)
-        dc.DrawText(text, 15 + sw + bw, offset + (MESSAGE_INFO_SIZE - mh) / 2)
+        dc.DrawText(text, 15 + sw + bw, offset + (MESSAGE_INFO_SIZE - mh) // 2)
 
     def GetHeight(self, draw_date):
         if draw_date:
@@ -611,7 +613,7 @@ class LogViewer(DebugViewer, wx.Panel):
     def ScrollMessagePanelByPage(self, page):
         if self.CurrentMessage is not None:
             _width, height = self.MessagePanel.GetClientSize()
-            message_per_page = max(1, (height - DATE_INFO_SIZE) / MESSAGE_INFO_SIZE - 1)
+            message_per_page = max(1, (height - DATE_INFO_SIZE) // MESSAGE_INFO_SIZE - 1)
             self.ScrollMessagePanel(page * message_per_page)
 
     def ScrollMessagePanelByTimestamp(self, seconds):
@@ -756,7 +758,7 @@ class LogViewer(DebugViewer, wx.Panel):
         event.Skip()
 
     def OnMessagePanelMouseWheel(self, event):
-        self.ScrollMessagePanel(event.GetWheelRotation() / event.GetWheelDelta())
+        self.ScrollMessagePanel(event.GetWheelRotation() // event.GetWheelDelta())
         event.Skip()
 
     def OnMessagePanelEraseBackground(self, event):

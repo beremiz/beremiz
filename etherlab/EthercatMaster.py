@@ -12,6 +12,7 @@
 from __future__ import absolute_import
 import os
 from copy import deepcopy
+from functools import reduce
 from lxml import etree
 
 import wx
@@ -94,7 +95,7 @@ class EtherlabLibrary(POULibrary):
         ethelabfile.close()
 
         return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "",
-                ("runtime_etherlab.py", file(GetLocalPath("runtime_etherlab.py"))))
+                ("runtime_etherlab.py", open(GetLocalPath("runtime_etherlab.py"))))
 
 # --------------------------------------------------
 #                 Ethercat MASTER
@@ -250,7 +251,7 @@ class _EthercatCTN(object):
                 if error is None:
                     config_is_saved = True
             except Exception as e:
-                error = e.message
+                error = str(e)
             config_xmlfile.close()
 
             if error is not None:
@@ -271,7 +272,7 @@ class _EthercatCTN(object):
                 if error is None:
                     process_is_saved = True
             except Exception as e:
-                error = e.message
+                error = str(e)
             process_xmlfile.close()
 
             if error is not None:

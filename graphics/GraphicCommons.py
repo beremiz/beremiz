@@ -24,8 +24,11 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from math import *
-from types import *
+from future.builtins import round
+from six import string_types
+from six.moves import xrange
 
 import wx
 from graphics.ToolTipProducer import ToolTipProducer
@@ -115,7 +118,7 @@ HANDLE_CURSORS = {
 
 
 def round_scaling(x, n, constraint=0):
-    fraction = float(x) / float(n)
+    fraction = x / n
     if constraint == -1:
         xround = int(fraction)
     else:
@@ -185,8 +188,8 @@ def GetScaledEventPosition(event, dc, scaling):
     """
     pos = event.GetLogicalPosition(dc)
     if scaling:
-        pos.x = round(float(pos.x) / float(scaling[0])) * scaling[0]
-        pos.y = round(float(pos.y) / float(scaling[1])) * scaling[1]
+        pos.x = round(pos.x / scaling[0]) * scaling[0]
+        pos.y = round(pos.y / scaling[1]) * scaling[1]
     return pos
 
 
@@ -434,11 +437,11 @@ class Graphic_Element(ToolTipProducer):
         pt = wx.Point(*self.Parent.CalcUnscrolledPosition(pos.x, pos.y))
 
         left = (self.BoundingBox.x - 2) * scalex - HANDLE_SIZE
-        center = (self.BoundingBox.x + self.BoundingBox.width / 2) * scalex - HANDLE_SIZE / 2
+        center = (self.BoundingBox.x + self.BoundingBox.width // 2) * scalex - HANDLE_SIZE // 2
         right = (self.BoundingBox.x + self.BoundingBox.width + 2) * scalex
 
         top = (self.BoundingBox.y - 2) * scaley - HANDLE_SIZE
-        middle = (self.BoundingBox.y + self.BoundingBox.height / 2) * scaley - HANDLE_SIZE / 2
+        middle = (self.BoundingBox.y + self.BoundingBox.height / 2) * scaley - HANDLE_SIZE // 2
         bottom = (self.BoundingBox.y + self.BoundingBox.height + 2) * scaley
 
         extern_rect = wx.Rect(left, top, right + HANDLE_SIZE - left, bottom + HANDLE_SIZE - top)
@@ -682,11 +685,11 @@ class Graphic_Element(ToolTipProducer):
                 dc.SetBrush(wx.BLACK_BRUSH)
 
                 left = (self.BoundingBox.x - 2) * scalex - HANDLE_SIZE
-                center = (self.BoundingBox.x + self.BoundingBox.width / 2) * scalex - HANDLE_SIZE / 2
+                center = (self.BoundingBox.x + self.BoundingBox.width // 2) * scalex - HANDLE_SIZE // 2
                 right = (self.BoundingBox.x + self.BoundingBox.width + 2) * scalex
 
                 top = (self.BoundingBox.y - 2) * scaley - HANDLE_SIZE
-                middle = (self.BoundingBox.y + self.BoundingBox.height / 2) * scaley - HANDLE_SIZE / 2
+                middle = (self.BoundingBox.y + self.BoundingBox.height // 2) * scaley - HANDLE_SIZE // 2
                 bottom = (self.BoundingBox.y + self.BoundingBox.height + 2) * scaley
 
                 for x, y in [(left, top), (center, top), (right, top),
@@ -858,13 +861,13 @@ class Graphic_Group(Graphic_Element):
                 if horizontally == ALIGN_LEFT:
                     movex = minx - posx
                 elif horizontally == ALIGN_CENTER:
-                    movex = (maxx + minx - width) / 2 - posx
+                    movex = (maxx + minx - width) // 2 - posx
                 elif horizontally == ALIGN_RIGHT:
                     movex = maxx - width - posx
                 if vertically == ALIGN_TOP:
                     movey = miny - posy
                 elif vertically == ALIGN_MIDDLE:
-                    movey = (maxy + miny - height) / 2 - posy
+                    movey = (maxy + miny - height) // 2 - posy
                 elif vertically == ALIGN_BOTTOM:
                     movey = maxy - height - posy
                 if movex != 0 or movey != 0:
@@ -1079,14 +1082,14 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 y -= 5
                 height += 5
         rect = wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
-        if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+        if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
             rect = rect.Union(
                 wx.Rect(
                     parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
-                    width * (self.Direction[0] - 1) / 2,
+                    width * (self.Direction[0] - 1) // 2,
                     parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
                     height * (self.Direction[1] - 1),
                     width, height))
@@ -1161,7 +1164,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 self.Parent.ElementNeedRefresh(self)
 
     def GetComputedValue(self):
-        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
+        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, bool):
             return self.Value
         return None
 
@@ -1198,7 +1201,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         current = False
         for wire, _handle in self.Wires:
             value = wire.GetValue()
-            if current != "undefined" and isinstance(value, BooleanType):
+            if current != "undefined" and isinstance(value, bool):
                 current |= wire.GetValue()
             elif value == "undefined":
                 current = "undefined"
@@ -1470,7 +1473,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         else:
             if not self.Valid:
                 dc.SetPen(MiterPen(wx.RED))
-            elif isinstance(self.Value, BooleanType) and self.Value:
+            elif isinstance(self.Value, bool) and self.Value:
                 if self.Forced:
                     dc.SetPen(MiterPen(wx.CYAN))
                 else:
@@ -1491,9 +1494,9 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
         if self.Negated:
             # If connector is negated, draw a circle
-            xcenter = parent_pos[0] + self.Pos.x + (CONNECTOR_SIZE * self.Direction[0]) / 2
-            ycenter = parent_pos[1] + self.Pos.y + (CONNECTOR_SIZE * self.Direction[1]) / 2
-            dc.DrawCircle(xcenter, ycenter, CONNECTOR_SIZE / 2)
+            xcenter = parent_pos[0] + self.Pos.x + (CONNECTOR_SIZE * self.Direction[0]) // 2
+            ycenter = parent_pos[1] + self.Pos.y + (CONNECTOR_SIZE * self.Direction[1]) // 2
+            dc.DrawCircle(xcenter, ycenter, CONNECTOR_SIZE // 2)
         else:
             xstart = parent_pos[0] + self.Pos.x
             ystart = parent_pos[1] + self.Pos.y
@@ -1518,13 +1521,13 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 yend = ystart + CONNECTOR_SIZE * self.Direction[1]
                 dc.DrawLine(xstart + self.Direction[0], ystart + self.Direction[1], xend, yend)
         if self.Direction[0] != 0:
-            ytext = parent_pos[1] + self.Pos.y - name_size[1] / 2
+            ytext = parent_pos[1] + self.Pos.y - name_size[1] // 2
             if self.Direction[0] < 0:
                 xtext = parent_pos[0] + self.Pos.x + 5
             else:
                 xtext = parent_pos[0] + self.Pos.x - (name_size[0] + 5)
         if self.Direction[1] != 0:
-            xtext = parent_pos[0] + self.Pos.x - name_size[0] / 2
+            xtext = parent_pos[0] + self.Pos.x - name_size[0] // 2
             if self.Direction[1] < 0:
                 ytext = parent_pos[1] + self.Pos.y + 5
             else:
@@ -1534,16 +1537,16 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if not getattr(dc, "printing", False):
             DrawHighlightedText(dc, self.Name, self.Highlights, xtext, ytext)
 
-        if self.Value is not None and not isinstance(self.Value, BooleanType) and self.Value != "undefined":
+        if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.ParentBlock.Parent.GetMiniFont())
             dc.SetTextForeground(wx.NamedColour("purple"))
-            if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+            if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
                 self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize
                 dc.DrawText(self.ComputedValue,
                             parent_pos[0] + self.Pos.x + CONNECTOR_SIZE * self.Direction[0] +
-                            width * (self.Direction[0] - 1) / 2,
+                            width * (self.Direction[0] - 1) // 2,
                             parent_pos[1] + self.Pos.y + CONNECTOR_SIZE * self.Direction[1] +
                             height * (self.Direction[1] - 1))
             dc.SetFont(self.ParentBlock.Parent.GetFont())
@@ -1605,22 +1608,22 @@ class Wire(Graphic_Element, DebugDataConsumer):
             rect = rect.Union(self.StartConnected.GetRedrawRect(movex, movey))
         if self.EndConnected:
             rect = rect.Union(self.EndConnected.GetRedrawRect(movex, movey))
-        if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+        if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
             self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
             if self.BoundingBox[2] > width * 4 or self.BoundingBox[3] > height * 4:
-                x = self.Points[0].x + width * self.StartPoint[1][0] / 2
+                x = self.Points[0].x + width * self.StartPoint[1][0] // 2
                 y = self.Points[0].y + height * (self.StartPoint[1][1] - 1)
                 rect = rect.Union(wx.Rect(x, y, width, height))
-                x = self.Points[-1].x + width * self.EndPoint[1][0] / 2
+                x = self.Points[-1].x + width * self.EndPoint[1][0] // 2
                 y = self.Points[-1].y + height * (self.EndPoint[1][1] - 1)
                 rect = rect.Union(wx.Rect(x, y, width, height))
             else:
-                middle = len(self.Segments) / 2 + len(self.Segments) % 2 - 1
-                x = (self.Points[middle].x + self.Points[middle + 1].x - width) / 2
+                middle = len(self.Segments) // 2 + len(self.Segments) % 2 - 1
+                x = (self.Points[middle].x + self.Points[middle + 1].x - width) // 2
                 if self.BoundingBox[3] > height and self.Segments[middle] in [NORTH, SOUTH]:
-                    y = (self.Points[middle].y + self.Points[middle + 1].y - height) / 2
+                    y = (self.Points[middle].y + self.Points[middle + 1].y - height) // 2
                 else:
                     y = self.Points[middle].y - height
                 rect = rect.Union(wx.Rect(x, y, width, height))
@@ -1754,7 +1757,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.Parent.ElementNeedRefresh(self)
 
     def GetComputedValue(self):
-        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, BooleanType):
+        if self.Value is not None and self.Value != "undefined" and not isinstance(self.Value, bool):
             return self.Value
         return None
 
@@ -1786,7 +1789,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.EndConnected.RefreshValue()
             if self.Visible:
                 self.Parent.ElementNeedRefresh(self)
-            if isinstance(value, BooleanType) and self.StartConnected is not None:
+            if isinstance(value, bool) and self.StartConnected is not None:
                 block = self.StartConnected.GetParentBlock()
                 block.SpreadCurrent()
 
@@ -2091,9 +2094,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         # Current point is positioned in the middle of start point
                         # and end point on the current direction and a point is added
                         if self.Segments[0][0] != 0:
-                            self.Points[1].x = (end.x + start.x) / 2
+                            self.Points[1].x = (end.x + start.x) // 2
                         if self.Segments[0][1] != 0:
-                            self.Points[1].y = (end.y + start.y) / 2
+                            self.Points[1].y = (end.y + start.y) // 2
                         self.Points.insert(2, wx.Point(self.Points[1].x, self.Points[1].y))
                         self.Segments.insert(2, DirectionChoice(
                             (self.Segments[1][1],
@@ -2135,9 +2138,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                                 # Current point is positioned in the middle of previous point
                                 # and end point on the current direction and a point is added
                                 if self.Segments[1][0] != 0:
-                                    self.Points[2].x = (self.Points[1].x + end.x) / 2
+                                    self.Points[2].x = (self.Points[1].x + end.x) // 2
                                 if self.Segments[1][1] != 0:
-                                    self.Points[2].y = (self.Points[1].y + end.y) / 2
+                                    self.Points[2].y = (self.Points[1].y + end.y) // 2
                                 self.Points.insert(3, wx.Point(self.Points[2].x, self.Points[2].y))
                                 self.Segments.insert(
                                     3,
@@ -2159,9 +2162,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                             # Current point is positioned in the middle of previous point
                             # and end point on the current direction
                             if self.Segments[i - 1][0] != 0:
-                                self.Points[i].x = (end.x + self.Points[i - 1].x) / 2
+                                self.Points[i].x = (end.x + self.Points[i - 1].x) // 2
                             if self.Segments[i - 1][1] != 0:
-                                self.Points[i].y = (end.y + self.Points[i - 1].y) / 2
+                                self.Points[i].y = (end.y + self.Points[i - 1].y) // 2
                         # A point is added
                         self.Points.insert(i + 1, wx.Point(self.Points[i].x, self.Points[i].y))
                         self.Segments.insert(
@@ -2241,9 +2244,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         dir = self.EndPoint[1]
                     else:
                         dir = (0, 0)
-                    pointx = max(-dir[0] * MIN_SEGMENT_SIZE, min(int(round(point[0] * width / float(max(lastwidth, 1)))),
+                    pointx = max(-dir[0] * MIN_SEGMENT_SIZE, min(int(round(point[0] * width / max(lastwidth, 1))),
                                                                  width - dir[0] * MIN_SEGMENT_SIZE))
-                    pointy = max(-dir[1] * MIN_SEGMENT_SIZE, min(int(round(point[1] * height / float(max(lastheight, 1)))),
+                    pointy = max(-dir[1] * MIN_SEGMENT_SIZE, min(int(round(point[1] * height / max(lastheight, 1))),
                                                                  height - dir[1] * MIN_SEGMENT_SIZE))
                     self.Points[i] = wx.Point(minx + x + pointx, miny + y + pointy)
             self.StartPoint[0] = self.Points[0]
@@ -2265,8 +2268,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
             # during a resize dragging
             for i, point in enumerate(self.RealPoints):
                 if not (i == 0 and self.StartConnected) and not (i == len(self.Points) - 1 and self.EndConnected):
-                    point[0] = point[0] * width / float(max(lastwidth, 1))
-                    point[1] = point[1] * height / float(max(lastheight, 1))
+                    point[0] = point[0] * width / max(lastwidth, 1)
+                    point[1] = point[1] * height / max(lastheight, 1)
             # Calculate the correct position of the points from real points
             for i, point in enumerate(self.RealPoints):
                 if not (i == 0 and self.StartConnected) and not (i == len(self.Points) - 1 and self.EndConnected):
@@ -2398,9 +2401,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 pointx = self.Points[segment].x
                 pointy = self.Points[segment].y
                 if dir[0] != 0:
-                    pointx = (self.Points[segment].x + self.Points[segment + 1].x) / 2
+                    pointx = (self.Points[segment].x + self.Points[segment + 1].x) // 2
                 if dir[1] != 0:
-                    pointy = (self.Points[segment].y + self.Points[segment + 1].y) / 2
+                    pointy = (self.Points[segment].y + self.Points[segment + 1].y) // 2
                 self.Points.insert(segment + 1, wx.Point(pointx, pointy))
                 self.Segments.insert(segment + 1, (dir[1], dir[0]))
                 self.Points.insert(segment + 2, wx.Point(pointx, pointy))
@@ -2409,11 +2412,11 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 p1x = p2x = self.Points[segment].x
                 p1y = p2y = self.Points[segment].y
                 if dir[0] != 0:
-                    p1x = (2 * self.Points[segment].x + self.Points[segment + 1].x) / 3
-                    p2x = (self.Points[segment].x + 2 * self.Points[segment + 1].x) / 3
+                    p1x = (2 * self.Points[segment].x + self.Points[segment + 1].x) // 3
+                    p2x = (self.Points[segment].x + 2 * self.Points[segment + 1].x) // 3
                 if dir[1] != 0:
-                    p1y = (2 * self.Points[segment].y + self.Points[segment + 1].y) / 3
-                    p2y = (self.Points[segment].y + 2 * self.Points[segment + 1].y) / 3
+                    p1y = (2 * self.Points[segment].y + self.Points[segment + 1].y) // 3
+                    p2y = (self.Points[segment].y + 2 * self.Points[segment + 1].y) // 3
                 self.Points.insert(segment + 1, wx.Point(p1x, p1y))
                 self.Segments.insert(segment + 1, (dir[1], dir[0]))
                 self.Points.insert(segment + 2, wx.Point(p1x, p1y))
@@ -2476,9 +2479,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if event.ControlDown():
             direction = (self.StartPoint[1], self.EndPoint[1])
             if direction in [(EAST, WEST), (WEST, EAST)]:
-                avgy = (self.StartPoint[0].y + self.EndPoint[0].y) / 2
+                avgy = (self.StartPoint[0].y + self.EndPoint[0].y) // 2
                 if scaling is not None:
-                    avgy = round(float(avgy) / scaling[1]) * scaling[1]
+                    avgy = round(avgy / scaling[1]) * scaling[1]
                 if self.StartConnected is not None:
                     movey = avgy - self.StartPoint[0].y
                     startblock = self.StartConnected.GetParentBlock()
@@ -2497,9 +2500,9 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     self.MoveEndPoint(wx.Point(self.EndPoint[0].x, avgy))
                 self.Parent.RefreshBuffer()
             elif direction in [(NORTH, SOUTH), (SOUTH, NORTH)]:
-                avgx = (self.StartPoint[0].x + self.EndPoint[0].x) / 2
+                avgx = (self.StartPoint[0].x + self.EndPoint[0].x) // 2
                 if scaling is not None:
-                    avgx = round(float(avgx) / scaling[0]) * scaling[0]
+                    avgx = round(avgx / scaling[0]) * scaling[0]
                 if self.StartConnected is not None:
                     movex = avgx - self.StartPoint[0].x
                     startblock = self.StartConnected.GetParentBlock()
@@ -2679,7 +2682,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if not self.Valid:
             dc.SetPen(MiterPen(wx.RED))
             dc.SetBrush(wx.RED_BRUSH)
-        elif isinstance(self.Value, BooleanType) and self.Value:
+        elif isinstance(self.Value, bool) and self.Value:
             if self.Forced:
                 dc.SetPen(MiterPen(wx.CYAN))
                 dc.SetBrush(wx.CYAN_BRUSH)
@@ -2717,25 +2720,25 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 end = 1
             dc.DrawLine(self.Points[self.SelectedSegment].x - 1, self.Points[self.SelectedSegment].y,
                         self.Points[self.SelectedSegment + 1].x + end, self.Points[self.SelectedSegment + 1].y)
-        if self.Value is not None and not isinstance(self.Value, BooleanType) and self.Value != "undefined":
+        if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.Parent.GetMiniFont())
             dc.SetTextForeground(wx.NamedColour("purple"))
-            if self.ValueSize is None and isinstance(self.ComputedValue, (StringType, UnicodeType)):
+            if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
                 self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize
                 if self.BoundingBox[2] > width * 4 or self.BoundingBox[3] > height * 4:
-                    x = self.Points[0].x + width * (self.StartPoint[1][0] - 1) / 2
+                    x = self.Points[0].x + width * (self.StartPoint[1][0] - 1) // 2
                     y = self.Points[0].y + height * (self.StartPoint[1][1] - 1)
                     dc.DrawText(self.ComputedValue, x, y)
-                    x = self.Points[-1].x + width * (self.EndPoint[1][0] - 1) / 2
+                    x = self.Points[-1].x + width * (self.EndPoint[1][0] - 1) // 2
                     y = self.Points[-1].y + height * (self.EndPoint[1][1] - 1)
                     dc.DrawText(self.ComputedValue, x, y)
                 else:
-                    middle = len(self.Segments) / 2 + len(self.Segments) % 2 - 1
-                    x = (self.Points[middle].x + self.Points[middle + 1].x - width) / 2
+                    middle = len(self.Segments) // 2 + len(self.Segments) % 2 - 1
+                    x = (self.Points[middle].x + self.Points[middle + 1].x - width) // 2
                     if self.BoundingBox[3] > height and self.Segments[middle] in [NORTH, SOUTH]:
-                        y = (self.Points[middle].y + self.Points[middle + 1].y - height) / 2
+                        y = (self.Points[middle].y + self.Points[middle + 1].y - height) // 2
                     else:
                         y = self.Points[middle].y - height
                     dc.DrawText(self.ComputedValue, x, y)

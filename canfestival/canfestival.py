@@ -24,6 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 from __future__ import absolute_import
+from __future__ import division
 import os
 import sys
 import shutil
@@ -327,7 +328,7 @@ class _NodeListCTN(NodeList):
             nodeid = self.CanFestivalNode.getNodeId()
             if value != nodeid:
                 slaves = self.GetSlaveIDs()
-                dir = (value - nodeid) / abs(value - nodeid)
+                dir = (value - nodeid) // abs(value - nodeid)
                 while value in slaves and value >= 0:
                     value += dir
                 if value < 0:
@@ -616,6 +617,6 @@ class RootClass(object):
         if can_driver is not None:
             can_driver_path = os.path.join(CanFestivalPath, "drivers", can_driver, can_driver_name)
             if os.path.exists(can_driver_path):
-                res += ((can_driver_name, file(can_driver_path, "rb")),)
+                res += ((can_driver_name, open(can_driver_path, "rb")),)
 
         return res

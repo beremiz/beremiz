@@ -24,12 +24,14 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import math
 from time import time as gettime
-from types import TupleType
 from threading import Lock
+from future.builtins import round
 
 import wx
+from six.moves import xrange
 
 from plcopen.structures import *
 from plcopen.types_enums import ComputePouName
@@ -275,7 +277,7 @@ class ViewerDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for viewer block") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for viewer block") % data
             values = None
         if values is not None:
@@ -307,10 +309,10 @@ class ViewerDropTarget(wx.TextDropTarget):
                         block = FBD_Block(self.ParentWindow, values[0], blockname, id, inputs=blockinputs)
                         width, height = block.GetMinSize()
                         if scaling is not None:
-                            x = round(float(x) / float(scaling[0])) * scaling[0]
-                            y = round(float(y) / float(scaling[1])) * scaling[1]
-                            width = round(float(width) / float(scaling[0]) + 0.5) * scaling[0]
-                            height = round(float(height) / float(scaling[1]) + 0.5) * scaling[1]
+                            x = round(x / scaling[0]) * scaling[0]
+                            y = round(y / scaling[1]) * scaling[1]
+                            width = round(width / scaling[0] + 0.5) * scaling[0]
+                            height = round(height / scaling[1] + 0.5) * scaling[1]
                         block.SetPosition(x, y)
                         block.SetSize(width, height)
                         self.ParentWindow.AddBlock(block)
@@ -859,7 +861,7 @@ class Viewer(EditorPanel, DebugViewer):
                 self.Editor.Freeze()
                 if mouse_event is None:
                     client_size = self.Editor.GetClientSize()
-                    mouse_pos = wx.Point(client_size[0] / 2, client_size[1] / 2)
+                    mouse_pos = wx.Point(client_size[0] // 2, client_size[1] // 2)
                     mouse_event = wx.MouseEvent(wx.EVT_MOUSEWHEEL.typeId)
                     mouse_event.x = mouse_pos.x
                     mouse_event.y = mouse_pos.y
@@ -1338,7 +1340,8 @@ class Viewer(EditorPanel, DebugViewer):
         maxy = int(maxy * self.ViewScale[1])
         self.Editor.SetScrollbars(
             SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-            round(maxx / SCROLLBAR_UNIT) + width_incr, round(maxy / SCROLLBAR_UNIT) + height_incr,
+            round(maxx / SCROLLBAR_UNIT) + width_incr,
+            round(maxy / SCROLLBAR_UNIT) + height_incr,
             xstart, ystart, True)
 
     def EnsureVisible(self, block):
@@ -1355,13 +1358,13 @@ class Viewer(EditorPanel, DebugViewer):
 
         xpos, ypos = xstart, ystart
         if block_minx < screen_minx and block_maxx < screen_maxx:
-            xpos -= (screen_minx - block_minx) / SCROLLBAR_UNIT + 1
+            xpos -= (screen_minx - block_minx) // SCROLLBAR_UNIT + 1
         elif block_maxx > screen_maxx and block_minx > screen_minx:
-            xpos += (block_maxx - screen_maxx) / SCROLLBAR_UNIT + 1
+            xpos += (block_maxx - screen_maxx) // SCROLLBAR_UNIT + 1
         if block_miny < screen_miny and block_maxy < screen_maxy:
-            ypos -= (screen_miny - block_miny) / SCROLLBAR_UNIT + 1
+            ypos -= (screen_miny - block_miny) // SCROLLBAR_UNIT + 1
         elif block_maxy > screen_maxy and block_miny > screen_miny:
-            ypos += (block_maxy - screen_maxy) / SCROLLBAR_UNIT + 1
+            ypos += (block_maxy - screen_maxy) // SCROLLBAR_UNIT + 1
         self.Scroll(xpos, ypos)
 
     def SelectInGroup(self, element):
@@ -2316,8 +2319,8 @@ class Viewer(EditorPanel, DebugViewer):
                 new_pos = event.GetPosition()
                 xmax = self.GetScrollRange(wx.HORIZONTAL) - self.GetScrollThumb(wx.HORIZONTAL)
                 ymax = self.GetScrollRange(wx.VERTICAL) - self.GetScrollThumb(wx.VERTICAL)
-                scrollx = max(0, self.StartScreenPos[0] - (new_pos[0] - self.StartMousePos[0]) / SCROLLBAR_UNIT)
-                scrolly = max(0, self.StartScreenPos[1] - (new_pos[1] - self.StartMousePos[1]) / SCROLLBAR_UNIT)
+                scrollx = max(0, self.StartScreenPos[0] - (new_pos[0] - self.StartMousePos[0]) // SCROLLBAR_UNIT)
+                scrolly = max(0, self.StartScreenPos[1] - (new_pos[1] - self.StartMousePos[1]) // SCROLLBAR_UNIT)
                 if scrollx > xmax or scrolly > ymax:
                     self.RefreshScrollBars(max(0, scrollx - xmax), max(0, scrolly - ymax))
                     self.Scroll(scrollx, scrolly)
@@ -2545,10 +2548,10 @@ class Viewer(EditorPanel, DebugViewer):
         variable = FBD_Variable(self, var_class, var_name, var_type, id)
         width, height = variable.GetMinSize()
         if scaling is not None:
-            x = round(float(x) / float(scaling[0])) * scaling[0]
-            y = round(float(y) / float(scaling[1])) * scaling[1]
-            width = round(float(width) / float(scaling[0]) + 0.5) * scaling[0]
-            height = round(float(height) / float(scaling[1]) + 0.5) * scaling[1]
+            x = round(x / scaling[0]) * scaling[0]
+            y = round(y / scaling[1]) * scaling[1]
+            width = round(width / scaling[0] + 0.5) * scaling[0]
+            height = round(height / scaling[1] + 0.5) * scaling[1]
         variable.SetPosition(x, y)
         variable.SetSize(width, height)
         self.AddBlock(variable)
@@ -2565,8 +2568,8 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetScaledSize(self, width, height):
         if self.Scaling is not None:
-            width = round(float(width) / float(self.Scaling[0]) + 0.4) * self.Scaling[0]
-            height = round(float(height) / float(self.Scaling[1]) + 0.4) * self.Scaling[1]
+            width = round(width / self.Scaling[0] + 0.4) * self.Scaling[0]
+            height = round(height / self.Scaling[1] + 0.4) * self.Scaling[1]
         return width, height
 
     def AddNewElement(self, element, bbox, wire=None, connector=None):
@@ -3451,7 +3454,7 @@ class Viewer(EditorPanel, DebugViewer):
                 middle = True
                 new_pos = [bbx.x, bbx.y]
             result = self.Controler.PasteEditedElementInstances(self.TagName, element, new_pos, middle, self.Debug)
-            if not isinstance(result, (StringType, UnicodeType)):
+            if not isinstance(result, string_types):
                 self.RefreshBuffer()
                 self.RefreshView(selection=result)
                 self.RefreshVariablePanel()

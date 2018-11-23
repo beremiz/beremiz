@@ -22,6 +22,9 @@
 # This code is made available on the understanding that it will not be
 # used in safety-critical situations without a full and competent review.
 
+from __future__ import absolute_import
+from __future__ import division
+from six.moves import xrange
 
 # dictionary implementing:
 # key   - string with the description we want in the request plugin GUI
@@ -185,7 +188,7 @@ DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(t
 {%(buffer)s}, {%(buffer)s}}'''
 
     timeout = int(GetCTVal(child, 4))
-    timeout_s = int(timeout / 1000)
+    timeout_s = timeout // 1000
     timeout_ms = timeout - (timeout_s * 1000)
     timeout_ns = timeout_ms * 1000000
 

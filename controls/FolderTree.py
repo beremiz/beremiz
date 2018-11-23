@@ -27,6 +27,7 @@ from __future__ import absolute_import
 import os
 
 import wx
+from six.moves import xrange
 
 from util.BitmapLibrary import GetBitmap
 

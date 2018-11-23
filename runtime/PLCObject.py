@@ -30,6 +30,10 @@ import sys
 import traceback
 from time import time
 import _ctypes  # pylint: disable=wrong-import-order
+from past.builtins import execfile
+import Pyro.core as pyro
+import six
+from six.moves import _thread, xrange
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
@@ -95,12 +99,12 @@ class PLCObject(object):
                 self._GetMD5FileName(),
                 "r").read().strip() + lib_ext
             if self.LoadPLC():
-                self.PLCStatus = "Stopped"
+                self.PLCStatus = PlcStatus.Stopped
                 if autostart:
                     self.StartPLC()
                     return
         except Exception:
-            self.PLCStatus = "Empty"
+            self.PLCStatus = PlcStatus.Empty
             self.CurrentPLCFilename = None
 
         self.StatusChange()
@@ -466,7 +470,7 @@ class PLCObject(object):
             try:
                 if replace_PLC_shared_object:
                     os.remove(old_PLC_filename)
-                for filename in file(extra_files_log, "r").readlines() + [extra_files_log]:
+                for filename in open(extra_files_log, "rt").readlines() + [extra_files_log]:
                     try:
                         os.remove(os.path.join(self.workingdir, filename.strip()))
                     except Exception:
@@ -483,7 +487,7 @@ class PLCObject(object):
                 open(self._GetMD5FileName(), "w").write(md5sum)
 
                 # Then write the files
-                log = file(extra_files_log, "w")
+                log = open(extra_files_log, "w")
                 for fname, fdata in extrafiles:
                     fpath = os.path.join(self.workingdir, fname)
                     open(fpath, "wb").write(fdata)

@@ -13,16 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=no-absolute-import
+# pylint: disable=no-absolute-import,bad-python3-import
 
 from __future__ import print_function
 import sys
-from types import StringType
 import compiler
 from compiler import ast
 import os
 import copy
-import cStringIO
+from builtins import str as text
+from past.builtins import basestring
+from six.moves import cStringIO
 
 # the standard location for builtins (e.g. pyjslib) can be
 # over-ridden by changing this.  it defaults to sys.prefix
@@ -1359,7 +1360,7 @@ class Translator(object):
             return str(node.value)
         elif isinstance(node.value, basestring):
             v = node.value
-            if isinstance(node.value, unicode):
+            if isinstance(node.value, text):
                 v = v.encode('utf-8')
             return "String('%s')" % escapejs(v)
         elif node.value is None:
@@ -1386,7 +1387,7 @@ class Translator(object):
         return self.expr(node.left, current_klass) + " * " + self.expr(node.right, current_klass)
 
     def _mod(self, node, current_klass):
-        if isinstance(node.left, ast.Const) and isinstance(node.left.value, StringType):
+        if isinstance(node.left, ast.Const) and isinstance(node.left.value, str):
             self.imported_js.add("sprintf.js")  # Include the sprintf functionality if it is used
             return "sprintf("+self.expr(node.left, current_klass) + ", " + self.expr(node.right, current_klass)+")"
         return self.expr(node.left, current_klass) + " % " + self.expr(node.right, current_klass)
@@ -1443,7 +1444,7 @@ class Translator(object):
             raise TranslationError("varargs are not supported in Lambdas", node)
         if node.kwargs:
             raise TranslationError("kwargs are not supported in Lambdas", node)
-        res = cStringIO.StringIO()
+        res = cStringIO()
         arg_names = list(node.argnames)
         function_args = ", ".join(arg_names)
         for child in node.getChildNodes():
@@ -1531,10 +1532,10 @@ class Translator(object):
 
 
 def translate(file_name, module_name, debug=False):
-    f = file(file_name, "r")
+    f = open(file_name, "r")
     src = f.read()
     f.close()
-    output = cStringIO.StringIO()
+    output = cStringIO()
     mod = compiler.parseFile(file_name)
     Translator(module_name, module_name, module_name, src, debug, mod, output)
     return output.getvalue()
@@ -1683,9 +1684,9 @@ class AppTranslator(object):
 
         file_name = self.findFile(module_name + self.extension)
 
-        output = cStringIO.StringIO()
+        output = cStringIO()
 
-        f = file(file_name, "r")
+        f = open(file_name, "r")
         src = f.read()
         f.close()
 
@@ -1718,8 +1719,8 @@ class AppTranslator(object):
 
     def translate(self, module_name, is_app=True, debug=False,
                   library_modules=None):
-        app_code = cStringIO.StringIO()
-        lib_code = cStringIO.StringIO()
+        app_code = cStringIO()
+        lib_code = cStringIO()
         imported_js = set()
         self.library_modules = []
         self.overrides = {}
@@ -1748,7 +1749,7 @@ class AppTranslator(object):
                 if self.verbose:
                     print('Including JS', js)
                 print('\n//\n// BEGIN JS '+js+'\n//\n', file=lib_code)
-                print(file(path).read(), file=lib_code)
+                print(open(path).read(), file=lib_code)
                 print('\n//\n// END JS '+js+'\n//\n', file=lib_code)
             else:
                 print('Warning: Unable to find imported javascript:', js, file=sys.stderr)

@@ -24,8 +24,10 @@
 
 
 from __future__ import absolute_import
-from types import *
 import re
+from functools import reduce
+from six.moves import xrange
+
 from plcopen import PLCOpenParser
 from plcopen.structures import *
 from plcopen.types_enums import *
@@ -708,7 +710,7 @@ class PouProgramGenerator(object):
 
     def ComputeConnectionTypes(self, pou):
         body = pou.getbody()
-        if isinstance(body, ListType):
+        if isinstance(body, list):
             body = body[0]
         body_content = body.getcontent()
         body_type = body_content.getLocalTag()
@@ -941,7 +943,7 @@ class PouProgramGenerator(object):
 
     def ComputeProgram(self, pou):
         body = pou.getbody()
-        if isinstance(body, ListType):
+        if isinstance(body, list):
             body = body[0]
         body_content = body.getcontent()
         body_type = body_content.getLocalTag()
@@ -1025,7 +1027,7 @@ class PouProgramGenerator(object):
                     try:
                         self.GenerateBlock(instance, block_infos, body, None)
                     except ValueError as e:
-                        raise PLCGenException(e.message)
+                        raise PLCGenException(str(e))
                 elif isinstance(instance, ConnectorClass):
                     connector = instance.getname()
                     if self.ComputedConnectors.get(connector, None):
@@ -1049,7 +1051,7 @@ class PouProgramGenerator(object):
         uncomputed_index = range(len(paths))
         factorized_paths = []
         for num, path in enumerate(paths):
-            if isinstance(path, ListType):
+            if isinstance(path, list):
                 if len(path) > 1:
                     str_path = str(path[-1:])
                     same_paths.setdefault(str_path, [])
@@ -1303,7 +1305,7 @@ class PouProgramGenerator(object):
                 try:
                     paths.append(str(self.GenerateBlock(next, block_infos, body, connection, order, to_inout)))
                 except ValueError as e:
-                    raise PLCGenException(e.message)
+                    raise PLCGenException(str(e))
             elif isinstance(next, ContinuationClass):
                 name = next.getname()
                 computed_value = self.ComputedConnectors.get(name, None)
@@ -1339,7 +1341,7 @@ class PouProgramGenerator(object):
                         paths.append([variable, tuple(factorized_paths)])
                     else:
                         paths.append([variable] + factorized_paths)
-                elif isinstance(result[0], ListType):
+                elif isinstance(result[0], list):
                     paths.append([variable] + result[0])
                 elif result[0] is not None:
                     paths.append([variable, result[0]])
@@ -1350,7 +1352,7 @@ class PouProgramGenerator(object):
         return paths
 
     def ComputePaths(self, paths, first=False):
-        if isinstance(paths, TupleType):
+        if isinstance(paths, tuple):
             if None in paths:
                 return [("TRUE", ())]
             else:
@@ -1359,7 +1361,7 @@ class PouProgramGenerator(object):
                     return JoinList([(" OR ", ())], vars)
                 else:
                     return [("(", ())] + JoinList([(" OR ", ())], vars) + [(")", ())]
-        elif isinstance(paths, ListType):
+        elif isinstance(paths, list):
             vars = [self.ComputePaths(path) for path in paths]
             return JoinList([(" AND ", ())], vars)
         elif paths is None:
@@ -1421,7 +1423,7 @@ class PouProgramGenerator(object):
             if connections is not None and len(connections) == 1:
                 instanceLocalId = connections[0].getrefLocalId()
                 body = pou.getbody()
-                if isinstance(body, ListType):
+                if isinstance(body, list):
                     body = body[0]
                 return body.getcontentInstance(instanceLocalId)
         return None
@@ -1433,7 +1435,7 @@ class PouProgramGenerator(object):
             if connections is not None and len(connections) == 1:
                 instanceLocalId = connections[0].getrefLocalId()
                 body = pou.getbody()
-                if isinstance(body, ListType):
+                if isinstance(body, list):
                     body = body[0]
                 instances.append(body.getcontentInstance(instanceLocalId))
         return instances
@@ -1454,7 +1456,7 @@ class PouProgramGenerator(object):
                 if connections is not None and len(connections) == 1:
                     instanceLocalId = connections[0].getrefLocalId()
                     body = pou.getbody()
-                    if isinstance(body, ListType):
+                    if isinstance(body, list):
                         body = body[0]
                     instance = body.getcontentInstance(instanceLocalId)
                     if isinstance(instance, TransitionClass):
@@ -1488,7 +1490,7 @@ class PouProgramGenerator(object):
             if connections is not None and len(connections) == 1:
                 instanceLocalId = connections[0].getrefLocalId()
                 body = pou.getbody()
-                if isinstance(body, ListType):
+                if isinstance(body, list):
                     body = body[0]
                 instance = body.getcontentInstance(instanceLocalId)
                 if isinstance(instance, TransitionClass):
@@ -1513,7 +1515,7 @@ class PouProgramGenerator(object):
         if connections is not None and len(connections) == 1:
             stepLocalId = connections[0].getrefLocalId()
             body = pou.getbody()
-            if isinstance(body, ListType):
+            if isinstance(body, list):
                 body = body[0]
             step = body.getcontentInstance(stepLocalId)
             self.GenerateSFCStep(step, pou)
@@ -1560,7 +1562,7 @@ class PouProgramGenerator(object):
             if connections is not None and len(connections) == 1:
                 instanceLocalId = connections[0].getrefLocalId()
                 body = pou.getbody()
-                if isinstance(body, ListType):
+                if isinstance(body, list):
                     body = body[0]
                 instance = body.getcontentInstance(instanceLocalId)
                 if isinstance(instance, StepClass):
@@ -1615,7 +1617,7 @@ class PouProgramGenerator(object):
                 self.TagName = previous_tagname
             elif transitionValues["type"] == "connection":
                 body = pou.getbody()
-                if isinstance(body, ListType):
+                if isinstance(body, list):
                     body = body[0]
                 connections = transitionValues["value"].getconnections()
                 if connections is not None:

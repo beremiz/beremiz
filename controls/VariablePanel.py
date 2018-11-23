@@ -24,12 +24,15 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import re
-from types import TupleType, StringType, UnicodeType
+from builtins import str as text
 
 import wx
 import wx.grid
 import wx.lib.buttons
+from six import string_types
+from six.moves import xrange
 
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from plcopen.VariableInfoCollector import _VariableInfos
@@ -98,8 +101,8 @@ CheckOptionForClass = {
     "External": lambda x: {"Constant": "Constant"}.get(x, "")
 }
 
-LOCATION_MODEL = re.compile("((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
-LOCATION_MODEL_SET = re.compile("((?:%[IQM](?:[XBWLD]?[0-9]+(?:\.[0-9]+)*))?)$")
+LOCATION_MODEL = re.compile(r"((?:%[IQM](?:\*|(?:[XBWLD]?[0-9]+(?:\.[0-9]+)*)))?)$")
+LOCATION_MODEL_SET = re.compile(r"((?:%[IQM](?:[XBWLD]?[0-9]+(?:\.[0-9]+)*))?)$")
 
 
 # -------------------------------------------------------------------------------
@@ -137,10 +140,10 @@ class VariableTable(CustomTable):
             if colname == "Initial Value":
                 colname = "InitialValue"
             value = getattr(self.data[row], colname, "")
-            if colname == "Type" and isinstance(value, TupleType):
+            if colname == "Type" and isinstance(value, tuple):
                 if value[0] == "array":
                     return "ARRAY [%s] OF %s" % (",".join(map("..".join, value[2])), value[1])
-            if not isinstance(value, (StringType, UnicodeType)):
+            if not isinstance(value, string_types):
                 value = str(value)
             if colname in ["Class", "Option"]:
                 return _(value)
@@ -277,7 +280,7 @@ class VariableDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for variable grid element") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for variable grid element") % data
             values = None
         if values is not None:
@@ -603,10 +606,10 @@ class VariablePanel(wx.Panel):
                 # increment location address
                 if row_content.Location != "" and LOCATION_MODEL_SET.match(row_content.Location):
                     old_location = row_content.Location
-                    model = re.compile("%[IQM][XBWLD]?(.*\.|)")
+                    model = re.compile(r"%[IQM][XBWLD]?(.*\.|)")
                     prefix = model.match(old_location).group(0)
                     addr = int(re.split(model, old_location)[-1]) + 1
-                    row_content.Location = prefix + unicode(addr)
+                    row_content.Location = prefix + text(addr)
 
             if not row_content.Class:
                 row_content.Class = self.DefaultTypes.get(self.Filter, self.Filter)
@@ -682,7 +685,7 @@ class VariablePanel(wx.Panel):
             self.VariablesGrid.SetColAttr(col, attr)
             self.VariablesGrid.SetColMinimalWidth(col, self.ColSettings["size"][col])
             if (panel_width > self.PanelWidthMin) and not self.ColSettings["fixed_size"][col]:
-                self.VariablesGrid.SetColSize(col, int((float(self.ColSettings["size"][col])/stretch_cols_sum)*stretch_cols_width))
+                self.VariablesGrid.SetColSize(col, int((self.ColSettings["size"][col]/stretch_cols_sum)*stretch_cols_width))
             else:
                 self.VariablesGrid.SetColSize(col, self.ColSettings["size"][col])
 
@@ -697,7 +700,7 @@ class VariablePanel(wx.Panel):
         return self.TagName
 
     def IsFunctionBlockType(self, name):
-        if isinstance(name, TupleType) or \
+        if isinstance(name, tuple) or \
            self.ElementType != "function" and self.BodyType in ["ST", "IL"]:
             return False
         else:
@@ -985,7 +988,7 @@ class VariablePanel(wx.Panel):
         event.Skip()
 
     def AddVariableHighlight(self, infos, highlight_type):
-        if isinstance(infos[0], TupleType):
+        if isinstance(infos[0], tuple):
             for i in xrange(*infos[0]):
                 self.Table.AddHighlight((i,) + infos[1:], highlight_type)
             cell_visible = infos[0][0]
@@ -997,7 +1000,7 @@ class VariablePanel(wx.Panel):
         self.RefreshHighlightsTimer.Start(int(REFRESH_HIGHLIGHT_PERIOD * 1000), oneShot=True)
 
     def RemoveVariableHighlight(self, infos, highlight_type):
-        if isinstance(infos[0], TupleType):
+        if isinstance(infos[0], tuple):
             for i in xrange(*infos[0]):
                 self.Table.RemoveHighlight((i,) + infos[1:], highlight_type)
         else:

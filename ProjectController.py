@@ -36,11 +36,11 @@ from time import localtime
 import shutil
 import re
 import tempfile
-from types import ListType
 from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
-from itertools import izip
+from functools import reduce
+from six.moves import xrange
 
 import wx
 
@@ -67,13 +67,13 @@ from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 base_folder = paths.AbsParentDir(__file__)
 
 MATIEC_ERROR_MODEL = re.compile(
-    ".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
+    r".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
 
 
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
     for n, d, _h, c in catalog:
-        if isinstance(c, ListType):
+        if isinstance(c, list):
             children_types.extend(ExtractChildrenTypesFromCatalog(c))
         else:
             children_types.append((n, GetClassImporter(c), d))
@@ -83,7 +83,7 @@ def ExtractChildrenTypesFromCatalog(catalog):
 def ExtractMenuItemsFromCatalog(catalog):
     menu_items = []
     for n, d, h, c in catalog:
-        if isinstance(c, ListType):
+        if isinstance(c, list):
             children = ExtractMenuItemsFromCatalog(c)
         else:
             children = []
@@ -712,7 +712,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             lines = [line.strip() for line in location_file.readlines()]
             # This regular expression parses the lines genereated by IEC2C
             LOCATED_MODEL = re.compile(
-                "__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWDL]))?,(?P<LOC>[,0-9]*)\)")
+                r"__LOCATED_VAR\((?P<IEC_TYPE>[A-Z]*),(?P<NAME>[_A-Za-z0-9]*),(?P<DIR>[QMI])(?:,(?P<SIZE>[XBWDL]))?,(?P<LOC>[,0-9]*)\)")
             for line in lines:
                 # If line match RE,
                 result = LOCATED_MODEL.match(line)
@@ -770,7 +770,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         plc_file.close()
         plc_file = open(self._getIECcodepath(), "r")
         self.ProgramOffset = 0
-        for dummy in plc_file.xreadlines():
+        for dummy in plc_file.readlines():
             self.ProgramOffset += 1
         plc_file.close()
         plc_file = open(self._getIECcodepath(), "a")
@@ -858,9 +858,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         H_files = map(
             lambda filename: os.path.join(buildpath, filename), H_files)
         for H_file in H_files:
-            with file(H_file, 'r') as original:
+            with open(H_file, 'r') as original:
                 data = original.read()
-            with file(H_file, 'w') as modified:
+            with open(H_file, 'w') as modified:
                 modified.write('#include "beremiz.h"\n' + data)
 
         self.logger.write(_("Extracting Located Variables...\n"))
@@ -952,7 +952,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                 # Separate sections
                 ListGroup = []
-                for line in open(csvfile, 'r').xreadlines():
+                for line in open(csvfile, 'r').readlines():
                     strippedline = line.strip()
                     if strippedline.startswith("//"):
                         # Start new section
@@ -1293,7 +1293,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._IECCodeView.SetTextSyntax("ALL")
                 self._IECCodeView.SetKeywords(IEC_KEYWORDS)
                 try:
-                    text = file(plc_file).read()
+                    text = open(plc_file).read()
                 except Exception:
                     text = '(* No IEC code have been generated at that time ! *)'
                 self._IECCodeView.SetText(text=text)
@@ -1503,7 +1503,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         debug_vars = UnpackDebugBuffer(
                             debug_buff, self.TracedIECTypes)
                         if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
-                            for IECPath, values_buffer, value in izip(
+                            for IECPath, values_buffer, value in zip(
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,
                                     debug_vars):
@@ -1682,7 +1682,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
         start_time = time.time()
         if len(self.TracedIECPath) == len(buffers):
-            for IECPath, values in izip(self.TracedIECPath, buffers):
+            for IECPath, values in zip(self.TracedIECPath, buffers):
                 if len(values) > 0:
                     self.CallWeakcallables(
                         IECPath, "NewValues", debug_ticks, values)

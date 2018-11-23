@@ -84,7 +84,9 @@ from __future__ import print_function
 import os
 import sys
 import re
+from builtins import str as text
 import wx
+
 
 # -----------------------------------------------------------------------------
 # Global variables
@@ -149,7 +151,7 @@ def processCustomFiles(filein, fileout, regexp, prefix=''):
     messages_file.write('\n')
 
     words_found = {}
-    for filepath in appfil_file.xreadlines():
+    for filepath in appfil_file.readlines():
         code_file = open(filepath.strip(), 'r')
         for match in regexp.finditer(code_file.read()):
             word = match.group(1)
@@ -200,7 +202,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     os.chdir(applicationDirectoryPath)
     filelist = 'app.fil'
     if not os.path.exists(filelist):
-        raise IOError(2, 'No module file: ' % filelist)
+        raise IOError(2, 'No module file: %s' % filelist)
 
     fileout = 'messages.pot'
     # Steps:
@@ -214,10 +216,10 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
     verbosePrint(verbose, cmd)
     os.system(cmd)
 
-    XSD_STRING_MODEL = re.compile("<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
+    XSD_STRING_MODEL = re.compile(r"<xsd\:(?:element|attribute) name=\"([^\"]*)\"[^\>]*\>")
     processCustomFiles(filelist, fileout, XSD_STRING_MODEL, 'Extra XSD strings')
 
-    XML_TC6_STRING_MODEL = re.compile("<documentation>\s*<xhtml\:p><!\[CDATA\[([^\]]*)\]\]></xhtml\:p>\s*</documentation>", re.MULTILINE | re.DOTALL)
+    XML_TC6_STRING_MODEL = re.compile(r"<documentation>\s*<xhtml\:p><!\[CDATA\[([^\]]*)\]\]></xhtml\:p>\s*</documentation>", re.MULTILINE | re.DOTALL)
     processCustomFiles(filelist, fileout, XML_TC6_STRING_MODEL, 'Extra TC6 documentation strings')
 
     # generate messages.po
@@ -487,7 +489,7 @@ if __name__ == "__main__":
     try:
         optionList, pargs = getopt.getopt(sys.argv[1:], validOptions, validLongOptions)
     except getopt.GetoptError as e:
-        printUsage(e[0])
+        printUsage(e)
         sys.exit(1)
     for (opt, val) in optionList:
         if opt == '-h':
@@ -513,7 +515,7 @@ if __name__ == "__main__":
             makePO(appDirPath, option['domain'], option['verbose'])
             exit_code = 0
         except IOError as e:
-            printUsage(e[1] + '\n   You must write a file app.fil that contains the list of all files to parse.')
+            printUsage(text(e) + '\n   You must write a file app.fil that contains the list of all files to parse.')
     if option['mo']:
         makeMO(appDirPath, option['moTarget'], option['domain'], option['verbose'], option['forceEnglish'])
         exit_code = 0

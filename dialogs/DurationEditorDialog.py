@@ -25,6 +25,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import re
 
 import wx
@@ -40,7 +41,7 @@ MINUTE = 60 * SECOND
 HOUR = 60 * MINUTE
 DAY = 24 * HOUR
 
-IEC_TIME_MODEL = re.compile("(?:T|TIME)#(-)?(?:(%(float)s)D_?)?(?:(%(float)s)H_?)?(?:(%(float)s)M(?!S)_?)?(?:(%(float)s)S_?)?(?:(%(float)s)MS)?$" % {"float": "[0-9]+(?:\.[0-9]+)?"})
+IEC_TIME_MODEL = re.compile(r"(?:T|TIME)#(-)?(?:(%(float)s)D_?)?(?:(%(float)s)H_?)?(?:(%(float)s)M(?!S)_?)?(?:(%(float)s)S_?)?(?:(%(float)s)MS)?$" % {"float": r"[0-9]+(?:\.[0-9]+)?"})
 
 
 # -------------------------------------------------------------------------------
@@ -139,10 +140,10 @@ class DurationEditorDialog(wx.Dialog):
 
         not_null = False
         duration = "T#"
-        for value, format in [((int(milliseconds) / DAY),             "%dd"),
-                              ((int(milliseconds) % DAY) / HOUR,      "%dh"),
-                              ((int(milliseconds) % HOUR) / MINUTE,   "%dm"),
-                              ((int(milliseconds) % MINUTE) / SECOND, "%ds")]:
+        for value, format in [((int(milliseconds) // DAY),             "%dd"),
+                              ((int(milliseconds) % DAY) // HOUR,      "%dh"),
+                              ((int(milliseconds) % HOUR) // MINUTE,   "%dm"),
+                              ((int(milliseconds) % MINUTE) // SECOND, "%ds")]:
 
             if value > 0 or not_null:
                 duration += format % value

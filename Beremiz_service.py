@@ -32,11 +32,15 @@ import getopt
 import threading
 from threading import Thread, Semaphore, Lock
 import __builtin__
+from builtins import str as text
+from past.builtins import execfile
+from six.moves import builtins
 
 import runtime
 from runtime.PyroServer import Server
 from runtime.xenomai import TryPreloadXenomai
 from runtime import LogMessageAndException
+from runtime import PlcStatus
 import util.paths as paths
 
 
@@ -142,7 +146,7 @@ elif len(argv) == 0:
     WorkingDir = os.getcwd()
     argv = [WorkingDir]
 
-__builtin__.__dict__['_'] = lambda x: x
+builtins.__dict__['_'] = lambda x: x
 # TODO: add a cmdline parameter if Trying Preloading Xenomai makes problem
 TryPreloadXenomai()
 version()
@@ -161,12 +165,12 @@ def SetupI18n():
     domain = "Beremiz"
 
     # Define locale for wx
-    loc = __builtin__.__dict__.get('loc', None)
+    loc = builtins.__dict__.get('loc', None)
     if loc is None:
         wx.LogGui.EnableLogging(False)
         loc = wx.Locale(langid)
         wx.LogGui.EnableLogging(True)
-        __builtin__.__dict__['loc'] = loc
+        builtins.__dict__['loc'] = loc
         # Define location for searching translation files
     loc.AddCatalogLookupPathPrefix(localedir)
     # Define locale domain
@@ -184,8 +188,8 @@ def SetupI18n():
     def unicode_translation(message):
         return wx.GetTranslation(message).encode(default_locale)
 
-    __builtin__.__dict__['_'] = unicode_translation
-    # __builtin__.__dict__['_'] = wx.GetTranslation
+    builtins.__dict__['_'] = unicode_translation
+    # builtins.__dict__['_'] = wx.GetTranslation
 
 
 # Life is hard... have a candy.
@@ -200,7 +204,6 @@ if enablewx:
 
     if havewx:
         import re
-        from types import *
 
         if wx.VERSION >= (3, 0, 0):
             app = wx.App(redirect=False)
@@ -315,7 +318,7 @@ if enablewx:
                 ip_addr = self.pyroserver.ip_addr
                 ip_addr = '' if ip_addr is None else ip_addr
                 dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)
-                dlg.SetTests([(re.compile('\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
+                dlg.SetTests([(re.compile(r'\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
                               (lambda x:len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4,
                                _("IP is not valid!"))])
                 if dlg.ShowModal() == wx.ID_OK:
@@ -324,7 +327,7 @@ if enablewx:
 
             def OnTaskBarChangePort(self, evt):
                 dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
-                dlg.SetTests([(UnicodeType.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
+                dlg.SetTests([(text.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.port = int(dlg.GetValue())
                     self.pyroserver.Restart()
@@ -368,9 +371,9 @@ if enablewx:
                 wx.CallAfter(wx.GetApp().ExitMainLoop)
 
             def UpdateIcon(self, plcstatus):
-                if plcstatus is "Started":
+                if plcstatus is PlcStatus.Started:
                     currenticon = self.MakeIcon(starticon)
-                elif plcstatus is "Stopped":
+                elif plcstatus is PlcStatus.Stopped:
                     currenticon = self.MakeIcon(stopicon)
                 else:
                     currenticon = self.MakeIcon(defaulticon)

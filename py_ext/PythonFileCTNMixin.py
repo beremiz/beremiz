@@ -27,8 +27,9 @@
 from __future__ import absolute_import
 import os
 import re
-import util.paths as paths
+from builtins import str as text
 
+import util.paths as paths
 from xmlclass import GenerateParserFromXSD
 
 from CodeFileTreeNode import CodeFile
@@ -62,8 +63,8 @@ class PythonFileCTNMixin(CodeFile):
                 'xmlns="http://www.w3.org/2001/XMLSchema"',
                 'xmlns:xhtml="http://www.w3.org/1999/xhtml"')
             for cre, repl in [
-                    (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-                    (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+                    (re.compile(r"(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+                    (re.compile(r"(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 pythonfile_xml = cre.sub(repl, pythonfile_xml)
 
             try:
@@ -74,7 +75,7 @@ class PythonFileCTNMixin(CodeFile):
                     self.CreateCodeFileBuffer(False)
                     self.OnCTNSave()
             except Exception as exc:
-                error = unicode(exc)
+                error = text(exc)
 
             if error is not None:
                 self.GetCTRoot().logger.write_error(
@@ -317,4 +318,4 @@ void __publish_%(location_str)s(void){
         return ([(Gen_PyCfile_path, matiec_CFLAGS)],
                 "",
                 True,
-                ("runtime_%s.py" % location_str, file(runtimefile_path, "rb")))
+                ("runtime_%s.py" % location_str, open(runtimefile_path, "rb")))

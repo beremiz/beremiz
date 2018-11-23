@@ -31,13 +31,13 @@ import wx
 
 def get_inkscape_path():
     """ Return the Inkscape path """
-    import _winreg
+    from six.moves import winreg
     try:
-        svgexepath = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE,
-                                        'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
+        svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                       'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
     except OSError:
-        svgexepath = _winreg.QueryValue(_winreg.HKEY_LOCAL_MACHINE,
-                                        'Software\\Classes\\inkscape.svg\\shell\\open\\command')
+        svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                       'Software\\Classes\\inkscape.svg\\shell\\open\\command')
     svgexepath = svgexepath.replace('"%1"', '')
     return svgexepath.replace('"', '')
 

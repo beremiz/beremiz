@@ -25,10 +25,11 @@
 
 
 from __future__ import absolute_import
-from types import *
+from __future__ import division
 import re
 from collections import OrderedDict
 
+from six.moves import xrange
 from lxml import etree
 
 from xmlclass import *
@@ -77,7 +78,7 @@ QualifierList = OrderedDict([
     ("SL", True)])
 
 
-FILTER_ADDRESS_MODEL = "(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)"
+FILTER_ADDRESS_MODEL = r"(%%[IQM](?:[XBWDL])?)(%s)((?:\.[0-9]+)*)"
 
 
 def update_address(address, address_model, new_leading):
@@ -229,8 +230,8 @@ def LoadProjectXML(project_xml):
         "http://www.plcopen.org/xml/tc6.xsd",
         "http://www.plcopen.org/xml/tc6_0201")
     for cre, repl in [
-            (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-            (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+            (re.compile(r"(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+            (re.compile(r"(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
         project_xml = cre.sub(repl, project_xml)
 
     try:
@@ -261,9 +262,9 @@ def LoadProjectXML(project_xml):
                                 text += "%ds" % time_values[2]
                             if time_values[3] != 0:
                                 if time_values[3] % 1000 != 0:
-                                    text += "%.3fms" % (float(time_values[3]) / 1000)
+                                    text += "%.3fms" % (time_values[3] / 1000)
                                 else:
-                                    text += "%dms" % (time_values[3] / 1000)
+                                    text += "%dms" % (time_values[3] // 1000)
                             task.set("interval", text)
 
                 # Update resources pou instance attributes
@@ -299,7 +300,7 @@ def LoadProjectXML(project_xml):
         return tree, error
 
     except Exception as e:
-        return None, e.message
+        return None, str(e)
 
 
 def LoadProject(filepath):
@@ -2874,7 +2875,7 @@ def _updateArrayValueValueClass(cls):
 
 cls = PLCOpenParser.GetElementClass("arrayValue", "value")
 if cls:
-    arrayValue_model = re.compile("([0-9]+)\((.*)\)$")
+    arrayValue_model = re.compile(r"([0-9]+)\((.*)\)$")
     _updateArrayValueValueClass(cls)
 
 # ----------------------------------------------------------------------

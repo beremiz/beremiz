@@ -24,7 +24,6 @@
 
 from __future__ import absolute_import
 import re
-from types import TupleType
 
 import wx
 
@@ -34,7 +33,7 @@ from controls import CustomEditableListBox
 #                                  Helpers
 # -------------------------------------------------------------------------------
 
-DIMENSION_MODEL = re.compile("([0-9]+)\.\.([0-9]+)$")
+DIMENSION_MODEL = re.compile(r"([0-9]+)\.\.([0-9]+)$")
 
 # -------------------------------------------------------------------------------
 #                             Array Type Dialog
@@ -83,7 +82,7 @@ class ArrayTypeDialog(wx.Dialog):
         for datatype in datatypes:
             self.BaseType.Append(datatype)
 
-        if isinstance(infos, TupleType) and infos[0] == "array":
+        if isinstance(infos, tuple) and infos[0] == "array":
             self.BaseType.SetStringSelection(infos[1])
             self.Dimensions.SetStrings(map("..".join, infos[2]))
         elif infos in datatypes:

@@ -8,6 +8,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from __future__ import division
 import os
 import string
 from xml.dom import minidom
@@ -422,7 +423,7 @@ class SDOPanelClass(wx.Panel):
 
                 self.Controler.CommonMethod.SaveSDOData[self.AllSDOData].append(self.Data)
 
-            if count >= len(self.SDOs.splitlines()) / 2:
+            if count >= len(self.SDOs.splitlines()) // 2:
                 (keep_going, _skip) = slaveSDO_progress.Update(count, "Please waiting a moment!!")
             else:
                 (keep_going, _skip) = slaveSDO_progress.Update(count)
@@ -1034,7 +1035,7 @@ class SlaveSiiSmartView(wx.Panel):
 
         # Config Data: EEPROM Size, PDI Type, Device Emulation
         # EEPROM's data in address '0x003f' is Size of EEPROM in KBit-1
-        eeprom_size = str((int(self.GetWordAddressData(sii_dict.get('Size'), 10))+1)/8*1024)
+        eeprom_size = str((int(self.GetWordAddressData(sii_dict.get('Size'), 10))+1)//8*1024)
         # Find PDI Type in pdiType dictionary
         cnt_pdi_type = int(self.GetWordAddressData(sii_dict.get('PDIControl'), 16).split('x')[1][2:4], 16)
         for i in self.PDIType.keys():
@@ -1363,10 +1364,10 @@ class SiiGridTable(wx.grid.Grid):
         for col in range(self.Col):
             if col == 16:
                 self.SetColLabelValue(16, "Text View")
-                self.SetColSize(16, (self.GetSize().x-120)*4/20)
+                self.SetColSize(16, (self.GetSize().x-120)*4//20)
             else:
                 self.SetColLabelValue(col, '%s' % col)
-                self.SetColSize(col, (self.GetSize().x-120)/20)
+                self.SetColSize(col, (self.GetSize().x-120)//20)
 
         # set data into table
         row = col = 0

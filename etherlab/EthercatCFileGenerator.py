@@ -10,6 +10,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from __future__ import division
 import os
 
 from etherlab.EthercatSlave import ExtractHexDecValue, DATATYPECONVERSION, ExtractName
@@ -254,7 +255,7 @@ class _EthercatCFileGenerator(object):
                     subindex = initCmd["Subindex"]
                     entry = device_entries.get((index, subindex), None)
                     if entry is not None:
-                        data_size = entry["BitSize"] / 8
+                        data_size = entry["BitSize"] // 8
                         data_str = ("0x%%.%dx" % (data_size * 2)) % initCmd["Value"]
                         init_cmd_infos = {
                             "index": index,
@@ -413,7 +414,7 @@ class _EthercatCFileGenerator(object):
                         elif pdo_type == "Outputs" and entry.getDataType() is not None and device_coe is not None:
                             data_type = entry.getDataType().getcontent()
                             entry_infos["dir"] = "Q"
-                            entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
+                            entry_infos["data_size"] = max(1, entry_infos["bitlen"] // 8)
                             entry_infos["data_type"] = DATATYPECONVERSION.get(data_type)
                             entry_infos["var_type"] = data_type
                             entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos

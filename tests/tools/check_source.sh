@@ -31,6 +31,11 @@ set_exit_error()
     fi
 }
 
+version_gt()
+{
+    test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+}
+
 
 compile_checks()
 {
@@ -115,8 +120,7 @@ pep8_checks_default()
     test -z $pep8 && return
 
     user_ignore=
-    # user_ignore=$user_ignore,E265  # E265 block comment should start with '# '
-    user_ignore=$user_ignore,E501  # E501 line too long (80 > 79 characters)
+    user_ignore=$user_ignore,W606  # W606 'async' and 'await' are reserved keywords starting with Python 3.7
 
     # ignored by default,
     default_ignore=
@@ -129,10 +133,11 @@ pep8_checks_default()
     default_ignore=$default_ignore,E242  # E242 tab after ‘,’
     default_ignore=$default_ignore,E704  # E704 multiple statements on one line (def)
     default_ignore=$default_ignore,W503  # W503 line break occurred before a binary operator
+    default_ignore=$default_ignore,W504  # W504 line break occurred after a binary operator
+    default_ignore=$default_ignore,W505  # W505 doc line too long (82 > 79 characters)
     ignore=$user_ignore,$default_ignore
 
-    # $pep8 --ignore $ignore --exclude build ./
-    $pep8 --max-line-length 300 --exclude build $py_files
+    $pep8 --max-line-length 300 --ignore=$ignore --exclude build $py_files
     if [ $? -ne 0 ]; then
         set_exit_error
     fi
@@ -237,6 +242,7 @@ flake8_checks()
 }
 
 pylint_checks()
+
 {
     echo "Check for problems using pylint ..."
 
@@ -256,7 +262,6 @@ pylint_checks()
     disable=$disable,C0103        # invalid-name
     disable=$disable,C0326        # bad whitespace
     disable=$disable,W0110        # (deprecated-lambda) map/filter on lambda could be replaced by comprehension
-    disable=$disable,W1401        # (anomalous-backslash-in-string) Anomalous backslash in string: '\.'. String constant might be missing an r prefix.
     disable=$disable,W0613        # (unused-argument) Unused argument 'X'
     disable=$disable,W0622        # (redefined-builtin) Redefining built-in
     disable=$disable,W0621        # (redefined-outer-name) Redefining name 'Y' from outer scope (line X)
@@ -347,9 +352,39 @@ pylint_checks()
     enable=$enable,W0612          # (unused-variable) Unused variable 'X'
     enable=$enable,C0330          # (bad-continuation) Wrong hanging indentation before block
     enable=$enable,R0123          # (literal-comparison) Comparison to literal
+
+    # python3 compatibility checks
+    enable=$enable,W1648          # (bad-python3-import) Module moved in Python 3
+    enable=$enable,W1613          # (xrange-builtin) xrange built-in referenced
+    enable=$enable,W1612          # (unicode-builtin) unicode built-in referenced
+    enable=$enable,W1619          # (old-division) division w/o __future__ statement
+    enable=$enable,W1601          # (apply-builtin) apply built-in referenced
+    enable=$enable,W1659          # (xreadlines-attribute) Accessing a removed xreadlines attribute
+    enable=$enable,W1607          # (file-builtin) file built-in referenced
+    enable=$enable,W1606          # (execfile-builtin) execfile built-in referenced
+    enable=$enable,W1629          # (nonzero-method) __nonzero__ method defined
+    enable=$enable,W1602          # (basestring-builtin) basestring built-in referenced
+    enable=$enable,W1646          # (invalid-str-codec) non-text encoding used in str.decode
+    enable=$enable,W1645          # (exception-message-attribute) Exception.message removed in Python 3
+    enable=$enable,W1649          # (deprecated-string-function) Accessing a deprecated function on the string module
+    enable=$enable,W1651          # (deprecated-itertools-function) Accessing a deprecated function on the itertools module
+    enable=$enable,W1652          # (deprecated-types-field) Accessing a deprecated fields on the types module
+    enable=$enable,W1611          # (standarderror-builtin) StandardError built-in referenced
+    enable=$enable,W1624          # (indexing-exception) Indexing exceptions will not work on Python 3
+    enable=$enable,W1625          # (raising-string) Raising a string exception
+    enable=$enable,W1622          # (next-method-called) Called a next() method on an object
+    enable=$enable,W1653          # (next-method-defined) next method defined
+    enable=$enable,W1610          # (reduce-builtin) reduce built-in referenced
+    enable=$enable,W1633          # (round-builtin) round built-in referenced
     # enable=
 
     options=
+
+    ver=$(pylint --version 2>&1 | grep pylint  | awk '{ print $2 }')
+    if version_gt $ver '1.6.8'; then
+	echo "Use multiple threads for pylint"
+	options="$options --jobs=0 "
+    fi
     options="$options --rcfile=.pylint"
     # options="$options --py3k"   # report errors for Python 3 porting
 

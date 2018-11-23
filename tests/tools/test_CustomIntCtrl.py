@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import unittest
 import time
 
@@ -66,7 +67,7 @@ class TestCustomIntCtrl(unittest.TestCase):
     def testCorrectValue(self):
         """Test case if no limiting is necessary"""
         self.AddControls()
-        val = (self.max_val + self.min_val) / 2
+        val = (self.max_val + self.min_val) // 2
         self.int_ctrl.SetValue(val)
         self.ProcessEvents()
 
@@ -86,7 +87,7 @@ class TestCustomIntCtrl(unittest.TestCase):
 
         self.int_ctrl.Bind(controls.CustomIntCtrl.EVT_CUSTOM_INT, EventHandler)
 
-        val = (self.max_val + self.min_val) / 2
+        val = (self.max_val + self.min_val) // 2
 
         self.int_ctrl.SetValue(val)
         self.ProcessEvents()
