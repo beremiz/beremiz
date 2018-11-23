@@ -10,7 +10,7 @@ import os
 from os.path import join, basename, abspath, split, isfile, isdir
 from hashlib import md5
 from optparse import OptionParser
-from cStringIO import StringIO
+from six.moves import cStringIO
 
 from svgui.pyjs import pyjs
 
@@ -45,7 +45,7 @@ _data_dir = os.path.join(pyjs.prefix, "share/pyjamas")
 
 
 # .cache.html files produces look like this
-CACHE_HTML_PAT = re.compile('^[a-z]*.[0-9a-f]{32}\.cache\.html$')
+CACHE_HTML_PAT = re.compile(r'^[a-z]*.[0-9a-f]{32}\.cache\.html$')
 
 # ok these are the three "default" library directories, containing
 # the builtins (str, List, Dict, ord, round, len, range etc.)
@@ -184,7 +184,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
         try:
             print("Creating output directory")
             os.mkdir(output)
-        except StandardError as e:
+        except OSError as e:
             print("Exception creating output directory %s: %s" % (output, e), file=sys.stderr)
 
     # public dir
@@ -254,7 +254,7 @@ def build(app_name, output, js_includes=(), debug=False, dynamic=0,
 
     # the selector templ is added to the selectScript function
     select_tmpl = """O(["true","%s"],"%s");"""
-    script_selectors = StringIO()
+    script_selectors = cStringIO()
 
     for platform, file_prefix in app_files:
         print(select_tmpl % (platform, file_prefix), file=script_selectors)
@@ -453,7 +453,7 @@ def generateAppFiles(data_dir, js_includes, app_name, debug, output, dynamic,
             if dynamic:
                 mod_cache_html_output = open(join(output, mod_cache_name), "w")
             else:
-                mod_cache_html_output = StringIO()
+                mod_cache_html_output = cStringIO()
 
             print(mod_cache_html_template % dict(
                 mod_name=mod_name,

@@ -24,8 +24,10 @@
 
 
 from __future__ import absolute_import
+from functools import reduce
 import wx
 import wx.stc
+from six.moves import xrange
 
 if wx.Platform == '__WXMSW__':
     faces = {

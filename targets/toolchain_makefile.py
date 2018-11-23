@@ -28,11 +28,11 @@ import os
 import re
 import operator
 import hashlib
-
+from functools import reduce
 from util.ProcessLogger import ProcessLogger
 
 
-includes_re = re.compile('\s*#include\s*["<]([^">]*)[">].*')
+includes_re = re.compile(r'\s*#include\s*["<]([^">]*)[">].*')
 
 
 class toolchain_makefile(object):

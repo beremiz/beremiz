@@ -26,9 +26,11 @@
 
 from __future__ import absolute_import
 import socket
+from six.moves import xrange
 import wx
 import wx.lib.mixins.listctrl as listmix
 from zeroconf import ServiceBrowser, Zeroconf
+
 
 service_type = '_PYRO._tcp.local.'
 

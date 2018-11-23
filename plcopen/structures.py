@@ -24,9 +24,9 @@
 
 
 from __future__ import absolute_import
-import string
 import re
 from collections import OrderedDict
+from functools import reduce
 
 from plcopen.plcopen import LoadProject
 from plcopen.definitions import *
@@ -104,7 +104,10 @@ def csv_file_to_table(file):
     """
     take a .csv file and translate it it a "csv_table"
     """
-    return [map(string.strip, line.split(';')) for line in file.xreadlines()]
+    table = [[column.strip()
+              for column in line.split(';')]
+             for line in file.readlines()]
+    return table
 
 
 def find_section(section_name, table):
@@ -264,7 +267,7 @@ def get_standard_funtions(table):
                             Function_decl_copy = Function_decl.copy()
                             Current_section["list"].append(Function_decl_copy)
             else:
-                raise "First function must be in a category"
+                raise ValueError("First function must be in a category")
 
     return Standard_Functions_Decl
 

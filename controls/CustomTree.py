@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 import wx
 import wx.lib.agw.customtreectrl as CT
 
@@ -100,14 +101,14 @@ class CustomTree(CT.CustomTreeCtrl):
         if self.BackgroundAlign & wx.ALIGN_RIGHT:
             x = client_size[0] - bitmap_size[0]
         elif self.BackgroundAlign & wx.ALIGN_CENTER_HORIZONTAL:
-            x = (client_size[0] - bitmap_size[0]) / 2
+            x = (client_size[0] - bitmap_size[0]) // 2
         else:
             x = 0
 
         if self.BackgroundAlign & wx.ALIGN_BOTTOM:
             y = client_size[1] - bitmap_size[1]
         elif self.BackgroundAlign & wx.ALIGN_CENTER_VERTICAL:
-            y = (client_size[1] - bitmap_size[1]) / 2
+            y = (client_size[1] - bitmap_size[1]) // 2
         else:
             y = 0
 

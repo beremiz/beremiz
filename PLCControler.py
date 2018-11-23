@@ -25,12 +25,14 @@
 
 
 from __future__ import absolute_import
-from types import TupleType
+from __future__ import division
 from copy import deepcopy
 import os
 import re
 import datetime
 from time import localtime
+from functools import reduce
+from future.builtins import round
 
 import util.paths as paths
 from plcopen import *
@@ -43,8 +45,8 @@ from plcopen.VariableInfoCollector import VariableInfoCollector
 from graphics.GraphicCommons import *
 from PLCGenerator import *
 
-duration_model = re.compile("(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
-VARIABLE_NAME_SUFFIX_MODEL = re.compile('(\d+)$')
+duration_model = re.compile(r"(?:([0-9]{1,2})h)?(?:([0-9]{1,2})m(?!s))?(?:([0-9]{1,2})s)?(?:([0-9]{1,3}(?:\.[0-9]*)?)ms)?")
+VARIABLE_NAME_SUFFIX_MODEL = re.compile(r'(\d+)$')
 
 ScriptDirectory = paths.AbsDir(__file__)
 
@@ -461,7 +463,7 @@ class PLCControler(object):
                     self.ProgramFilePath = filepath
                 return program_text, errors, warnings
             except PLCGenException as ex:
-                errors.append(ex.message)
+                errors.append(str(ex))
         else:
             errors.append("No project opened")
         return "", errors, warnings
@@ -873,7 +875,7 @@ class PLCControler(object):
             tempvar.setname(var.Name)
 
             var_type = PLCOpenParser.CreateElement("type", "variable")
-            if isinstance(var.Type, TupleType):
+            if isinstance(var.Type, tuple):
                 if var.Type[0] == "array":
                     _array_type, base_type_name, dimensions = var.Type
                     array = PLCOpenParser.CreateElement("array", "dataType")
@@ -1366,7 +1368,7 @@ class PLCControler(object):
         return True
 
     def IsLocatableType(self, typename, debug=False):
-        if isinstance(typename, TupleType) or self.GetBlockType(typename) is not None:
+        if isinstance(typename, tuple) or self.GetBlockType(typename) is not None:
             return False
 
         # the size of these types is implementation dependend
@@ -1379,7 +1381,7 @@ class PLCControler(object):
         return True
 
     def IsEnumeratedType(self, typename, debug=False):
-        if isinstance(typename, TupleType):
+        if isinstance(typename, tuple):
             typename = typename[1]
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
@@ -1393,7 +1395,7 @@ class PLCControler(object):
     def IsSubrangeType(self, typename, exclude=None, debug=False):
         if typename == exclude:
             return False
-        if isinstance(typename, TupleType):
+        if isinstance(typename, tuple):
             typename = typename[1]
         datatype = self.GetDataType(typename, debug)
         if datatype is not None:
@@ -1612,7 +1614,7 @@ class PLCControler(object):
                     element = PLCOpenParser.CreateElement("variable", "struct")
                     element.setname(element_infos["Name"])
                     element_type = PLCOpenParser.CreateElement("type", "variable")
-                    if isinstance(element_infos["Type"], TupleType):
+                    if isinstance(element_infos["Type"], tuple):
                         if element_infos["Type"][0] == "array":
                             _array_type, base_type_name, dimensions = element_infos["Type"]
                             array = PLCOpenParser.CreateElement("array", "dataType")
@@ -1939,8 +1941,8 @@ class PLCControler(object):
 
             x, y, width, height = bbox.bounding_box()
             if middle:
-                new_pos[0] -= width / 2
-                new_pos[1] -= height / 2
+                new_pos[0] -= width // 2
+                new_pos[1] -= height // 2
             else:
                 new_pos = map(lambda x: x + 30, new_pos)
             if scaling[0] != 0 and scaling[1] != 0:

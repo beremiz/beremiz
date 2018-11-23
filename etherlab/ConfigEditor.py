@@ -10,9 +10,9 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from __future__ import division
 import os
 import re
-from types import TupleType
 
 import wx
 import wx.grid
@@ -71,7 +71,7 @@ VARIABLE_INDEX_FILTER_FORMAT = _("Variable Index: #x%4.4X")
 
 ETHERCAT_INDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,4})$")
 ETHERCAT_SUBINDEX_MODEL = re.compile("#x([0-9a-fA-F]{0,2})$")
-LOCATION_MODEL = re.compile("(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
+LOCATION_MODEL = re.compile(r"(?:%[IQM](?:[XBWLD]?([0-9]+(?:\.[0-9]+)*)))$")
 
 
 class NodeVariablesSizer(wx.FlexGridSizer):
@@ -324,12 +324,12 @@ class NodeEditor(ConfTreeNodeEditor):
         xstart, ystart = self.EtherCATManagementEditor.GetViewStart()
         window_size = self.EtherCATManagementEditor.GetClientSize()
         maxx, maxy = self.EtherCATManagementEditor.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.EtherCATManagementEditor.Scroll(posx, posy)
         self.EtherCATManagementEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                                    maxx / SCROLLBAR_UNIT,
-                                                    maxy / SCROLLBAR_UNIT,
+                                                    maxx // SCROLLBAR_UNIT,
+                                                    maxy // SCROLLBAR_UNIT,
                                                     posx, posy)
         event.Skip()
     # -------------------------------------------------------------------------------------------------------
@@ -417,7 +417,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for process variable") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for process variable") % data
             values = None
         if values is not None and col != wx.NOT_FOUND and row != wx.NOT_FOUND and 2 <= col <= 3:
@@ -479,7 +479,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
         except Exception:
             message = _("Invalid value \"%s\" for startup command") % data
             values = None
-        if not isinstance(values, TupleType):
+        if not isinstance(values, tuple):
             message = _("Invalid value \"%s\" for startup command") % data
             values = None
         if values is not None:
@@ -1056,12 +1056,12 @@ class MasterEditor(ConfTreeNodeEditor):
         xstart, ystart = self.EthercatMasterEditor.GetViewStart()
         window_size = self.EthercatMasterEditor.GetClientSize()
         maxx, maxy = self.EthercatMasterEditorSizer.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.EthercatMasterEditor.Scroll(posx, posy)
         self.EthercatMasterEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                                maxx / SCROLLBAR_UNIT,
-                                                maxy / SCROLLBAR_UNIT,
+                                                maxx // SCROLLBAR_UNIT,
+                                                maxy // SCROLLBAR_UNIT,
                                                 posx, posy)
         event.Skip()
 
@@ -1421,11 +1421,11 @@ class LibraryEditor(ConfTreeNodeEditor):
         xstart, ystart = self.ModuleLibraryEditor.GetViewStart()
         window_size = self.ModuleLibraryEditor.GetClientSize()
         maxx, maxy = self.ModuleLibraryEditor.GetMinSize()
-        posx = max(0, min(xstart, (maxx - window_size[0]) / SCROLLBAR_UNIT))
-        posy = max(0, min(ystart, (maxy - window_size[1]) / SCROLLBAR_UNIT))
+        posx = max(0, min(xstart, (maxx - window_size[0]) // SCROLLBAR_UNIT))
+        posy = max(0, min(ystart, (maxy - window_size[1]) // SCROLLBAR_UNIT))
         self.ModuleLibraryEditor.Scroll(posx, posy)
         self.ModuleLibraryEditor.SetScrollbars(SCROLLBAR_UNIT, SCROLLBAR_UNIT,
-                                               maxx / SCROLLBAR_UNIT,
-                                               maxy / SCROLLBAR_UNIT,
+                                               maxx // SCROLLBAR_UNIT,
+                                               maxy // SCROLLBAR_UNIT,
                                                posx, posy)
         event.Skip()

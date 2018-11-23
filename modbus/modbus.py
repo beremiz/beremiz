@@ -25,8 +25,9 @@
 
 from __future__ import absolute_import
 import os
-from modbus.mb_utils import *
+from six.moves import xrange
 
+from modbus.mb_utils import *
 from ConfigTreeNode import ConfigTreeNode
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 

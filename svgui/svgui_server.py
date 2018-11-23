@@ -25,6 +25,7 @@
 
 from __future__ import absolute_import
 import os
+from builtins import str as text
 
 from nevow import tags, loaders
 import simplejson as json  # pylint: disable=import-error
@@ -122,13 +123,13 @@ class SVGUI_HMI(website.PLCHMI):
     def HMIinitialisation(self):
         gadgets = []
         for gadget in svguiWidgets.values():
-            gadgets.append(unicode(json.dumps(gadget, default=get_object_init_state, indent=2), 'ascii'))
+            gadgets.append(text(json.dumps(gadget, default=get_object_init_state, indent=2), 'ascii'))
         d = self.callRemote('init', gadgets)
         d.addCallback(self.HMIinitialised)
 
     def sendData(self, data):
         if self.initialised:
-            return self.callRemote('receiveData', unicode(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
+            return self.callRemote('receiveData', text(json.dumps(data, default=get_object_current_state, indent=2), 'ascii'))
         return None
 
     def setattr(self, id, attrname, value):
@@ -139,7 +140,7 @@ def createSVGUIControl(*args, **kwargs):
     id = getNewId()
     gad = SvguiWidget(args[0], id, **kwargs)
     svguiWidgets[id] = gad
-    gadget = [unicode(json.dumps(gad, default=get_object_init_state, indent=2), 'ascii')]
+    gadget = [text(json.dumps(gad, default=get_object_init_state, indent=2), 'ascii')]
     interface = website.getHMI()
     if isinstance(interface, SVGUI_HMI) and interface.initialised:
         interface.callRemote('init', gadget)

@@ -24,9 +24,11 @@
 
 
 from __future__ import absolute_import
-from types import *
+from __future__ import division
+from future.builtins import round
 
 import wx
+from six.moves import xrange
 
 from editors.Viewer import *
 
@@ -159,7 +161,7 @@ def CalcWeight(element, element_tree):
                 return
         if not parts:
             parts = 1
-        element_tree[element]["weight"] = max(1, weight / parts)
+        element_tree[element]["weight"] = max(1, weight // parts)
 
 
 # -------------------------------------------------------------------------------
@@ -456,10 +458,10 @@ class LD_Viewer(Viewer):
                 contact = LD_Contact(self, CONTACT_NORMAL, var_name, id)
                 width, height = contact.GetMinSize()
                 if scaling is not None:
-                    x = round(float(x) / float(scaling[0])) * scaling[0]
-                    y = round(float(y) / float(scaling[1])) * scaling[1]
-                    width = round(float(width) / float(scaling[0]) + 0.5) * scaling[0]
-                    height = round(float(height) / float(scaling[1]) + 0.5) * scaling[1]
+                    x = round(x / scaling[0]) * scaling[0]
+                    y = round(y / scaling[1]) * scaling[1]
+                    width = round(width / scaling[0] + 0.5) * scaling[0]
+                    height = round(height / scaling[1] + 0.5) * scaling[1]
                 contact.SetPosition(x, y)
                 contact.SetSize(width, height)
                 self.AddBlock(contact)
@@ -469,10 +471,10 @@ class LD_Viewer(Viewer):
                 coil = LD_Coil(self, COIL_NORMAL, var_name, id)
                 width, height = coil.GetMinSize()
                 if scaling is not None:
-                    x = round(float(x) / float(scaling[0])) * scaling[0]
-                    y = round(float(y) / float(scaling[1])) * scaling[1]
-                    width = round(float(width) / float(scaling[0]) + 0.5) * scaling[0]
-                    height = round(float(height) / float(scaling[1]) + 0.5) * scaling[1]
+                    x = round(x / scaling[0]) * scaling[0]
+                    y = round(y / scaling[1]) * scaling[1]
+                    width = round(width / scaling[0] + 0.5) * scaling[0]
+                    height = round(height / scaling[1] + 0.5) * scaling[1]
                 coil.SetPosition(x, y)
                 coil.SetSize(width, height)
                 self.AddBlock(coil)
@@ -536,7 +538,7 @@ class LD_Viewer(Viewer):
             # Create Coil
             id = self.GetNewId()
             coil = LD_Coil(self, values["type"], values["name"], id)
-            coil.SetPosition(startx, starty + (LD_LINE_SIZE - LD_ELEMENT_SIZE[1]) / 2)
+            coil.SetPosition(startx, starty + (LD_LINE_SIZE - LD_ELEMENT_SIZE[1]) // 2)
             coil_connectors = coil.GetConnectors()
             self.AddBlock(coil)
             rung.SelectElement(coil)
@@ -605,7 +607,7 @@ class LD_Viewer(Viewer):
                 points = wires[0].GetSelectedSegmentPoints()
                 id = self.GetNewId()
                 contact = LD_Contact(self, values["type"], values["name"], id)
-                contact.SetPosition(0, points[0].y - (LD_ELEMENT_SIZE[1] + 1) / 2)
+                contact.SetPosition(0, points[0].y - (LD_ELEMENT_SIZE[1] + 1) // 2)
                 self.AddBlock(contact)
                 self.Controler.AddEditedElementContact(self.TagName, id)
                 rungindex = self.FindRung(wires[0])

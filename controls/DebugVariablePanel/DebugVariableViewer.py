@@ -24,7 +24,9 @@
 
 
 from __future__ import absolute_import
+from __future__ import division
 from collections import OrderedDict
+from functools import reduce
 
 import wx
 from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
@@ -375,7 +377,7 @@ class DebugVariableViewer(object):
         _width, height = self.GetSize()
 
         # Mouse is in the first half of Viewer
-        if y < height / 2:
+        if y < height // 2:
             # If Viewer is the upper one, draw drop before highlight
             if self.ParentWindow.IsViewerFirst(self):
                 self.SetHighlight(HIGHLIGHT_BEFORE)

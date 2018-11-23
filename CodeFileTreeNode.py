@@ -27,8 +27,9 @@ from __future__ import absolute_import
 import os
 import re
 import traceback
-
+from builtins import str as text
 from copy import deepcopy
+
 from lxml import etree
 from xmlclass import GenerateParserFromXSDstring
 
@@ -113,8 +114,8 @@ class CodeFile(object):
                 '<%s>' % self.CODEFILE_NAME,
                 '<%s xmlns:xhtml="http://www.w3.org/1999/xhtml">' % self.CODEFILE_NAME)
             for cre, repl in [
-                    (re.compile("(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
-                    (re.compile("(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
+                    (re.compile(r"(?<!<xhtml:p>)(?:<!\[CDATA\[)"), "<xhtml:p><![CDATA["),
+                    (re.compile(r"(?:]]>)(?!</xhtml:p>)"), "]]></xhtml:p>")]:
                 codefile_xml = cre.sub(repl, codefile_xml)
 
             try:
@@ -124,7 +125,7 @@ class CodeFile(object):
                     self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 self.CreateCodeFileBuffer(True)
             except Exception as exc:
-                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=self.CTNName(), a2=unicode(exc))
+                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=self.CTNName(), a2=text(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
                 raise Exception

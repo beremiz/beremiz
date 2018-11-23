@@ -9,7 +9,11 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from __future__ import division
+from builtins import str as text
+import codecs
 import wx
+
 
 mailbox_protocols = ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
 
@@ -182,7 +186,7 @@ class _CommonSlave(object):
         @param controler: _EthercatSlaveCTN class in EthercatSlave.py
         """
         self.Controler = controler
-
+        self.HexDecode = codecs.getdecoder("hex_codec")
         self.ClearSDODataSet()
 
     # -------------------------------------------------------------------------------
@@ -549,7 +553,7 @@ class _CommonSlave(object):
         if (value_len % 2) == 0:
             hex_len = value_len
         else:
-            hex_len = (value_len / 2) * 2 + 2
+            hex_len = (value_len // 2) * 2 + 2
 
         hex_data = ("{:0>"+str(hex_len)+"x}").format(decnum)
 
@@ -589,7 +593,7 @@ class _CommonSlave(object):
 
         # append zero-filled padding data up to EEPROM size
         for dummy in range(self.SmartViewInfosFromXML["eeprom_size"] - len(self.BinaryCode)):
-            self.BinaryCode = self.BinaryCode + 'ff'.decode('hex')
+            self.BinaryCode = self.BinaryCode + self.HexDecode('ff')[0]
 
         return self.BinaryCode
 
@@ -648,7 +652,7 @@ class _CommonSlave(object):
         eeprom_list = []
 
         if direction is 0 or 1:
-            for dummy in range(length/2):
+            for dummy in range(length//2):
                 if data == "":
                     eeprom_list.append("00")
                 else:
@@ -808,7 +812,7 @@ class _CommonSlave(object):
             for eeprom_element in device.getEeprom().getcontent():
                 if eeprom_element["name"] == "ByteSize":
                     eeprom_size = int(str(eeprom_element))
-                    data = "{:0>4x}".format(int(eeprom_element)/1024*8-1)
+                    data = "{:0>4x}".format(int(eeprom_element)//1024*8-1)
 
             if data == "":
                 eeprom.append("00")
@@ -857,7 +861,7 @@ class _CommonSlave(object):
 
             # convert binary code
             for index in range(eeprom_size):
-                eeprom_binary = eeprom_binary + eeprom[index].decode('hex')
+                eeprom_binary = eeprom_binary + self.HexDecode(eeprom[index])[0]
 
             return eeprom_binary
 
@@ -894,7 +898,7 @@ class _CommonSlave(object):
         vendor_spec_strings = []
         for element in device.getType().getcontent():
             data += element
-        if data != "" and isinstance(data, unicode):
+        if data != "" and isinstance(data, text):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.OrderIdx = vendor_spec_strings.index(data)+1
@@ -913,7 +917,7 @@ class _CommonSlave(object):
 
         #  element2-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<GroupType>
         data = device.getGroupType()
-        if data is not None and isinstance(data, unicode):
+        if data is not None and isinstance(data, text):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.GroupIdx = vendor_spec_strings.index(data)+1
@@ -937,7 +941,7 @@ class _CommonSlave(object):
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_type
-                if data is not None and isinstance(data, unicode):
+                if data is not None and isinstance(data, text):
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
                             self.GroupIdx = vendor_spec_strings.index(data)+1
@@ -961,7 +965,7 @@ class _CommonSlave(object):
                     for device_item in group_etc["devices"]:
                         if device == device_item[1]:
                             data = group_etc["name"]
-        if data != "" and isinstance(data, unicode):
+        if data != "" and isinstance(data, text):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     groupnameflag = True
@@ -980,7 +984,7 @@ class _CommonSlave(object):
         for element in device.getName():
             if element.getLcId() == 1 or element.getLcId() == 1033:
                 data = element.getcontent()
-        if data != "" and isinstance(data, unicode):
+        if data != "" and isinstance(data, text):
             for vendor_spec_string in vendor_spec_strings:
                 if data == vendor_spec_string:
                     self.NameIdx = vendor_spec_strings.index(data)+1
@@ -1000,7 +1004,7 @@ class _CommonSlave(object):
         #  element5-1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Image16x14>
         if device.getcontent() is not None:
             data = device.getcontent()
-            if data is not None and isinstance(data, unicode):
+            if data is not None and isinstance(data, text):
                 for vendor_spec_string in vendor_spec_strings:
                     if data == vendor_spec_string:
                         self.ImgIdx = vendor_spec_strings.index(data)+1
@@ -1024,7 +1028,7 @@ class _CommonSlave(object):
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_etc
-                if data is not None and isinstance(data, unicode):
+                if data is not None and isinstance(data, text):
                     for vendor_spec_string in vendor_spec_strings:
                         if data == vendor_spec_string:
                             self.ImgIdx = vendor_spec_strings.index(data)+1
@@ -1132,15 +1136,15 @@ class _CommonSlave(object):
         else:
             length += length % 4
             padflag = True
-        eeprom.append("{:0>4x}".format(length/4)[2:4])
-        eeprom.append("{:0>4x}".format(length/4)[0:2])
+        eeprom.append("{:0>4x}".format(length//4)[2:4])
+        eeprom.append("{:0>4x}".format(length//4)[0:2])
         #  total numbers of strings
         eeprom.append("{:0>2x}".format(count))
         for element in [vendor_specific_data,
                         dc_related_elements,
                         input_elements,
                         output_elements]:
-            for dummy in range(len(element)/2):
+            for dummy in range(len(element)//2):
                 if element == "":
                     eeprom.append("00")
                 else:
@@ -1285,11 +1289,11 @@ class _CommonSlave(object):
             #  category length
             if count % 2 == 1:
                 padflag = True
-                eeprom.append("{:0>4x}".format((count+1)/2)[2:4])
-                eeprom.append("{:0>4x}".format((count+1)/2)[0:2])
+                eeprom.append("{:0>4x}".format((count+1)//2)[2:4])
+                eeprom.append("{:0>4x}".format((count+1)//2)[0:2])
             else:
-                eeprom.append("{:0>4x}".format((count)/2)[2:4])
-                eeprom.append("{:0>4x}".format((count)/2)[0:2])
+                eeprom.append("{:0>4x}".format((count)//2)[2:4])
+                eeprom.append("{:0>4x}".format((count)//2)[0:2])
             for dummy in range(count):
                 if data == "":
                     eeprom.append("00")
@@ -1332,9 +1336,9 @@ class _CommonSlave(object):
             eeprom.append("29")
             eeprom.append("00")
             #  category length
-            eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
-            eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
-            for dummy in range(len(data)/2):
+            eeprom.append("{:0>4x}".format(len(data)//4)[2:4])
+            eeprom.append("{:0>4x}".format(len(data)//4)[0:2])
+            for dummy in range(len(data)//2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1440,10 +1444,10 @@ class _CommonSlave(object):
                 eeprom.append("00")
             eeprom.append("00")
             #  category length
-            eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
-            eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
+            eeprom.append("{:0>4x}".format(len(data)//4)[2:4])
+            eeprom.append("{:0>4x}".format(len(data)//4)[0:2])
             data = str(data.lower())
-            for dummy in range(len(data)/2):
+            for dummy in range(len(data)//2):
                 if data == "":
                     eeprom.append("00")
                 else:
@@ -1514,10 +1518,10 @@ class _CommonSlave(object):
             eeprom.append("3c")
             eeprom.append("00")
             #  category length
-            eeprom.append("{:0>4x}".format(len(data)/4)[2:4])
-            eeprom.append("{:0>4x}".format(len(data)/4)[0:2])
+            eeprom.append("{:0>4x}".format(len(data)//4)[2:4])
+            eeprom.append("{:0>4x}".format(len(data)//4)[0:2])
             data = str(data.lower())
-            for dummy in range(len(data)/2):
+            for dummy in range(len(data)//2):
                 if data == "":
                     eeprom.append("00")
                 else:

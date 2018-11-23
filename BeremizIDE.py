@@ -31,12 +31,11 @@ import sys
 import tempfile
 import shutil
 import random
-import types
 import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
 
-import cPickle
+from six.moves import cPickle, xrange
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
@@ -718,7 +717,7 @@ class Beremiz(IDEFrame):
 
     def GenerateMenuRecursive(self, items, menu):
         for kind, infos in items:
-            if isinstance(kind, types.ListType):
+            if isinstance(kind, list):
                 text, id = infos
                 submenu = wx.Menu('')
                 self.GenerateMenuRecursive(kind, submenu)
