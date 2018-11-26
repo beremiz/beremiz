@@ -81,11 +81,20 @@ def UpdateID(project_path, ID, secret, URI):
     # here we directly use _LoadData, avoiding filtering that could be long
     data = _LoadData(project_path)
     idata = _dataByID(data)
-    dataForID = idata.get(ID, _default(ID)) if data else _default(ID)
+    dataForID = idata.get(ID, None) if data else None
+
+    _is_new_ID = dataForID is None
+    if _is_new_ID:
+       dataForID = _default(ID)
+
     dataForID[COL_URI] = URI
     # FIXME : could store time instead os a string and use DVC model's cmp 
     # then date display could be smarter, etc - sortable sting hack for now
     dataForID[COL_LAST] = time.strftime('%y/%M/%d-%H:%M:%S')
+
+    if _is_new_ID:
+        data.append(dataForID)
+
     SaveData(project_path, data)
 
 def ExportIDs(project_path, export_zip):
