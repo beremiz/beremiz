@@ -279,10 +279,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def LoadLibraries(self):
         self.Libraries = []
         TypeStack = []
-        for libname, clsname, _default in features.libraries:
-            if self.BeremizRoot.Libraries is not None and \
-               getattr(self.BeremizRoot.Libraries,
-                       "Enable_" + libname + "_Library"):
+        for libname, clsname, lib_enabled in features.libraries:
+            if self.BeremizRoot.Libraries is not None:
+                enable_attr = getattr(self.BeremizRoot.Libraries,
+                                      "Enable_" + libname + "_Library")
+                if enable_attr is not None:
+                    lib_enabled = enable_attr
+
+            if lib_enabled:
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries.append(Lib)
