@@ -20,6 +20,12 @@ def _pskpath(project_path):
 def _mgtpath(project_path):
     return os.path.join(_pskpath(project_path), 'management.json')
 
+def _ensurePSKdir(project_path):
+    pskpath = _pskpath(project_path)
+    if not os.path.exists(pskpath):
+        os.mkdir(pskpath)
+    return pskpath
+
 def _default(ID):
     return [ID,
             '', # default description
@@ -62,15 +68,12 @@ def DeleteID(project_path, ID):
     os.remove(secret_path)
 
 def SaveData(project_path, data):
-    pskpath = _pskpath(project_path)
-    if not os.path.isdir(pskpath):
-        os.mkdir(pskpath)
+    _ensurePSKdir(project_path)
     with open(_mgtpath(project_path), 'w') as f:
         f.write(json.dumps(data))
 
-
 def UpdateID(project_path, ID, secret, URI):
-    pskpath = _pskpath(project_path)
+    pskpath = _ensurePSKdir(project_path)
     if not os.path.exists(pskpath):
         os.mkdir(pskpath)
 
