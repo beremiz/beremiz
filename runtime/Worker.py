@@ -9,6 +9,7 @@
 
 from __future__ import absolute_import
 import sys
+import six
 import thread
 from threading import Lock, Condition
 

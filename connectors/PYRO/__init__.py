@@ -150,4 +150,4 @@ def PYRO_connector_factory(uri, confnodesroot):
                 self.__dict__[attrName] = member
             return member
 
-    return PyroProxyProxy()
+    return PyroProxyProxy

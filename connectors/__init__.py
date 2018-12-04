@@ -29,6 +29,8 @@
 from __future__ import absolute_import
 from os import listdir, path
 import util.paths as paths
+from connectors.ConnectorBase import ConnectorBase
+from types import ClassType
 
 connectors_packages = ["PYRO","WAMP"]
 
@@ -64,8 +66,8 @@ def ConnectorFactory(uri, confnodesroot):
     Return a connector corresponding to the URI
     or None if cannot connect to URI
     """
-    scheme = uri.split("://")[0].upper()
-    if scheme == "LOCAL":
+    _scheme = uri.split("://")[0].upper()
+    if _scheme == "LOCAL":
         # Local is special case
         # pyro connection to local runtime
         # started on demand, listening on random port
@@ -73,17 +75,21 @@ def ConnectorFactory(uri, confnodesroot):
         runtime_port = confnodesroot.AppFrame.StartLocalRuntime(
             taskbaricon=True)
         uri = "PYROLOC://127.0.0.1:" + str(runtime_port)
-    elif scheme in connectors:
-        pass
-    elif scheme[-1] == 'S' and scheme[:-1] in connectors:
-        scheme = scheme[:-1]
+    elif _scheme in connectors:
+        scheme = _scheme
+    elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
+        scheme = _scheme[:-1]
     else:
         return None
 
-    # import module according to uri type
-    connectorclass = connectors[scheme]()
-    return connectorclass(uri, confnodesroot)
+    # import module according to uri type and get connector specific baseclass
+    # first call to import the module, 
+    # then call with parameters to create the class
+    connector_specific_class = connectors[scheme]()(uri, confnodesroot)
 
+    # new class inheriting from generic and specific connector base classes
+    return ClassType(_scheme + "_connector", 
+                     (ConnectorBase, connector_specific_class), {})()
 
 def EditorClassFromScheme(scheme):
     _Import_Dialogs()

@@ -156,10 +156,4 @@ def WAMP_connector_factory(uri, confnodesroot):
     # TODO : GetPLCID()
     # TODO : PSK.UpdateID()
 
-    # Try to get the proxy object
-    try:
-        return WampPLCObjectProxy()
-    except Exception:
-        confnodesroot.logger.write_error(_("WAMP connection to '%s' failed.\n") % location)
-        confnodesroot.logger.write_error(traceback.format_exc())
-        return None
+    return WampPLCObjectProxy
