@@ -891,19 +891,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._builder = targetclass(self)
         return self._builder
 
-    def ResetBuildMD5(self):
-        builder = self.GetBuilder()
-        if builder is not None:
-            builder.ResetBinaryCodeMD5()
-        self.EnableMethod("_Transfer", False)
-
-    def GetLastBuildMD5(self):
-        builder = self.GetBuilder()
-        if builder is not None:
-            return builder.GetBinaryCodeMD5()
-        else:
-            return None
-
     #
     #
     #                C CODE GENERATION METHODS
@@ -1131,7 +1118,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # If IEC code gen fail, bail out.
         if not IECGenRes:
             self.logger.write_error(_("PLC code generation failed !\n"))
-            self.ResetBuildMD5()
             return False
 
         # Reset variable and program list that are parsed from
@@ -1147,7 +1133,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         builder = self.GetBuilder()
         if builder is None:
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
-            self.ResetBuildMD5()
             return False
 
         # Build
@@ -1156,9 +1141,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.logger.write_error(_("C Build failed.\n"))
                 return False
         except Exception:
+            builder.ResetBinaryMD5()
             self.logger.write_error(_("C Build crashed !\n"))
             self.logger.write_error(traceback.format_exc())
-            self.ResetBuildMD5()
             return False
 
         self.logger.write(_("Successfully built.\n"))
@@ -1178,7 +1163,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Runtime IO extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
-            self.ResetBuildMD5()
             return False
 
         # Generate C code and compilation params from liraries
@@ -1189,7 +1173,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Runtime library extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
-            self.ResetBuildMD5()
             return False
 
         self.LocationCFilesAndCFLAGS = LibCFilesAndCFLAGS + \
@@ -1239,7 +1222,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             except Exception:
                 self.logger.write_error(name + _(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
-                self.ResetBuildMD5()
                 return False
         self.logger.write(_("C code generated successfully.\n"))
         return True
@@ -1820,26 +1802,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def CompareLocalAndRemotePLC(self):
         if self._connector is None:
             return
-        # We are now connected. Update button status
-        MD5 = self.GetLastBuildMD5()
+        builder = self.GetBuilder()
+        if builder is None :
+            return
+        MD5 = builder.GetBinaryMD5()
+        if MD5 is None:
+            return
         # Check remote target PLC correspondance to that md5
-        if MD5 is not None:
-            if not self._connector.MatchMD5(MD5):
-                # self.logger.write_warning(
-                # _("Latest build does not match with target, please
-                # transfer.\n"))
-                self.EnableMethod("_Transfer", True)
-            else:
-                # self.logger.write(
-                #     _("Latest build matches target, no transfer needed.\n"))
-                self.EnableMethod("_Transfer", True)
-                # warns controller that program match
-                self.ProgramTransferred()
-                # self.EnableMethod("_Transfer", False)
+        if self._connector.MatchMD5(MD5):
+            self.ProgramTransferred()
         else:
-            # self.logger.write_warning(
-            #     _("Cannot compare latest build to target. Please build.\n"))
-            self.EnableMethod("_Transfer", False)
+            self.logger.write(
+                _("Latest build does not match with connected target.\n"))
 
     def _Disconnect(self):
         self._SetConnector(None)
@@ -1855,8 +1829,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 return
 
-        # Get the last build PLC's
-        MD5 = self.GetLastBuildMD5()
+        builder = self.GetBuilder()
+        if builder is None:
+            self.logger.write_error(_("Fatal : cannot get builder.\n"))
+            return False
+
+        # recover md5 from last build 
+        MD5 = builder.GetBinaryMD5()
 
         # Check if md5 file is empty : ask user to build PLC
         if MD5 is None:
@@ -1869,35 +1848,37 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write(
                 _("Latest build already matches current target. Transfering anyway...\n"))
 
-        # Get temprary directory path
+        # purge any non-finished transfer
+        # note: this would abord any runing transfer with error
+        self._connector.PurgeBlobs()
+
+        # transfer extra files
         extrafiles = []
         for extrafilespath in [self._getExtraFilesPath(),
                                self._getProjectFilesPath()]:
 
-            extrafiles.extend(
-                [(name, open(os.path.join(extrafilespath, name),
-                             'rb').read())
-                 for name in os.listdir(extrafilespath)])
+            for name in os.listdir(extrafilespath):
+                extrafiles.append((
+                    name, 
+                    self._connector.BlobFromFile(
+                        os.path.join(extrafilespath, name))))
 
         # Send PLC on target
-        builder = self.GetBuilder()
-        if builder is not None:
-            data = builder.GetBinaryCode()
-            if data is not None:
-                if self._connector.NewPLC(MD5, data, extrafiles) and self.GetIECProgramsAndVariables():
-                    self.UnsubscribeAllDebugIECVariable()
-                    self.ProgramTransferred()
-                    if self.AppFrame is not None:
-                        self.AppFrame.CloseObsoleteDebugTabs()
-                        self.AppFrame.RefreshPouInstanceVariablesPanel()
-                    self.logger.write(_("Transfer completed successfully.\n"))
-                    self.AppFrame.LogViewer.ResetLogCounters()
-                else:
-                    self.logger.write_error(_("Transfer failed\n"))
-                self.HidePLCProgress()
-            else:
-                self.logger.write_error(
-                    _("No PLC to transfer (did build succeed ?)\n"))
+        object_path = builder.GetBinaryPath()
+        object_blob = self._connector.BlobFromFile(object_path)
+
+        if self._connector.NewPLC(MD5, object_blob, extrafiles):
+            self.ProgramTransferred()
+            self.AppFrame.CloseObsoleteDebugTabs()
+            self.AppFrame.LogViewer.ResetLogCounters()
+            if self.GetIECProgramsAndVariables():
+                self.UnsubscribeAllDebugIECVariable()
+                self.AppFrame.RefreshPouInstanceVariablesPanel()
+            self.logger.write(_("Transfer completed successfully.\n"))
+        else:
+            self.logger.write_error(_("Transfer failed\n"))
+
+        self.HidePLCProgress()
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 

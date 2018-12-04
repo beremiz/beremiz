@@ -34,12 +34,17 @@ from past.builtins import execfile
 import Pyro.core as pyro
 import six
 from six.moves import _thread, xrange
+import md5
+from tempfile import mkstemp
+import shutil
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
 from runtime.Stunnel import getPSKID
 from runtime import PlcStatus
 from runtime import MainWorker
+
+empty_md5_digest = md5.new().digest()
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -74,7 +79,11 @@ def RunInMain(func):
 
 class PLCObject(object):
     def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars):
-        self.workingdir = WorkingDir
+        self.workingdir = WorkingDir # must exits already
+        self.tmpdir = os.path.join(WorkingDir, 'tmp')
+        if os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+        os.mkdir(self.tmpdir)
         # FIXME : is argv of any use nowadays ?
         self.argv = [WorkingDir] + argv  # force argv[0] to be "path" to exec...
         self.statuschange = statuschange
@@ -90,6 +99,8 @@ class PLCObject(object):
         self.TraceThread = None
         self.TraceLock = Lock()
         self.Traces = []
+
+        self._init_blobs()
 
     # First task of worker -> no @RunInMain
     def AutoLoad(self, autostart):
@@ -447,8 +458,52 @@ class PLCObject(object):
     def GetPLCID(self):
         return getPSKID()
 
+    def _init_blobs(self):
+        self.blobs = {}
+        if os.path.exists(self.tmpdir):
+            shutil.rmtree(self.tmpdir)
+        os.mkdir(self.tmpdir)
+    
     @RunInMain
-    def NewPLC(self, md5sum, data, extrafiles):
+    def AppendChunkToBlob(self, data, blobID):
+        blob = ((mkstemp(dir=self.tmpdir) if data else None)\
+                   + (md5.new(),)) \
+               if blobID == empty_md5_digest \
+               else self.blobs.pop(blobID, None)
+
+        if blob is None:
+            return None
+
+        fobj, path, md5sum = blob
+        md5sum.update(data)
+        newBlobID = md5sum.digest()
+        if data:
+            os.write(fobj,data)
+            self.blobs[newBlobID] = blob
+        return newBlobID
+
+    @RunInMain
+    def PurgeBlobs(self):
+        for fobj, path, md5sum in self.blobs:
+            os.close(fobj) 
+        self._init_blobs()
+
+    def _BlobAsFile(self, blobID, newpath):
+        blob = self.blobs.pop(blobID, None)
+
+        if blob is None:
+            if blobID == md5.new().digest():
+                # create empty file
+                open(newpath,'r').close()
+                return
+            raise Exception(_("Missing data to create file: {}").format(newpath))
+
+        fobj, path, md5sum = blob
+        os.close(fobj)
+        shutil.move(path, newpath)
+            
+    @RunInMain
+    def NewPLC(self, md5sum, plc_object, extrafiles):
         if self.PLCStatus in [PlcStatus.Stopped, PlcStatus.Empty, PlcStatus.Broken]:
             NewFileName = md5sum + lib_ext
             extra_files_log = os.path.join(self.workingdir, "extra_files.txt")
@@ -458,18 +513,13 @@ class PLCObject(object):
                 else None
             new_PLC_filename = os.path.join(self.workingdir, NewFileName)
 
-            # Some platform (i.e. Xenomai) don't like reloading same .so file
-            replace_PLC_shared_object = new_PLC_filename != old_PLC_filename
-
-            if replace_PLC_shared_object:
-                self.UnLoadPLC()
+            self.UnLoadPLC()
 
             self.LogMessage("NewPLC (%s)" % md5sum)
             self.PLCStatus = PlcStatus.Empty
 
             try:
-                if replace_PLC_shared_object:
-                    os.remove(old_PLC_filename)
+                os.remove(old_PLC_filename)
                 for filename in open(extra_files_log, "rt").readlines() + [extra_files_log]:
                     try:
                         os.remove(os.path.join(self.workingdir, filename.strip()))
@@ -480,17 +530,16 @@ class PLCObject(object):
 
             try:
                 # Create new PLC file
-                if replace_PLC_shared_object:
-                    open(new_PLC_filename, 'wb').write(data)
+                self._BlobAsFile(plc_object, new_PLC_filename)
 
                 # Store new PLC filename based on md5 key
                 open(self._GetMD5FileName(), "w").write(md5sum)
 
                 # Then write the files
                 log = open(extra_files_log, "w")
-                for fname, fdata in extrafiles:
+                for fname, blobID in extrafiles:
                     fpath = os.path.join(self.workingdir, fname)
-                    open(fpath, "wb").write(fdata)
+                    self._BlobAsFile(blobID, fpath)
                     log.write(fname+'\n')
 
                 # Store new PLC filename
@@ -501,9 +550,7 @@ class PLCObject(object):
                 PLCprint(traceback.format_exc())
                 return False
 
-            if not replace_PLC_shared_object:
-                self.PLCStatus = PlcStatus.Stopped
-            elif self.LoadPLC():
+            if self.LoadPLC():
                 self.PLCStatus = PlcStatus.Stopped
             else:
                 self.PLCStatus = PlcStatus.Broken
