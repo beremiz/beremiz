@@ -1810,6 +1810,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return
         # Check remote target PLC correspondance to that md5
         if self._connector.MatchMD5(MD5):
+            self.logger.write(
+                _("Latest build matches with connected target.\n"))
             self.ProgramTransferred()
         else:
             self.logger.write(
@@ -1867,18 +1869,22 @@ class ProjectController(ConfigTreeNode, PLCControler):
         object_path = builder.GetBinaryPath()
         object_blob = self._connector.BlobFromFile(object_path)
 
+        self.HidePLCProgress()
+
+        self.logger.write(_("PLC data transfered successfully.\n"))
+
         if self._connector.NewPLC(MD5, object_blob, extrafiles):
-            self.ProgramTransferred()
-            self.AppFrame.CloseObsoleteDebugTabs()
-            self.AppFrame.LogViewer.ResetLogCounters()
             if self.GetIECProgramsAndVariables():
                 self.UnsubscribeAllDebugIECVariable()
+                self.ProgramTransferred()
+                self.AppFrame.CloseObsoleteDebugTabs()
                 self.AppFrame.RefreshPouInstanceVariablesPanel()
-            self.logger.write(_("Transfer completed successfully.\n"))
+                self.AppFrame.LogViewer.ResetLogCounters()
+                self.logger.write(_("PLC installed successfully.\n"))
+            else:
+                self.logger.write_error(_("Missing debug data\n"))
         else:
-            self.logger.write_error(_("Transfer failed\n"))
-
-        self.HidePLCProgress()
+            self.logger.write_error(_("PLC couldn't be installed\n"))
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
