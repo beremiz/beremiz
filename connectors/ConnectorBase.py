@@ -7,7 +7,8 @@ import md5
 
 class ConnectorBase(object):
 
-    chuncksize = 16384
+    #chuncksize = 16384
+    chuncksize = 1024*1024
     def BlobFromFile(self, filepath): 
         s = md5.new()
         blobID = s.digest()  # empty md5, to support empty blob
