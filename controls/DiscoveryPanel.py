@@ -110,6 +110,8 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
+        self.parent = parent
+
         self._init_list_ctrl()
         listmix.ColumnSorterMixin.__init__(self, 4)
 
@@ -153,7 +155,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def OnItemActivated(self, event):
         self.SetURI(event.m_itemIndex)
-        self.EndModal(wx.ID_OK)
+        self.parent.EndModal(wx.ID_OK)
         event.Skip()
 
 #    def SetURI(self, idx):
@@ -167,7 +169,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         self.LatestSelection = idx
         svcname = self.getColumnText(idx, 0)
         connect_type = self.getColumnText(idx, 1)
-        self.URI = "%s://%s" % (connect_type, svcname + '.' + service_type)
+        self.URI = str("%s://%s" % (connect_type, svcname + '.' + service_type))
 
     def GetURI(self):
         if self.LatestSelection is not None:
