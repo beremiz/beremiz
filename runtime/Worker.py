@@ -56,6 +56,7 @@ class worker(object):
         meant to be called by worker thread (blocking)
         """
         self._threadID = thread.get_ident()
+        self.mutex.acquire()
         if args or kwargs:
             _job = job(*args, **kwargs)
             _job.do()
@@ -64,7 +65,6 @@ class worker(object):
                 pass
             else:
                 raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
-        self.mutex.acquire()
         while not self._finish:
             self.todo.wait()
             if self.job is not None:
