@@ -97,6 +97,8 @@ def PYRO_connector_factory(uri, confnodesroot):
         #confnodesroot.logger.write_error(traceback.format_exc())
         return None
 
+    RemotePLCObjectProxy.adapter.setTimeout(60)
+
     def PyroCatcher(func, default=None):
         """
         A function that catch a Pyro exceptions, write error to logger
