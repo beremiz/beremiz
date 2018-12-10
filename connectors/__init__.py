@@ -86,6 +86,9 @@ def ConnectorFactory(uri, confnodesroot):
     # first call to import the module, 
     # then call with parameters to create the class
     connector_specific_class = connectors[scheme]()(uri, confnodesroot)
+    
+    if connector_specific_class is None:
+        return None
 
     # new class inheriting from generic and specific connector base classes
     return ClassType(_scheme + "_connector", 
