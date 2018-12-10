@@ -1777,10 +1777,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Get connector from uri
         try:
             self._SetConnector(connectors.ConnectorFactory(uri, self))
-        except Exception:
+        except Exception as e:
             self.logger.write_error(
-                _("Exception while connecting %s!\n") % uri)
-            self.logger.write_error(traceback.format_exc())
+                _("Exception while connecting to '%s': %s\n") % (uri, str(e)))
+            #self.logger.write_error(traceback.format_exc())
 
         # Did connection success ?
         if self._connector is None:
