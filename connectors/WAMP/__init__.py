@@ -28,7 +28,7 @@ from __future__ import print_function
 import sys
 import traceback
 from threading import Thread, Event
-from builtins import str as text
+from six import text_type as text
 
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
