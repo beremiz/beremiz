@@ -27,6 +27,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import sys
 import traceback
+from functools import partial
 from threading import Thread, Event
 from six import text_type as text
 
@@ -66,7 +67,7 @@ PLCObjDefaults = {
 }
 
 
-def WAMP_connector_factory(uri, confnodesroot):
+def _WAMP_connector_factory(cls, uri, confnodesroot):
     """
     WAMP://127.0.0.1:12345/path#realm#ID
     WAMPS://127.0.0.1:12345/path#realm#ID
@@ -88,7 +89,7 @@ def WAMP_connector_factory(uri, confnodesroot):
             extra={"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
             config=component_config)
-        session_factory.session = WampSession
+        session_factory.session = cls
 
         # create a WAMP-over-WebSocket transport client factory
         transport_factory = WampWebSocketClientFactory(
@@ -157,3 +158,5 @@ def WAMP_connector_factory(uri, confnodesroot):
     # TODO : PSK.UpdateID()
 
     return WampPLCObjectProxy
+
+WAMP_connector_factory = partial(_WAMP_connector_factory, WampSession)
