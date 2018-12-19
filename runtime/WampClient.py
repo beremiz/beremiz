@@ -226,12 +226,9 @@ def SetConfiguration(WampClientConf):
 
     with open(os.path.realpath(_WampConf), 'w') as f:
         json.dump(WampClientConf, f, sort_keys=True, indent=4)
+    StopReconnectWampClient()
     if 'active' in WampClientConf and WampClientConf['active']:
-        if _transportFactory and _WampSession:
-            StopReconnectWampClient()
         StartReconnectWampClient()
-    else:
-        StopReconnectWampClient()
 
     return WampClientConf
 
