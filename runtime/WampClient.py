@@ -173,22 +173,16 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         return ReconnectingClientFactory.buildProtocol(self, addr)
 
     def clientConnectionFailed(self, connector, reason):
-        if self.continueTrying:
-            print(_("WAMP Client connection failed (%s) .. retrying ..") %
-                  time.ctime())
-            super(ReconnectingWampWebSocketClientFactory,
-                  self).clientConnectionFailed(connector, reason)
-        else:
-            del connector
+        print(_("WAMP Client connection failed (%s) .. retrying ..") %
+              time.ctime())
+        super(ReconnectingWampWebSocketClientFactory,
+              self).clientConnectionFailed(connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        if self.continueTrying:
-            print(_("WAMP Client connection lost (%s) .. retrying ..") %
-                  time.ctime())
-            super(ReconnectingWampWebSocketClientFactory,
-                  self).clientConnectionFailed(connector, reason)
-        else:
-            del connector
+        print(_("WAMP Client connection lost (%s) .. retrying ..") %
+              time.ctime())
+        super(ReconnectingWampWebSocketClientFactory,
+              self).clientConnectionFailed(connector, reason)
 
 
 def CheckConfiguration(WampClientConf):
