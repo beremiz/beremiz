@@ -29,10 +29,10 @@ import socket
 from six.moves import xrange
 import wx
 import wx.lib.mixins.listctrl as listmix
-from zeroconf import ServiceBrowser, Zeroconf
+from zeroconf import ServiceBrowser, Zeroconf, get_all_addresses
+import netifaces
 
-
-service_type = '_PYRO._tcp.local.'
+service_type = '_Beremiz._tcp.local.'
 
 
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
@@ -95,14 +95,13 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
             label=_('Services available:'), name='staticText1', parent=self,
             pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
 
-        refreshID = wx.NewId()
         self.RefreshButton = wx.Button(
-            id=refreshID,
             label=_('Refresh'), name='RefreshButton', parent=self,
             pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
-        self.Bind(wx.EVT_BUTTON, self.OnRefreshButton, id=refreshID)
+        self.RefreshButton.Bind(wx.EVT_BUTTON, self.OnRefreshButton)
 
         self.ByIPCheck = wx.CheckBox(self, label=_("Use IP instead of Service Name"))
+        self.ByIPCheck.SetValue(True)
 
         self._init_sizers()
         self.Fit()
@@ -122,23 +121,44 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
         self.URI = None
         self.Browser = None
+        self.ZeroConfInstance = None
 
-        self.ZeroConfInstance = Zeroconf()
         self.RefreshList()
         self.LatestSelection = None
 
+        self.IfacesMonitorState = None
+        self.IfacesMonitorTimer = wx.Timer(self)
+        self.IfacesMonitorTimer.Start(2000)
+        self.Bind(wx.EVT_TIMER, self.IfacesMonitor , self.IfacesMonitorTimer)
+
     def __del__(self):
-        if self.Browser is not None:
-            self.Browser.cancel()
+        self.IfacesMonitorTimer.Stop()
+        self.Browser.cancel()
         self.ZeroConfInstance.close()
 
+    def IfacesMonitor(self, event):
+        NewState = get_all_addresses(socket.AF_INET)
+
+        if self.IfacesMonitorState != NewState: 
+            if self.IfacesMonitorState is not None:
+                # refresh only if a new address appeared
+                for addr in NewState:
+                    if addr not in self.IfacesMonitorState:
+                        self.RefreshList()
+                        break
+            self.IfacesMonitorState = NewState
+        event.Skip()
+
     def RefreshList(self):
+        self.ServicesList.DeleteAllItems()
         if self.Browser is not None:
             self.Browser.cancel()
+        if self.ZeroConfInstance is not None:
+            self.ZeroConfInstance.close()
+        self.ZeroConfInstance = Zeroconf()
         self.Browser = ServiceBrowser(self.ZeroConfInstance, service_type, self)
 
     def OnRefreshButton(self, event):
-        self.ServicesList.DeleteAllItems()
         self.RefreshList()
 
     # Used by the ColumnSorterMixin, see wx/lib/mixins/listctrl.py
@@ -167,18 +187,20 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def SetURI(self, idx):
         self.LatestSelection = idx
-        svcname = self.getColumnText(idx, 0)
-        connect_type = self.getColumnText(idx, 1)
-        self.URI = str("%s://%s" % (connect_type, svcname + '.' + service_type))
 
     def GetURI(self):
         if self.LatestSelection is not None:
             if self.ByIPCheck.IsChecked():
-                self.URI = "%s://%s:%s" % tuple(
+                svcname, scheme, host, port = \
                     map(lambda col:self.getColumnText(self.LatestSelection, col),
-                        (1, 2, 3)))
-
-            return self.URI
+                        range(4))
+                return ("%s://%s:%s#%s" % (scheme, host, port, svcname)) \
+                    if scheme[-1] == "S" \
+                    else ("%s://%s:%s" % (scheme, host, port))
+            else:
+                svcname = self.getColumnText(self.LatestSelection, 0)
+                connect_type = self.getColumnText(self.LatestSelection, 1)
+                return str("MDNS://%s" % svcname)
         return None
 
     def remove_service(self, zeroconf, _type, name):
@@ -210,7 +232,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         '''
         info = self.ZeroConfInstance.get_service_info(_type, name)
         svcname = name.split(".")[0]
-        typename = _type.split(".")[0][1:]
+        typename = info.properties.get("protocol", None)
         ip = str(socket.inet_ntoa(info.address))
         port = info.port
 

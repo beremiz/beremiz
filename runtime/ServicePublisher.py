@@ -28,13 +28,16 @@ import socket
 import threading
 import zeroconf
 
-service_type = '_PYRO._tcp.local.'
 
+service_type = '_Beremiz._tcp.local.'
 
 class ServicePublisher(object):
-    def __init__(self):
+    def __init__(self, protocol):
         # type: fully qualified service type name
-        self.serviceproperties = {'description': 'Beremiz remote PLC'}
+        self.serviceproperties = {
+            'description': 'Beremiz remote PLC',
+            'protocol': protocol
+        }
 
         self.name = None
         self.ip_32b = None
@@ -52,7 +55,7 @@ class ServicePublisher(object):
 
     def _RegisterService(self, name, ip, port):
         # name: fully qualified service name
-        self.service_name = 'Beremiz_%s.%s' % (name, service_type)
+        self.service_name = '%s.%s' % (name, service_type)
         self.name = name
         self.port = port
 
