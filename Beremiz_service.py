@@ -37,7 +37,7 @@ from past.builtins import execfile
 from six.moves import builtins
 
 import runtime
-from runtime.PyroServer import Server
+from runtime.PyroServer import PyroServer
 from runtime.xenomai import TryPreloadXenomai
 from runtime import LogMessageAndException
 from runtime import PlcStatus
@@ -504,7 +504,7 @@ if servicename is not None and PSKpath is not None:
 runtime.CreatePLCObjectSingleton(
     WorkingDir, argv, statuschange, evaluator, pyruntimevars)
 
-pyroserver = Server(servicename, interface, port)
+pyroserver = PyroServer(servicename, interface, port)
 
 if havewx:
     taskbar_instance = BeremizTaskBarIcon(pyroserver)

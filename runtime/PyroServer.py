@@ -19,7 +19,7 @@ import runtime
 from runtime.ServicePublisher import ServicePublisher
 
 
-class Server(object):
+class PyroServer(object):
     def __init__(self, servicename, ip_addr, port):
         self.continueloop = True
         self.daemon = None
@@ -41,6 +41,7 @@ class Server(object):
         sys.stdout.flush()
 
     def PyroLoop(self, when_ready):
+        if self._to_be_published(): self.Publish()
         while self.continueloop:
             Pyro.config.PYRO_MULTITHREADED = 0
             pyro.initServer()
@@ -56,23 +57,24 @@ class Server(object):
 
             self.daemon.connect(pyro_obj, "PLCObject")
 
-            if self._to_be_published():
-                self.servicepublisher = ServicePublisher()
-                self.servicepublisher.RegisterService(self.servicename, self.ip_addr, self.port)
-
             when_ready()
             self.daemon.requestLoop()
             self.daemon.sock.close()
+        self.Unpublish()
 
     def Restart(self):
-        self._stop()
+        self.daemon.shutdown(True)
 
     def Quit(self):
         self.continueloop = False
-        self._stop()
+        self.daemon.shutdown(True)
 
-    def _stop(self):
+    def Publish(self):
+        self.servicepublisher = ServicePublisher("PYRO")
+        self.servicepublisher.RegisterService(self.servicename,
+                                              self.ip_addr, self.port)
+
+    def Unpublish(self):
         if self.servicepublisher is not None:
             self.servicepublisher.UnRegisterService()
             self.servicepublisher = None
-        self.daemon.shutdown(True)
