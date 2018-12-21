@@ -55,6 +55,7 @@ class UriEditor(wx.Dialog):
             self.UriTypeChoice.SetStringSelection(scheme)
         else:
             self.UriTypeChoice.SetSelection(0)
+            scheme = None
 
         self._replaceSchemeEditor(scheme)
 
