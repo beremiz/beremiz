@@ -3665,7 +3665,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnMouseWheelWindow(self, event):
         if self.StartMousePos is None or self.StartScreenPos is None:
-            rotation = event.GetWheelRotation() / event.GetWheelDelta()
+            rotation = event.GetWheelRotation() // event.GetWheelDelta()
             if event.ShiftDown():
                 x, y = self.GetViewStart()
                 xp = max(0, min(x - rotation * 3, self.Editor.GetVirtualSize()[0] / self.Editor.GetScrollPixelsPerUnit()[0]))
