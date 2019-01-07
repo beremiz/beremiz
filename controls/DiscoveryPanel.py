@@ -54,7 +54,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def _init_coll_ButtonGridSizer_Items(self, parent):
         parent.AddWindow(self.RefreshButton, 0, border=0, flag=0)
-        parent.AddWindow(self.ByIPCheck, 0, border=0, flag=0)
+        # parent.AddWindow(self.ByIPCheck, 0, border=0, flag=0)
 
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
@@ -100,8 +100,8 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
             pos=wx.Point(0, 0), size=wx.DefaultSize, style=0)
         self.RefreshButton.Bind(wx.EVT_BUTTON, self.OnRefreshButton)
 
-        self.ByIPCheck = wx.CheckBox(self, label=_("Use IP instead of Service Name"))
-        self.ByIPCheck.SetValue(True)
+        # self.ByIPCheck = wx.CheckBox(self, label=_("Use IP instead of Service Name"))
+        # self.ByIPCheck.SetValue(True)
 
         self._init_sizers()
         self.Fit()
@@ -190,17 +190,17 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def GetURI(self):
         if self.LatestSelection is not None:
-            if self.ByIPCheck.IsChecked():
-                svcname, scheme, host, port = \
-                    map(lambda col:self.getColumnText(self.LatestSelection, col),
-                        range(4))
-                return ("%s://%s:%s#%s" % (scheme, host, port, svcname)) \
-                    if scheme[-1] == "S" \
-                    else ("%s://%s:%s" % (scheme, host, port))
-            else:
-                svcname = self.getColumnText(self.LatestSelection, 0)
-                connect_type = self.getColumnText(self.LatestSelection, 1)
-                return str("MDNS://%s" % svcname)
+            # if self.ByIPCheck.IsChecked():
+            svcname, scheme, host, port = \
+                map(lambda col:self.getColumnText(self.LatestSelection, col),
+                    range(4))
+            return ("%s://%s:%s#%s" % (scheme, host, port, svcname)) \
+                if scheme[-1] == "S" \
+                else ("%s://%s:%s" % (scheme, host, port))
+            # else:
+            #     svcname = self.getColumnText(self.LatestSelection, 0)
+            #     connect_type = self.getColumnText(self.LatestSelection, 1)
+            #     return str("MDNS://%s" % svcname)
         return None
 
     def remove_service(self, zeroconf, _type, name):
