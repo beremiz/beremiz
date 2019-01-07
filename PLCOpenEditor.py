@@ -305,7 +305,7 @@ class PLCOpenEditor(IDEFrame):
         self.SaveProjectAs()
 
     def OnGenerateProgramMenu(self, event):
-        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), self.Controler.GetProgramFilePath(),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE | wx.CHANGE_DIR)
+        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), os.path.basename(self.Controler.GetProgramFilePath()),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE | wx.CHANGE_DIR)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             message_text = ""
