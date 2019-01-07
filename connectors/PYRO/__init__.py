@@ -39,7 +39,6 @@ from Pyro.errors import PyroError
 import PSKManagement as PSK
 from runtime import PlcStatus
 
-zeroconf_service_type = '_PYRO._tcp.local.'
 # this module attribute contains a list of DNS-SD (Zeroconf) service types
 # supported by this connector confnode.
 #
@@ -70,24 +69,6 @@ def PYRO_connector_factory(uri, confnodesroot):
         location = url
     else:
         schemename = "PYROLOC"
-
-    if location.find(zeroconf_service_type) != -1:
-        try:
-            from zeroconf import Zeroconf
-            r = Zeroconf()
-            i = r.get_service_info(zeroconf_service_type, location)
-            if i is None:
-                raise Exception("'%s' not found" % location)
-            ip = str(socket.inet_ntoa(i.address))
-            port = str(i.port)
-            newlocation = ip + ':' + port
-            confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
-            location = newlocation
-            r.close()
-        except Exception:
-            confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n") % location)
-            confnodesroot.logger.write_error(traceback.format_exc())
-            return None
 
     # Try to get the proxy object
     try:

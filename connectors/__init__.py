@@ -67,6 +67,11 @@ def ConnectorFactory(uri, confnodesroot):
     or None if cannot connect to URI
     """
     _scheme = uri.split("://")[0].upper()
+
+    # commented code to enable for MDNS:// support
+    # _scheme, location = uri.split("://")
+    # _scheme = _scheme.upper()
+
     if _scheme == "LOCAL":
         # Local is special case
         # pyro connection to local runtime
@@ -75,6 +80,28 @@ def ConnectorFactory(uri, confnodesroot):
         runtime_port = confnodesroot.AppFrame.StartLocalRuntime(
             taskbaricon=True)
         uri = "PYROLOC://127.0.0.1:" + str(runtime_port)
+
+    # commented code to enable for MDNS:// support
+    # elif _scheme == "MDNS":
+    #     try:
+    #         from zeroconf import Zeroconf
+    #         r = Zeroconf()
+    #         i = r.get_service_info(zeroconf_service_type, location)
+    #         if i is None:
+    #             raise Exception("'%s' not found" % location)
+    #         ip = str(socket.inet_ntoa(i.address))
+    #         port = str(i.port)
+    #         newlocation = ip + ':' + port
+    #         confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
+    #         location = newlocation
+    #         # not a bug, but a workaround against obvious downgrade attack
+    #         scheme = "PYROS"
+    #         r.close()
+    #     except Exception:
+    #         confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n") % location)
+    #         confnodesroot.logger.write_error(traceback.format_exc())
+    #         return None
+
     elif _scheme in connectors:
         scheme = _scheme
     elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
