@@ -1752,7 +1752,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # Launch Service Discovery dialog
                 dialog = UriEditor(self.AppFrame, self)
                 answer = dialog.ShowModal()
-                uri = dialog.GetURI()
+                uri = str(dialog.GetURI())
                 dialog.Destroy()
             except Exception:
                 self.logger.write_error(_("Local service discovery failed!\n"))
