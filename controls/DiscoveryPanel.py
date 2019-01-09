@@ -231,6 +231,8 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         called when a service with the desired type is discovered.
         '''
         info = self.ZeroConfInstance.get_service_info(_type, name)
+        if info is None:
+            return
         svcname = name.split(".")[0]
         typename = info.properties.get("protocol", None)
         ip = str(socket.inet_ntoa(info.address))
