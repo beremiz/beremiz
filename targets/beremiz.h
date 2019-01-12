@@ -1,3 +1,6 @@
+#ifndef _BEREMIZ_H_
+#define _BEREMIZ_H_
+
 /* Beremiz' header file for use by extensions */
 
 #include "iec_types.h"
@@ -24,3 +27,4 @@ int     LogMessage(uint8_t level, char* buf, uint32_t size);
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
 
+#endif
