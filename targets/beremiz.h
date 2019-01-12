@@ -11,7 +11,13 @@
 extern unsigned long long common_ticktime__;
 
 #ifdef TARGET_LOGGING_DISABLE
-#define LogMessage(level, buf, size)
+static inline int LogMessage(uint8_t level, char* buf, uint32_t size)
+{
+	(void)level;
+	(void)buf;
+	(void)size;
+	return 0;
+}
 #else
 int     LogMessage(uint8_t level, char* buf, uint32_t size);
 #endif
