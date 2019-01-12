@@ -35,9 +35,6 @@ extern unsigned long greatest_tick_count__;
 /* Help to quit cleanly when init fail at a certain level */
 static int init_level = 0;
 
-/* Prototype for Logging to help spotting errors at init */
-int LogMessage(uint8_t level, char* buf, uint32_t size);
-
 /*
  * Prototypes of functions exported by plugins
  **/
