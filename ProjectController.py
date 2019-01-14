@@ -40,6 +40,7 @@ from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from functools import reduce
+from distutils.dir_util import copy_tree
 from six.moves import xrange
 
 import wx
@@ -574,8 +575,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 old_projectfiles_path = self._getProjectFilesPath(
                     from_project_path)
                 if os.path.isdir(old_projectfiles_path):
-                    shutil.copytree(old_projectfiles_path,
-                                    self._getProjectFilesPath(self.ProjectPath))
+                    copy_tree(old_projectfiles_path,
+                              self._getProjectFilesPath(self.ProjectPath))
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
             result = self.CTNRequestSave(from_project_path)
             if result:
