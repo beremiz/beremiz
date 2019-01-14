@@ -549,10 +549,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
             dialog.ShowModal()
             return False
         else:
-            plc_file = os.path.join(new_project_path, "plc.xml")
-            if os.path.isfile(plc_file):
-                message = (
-                    _("Selected directory already contains another project. Overwrite? \n"))
+            if not CheckPathPerm(new_project_path):
+                dialog = wx.MessageDialog(
+                    self.AppFrame,
+                    _('No write permissions in selected directory! \n'),
+                    _("Error"), wx.OK | wx.ICON_ERROR)
+                dialog.ShowModal()
+                return False
+            if not os.path.isdir(new_project_path) or len(os.listdir(new_project_path)) > 0:
+                plc_file = os.path.join(new_project_path, "plc.xml")
+                if os.path.isfile(plc_file):
+                    message = _("Selected directory already contains another project. Overwrite? \n")
+                else:
+                    message = _("Selected directory isn't empty. Continue? \n")
                 dialog = wx.MessageDialog(
                     self.AppFrame, message, _("Error"), wx.YES_NO | wx.ICON_ERROR)
                 answer = dialog.ShowModal()
