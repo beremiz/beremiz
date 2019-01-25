@@ -615,11 +615,7 @@ class Beremiz(IDEFrame):
     def AddToDoBeforeQuit(self, Thing):
         self.ToDoBeforeQuit.append(Thing)
 
-    def OnCloseFrame(self, event):
-        for evt_type in [wx.EVT_SET_FOCUS,
-                         wx.EVT_KILL_FOCUS,
-                         wx.stc.EVT_STC_UPDATEUI]:
-            self.LogConsole.Unbind(evt_type)
+    def TryCloseFrame(self):
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
             if self.CTR is not None:
                 self.CTR.KillDebugThread()
@@ -631,8 +627,14 @@ class Beremiz(IDEFrame):
                 Thing()
             self.ToDoBeforeQuit = []
 
+            return True
+        return False
+
+    def OnCloseFrame(self, event):
+        if self.TryCloseFrame():
             event.Skip()
         else:
+            # prevent event to continue, i.e. cancel closing
             event.Veto()
 
     def RefreshFileMenu(self):
