@@ -30,7 +30,7 @@ import os
 import sys
 import getopt
 import threading
-from threading import Thread, Semaphore, Lock
+from threading import Thread, Semaphore, Lock, currentThread
 import __builtin__
 from builtins import str as text
 from past.builtins import execfile
@@ -414,10 +414,11 @@ if havetwisted:
     if havewx:
         reactor.registerWxApp(app)
 
+twisted_reactor_thread_id = None
+ui_thread = None 
+
 if havewx:
     wx_eval_lock = Semaphore(0)
-    # FIXME : beware wx mainloop is _not_ running in main thread
-    # main_thread = currentThread()
 
     def statuschangeTskBar(status):
         wx.CallAfter(taskbar_instance.UpdateIcon, status)
@@ -430,15 +431,23 @@ if havewx:
         wx_eval_lock.release()
 
     def evaluator(tocall, *args, **kwargs):
-        # FIXME : should implement anti-deadlock
-        # if main_thread == currentThread():
-        #     # avoid dead lock if called from the wx mainloop
-        #     return default_evaluator(tocall, *args, **kwargs)
-        # else:
-        o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
-        wx.CallAfter(wx_evaluator, o)
-        wx_eval_lock.acquire()
-        return o.res
+        # To prevent deadlocks, check if current thread is not one of the UI
+        # UI threads can be either the one from WX main loop or
+        # worker thread from twisted "threadselect" reactor
+        current_id = currentThread().ident
+        if ui_thread is not None \
+            and ui_thread.ident != current_id \
+            and (not havetwisted or (
+                twisted_reactor_thread_id is not None 
+                and twisted_reactor_thread_id != current_id)):
+
+            o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
+            wx.CallAfter(wx_evaluator, o)
+            wx_eval_lock.acquire()
+            return o.res
+        else:
+            # avoid dead lock if called from the wx mainloop
+            return default_evaluator(tocall, *args, **kwargs)
 else:
     evaluator = default_evaluator
 
@@ -560,7 +569,10 @@ if havetwisted or havewx:
 
     # This order ui loop to unblock main thread when ready.
     if havetwisted:
-        reactor.callLater(0, ui_thread_started.release)
+        def signal_uithread_started():
+            twisted_reactor_thread_id = currentThread().ident
+            ui_thread_started.release()
+        reactor.callLater(0, signal_uithread_started)
     else:
         wx.CallAfter(ui_thread_started.release)
 
