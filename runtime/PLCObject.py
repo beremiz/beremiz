@@ -99,6 +99,7 @@ class PLCObject(object):
         self.TraceThread = None
         self.TraceLock = Lock()
         self.Traces = []
+        self.DebugToken = 0
 
         self._init_blobs()
 
@@ -567,11 +568,13 @@ class PLCObject(object):
             pass
         return False
 
+    @RunInMain
     def SetTraceVariablesList(self, idxs):
         """
         Call ctype imported function to append
         these indexes to registred variables in PLC debugger
         """
+        self.DebugToken += 1
         if idxs:
             # suspend but dont disable
             if self._suspendDebug(False) == 0:
@@ -586,8 +589,10 @@ class PLCObject(object):
                     self._RegisterDebugVariable(idx, force)
                 self._TracesSwap()
                 self._resumeDebug()
+                return self.DebugToken
         else:
             self._suspendDebug(True)
+        return None
 
     def _TracesSwap(self):
         self.LastSwapTrace = time()
@@ -601,8 +606,11 @@ class PLCObject(object):
         return Traces
 
     @RunInMain
-    def GetTraceVariables(self):
-        return self.PLCStatus, self._TracesSwap()
+    def GetTraceVariables(self, DebugToken):
+        if (DebugToken is not None and
+            DebugToken == self.DebugToken):
+            return self.PLCStatus, self._TracesSwap()
+        return PlcStatus.Broken, []
 
     def TraceThreadProc(self):
         """

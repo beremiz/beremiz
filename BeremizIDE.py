@@ -209,10 +209,6 @@ class LogPseudoFile(object):
     def write_error(self, s):
         self.write(s, self.red_yellow)
 
-    def writeyield(self, s):
-        self.write(s)
-        wx.GetApp().Yield()
-
     def flush(self):
         # Temporary deactivate read only mode on StyledTextCtrl for clearing
         # text. It seems that text modifications, even programmatically, are

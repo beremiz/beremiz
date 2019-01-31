@@ -270,6 +270,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.previous_plcstate = None
         # copy StatusMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
+        self.DebugToken = None
+        self.debug_status = PlcStatus.Stopped
 
     def __del__(self):
         if self.DebugTimer:
@@ -1479,11 +1481,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.UpdateMethodsFromPLCStatus()
 
     def SnapshotAndResetDebugValuesBuffers(self):
-        if self._connector is not None:
-            plc_status, Traces = self._connector.GetTraceVariables()
+        debug_status = PlcStatus.Disconnected
+        if self._connector is not None and self.DebugToken is not None:
+            debug_status, Traces = self._connector.GetTraceVariables(self.DebugToken)
             # print [dict.keys() for IECPath, (dict, log, status, fvalue) in
             # self.IECdebug_datas.items()]
-            if plc_status == PlcStatus.Started:
+            if debug_status == PlcStatus.Started:
                 if len(Traces) > 0:
                     for debug_tick, debug_buff in Traces:
                         debug_vars = UnpackDebugBuffer(
@@ -1509,14 +1512,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         ticks, self.DebugTicks = self.DebugTicks, []
 
-        return ticks, buffers
+        return debug_status, ticks, buffers
 
     def RegisterDebugVarToConnector(self):
         self.DebugTimer = None
         Idxs = []
         self.TracedIECPath = []
         self.TracedIECTypes = []
-        if self._connector is not None:
+        if self._connector is not None and self.debug_status != PlcStatus.Broken:
             IECPathsToPop = []
             for IECPath, data_tuple in self.IECdebug_datas.iteritems():
                 WeakCallableDict, _data_log, _status, fvalue, _buffer_list = data_tuple
@@ -1545,11 +1548,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 IdxsT = zip(*Idxs)
                 self.TracedIECPath = IdxsT[3]
                 self.TracedIECTypes = IdxsT[1]
-                self._connector.SetTraceVariablesList(zip(*IdxsT[0:3]))
+                self.DebugToken = self._connector.SetTraceVariablesList(zip(*IdxsT[0:3]))
             else:
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
-            self.SnapshotAndResetDebugValuesBuffers()
+                self.DebugToken = None
+            self.debug_status, _debug_ticks, _buffers = self.SnapshotAndResetDebugValuesBuffers()
 
     def IsPLCStarted(self):
         return self.previous_plcstate == PlcStatus.Started
@@ -1665,7 +1669,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self._connector.RemoteExec(script, **kwargs)
 
     def DispatchDebugValuesProc(self, event):
-        debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
+        self.debug_status, debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
         start_time = time.time()
         if len(self.TracedIECPath) == len(buffers):
             for IECPath, values in zip(self.TracedIECPath, buffers):
@@ -1676,11 +1680,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.CallWeakcallables(
                     "__tick__", "NewDataAvailable", debug_ticks)
 
-        delay = time.time() - start_time
-        next_refresh = max(REFRESH_PERIOD - delay, 0.2 * delay)
-        if self.DispatchDebugValuesTimer is not None:
-            self.DispatchDebugValuesTimer.Start(
-                int(next_refresh * 1000), oneShot=True)
+        if self.debug_status == PlcStatus.Broken:
+            self.logger.write_warning(
+                _("Debug: token rejected - other debug took over - reconnect to recover\n"))
+        else:
+            delay = time.time() - start_time
+            next_refresh = max(REFRESH_PERIOD - delay, 0.2 * delay)
+            if self.DispatchDebugValuesTimer is not None:
+                self.DispatchDebugValuesTimer.Start(
+                    int(next_refresh * 1000), oneShot=True)
         event.Skip()
 
     def KillDebugThread(self):
@@ -1691,6 +1699,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.previous_plcstate = None
         if self.AppFrame:
             self.AppFrame.ResetGraphicViewers()
+
+        self.debug_status = PlcStatus.Started
+
         self.RegisterDebugVarToConnector()
         if self.DispatchDebugValuesTimer is not None:
             self.DispatchDebugValuesTimer.Start(
@@ -1727,7 +1738,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if connector is not None:
             if self.StatusTimer is not None:
                 # Start the status Timer
-                wx.Yield()
                 self.StatusTimer.Start(milliseconds=500, oneShot=False)
         else:
             if self.StatusTimer is not None:
