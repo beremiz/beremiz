@@ -37,6 +37,7 @@ from six.moves import _thread, xrange
 import md5
 from tempfile import mkstemp
 import shutil
+from functools import wraps
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
@@ -72,6 +73,7 @@ def PLCprint(message):
 
 
 def RunInMain(func):
+    @wraps(func)
     def func_wrapper(*args, **kwargs):
         return MainWorker.call(func, *args, **kwargs)
     return func_wrapper
