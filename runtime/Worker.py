@@ -65,13 +65,15 @@ class worker(object):
                 pass
             else:
                 raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
+
         while not self._finish:
             self.todo.wait()
             if self.job is not None:
                 self.job.do()
                 self.done.notify()
             else:
-                self.free.notify()
+                break
+
         self.mutex.release()
 
     def call(self, *args, **kwargs):
@@ -97,8 +99,8 @@ class worker(object):
             self.job = _job
             self.todo.notify()
             self.done.wait()
-            _job = self.job
             self.job = None
+            self.free.notify()
             self.mutex.release()
 
         if _job.success:
