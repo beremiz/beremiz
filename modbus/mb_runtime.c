@@ -280,6 +280,15 @@ static void *__mb_server_thread(void *_server_node)  {
 }
 
 
+#define timespec_add(ts, sec, nsec) {		\
+	ts.tv_sec  +=  sec;			\
+	ts.tv_nsec += nsec;			\
+	if (ts.tv_nsec >= 1000000000) {		\
+		ts.tv_sec  ++;			\
+		ts.tv_nsec -= 1000000000;	\
+	}					\
+}
+
 
 static void *__mb_client_thread(void *_index)  {
 	int client_node_id = (char *)_index - (char *)NULL; // Use pointer arithmetic (more portable than cast)
@@ -350,33 +359,33 @@ static void *__mb_client_thread(void *_index)  {
 			}
 		}
 		// Determine absolute time instant for starting the next cycle
-		// struct timespec prev_cycle;
-		// prev_cycle = next_cycle;
-		next_cycle.tv_sec  += period_sec;
-		next_cycle.tv_nsec += period_nsec;
-		if (next_cycle.tv_nsec >= 1000000000) {
-			next_cycle.tv_sec  ++;
-			next_cycle.tv_nsec -= 1000000000;
-		}
-		/* It probably does not make sense to check for overflow of timer.
+		struct timespec prev_cycle, now;
+		prev_cycle = next_cycle;
+		timespec_add(next_cycle, period_sec, period_nsec);
+		/* NOTE A:
+		 * When we have difficulty communicating with remote client and/or server, then the communications get delayed and we will
+		 * fall behind in the period. This means that when communication is re-established we may end up running this loop continuously
+		 * for some time until we catch up.
+		 * This is undesirable, so we detect it by making sure the next_cycle will start in the future.
+		 * When this happens we will switch from a purely periodic task _activation_ sequence, to a fixed task suspension interval.
+		 * 
+		 * NOTE B:
+		 * It probably does not make sense to check for overflow of timer - so we don't do it for now!
 		 * Even in 32 bit systems this will take at least 68 years since the computer booted
 		 * (remember, we are using CLOCK_MONOTONIC, which should start counting from 0
 		 * every time the system boots). On 64 bit systems, it will take over 
 		 * 10^11 years to overflow.
 		 */
-		/*
-		if (next_cycle.tv_sec) < prev_cycle.tv_sec) {
-			// we will lose some precision by reading the time again, 
-			// but it is better than the alternative...
-			clock_gettime(CLOCK_MONOTONIC, &next_cycle);
-			next_cycle.tv_sec  += period_sec;
-			next_cycle.tv_nsec += period_nsec;
-			if (next_cycle.tv_nsec >= 1000000000) {
-				next_cycle.tv_sec  ++;
-				next_cycle.tv_nsec -= 1000000000;
-			}
+		clock_gettime(CLOCK_MONOTONIC, &now);
+		if (  ((now.tv_sec > next_cycle.tv_sec) || ((now.tv_sec == next_cycle.tv_sec) && (now.tv_nsec > next_cycle.tv_nsec)))
+		   /* We are falling behind. See NOTE A above */
+		   || (next_cycle.tv_sec < prev_cycle.tv_sec)
+		   /* Timer overflow. See NOTE B above */
+		   ) {
+			next_cycle = now;
+			timespec_add(next_cycle, period_sec, period_nsec);
 		}
-		*/
+
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle, NULL);
 	}
 
