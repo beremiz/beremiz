@@ -45,8 +45,6 @@ from runtime.Stunnel import getPSKID
 from runtime import PlcStatus
 from runtime import MainWorker
 
-empty_md5_digest = md5.new().digest()
-
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
     dlclose = _ctypes.FreeLibrary
@@ -468,11 +466,17 @@ class PLCObject(object):
         os.mkdir(self.tmpdir)
     
     @RunInMain
+    def SeedBlob(self, seed):
+        blob = (mkstemp(dir=self.tmpdir) + (md5.new(),))
+        fobj, path, md5sum = blob
+        md5sum.update(seed)
+        newBlobID = md5sum.digest()
+        self.blobs[newBlobID] = blob
+        return newBlobID
+
+    @RunInMain
     def AppendChunkToBlob(self, data, blobID):
-        blob = ((mkstemp(dir=self.tmpdir) if data else None)\
-                   + (md5.new(),)) \
-               if blobID == empty_md5_digest \
-               else self.blobs.pop(blobID, None)
+        blob = self.blobs.pop(blobID, None)
 
         if blob is None:
             return None
@@ -480,9 +484,8 @@ class PLCObject(object):
         fobj, path, md5sum = blob
         md5sum.update(data)
         newBlobID = md5sum.digest()
-        if data:
-            os.write(fobj,data)
-            self.blobs[newBlobID] = blob
+        os.write(fobj,data)
+        self.blobs[newBlobID] = blob
         return newBlobID
 
     @RunInMain
@@ -495,10 +498,6 @@ class PLCObject(object):
         blob = self.blobs.pop(blobID, None)
 
         if blob is None:
-            if blobID == md5.new().digest():
-                # create empty file
-                open(newpath,'r').close()
-                return
             raise Exception(_("Missing data to create file: {}").format(newpath))
 
         fobj, path, md5sum = blob

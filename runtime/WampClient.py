@@ -57,6 +57,7 @@ ExposedCalls = [
     ("StopPLC", {}),
     ("GetPLCstatus", {}),
     ("GetPLCID", {}),
+    ("SeedBlob", {}),
     ("AppendChunkToBlob", {}),
     ("PurgeBlobs", {}),
     ("NewPLC", {}),
