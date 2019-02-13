@@ -1873,11 +1873,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 extrafiles.append((
                     name, 
                     self._connector.BlobFromFile(
-                        os.path.join(extrafilespath, name))))
+                        # use file name as a seed to avoid collisions
+                        # with files having same content
+                        os.path.join(extrafilespath, name),name)))
 
         # Send PLC on target
         object_path = builder.GetBinaryPath()
-        object_blob = self._connector.BlobFromFile(object_path)
+        # arbitrarily use MD5 as a seed, could be any string
+        object_blob = self._connector.BlobFromFile(object_path, MD5)
 
         self.HidePLCProgress()
 
