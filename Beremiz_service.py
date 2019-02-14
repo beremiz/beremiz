@@ -435,6 +435,7 @@ if havewx:
         # UI threads can be either the one from WX main loop or
         # worker thread from twisted "threadselect" reactor
         current_id = currentThread().ident
+
         if ui_thread is not None \
             and ui_thread.ident != current_id \
             and (not havetwisted or (
@@ -570,6 +571,7 @@ if havetwisted or havewx:
     # This order ui loop to unblock main thread when ready.
     if havetwisted:
         def signal_uithread_started():
+            global twisted_reactor_thread_id
             twisted_reactor_thread_id = currentThread().ident
             ui_thread_started.release()
         reactor.callLater(0, signal_uithread_started)

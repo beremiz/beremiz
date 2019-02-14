@@ -132,6 +132,9 @@ class WxGladeHMI(PythonFileCTNMixin):
         else:
             define_hmi = ""
 
+        global_hmi = ("global %s\n" % ",".join(
+            [x["name"] for x in main_frames]) if len(main_frames) > 0 else "")
+
         declare_hmi = \
 "\n".join(["%(name)s = None\n" % x for x in main_frames]) + \
 "\n".join(["\n".join(["%(class)s.%(h)s = %(h)s" %
@@ -142,29 +145,26 @@ def OnCloseFrame(evt):
     wx.MessageBox(_("Please stop PLC to close"))
 
 def InitHMI():
-"""+"\n".join(["""\
+    """+ global_hmi + "\n" + "\n".join(["""\
     %(name)s = %(class)s(None)
     %(name)s.Bind(wx.EVT_CLOSE, OnCloseFrame)
     %(name)s.Show()
 
 """ % x for x in main_frames]) + """\
 def CleanupHMI():
-""" + "\n".join(["""\
+    """+ global_hmi + "\n" + "\n".join(["""\
     if %(name)s is not None: 
         %(name)s.Destroy()
 """ % x for x in main_frames])
 
-        global_hmi = ("global %s\n" % ",".join(
-            [x["name"] for x in main_frames]) if len(main_frames) > 0 else "")
-
         self.PreSectionsTexts = {
             "globals": define_hmi,
             "start":   global_hmi,
-            "stop":    global_hmi + "wx.CallAfter(CleanupHMI)\n"
+            "stop":    "CleanupHMI()\n"
         }
         self.PostSectionsTexts = {
             "globals": declare_hmi,
-            "start":   "wx.CallAfter(InitHMI)\n",
+            "start":   "InitHMI()\n",
         }
 
         if len(main_frames) == 0 and \
