@@ -228,4 +228,7 @@ class ForceVariableDialog(wx.Dialog):
         event.Skip()
 
     def GetValue(self):
-        return GetTypeValue[self.IEC_Type](wx.TextEntryDialog.GetValue(self))
+        """
+        Return new enforce value of particular type
+        """
+        return GetTypeValue[self.IEC_Type](self.ValueTextCtrl.GetValue())
