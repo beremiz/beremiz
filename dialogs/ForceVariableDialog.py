@@ -213,7 +213,12 @@ class ForceVariableDialog(wx.Dialog):
         self.ValueTextCtrl.SetValue(text(value))
 
     def OnOK(self, event):
+        """
+        Checks new entered value
+        before closing dialog window
+        """
         message = None
+        ret = True
         value = self.ValueTextCtrl.GetValue()
         if value == "":
             message = _("You must type a value!")
@@ -223,9 +228,10 @@ class ForceVariableDialog(wx.Dialog):
             dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
             dialog.ShowModal()
             dialog.Destroy()
+            ret = False
         else:
             self.EndModal(wx.ID_OK)
-        event.Skip()
+        event.Skip(ret)
 
     def GetValue(self):
         """
