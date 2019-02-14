@@ -251,6 +251,10 @@ class BlockPreviewDialog(wx.Dialog):
         self.EndModal(wx.ID_OK)
 
     def RefreshPreview(self):
+        """Triggers EVT_PAINT event to refresh UI"""
+        self.Refresh()
+
+    def DrawPreview(self):
         """
         Refresh preview panel of graphic element
         May be overridden by inherited classes
@@ -300,5 +304,5 @@ class BlockPreviewDialog(wx.Dialog):
         Called when Preview panel need to be redraw
         @param event: wx.PaintEvent
         """
-        self.RefreshPreview()
+        self.DrawPreview()
         event.Skip()
