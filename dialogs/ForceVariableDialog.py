@@ -169,34 +169,43 @@ GetTypeValue = {"BOOL": lambda x: {"TRUE": True, "FALSE": False, "0": False, "1"
 # -------------------------------------------------------------------------------
 
 
-class ForceVariableDialog(wx.TextEntryDialog):
+class ForceVariableDialog(wx.Dialog):
+    """Dialog to enforce new value for variables in debug panel"""
 
     def __init__(self, parent, iec_type, defaultValue=""):
-        wx.TextEntryDialog.__init__(
+        wx.Dialog.__init__(
             self, parent,
-            message=_("Forcing Variable Value"),
-            caption=_("Please enter value for a \"%s\" variable:") % iec_type,
-            defaultValue=defaultValue,
-            style=wx.OK | wx.CANCEL | wx.CENTRE, pos=wx.DefaultPosition)
+            name='ForceVariableDialog',
+            title=_("Please enter value for a \"%s\" variable:") % iec_type,
+            style=wx.DEFAULT_DIALOG_STYLE, pos=wx.DefaultPosition)
 
         self.IEC_Type = iec_type
+        info_sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.Bind(wx.EVT_BUTTON, self.OnOK,
-                  self.GetSizer().GetItem(2).GetSizer().GetItem(1).
-                  GetSizer().GetAffirmativeButton())
-        self.ValueTextCtrl = self.GetSizer().GetItem(1).GetWindow()
+        message_label = wx.StaticText(self, label=_("Forcing Variable Value"))
+        info_sizer.AddWindow(message_label, border=10,
+                             flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+
+        self.ValueTextCtrl = wx.TextCtrl(self)
+        self.ValueTextCtrl.SetValue(defaultValue)
+        info_sizer.AddWindow(self.ValueTextCtrl, border=10,
+                             flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
+
         if self.IEC_Type == "BOOL":
             self.ToggleButton = wx.ToggleButton(self, label=_("Toggle value"))
             value = GetTypeValue[self.IEC_Type](defaultValue)
             if value is not None:
                 self.ToggleButton.SetValue(value)
 
-            border = self.GetSizer().GetItem(1).GetBorder()
-            self.GetSizer().Insert(before=2, item=self.ToggleButton,
-                                   border=border,
-                                   flag=wx.LEFT | wx.RIGHT | wx.EXPAND)
+            info_sizer.AddWindow(self.ToggleButton, border=10,
+                                 flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
             self.Bind(wx.EVT_TOGGLEBUTTON, self.ToggleBoolValue, self.ToggleButton)
 
+        button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
+        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
+        info_sizer.AddSizer(button_sizer, border=10, flag=wx.ALIGN_RIGHT | wx.ALL)
+
+        self.SetSizer(info_sizer)
         self.Fit()
 
     def ToggleBoolValue(self, event):
