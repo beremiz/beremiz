@@ -1515,8 +1515,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                 IECdebug_data = self.IECdebug_datas.get(
                                     IECPath, None)
                                 if IECdebug_data is not None and value is not None:
-                                    forced = IECdebug_data[2:4] == [
-                                        "Forced", value]
+                                    forced = (IECdebug_data[2] == "Forced") \
+                                        and (value is not None) and \
+                                        (IECdebug_data[3] is not None)
+
                                     if not IECdebug_data[4] and len(values_buffer) > 0:
                                         values_buffer[-1] = (value, forced)
                                     else:
