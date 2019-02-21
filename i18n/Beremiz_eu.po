@@ -4,7 +4,7 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Emil Saracutu <emil_saracutu@yahoo.com>, 2018
+# José Miguel Andonegi <jm.andonegi@gmail.com>, 2019
 # 
 #, fuzzy
 msgid ""
@@ -13,13 +13,13 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-10-03 14:20+0300\n"
 "PO-Revision-Date: 2017-06-13 13:14+0000\n"
-"Last-Translator: Emil Saracutu <emil_saracutu@yahoo.com>, 2018\n"
-"Language-Team: Romanian (Romania) (https://www.transifex.com/beremiz/teams/75746/ro_RO/)\n"
+"Last-Translator: José Miguel Andonegi <jm.andonegi@gmail.com>, 2019\n"
+"Language-Team: Basque (https://www.transifex.com/beremiz/teams/75746/eu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ro_RO\n"
-"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));\n"
+"Language: eu\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../util/ExceptionHandler.py:58
 #, python-format
@@ -38,7 +38,7 @@ msgstr ""
 
 #: ../controls/VariablePanel.py:87
 msgid "   External"
-msgstr "Extern"
+msgstr ""
 
 #: ../controls/VariablePanel.py:86
 msgid "   InOut"
@@ -46,19 +46,19 @@ msgstr ""
 
 #: ../controls/VariablePanel.py:86
 msgid "   Input"
-msgstr "Intrare"
+msgstr "Sarrera"
 
 #: ../controls/VariablePanel.py:87
 msgid "   Local"
-msgstr "Local"
+msgstr ""
 
 #: ../controls/VariablePanel.py:86
 msgid "   Output"
-msgstr "Ieșire"
+msgstr "Irteera"
 
 #: ../controls/VariablePanel.py:88
 msgid "   Temp"
-msgstr "Temporar"
+msgstr ""
 
 #: ../etherlab/etherlab.py:301
 #, python-format
@@ -67,22 +67,22 @@ msgstr ""
 
 #: ../etherlab/CommonEtherCATFunction.py:1599
 msgid " Warning..."
-msgstr ""
+msgstr "Adi..."
 
 #: ../dialogs/PouTransitionDialog.py:100 ../dialogs/ProjectDialog.py:72
 #: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:157
 #, python-format
 msgid " and %s"
-msgstr "și%s"
+msgstr ""
 
 #: ../ProjectController.py:1236
 msgid " generation failed !\n"
-msgstr "generare eșuată\n"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1029
 #, python-format
 msgid "\"%s\" Data Type doesn't exist !!!"
-msgstr "\"%s\" Tipul de dată nu există !"
+msgstr ""
 
 #: ../plcopen/plcopen.py:1047
 #, python-format
