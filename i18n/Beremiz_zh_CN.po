@@ -3,14 +3,22 @@
 # This file is distributed under the same license as the Beremiz package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
+# Translators:
+# Andrey Skvortsov <andrej.skvortzov@gmail.com>, 2017
+# Tango_Wu <wuyangtang@live.com>, 2017
+# yiwei Yan <523136664@qq.com>, 2017
+# frank guan <gpfrank@163.com>, 2019
+# ji wang <2485567515@qq.com>, 2019
+# 珂 曾 <15627997@qq.com>, 2019
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Beremiz\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-15 16:39+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: yiwei Yan <523136664@qq.com>, 2017\n"
+"POT-Creation-Date: 2018-10-03 14:20+0300\n"
+"PO-Revision-Date: 2017-06-13 13:14+0000\n"
+"Last-Translator: 珂 曾 <15627997@qq.com>, 2019\n"
 "Language-Team: Chinese (China) (https://www.transifex.com/beremiz/teams/75746/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,37 +51,46 @@ msgstr ""
 "\n"
 "追溯：\n"
 
-#: ../controls/VariablePanel.py:90
+#: ../controls/VariablePanel.py:87
 msgid "   External"
 msgstr "   外部"
 
-#: ../controls/VariablePanel.py:89
+#: ../controls/VariablePanel.py:86
 msgid "   InOut"
 msgstr "   输入输出"
 
-#: ../controls/VariablePanel.py:89
+#: ../controls/VariablePanel.py:86
 msgid "   Input"
 msgstr "   输入"
 
-#: ../controls/VariablePanel.py:90
+#: ../controls/VariablePanel.py:87
 msgid "   Local"
 msgstr "   本地"
 
-#: ../controls/VariablePanel.py:89
+#: ../controls/VariablePanel.py:86
 msgid "   Output"
 msgstr "   输出"
 
-#: ../controls/VariablePanel.py:91
+#: ../controls/VariablePanel.py:88
 msgid "   Temp"
 msgstr "临时"
 
-#: ../dialogs/PouTransitionDialog.py:101 ../dialogs/ProjectDialog.py:74
-#: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:122
+#: ../etherlab/etherlab.py:301
+#, python-format
+msgid " (rev. %s)"
+msgstr "(版本.%s)"
+
+#: ../etherlab/CommonEtherCATFunction.py:1599
+msgid " Warning..."
+msgstr "警报..."
+
+#: ../dialogs/PouTransitionDialog.py:100 ../dialogs/ProjectDialog.py:72
+#: ../dialogs/PouActionDialog.py:99 ../dialogs/PouDialog.py:157
 #, python-format
 msgid " and %s"
 msgstr "和 %s"
 
-#: ../ProjectController.py:1182
+#: ../ProjectController.py:1236
 msgid " generation failed !\n"
 msgstr "生成失败！\n"
 
@@ -97,7 +114,7 @@ msgstr "\"%s\" POU不存在！！！"
 msgid "\"%s\" can't use itself!"
 msgstr "\"%s\" 不能自己使用！"
 
-#: ../IDEFrame.py:1688 ../IDEFrame.py:1707
+#: ../IDEFrame.py:1705 ../IDEFrame.py:1724
 #, python-format
 msgid "\"%s\" config already exists!"
 msgstr "\"%s\" 配置已存在！"
@@ -112,32 +129,32 @@ msgstr "\"%s\" 配置已存在！！！"
 msgid "\"%s\" configuration doesn't exist !!!"
 msgstr "“ %s ” 配置不存在！！！"
 
-#: ../IDEFrame.py:1638
+#: ../IDEFrame.py:1655
 #, python-format
 msgid "\"%s\" data type already exists!"
 msgstr "\"%s\" 数据类型已存在！"
 
-#: ../dialogs/PouTransitionDialog.py:112 ../dialogs/BlockPreviewDialog.py:220
+#: ../dialogs/PouTransitionDialog.py:111 ../dialogs/BlockPreviewDialog.py:220
 #: ../dialogs/PouActionDialog.py:110 ../editors/Viewer.py:304
 #: ../editors/Viewer.py:374 ../editors/Viewer.py:398 ../editors/Viewer.py:418
 #: ../editors/TextViewer.py:270 ../editors/TextViewer.py:299
-#: ../controls/VariablePanel.py:425
+#: ../controls/VariablePanel.py:424
 #, python-format
 msgid "\"%s\" element for this pou already exists!"
 msgstr "\"%s\" 元素对于此POU已经存在！"
 
-#: ../BeremizIDE.py:928
+#: ../BeremizIDE.py:925
 #, python-format
 msgid "\"%s\" folder is not a valid Beremiz project\n"
 msgstr "\"%s\" 文件夹不是有效的Beremiz项目\n"
 
-#: ../dialogs/SFCStepNameDialog.py:56 ../dialogs/PouTransitionDialog.py:108
+#: ../dialogs/SFCStepNameDialog.py:56 ../dialogs/PouTransitionDialog.py:107
 #: ../dialogs/BlockPreviewDialog.py:209 ../dialogs/PouNameDialog.py:54
-#: ../dialogs/PouActionDialog.py:106 ../dialogs/PouDialog.py:129
-#: ../editors/ResourceEditor.py:483 ../editors/ResourceEditor.py:518
-#: ../editors/DataTypeEditor.py:571 ../editors/DataTypeEditor.py:603
-#: ../editors/CodeFileEditor.py:774 ../controls/VariablePanel.py:787
-#: ../IDEFrame.py:1629
+#: ../dialogs/PouActionDialog.py:106 ../dialogs/PouDialog.py:164
+#: ../etherlab/ConfigEditor.py:973 ../editors/ResourceEditor.py:481
+#: ../editors/ResourceEditor.py:518 ../editors/DataTypeEditor.py:571
+#: ../editors/DataTypeEditor.py:603 ../editors/CodeFileEditor.py:793
+#: ../controls/VariablePanel.py:798 ../IDEFrame.py:1646
 #, python-format
 msgid "\"%s\" is a keyword. It can't be used!"
 msgstr "\"%s\" 是一个关键词。它不能被使用！"
@@ -152,27 +169,28 @@ msgstr "\"%s\"不是有效值！"
 msgid "\"%s\" is not a valid folder!"
 msgstr "\"%s\"不是有效文件夹！"
 
-#: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:106
+#: ../dialogs/SFCStepNameDialog.py:54 ../dialogs/PouTransitionDialog.py:105
 #: ../dialogs/BlockPreviewDialog.py:205 ../dialogs/PouNameDialog.py:52
-#: ../dialogs/PouActionDialog.py:104 ../dialogs/PouDialog.py:127
-#: ../editors/ResourceEditor.py:481 ../editors/ResourceEditor.py:516
-#: ../editors/DataTypeEditor.py:601 ../editors/CodeFileEditor.py:772
-#: ../controls/VariablePanel.py:785 ../IDEFrame.py:1627
+#: ../dialogs/PouActionDialog.py:104 ../dialogs/PouDialog.py:162
+#: ../etherlab/ConfigEditor.py:971 ../editors/ResourceEditor.py:479
+#: ../editors/ResourceEditor.py:516 ../editors/DataTypeEditor.py:601
+#: ../editors/CodeFileEditor.py:791 ../controls/VariablePanel.py:796
+#: ../IDEFrame.py:1644
 #, python-format
 msgid "\"%s\" is not a valid identifier!"
 msgstr "\"%s\"不是有效标识符！"
 
-#: ../IDEFrame.py:2436
+#: ../IDEFrame.py:2454
 #, python-format
 msgid "\"%s\" is used by one or more POUs. Do you wish to continue?"
 msgstr "\"%s\"被一个或多个程序组织单元使用，你确定要继续吗？ "
 
-#: ../dialogs/BlockPreviewDialog.py:213 ../dialogs/PouDialog.py:131
+#: ../dialogs/BlockPreviewDialog.py:213 ../dialogs/PouDialog.py:166
 #: ../editors/Viewer.py:302 ../editors/Viewer.py:359 ../editors/Viewer.py:389
 #: ../editors/Viewer.py:411 ../editors/TextViewer.py:268
 #: ../editors/TextViewer.py:297 ../editors/TextViewer.py:351
-#: ../editors/TextViewer.py:374 ../controls/VariablePanel.py:364
-#: ../IDEFrame.py:1647
+#: ../editors/TextViewer.py:374 ../controls/VariablePanel.py:363
+#: ../IDEFrame.py:1664
 #, python-format
 msgid "\"%s\" pou already exists!"
 msgstr "\"%s\"编程组织单元已经存在！"
@@ -201,7 +219,7 @@ msgstr ""
 "\"%s\" 不是一个有效的数组维数值！\n"
 "右边的数值必须大于左边的数值。"
 
-#: ../PLCGenerator.py:1133
+#: ../PLCGenerator.py:1182
 #, python-brace-format
 msgid "\"{a1}\" function cancelled in \"{a2}\" POU: No input connected"
 msgstr "\"{a1}\" 功能 被取消在 \"{a2}\" POU：没有输入被连接"
@@ -221,35 +239,35 @@ msgstr "\"{a1}\" 资源已经存在于 \"{a2}\" 配置 ！！！"
 msgid "\"{a1}\" resource doesn't exist in \"{a2}\" configuration !!!"
 msgstr "\"{a1}\" 资源部存在于 \"{a2}\" 配置！！！"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:580
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:559
 #, python-format
 msgid "%03gms"
 msgstr "%03gms"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:571
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:550
 #, python-format
 msgid "%dd"
 msgstr "%dd"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:61
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:572
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:189
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:551
 #, python-format
 msgid "%dh"
 msgstr "%dh"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:60
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:573
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:188
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:552
 #, python-format
 msgid "%dm"
 msgstr "%dm"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:58
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:186
 #, python-format
 msgid "%dms"
 msgstr "%dms"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:59
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:574
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:187
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:553
 #, python-format
 msgid "%ds"
 msgstr "%ds"
@@ -282,7 +300,12 @@ msgstr "%s 未包含实例！"
 msgid "%s body don't have text!"
 msgstr "%s 未包含文本！"
 
-#: ../IDEFrame.py:388
+#: ../etherlab/ConfigEditor.py:856
+#, python-format
+msgid "%s's nodes"
+msgstr "%s的节点"
+
+#: ../IDEFrame.py:391
 msgid "&Add Element"
 msgstr "&增加元素"
 
@@ -291,35 +314,35 @@ msgstr "&增加元素"
 msgid "&Close"
 msgstr "&关闭"
 
-#: ../IDEFrame.py:361
+#: ../IDEFrame.py:364
 msgid "&Configuration"
 msgstr "&配置"
 
-#: ../IDEFrame.py:350
+#: ../IDEFrame.py:353
 msgid "&Data Type"
 msgstr "&数据类型"
 
-#: ../IDEFrame.py:392
+#: ../IDEFrame.py:395
 msgid "&Delete"
 msgstr "&删除"
 
-#: ../IDEFrame.py:342
+#: ../IDEFrame.py:345
 msgid "&Display"
 msgstr "&显示"
 
-#: ../IDEFrame.py:341
+#: ../IDEFrame.py:344
 msgid "&Edit"
 msgstr "&编辑"
 
-#: ../IDEFrame.py:340
+#: ../IDEFrame.py:343
 msgid "&File"
 msgstr "&文件"
 
-#: ../IDEFrame.py:352
+#: ../IDEFrame.py:355
 msgid "&Function"
 msgstr "&功能"
 
-#: ../IDEFrame.py:343
+#: ../IDEFrame.py:346
 msgid "&Help"
 msgstr "&帮助"
 
@@ -327,7 +350,7 @@ msgstr "&帮助"
 msgid "&License"
 msgstr "&许可"
 
-#: ../IDEFrame.py:356
+#: ../IDEFrame.py:359
 msgid "&Program"
 msgstr "&程序"
 
@@ -339,9 +362,13 @@ msgstr "&属性"
 msgid "&Recent Projects"
 msgstr "&最近项目"
 
-#: ../IDEFrame.py:358
+#: ../IDEFrame.py:361
 msgid "&Resource"
 msgstr "&资源"
+
+#: ../etherlab/ConfigEditor.py:450
+msgid "'Read from' and 'Write to' variables types are not compatible"
+msgstr "'读取'和'写入'变量的格式不匹配"
 
 #: ../controls/SearchResultPanel.py:247
 #, python-brace-format
@@ -353,7 +380,7 @@ msgstr "'{a1}' - {a2} 在项目中匹配"
 msgid "'{a1}' - {a2} matches in project"
 msgstr "'{a1}' - {a2} 在项目中匹配"
 
-#: ../connectors/PYRO/__init__.py:98
+#: ../connectors/PYRO/__init__.py:99
 #, python-brace-format
 msgid "'{a1}' is located at {a2}\n"
 msgstr "'{a1}' 位于 {a2}\n"
@@ -363,8 +390,8 @@ msgstr "'{a1}' 位于 {a2}\n"
 msgid "(%d matches)"
 msgstr "(%d 匹配)"
 
-#: ../dialogs/PouTransitionDialog.py:103 ../dialogs/PouActionDialog.py:101
-#: ../dialogs/PouDialog.py:124
+#: ../dialogs/PouTransitionDialog.py:102 ../dialogs/PouActionDialog.py:101
+#: ../dialogs/PouDialog.py:159
 #, python-format
 msgid ", %s"
 msgstr "， %s"
@@ -389,17 +416,17 @@ msgstr "1m"
 msgid "1s"
 msgstr "1s"
 
-#: ../dialogs/PouDialog.py:133 ../IDEFrame.py:1650 ../IDEFrame.py:1696
-#: ../IDEFrame.py:1715
+#: ../dialogs/PouDialog.py:168 ../IDEFrame.py:1667 ../IDEFrame.py:1713
+#: ../IDEFrame.py:1732
 #, python-format
 msgid ""
 "A POU has an element named \"%s\". This could cause a conflict. Do you wish "
 "to continue?"
 msgstr "一个编程组织单元的成员被命名为\"%s\"。这可能会产生冲突。你希望继续吗？"
 
-#: ../dialogs/SFCStepNameDialog.py:58 ../dialogs/PouTransitionDialog.py:110
+#: ../dialogs/SFCStepNameDialog.py:58 ../dialogs/PouTransitionDialog.py:109
 #: ../dialogs/PouNameDialog.py:56 ../dialogs/PouActionDialog.py:108
-#: ../controls/VariablePanel.py:789 ../IDEFrame.py:1664 ../IDEFrame.py:1677
+#: ../controls/VariablePanel.py:800 ../IDEFrame.py:1681 ../IDEFrame.py:1694
 #, python-format
 msgid "A POU named \"%s\" already exists!"
 msgstr "一个以\"%s\"命名的的编程组织单元已经存在！"
@@ -409,21 +436,21 @@ msgstr "一个以\"%s\"命名的的编程组织单元已经存在！"
 msgid "A child named \"{a1}\" already exists -> \"{a2}\"\n"
 msgstr "一个子命名的 \"{a1}\" 已经存在 -> \"{a2}\"\n"
 
-#: ../dialogs/BrowseLocationsDialog.py:229
+#: ../dialogs/BrowseLocationsDialog.py:228
 msgid "A location must be selected!"
 msgstr "一个定位必须被选择！"
 
-#: ../editors/ResourceEditor.py:485
+#: ../editors/ResourceEditor.py:483
 msgid "A task with the same name already exists!"
 msgstr "相同名称的任务已经存在！"
 
-#: ../dialogs/SFCStepNameDialog.py:60 ../controls/VariablePanel.py:791
-#: ../IDEFrame.py:1666 ../IDEFrame.py:1679
+#: ../dialogs/SFCStepNameDialog.py:60 ../controls/VariablePanel.py:802
+#: ../IDEFrame.py:1683 ../IDEFrame.py:1696
 #, python-format
 msgid "A variable with \"%s\" as name already exists in this pou!"
 msgstr "一个以\"%s\"命名的变量在这个编程组织单元中已经存在！"
 
-#: ../editors/CodeFileEditor.py:778
+#: ../editors/CodeFileEditor.py:797
 #, python-format
 msgid "A variable with \"%s\" as name already exists!"
 msgstr "一个变量以 \"%s\" 作为名字已经存在！"
@@ -436,11 +463,15 @@ msgstr "关于"
 msgid "Absolute number"
 msgstr "绝对值"
 
+#: ../etherlab/ConfigEditor.py:48
+msgid "Access"
+msgstr "使用"
+
 #: ../dialogs/SFCStepDialog.py:75 ../dialogs/ActionBlockDialog.py:47
 msgid "Action"
 msgstr "动作"
 
-#: ../editors/Viewer.py:653 ../editors/Viewer.py:2427
+#: ../editors/Viewer.py:656 ../editors/Viewer.py:2429
 msgid "Action Block"
 msgstr "动作控制功能块"
 
@@ -465,56 +496,64 @@ msgstr "动作"
 msgid "Actions:"
 msgstr "动作："
 
-#: ../editors/Viewer.py:473
+#: ../editors/Viewer.py:484
 msgid "Active"
 msgstr "活动"
 
 #: ../canfestival/SlaveEditor.py:84 ../canfestival/NetworkEditor.py:108
-#: ../BeremizIDE.py:1001 ../editors/Viewer.py:686
+#: ../BeremizIDE.py:998 ../editors/Viewer.py:689
 msgid "Add"
 msgstr "添加"
 
-#: ../IDEFrame.py:1924 ../IDEFrame.py:1959
+#: ../IDEFrame.py:1941 ../IDEFrame.py:1976
 msgid "Add Action"
 msgstr "添加动作"
 
-#: ../features.py:33
+#: ../features.py:22
 msgid "Add C code accessing located variables synchronously"
 msgstr "同步的增加C代码访问定位的变量"
 
-#: ../IDEFrame.py:1907
+#: ../IDEFrame.py:1924
 msgid "Add Configuration"
 msgstr "添加配置"
 
-#: ../IDEFrame.py:1887
+#: ../IDEFrame.py:1904
 msgid "Add DataType"
 msgstr "添加数据类型"
 
-#: ../editors/Viewer.py:609
+#: ../editors/Viewer.py:612
 msgid "Add Divergence Branch"
 msgstr "添加发散分支"
+
+#: ../etherlab/EthercatMaster.py:297
+msgid "Add Ethercat Slave"
+msgstr "添加以太网从机"
+
+#: ../etherlab/EthercatMaster.py:297
+msgid "Add Ethercat Slave to Master"
+msgstr "向主机添加以太网从机"
 
 #: ../dialogs/DiscoveryDialog.py:121
 msgid "Add IP"
 msgstr "添加 IP"
 
-#: ../IDEFrame.py:1895
+#: ../IDEFrame.py:1912
 msgid "Add POU"
 msgstr "添加 POU"
 
-#: ../features.py:34
+#: ../features.py:23
 msgid "Add Python code executed asynchronously"
 msgstr "添加异步执行的Python代码"
 
-#: ../IDEFrame.py:1935 ../IDEFrame.py:1985
+#: ../IDEFrame.py:1952 ../IDEFrame.py:2002
 msgid "Add Resource"
 msgstr "添加源"
 
-#: ../IDEFrame.py:1913 ../IDEFrame.py:1956
+#: ../IDEFrame.py:1930 ../IDEFrame.py:1973
 msgid "Add Transition"
 msgstr "添加跃迁"
 
-#: ../editors/Viewer.py:596
+#: ../editors/Viewer.py:599
 msgid "Add Wire Segment"
 msgstr "添加布线段"
 
@@ -522,7 +561,7 @@ msgstr "添加布线段"
 msgid "Add a new initial step"
 msgstr "新建一个初始步骤"
 
-#: ../editors/Viewer.py:2791 ../editors/SFCViewer.py:784
+#: ../editors/Viewer.py:2790 ../editors/SFCViewer.py:784
 msgid "Add a new jump"
 msgstr "新建一个跳跃"
 
@@ -530,7 +569,7 @@ msgstr "新建一个跳跃"
 msgid "Add a new step"
 msgstr "添加一个新步骤"
 
-#: ../features.py:35
+#: ../features.py:24
 msgid "Add a simple WxGlade based GUI."
 msgstr "添加一个简单的基于 WxGlade的 GUI."
 
@@ -542,21 +581,48 @@ msgstr "添加动作"
 msgid "Add element"
 msgstr "添加元素"
 
-#: ../editors/ResourceEditor.py:283
+#: ../etherlab/ConfigEditor.py:1388
+msgid "Add file from ESI files database"
+msgstr "从ESI数据库添加文件"
+
+#: ../etherlab/ConfigEditor.py:1360
+msgid "Add file to project"
+msgstr "向项目添加文件"
+
+#: ../editors/ResourceEditor.py:281
 msgid "Add instance"
 msgstr "添加实例"
+
+#: ../etherlab/ConfigEditor.py:652
+msgid "Add process variable"
+msgstr "添加过程变量"
 
 #: ../canfestival/NetworkEditor.py:110
 msgid "Add slave"
 msgstr "添加从站"
 
-#: ../editors/ResourceEditor.py:252
+#: ../etherlab/ConfigEditor.py:679
+msgid "Add startup service variable"
+msgstr "添加启动服务变量 "
+
+#: ../editors/ResourceEditor.py:250
 msgid "Add task"
 msgstr "添加任务"
 
-#: ../editors/CodeFileEditor.py:654 ../controls/VariablePanel.py:481
+#: ../bacnet/BacnetSlaveEditor.py:811 ../editors/CodeFileEditor.py:672
+#: ../controls/VariablePanel.py:483
 msgid "Add variable"
 msgstr "添加变量"
+
+#: ../etherlab/etherlab.py:186
+msgid ""
+"Adding a PDO not defined in default configuration\n"
+"for mapping needed location variables\n"
+"(1 if possible)"
+msgstr ""
+"为了映射必需的位置变量，\n"
+"在默认配置里添加一个未被定义的PDO。\n"
+"（如果可能的话为1）"
 
 #: ../plcopen/iec_std.csv:33
 msgid "Addition"
@@ -566,27 +632,28 @@ msgstr "加法"
 msgid "Additional function blocks"
 msgstr "附加功能类型"
 
-#: ../editors/Viewer.py:669
+#: ../editors/Viewer.py:672
 msgid "Adjust Block Size"
 msgstr "调整块尺寸"
 
-#: ../editors/Viewer.py:1720
+#: ../editors/Viewer.py:1722
 msgid "Alignment"
 msgstr "对准"
 
 #: ../dialogs/BrowseLocationsDialog.py:42
-#: ../dialogs/BrowseLocationsDialog.py:53
-#: ../dialogs/BrowseLocationsDialog.py:152
-#: ../dialogs/BrowseLocationsDialog.py:155 ../controls/LogViewer.py:307
-#: ../controls/VariablePanel.py:88
+#: ../dialogs/BrowseLocationsDialog.py:50
+#: ../dialogs/BrowseLocationsDialog.py:151
+#: ../dialogs/BrowseLocationsDialog.py:154 ../etherlab/ConfigEditor.py:65
+#: ../etherlab/ConfigEditor.py:853 ../controls/LogViewer.py:307
+#: ../controls/VariablePanel.py:85
 msgid "All"
 msgstr "所有"
 
-#: ../editors/FileManagementPanel.py:37
+#: ../editors/FileManagementPanel.py:51
 msgid "All files (*.*)|*.*|CSV files (*.csv)|*.csv"
 msgstr "所有文件 (*.*)|*.*|CSV 文件 (*.csv)|*.csv"
 
-#: ../ProjectController.py:1670
+#: ../ProjectController.py:1752
 msgid "Already connected. Please disconnect\n"
 msgstr "已经连接。请断开连接\n"
 
@@ -598,6 +665,23 @@ msgstr "一个以\"%s\"命名的元素已经在这个结构中存在！"
 #: ../editors/ResourceEditor.py:520
 msgid "An instance with the same name already exists!"
 msgstr "相同名称的实例已经存在！"
+
+#: ../etherlab/ConfigEditor.py:975
+#, python-format
+msgid "An variable named \"%s\" already exists!"
+msgstr "变量名\"%s\"已经存在"
+
+#: ../bacnet/BacnetSlaveEditor.py:935
+msgid "Analog Input Objects"
+msgstr "模拟输入对象"
+
+#: ../bacnet/BacnetSlaveEditor.py:934
+msgid "Analog Output Objects"
+msgstr "模拟输出对象"
+
+#: ../bacnet/BacnetSlaveEditor.py:933
+msgid "Analog Value Objects"
+msgstr "模拟价值对象"
 
 #: ../dialogs/ConnectionDialog.py:103
 msgid "Apply name modification to all continuations with the same name"
@@ -620,7 +704,7 @@ msgid "Arithmetic"
 msgstr "运算"
 
 #: ../editors/DataTypeEditor.py:60 ../editors/DataTypeEditor.py:649
-#: ../controls/VariablePanel.py:872
+#: ../controls/VariablePanel.py:883
 msgid "Array"
 msgstr "阵列的"
 
@@ -628,21 +712,33 @@ msgstr "阵列的"
 msgid "Assignment"
 msgstr "分配"
 
-#: ../dialogs/FBDVariableDialog.py:226
+#: ../dialogs/FBDVariableDialog.py:227
 msgid "At least a variable or an expression must be selected!"
 msgstr "至少选择一个变量或者表达式！"
 
-#: ../controls/ProjectPropertiesPanel.py:111
+#: ../controls/ProjectPropertiesPanel.py:113
 msgid "Author"
 msgstr "作者"
 
-#: ../controls/ProjectPropertiesPanel.py:108
+#: ../controls/ProjectPropertiesPanel.py:110
 msgid "Author Name (optional):"
 msgstr "作者姓名（选填）："
+
+#: ../etherlab/EthercatCIA402Slave.py:125
+msgid "Axis Pos"
+msgstr "Pos轴"
+
+#: ../etherlab/EthercatCIA402Slave.py:118
+msgid "Axis Ref"
+msgstr "Ref轴"
 
 #: ../dialogs/FindInPouDialog.py:80
 msgid "Backward"
 msgstr "反向"
+
+#: ../features.py:19
+msgid "Bacnet support"
+msgstr "Bacnet 支持"
 
 #: ../canfestival/config_utils.py:365 ../canfestival/config_utils.py:672
 #, python-format
@@ -654,13 +750,29 @@ msgstr "不好的位置大小：%s"
 msgid "Base Type:"
 msgstr "基类型："
 
-#: ../editors/DataTypeEditor.py:639 ../controls/VariablePanel.py:830
+#: ../editors/DataTypeEditor.py:639 ../controls/VariablePanel.py:841
 msgid "Base Types"
 msgstr "基类型"
 
-#: ../BeremizIDE.py:483
+#: ../BeremizIDE.py:479
 msgid "Beremiz"
 msgstr "Beremiz"
+
+#: ../runtime/NevowServer.py:201
+msgid "Beremiz Runtime Settings"
+msgstr "Beremiz 运行状态设置"
+
+#: ../bacnet/BacnetSlaveEditor.py:938
+msgid "Binary Input Objects"
+msgstr "二进制输入对象"
+
+#: ../bacnet/BacnetSlaveEditor.py:937
+msgid "Binary Output Objects"
+msgstr "二进制输出对象"
+
+#: ../bacnet/BacnetSlaveEditor.py:936
+msgid "Binary Value Objects"
+msgstr "二进制值对象"
 
 #: ../plcopen/iec_std.csv:70
 msgid "Binary selection (1 of 2)"
@@ -690,7 +802,7 @@ msgstr "按位”异或“"
 msgid "Bitwise inverting"
 msgstr "按位“反向”"
 
-#: ../editors/Viewer.py:621 ../editors/Viewer.py:2440
+#: ../editors/Viewer.py:624 ../editors/Viewer.py:2442
 msgid "Block"
 msgstr "块"
 
@@ -702,11 +814,11 @@ msgstr "块属性"
 msgid "Block name"
 msgstr "块名称"
 
-#: ../editors/Viewer.py:586
+#: ../editors/Viewer.py:589
 msgid "Bottom"
 msgstr "底部"
 
-#: ../ProjectController.py:1400
+#: ../runtime/PlcStatus.py:11
 msgid "Broken"
 msgstr "损坏"
 
@@ -715,27 +827,27 @@ msgstr "损坏"
 msgid "Browse %s values library"
 msgstr "浏览 %s 值库"
 
-#: ../dialogs/BrowseLocationsDialog.py:72
+#: ../dialogs/BrowseLocationsDialog.py:69
 msgid "Browse Locations"
 msgstr "浏览定位"
 
-#: ../ProjectController.py:1815
+#: ../ProjectController.py:1898
 msgid "Build"
 msgstr "构建"
 
-#: ../ProjectController.py:1335
+#: ../ProjectController.py:1397
 msgid "Build directory already clean\n"
 msgstr "构建目录已经清除\n"
 
-#: ../ProjectController.py:1816
+#: ../ProjectController.py:1899
 msgid "Build project into build folder"
 msgstr "在构建文件夹中构建项目"
 
-#: ../ProjectController.py:1108
+#: ../ProjectController.py:1155
 msgid "C Build crashed !\n"
 msgstr "C构建损坏！\n"
 
-#: ../ProjectController.py:1105
+#: ../ProjectController.py:1152
 msgid "C Build failed.\n"
 msgstr "C构建失败。\n"
 
@@ -743,7 +855,7 @@ msgstr "C构建失败。\n"
 msgid "C code"
 msgstr "C 代码"
 
-#: ../ProjectController.py:1186
+#: ../ProjectController.py:1240
 msgid "C code generated successfully.\n"
 msgstr "C代码生成成功。\n"
 
@@ -756,7 +868,7 @@ msgstr "C编译失败。\n"
 msgid "C compilation of %s failed.\n"
 msgstr " %s 的C编译失败。\n"
 
-#: ../features.py:33
+#: ../features.py:22
 msgid "C extension"
 msgstr "C扩展"
 
@@ -772,16 +884,20 @@ msgstr "CANOpen 网络"
 msgid "CANOpen slave"
 msgstr "CANOpen 从站"
 
-#: ../features.py:31
+#: ../features.py:18
 msgid "CANopen support"
 msgstr "CANOpen 支持"
+
+#: ../etherlab/ConfigEditor.py:858
+msgid "CIA402 nodes"
+msgstr "CIA402节点"
 
 #: ../plcopen/plcopen.py:1839 ../plcopen/plcopen.py:1853
 #: ../plcopen/plcopen.py:1878 ../plcopen/plcopen.py:1894
 msgid "Can only generate execution order on FBD networks!"
 msgstr "在功能块网络，只能生成执行命令！"
 
-#: ../controls/VariablePanel.py:291
+#: ../controls/VariablePanel.py:290
 msgid "Can only give a location to local or global variables"
 msgstr "只能影响本地或全局变量的位置"
 
@@ -790,7 +906,7 @@ msgstr "只能影响本地或全局变量的位置"
 msgid "Can't generate program to file %s!"
 msgstr "这个编程生成文件失败 %s！"
 
-#: ../controls/VariablePanel.py:289
+#: ../controls/VariablePanel.py:288
 msgid "Can't give a location to a function block instance"
 msgstr "不能影响功能块实例的位置"
 
@@ -799,7 +915,7 @@ msgstr "不能影响功能块实例的位置"
 msgid "Can't save project to file %s!"
 msgstr "这个项目保存为文件失败 %s！"
 
-#: ../controls/VariablePanel.py:339
+#: ../controls/VariablePanel.py:338
 msgid "Can't set an initial value to a function block instance"
 msgstr "不能设置一个初始值到一个功能块实例"
 
@@ -813,11 +929,11 @@ msgstr "不能创建类型 {a2} 的子类型 {a1} "
 msgid "Cannot find lower free IEC channel than %d\n"
 msgstr "无法找到比 %d 更低的自由的IEC通道\n"
 
-#: ../connectors/PYRO/__init__.py:139
+#: ../connectors/PYRO/__init__.py:140
 msgid "Cannot get PLC status - connection failed.\n"
 msgstr "无法获取PLC的状态 - 连接失败。\n"
 
-#: ../ProjectController.py:967
+#: ../ProjectController.py:1013
 msgid "Cannot open/parse VARIABLES.csv!\n"
 msgstr "无法打开／解析 VARIABLES.csv！\n"
 
@@ -828,7 +944,7 @@ msgid ""
 "(ID:{a2},Idx:{a3},sIdx:{a4}))"
 msgstr "不能设置位偏移对于非布尔 '{a1}' 变量 (ID:{a2},Idx:{a3},sIdx:{a4}))"
 
-#: ../ProjectController.py:1761
+#: ../ProjectController.py:1842
 msgid "Cannot transfer while PLC is running. Stop it now?"
 msgstr "在PLC运行时，不能传输！现在停止运行吗？"
 
@@ -836,27 +952,27 @@ msgstr "在PLC运行时，不能传输！现在停止运行吗？"
 msgid "Case sensitive"
 msgstr "区分大小写"
 
-#: ../editors/Viewer.py:581
+#: ../editors/Viewer.py:584
 msgid "Center"
 msgstr "中"
 
-#: ../Beremiz_service.py:276
+#: ../Beremiz_service.py:289
 msgid "Change IP of interface to bind"
 msgstr "更改界面的ip用以绑定"
 
-#: ../Beremiz_service.py:275
+#: ../Beremiz_service.py:288
 msgid "Change Name"
 msgstr "更改名字"
 
-#: ../IDEFrame.py:1977
+#: ../IDEFrame.py:1994
 msgid "Change POU Type To"
 msgstr "将POU类型转换为"
 
-#: ../Beremiz_service.py:277
+#: ../Beremiz_service.py:290
 msgid "Change Port Number"
 msgstr "更改端口号"
 
-#: ../Beremiz_service.py:278
+#: ../Beremiz_service.py:291
 msgid "Change working directory"
 msgstr "更改工作目录"
 
@@ -868,16 +984,21 @@ msgstr "字符串"
 msgid "Choose a SVG file"
 msgstr "选择一个SVG文件"
 
-#: ../ProjectController.py:561
+#: ../etherlab/EtherCATManagementEditor.py:911
+#: ../etherlab/EtherCATManagementEditor.py:1306
+msgid "Choose a binary file"
+msgstr "选择一个二进制文件"
+
+#: ../ProjectController.py:582
 msgid "Choose a directory to save project"
 msgstr "选择一个目录保存项目"
 
-#: ../canfestival/canfestival.py:171 ../PLCOpenEditor.py:276
-#: ../PLCOpenEditor.py:308 ../PLCOpenEditor.py:357
+#: ../canfestival/canfestival.py:171 ../bacnet/bacnet.py:434
+#: ../PLCOpenEditor.py:276 ../PLCOpenEditor.py:308 ../PLCOpenEditor.py:357
 msgid "Choose a file"
 msgstr "选择一个文件"
 
-#: ../BeremizIDE.py:900
+#: ../BeremizIDE.py:897
 msgid "Choose a project"
 msgstr "选择一个项目"
 
@@ -886,19 +1007,23 @@ msgstr "选择一个项目"
 msgid "Choose a value for %s:"
 msgstr "这对 %s选择一个值："
 
-#: ../Beremiz_service.py:333
+#: ../Beremiz_service.py:346
 msgid "Choose a working directory "
 msgstr "选择一个工作目录"
 
-#: ../BeremizIDE.py:864
+#: ../etherlab/ConfigEditor.py:1234
+msgid "Choose an XML file"
+msgstr "选择一个XML格式文件"
+
+#: ../BeremizIDE.py:861
 msgid "Choose an empty directory for new project"
 msgstr "选择一个空白目录以保存项目"
 
-#: ../ProjectController.py:468
+#: ../ProjectController.py:483
 msgid "Chosen folder doesn't contain a program. It's not a valid project!"
 msgstr "被选中的文件夹未包含一个程序。它不是一个有效项目！"
 
-#: ../ProjectController.py:435
+#: ../ProjectController.py:450
 msgid "Chosen folder isn't empty. You can't use it for a new project!"
 msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
 
@@ -906,15 +1031,15 @@ msgstr "被选中的文件夹非空。你不能用它创建一个新项目！"
 msgid "Class"
 msgstr "分类"
 
-#: ../controls/VariablePanel.py:472
+#: ../controls/VariablePanel.py:474
 msgid "Class Filter:"
 msgstr "类过滤器："
 
-#: ../dialogs/FBDVariableDialog.py:74
+#: ../dialogs/FBDVariableDialog.py:75
 msgid "Class:"
 msgstr "分类："
 
-#: ../ProjectController.py:1821
+#: ../ProjectController.py:1904
 msgid "Clean"
 msgstr "清除"
 
@@ -922,32 +1047,33 @@ msgstr "清除"
 msgid "Clean log messages"
 msgstr "清楚记录信息"
 
-#: ../ProjectController.py:1822
+#: ../ProjectController.py:1905
 msgid "Clean project build folder"
 msgstr "清除项目构建目录"
 
-#: ../ProjectController.py:1332
+#: ../ProjectController.py:1394
 msgid "Cleaning the build directory\n"
 msgstr "清除构建目录\n"
 
-#: ../IDEFrame.py:437
+#: ../IDEFrame.py:439
 msgid "Clear Errors"
 msgstr "清楚错误"
 
-#: ../editors/Viewer.py:680
+#: ../editors/Viewer.py:683
 msgid "Clear Execution Order"
 msgstr "清空执行命令"
 
 #: ../dialogs/SearchInProjectDialog.py:107 ../dialogs/FindInPouDialog.py:112
+#: ../etherlab/ConfigEditor.py:1361
 msgid "Close"
 msgstr "关闭"
 
-#: ../BeremizIDE.py:627 ../PLCOpenEditor.py:183
+#: ../BeremizIDE.py:623 ../PLCOpenEditor.py:183
 msgid "Close Application"
 msgstr "关闭应用"
 
-#: ../BeremizIDE.py:253 ../BeremizIDE.py:566 ../PLCOpenEditor.py:81
-#: ../IDEFrame.py:1040
+#: ../BeremizIDE.py:253 ../BeremizIDE.py:562 ../PLCOpenEditor.py:81
+#: ../IDEFrame.py:1053
 msgid "Close Project"
 msgstr "关闭项目"
 
@@ -955,28 +1081,32 @@ msgstr "关闭项目"
 msgid "Close Tab"
 msgstr "关闭标签"
 
-#: ../editors/Viewer.py:638 ../editors/Viewer.py:2448
+#: ../editors/Viewer.py:641 ../editors/Viewer.py:2450
 msgid "Coil"
 msgstr "线圈"
 
-#: ../editors/Viewer.py:659 ../editors/LDViewer.py:517
+#: ../editors/Viewer.py:662 ../editors/LDViewer.py:517
 msgid "Comment"
 msgstr "注释"
+
+#: ../etherlab/ConfigEditor.py:66
+msgid "Communication Parameters"
+msgstr "通讯参数"
 
 #: ../BeremizIDE.py:303 ../BeremizIDE.py:307 ../PLCOpenEditor.py:134
 #: ../PLCOpenEditor.py:138
 msgid "Community support"
 msgstr "社区支持"
 
-#: ../dialogs/ProjectDialog.py:65
+#: ../dialogs/ProjectDialog.py:63
 msgid "Company Name"
 msgstr "公司名称"
 
-#: ../controls/ProjectPropertiesPanel.py:106
+#: ../controls/ProjectPropertiesPanel.py:108
 msgid "Company Name (required):"
 msgstr "公司名字（必须）："
 
-#: ../controls/ProjectPropertiesPanel.py:107
+#: ../controls/ProjectPropertiesPanel.py:109
 msgid "Company URL (optional):"
 msgstr "公司网址（选填）："
 
@@ -984,7 +1114,7 @@ msgstr "公司网址（选填）："
 msgid "Comparison"
 msgstr "比较"
 
-#: ../ProjectController.py:756
+#: ../ProjectController.py:787
 msgid "Compiling IEC Program into C code...\n"
 msgstr "正在将IEC程序编译成C代码...\n"
 
@@ -1010,25 +1140,25 @@ msgstr "配置"
 
 #: ../editors/Viewer.py:351 ../editors/Viewer.py:381 ../editors/Viewer.py:403
 #: ../editors/TextViewer.py:289 ../editors/TextViewer.py:343
-#: ../editors/TextViewer.py:366 ../controls/VariablePanel.py:354
+#: ../editors/TextViewer.py:366 ../controls/VariablePanel.py:353
 msgid "Confirm or change variable name"
 msgstr "确认或变更变量名称"
 
-#: ../ProjectController.py:1842
+#: ../ProjectController.py:1925
 msgid "Connect"
 msgstr "连接"
 
-#: ../ProjectController.py:1843
+#: ../ProjectController.py:1926
 msgid "Connect to the target PLC"
 msgstr "连接到PLC目标"
 
-#: ../ProjectController.py:1391
+#: ../ProjectController.py:1469
 #, python-format
 msgid "Connected to URI: %s"
 msgstr "连接到URI： %s"
 
-#: ../dialogs/SFCTransitionDialog.py:78 ../editors/Viewer.py:623
-#: ../editors/Viewer.py:2441
+#: ../dialogs/SFCTransitionDialog.py:78 ../editors/Viewer.py:626
+#: ../editors/Viewer.py:2443
 msgid "Connection"
 msgstr "连接"
 
@@ -1036,25 +1166,25 @@ msgstr "连接"
 msgid "Connection Properties"
 msgstr "连接属性"
 
-#: ../ProjectController.py:1691
+#: ../ProjectController.py:1773
 msgid "Connection canceled!\n"
 msgstr "取消连接！\n"
 
-#: ../ProjectController.py:1714
+#: ../ProjectController.py:1797
 #, python-format
 msgid "Connection failed to %s!\n"
 msgstr "连接失败 %s!\n"
 
-#: ../connectors/PYRO/__init__.py:123 ../connectors/WAMP/__init__.py:120
+#: ../connectors/PYRO/__init__.py:124 ../connectors/WAMP/__init__.py:121
 msgid "Connection lost!\n"
 msgstr "失去连接！\n"
 
-#: ../connectors/PYRO/__init__.py:110
+#: ../connectors/PYRO/__init__.py:111
 #, python-format
 msgid "Connection to '%s' failed.\n"
 msgstr "连接到 '%s' 失败。\n"
 
-#: ../dialogs/ConnectionDialog.py:67 ../editors/Viewer.py:1676
+#: ../dialogs/ConnectionDialog.py:67 ../editors/Viewer.py:1678
 msgid "Connector"
 msgstr "连接"
 
@@ -1062,7 +1192,7 @@ msgstr "连接"
 msgid "Connectors:"
 msgstr "连接："
 
-#: ../BeremizIDE.py:378
+#: ../BeremizIDE.py:374
 msgid "Console"
 msgstr "控制台"
 
@@ -1070,17 +1200,21 @@ msgstr "控制台"
 msgid "Constant"
 msgstr "常量"
 
-#: ../editors/Viewer.py:634 ../editors/Viewer.py:2444
+#: ../editors/Viewer.py:637 ../editors/Viewer.py:2446
 msgid "Contact"
 msgstr "连接"
 
-#: ../controls/ProjectPropertiesPanel.py:217
+#: ../controls/ProjectPropertiesPanel.py:219
 msgid "Content Description (optional):"
 msgstr "内容描述（选填）："
 
-#: ../dialogs/ConnectionDialog.py:68 ../editors/Viewer.py:1677
+#: ../dialogs/ConnectionDialog.py:68 ../editors/Viewer.py:1679
 msgid "Continuation"
 msgstr "连续"
+
+#: ../etherlab/EtherCATManagementEditor.py:37
+msgid "Control Byte"
+msgstr "控制字节"
 
 #: ../plcopen/iec_std.csv:18
 msgid "Conversion from BCD"
@@ -1098,20 +1232,20 @@ msgstr "转换为日期"
 msgid "Conversion to time-of-day"
 msgstr "转换为日期时间"
 
-#: ../editors/Viewer.py:695 ../controls/LogViewer.py:713 ../IDEFrame.py:372
-#: ../IDEFrame.py:427
+#: ../editors/Viewer.py:698 ../controls/LogViewer.py:713 ../IDEFrame.py:375
+#: ../IDEFrame.py:428
 msgid "Copy"
 msgstr "复制"
 
-#: ../IDEFrame.py:1964
+#: ../IDEFrame.py:1981
 msgid "Copy POU"
 msgstr "复制POU"
 
-#: ../editors/FileManagementPanel.py:68
+#: ../editors/FileManagementPanel.py:67
 msgid "Copy file from left folder to right"
 msgstr "从左侧文件夹中复制文件到右侧"
 
-#: ../editors/FileManagementPanel.py:67
+#: ../editors/FileManagementPanel.py:66
 msgid "Copy file from right folder to left"
 msgstr "从右侧文件夹中复制文件到左侧"
 
@@ -1133,6 +1267,16 @@ msgstr ""
 msgid "Couldn't import old %s file."
 msgstr "不能导入旧 %s 文件。"
 
+#: ../etherlab/EthercatMaster.py:258
+#, python-format
+msgid "Couldn't load %s network configuration file."
+msgstr "不能载入%s网络配置文件。"
+
+#: ../etherlab/EthercatMaster.py:279
+#, python-format
+msgid "Couldn't load %s network process variables file."
+msgstr "不能载入%s网络过程变量文件。"
+
 #: ../ConfigTreeNode.py:630
 #, python-brace-format
 msgid ""
@@ -1151,15 +1295,24 @@ msgstr ""
 "不能加载 confnode 参数 {a1} ：\n"
 " {a2}"
 
+#: ../etherlab/etherlab.py:264
+#, python-brace-format
+msgid ""
+"Couldn't load {a1} XML file:\n"
+"{a2}"
+msgstr ""
+"不能载入{a1}XML文件\n"
+"{a2}"
+
 #: ../PLCControler.py:552
 msgid "Couldn't paste non-POU object."
 msgstr "不能粘贴 非-POU 目标。"
 
-#: ../ProjectController.py:1636
+#: ../ProjectController.py:1717
 msgid "Couldn't start PLC !\n"
 msgstr "无法开始PLC！\n"
 
-#: ../ProjectController.py:1644
+#: ../ProjectController.py:1725
 msgid "Couldn't stop PLC !\n"
 msgstr "无法停止PLC！\n"
 
@@ -1167,43 +1320,43 @@ msgstr "无法停止PLC！\n"
 msgid "Create HMI"
 msgstr "新建 HMI"
 
-#: ../dialogs/PouDialog.py:54
+#: ../dialogs/PouDialog.py:48
 msgid "Create a new POU"
 msgstr "新建一个POU"
 
-#: ../dialogs/PouActionDialog.py:45
+#: ../dialogs/PouActionDialog.py:42
 msgid "Create a new action"
 msgstr "新建一个动作"
 
-#: ../IDEFrame.py:166
+#: ../IDEFrame.py:313
 msgid "Create a new action block"
 msgstr "新建一个动作控制功能块"
 
-#: ../IDEFrame.py:115 ../IDEFrame.py:145 ../IDEFrame.py:178
+#: ../IDEFrame.py:262 ../IDEFrame.py:292 ../IDEFrame.py:325
 msgid "Create a new block"
 msgstr "新建一个块"
 
-#: ../IDEFrame.py:139
+#: ../IDEFrame.py:286
 msgid "Create a new branch"
 msgstr "新建一个支流"
 
-#: ../IDEFrame.py:133
+#: ../IDEFrame.py:280
 msgid "Create a new coil"
 msgstr "新建一个线圈"
 
-#: ../IDEFrame.py:109 ../IDEFrame.py:124 ../IDEFrame.py:154
+#: ../IDEFrame.py:256 ../IDEFrame.py:271 ../IDEFrame.py:301
 msgid "Create a new comment"
 msgstr "新建一个备注"
 
-#: ../IDEFrame.py:118 ../IDEFrame.py:148 ../IDEFrame.py:181
+#: ../IDEFrame.py:265 ../IDEFrame.py:295 ../IDEFrame.py:328
 msgid "Create a new connection"
 msgstr "新建一个连接"
 
-#: ../IDEFrame.py:136 ../IDEFrame.py:187
+#: ../IDEFrame.py:283 ../IDEFrame.py:334
 msgid "Create a new contact"
 msgstr "新建一个接触点"
 
-#: ../IDEFrame.py:169
+#: ../IDEFrame.py:316
 msgid "Create a new divergence"
 msgstr "新建一个发散"
 
@@ -1211,43 +1364,55 @@ msgstr "新建一个发散"
 msgid "Create a new divergence or convergence"
 msgstr "新建一个发散或者收敛"
 
-#: ../IDEFrame.py:157
+#: ../IDEFrame.py:304
 msgid "Create a new initial step"
 msgstr "新建一个初始步骤"
 
-#: ../IDEFrame.py:172
+#: ../IDEFrame.py:319
 msgid "Create a new jump"
 msgstr "新建一个跳跃"
 
-#: ../IDEFrame.py:127 ../IDEFrame.py:184
+#: ../IDEFrame.py:274 ../IDEFrame.py:331
 msgid "Create a new power rail"
 msgstr "新建一个电源导轨"
 
-#: ../IDEFrame.py:130
+#: ../IDEFrame.py:277
 msgid "Create a new rung"
 msgstr "新建一个梯级"
 
-#: ../IDEFrame.py:160
+#: ../IDEFrame.py:307
 msgid "Create a new step"
 msgstr "新建一个步骤"
 
-#: ../dialogs/PouTransitionDialog.py:49 ../IDEFrame.py:163
+#: ../dialogs/PouTransitionDialog.py:45 ../IDEFrame.py:310
 msgid "Create a new transition"
 msgstr "新建一个跃迁"
 
-#: ../IDEFrame.py:112 ../IDEFrame.py:142 ../IDEFrame.py:175
+#: ../IDEFrame.py:259 ../IDEFrame.py:289 ../IDEFrame.py:322
 msgid "Create a new variable"
 msgstr "新建一个变量"
+
+#: ../etherlab/etherlab.py:183
+msgid "Creating new PDO"
+msgstr "创建新的PDO"
 
 #: ../dialogs/AboutDialog.py:109
 msgid "Credits"
 msgstr "关于作者"
 
-#: ../Beremiz_service.py:424
+#: ../runtime/WampClient.py:400
+msgid "Current status"
+msgstr " 当前状态"
+
+#: ../Beremiz_service.py:437
 msgid "Current working directory :"
 msgstr "当前工作目录："
 
-#: ../editors/Viewer.py:694 ../IDEFrame.py:370 ../IDEFrame.py:426
+#: ../runtime/WampClient.py:161
+msgid "Custom protocol options failed :"
+msgstr "自定义协议选项失败："
+
+#: ../editors/Viewer.py:697 ../IDEFrame.py:373 ../IDEFrame.py:427
 msgid "Cut"
 msgstr "剪切"
 
@@ -1296,11 +1461,11 @@ msgstr "日期和时间减法"
 msgid "Date subtraction"
 msgstr "日期减法"
 
-#: ../dialogs/DurationEditorDialog.py:46
+#: ../dialogs/DurationEditorDialog.py:57
 msgid "Days:"
 msgstr "日："
 
-#: ../ProjectController.py:1729
+#: ../ProjectController.py:1809
 msgid "Debug does not match PLC - stop/transfert/start to re-enable\n"
 msgstr "调试部匹配PLC  -  停止/传输/启动 来新启用\n"
 
@@ -1308,42 +1473,51 @@ msgstr "调试部匹配PLC  -  停止/传输/启动 来新启用\n"
 msgid "Debug instance"
 msgstr "调试实例"
 
-#: ../editors/Viewer.py:490
+#: ../editors/Viewer.py:493
 #, python-format
 msgid "Debug: %s"
 msgstr "调试：%s"
 
-#: ../ProjectController.py:1471
+#: ../ProjectController.py:1548
 #, python-format
 msgid "Debug: Unknown variable '%s'\n"
 msgstr "调试：未知变量 '%s'\n"
 
-#: ../ProjectController.py:1469
+#: ../ProjectController.py:1545
 #, python-format
 msgid "Debug: Unsupported type to debug '%s'\n"
 msgstr "调试：不支持的类型进行调试 '%s'\n"
 
-#: ../IDEFrame.py:660
+#: ../IDEFrame.py:666
 msgid "Debugger"
 msgstr "调试器"
 
-#: ../ProjectController.py:1726
+#: ../ProjectController.py:1805
 msgid "Debugger ready\n"
 msgstr "调试器准备好\n"
 
-#: ../BeremizIDE.py:1004 ../editors/Viewer.py:670 ../IDEFrame.py:1993
+#: ../etherlab/EtherCATManagementEditor.py:37
+msgid "Default Size"
+msgstr "默认尺寸"
+
+#: ../etherlab/EthercatCFileGenerator.py:174
+#, python-format
+msgid "Definition conflict for location \"%s\""
+msgstr "位置“%s”定义冲突"
+
+#: ../BeremizIDE.py:1001 ../editors/Viewer.py:673 ../IDEFrame.py:2010
 msgid "Delete"
 msgstr "删除"
 
-#: ../editors/Viewer.py:610
+#: ../editors/Viewer.py:613
 msgid "Delete Divergence Branch"
 msgstr "删除发散分支"
 
-#: ../editors/FileManagementPanel.py:157
+#: ../etherlab/ConfigEditor.py:1261 ../editors/FileManagementPanel.py:156
 msgid "Delete File"
 msgstr "删除文件"
 
-#: ../editors/Viewer.py:597
+#: ../editors/Viewer.py:600
 msgid "Delete Wire Segment"
 msgstr "删除布线段"
 
@@ -1359,11 +1533,12 @@ msgstr "删除"
 msgid "Derivation Type:"
 msgstr "推导类型："
 
-#: ../editors/CodeFileEditor.py:735
+#: ../etherlab/ConfigEditor.py:346 ../etherlab/ConfigEditor.py:465
+#: ../editors/CodeFileEditor.py:754
 msgid "Description"
 msgstr "描述"
 
-#: ../controls/VariablePanel.py:463
+#: ../controls/VariablePanel.py:465
 msgid "Description:"
 msgstr "描述："
 
@@ -1375,7 +1550,7 @@ msgstr "维数："
 msgid "Direction"
 msgstr "方向"
 
-#: ../dialogs/BrowseLocationsDialog.py:102
+#: ../dialogs/BrowseLocationsDialog.py:101
 msgid "Direction:"
 msgstr "方向："
 
@@ -1383,19 +1558,19 @@ msgstr "方向："
 msgid "Directly"
 msgstr "直接的"
 
-#: ../ProjectController.py:1855
+#: ../ProjectController.py:1938
 msgid "Disconnect"
 msgstr "断开"
 
-#: ../ProjectController.py:1856
+#: ../ProjectController.py:1939
 msgid "Disconnect from PLC"
 msgstr "从PLC断开"
 
-#: ../ProjectController.py:1401
+#: ../runtime/PlcStatus.py:14
 msgid "Disconnected"
 msgstr "已断开"
 
-#: ../editors/Viewer.py:654 ../editors/Viewer.py:2436
+#: ../editors/Viewer.py:657 ../editors/Viewer.py:2438
 msgid "Divergence"
 msgstr "偏差"
 
@@ -1403,7 +1578,7 @@ msgstr "偏差"
 msgid "Division"
 msgstr "除法"
 
-#: ../editors/FileManagementPanel.py:156
+#: ../etherlab/ConfigEditor.py:1260 ../editors/FileManagementPanel.py:155
 #, python-format
 msgid "Do you really want to delete the file '%s'?"
 msgstr "你真的想删除这个文件 '%s' ？"
@@ -1416,15 +1591,31 @@ msgstr "文档"
 msgid "Done"
 msgstr "完成"
 
+#: ../runtime/WampClient.py:384
+msgid "Download"
+msgstr "下载"
+
 #: ../dialogs/ActionBlockDialog.py:42
 msgid "Duration"
 msgstr "时间"
+
+#: ../bacnet/bacnet.py:437
+msgid "EDE files (*_EDE.csv)|*_EDE.csv|All files|*.*"
+msgstr "EDE 文件 (*_EDE.csv)|*_EDE.csv|所有文件|*.*"
 
 #: ../canfestival/canfestival.py:174
 msgid "EDS files (*.eds)|*.eds|All files|*.*"
 msgstr "EDS 文件 (*.eds)|*.eds|All files|*.*"
 
-#: ../editors/Viewer.py:668
+#: ../etherlab/ConfigEditor.py:1342
+msgid "ESI Files Database management"
+msgstr "ESI文件数据库管理"
+
+#: ../etherlab/ConfigEditor.py:1109
+msgid "ESI Files:"
+msgstr "ESI文件："
+
+#: ../editors/Viewer.py:671
 msgid "Edit Block"
 msgstr "编辑块"
 
@@ -1436,7 +1627,7 @@ msgstr "编辑线圈值"
 msgid "Edit Contact Values"
 msgstr "编辑接触点值"
 
-#: ../dialogs/DurationEditorDialog.py:62
+#: ../dialogs/DurationEditorDialog.py:54
 msgid "Edit Duration"
 msgstr "编辑期间"
 
@@ -1456,11 +1647,11 @@ msgstr "编辑行动块属性"
 msgid "Edit array type properties"
 msgstr "编辑数组类型属性"
 
-#: ../editors/Viewer.py:2660 ../editors/Viewer.py:3102
+#: ../dialogs/CommentEditDialog.py:53
 msgid "Edit comment"
 msgstr "编辑注释"
 
-#: ../editors/FileManagementPanel.py:69
+#: ../editors/FileManagementPanel.py:68
 msgid "Edit file"
 msgstr "编辑文件"
 
@@ -1468,11 +1659,11 @@ msgstr "编辑文件"
 msgid "Edit item"
 msgstr "编辑项目"
 
-#: ../editors/Viewer.py:3059
+#: ../editors/Viewer.py:3058
 msgid "Edit jump target"
 msgstr "编辑跳跃目标"
 
-#: ../ProjectController.py:1873
+#: ../ProjectController.py:1956
 msgid "Edit raw IEC code added to code generated by PLCGenerator"
 msgstr "编辑原始的IEC代码添加至PLCGenerator生成的代码"
 
@@ -1484,11 +1675,11 @@ msgstr "编辑步骤名称"
 msgid "Edit transition"
 msgstr "编辑跃迁"
 
-#: ../IDEFrame.py:632
+#: ../IDEFrame.py:638
 msgid "Editor ToolBar"
 msgstr "编辑工具栏"
 
-#: ../ProjectController.py:1294
+#: ../ProjectController.py:1355
 msgid "Editor selection"
 msgstr "编辑选择"
 
@@ -1496,7 +1687,7 @@ msgstr "编辑选择"
 msgid "Elements :"
 msgstr "元素："
 
-#: ../ProjectController.py:1399
+#: ../runtime/PlcStatus.py:15
 msgid "Empty"
 msgstr "空的"
 
@@ -1504,17 +1695,44 @@ msgstr "空的"
 msgid "Empty dimension isn't allowed."
 msgstr "不允许空维度。"
 
-#: ../Beremiz_service.py:341
+#: ../etherlab/EtherCATManagementEditor.py:37
+msgid "Enable"
+msgstr "使能"
+
+#: ../runtime/WampClient.py:410
+msgid "Enable WAMP connection"
+msgstr "使能WAMP连接"
+
+#: ../Beremiz_service.py:354
 msgid "Enter a name "
 msgstr "输入一个名字"
 
-#: ../Beremiz_service.py:326
+#: ../Beremiz_service.py:339
 msgid "Enter a port number "
 msgstr "输入一个端口号"
 
-#: ../Beremiz_service.py:317
+#: ../etherlab/EtherCATManagementEditor.py:627
+msgid ""
+"Enter hex or dec value (if enter dec value, it automatically conversed hex "
+"value)"
+msgstr "输入十六进制或十进制数值（如果输入十进制数值，它会自动转换为十六进制数值）"
+
+#: ../etherlab/EtherCATManagementEditor.py:1964
+msgid "Enter hex(0xnnnn) or dec(n) value"
+msgstr "输入十六进制(0xnnnn)或者十进制(n)数值"
+
+#: ../Beremiz_service.py:330
 msgid "Enter the IP of the interface to bind"
 msgstr "输入界面的ip用以绑定"
+
+#: ../etherlab/ConfigEditor.py:502
+msgid "Entry can't be write through SDO"
+msgstr "通过SDO不能写入口"
+
+#: ../etherlab/EthercatCFileGenerator.py:569
+#, python-brace-format
+msgid "Entry index 0x{a1:.4x}, subindex 0x{a2:.2x} not mapped for device {a3}"
+msgstr "入口索引 0x{a1:.4x}, 子索引 0x{a2:.2x} 不能映射到设备 {a3} "
 
 #: ../editors/DataTypeEditor.py:60
 msgid "Enumerated"
@@ -1526,45 +1744,48 @@ msgstr "等于"
 
 #: ../dialogs/ForceVariableDialog.py:213
 #: ../dialogs/SearchInProjectDialog.py:172 ../dialogs/SFCStepNameDialog.py:64
-#: ../dialogs/DurationEditorDialog.py:124
-#: ../dialogs/DurationEditorDialog.py:170
-#: ../dialogs/PouTransitionDialog.py:114 ../dialogs/BlockPreviewDialog.py:237
-#: ../dialogs/ProjectDialog.py:80 ../dialogs/ArrayTypeDialog.py:114
-#: ../dialogs/PouNameDialog.py:58 ../dialogs/BrowseLocationsDialog.py:229
+#: ../dialogs/DurationEditorDialog.py:125
+#: ../dialogs/DurationEditorDialog.py:172
+#: ../dialogs/PouTransitionDialog.py:113 ../dialogs/BlockPreviewDialog.py:237
+#: ../dialogs/ProjectDialog.py:78 ../dialogs/ArrayTypeDialog.py:114
+#: ../dialogs/PouNameDialog.py:58 ../dialogs/BrowseLocationsDialog.py:228
 #: ../dialogs/BrowseValuesLibraryDialog.py:87
-#: ../dialogs/PouActionDialog.py:112 ../dialogs/PouDialog.py:143
+#: ../dialogs/PouActionDialog.py:112 ../dialogs/PouDialog.py:178
 #: ../PLCOpenEditor.py:319 ../PLCOpenEditor.py:324
-#: ../editors/ResourceEditor.py:470 ../editors/Viewer.py:467
-#: ../editors/LDViewer.py:677 ../editors/LDViewer.py:893
-#: ../editors/LDViewer.py:897 ../editors/DataTypeEditor.py:566
-#: ../editors/DataTypeEditor.py:571 ../editors/DataTypeEditor.py:590
-#: ../editors/DataTypeEditor.py:759 ../editors/DataTypeEditor.py:766
-#: ../editors/TextViewer.py:390 ../editors/CodeFileEditor.py:760
-#: ../ProjectController.py:391 ../ProjectController.py:531
-#: ../ProjectController.py:538 ../controls/FolderTree.py:222
-#: ../controls/ProjectPropertiesPanel.py:306
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:173
+#: ../etherlab/ConfigEditor.py:458 ../etherlab/ConfigEditor.py:510
+#: ../etherlab/ConfigEditor.py:981 ../etherlab/ConfigEditor.py:1047
+#: ../etherlab/ConfigEditor.py:1246 ../etherlab/ConfigEditor.py:1314
+#: ../etherlab/EthercatMaster.py:463 ../editors/ResourceEditor.py:468
+#: ../editors/Viewer.py:467 ../editors/LDViewer.py:677
+#: ../editors/LDViewer.py:893 ../editors/LDViewer.py:897
+#: ../editors/DataTypeEditor.py:566 ../editors/DataTypeEditor.py:571
+#: ../editors/DataTypeEditor.py:590 ../editors/DataTypeEditor.py:759
+#: ../editors/DataTypeEditor.py:766 ../editors/TextViewer.py:390
+#: ../editors/CodeFileEditor.py:779 ../ProjectController.py:404
+#: ../ProjectController.py:548 ../ProjectController.py:557
+#: ../controls/FolderTree.py:222 ../controls/ProjectPropertiesPanel.py:308
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:163
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:138
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:227
-#: ../controls/VariablePanel.py:431 ../controls/VariablePanel.py:773
-#: ../util/ExceptionHandler.py:70 ../IDEFrame.py:1036 ../IDEFrame.py:1650
-#: ../IDEFrame.py:1691 ../IDEFrame.py:1696 ../IDEFrame.py:1710
-#: ../IDEFrame.py:1715 ../Beremiz_service.py:221
+#: ../controls/VariablePanel.py:430 ../controls/VariablePanel.py:784
+#: ../util/ExceptionHandler.py:70 ../IDEFrame.py:1049 ../IDEFrame.py:1667
+#: ../IDEFrame.py:1708 ../IDEFrame.py:1713 ../IDEFrame.py:1727
+#: ../IDEFrame.py:1732 ../Beremiz_service.py:234
 msgid "Error"
 msgstr "错误"
 
-#: ../ProjectController.py:811
+#: ../ProjectController.py:848
 msgid ""
 "Error : At least one configuration and one resource must be declared in PLC "
 "!\n"
 msgstr "错误：在PLC中，必须申明至少一个配置和一个资源！\n"
 
-#: ../ProjectController.py:803
+#: ../ProjectController.py:838
 #, python-format
 msgid "Error : IEC to C compiler returned %d\n"
 msgstr "错误：IEC到C编译器返回 %d\n"
 
-#: ../ProjectController.py:731
+#: ../ProjectController.py:762
 #, python-format
 msgid ""
 "Error in ST/IL/SFC code generator :\n"
@@ -1578,7 +1799,21 @@ msgstr ""
 msgid "Error while saving \"%s\"\n"
 msgstr "存储时有错误 \"%s\"\n"
 
-#: ../canfestival/canfestival.py:179
+#: ../bacnet/bacnet.py:581
+#, python-brace-format
+msgid ""
+"Error: BACnet server '{a1}.x: {a2}' contains objects with duplicate object "
+"identifiers.\n"
+msgstr "错误：BACnet 服务器 '{a1}.x: {a2}'包含多重对象ID的对象。\n"
+
+#: ../bacnet/bacnet.py:573
+#, python-brace-format
+msgid ""
+"Error: BACnet server '{a1}.x:{a2}' contains objects with duplicate object "
+"names.\n"
+msgstr "错误：BACnet 服务器 '{a1}.x: {a2}'包含多重对象名称的对象。\n"
+
+#: ../canfestival/canfestival.py:179 ../bacnet/bacnet.py:444
 msgid "Error: Export slave failed\n"
 msgstr "错误：导出从站失败\n"
 
@@ -1597,7 +1832,23 @@ msgstr "错误：没有主控生成\n"
 msgid "Error: No PLC built\n"
 msgstr "错误：没有PLC构建\n"
 
-#: ../ProjectController.py:1708
+#: ../etherlab/ConfigEditor.py:269
+msgid "EtherCAT Management"
+msgstr "EtherCAT管理"
+
+#: ../features.py:20
+msgid "EtherCAT master"
+msgstr "EtherCAT主站"
+
+#: ../etherlab/EthercatMaster.py:302
+msgid "Ethercat Slave Type"
+msgstr "Ethercat从站类型"
+
+#: ../etherlab/ConfigEditor.py:267
+msgid "Ethercat node"
+msgstr "Ethercat节点"
+
+#: ../ProjectController.py:1791
 #, python-format
 msgid "Exception while connecting %s!\n"
 msgstr "连接时存在异常 %s!\n"
@@ -1606,11 +1857,11 @@ msgstr "连接时存在异常 %s!\n"
 msgid "Execution Control:"
 msgstr "执行控制："
 
-#: ../dialogs/FBDVariableDialog.py:84 ../dialogs/FBDBlockDialog.py:111
+#: ../dialogs/FBDVariableDialog.py:85 ../dialogs/FBDBlockDialog.py:111
 msgid "Execution Order:"
 msgstr "执行命令："
 
-#: ../features.py:36
+#: ../features.py:25
 msgid "Experimental web based HMI"
 msgstr "实验性的WEB基础的HMI"
 
@@ -1622,44 +1873,48 @@ msgstr "指数"
 msgid "Exponentiation"
 msgstr "幂"
 
+#: ../bacnet/bacnet.py:156
+msgid "Export BACnet slave to EDE file"
+msgstr "导出 BACnet 从站 为 EDE 文件"
+
 #: ../canfestival/canfestival.py:186
 msgid "Export CanOpen slave to EDS file"
 msgstr "导出 CANOpen 从站到 EDS 文件"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:246
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:243
 msgid "Export graph values to clipboard"
 msgstr "导出图形值到剪切板"
 
-#: ../canfestival/canfestival.py:185
+#: ../canfestival/canfestival.py:185 ../bacnet/bacnet.py:155
 msgid "Export slave"
 msgstr "导出从站"
 
-#: ../dialogs/FBDVariableDialog.py:94
+#: ../dialogs/FBDVariableDialog.py:95
 msgid "Expression:"
 msgstr "表达式："
 
-#: ../controls/VariablePanel.py:90
+#: ../controls/VariablePanel.py:87
 msgid "External"
 msgstr "外部的"
 
-#: ../ProjectController.py:826
+#: ../ProjectController.py:866
 msgid "Extracting Located Variables...\n"
 msgstr "正在提取位置变量......\n"
 
 #: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:36
-#: ../dialogs/PouDialog.py:44 ../controls/ProjectPropertiesPanel.py:158
+#: ../dialogs/PouDialog.py:128 ../controls/ProjectPropertiesPanel.py:161
 msgid "FBD"
 msgstr "功能块图"
 
-#: ../ProjectController.py:1773
+#: ../ProjectController.py:1855
 msgid "Failed : Must build before transfer.\n"
 msgstr "失败：传输之前必须构建。\n"
 
-#: ../dialogs/LDElementDialog.py:80 ../editors/Viewer.py:556
+#: ../dialogs/LDElementDialog.py:80 ../editors/Viewer.py:559
 msgid "Falling Edge"
 msgstr "下降沿"
 
-#: ../ProjectController.py:1098
+#: ../ProjectController.py:1145
 msgid "Fatal : cannot get builder.\n"
 msgstr "致命错误：无法获取构建者。\n"
 
@@ -1668,12 +1923,12 @@ msgstr "致命错误：无法获取构建者。\n"
 msgid "Fetching %s"
 msgstr "抓取 %s"
 
-#: ../dialogs/DurationEditorDialog.py:167
+#: ../dialogs/DurationEditorDialog.py:169
 #, python-format
 msgid "Field %s hasn't a valid value!"
 msgstr "领域 %s 没有一个有效值！"
 
-#: ../dialogs/DurationEditorDialog.py:169
+#: ../dialogs/DurationEditorDialog.py:171
 #, python-format
 msgid "Fields %s haven't a valid value!"
 msgstr "领域 %s 没有一个有效值！"
@@ -1683,16 +1938,20 @@ msgstr "领域 %s 没有一个有效值！"
 msgid "File '%s' already exists!"
 msgstr "文件 '%s' 已经存在！"
 
+#: ../runtime/WampClient.py:407
+msgid "File containing secret for that ID"
+msgstr ""
+
 #: ../dialogs/SearchInProjectDialog.py:102 ../dialogs/FindInPouDialog.py:40
-#: ../dialogs/FindInPouDialog.py:107 ../IDEFrame.py:377
+#: ../dialogs/FindInPouDialog.py:107 ../IDEFrame.py:380
 msgid "Find"
 msgstr "查找"
 
-#: ../IDEFrame.py:379
+#: ../IDEFrame.py:382
 msgid "Find Next"
 msgstr "查找下一个"
 
-#: ../IDEFrame.py:381
+#: ../IDEFrame.py:384
 msgid "Find Previous"
 msgstr "查找前一个"
 
@@ -1704,7 +1963,7 @@ msgstr "查找位置"
 msgid "Find:"
 msgstr "查找："
 
-#: ../editors/Viewer.py:1633
+#: ../editors/Viewer.py:1635
 msgid "Force value"
 msgstr "强制值"
 
@@ -1712,9 +1971,9 @@ msgstr "强制值"
 msgid "Forcing Variable Value"
 msgstr "强制变量值"
 
-#: ../dialogs/SFCTransitionDialog.py:184 ../dialogs/PouTransitionDialog.py:104
-#: ../dialogs/ProjectDialog.py:79 ../dialogs/PouActionDialog.py:102
-#: ../dialogs/PouDialog.py:125
+#: ../dialogs/SFCTransitionDialog.py:184 ../dialogs/PouTransitionDialog.py:103
+#: ../dialogs/ProjectDialog.py:77 ../dialogs/PouActionDialog.py:102
+#: ../dialogs/PouDialog.py:160
 #, python-format
 msgid "Form isn't complete. %s must be filled!"
 msgstr "形式不完整。%s 必须被填补完整！"
@@ -1732,20 +1991,24 @@ msgstr "形式不完整。%s 有效的块类型必须被选择！"
 msgid "Forward"
 msgstr "向前的"
 
-#: ../dialogs/SearchInProjectDialog.py:40 ../IDEFrame.py:1780
+#: ../IDEFrame.py:455
+msgid "Full screen"
+msgstr "全屏"
+
+#: ../dialogs/SearchInProjectDialog.py:40 ../IDEFrame.py:1797
 msgid "Function"
 msgstr "功能"
 
-#: ../IDEFrame.py:354
+#: ../IDEFrame.py:357
 msgid "Function &Block"
 msgstr "功能 &块"
 
-#: ../dialogs/SearchInProjectDialog.py:41 ../IDEFrame.py:1779
-#: ../IDEFrame.py:1972
+#: ../dialogs/SearchInProjectDialog.py:41 ../IDEFrame.py:1796
+#: ../IDEFrame.py:1989
 msgid "Function Block"
 msgstr "功能块"
 
-#: ../controls/VariablePanel.py:868
+#: ../controls/VariablePanel.py:879
 msgid "Function Block Types"
 msgstr "功能块类型"
 
@@ -1770,19 +2033,19 @@ msgstr "功能"
 msgid "Generate Program"
 msgstr "生成程序"
 
-#: ../ProjectController.py:722
+#: ../ProjectController.py:750
 msgid "Generating SoftPLC IEC-61131 ST/IL/SFC code...\n"
 msgstr "生成软PLC IEC-61131 ST/IL/SFC 代码......\n"
 
-#: ../controls/VariablePanel.py:91
+#: ../controls/VariablePanel.py:88
 msgid "Global"
 msgstr "全球的"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:245
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:242
 msgid "Go to current value"
 msgstr "定位当前值"
 
-#: ../controls/ProjectPropertiesPanel.py:189
+#: ../controls/ProjectPropertiesPanel.py:192
 msgid "Graphics"
 msgstr "图形"
 
@@ -1794,32 +2057,36 @@ msgstr "大于"
 msgid "Greater than or equal to"
 msgstr "大于或等于"
 
-#: ../controls/ProjectPropertiesPanel.py:149
+#: ../controls/ProjectPropertiesPanel.py:152
 msgid "Grid Resolution:"
 msgstr "栅格分辨率："
 
-#: ../runtime/NevowServer.py:192
+#: ../runtime/NevowServer.py:313
 msgid "HTTP interface port :"
 msgstr "HTTP 界面端口："
 
-#: ../controls/ProjectPropertiesPanel.py:135
+#: ../controls/ProjectPropertiesPanel.py:138
 msgid "Height:"
 msgstr "高度："
 
-#: ../editors/FileManagementPanel.py:89
+#: ../editors/FileManagementPanel.py:88
 msgid "Home Directory:"
 msgstr "主目录"
 
-#: ../controls/ProjectPropertiesPanel.py:165
+#: ../controls/ProjectPropertiesPanel.py:168
 msgid "Horizontal:"
 msgstr "水平："
 
-#: ../dialogs/DurationEditorDialog.py:47
+#: ../dialogs/DurationEditorDialog.py:58
 msgid "Hours:"
 msgstr "小时："
 
+#: ../runtime/WampClient.py:404
+msgid "ID"
+msgstr "ID"
+
 #: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:36
-#: ../dialogs/PouDialog.py:44
+#: ../dialogs/PouDialog.py:128
 msgid "IL"
 msgstr "指令表编程语言"
 
@@ -1827,52 +2094,64 @@ msgstr "指令表编程语言"
 msgid "IP"
 msgstr "IP"
 
-#: ../Beremiz_service.py:318 ../Beremiz_service.py:320
+#: ../Beremiz_service.py:331 ../Beremiz_service.py:333
 msgid "IP is not valid!"
 msgstr "IP 无效！"
+
+#: ../etherlab/ConfigEditor.py:1387
+msgid "Import ESI file"
+msgstr "导入ESI文件"
 
 #: ../svgui/svgui.py:50 ../svgui/svgui.py:51
 msgid "Import SVG"
 msgstr "导入 SVG"
 
-#: ../dialogs/FBDVariableDialog.py:41 ../editors/Viewer.py:1662
-#: ../controls/VariablePanel.py:89
+#: ../etherlab/ConfigEditor.py:1352
+msgid "Import file to ESI files database"
+msgstr "导入文件到ESI文件数据库"
+
+#: ../dialogs/FBDVariableDialog.py:64 ../editors/Viewer.py:1664
+#: ../controls/VariablePanel.py:86
 msgid "InOut"
 msgstr "输入输出"
 
-#: ../PLCGenerator.py:1040
+#: ../PLCGenerator.py:1089
 #, python-brace-format
 msgid "InOut variable {a1} in block {a2} in POU {a3} must be connected."
 msgstr "InOut 变量 {a1} 在块 {a2} 在 POU{a3} 必须被连接."
 
-#: ../editors/Viewer.py:473
+#: ../editors/Viewer.py:484
 msgid "Inactive"
 msgstr "不活动"
 
-#: ../controls/VariablePanel.py:300
+#: ../controls/VariablePanel.py:299
 #, python-brace-format
 msgid "Incompatible data types between \"{a1}\" and \"{a2}\""
 msgstr " \"{a1}\" 和 \"{a2}\" 数据类型不相容"
 
-#: ../controls/VariablePanel.py:306
+#: ../controls/VariablePanel.py:305
 #, python-format
 msgid "Incompatible size of data between \"%s\" and \"BOOL\""
 msgstr " \"%s\" 和  \"BOOL\" 数据尺寸不相容"
 
-#: ../controls/VariablePanel.py:310
+#: ../controls/VariablePanel.py:309
 #, python-brace-format
 msgid "Incompatible size of data between \"{a1}\" and \"{a2}\""
 msgstr " \"{a1}\" 和 \"{a2}\" 数据尺寸不相容"
+
+#: ../etherlab/ConfigEditor.py:48 ../etherlab/ConfigEditor.py:465
+msgid "Index"
+msgstr "索引"
 
 #: ../dialogs/ActionBlockDialog.py:42
 msgid "Indicator"
 msgstr "指示器"
 
-#: ../editors/CodeFileEditor.py:734
+#: ../editors/CodeFileEditor.py:753
 msgid "Initial"
 msgstr "初始的"
 
-#: ../editors/Viewer.py:650
+#: ../editors/Viewer.py:653
 msgid "Initial Step"
 msgstr "初始的步"
 
@@ -1885,6 +2164,14 @@ msgstr "初始值"
 msgid "Initial Value:"
 msgstr "初始值："
 
+#: ../etherlab/EthercatCIA402Slave.py:119
+msgid "Initiate Drag'n drop of Axis ref located variable"
+msgstr ""
+
+#: ../etherlab/EthercatCIA402Slave.py:126
+msgid "Initiate Drag'n drop of Network position located variable"
+msgstr ""
+
 #: ../svgui/svgui.py:56
 msgid "Inkscape"
 msgstr "Inkscape"
@@ -1893,11 +2180,11 @@ msgstr "Inkscape"
 msgid "Inline"
 msgstr "在线"
 
-#: ../dialogs/SFCStepDialog.py:73 ../dialogs/FBDVariableDialog.py:40
+#: ../dialogs/SFCStepDialog.py:73 ../dialogs/FBDVariableDialog.py:63
 #: ../dialogs/BrowseLocationsDialog.py:43 ../editors/Viewer.py:333
-#: ../editors/Viewer.py:1660 ../editors/TextViewer.py:307
-#: ../controls/LocationCellEditor.py:103 ../controls/VariablePanel.py:89
-#: ../controls/VariablePanel.py:317 ../controls/VariablePanel.py:380
+#: ../editors/Viewer.py:1662 ../editors/TextViewer.py:307
+#: ../controls/LocationCellEditor.py:103 ../controls/VariablePanel.py:86
+#: ../controls/VariablePanel.py:316 ../controls/VariablePanel.py:379
 msgid "Input"
 msgstr "输入"
 
@@ -1914,11 +2201,11 @@ msgstr "插入"
 msgid "Instance with id %d doesn't exist!"
 msgstr "有id的实例 %d 尚不存在！"
 
-#: ../editors/ResourceEditor.py:279
+#: ../editors/ResourceEditor.py:277
 msgid "Instances:"
 msgstr "实例："
 
-#: ../controls/VariablePanel.py:88
+#: ../controls/VariablePanel.py:85
 msgid "Interface"
 msgstr "界面"
 
@@ -1930,7 +2217,7 @@ msgstr "中断"
 msgid "Interval"
 msgstr "区间"
 
-#: ../controls/ProjectPropertiesPanel.py:304
+#: ../controls/ProjectPropertiesPanel.py:306
 msgid ""
 "Invalid URL!\n"
 "Please enter correct URL address."
@@ -1952,14 +2239,26 @@ msgstr "无效类型 \"{a1}\"-> {a2} != {a3} 对于定位 \"{a4}\""
 msgid "Invalid type \"{a1}\"-> {a2} != {a3} for location \"{a4}\""
 msgstr "无效类型 \"{a1}\"-> {a2} != {a3} 对于定位 \"{a4}\""
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:139
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:129
 #: ../controls/DebugVariablePanel/DebugVariableTextViewer.py:93
 #: ../controls/DebugVariablePanel/DebugVariableGraphicViewer.py:162
 #, python-format
 msgid "Invalid value \"%s\" for debug variable"
 msgstr "无效值 \"%s\" 为调试变量"
 
-#: ../controls/VariablePanel.py:279 ../controls/VariablePanel.py:282
+#: ../etherlab/ConfigEditor.py:418 ../etherlab/ConfigEditor.py:421
+#: ../etherlab/ConfigEditor.py:452
+#, python-format
+msgid "Invalid value \"%s\" for process variable"
+msgstr ""
+
+#: ../etherlab/ConfigEditor.py:480 ../etherlab/ConfigEditor.py:483
+#: ../etherlab/ConfigEditor.py:504
+#, python-format
+msgid "Invalid value \"%s\" for startup command"
+msgstr ""
+
+#: ../controls/VariablePanel.py:278 ../controls/VariablePanel.py:281
 #, python-format
 msgid "Invalid value \"%s\" for variable grid element"
 msgstr "无效值 \"%s\" 对于变量网格元素"
@@ -1974,7 +2273,12 @@ msgstr "无效值 \"%s\" 在视窗块"
 msgid "Invalid value \"{a1}\" for \"{a2}\" variable!"
 msgstr "无效值 \"{a1}\" 对于 \"{a2}\" 变量！"
 
-#: ../dialogs/DurationEditorDialog.py:124
+#: ../etherlab/CommonEtherCATFunction.py:31
+#, python-format
+msgid "Invalid value for HexDecValue \"%s\""
+msgstr ""
+
+#: ../dialogs/DurationEditorDialog.py:125
 msgid ""
 "Invalid value!\n"
 "You must fill a numeric value."
@@ -1986,12 +2290,12 @@ msgstr ""
 msgid "Is connection secure?"
 msgstr "是安全连接吗？"
 
-#: ../editors/Viewer.py:655 ../editors/Viewer.py:2425
+#: ../editors/Viewer.py:658 ../editors/Viewer.py:2427
 msgid "Jump"
 msgstr "跳转"
 
 #: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:36
-#: ../dialogs/PouDialog.py:44 ../controls/ProjectPropertiesPanel.py:158
+#: ../dialogs/PouDialog.py:128 ../controls/ProjectPropertiesPanel.py:161
 msgid "LD"
 msgstr "梯级图"
 
@@ -2000,33 +2304,33 @@ msgstr "梯级图"
 msgid "Ladder element with id %d is on more than one rung."
 msgstr "有id的梯形元素 %d  不止在一个梯级上。"
 
-#: ../dialogs/PouTransitionDialog.py:93 ../dialogs/PouActionDialog.py:91
-#: ../dialogs/PouDialog.py:113
+#: ../dialogs/PouTransitionDialog.py:92 ../dialogs/PouActionDialog.py:91
+#: ../dialogs/PouDialog.py:148
 msgid "Language"
 msgstr "语言"
 
-#: ../controls/ProjectPropertiesPanel.py:206
+#: ../controls/ProjectPropertiesPanel.py:208
 msgid "Language (optional):"
 msgstr "语言（选填）："
 
-#: ../dialogs/PouTransitionDialog.py:67 ../dialogs/PouActionDialog.py:63
-#: ../dialogs/PouDialog.py:81
+#: ../dialogs/PouTransitionDialog.py:66 ../dialogs/PouActionDialog.py:63
+#: ../dialogs/PouDialog.py:79
 msgid "Language:"
 msgstr "语言："
 
-#: ../ProjectController.py:1779
+#: ../ProjectController.py:1861
 msgid "Latest build already matches current target. Transfering anyway...\n"
 msgstr "最新构建已经与当前目标匹配。正在传输中......\n"
 
-#: ../Beremiz_service.py:281
+#: ../Beremiz_service.py:294
 msgid "Launch WX GUI inspector"
 msgstr "启动 WX GUI 检查员"
 
-#: ../Beremiz_service.py:280
+#: ../Beremiz_service.py:293
 msgid "Launch a live Python shell"
 msgstr "启动一个活的Python Shell"
 
-#: ../editors/Viewer.py:580
+#: ../editors/Viewer.py:583
 msgid "Left"
 msgstr "左"
 
@@ -2046,7 +2350,7 @@ msgstr "小于"
 msgid "Less than or equal to"
 msgstr "小于或等于"
 
-#: ../IDEFrame.py:652
+#: ../IDEFrame.py:658
 msgid "Library"
 msgstr "库"
 
@@ -2062,7 +2366,7 @@ msgstr "限制"
 msgid "Linking :\n"
 msgstr "链接：\n"
 
-#: ../dialogs/DiscoveryDialog.py:115 ../controls/VariablePanel.py:90
+#: ../dialogs/DiscoveryDialog.py:115 ../controls/VariablePanel.py:87
 msgid "Local"
 msgstr "本地"
 
@@ -2070,7 +2374,7 @@ msgstr "本地"
 msgid "Local entries"
 msgstr "本地入口"
 
-#: ../ProjectController.py:1685
+#: ../ProjectController.py:1767
 msgid "Local service discovery failed!\n"
 msgstr "本地服务探索失败！\n"
 
@@ -2078,28 +2382,44 @@ msgstr "本地服务探索失败！\n"
 msgid "Location"
 msgstr "位置"
 
-#: ../dialogs/BrowseLocationsDialog.py:79
+#: ../dialogs/BrowseLocationsDialog.py:78
 msgid "Locations available:"
 msgstr "存在的定位："
+
+#: ../runtime/NevowServer.py:175
+msgid "Log message level"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:25
 msgid "Logarithm to base 10"
 msgstr "底数10的对数"
 
-#: ../connectors/PYRO/__init__.py:102
+#: ../connectors/PYRO/__init__.py:103
 #, python-format
 msgid "MDNS resolution failure for '%s'\n"
 msgstr "MDNS 解析度失败因为 '%s'\n"
+
+#: ../etherlab/ConfigEditor.py:67
+msgid "Manufacturer Specific"
+msgstr ""
 
 #: ../canfestival/SlaveEditor.py:68 ../canfestival/NetworkEditor.py:92
 msgid "Map Variable"
 msgstr "映射变量"
 
-#: ../features.py:31
+#: ../features.py:19
+msgid "Map located variables over Bacnet"
+msgstr ""
+
+#: ../features.py:18
 msgid "Map located variables over CANopen"
 msgstr "通过CANopen映射位置变量"
 
-#: ../features.py:32
+#: ../features.py:20
+msgid "Map located variables over EtherCAT"
+msgstr ""
+
+#: ../features.py:21
 msgid "Map located variables over Modbus"
 msgstr "通过Modbus定位变量"
 
@@ -2107,10 +2427,24 @@ msgstr "通过Modbus定位变量"
 msgid "Master"
 msgstr "主站"
 
+#: ../etherlab/ConfigEditor.py:613
+msgid "Master State"
+msgstr "主机状态"
+
 #: ../ConfigTreeNode.py:544
 #, python-brace-format
 msgid "Max count ({a1}) reached for this confnode of type {a2} "
 msgstr "最大计数 ({a1}) 达到了对于类型 {a2} 这个confnode"
+
+#: ../etherlab/etherlab.py:173
+msgid "Max entries by PDO"
+msgstr "PDO最大记录"
+
+#: ../etherlab/etherlab.py:176
+msgid ""
+"Maximal number of entries mapped in a PDO\n"
+"including empty entries used for PDO alignment"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:71
 msgid "Maximum"
@@ -2122,25 +2456,33 @@ msgstr "最大值："
 
 #: ../dialogs/BrowseLocationsDialog.py:45 ../editors/Viewer.py:333
 #: ../editors/TextViewer.py:307 ../controls/LocationCellEditor.py:103
-#: ../controls/VariablePanel.py:317 ../controls/VariablePanel.py:380
+#: ../controls/VariablePanel.py:316 ../controls/VariablePanel.py:379
 msgid "Memory"
 msgstr "存储"
 
-#: ../IDEFrame.py:617
+#: ../IDEFrame.py:623
 msgid "Menu ToolBar"
 msgstr "菜单工具栏"
 
-#: ../dialogs/DurationEditorDialog.py:51
+#: ../runtime/NevowServer.py:176
+msgid "Message text"
+msgstr "消息文本"
+
+#: ../dialogs/DurationEditorDialog.py:62
 msgid "Microseconds:"
 msgstr "微秒："
 
-#: ../editors/Viewer.py:585
+#: ../editors/Viewer.py:588
 msgid "Middle"
 msgstr "中间"
 
-#: ../dialogs/DurationEditorDialog.py:50
+#: ../dialogs/DurationEditorDialog.py:61
 msgid "Milliseconds:"
 msgstr "毫秒："
+
+#: ../etherlab/etherlab.py:167
+msgid "Minimal size in bits between 2 pdo entries"
+msgstr ""
 
 #: ../plcopen/iec_std.csv:72
 msgid "Minimum"
@@ -2150,15 +2492,15 @@ msgstr "最小值"
 msgid "Minimum:"
 msgstr "最小值："
 
-#: ../dialogs/DurationEditorDialog.py:48
+#: ../dialogs/DurationEditorDialog.py:59
 msgid "Minutes:"
 msgstr "分："
 
-#: ../controls/ProjectPropertiesPanel.py:231
+#: ../etherlab/etherlab.py:238 ../controls/ProjectPropertiesPanel.py:233
 msgid "Miscellaneous"
 msgstr "其他"
 
-#: ../features.py:32
+#: ../features.py:21
 msgid "Modbus support"
 msgstr "Modbus 支持"
 
@@ -2166,7 +2508,20 @@ msgstr "Modbus 支持"
 msgid "Modifier:"
 msgstr "改动："
 
-#: ../PLCGenerator.py:795 ../PLCGenerator.py:1269
+#: ../etherlab/ConfigEditor.py:1313
+#, python-format
+msgid "Module %s must be an integer!"
+msgstr "模块%s必需为一个整形数值"
+
+#: ../etherlab/ConfigEditor.py:1376
+msgid "Modules Library"
+msgstr "模块库"
+
+#: ../etherlab/ConfigEditor.py:1145
+msgid "Modules library:"
+msgstr "模块库："
+
+#: ../PLCGenerator.py:795 ../PLCGenerator.py:1318
 #, python-brace-format
 msgid ""
 "More than one connector found corresponding to \"{a1}\" continuation in "
@@ -2193,23 +2548,31 @@ msgstr "下移元素"
 msgid "Move element up"
 msgstr "上移元素"
 
-#: ../editors/ResourceEditor.py:286
+#: ../editors/ResourceEditor.py:284
 msgid "Move instance down"
 msgstr "下移实例"
 
-#: ../editors/ResourceEditor.py:285
+#: ../editors/ResourceEditor.py:283
 msgid "Move instance up"
 msgstr "上移实例"
 
-#: ../editors/ResourceEditor.py:255
+#: ../etherlab/ConfigEditor.py:655
+msgid "Move process variable down"
+msgstr ""
+
+#: ../etherlab/ConfigEditor.py:654
+msgid "Move process variable up"
+msgstr ""
+
+#: ../editors/ResourceEditor.py:253
 msgid "Move task down"
 msgstr "下移任务"
 
-#: ../editors/ResourceEditor.py:254
+#: ../editors/ResourceEditor.py:252
 msgid "Move task up"
 msgstr "上移任务"
 
-#: ../IDEFrame.py:106 ../IDEFrame.py:121 ../IDEFrame.py:151 ../IDEFrame.py:192
+#: ../IDEFrame.py:253 ../IDEFrame.py:268 ../IDEFrame.py:298 ../IDEFrame.py:339
 msgid "Move the view"
 msgstr "移动视图"
 
@@ -2217,13 +2580,27 @@ msgstr "移动视图"
 msgid "Move up"
 msgstr "上移"
 
-#: ../editors/CodeFileEditor.py:657 ../controls/VariablePanel.py:484
+#: ../bacnet/BacnetSlaveEditor.py:814 ../editors/CodeFileEditor.py:675
+#: ../controls/VariablePanel.py:486
 msgid "Move variable down"
 msgstr "下移变量"
 
-#: ../editors/CodeFileEditor.py:656 ../controls/VariablePanel.py:483
+#: ../bacnet/BacnetSlaveEditor.py:813 ../editors/CodeFileEditor.py:674
+#: ../controls/VariablePanel.py:485
 msgid "Move variable up"
 msgstr "上移变量"
+
+#: ../bacnet/BacnetSlaveEditor.py:941
+msgid "Multi-State Input Objects"
+msgstr "多态输入对象"
+
+#: ../bacnet/BacnetSlaveEditor.py:940
+msgid "Multi-State Output Objects"
+msgstr "多态输出对象"
+
+#: ../bacnet/BacnetSlaveEditor.py:939
+msgid "Multi-State Value Objects"
+msgstr "多态数值对象"
 
 #: ../plcopen/iec_std.csv:74
 msgid "Multiplexer (select 1 of N)"
@@ -2233,7 +2610,7 @@ msgstr "多路器（多选一）"
 msgid "Multiplication"
 msgstr "乘法"
 
-#: ../editors/FileManagementPanel.py:87
+#: ../editors/FileManagementPanel.py:86
 msgid "My Computer:"
 msgstr "我的计算机："
 
@@ -2241,13 +2618,15 @@ msgstr "我的计算机："
 msgid "NAME"
 msgstr "NAME"
 
-#: ../editors/ResourceEditor.py:76 ../editors/ResourceEditor.py:97
-#: ../editors/DataTypeEditor.py:55 ../editors/CodeFileEditor.py:732
+#: ../etherlab/EtherCATManagementEditor.py:37 ../etherlab/ConfigEditor.py:48
+#: ../etherlab/ConfigEditor.py:343 ../etherlab/ConfigEditor.py:1167
+#: ../editors/ResourceEditor.py:76 ../editors/ResourceEditor.py:94
+#: ../editors/DataTypeEditor.py:55 ../editors/CodeFileEditor.py:751
 #: ../controls/VariablePanel.py:59
 msgid "Name"
 msgstr "名字"
 
-#: ../Beremiz_service.py:342
+#: ../Beremiz_service.py:355
 msgid "Name must not be null!"
 msgstr "名称不能为空！"
 
@@ -2260,15 +2639,19 @@ msgstr "名字："
 msgid "Natural logarithm"
 msgstr "自然对数"
 
-#: ../dialogs/LDElementDialog.py:78 ../editors/Viewer.py:554
+#: ../dialogs/LDElementDialog.py:78 ../editors/Viewer.py:557
 msgid "Negated"
 msgstr "否定"
 
-#: ../Beremiz_service.py:610
+#: ../etherlab/ConfigEditor.py:612
+msgid "Network"
+msgstr "网络"
+
+#: ../Beremiz_service.py:620
 msgid "Nevow Web service failed. "
 msgstr "Nevow Web 服务失败。 "
 
-#: ../Beremiz_service.py:580
+#: ../Beremiz_service.py:596
 msgid "Nevow/Athena import failed :"
 msgstr "Nevow/Athena 导入失败："
 
@@ -2281,20 +2664,29 @@ msgstr "新建"
 msgid "New item"
 msgstr "新建项目"
 
-#: ../editors/Viewer.py:553
+#: ../editors/Viewer.py:556
 msgid "No Modifier"
 msgstr "无改动"
 
-#: ../ProjectController.py:1808
+#: ../ProjectController.py:1891
 msgid "No PLC to transfer (did build succeed ?)\n"
 msgstr "没有PLC可传输（构建是否成功？）\n"
 
-#: ../PLCGenerator.py:1678
+#: ../etherlab/EthercatCFileGenerator.py:504
+#, python-format
+msgid "No Sync manager defined for %s!"
+msgstr "没有%s的同步管理定义！"
+
+#: ../PLCGenerator.py:1727
 #, python-format
 msgid "No body defined in \"%s\" POU"
 msgstr "在 \"%s\" POU 中没有任何东西被定义"
 
-#: ../PLCGenerator.py:816 ../PLCGenerator.py:1281
+#: ../etherlab/CommonEtherCATFunction.py:1581
+msgid "No connected slaves"
+msgstr "没有连接的从站"
+
+#: ../PLCGenerator.py:816 ../PLCGenerator.py:1330
 #, python-brace-format
 msgid "No connector found corresponding to \"{a1}\" continuation in \"{a2}\" POU"
 msgstr "没有连接器发现对应在 \"{a2}\" POU中 \"{a1}\" 延续"
@@ -2312,7 +2704,17 @@ msgstr ""
 msgid "No informations found for \"%s\" block"
 msgstr "对于 \"%s\" 块没有信息发现"
 
-#: ../PLCGenerator.py:1232
+#: ../etherlab/EthercatCFileGenerator.py:224
+#, python-format
+msgid "No informations found for device %s!"
+msgstr "设备%s未寻到信息！"
+
+#: ../etherlab/EthercatCFileGenerator.py:515
+#, python-format
+msgid "No more free PDO index available for %s!"
+msgstr "对%s没有更多空闲的有效PDO索引！"
+
+#: ../PLCGenerator.py:1281
 #, python-brace-format
 msgid ""
 "No output {a1} variable found in block {a2} in POU {a3}. Connection must be "
@@ -2323,10 +2725,20 @@ msgstr "无输出{a1}变量发现在 {a3} POU的 {a2} 块。 连接必须断开"
 msgid "No search results available."
 msgstr "没有存在的搜索结果。"
 
+#: ../etherlab/ConfigEditor.py:1029
+#, python-format
+msgid "No slave defined at position %d!"
+msgstr ""
+
 #: ../svgui/svgui.py:142
 #, python-format
 msgid "No such SVG file: %s\n"
 msgstr "没有这样的SVG文件：%s\n"
+
+#: ../etherlab/ConfigEditor.py:1245
+#, python-format
+msgid "No such XML file: %s\n"
+msgstr ""
 
 #: ../canfestival/config_utils.py:682
 #, python-brace-format
@@ -2338,14 +2750,32 @@ msgstr "没有如此 标签/子标签 ({a1},{a2}) (变量 {a3})"
 msgid "No such index/subindex ({a1},{a2}) in ID : {a3} (variable {a4})"
 msgstr "没有如此 标签/子标签 ({a1},{a2}) 在ID : {a3} (变量 {a4})"
 
+#: ../etherlab/EthercatCFileGenerator.py:438
+#, python-format
+msgid "No sync manager available for %s pdo!"
+msgstr "%spdo没有有效的同步管理！"
+
 #: ../dialogs/BrowseValuesLibraryDialog.py:87
 msgid "No valid value selected!"
 msgstr "没有有效的值被选择！"
 
-#: ../PLCGenerator.py:1676
+#: ../PLCGenerator.py:1725
 #, python-format
 msgid "No variable defined in \"%s\" POU"
 msgstr "无变量被定义在 \"%s\" POU"
+
+#: ../etherlab/ConfigEditor.py:606
+#, python-format
+msgid "Node Position: %d"
+msgstr "节点位置：%d"
+
+#: ../etherlab/ConfigEditor.py:697
+msgid "Node filter:"
+msgstr "节点过滤："
+
+#: ../etherlab/ConfigEditor.py:717
+msgid "Nodes variables filter:"
+msgstr "节点变量过滤："
 
 #: ../canfestival/config_utils.py:379
 #, python-brace-format
@@ -2369,6 +2799,10 @@ msgstr "不是PDO可映射变量：'{a1}' (ID:{a2},Idx:{a3},sIdx:{a4}))"
 msgid "Not equal to"
 msgstr "不等于"
 
+#: ../etherlab/EtherCATManagementEditor.py:361
+msgid "Now Uploading..."
+msgstr "开始上传。。。"
+
 #: ../dialogs/SFCDivergenceDialog.py:91
 msgid "Number of sequences:"
 msgstr "序列号："
@@ -2377,7 +2811,11 @@ msgstr "序列号："
 msgid "Numerical"
 msgstr "数学式"
 
-#: ../editors/CodeFileEditor.py:736
+#: ../bacnet/BacnetSlaveEditor.py:808
+msgid "Object Properties:"
+msgstr "对象属性："
+
+#: ../editors/CodeFileEditor.py:755
 msgid "OnChange"
 msgstr "在改变中"
 
@@ -2394,17 +2832,17 @@ msgstr "打开"
 msgid "Open Inkscape"
 msgstr "打开 Inkscape"
 
-#: ../version.py:86
+#: ../version.py:88
 msgid ""
 "Open Source framework for automation, implemented IEC 61131 IDE with "
 "constantly growing set of extensions and flexible PLC runtime."
 msgstr "开源自动化框架，实现不断增长的扩展集和弹性的PLC运行时的IEC 61131-3 IDE"
 
-#: ../ProjectController.py:1879
+#: ../ProjectController.py:1962
 msgid "Open a file explorer to manage project files"
 msgstr "打开一个文件浏览器来管理项目文件"
 
-#: ../wxglade_hmi/wxglade_hmi.py:161
+#: ../wxglade_hmi/wxglade_hmi.py:176
 msgid "Open wxGlade"
 msgstr "打开 wxGlade"
 
@@ -2412,11 +2850,11 @@ msgstr "打开 wxGlade"
 msgid "Option"
 msgstr "选项"
 
-#: ../dialogs/FindInPouDialog.py:84 ../editors/CodeFileEditor.py:737
+#: ../dialogs/FindInPouDialog.py:84 ../editors/CodeFileEditor.py:756
 msgid "Options"
 msgstr "选项"
 
-#: ../controls/ProjectPropertiesPanel.py:109
+#: ../controls/ProjectPropertiesPanel.py:111
 msgid "Organization (optional):"
 msgstr "组织（选填）："
 
@@ -2424,13 +2862,19 @@ msgstr "组织（选填）："
 msgid "Other Profile"
 msgstr "其他配置"
 
-#: ../dialogs/SFCStepDialog.py:74 ../dialogs/FBDVariableDialog.py:42
+#: ../dialogs/SFCStepDialog.py:74 ../dialogs/FBDVariableDialog.py:65
 #: ../dialogs/BrowseLocationsDialog.py:44 ../editors/Viewer.py:333
-#: ../editors/Viewer.py:1661 ../editors/TextViewer.py:307
-#: ../controls/LocationCellEditor.py:103 ../controls/VariablePanel.py:89
-#: ../controls/VariablePanel.py:317 ../controls/VariablePanel.py:380
+#: ../editors/Viewer.py:1663 ../editors/TextViewer.py:307
+#: ../controls/LocationCellEditor.py:103 ../controls/VariablePanel.py:86
+#: ../controls/VariablePanel.py:316 ../controls/VariablePanel.py:379
 msgid "Output"
 msgstr "输出"
+
+#: ../etherlab/EthercatCFileGenerator.py:170
+#, python-brace-format
+msgid ""
+"Output variables can't be defined with different locations ({a1} and {a2})"
+msgstr "输出变量不能定义在不同的位置({a1} and {a2})"
 
 #: ../canfestival/SlaveEditor.py:67 ../canfestival/NetworkEditor.py:91
 msgid "PDO Receive"
@@ -2440,25 +2884,38 @@ msgstr "PDO 接收"
 msgid "PDO Transmit"
 msgstr "PDO 传输"
 
+#: ../etherlab/etherlab.py:164
+msgid "PDO alignment"
+msgstr "PDO对齐"
+
 #: ../targets/toolchain_gcc.py:174
 msgid "PLC :\n"
 msgstr "PLC：\n"
 
-#: ../BeremizIDE.py:383
+#: ../BeremizIDE.py:379
 msgid "PLC Log"
 msgstr "PLC 记录"
 
-#: ../ProjectController.py:1082
+#: ../ProjectController.py:1129
 msgid "PLC code generation failed !\n"
 msgstr "PLC 代码生成失败！\n"
 
-#: ../Beremiz_service.py:305
+#: ../etherlab/EtherCATManagementEditor.py:250
+msgid "PLC is Not Started"
+msgstr "PLC未启动"
+
+#: ../Beremiz_service.py:318
 msgid "PLC is empty or already started."
 msgstr "PLC 是空的或者已经被启动。"
 
-#: ../Beremiz_service.py:312
+#: ../Beremiz_service.py:325
 msgid "PLC is not started."
 msgstr "PLC 没有被启动。"
+
+#: ../etherlab/EtherCATManagementEditor.py:2160
+#: ../etherlab/CommonEtherCATFunction.py:1589
+msgid "PLC not connected!"
+msgstr "PLC未连接"
 
 #: ../PLCOpenEditor.py:180 ../PLCOpenEditor.py:293
 #, python-brace-format
@@ -2491,28 +2948,28 @@ msgstr ""
 msgid "PORT"
 msgstr "端口"
 
-#: ../dialogs/PouDialog.py:109
+#: ../dialogs/PouDialog.py:144
 msgid "POU Name"
 msgstr "POU 名字"
 
-#: ../dialogs/PouDialog.py:66
+#: ../dialogs/PouDialog.py:64
 msgid "POU Name:"
 msgstr "POU 名字："
 
-#: ../dialogs/PouDialog.py:111
+#: ../dialogs/PouDialog.py:146
 msgid "POU Type"
 msgstr "POU类型"
 
-#: ../dialogs/PouDialog.py:73
+#: ../dialogs/PouDialog.py:71
 msgid "POU Type:"
 msgstr "POU 类型："
 
-#: ../connectors/PYRO/__init__.py:52
+#: ../connectors/PYRO/__init__.py:53
 #, python-format
 msgid "PYRO connecting to URI : %s\n"
 msgstr "PYRO 连接到 URI ： %s\n"
 
-#: ../connectors/PYRO/__init__.py:68
+#: ../connectors/PYRO/__init__.py:69
 #, python-format
 msgid "PYRO using certificates in '%s' \n"
 msgstr "PYRO使用认证在 '%s' \n"
@@ -2521,11 +2978,11 @@ msgstr "PYRO使用认证在 '%s' \n"
 msgid "Page Setup"
 msgstr "页面设置"
 
-#: ../controls/ProjectPropertiesPanel.py:124
+#: ../controls/ProjectPropertiesPanel.py:127
 msgid "Page Size (optional):"
 msgstr "页面大小（选填）："
 
-#: ../IDEFrame.py:2640
+#: ../IDEFrame.py:2660
 #, python-format
 msgid "Page: %d"
 msgstr "页：%d"
@@ -2534,11 +2991,11 @@ msgstr "页：%d"
 msgid "Parent instance"
 msgstr "父实例"
 
-#: ../editors/Viewer.py:696 ../IDEFrame.py:374 ../IDEFrame.py:428
+#: ../editors/Viewer.py:699 ../IDEFrame.py:377 ../IDEFrame.py:429
 msgid "Paste"
 msgstr "粘贴"
 
-#: ../IDEFrame.py:1899
+#: ../IDEFrame.py:1916
 msgid "Paste POU"
 msgstr "粘贴POU"
 
@@ -2550,7 +3007,11 @@ msgstr "检索模式："
 msgid "Pin number:"
 msgstr "插脚数："
 
-#: ../editors/Viewer.py:2792 ../editors/Viewer.py:3060
+#: ../runtime/NevowServer.py:163
+msgid "Platform"
+msgstr "平台"
+
+#: ../editors/Viewer.py:2791 ../editors/Viewer.py:3059
 #: ../editors/SFCViewer.py:785
 msgid "Please choose a target"
 msgstr "请选择一个目标"
@@ -2559,7 +3020,7 @@ msgstr "请选择一个目标"
 msgid "Please enter a block name"
 msgstr "请输入一个块名称"
 
-#: ../editors/Viewer.py:2661 ../editors/Viewer.py:3103
+#: ../dialogs/CommentEditDialog.py:52
 msgid "Please enter comment text"
 msgstr "请输入注释文本"
 
@@ -2568,7 +3029,8 @@ msgstr "请输入注释文本"
 msgid "Please enter step name"
 msgstr "请输入步骤名称"
 
-#: ../dialogs/PouNameDialog.py:37 ../Beremiz_service.py:209
+#: ../dialogs/SFCStepNameDialog.py:37 ../dialogs/PouNameDialog.py:37
+#: ../Beremiz_service.py:222
 msgid "Please enter text"
 msgstr "请输入文本"
 
@@ -2577,15 +3039,19 @@ msgstr "请输入文本"
 msgid "Please enter value for a \"%s\" variable:"
 msgstr "请输入值对于一个 \"%s\" 变量："
 
-#: ../Beremiz_service.py:327
+#: ../Beremiz_service.py:340
 msgid "Port number must be 0 <= port <= 65535!"
 msgstr "端口号必须为 0 <= 端口号 <= 65535！"
 
-#: ../Beremiz_service.py:327
+#: ../Beremiz_service.py:340
 msgid "Port number must be an integer!"
 msgstr "端口号必须是整数！"
 
-#: ../editors/Viewer.py:633 ../editors/Viewer.py:2449
+#: ../etherlab/ConfigEditor.py:47 ../etherlab/ConfigEditor.py:465
+msgid "Position"
+msgstr "位置"
+
+#: ../editors/Viewer.py:636 ../editors/Viewer.py:2451
 msgid "Power Rail"
 msgstr "电源导轨"
 
@@ -2606,7 +3072,7 @@ msgstr "预览："
 msgid "Print"
 msgstr "打印"
 
-#: ../IDEFrame.py:1110
+#: ../IDEFrame.py:1123
 msgid "Print preview"
 msgstr "打印预览"
 
@@ -2618,33 +3084,37 @@ msgstr "优先"
 msgid "Priority:"
 msgstr "优先："
 
-#: ../runtime/PLCObject.py:518
+#: ../runtime/PLCObject.py:523
 #, python-format
 msgid "Problem starting PLC : error %d"
 msgstr "故障启动PLC：错误 %d"
 
-#: ../dialogs/ProjectDialog.py:63
+#: ../etherlab/ConfigEditor.py:647
+msgid "Process variables mapped between nodes:"
+msgstr "节点间过程变量映射："
+
+#: ../dialogs/ProjectDialog.py:61
 msgid "Product Name"
 msgstr "产品名称"
 
-#: ../controls/ProjectPropertiesPanel.py:90
+#: ../controls/ProjectPropertiesPanel.py:91
 msgid "Product Name (required):"
 msgstr "产品名字（必填）："
 
-#: ../controls/ProjectPropertiesPanel.py:92
+#: ../controls/ProjectPropertiesPanel.py:93
 msgid "Product Release (optional):"
 msgstr "产品发布（选填）："
 
-#: ../dialogs/ProjectDialog.py:64
+#: ../dialogs/ProjectDialog.py:62
 msgid "Product Version"
 msgstr "产品版本"
 
-#: ../controls/ProjectPropertiesPanel.py:91
+#: ../controls/ProjectPropertiesPanel.py:92
 msgid "Product Version (required):"
 msgstr "产品版本（必填）："
 
-#: ../dialogs/SearchInProjectDialog.py:42 ../IDEFrame.py:1778
-#: ../IDEFrame.py:1975
+#: ../dialogs/SearchInProjectDialog.py:42 ../IDEFrame.py:1795
+#: ../IDEFrame.py:1992
 msgid "Program"
 msgstr "程序"
 
@@ -2660,7 +3130,7 @@ msgstr "程序"
 msgid "Programs can't be used by other POUs!"
 msgstr "程序不能被其它POU使用！"
 
-#: ../controls/ProjectPropertiesPanel.py:94 ../IDEFrame.py:601
+#: ../controls/ProjectPropertiesPanel.py:95 ../IDEFrame.py:607
 msgid "Project"
 msgstr "项目"
 
@@ -2669,19 +3139,19 @@ msgstr "项目"
 msgid "Project '%s':"
 msgstr "项目 '%s'："
 
-#: ../ProjectController.py:1878
+#: ../ProjectController.py:1961
 msgid "Project Files"
 msgstr "项目文件"
 
-#: ../dialogs/ProjectDialog.py:62
+#: ../dialogs/ProjectDialog.py:60
 msgid "Project Name"
 msgstr "项目名称"
 
-#: ../controls/ProjectPropertiesPanel.py:88
+#: ../controls/ProjectPropertiesPanel.py:89
 msgid "Project Name (required):"
 msgstr "项目名称（必填）："
 
-#: ../controls/ProjectPropertiesPanel.py:89
+#: ../controls/ProjectPropertiesPanel.py:90
 msgid "Project Version (optional):"
 msgstr "项目版本（选填）："
 
@@ -2710,16 +3180,16 @@ msgstr "扩展名"
 msgid "Properties"
 msgstr "属性"
 
-#: ../Beremiz_service.py:427
+#: ../Beremiz_service.py:440
 msgid "Publishing service on local network"
 msgstr "在本地网络上发布服务"
 
-#: ../connectors/PYRO/__init__.py:126
+#: ../connectors/PYRO/__init__.py:127
 #, python-format
 msgid "Pyro exception: %s\n"
 msgstr "Pyro异常： %s\n"
 
-#: ../Beremiz_service.py:420
+#: ../Beremiz_service.py:433
 msgid "Pyro port :"
 msgstr "Pyro端口："
 
@@ -2727,7 +3197,7 @@ msgstr "Pyro端口："
 msgid "Python code"
 msgstr "Python代码"
 
-#: ../features.py:34
+#: ../features.py:23
 msgid "Python file"
 msgstr "Python文件"
 
@@ -2735,19 +3205,23 @@ msgstr "Python文件"
 msgid "Qualifier"
 msgstr "合格验证"
 
-#: ../BeremizIDE.py:263 ../PLCOpenEditor.py:101 ../Beremiz_service.py:283
+#: ../BeremizIDE.py:263 ../PLCOpenEditor.py:101 ../Beremiz_service.py:296
 msgid "Quit"
 msgstr "退出"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:227
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:224
 msgid "Range:"
 msgstr "范围："
 
-#: ../ProjectController.py:1872
+#: ../ProjectController.py:1955
 msgid "Raw IEC code"
 msgstr "原始的IEC代码"
 
-#: ../BeremizIDE.py:1083
+#: ../etherlab/ConfigEditor.py:344
+msgid "Read from (nodeid, index, subindex)"
+msgstr "从（节点ID，索引，子索引）读取"
+
+#: ../BeremizIDE.py:1080
 #, python-format
 msgid "Really delete node '%s'?"
 msgstr "真的删除节点 '%s'吗？"
@@ -2756,7 +3230,7 @@ msgstr "真的删除节点 '%s'吗？"
 msgid "Realm:"
 msgstr "范围:"
 
-#: ../IDEFrame.py:367 ../IDEFrame.py:424
+#: ../IDEFrame.py:370 ../IDEFrame.py:425
 msgid "Redo"
 msgstr "重做"
 
@@ -2764,9 +3238,13 @@ msgstr "重做"
 msgid "Reference"
 msgstr "参照"
 
-#: ../dialogs/DiscoveryDialog.py:109 ../IDEFrame.py:434
+#: ../dialogs/DiscoveryDialog.py:109 ../IDEFrame.py:436
 msgid "Refresh"
 msgstr "刷新"
+
+#: ../etherlab/EtherCATManagementEditor.py:1965
+msgid "Register Modify Dialog"
+msgstr "寄存器修改对话框"
 
 #: ../dialogs/SearchInProjectDialog.py:70
 msgid "Regular expression"
@@ -2776,7 +3254,7 @@ msgstr "正则表达式"
 msgid "Regular expressions"
 msgstr "正则表达式"
 
-#: ../editors/Viewer.py:1636
+#: ../editors/Viewer.py:1638
 msgid "Release value"
 msgstr "释放值"
 
@@ -2784,16 +3262,16 @@ msgstr "释放值"
 msgid "Remainder (modulo)"
 msgstr "余数（模）"
 
-#: ../BeremizIDE.py:1084
+#: ../BeremizIDE.py:1081
 #, python-format
 msgid "Remove %s node"
 msgstr "移除 %s 节点"
 
-#: ../IDEFrame.py:2445
+#: ../IDEFrame.py:2463
 msgid "Remove Datatype"
 msgstr "移除数据类型"
 
-#: ../IDEFrame.py:2450
+#: ../IDEFrame.py:2468
 msgid "Remove Pou"
 msgstr "移除POU"
 
@@ -2805,35 +3283,52 @@ msgstr "移除动作"
 msgid "Remove element"
 msgstr "移除元素"
 
-#: ../editors/FileManagementPanel.py:66
+#: ../etherlab/ConfigEditor.py:1353
+msgid "Remove file from database"
+msgstr "从数据库移除文件"
+
+#: ../editors/FileManagementPanel.py:65
 msgid "Remove file from left folder"
 msgstr "从左侧目录移除文件"
 
-#: ../editors/ResourceEditor.py:284
+#: ../etherlab/ConfigEditor.py:1389
+msgid "Remove file from library"
+msgstr "从库里移除文件"
+
+#: ../editors/ResourceEditor.py:282
 msgid "Remove instance"
 msgstr "移除实例"
+
+#: ../etherlab/ConfigEditor.py:653
+msgid "Remove process variable"
+msgstr "移除过程变量"
 
 #: ../canfestival/NetworkEditor.py:111
 msgid "Remove slave"
 msgstr "移除从站"
 
-#: ../editors/ResourceEditor.py:253
+#: ../etherlab/ConfigEditor.py:680
+msgid "Remove startup service variable"
+msgstr "移除开机启动参数"
+
+#: ../editors/ResourceEditor.py:251
 msgid "Remove task"
 msgstr "移除任务"
 
-#: ../editors/CodeFileEditor.py:655 ../controls/VariablePanel.py:482
+#: ../bacnet/BacnetSlaveEditor.py:812 ../editors/CodeFileEditor.py:673
+#: ../controls/VariablePanel.py:484
 msgid "Remove variable"
 msgstr "移除变量"
 
-#: ../IDEFrame.py:1979
+#: ../IDEFrame.py:1996
 msgid "Rename"
 msgstr "重命名"
 
-#: ../editors/FileManagementPanel.py:187
+#: ../editors/FileManagementPanel.py:186
 msgid "Replace File"
 msgstr "替换文件"
 
-#: ../editors/Viewer.py:598
+#: ../editors/Viewer.py:601
 msgid "Replace Wire by connections"
 msgstr "通过连接替换Wire"
 
@@ -2845,11 +3340,11 @@ msgstr "替换"
 msgid "Reset"
 msgstr "重置"
 
-#: ../editors/Viewer.py:681
+#: ../editors/Viewer.py:684
 msgid "Reset Execution Order"
 msgstr "重置执行命令"
 
-#: ../IDEFrame.py:453
+#: ../IDEFrame.py:459
 msgid "Reset Perspective"
 msgstr "复位透视图"
 
@@ -2857,7 +3352,7 @@ msgstr "复位透视图"
 msgid "Reset search result"
 msgstr "复位搜索结果"
 
-#: ../BeremizIDE.py:1015 ../plcopen/types_enums.py:77
+#: ../BeremizIDE.py:1012 ../plcopen/types_enums.py:77
 msgid "Resources"
 msgstr "资源"
 
@@ -2865,11 +3360,11 @@ msgstr "资源"
 msgid "Retain"
 msgstr "保持"
 
-#: ../controls/VariablePanel.py:455
+#: ../controls/VariablePanel.py:457
 msgid "Return Type:"
 msgstr "返回类型："
 
-#: ../editors/Viewer.py:582
+#: ../editors/Viewer.py:585
 msgid "Right"
 msgstr "右"
 
@@ -2877,7 +3372,7 @@ msgstr "右"
 msgid "Right PowerRail"
 msgstr "右电源导轨"
 
-#: ../dialogs/LDElementDialog.py:80 ../editors/Viewer.py:555
+#: ../dialogs/LDElementDialog.py:80 ../editors/Viewer.py:558
 msgid "Rising Edge"
 msgstr "上升沿"
 
@@ -2893,15 +3388,15 @@ msgstr "循环右移"
 msgid "Rounding up/down"
 msgstr "四舍五入"
 
-#: ../ProjectController.py:1828
+#: ../ProjectController.py:1911
 msgid "Run"
 msgstr "运行"
 
-#: ../ProjectController.py:1127
+#: ../ProjectController.py:1175
 msgid "Runtime IO extensions C code generation failed !\n"
 msgstr "运行时IO扩展C代码生成失败！\n"
 
-#: ../ProjectController.py:1136
+#: ../ProjectController.py:1186
 msgid "Runtime library extensions C code generation failed !\n"
 msgstr "运行时库扩展C代码生成失败！\n"
 
@@ -2913,11 +3408,11 @@ msgstr "SDO客户端"
 msgid "SDO Server"
 msgstr "SDO服务器"
 
-#: ../dialogs/PouDialog.py:44 ../controls/ProjectPropertiesPanel.py:158
+#: ../dialogs/PouDialog.py:128 ../controls/ProjectPropertiesPanel.py:161
 msgid "SFC"
 msgstr "顺序功能图"
 
-#: ../PLCGenerator.py:1433
+#: ../PLCGenerator.py:1482
 #, python-brace-format
 msgid "SFC jump in pou \"{a1}\" refers to non-existent SFC step \"{a2}\""
 msgstr "POU \"{a1}\" 中的SFC跳转 涉及不存在SFC步 \"{a2}\""
@@ -2928,7 +3423,7 @@ msgid "SFC transition in POU \"%s\" must be connected."
 msgstr "在POU \"%s\" 中 SFC 移动必须被连接。"
 
 #: ../dialogs/PouTransitionDialog.py:40 ../dialogs/PouActionDialog.py:36
-#: ../dialogs/PouDialog.py:44
+#: ../dialogs/PouDialog.py:128
 msgid "ST"
 msgstr "结构化文本"
 
@@ -2940,7 +3435,7 @@ msgstr "ST 文件 (*.st)|*.st|所有文件|*.*"
 msgid "SVG files (*.svg)|*.svg|All files|*.*"
 msgstr "SVG 文件 (*.svg)|*.svg|All files|*.*"
 
-#: ../features.py:36
+#: ../features.py:25
 msgid "SVGUI"
 msgstr "SVGUI"
 
@@ -2957,38 +3452,48 @@ msgstr "另存为..."
 msgid "Save as"
 msgstr "另存为"
 
-#: ../ProjectController.py:530
+#: ../etherlab/EtherCATManagementEditor.py:941
+#: ../etherlab/EtherCATManagementEditor.py:1289
+msgid "Save as..."
+msgstr "另存为"
+
+#: ../ProjectController.py:546
 msgid "Save path is the same as path of a project! \n"
 msgstr "保存路径和项目路径相同！\n"
+
+#: ../etherlab/EthercatMaster.py:455 ../etherlab/EthercatMaster.py:764
+#: ../etherlab/EthercatMaster.py:765
+msgid "Scan Network"
+msgstr "扫描网络"
 
 #: ../dialogs/SearchInProjectDialog.py:73
 msgid "Scope"
 msgstr "范围"
 
-#: ../IDEFrame.py:644
+#: ../IDEFrame.py:650
 msgid "Search"
 msgstr "搜索"
 
-#: ../dialogs/SearchInProjectDialog.py:49 ../IDEFrame.py:384
-#: ../IDEFrame.py:430
+#: ../dialogs/SearchInProjectDialog.py:49 ../IDEFrame.py:387
+#: ../IDEFrame.py:431
 msgid "Search in Project"
 msgstr "在项目中搜索"
 
-#: ../dialogs/DurationEditorDialog.py:49
+#: ../dialogs/DurationEditorDialog.py:60
 msgid "Seconds:"
 msgstr "秒："
 
-#: ../IDEFrame.py:390
+#: ../IDEFrame.py:393
 msgid "Select All"
 msgstr "选择全部"
 
 #: ../editors/Viewer.py:331 ../editors/TextViewer.py:305
-#: ../controls/LocationCellEditor.py:101 ../controls/VariablePanel.py:315
-#: ../controls/VariablePanel.py:378
+#: ../controls/LocationCellEditor.py:101 ../controls/VariablePanel.py:314
+#: ../controls/VariablePanel.py:377
 msgid "Select a variable class:"
 msgstr "选择一个变量种类："
 
-#: ../ProjectController.py:1293
+#: ../ProjectController.py:1354
 msgid "Select an editor:"
 msgstr "选择一个编辑："
 
@@ -2996,11 +3501,11 @@ msgstr "选择一个编辑："
 msgid "Select an instance"
 msgstr "选择一个实例"
 
-#: ../IDEFrame.py:628
+#: ../IDEFrame.py:634
 msgid "Select an object"
 msgstr "选择一个对象"
 
-#: ../ProjectController.py:537
+#: ../ProjectController.py:555
 msgid "Selected directory already contains another project. Overwrite? \n"
 msgstr "选择的目录已经包含其他项目。覆盖？\n"
 
@@ -3016,6 +3521,14 @@ msgstr "选择收敛"
 msgid "Selection Divergence"
 msgstr "选择发散"
 
+#: ../runtime/NevowServer.py:182
+msgid "Send"
+msgstr "发送"
+
+#: ../runtime/NevowServer.py:181
+msgid "Send a message to the log"
+msgstr "发送一个消息到记录"
+
 #: ../dialogs/DiscoveryDialog.py:135
 msgid "Service Discovery"
 msgstr "服务探索"
@@ -3024,7 +3537,7 @@ msgstr "服务探索"
 msgid "Services available:"
 msgstr "存在的服务："
 
-#: ../dialogs/LDElementDialog.py:79
+#: ../dialogs/LDElementDialog.py:79 ../runtime/WampClient.py:434
 msgid "Set"
 msgstr "设置"
 
@@ -3036,7 +3549,7 @@ msgstr "左移"
 msgid "Shift right"
 msgstr "右移"
 
-#: ../ProjectController.py:1863
+#: ../ProjectController.py:1946
 msgid "Show IEC code generated by PLCGenerator"
 msgstr "显示由PLCGenerator生成的IEC代码"
 
@@ -3048,7 +3561,7 @@ msgstr "显示主控"
 msgid "Show Master generated by config_utils"
 msgstr "显示由config_utils生成的主控"
 
-#: ../ProjectController.py:1862
+#: ../ProjectController.py:1945
 msgid "Show code"
 msgstr "显示代码"
 
@@ -3067,6 +3580,14 @@ msgstr "正弦"
 #: ../editors/ResourceEditor.py:76
 msgid "Single"
 msgstr "单"
+
+#: ../etherlab/EtherCATManagementEditor.py:361
+msgid "Slave SDO Monitoring"
+msgstr "从站SDO监视"
+
+#: ../etherlab/ConfigEditor.py:135
+msgid "Slave entries"
+msgstr "从站入口"
 
 #: ../targets/toolchain_makefile.py:130
 msgid "Source didn't change, no build.\n"
@@ -3087,50 +3608,70 @@ msgstr "平方根（底数2）"
 msgid "Standard function blocks"
 msgstr "标准功能类型"
 
-#: ../ProjectController.py:1829 ../Beremiz_service.py:271
+#: ../etherlab/ConfigEditor.py:68
+msgid "Standardized Device Profile"
+msgstr "标准设备描述"
+
+#: ../etherlab/EtherCATManagementEditor.py:37
+msgid "Start Address"
+msgstr "起始地址"
+
+#: ../ProjectController.py:1912 ../Beremiz_service.py:284
 msgid "Start PLC"
 msgstr "开始PLC"
 
-#: ../ProjectController.py:1074
+#: ../ProjectController.py:1121
 #, python-format
 msgid "Start build in %s\n"
 msgstr "开始建立 %s\n"
 
-#: ../ProjectController.py:1397
+#: ../runtime/PlcStatus.py:12
 msgid "Started"
 msgstr "已开始"
 
-#: ../ProjectController.py:1633
+#: ../ProjectController.py:1714
 msgid "Starting PLC\n"
 msgstr "启动PLC\n"
 
-#: ../BeremizIDE.py:393
+#: ../etherlab/ConfigEditor.py:674
+msgid "Startup service variables assignments:"
+msgstr "开机启动服务参数分配："
+
+#: ../BeremizIDE.py:389
 msgid "Status ToolBar"
 msgstr "状态工具栏"
 
-#: ../editors/Viewer.py:651 ../editors/Viewer.py:2424
+#: ../editors/Viewer.py:654 ../editors/Viewer.py:2426
 msgid "Step"
 msgstr "步"
 
-#: ../ProjectController.py:1835
+#: ../ProjectController.py:1918
 msgid "Stop"
 msgstr "停止"
 
-#: ../Beremiz_service.py:272
+#: ../Beremiz_service.py:285
 msgid "Stop PLC"
 msgstr "停止PLC"
 
-#: ../ProjectController.py:1836
+#: ../ProjectController.py:1919
 msgid "Stop Running PLC"
 msgstr "停止运行PLC"
 
-#: ../ProjectController.py:1398
+#: ../runtime/PlcStatus.py:13
 msgid "Stopped"
 msgstr "已停止"
 
 #: ../editors/DataTypeEditor.py:60
 msgid "Structure"
 msgstr "结构的"
+
+#: ../etherlab/ConfigEditor.py:48
+msgid "SubIndex"
+msgstr "子索引"
+
+#: ../etherlab/ConfigEditor.py:465
+msgid "Subindex"
+msgstr "子索引"
 
 #: ../editors/DataTypeEditor.py:60
 msgid "Subrange"
@@ -3140,11 +3681,11 @@ msgstr "子集的"
 msgid "Subtraction"
 msgstr "减法"
 
-#: ../ProjectController.py:1113
+#: ../ProjectController.py:1160
 msgid "Successfully built.\n"
 msgstr "成功构建.\n"
 
-#: ../IDEFrame.py:449
+#: ../IDEFrame.py:451
 msgid "Switch perspective"
 msgstr "切换视图"
 
@@ -3160,19 +3701,19 @@ msgstr "类型"
 msgid "Tangent"
 msgstr "正切"
 
-#: ../editors/ResourceEditor.py:97
+#: ../editors/ResourceEditor.py:94
 msgid "Task"
 msgstr "任务 "
 
-#: ../editors/ResourceEditor.py:248
+#: ../editors/ResourceEditor.py:246
 msgid "Tasks:"
 msgstr "任务："
 
-#: ../controls/VariablePanel.py:91
+#: ../controls/VariablePanel.py:88
 msgid "Temp"
 msgstr "缓冲"
 
-#: ../version.py:35
+#: ../version.py:37
 msgid ""
 "The best place to ask questions about Beremiz/PLCOpenEditor\n"
 "is project's mailing list: beremiz-devel@lists.sourceforge.net\n"
@@ -3192,7 +3733,15 @@ msgstr ""
 "你可在这里订阅列表：\n"
 "https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
 
-#: ../editors/FileManagementPanel.py:186
+#: ../etherlab/EthercatMaster.py:454
+msgid ""
+"The current network configuration will be deleted.\n"
+"Do you want to continue?"
+msgstr ""
+"当前网络配置将会被删除。\n"
+"你想继续吗？"
+
+#: ../editors/FileManagementPanel.py:185
 #, python-format
 msgid ""
 "The file '%s' already exist.\n"
@@ -3201,22 +3750,27 @@ msgstr ""
 "文件 '%s' 已经存在。\n"
 "你真的要替换它？"
 
+#: ../etherlab/EtherCATManagementEditor.py:928
+#: ../etherlab/EtherCATManagementEditor.py:1320
+msgid "The file does not exist!"
+msgstr "文件不存在！"
+
 #: ../editors/LDViewer.py:893
 msgid "The group of block must be coherent!"
 msgstr "块的组必须是连贯的！"
 
-#: ../BeremizIDE.py:573 ../IDEFrame.py:1046
+#: ../BeremizIDE.py:569 ../IDEFrame.py:1059
 msgid "There are changes, do you want to save?"
 msgstr "文件已被改动。你希望保存吗？"
 
-#: ../IDEFrame.py:1691 ../IDEFrame.py:1710
+#: ../IDEFrame.py:1708 ../IDEFrame.py:1727
 #, python-format
 msgid ""
 "There is a POU named \"%s\". This could cause a conflict. Do you wish to "
 "continue?"
 msgstr "一个编程组织单元被命名为\"%s\"。这可能会产生冲突。你希望继续吗？"
 
-#: ../IDEFrame.py:1133
+#: ../IDEFrame.py:1146
 msgid ""
 "There was a problem printing.\n"
 "Perhaps your current printer is not set correctly?"
@@ -3228,7 +3782,7 @@ msgstr ""
 msgid "This option isn't available yet!"
 msgstr "该选项尚未可用！"
 
-#: ../controls/DebugVariablePanel/DebugVariablePanel.py:567
+#: ../controls/DebugVariablePanel/DebugVariablePanel.py:546
 #, python-format
 msgid "Tick: %d"
 msgstr "滴答： %d"
@@ -3266,56 +3820,60 @@ msgstr "日期时间加法"
 msgid "Time-of-day subtraction"
 msgstr "日期时间减法"
 
+#: ../IDEFrame.py:432
+msgid "Toggle fullscreen mode"
+msgstr "切换全屏模式"
+
 #: ../dialogs/ForceVariableDialog.py:188
 msgid "Toggle value"
 msgstr "触发值"
 
-#: ../editors/Viewer.py:584
+#: ../editors/Viewer.py:587
 msgid "Top"
 msgstr "顶部"
 
-#: ../ProjectController.py:1848
+#: ../ProjectController.py:1931
 msgid "Transfer"
 msgstr "传输"
 
-#: ../ProjectController.py:1849
+#: ../ProjectController.py:1932
 msgid "Transfer PLC"
 msgstr "传输PLC"
 
-#: ../ProjectController.py:1802
+#: ../ProjectController.py:1884
 msgid "Transfer completed successfully.\n"
 msgstr "传输成功\n"
 
-#: ../ProjectController.py:1805
+#: ../ProjectController.py:1887
 msgid "Transfer failed\n"
 msgstr "传输失败\n"
 
-#: ../editors/Viewer.py:652 ../editors/Viewer.py:2426
-#: ../editors/Viewer.py:2453
+#: ../editors/Viewer.py:655 ../editors/Viewer.py:2428
+#: ../editors/Viewer.py:2455
 msgid "Transition"
 msgstr "转换"
 
-#: ../PLCGenerator.py:1564
+#: ../PLCGenerator.py:1613
 #, python-format
 msgid ""
 "Transition \"%s\" body must contain an output variable or coil referring to "
 "its name"
 msgstr "转换 \"%s\" 体必须包含一个输出变量或圈指的是它的名字"
 
-#: ../dialogs/PouTransitionDialog.py:91
+#: ../dialogs/PouTransitionDialog.py:90
 msgid "Transition Name"
 msgstr "转换名字"
 
-#: ../dialogs/PouTransitionDialog.py:60
+#: ../dialogs/PouTransitionDialog.py:59
 msgid "Transition Name:"
 msgstr "转换名字："
 
-#: ../PLCGenerator.py:1657
+#: ../PLCGenerator.py:1706
 #, python-brace-format
 msgid "Transition with content \"{a1}\" not connected to a next step in \"{a2}\" POU"
 msgstr "转换的内容 \"{a1}\" 没有连接到下一步在 \"{a2}\" POU"
 
-#: ../PLCGenerator.py:1646
+#: ../PLCGenerator.py:1695
 #, python-brace-format
 msgid ""
 "Transition with content \"{a1}\" not connected to a previous step in "
@@ -3339,17 +3897,17 @@ msgstr "转换因为"
 msgid "Triggering"
 msgstr "触发"
 
-#: ../Beremiz_service.py:490
+#: ../Beremiz_service.py:503
 msgid "Twisted unavailable."
 msgstr "扭曲的不可用。"
 
-#: ../dialogs/ActionBlockDialog.py:42 ../editors/ResourceEditor.py:97
-#: ../editors/DataTypeEditor.py:55 ../editors/CodeFileEditor.py:733
-#: ../controls/VariablePanel.py:61
+#: ../dialogs/ActionBlockDialog.py:42 ../etherlab/ConfigEditor.py:48
+#: ../editors/ResourceEditor.py:94 ../editors/DataTypeEditor.py:55
+#: ../editors/CodeFileEditor.py:752 ../controls/VariablePanel.py:61
 msgid "Type"
 msgstr "类型"
 
-#: ../dialogs/BrowseLocationsDialog.py:54
+#: ../dialogs/BrowseLocationsDialog.py:51
 msgid "Type and derivated"
 msgstr "类型和派生"
 
@@ -3366,15 +3924,24 @@ msgstr "类型转换"
 msgid "Type infos:"
 msgstr "类型信息："
 
-#: ../dialogs/BrowseLocationsDialog.py:55
+#: ../etherlab/EthercatCFileGenerator.py:76
+#, python-format
+msgid "Type of location \"%s\" not yet supported!"
+msgstr "位置\"%s\"类型不再支持！"
+
+#: ../dialogs/BrowseLocationsDialog.py:52
 msgid "Type strict"
 msgstr "严格类型"
 
 #: ../dialogs/SFCDivergenceDialog.py:60 ../dialogs/SFCTransitionDialog.py:59
-#: ../dialogs/LDPowerRailDialog.py:58 ../dialogs/BrowseLocationsDialog.py:111
+#: ../dialogs/LDPowerRailDialog.py:58 ../dialogs/BrowseLocationsDialog.py:110
 #: ../dialogs/FBDBlockDialog.py:69 ../dialogs/ConnectionDialog.py:61
 msgid "Type:"
 msgstr "类型："
+
+#: ../runtime/WampClient.py:129
+msgid "TypeError register option: {}"
+msgstr "类型错误寄存器选项：{}"
 
 #: ../connectors/PYRO/dialog.py:39 ../connectors/WAMP/dialog.py:42
 msgid "URI host:"
@@ -3398,7 +3965,17 @@ msgstr "对于 %02x节点不能定义POU映射"
 msgid "Unable to get Xenomai's %s \n"
 msgstr "不能获得 Xenomai 的 %s \n"
 
-#: ../PLCGenerator.py:974 ../PLCGenerator.py:1252
+#: ../bacnet/bacnet.py:430
+#, python-format
+msgid "Unable to load file \"%s\"!"
+msgstr "不能读取文件“%s”！"
+
+#: ../bacnet/bacnet.py:420
+#, python-format
+msgid "Unable to save to file \"%s\"!"
+msgstr "不能保存到文件“%s”！"
+
+#: ../PLCGenerator.py:1023 ../PLCGenerator.py:1301
 #, python-brace-format
 msgid "Undefined block type \"{a1}\" in \"{a2}\" POU"
 msgstr "未定义块类型 \"{a1}\" 在 \"{a2}\" POU中"
@@ -3408,20 +3985,25 @@ msgstr "未定义块类型 \"{a1}\" 在 \"{a2}\" POU中"
 msgid "Undefined pou type \"%s\""
 msgstr "未定义的pou类型"
 
-#: ../IDEFrame.py:365 ../IDEFrame.py:423
+#: ../IDEFrame.py:368 ../IDEFrame.py:424
 msgid "Undo"
 msgstr "撤销"
 
-#: ../ProjectController.py:442
+#: ../ProjectController.py:457
 msgid "Unknown"
 msgstr "未知"
+
+#: ../etherlab/EthercatCFileGenerator.py:470
+#, python-brace-format
+msgid "Unknown entry index 0x{a1:.4x}, subindex 0x{a2:.2x} for device {a3}"
+msgstr "未知的入口索引 0x{a1:.4x}, 子索引 0x{a2:.2x} 为设备 {a3}"
 
 #: ../editors/Viewer.py:437
 #, python-format
 msgid "Unknown variable \"%s\" for this POU!"
 msgstr "未知的变量 \"%s\" 这个POU！"
 
-#: ../ProjectController.py:439 ../ProjectController.py:440
+#: ../ProjectController.py:454 ../ProjectController.py:455
 msgid "Unnamed"
 msgstr "未命名"
 
@@ -3430,12 +4012,20 @@ msgstr "未命名"
 msgid "Unnamed%d"
 msgstr "未命名%d"
 
-#: ../controls/VariablePanel.py:308
+#: ../controls/VariablePanel.py:307
 #, python-format
 msgid "Unrecognized data size \"%s\""
 msgstr "无法识别数据大小 \"%s\""
 
-#: ../editors/DataTypeEditor.py:646 ../controls/VariablePanel.py:841
+#: ../etherlab/EtherCATManagementEditor.py:2080
+msgid "Update"
+msgstr "更新"
+
+#: ../runtime/WampClient.py:380
+msgid "Upload:"
+msgstr "上传"
+
+#: ../editors/DataTypeEditor.py:646 ../controls/VariablePanel.py:852
 msgid "User Data Types"
 msgstr "用户数据类型"
 
@@ -3447,7 +4037,7 @@ msgstr "用户类型"
 msgid "User-defined POUs"
 msgstr "用户 - 定义POUs"
 
-#: ../dialogs/ActionBlockDialog.py:42
+#: ../dialogs/ActionBlockDialog.py:42 ../etherlab/ConfigEditor.py:465
 msgid "Value"
 msgstr "值"
 
@@ -3455,24 +4045,29 @@ msgstr "值"
 msgid "Values:"
 msgstr "值："
 
-#: ../dialogs/ActionBlockDialog.py:47 ../editors/Viewer.py:622
-#: ../editors/Viewer.py:2456
+#: ../dialogs/ActionBlockDialog.py:47 ../editors/Viewer.py:625
+#: ../editors/Viewer.py:2458
 msgid "Variable"
 msgstr "变量"
 
 #: ../editors/Viewer.py:352 ../editors/Viewer.py:382 ../editors/Viewer.py:404
 #: ../editors/TextViewer.py:290 ../editors/TextViewer.py:344
-#: ../editors/TextViewer.py:367 ../controls/VariablePanel.py:355
+#: ../editors/TextViewer.py:367 ../controls/VariablePanel.py:354
 msgid "Variable Drop"
 msgstr "变量Drop"
 
-#: ../dialogs/FBDVariableDialog.py:68
+#: ../etherlab/ConfigEditor.py:70
+#, python-format
+msgid "Variable Index: #x%4.4X"
+msgstr "变量索引：#x%4.4X "
+
+#: ../dialogs/FBDVariableDialog.py:58
 msgid "Variable Properties"
 msgstr "变量属性"
 
 #: ../editors/Viewer.py:332 ../editors/TextViewer.py:306
-#: ../controls/LocationCellEditor.py:102 ../controls/VariablePanel.py:316
-#: ../controls/VariablePanel.py:379
+#: ../controls/LocationCellEditor.py:102 ../controls/VariablePanel.py:315
+#: ../controls/VariablePanel.py:378
 msgid "Variable class"
 msgstr "变量种类"
 
@@ -3480,24 +4075,28 @@ msgstr "变量种类"
 msgid "Variable don't belong to this POU!"
 msgstr "变量不属于这个POU！"
 
+#: ../etherlab/ConfigEditor.py:280
+msgid "Variable entries:"
+msgstr ""
+
 #: ../dialogs/LDElementDialog.py:92
 msgid "Variable:"
 msgstr "变量："
 
-#: ../controls/VariablePanel.py:90
+#: ../controls/VariablePanel.py:87
 msgid "Variables"
 msgstr "变量"
 
-#: ../controls/ProjectPropertiesPanel.py:166
+#: ../controls/ProjectPropertiesPanel.py:169
 msgid "Vertical:"
 msgstr "垂直的："
 
-#: ../runtime/WampClient.py:113
+#: ../runtime/WampClient.py:170
 #, python-format
 msgid "WAMP Client connection failed (%s) .. retrying .."
 msgstr "WAMP 客户端连接失败 (%s) .. 重试 .."
 
-#: ../runtime/WampClient.py:117
+#: ../runtime/WampClient.py:179
 #, python-format
 msgid "WAMP Client connection lost (%s) .. retrying .."
 msgstr "WAMP 客户端连接丢失 (%s) .. 重试 .."
@@ -3506,49 +4105,66 @@ msgstr "WAMP 客户端连接丢失 (%s) .. 重试 .."
 msgid "WAMP ID:"
 msgstr "WAMP ID:"
 
-#: ../runtime/WampClient.py:172
+#: ../runtime/WampClient.py:413
+msgid "WAMP Server URL"
+msgstr ""
+
+#: ../runtime/WampClient.py:276
+msgid "WAMP authentication has no secret configured"
+msgstr ""
+
+#: ../runtime/WampClient.py:304
+msgid "WAMP client can not connect to :"
+msgstr ""
+
+#: ../runtime/WampClient.py:301
 msgid "WAMP client connecting to :"
 msgstr "WAMP 客户端连接到 :"
 
-#: ../runtime/WampClient.py:148
-msgid "WAMP client connection not established!"
-msgstr "WAMP 客户端连接没有建立!"
-
-#: ../Beremiz_service.py:625
+#: ../Beremiz_service.py:628
 msgid "WAMP client startup failed. "
 msgstr "WAMP客户端启动失败。"
 
-#: ../Beremiz_service.py:621
-msgid "WAMP config is incomplete."
-msgstr "WAMP 配置不完整."
+#: ../runtime/WampClient.py:206
+msgid "WAMP configuration error : missing '{}' parameter."
+msgstr ""
 
-#: ../Beremiz_service.py:623
-msgid "WAMP config is missing."
-msgstr "WAMP 配置丢失."
+#: ../runtime/WampClient.py:192
+msgid "WAMP configuration error:"
+msgstr ""
 
-#: ../connectors/WAMP/__init__.py:99
+#: ../connectors/WAMP/__init__.py:100
 #, python-format
 msgid "WAMP connecting to URL : %s\n"
 msgstr "WAMP 连接到 URL : %s\n"
 
-#: ../connectors/WAMP/__init__.py:140
+#: ../connectors/WAMP/__init__.py:141
 msgid "WAMP connection timeout"
 msgstr "WAMP连接超时"
 
-#: ../connectors/WAMP/__init__.py:158
+#: ../connectors/WAMP/__init__.py:159
 #, python-format
 msgid "WAMP connection to '%s' failed.\n"
 msgstr "WAMP 连接到 '%s' 失败。\n"
 
-#: ../Beremiz_service.py:595
+#: ../runtime/WampClient.py:280
+msgid "WAMP deactivated in configuration"
+msgstr ""
+
+#: ../Beremiz_service.py:605
 msgid "WAMP import failed :"
 msgstr "WAMP导入失败："
 
-#: ../runtime/WampClient.py:126
-msgid "WAMP load error: "
-msgstr "WAMP 加载错误: "
+#: ../runtime/WampClient.py:241
+msgid "WAMP secret empty"
+msgstr ""
 
-#: ../runtime/WampClient.py:108
+#: ../runtime/WampClient.py:139
+#, python-format
+msgid "WAMP session joined (%s) by:"
+msgstr ""
+
+#: ../runtime/WampClient.py:146
 msgid "WAMP session left"
 msgstr "WAMP 会话残留"
 
@@ -3556,15 +4172,26 @@ msgstr "WAMP 会话残留"
 msgid "WXGLADE GUI"
 msgstr "WXGLADE 用户图形界面"
 
-#: ../runtime/WampClient.py:137
-msgid "Wamp secret load error:"
-msgstr "Wamp 加密加载错误:"
+#: ../runtime/WampClient.py:432
+msgid "Wamp Settings"
+msgstr ""
 
-#: ../dialogs/PouDialog.py:137 ../editors/LDViewer.py:902
+#: ../dialogs/PouDialog.py:172 ../editors/LDViewer.py:902
 msgid "Warning"
 msgstr "警告"
 
-#: ../ProjectController.py:726
+#: ../etherlab/EthercatCFileGenerator.py:405
+#: ../etherlab/EthercatCFileGenerator.py:571
+msgid "Warning: "
+msgstr "警告"
+
+#: ../wxglade_hmi/wxglade_hmi.py:166
+msgid ""
+"Warning: WxGlade HMI has no object with name identical to extension name, "
+"and no python code is provided in start section to create object.\n"
+msgstr ""
+
+#: ../ProjectController.py:756
 msgid "Warnings in ST/IL/SFC code generator :\n"
 msgstr "警告在ST/IL/SFC代码生成器中：\n"
 
@@ -3572,7 +4199,7 @@ msgstr "警告在ST/IL/SFC代码生成器中：\n"
 msgid "Whole Project"
 msgstr "整个项目"
 
-#: ../controls/ProjectPropertiesPanel.py:134
+#: ../controls/ProjectPropertiesPanel.py:137
 msgid "Width:"
 msgstr "宽度："
 
@@ -3580,13 +4207,45 @@ msgstr "宽度："
 msgid "Wrap search"
 msgstr "包搜索"
 
+#: ../etherlab/ConfigEditor.py:345
+msgid "Write to (nodeid, index, subindex)"
+msgstr "写入（节点ID，索引，子索引）"
+
 #: ../dialogs/AboutDialog.py:126
 msgid "Written by"
 msgstr "出自"
 
-#: ../features.py:35
+#: ../etherlab/EthercatCFileGenerator.py:409
+#: ../etherlab/EthercatCFileGenerator.py:499
+#, python-format
+msgid "Wrong direction for location \"%s\"!"
+msgstr "位置“%s”有错误定向！"
+
+#: ../etherlab/EthercatCFileGenerator.py:400
+#: ../etherlab/EthercatCFileGenerator.py:487
+#, python-format
+msgid "Wrong type for location \"%s\"!"
+msgstr "位置“%s”有错误类型！"
+
+#: ../features.py:24
 msgid "WxGlade GUI"
 msgstr "WxGlade GUI"
+
+#: ../etherlab/ConfigEditor.py:1236
+msgid "XML files (*.xml)|*.xml|All files|*.*"
+msgstr "XML 文件 (*.xml)|*.xml|所有文件|*.*"
+
+#: ../etherlab/EtherCATManagementEditor.py:652
+msgid "You can input only hex, dec value"
+msgstr "您只能输入十六进制或十进制值"
+
+#: ../etherlab/EtherCATManagementEditor.py:1999
+msgid "You can't modify it. This register is read-only or it's not connected."
+msgstr "您不能定义它，他是只读或者并未连接"
+
+#: ../etherlab/EtherCATManagementEditor.py:648
+msgid "You cannot SDO download this state"
+msgstr "你不能SDO下载这个状态"
 
 #: ../svgui/svgui.py:150
 msgid ""
@@ -3596,7 +4255,7 @@ msgstr ""
 "你没有写入的许可。\n"
 "无论如何都打开Inkscape？"
 
-#: ../wxglade_hmi/wxglade_hmi.py:160
+#: ../wxglade_hmi/wxglade_hmi.py:175
 msgid ""
 "You don't have write permissions.\n"
 "Open wxGlade anyway ?"
@@ -3604,7 +4263,11 @@ msgstr ""
 "你没有写入的许可。\n"
 "无论如何都打开wxGlade？"
 
-#: ../ProjectController.py:390
+#: ../etherlab/EtherCATManagementEditor.py:2002
+msgid "You entered wrong value. You can enter dec or hex value only."
+msgstr "你输入了错误的数值。你只能输入十进制或十六进制数值。"
+
+#: ../ProjectController.py:403
 msgid ""
 "You must have permission to work on the project\n"
 "Work on a project copy ?"
@@ -3630,11 +4293,21 @@ msgstr "你必须输入一个名字！"
 msgid "You must type a value!"
 msgstr "你必须输入一个值！"
 
-#: ../IDEFrame.py:440
+#: ../IDEFrame.py:442
 msgid "Zoom"
 msgstr "显示比例"
 
-#: ../dialogs/DurationEditorDialog.py:158
+#: ../etherlab/EtherCATManagementEditor.py:911
+#: ../etherlab/EtherCATManagementEditor.py:1307
+msgid "bin files (*.bin)|*.bin"
+msgstr "bin 文件 (*.bin)|*.bin"
+
+#: ../etherlab/EtherCATManagementEditor.py:942
+#: ../etherlab/EtherCATManagementEditor.py:1290
+msgid "bin files (*.bin)|*.bin|All files|*.*"
+msgstr "bin 文件 (*.bin)|*.bin|所有文件|*.*"
+
+#: ../dialogs/DurationEditorDialog.py:159
 msgid "days"
 msgstr "日"
 
@@ -3648,35 +4321,39 @@ msgstr "错误：%s\n"
 msgid "exited with status {a1} (pid {a2})\n"
 msgstr "退出伴随状态 {a1} (pid {a2})\n"
 
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouDialog.py:110
 msgid "function"
 msgstr "功能"
 
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouDialog.py:110
 msgid "functionBlock"
 msgstr "功能块"
 
-#: ../dialogs/DurationEditorDialog.py:158
+#: ../dialogs/DurationEditorDialog.py:159
 msgid "hours"
 msgstr "小时"
 
-#: ../ProjectController.py:753
+#: ../ProjectController.py:784
 msgid "matiec installation is not found\n"
 msgstr "matiec安装没有发现\n"
 
-#: ../dialogs/DurationEditorDialog.py:160
+#: ../dialogs/DurationEditorDialog.py:162
+msgid "microseconds"
+msgstr "毫秒"
+
+#: ../dialogs/DurationEditorDialog.py:161
 msgid "milliseconds"
 msgstr "毫秒"
 
-#: ../dialogs/DurationEditorDialog.py:159
+#: ../dialogs/DurationEditorDialog.py:160
 msgid "minutes"
 msgstr "分"
 
-#: ../dialogs/PouDialog.py:36
+#: ../dialogs/PouDialog.py:110
 msgid "program"
 msgstr "程序"
 
-#: ../dialogs/DurationEditorDialog.py:159
+#: ../dialogs/DurationEditorDialog.py:160
 msgid "seconds"
 msgstr "秒"
 
@@ -3691,6 +4368,10 @@ msgstr "从左取字符串"
 #: ../plcopen/iec_std.csv:83
 msgid "string right of"
 msgstr "从右取字符串"
+
+#: ../etherlab/EtherCATManagementEditor.py:323
+msgid "update"
+msgstr "更新"
 
 #: ../Beremiz.py:167
 msgid "update info unavailable."
@@ -3745,6 +4426,33 @@ msgstr "CanFestival实例"
 
 msgid "CAN_Driver"
 msgstr "CAN_驱动"
+
+msgid "BACnetServerNode"
+msgstr "BACnet服务器节点"
+
+msgid "Network_Interface"
+msgstr "网络接口"
+
+msgid "UDP_Port_Number"
+msgstr "UDP端口数"
+
+msgid "BACnet_Communication_Control_Password"
+msgstr "BACnet通讯控制密码"
+
+msgid "BACnet_Device_ID"
+msgstr "BACnet设备ID"
+
+msgid "BACnet_Device_Name"
+msgstr "BACnet设备名称"
+
+msgid "BACnet_Device_Location"
+msgstr "BACnet设备地址"
+
+msgid "BACnet_Device_Description"
+msgstr "BACnet设备描述"
+
+msgid "BACnet_Device_Application_Software_Version"
+msgstr "BACnet设备应用软件版本"
 
 msgid "Generic"
 msgstr "一般的"
@@ -3842,6 +4550,24 @@ msgstr "Modbus根"
 msgid "MaxRemoteTCPclients"
 msgstr "最大远程TCP客户端"
 
+msgid "CIA402SlaveParams"
+msgstr "CIA402从站参数"
+
+msgid "Enable%s"
+msgstr "使能%s"
+
+msgid "ProcessVariables"
+msgstr "过程变量"
+
+msgid "variable"
+msgstr "变量"
+
+msgid "ReadFrom"
+msgstr "读取"
+
+msgid "WriteTo"
+msgstr "写入"
+
 msgid "BaseParams"
 msgstr "基本参照 "
 
@@ -3870,9 +4596,6 @@ msgid "%(codefile_name)s"
 msgstr "%(codefile_name)s"
 
 msgid "variables"
-msgstr "变量"
-
-msgid "variable"
 msgstr "变量"
 
 msgid "name"
