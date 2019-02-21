@@ -173,6 +173,12 @@ class ForceVariableDialog(wx.Dialog):
     """Dialog to enforce new value for variables in debug panel"""
 
     def __init__(self, parent, iec_type, defaultValue=""):
+        """
+        Constructor
+        @param parent: Parent wx.Window of dialog for modal
+        @param iec_type: IEC type of variable (string). For example 'BOOL', 'LREAL'.
+        @param defaultValue: current variable value as string. Default is empty string.
+        """
         wx.Dialog.__init__(
             self, parent,
             name='ForceVariableDialog',
@@ -186,20 +192,13 @@ class ForceVariableDialog(wx.Dialog):
         info_sizer.AddWindow(message_label, border=10,
                              flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
-        self.ValueTextCtrl = wx.TextCtrl(self)
-        self.ValueTextCtrl.SetValue(defaultValue)
-        info_sizer.AddWindow(self.ValueTextCtrl, border=10,
-                             flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
-
-        if self.IEC_Type == "BOOL":
-            self.ToggleButton = wx.ToggleButton(self, label=_("Toggle value"))
-            value = GetTypeValue[self.IEC_Type](defaultValue)
-            if value is not None:
-                self.ToggleButton.SetValue(value)
-
-            info_sizer.AddWindow(self.ToggleButton, border=10,
-                                 flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
-            self.Bind(wx.EVT_TOGGLEBUTTON, self.ToggleBoolValue, self.ToggleButton)
+        if GetTypeValue[self.IEC_Type] in [getinteger, getfloat]:
+            self.InitCtrlNumber(info_sizer, defaultValue)
+        elif self.IEC_Type == "BOOL":
+            self.InitCtrlBool(info_sizer, defaultValue)
+        else:
+            self.InitCtrlDefault(info_sizer, defaultValue)
+        self.GetEnteredValue = self.GetValueDefault
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
         self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
@@ -207,10 +206,63 @@ class ForceVariableDialog(wx.Dialog):
 
         self.SetSizer(info_sizer)
         self.Fit()
+        self.ValueCtrl.SetFocus()
 
-    def ToggleBoolValue(self, event):
-        value = self.ToggleButton.GetValue()
-        self.ValueTextCtrl.SetValue(text(value))
+    # ---------------------------------
+    # default type methods
+    # ---------------------------------
+
+    def InitCtrlDefault(self, info_sizer, defaultValue):
+        """Add simple text control to change variable of any type"""
+        self.ValueCtrl = wx.TextCtrl(self)
+        self.ValueCtrl.SetValue(defaultValue)
+        info_sizer.AddWindow(self.ValueCtrl, border=10, proportion=1,
+                             flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+
+    def GetValueDefault(self):
+        """
+        Returns text representation for a variable value
+        @return: variable value as a string
+        """
+        return text(self.ValueCtrl.GetValue())
+
+    # -----------------------------------------------
+    # integer and floating point number type methods
+    # ----------------------------------------------
+
+    def InitCtrlNumber(self, info_sizer, defaultValue):
+        """Add controls to change float and integer variables"""
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.InitCtrlDefault(sizer, defaultValue)
+        self.SpinButtonCtrl = wx.SpinButton(self, style=wx.HORIZONTAL | wx.SP_WRAP)
+        sizer.AddWindow(self.SpinButtonCtrl, border=10,
+                        flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND)
+        self.Bind(wx.EVT_SPIN_UP, self.SpinButtonChanged)
+        self.Bind(wx.EVT_SPIN_DOWN, self.SpinButtonChanged)
+        info_sizer.AddWindow(sizer, proportion=1, flag=wx.EXPAND)
+
+    def SpinButtonChanged(self, evt):
+        """Increment/decrement variable value"""
+        value = self.GetValue()
+        if value is not None:
+            up = evt.GetEventType() == wx.EVT_SPIN_UP._getEvtType()
+            value = value + 1 if up else value - 1
+            self.ValueCtrl.SetValue(text(value))
+        evt.Skip()
+
+    # -----------------------------------------------
+    # bool type related methods
+    # ----------------------------------------------
+
+    def InitCtrlBool(self, info_sizer, defaultValue):
+        """Add button to change value of boolean variable"""
+        self.ValueCtrl = wx.ToggleButton(self, label=_("Toggle value"))
+        value = GetTypeValue[self.IEC_Type](defaultValue)
+        if value is not None:
+            self.ValueCtrl.SetValue(value)
+
+        info_sizer.AddWindow(self.ValueCtrl, border=10,
+                             flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
     def OnOK(self, event):
         """
@@ -219,7 +271,7 @@ class ForceVariableDialog(wx.Dialog):
         """
         message = None
         ret = True
-        value = self.ValueTextCtrl.GetValue()
+        value = self.GetEnteredValue()
         if value == "":
             message = _("You must type a value!")
         elif GetTypeValue[self.IEC_Type](value) is None:
@@ -237,4 +289,4 @@ class ForceVariableDialog(wx.Dialog):
         """
         Return new enforce value of particular type
         """
-        return GetTypeValue[self.IEC_Type](self.ValueTextCtrl.GetValue())
+        return GetTypeValue[self.IEC_Type](self.GetEnteredValue())
