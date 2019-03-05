@@ -463,7 +463,7 @@ class PLCControler(object):
                     self.ProgramFilePath = filepath
                 return program_text, errors, warnings
             except PLCGenException as ex:
-                errors.append(str(ex))
+                errors.append(ex)
         else:
             errors.append("No project opened")
         return "", errors, warnings
