@@ -74,6 +74,31 @@ IEC_INT *__IW%(location_str)s_402 = &beremiz__IW%(location_str)s_402;
 
 static IEC_BOOL __FirstTick = 1;
 
+typedef enum {
+    mc_mode_none, // No motion mode
+    mc_mode_csp,  // Continuous Synchronous Positionning mode
+    mc_mode_csv,  // Continuous Synchronous Velocity mode
+    mc_mode_cst,  // Continuous Synchronous Torque mode
+} mc_axismotionmode_enum;
+
+typedef struct {
+   IEC_BOOL Power;
+   IEC_BOOL CommunicationReady;
+   IEC_UINT NetworkPosition;
+   IEC_BOOL ReadyForPowerOn;
+   IEC_BOOL PowerFeedback;
+   IEC_DINT ActualRawPosition;
+   IEC_DINT ActualRawVelocity;
+   IEC_DINT ActualRawTorque;
+   IEC_DINT RawPositionSetPoint;
+   IEC_DINT RawVelocitySetPoint;
+   IEC_DINT RawTorqueSetPoint;
+   mc_axismotionmode_enum AxisMotionMode;
+   IEC_LREAL ActualVelocity;
+   IEC_LREAL ActualPosition;
+   IEC_LREAL ActualTorque;
+}axis_s;
+
 typedef struct {
 %(entry_variables)s
     axis_s* axis;
