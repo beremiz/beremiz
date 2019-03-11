@@ -40,6 +40,7 @@ from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from functools import reduce
+from distutils.dir_util import copy_tree
 from six.moves import xrange
 
 import wx
@@ -555,10 +556,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
             dialog.ShowModal()
             return False
         else:
-            plc_file = os.path.join(new_project_path, "plc.xml")
-            if os.path.isfile(plc_file):
-                message = (
-                    _("Selected directory already contains another project. Overwrite? \n"))
+            if not CheckPathPerm(new_project_path):
+                dialog = wx.MessageDialog(
+                    self.AppFrame,
+                    _('No write permissions in selected directory! \n'),
+                    _("Error"), wx.OK | wx.ICON_ERROR)
+                dialog.ShowModal()
+                return False
+            if not os.path.isdir(new_project_path) or len(os.listdir(new_project_path)) > 0:
+                plc_file = os.path.join(new_project_path, "plc.xml")
+                if os.path.isfile(plc_file):
+                    message = _("Selected directory already contains another project. Overwrite? \n")
+                else:
+                    message = _("Selected directory isn't empty. Continue? \n")
                 dialog = wx.MessageDialog(
                     self.AppFrame, message, _("Error"), wx.YES_NO | wx.ICON_ERROR)
                 answer = dialog.ShowModal()
@@ -571,8 +581,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 old_projectfiles_path = self._getProjectFilesPath(
                     from_project_path)
                 if os.path.isdir(old_projectfiles_path):
-                    shutil.copytree(old_projectfiles_path,
-                                    self._getProjectFilesPath(self.ProjectPath))
+                    copy_tree(old_projectfiles_path,
+                              self._getProjectFilesPath(self.ProjectPath))
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
             result = self.CTNRequestSave(from_project_path)
             if result:
@@ -1499,8 +1509,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                 IECdebug_data = self.IECdebug_datas.get(
                                     IECPath, None)
                                 if IECdebug_data is not None and value is not None:
-                                    forced = IECdebug_data[2:4] == [
-                                        "Forced", value]
+                                    forced = (IECdebug_data[2] == "Forced") \
+                                        and (value is not None) and \
+                                        (IECdebug_data[3] is not None)
+
                                     if not IECdebug_data[4] and len(values_buffer) > 0:
                                         values_buffer[-1] = (value, forced)
                                     else:

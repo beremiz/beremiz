@@ -1335,6 +1335,9 @@ class PouProgramGenerator(object):
                 contact_info = (self.TagName, "contact", next.getlocalId())
                 variable = str(self.ExtractModifier(next, [(next.getvariable(), contact_info + ("reference",))], contact_info))
                 result = self.GeneratePaths(next.connectionPointIn.getconnections(), body, order)
+                if len(result) == 0:
+                    raise PLCGenException(_("Contact \"{a1}\" in POU \"{a2}\" must be connected.").
+                                          format(a1=next.getvariable(), a2=self.Name))
                 if len(result) > 1:
                     factorized_paths = self.FactorizePaths(result)
                     if len(factorized_paths) > 1:

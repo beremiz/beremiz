@@ -185,8 +185,12 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
             self.Buttons.append(GraphButton(0, 0, bitmap, callback))
 
     def RefreshViewer(self):
+        """Triggers EVT_PAINT event to refresh UI"""
+        self.Refresh()
+
+    def DrawViewer(self):
         """
-        Method that refresh the content displayed by Viewer
+        Redraw content displayed by Viewer
         """
         # Create buffered DC for drawing in panel
         width, height = self.GetSize()
@@ -282,5 +286,5 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         Function called when redrawing Viewer content is needed
         @param event: wx.PaintEvent
         """
-        self.RefreshViewer()
+        self.DrawViewer()
         event.Skip()

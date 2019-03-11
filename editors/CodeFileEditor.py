@@ -280,20 +280,20 @@ class CodeEditor(CustomStyledTextCtrl):
     def RefreshSectionStyling(self):
         self.Colourise(0, -1)
 
-        text = self.GetText()
         for line in xrange(self.GetLineCount()):
             self.SetLineState(line, 0)
 
+        doc_end_pos = self.GetLength()
         for section in self.Controler.SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
-            start_pos = text.find(section_comments["comment"])
+            start_pos = self.FindText(0, doc_end_pos, section_comments["comment"])
             end_pos = start_pos + len(section_comments["comment"])
             self.StartStyling(start_pos, 0xff)
             self.SetStyling(end_pos - start_pos, STC_CODE_SECTION)
             self.SetLineState(self.LineFromPosition(start_pos), 1)
 
         self.StartStyling(end_pos, 0x00)
-        self.SetStyling(len(self.GetText()) - end_pos, stc.STC_STYLE_DEFAULT)
+        self.SetStyling(doc_end_pos - end_pos, stc.STC_STYLE_DEFAULT)
 
     def DoGetBestSize(self):
         return self.ParentWindow.GetPanelBestSize()

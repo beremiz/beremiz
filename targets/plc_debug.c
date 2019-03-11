@@ -10,8 +10,7 @@
  *  
  * 
  * */
-
-#ifdef TARGET_DEBUG_DISABLE
+#ifdef TARGET_DEBUG_AND_RETAIN_DISABLE
 
 void __init_debug    (void){}
 void __cleanup_debug (void){}
@@ -26,6 +25,7 @@ void __publish_debug (void){}
 #include <string.h>
 #include <stdio.h>
 
+#ifndef TARGET_ONLINE_DEBUG_DISABLE
 #define BUFFER_SIZE %(buffer_size)d
 
 /* Atomically accessed variable for buffer state */
@@ -38,6 +38,8 @@ char debug_buffer[BUFFER_SIZE];
 
 /* Buffer's cursor*/
 static char* buffer_cursor = debug_buffer;
+#endif
+
 static unsigned int retain_offset = 0;
 /***
  * Declare programs 
@@ -126,9 +128,12 @@ extern void InitRetain(void);
 void __init_debug(void)
 {
     /* init local static vars */
+#ifndef TARGET_ONLINE_DEBUG_DISABLE	
     buffer_cursor = debug_buffer;
-    retain_offset = 0;
     buffer_state = BUFFER_FREE;
+#endif
+
+    retain_offset = 0;
     InitRetain();
     /* Iterate over all variables to fill debug buffer */
     if(CheckRetainBuffer()){
@@ -147,8 +152,11 @@ extern unsigned long __tick;
 
 void __cleanup_debug(void)
 {
+#ifndef TARGET_ONLINE_DEBUG_DISABLE	
     buffer_cursor = debug_buffer;
     InitiateDebugTransfer();
+#endif    
+
     CleanupRetain();
 }
 
@@ -169,6 +177,8 @@ static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
 
     if(flags & ( __IEC_DEBUG_FLAG | __IEC_RETAIN_FLAG)){
         USINT size = __get_type_enum_size(dsc->type);
+
+#ifndef TARGET_ONLINE_DEBUG_DISABLE	
         if(flags & __IEC_DEBUG_FLAG){
             /* copy visible variable to buffer */;
             if(do_debug){
@@ -192,6 +202,8 @@ static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
                 memcpy(real_value_p, visible_value_p, size);
             }
         }
+#endif	
+
         if(flags & __IEC_RETAIN_FLAG){
             /* compute next cursor positon*/
             unsigned int next_retain_offset = retain_offset + size;
@@ -248,6 +260,8 @@ void __publish_debug(void)
 {
     retain_offset = 0;
     InValidateRetainBuffer();
+    
+#ifndef TARGET_ONLINE_DEBUG_DISABLE 
     /* Check there is no running debugger re-configuration */
     if(TryEnterDebugSection()){
         /* Lock buffer */
@@ -273,13 +287,16 @@ void __publish_debug(void)
             __for_each_variable_do(RetainIterator);
         }
         LeaveDebugSection();
-    }else{
+    }else
+#endif
+    {
         /* when not debugging, do only retain */
         __for_each_variable_do(RetainIterator);
     }
     ValidateRetainBuffer();
 }
 
+#ifndef TARGET_ONLINE_DEBUG_DISABLE
 #define __RegisterDebugVariable_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
             ((__IEC_##TYPENAME##_t *)varp)->flags |= flags;\
@@ -362,6 +379,6 @@ int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     }
     return wait_error;
 }
-
+#endif
 #endif
 

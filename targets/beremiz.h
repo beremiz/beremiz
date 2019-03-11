@@ -1,3 +1,6 @@
+#ifndef _BEREMIZ_H_
+#define _BEREMIZ_H_
+
 /* Beremiz' header file for use by extensions */
 
 #include "iec_types.h"
@@ -11,10 +14,17 @@
 extern unsigned long long common_ticktime__;
 
 #ifdef TARGET_LOGGING_DISABLE
-#define LogMessage(level, buf, size)
+static inline int LogMessage(uint8_t level, char* buf, uint32_t size)
+{
+	(void)level;
+	(void)buf;
+	(void)size;
+	return 0;
+}
 #else
 int     LogMessage(uint8_t level, char* buf, uint32_t size);
 #endif
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
 
+#endif
