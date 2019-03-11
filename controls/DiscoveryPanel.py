@@ -30,7 +30,6 @@ from six.moves import xrange
 import wx
 import wx.lib.mixins.listctrl as listmix
 from zeroconf import ServiceBrowser, Zeroconf, get_all_addresses
-import netifaces
 
 service_type = '_Beremiz._tcp.local.'
 
@@ -40,6 +39,7 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
                  size=wx.DefaultSize, style=0):
         wx.ListCtrl.__init__(self, parent, id, pos, size, style, name=name)
         listmix.ListCtrlAutoWidthMixin.__init__(self)
+
 
 class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
@@ -129,7 +129,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         self.IfacesMonitorState = None
         self.IfacesMonitorTimer = wx.Timer(self)
         self.IfacesMonitorTimer.Start(2000)
-        self.Bind(wx.EVT_TIMER, self.IfacesMonitor , self.IfacesMonitorTimer)
+        self.Bind(wx.EVT_TIMER, self.IfacesMonitor, self.IfacesMonitorTimer)
 
     def __del__(self):
         self.IfacesMonitorTimer.Stop()
@@ -139,7 +139,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
     def IfacesMonitor(self, event):
         NewState = get_all_addresses(socket.AF_INET)
 
-        if self.IfacesMonitorState != NewState: 
+        if self.IfacesMonitorState != NewState:
             if self.IfacesMonitorState is not None:
                 # refresh only if a new address appeared
                 for addr in NewState:
@@ -192,7 +192,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         if self.LatestSelection is not None:
             # if self.ByIPCheck.IsChecked():
             svcname, scheme, host, port = \
-                map(lambda col:self.getColumnText(self.LatestSelection, col),
+                map(lambda col: self.getColumnText(self.LatestSelection, col),
                     range(4))
             return ("%s://%s:%s#%s" % (scheme, host, port, svcname)) \
                 if scheme[-1] == "S" \

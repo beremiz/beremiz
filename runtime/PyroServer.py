@@ -41,7 +41,9 @@ class PyroServer(object):
         sys.stdout.flush()
 
     def PyroLoop(self, when_ready):
-        if self._to_be_published(): self.Publish()
+        if self._to_be_published():
+            self.Publish()
+
         while self.continueloop:
             Pyro.config.PYRO_MULTITHREADED = 0
             pyro.initServer()

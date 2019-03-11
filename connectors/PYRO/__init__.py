@@ -55,8 +55,9 @@ def PYRO_connector_factory(uri, confnodesroot):
     scheme, location = uri.split("://")
     if scheme == "PYROS":
         import connectors.PYRO.PSK_Adapter
+        _unused_module_imported_for_monkey_patching_pylint_sucks = connectors.PYRO.PSK_Adapter
         schemename = "PYROLOCPSK"
-        url, ID = location.split('#') #TODO fix exception when # not found
+        url, ID = location.split('#')  # TODO fix exception when # not found
         # load PSK from project
         secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
         if not os.path.exists(secpath):
@@ -73,9 +74,10 @@ def PYRO_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
-    except Exception:
-        confnodesroot.logger.write_error(_("Connection to '%s' failed with exception '%s'\n") % (location, str(e)))
-        #confnodesroot.logger.write_error(traceback.format_exc())
+    except Exception, e:
+        confnodesroot.logger.write_error(
+            _("Connection to {loc} failed with exception {ex}\n").format(
+                loc=location, exo=str(e)))
         return None
 
     RemotePLCObjectProxy.adapter.setTimeout(60)
@@ -108,9 +110,8 @@ def PYRO_connector_factory(uri, confnodesroot):
     if IDPSK is None:
         confnodesroot.logger.write_warning(_("PLC did not provide identity and security infomation.\n"))
     else:
-        ID,secret = IDPSK
+        ID, secret = IDPSK
         PSK.UpdateID(confnodesroot.ProjectPath, ID, secret, uri)
-
 
     _special_return_funcs = {
         "StartPLC": False,

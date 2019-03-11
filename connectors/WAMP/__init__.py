@@ -159,4 +159,5 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
     return WampPLCObjectProxy
 
+
 WAMP_connector_factory = partial(_WAMP_connector_factory, WampSession)

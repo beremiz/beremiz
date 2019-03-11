@@ -3,14 +3,16 @@
 
 # subset of subprocess built-in module using posix_spawn rather than fork.
 
-import posix_spawn
+from __future__ import absolute_import
 import os
 import signal
+import posix_spawn
 
 PIPE = "42"
 
+
 class Popen(object):
-    def __init__(self, args,stdin=None, stdout=None):
+    def __init__(self, args, stdin=None, stdout=None):
         self.returncode = None
         self.stdout = None
         self.stdin = None
@@ -40,7 +42,7 @@ class Popen(object):
 
     def _wait(self):
         if self.returncode is None:
-            self.returncode = os.waitpid(self.pid,0)[1]
+            self.returncode = os.waitpid(self.pid, 0)[1]
 
     def communicate(self):
         if self.stdin is not None:
@@ -50,7 +52,7 @@ class Popen(object):
             stdoutdata = self.stdout.read()
         else:
             stdoutdata = ""
-        
+
         # TODO
         stderrdata = ""
 
@@ -58,7 +60,7 @@ class Popen(object):
         if self.stdout is not None:
             self.stdout.close()
             self.stdout = None
-        
+
         return (stdoutdata, stderrdata)
 
     def wait(self):
@@ -74,7 +76,7 @@ class Popen(object):
     def poll(self):
         if self.returncode is None:
             pid, ret = os.waitpid(self.pid, os.WNOHANG)
-            if (pid,ret) != (0,0):
+            if (pid, ret) != (0, 0):
                 self.returncode = ret
 
                 if self.stdin is not None:
@@ -85,7 +87,7 @@ class Popen(object):
                     self.stdout = None
 
         return self.returncode
-        
+
     def kill(self):
         os.kill(self.pid, signal.SIGKILL)
 
@@ -96,23 +98,23 @@ class Popen(object):
             self.stdout.close()
             self.stdout = None
 
-        
 
 def call(*args):
     cmd = []
     if isinstance(args[0], str):
-        if len(args)==1:
+        if len(args) == 1:
             # oversimplified splitting of arguments,
             # TODO: care about use of simple and double quotes
             cmd = args[0].split()
         else:
             cmd = args
-    elif isinstance(args[0], list) and len(args)==1:
+    elif isinstance(args[0], list) and len(args) == 1:
         cmd = args[0]
     else:
         raise Exception("Wrong arguments passed to subprocess.call")
     pid = posix_spawn.posix_spawnp(cmd[0], cmd)
-    return os.waitpid(pid,0)
+    return os.waitpid(pid, 0)
+
 
 if __name__ == '__main__':
     # unit test
@@ -120,12 +122,12 @@ if __name__ == '__main__':
     p = Popen(["tr", "abc", "def"], stdin=PIPE, stdout=PIPE)
     p.stdin.write("blah")
     p.stdin.close()
-    print p.stdout.read()
+    print(p.stdout.read())
     p.wait()
 
     p = Popen(["tr", "abc", "def"], stdin=PIPE, stdout=PIPE)
     p.stdin.write("blah")
-    print p.communicate()
+    print(p.communicate())
 
     call("echo blah0")
     call(["echo", "blah1"])

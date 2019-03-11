@@ -30,14 +30,12 @@ import sys
 import traceback
 from time import time
 import _ctypes  # pylint: disable=wrong-import-order
+from six.moves import xrange
 from past.builtins import execfile
-import Pyro.core as pyro
-import six
-from six.moves import _thread, xrange
 import md5
 from tempfile import mkstemp
 import shutil
-from functools import wraps
+from functools import wraps, partial
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
@@ -79,7 +77,7 @@ def RunInMain(func):
 
 class PLCObject(object):
     def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars):
-        self.workingdir = WorkingDir # must exits already
+        self.workingdir = WorkingDir  # must exits already
         self.tmpdir = os.path.join(WorkingDir, 'tmp')
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
@@ -457,18 +455,18 @@ class PLCObject(object):
 
     @RunInMain
     def GetPLCID(self):
-        return getPSKID()
+        return getPSKID(partial(self.LogMessage, 0))
 
     def _init_blobs(self):
         self.blobs = {}
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         os.mkdir(self.tmpdir)
-    
+
     @RunInMain
     def SeedBlob(self, seed):
         blob = (mkstemp(dir=self.tmpdir) + (md5.new(),))
-        fobj, path, md5sum = blob
+        _fobj, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
         self.blobs[newBlobID] = blob
@@ -481,17 +479,17 @@ class PLCObject(object):
         if blob is None:
             return None
 
-        fobj, path, md5sum = blob
+        fobj, _path, md5sum = blob
         md5sum.update(data)
         newBlobID = md5sum.digest()
-        os.write(fobj,data)
+        os.write(fobj, data)
         self.blobs[newBlobID] = blob
         return newBlobID
 
     @RunInMain
     def PurgeBlobs(self):
-        for fobj, path, md5sum in self.blobs:
-            os.close(fobj) 
+        for fobj, _path, _md5sum in self.blobs:
+            os.close(fobj)
         self._init_blobs()
 
     def _BlobAsFile(self, blobID, newpath):
@@ -500,10 +498,10 @@ class PLCObject(object):
         if blob is None:
             raise Exception(_("Missing data to create file: {}").format(newpath))
 
-        fobj, path, md5sum = blob
+        fobj, path, _md5sum = blob
         os.close(fobj)
         shutil.move(path, newpath)
-            
+
     @RunInMain
     def NewPLC(self, md5sum, plc_object, extrafiles):
         if self.PLCStatus in [PlcStatus.Stopped, PlcStatus.Empty, PlcStatus.Broken]:
@@ -608,8 +606,7 @@ class PLCObject(object):
 
     @RunInMain
     def GetTraceVariables(self, DebugToken):
-        if (DebugToken is not None and
-            DebugToken == self.DebugToken):
+        if (DebugToken is not None and DebugToken == self.DebugToken):
             return self.PLCStatus, self._TracesSwap()
         return PlcStatus.Broken, []
 

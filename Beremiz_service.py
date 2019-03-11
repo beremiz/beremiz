@@ -41,6 +41,7 @@ from runtime.PyroServer import PyroServer
 from runtime.xenomai import TryPreloadXenomai
 from runtime import LogMessageAndException
 from runtime import PlcStatus
+from runtime.Stunnel import ensurePSK
 import util.paths as paths
 
 
@@ -415,7 +416,7 @@ if havetwisted:
         reactor.registerWxApp(app)
 
 twisted_reactor_thread_id = None
-ui_thread = None 
+ui_thread = None
 
 if havewx:
     wx_eval_lock = Semaphore(0)
@@ -439,8 +440,8 @@ if havewx:
         if ui_thread is not None \
             and ui_thread.ident != current_id \
             and (not havetwisted or (
-                twisted_reactor_thread_id is not None 
-                and twisted_reactor_thread_id != current_id)):
+                    twisted_reactor_thread_id is not None
+                    and twisted_reactor_thread_id != current_id)):
 
             o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
             wx.CallAfter(wx_evaluator, o)
@@ -508,7 +509,6 @@ for extention_file, extension_folder in extensions:
 # Some extension may set 'servicename' to a computed ID or Serial Number
 # instead of using commandline '-n'
 if servicename is not None and PSKpath is not None:
-    from runtime.Stunnel import ensurePSK
     ensurePSK(servicename, PSKpath)
 
 runtime.CreatePLCObjectSingleton(
