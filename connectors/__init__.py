@@ -28,7 +28,6 @@
 
 from __future__ import absolute_import
 from os import listdir, path
-import util.paths as paths
 from connectors.ConnectorBase import ConnectorBase
 from types import ClassType
 
