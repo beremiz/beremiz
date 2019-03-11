@@ -1,9 +1,8 @@
 from __future__ import absolute_import
 
 import wx
-from connectors import ConnectorSchemes, EditorClassFromScheme
-from controls.DiscoveryPanel import DiscoveryPanel
 from controls.IDBrowser import IDBrowser
+
 
 class IDManager(wx.Dialog):
     def __init__(self, parent, ctr):
@@ -12,7 +11,7 @@ class IDManager(wx.Dialog):
                            name='IDManager', parent=parent,
                            title=_('URI Editor'),
                            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER,
-                           size=(800,600))
+                           size=(800, 600))
         # start IDBrowser in manager mode
         self.browser = IDBrowser(self, ctr)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnEscapeKey)
@@ -23,5 +22,3 @@ class IDManager(wx.Dialog):
             self.EndModal(wx.ID_CANCEL)
         else:
             event.Skip()
-
-

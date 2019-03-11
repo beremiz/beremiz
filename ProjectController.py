@@ -1789,8 +1789,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._SetConnector(connectors.ConnectorFactory(uri, self))
         except Exception as e:
             self.logger.write_error(
-                _("Exception while connecting to '%s': %s\n") % (uri, str(e)))
-            #self.logger.write_error(traceback.format_exc())
+                _("Exception while connecting to '{uri}': {ex}\n").format(
+                    uri=uri, ex=e))
 
         # Did connection success ?
         if self._connector is None:
@@ -1813,7 +1813,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self._connector is None:
             return
         builder = self.GetBuilder()
-        if builder is None :
+        if builder is None:
             return
         MD5 = builder.GetBinaryMD5()
         if MD5 is None:
@@ -1846,7 +1846,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
-        # recover md5 from last build 
+        # recover md5 from last build
         MD5 = builder.GetBinaryMD5()
 
         # Check if md5 file is empty : ask user to build PLC
@@ -1871,11 +1871,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             for name in os.listdir(extrafilespath):
                 extrafiles.append((
-                    name, 
+                    name,
                     self._connector.BlobFromFile(
                         # use file name as a seed to avoid collisions
                         # with files having same content
-                        os.path.join(extrafilespath, name),name)))
+                        os.path.join(extrafilespath, name), name)))
 
         # Send PLC on target
         object_path = builder.GetBinaryPath()

@@ -4,6 +4,7 @@ import wx
 from connectors import ConnectorSchemes, EditorClassFromScheme
 from controls.DiscoveryPanel import DiscoveryPanel
 
+
 class UriEditor(wx.Dialog):
     def _init_ctrls(self, parent):
         self.UriTypeChoice = wx.Choice(parent=self, choices=self.choices)
@@ -16,7 +17,7 @@ class UriEditor(wx.Dialog):
         self.mainSizer = wx.BoxSizer(wx.VERTICAL)
         typeSizer = wx.BoxSizer(wx.HORIZONTAL)
         typeSizer.Add(wx.StaticText(self, wx.ID_ANY, _("Scheme :")), border=5,
-                                    flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
+                      flag=wx.ALIGN_CENTER_VERTICAL | wx.ALL)
         typeSizer.Add(self.UriTypeChoice, border=5, flag=wx.ALL)
         self.mainSizer.Add(typeSizer)
 
@@ -46,9 +47,9 @@ class UriEditor(wx.Dialog):
 
     def SetURI(self, uri):
         try:
-            scheme, loc = uri.strip().split("://",1)
+            scheme, loc = uri.strip().split("://", 1)
             scheme = scheme.upper()
-        except:
+        except Exception:
             scheme = None
 
         if scheme in ConnectorSchemes():
@@ -62,7 +63,6 @@ class UriEditor(wx.Dialog):
         if scheme is not None:
             self.scheme_editor.SetLoc(loc)
 
-
     def GetURI(self):
         if self.scheme is None:
             return self.scheme_editor.GetURI()
@@ -71,23 +71,22 @@ class UriEditor(wx.Dialog):
 
     def _replaceSchemeEditor(self, scheme):
         self.scheme = scheme
-       
+
         if self.scheme_editor is not None:
             self.editor_sizer.Detach(self.scheme_editor)
             self.scheme_editor.Destroy()
             self.scheme_editor = None
 
-        if scheme is not None :
+        if scheme is not None:
             EditorClass = EditorClassFromScheme(scheme)
-            self.scheme_editor = EditorClass(scheme,self)
-        else :
+            self.scheme_editor = EditorClass(scheme, self)
+        else:
             # None is for searching local network
-            self.scheme_editor = DiscoveryPanel(self) 
+            self.scheme_editor = DiscoveryPanel(self)
 
         self.editor_sizer.Add(self.scheme_editor)
         self.scheme_editor.Refresh()
-            
+
         self.editor_sizer.Layout()
         self.mainSizer.Layout()
         self.Fit()
-

@@ -14,11 +14,14 @@ from zipfile import ZipFile
 COL_ID, COL_URI, COL_DESC, COL_LAST = range(4)
 REPLACE, REPLACE_ALL, KEEP, KEEP_ALL, CANCEL = range(5)
 
+
 def _pskpath(project_path):
     return os.path.join(project_path, 'psk')
 
+
 def _mgtpath(project_path):
     return os.path.join(_pskpath(project_path), 'management.json')
+
 
 def _ensurePSKdir(project_path):
     pskpath = _pskpath(project_path)
@@ -26,14 +29,17 @@ def _ensurePSKdir(project_path):
         os.mkdir(pskpath)
     return pskpath
 
+
 def _default(ID):
     return [ID,
-            '', # default description
-            None, # last known URI
+            '',  # default description
+            None,  # last known URI
             None]  # last connection date
 
+
 def _dataByID(data):
-    return {row[COL_ID]:row for row in data}
+    return {row[COL_ID]: row for row in data}
+
 
 def _LoadData(project_path):
     """ load known keys metadata """
@@ -43,6 +49,7 @@ def _LoadData(project_path):
             return json.loads(open(_path).read())
     return []
 
+
 def _filterData(psk_files, data_input):
     input_by_ID = _dataByID(data_input)
     output = []
@@ -51,10 +58,11 @@ def _filterData(psk_files, data_input):
     # this implicitly filters IDs out of metadata who's
     # secret is missing
     for filename in psk_files:
-       if filename.endswith('.secret'):
-           ID = filename[:-7]  # strip filename extension
-           output.append(input_by_ID.get(ID,_default(ID)))
+        if filename.endswith('.secret'):
+            ID = filename[:-7]  # strip filename extension
+            output.append(input_by_ID.get(ID, _default(ID)))
     return output
+
 
 def GetData(project_path):
     loaded_data = _LoadData(project_path)
@@ -63,14 +71,17 @@ def GetData(project_path):
         return _filterData(psk_files, loaded_data)
     return []
 
+
 def DeleteID(project_path, ID):
     secret_path = os.path.join(_pskpath(project_path), ID+'.secret')
     os.remove(secret_path)
+
 
 def SaveData(project_path, data):
     _ensurePSKdir(project_path)
     with open(_mgtpath(project_path), 'w') as f:
         f.write(json.dumps(data))
+
 
 def UpdateID(project_path, ID, secret, URI):
     pskpath = _ensurePSKdir(project_path)
@@ -88,10 +99,10 @@ def UpdateID(project_path, ID, secret, URI):
 
     _is_new_ID = dataForID is None
     if _is_new_ID:
-       dataForID = _default(ID)
+        dataForID = _default(ID)
 
     dataForID[COL_URI] = URI
-    # FIXME : could store time instead os a string and use DVC model's cmp 
+    # FIXME : could store time instead os a string and use DVC model's cmp
     # then date display could be smarter, etc - sortable sting hack for now
     dataForID[COL_LAST] = time.strftime('%y/%M/%d-%H:%M:%S')
 
@@ -100,12 +111,14 @@ def UpdateID(project_path, ID, secret, URI):
 
     SaveData(project_path, data)
 
+
 def ExportIDs(project_path, export_zip):
     with ZipFile(export_zip, 'w') as zf:
         path = _pskpath(project_path)
         for nm in os.listdir(path):
             if nm.endswith('.secret') or nm == 'management.json':
                 zf.write(os.path.join(path, nm), nm)
+
 
 def ImportIDs(project_path, import_zip, should_I_replace_callback):
     zf = ZipFile(import_zip, 'r')
@@ -132,18 +145,16 @@ def ImportIDs(project_path, import_zip, should_I_replace_callback):
 
             if result == CANCEL:
                 return
-            
+
             if result in [REPLACE_ALL, REPLACE]:
                 # replace with imported
                 existing_row[:] = imported_row
                 # copy the key of selected
                 keys_to_import.append(ID)
-    
+
     for ID in keys_to_import:
         zf.extract(ID+".secret", _pskpath(project_path))
 
     SaveData(project_path, data)
 
     return data
-
-

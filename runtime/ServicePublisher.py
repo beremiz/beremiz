@@ -31,6 +31,7 @@ import zeroconf
 
 service_type = '_Beremiz._tcp.local.'
 
+
 class ServicePublisher(object):
     def __init__(self, protocol):
         # type: fully qualified service type name
@@ -61,13 +62,13 @@ class ServicePublisher(object):
 
         if ip == "0.0.0.0":
             print("MDNS brodcasted on all interfaces")
-            interfaces=zeroconf.InterfaceChoice.All
+            interfaces = zeroconf.InterfaceChoice.All
             ip = self.gethostaddr()
         else:
-            interfaces=[ip]
+            interfaces = [ip]
 
         self.server = zeroconf.Zeroconf(interfaces=interfaces)
-        
+
         print("MDNS brodcasted service address :" + ip)
         self.ip_32b = socket.inet_aton(ip)
 

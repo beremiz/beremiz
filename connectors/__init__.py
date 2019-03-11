@@ -32,7 +32,7 @@ import util.paths as paths
 from connectors.ConnectorBase import ConnectorBase
 from types import ClassType
 
-connectors_packages = ["PYRO","WAMP"]
+connectors_packages = ["PYRO", "WAMP"]
 
 
 def _GetLocalConnectorClassFactory(name):
@@ -44,17 +44,18 @@ connectors = {name: _GetLocalConnectorClassFactory(name)
 
 _dialogs_imported = False
 per_URI_connectors = None
-schemes = None 
+schemes = None
+
 
 # lazy import of connectors dialogs, only if used
 def _Import_Dialogs():
     global per_URI_connectors, schemes, _dialogs_imported
-    if not _dialogs_imported: 
+    if not _dialogs_imported:
         _dialogs_imported = True
         per_URI_connectors = {}
         schemes = []
         for con_name in connectors_packages:
-            module =  __import__(con_name + '_dialog', globals(), locals())
+            module = __import__(con_name + '_dialog', globals(), locals())
 
             for scheme in module.Schemes:
                 per_URI_connectors[scheme] = getattr(module, con_name + '_dialog')
@@ -110,20 +111,22 @@ def ConnectorFactory(uri, confnodesroot):
         return None
 
     # import module according to uri type and get connector specific baseclass
-    # first call to import the module, 
+    # first call to import the module,
     # then call with parameters to create the class
     connector_specific_class = connectors[scheme]()(uri, confnodesroot)
-    
+
     if connector_specific_class is None:
         return None
 
     # new class inheriting from generic and specific connector base classes
-    return ClassType(_scheme + "_connector", 
+    return ClassType(_scheme + "_connector",
                      (ConnectorBase, connector_specific_class), {})()
+
 
 def EditorClassFromScheme(scheme):
     _Import_Dialogs()
-    return per_URI_connectors.get(scheme, None) 
+    return per_URI_connectors.get(scheme, None)
+
 
 def ConnectorSchemes():
     _Import_Dialogs()
