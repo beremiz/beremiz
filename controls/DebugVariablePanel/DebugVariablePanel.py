@@ -521,6 +521,15 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.RefreshGraphicsWindowScrollbars()
 
     def RefreshView(self):
+        """Triggers EVT_PAINT event to refresh UI"""
+        self.Refresh()
+
+    def DrawView(self):
+        """
+        Redraw elements.
+        Method is used by EVT_PAINT handler.
+        """
+
         self.RefreshCanvasPosition()
 
         if not self.Fixed or self.Force:
@@ -922,7 +931,9 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         pass
 
     def OnGraphicsWindowPaint(self, event):
-        self.RefreshView()
+        """EVT_PAINT handler"""
+
+        self.DrawView()
         event.Skip()
 
     def OnGraphicsWindowResize(self, event):

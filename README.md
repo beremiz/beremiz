@@ -33,8 +33,8 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 * Get Source Code
 
 		cd ~/Beremiz
-		hg clone https://bitbucket.org/skvorl/beremiz
-		hg clone https://bitbucket.org/mjsousa/matiec
+		hg clone https://bitbucket.org/automforge/beremiz
+		hg clone https://bitbucket.org/automforge/matiec
 
 * Build MatIEC compiler
 

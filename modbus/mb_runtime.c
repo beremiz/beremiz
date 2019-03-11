@@ -370,7 +370,7 @@ static void *__mb_client_thread(void *_index)  {
 		 * When this happens we will switch from a purely periodic task _activation_ sequence, to a fixed task suspension interval.
 		 * 
 		 * NOTE B:
-		 * It probably does not make sense to check for overflow of timer.
+		 * It probably does not make sense to check for overflow of timer - so we don't do it for now!
 		 * Even in 32 bit systems this will take at least 68 years since the computer booted
 		 * (remember, we are using CLOCK_MONOTONIC, which should start counting from 0
 		 * every time the system boots). On 64 bit systems, it will take over 
@@ -385,6 +385,7 @@ static void *__mb_client_thread(void *_index)  {
 			next_cycle = now;
 			timespec_add(next_cycle, period_sec, period_nsec);
 		}
+
 		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle, NULL);
 	}
 

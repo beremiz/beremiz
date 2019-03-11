@@ -121,6 +121,10 @@ def GetAboutDialogInfo():
     info.Icon = wx.Icon(os.path.join(path, "images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
 
     info.Translators = (
+        "Basque",
+        "José Miguel Andonegi <jm.andonegi@gmail.com>, 2019",
+        "",
+
         "Bengali (Bangladesh)",
         "  Adhir Dutta <likhon52@gmail.com>, 2017",
         "",
@@ -129,9 +133,12 @@ def GetAboutDialogInfo():
         "  Frank Guan <gpfrank@163.com>, 2018",
         "  Tango Wu <wuyangtang@live.com>, 2017",
         "  Yiwei Yan <523136664@qq.com>, 2018",
+        "  Ji Wang <2485567515@qq.com>, 2019",
+        "  珂 曾 <15627997@qq.com>, 2019",
         "",
 
         "Dutch (Netherlands)",
+        "  Martijn Berntsen <mxberntsen@gmail.com>, 2019",
         "  Jordy van der Heijden <jordyvanderheijden@gmail.com>, 2018",
         "",
 
@@ -160,6 +167,10 @@ def GetAboutDialogInfo():
         "Korean",
         "  Ikhwan Kim <duo821228@gmail.com>, 2018",
         "  Reinhard Lee <lij3105@gmail.com>, 2012",
+        "",
+
+        "Polish",
+        "  Adam B <adisz.pl@gmail.com>, 2019",
         "",
 
         "Portuguese",
@@ -197,6 +208,11 @@ def GetAboutDialogInfo():
         "Turkish",
         "  Ibrahim Kilicarslan <ibrahimhalilkilicarslan@outlook.com>, 2018",
         "",
+
+        "Vietnamese (Viet Nam)",
+        "  Nhất Thìn, 2019",
+        "",
+
 
     )
     return info
