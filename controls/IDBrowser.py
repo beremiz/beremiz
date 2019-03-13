@@ -98,8 +98,8 @@ class IDBrowser(wx.Panel):
             args(_("Last URI"), COL_URI, width=300 if big else 80),
             args(_("Description"), COL_DESC, width=300 if big else 200,
                  mode=dv.DATAVIEW_CELL_EDITABLE
-                      if self.isManager
-                      else dv.DATAVIEW_CELL_INERT),
+                 if self.isManager
+                 else dv.DATAVIEW_CELL_INERT),
             args(_("Last connection"), COL_LAST, width=120),
         ]
 

@@ -3,8 +3,8 @@ from __future__ import print_function
 
 import socket
 import re
-import sslpsk
 import ssl
+import sslpsk
 import Pyro
 from Pyro.core import PyroURI
 from Pyro.protocol import _connect_socket, TCPConnection, PYROAdapter

@@ -28,14 +28,14 @@ import ctypes
 import os
 import sys
 import traceback
+import shutil
 from time import time
-import _ctypes  # pylint: disable=wrong-import-order
-from six.moves import xrange
-from past.builtins import execfile
 import md5
 from tempfile import mkstemp
-import shutil
 from functools import wraps, partial
+from six.moves import xrange
+from past.builtins import execfile
+import _ctypes
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount

@@ -54,7 +54,7 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     scheme, location = uri.split("://")
     if scheme == "PYROS":
-        import connectors.PYRO.PSK_Adapter # pylint: disable=wrong-import-order,unused-import,wrong-import-position
+        import connectors.PYRO.PSK_Adapter  # pylint: disable=wrong-import-order,unused-import,wrong-import-position
         schemename = "PYROLOCPSK"
         url, ID = location.split('#')  # TODO fix exception when # not found
         # load PSK from project

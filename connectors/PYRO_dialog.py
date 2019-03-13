@@ -6,7 +6,6 @@
 from __future__ import absolute_import
 
 from itertools import repeat, islice, chain
-import wx
 
 from connectors.SchemeEditor import SchemeEditor
 
