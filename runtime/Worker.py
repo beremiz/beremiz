@@ -9,9 +9,9 @@
 
 from __future__ import absolute_import
 import sys
-import thread
 from threading import Lock, Condition
 import six
+from six.moves import _thread
 
 
 class job(object):
@@ -65,7 +65,7 @@ class worker(object):
         """
         meant to be called by worker thread (blocking)
         """
-        self._threadID = thread.get_ident()
+        self._threadID = _thread.get_ident()
         self.mutex.acquire()
         if args or kwargs:
             _job = job(*args, **kwargs)
@@ -93,7 +93,7 @@ class worker(object):
 
         _job = job(*args, **kwargs)
 
-        if self._threadID == thread.get_ident():
+        if self._threadID == _thread.get_ident():
             # if caller is worker thread execute immediately
             _job.do()
         else:
