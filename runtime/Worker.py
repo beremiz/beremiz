@@ -51,6 +51,16 @@ class worker(object):
         self.free = Condition(self.mutex)
         self.job = None
 
+    def reraise(self, job):
+        """
+        reraise exception happend in a job
+        @param job: job where original exception happend
+        """
+        exc_type = job.exc_info[0]
+        exc_value = job.exc_info[1]
+        exc_traceback = job.exc_info[2]
+        six.reraise(exc_type, exc_value, exc_traceback)
+
     def runloop(self, *args, **kwargs):
         """
         meant to be called by worker thread (blocking)
@@ -60,11 +70,8 @@ class worker(object):
         if args or kwargs:
             _job = job(*args, **kwargs)
             _job.do()
-            if _job.success:
-                # result is ignored
-                pass
-            else:
-                raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
+            if not _job.success:
+                self.reraise(_job)
 
         while not self._finish:
             self.todo.wait()
@@ -106,10 +113,7 @@ class worker(object):
         if _job.success:
             return _job.result
         else:
-            exc_type = _job.exc_info[0]
-            exc_value = _job.exc_info[1]
-            exc_traceback = _job.exc_info[2]
-            six.reraise(exc_type, exc_value, exc_traceback)
+            self.reraise(_job)
 
     def quit(self):
         """

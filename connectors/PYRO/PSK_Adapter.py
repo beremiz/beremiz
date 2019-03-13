@@ -37,7 +37,7 @@ class PYROPSKAdapter(PYROAdapter):
                 # receive the authentication challenge string, and use that to build the actual identification string.
                 try:
                     authChallenge = self.recvAuthChallenge(conn)
-                except ProtocolError, x:
+                except ProtocolError as x:
                     # check if we were denied
                     if hasattr(x, "partialMsg") and x.partialMsg[:len(self.denyMSG)] == self.denyMSG:
                         raise ConnectionDeniedError(Pyro.constants.deniedReasons[int(x.partialMsg[-1])])
