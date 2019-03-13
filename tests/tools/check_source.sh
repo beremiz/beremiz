@@ -66,7 +66,7 @@ python3_compile_checks()
     # remove compiled Python files
     find . -name '*.pyc' -exec rm -f {} \;
 
-    for i in $py_files; do
+    for i in $py3_files; do
         # echo $i
         python3 -m py_compile $i
         if [ $? -ne 0 ]; then
@@ -444,6 +444,8 @@ get_files_to_check()
         echo "No files to check"
         exit 0;
     fi
+
+    py3_files=$(echo $py_files | sed 's/ [a-Z\/\.]*pyjslib.py//')
 }
 
 
