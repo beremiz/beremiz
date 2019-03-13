@@ -76,7 +76,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
-                loc=location, exo=str(e)))
+                loc=location, ex=str(e)))
         return None
 
     RemotePLCObjectProxy.adapter.setTimeout(60)
