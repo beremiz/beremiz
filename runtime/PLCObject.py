@@ -30,7 +30,7 @@ import sys
 import traceback
 import shutil
 from time import time
-import md5
+import hashlib
 from tempfile import mkstemp
 from functools import wraps, partial
 from six.moves import xrange
@@ -465,7 +465,7 @@ class PLCObject(object):
 
     @RunInMain
     def SeedBlob(self, seed):
-        blob = (mkstemp(dir=self.tmpdir) + (md5.new(),))
+        blob = (mkstemp(dir=self.tmpdir) + (hashlib.new('md5'),))
         _fobj, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
