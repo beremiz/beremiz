@@ -66,7 +66,8 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 		cd ~/Beremiz
 		svn checkout https://svn.code.sf.net/p/bacnet/code/trunk/bacnet-stack/ BACnet
 		cd BACnet
-		make MAKE_DEFINE='-fPIC' all
+		make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBACFILE -DINTRINSIC_REPORTING -DBACNET_TIME_MASTER -DBACNET_PROPERTY_LISTS=1 -DBACNET_PROTOCOL_REVISION=16' library
+
 
 * Launch Beremiz IDE
 
