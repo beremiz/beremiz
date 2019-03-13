@@ -70,9 +70,6 @@ def getProtocolAdapter(protocol):
     return _getProtocolAdapter(protocol)
 
 
-Pyro.protocol.getProtocolAdapter = getProtocolAdapter
-
-
 _processStringURI = Pyro.core.processStringURI
 
 
@@ -91,4 +88,13 @@ def processStringURI(URI):
     return _processStringURI(URI)
 
 
-Pyro.core.processStringURI = processStringURI
+def setupPSKAdapter():
+    """
+    Add PyroAdapter to the list of available in
+    Pyro adapters and handle new supported protocols
+
+    This function should be called after
+    reimport of Pyro module to enable PYROS:// again.
+    """
+    Pyro.protocol.getProtocolAdapter = getProtocolAdapter
+    Pyro.core.processStringURI = processStringURI
