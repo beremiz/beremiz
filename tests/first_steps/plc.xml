@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="1" creationDateTime="2016-10-24T18:09:22"/>
-  <contentHeader name="First Steps" modificationDateTime="2019-02-13T10:30:06">
+  <contentHeader name="First Steps" modificationDateTime="2018-09-26T12:52:51">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -676,11 +676,6 @@ Out := Cnt;]]></xhtml:p>
                 <INT/>
               </type>
             </variable>
-            <variable name="R2">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
           </localVars>
           <externalVars constant="true">
             <variable name="ResetCounterValue">
@@ -813,7 +808,7 @@ Out := Cnt;]]></xhtml:p>
                 <relPosition x="85" y="15"/>
               </connectionPointOutAction>
             </step>
-            <actionBlock localId="8" height="63" width="148" executionOrderId="0">
+            <actionBlock localId="8" height="52" width="164" executionOrderId="0">
               <position x="154" y="191"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -830,14 +825,6 @@ Out := Cnt;]]></xhtml:p>
                   </ST>
                 </inline>
               </action>
-              <action localId="0" qualifier="S">
-                <relPosition x="0" y="0"/>
-                <inline>
-                  <ST>
-                    <xhtml:p><![CDATA[ R2 := True;]]></xhtml:p>
-                  </ST>
-                </inline>
-              </action>
               <action localId="0">
                 <relPosition x="0" y="0"/>
                 <inline>
@@ -848,18 +835,18 @@ Out := Cnt;]]></xhtml:p>
               </action>
             </actionBlock>
             <selectionConvergence localId="10" height="1" width="431">
-              <position x="70" y="657"/>
+              <position x="70" y="273"/>
               <connectionPointIn>
                 <relPosition x="0" y="0"/>
                 <connection refLocalId="13">
-                  <position x="70" y="657"/>
+                  <position x="70" y="273"/>
                   <position x="70" y="244"/>
                 </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="431" y="0"/>
                 <connection refLocalId="14">
-                  <position x="501" y="657"/>
+                  <position x="501" y="273"/>
                   <position x="501" y="250"/>
                 </connection>
               </connectionPointIn>
@@ -868,12 +855,12 @@ Out := Cnt;]]></xhtml:p>
               </connectionPointOut>
             </selectionConvergence>
             <jumpStep localId="12" targetName="Start" height="13" width="12">
-              <position x="280" y="701"/>
+              <position x="280" y="317"/>
               <connectionPointIn>
                 <relPosition x="6" y="0"/>
                 <connection refLocalId="10">
-                  <position x="286" y="701"/>
-                  <position x="286" y="658"/>
+                  <position x="286" y="317"/>
+                  <position x="286" y="274"/>
                 </connection>
               </connectionPointIn>
             </jumpStep>
@@ -883,7 +870,7 @@ Out := Cnt;]]></xhtml:p>
                 <relPosition x="10" y="0"/>
                 <connection refLocalId="7">
                   <position x="70" y="242"/>
-                  <position x="70" y="221"/>
+                  <position x="70" y="215"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -983,11 +970,6 @@ ST Out
             </variable>
           </inputVars>
           <outputVars>
-            <variable name="Reset0">
-              <type>
-                <BOOL/>
-              </type>
-            </variable>
             <variable name="Out">
               <type>
                 <INT/>
