@@ -73,7 +73,7 @@ def PYRO_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
-    except Exception, e:
+    except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
                 loc=location, exo=str(e)))
