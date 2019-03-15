@@ -62,7 +62,8 @@ from dialogs.AboutDialog import ShowAboutDialog
 # Define PLCOpenEditor FileMenu extra items id
 [
     ID_PLCOPENEDITORFILEMENUGENERATE,
-] = [wx.NewId() for _init_coll_FileMenu_Items in range(1)]
+    ID_PLCOPENEDITORFILEMENUGENERATEAS,
+] = [wx.NewId() for _init_coll_FileMenu_Items in range(2)]
 
 
 beremiz_dir = paths.AbsDir(__file__)
@@ -86,6 +87,8 @@ class PLCOpenEditor(IDEFrame):
                    kind=wx.ITEM_NORMAL, text=_(u'Save As...') + '\tCTRL+SHIFT+S')
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORFILEMENUGENERATE,
                    kind=wx.ITEM_NORMAL, text=_(u'Generate Program') + '\tCTRL+G')
+        AppendMenu(parent, help='', id=ID_PLCOPENEDITORFILEMENUGENERATEAS,
+                   kind=wx.ITEM_NORMAL, text=_(u'Generate Program As...') + '\tCTRL+SHIFT+G')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
                    kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
@@ -108,6 +111,8 @@ class PLCOpenEditor(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnSaveProjectAsMenu, id=wx.ID_SAVEAS)
         self.Bind(wx.EVT_MENU, self.OnGenerateProgramMenu,
                   id=ID_PLCOPENEDITORFILEMENUGENERATE)
+        self.Bind(wx.EVT_MENU, self.OnGenerateProgramAsMenu,
+                  id=ID_PLCOPENEDITORFILEMENUGENERATEAS)
         self.Bind(wx.EVT_MENU, self.OnPageSetupMenu, id=wx.ID_PAGE_SETUP)
         self.Bind(wx.EVT_MENU, self.OnPreviewMenu, id=wx.ID_PREVIEW)
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
@@ -234,6 +239,7 @@ class PLCOpenEditor(IDEFrame):
             MenuToolBar.EnableTool(wx.ID_SAVEAS, True)
             self.FileMenu.Enable(ID_PLCOPENEDITORFILEMENUGENERATE, True)
             MenuToolBar.EnableTool(ID_PLCOPENEDITORFILEMENUGENERATE, True)
+            self.FileMenu.Enable(ID_PLCOPENEDITORFILEMENUGENERATEAS, True)
         else:
             self.FileMenu.Enable(wx.ID_CLOSE, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, False)
@@ -248,6 +254,7 @@ class PLCOpenEditor(IDEFrame):
             MenuToolBar.EnableTool(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(ID_PLCOPENEDITORFILEMENUGENERATE, False)
             MenuToolBar.EnableTool(ID_PLCOPENEDITORFILEMENUGENERATE, False)
+            self.FileMenu.Enable(ID_PLCOPENEDITORFILEMENUGENERATEAS, False)
 
     def OnNewProjectMenu(self, event):
         if self.Controler is not None and not self.CheckSaveBeforeClosing():
@@ -308,27 +315,39 @@ class PLCOpenEditor(IDEFrame):
         self.SaveProjectAs()
 
     def OnGenerateProgramMenu(self, event):
+        result = self.Controler.GetProgramFilePath()
+        if not result:
+            self.GenerateProgramAs()
+        else:
+            self.GenerateProgram(result)
+
+    def OnGenerateProgramAsMenu(self, event):
+        self.GenerateProgramAs()
+
+    def GenerateProgramAs(self):
         dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), os.path.basename(self.Controler.GetProgramFilePath()),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE | wx.CHANGE_DIR)
         if dialog.ShowModal() == wx.ID_OK:
-            filepath = dialog.GetPath()
-            message_text = ""
-            header, icon = _("Done"), wx.ICON_INFORMATION
-            if os.path.isdir(os.path.dirname(filepath)):
-                _program, errors, warnings = self.Controler.GenerateProgram(filepath)
-                message_text += "".join([_("warning: %s\n") % warning for warning in warnings])
-                if len(errors) > 0:
-                    message_text += "".join([_("error: %s\n") % error for error in errors])
-                    message_text += _("Can't generate program to file %s!") % filepath
-                    header, icon = _("Error"), wx.ICON_ERROR
-                else:
-                    message_text += _("Program was successfully generated!")
-            else:
-                message_text += _("\"%s\" is not a valid folder!") % os.path.dirname(filepath)
-                header, icon = _("Error"), wx.ICON_ERROR
-            message = wx.MessageDialog(self, message_text, header, wx.OK | icon)
-            message.ShowModal()
-            message.Destroy()
+            self.GenerateProgram(dialog.GetPath())
         dialog.Destroy()
+
+    def GenerateProgram(self, filepath=None):
+        message_text = ""
+        header, icon = _("Done"), wx.ICON_INFORMATION
+        if os.path.isdir(os.path.dirname(filepath)):
+            _program, errors, warnings = self.Controler.GenerateProgram(filepath)
+            message_text += "".join([_("warning: %s\n") % warning for warning in warnings])
+            if len(errors) > 0:
+                message_text += "".join([_("error: %s\n") % error for error in errors])
+                message_text += _("Can't generate program to file %s!") % filepath
+                header, icon = _("Error"), wx.ICON_ERROR
+            else:
+                message_text += _("Program was successfully generated!")
+        else:
+            message_text += _("\"%s\" is not a valid folder!") % os.path.dirname(filepath)
+            header, icon = _("Error"), wx.ICON_ERROR
+        message = wx.MessageDialog(self, message_text, header, wx.OK | icon)
+        message.ShowModal()
+        message.Destroy()
 
     def OnPLCOpenEditorMenu(self, event):
         wx.MessageBox(_("No documentation available.\nComing soon."))
