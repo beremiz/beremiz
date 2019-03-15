@@ -36,6 +36,7 @@ import os
 import traceback
 import types
 import shutil
+from operator import add
 from builtins import str as text
 from past.builtins import execfile
 
@@ -120,6 +121,12 @@ class ConfigTreeNode(object):
         if parent != "":
             return parent + "." + self.CTNName()
         return self.BaseParams.getName()
+
+    def CTNSearch(self, criteria):
+        # TODO match config's fields name and fields contents
+        return reduce(add, [
+            CTNChild.CTNSearch(criteria)
+            for CTNChild in self.IterChildren()])
 
     def GetIconName(self):
         return None
