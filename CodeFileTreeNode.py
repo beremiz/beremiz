@@ -209,6 +209,11 @@ class CodeFile(object):
                     if variable.getonchange()])
         return ret
 
+
+    def CTNSearch(self, criteria):
+        # TODO really search
+        return [((self.CTNFullName()), (0,0),(0,3),"cow")]
+
 # -------------------------------------------------------------------------------
 #                      Current Buffering Management Functions
 # -------------------------------------------------------------------------------
