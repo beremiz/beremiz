@@ -118,7 +118,8 @@ class PLCOpenEditor(IDEFrame):
                                (wx.ID_OPEN, "open", _(u'Open'), None),
                                (wx.ID_SAVE, "save", _(u'Save'), None),
                                (wx.ID_SAVEAS, "saveas", _(u'Save As...'), None),
-                               (wx.ID_PRINT, "print", _(u'Print'), None)])
+                               (wx.ID_PRINT, "print", _(u'Print'), None),
+                               (ID_PLCOPENEDITORFILEMENUGENERATE, "Build", _(u'Generate Program'), None)])
 
     def _init_coll_HelpMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_HELP,
@@ -232,6 +233,7 @@ class PLCOpenEditor(IDEFrame):
             self.FileMenu.Enable(wx.ID_SAVEAS, True)
             MenuToolBar.EnableTool(wx.ID_SAVEAS, True)
             self.FileMenu.Enable(ID_PLCOPENEDITORFILEMENUGENERATE, True)
+            MenuToolBar.EnableTool(ID_PLCOPENEDITORFILEMENUGENERATE, True)
         else:
             self.FileMenu.Enable(wx.ID_CLOSE, False)
             self.FileMenu.Enable(wx.ID_PAGE_SETUP, False)
@@ -245,6 +247,7 @@ class PLCOpenEditor(IDEFrame):
             self.FileMenu.Enable(wx.ID_SAVEAS, False)
             MenuToolBar.EnableTool(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(ID_PLCOPENEDITORFILEMENUGENERATE, False)
+            MenuToolBar.EnableTool(ID_PLCOPENEDITORFILEMENUGENERATE, False)
 
     def OnNewProjectMenu(self, event):
         if self.Controler is not None and not self.CheckSaveBeforeClosing():
