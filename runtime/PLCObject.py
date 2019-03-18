@@ -606,7 +606,7 @@ class PLCObject(object):
 
     @RunInMain
     def GetTraceVariables(self, DebugToken):
-        if (DebugToken is not None and DebugToken == self.DebugToken):
+        if DebugToken is not None and DebugToken == self.DebugToken:
             return self.PLCStatus, self._TracesSwap()
         return PlcStatus.Broken, []
 
