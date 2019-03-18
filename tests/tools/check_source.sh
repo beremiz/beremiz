@@ -445,7 +445,7 @@ get_files_to_check()
         exit 0;
     fi
 
-    py3_files=$(echo $py_files | sed 's/ [a-Z\/\.]*pyjslib.py//')
+    py3_files=$(echo $py_files | sed 's/ [[:alnum:]_\-\/.]*pyjslib.py//')
 }
 
 
