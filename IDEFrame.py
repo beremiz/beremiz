@@ -1587,6 +1587,7 @@ class IDEFrame(wx.Frame):
         "R": [ITEM_CONFIGURATION, ITEM_RESOURCE]}
 
     def SelectProjectTreeItem(self, tagname):
+        print("SelectProjectTreeItem", tagname)
         result = False
         if self.ProjectTree is not None:
             root = self.ProjectTree.GetRootItem()
@@ -1597,6 +1598,7 @@ class IDEFrame(wx.Frame):
         return result
 
     def RecursiveProjectTreeItemSelection(self, root, items):
+        print("RecursiveProjectTreeItemSelection", items)
         found = False
         item, root_cookie = self.ProjectTree.GetFirstChild(root)
         while item is not None and item.IsOk() and not found:
@@ -1819,7 +1821,50 @@ class IDEFrame(wx.Frame):
         else:
             event.Skip()
 
+    def GetProjectElementWindow(self, element, tagname):
+        print("GetProjectElementWindo", element, tagname)
+        new_window = None
+        if self.Controler.GetEditedElement(tagname) is not None:
+            new_window = None
+            if element == ITEM_CONFIGURATION:
+                new_window = ConfigurationEditor(self.TabsOpened, tagname, self, self.Controler)
+                new_window.SetIcon(GetBitmap("CONFIGURATION"))
+            elif element == ITEM_RESOURCE:
+                new_window = ResourceEditor(self.TabsOpened, tagname, self, self.Controler)
+                new_window.SetIcon(GetBitmap("RESOURCE"))
+            elif element in [ITEM_POU, ITEM_TRANSITION, ITEM_ACTION]:
+                bodytype = self.Controler.GetEditedElementBodyType(tagname)
+                if bodytype == "FBD":
+                    new_window = Viewer(self.TabsOpened, tagname, self, self.Controler)
+                    new_window.RefreshScaling(False)
+                elif bodytype == "LD":
+                    new_window = LD_Viewer(self.TabsOpened, tagname, self, self.Controler)
+                    new_window.RefreshScaling(False)
+                elif bodytype == "SFC":
+                    new_window = SFC_Viewer(self.TabsOpened, tagname, self, self.Controler)
+                    new_window.RefreshScaling(False)
+                else:
+                    new_window = TextViewer(self.TabsOpened, tagname, self, self.Controler)
+                    new_window.SetTextSyntax(bodytype)
+                    if bodytype == "IL":
+                        new_window.SetKeywords(IL_KEYWORDS)
+                    else:
+                        new_window.SetKeywords(ST_KEYWORDS)
+                if element == ITEM_POU:
+                    pou_type = self.Controler.GetEditedElementType(tagname)[1].upper()
+                    icon = GetBitmap(pou_type, bodytype)
+                elif element == ITEM_TRANSITION:
+                    icon = GetBitmap("TRANSITION", bodytype)
+                elif element == ITEM_ACTION:
+                    icon = GetBitmap("ACTION", bodytype)
+                new_window.SetIcon(icon)
+            elif element == ITEM_DATATYPE:
+                new_window = DataTypeEditor(self.TabsOpened, tagname, self, self.Controler)
+                new_window.SetIcon(GetBitmap("DATATYPE"))
+        return new_window
+
     def EditProjectElement(self, element, tagname, onlyopened=False):
+        print("EditProjectElement", element, tagname, onlyopened)
         openedidx = self.IsOpened(tagname)
         if openedidx is not None:
             old_selected = self.TabsOpened.GetSelection()
@@ -1831,49 +1876,11 @@ class IDEFrame(wx.Frame):
         elif not onlyopened:
             if isinstance(element, EditorPanel):
                 new_window = element
-                self.AddPage(element, "")
-            elif self.Controler.GetEditedElement(tagname) is not None:
-                new_window = None
-                if element == ITEM_CONFIGURATION:
-                    new_window = ConfigurationEditor(self.TabsOpened, tagname, self, self.Controler)
-                    new_window.SetIcon(GetBitmap("CONFIGURATION"))
-                    self.AddPage(new_window, "")
-                elif element == ITEM_RESOURCE:
-                    new_window = ResourceEditor(self.TabsOpened, tagname, self, self.Controler)
-                    new_window.SetIcon(GetBitmap("RESOURCE"))
-                    self.AddPage(new_window, "")
-                elif element in [ITEM_POU, ITEM_TRANSITION, ITEM_ACTION]:
-                    bodytype = self.Controler.GetEditedElementBodyType(tagname)
-                    if bodytype == "FBD":
-                        new_window = Viewer(self.TabsOpened, tagname, self, self.Controler)
-                        new_window.RefreshScaling(False)
-                    elif bodytype == "LD":
-                        new_window = LD_Viewer(self.TabsOpened, tagname, self, self.Controler)
-                        new_window.RefreshScaling(False)
-                    elif bodytype == "SFC":
-                        new_window = SFC_Viewer(self.TabsOpened, tagname, self, self.Controler)
-                        new_window.RefreshScaling(False)
-                    else:
-                        new_window = TextViewer(self.TabsOpened, tagname, self, self.Controler)
-                        new_window.SetTextSyntax(bodytype)
-                        if bodytype == "IL":
-                            new_window.SetKeywords(IL_KEYWORDS)
-                        else:
-                            new_window.SetKeywords(ST_KEYWORDS)
-                    if element == ITEM_POU:
-                        pou_type = self.Controler.GetEditedElementType(tagname)[1].upper()
-                        icon = GetBitmap(pou_type, bodytype)
-                    elif element == ITEM_TRANSITION:
-                        icon = GetBitmap("TRANSITION", bodytype)
-                    elif element == ITEM_ACTION:
-                        icon = GetBitmap("ACTION", bodytype)
-                    new_window.SetIcon(icon)
-                    self.AddPage(new_window, "")
-                elif element == ITEM_DATATYPE:
-                    new_window = DataTypeEditor(self.TabsOpened, tagname, self, self.Controler)
-                    new_window.SetIcon(GetBitmap("DATATYPE"))
-                    self.AddPage(new_window, "")
+            else:
+                new_window = self.GetProjectElementWindow(element, tagname)
+
             if new_window is not None:
+                self.AddPage(new_window, "")
                 openedidx = self.IsOpened(tagname)
                 old_selected = self.TabsOpened.GetSelection()
                 if old_selected != openedidx:
@@ -2554,6 +2561,7 @@ class IDEFrame(wx.Frame):
     # -------------------------------------------------------------------------------
 
     def ShowHighlight(self, infos, start, end, highlight_type):
+        print(infos)
         self.SelectProjectTreeItem(infos[0])
         if infos[1] == "name":
             self.Highlights[infos[0]] = highlight_type
