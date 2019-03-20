@@ -212,7 +212,8 @@ class CodeFile(object):
 
     def CTNSearch(self, criteria):
         # TODO really search
-        return [((self.CTNFullName()), (0,0),(0,3),"cow")]
+        return [((self.CTNFullName(),"variable",0), (0,2),(0,4),"a_cow"),
+                ((self.CTNFullName(),"body"), (1,12),(1,15),"Bitch I'm a cow !")]
 
 # -------------------------------------------------------------------------------
 #                      Current Buffering Management Functions

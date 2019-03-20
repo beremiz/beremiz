@@ -1033,6 +1033,15 @@ class Beremiz(IDEFrame):
             else:
                 IDEFrame.ProjectTreeItemSelect(self, select_item)
 
+    def GetProjectElementWindow(self, element, tagname):
+        print("BeremizIDE GetProjectElementWindo", element, tagname)
+        is_a_CTN_tagname = len(tagname.split("::"))==1
+        if is_a_CTN_tagname:
+            confnode = self.CTR.GetChildByName(tagname)
+            return confnode.GetView() 
+        else :
+            return IDEFrame.GetProjectElementWindow(self, element, tagname)
+
     def SelectProjectTreeItem(self, tagname):
         if self.ProjectTree is not None:
             root = self.ProjectTree.GetRootItem()
@@ -1050,6 +1059,7 @@ class Beremiz(IDEFrame):
                 elif words[0] == "R":
                     return self.RecursiveProjectTreeItemSelection(root, [(words[2], ITEM_RESOURCE)])
                 elif not os.path.exists(words[0]):
+                    print(words[0])
                     IDEFrame.SelectProjectTreeItem(self, tagname)
 
     def GetAddConfNodeFunction(self, name, confnode=None):

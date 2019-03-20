@@ -471,20 +471,23 @@ class ConfigTreeNode(object):
     def GetContextualMenuItems(self):
         return None
 
-    def _OpenView(self, name=None, onlyopened=False):
-        if self.EditorType is not None:
+    def GetView(self):
+        if self._View is None and self.EditorType is not None:
             app_frame = self.GetCTRoot().AppFrame
-            if self._View is None and not onlyopened:
+            self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
 
-                self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
+        return self._View
 
-            if self._View is not None:
-                if name is None:
-                    name = self.CTNFullName()
-                app_frame.EditProjectElement(self._View, name)
+    def _OpenView(self, name=None, onlyopened=False):
+        view = self.GetView()
 
-            return self._View
-        return None
+        if view is not None:
+            if name is None:
+                name = self.CTNFullName()
+            app_frame = self.GetCTRoot().AppFrame
+            app_frame.EditProjectElement(view, name)
+
+        return view
 
     def _CloseView(self, view):
         app_frame = self.GetCTRoot().AppFrame
