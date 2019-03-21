@@ -936,13 +936,13 @@ class CodeFileEditor(ConfTreeNodeEditor):
         if self.VariablesPanel is not None and infos[0] == "var_inout":
             self.VariablesPanel.AddVariableHighlight(infos[1:], highlight_type)
         else:
-            self.CodeEditor.AddHighlight(infos, start, end, highlight_type)
+            self.CodeEditor.AddHighlight(start, end, highlight_type)
 
     def RemoveHighlight(self, infos, start, end, highlight_type):
         if self.VariablesPanel is not None and infos[0] == "var_inout":
             self.VariablesPanel.RemoveVariableHighlight(infos[1:], highlight_type)
         else:
-            self.CodeEditor.RemoveHighlight(infos, start, end, highlight_type)
+            self.CodeEditor.RemoveHighlight(start, end, highlight_type)
 
     def ClearHighlights(self, highlight_type=None):
         if self.VariablesPanel is not None:
