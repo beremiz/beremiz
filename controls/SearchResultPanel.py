@@ -207,9 +207,9 @@ class SearchResultPanel(wx.Panel):
                 for infos, start, end, text in results:
                     if len(words) == 1:  # CTN match
                         child_name = {"body":str(start[0])+":",
-                                      "variable":_("Variable:")}[infos[1]]
+                                      "var_inout":_("Variable:")}[infos[1]]
                         child_type = {"body":ITEM_CONFNODE,
-                                      "variable":"var_inout"}[infos[1]]
+                                      "var_inout":"var_inout"}[infos[1]]
                     elif infos[1] == "name" or element_type == ITEM_DATATYPE:
                         child_name = GenerateName(infos[1:])
                         child_type = element_type
