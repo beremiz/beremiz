@@ -36,6 +36,8 @@ from xmlclass import GenerateParserFromXSDstring
 from PLCControler import UndoBuffer
 from ConfigTreeNode import XSDSchemaErrorMessage
 
+from plcopen.plcopen import TestTextElement
+
 CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:xhtml="http://www.w3.org/1999/xhtml">
@@ -212,7 +214,15 @@ class CodeFile(object):
 
     def CTNSearch(self, criteria):
         # TODO really search
-        return [((self.CTNFullName(),"var_inout",1,"name"), (0,2),(0,4),"a_cow"),
+        variables = self.GetVariables()
+        results = []
+        tagname = self.CTNFullName()
+        for index, var in enumerate(variables):
+            varname = var["Name"]
+            results.extend([((tagname, "var_inout", index, "name"),) + result
+                            for result in TestTextElement(varname, criteria)])
+        print("FFFFFFFFFF", results)
+        return results + [((self.CTNFullName(),"var_inout",1,"name"), (0,2),(0,4),"a_cow"),
                 ((self.CTNFullName(),"body"), (1,12),(1,15),"Bitch I'm a cow !")]
 
 # -------------------------------------------------------------------------------
