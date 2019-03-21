@@ -2561,7 +2561,7 @@ class IDEFrame(wx.Frame):
     # -------------------------------------------------------------------------------
 
     def ShowHighlight(self, infos, start, end, highlight_type):
-        print(infos)
+        print("ZZZZZZZZZZZZZ", infos, start, end, highlight_type)
         self.SelectProjectTreeItem(infos[0])
         if infos[1] == "name":
             self.Highlights[infos[0]] = highlight_type

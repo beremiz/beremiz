@@ -644,6 +644,7 @@ class VariablesTable(CustomTable):
         """
 
         for row in range(self.GetNumberRows()):
+            row_highlights = self.Highlights.get(row, {})
             for col in range(self.GetNumberCols()):
                 editor = None
                 renderer = None
@@ -656,7 +657,9 @@ class VariablesTable(CustomTable):
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
 
-                grid.SetCellBackgroundColour(row, col, wx.WHITE)
+                highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
+                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
+                grid.SetCellTextColour(row, col, highlight_colours[1])
             self.ResizeRow(grid, row)
 
 
@@ -859,6 +862,20 @@ class VariablesEditor(wx.Panel):
             return
         event.Skip()
 
+    def AddVariableHighlight(self, infos, highlight_type):
+        self.Table.AddHighlight(infos, highlight_type)
+        cell_visible = infos[0]
+        colnames = [colname.lower() for colname in self.Table.colnames]
+        self.VariablesGrid.MakeCellVisible(cell_visible, colnames.index(infos[1]))
+        self.Table.ResetView(self.VariablesGrid)
+
+    def RemoveVariableHighlight(self, infos, highlight_type):
+        self.Table.RemoveHighlight(infos, highlight_type)
+        self.Table.ResetView(self.VariablesGrid)
+
+    def ClearHighlights(self, highlight_type=None):
+        self.Table.ClearHighlights(highlight_type)
+        self.Table.ResetView(self.VariablesGrid)
 
 # -------------------------------------------------------------------------------
 #                          CodeFileEditor Main Frame Class
@@ -914,3 +931,21 @@ class CodeFileEditor(ConfTreeNodeEditor):
 
     def Find(self, direction, search_params):
         self.CodeEditor.Find(direction, search_params)
+
+    def AddHighlight(self, infos, start, end, highlight_type):
+        if self.VariablesPanel is not None and infos[0] == "var_inout":
+            self.VariablesPanel.AddVariableHighlight(infos[1:], highlight_type)
+        else:
+            self.CodeEditor.AddHighlight(infos, start, end, highlight_type)
+
+    def RemoveHighlight(self, infos, start, end, highlight_type):
+        if self.VariablesPanel is not None and infos[0] == "var_inout":
+            self.VariablesPanel.RemoveVariableHighlight(infos[1:], highlight_type)
+        else:
+            self.CodeEditor.RemoveHighlight(infos, start, end, highlight_type)
+
+    def ClearHighlights(self, highlight_type=None):
+        if self.VariablesPanel is not None:
+            self.VariablesPanel.ClearHighlights(highlight_type)
+        else:
+            self.CodeEditor.ClearHighlights(highlight_type)

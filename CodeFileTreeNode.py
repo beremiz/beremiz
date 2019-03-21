@@ -212,7 +212,7 @@ class CodeFile(object):
 
     def CTNSearch(self, criteria):
         # TODO really search
-        return [((self.CTNFullName(),"variable",0), (0,2),(0,4),"a_cow"),
+        return [((self.CTNFullName(),"var_inout",1,"name"), (0,2),(0,4),"a_cow"),
                 ((self.CTNFullName(),"body"), (1,12),(1,15),"Bitch I'm a cow !")]
 
 # -------------------------------------------------------------------------------
