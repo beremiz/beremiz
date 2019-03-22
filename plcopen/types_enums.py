@@ -117,7 +117,6 @@ def ComputeConfigurationResourceName(config, resource):
 
 def GetElementType(tagname):
     words = tagname.split("::")
-    print("GetElementType",tagname, len(words))
     if len(words) == 1:
         return ITEM_CONFNODE
     return {

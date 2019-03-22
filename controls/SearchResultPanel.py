@@ -29,7 +29,6 @@ from functools import reduce
 import wx
 import wx.lib.buttons
 import wx.lib.agw.customtreectrl as CT
-from pprint import pprint
 
 from PLCControler import *
 from util.BitmapLibrary import GetBitmap
@@ -296,8 +295,6 @@ class SearchResultPanel(wx.Panel):
                 self.SearchResultsTree.SetItemImage(root, self.TreeImageDict[infos["type"]])
 
         text = None
-        print("XXXXXXXXXXXXXX")
-        pprint(infos)
         if infos["text"] is not None:
             text = infos["text"]
             start, end = infos["data"][1:3]

@@ -1587,7 +1587,6 @@ class IDEFrame(wx.Frame):
         "R": [ITEM_CONFIGURATION, ITEM_RESOURCE]}
 
     def SelectProjectTreeItem(self, tagname):
-        print("SelectProjectTreeItem", tagname)
         result = False
         if self.ProjectTree is not None:
             root = self.ProjectTree.GetRootItem()
@@ -1598,7 +1597,6 @@ class IDEFrame(wx.Frame):
         return result
 
     def RecursiveProjectTreeItemSelection(self, root, items):
-        print("RecursiveProjectTreeItemSelection", items)
         found = False
         item, root_cookie = self.ProjectTree.GetFirstChild(root)
         while item is not None and item.IsOk() and not found:
@@ -1822,7 +1820,6 @@ class IDEFrame(wx.Frame):
             event.Skip()
 
     def GetProjectElementWindow(self, element, tagname):
-        print("GetProjectElementWindo", element, tagname)
         new_window = None
         if self.Controler.GetEditedElement(tagname) is not None:
             new_window = None
@@ -1864,7 +1861,6 @@ class IDEFrame(wx.Frame):
         return new_window
 
     def EditProjectElement(self, element, tagname, onlyopened=False):
-        print("EditProjectElement", element, tagname, onlyopened)
         openedidx = self.IsOpened(tagname)
         if openedidx is not None:
             old_selected = self.TabsOpened.GetSelection()
@@ -2561,7 +2557,6 @@ class IDEFrame(wx.Frame):
     # -------------------------------------------------------------------------------
 
     def ShowHighlight(self, infos, start, end, highlight_type):
-        print("ZZZZZZZZZZZZZ", infos, start, end, highlight_type)
         self.SelectProjectTreeItem(infos[0])
         if infos[1] == "name":
             self.Highlights[infos[0]] = highlight_type

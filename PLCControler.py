@@ -2750,7 +2750,6 @@ class PLCControler(object):
 
     def SearchInProject(self, criteria):
         project_matches =  self.Project.Search(criteria)
-        print(project_matches)
         ctn_matches =  self.CTNSearch(criteria)
         return project_matches + ctn_matches
 
