@@ -71,6 +71,7 @@ def GetSectionsText(controler, sections_headers):
                 text += "\n"
     return text
 
+
 class CodeEditor(CustomStyledTextCtrl):
 
     KEYWORDS = []
@@ -255,8 +256,8 @@ class CodeEditor(CustomStyledTextCtrl):
 
     def GetCodeText(self):
         return GetSectionsText(
-            self.Controler, 
-            lambda section : self.SectionsComments[section]["comment"])
+            self.Controler,
+            lambda section: self.SectionsComments[section]["comment"])
 
     def RefreshView(self, scroll_to_highlight=False):
         self.ResetBuffer()
@@ -884,6 +885,7 @@ class VariablesEditor(wx.Panel):
 # -------------------------------------------------------------------------------
 #                          CodeFileEditor Main Frame Class
 # -------------------------------------------------------------------------------
+
 
 class CodeFileEditor(ConfTreeNodeEditor):
 

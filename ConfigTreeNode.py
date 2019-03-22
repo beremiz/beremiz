@@ -37,6 +37,7 @@ import traceback
 import types
 import shutil
 from operator import add
+from functools import reduce
 from builtins import str as text
 from past.builtins import execfile
 

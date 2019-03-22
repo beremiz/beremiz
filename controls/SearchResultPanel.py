@@ -131,8 +131,7 @@ class SearchResultPanel(wx.Panel):
                 ("ACTION",         "action_block"),
                 ("IL",             "IL"),
                 ("ST",             "ST"),
-                ("FILE",           ITEM_CONFNODE),
-                ]:
+                ("FILE",           ITEM_CONFNODE)]:
             self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
 
         for itemtype in ["function", "functionBlock", "program",
@@ -205,10 +204,10 @@ class SearchResultPanel(wx.Panel):
                 children = element_infos.setdefault("children", [])
                 for infos, start, end, text in results:
                     if len(words) == 1:  # CTN match
-                        child_name = {"body":str(start[0])+":",
-                                      "var_inout":_("Variable:")}[infos[1]]
-                        child_type = {"body":ITEM_CONFNODE,
-                                      "var_inout":"var_inout"}[infos[1]]
+                        child_name = {"body": str(start[0])+":",
+                                      "var_inout": _("Variable:")}[infos[1]]
+                        child_type = {"body": ITEM_CONFNODE,
+                                      "var_inout": "var_inout"}[infos[1]]
                     elif infos[1] == "name" or element_type == ITEM_DATATYPE:
                         child_name = GenerateName(infos[1:])
                         child_type = element_type
