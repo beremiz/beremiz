@@ -56,6 +56,21 @@ HIGHLIGHT_TYPES = {
 EDGE_COLUMN = 80
 
 
+def GetSectionsText(controler, sections_headers):
+    parts = controler.GetTextParts()
+    text = ""
+    for section in controler.SECTIONS_NAMES:
+        text += sections_headers(section)
+        if parts[section] == "":
+            text += "\n"
+        else:
+            if not parts[section].startswith("\n"):
+                text += "\n"
+            text += parts[section]
+            if not parts[section].endswith("\n"):
+                text += "\n"
+    return text
+
 class CodeEditor(CustomStyledTextCtrl):
 
     KEYWORDS = []
@@ -239,20 +254,9 @@ class CodeEditor(CustomStyledTextCtrl):
             self.CurrentAction = None
 
     def GetCodeText(self):
-        parts = self.Controler.GetTextParts()
-        text = ""
-        for section in self.Controler.SECTIONS_NAMES:
-            section_comments = self.SectionsComments[section]
-            text += section_comments["comment"]
-            if parts[section] == "":
-                text += "\n"
-            else:
-                if not parts[section].startswith("\n"):
-                    text += "\n"
-                text += parts[section]
-                if not parts[section].endswith("\n"):
-                    text += "\n"
-        return text
+        return GetSectionsText(
+            self.Controler, 
+            lambda section : self.SectionsComments[section]["comment"])
 
     def RefreshView(self, scroll_to_highlight=False):
         self.ResetBuffer()
