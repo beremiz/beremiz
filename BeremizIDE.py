@@ -1034,11 +1034,11 @@ class Beremiz(IDEFrame):
                 IDEFrame.ProjectTreeItemSelect(self, select_item)
 
     def GetProjectElementWindow(self, element, tagname):
-        is_a_CTN_tagname = len(tagname.split("::"))==1
+        is_a_CTN_tagname = len(tagname.split("::")) == 1
         if is_a_CTN_tagname:
             confnode = self.CTR.GetChildByName(tagname)
-            return confnode.GetView() 
-        else :
+            return confnode.GetView()
+        else:
             return IDEFrame.GetProjectElementWindow(self, element, tagname)
 
     def SelectProjectTreeItem(self, tagname):
