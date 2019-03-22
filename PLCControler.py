@@ -2749,7 +2749,9 @@ class PLCControler(object):
     # -------------------------------------------------------------------------------
 
     def SearchInProject(self, criteria):
-        return self.Project.Search(criteria)
+        project_matches =  self.Project.Search(criteria)
+        ctn_matches =  self.CTNSearch(criteria)
+        return project_matches + ctn_matches
 
     def SearchInPou(self, tagname, criteria, debug=False):
         pou = self.GetEditedElement(tagname, debug)

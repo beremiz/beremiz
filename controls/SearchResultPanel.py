@@ -130,7 +130,9 @@ class SearchResultPanel(wx.Panel):
                 ("DATATYPE",       ITEM_DATATYPE),
                 ("ACTION",         "action_block"),
                 ("IL",             "IL"),
-                ("ST",             "ST")]:
+                ("ST",             "ST"),
+                ("FILE",           ITEM_CONFNODE),
+                ]:
             self.TreeImageDict[itemtype] = self.TreeImageList.Add(GetBitmap(imgname))
 
         for itemtype in ["function", "functionBlock", "program",
@@ -202,7 +204,12 @@ class SearchResultPanel(wx.Panel):
 
                 children = element_infos.setdefault("children", [])
                 for infos, start, end, text in results:
-                    if infos[1] == "name" or element_type == ITEM_DATATYPE:
+                    if len(words) == 1:  # CTN match
+                        child_name = {"body":str(start[0])+":",
+                                      "var_inout":_("Variable:")}[infos[1]]
+                        child_type = {"body":ITEM_CONFNODE,
+                                      "var_inout":"var_inout"}[infos[1]]
+                    elif infos[1] == "name" or element_type == ITEM_DATATYPE:
                         child_name = GenerateName(infos[1:])
                         child_type = element_type
                     else:
@@ -232,6 +239,7 @@ class SearchResultPanel(wx.Panel):
                     }
                     children.append(child_infos)
 
+                # not Project node
                 if len(words) > 2:
                     for _element_infos in search_results_tree_children:
                         if _element_infos["name"] == words[1]:
@@ -240,7 +248,7 @@ class SearchResultPanel(wx.Panel):
                             break
                     if element_type == ITEM_RESOURCE:
                         search_results_tree_children.append(element_infos)
-                else:
+                else:  # Project node or CTN
                     search_results_tree_children.append(element_infos)
 
             if matches_number < 2:
@@ -302,7 +310,7 @@ class SearchResultPanel(wx.Panel):
         if text is not None:
             text_ctrl_style = wx.BORDER_NONE | wx.TE_READONLY | wx.TE_RICH2
             if wx.Platform != '__WXMSW__' or len(text.splitlines()) > 1:
-                text_ctrl_style |= wx.TE_MULTILINE
+                text_ctrl_style |= wx.TE_MULTILINE | wx.TE_NO_VSCROLL
             text_ctrl = wx.TextCtrl(id=-1, parent=self.SearchResultsTree, pos=wx.Point(0, 0),
                                     value=text, style=text_ctrl_style)
             width, height = text_ctrl.GetTextExtent(text)

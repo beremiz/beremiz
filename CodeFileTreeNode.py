@@ -36,6 +36,9 @@ from xmlclass import GenerateParserFromXSDstring
 from PLCControler import UndoBuffer
 from ConfigTreeNode import XSDSchemaErrorMessage
 
+from plcopen.plcopen import TestTextElement
+from editors.CodeFileEditor import GetSectionsText
+
 CODEFILE_XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:xhtml="http://www.w3.org/1999/xhtml">
@@ -208,6 +211,19 @@ class CodeFile(object):
                     for variable in variables
                     if variable.getonchange()])
         return ret
+
+    def CTNSearch(self, criteria):
+        variables = self.GetVariables()
+        results = []
+        tagname = self.CTNFullName()
+        for index, var in enumerate(variables):
+            varname = var["Name"]
+            results.extend([((tagname, "var_inout", index, "name"),) + result
+                            for result in TestTextElement(varname, criteria)])
+        results.extend([((tagname, "body"),) + result
+                        for result in TestTextElement(
+                            GetSectionsText(self, lambda x:""), criteria)])
+        return results
 
 # -------------------------------------------------------------------------------
 #                      Current Buffering Management Functions

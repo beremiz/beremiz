@@ -856,6 +856,7 @@ def _updateResourceConfigurationClass(cls):
     setattr(cls, "removeVariableByFilter", _removeConfigurationResourceVariableByFilter)
 
     def Search(self, criteria, parent_infos=None):
+        # FIXME  : two next lines are incompatible [][-1] raises exception !
         parent_infos = [] if parent_infos is None else parent_infos
         parent_infos = parent_infos[:-1] + ["R::%s::%s" % (parent_infos[-1].split("::")[1], self.getname())]
         search_result = _SearchInConfigurationResource(self, criteria, parent_infos)
