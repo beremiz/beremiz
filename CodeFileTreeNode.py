@@ -212,9 +212,7 @@ class CodeFile(object):
                     if variable.getonchange()])
         return ret
 
-
     def CTNSearch(self, criteria):
-        # TODO really search
         variables = self.GetVariables()
         results = []
         tagname = self.CTNFullName()
