@@ -4,7 +4,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
-import md5
+import hashlib
 
 
 class ConnectorBase(object):
@@ -12,7 +12,7 @@ class ConnectorBase(object):
     chuncksize = 1024*1024
 
     def BlobFromFile(self, filepath, seed):
-        s = md5.new()
+        s = hashlib.new('md5')
         s.update(seed)
         blobID = self.SeedBlob(seed)
         with open(filepath, "rb") as f:

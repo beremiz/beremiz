@@ -31,7 +31,6 @@ import sys
 import getopt
 import threading
 from threading import Thread, Semaphore, Lock, currentThread
-import __builtin__
 from builtins import str as text
 from past.builtins import execfile
 from six.moves import builtins

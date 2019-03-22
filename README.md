@@ -25,6 +25,9 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 		sudo apt-get install python-nevow python-matplotlib python-lxml python-zeroconf python-cycler
 		sudo apt-get install python-autobahn python-u-msgpack
 
+		sudo apt-get install libpython2.7-dev
+		pip2 install --use sslpsk posix_spawn
+
 * Prepare
 
 		mkdir ~/Beremiz
@@ -66,7 +69,8 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 		cd ~/Beremiz
 		svn checkout https://svn.code.sf.net/p/bacnet/code/trunk/bacnet-stack/ BACnet
 		cd BACnet
-		make MAKE_DEFINE='-fPIC' all
+		make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBACFILE -DINTRINSIC_REPORTING -DBACNET_TIME_MASTER -DBACNET_PROPERTY_LISTS=1 -DBACNET_PROTOCOL_REVISION=16' library
+
 
 * Launch Beremiz IDE
 

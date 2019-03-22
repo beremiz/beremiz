@@ -28,14 +28,14 @@ import ctypes
 import os
 import sys
 import traceback
+import shutil
 from time import time
-import _ctypes  # pylint: disable=wrong-import-order
+import hashlib
+from tempfile import mkstemp
+from functools import wraps, partial
 from six.moves import xrange
 from past.builtins import execfile
-import md5
-from tempfile import mkstemp
-import shutil
-from functools import wraps, partial
+import _ctypes
 
 from runtime.typemapping import TypeTranslator
 from runtime.loglevels import LogLevelsDefault, LogLevelsCount
@@ -465,7 +465,7 @@ class PLCObject(object):
 
     @RunInMain
     def SeedBlob(self, seed):
-        blob = (mkstemp(dir=self.tmpdir) + (md5.new(),))
+        blob = (mkstemp(dir=self.tmpdir) + (hashlib.new('md5'),))
         _fobj, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
@@ -606,7 +606,7 @@ class PLCObject(object):
 
     @RunInMain
     def GetTraceVariables(self, DebugToken):
-        if (DebugToken is not None and DebugToken == self.DebugToken):
+        if DebugToken is not None and DebugToken == self.DebugToken:
             return self.PLCStatus, self._TracesSwap()
         return PlcStatus.Broken, []
 

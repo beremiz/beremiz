@@ -28,9 +28,7 @@
 
 from __future__ import absolute_import
 from os import listdir, path
-import util.paths as paths
 from connectors.ConnectorBase import ConnectorBase
-from types import ClassType
 
 connectors_packages = ["PYRO", "WAMP"]
 
@@ -119,8 +117,8 @@ def ConnectorFactory(uri, confnodesroot):
         return None
 
     # new class inheriting from generic and specific connector base classes
-    return ClassType(_scheme + "_connector",
-                     (ConnectorBase, connector_specific_class), {})()
+    return type(_scheme + "_connector",
+                (ConnectorBase, connector_specific_class), {})()
 
 
 def EditorClassFromScheme(scheme):

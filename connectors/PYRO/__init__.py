@@ -37,13 +37,19 @@ import Pyro.util
 from Pyro.errors import PyroError
 
 import PSKManagement as PSK
+import connectors.PYRO.PSK_Adapter
 from runtime import PlcStatus
 
-# this module attribute contains a list of DNS-SD (Zeroconf) service types
-# supported by this connector confnode.
-#
-# for connectors that do not support DNS-SD, this attribute can be omitted
-# or set to an empty list.
+
+def switch_pyro_adapter(use_ssl):
+    """
+    Reloads Pyro module with new settings.
+    This is workaround for Pyro, because it doesn't work with SSL wrapper.
+    """
+    # Pyro.config.PYRO_BROKEN_MSGWAITALL = use_ssl
+    reload(Pyro.protocol)
+    if use_ssl:
+        connectors.PYRO.PSK_Adapter.setupPSKAdapter()
 
 
 def PYRO_connector_factory(uri, confnodesroot):
@@ -53,8 +59,9 @@ def PYRO_connector_factory(uri, confnodesroot):
     confnodesroot.logger.write(_("PYRO connecting to URI : %s\n") % uri)
 
     scheme, location = uri.split("://")
-    if scheme == "PYROS":
-        import connectors.PYRO.PSK_Adapter # pylint: disable=wrong-import-order,unused-import,wrong-import-position
+    use_ssl = scheme == "PYROS"
+    switch_pyro_adapter(use_ssl)
+    if use_ssl:
         schemename = "PYROLOCPSK"
         url, ID = location.split('#')  # TODO fix exception when # not found
         # load PSK from project
@@ -73,10 +80,10 @@ def PYRO_connector_factory(uri, confnodesroot):
     # Try to get the proxy object
     try:
         RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
-    except Exception, e:
+    except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
-                loc=location, exo=str(e)))
+                loc=location, ex=str(e)))
         return None
 
     RemotePLCObjectProxy.adapter.setTimeout(60)
