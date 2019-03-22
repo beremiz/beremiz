@@ -135,7 +135,7 @@ class WampSession(wamp.ApplicationSession):
             self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
-            self.subscribe(GetCallee(name), unicode(name))
+            self.subscribe(GetCallee(name), text(name))
 
         for func in DoOnJoin:
             func(self)
@@ -151,7 +151,7 @@ class WampSession(wamp.ApplicationSession):
 
     def publishWithOwnID(self, eventID, value):
         ID = self.config.extra["ID"]
-        self.publish(unicode(ID+'.'+eventID), value)
+        self.publish(text(ID+'.'+eventID), value)
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
@@ -343,12 +343,12 @@ def SetServer(pysrv):
 
 def PublishEvent(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publish(unicode(eventID), value)
+        _WampSession.publish(text(eventID), value)
 
 
 def PublishEventWithOwnID(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publishWithOwnID(unicode(eventID), value)
+        _WampSession.publishWithOwnID(text(eventID), value)
 
 
 # WEB CONFIGURATION INTERFACE

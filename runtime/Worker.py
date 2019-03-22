@@ -9,9 +9,9 @@
 
 from __future__ import absolute_import
 import sys
-import thread
 from threading import Lock, Condition
 import six
+from six.moves import _thread
 
 
 class job(object):
@@ -51,20 +51,27 @@ class worker(object):
         self.free = Condition(self.mutex)
         self.job = None
 
+    def reraise(self, job):
+        """
+        reraise exception happend in a job
+        @param job: job where original exception happend
+        """
+        exc_type = job.exc_info[0]
+        exc_value = job.exc_info[1]
+        exc_traceback = job.exc_info[2]
+        six.reraise(exc_type, exc_value, exc_traceback)
+
     def runloop(self, *args, **kwargs):
         """
         meant to be called by worker thread (blocking)
         """
-        self._threadID = thread.get_ident()
+        self._threadID = _thread.get_ident()
         self.mutex.acquire()
         if args or kwargs:
             _job = job(*args, **kwargs)
             _job.do()
-            if _job.success:
-                # result is ignored
-                pass
-            else:
-                raise _job.exc_info[0], _job.exc_info[1], _job.exc_info[2]
+            if not _job.success:
+                self.reraise(_job)
 
         while not self._finish:
             self.todo.wait()
@@ -86,7 +93,7 @@ class worker(object):
 
         _job = job(*args, **kwargs)
 
-        if self._threadID == thread.get_ident():
+        if self._threadID == _thread.get_ident():
             # if caller is worker thread execute immediately
             _job.do()
         else:
@@ -106,10 +113,7 @@ class worker(object):
         if _job.success:
             return _job.result
         else:
-            exc_type = _job.exc_info[0]
-            exc_value = _job.exc_info[1]
-            exc_traceback = _job.exc_info[2]
-            six.reraise(exc_type, exc_value, exc_traceback)
+            self.reraise(_job)
 
     def quit(self):
         """

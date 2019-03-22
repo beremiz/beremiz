@@ -26,7 +26,7 @@ class SchemeEditor(wx.Panel):
             self.txtctrls[tag] = txtctrl
             for win, flag in [
                     (wx.StaticText(self, label=label),
-                    wx.ALIGN_CENTER_VERTICAL),
+                     wx.ALIGN_CENTER_VERTICAL),
                     (txtctrl, wx.GROW)]:
                 self.fieldsizer.AddWindow(win, flag=flag)
 
@@ -39,7 +39,7 @@ class SchemeEditor(wx.Panel):
                 self, parent.ctr,
                 # use a callafter, as editor can be deleted by calling SetURI
                 partial(wx.CallAfter, parent.SetURI),
-                self.txtctrls[tag].SetValue)
+                self.txtctrls["ID"].SetValue)
             self.mainsizer.AddWindow(self.idselector)
             self.SetSizer(self.mainsizer)
         else:

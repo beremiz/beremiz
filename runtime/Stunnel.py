@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import print_function
 import os
 from binascii import b2a_hqx
 try:
@@ -11,6 +12,17 @@ restart_stunnel_cmdline = ["/etc/init.d/S50stunnel", "restart"]
 _PSKpath = None
 
 
+def restartStunnel():
+    """
+    Restart stunnel service using SysV init stript
+    to apply new generated credentials
+    """
+    try:
+        call(restart_stunnel_cmdline)
+    except OSError:
+        print(_("Couldn't restart stunnel service"))
+
+
 def PSKgen(ID, PSKpath):
 
     # b2a_hqx output len is 4/3 input len
@@ -20,7 +32,7 @@ def PSKgen(ID, PSKpath):
     PSKstring = ID+":"+secretstring
     with open(PSKpath, 'w') as f:
         f.write(PSKstring)
-    call(restart_stunnel_cmdline)
+    restartStunnel()
 
 
 def ensurePSK(ID, PSKpath):
