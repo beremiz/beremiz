@@ -451,14 +451,12 @@ class ViewerDropTarget(wx.TextDropTarget):
             if len(child_dimensions) > 0:
                 child_path += "[%s]" % ",".join([str(dimension[0]) for dimension in child_dimensions])
                 child_name += "[]"
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=child_name)
-            self.ParentWindow.Bind(wx.EVT_MENU, self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type), id=new_id)
+            item = menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=child_name)
+            self.ParentWindow.Bind(wx.EVT_MENU, self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type), item)
             if len(child_tree) > 0:
-                new_id = wx.NewId()
                 child_menu = wx.Menu(title='')
                 self.GenerateTreeMenu(x, y, scaling, child_menu, child_path, var_class, child_tree)
-                menu.AppendMenu(new_id, "%s." % child_name, child_menu)
+                menu.AppendMenu(wx.ID_ANY, "%s." % child_name, child_menu)
 
     def GetAddVariableBlockFunction(self, x, y, scaling, var_class, var_name, var_type):
         def AddVariableFunction(event):
@@ -548,47 +546,43 @@ class Viewer(EditorPanel, DebugViewer):
                 # Link menu event to corresponding called functions
                 self.Bind(wx.EVT_MENU, callback, id=id)
 
+    def AppendItem(self, menu, text, callback, *args, **kwargs):
+        item = menu.Append(wx.ID_ANY, text, *args, **kwargs)
+        self.Bind(wx.EVT_MENU, callback, item)
+        return item
+
     # Add Block Pin Menu items to the given menu
     def AddBlockPinMenuItems(self, menu, connector):
-        [ID_NO_MODIFIER, ID_NEGATED, ID_RISING_EDGE,
-         ID_FALLING_EDGE] = [wx.NewId() for dummy in xrange(4)]
-
         # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_NO_MODIFIER, wx.ITEM_RADIO, _(u'No Modifier'), '', self.OnNoModifierMenu),
-            (ID_NEGATED, wx.ITEM_RADIO, _(u'Negated'), '', self.OnNegatedMenu),
-            (ID_RISING_EDGE, wx.ITEM_RADIO, _(u'Rising Edge'), '', self.OnRisingEdgeMenu),
-            (ID_FALLING_EDGE, wx.ITEM_RADIO, _(u'Falling Edge'), '', self.OnFallingEdgeMenu)])
+        no_modifier = self.AppendItem(menu,  _(u'No modifier'), self.OnNoModifierMenu, kind=wx.ITEM_RADIO)
+        negated = self.AppendItem(menu,  _(u'Negated'), self.OnNegatedMenu, kind=wx.ITEM_RADIO)
+        rising_edge = self.AppendItem(menu,  _(u'Rising Edge'), self.OnRisingEdgeMenu, kind=wx.ITEM_RADIO)
+        falling_edge = self.AppendItem(menu,  _(u'Falling Edge'), self.OnFallingEdgeMenu, kind=wx.ITEM_RADIO)
 
-        type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
-        menu.Enable(ID_RISING_EDGE, type != "function")
-        menu.Enable(ID_FALLING_EDGE, type != "function")
+        not_a_function = self.Controler.GetEditedElementType(
+            self.TagName, self.Debug) != "function"
+        rising_edge.Enable(not_a_function)
+        falling_edge.Enable(not_a_function)
 
         if connector.IsNegated():
-            menu.Check(ID_NEGATED, True)
+            negated.Check(True)
         elif connector.GetEdge() == "rising":
-            menu.Check(ID_RISING_EDGE, True)
+            rising_edge.Check(True)
         elif connector.GetEdge() == "falling":
-            menu.Check(ID_FALLING_EDGE, True)
+            falling_edge.Check(True)
         else:
-            menu.Check(ID_NO_MODIFIER, True)
+            no_modifier.Check(True)
 
     # Add Alignment Menu items to the given menu
     def AddAlignmentMenuItems(self, menu):
-        [
-            ID_ALIGN_LEFT, ID_ALIGN_CENTER, ID_ALIGN_RIGHT,
-            ID_ALIGN_TOP, ID_ALIGN_MIDDLE, ID_ALIGN_BOTTOM,
-        ] = [wx.NewId() for dummy in xrange(6)]
-
         # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_ALIGN_LEFT, wx.ITEM_NORMAL, _(u'Left'), '', self.OnAlignLeftMenu),
-            (ID_ALIGN_CENTER, wx.ITEM_NORMAL, _(u'Center'), '', self.OnAlignCenterMenu),
-            (ID_ALIGN_RIGHT, wx.ITEM_NORMAL, _(u'Right'), '', self.OnAlignRightMenu),
-            None,
-            (ID_ALIGN_TOP, wx.ITEM_NORMAL, _(u'Top'), '', self.OnAlignTopMenu),
-            (ID_ALIGN_MIDDLE, wx.ITEM_NORMAL, _(u'Middle'), '', self.OnAlignMiddleMenu),
-            (ID_ALIGN_BOTTOM, wx.ITEM_NORMAL, _(u'Bottom'), '', self.OnAlignBottomMenu)])
+        self.AppendItem(menu, _(u'Left'), self.OnAlignLeftMenu)
+        self.AppendItem(menu, _(u'Center'), self.OnAlignCenterMenu)
+        self.AppendItem(menu, _(u'Right'), self.OnAlignRightMenu)
+        menu.AppendSeparator()
+        self.AppendItem(menu, _(u'Top'), self.OnAlignTopMenu)
+        self.AppendItem(menu, _(u'Middle'), self.OnAlignMiddleMenu)
+        self.AppendItem(menu, _(u'Bottom'), self.OnAlignBottomMenu)
 
     # Add Wire Menu items to the given menu
     def AddWireMenuItems(self, menu, delete=False, replace=False):
@@ -1634,16 +1628,14 @@ class Viewer(EditorPanel, DebugViewer):
         iec_path = self.GetElementIECPath(self.SelectedElement)
         if iec_path is not None:
             menu = wx.Menu(title='')
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Force value"))
-            self.Bind(wx.EVT_MENU, self.GetForceVariableMenuFunction(iec_path.upper(), self.SelectedElement), id=new_id)
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Release value"))
-            self.Bind(wx.EVT_MENU, self.GetReleaseVariableMenuFunction(iec_path.upper()), id=new_id)
+            item = menu.Append(wx.ANY_ID, help='', kind=wx.ITEM_NORMAL, text=_("Force value"))
+            self.Bind(wx.EVT_MENU, self.GetForceVariableMenuFunction(iec_path.upper(), self.SelectedElement), item)
+            ritem = menu.Append(wx.ANY_ID, help='', kind=wx.ITEM_NORMAL, text=_("Release value"))
+            self.Bind(wx.EVT_MENU, self.GetReleaseVariableMenuFunction(iec_path.upper()), ritem)
             if self.SelectedElement.IsForced():
-                menu.Enable(new_id, True)
+                ritem.Enable(True)
             else:
-                menu.Enable(new_id, False)
+                ritem.Enable(False)
             if self.Editor.HasCapture():
                 self.Editor.ReleaseMouse()
             self.Editor.PopupMenu(menu)
