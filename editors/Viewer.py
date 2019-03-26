@@ -546,17 +546,18 @@ class Viewer(EditorPanel, DebugViewer):
                 # Link menu event to corresponding called functions
                 self.Bind(wx.EVT_MENU, callback, id=id)
 
+    def AppendItem(self, menu, text, callback, *args, **kwargs):
+        item = menu.Append(wx.ID_ANY, text, *args, **kwargs)
+        self.Bind(wx.EVT_MENU, callback, item)
+        return item
+
     # Add Block Pin Menu items to the given menu
     def AddBlockPinMenuItems(self, menu, connector):
         # Create menu items
-        no_modifier = menu.Append(wx.ID_ANY,  _(u'No modifier'), kind=wx.ITEM_RADIO)
-        self.Bind(wx.EVT_MENU, self.OnNoModifierMenu, no_modifier)
-        negated = menu.Append(wx.ID_ANY,  _(u'Negated'), kind=wx.ITEM_RADIO)
-        self.Bind(wx.EVT_MENU, self.OnNegatedMenu, negated)
-        rising_edge = menu.Append(wx.ID_ANY,  _(u'Rising Edge'), kind=wx.ITEM_RADIO)
-        self.Bind(wx.EVT_MENU, self.OnRisingEdgeMenu, rising_edge)
-        falling_edge = menu.Append(wx.ID_ANY,  _(u'Falling Edge'), kind=wx.ITEM_RADIO)
-        self.Bind(wx.EVT_MENU, self.OnFallingEdgeMenu, falling_edge)
+        no_modifier = self.AppendItem(menu,  _(u'No modifier'), self.OnNoModifierMenu, kind=wx.ITEM_RADIO)
+        negated = self.AppendItem(menu,  _(u'Negated'), self.OnNegatedMenu, kind=wx.ITEM_RADIO)
+        rising_edge = self.AppendItem(menu,  _(u'Rising Edge'), self.OnRisingEdgeMenu, kind=wx.ITEM_RADIO)
+        falling_edge = self.AppendItem(menu,  _(u'Falling Edge'), self.OnFallingEdgeMenu, kind=wx.ITEM_RADIO)
 
         not_a_function = self.Controler.GetEditedElementType(
             self.TagName, self.Debug) != "function"
@@ -574,20 +575,14 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Alignment Menu items to the given menu
     def AddAlignmentMenuItems(self, menu):
-        [
-            ID_ALIGN_LEFT, ID_ALIGN_CENTER, ID_ALIGN_RIGHT,
-            ID_ALIGN_TOP, ID_ALIGN_MIDDLE, ID_ALIGN_BOTTOM,
-        ] = [wx.NewId() for dummy in xrange(6)]
-
         # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_ALIGN_LEFT, wx.ITEM_NORMAL, _(u'Left'), '', self.OnAlignLeftMenu),
-            (ID_ALIGN_CENTER, wx.ITEM_NORMAL, _(u'Center'), '', self.OnAlignCenterMenu),
-            (ID_ALIGN_RIGHT, wx.ITEM_NORMAL, _(u'Right'), '', self.OnAlignRightMenu),
-            None,
-            (ID_ALIGN_TOP, wx.ITEM_NORMAL, _(u'Top'), '', self.OnAlignTopMenu),
-            (ID_ALIGN_MIDDLE, wx.ITEM_NORMAL, _(u'Middle'), '', self.OnAlignMiddleMenu),
-            (ID_ALIGN_BOTTOM, wx.ITEM_NORMAL, _(u'Bottom'), '', self.OnAlignBottomMenu)])
+        self.AppendItem(menu, _(u'Left'), self.OnAlignLeftMenu)
+        self.AppendItem(menu, _(u'Center'), self.OnAlignCenterMenu)
+        self.AppendItem(menu, _(u'Right'), self.OnAlignRightMenu)
+        menu.AppendSeparator()
+        self.AppendItem(menu, _(u'Top'), self.OnAlignTopMenu)
+        self.AppendItem(menu, _(u'Middle'), self.OnAlignMiddleMenu)
+        self.AppendItem(menu, _(u'Bottom'), self.OnAlignBottomMenu)
 
     # Add Wire Menu items to the given menu
     def AddWireMenuItems(self, menu, delete=False, replace=False):
