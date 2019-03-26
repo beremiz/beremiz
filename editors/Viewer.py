@@ -451,14 +451,12 @@ class ViewerDropTarget(wx.TextDropTarget):
             if len(child_dimensions) > 0:
                 child_path += "[%s]" % ",".join([str(dimension[0]) for dimension in child_dimensions])
                 child_name += "[]"
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=child_name)
-            self.ParentWindow.Bind(wx.EVT_MENU, self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type), id=new_id)
+            item = menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=child_name)
+            self.ParentWindow.Bind(wx.EVT_MENU, self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type), item)
             if len(child_tree) > 0:
-                new_id = wx.NewId()
                 child_menu = wx.Menu(title='')
                 self.GenerateTreeMenu(x, y, scaling, child_menu, child_path, var_class, child_tree)
-                menu.AppendMenu(new_id, "%s." % child_name, child_menu)
+                menu.AppendMenu(wx.ID_ANY, "%s." % child_name, child_menu)
 
     def GetAddVariableBlockFunction(self, x, y, scaling, var_class, var_name, var_type):
         def AddVariableFunction(event):
@@ -1634,16 +1632,14 @@ class Viewer(EditorPanel, DebugViewer):
         iec_path = self.GetElementIECPath(self.SelectedElement)
         if iec_path is not None:
             menu = wx.Menu(title='')
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Force value"))
-            self.Bind(wx.EVT_MENU, self.GetForceVariableMenuFunction(iec_path.upper(), self.SelectedElement), id=new_id)
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Release value"))
-            self.Bind(wx.EVT_MENU, self.GetReleaseVariableMenuFunction(iec_path.upper()), id=new_id)
+            item = menu.Append(wx.ANY_ID, help='', kind=wx.ITEM_NORMAL, text=_("Force value"))
+            self.Bind(wx.EVT_MENU, self.GetForceVariableMenuFunction(iec_path.upper(), self.SelectedElement), item)
+            ritem = menu.Append(wx.ANY_ID, help='', kind=wx.ITEM_NORMAL, text=_("Release value"))
+            self.Bind(wx.EVT_MENU, self.GetReleaseVariableMenuFunction(iec_path.upper()), ritem)
             if self.SelectedElement.IsForced():
-                menu.Enable(new_id, True)
+                ritem.Enable(True)
             else:
-                menu.Enable(new_id, False)
+                ritem.Enable(False)
             if self.Editor.HasCapture():
                 self.Editor.ReleaseMouse()
             self.Editor.PopupMenu(menu)
