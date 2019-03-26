@@ -548,28 +548,29 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Block Pin Menu items to the given menu
     def AddBlockPinMenuItems(self, menu, connector):
-        [ID_NO_MODIFIER, ID_NEGATED, ID_RISING_EDGE,
-         ID_FALLING_EDGE] = [wx.NewId() for dummy in xrange(4)]
-
         # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_NO_MODIFIER, wx.ITEM_RADIO, _(u'No Modifier'), '', self.OnNoModifierMenu),
-            (ID_NEGATED, wx.ITEM_RADIO, _(u'Negated'), '', self.OnNegatedMenu),
-            (ID_RISING_EDGE, wx.ITEM_RADIO, _(u'Rising Edge'), '', self.OnRisingEdgeMenu),
-            (ID_FALLING_EDGE, wx.ITEM_RADIO, _(u'Falling Edge'), '', self.OnFallingEdgeMenu)])
+        no_modifier = menu.Append(wx.ID_ANY,  _(u'No modifier'), kind=wx.ITEM_RADIO)
+        self.Bind(wx.EVT_MENU, self.OnNoModifierMenu, no_modifier)
+        negated = menu.Append(wx.ID_ANY,  _(u'Negated'), kind=wx.ITEM_RADIO)
+        self.Bind(wx.EVT_MENU, self.OnNegatedMenu, negated)
+        rising_edge = menu.Append(wx.ID_ANY,  _(u'Rising Edge'), kind=wx.ITEM_RADIO)
+        self.Bind(wx.EVT_MENU, self.OnRisingEdgeMenu, rising_edge)
+        falling_edge = menu.Append(wx.ID_ANY,  _(u'Falling Edge'), kind=wx.ITEM_RADIO)
+        self.Bind(wx.EVT_MENU, self.OnFallingEdgeMenu, falling_edge)
 
-        type = self.Controler.GetEditedElementType(self.TagName, self.Debug)
-        menu.Enable(ID_RISING_EDGE, type != "function")
-        menu.Enable(ID_FALLING_EDGE, type != "function")
+        not_a_function = self.Controler.GetEditedElementType(
+            self.TagName, self.Debug) != "function"
+        rising_edge.Enable(not_a_function)
+        falling_edge.Enable(not_a_function)
 
         if connector.IsNegated():
-            menu.Check(ID_NEGATED, True)
+            negated.Check(True)
         elif connector.GetEdge() == "rising":
-            menu.Check(ID_RISING_EDGE, True)
+            rising_edge.Check(True)
         elif connector.GetEdge() == "falling":
-            menu.Check(ID_FALLING_EDGE, True)
+            falling_edge.Check(True)
         else:
-            menu.Check(ID_NO_MODIFIER, True)
+            no_modifier.Check(True)
 
     # Add Alignment Menu items to the given menu
     def AddAlignmentMenuItems(self, menu):
