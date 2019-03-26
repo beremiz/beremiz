@@ -33,6 +33,20 @@ from past.builtins import execfile
 import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
+import traceback
+from pprint import pprint
+orig_NewId = wx.NewId
+log_newid = {}
+def NewId(*a,**k):
+    res = orig_NewId(*a,**k)
+    bt = '|'.join([':'.join([f,str(l)]) for f,l,_0,_1 in traceback.extract_stack()[-2:-1]])
+    log_newid[bt] = log_newid.get(bt, 0) + 1
+    worst = log_newid.items()
+    worst.sort(key=lambda x:x[1])
+    pprint(worst)
+    return res
+wx.NewId = NewId
+
 import util.paths as paths
 
 
