@@ -743,11 +743,10 @@ class Beremiz(IDEFrame):
 
             for confnode_method in self.CTR.StatusMethods:
                 if "method" in confnode_method and confnode_method.get("shown", True):
-                    id = wx.NewId()
-                    StatusToolBar.AddSimpleTool(
-                        id, GetBitmap(confnode_method.get("bitmap", "Unknown")),
+                    tool = StatusToolBar.AddSimpleTool(
+                        wx.ID_ANY, GetBitmap(confnode_method.get("bitmap", "Unknown")),
                         confnode_method["tooltip"])
-                    self.Bind(wx.EVT_MENU, self.GetMenuCallBackFunction(confnode_method["method"]), id=id)
+                    self.Bind(wx.EVT_MENU, self.GetMenuCallBackFunction(confnode_method["method"]), tool)
 
             StatusToolBar.Realize()
             self.AUIManager.GetPane("StatusToolBar").BestSize(StatusToolBar.GetBestSize()).Show()
