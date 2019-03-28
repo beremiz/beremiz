@@ -276,17 +276,14 @@ class Beremiz(IDEFrame):
                                (wx.ID_PRINT, "print", _(u'Print'), None)])
 
     def _RecursiveAddMenuItems(self, menu, items):
-        for name, text, help, children in items:
-            new_id = wx.NewId()
+        for name, text, helpstr, children in items:
             if len(children) > 0:
                 new_menu = wx.Menu(title='')
-                menu.AppendMenu(new_id, text, new_menu)
+                menu.AppendMenu(wx.ID_ANY, text, new_menu)
                 self._RecursiveAddMenuItems(new_menu, children)
             else:
-                AppendMenu(menu, help=help, id=new_id,
-                           kind=wx.ITEM_NORMAL, text=text)
-                self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name),
-                          id=new_id)
+                item = menu.Append(wx.ID_ANY, text, helpstr)
+                self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name), item)
 
     def _init_coll_AddMenu_Items(self, parent):
         IDEFrame._init_coll_AddMenu_Items(self, parent, False)
@@ -299,9 +296,8 @@ class Beremiz(IDEFrame):
                 _(u'Community support'),
                 wx.OK | wx.ICON_INFORMATION)
 
-        id = wx.NewId()
-        parent.Append(help='', id=id, kind=wx.ITEM_NORMAL, text=_(u'Community support'))
-        self.Bind(wx.EVT_MENU, handler, id=id)
+        item = parent.Append(wx.ID_ANY, _(u'Community support'), '')
+        self.Bind(wx.EVT_MENU, handler, item)
 
         parent.Append(help='', id=wx.ID_ABOUT,
                       kind=wx.ITEM_NORMAL, text=_(u'About'))
@@ -696,14 +692,11 @@ class Beremiz(IDEFrame):
 
             if idx < self.RecentProjectsMenu.GetMenuItemCount():
                 item = self.RecentProjectsMenu.FindItemByPosition(idx)
-                id = item.GetId()
                 item.SetItemLabel(text)
                 self.Disconnect(id, id, wx.EVT_BUTTON._getEvtType())
             else:
-                id = wx.NewId()
-                AppendMenu(self.RecentProjectsMenu, help='', id=id,
-                           kind=wx.ITEM_NORMAL, text=text)
-            self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), id=id)
+                item = self.RecentProjectsMenu.Append(wx.ID_ANY, text, '')
+            self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), item)
 
     def GenerateOpenRecentProjectFunction(self, projectpath):
         def OpenRecentProject(event):
@@ -983,20 +976,17 @@ class Beremiz(IDEFrame):
             if confnode is not None:
                 menu_items = confnode.GetContextualMenuItems()
                 if menu_items is not None:
-                    for text, help, callback in menu_items:
-                        new_id = wx.NewId()
-                        confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=text)
-                        self.Bind(wx.EVT_MENU, callback, id=new_id)
+                    for text, helpstr, callback in menu_items:
+                        item = confnode_menu.Append(wx.ID_ANY, text, helpstr)
+                        self.Bind(wx.EVT_MENU, callback, item)
                 else:
-                    for name, XSDClass, help in confnode.CTNChildrenTypes:
+                    for name, XSDClass, helpstr in confnode.CTNChildrenTypes:
                         if not hasattr(XSDClass, 'CTNMaxCount') or not confnode.Children.get(name) \
                                 or len(confnode.Children[name]) < XSDClass.CTNMaxCount:
-                            new_id = wx.NewId()
-                            confnode_menu.Append(help=help, id=new_id, kind=wx.ITEM_NORMAL, text=_("Add") + " " + name)
-                            self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), id=new_id)
-            new_id = wx.NewId()
-            AppendMenu(confnode_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Delete"))
-            self.Bind(wx.EVT_MENU, self.GetDeleteMenuFunction(confnode), id=new_id)
+                            item = confnode_menu.Append(wx.ID_ANY, _("Add") + " " + name, helpstr)
+                            self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name, confnode), item)
+            item = confnode_menu.Append(wx.ID_ANY, _("Delete"))
+            self.Bind(wx.EVT_MENU, self.GetDeleteMenuFunction(confnode), item)
 
             self.PopupMenu(confnode_menu)
             confnode_menu.Destroy()
