@@ -682,7 +682,7 @@ class Beremiz(IDEFrame):
         except Exception:
             recent_projects = []
 
-        while self.RecentProjectsMenu.GetMenuItemCount() > len(recent_projects):
+        while self.RecentProjectsMenu.GetMenuItemCount() > 0:
             item = self.RecentProjectsMenu.FindItemByPosition(0)
             self.RecentProjectsMenu.RemoveItem(item)
 
@@ -690,12 +690,7 @@ class Beremiz(IDEFrame):
         for idx, projectpath in enumerate(recent_projects):
             text = u'&%d: %s' % (idx + 1, projectpath)
 
-            if idx < self.RecentProjectsMenu.GetMenuItemCount():
-                item = self.RecentProjectsMenu.FindItemByPosition(idx)
-                item.SetItemLabel(text)
-                self.Disconnect(id, id, wx.EVT_BUTTON._getEvtType())
-            else:
-                item = self.RecentProjectsMenu.Append(wx.ID_ANY, text, '')
+            item = self.RecentProjectsMenu.Append(wx.ID_ANY, text, '')
             self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), item)
 
     def GenerateOpenRecentProjectFunction(self, projectpath):
