@@ -34,16 +34,22 @@ import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import traceback
+import time
 from pprint import pprint
 orig_NewId = wx.NewId
 log_newid = {}
+last = 0 
 def NewId(*a,**k):
+    global last
     res = orig_NewId(*a,**k)
     bt = '|'.join([':'.join([f,str(l)]) for f,l,_0,_1 in traceback.extract_stack()[-2:-1]])
     log_newid[bt] = log_newid.get(bt, 0) + 1
     worst = log_newid.items()
     worst.sort(key=lambda x:x[1])
-    pprint(worst)
+    now = time.time()
+    if now - last > 1:
+        pprint(worst)
+        last = now
     return res
 wx.NewId = NewId
 
