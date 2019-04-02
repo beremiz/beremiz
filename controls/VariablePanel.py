@@ -150,6 +150,7 @@ class VariableTable(CustomTable):
             return value
 
     def SetValue(self, row, col, value):
+        print("SetValue",row, col, value)
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
             if colname == "Name":
@@ -788,6 +789,14 @@ class VariablePanel(wx.Panel):
         dialog.ShowModal()
         dialog.Destroy()
 
+    def OnVariableNameChange(self, old_name, new_name):
+        """ propagate renaming of variable to the rest of the project """
+        if old_name != "":
+            self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_name, new_name)
+        self.Controler.BufferProject()
+        wx.CallAfter(self.ParentWindow.RefreshView, False)
+        self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+
     def OnVariablesGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.Table.GetColLabelValue(col, False)
@@ -806,11 +815,7 @@ class VariablePanel(wx.Panel):
             else:
                 self.SaveValues(False)
                 old_value = self.Table.GetOldValue()
-                if old_value != "":
-                    self.Controler.UpdateEditedElementUsedVariable(self.TagName, old_value, value)
-                self.Controler.BufferProject()
-                wx.CallAfter(self.ParentWindow.RefreshView, False)
-                self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
+                self.OnVariableNameChange(old_value, value)
         else:
             self.SaveValues()
             if colname == "Class":

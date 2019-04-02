@@ -80,6 +80,9 @@ class LocationCellControl(wx.PyControl):
     def GetValue(self):
         return self.Location.GetValue()
 
+    def GetName(self):
+        return self.VariableName
+    
     def OnSize(self, event):
         self.Layout()
 
@@ -118,6 +121,7 @@ class LocationCellControl(wx.PyControl):
                     location = "%M" + location
 
             self.Location.SetValue(location)
+            self.VariableName = infos["name"]
             self.VarType = infos["IEC_type"]
 
         self.Location.SetFocus()
@@ -171,6 +175,10 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
         loc = self.CellControl.GetValue()
         changed = loc != old_loc
         if changed:
+            name = self.CellControl.GetName()
+            old_name  = self.Table.GetValueByName(row, 'Name')
+            self.Table.SetValueByName(row, 'Name', name)
+            self.Table.Parent.OnVariableNameChange(old_name, name)
             self.Table.SetValueByName(row, 'Location', loc)
             self.Table.SetValueByName(row, 'Type', self.CellControl.GetVarType())
         self.CellControl.Disable()
