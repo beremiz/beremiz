@@ -60,6 +60,7 @@ class LocationCellControl(wx.PyControl):
         self.Controller = None
         self.VarType = None
         self.Default = False
+        self.VariableName = None
 
     def __del__(self):
         self.Controller = None
@@ -75,6 +76,8 @@ class LocationCellControl(wx.PyControl):
 
     def SetValue(self, value):
         self.Default = value
+        self.VariableName = None
+        self.VarType = None
         self.Location.SetValue(value)
 
     def GetValue(self):
@@ -121,7 +124,7 @@ class LocationCellControl(wx.PyControl):
                     location = "%M" + location
 
             self.Location.SetValue(location)
-            self.VariableName = infos["name"]
+            self.VariableName = infos["var_name"]
             self.VarType = infos["IEC_type"]
 
         self.Location.SetFocus()
@@ -176,11 +179,18 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
         changed = loc != old_loc
         if changed:
             name = self.CellControl.GetName()
-            old_name  = self.Table.GetValueByName(row, 'Name')
-            self.Table.SetValueByName(row, 'Name', name)
-            self.Table.Parent.OnVariableNameChange(old_name, name)
+            if name is not None:
+                message = self.Table.Parent.CheckVariableName(name, row)
+                if message is not None:
+                    wx.CallAfter(self.Table.Parent.ShowErrorMessage, message)
+                    return None
+                old_name  = self.Table.GetValueByName(row, 'Name')
+                self.Table.SetValueByName(row, 'Name', name)
+                self.Table.Parent.OnVariableNameChange(old_name, name)
             self.Table.SetValueByName(row, 'Location', loc)
-            self.Table.SetValueByName(row, 'Type', self.CellControl.GetVarType())
+            var_type = self.CellControl.GetVarType()
+            if var_type is not None:
+                self.Table.SetValueByName(row, 'Type', var_type)
         self.CellControl.Disable()
         return changed
 

@@ -34,6 +34,7 @@ import wx.lib.buttons
 from six import string_types
 from six.moves import xrange
 
+
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from plcopen.VariableInfoCollector import _VariableInfos
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
@@ -797,6 +798,19 @@ class VariablePanel(wx.Panel):
         wx.CallAfter(self.ParentWindow.RefreshView, False)
         self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
 
+    def CheckVariableName(self, value, row):
+        if not TestIdentifier(value):
+            message = _("\"%s\" is not a valid identifier!") % value
+        elif value.upper() in IEC_KEYWORDS:
+            message = _("\"%s\" is a keyword. It can't be used!") % value
+        elif value.upper() in self.PouNames:
+            message = _("A POU named \"%s\" already exists!") % value
+        elif value.upper() in [var.Name.upper() for var in self.Values if var != self.Table.data[row]]:
+            message = _("A variable with \"%s\" as name already exists in this pou!") % value
+        else:
+            return None
+        return message
+
     def OnVariablesGridCellChange(self, event):
         row, col = event.GetRow(), event.GetCol()
         colname = self.Table.GetColLabelValue(col, False)
@@ -804,15 +818,8 @@ class VariablePanel(wx.Panel):
         message = None
 
         if colname == "Name" and value != "":
-            if not TestIdentifier(value):
-                message = _("\"%s\" is not a valid identifier!") % value
-            elif value.upper() in IEC_KEYWORDS:
-                message = _("\"%s\" is a keyword. It can't be used!") % value
-            elif value.upper() in self.PouNames:
-                message = _("A POU named \"%s\" already exists!") % value
-            elif value.upper() in [var.Name.upper() for var in self.Values if var != self.Table.data[row]]:
-                message = _("A variable with \"%s\" as name already exists in this pou!") % value
-            else:
+            message = self.CheckVariableName(value, row)
+            if message is None:
                 self.SaveValues(False)
                 old_value = self.Table.GetOldValue()
                 self.OnVariableNameChange(old_value, value)
