@@ -127,6 +127,10 @@ class LocationCellControl(wx.PyControl):
             self.VariableName = infos["var_name"]
             self.VarType = infos["IEC_type"]
 
+            # when user selected something, end editing immediately
+            # so that changes over multiple colums appear
+            wx.CallAfter(self.Parent.Parent.CloseEditControl)
+
         self.Location.SetFocus()
 
     def OnLocationChar(self, event):
@@ -191,6 +195,9 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
             var_type = self.CellControl.GetVarType()
             if var_type is not None:
                 self.Table.SetValueByName(row, 'Type', var_type)
+        else:
+            wx.CallAfter(self.Table.Parent.ShowErrorMessage,
+                _("Selected location is identical to previous one"))
         self.CellControl.Disable()
         return changed
 
