@@ -595,8 +595,8 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Divergence Menu items to the given menu
     def AddDivergenceMenuItems(self, menu, delete=False):
-        add_branch = self.AppendItem(menu, _(u'Add Divergence Branch'),
-                                     self.OnAddBranchMenu)
+        self.AppendItem(menu, _(u'Add Divergence Branch'),
+                        self.OnAddBranchMenu)
         delete_branch = self.AppendItem(menu, _(u'Delete Divergence Branch'),
                                         self.OnDeleteBranchMenu)
 
@@ -640,7 +640,7 @@ class Viewer(EditorPanel, DebugViewer):
             menu.AppendSeparator()
 
         self.AppendItem(menu, _(u'Comment'),
-                       self.GetAddMenuCallBack(self.AddNewComment))
+                        self.GetAddMenuCallBack(self.AddNewComment))
 
     # Add Default Menu items to the given menu
     def AddDefaultMenuItems(self, menu, edit=False, block=False):
@@ -667,8 +667,8 @@ class Viewer(EditorPanel, DebugViewer):
 
         menu.AppendSeparator()
 
-        cut   = self.AppendItem(menu, _(u'Cut'), self.GetClipboardCallBack(self.Cut))
-        copy  = self.AppendItem(menu, _(u'Copy'), self.GetClipboardCallBack(self.Copy))
+        cut = self.AppendItem(menu, _(u'Cut'), self.GetClipboardCallBack(self.Cut))
+        copy = self.AppendItem(menu, _(u'Copy'), self.GetClipboardCallBack(self.Copy))
         paste = self.AppendItem(menu, _(u'Paste'), self.GetAddMenuCallBack(self.Paste))
 
         cut.Enable(block)
@@ -1631,13 +1631,13 @@ class Viewer(EditorPanel, DebugViewer):
     def PopupVariableMenu(self):
         menu = wx.Menu(title='')
         variable_type = self.SelectedElement.GetType()
-        for type_label, type in [(_("Input"), INPUT),
-                                 (_("Output"), OUTPUT),
-                                 (_("InOut"), INOUT)]:
+        for type_label, vtype in [(_("Input"), INPUT),
+                                  (_("Output"), OUTPUT),
+                                  (_("InOut"), INOUT)]:
             item = self.AppendItem(menu, type_label,
-                                   self.GetChangeVariableTypeMenuFunction(type),
+                                   self.GetChangeVariableTypeMenuFunction(vtype),
                                    kind=wx.ITEM_RADIO)
-            if type == variable_type:
+            if vtype == variable_type:
                 item.Check(True)
         menu.AppendSeparator()
         self.AddDefaultMenuItems(menu, block=True)
@@ -1647,12 +1647,12 @@ class Viewer(EditorPanel, DebugViewer):
     def PopupConnectionMenu(self):
         menu = wx.Menu(title='')
         connection_type = self.SelectedElement.GetType()
-        for type_label, type in [(_("Connector"), CONNECTOR),
-                                 (_("Continuation"), CONTINUATION)]:
+        for type_label, ctype in [(_("Connector"), CONNECTOR),
+                                  (_("Continuation"), CONTINUATION)]:
             item = self.AppendItem(menu, type_label,
-                                   self.GetChangeConnectionTypeMenuFunction(type),
+                                   self.GetChangeConnectionTypeMenuFunction(ctype),
                                    kind=wx.ITEM_RADIO)
-            if type == variable_type:
+            if ctype == connection_type:
                 item.Check(True)
         menu.AppendSeparator()
         self.AddDefaultMenuItems(menu, block=True)
@@ -2135,8 +2135,8 @@ class Viewer(EditorPanel, DebugViewer):
 
                         # Popup contextual menu
                         menu = wx.Menu()
-                        for text, callback in items :
-                            self.AppendItem(menu, text, callback) 
+                        for text, callback in items:
+                            self.AppendItem(menu, text, callback)
                         self.PopupMenu(menu)
 
                     self.SelectedElement.StartConnected.HighlightParentBlock(False)

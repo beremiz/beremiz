@@ -127,7 +127,7 @@ class ConfigTreeNode(object):
         # TODO match config's fields name and fields contents
         return reduce(add, [
             CTNChild.CTNSearch(criteria)
-            for CTNChild in self.IterChildren()],[])
+            for CTNChild in self.IterChildren()], [])
 
     def GetIconName(self):
         return None
