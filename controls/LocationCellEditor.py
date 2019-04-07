@@ -85,7 +85,7 @@ class LocationCellControl(wx.PyControl):
 
     def GetName(self):
         return self.VariableName
-    
+
     def OnSize(self, event):
         self.Layout()
 
@@ -188,7 +188,7 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
                 if message is not None:
                     wx.CallAfter(self.Table.Parent.ShowErrorMessage, message)
                     return None
-                old_name  = self.Table.GetValueByName(row, 'Name')
+                old_name = self.Table.GetValueByName(row, 'Name')
                 self.Table.SetValueByName(row, 'Name', name)
                 self.Table.Parent.OnVariableNameChange(old_name, name)
             self.Table.SetValueByName(row, 'Location', loc)
@@ -197,7 +197,7 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
                 self.Table.SetValueByName(row, 'Type', var_type)
         else:
             wx.CallAfter(self.Table.Parent.ShowErrorMessage,
-                _("Selected location is identical to previous one"))
+                         _("Selected location is identical to previous one"))
         self.CellControl.Disable()
         return changed
 

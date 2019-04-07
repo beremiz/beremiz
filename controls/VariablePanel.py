@@ -151,7 +151,6 @@ class VariableTable(CustomTable):
             return value
 
     def SetValue(self, row, col, value):
-        print("SetValue",row, col, value)
         if col < len(self.colnames):
             colname = self.GetColLabelValue(col, False)
             if colname == "Name":
