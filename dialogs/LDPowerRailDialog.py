@@ -155,7 +155,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         self.RefreshPreview()
         event.Skip()
 
-    def RefreshPreview(self):
+    def DrawPreview(self):
         """
         Refresh preview panel of graphic element
         Override BlockPreviewDialog function
@@ -166,5 +166,4 @@ class LDPowerRailDialog(BlockPreviewDialog):
                                     self.GetPowerRailType(),
                                     connectors=self.PinNumber.GetValue())
 
-        # Call BlockPreviewDialog function
-        BlockPreviewDialog.RefreshPreview(self)
+        return BlockPreviewDialog.DrawPreview(self)

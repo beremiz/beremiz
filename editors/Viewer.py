@@ -553,7 +553,6 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Block Pin Menu items to the given menu
     def AddBlockPinMenuItems(self, menu, connector):
-        # Create menu items
         no_modifier = self.AppendItem(menu,  _(u'No modifier'), self.OnNoModifierMenu, kind=wx.ITEM_RADIO)
         negated = self.AppendItem(menu,  _(u'Negated'), self.OnNegatedMenu, kind=wx.ITEM_RADIO)
         rising_edge = self.AppendItem(menu,  _(u'Rising Edge'), self.OnRisingEdgeMenu, kind=wx.ITEM_RADIO)
@@ -575,7 +574,6 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Alignment Menu items to the given menu
     def AddAlignmentMenuItems(self, menu):
-        # Create menu items
         self.AppendItem(menu, _(u'Left'), self.OnAlignLeftMenu)
         self.AppendItem(menu, _(u'Center'), self.OnAlignCenterMenu)
         self.AppendItem(menu, _(u'Right'), self.OnAlignRightMenu)
@@ -586,98 +584,81 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Add Wire Menu items to the given menu
     def AddWireMenuItems(self, menu, delete=False, replace=False):
-        [
-            ID_ADD_SEGMENT, ID_DELETE_SEGMENT, ID_REPLACE_WIRE,
-        ] = [wx.NewId() for dummy in xrange(3)]
+        self.AppendItem(menu, _(u'Add Wire Segment'), self.OnAddSegmentMenu)
+        delete_segment = self.AppendItem(menu, _(u'Delete Wire Segment'),
+                                         self.OnDeleteSegmentMenu)
+        replace_wire = self.AppendItem(menu, _(u'Replace Wire by connections'),
+                                       self.OnReplaceWireMenu)
 
-        # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_ADD_SEGMENT, wx.ITEM_NORMAL, _(u'Add Wire Segment'), '', self.OnAddSegmentMenu),
-            (ID_DELETE_SEGMENT, wx.ITEM_NORMAL, _(u'Delete Wire Segment'), '', self.OnDeleteSegmentMenu),
-            (ID_REPLACE_WIRE, wx.ITEM_NORMAL, _(u'Replace Wire by connections'), '', self.OnReplaceWireMenu)])
-
-        menu.Enable(ID_DELETE_SEGMENT, delete)
-        menu.Enable(ID_REPLACE_WIRE, replace)
+        delete_segment.Enable(delete)
+        replace_wire.Enable(replace)
 
     # Add Divergence Menu items to the given menu
     def AddDivergenceMenuItems(self, menu, delete=False):
-        [ID_ADD_BRANCH, ID_DELETE_BRANCH] = [wx.NewId() for dummy in xrange(2)]
+        add_branch = self.AppendItem(menu, _(u'Add Divergence Branch'),
+                                     self.OnAddBranchMenu)
+        delete_branch = self.AppendItem(menu, _(u'Delete Divergence Branch'),
+                                        self.OnDeleteBranchMenu)
 
-        # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_ADD_BRANCH, wx.ITEM_NORMAL, _(u'Add Divergence Branch'), '', self.OnAddBranchMenu),
-            (ID_DELETE_BRANCH, wx.ITEM_NORMAL, _(u'Delete Divergence Branch'), '', self.OnDeleteBranchMenu)])
-
-        menu.Enable(ID_DELETE_BRANCH, delete)
+        delete_branch.Enable(delete)
 
     # Add Add Menu items to the given menu
     def AddAddMenuItems(self, menu):
-        [ID_ADD_BLOCK, ID_ADD_VARIABLE, ID_ADD_CONNECTION,
-         ID_ADD_COMMENT] = [wx.NewId() for dummy in xrange(4)]
-
-        # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_ADD_BLOCK, wx.ITEM_NORMAL, _(u'Block'), '', self.GetAddMenuCallBack(self.AddNewBlock)),
-            (ID_ADD_VARIABLE, wx.ITEM_NORMAL, _(u'Variable'), '', self.GetAddMenuCallBack(self.AddNewVariable)),
-            (ID_ADD_CONNECTION, wx.ITEM_NORMAL, _(u'Connection'), '', self.GetAddMenuCallBack(self.AddNewConnection)),
-            None])
+        self.AppendItem(menu, _(u'Block'),
+                        self.GetAddMenuCallBack(self.AddNewBlock))
+        self.AppendItem(menu, _(u'Variable'),
+                        self.GetAddMenuCallBack(self.AddNewVariable))
+        self.AppendItem(menu, _(u'Connection'),
+                        self.GetAddMenuCallBack(self.AddNewConnection))
+        menu.AppendSeparator()
 
         if self.CurrentLanguage != "FBD":
-            [
-                ID_ADD_POWER_RAIL, ID_ADD_CONTACT, ID_ADD_COIL,
-            ] = [wx.NewId() for dummy in xrange(3)]
-
-            # Create menu items
-            self.AddMenuItems(menu, [
-                (ID_ADD_POWER_RAIL, wx.ITEM_NORMAL, _(u'Power Rail'), '', self.GetAddMenuCallBack(self.AddNewPowerRail)),
-                (ID_ADD_CONTACT, wx.ITEM_NORMAL, _(u'Contact'), '', self.GetAddMenuCallBack(self.AddNewContact))])
+            self.AppendItem(menu, _(u'Power Rail'),
+                            self.GetAddMenuCallBack(self.AddNewPowerRail))
+            self.AppendItem(menu, _(u'Contact'),
+                            self.GetAddMenuCallBack(self.AddNewContact))
 
             if self.CurrentLanguage != "SFC":
-                self.AddMenuItems(menu, [
-                    (ID_ADD_COIL, wx.ITEM_NORMAL, _(u'Coil'), '', self.GetAddMenuCallBack(self.AddNewCoil))])
+                self.AppendItem(menu, _(u'Coil'),
+                                self.GetAddMenuCallBack(self.AddNewCoil))
 
             menu.AppendSeparator()
 
         if self.CurrentLanguage == "SFC":
-            [
-                ID_ADD_INITIAL_STEP, ID_ADD_STEP, ID_ADD_TRANSITION,
-                ID_ADD_ACTION_BLOCK, ID_ADD_DIVERGENCE, ID_ADD_JUMP,
-            ] = [wx.NewId() for dummy in xrange(6)]
+            self.AppendItem(menu, _(u'Initial Step'),
+                            self.GetAddMenuCallBack(self.AddNewStep, True))
+            self.AppendItem(menu, (u'Step'),
+                            self.GetAddMenuCallBack(self.AddNewStep))
+            self.AppendItem(menu, (u'Transition'),
+                            self.GetAddMenuCallBack(self.AddNewTransition))
+            self.AppendItem(menu, (u'Action Block'),
+                            self.GetAddMenuCallBack(self.AddNewActionBlock))
+            self.AppendItem(menu, (u'Divergence'),
+                            self.GetAddMenuCallBack(self.AddNewDivergence))
+            self.AppendItem(menu, (u'Jump'),
+                            self.GetAddMenuCallBack(self.AddNewJump))
+            menu.AppendSeparator()
 
-            # Create menu items
-            self.AddMenuItems(menu, [
-                (ID_ADD_INITIAL_STEP, wx.ITEM_NORMAL, _(u'Initial Step'), '', self.GetAddMenuCallBack(self.AddNewStep, True)),
-                (ID_ADD_STEP, wx.ITEM_NORMAL, _(u'Step'), '', self.GetAddMenuCallBack(self.AddNewStep)),
-                (ID_ADD_TRANSITION, wx.ITEM_NORMAL, _(u'Transition'), '', self.GetAddMenuCallBack(self.AddNewTransition)),
-                (ID_ADD_ACTION_BLOCK, wx.ITEM_NORMAL, _(u'Action Block'), '', self.GetAddMenuCallBack(self.AddNewActionBlock)),
-                (ID_ADD_DIVERGENCE, wx.ITEM_NORMAL, _(u'Divergence'), '', self.GetAddMenuCallBack(self.AddNewDivergence)),
-                (ID_ADD_JUMP, wx.ITEM_NORMAL, _(u'Jump'), '', self.GetAddMenuCallBack(self.AddNewJump)),
-                None])
-
-        self.AddMenuItems(menu, [
-            (ID_ADD_COMMENT, wx.ITEM_NORMAL, _(u'Comment'), '', self.GetAddMenuCallBack(self.AddNewComment))])
+        self.AppendItem(menu, _(u'Comment'),
+                       self.GetAddMenuCallBack(self.AddNewComment))
 
     # Add Default Menu items to the given menu
     def AddDefaultMenuItems(self, menu, edit=False, block=False):
         if block:
-            [ID_EDIT_BLOCK, ID_DELETE, ID_ADJUST_BLOCK_SIZE] = [wx.NewId() for dummy in xrange(3)]
+            edit_block = self.AppendItem(menu, _(u'Edit Block'),
+                                         self.OnEditBlockMenu)
+            self.AppendItem(menu, _(u'Adjust Block Size'),
+                            self.OnAdjustBlockSizeMenu)
+            self.AppendItem(menu, _(u'Delete'), self.OnDeleteMenu)
 
-            # Create menu items
-            self.AddMenuItems(menu, [
-                (ID_EDIT_BLOCK, wx.ITEM_NORMAL, _(u'Edit Block'), '', self.OnEditBlockMenu),
-                (ID_ADJUST_BLOCK_SIZE, wx.ITEM_NORMAL, _(u'Adjust Block Size'), '', self.OnAdjustBlockSizeMenu),
-                (ID_DELETE, wx.ITEM_NORMAL, _(u'Delete'), '', self.OnDeleteMenu)])
-
-            menu.Enable(ID_EDIT_BLOCK, edit)
+            edit_block.Enable(edit)
 
         else:
-            [ID_CLEAR_EXEC_ORDER, ID_RESET_EXEC_ORDER] = [wx.NewId() for dummy in xrange(2)]
-
-            # Create menu items
             if self.CurrentLanguage == 'FBD':
-                self.AddMenuItems(menu, [
-                    (ID_CLEAR_EXEC_ORDER, wx.ITEM_NORMAL, _(u'Clear Execution Order'), '', self.OnClearExecutionOrderMenu),
-                    (ID_RESET_EXEC_ORDER, wx.ITEM_NORMAL, _(u'Reset Execution Order'), '', self.OnResetExecutionOrderMenu)])
+                self.AppendItem(menu, _(u'Clear Execution Order'),
+                                self.OnClearExecutionOrderMenu)
+                self.AppendItem(menu, _(u'Reset Execution Order'),
+                                self.OnResetExecutionOrderMenu)
                 menu.AppendSeparator()
 
             add_menu = wx.Menu(title='')
@@ -686,17 +667,13 @@ class Viewer(EditorPanel, DebugViewer):
 
         menu.AppendSeparator()
 
-        [ID_CUT, ID_COPY, ID_PASTE] = [wx.NewId() for dummy in xrange(3)]
+        cut   = self.AppendItem(menu, _(u'Cut'), self.GetClipboardCallBack(self.Cut))
+        copy  = self.AppendItem(menu, _(u'Copy'), self.GetClipboardCallBack(self.Copy))
+        paste = self.AppendItem(menu, _(u'Paste'), self.GetAddMenuCallBack(self.Paste))
 
-        # Create menu items
-        self.AddMenuItems(menu, [
-            (ID_CUT, wx.ITEM_NORMAL, _(u'Cut'), '', self.GetClipboardCallBack(self.Cut)),
-            (ID_COPY, wx.ITEM_NORMAL, _(u'Copy'), '', self.GetClipboardCallBack(self.Copy)),
-            (ID_PASTE, wx.ITEM_NORMAL, _(u'Paste'), '', self.GetAddMenuCallBack(self.Paste))])
-
-        menu.Enable(ID_CUT, block)
-        menu.Enable(ID_COPY, block)
-        menu.Enable(ID_PASTE, self.ParentWindow.GetCopyBuffer() is not None)
+        cut.Enable(block)
+        copy.Enable(block)
+        paste.Enable(self.ParentWindow.GetCopyBuffer() is not None)
 
     def _init_Editor(self, prnt):
         self.Editor = wx.ScrolledWindow(prnt, name="Viewer",
@@ -1657,11 +1634,11 @@ class Viewer(EditorPanel, DebugViewer):
         for type_label, type in [(_("Input"), INPUT),
                                  (_("Output"), OUTPUT),
                                  (_("InOut"), INOUT)]:
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_RADIO, text=type_label)
-            self.Bind(wx.EVT_MENU, self.GetChangeVariableTypeMenuFunction(type), id=new_id)
+            item = self.AppendItem(menu, type_label,
+                                   self.GetChangeVariableTypeMenuFunction(type),
+                                   kind=wx.ITEM_RADIO)
             if type == variable_type:
-                menu.Check(new_id, True)
+                item.Check(True)
         menu.AppendSeparator()
         self.AddDefaultMenuItems(menu, block=True)
         self.Editor.PopupMenu(menu)
@@ -1672,11 +1649,11 @@ class Viewer(EditorPanel, DebugViewer):
         connection_type = self.SelectedElement.GetType()
         for type_label, type in [(_("Connector"), CONNECTOR),
                                  (_("Continuation"), CONTINUATION)]:
-            new_id = wx.NewId()
-            AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_RADIO, text=type_label)
-            self.Bind(wx.EVT_MENU, self.GetChangeConnectionTypeMenuFunction(type), id=new_id)
-            if type == connection_type:
-                menu.Check(new_id, True)
+            item = self.AppendItem(menu, type_label,
+                                   self.GetChangeConnectionTypeMenuFunction(type),
+                                   kind=wx.ITEM_RADIO)
+            if type == variable_type:
+                item.Check(True)
         menu.AppendSeparator()
         self.AddDefaultMenuItems(menu, block=True)
         self.Editor.PopupMenu(menu)
@@ -2158,9 +2135,8 @@ class Viewer(EditorPanel, DebugViewer):
 
                         # Popup contextual menu
                         menu = wx.Menu()
-                        self.AddMenuItems(menu,
-                                          [(wx.NewId(), wx.ITEM_NORMAL, text, '', callback)
-                                           for text, callback in items])
+                        for text, callback in items :
+                            self.AppendItem(menu, text, callback) 
                         self.PopupMenu(menu)
 
                     self.SelectedElement.StartConnected.HighlightParentBlock(False)
