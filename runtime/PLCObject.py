@@ -23,7 +23,7 @@
 
 
 from __future__ import absolute_import
-from threading import Thread, Lock, Semaphore, Event
+from threading import Thread, Lock, Event, Condition
 import ctypes
 import os
 import sys
@@ -42,6 +42,7 @@ from runtime.loglevels import LogLevelsDefault, LogLevelsCount
 from runtime.Stunnel import getPSKID
 from runtime import PlcStatus
 from runtime import MainWorker
+from runtime import default_evaluator
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -319,13 +320,16 @@ class PLCObject(object):
 
         return False
 
-    def PythonRuntimeCall(self, methodname):
+    def PythonRuntimeCall(self, methodname, use_evaluator=True):
         """
         Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
         """
         for method in self.python_runtime_vars.get("_runtime_%s" % methodname, []):
-            _res, exp = self.evaluator(method)
+            if use_evaluator:
+                _res, exp = self.evaluator(method)
+            else:
+                _res, exp = default_evaluator(method)
             if exp is not None:
                 self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
@@ -379,17 +383,25 @@ class PLCObject(object):
             self.LogMessage(0, traceback.format_exc())
             raise
 
-        self.PythonRuntimeCall("init")
+        self.PythonRuntimeCall("init", use_evaluator=False)
+
+        self.PythonThreadCondLock = Lock()
+        self.PythonThreadCond = Condition(self.PythonThreadCondLock)
+        self.PythonThreadCmd = "Wait"
+        self.PythonThread = Thread(target=self.PythonThreadProc)
+        self.PythonThread.start()
+
 
     # used internaly
     def PythonRuntimeCleanup(self):
         if self.python_runtime_vars is not None:
-            self.PythonRuntimeCall("cleanup")
+            self.PythonThreadCommand("Finish")
+            self.PythonThread.join()
+            self.PythonRuntimeCall("cleanup", use_evaluator=False)
 
         self.python_runtime_vars = None
 
-    def PythonThreadProc(self):
-        self.StartSem.release()
+    def PythonThreadLoop(self):
         res, cmd, blkid = "None", "None", ctypes.c_void_p()
         compile_cache = {}
         while True:
@@ -415,6 +427,31 @@ class PLCObject(object):
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
 
+    def PythonThreadProc(self):
+        while True:
+            self.PythonThreadCondLock.acquire()
+            cmd = self.PythonThreadCmd
+            while cmd == "Wait":
+                self.PythonThreadCond.wait()
+                cmd = self.PythonThreadCmd
+                self.PythonThreadCmd = "Wait"
+            self.PythonThreadCondLock.release()
+            
+            if cmd == "Activate" :
+                self.PythonRuntimeCall("start")
+
+                self.PythonThreadLoop()
+                
+                self.PythonRuntimeCall("stop")
+            else:  # "Finish"
+                break
+
+    def PythonThreadCommand(self, cmd):
+        self.PythonThreadCondLock.acquire()
+        self.PythonThreadCmd = cmd 
+        self.PythonThreadCond.notify()
+        self.PythonThreadCondLock.release()
+
     @RunInMain
     def StartPLC(self):
         if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
@@ -423,11 +460,7 @@ class PLCObject(object):
             if res == 0:
                 self.PLCStatus = PlcStatus.Started
                 self.StatusChange()
-                self.PythonRuntimeCall("start")
-                self.StartSem = Semaphore(0)
-                self.PythonThread = Thread(target=self.PythonThreadProc)
-                self.PythonThread.start()
-                self.StartSem.acquire()
+                self.PythonThreadCommand("Activate")
                 self.LogMessage("PLC started")
             else:
                 self.LogMessage(0, _("Problem starting PLC : error %d" % res))
@@ -439,10 +472,8 @@ class PLCObject(object):
         if self.PLCStatus == PlcStatus.Started:
             self.LogMessage("PLC stopped")
             self._stopPLC()
-            self.PythonThread.join()
             self.PLCStatus = PlcStatus.Stopped
             self.StatusChange()
-            self.PythonRuntimeCall("stop")
             if self.TraceThread is not None:
                 self.TraceThread.join()
                 self.TraceThread = None
