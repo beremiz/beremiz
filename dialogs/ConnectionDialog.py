@@ -138,7 +138,7 @@ class ConnectionDialog(BlockPreviewDialog):
                 self.ConnectionName.SetValue(value)
 
         # Refresh preview panel
-        self.RefreshPreview()
+        self.DrawPreview()
 
     def GetValues(self):
         """
@@ -199,7 +199,7 @@ class ConnectionDialog(BlockPreviewDialog):
         Called when connection type changed
         @param event: wx.RadioButtonEvent
         """
-        self.RefreshPreview()
+        self.DrawPreview()
         event.Skip()
 
     def OnNameChanged(self, event):
@@ -207,10 +207,10 @@ class ConnectionDialog(BlockPreviewDialog):
         Called when connection name value changed
         @param event: wx.TextEvent
         """
-        self.RefreshPreview()
+        self.DrawPreview()
         event.Skip()
 
-    def RefreshPreview(self):
+    def DrawPreview(self):
         """
         Refresh preview panel of graphic element
         Override BlockPreviewDialog function
@@ -221,4 +221,4 @@ class ConnectionDialog(BlockPreviewDialog):
                                      self.ConnectionName.GetValue())
 
         # Call BlockPreviewDialog function
-        BlockPreviewDialog.RefreshPreview(self)
+        BlockPreviewDialog.DrawPreview(self)

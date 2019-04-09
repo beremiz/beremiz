@@ -144,7 +144,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         Called when SFC divergence type changed
         @param event: wx.RadioButtonEvent
         """
-        self.RefreshPreview()
+        self.DrawPreview()
         event.Skip()
 
     def OnSequencesChanged(self, event):
@@ -152,10 +152,10 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         Called when SFC divergence number of sequences changed
         @param event: wx.SpinEvent
         """
-        self.RefreshPreview()
+        self.DrawPreview()
         event.Skip()
 
-    def RefreshPreview(self):
+    def DrawPreview(self):
         """
         Refresh preview panel of graphic element
         Override BlockPreviewDialog function
@@ -166,4 +166,4 @@ class SFCDivergenceDialog(BlockPreviewDialog):
                                       self.Sequences.GetValue())
 
         # Call BlockPreviewDialog function
-        BlockPreviewDialog.RefreshPreview(self)
+        BlockPreviewDialog.DrawPreview(self)
