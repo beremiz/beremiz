@@ -40,6 +40,7 @@ from runtime.PyroServer import PyroServer
 from runtime.xenomai import TryPreloadXenomai
 from runtime import LogMessageAndException
 from runtime import PlcStatus
+from runtime import default_evaluator
 from runtime.Stunnel import ensurePSK
 import util.paths as paths
 
@@ -382,14 +383,6 @@ if enablewx:
 
 if not os.path.isdir(WorkingDir):
     os.mkdir(WorkingDir)
-
-
-def default_evaluator(tocall, *args, **kwargs):
-    try:
-        res = (tocall(*args, **kwargs), None)
-    except Exception:
-        res = (None, sys.exc_info())
-    return res
 
 
 if enabletwisted:
