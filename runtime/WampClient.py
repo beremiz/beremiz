@@ -28,7 +28,7 @@ import time
 import json
 import os
 import re
-from builtins import str as text
+from six import text_type as text
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
