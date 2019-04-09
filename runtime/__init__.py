@@ -38,5 +38,3 @@ def default_evaluator(tocall, *args, **kwargs):
     except Exception:
         res = (None, sys.exc_info())
     return res
-
-
