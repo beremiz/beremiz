@@ -42,6 +42,7 @@ from runtime.loglevels import LogLevelsDefault, LogLevelsCount
 from runtime.Stunnel import getPSKID
 from runtime import PlcStatus
 from runtime import MainWorker
+from runtime import default_evaluator
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -319,13 +320,16 @@ class PLCObject(object):
 
         return False
 
-    def PythonRuntimeCall(self, methodname):
+    def PythonRuntimeCall(self, methodname, use_evaluator=True):
         """
         Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
         """
         for method in self.python_runtime_vars.get("_runtime_%s" % methodname, []):
-            _res, exp = self.evaluator(method)
+            if use_evaluator:
+                _res, exp = self.evaluator(method)
+            else:
+                _res, exp = default_evaluator(method)
             if exp is not None:
                 self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
@@ -379,6 +383,8 @@ class PLCObject(object):
             self.LogMessage(0, traceback.format_exc())
             raise
 
+        self.PythonRuntimeCall("init", use_evaluator=False)
+
         self.PythonThreadCondLock = Lock()
         self.PythonThreadCond = Condition(self.PythonThreadCondLock)
         self.PythonThreadCmd = "Wait"
@@ -391,6 +397,7 @@ class PLCObject(object):
         if self.python_runtime_vars is not None:
             self.PythonThreadCommand("Finish")
             self.PythonThread.join()
+            self.PythonRuntimeCall("cleanup", use_evaluator=False)
 
         self.python_runtime_vars = None
 
@@ -421,9 +428,6 @@ class PLCObject(object):
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
 
     def PythonThreadProc(self):
-        print('self.PythonRuntimeCall("init")')
-        self.PythonRuntimeCall("init")
-
         while True:
             self.PythonThreadCondLock.acquire()
             cmd = self.PythonThreadCmd
@@ -434,7 +438,6 @@ class PLCObject(object):
             self.PythonThreadCondLock.release()
             
             if cmd == "Activate" :
-                print('self.PythonRuntimeCall("start")')
                 self.PythonRuntimeCall("start")
 
                 self.PythonThreadLoop()
@@ -442,8 +445,6 @@ class PLCObject(object):
                 self.PythonRuntimeCall("stop")
             else:  # "Finish"
                 break
-
-        self.PythonRuntimeCall("cleanup")
 
     def PythonThreadCommand(self, cmd):
         self.PythonThreadCondLock.acquire()
