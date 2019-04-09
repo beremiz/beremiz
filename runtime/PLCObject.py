@@ -391,7 +391,6 @@ class PLCObject(object):
         self.PythonThread = Thread(target=self.PythonThreadProc)
         self.PythonThread.start()
 
-
     # used internaly
     def PythonRuntimeCleanup(self):
         if self.python_runtime_vars is not None:
@@ -436,19 +435,17 @@ class PLCObject(object):
                 cmd = self.PythonThreadCmd
                 self.PythonThreadCmd = "Wait"
             self.PythonThreadCondLock.release()
-            
-            if cmd == "Activate" :
-                self.PythonRuntimeCall("start")
 
+            if cmd == "Activate":
+                self.PythonRuntimeCall("start")
                 self.PythonThreadLoop()
-                
                 self.PythonRuntimeCall("stop")
             else:  # "Finish"
                 break
 
     def PythonThreadCommand(self, cmd):
         self.PythonThreadCondLock.acquire()
-        self.PythonThreadCmd = cmd 
+        self.PythonThreadCmd = cmd
         self.PythonThreadCond.notify()
         self.PythonThreadCondLock.release()
 
