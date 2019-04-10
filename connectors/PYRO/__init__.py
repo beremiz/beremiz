@@ -37,7 +37,7 @@ import Pyro.util
 from Pyro.errors import PyroError
 
 import PSKManagement as PSK
-import connectors.PYRO.PSK_Adapter
+from connectors.PYRO.PSK_Adapter import setupPSKAdapter
 from runtime import PlcStatus
 
 
@@ -49,7 +49,7 @@ def switch_pyro_adapter(use_ssl):
     # Pyro.config.PYRO_BROKEN_MSGWAITALL = use_ssl
     reload(Pyro.protocol)
     if use_ssl:
-        connectors.PYRO.PSK_Adapter.setupPSKAdapter()
+        setupPSKAdapter()
 
 
 def PYRO_connector_factory(uri, confnodesroot):
