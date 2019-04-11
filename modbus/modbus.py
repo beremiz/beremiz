@@ -122,7 +122,7 @@ class _RequestPlug(object):
                 "type": LOCATION_VAR_MEMORY,
                 "size": datasize,
                 "IEC_type": datatype,
-                "var_name": "var_name",
+                "var_name": "MB_" + "".join([w[0] for w in dataname.split()]) + "_" + str(offset),
                 "location": datatacc + ".".join([str(i) for i in current_location]) + "." + str(offset),
                 "description": "description",
                 "children": []})
@@ -227,7 +227,7 @@ class _MemoryAreaPlug(object):
                 "type": LOCATION_VAR_MEMORY,
                 "size": datasize,
                 "IEC_type": datatype,
-                "var_name": "var_name",
+                "var_name": "MB_" + "".join([w[0] for w in dataname.split()]) + "_" + str(offset),
                 "location": datatacc + ".".join([str(i) for i in current_location]) + "." + str(offset),
                 "description": "description",
                 "children": []})
