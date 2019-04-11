@@ -144,7 +144,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         Called when power rail type changed
         @param event: wx.RadioButtonEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnPinNumberChanged(self, event):
@@ -152,7 +152,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         Called when power rail pin number value changed
         @param event: wx.SpinEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def DrawPreview(self):

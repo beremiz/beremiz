@@ -156,7 +156,7 @@ class LDElementDialog(BlockPreviewDialog):
                 self.ModifierRadioButtons[value].SetValue(True)
 
         # Refresh preview panel
-        self.DrawPreview()
+        self.RefreshPreview()
 
     def GetValues(self):
         """
@@ -174,7 +174,7 @@ class LDElementDialog(BlockPreviewDialog):
         Called when LD element modifier changed
         @param event: wx.RadioButtonEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnVariableChanged(self, event):
@@ -182,7 +182,7 @@ class LDElementDialog(BlockPreviewDialog):
         Called when LD element associated variable changed
         @param event: wx.ComboBoxEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def DrawPreview(self):

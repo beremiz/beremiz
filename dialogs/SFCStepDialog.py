@@ -120,7 +120,7 @@ class SFCStepDialog(BlockPreviewDialog):
                     control.SetValue(value)
 
         # Refresh preview panel
-        self.DrawPreview()
+        self.RefreshPreview()
 
     def GetValues(self):
         """
@@ -163,7 +163,7 @@ class SFCStepDialog(BlockPreviewDialog):
         Called when a step connector value changed
         @param event: wx.CheckBoxEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnNameChanged(self, event):
@@ -171,7 +171,7 @@ class SFCStepDialog(BlockPreviewDialog):
         Called when step name value changed
         @param event: wx.TextEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def DrawPreview(self):

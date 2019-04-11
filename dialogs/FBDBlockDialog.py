@@ -199,7 +199,7 @@ class FBDBlockDialog(BlockPreviewDialog):
                     control.SetValue(value)
 
         # Refresh preview panel
-        self.DrawPreview()
+        self.RefreshPreview()
 
     def GetValues(self):
         """
@@ -293,7 +293,7 @@ class FBDBlockDialog(BlockPreviewDialog):
             self.BlockName.ChangeValue("")
 
         # Refresh preview panel
-        self.DrawPreview()
+        self.RefreshPreview()
 
     def OnNameChanged(self, event):
         """
@@ -303,7 +303,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         if self.BlockName.IsEnabled():
             # Save block name typed by user
             self.CurrentBlockName = self.BlockName.GetValue()
-            self.DrawPreview()
+            self.RefreshPreview()
         event.Skip()
 
     def OnInputsChanged(self, event):
@@ -312,7 +312,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         @param event: wx.SpinEvent
         """
         if self.Inputs.IsEnabled():
-            self.DrawPreview()
+            self.RefreshPreview()
         event.Skip()
 
     def OnExecutionOrderChanged(self, event):
@@ -320,7 +320,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         Called when block execution order value changed
         @param event: wx.SpinEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnExecutionControlChanged(self, event):
@@ -328,7 +328,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         Called when block execution control value changed
         @param event: wx.SpinEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def DrawPreview(self):
