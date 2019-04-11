@@ -279,7 +279,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         self.GraphicsWindow = wx.ScrolledWindow(self, style=wx.HSCROLL | wx.VSCROLL)
         self.GraphicsWindow.SetBackgroundColour(wx.WHITE)
         self.GraphicsWindow.SetDropTarget(DebugVariableDropTarget(self))
-        self.GraphicsWindow.Bind(wx.EVT_ERASE_BACKGROUND, self.OnGraphicsWindowEraseBackground)
         self.GraphicsWindow.Bind(wx.EVT_PAINT, self.OnGraphicsWindowPaint)
         self.GraphicsWindow.Bind(wx.EVT_SIZE, self.OnGraphicsWindowResize)
         self.GraphicsWindow.Bind(wx.EVT_MOUSEWHEEL, self.OnGraphicsWindowMouseWheel)
@@ -926,9 +925,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                                           vwidth // SCROLLBAR_UNIT,
                                           vheight // SCROLLBAR_UNIT,
                                           posx, posy)
-
-    def OnGraphicsWindowEraseBackground(self, event):
-        pass
 
     def OnGraphicsWindowPaint(self, event):
         """EVT_PAINT handler"""
