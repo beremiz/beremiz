@@ -192,10 +192,11 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         """
         Redraw content displayed by Viewer
         """
+
         # Create buffered DC for drawing in panel
         width, height = self.GetSize()
         bitmap = wx.EmptyBitmap(width, height)
-        dc = wx.BufferedDC(wx.ClientDC(self), bitmap)
+        dc = wx.BufferedDC(wx.PaintDC(self), bitmap)
         dc.Clear()
 
         # Get Graphics Context for DC, for anti-aliased and transparent
