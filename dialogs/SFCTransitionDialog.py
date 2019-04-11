@@ -156,7 +156,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
                                 control.ChangeValue(type_value)
 
         # Refresh preview panel
-        self.DrawPreview()
+        self.RefreshPreview()
 
     def GetValues(self):
         """
@@ -202,7 +202,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
                 control.Enable(radio.GetValue())
 
         # Refresh preview panel
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnReferenceChanged(self, event):
@@ -210,7 +210,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         Called when SFC transition reference value changed
         @param event: wx.ComboBoxEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnInlineChanged(self, event):
@@ -218,7 +218,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         Called when SFC transition inline value changed
         @param event: wx.TextEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def OnPriorityChanged(self, event):
@@ -226,7 +226,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         Called when block inputs number changed
         @param event: wx.SpinEvent
         """
-        self.DrawPreview()
+        self.RefreshPreview()
         event.Skip()
 
     def DrawPreview(self):
