@@ -1422,6 +1422,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         "_Stop": False,
         "_Transfer": False,
         "_Connect": True,
+        "_Repair": False,
         "_Disconnect": False
     }
 
@@ -1438,6 +1439,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                  "_Connect": False,
                                  "_Disconnect": True},
         PlcStatus.Broken:       {"_Connect": False,
+                                 "_Repair": True,
                                  "_Disconnect": True},
         PlcStatus.Disconnected: {},
     }
@@ -1913,6 +1915,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
+    def _Repair(self):
+        dialog = wx.MessageDialog(
+            self.AppFrame,
+            _('Delete target PLC application?'),
+            _('Repair'),
+            wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
+        answer = dialog.ShowModal()
+        dialog.Destroy()
+        if answer == wx.ID_YES:
+            self._connector.PurgePLC()
+
     StatusMethods = [
         {
             "bitmap":    "Build",
@@ -1952,6 +1965,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
             "name":    _("Transfer"),
             "tooltip": _("Transfer PLC"),
             "method":   "_Transfer",
+            "shown":      False,
+        },
+        {
+            "bitmap":    "Repair",
+            "name":    _("Repair"),
+            "tooltip": _("Repair broken PLC"),
+            "method":   "_Repair",
             "shown":      False,
         },
         {
