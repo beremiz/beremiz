@@ -530,31 +530,45 @@ class PLCObject(object):
         os.close(fobj)
         shutil.move(path, newpath)
 
+    def _extra_files_log_path(self):
+        return os.path.join(self.workingdir, "extra_files.txt")
+
+    @RunInMain
+    def PurgePLC(self):
+
+        extra_files_log = self._extra_files_log_path()
+
+        old_PLC_filename = os.path.join(self.workingdir, self.CurrentPLCFilename) \
+            if self.CurrentPLCFilename is not None \
+            else None
+
+        try:
+            os.remove(old_PLC_filename)
+            for filename in open(extra_files_log, "rt").readlines() + [extra_files_log]:
+                try:
+                    os.remove(os.path.join(self.workingdir, filename.strip()))
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        self.PLCStatus = PlcStatus.Empty
+
+        # TODO: PLCObject restart
+
     @RunInMain
     def NewPLC(self, md5sum, plc_object, extrafiles):
         if self.PLCStatus in [PlcStatus.Stopped, PlcStatus.Empty, PlcStatus.Broken]:
             NewFileName = md5sum + lib_ext
-            extra_files_log = os.path.join(self.workingdir, "extra_files.txt")
+            extra_files_log = self._extra_files_log_path()
 
-            old_PLC_filename = os.path.join(self.workingdir, self.CurrentPLCFilename) \
-                if self.CurrentPLCFilename is not None \
-                else None
             new_PLC_filename = os.path.join(self.workingdir, NewFileName)
 
             self.UnLoadPLC()
 
-            self.LogMessage("NewPLC (%s)" % md5sum)
-            self.PLCStatus = PlcStatus.Empty
+            self.PurgePLC()
 
-            try:
-                os.remove(old_PLC_filename)
-                for filename in open(extra_files_log, "rt").readlines() + [extra_files_log]:
-                    try:
-                        os.remove(os.path.join(self.workingdir, filename.strip()))
-                    except Exception:
-                        pass
-            except Exception:
-                pass
+            self.LogMessage("NewPLC (%s)" % md5sum)
 
             try:
                 # Create new PLC file
