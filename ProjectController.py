@@ -1924,7 +1924,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         answer = dialog.ShowModal()
         dialog.Destroy()
         if answer == wx.ID_YES:
-            self._connector.PurgePLC()
+            self._connector.RepairPLC()
 
     StatusMethods = [
         {
