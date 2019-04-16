@@ -46,13 +46,13 @@ except ImportError as e:
     print(str(e))
     sslpsk = None
 
+
 class PYROPSKAdapter(PYROAdapter):
     """
     This is essentialy the same as in Pyro/protocol.py
     only raw_sock wrapping into sock through sslpsk.wrap_socket was added
     Pyro unfortunately doesn't allow cleaner customization
     """
-
 
     def bindToURI(self, URI):
         with self.lock:   # only 1 thread at a time can bind the URI
