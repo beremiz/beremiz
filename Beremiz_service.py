@@ -586,4 +586,9 @@ plcobj = runtime.GetPLCObjectSingleton()
 plcobj.StopPLC()
 plcobj.UnLoadPLC()
 
+if havetwisted:
+    reactor.stop()
+elif havewx:
+    app.ExitMainLoop()
+
 sys.exit(0)
