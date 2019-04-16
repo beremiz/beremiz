@@ -533,6 +533,10 @@ class PLCObject(object):
     def _extra_files_log_path(self):
         return os.path.join(self.workingdir, "extra_files.txt")
 
+    def RepairPLC(self):
+        self.PurgePLC()
+        MainWorker.quit()
+
     @RunInMain
     def PurgePLC(self):
 
@@ -542,15 +546,18 @@ class PLCObject(object):
             if self.CurrentPLCFilename is not None \
             else None
 
+        allfiles = [extra_files_log, old_PLC_filename, self._GetMD5FileName()]
+
         try:
-            os.remove(old_PLC_filename)
-            for filename in open(extra_files_log, "rt").readlines() + [extra_files_log]:
-                try:
-                    os.remove(os.path.join(self.workingdir, filename.strip()))
-                except Exception:
-                    pass
+            allfiles.append(open(extra_files_log, "rt").readlines())
         except Exception:
             pass
+
+        for filename in allfiles:
+            try:
+                os.remove(os.path.join(self.workingdir, filename.strip()))
+            except Exception:
+                pass
 
         self.PLCStatus = PlcStatus.Empty
 
