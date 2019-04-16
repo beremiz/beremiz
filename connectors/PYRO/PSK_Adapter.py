@@ -53,6 +53,7 @@ class PYROPSKAdapter(PYROAdapter):
     Pyro unfortunately doesn't allow cleaner customization
     """
 
+
     def bindToURI(self, URI):
         with self.lock:   # only 1 thread at a time can bind the URI
             try:
