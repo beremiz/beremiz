@@ -388,7 +388,7 @@ class PLCObject(object):
         self.PythonThreadCondLock = Lock()
         self.PythonThreadCond = Condition(self.PythonThreadCondLock)
         self.PythonThreadCmd = "Wait"
-        self.PythonThread = Thread(target=self.PythonThreadProc)
+        self.PythonThread = Thread(target=self.PythonThreadProc, name="PLCPythonThread")
         self.PythonThread.start()
 
     # used internaly
@@ -645,7 +645,7 @@ class PLCObject(object):
     def _TracesSwap(self):
         self.LastSwapTrace = time()
         if self.TraceThread is None and self.PLCStatus == PlcStatus.Started:
-            self.TraceThread = Thread(target=self.TraceThreadProc)
+            self.TraceThread = Thread(target=self.TraceThreadProc, name="PLCTrace")
             self.TraceThread.start()
         self.TraceLock.acquire()
         Traces = self.Traces
