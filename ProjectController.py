@@ -1446,13 +1446,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def UpdateMethodsFromPLCStatus(self):
         updated = False
-        status = None
+        status = PlcStatus.Disconnected
         if self._connector is not None:
             PLCstatus = self._connector.GetPLCstatus()
             if PLCstatus is not None:
                 status, log_count = PLCstatus
                 self.UpdatePLCLog(log_count)
-        if status is None:
+        if status == PlcStatus.Disconnected:
             self._SetConnector(None, False)
             status = PlcStatus.Disconnected
         if self.previous_plcstate != status:

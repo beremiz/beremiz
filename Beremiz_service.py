@@ -532,7 +532,8 @@ if havetwisted:
 pyro_thread_started = Lock()
 pyro_thread_started.acquire()
 pyro_thread = Thread(target=pyroserver.PyroLoop,
-                     kwargs=dict(when_ready=pyro_thread_started.release))
+                     kwargs=dict(when_ready=pyro_thread_started.release),
+                     name="PyroThread")
 pyro_thread.start()
 
 # Wait for pyro thread to be effective
@@ -557,7 +558,7 @@ if havetwisted or havewx:
     else:
         ui_thread_target = app.MainLoop
 
-    ui_thread = Thread(target=ui_thread_target)
+    ui_thread = Thread(target=ui_thread_target, name="UIThread")
     ui_thread.start()
 
     # This order ui loop to unblock main thread when ready.
@@ -581,6 +582,7 @@ except KeyboardInterrupt:
     pass
 
 pyroserver.Quit()
+pyro_thread.join()
 
 plcobj = runtime.GetPLCObjectSingleton()
 plcobj.StopPLC()
@@ -588,7 +590,9 @@ plcobj.UnLoadPLC()
 
 if havetwisted:
     reactor.stop()
+    ui_thread.join()
 elif havewx:
     app.ExitMainLoop()
+    ui_thread.join()
 
 sys.exit(0)
