@@ -582,6 +582,7 @@ except KeyboardInterrupt:
     pass
 
 pyroserver.Quit()
+pyro_thread.join()
 
 plcobj = runtime.GetPLCObjectSingleton()
 plcobj.StopPLC()
@@ -589,7 +590,9 @@ plcobj.UnLoadPLC()
 
 if havetwisted:
     reactor.stop()
+    ui_thread.join()
 elif havewx:
     app.ExitMainLoop()
+    ui_thread.join()
 
 sys.exit(0)
