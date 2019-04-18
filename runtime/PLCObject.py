@@ -477,8 +477,14 @@ class PLCObject(object):
             return True
         return False
 
-    @RunInMain
     def GetPLCstatus(self):
+        try:
+            return self._GetPLCstatus()
+        except EOFError:
+            return (PlcStatus.Disconnected, None)
+
+    @RunInMain
+    def _GetPLCstatus(self):
         return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
 
     @RunInMain
