@@ -61,6 +61,7 @@ ExposedCalls = [
     ("AppendChunkToBlob", {}),
     ("PurgeBlobs", {}),
     ("NewPLC", {}),
+    ("RepairPLC", {}),
     ("MatchMD5", {}),
     ("SetTraceVariablesList", {}),
     ("GetTraceVariables", {}),
