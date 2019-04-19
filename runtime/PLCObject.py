@@ -109,9 +109,9 @@ class PLCObject(object):
             self.CurrentPLCFilename = open(
                 self._GetMD5FileName(),
                 "r").read().strip() + lib_ext
-            if self.LoadPLC():
-                self.PLCStatus = PlcStatus.Stopped
-                if autostart:
+            self.PLCStatus = PlcStatus.Stopped
+            if autostart:
+                if self.LoadPLC():
                     self.StartPLC()
                     return
         except Exception:
@@ -451,6 +451,16 @@ class PLCObject(object):
 
     @RunInMain
     def StartPLC(self):
+
+        def fail(msg):
+            self.LogMessage(0, msg)
+            self.PLCStatus = PlcStatus.Broken
+            self.StatusChange()
+
+        if self.PLClibraryHandle is None:
+            if not self.LoadPLC():
+                fail(_("Problem starting PLC : can't load PLC"))
+
         if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
             c_argv = ctypes.c_char_p * len(self.argv)
             res = self._startPLC(len(self.argv), c_argv(*self.argv))
@@ -460,9 +470,7 @@ class PLCObject(object):
                 self.PythonThreadCommand("Activate")
                 self.LogMessage("PLC started")
             else:
-                self.LogMessage(0, _("Problem starting PLC : error %d" % res))
-                self.PLCStatus = PlcStatus.Broken
-                self.StatusChange()
+                fail(_("Problem starting PLC : error %d" % res))
 
     @RunInMain
     def StopPLC(self):
