@@ -125,7 +125,7 @@ class PLCObject(object):
             for callee in self.statuschange:
                 callee(self.PLCStatus)
 
-    @RunInMain
+    #@RunInMain
     def LogMessage(self, *args):
         if len(args) == 2:
             level, msg = args
