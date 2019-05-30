@@ -23,7 +23,6 @@ class job(object):
         self.result = None
         self.success = None
         self.exc_info = None
-        self.enabled = False
 
     def do(self):
         """
@@ -51,6 +50,7 @@ class worker(object):
         self.done = Condition(self.mutex)
         self.free = Condition(self.mutex)
         self.job = None
+        self.enabled = False
 
     def reraise(self, job):
         """
