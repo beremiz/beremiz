@@ -560,18 +560,20 @@ class PLCObject(object):
             if self.CurrentPLCFilename is not None \
             else None
 
-        allfiles = [extra_files_log, old_PLC_filename, self._GetMD5FileName()]
-
         try:
-            allfiles.append(open(extra_files_log, "rt").readlines())
+            allfiles = open(extra_files_log, "rt").readlines()
+            allfiles.extend([extra_files_log, old_PLC_filename, self._GetMD5FileName()])
         except Exception:
-            pass
+            self.LogMessage("No files to purge")
+            allfiles = []
 
         for filename in allfiles:
-            try:
-                os.remove(os.path.join(self.workingdir, filename.strip()))
-            except Exception:
-                pass
+            if filename:
+                filename = filename.strip()
+                try:
+                    os.remove(os.path.join(self.workingdir, filename))
+                except Exception:
+                    self.LogMessage("Couldn't purge " + filename)
 
         self.PLCStatus = PlcStatus.Empty
 
