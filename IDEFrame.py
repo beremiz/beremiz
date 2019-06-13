@@ -1997,7 +1997,7 @@ class IDEFrame(wx.Frame):
                     new_id = wx.NewId()
                     AppendMenu(change_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Program"))
                     self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "program"), id=new_id)
-                    menu.AppendMenu(wx.NewId(), _("Change POU Type To"), change_menu)
+                    menu.AppendMenu(wx.NewId(), _("Duplicate as..."), change_menu)
                 new_id = wx.NewId()
                 AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Rename"))
                 self.Bind(wx.EVT_MENU, self.OnRenamePouMenu, id=new_id)
