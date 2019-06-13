@@ -532,7 +532,26 @@ class PLCControler(object):
         if self.Project is not None:
             pou = self.Project.getpou(name)
             if pou is not None:
-                pou.setpouType(pou_type)
+                new_pou = self.Copy(pou)
+                idx = 0
+                new_name = name + "_" + pou_type
+                while self.Project.getpou(new_name) is not None:
+                    idx += 1
+                    new_name = "%s%d" % (name, idx)
+                new_pou.setname(new_name)
+
+                orig_type = pou.getpouType()
+                if orig_type == 'function' and pou_type in ['functionBlock', 'program']:
+                    # delete return type 
+                    return_type_obj = new_pou.interface.getreturnType()
+                    new_pou.interface.remove(return_type_obj)
+                    # To be ultimately correct we could re-create an 
+                    # output variable with same name+_out or so 
+                    # but in any case user will have to connect/assign 
+                    # this output, so better leave it as-is
+
+                new_pou.setpouType(pou_type)
+                self.Project.insertpou(0, new_pou)
                 self.BufferProject()
 
     def GetPouXml(self, pou_name):
