@@ -1965,7 +1965,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
     # Define the wire points
     def SetPoints(self, points, merge_segments=True):
-        print("SetPoints", self)
         if len(points) > 1:
 
             # filter duplicates, add corner to diagonals
