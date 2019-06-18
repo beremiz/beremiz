@@ -1964,7 +1964,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
         return None
 
     # Define the wire points
-    def SetPoints(self, points, verify=True):
+    def SetPoints(self, points, merge_segments=True):
+        print("SetPoints", self)
         if len(points) > 1:
             self.Points = [wx.Point(x, y) for x, y in points]
             # Calculate the start and end directions
@@ -1980,22 +1981,46 @@ class Wire(Graphic_Element, DebugDataConsumer):
             # Calculate the segments directions
             self.Segments = []
             i = 0
-            while i < len(self.Points) - 1:
-                if verify and 0 < i < len(self.Points) - 2 and \
-                   self.Points[i] == self.Points[i + 1] and \
-                   self.Segments[-1] == vector(self.Points[i + 1], self.Points[i + 2]):
-                    for dummy in xrange(2):
-                        self.Points.pop(i)
-                else:
-                    segment = vector(self.Points[i], self.Points[i + 1])
-                    if is_null_vector(segment) and i > 0:
-                        segment = (self.Segments[-1][1], self.Segments[-1][0])
-                    if i < len(self.Points) - 2:
-                        next = vector(self.Points[i + 1], self.Points[i + 2])
-                        if next == segment or is_null_vector(add_vectors(segment, next)):
-                            self.Points.insert(i + 1, wx.Point(self.Points[i + 1].x, self.Points[i + 1].y))
-                    self.Segments.append(segment)
-                    i += 1
+            while True:
+                l = len(self.Points)
+                if i > l - 2:
+                    break
+
+                segment = vector(self.Points[i], self.Points[i + 1])
+
+                # delete duplicates 
+                if is_null_vector(segment):
+                    self.Points.pop(i)
+                    # next point is the same, no need to rollback
+                    continue
+
+                # merge segment if requested
+                if merge_segments and 0 < i and \
+                   self.Segments[-1] == segment:
+                    self.Points.pop(i)
+                    # Rollback
+                    self.Segments.pop()
+                    i -= 1
+                    continue
+
+                # add point to make a corner in case of diagonal segment
+                if segment not in [EAST, NORTH, WEST, SOUTH]:
+                    self.Points.insert(i + 1, wx.Point(
+                        self.Points[i].x, self.Points[i + 1].y))
+                    continue
+
+                # remove corner when two segments are in opposite direction
+                if i < l - 2:
+                    next = vector(self.Points[i + 1], self.Points[i + 2])
+                    if is_null_vector(add_vectors(segment, next)):
+                        self.Points.pop(i+1)
+                        continue
+
+                self.Segments.append(segment)
+
+                i += 1
+
+
             self.RefreshBoundingBox()
             self.RefreshRealPoints()
 
