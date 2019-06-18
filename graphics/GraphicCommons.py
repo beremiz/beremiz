@@ -1967,7 +1967,21 @@ class Wire(Graphic_Element, DebugDataConsumer):
     def SetPoints(self, points, merge_segments=True):
         print("SetPoints", self)
         if len(points) > 1:
-            self.Points = [wx.Point(x, y) for x, y in points]
+
+            # filter duplicates, add corner to diagonals
+            self.Points = []
+            lx,ly = None,None
+            for x, y in points:
+                ex, ey = lx == x, ly == y
+                if ex and ey:
+                    # duplicate
+                    continue
+                if (lx,ly) != (None,None) and not ex and not ey:
+                    # diagonal
+                    self.Points.append(wx.Point(lx, y))
+                self.Points.append(wx.Point(x, y))
+                lx,ly = x,y
+
             # Calculate the start and end directions
             self.StartPoint = [None, vector(self.Points[0], self.Points[1])]
             self.EndPoint = [None, vector(self.Points[-1], self.Points[-2])]
@@ -1988,12 +2002,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
                 segment = vector(self.Points[i], self.Points[i + 1])
 
-                # delete duplicates 
-                if is_null_vector(segment):
-                    self.Points.pop(i)
-                    # next point is the same, no need to rollback
-                    continue
-
                 # merge segment if requested
                 if merge_segments and 0 < i and \
                    self.Segments[-1] == segment:
@@ -2001,12 +2009,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     # Rollback
                     self.Segments.pop()
                     i -= 1
-                    continue
-
-                # add point to make a corner in case of diagonal segment
-                if segment not in [EAST, NORTH, WEST, SOUTH]:
-                    self.Points.insert(i + 1, wx.Point(
-                        self.Points[i].x, self.Points[i + 1].y))
                     continue
 
                 # remove corner when two segments are in opposite direction
@@ -2019,7 +2021,6 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 self.Segments.append(segment)
 
                 i += 1
-
 
             self.RefreshBoundingBox()
             self.RefreshRealPoints()
