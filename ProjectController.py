@@ -947,7 +947,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # describes CSV columns
                 ProgramsListAttributeName = ["num", "C_path", "type"]
                 VariablesListAttributeName = [
-                    "num", "vartype", "IEC_path", "C_path", "type"]
+                    "num", "vartype", "IEC_path", "C_path", "type", "derived"]
                 self._ProgramList = []
                 self._VariablesList = []
                 self._DbgVariablesList = []
