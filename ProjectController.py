@@ -664,9 +664,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             children.append(child.GetVariableLocationTree())
         return children
 
-    def ConfNodePath(self):
-        return paths.AbsDir(__file__)
-
     def CTNPath(self, CTNName=None):
         return self.ProjectPath
 

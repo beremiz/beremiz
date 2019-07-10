@@ -100,9 +100,6 @@ class ConfigTreeNode(object):
     def ConfNodeXmlFilePath(self, CTNName=None):
         return os.path.join(self.CTNPath(CTNName), "confnode.xml")
 
-    def ConfNodePath(self):
-        return os.path.join(self.CTNParent.ConfNodePath(), self.CTNType)
-
     def CTNPath(self, CTNName=None, project_path=None):
         if not CTNName:
             CTNName = self.CTNName()

@@ -59,9 +59,6 @@ class SVGUI(PythonFileCTNMixin):
         },
     ]
 
-    def ConfNodePath(self):
-        return paths.AbsDir(__file__)
-
     def _getSVGpath(self, project_path=None):
         if project_path is None:
             project_path = self.CTNPath()
