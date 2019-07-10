@@ -1875,40 +1875,43 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # note: this would abord any runing transfer with error
         self._connector.PurgeBlobs()
 
-        # transfer extra files
-        extrafiles = []
-        for extrafilespath in [self._getExtraFilesPath(),
-                               self._getProjectFilesPath()]:
+        try:
+            # transfer extra files
+            extrafiles = []
+            for extrafilespath in [self._getExtraFilesPath(),
+                                   self._getProjectFilesPath()]:
 
-            for name in os.listdir(extrafilespath):
-                extrafiles.append((
-                    name,
-                    self._connector.BlobFromFile(
-                        # use file name as a seed to avoid collisions
-                        # with files having same content
-                        os.path.join(extrafilespath, name), name)))
+                for name in os.listdir(extrafilespath):
+                    extrafiles.append((
+                        name,
+                        self._connector.BlobFromFile(
+                            # use file name as a seed to avoid collisions
+                            # with files having same content
+                            os.path.join(extrafilespath, name), name)))
 
-        # Send PLC on target
-        object_path = builder.GetBinaryPath()
-        # arbitrarily use MD5 as a seed, could be any string
-        object_blob = self._connector.BlobFromFile(object_path, MD5)
-
-        self.HidePLCProgress()
-
-        self.logger.write(_("PLC data transfered successfully.\n"))
-
-        if self._connector.NewPLC(MD5, object_blob, extrafiles):
-            if self.GetIECProgramsAndVariables():
-                self.UnsubscribeAllDebugIECVariable()
-                self.ProgramTransferred()
-                self.AppFrame.CloseObsoleteDebugTabs()
-                self.AppFrame.RefreshPouInstanceVariablesPanel()
-                self.AppFrame.LogViewer.ResetLogCounters()
-                self.logger.write(_("PLC installed successfully.\n"))
-            else:
-                self.logger.write_error(_("Missing debug data\n"))
+            # Send PLC on target
+            object_path = builder.GetBinaryPath()
+            # arbitrarily use MD5 as a seed, could be any string
+            object_blob = self._connector.BlobFromFile(object_path, MD5)
+        except IOError as e:
+            self.HidePLCProgress()
+            self.logger.write_error(repr(e))
         else:
-            self.logger.write_error(_("PLC couldn't be installed\n"))
+            self.HidePLCProgress()
+            self.logger.write(_("PLC data transfered successfully.\n"))
+
+            if self._connector.NewPLC(MD5, object_blob, extrafiles):
+                if self.GetIECProgramsAndVariables():
+                    self.UnsubscribeAllDebugIECVariable()
+                    self.ProgramTransferred()
+                    self.AppFrame.CloseObsoleteDebugTabs()
+                    self.AppFrame.RefreshPouInstanceVariablesPanel()
+                    self.AppFrame.LogViewer.ResetLogCounters()
+                    self.logger.write(_("PLC installed successfully.\n"))
+                else:
+                    self.logger.write_error(_("Missing debug data\n"))
+            else:
+                self.logger.write_error(_("PLC couldn't be installed\n"))
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
