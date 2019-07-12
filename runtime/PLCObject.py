@@ -530,7 +530,7 @@ class PLCObject(object):
 
     @RunInMain
     def PurgeBlobs(self):
-        for fobj, _path, _md5sum in self.blobs:
+        for fobj, _path, _md5sum in self.blobs.values():
             os.close(fobj)
         self._init_blobs()
 
