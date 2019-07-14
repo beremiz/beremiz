@@ -542,12 +542,12 @@ class PLCControler(object):
 
                 orig_type = pou.getpouType()
                 if orig_type == 'function' and pou_type in ['functionBlock', 'program']:
-                    # delete return type 
+                    # delete return type
                     return_type_obj = new_pou.interface.getreturnType()
                     new_pou.interface.remove(return_type_obj)
-                    # To be ultimately correct we could re-create an 
-                    # output variable with same name+_out or so 
-                    # but in any case user will have to connect/assign 
+                    # To be ultimately correct we could re-create an
+                    # output variable with same name+_out or so
+                    # but in any case user will have to connect/assign
                     # this output, so better leave it as-is
 
                 new_pou.setpouType(pou_type)
