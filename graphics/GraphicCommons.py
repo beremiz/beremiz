@@ -1969,17 +1969,17 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
             # filter duplicates, add corner to diagonals
             self.Points = []
-            lx,ly = None,None
+            lx, ly = None, None
             for x, y in points:
                 ex, ey = lx == x, ly == y
                 if ex and ey:
                     # duplicate
                     continue
-                if (lx,ly) != (None,None) and not ex and not ey:
+                if (lx, ly) != (None, None) and not ex and not ey:
                     # diagonal
                     self.Points.append(wx.Point(lx, y))
                 self.Points.append(wx.Point(x, y))
-                lx,ly = x,y
+                lx, ly = x, y
 
             # Calculate the start and end directions
             self.StartPoint = [None, vector(self.Points[0], self.Points[1])]
@@ -1995,8 +1995,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
             self.Segments = []
             i = 0
             while True:
-                l = len(self.Points)
-                if i > l - 2:
+                lp = len(self.Points)
+                if i > lp - 2:
                     break
 
                 segment = vector(self.Points[i], self.Points[i + 1])
@@ -2011,7 +2011,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                     continue
 
                 # remove corner when two segments are in opposite direction
-                if i < l - 2:
+                if i < lp - 2:
                     next = vector(self.Points[i + 1], self.Points[i + 2])
                     if is_null_vector(add_vectors(segment, next)):
                         self.Points.pop(i+1)

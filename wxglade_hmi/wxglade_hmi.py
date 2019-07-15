@@ -32,7 +32,6 @@ from xml.dom import minidom
 
 import wx
 
-import util.paths as paths
 from py_ext import PythonFileCTNMixin
 
 
