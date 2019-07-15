@@ -62,10 +62,10 @@ class PyroServer(object):
             self.daemon.connect(pyro_obj, "PLCObject")
 
             when_ready()
-            self.piper,self.pipew = os.pipe()
-            self.daemon.requestLoop(others=[self.piper], callback=lambda x:None)
+            self.piper, self.pipew = os.pipe()
+            self.daemon.requestLoop(others=[self.piper], callback=lambda x: None)
             self.piper, self.pipew = None, None
-            if hasattr(self,'sock'):
+            if hasattr(self, 'sock'):
                 self.daemon.sock.close()
         self.Unpublish()
 
