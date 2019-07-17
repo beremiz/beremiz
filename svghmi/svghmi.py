@@ -61,7 +61,6 @@ class SVGHMI(object):
         if from_project_path is not None:
             shutil.copyfile(self._getSVGpath(from_project_path),
                             self._getSVGpath())
-        return PythonFileCTNMixin.OnCTNSave(self, from_project_path)
 
     def CTNGenerate_C(self, buildpath, locations):
         """
