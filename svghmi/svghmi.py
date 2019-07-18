@@ -16,11 +16,40 @@ import util.paths as paths
 from POULibrary import POULibrary
 from docutil import open_svg
 
+HMI_TYPES_DESC = {
+    "HMI_CLASS":{},
+    "HMI_LABEL":{},
+    "HMI_STRING":{},
+    "HMI_INT":{},
+    "HMI_REAL":{}
+}
+
+HMI_TYPES = HMI_TYPES_DESC.keys()
 
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
         return paths.AbsNeighbourFile(__file__, "pous.xml")
 
+    def Generate_C(self, buildpath, varlist, IECCFLAGS):
+
+        # Filter known HMI types
+        hmi_types_instances = [v for v in varlist if v["derived"] in HMI_TYPES]
+
+        # TODO deduce HMI tree
+
+        # TODO generate C code to observe/access HMI tree variables
+        svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
+        svghmi_c_file = open(svghmi_c_filepath, 'r')
+        svghmi_c_code = svghmi_c_file.read()
+        svghmi_c_file.close()
+        svghmi_c_code = svghmi_c_code % { "the code": "/* TODO */"}
+
+        gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
+        gen_svghmi_c = open(gen_svghmi_c_path, 'w')
+        gen_svghmi_c.write(svghmi_c_code)
+        gen_svghmi_c.close()
+
+        return (["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), ""
 
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -70,9 +99,7 @@ class SVGHMI(object):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
 
-        # TODO : get variable list from Controller
-        # self.GetCTRoot().blah
-        # TODO deduce HMI tree
+        # TODO fetch HMI tree from library
 
         svgfile = self._getSVGpath()
         if os.path.exists(svgfile):

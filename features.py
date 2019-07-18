@@ -12,7 +12,8 @@ libraries = [
     ('Native', 'NativeLib.NativeLibrary', True),
     ('Python', 'py_ext.PythonLibrary', True),
     ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
-    ('SVGUI', 'svgui.SVGUILibrary', False)]
+    ('SVGUI', 'svgui.SVGUILibrary', False),
+    ('SVGHMI', 'svghmi.SVGHMILibrary', False)]
 
 catalog = [
     ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),
