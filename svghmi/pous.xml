@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:53:26"/>
-  <contentHeader name="Beremiz non-standard POUs library" modificationDateTime="2019-07-09T11:05:01">
+  <contentHeader name="Beremiz non-standard POUs library" modificationDateTime="2019-08-06T14:08:26">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -28,7 +28,7 @@
       </dataType>
       <dataType name="HMI_STRING">
         <baseType>
-          <STRING/>
+          <string/>
         </baseType>
       </dataType>
       <dataType name="HMI_BOOL">
