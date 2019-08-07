@@ -28,7 +28,7 @@ HMI_TYPES = HMI_TYPES_DESC.keys()
 
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
-        return paths.AbsNeighbourFile(__file__, "pous.xml")
+         return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
 
@@ -90,6 +90,7 @@ class SVGHMI(object):
         if from_project_path is not None:
             shutil.copyfile(self._getSVGpath(from_project_path),
                             self._getSVGpath())
+        return True
 
     def CTNGenerate_C(self, buildpath, locations):
         """
