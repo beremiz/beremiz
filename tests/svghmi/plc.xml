@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2019-08-06T14:37:15">
+  <contentHeader name="Unnamed" modificationDateTime="2019-08-08T08:54:36">
     <coordinateInfo>
       <fbd>
-        <scaling x="0" y="0"/>
+        <scaling x="5" y="5"/>
       </fbd>
       <ld>
         <scaling x="0" y="0"/>
@@ -18,8 +18,48 @@
     <dataTypes/>
     <pous>
       <pou name="program0" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="LocalVar0">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
         <body>
-          <FBD/>
+          <FBD>
+            <inVariable localId="1" executionOrderId="0" height="26" width="82" negated="false">
+              <position x="115" y="192"/>
+              <connectionPointOut>
+                <relPosition x="82" y="13"/>
+              </connectionPointOut>
+              <expression>LocalVar0</expression>
+            </inVariable>
+            <block localId="2" typeName="ADD" executionOrderId="0" height="60" width="63">
+              <position x="255" y="175"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="63" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+          </FBD>
         </body>
       </pou>
     </pous>
