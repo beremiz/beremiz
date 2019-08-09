@@ -1,0 +1,44 @@
+include yslt_noindent.yml2
+istylesheet 
+            /* From Inkscape */
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:cc="http://creativecommons.org/ns#"
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+            xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+
+            /* Our namespace to invoke python code */
+            xmlns:ns="beremiz"
+            extension-element-prefixes="ns" 
+            exclude-result-prefixes="ns" {
+    
+    /* This retrieves geometry obtained through "inkscape -S" 
+     * already parsed by python and presented as a list of 
+     * <bbox x="0" y="0" w="42" h="42">
+     */
+    variable "geometry", "ns:GetSVGGeometry()";
+   
+    /* Identity template :
+     *  - copy every attributes 
+     *  - copy every sub-elements
+     */
+    template "@* | node()" {
+      /* use real xsl:copy instead copy-of alias from yslt.yml2 */
+      xsl:copy apply "@* | node()";
+    }
+
+    /* copy root node and add geometry as comment for a test */
+    template "/" {
+      xsl:copy {
+          apply "$geometry", mode="testgeo";
+          apply "@* | node()";
+      }
+    }
+
+    template "bbox", mode="testgeo"{
+          comment {
+              > ID: «@id» x: «@x» y: «@y» w: «@w» h: «@h»
+          }
+    }
+}
