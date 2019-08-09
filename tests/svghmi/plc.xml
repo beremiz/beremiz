@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2019-08-08T08:54:36">
+  <contentHeader name="Unnamed" modificationDateTime="2019-08-09T11:20:07">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -29,24 +29,27 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="26" width="82" negated="false">
-              <position x="115" y="192"/>
-              <connectionPointOut>
-                <relPosition x="82" y="13"/>
-              </connectionPointOut>
-              <expression>LocalVar0</expression>
-            </inVariable>
             <block localId="2" typeName="ADD" executionOrderId="0" height="60" width="63">
               <position x="255" y="175"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
+                    <connection refLocalId="1">
+                      <position x="255" y="205"/>
+                      <position x="202" y="205"/>
+                    </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
                   <connectionPointIn>
                     <relPosition x="0" y="50"/>
+                    <connection refLocalId="3">
+                      <position x="255" y="225"/>
+                      <position x="235" y="225"/>
+                      <position x="235" y="235"/>
+                      <position x="190" y="235"/>
+                    </connection>
                   </connectionPointIn>
                 </variable>
               </inputVariables>
@@ -59,6 +62,31 @@
                 </variable>
               </outputVariables>
             </block>
+            <inOutVariable localId="1" executionOrderId="0" height="26" width="82" negatedOut="false" negatedIn="false">
+              <position x="120" y="190"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="2" formalParameter="OUT">
+                  <position x="120" y="200"/>
+                  <position x="100" y="200"/>
+                  <position x="100" y="140"/>
+                  <position x="328" y="140"/>
+                  <position x="328" y="200"/>
+                  <position x="318" y="200"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="82" y="10"/>
+              </connectionPointOut>
+              <expression>LocalVar0</expression>
+            </inOutVariable>
+            <inVariable localId="3" executionOrderId="0" height="25" width="60" negated="false">
+              <position x="130" y="225"/>
+              <connectionPointOut>
+                <relPosition x="60" y="10"/>
+              </connectionPointOut>
+              <expression>DINT#1</expression>
+            </inVariable>
           </FBD>
         </body>
       </pou>
