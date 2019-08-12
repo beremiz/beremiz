@@ -16,7 +16,7 @@
   <xsl:template mode="testgeo" match="bbox">
     <xsl:comment>
       <xsl:text>ID: </xsl:text>
-      <xsl:value-of select="@id"/>
+      <xsl:value-of select="@Id"/>
       <xsl:text> x: </xsl:text>
       <xsl:value-of select="@x"/>
       <xsl:text> y: </xsl:text>

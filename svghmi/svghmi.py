@@ -14,8 +14,10 @@ import wx
 
 import util.paths as paths
 from POULibrary import POULibrary
-from docutil import open_svg
+from docutil import open_svg, get_inkscape_path
 from lxml import etree
+
+from util.ProcessLogger import ProcessLogger
 
 HMI_TYPES_DESC = {
     "HMI_CLASS":{},
@@ -98,9 +100,25 @@ class SVGHMI(object):
         return True
 
     def GetSVGGeometry(self):
-        # TODO : invoke inskscape -S, csv-parse output, produce elements
-        return [etree.Element("bbox", id="blah0", x="1", y="2", w="3", h="4"),
-                etree.Element("bbox", id="blah1", x="5", y="6", w="7", h="8")]
+        # invoke inskscape -S, csv-parse output, produce elements
+        InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
+
+        # TODO : move following line to __init__
+        inkpath = get_inkscape_path()
+        svgpath = self._getSVGpath()
+        _status, result, _err_result = ProcessLogger(None,
+                                                     inkpath + " -S " + svgpath,
+                                                     no_stdout=True,
+                                                     no_stderr=True).spin()
+        res = []
+        for line in result.split():
+            strippedline = line.strip()
+            attrs = dict(
+                zip(InkscapeGeomColumns, line.strip().split(',')))
+
+            res.append(etree.Element("bbox", **attrs))
+
+        return res
 
     def CTNGenerate_C(self, buildpath, locations):
         """
