@@ -31,15 +31,19 @@ import wx
 
 def get_inkscape_path():
     """ Return the Inkscape path """
-    from six.moves import winreg
-    try:
-        svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
-                                       'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
-    except OSError:
-        svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
-                                       'Software\\Classes\\inkscape.svg\\shell\\open\\command')
-    svgexepath = svgexepath.replace('"%1"', '')
-    return svgexepath.replace('"', '')
+    if wx.Platform == '__WXMSW__':
+        from six.moves import winreg
+        try:
+            svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                           'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
+        except OSError:
+            svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                           'Software\\Classes\\inkscape.svg\\shell\\open\\command')
+        svgexepath = svgexepath.replace('"%1"', '').strip()
+        return svgexepath.replace('"', '')
+    else:
+        # TODO: search path
+        return os.path.join("/usr/bin", "inkscape")
 
 
 def open_win_svg(svgexepath, svgfile):
@@ -65,7 +69,7 @@ def open_svg(svgfile):
             wx.MessageBox("Inkscape is not found or installed !")
             return None
     else:
-        svgexepath = os.path.join("/usr/bin", "inkscape")
+        svgexepath=get_inkscape_path()
         if os.path.isfile(svgexepath):
             open_lin_svg(svgexepath, svgfile)
         else:
