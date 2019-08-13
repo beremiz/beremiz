@@ -9,6 +9,8 @@
 from __future__ import absolute_import
 import os
 import shutil
+from itertools import izip
+from pprint import pprint, pformat
 
 import wx
 
@@ -33,16 +35,100 @@ from XSLTransform import XSLTransform
 
 ScriptDirectory = paths.AbsDir(__file__)
 
+class HMITreeNode(object):
+    def __init__(self, path, name, nodetype):
+        self.path = path
+        self.name = name
+        self.nodetype = nodetype
+        if nodetype in ["HMI_LABEL", "HMI_ROOT"]:
+            self.children = []
+
+    def pprint(self, indent = 0):
+        res = ">"*indent + pformat(self.__dict__, indent = indent, depth = 1) + "\n"
+        if hasattr(self, "children"): 
+            res += "\n".join([child.pprint(indent = indent + 1)
+                              for child in self.children])
+            res += "\n"
+            
+        return res
+
+    def place_node(self, node):
+        best_child = None
+        known_best_match = 0
+        for child in self.children:
+            in_common = 0
+            for child_path_item, node_path_item in izip(child.path, node.path):
+                if child_path_item == node_path_item:
+                    in_common +=1
+                else:
+                    break
+            if in_common > known_best_match:
+                known_best_match = in_common
+                best_child = child
+        if best_child is not None and best_child.nodetype == "HMI_LABEL":
+            best_child.place_node(node)
+        else:
+            self.children.append(node)
+            
+
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
 
+        """
+        PLC Instance Tree:
+          prog0
+           +->v1 HMI_INT
+           +->v2 HMI_INT
+           +->fb0 (type mhoo)
+           |   +->va HMI_LABEL
+           |   +->v3 HMI_INT
+           |   +->v4 HMI_INT
+           |
+           +->fb1 (type mhoo)
+           |   +->va HMI_LABEL
+           |   +->v3 HMI_INT
+           |   +->v4 HMI_INT
+           |
+           +->fb2
+               +->v5 HMI_IN
+
+        HMI tree:
+          hmi0
+           +->v1
+           +->v2
+           +->fb0_va
+           |   +-> v3
+           |   +-> v4
+           |
+           +->fb1_va
+           |   +-> v3
+           |   +-> v4
+           |
+           +->v5
+
+        """
+
         # Filter known HMI types
         hmi_types_instances = [v for v in varlist if v["derived"] in HMI_TYPES]
+        # TODO XXX !!!  filter intermediate variables added for FBD feedback loop
 
-        # TODO deduce HMI tree
+        hmi_tree_root = HMITreeNode(None, "hmi0", "HMI_ROOT")
+
+        # TODO add always available variables here ?
+        #    - plc status
+        #    - current page
+        #    - ...
+
+        # deduce HMI tree from PLC HMI_* instances
+        for v in hmi_types_instances:
+            path = v["IEC_path"].split(".")
+            new_node = HMITreeNode(path, path[-1], v["derived"])
+            hmi_tree_root.place_node(new_node)
+
+        print(hmi_tree_root.pprint())
 
         # TODO generate C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
