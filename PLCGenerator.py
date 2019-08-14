@@ -1160,7 +1160,7 @@ class PouProgramGenerator(object):
                             if variable.getformalParameter() == "":
                                 variable_name = "%s%d" % (type, block.getlocalId())
                             else:
-                                variable_name = "%s%d_%s" % (type, block.getlocalId(), parameter)
+                                variable_name = "_TMP_%s%d_%s" % (type, block.getlocalId(), parameter)
                             if self.Interface[-1][0] != "VAR" or self.Interface[-1][1] is not None or self.Interface[-1][2]:
                                 self.Interface.append(("VAR", None, False, []))
                             if variable.connectionPointOut in self.ConnectionTypes:
@@ -1253,7 +1253,7 @@ class PouProgramGenerator(object):
                     if output_parameter == "":
                         output_name = "%s%d" % (type, block.getlocalId())
                     else:
-                        output_name = "%s%d_%s" % (type, block.getlocalId(), output_parameter)
+                        output_name = "_TMP_%s%d_%s" % (type, block.getlocalId(), output_parameter)
                     output_value = [(output_name, output_info)]
                 return self.ExtractModifier(output_variable, output_value, output_info)
             if block_infos["type"] == "functionBlock":

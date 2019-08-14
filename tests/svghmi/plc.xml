@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2019-08-13T10:34:09">
+  <contentHeader name="Unnamed" modificationDateTime="2019-08-14T10:55:12">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -27,7 +27,7 @@
             </variable>
             <variable name="Pump0">
               <type>
-                <derived name="Pump"/>
+                <derived name="PumpControl"/>
               </type>
             </variable>
           </localVars>
@@ -92,7 +92,7 @@
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <block localId="4" typeName="Pump" instanceName="Pump0" executionOrderId="0" height="20" width="45">
+            <block localId="4" typeName="PumpControl" instanceName="Pump0" executionOrderId="0" height="20" width="98">
               <position x="595" y="50"/>
               <inputVariables/>
               <inOutVariables/>
@@ -101,15 +101,20 @@
           </FBD>
         </body>
       </pou>
-      <pou name="Pump" pouType="functionBlock">
+      <pou name="PumpControl" pouType="functionBlock">
         <interface>
           <localVars>
-            <variable name="hmi">
+            <variable name="Pump">
               <type>
                 <derived name="HMI_LABEL"/>
               </type>
             </variable>
             <variable name="Pressure">
+              <type>
+                <derived name="HMI_INT"/>
+              </type>
+            </variable>
+            <variable name="AddOut">
               <type>
                 <derived name="HMI_INT"/>
               </type>
@@ -178,6 +183,19 @@
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
+            <outVariable localId="4" executionOrderId="0" height="30" width="60" negated="false">
+              <position x="640" y="135"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="2" formalParameter="OUT">
+                  <position x="640" y="150"/>
+                  <position x="590" y="150"/>
+                  <position x="590" y="135"/>
+                  <position x="540" y="135"/>
+                </connection>
+              </connectionPointIn>
+              <expression>AddOut</expression>
+            </outVariable>
           </FBD>
         </body>
       </pou>
@@ -190,6 +208,13 @@
           <task name="task0" priority="0" interval="T#20ms">
             <pouInstance name="instance0" typeName="program0"/>
           </task>
+          <globalVars>
+            <variable name="LocalVar0">
+              <type>
+                <derived name="HMI_LABEL"/>
+              </type>
+            </variable>
+          </globalVars>
         </resource>
       </configuration>
     </configurations>

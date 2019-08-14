@@ -113,9 +113,8 @@ class SVGHMILibrary(POULibrary):
 
         # Filter known HMI types
         hmi_types_instances = [v for v in varlist if v["derived"] in HMI_TYPES]
-        # TODO XXX !!!  filter intermediate variables added for FBD feedback loop
 
-        hmi_tree_root = HMITreeNode(None, "hmi0", "HMI_ROOT")
+        hmi_tree_root = HMITreeNode(None, "/", "HMI_ROOT")
 
         # TODO add always available variables here ?
         #    - plc status
@@ -125,6 +124,9 @@ class SVGHMILibrary(POULibrary):
         # deduce HMI tree from PLC HMI_* instances
         for v in hmi_types_instances:
             path = v["IEC_path"].split(".")
+            # ignores variables starting with _TMP_
+            if path[-1].startswith("_TMP_"):
+                continue
             new_node = HMITreeNode(path, path[-1], v["derived"])
             hmi_tree_root.place_node(new_node)
 
