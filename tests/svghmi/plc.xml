@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2019-08-14T10:55:12">
+  <contentHeader name="Unnamed" modificationDateTime="2019-08-14T11:10:01">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -17,10 +17,10 @@
   <types>
     <dataTypes/>
     <pous>
-      <pou name="program0" pouType="program">
+      <pou name="MainStuff" pouType="program">
         <interface>
           <localVars>
-            <variable name="LocalVar0">
+            <variable name="TargetPressure">
               <type>
                 <derived name="HMI_INT"/>
               </type>
@@ -67,23 +67,23 @@
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="1" executionOrderId="0" height="26" width="82" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="1" executionOrderId="0" height="26" width="122" negatedOut="false" negatedIn="false">
               <position x="120" y="190"/>
               <connectionPointIn>
-                <relPosition x="0" y="10"/>
+                <relPosition x="0" y="15"/>
                 <connection refLocalId="2" formalParameter="OUT">
-                  <position x="120" y="200"/>
-                  <position x="100" y="200"/>
+                  <position x="120" y="205"/>
+                  <position x="100" y="205"/>
                   <position x="100" y="140"/>
                   <position x="328" y="140"/>
-                  <position x="328" y="200"/>
-                  <position x="318" y="200"/>
+                  <position x="328" y="205"/>
+                  <position x="318" y="205"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="82" y="10"/>
+                <relPosition x="122" y="15"/>
               </connectionPointOut>
-              <expression>LocalVar0</expression>
+              <expression>TargetPressure</expression>
             </inOutVariable>
             <inVariable localId="3" executionOrderId="0" height="25" width="60" negated="false">
               <position x="130" y="225"/>
@@ -92,12 +92,29 @@
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <block localId="4" typeName="PumpControl" instanceName="Pump0" executionOrderId="0" height="20" width="98">
+            <block localId="4" typeName="PumpControl" instanceName="Pump0" executionOrderId="0" height="40" width="127">
               <position x="595" y="50"/>
-              <inputVariables/>
+              <inputVariables>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="5">
+                      <position x="595" y="80"/>
+                      <position x="570" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
               <inOutVariables/>
               <outputVariables/>
             </block>
+            <inVariable localId="5" executionOrderId="0" height="30" width="125" negated="false">
+              <position x="445" y="65"/>
+              <connectionPointOut>
+                <relPosition x="125" y="15"/>
+              </connectionPointOut>
+              <expression>TargetPressure</expression>
+            </inVariable>
           </FBD>
         </body>
       </pou>
@@ -114,6 +131,15 @@
                 <derived name="HMI_INT"/>
               </type>
             </variable>
+          </localVars>
+          <inputVars>
+            <variable name="TargetPressure">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </inputVars>
+          <localVars>
             <variable name="AddOut">
               <type>
                 <derived name="HMI_INT"/>
@@ -206,15 +232,8 @@
       <configuration name="config">
         <resource name="resource1">
           <task name="task0" priority="0" interval="T#20ms">
-            <pouInstance name="instance0" typeName="program0"/>
+            <pouInstance name="instance0" typeName="MainStuff"/>
           </task>
-          <globalVars>
-            <variable name="LocalVar0">
-              <type>
-                <derived name="HMI_LABEL"/>
-              </type>
-            </variable>
-          </globalVars>
         </resource>
       </configuration>
     </configurations>
