@@ -14,7 +14,7 @@
    viewBox="0 0 1280 720"
    version="1.1"
    id="hmi0"
-   sodipodi:docname="default.svg"
+   sodipodi:docname="gui.svg"
    inkscape:version="0.92.3 (2405546, 2018-03-11)">
   <metadata
      id="metadata4542">
@@ -42,8 +42,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.7"
-     inkscape:cx="576.80864"
-     inkscape:cy="330.28432"
+     inkscape:cx="586.09435"
+     inkscape:cy="381.71289"
      inkscape:window-width="1600"
      inkscape:window-height="886"
      inkscape:window-x="0"
@@ -57,36 +57,61 @@
      x="0"
      y="0">
     <desc
-       id="desc_page0">This is description for page 0
-
-all lines in the form &quot;name: value&quot; 
-are used as js object definition initializer
-
-role: &quot;page&quot;
-name: &quot;Home&quot;
-
-after triple opening braces is global JavaScript code
-
-{{{
-/* JS style Comment */
-alert(&quot;Hello World&quot;);
-}}}
-
-after triple closing braces is back to description
+       id="desc_page0">=HMI=
+role = Page;
+name = &quot;Home&quot;;
 </desc>
   </rect>
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:160px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="436.32812"
+     x="136.32812"
      y="418.24219"
      id="text5151"
      inkscape:label="count"><desc
-       id="desc5153">path: &quot;count&quot;
-format: &quot;%4.4d&quot;</desc><tspan
+       id="desc5153">=HMI=
+role = Input;
+path = &quot;/PRESSURETARGET&quot;;
+/* Don't forget to press the &quot;Set&quot; button ! */</desc><tspan
        sodipodi:role="line"
        id="tspan5149"
-       x="436.32812"
+       x="136.32812"
        y="418.24219"
        style="stroke-width:1px">8888</tspan></text>
+  <text
+     inkscape:label="count"
+     id="text823"
+     y="418.24219"
+     x="756.32812"
+     style="font-style:normal;font-weight:normal;font-size:160px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     xml:space="preserve"><desc
+       id="desc819">=HMI=
+role = Display;
+path = &quot;/PUMP/PRESSURE&quot;;
+/* Don't forget to press the &quot;Set&quot; button ! */</desc><tspan
+       style="stroke-width:1px"
+       y="418.24219"
+       x="756.32812"
+       id="tspan821"
+       sodipodi:role="line">8888</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+     x="242.85715"
+     y="197.14285"
+     id="text827"><tspan
+       sodipodi:role="line"
+       id="tspan825"
+       x="242.85715"
+       y="197.14285">SetPoint</tspan></text>
+  <text
+     id="text831"
+     y="197.14285"
+     x="882.85718"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#008000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+     xml:space="preserve"><tspan
+       y="197.14285"
+       x="882.85718"
+       id="tspan829"
+       sodipodi:role="line">Actual</tspan></text>
 </svg>
