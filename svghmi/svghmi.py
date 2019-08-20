@@ -55,16 +55,17 @@ class HMITreeNode(object):
     def place_node(self, node):
         best_child = None
         known_best_match = 0
-        for child in self.children:
-            in_common = 0
-            for child_path_item, node_path_item in izip(child.path, node.path):
-                if child_path_item == node_path_item:
-                    in_common +=1
-                else:
-                    break
-            if in_common > known_best_match:
-                known_best_match = in_common
-                best_child = child
+        for child in self.children : 
+            if child.path is not None:
+                in_common = 0
+                for child_path_item, node_path_item in izip(child.path, node.path):
+                    if child_path_item == node_path_item:
+                        in_common +=1
+                    else:
+                        break
+                if in_common > known_best_match:
+                    known_best_match = in_common
+                    best_child = child
         if best_child is not None and best_child.nodetype == "HMI_LABEL":
             best_child.place_node(node)
         else:
@@ -116,10 +117,10 @@ class SVGHMILibrary(POULibrary):
 
         hmi_tree_root = HMITreeNode(None, "/", "HMI_ROOT")
 
-        # TODO add always available variables here ?
-        #    - plc status
-        #    - current page
-        #    - ...
+        # add special nodes 
+        map(lambda (n,t): hmi_tree_root.children.append(HMITreeNode(None,n,t)), [
+                ("plc_status", "HMI_PLC_STATUS"),
+                ("current_page", "HMI_CURRENT_PAGE")])
 
         # deduce HMI tree from PLC HMI_* instances
         for v in hmi_types_instances:
