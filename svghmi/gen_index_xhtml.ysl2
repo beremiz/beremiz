@@ -18,6 +18,7 @@ istylesheet
      * <bbox x="0" y="0" w="42" h="42">
      */
     variable "geometry", "ns:GetSVGGeometry()";
+    variable "hmitree", "ns:GetHMITree()";
    
     /* Identity template :
      *  - copy every attributes 
@@ -31,14 +32,26 @@ istylesheet
     /* copy root node and add geometry as comment for a test */
     template "/" {
       xsl:copy {
-          apply "$geometry", mode="testgeo";
+          comment {
+              apply "$geometry", mode="testgeo";
+          }
+          comment {
+              | blah
+              apply "$hmitree", mode="testtree";
+          }
           apply "@* | node()";
       }
     }
 
     template "bbox", mode="testgeo"{
-          comment {
-              > ID: «@Id» x: «@x» y: «@y» w: «@w» h: «@h»
-          }
+        | ID: «@Id» x: «@x» y: «@y» w: «@w» h: «@h»
+    }
+
+    template "*", mode="testtree"{
+        param "indent", "''";
+        | «$indent» «local-name()» «@name» «@type» «@path»
+        apply "*", mode="testtree" {
+            with "indent" value "concat($indent,'>')"
+        };
     }
 }
