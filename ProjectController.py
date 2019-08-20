@@ -1163,16 +1163,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _Generate_runtime(self):
         buildpath = self._getBuildPath()
 
-        # Generate C code and compilation params from confnode hierarchy
-        try:
-            CTNLocationCFilesAndCFLAGS, CTNLDFLAGS, CTNExtraFiles = self._Generate_C(
-                buildpath,
-                self.PLCGeneratedLocatedVars)
-        except Exception:
-            self.logger.write_error(
-                _("Runtime IO extensions C code generation failed !\n"))
-            self.logger.write_error(traceback.format_exc())
-            return False
+        # CTN code gen is expected AFTER Libraries code gen,
+        # at least SVGHMI relies on it.
 
         # Generate C code and compilation params from liraries
         try:
@@ -1181,6 +1173,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
         except Exception:
             self.logger.write_error(
                 _("Runtime library extensions C code generation failed !\n"))
+            self.logger.write_error(traceback.format_exc())
+            return False
+
+        # Generate C code and compilation params from confnode hierarchy
+        try:
+            CTNLocationCFilesAndCFLAGS, CTNLDFLAGS, CTNExtraFiles = self._Generate_C(
+                buildpath,
+                self.PLCGeneratedLocatedVars)
+        except Exception:
+            self.logger.write_error(
+                _("Runtime IO extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             return False
 
