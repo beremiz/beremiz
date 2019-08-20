@@ -1,4 +1,8 @@
 include yslt.yml2
+!!
+def indent(level):
+    return ""
+!!
 
 in xsl {
     decl istylesheet (
@@ -11,6 +15,8 @@ in xsl {
         output *output;
         content;
     };
+
+    decl indent() alias -; 
 
     decl template(match) {
         content;
