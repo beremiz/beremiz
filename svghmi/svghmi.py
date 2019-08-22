@@ -20,6 +20,7 @@ from docutil import open_svg, get_inkscape_path
 from lxml import etree
 
 from util.ProcessLogger import ProcessLogger
+from runtime.typemapping import DebugTypesSize
 
 HMI_TYPES_DESC = {
     "HMI_CLASS":{},
@@ -36,10 +37,14 @@ from XSLTransform import XSLTransform
 ScriptDirectory = paths.AbsDir(__file__)
 
 class HMITreeNode(object):
-    def __init__(self, path, name, nodetype):
+    def __init__(self, path, name, nodetype, iectype = None, vartype = None):
         self.path = path
         self.name = name
         self.nodetype = nodetype
+
+        if iectype is not None:
+            self.iectype = iectype
+            self.vartype = vartype
         if nodetype in ["HMI_LABEL", "HMI_ROOT"]:
             self.children = []
 
@@ -84,6 +89,13 @@ class HMITreeNode(object):
                 res.append(child_etree)
 
         return res
+
+    def traverse(self):
+        yield self
+        if hasattr(self, "children"): 
+            for c in self.children:
+                for yoodl in c.traverse():
+                    yield yoodl
 
 # module scope for HMITree root
 # so that CTN can use HMITree deduced in Library
@@ -145,21 +157,58 @@ class SVGHMILibrary(POULibrary):
 
         # deduce HMI tree from PLC HMI_* instances
         for v in hmi_types_instances:
-            path = v["IEC_path"].split(".")
+            path = v["C_path"].split(".")
             # ignores variables starting with _TMP_
             if path[-1].startswith("_TMP_"):
                 continue
-            new_node = HMITreeNode(path, path[-1], v["derived"])
+            new_node = HMITreeNode(path, path[-1], v["derived"], v["type"], v["vartype"])
             hmi_tree_root.place_node(new_node)
 
         print(hmi_tree_root.pprint())
+
+        variable_decl_array = []
+        extern_variables_declarations = []
+        bofs = 0
+        for node in hmi_tree_root.traverse():
+            if hasattr(node, "iectype"):
+                sz = DebugTypesSize.get(node.iectype, 0)
+                variable_decl_array += [
+                    "{&(" + ".".join(node.path) + "), " + node.iectype + {
+                        "EXT": "_P_ENUM",
+                        "IN":  "_P_ENUM",
+                        "MEM": "_O_ENUM",
+                        "OUT": "_O_ENUM",
+                        "VAR": "_ENUM"
+                    }[node.vartype] + "}"]
+                bofs += sz
+                if len(node.path) == 1:
+                    extern_variables_declarations += [
+                        "extern __IEC_" + node.iectype + "_" +
+                        "t" if node.vartype is "VAR" else "p"
+                        + ".".join(node.path) + ";"]
+
+        # TODO : filter only requiered external declarations
+        for v in varlist :
+            if v["C_path"].find('.') < 0 and v["vartype"] == "FB" :
+                extern_variables_declarations += [
+                    "extern %(type)s %(C_path)s;" % v]
+
+        # TODO check if programs need to be declared separately
+        # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
+        #                                     p for p in self._ProgramList]),
 
         # TODO generate C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
         svghmi_c_file = open(svghmi_c_filepath, 'r')
         svghmi_c_code = svghmi_c_file.read()
         svghmi_c_file.close()
-        svghmi_c_code = svghmi_c_code % { "hmi_tree": "TODO !!!"}
+        svghmi_c_code = svghmi_c_code % { 
+            "variable_decl_array": ",\n".join(variable_decl_array),
+            "extern_variables_declarations": "\n".join(extern_variables_declarations),
+            "varinit":"",
+            "varret":"",
+            "varpub":""
+            }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
         gen_svghmi_c = open(gen_svghmi_c_path, 'w')
@@ -243,8 +292,6 @@ class SVGHMI(object):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
 
-        # TODO fetch HMI tree from library
-
         svgfile = self._getSVGpath()
         if os.path.exists(svgfile):
 
@@ -260,8 +307,8 @@ class SVGHMI(object):
             # call xslt transform on Inkscape's SVG to generate XHTML
             result = transform.transform(svgdom)
            
-            print(str(result))
-            print(transform.xslt.error_log)
+            # print(str(result))
+            # print(transform.xslt.error_log)
 
             # TODO
             #   - Errors on HMI semantics
