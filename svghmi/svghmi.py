@@ -168,7 +168,7 @@ class SVGHMILibrary(POULibrary):
 
         variable_decl_array = []
         extern_variables_declarations = []
-        bofs = 0
+        buf_index = 0
         for node in hmi_tree_root.traverse():
             if hasattr(node, "iectype"):
                 sz = DebugTypesSize.get(node.iectype, 0)
@@ -179,8 +179,9 @@ class SVGHMILibrary(POULibrary):
                         "MEM": "_O_ENUM",
                         "OUT": "_O_ENUM",
                         "VAR": "_ENUM"
-                    }[node.vartype] + "}"]
-                bofs += sz
+                    }[node.vartype] + ", " +
+                    str(buf_index) + ", 0}"]
+                buf_index += sz
                 if len(node.path) == 1:
                     extern_variables_declarations += [
                         "extern __IEC_" + node.iectype + "_" +
@@ -205,9 +206,7 @@ class SVGHMILibrary(POULibrary):
         svghmi_c_code = svghmi_c_code % { 
             "variable_decl_array": ",\n".join(variable_decl_array),
             "extern_variables_declarations": "\n".join(extern_variables_declarations),
-            "varinit":"",
-            "varret":"",
-            "varpub":""
+            "buffer_size": buf_index
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
