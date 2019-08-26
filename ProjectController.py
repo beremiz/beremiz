@@ -1053,7 +1053,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     "FB":  "extern       %(type)s   %(C_path)s;"
                 }[v["vartype"]] % v
                 for v in self._VariablesList if v["C_path"].find('.') < 0]),
-            "variable_decl_array": ",\n".join(variable_decl_array)
+            "variable_decl_array": ",\n".join(variable_decl_array),
+            "var_access_code": targets.GetCode("var_access.c")
         }
 
         return debug_code
