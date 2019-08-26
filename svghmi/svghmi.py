@@ -21,6 +21,7 @@ from lxml import etree
 
 from util.ProcessLogger import ProcessLogger
 from runtime.typemapping import DebugTypesSize
+import targets
 
 HMI_TYPES_DESC = {
     "HMI_CLASS":{},
@@ -206,7 +207,8 @@ class SVGHMILibrary(POULibrary):
         svghmi_c_code = svghmi_c_code % { 
             "variable_decl_array": ",\n".join(variable_decl_array),
             "extern_variables_declarations": "\n".join(extern_variables_declarations),
-            "buffer_size": buf_index
+            "buffer_size": buf_index,
+            "var_access_code": targets.GetCode("var_access.c")
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
