@@ -4,6 +4,7 @@
 #include "config.h"
 #include "beremiz.h"
 
+#define DEFAULT_REFRESH_PERIOD_MS 100
 #define HMI_BUFFER_SIZE %(buffer_size)d
 
 /* PLC reads from that buffer */
@@ -12,16 +13,38 @@ static char rbuf[HMI_BUFFER_SIZE];
 /* PLC writes to that buffer */
 static char wbuf[HMI_BUFFER_SIZE];
 
-static pthread_mutex_t wbuf_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t rbuf_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 %(extern_variables_declarations)s
+
+#define ticktime_ns %(PLC_ticktime)d;
+uint16_t ticktime_ms (ticktime_ns>1000000)?
+                     ticktime_ns/1000000:
+                     1;
+
+typedef enum {
+    buf_free = 0,
+    buf_set,
+    buf_tosend
+} buf_state_t;
+
+int global_write_dirty = 0;
 
 typedef const struct {
     void *ptr;
     __IEC_types_enum type;
     uint32_t buf_index;
-    uint32_t flags;
+
+    /* publish/write/send */
+    int wlock;
+    /* zero means not subscribed */
+    uint16_t refresh_period_ms;
+    uint16_t age_ms;
+
+    buf_state_t wstate;
+
+    /* retrieve/read/recv */
+    int rlock;
+    buf_state_t rstate;
+
 } hmi_tree_item_t;
 
 static hmi_tree_item_t hmi_tree_item[] = {
@@ -51,7 +74,56 @@ void write_iterator(hmi_tree_item_t *dsc)
 
     void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
 
-    memcpy(dest_p, visible_value_p, __get_type_enum_size(dsc->type));
+    /* Try take lock */
+    long was_locked = AtomicCompareExchange(&dsc->wlock, 0, 1);
+
+    if(was_locked) {
+        /* was locked. give up*/
+        return;
+    }
+
+    if(dsc->wstate == buf_set)
+        /* if being subscribed */
+        if(dsc->refresh_period_ms){
+            if(dsc->age_ms + ticktime_ms < dsc->refresh_period_ms){
+                dsc->age_ms += ticktime_ms;
+            }else{
+                dsc->wstate = buf_tosend;
+            }
+        }
+    }
+    
+    /* if new value differs from previous one */
+    if(memcmp(dest_p, visible_value_p, __get_type_enum_size(dsc->type)) != 0){
+        /* copy and flag as set */
+        memcpy(dest_p, visible_value_p, __get_type_enum_size(dsc->type));
+        if(dsc->wstate == buf_free) {
+            dsc->wstate = buf_set;
+            dsc->age_ms = 0;
+        }
+        global_write_dirty = 1;
+    }
+
+    /* unlock - use AtomicComparExchange to have memory barrier */
+    AtomicCompareExchange(&dsc->wlock, 1, 0);
+}
+
+struct timespec sending_now;
+struct timespec next_sending;
+void send_iterator(hmi_tree_item_t *dsc)
+{
+    while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
+
+    // check for variable being modified
+    if(dsc->wstat == buf_tosend){
+        // send 
+
+        // TODO write to some socket
+
+        dsc->wstate = buf_free; 
+    }
+
+    AtomicCompareExchange(&dsc->wlock, 1, 0);
 }
 
 void read_iterator(hmi_tree_item_t *dsc)
@@ -62,6 +134,7 @@ void read_iterator(hmi_tree_item_t *dsc)
 
     void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
 
+
     memcpy(visible_value_p, src_p, __get_type_enum_size(dsc->type));
 }
 
@@ -69,6 +142,11 @@ int __init_svghmi()
 {
     bzero(rbuf,sizeof(rbuf));
     bzero(wbuf,sizeof(wbuf));
+    
+    // create - connection endpoint
+    //        - sending thread
+    //        - sending semaphore
+    //        - recv thread
 
     return 0;
 }
@@ -79,16 +157,24 @@ void __cleanup_svghmi()
 
 void __retrieve_svghmi()
 {
-    if(!pthread_mutex_lock(&rbuf_mutex)){
-        traverse_hmi_tree(read_iterator);
-        pthread_mutex_unlock(&rbuf_mutex);
-    }
+    traverse_hmi_tree(read_iterator);
 }
 
 void __publish_svghmi()
 {
-    if(!pthread_mutex_lock(&wbuf_mutex)){
-        pthread_mutex_unlock(&wbuf_mutex);
+    global_write_dirty = 0;
+    traverse_hmi_tree(write_iterator);
+    if(global_write_dirty) {
+        // TODO : set emaphore to wakeup sending thread
     }
+
 }
 
+void sending_thread_proc(void* args){
+
+    // TODO : wait for 
+    //        - semaphore
+    //        - next autonomous send thread wakeup. (impl as wait timeout ?) 
+
+    traverse_hmi_tree(send_iterator);
+}

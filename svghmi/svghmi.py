@@ -181,7 +181,7 @@ class SVGHMILibrary(POULibrary):
                         "OUT": "_O_ENUM",
                         "VAR": "_ENUM"
                     }[node.vartype] + ", " +
-                    str(buf_index) + ", 0}"]
+                    str(buf_index) + ", 0, }"]
                 buf_index += sz
                 if len(node.path) == 1:
                     extern_variables_declarations += [
@@ -208,7 +208,8 @@ class SVGHMILibrary(POULibrary):
             "variable_decl_array": ",\n".join(variable_decl_array),
             "extern_variables_declarations": "\n".join(extern_variables_declarations),
             "buffer_size": buf_index,
-            "var_access_code": targets.GetCode("var_access.c")
+            "var_access_code": targets.GetCode("var_access.c"),
+            "PLC_ticktime": self.GetCTRoot().GetTicktime()
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
