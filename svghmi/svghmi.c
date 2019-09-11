@@ -15,8 +15,8 @@ static char wbuf[HMI_BUFFER_SIZE];
 
 %(extern_variables_declarations)s
 
-#define ticktime_ns %(PLC_ticktime)d;
-uint16_t ticktime_ms (ticktime_ns>1000000)?
+#define ticktime_ns %(PLC_ticktime)d
+uint16_t ticktime_ms = (ticktime_ns>1000000)?
                      ticktime_ns/1000000:
                      1;
 
@@ -28,13 +28,13 @@ typedef enum {
 
 int global_write_dirty = 0;
 
-typedef const struct {
+typedef struct {
     void *ptr;
     __IEC_types_enum type;
     uint32_t buf_index;
 
     /* publish/write/send */
-    int wlock;
+    long wlock;
     /* zero means not subscribed */
     uint16_t refresh_period_ms;
     uint16_t age_ms;
@@ -42,7 +42,7 @@ typedef const struct {
     buf_state_t wstate;
 
     /* retrieve/read/recv */
-    int rlock;
+    long rlock;
     buf_state_t rstate;
 
 } hmi_tree_item_t;
@@ -82,7 +82,7 @@ void write_iterator(hmi_tree_item_t *dsc)
         return;
     }
 
-    if(dsc->wstate == buf_set)
+    if(dsc->wstate == buf_set){
         /* if being subscribed */
         if(dsc->refresh_period_ms){
             if(dsc->age_ms + ticktime_ms < dsc->refresh_period_ms){
@@ -115,10 +115,10 @@ void send_iterator(hmi_tree_item_t *dsc)
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
 
     // check for variable being modified
-    if(dsc->wstat == buf_tosend){
+    if(dsc->wstate == buf_tosend){
         // send 
 
-        // TODO write to some socket
+        // TODO call the python callback 
 
         dsc->wstate = buf_free; 
     }
@@ -143,10 +143,7 @@ int __init_svghmi()
     bzero(rbuf,sizeof(rbuf));
     bzero(wbuf,sizeof(wbuf));
     
-    // create - connection endpoint
-    //        - sending thread
-    //        - sending semaphore
-    //        - recv thread
+    // TODO - sending pthread condition variable
 
     return 0;
 }
@@ -165,16 +162,21 @@ void __publish_svghmi()
     global_write_dirty = 0;
     traverse_hmi_tree(write_iterator);
     if(global_write_dirty) {
-        // TODO : set emaphore to wakeup sending thread
+        // TODO : set condition variable to wakeup sending collector
     }
 
 }
 
-void sending_thread_proc(void* args){
+void* collect_updates_to_send(void* args){
+
+    // TODO : get callback from args
+
 
     // TODO : wait for 
-    //        - semaphore
-    //        - next autonomous send thread wakeup. (impl as wait timeout ?) 
+    //        - condition variable
+
+    // TODO add arg to traverse_hmi_tree to pass callback
 
     traverse_hmi_tree(send_iterator);
+
 }

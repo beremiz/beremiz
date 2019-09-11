@@ -199,7 +199,7 @@ class SVGHMILibrary(POULibrary):
         # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
         #                                     p for p in self._ProgramList]),
 
-        # TODO generate C code to observe/access HMI tree variables
+        # C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
         svghmi_c_file = open(svghmi_c_filepath, 'r')
         svghmi_c_code = svghmi_c_file.read()
@@ -209,7 +209,7 @@ class SVGHMILibrary(POULibrary):
             "extern_variables_declarations": "\n".join(extern_variables_declarations),
             "buffer_size": buf_index,
             "var_access_code": targets.GetCode("var_access.c"),
-            "PLC_ticktime": self.GetCTRoot().GetTicktime()
+            "PLC_ticktime": self.GetCTR().GetTicktime()
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
@@ -217,10 +217,21 @@ class SVGHMILibrary(POULibrary):
         gen_svghmi_c.write(svghmi_c_code)
         gen_svghmi_c.close()
 
-        return (["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), ""
+        # Python based WebSocket HMITree Server
+        svghmiserverfile = open(paths.AbsNeighbourFile(__file__, "svghmi_server.py"), 'r')
+        svghmiservercode = svghmiserverfile.read()
+        svghmiserverfile.close()
+
+        runtimefile_path = os.path.join(buildpath, "runtime_svghmi.py")
+        runtimefile = open(runtimefile_path, 'w')
+        runtimefile.write(svghmiservercode)
+        runtimefile.close()
+
+        return ((["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), "",
+                ("runtime_svghmi0.py", open(runtimefile_path, "rb")))
 
 class SVGHMI(object):
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    XSD = """<?xml version="1.0" encoding="utf-8" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="SVGHMI">
         <xsd:complexType>
@@ -245,6 +256,10 @@ class SVGHMI(object):
             "tooltip": _("Edit HMI"),
             "method":   "_StartInkscape"
         },
+
+        # TODO : HMITree button
+        #        - can drag'n'drop variabes to Inkscape
+
     ]
 
     def _getSVGpath(self, project_path=None):
@@ -294,7 +309,18 @@ class SVGHMI(object):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
 
+        location_str = "_".join(map(str, self.GetCurrentLocation()))
+        view_name = self.BaseParams.getName()
+
         svgfile = self._getSVGpath()
+
+        res = ([], "", False)
+
+        target_fname = "sghmi_"+location_str+".xhtml"
+
+        target_path = os.path.join(self._getBuildPath(), target_fname)
+        target_file = open(target_path, 'w')
+
         if os.path.exists(svgfile):
 
             # TODO : move to __init__
@@ -309,6 +335,7 @@ class SVGHMI(object):
             # call xslt transform on Inkscape's SVG to generate XHTML
             result = transform.transform(svgdom)
            
+            result.write(target_file, encoding="utf-8")
             # print(str(result))
             # print(transform.xslt.error_log)
 
@@ -318,23 +345,29 @@ class SVGHMI(object):
 
         else:
             # TODO : use default svg that expose the HMI tree as-is 
-            pass
+            target_file.write("""<!DOCTYPE html>
+<html>
+<body>
+<h1> No SVG file provided </h1>
+</body>
+</html>
+""")
 
+        target_file.close()
 
-        res = ([], "", False)
+        runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
+        runtimefile = open(runtimefile_path, 'w')
+        runtimefile.write("""
+def _runtime_svghmi1_%(location)s_start():
+    svghmi_root.putChild('%(view_name)s',File('%(xhtml)s'))
 
-        targetpath = os.path.join(self._getBuildPath(), "target.xhtml")
-        targetfile = open(targetpath, 'w')
+        """ % {"location": location_str,
+               "xhtml": target_fname,
+               "view_name": view_name})
 
-        # TODO : DOM to string
-        targetfile.write("TODO")
-        targetfile.close()
-        res += (("target.js", open(targetpath, "rb")),)
+        runtimefile.close()
 
-        # TODO add C code to expose HMI tree variables to shared memory
-        # TODO generate a description of shared memory (xml or CSV) 
-        #      that can be loaded by svghmi QTWeb* app or svghmi server
-
+        res += (("runtime_svghmi1_%s.py" % location_str, open(runtimefile_path, "rb")),)
 
         return res
 
