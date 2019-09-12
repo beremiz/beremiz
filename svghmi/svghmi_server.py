@@ -31,7 +31,7 @@ class HMISession(object):
         global svghmi_sessions
         svghmi_sessions.remove(self)
 
-    def onMessage():
+    def onMessage(self, msg):
         # TODO :  pass it to the C side recieve_message()
         #    update HMITree
         #        - values
@@ -87,4 +87,4 @@ def _runtime_svghmi0_start():
 # Called by PLCObject at stop
 def _runtime_svghmi0_stop():
     global svghmi_listener
-    svghmi_listener.stopListening
+    svghmi_listener.stopListening()
