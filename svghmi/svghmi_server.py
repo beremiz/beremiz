@@ -21,6 +21,30 @@ from autobahn.twisted.resource import  WebSocketResource
 
 svghmi_session = None
 
+svghmi_send_collect = PLCBinary.svghmi_send_collect
+svghmi_send_collect.restype = ctypes.c_int # error or 0
+svghmi_send_collect.argtypes = [
+    ctypes.POINTER(ctypes.c_uint32),  # size
+    ctypes.POINTER(ctypes.c_void_p)]  # data ptr
+# TODO multiclient : switch to arrays
+
+svghmi_recv_dispatch = PLCBinary.svghmi_recv_dispatch
+svghmi_recv_dispatch.restype = ctypes.c_int # error or 0
+svghmi_recv_dispatch.argtypes = [
+    ctypes.POINTER(ctypes.c_uint32),  # size
+    ctypes.POINTER(ctypes.c_void_p)]  # data ptr
+# TODO multiclient : switch to arrays
+
+def SendThreadProc():
+   assert(svghmi_session)
+   size = ctypes.c_uint32()
+   ptr = ctypes.c_void_p()
+   while res == 0:
+       res = svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr))
+
+   # TODO multiclient : dispatch to sessions
+   svghmi_session.sendMessage(ctypes.string_at(ptr,size))
+
 class HMISession(object):
     def __init__(self, protocol_instance):
         global svghmi_session
@@ -53,6 +77,8 @@ class HMISession(object):
         # TODO multiclient : pass client index as well
         pass
          
+    def sendMessage(self, msg):
+        self.sendMessage(msg, True)
 
 class HMIProtocol(WebSocketServerProtocol):
 
