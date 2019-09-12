@@ -15,21 +15,34 @@ from twisted.web.static import File
 from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
 from autobahn.twisted.resource import  WebSocketResource
 
-# TODO session list lock
-svghmi_sessions = []
+# TODO multiclient :
+# session list lock
+# svghmi_sessions = []
+
+svghmi_session = None
 
 class HMISession(object):
     def __init__(self, protocol_instance):
-        global svghmi_sessions
-        svghmi_sessions.append(self)
+        global svghmi_session
+        
+        # TODO: kill existing session for robustness
+        assert(svghmi_session is None)
+
+        svghmi_session = self
+        self.protocol_instance = protocol_instance
 
         # TODO multiclient :
+        # svghmi_sessions.append(self)
         # get a unique bit index amont other svghmi_sessions,
         # so that we can match flags passed by C->python callback
     
     def __del__(self):
-        global svghmi_sessions
-        svghmi_sessions.remove(self)
+        global svghmi_session
+        assert(svghmi_session)
+        svghmi_session = None
+
+        # TODO multiclient :
+        # svghmi_sessions.remove(self)
 
     def onMessage(self, msg):
         # TODO :  pass it to the C side recieve_message()
