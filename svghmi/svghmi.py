@@ -355,6 +355,8 @@ class SVGHMI(object):
 
         target_file.close()
 
+        res += ((target_fname, open(target_path, "rb")),)
+
         runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
