@@ -65,7 +65,9 @@ class HMISession(object):
         #        - refresh rates / subsriptions
 
         # TODO multiclient : pass client index as well
-        pass
+
+        #
+        svghmi_recv_dispatch(len(msg), ctypes.c_void_p.from_buffer_copy(msg))
 
     def sendMessage(self, msg):
         self.sendMessage(msg, True)
