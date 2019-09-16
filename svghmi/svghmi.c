@@ -142,8 +142,8 @@ void read_iterator(hmi_tree_item_t *dsc)
     memcpy(visible_value_p, src_p, __get_type_enum_size(dsc->type));
 }
 
-static pthread_cond_t UART_WakeCond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t UART_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t svghmi_send_WakeCond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t svghmi_send_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
 
 static int continue_collect;
 
@@ -158,10 +158,10 @@ int __init_svghmi()
 
 void __cleanup_svghmi()
 {
-    pthread_mutex_lock(&UART_WakeCondLock);
+    pthread_mutex_lock(&svghmi_send_WakeCondLock);
     continue_collect = 0;
-    pthread_cond_signal(&UART_WakeCond);
-    pthread_mutex_unlock(&UART_WakeCondLock);
+    pthread_cond_signal(&svghmi_send_WakeCond);
+    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
 }
 
 void __retrieve_svghmi()
@@ -174,7 +174,7 @@ void __publish_svghmi()
     global_write_dirty = 0;
     traverse_hmi_tree(write_iterator);
     if(global_write_dirty) {
-        pthread_cond_signal(&UART_WakeCond);
+        pthread_cond_signal(&svghmi_send_WakeCond);
     }
 }
 
@@ -182,13 +182,13 @@ void __publish_svghmi()
 int svghmi_send_collect(uint32_t *size, void *ptr){
 
     int do_collect;
-    pthread_mutex_lock(&UART_WakeCondLock);
+    pthread_mutex_lock(&svghmi_send_WakeCondLock);
     do_collect = continue_collect;
     if(do_collect){
-        pthread_cond_wait(&UART_WakeCond, &UART_WakeCondLock);
+        pthread_cond_wait(&svghmi_send_WakeCond, &svghmi_send_WakeCondLock);
         do_collect = continue_collect;
     }
-    pthread_mutex_unlock(&UART_WakeCondLock);
+    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
 
 
     if(do_collect) {
@@ -203,6 +203,7 @@ int svghmi_send_collect(uint32_t *size, void *ptr){
 }
 
 int svghmi_recv_dispatch(uint32_t size, void* ptr){
+    printf("%%*s",size,ptr);
     /* TODO something with ptr and size
         - subscribe
          or
