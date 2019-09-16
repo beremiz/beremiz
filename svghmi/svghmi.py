@@ -170,6 +170,7 @@ class SVGHMILibrary(POULibrary):
         variable_decl_array = []
         extern_variables_declarations = []
         buf_index = 0
+        item_count = 0
         for node in hmi_tree_root.traverse():
             if hasattr(node, "iectype"):
                 sz = DebugTypesSize.get(node.iectype, 0)
@@ -183,6 +184,7 @@ class SVGHMILibrary(POULibrary):
                     }[node.vartype] + ", " +
                     str(buf_index) + ", 0, }"]
                 buf_index += sz
+                item_count += 1
                 if len(node.path) == 1:
                     extern_variables_declarations += [
                         "extern __IEC_" + node.iectype + "_" +
@@ -208,6 +210,7 @@ class SVGHMILibrary(POULibrary):
             "variable_decl_array": ",\n".join(variable_decl_array),
             "extern_variables_declarations": "\n".join(extern_variables_declarations),
             "buffer_size": buf_index,
+            "item_count": item_count,
             "var_access_code": targets.GetCode("var_access.c"),
             "PLC_ticktime": self.GetCTR().GetTicktime()
             }

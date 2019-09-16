@@ -31,7 +31,7 @@ svghmi_send_collect.argtypes = [
 svghmi_recv_dispatch = PLCBinary.svghmi_recv_dispatch
 svghmi_recv_dispatch.restype = ctypes.c_int # error or 0
 svghmi_recv_dispatch.argtypes = [
-    ctypes.POINTER(ctypes.c_uint32),  # size
+    ctypes.c_uint32,                  # size
     ctypes.POINTER(ctypes.c_void_p)]  # data ptr
 # TODO multiclient : switch to arrays
 
@@ -39,16 +39,18 @@ def SendThreadProc():
    assert(svghmi_session)
    size = ctypes.c_uint32()
    ptr = ctypes.c_void_p()
-   while res == 0:
-       res = svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr))
+   res = 0
+   while svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr)) == 0 and \
+         svghmi_session is not None and \
+         svghmi_session.sendMessage(ctypes.string_at(ptr,size)) == 0:
+         pass
 
-   # TODO multiclient : dispatch to sessions
-   svghmi_session.sendMessage(ctypes.string_at(ptr,size))
+       # TODO multiclient : dispatch to sessions
 
 class HMISession(object):
     def __init__(self, protocol_instance):
         global svghmi_session
-        
+
         # TODO: kill existing session for robustness
         assert(svghmi_session is None)
 
@@ -59,7 +61,7 @@ class HMISession(object):
         # svghmi_sessions.append(self)
         # get a unique bit index amont other svghmi_sessions,
         # so that we can match flags passed by C->python callback
-    
+
     def __del__(self):
         global svghmi_session
         assert(svghmi_session)
@@ -76,7 +78,7 @@ class HMISession(object):
 
         # TODO multiclient : pass client index as well
         pass
-         
+
     def sendMessage(self, msg):
         self.sendMessage(msg, True)
 
@@ -99,31 +101,40 @@ class HMIProtocol(WebSocketServerProtocol):
         self._hmi_session.onMessage(msg)
         print msg
         #self.sendMessage(msg, binary)
-     
+
 svghmi_root = None
 svghmi_listener = None
+svghmi_send_thread = None
+
 
 # Called by PLCObject at start
 def _runtime_svghmi0_start():
-    global svghmi_listener, svghmi_root
+    global svghmi_listener, svghmi_root, svghmi_send_thread
 
     svghmi_root = Resource()
 
     wsfactory = WebSocketServerFactory()
     wsfactory.protocol = HMIProtocol
 
-    # svghmi_root.putChild("",File(".svg"))
-    svghmi_root.putChild("ws",WebSocketResource(wsfactory))
+    svghmi_root.putChild("ws", WebSocketResource(wsfactory))
 
     sitefactory = Site(svghmi_root)
 
     svghmi_listener = reactor.listenTCP(8008, sitefactory)
 
-    # TODO
     # start a thread that call the C part of SVGHMI
+    svghmi_send_thread = Thread(target=SendThreadProc, name="SVGHMI Send")
+    svghmi_send_thread.start()
 
 
 # Called by PLCObject at stop
 def _runtime_svghmi0_stop():
-    global svghmi_listener
+    global svghmi_listener, svghmi_root, svghmi_send_thread
+    svghmi_root.delEntity("ws")
+    svghmi_root = None
     svghmi_listener.stopListening()
+    svghmi_listener = None
+    # plc cleanup calls svghmi_(locstring)_cleanup and unlocks send thread
+    svghmi_send_thread.join()
+    svghmi_send_thread = None
+
