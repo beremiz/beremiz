@@ -118,9 +118,9 @@ void send_iterator(hmi_tree_item_t *dsc)
     if(dsc->wstate == buf_tosend){
         // send 
 
-        // TODO call the python callback 
+        // TODO pack data in buffer
 
-        dsc->wstate = buf_free; 
+        dsc->wstate = buf_free;
     }
 
     AtomicCompareExchange(&dsc->wlock, 1, 0);
@@ -138,18 +138,24 @@ void read_iterator(hmi_tree_item_t *dsc)
     memcpy(visible_value_p, src_p, __get_type_enum_size(dsc->type));
 }
 
+static pthread_cond_t UART_WakeCond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t UART_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
+
 int __init_svghmi()
 {
     bzero(rbuf,sizeof(rbuf));
     bzero(wbuf,sizeof(wbuf));
-    
-    // TODO - sending pthread condition variable
+    continue_collect = 1;
 
     return 0;
 }
 
 void __cleanup_svghmi()
 {
+    pthread_mutex_lock(&UART_WakeCondLock);
+    continue_collect = 0;
+    pthread_cond_signal(&UART_WakeCond);
+    pthread_mutex_unlock(&UART_WakeCondLock);
 }
 
 void __retrieve_svghmi()
@@ -162,21 +168,37 @@ void __publish_svghmi()
     global_write_dirty = 0;
     traverse_hmi_tree(write_iterator);
     if(global_write_dirty) {
-        // TODO : set condition variable to wakeup sending collector
+        pthread_cond_signal(&UART_WakeCond);
     }
-
 }
 
-void* collect_updates_to_send(void* args){
+/* PYTHON CALLS */
+int svghmi_send_collect(uint32_t *size, void *ptr){
 
-    // TODO : get callback from args
+    pthread_mutex_lock(&UART_WakeCondLock);
+    do_collect = continue_collect;
+    if do_collect;
+        pthread_cond_wait(&UART_WakeCond, &UART_WakeCondLock);
+        do_collect = continue_collect;
+    pthread_mutex_unlock(&UART_WakeCondLock);
 
 
-    // TODO : wait for 
-    //        - condition variable
-
-    // TODO add arg to traverse_hmi_tree to pass callback
-
-    traverse_hmi_tree(send_iterator);
-
+    if(do_collect) {
+        traverse_hmi_tree(send_iterator);
+        /* TODO set ptr and size to something  */
+        return 0;
+    }
+    else
+    {
+        return EINTR;
+    }
 }
+
+int svghmi_recv_dispatch(uint32_t size, void* ptr){
+    /* TODO something with ptr and size
+        - subscribe
+         or
+        - spread values
+    */
+}
+
