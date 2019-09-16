@@ -35,18 +35,6 @@ svghmi_recv_dispatch.argtypes = [
     ctypes.POINTER(ctypes.c_void_p)]  # data ptr
 # TODO multiclient : switch to arrays
 
-def SendThreadProc():
-   assert(svghmi_session)
-   size = ctypes.c_uint32()
-   ptr = ctypes.c_void_p()
-   res = 0
-   while svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr)) == 0 and \
-         svghmi_session is not None and \
-         svghmi_session.sendMessage(ctypes.string_at(ptr,size)) == 0:
-         pass
-
-       # TODO multiclient : dispatch to sessions
-
 class HMISession(object):
     def __init__(self, protocol_instance):
         global svghmi_session
@@ -105,6 +93,18 @@ class HMIProtocol(WebSocketServerProtocol):
 svghmi_root = None
 svghmi_listener = None
 svghmi_send_thread = None
+
+def SendThreadProc():
+   global svghmi_session
+   size = ctypes.c_uint32()
+   ptr = ctypes.c_void_p()
+   res = 0
+   while svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr)) == 0 and \
+         svghmi_session is not None and \
+         svghmi_session.sendMessage(ctypes.string_at(ptr,size)) == 0:
+         pass
+
+       # TODO multiclient : dispatch to sessions
 
 
 # Called by PLCObject at start

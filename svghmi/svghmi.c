@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <errno.h>
 #include "iec_types_all.h"
 #include "POUS.h"
 #include "config.h"
@@ -6,6 +7,7 @@
 
 #define DEFAULT_REFRESH_PERIOD_MS 100
 #define HMI_BUFFER_SIZE %(buffer_size)d
+#define HMI_ITEM_COUNT %(item_count)d
 
 /* PLC reads from that buffer */
 static char rbuf[HMI_BUFFER_SIZE];
@@ -51,6 +53,8 @@ static hmi_tree_item_t hmi_tree_item[] = {
 %(variable_decl_array)s
 };
 
+static char sendbuf[HMI_BUFFER_SIZE];
+
 typedef void(*hmi_tree_iterator)(hmi_tree_item_t*);
 void traverse_hmi_tree(hmi_tree_iterator fp)
 {
@@ -92,7 +96,7 @@ void write_iterator(hmi_tree_item_t *dsc)
             }
         }
     }
-    
+
     /* if new value differs from previous one */
     if(memcmp(dest_p, visible_value_p, __get_type_enum_size(dsc->type)) != 0){
         /* copy and flag as set */
@@ -141,6 +145,8 @@ void read_iterator(hmi_tree_item_t *dsc)
 static pthread_cond_t UART_WakeCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t UART_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
 
+static int continue_collect;
+
 int __init_svghmi()
 {
     bzero(rbuf,sizeof(rbuf));
@@ -175,11 +181,13 @@ void __publish_svghmi()
 /* PYTHON CALLS */
 int svghmi_send_collect(uint32_t *size, void *ptr){
 
+    int do_collect;
     pthread_mutex_lock(&UART_WakeCondLock);
     do_collect = continue_collect;
-    if do_collect;
+    if(do_collect){
         pthread_cond_wait(&UART_WakeCond, &UART_WakeCondLock);
         do_collect = continue_collect;
+    }
     pthread_mutex_unlock(&UART_WakeCondLock);
 
 
