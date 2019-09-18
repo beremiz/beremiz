@@ -319,12 +319,15 @@ class PLCObject(object):
 
         return False
 
-    def PythonRuntimeCall(self, methodname, use_evaluator=True):
+    def PythonRuntimeCall(self, methodname, use_evaluator=True, reverse_order=False):
         """
         Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
         """
-        for method in self.python_runtime_vars.get("_runtime_%s" % methodname, []):
+        methods = self.python_runtime_vars.get("_runtime_%s" % methodname, [])
+        if reverse_order:
+            methods = reversed(methods)
+        for method in methods:
             if use_evaluator:
                 _res, exp = self.evaluator(method)
             else:
@@ -395,7 +398,7 @@ class PLCObject(object):
         if self.python_runtime_vars is not None:
             self.PythonThreadCommand("Finish")
             self.PythonThread.join()
-            self.PythonRuntimeCall("cleanup", use_evaluator=False)
+            self.PythonRuntimeCall("cleanup", use_evaluator=False, reverse_order=True)
 
         self.python_runtime_vars = None
 
@@ -438,7 +441,7 @@ class PLCObject(object):
             if cmd == "Activate":
                 self.PythonRuntimeCall("start")
                 self.PythonThreadLoop()
-                self.PythonRuntimeCall("stop")
+                self.PythonRuntimeCall("stop", reverse_order=True)
             else:  # "Finish"
                 break
 
