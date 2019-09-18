@@ -1,4 +1,7 @@
 include yslt_noindent.yml2
+
+// overrides yslt's output function to set CDATA
+decl output(method, cdata-section-elements="script");
 istylesheet 
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -7,6 +10,7 @@ istylesheet
             xmlns:svg="http://www.w3.org/2000/svg"
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+            xmlns="http://www.w3.org/1999/xhtml"
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
@@ -30,17 +34,34 @@ istylesheet
     }
 
     /* copy root node and add geometry as comment for a test */
-    template "/" {
-      xsl:copy {
-          comment {
-              apply "$geometry", mode="testgeo";
+    template "/" 
+      html xmlns="http://www.w3.org/1999/xhtml" {
+          head;
+          body style="margin:0;" {
+              xsl:copy {
+                  comment {
+                      apply "$geometry", mode="testgeo";
+                  }
+                  comment {
+                      apply "$hmitree", mode="testtree";
+                  }
+                  apply "@* | node()";
+              }
+              script
+                  ||
+                  (function(){
+                      var relative_URI = window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws');
+                      var ws = new WebSocket(relative_URI);
+                      ws.onmessage = function (evt) {
+                          var received_msg = evt.data;
+                          alert("Message is received..."+received_msg); 
+                      };
+                      ws.onopen = function (evt) {
+                          ws.send("test");
+                      };
+                  })();
+                  ||
           }
-          comment {
-              | blah
-              apply "$hmitree", mode="testtree";
-          }
-          apply "@* | node()";
-      }
     }
 
     template "bbox", mode="testgeo"{
