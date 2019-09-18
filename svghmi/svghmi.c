@@ -179,7 +179,7 @@ void __publish_svghmi()
 }
 
 /* PYTHON CALLS */
-int svghmi_send_collect(uint32_t *size, void *ptr){
+int svghmi_send_collect(uint32_t *size, char **ptr){
 
     int do_collect;
     pthread_mutex_lock(&svghmi_send_WakeCondLock);
@@ -202,7 +202,7 @@ int svghmi_send_collect(uint32_t *size, void *ptr){
     }
 }
 
-int svghmi_recv_dispatch(uint32_t size, void* ptr){
+int svghmi_recv_dispatch(uint32_t size, char *ptr){
     printf("%%*s",size,ptr);
     /* TODO something with ptr and size
         - subscribe

@@ -165,8 +165,6 @@ class SVGHMILibrary(POULibrary):
             new_node = HMITreeNode(path, path[-1], v["derived"], v["type"], v["vartype"])
             hmi_tree_root.place_node(new_node)
 
-        print(hmi_tree_root.pprint())
-
         variable_decl_array = []
         extern_variables_declarations = []
         buf_index = 0
@@ -365,6 +363,9 @@ class SVGHMI(object):
         runtimefile.write("""
 def _runtime_svghmi1_%(location)s_start():
     svghmi_root.putChild('%(view_name)s',File('%(xhtml)s'))
+
+def _runtime_svghmi1_%(location)s_stop():
+    svghmi_root.delEntity('%(view_name)s')
 
         """ % {"location": location_str,
                "xhtml": target_fname,
