@@ -266,8 +266,7 @@ class SVGHMI(object):
     def _getSVGpath(self, project_path=None):
         if project_path is None:
             project_path = self.CTNPath()
-        # define name for SVG file containing gui layout
-        return os.path.join(project_path, "gui.svg")
+        return os.path.join(project_path, "svghmi.svg")
 
 
     def OnCTNSave(self, from_project_path=None):
@@ -280,7 +279,6 @@ class SVGHMI(object):
         # invoke inskscape -S, csv-parse output, produce elements
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
-        # TODO : move following line to __init__
         inkpath = get_inkscape_path()
         svgpath = self._getSVGpath()
         _status, result, _err_result = ProcessLogger(None,
