@@ -33,6 +33,8 @@ istylesheet
       xsl:copy apply "@* | node()";
     }
 
+    variable "mark" > =HMI=\n
+
     /* copy root node and add geometry as comment for a test */
     template "/" 
       html xmlns="http://www.w3.org/1999/xhtml" {
@@ -48,15 +50,33 @@ istylesheet
                   apply "@* | node()";
               }
               script{
+                  variable "midmark" > \n«$mark»
+                  apply """//*[contains(child::svg:desc, $midmark) or \
+                               starts-with(child::svg:desc, $mark)]""", 
+                        mode="code_from_descs";
+                  |
+
                   /*TODO add :
                     - pages content
                       + with ref to elt ?
                     - widgets parameters
                   */
+
                   include text svghmi.js
               }
           }
     }
+
+    template "*", mode="code_from_descs" {
+        | function js_«@id»() {
+        | var path, role, path, priv;
+        | 
+        value "substring-after(svg:desc, $mark)";
+        | 
+        | }
+        |
+    }
+
 
     template "bbox", mode="testgeo"{
         | ID: «@Id» x: «@x» y: «@y» w: «@w» h: «@h»
