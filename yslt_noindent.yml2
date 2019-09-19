@@ -10,7 +10,9 @@ in xsl {
         version="1.0",
         xmlns:xsl="http://www.w3.org/1999/XSL/Transform",
         xmlns:exsl='http://exslt.org/common',
-        extension-element-prefixes='exsl'
+        xmlns:regexp="http://exslt.org/regular-expressions",
+        xmlns:str="http://exslt.org/strings",
+        extension-element-prefixes='exsl regexp str'
     ) alias stylesheet {
         output *output;
         content;

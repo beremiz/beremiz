@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns" version="1.0" exclude-result-prefixes="ns">
+<xsl:stylesheet xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/1999/xhtml" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" exclude-result-prefixes="ns" extension-element-prefixes="ns" version="1.0">
   <xsl:output method="xml" cdata-section-elements="script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -8,6 +8,10 @@
       <xsl:apply-templates select="@* | node()"/>
     </xsl:copy>
   </xsl:template>
+  <xsl:variable name="mark">
+    <xsl:text>=HMI=
+</xsl:text>
+  </xsl:variable>
   <xsl:template match="/">
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head/>
@@ -22,6 +26,14 @@
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
         <script>
+          <xsl:variable name="midmark">
+            <xsl:text>
+</xsl:text>
+            <xsl:value-of select="$mark"/>
+          </xsl:variable>
+          <xsl:apply-templates mode="code_from_descs" select="//*[contains(child::svg:desc, $midmark) or                                starts-with(child::svg:desc, $mark)]"/>
+          <xsl:text>
+</xsl:text>
           <xsl:text>(function(){
 </xsl:text>
           <xsl:text>    var relative_URI = window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws');
@@ -47,6 +59,23 @@
         </script>
       </body>
     </html>
+  </xsl:template>
+  <xsl:template mode="code_from_descs" match="*">
+    <xsl:text>function js_</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>() {
+</xsl:text>
+    <xsl:text>var path, role, path, priv;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:value-of select="substring-after(svg:desc, $mark)"/>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <xsl:template mode="testgeo" match="bbox">
     <xsl:text>ID: </xsl:text>
