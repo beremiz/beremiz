@@ -50,11 +50,21 @@ istylesheet
                   apply "@* | node()";
               }
               script{
+                  ||
+                  function evaluate_js_from_descriptions() {
+                      var Page;
+                      var Input;
+                      var Display;
+                      var res = [];
+                  ||
                   variable "midmark" > \n«$mark»
                   apply """//*[contains(child::svg:desc, $midmark) or \
-                               starts-with(child::svg:desc, $mark)]""", 
+                               starts-with(child::svg:desc, $mark)]""",2 
                         mode="code_from_descs";
-                  |
+                  ||
+                      return res;
+                  }
+                  ||
 
                   /*TODO add :
                     - pages content
@@ -68,13 +78,33 @@ istylesheet
     }
 
     template "*", mode="code_from_descs" {
-        | function js_«@id»() {
-        | var path, role, path, priv;
-        | 
+        ||
+        {
+            var path, role, name, priv;
+            var id = "«@id»";
+        ||
+
+        /* if label is used, use it as default name */
+        if "«@inkscape:label»"
+            |> name = "«@inkscape:label»";
+
+        | /* -------------- */
+
+        // this breaks indent, but fixing indent could break string literals
         value "substring-after(svg:desc, $mark)";
-        | 
-        | }
-        |
+        // nobody reads generated code anyhow...
+
+        ||
+
+            /* -------------- */
+            res.push({
+                path:path,
+                role:role,
+                name:name,
+                priv:priv
+            })
+        }
+        ||
     }
 
 

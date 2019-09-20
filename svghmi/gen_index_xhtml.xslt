@@ -26,13 +26,25 @@
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
         <script>
+          <xsl:text>function evaluate_js_from_descriptions() {
+</xsl:text>
+          <xsl:text>    var Page;
+</xsl:text>
+          <xsl:text>    var Input;
+</xsl:text>
+          <xsl:text>    var Display;
+</xsl:text>
+          <xsl:text>    var res = [];
+</xsl:text>
           <xsl:variable name="midmark">
             <xsl:text>
 </xsl:text>
             <xsl:value-of select="$mark"/>
           </xsl:variable>
           <xsl:apply-templates mode="code_from_descs" select="//*[contains(child::svg:desc, $midmark) or                                starts-with(child::svg:desc, $mark)]"/>
-          <xsl:text>
+          <xsl:text>    return res;
+</xsl:text>
+          <xsl:text>}
 </xsl:text>
           <xsl:text>(function(){
 </xsl:text>
@@ -61,20 +73,40 @@
     </html>
   </xsl:template>
   <xsl:template mode="code_from_descs" match="*">
-    <xsl:text>function js_</xsl:text>
+    <xsl:text>{
+</xsl:text>
+    <xsl:text>    var path, role, name, priv;
+</xsl:text>
+    <xsl:text>    var id = "</xsl:text>
     <xsl:value-of select="@id"/>
-    <xsl:text>() {
+    <xsl:text>";
 </xsl:text>
-    <xsl:text>var path, role, path, priv;
+    <xsl:if test="&#xAB;@inkscape:label&#xBB;">
+      <xsl:text>name = "</xsl:text>
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text>";
 </xsl:text>
-    <xsl:text>
+    </xsl:if>
+    <xsl:text>/* -------------- */
 </xsl:text>
     <xsl:value-of select="substring-after(svg:desc, $mark)"/>
     <xsl:text>
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>    /* -------------- */
 </xsl:text>
-    <xsl:text>
+    <xsl:text>    res.push({
+</xsl:text>
+    <xsl:text>        path:path,
+</xsl:text>
+    <xsl:text>        role:role,
+</xsl:text>
+    <xsl:text>        name:name,
+</xsl:text>
+    <xsl:text>        priv:priv
+</xsl:text>
+    <xsl:text>    })
+</xsl:text>
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
   <xsl:template mode="testgeo" match="bbox">
