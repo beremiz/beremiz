@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:21:19" contentDescription="This example shows many features in Beremiz:&#10;&#10;   1. How to implement python extensions.&#10;   2. How to implement basic C extension.&#10;   3. How to use C code in IEC POUs.&#10;   4. How to call C functions from python code.&#10;   5. How to avoid race conditions between IEC, C and python code.&#10;   6. How to convert betweet different IEC types.&#10;"/>
-  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2018-09-26T13:15:28">
+  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2019-09-24T11:49:14">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -49,6 +49,16 @@
           <BOOL/>
         </baseType>
       </dataType>
+      <dataType name="blups">
+        <baseType>
+          <array>
+            <dimension lower="0" upper="31"/>
+            <baseType>
+              <derived name="CPLX_TYPE"/>
+            </baseType>
+          </array>
+        </baseType>
+      </dataType>
     </dataTypes>
     <pous>
       <pou name="main_pytest" pouType="program">
@@ -61,6 +71,9 @@
               <initialValue>
                 <simpleValue value="3"/>
               </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[blah]]></xhtml:p>
+              </documentation>
             </variable>
             <variable name="mux2_sel">
               <type>
@@ -1351,6 +1364,11 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
                 <derived name="RS"/>
               </type>
             </variable>
+            <variable name="Dudiduda">
+              <type>
+                <derived name="blups"/>
+              </type>
+            </variable>
           </externalVars>
         </interface>
         <body>
@@ -1372,6 +1390,9 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
 }}
 (* If you do not use GetFbVar and SetFbVar macros, expect unexpected behaviour*)
 Global_RS();
+
+(* testing access to global struct array *)
+Dudiduda[2].FIRSTBYTE := 0;
 ]]></xhtml:p>
           </ST>
         </body>
@@ -1440,6 +1461,11 @@ Global_RS();
           <variable name="Global_RS">
             <type>
               <derived name="RS"/>
+            </type>
+          </variable>
+          <variable name="Dudiduda">
+            <type>
+              <derived name="blups"/>
             </type>
           </variable>
           <variable name="TUTU">
