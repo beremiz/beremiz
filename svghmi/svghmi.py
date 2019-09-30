@@ -77,11 +77,14 @@ class HMITreeNode(object):
         else:
             self.children.append(node)
             
-    def etree(self):
+    def etree(self, add_hash=False):
 
         attribs = dict(name=self.name)
         if self.path is not None:
-            attribs["path"]=".".join(self.path)
+            attribs["path"] = ".".join(self.path)
+
+        if add_hash:
+            attribs["hash"] = ",".join(map(str,self.hash()))
 
         res = etree.Element(self.nodetype, **attribs)
 
@@ -98,6 +101,20 @@ class HMITreeNode(object):
                 for yoodl in c.traverse():
                     yield yoodl
 
+
+    def hash(self):
+        """ Produce a hash, any change in HMI tree structure change that hash """
+        s = hashlib.new('md5')
+        self._hash(s)
+        # limit size to HMI_HASH_SIZE as in svghmi.c
+        return map(ord,s.digest())[:8] 
+
+    def _hash(self, s):
+        s.update(str((self.name,self.nodetype)))
+        if hasattr(self, "children"): 
+            for c in self.children:
+                c._hash(s)
+
 # module scope for HMITree root
 # so that CTN can use HMITree deduced in Library
 # note: this only works because library's Generate_C is 
@@ -110,7 +127,7 @@ class SVGHMILibrary(POULibrary):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root
+        global hmi_tree_root, hmi_tree_unique_id 
 
         """
         PLC Instance Tree:
@@ -170,7 +187,8 @@ class SVGHMILibrary(POULibrary):
         buf_index = 0
         item_count = 0
         for node in hmi_tree_root.traverse():
-            if hasattr(node, "iectype"):
+            if hasattr(node, "iectype") and \
+               node.nodetype not in ["HMI_CLASS", "HMI_LABEL"]:
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
                     "{&(" + ".".join(node.path) + "), " + node.iectype + {
@@ -210,7 +228,8 @@ class SVGHMILibrary(POULibrary):
             "buffer_size": buf_index,
             "item_count": item_count,
             "var_access_code": targets.GetCode("var_access.c"),
-            "PLC_ticktime": self.GetCTR().GetTicktime()
+            "PLC_ticktime": self.GetCTR().GetTicktime(),
+            "hmi_hash_int": ",".join(map(str,hmi_tree_root.hash()))
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
@@ -243,6 +262,7 @@ class SVGHMI(object):
       </xsd:element>
     </xsd:schema>
     """
+    # TODO : add comma separated supported language list
 
     ConfNodeMethods = [
         {
@@ -257,6 +277,10 @@ class SVGHMI(object):
             "tooltip": _("Edit HMI"),
             "method":   "_StartInkscape"
         },
+
+        # TODO : Launch POEdit button
+        #        PO -> SVG layers button
+        #        SVG layers -> PO
 
         # TODO : HMITree button
         #        - can drag'n'drop variabes to Inkscape
@@ -297,7 +321,7 @@ class SVGHMI(object):
 
     def GetHMITree(self):
         global hmi_tree_root
-        res = [hmi_tree_root.etree()]
+        res = [hmi_tree_root.etree(add_hash=True)]
         return res
 
     def CTNGenerate_C(self, buildpath, locations):

@@ -46,21 +46,51 @@
 </xsl:text>
           <xsl:text>}
 </xsl:text>
+          <xsl:text>// svghmi.js
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>(function(){
 </xsl:text>
-          <xsl:text>    var relative_URI = window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws');
+          <xsl:text>    // Open WebSocket to relative "/ws" address
 </xsl:text>
-          <xsl:text>    var ws = new WebSocket(relative_URI);
+          <xsl:text>    var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    // Register message reception handler 
 </xsl:text>
           <xsl:text>    ws.onmessage = function (evt) {
 </xsl:text>
+          <xsl:text>        // TODO : dispatch and cache hmi tree updates
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>        var received_msg = evt.data;
+</xsl:text>
+          <xsl:text>        // TODO : check for hmitree hash header
+</xsl:text>
+          <xsl:text>        //        if not matching, reload page
 </xsl:text>
           <xsl:text>        alert("Message is received..."+received_msg); 
 </xsl:text>
           <xsl:text>    };
 </xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    // Once connection established
+</xsl:text>
           <xsl:text>    ws.onopen = function (evt) {
+</xsl:text>
+          <xsl:text>        // TODO : enable the HMI (was previously offline, or just starts)
+</xsl:text>
+          <xsl:text>        //        show main page
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        // TODO : prefix with hmitree hash header
 </xsl:text>
           <xsl:text>        ws.send("test");
 </xsl:text>

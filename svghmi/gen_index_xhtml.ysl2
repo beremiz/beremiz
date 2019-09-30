@@ -50,6 +50,8 @@ istylesheet
                   apply "@* | node()";
               }
               script{
+                  /* TODO : paste hmitree hash stored in hmi tree root node */
+
                   ||
                   function evaluate_js_from_descriptions() {
                       var Page;
