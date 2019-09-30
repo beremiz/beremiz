@@ -8,6 +8,8 @@
 #define DEFAULT_REFRESH_PERIOD_MS 100
 #define HMI_BUFFER_SIZE %(buffer_size)d
 #define HMI_ITEM_COUNT %(item_count)d
+#define HMI_HASH_SIZE 8
+static uint8_t hmi_hash[HMI_HASH_SIZE] = {%(hmi_hash_ints)s};
 
 /* PLC reads from that buffer */
 static char rbuf[HMI_BUFFER_SIZE];
@@ -15,10 +17,15 @@ static char rbuf[HMI_BUFFER_SIZE];
 /* PLC writes to that buffer */
 static char wbuf[HMI_BUFFER_SIZE];
 
+/* TODO change that in case of multiclient... */
+/* worst biggest send buffer. FIXME : use dynamic alloc ? */
+static char sbuf[HMI_HASH_SIZE +  HMI_BUFFER_SIZE + (HMI_ITEM_COUNT * sizeof(uint32_t))];
+static unsigned int sbufidx;
+
 %(extern_variables_declarations)s
 
 #define ticktime_ns %(PLC_ticktime)d
-uint16_t ticktime_ms = (ticktime_ns>1000000)?
+static uint16_t ticktime_ms = (ticktime_ns>1000000)?
                      ticktime_ns/1000000:
                      1;
 
@@ -28,7 +35,7 @@ typedef enum {
     buf_tosend
 } buf_state_t;
 
-int global_write_dirty = 0;
+static int global_write_dirty = 0;
 
 typedef struct {
     void *ptr;
@@ -37,11 +44,11 @@ typedef struct {
 
     /* publish/write/send */
     long wlock;
+    buf_state_t wstate;
+
     /* zero means not subscribed */
     uint16_t refresh_period_ms;
     uint16_t age_ms;
-
-    buf_state_t wstate;
 
     /* retrieve/read/recv */
     long rlock;
@@ -53,16 +60,15 @@ static hmi_tree_item_t hmi_tree_item[] = {
 %(variable_decl_array)s
 };
 
-static char sendbuf[HMI_BUFFER_SIZE];
-
-typedef void(*hmi_tree_iterator)(hmi_tree_item_t*);
-void traverse_hmi_tree(hmi_tree_iterator fp)
+typedef int(*hmi_tree_iterator)(uint32_t*, hmi_tree_item_t*);
+static int traverse_hmi_tree(hmi_tree_iterator fp)
 {
     unsigned int i;
     for(i = 0; i < sizeof(hmi_tree_item)/sizeof(hmi_tree_item_t); i++){
+        int res;
         hmi_tree_item_t *dsc = &hmi_tree_item[i];
-        if(dsc->type != UNKNOWN_ENUM) 
-            (*fp)(dsc);
+        if(res = (*fp)(i, dsc))
+            return res;
     }
 }
 
@@ -70,76 +76,101 @@ void traverse_hmi_tree(hmi_tree_iterator fp)
 
 %(var_access_code)s
 
-void write_iterator(hmi_tree_item_t *dsc)
+inline int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    void *dest_p = &wbuf[dsc->buf_index];
-    void *real_value_p = NULL;
-    char flags = 0;
-
-    void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
-
-    /* Try take lock */
-    long was_locked = AtomicCompareExchange(&dsc->wlock, 0, 1);
-
-    if(was_locked) {
-        /* was locked. give up*/
-        return;
-    }
-
-    if(dsc->wstate == buf_set){
-        /* if being subscribed */
-        if(dsc->refresh_period_ms){
-            if(dsc->age_ms + ticktime_ms < dsc->refresh_period_ms){
-                dsc->age_ms += ticktime_ms;
-            }else{
-                dsc->wstate = buf_tosend;
+    if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0)
+    {
+        if(dsc->wstate == buf_set){
+            /* if being subscribed */
+            if(dsc->refresh_period_ms){
+                if(dsc->age_ms + ticktime_ms < dsc->refresh_period_ms){
+                    dsc->age_ms += ticktime_ms;
+                }else{
+                    dsc->wstate = buf_tosend;
+                }
             }
         }
-    }
 
-    /* if new value differs from previous one */
-    if(memcmp(dest_p, visible_value_p, __get_type_enum_size(dsc->type)) != 0){
-        /* copy and flag as set */
-        memcpy(dest_p, visible_value_p, __get_type_enum_size(dsc->type));
-        if(dsc->wstate == buf_free) {
-            dsc->wstate = buf_set;
-            dsc->age_ms = 0;
+        void *dest_p = &wbuf[dsc->buf_index];
+        void *real_value_p = NULL;
+        char flags = 0;
+        void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+
+        /* if new value differs from previous one */
+        USINT sz = __get_type_enum_size(dsc->type);
+        if(memcmp(dest_p, visible_value_p, sz) != 0){
+            /* copy and flag as set */
+            memcpy(dest_p, visible_value_p, sz);
+            if(dsc->wstate == buf_free) {
+                dsc->wstate = buf_set;
+                dsc->age_ms = 0;
+            }
+            global_write_dirty = 1;
         }
-        global_write_dirty = 1;
-    }
 
-    /* unlock - use AtomicComparExchange to have memory barrier */
-    AtomicCompareExchange(&dsc->wlock, 1, 0);
+        AtomicCompareExchange(&dsc->wlock, 1, 0);
+    }
+    // else ... : PLC can't wait, variable will be updated next turn
+    return 0;
 }
 
-struct timespec sending_now;
-struct timespec next_sending;
-void send_iterator(hmi_tree_item_t *dsc)
+inline int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
+    int res = 0;
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
 
-    // check for variable being modified
-    if(dsc->wstate == buf_tosend){
-        // send 
-
-        // TODO pack data in buffer
-
-        dsc->wstate = buf_free;
+    if(dsc->wstate == buf_tosend)
+    {
+        uint32_t sz = __get_type_enum_size(dsc->type);
+        if(sbufidx + sizeof(uint32_t) + sz <  sizeof(sbuf))
+        {
+            void *src_p = &wbuf[dsc->buf_index];
+            void *dst_p = &sbuf[sbufidx];
+            memcpy(dst_p, &index, sizeof(uint32_t));
+            memcpy(dst_p + sizeof(uint32_t), src_p, sz);
+            dsc->wstate = buf_free;
+            sbufidx += sizeof(uint32_t) /* index */ + sz;
+        }
+        else
+        {
+            res = EOVERFLOW;
+        }
     }
 
     AtomicCompareExchange(&dsc->wlock, 1, 0);
+    return res; 
 }
 
-void read_iterator(hmi_tree_item_t *dsc)
+inline int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    void *src_p = &rbuf[dsc->buf_index];
-    void *real_value_p = NULL;
-    char flags = 0;
+    if(AtomicCompareExchange(&dsc->rlock, 0, 1) == 0)
+    {
+        if(dsc->rstate == buf_set)
+        {
+            void *src_p = &rbuf[dsc->buf_index];
+            void *real_value_p = NULL;
+            char flags = 0;
+            void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+            memcpy(real_value_p, src_p, __get_type_enum_size(dsc->type));
+            dsc->rstate = buf_free;
+        }
+        AtomicCompareExchange(&dsc->rlock, 1, 0);
+    }
+    // else ... : PLC can't wait, variable will be updated next turn
+    return 0;
+}
 
-    void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+inline void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_ms)
+{
+    while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
+    dsc->refresh_period_ms = refresh_period_ms;
+    AtomicCompareExchange(&dsc->wlock, 1, 0);
+}
 
-
-    memcpy(visible_value_p, src_p, __get_type_enum_size(dsc->type));
+inline int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
+{
+    update_refresh_period(*dsc, 0);
+    return 0;
 }
 
 static pthread_cond_t svghmi_send_WakeCond = PTHREAD_COND_INITIALIZER;
@@ -184,17 +215,23 @@ int svghmi_send_collect(uint32_t *size, char **ptr){
     int do_collect;
     pthread_mutex_lock(&svghmi_send_WakeCondLock);
     do_collect = continue_collect;
-    if(do_collect){
+    if(do_collect)
+    {
         pthread_cond_wait(&svghmi_send_WakeCond, &svghmi_send_WakeCondLock);
         do_collect = continue_collect;
     }
     pthread_mutex_unlock(&svghmi_send_WakeCondLock);
 
-
     if(do_collect) {
-        traverse_hmi_tree(send_iterator);
-        /* TODO set ptr and size to something  */
-        return 0;
+        int res;
+        memcpy(&sbuf[0], &hmi_hash[0], HMI_HASH_SIZE);
+        sbufidx = HMI_HASH_SIZE;
+        if((res = traverse_hmi_tree(send_iterator)) == 0)
+        {
+            *ptr = &sbuf[0];
+            *size = sbufidx;
+        }
+        return res;
     }
     else
     {
@@ -202,12 +239,102 @@ int svghmi_send_collect(uint32_t *size, char **ptr){
     }
 }
 
-int svghmi_recv_dispatch(uint32_t size, char *ptr){
-    printf("%%*s",size,ptr);
-    /* TODO something with ptr and size
-        - subscribe
-         or
-        - spread values
-    */
+typedef enum {
+    setval = 0,
+    reset = 1,
+    subscribe = 2,
+    unsubscribe = 3
+} cmd_from_JS;
+
+int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
+    const uint8_t* cursor = ptr + HMI_HASH_SIZE;
+    const uint8_t* end = ptr + size;
+
+    printf("svghmi_recv_dispatch %d\n",size);
+
+    /* match hmitree fingerprint */
+    if(size <= HMI_HASH_SIZE || memcmp(ptr, hmihash, HMI_HASH_SIZE) != 0)
+    {
+        printf("svghmi_recv_dispatch MISMATCH !!\n");
+        return EINVAL;
+    }
+
+    while(cursor < end)
+    {
+        uint32_t progress;
+        cmd_from_JS cmd = *(cursor++);
+        switch(cmd)
+        {
+            case setval:
+            {
+                uint32_t index = *(uint32_t*)(cursor);
+                uint8_t *valptr = cursor + sizeof(uint32_t);
+
+                if(index < HMI_ITEM_COUNT)
+                {
+                    hmi_tree_item_t *dsc = &hmi_tree_item[index];
+                    void *real_value_p = NULL;
+                    char flags = 0;
+                    void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+                    void *dst_p = &rbuf[dsc->buf_index];
+                    uint32_t sz = __get_type_enum_size(dsc->type);
+
+                    if(valptr + sz < end)
+                    {
+                        // rescheduling spinlock until free
+                        while(AtomicCompareExchange(&dsc->rlock, 0, 1)) sched_yield();
+
+                        memcpy(dst_p, valptr, sz);
+                        dsc->rstate = buf_set;
+
+                        AtomicCompareExchange(&dsc->rlock, 1, 0);
+                        progress = sz + sizeof(uint32_t) /* index */;
+                    }
+                    else return -EINVAL;
+                }
+                else return -EINVAL;
+            }
+            break;
+
+            case reset:
+            {
+                progress = 0;
+                traverse_hmi_tree(reset_iterator);
+            }
+            break;
+
+            case subscribe:
+            {
+                uint32_t index = *(uint32_t*)(cursor);
+                uint16_t refresh_period_ms = *(uint32_t*)(cursor + sizeof(uint32_t));
+
+                if(index < HMI_ITEM_COUNT)
+                {
+                    hmi_tree_item_t *dsc = &hmi_tree_item[index];
+                    update_refresh_period(*dsc, refresh_period_ms);
+                }
+                else return -EINVAL;
+
+                progress = sizeof(uint32_t) /* index */ + 
+                           sizeof(uint16_t) /* refresh period */;
+            }
+            break;
+
+            case unsubscribe:
+            {
+                if(index < HMI_ITEM_COUNT)
+                {
+                    hmi_tree_item_t *dsc = &hmi_tree_item[index];
+                    reset_iterator(index, dsc);
+                }
+                else return -EINVAL;
+
+                progress = sizeof(uint32_t) /* index */;
+            }
+            break;
+        }
+        cursor += progress;
+    }
+    return 0;
 }
 

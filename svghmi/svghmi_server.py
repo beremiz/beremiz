@@ -31,7 +31,7 @@ svghmi_send_collect.argtypes = [
 svghmi_recv_dispatch = PLCBinary.svghmi_recv_dispatch
 svghmi_recv_dispatch.restype = ctypes.c_int # error or 0
 svghmi_recv_dispatch.argtypes = [
-    ctypes.c_uint32,         # size
+    ctypes.c_uint32,  # size
     ctypes.c_char_p]  # data ptr
 # TODO multiclient : switch to arrays
 
@@ -60,8 +60,6 @@ class HMISession(object):
 
     def onMessage(self, msg):
         # pass message to the C side recieve_message()
-        c_string = ctypes.c_char_p(msg)
-        c_string_pointer = ctypes.c_void_p(ctypes.addressof(c_string))
         svghmi_recv_dispatch(len(msg), msg)
 
         # TODO multiclient : pass client index as well

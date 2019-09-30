@@ -9,6 +9,8 @@
         // TODO : dispatch and cache hmi tree updates
 
         var received_msg = evt.data;
+        // TODO : check for hmitree hash header
+        //        if not matching, reload page
         alert("Message is received..."+received_msg); 
     };
 
@@ -17,6 +19,8 @@
         // TODO : enable the HMI (was previously offline, or just starts)
         //        show main page
 
+
+        // TODO : prefix with hmitree hash header
         ws.send("test");
     };
 })();
