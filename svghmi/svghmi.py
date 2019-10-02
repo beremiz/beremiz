@@ -11,6 +11,7 @@ import os
 import shutil
 from itertools import izip, imap
 from pprint import pprint, pformat
+import hashlib
 
 import wx
 
@@ -229,7 +230,7 @@ class SVGHMILibrary(POULibrary):
             "item_count": item_count,
             "var_access_code": targets.GetCode("var_access.c"),
             "PLC_ticktime": self.GetCTR().GetTicktime(),
-            "hmi_hash_int": ",".join(map(str,hmi_tree_root.hash()))
+            "hmi_hash_ints": ",".join(map(str,hmi_tree_root.hash()))
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
