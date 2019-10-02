@@ -87,7 +87,7 @@ istylesheet
         ||
 
         /* if label is used, use it as default name */
-        if "«@inkscape:label»"
+        if "@inkscape:label"
             |> name = "«@inkscape:label»";
 
         | /* -------------- */

@@ -111,7 +111,7 @@
     <xsl:value-of select="@id"/>
     <xsl:text>";
 </xsl:text>
-    <xsl:if test="&#xAB;@inkscape:label&#xBB;">
+    <xsl:if test="@inkscape:label">
       <xsl:text>name = "</xsl:text>
       <xsl:value-of select="@inkscape:label"/>
       <xsl:text>";

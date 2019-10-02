@@ -60,7 +60,7 @@ static hmi_tree_item_t hmi_tree_item[] = {
 %(variable_decl_array)s
 };
 
-typedef int(*hmi_tree_iterator)(uint32_t*, hmi_tree_item_t*);
+typedef int(*hmi_tree_iterator)(uint32_t, hmi_tree_item_t*);
 static int traverse_hmi_tree(hmi_tree_iterator fp)
 {
     unsigned int i;
@@ -76,7 +76,7 @@ static int traverse_hmi_tree(hmi_tree_iterator fp)
 
 %(var_access_code)s
 
-inline int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
+static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
     if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0)
     {
@@ -114,7 +114,7 @@ inline int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
     return 0;
 }
 
-inline int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
+static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
     int res = 0;
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
@@ -141,7 +141,7 @@ inline int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
     return res; 
 }
 
-inline int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
+static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
     if(AtomicCompareExchange(&dsc->rlock, 0, 1) == 0)
     {
@@ -167,9 +167,9 @@ inline void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_
     AtomicCompareExchange(&dsc->wlock, 1, 0);
 }
 
-inline int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
+static int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    update_refresh_period(*dsc, 0);
+    update_refresh_period(dsc, 0);
     return 0;
 }
 
@@ -250,10 +250,10 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
     const uint8_t* cursor = ptr + HMI_HASH_SIZE;
     const uint8_t* end = ptr + size;
 
-    printf("svghmi_recv_dispatch %d\n",size);
+    printf("svghmi_recv_dispatch %%d\n",size);
 
     /* match hmitree fingerprint */
-    if(size <= HMI_HASH_SIZE || memcmp(ptr, hmihash, HMI_HASH_SIZE) != 0)
+    if(size <= HMI_HASH_SIZE || memcmp(ptr, hmi_hash, HMI_HASH_SIZE) != 0)
     {
         printf("svghmi_recv_dispatch MISMATCH !!\n");
         return EINVAL;
@@ -268,7 +268,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
             case setval:
             {
                 uint32_t index = *(uint32_t*)(cursor);
-                uint8_t *valptr = cursor + sizeof(uint32_t);
+                uint8_t const *valptr = cursor + sizeof(uint32_t);
 
                 if(index < HMI_ITEM_COUNT)
                 {
@@ -279,7 +279,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                     void *dst_p = &rbuf[dsc->buf_index];
                     uint32_t sz = __get_type_enum_size(dsc->type);
 
-                    if(valptr + sz < end)
+                    if((valptr + sz) < end)
                     {
                         // rescheduling spinlock until free
                         while(AtomicCompareExchange(&dsc->rlock, 0, 1)) sched_yield();
@@ -311,7 +311,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                 if(index < HMI_ITEM_COUNT)
                 {
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
-                    update_refresh_period(*dsc, refresh_period_ms);
+                    update_refresh_period(dsc, refresh_period_ms);
                 }
                 else return -EINVAL;
 
@@ -322,6 +322,8 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
 
             case unsubscribe:
             {
+                uint32_t index = *(uint32_t*)(cursor);
+
                 if(index < HMI_ITEM_COUNT)
                 {
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
