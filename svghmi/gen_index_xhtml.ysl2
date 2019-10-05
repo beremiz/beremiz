@@ -10,7 +10,7 @@ istylesheet
             xmlns:svg="http://www.w3.org/2000/svg"
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-            xmlns="http://www.w3.org/1999/xhtml"
+            xmlns:xhtml="http://www.w3.org/1999/xhtml"
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
@@ -23,7 +23,43 @@ istylesheet
      */
     variable "geometry", "ns:GetSVGGeometry()";
     variable "hmitree", "ns:GetHMITree()";
-   
+
+    variable "_categories" {
+        noindex > HMI_ROOT
+        noindex > HMI_LABEL
+        noindex > HMI_CLASS
+        noindex > HMI_PLC_STATUS
+        noindex > HMI_CURRENT_PAGE
+    }
+    variable "categories", "exsl:node-set($_categories)";
+    //variable "indexed_hmitree", "$hmitree[not(local-name() = $categories/noindex/text())]";
+    variable "indexed_hmitree" apply "$hmitree", mode="index";
+
+    template "node()", mode="index"{
+        param "index", "0";
+        variable "content" {
+            choose {
+                when "not(local-name() = $categories/noindex)" {
+                    xsl:copy {
+                        attrib "index" > «$index»
+                        foreach "@*" xsl:copy;
+                    }
+                    /* no node expected below value nodes */
+                }
+                otherwise {
+                    apply "*[1]", mode="index"{
+                        with "index", "$index";
+                    }
+                }
+            }
+        }
+
+        copy "$content";
+        apply "following-sibling::*[1]", mode="index" {
+            with "index", "$index + count(exsl:node-set($content)/*)";
+        }
+    }
+
     /* Identity template :
      *  - copy every attributes 
      *  - copy every sub-elements
@@ -47,11 +83,15 @@ istylesheet
                   comment {
                       apply "$hmitree", mode="testtree";
                   }
+                  comment {
+                      apply "exsl:node-set($indexed_hmitree)", mode="testtree";
+                  }
                   apply "@* | node()";
               }
               script{
                   /* TODO : paste hmitree hash stored in hmi tree root node */
 
+                  /* TODO re-enable
                   ||
                   function evaluate_js_from_descriptions() {
                       var Page;
@@ -67,6 +107,7 @@ istylesheet
                       return res;
                   }
                   ||
+                  */
 
                   /*TODO add :
                     - pages content
@@ -74,6 +115,14 @@ istylesheet
                     - widgets parameters
                   */
 
+                  ||
+                  var subscriptions = {
+                  ||
+                  //    apply "$hmitree", mode="subscription_";
+                  ||
+                      return res;
+                  }
+                  ||
                   include text svghmi.js
               }
           }
@@ -116,7 +165,9 @@ istylesheet
 
     template "*", mode="testtree"{
         param "indent", "''";
-        | «$indent» «local-name()» «@name» «@type» «@path»
+        > «$indent» «local-name()» 
+        foreach "@*" > «local-name()»=«.» 
+        > \n
         apply "*", mode="testtree" {
             with "indent" value "concat($indent,'>')"
         };
