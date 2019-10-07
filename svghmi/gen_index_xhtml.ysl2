@@ -21,27 +21,35 @@ istylesheet
      * already parsed by python and presented as a list of 
      * <bbox x="0" y="0" w="42" h="42">
      */
-    variable "geometry", "ns:GetSVGGeometry()";
-    variable "hmitree", "ns:GetHMITree()";
+    const "geometry", "ns:GetSVGGeometry()";
+    const "hmitree", "ns:GetHMITree()";
 
-    variable "_categories" {
+    const "_categories" {
         noindex > HMI_ROOT
         noindex > HMI_LABEL
         noindex > HMI_CLASS
         noindex > HMI_PLC_STATUS
         noindex > HMI_CURRENT_PAGE
     }
-    variable "categories", "exsl:node-set($_categories)";
-    //variable "indexed_hmitree", "$hmitree[not(local-name() = $categories/noindex/text())]";
-    variable "indexed_hmitree" apply "$hmitree", mode="index";
+    const "categories", "exsl:node-set($_categories)";
+    //const "indexed_hmitree", "$hmitree[not(local-name() = $categories/noindex/text())]";
+    const "_indexed_hmitree" apply "$hmitree", mode="index";
+    const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
-    template "node()", mode="index"{
+    template "*", mode="index"{
         param "index", "0";
-        variable "content" {
+        param "parentpath", "''";
+        const "content" {
+            const "path"
+                choose {
+                    when "local-name() = 'HMI_ROOT'" > «$parentpath»
+                    otherwise > «$parentpath»/«@name»
+                }
             choose {
                 when "not(local-name() = $categories/noindex)" {
                     xsl:copy {
                         attrib "index" > «$index»
+                        attrib "hmipath" > «$path»
                         foreach "@*" xsl:copy;
                     }
                     /* no node expected below value nodes */
@@ -49,6 +57,7 @@ istylesheet
                 otherwise {
                     apply "*[1]", mode="index"{
                         with "index", "$index";
+                        with "parentpath" > «$path»
                     }
                 }
             }
@@ -57,6 +66,7 @@ istylesheet
         copy "$content";
         apply "following-sibling::*[1]", mode="index" {
             with "index", "$index + count(exsl:node-set($content)/*)";
+            with "parentpath" > «$parentpath»
         }
     }
 
@@ -64,12 +74,12 @@ istylesheet
      *  - copy every attributes 
      *  - copy every sub-elements
      */
-    template "@* | node()" {
+    template "@* | node()", mode="identity_svg" {
       /* use real xsl:copy instead copy-of alias from yslt.yml2 */
-      xsl:copy apply "@* | node()";
+      xsl:copy apply "@* | node()", mode="identity_svg";
     }
 
-    variable "mark" > =HMI=\n
+    const "mark" > =HMI=\n
 
     /* copy root node and add geometry as comment for a test */
     template "/" 
@@ -84,9 +94,9 @@ istylesheet
                       apply "$hmitree", mode="testtree";
                   }
                   comment {
-                      apply "exsl:node-set($indexed_hmitree)", mode="testtree";
+                      apply "$indexed_hmitree", mode="testtree";
                   }
-                  apply "@* | node()";
+                  apply "@* | node()", mode="identity_svg";
               }
               script{
                   /* TODO : paste hmitree hash stored in hmi tree root node */
@@ -99,7 +109,7 @@ istylesheet
                       var Display;
                       var res = [];
                   ||
-                  variable "midmark" > \n«$mark»
+                  const "midmark" > \n«$mark»
                   apply """//*[contains(child::svg:desc, $midmark) or \
                                starts-with(child::svg:desc, $mark)]""",2 
                         mode="code_from_descs";
@@ -115,14 +125,24 @@ istylesheet
                     - widgets parameters
                   */
 
-                  ||
-                  var subscriptions = {
-                  ||
-                  //    apply "$hmitree", mode="subscription_";
-                  ||
-                      return res;
+                  | var subscriptions = {
+
+                  const "svg","/"; /* foreach loses document root */
+                  foreach "$indexed_hmitree/*" {
+                      | «@index»: {
+                      |     name: "«@name»",
+                      |     hmipath: "«@hmipath»"
+                      |     ids: [
+                      const "hmipath","@hmipath";
+                      foreach "$svg//*[substring-after(@inkscape:label,'@') = $hmipath]" {
+                      |         "«@id»"`if "position()!=last()" > ,`
+                      }
+                      |     ]
+                      | }`if "position()!=last()" > ,`
                   }
-                  ||
+
+                  | }
+
                   include text svghmi.js
               }
           }

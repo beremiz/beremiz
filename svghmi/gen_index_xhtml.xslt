@@ -21,17 +21,34 @@
     </noindex>
   </xsl:variable>
   <xsl:variable name="categories" select="exsl:node-set($_categories)"/>
-  <xsl:variable name="indexed_hmitree">
+  <xsl:variable name="_indexed_hmitree">
     <xsl:apply-templates mode="index" select="$hmitree"/>
   </xsl:variable>
-  <xsl:template mode="index" match="node()">
+  <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
+  <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
+    <xsl:param name="parentpath" select="''"/>
     <xsl:variable name="content">
+      <xsl:variable name="path">
+        <xsl:choose>
+          <xsl:when test="local-name() = 'HMI_ROOT'">
+            <xsl:value-of select="$parentpath"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$parentpath"/>
+            <xsl:text>/</xsl:text>
+            <xsl:value-of select="@name"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
       <xsl:choose>
         <xsl:when test="not(local-name() = $categories/noindex)">
           <xsl:copy>
             <xsl:attribute name="index">
               <xsl:value-of select="$index"/>
+            </xsl:attribute>
+            <xsl:attribute name="hmipath">
+              <xsl:value-of select="$path"/>
             </xsl:attribute>
             <xsl:for-each select="@*">
               <xsl:copy/>
@@ -41,6 +58,9 @@
         <xsl:otherwise>
           <xsl:apply-templates mode="index" select="*[1]">
             <xsl:with-param name="index" select="$index"/>
+            <xsl:with-param name="parentpath">
+              <xsl:value-of select="$path"/>
+            </xsl:with-param>
           </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
@@ -48,11 +68,14 @@
     <xsl:copy-of select="$content"/>
     <xsl:apply-templates mode="index" select="following-sibling::*[1]">
       <xsl:with-param name="index" select="$index + count(exsl:node-set($content)/*)"/>
+      <xsl:with-param name="parentpath">
+        <xsl:value-of select="$parentpath"/>
+      </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="@* | node()">
+  <xsl:template mode="identity_svg" match="@* | node()">
     <xsl:copy>
-      <xsl:apply-templates select="@* | node()"/>
+      <xsl:apply-templates mode="identity_svg" select="@* | node()"/>
     </xsl:copy>
   </xsl:template>
   <xsl:variable name="mark">
@@ -71,15 +94,48 @@
             <xsl:apply-templates mode="testtree" select="$hmitree"/>
           </xsl:comment>
           <xsl:comment>
-            <xsl:apply-templates mode="testtree" select="exsl:node-set($indexed_hmitree)"/>
+            <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
           </xsl:comment>
-          <xsl:apply-templates select="@* | node()"/>
+          <xsl:apply-templates mode="identity_svg" select="@* | node()"/>
         </xsl:copy>
         <script>
           <xsl:text>var subscriptions = {
 </xsl:text>
-          <xsl:text>    return res;
+          <xsl:variable name="svg" select="/"/>
+          <xsl:for-each select="$indexed_hmitree/*">
+            <xsl:value-of select="@index"/>
+            <xsl:text>: {
 </xsl:text>
+            <xsl:text>    name: "</xsl:text>
+            <xsl:value-of select="@name"/>
+            <xsl:text>",
+</xsl:text>
+            <xsl:text>    hmipath: "</xsl:text>
+            <xsl:value-of select="@hmipath"/>
+            <xsl:text>"
+</xsl:text>
+            <xsl:text>    ids: [
+</xsl:text>
+            <xsl:variable name="hmipath" select="@hmipath"/>
+            <xsl:for-each select="$svg//*[substring-after(@inkscape:label,'@') = $hmipath]">
+              <xsl:text>        "</xsl:text>
+              <xsl:value-of select="@id"/>
+              <xsl:text>"</xsl:text>
+              <xsl:if test="position()!=last()">
+                <xsl:text>,</xsl:text>
+              </xsl:if>
+              <xsl:text>
+</xsl:text>
+            </xsl:for-each>
+            <xsl:text>    ]
+</xsl:text>
+            <xsl:text>}</xsl:text>
+            <xsl:if test="position()!=last()">
+              <xsl:text>,</xsl:text>
+            </xsl:if>
+            <xsl:text>
+</xsl:text>
+          </xsl:for-each>
           <xsl:text>}
 </xsl:text>
           <xsl:text>// svghmi.js
