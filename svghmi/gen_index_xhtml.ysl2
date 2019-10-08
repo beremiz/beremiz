@@ -2,7 +2,8 @@ include yslt_noindent.yml2
 
 // overrides yslt's output function to set CDATA
 decl output(method, cdata-section-elements="script");
-istylesheet 
+
+istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
             xmlns:cc="http://creativecommons.org/ns#"
@@ -10,15 +11,14 @@ istylesheet
             xmlns:svg="http://www.w3.org/2000/svg"
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-            xmlns:xhtml="http://www.w3.org/1999/xhtml"
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
-            extension-element-prefixes="ns" 
-            exclude-result-prefixes="ns" {
-    
-    /* This retrieves geometry obtained through "inkscape -S" 
-     * already parsed by python and presented as a list of 
+            extension-element-prefixes="ns"
+            exclude-result-prefixes="ns str regexp exsl" {
+
+    /* This retrieves geometry obtained through "inkscape -S"
+     * already parsed by python and presented as a list of
      * <bbox x="0" y="0" w="42" h="42">
      */
     const "geometry", "ns:GetSVGGeometry()";
@@ -82,70 +82,133 @@ istylesheet
     const "mark" > =HMI=\n
 
     /* copy root node and add geometry as comment for a test */
-    template "/" 
-      html xmlns="http://www.w3.org/1999/xhtml" {
-          head;
-          body style="margin:0;" {
-              xsl:copy {
-                  comment {
-                      apply "$geometry", mode="testgeo";
-                  }
-                  comment {
-                      apply "$hmitree", mode="testtree";
-                  }
-                  comment {
-                      apply "$indexed_hmitree", mode="testtree";
-                  }
-                  apply "@* | node()", mode="identity_svg";
-              }
-              script{
-                  /* TODO : paste hmitree hash stored in hmi tree root node */
+    template "/" { 
+        html xmlns="http://www.w3.org/1999/xhtml" {
+            head;
+            body style="margin:0;" {
+                xsl:copy {
+                    comment {
+                        apply "$geometry", mode="testgeo";
+                    }
+                    comment {
+                        apply "$hmitree", mode="testtree";
+                    }
+                    comment {
+                        apply "$indexed_hmitree", mode="testtree";
+                    }
+                    apply "@* | node()", mode="identity_svg";
+                }
+                script{
+                    call "scripts";
+                }
+            }
+        }
+    }
 
-                  /* TODO re-enable
-                  ||
-                  function evaluate_js_from_descriptions() {
-                      var Page;
-                      var Input;
-                      var Display;
-                      var res = [];
-                  ||
-                  const "midmark" > \n«$mark»
-                  apply """//*[contains(child::svg:desc, $midmark) or \
-                               starts-with(child::svg:desc, $mark)]""",2 
-                        mode="code_from_descs";
-                  ||
-                      return res;
-                  }
-                  ||
-                  */
+    function "scripts"
+    {
+        /* TODO : paste hmitree hash stored in hmi tree root node */
 
-                  /*TODO add :
-                    - pages content
-                      + with ref to elt ?
-                    - widgets parameters
-                  */
+        /* TODO re-enable
+        ||
+        function evaluate_js_from_descriptions() {
+            var Page;
+            var Input;
+            var Display;
+            var res = [];
+        ||
+        const "midmark" > \n«$mark»
+        apply """//*[contains(child::svg:desc, $midmark) or \
+                     starts-with(child::svg:desc, $mark)]""",2 
+              mode="code_from_descs";
+        ||
+            return res;
+        }
+        ||
+        */
 
-                  | var subscriptions = {
+        /*TODO add :
+          - pages content
+            + with ref to elt ?
+          - widgets parameters
+        */
 
-                  const "svg","/"; /* foreach loses document root */
-                  foreach "$indexed_hmitree/*" {
-                      | «@index»: {
-                      |     name: "«@name»",
-                      |     hmipath: "«@hmipath»"
-                      |     ids: [
-                      const "hmipath","@hmipath";
-                      foreach "$svg//*[substring-after(@inkscape:label,'@') = $hmipath]" {
-                      |         "«@id»"`if "position()!=last()" > ,`
-                      }
-                      |     ]
-                      | }`if "position()!=last()" > ,`
-                  }
+        | var hmi_index = {
 
-                  | }
+        const "svg","/"; /* foreach loses document root */
+        foreach "$indexed_hmitree/*" {
+            | «@index»: {
+            |     name: "«@name»",
+            |     hmipath: "«@hmipath»"
+            |     ids: [
+            const "hmipath","@hmipath";
+            foreach "$svg//*[substring-after(@inkscape:label,'@') = $hmipath]" {
+            |         "«@id»"`if "position()!=last()" > ,`
+            }
+            |     ]
+            | }`if "position()!=last()" > ,`
+        }
 
-                  include text svghmi.js
-              }
-          }
+        | }
+        |
+        | var page_desc = {
+
+        // apply "//*[substring-after(substring-before(@inkscape:label, '@'), 'HMI'
+        foreach "//*[starts-with(@inkscape:label,'HMI:')]" {
+            | «@inkscape:label»
+            const "ast" call "parse_label" with "label","@inkscape:label";
+            apply "exsl:node-set($ast)", mode="testtree";
+        }
+        | }
+
+        include text svghmi.js
+    }
+
+    /*
+        Parses:
+        "HMI:WidgetType:param1:param2@path1@path2"
+
+        Into:
+        widget type="WidgetType" {
+            arg value="param1";
+            arg value="param2";
+            path value="path1";
+            path value="path2";
+        }
+    */
+    function "parse_label" {
+        param "label";
+        const "description", "substring-after($label,'HMI:')";
+
+        const "_args", "substring-before($description,'@')";
+        const "args" choose {
+            when "$_args" value "$_args";
+            otherwise value "$description";
+        }
+
+        const "_type", "substring-before($args,':')";
+        const "type" choose {
+            when "$_type" value "$_type";
+            otherwise value "$args";
+        }
+
+        if "$type" widget {
+            attrib "type" > «$type»
+            foreach "str:split($args, ':')" {
+                arg {
+                    attrib "value" > «.»
+                }
+            }
+            const "paths", "substring-after($description,'@')";
+            foreach "str:split($paths, '@')" {
+                path {
+                    attrib "value" > «.»
+                }
+            }
+        }
+    }
+
+    template "*", mode="page_desc" {
     }
 
     template "*", mode="code_from_descs" {
