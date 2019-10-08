@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" exclude-result-prefixes="ns" extension-element-prefixes="ns" version="1.0">
+<xsl:stylesheet xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" exclude-result-prefixes="ns str regexp exsl" extension-element-prefixes="ns" version="1.0">
   <xsl:output method="xml" cdata-section-elements="script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -99,161 +99,244 @@
           <xsl:apply-templates mode="identity_svg" select="@* | node()"/>
         </xsl:copy>
         <script>
-          <xsl:text>var subscriptions = {
-</xsl:text>
-          <xsl:variable name="svg" select="/"/>
-          <xsl:for-each select="$indexed_hmitree/*">
-            <xsl:value-of select="@index"/>
-            <xsl:text>: {
-</xsl:text>
-            <xsl:text>    name: "</xsl:text>
-            <xsl:value-of select="@name"/>
-            <xsl:text>",
-</xsl:text>
-            <xsl:text>    hmipath: "</xsl:text>
-            <xsl:value-of select="@hmipath"/>
-            <xsl:text>"
-</xsl:text>
-            <xsl:text>    ids: [
-</xsl:text>
-            <xsl:variable name="hmipath" select="@hmipath"/>
-            <xsl:for-each select="$svg//*[substring-after(@inkscape:label,'@') = $hmipath]">
-              <xsl:text>        "</xsl:text>
-              <xsl:value-of select="@id"/>
-              <xsl:text>"</xsl:text>
-              <xsl:if test="position()!=last()">
-                <xsl:text>,</xsl:text>
-              </xsl:if>
-              <xsl:text>
-</xsl:text>
-            </xsl:for-each>
-            <xsl:text>    ]
-</xsl:text>
-            <xsl:text>}</xsl:text>
-            <xsl:if test="position()!=last()">
-              <xsl:text>,</xsl:text>
-            </xsl:if>
-            <xsl:text>
-</xsl:text>
-          </xsl:for-each>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>// svghmi.js
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>(function(){
-</xsl:text>
-          <xsl:text>    // Open WebSocket to relative "/ws" address
-</xsl:text>
-          <xsl:text>    var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    // Register message reception handler 
-</xsl:text>
-          <xsl:text>    ws.onmessage = function (evt) {
-</xsl:text>
-          <xsl:text>        // TODO : dispatch and cache hmi tree updates
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        var received_msg = evt.data;
-</xsl:text>
-          <xsl:text>        // TODO : check for hmitree hash header
-</xsl:text>
-          <xsl:text>        //        if not matching, reload page
-</xsl:text>
-          <xsl:text>        alert("Message is received..."+received_msg); 
-</xsl:text>
-          <xsl:text>    };
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    // Once connection established
-</xsl:text>
-          <xsl:text>    ws.onopen = function (evt) {
-</xsl:text>
-          <xsl:text>        // TODO : enable the HMI (was previously offline, or just starts)
-</xsl:text>
-          <xsl:text>        //        show main page
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        // TODO : prefix with hmitree hash header
-</xsl:text>
-          <xsl:text>        ws.send("test");
-</xsl:text>
-          <xsl:text>    };
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    var pending_updates = {};
-</xsl:text>
-          <xsl:text>    
-</xsl:text>
-          <xsl:text>    // subscription state, as it should be in hmi server
-</xsl:text>
-          <xsl:text>    // expected {index:period}
-</xsl:text>
-          <xsl:text>    var subscriptions = {};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    // subscription state as needed by widget now
-</xsl:text>
-          <xsl:text>    // expected {index:[widgets]};
-</xsl:text>
-          <xsl:text>    var subscribers = {};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    // return the diff in between curently subscribed and subscription
-</xsl:text>
-          <xsl:text>    function update_subscriptions() {
-</xsl:text>
-          <xsl:text>        let result = [];
-</xsl:text>
-          <xsl:text>        Object.keys(subscribers).forEach(index =&gt; {
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>            let previous_period = subscriptions[index];
-</xsl:text>
-          <xsl:text>            let new_period = Math.min(...widgets.map(widget =&gt; widget.period));
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>            if(previous_period != new_period) 
-</xsl:text>
-          <xsl:text>                result.push({index: index, period: new_period});
-</xsl:text>
-          <xsl:text>        })
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    function update_value(index, value) {
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    };
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>})();
-</xsl:text>
+          <xsl:call-template name="scripts"/>
         </script>
       </body>
     </html>
   </xsl:template>
+  <xsl:template name="scripts">
+    <xsl:text>var hmi_index = {
+</xsl:text>
+    <xsl:variable name="svg" select="/"/>
+    <xsl:for-each select="$indexed_hmitree/*">
+      <xsl:value-of select="@index"/>
+      <xsl:text>: {
+</xsl:text>
+      <xsl:text>    name: "</xsl:text>
+      <xsl:value-of select="@name"/>
+      <xsl:text>",
+</xsl:text>
+      <xsl:text>    hmipath: "</xsl:text>
+      <xsl:value-of select="@hmipath"/>
+      <xsl:text>"
+</xsl:text>
+      <xsl:text>    ids: [
+</xsl:text>
+      <xsl:variable name="hmipath" select="@hmipath"/>
+      <xsl:for-each select="$svg//*[substring-after(@inkscape:label,'@') = $hmipath]">
+        <xsl:text>        "</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>"</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>    ]
+</xsl:text>
+      <xsl:text>}</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var page_desc = {
+</xsl:text>
+    <xsl:for-each select="//*[starts-with(@inkscape:label,'HMI:')]">
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:variable name="ast">
+        <xsl:call-template name="parse_label">
+          <xsl:with-param name="label" select="@inkscape:label"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:apply-templates mode="testtree" select="exsl:node-set($ast)"/>
+    </xsl:for-each>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>// svghmi.js
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>(function(){
+</xsl:text>
+    <xsl:text>    // Open WebSocket to relative "/ws" address
+</xsl:text>
+    <xsl:text>    var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // Register message reception handler 
+</xsl:text>
+    <xsl:text>    ws.onmessage = function (evt) {
+</xsl:text>
+    <xsl:text>        // TODO : dispatch and cache hmi tree updates
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        var received_msg = evt.data;
+</xsl:text>
+    <xsl:text>        // TODO : check for hmitree hash header
+</xsl:text>
+    <xsl:text>        //        if not matching, reload page
+</xsl:text>
+    <xsl:text>        alert("Message is received..."+received_msg); 
+</xsl:text>
+    <xsl:text>    };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // Once connection established
+</xsl:text>
+    <xsl:text>    ws.onopen = function (evt) {
+</xsl:text>
+    <xsl:text>        // TODO : enable the HMI (was previously offline, or just starts)
+</xsl:text>
+    <xsl:text>        //        show main page
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // TODO : prefix with hmitree hash header
+</xsl:text>
+    <xsl:text>        ws.send("test");
+</xsl:text>
+    <xsl:text>    };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    var pending_updates = {};
+</xsl:text>
+    <xsl:text>    
+</xsl:text>
+    <xsl:text>    // subscription state, as it should be in hmi server
+</xsl:text>
+    <xsl:text>    // expected {index:period}
+</xsl:text>
+    <xsl:text>    const subscriptions = new Map();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // subscription state as needed by widget now
+</xsl:text>
+    <xsl:text>    // expected {index:[widgets]};
+</xsl:text>
+    <xsl:text>    var subscribers = {};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // return the diff in between curently subscribed and subscription
+</xsl:text>
+    <xsl:text>    function update_subscriptions() {
+</xsl:text>
+    <xsl:text>        let delta = [];
+</xsl:text>
+    <xsl:text>        Object.keys(subscribers).forEach(index =&gt; {
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            let previous_period = subscriptions.get(index);
+</xsl:text>
+    <xsl:text>            delete subscriptions[index];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            let new_period = Math.min(...widgets.map(widget =&gt; widget.period));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            if(previous_period != new_period) 
+</xsl:text>
+    <xsl:text>                delta.push({index: index, period: new_period});
+</xsl:text>
+    <xsl:text>        })
+</xsl:text>
+    <xsl:text>        return result;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    function update_value(index, value) {
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    function switch_page(page_name) {
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>})();
+</xsl:text>
+  </xsl:template>
+  <xsl:template name="parse_label">
+    <xsl:param name="label"/>
+    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
+    <xsl:variable name="_args" select="substring-before($description,'@')"/>
+    <xsl:variable name="args">
+      <xsl:choose>
+        <xsl:when test="$_args">
+          <xsl:value-of select="$_args"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$description"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="_type" select="substring-before($args,':')"/>
+    <xsl:variable name="type">
+      <xsl:choose>
+        <xsl:when test="$_type">
+          <xsl:value-of select="$_type"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$args"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:if test="$type">
+      <widget>
+        <xsl:attribute name="type">
+          <xsl:value-of select="$type"/>
+        </xsl:attribute>
+        <xsl:for-each select="str:split($args, ':')">
+          <arg>
+            <xsl:attribute name="value">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </arg>
+        </xsl:for-each>
+        <xsl:variable name="paths" select="substring-after($description,'@')"/>
+        <xsl:for-each select="str:split($paths, '@')">
+          <path>
+            <xsl:attribute name="value">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </path>
+        </xsl:for-each>
+      </widget>
+    </xsl:if>
+  </xsl:template>
+  <xsl:template mode="page_desc" match="*"/>
   <xsl:template mode="code_from_descs" match="*">
     <xsl:text>{
 </xsl:text>
