@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:svg="http://www.w3.org/2000/svg" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" exclude-result-prefixes="ns str regexp exsl" extension-element-prefixes="ns" version="1.0">
+<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func" version="1.0" exclude-result-prefixes="ns str regexp exsl func">
   <xsl:output method="xml" cdata-section-elements="script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -83,6 +83,9 @@
 </xsl:text>
   </xsl:variable>
   <xsl:template match="/">
+    <xsl:comment>
+      <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
+    </xsl:comment>
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;">
@@ -104,6 +107,57 @@
       </body>
     </html>
   </xsl:template>
+  <func:function name="func:parselabel">
+    <xsl:param name="label"/>
+    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
+    <xsl:variable name="_args" select="substring-before($description,'@')"/>
+    <xsl:variable name="args">
+      <xsl:choose>
+        <xsl:when test="$_args">
+          <xsl:value-of select="$_args"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$description"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="_type" select="substring-before($args,':')"/>
+    <xsl:variable name="type">
+      <xsl:choose>
+        <xsl:when test="$_type">
+          <xsl:value-of select="$_type"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$args"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="ast">
+      <xsl:if test="$type">
+        <widget>
+          <xsl:attribute name="type">
+            <xsl:value-of select="$type"/>
+          </xsl:attribute>
+          <xsl:for-each select="str:split($args, ':')">
+            <arg>
+              <xsl:attribute name="value">
+                <xsl:value-of select="."/>
+              </xsl:attribute>
+            </arg>
+          </xsl:for-each>
+          <xsl:variable name="paths" select="substring-after($description,'@')"/>
+          <xsl:for-each select="str:split($paths, '@')">
+            <path>
+              <xsl:attribute name="value">
+                <xsl:value-of select="."/>
+              </xsl:attribute>
+            </path>
+          </xsl:for-each>
+        </widget>
+      </xsl:if>
+    </xsl:variable>
+    <func:result select="exsl:node-set($ast)"/>
+  </func:function>
   <xsl:template name="scripts">
     <xsl:text>var hmi_index = {
 </xsl:text>
@@ -148,16 +202,12 @@
 </xsl:text>
     <xsl:text>var page_desc = {
 </xsl:text>
-    <xsl:for-each select="//*[starts-with(@inkscape:label,'HMI:')]">
+    <xsl:for-each select="//*[func:parselabel(@inkscape:label)/widget/@type = 'Page']">
       <xsl:value-of select="@inkscape:label"/>
       <xsl:text>
 </xsl:text>
-      <xsl:variable name="ast">
-        <xsl:call-template name="parse_label">
-          <xsl:with-param name="label" select="@inkscape:label"/>
-        </xsl:call-template>
-      </xsl:variable>
-      <xsl:apply-templates mode="testtree" select="exsl:node-set($ast)"/>
+      <xsl:variable name="ast" select="func:parselabel(@inkscape:label)"/>
+      <xsl:apply-templates mode="testtree" select="$ast"/>
     </xsl:for-each>
     <xsl:text>}
 </xsl:text>
@@ -287,54 +337,6 @@
 </xsl:text>
     <xsl:text>})();
 </xsl:text>
-  </xsl:template>
-  <xsl:template name="parse_label">
-    <xsl:param name="label"/>
-    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
-    <xsl:variable name="_args" select="substring-before($description,'@')"/>
-    <xsl:variable name="args">
-      <xsl:choose>
-        <xsl:when test="$_args">
-          <xsl:value-of select="$_args"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$description"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:variable name="_type" select="substring-before($args,':')"/>
-    <xsl:variable name="type">
-      <xsl:choose>
-        <xsl:when test="$_type">
-          <xsl:value-of select="$_type"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$args"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:if test="$type">
-      <widget>
-        <xsl:attribute name="type">
-          <xsl:value-of select="$type"/>
-        </xsl:attribute>
-        <xsl:for-each select="str:split($args, ':')">
-          <arg>
-            <xsl:attribute name="value">
-              <xsl:value-of select="."/>
-            </xsl:attribute>
-          </arg>
-        </xsl:for-each>
-        <xsl:variable name="paths" select="substring-after($description,'@')"/>
-        <xsl:for-each select="str:split($paths, '@')">
-          <path>
-            <xsl:attribute name="value">
-              <xsl:value-of select="."/>
-            </xsl:attribute>
-          </path>
-        </xsl:for-each>
-      </widget>
-    </xsl:if>
   </xsl:template>
   <xsl:template mode="page_desc" match="*"/>
   <xsl:template mode="code_from_descs" match="*">
