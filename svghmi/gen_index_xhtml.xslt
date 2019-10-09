@@ -3,6 +3,9 @@
   <xsl:output method="xml" cdata-section-elements="script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
+  <xsl:variable name="hmi_elements" select="//*[starts-with(@inkscape:label, 'HMI:')]"/>
+  <xsl:variable name="hmi_geometry" select="$geometry[@Id = $hmi_elements/@id]"/>
+  <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
   <xsl:variable name="_categories">
     <noindex>
       <xsl:text>HMI_ROOT</xsl:text>
@@ -78,10 +81,6 @@
       <xsl:apply-templates mode="identity_svg" select="@* | node()"/>
     </xsl:copy>
   </xsl:template>
-  <xsl:variable name="mark">
-    <xsl:text>=HMI=
-</xsl:text>
-  </xsl:variable>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -91,7 +90,7 @@
       <body style="margin:0;">
         <xsl:copy>
           <xsl:comment>
-            <xsl:apply-templates mode="testgeo" select="$geometry"/>
+            <xsl:apply-templates mode="testgeo" select="$hmi_geometry"/>
           </xsl:comment>
           <xsl:comment>
             <xsl:apply-templates mode="testtree" select="$hmitree"/>
@@ -138,7 +137,7 @@
           <xsl:attribute name="type">
             <xsl:value-of select="$type"/>
           </xsl:attribute>
-          <xsl:for-each select="str:split($args, ':')">
+          <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
             <arg>
               <xsl:attribute name="value">
                 <xsl:value-of select="."/>
@@ -202,12 +201,32 @@
 </xsl:text>
     <xsl:text>var page_desc = {
 </xsl:text>
-    <xsl:for-each select="//*[func:parselabel(@inkscape:label)/widget/@type = 'Page']">
-      <xsl:value-of select="@inkscape:label"/>
-      <xsl:text>
+    <xsl:for-each select="$hmi_pages">
+      <xsl:variable name="desc" select="func:parselabel(@inkscape:label)/widget"/>
+      <xsl:text>    "</xsl:text>
+      <xsl:value-of select="$desc/arg[1]/@value"/>
+      <xsl:text>": {
 </xsl:text>
-      <xsl:variable name="ast" select="func:parselabel(@inkscape:label)"/>
-      <xsl:apply-templates mode="testtree" select="$ast"/>
+      <xsl:text>        id: "</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"
+</xsl:text>
+      <xsl:text>        widgets: [
+</xsl:text>
+      <xsl:variable name="page" select="."/>
+      <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
+      <xsl:for-each select="$hmi_geometry[@Id != $page/@id and &#10;                       @x &gt;= $p/@x and @y &gt;= $p/@y and @w &lt;= $p/@w and @h &lt;= $p/@h]">
+        <xsl:text>            "</xsl:text>
+        <xsl:value-of select="@Id"/>
+        <xsl:text>"</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>        ]
+</xsl:text>
     </xsl:for-each>
     <xsl:text>}
 </xsl:text>
