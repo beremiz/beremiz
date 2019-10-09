@@ -14,8 +14,8 @@ istylesheet
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
-            extension-element-prefixes="ns"
-            exclude-result-prefixes="ns str regexp exsl" {
+            extension-element-prefixes="ns func"
+            exclude-result-prefixes="ns str regexp exsl func" {
 
     /* This retrieves geometry obtained through "inkscape -S"
      * already parsed by python and presented as a list of
@@ -83,6 +83,7 @@ istylesheet
 
     /* copy root node and add geometry as comment for a test */
     template "/" { 
+        comment > Made with SVGHMI. https://beremiz.org
         html xmlns="http://www.w3.org/1999/xhtml" {
             head;
             body style="margin:0;" {
@@ -103,6 +104,40 @@ istylesheet
                 }
             }
         }
+    }
+
+    func:function name="func:parselabel" {
+        param "label";
+        const "description", "substring-after($label,'HMI:')";
+
+        const "_args", "substring-before($description,'@')";
+        const "args" choose {
+            when "$_args" value "$_args";
+            otherwise value "$description";
+        }
+
+        const "_type", "substring-before($args,':')";
+        const "type" choose {
+            when "$_type" value "$_type";
+            otherwise value "$args";
+        }
+
+        const "ast" if "$type" widget {
+            attrib "type" > «$type»
+            foreach "str:split($args, ':')" {
+                arg {
+                    attrib "value" > «.»
+                }
+            }
+            const "paths", "substring-after($description,'@')";
+            foreach "str:split($paths, '@')" {
+                path {
+                    attrib "value" > «.»
+                }
+            }
+        }
+
+        func:result select="exsl:node-set($ast)"
     }
 
     function "scripts"
@@ -154,10 +189,10 @@ istylesheet
         | var page_desc = {
 
         // apply "//*[substring-after(substring-before(@inkscape:label, '@'), 'HMI'
-        foreach "//*[starts-with(@inkscape:label,'HMI:')]" {
+        foreach "//*[func:parselabel(@inkscape:label)/widget/@type = 'Page']" {
             | «@inkscape:label»
-            const "ast" call "parse_label" with "label","@inkscape:label";
-            apply "exsl:node-set($ast)", mode="testtree";
+            const "ast", "func:parselabel(@inkscape:label)";
+            apply "$ast", mode="testtree";
         }
         | }
 
@@ -176,37 +211,6 @@ istylesheet
             path value="path2";
         }
     */
-    function "parse_label" {
-        param "label";
-        const "description", "substring-after($label,'HMI:')";
-
-        const "_args", "substring-before($description,'@')";
-        const "args" choose {
-            when "$_args" value "$_args";
-            otherwise value "$description";
-        }
-
-        const "_type", "substring-before($args,':')";
-        const "type" choose {
-            when "$_type" value "$_type";
-            otherwise value "$args";
-        }
-
-        if "$type" widget {
-            attrib "type" > «$type»
-            foreach "str:split($args, ':')" {
-                arg {
-                    attrib "value" > «.»
-                }
-            }
-            const "paths", "substring-after($description,'@')";
-            foreach "str:split($paths, '@')" {
-                path {
-                    attrib "value" > «.»
-                }
-            }
-        }
-    }
 
     template "*", mode="page_desc" {
     }
