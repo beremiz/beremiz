@@ -29,6 +29,23 @@ istylesheet
 
     const "hmi_pages", "$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']";
 
+    const "default_page" choose {
+        when "count($hmi_pages) > 1" {
+            const "Home_page", 
+                "$hmi_pages[func:parselabel(@inkscape:label)/widget/arg[1]/@value = 'Home']";
+            choose {
+                when "$Home_page" > Home
+                otherwise {
+                    error "No Home page defined!";
+                }
+            }
+        }
+        when "count($hmi_pages) = 0" {
+            error "No page defined!";
+        }
+        otherwise > «func:parselabel($hmi_pages/@inkscape:label)/widget/arg[1]/@value»
+    }
+
     const "_categories" {
         noindex > HMI_ROOT
         noindex > HMI_LABEL
@@ -37,7 +54,6 @@ istylesheet
         noindex > HMI_CURRENT_PAGE
     }
     const "categories", "exsl:node-set($_categories)";
-    //const "indexed_hmitree", "$hmitree[not(local-name() = $categories/noindex/text())]";
     const "_indexed_hmitree" apply "$hmitree", mode="index";
     const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
@@ -196,7 +212,7 @@ istylesheet
         foreach "$hmi_pages" {
             const "desc", "func:parselabel(@inkscape:label)/widget";
             |     "«$desc/arg[1]/@value»": {
-            |         id: "«@id»"
+            |         id: "«@id»",
             |         widgets: [
             const "page", "."; 
             const "p", "$hmi_geometry[@Id = $page/@id]"; 
@@ -208,6 +224,9 @@ istylesheet
             |         ]
         }
         | }
+
+        |
+        | var default_page = "«$default_page»";
 
         include text svghmi.js
     }
