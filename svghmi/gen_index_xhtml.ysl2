@@ -218,7 +218,7 @@ istylesheet
             const "p", "$hmi_geometry[@Id = $page/@id]"; 
             foreach """$hmi_geometry[@Id != $page/@id and 
                        @x >= $p/@x and @y >= $p/@y and 
-                       @w <= $p/@w and @h <= $p/@h]""" {
+                       @x+@w <= $p/@x+$p/@w and @y+@h <= $p/@y+$p/@h]""" {
                 |             "«@Id»"`if "position()!=last()" > ,`
             }
             |         ]
