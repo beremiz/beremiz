@@ -6,6 +6,27 @@
   <xsl:variable name="hmi_elements" select="//*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmi_geometry" select="$geometry[@Id = $hmi_elements/@id]"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
+  <xsl:variable name="default_page">
+    <xsl:choose>
+      <xsl:when test="count($hmi_pages) &gt; 1">
+        <xsl:variable name="Home_page" select="$hmi_pages[func:parselabel(@inkscape:label)/widget/arg[1]/@value = 'Home']"/>
+        <xsl:choose>
+          <xsl:when test="$Home_page">
+            <xsl:text>Home</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:message terminate="yes">No Home page defined!</xsl:message>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:when test="count($hmi_pages) = 0">
+        <xsl:message terminate="yes">No page defined!</xsl:message>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="func:parselabel($hmi_pages/@inkscape:label)/widget/arg[1]/@value"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
   <xsl:variable name="_categories">
     <noindex>
       <xsl:text>HMI_ROOT</xsl:text>
@@ -209,13 +230,13 @@
 </xsl:text>
       <xsl:text>        id: "</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>"
+      <xsl:text>",
 </xsl:text>
       <xsl:text>        widgets: [
 </xsl:text>
       <xsl:variable name="page" select="."/>
       <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
-      <xsl:for-each select="$hmi_geometry[@Id != $page/@id and &#10;                       @x &gt;= $p/@x and @y &gt;= $p/@y and @w &lt;= $p/@w and @h &lt;= $p/@h]">
+      <xsl:for-each select="$hmi_geometry[@Id != $page/@id and &#10;                       @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                       @w &lt;= $p/@w and @h &lt;= $p/@h]">
         <xsl:text>            "</xsl:text>
         <xsl:value-of select="@Id"/>
         <xsl:text>"</xsl:text>
@@ -229,6 +250,12 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var default_page = "</xsl:text>
+    <xsl:value-of select="$default_page"/>
+    <xsl:text>";
 </xsl:text>
     <xsl:text>// svghmi.js
 </xsl:text>
