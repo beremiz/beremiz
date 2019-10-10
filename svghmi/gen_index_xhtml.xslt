@@ -236,7 +236,7 @@
 </xsl:text>
       <xsl:variable name="page" select="."/>
       <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
-      <xsl:for-each select="$hmi_geometry[@Id != $page/@id and &#10;                       @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                       @w &lt;= $p/@w and @h &lt;= $p/@h]">
+      <xsl:for-each select="$hmi_geometry[@Id != $page/@id and &#10;                       @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                       @x+@w &lt;= $p/@x+$p/@w and @y+@h &lt;= $p/@y+$p/@h]">
         <xsl:text>            "</xsl:text>
         <xsl:value-of select="@Id"/>
         <xsl:text>"</xsl:text>
