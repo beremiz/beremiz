@@ -3,7 +3,7 @@
   <xsl:output method="xml" cdata-section-elements="script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
-  <xsl:variable name="hmi_elements" select="//*[starts-with(@inkscape:label, 'HMI:')]"/>
+  <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmi_geometry" select="$geometry[@Id = $hmi_elements/@id]"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
   <xsl:variable name="default_page">
@@ -179,28 +179,53 @@
     <func:result select="exsl:node-set($ast)"/>
   </func:function>
   <xsl:template name="scripts">
-    <xsl:text>var hmi_index = {
+    <xsl:text>var hmi_hash = [</xsl:text>
+    <xsl:value-of select="$hmitree/@hash"/>
+    <xsl:text>]; 
 </xsl:text>
-    <xsl:variable name="svg" select="/"/>
-    <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:value-of select="@index"/>
+    <xsl:text>var hmi_widgets = {
+</xsl:text>
+    <xsl:for-each select="$hmi_elements">
+      <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
+      <xsl:value-of select="@id"/>
       <xsl:text>: {
 </xsl:text>
-      <xsl:text>    name: "</xsl:text>
-      <xsl:value-of select="@name"/>
+      <xsl:text>    type: "</xsl:text>
+      <xsl:value-of select="$widget/@type"/>
       <xsl:text>",
 </xsl:text>
-      <xsl:text>    hmipath: "</xsl:text>
-      <xsl:value-of select="@hmipath"/>
-      <xsl:text>"
+      <xsl:text>    frequency: </xsl:text>
+      <xsl:apply-templates mode="refresh_frequency" select="$widget"/>
+      <xsl:text>,
 </xsl:text>
-      <xsl:text>    ids: [
+      <xsl:text>    args: [
 </xsl:text>
-      <xsl:variable name="hmipath" select="@hmipath"/>
-      <xsl:for-each select="$svg//*[substring-after(@inkscape:label,'@') = $hmipath]">
+      <xsl:for-each select="$widget/arg">
         <xsl:text>        "</xsl:text>
-        <xsl:value-of select="@id"/>
+        <xsl:value-of select="@value"/>
         <xsl:text>"</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>    ],
+</xsl:text>
+      <xsl:text>    paths: [
+</xsl:text>
+      <xsl:for-each select="$widget/path">
+        <xsl:variable name="hmipath" select="@value"/>
+        <xsl:variable name="hmitree_match" select="$indexed_hmitree/*[@hmipath = $hmipath]"/>
+        <xsl:if test="count($hmitree_match) = 0">
+          <xsl:message terminate="yes">
+            <xsl:text>No match for HMI </xsl:text>
+            <xsl:value-of select="$hmipath"/>
+            <xsl:text>;</xsl:text>
+          </xsl:message>
+        </xsl:if>
+        <xsl:text>        </xsl:text>
+        <xsl:value-of select="$hmitree_match/@index"/>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
         </xsl:if>
@@ -220,10 +245,54 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var hmi_index = [
+</xsl:text>
+    <xsl:variable name="svg" select="/"/>
+    <xsl:for-each select="$indexed_hmitree/*">
+      <xsl:text>{   /* </xsl:text>
+      <xsl:value-of select="@index"/>
+      <xsl:text>  </xsl:text>
+      <xsl:value-of select="@hmipath"/>
+      <xsl:text> */
+</xsl:text>
+      <xsl:text>    type: "</xsl:text>
+      <xsl:value-of select="local-name()"/>
+      <xsl:text>",
+</xsl:text>
+      <xsl:text>    ids: [
+</xsl:text>
+      <xsl:variable name="hmipath" select="@hmipath"/>
+      <xsl:for-each select="$svg//*[substring-after(@inkscape:label,'@') = $hmipath]">
+        <xsl:text>        hmi_widgets["</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>"]</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>    ]
+</xsl:text>
+      <xsl:text>}</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>]
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var page_desc = {
 </xsl:text>
     <xsl:for-each select="$hmi_pages">
       <xsl:variable name="desc" select="func:parselabel(@inkscape:label)/widget"/>
+      <xsl:variable name="page" select="."/>
+      <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
+      <xsl:variable name="page_ids" select="$hmi_geometry[@Id != $page/@id and &#10;                                @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                                @x+@w &lt;= $p/@x+$p/@w and @y+@h &lt;= $p/@y+$p/@h]/@Id"/>
+      <xsl:variable name="page_elements" select="$hmi_elements[@id = $page_ids]"/>
       <xsl:text>    "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
@@ -234,11 +303,9 @@
 </xsl:text>
       <xsl:text>        widgets: [
 </xsl:text>
-      <xsl:variable name="page" select="."/>
-      <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
-      <xsl:for-each select="$hmi_geometry[@Id != $page/@id and &#10;                       @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                       @x+@w &lt;= $p/@x+$p/@w and @y+@h &lt;= $p/@y+$p/@h]">
+      <xsl:for-each select="$page_ids">
         <xsl:text>            "</xsl:text>
-        <xsl:value-of select="@Id"/>
+        <xsl:value-of select="."/>
         <xsl:text>"</xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
@@ -247,6 +314,30 @@
 </xsl:text>
       </xsl:for-each>
       <xsl:text>        ]
+</xsl:text>
+      <xsl:text>        subscriptions: [
+</xsl:text>
+      <xsl:for-each select="$page_elements">
+        <xsl:variable name="hmipaths" select="func:parselabel(@inkscape:label)/widget/path/@value"/>
+        <xsl:variable name="notlast" select="position()!=last()"/>
+        <xsl:for-each select="$hmipaths">
+          <xsl:variable name="hmipath" select="."/>
+          <xsl:text>            </xsl:text>
+          <xsl:value-of select="$indexed_hmitree/*[@hmipath = $hmipath]/@index"/>
+          <xsl:if test="$notlast or position()!=last()">
+            <xsl:text>,</xsl:text>
+          </xsl:if>
+          <xsl:text>
+</xsl:text>
+        </xsl:for-each>
+      </xsl:for-each>
+      <xsl:text>        ]
+</xsl:text>
+      <xsl:text>    }</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
 </xsl:text>
     </xsl:for-each>
     <xsl:text>}
@@ -321,13 +412,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>    // subscription state as needed by widget now
 </xsl:text>
     <xsl:text>    // expected {index:[widgets]};
 </xsl:text>
-    <xsl:text>    var subscribers = {};
+    <xsl:text>    var subscribers = new Map();
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -337,23 +426,29 @@
 </xsl:text>
     <xsl:text>        let delta = [];
 </xsl:text>
-    <xsl:text>        Object.keys(subscribers).forEach(index =&gt; {
+    <xsl:text>        for(let [index, widgets] in subscribers.entries()){
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>            // periods are in ms
 </xsl:text>
     <xsl:text>            let previous_period = subscriptions.get(index);
 </xsl:text>
-    <xsl:text>            delete subscriptions[index];
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            let new_period = Math.min(...widgets.map(widget =&gt; 1000/widget.frequency));
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            let new_period = Math.min(...widgets.map(widget =&gt; widget.period));
+    <xsl:text>            if(previous_period != new_period) {
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            if(previous_period != new_period) 
+    <xsl:text>                subscriptions.set(index, new_period);
 </xsl:text>
     <xsl:text>                delta.push({index: index, period: new_period});
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            
 </xsl:text>
     <xsl:text>        })
 </xsl:text>
@@ -373,7 +468,27 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    var current_page = default_page;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    function switch_page(page_name) {
+</xsl:text>
+    <xsl:text>        let new_desc = page_desc[page_name];
+</xsl:text>
+    <xsl:text>        let old_desc = page_desc[page_name];
+</xsl:text>
+    <xsl:text>        /* TODO hide / show widgets */
+</xsl:text>
+    <xsl:text>        /* TODO move viewport */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        /* Update subscribers */
+</xsl:text>
+    <xsl:text>        /* Update subscriptions */
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -455,5 +570,17 @@
         <xsl:value-of select="concat($indent,'&gt;')"/>
       </xsl:with-param>
     </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template mode="refresh_frequency" match="widget">
+    <xsl:text>10</xsl:text>
+  </xsl:template>
+  <xsl:template mode="refresh_frequency" match="widget[@type='Meter']">
+    <xsl:text>10</xsl:text>
+  </xsl:template>
+  <xsl:template mode="refresh_frequency" match="widget[@type='Display']">
+    <xsl:text>5</xsl:text>
+  </xsl:template>
+  <xsl:template mode="refresh_frequency" match="widget[@type='Input']">
+    <xsl:text>5</xsl:text>
   </xsl:template>
 </xsl:stylesheet>
