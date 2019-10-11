@@ -24,7 +24,7 @@ istylesheet
     const "geometry", "ns:GetSVGGeometry()";
     const "hmitree", "ns:GetHMITree()";
 
-    const "hmi_elements", "//*[starts-with(@inkscape:label, 'HMI:')]";
+    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
     const "hmi_geometry", "$geometry[@Id = $hmi_elements/@id]";
 
     const "hmi_pages", "$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']";
@@ -163,7 +163,8 @@ istylesheet
 
     function "scripts"
     {
-        /* TODO : paste hmitree hash stored in hmi tree root node */
+        /* paste hmitree hash stored in hmi tree root node */
+        | var hmi_hash = [«$hmitree/@hash»]; 
 
         /* TODO re-enable
         ||
@@ -183,45 +184,74 @@ istylesheet
         ||
         */
 
-        /*TODO add :
-          - pages content
-            + with ref to elt ?
-          - widgets parameters
-        */
-
-        | var hmi_index = {
+        | var hmi_widgets = {
+        foreach "$hmi_elements" {
+            const "widget", "func:parselabel(@inkscape:label)/widget";
+            | «@id»: {
+            |     type: "«$widget/@type»",
+            |     frequency: `apply "$widget", mode="refresh_frequency"`,
+            |     args: [
+            foreach "$widget/arg"
+            |         "«@value»"`if "position()!=last()" > ,`
+            |     ],
+            |     paths: [
+            foreach "$widget/path" {
+                const "hmipath","@value";
+                const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
+                if "count($hmitree_match) = 0"
+                    error > No match for HMI «$hmipath»;
+            |         «$hmitree_match/@index»`if "position()!=last()" > ,`
+            }
+            |     ]
+            | }`if "position()!=last()" > ,`
+        }
+        | }
+        |
+        | var hmi_index = [
 
         const "svg","/"; /* foreach loses document root */
         foreach "$indexed_hmitree/*" {
-            | «@index»: {
-            |     name: "«@name»",
-            |     hmipath: "«@hmipath»"
+            | {   /* «@index»  «@hmipath» */
+            |     type: "«local-name()»",
             |     ids: [
             const "hmipath","@hmipath";
             foreach "$svg//*[substring-after(@inkscape:label,'@') = $hmipath]" {
-            |         "«@id»"`if "position()!=last()" > ,`
+            |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
             }
             |     ]
             | }`if "position()!=last()" > ,`
         }
 
-        | }
+        | ]
         |
         | var page_desc = {
 
         foreach "$hmi_pages" {
             const "desc", "func:parselabel(@inkscape:label)/widget";
+            const "page", "."; 
+            const "p", "$hmi_geometry[@Id = $page/@id]"; 
+            const "page_ids","""$hmi_geometry[@Id != $page/@id and 
+                                @x >= $p/@x and @y >= $p/@y and 
+                                @x+@w <= $p/@x+$p/@w and @y+@h <= $p/@y+$p/@h]/@Id""";
+            const "page_elements", "$hmi_elements[@id = $page_ids]";
             |     "«$desc/arg[1]/@value»": {
             |         id: "«@id»",
             |         widgets: [
-            const "page", "."; 
-            const "p", "$hmi_geometry[@Id = $page/@id]"; 
-            foreach """$hmi_geometry[@Id != $page/@id and 
-                       @x >= $p/@x and @y >= $p/@y and 
-                       @x+@w <= $p/@x+$p/@w and @y+@h <= $p/@y+$p/@h]""" {
-                |             "«@Id»"`if "position()!=last()" > ,`
+            foreach "$page_ids" {
+            |             "«.»"`if "position()!=last()" > ,`
             }
             |         ]
+            |         subscriptions: [
+            foreach "$page_elements" {
+                const "hmipaths", "func:parselabel(@inkscape:label)/widget/path/@value";
+                const "notlast", "position()!=last()";
+                foreach "$hmipaths" {
+                    const "hmipath",".";
+            |             «$indexed_hmitree/*[@hmipath = $hmipath]/@index»`if "$notlast or position()!=last()" > ,`
+                }
+            }
+            |         ]
+            |     }`if "position()!=last()" > ,`
         }
         | }
 
@@ -291,4 +321,9 @@ istylesheet
             with "indent" value "concat($indent,'>')"
         };
     }
+
+    template "widget", mode="refresh_frequency" > 10
+    template "widget[@type='Meter']", mode="refresh_frequency" > 10
+    template "widget[@type='Display']", mode="refresh_frequency" > 5
+    template "widget[@type='Input']", mode="refresh_frequency" > 5
 }
