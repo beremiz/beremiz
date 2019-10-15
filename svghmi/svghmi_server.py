@@ -85,7 +85,7 @@ class HMIProtocol(WebSocketServerProtocol):
 
     def onMessage(self, msg, isBinary):
         self._hmi_session.onMessage(msg)
-        print msg
+        # print msg
         #self.sendMessage(msg, binary)
 
 class HMIWebSocketServerFactory(WebSocketServerFactory):

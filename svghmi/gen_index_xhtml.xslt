@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func" version="1.0" exclude-result-prefixes="ns str regexp exsl func">
-  <xsl:output method="xml" cdata-section-elements="script"/>
+<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func" version="1.0" exclude-result-prefixes="ns str regexp exsl func">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
@@ -179,6 +179,10 @@
     <func:result select="exsl:node-set($ast)"/>
   </func:function>
   <xsl:template name="scripts">
+    <xsl:text>(function(){
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var hmi_hash = [</xsl:text>
     <xsl:value-of select="$hmitree/@hash"/>
     <xsl:text>]; 
@@ -212,7 +216,7 @@
       </xsl:for-each>
       <xsl:text>    ],
 </xsl:text>
-      <xsl:text>    paths: [
+      <xsl:text>    indexes: [
 </xsl:text>
       <xsl:for-each select="$widget/path">
         <xsl:variable name="hmipath" select="@value"/>
@@ -245,36 +249,16 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>var hmi_index = [
+    <xsl:text>var hmitree_types = [
 </xsl:text>
-    <xsl:variable name="svg" select="/"/>
     <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:text>{   /* </xsl:text>
+      <xsl:text>/* </xsl:text>
       <xsl:value-of select="@index"/>
       <xsl:text>  </xsl:text>
       <xsl:value-of select="@hmipath"/>
-      <xsl:text> */
-</xsl:text>
-      <xsl:text>    type: "</xsl:text>
-      <xsl:value-of select="local-name()"/>
-      <xsl:text>",
-</xsl:text>
-      <xsl:text>    ids: [
-</xsl:text>
-      <xsl:variable name="hmipath" select="@hmipath"/>
-      <xsl:for-each select="$svg//*[substring-after(@inkscape:label,'@') = $hmipath]">
-        <xsl:text>        hmi_widgets["</xsl:text>
-        <xsl:value-of select="@id"/>
-        <xsl:text>"]</xsl:text>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-        <xsl:text>
-</xsl:text>
-      </xsl:for-each>
-      <xsl:text>    ]
-</xsl:text>
-      <xsl:text>}</xsl:text>
+      <xsl:text> */ "</xsl:text>
+      <xsl:value-of select="substring(local-name(), 5)"/>
+      <xsl:text>"</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -304,32 +288,13 @@
       <xsl:text>        widgets: [
 </xsl:text>
       <xsl:for-each select="$page_ids">
-        <xsl:text>            "</xsl:text>
+        <xsl:text>            hmi_widgets.</xsl:text>
         <xsl:value-of select="."/>
-        <xsl:text>"</xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
         </xsl:if>
         <xsl:text>
 </xsl:text>
-      </xsl:for-each>
-      <xsl:text>        ]
-</xsl:text>
-      <xsl:text>        subscriptions: [
-</xsl:text>
-      <xsl:for-each select="$page_elements">
-        <xsl:variable name="hmipaths" select="func:parselabel(@inkscape:label)/widget/path/@value"/>
-        <xsl:variable name="notlast" select="position()!=last()"/>
-        <xsl:for-each select="$hmipaths">
-          <xsl:variable name="hmipath" select="."/>
-          <xsl:text>            </xsl:text>
-          <xsl:value-of select="$indexed_hmitree/*[@hmipath = $hmipath]/@index"/>
-          <xsl:if test="$notlast or position()!=last()">
-            <xsl:text>,</xsl:text>
-          </xsl:if>
-          <xsl:text>
-</xsl:text>
-        </xsl:for-each>
       </xsl:for-each>
       <xsl:text>        ]
 </xsl:text>
@@ -352,147 +317,305 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>(function(){
+    <xsl:text>function dispatch_value(index, value) {
 </xsl:text>
-    <xsl:text>    // Open WebSocket to relative "/ws" address
+    <xsl:text>    console.log("dispatch_value("+index+value+")");
 </xsl:text>
-    <xsl:text>    var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    // Register message reception handler 
-</xsl:text>
-    <xsl:text>    ws.onmessage = function (evt) {
-</xsl:text>
-    <xsl:text>        // TODO : dispatch and cache hmi tree updates
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        var received_msg = evt.data;
+    <xsl:text>// Open WebSocket to relative "/ws" address
 </xsl:text>
-    <xsl:text>        // TODO : check for hmitree hash header
+    <xsl:text>var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
 </xsl:text>
-    <xsl:text>        //        if not matching, reload page
+    <xsl:text>ws.binaryType = 'arraybuffer';
 </xsl:text>
-    <xsl:text>        alert("Message is received..."+received_msg); 
+    <xsl:text>
+</xsl:text>
+    <xsl:text>const dvgetters = {
+</xsl:text>
+    <xsl:text>    INT: [DataView.prototype.getInt16, 2],
+</xsl:text>
+    <xsl:text>    BOOL: [DataView.prototype.getInt8, 1]
+</xsl:text>
+    <xsl:text>    /* TODO */
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>// Register message reception handler 
+</xsl:text>
+    <xsl:text>ws.onmessage = function (evt) {
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let data = evt.data;
+</xsl:text>
+    <xsl:text>    let dv = new DataView(data);
+</xsl:text>
+    <xsl:text>    let i = 0;
+</xsl:text>
+    <xsl:text>    for(let hash_int of hmi_hash) {
+</xsl:text>
+    <xsl:text>        if(hash_int != dv.getUint8(i)){
+</xsl:text>
+    <xsl:text>            console.log("Recv non maching hash. Reload.");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // 1003 is for "Unsupported Data"
+</xsl:text>
+    <xsl:text>            ws.close(1003,"Hash doesn't match");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // TODO : remove debug alert ?
+</xsl:text>
+    <xsl:text>            alert("HMI will be reloaded.");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // force reload ignoring cache
+</xsl:text>
+    <xsl:text>            location.reload(true);
+</xsl:text>
+    <xsl:text>        };
+</xsl:text>
+    <xsl:text>        i++;
 </xsl:text>
     <xsl:text>    };
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    // Once connection established
+    <xsl:text>    while(i &lt; data.length){
 </xsl:text>
-    <xsl:text>    ws.onopen = function (evt) {
+    <xsl:text>        let index = dv.getUint32(i);
 </xsl:text>
-    <xsl:text>        // TODO : enable the HMI (was previously offline, or just starts)
+    <xsl:text>        i += 4;
 </xsl:text>
-    <xsl:text>        //        show main page
+    <xsl:text>        let iectype = hmitree_types[index];
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        let [dvgetter, bytesize] = dvgetters[iectypes];
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        value = dvgetter.call(dv,i);
 </xsl:text>
-    <xsl:text>        // TODO : prefix with hmitree hash header
+    <xsl:text>        dispatch_value(index, value);
 </xsl:text>
-    <xsl:text>        ws.send("test");
+    <xsl:text>        i += bytesize;
 </xsl:text>
     <xsl:text>    };
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    var pending_updates = {};
-</xsl:text>
-    <xsl:text>    
-</xsl:text>
-    <xsl:text>    // subscription state, as it should be in hmi server
-</xsl:text>
-    <xsl:text>    // expected {index:period}
-</xsl:text>
-    <xsl:text>    const subscriptions = new Map();
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    // subscription state as needed by widget now
+    <xsl:text>
 </xsl:text>
-    <xsl:text>    // expected {index:[widgets]};
+    <xsl:text>function send_blob(data) {
 </xsl:text>
-    <xsl:text>    var subscribers = new Map();
+    <xsl:text>    if(data.length &gt; 0) {
+</xsl:text>
+    <xsl:text>        ws.send(new Blob([
+</xsl:text>
+    <xsl:text>            new Uint8Array(hmi_hash), 
+</xsl:text>
+    <xsl:text>            data]));
+</xsl:text>
+    <xsl:text>    };
+</xsl:text>
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    // return the diff in between curently subscribed and subscription
+    <xsl:text>const typedarray_types = {
 </xsl:text>
-    <xsl:text>    function update_subscriptions() {
+    <xsl:text>    INT: Int16Array,
 </xsl:text>
-    <xsl:text>        let delta = [];
+    <xsl:text>    BOOL: Uint8Array
 </xsl:text>
-    <xsl:text>        for(let [index, widgets] in subscribers.entries()){
+    <xsl:text>    /* TODO */
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            // periods are in ms
-</xsl:text>
-    <xsl:text>            let previous_period = subscriptions.get(index);
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            let new_period = Math.min(...widgets.map(widget =&gt; 1000/widget.frequency));
+    <xsl:text>function send_reset() {
+</xsl:text>
+    <xsl:text>    send_blob(new Uint8Array([1])); /* reset = 1 */
+</xsl:text>
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            if(previous_period != new_period) {
+    <xsl:text>// subscription state, as it should be in hmi server
 </xsl:text>
-    <xsl:text>                subscriptions.set(index, new_period);
+    <xsl:text>// hmitree indexed array of integers
 </xsl:text>
-    <xsl:text>                delta.push({index: index, period: new_period});
+    <xsl:text>var subscriptions =  hmitree_types.map(_ignored =&gt; 0);
 </xsl:text>
-    <xsl:text>            }
+    <xsl:text>
 </xsl:text>
-    <xsl:text>            
+    <xsl:text>// subscription state as needed by widget now
 </xsl:text>
-    <xsl:text>        })
+    <xsl:text>// hmitree indexed array of Sets of widgets objects
 </xsl:text>
-    <xsl:text>        return result;
+    <xsl:text>var subscribers = hmitree_types.map(_ignored =&gt; new Set());
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function update_subscriptions() {
+</xsl:text>
+    <xsl:text>    let delta = [];
+</xsl:text>
+    <xsl:text>    for(let index = 0; index &lt; subscribers.length; index++){
+</xsl:text>
+    <xsl:text>        let widgets = subscribers[index];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // periods are in ms
+</xsl:text>
+    <xsl:text>        let previous_period = subscriptions[index];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let new_period;
+</xsl:text>
+    <xsl:text>        if(widgets.size &gt; 0) {
+</xsl:text>
+    <xsl:text>            let maxfreq = 0;
+</xsl:text>
+    <xsl:text>            for(let widget of widgets)
+</xsl:text>
+    <xsl:text>                if(maxfreq &lt; widgets.frequency)
+</xsl:text>
+    <xsl:text>                    maxfreq = widgets.frequency;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            new_period = 1000/maxfreq;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            new_period = 0;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(previous_period != new_period) {
+</xsl:text>
+    <xsl:text>            subscriptions[index] = new_period;
+</xsl:text>
+    <xsl:text>            delta.push([
+</xsl:text>
+    <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
+</xsl:text>
+    <xsl:text>                new Uint32Array([index]), 
+</xsl:text>
+    <xsl:text>                new Uint16Array([new_period])]);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    send_blob(delta);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function update_value(index, value) {
+</xsl:text>
+    <xsl:text>    iectype = hmitree_types[index];
+</xsl:text>
+    <xsl:text>    jstype = typedarray_types[iectypes];
+</xsl:text>
+    <xsl:text>    send_blob([
+</xsl:text>
+    <xsl:text>        new Uint8Array([0]),  /* setval = 0 */
+</xsl:text>
+    <xsl:text>        new jstype([value])
+</xsl:text>
+    <xsl:text>        ]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var current_page;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function switch_page(page_name) {
+</xsl:text>
+    <xsl:text>    let old_desc = page_desc[current_page];
+</xsl:text>
+    <xsl:text>    let new_desc = page_desc[page_name];
+</xsl:text>
+    <xsl:text>    /* TODO hide / show widgets */
+</xsl:text>
+    <xsl:text>    /* TODO move viewport */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    /* remove subsribers of previous page if any */
+</xsl:text>
+    <xsl:text>    if(old_desc) for(let widget of old_desc.widgets){
+</xsl:text>
+    <xsl:text>        for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>            subscribers[index].delete(widget);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    /* add new subsribers if any */
+</xsl:text>
+    <xsl:text>    if(new_desc) for(let widget of new_desc.widgets){
+</xsl:text>
+    <xsl:text>        for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>            subscribers[index].add(widget);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    function update_value(index, value) {
+    <xsl:text>    current_page = page_name;
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    };
+    <xsl:text>    update_subscriptions();
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    var current_page = default_page;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    function switch_page(page_name) {
-</xsl:text>
-    <xsl:text>        let new_desc = page_desc[page_name];
-</xsl:text>
-    <xsl:text>        let old_desc = page_desc[page_name];
-</xsl:text>
-    <xsl:text>        /* TODO hide / show widgets */
-</xsl:text>
-    <xsl:text>        /* TODO move viewport */
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        /* Update subscribers */
-</xsl:text>
-    <xsl:text>        /* Update subscriptions */
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    };
+    <xsl:text>// Once connection established
+</xsl:text>
+    <xsl:text>ws.onopen = function (evt) {
+</xsl:text>
+    <xsl:text>    send_reset();
+</xsl:text>
+    <xsl:text>    // show main page
+</xsl:text>
+    <xsl:text>    switch_page(default_page);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
