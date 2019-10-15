@@ -242,8 +242,7 @@ int svghmi_send_collect(uint32_t *size, char **ptr){
 typedef enum {
     setval = 0,
     reset = 1,
-    subscribe = 2,
-    unsubscribe = 3
+    subscribe = 2
 } cmd_from_JS;
 
 int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
@@ -320,20 +319,6 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
             }
             break;
 
-            case unsubscribe:
-            {
-                uint32_t index = *(uint32_t*)(cursor);
-
-                if(index < HMI_ITEM_COUNT)
-                {
-                    hmi_tree_item_t *dsc = &hmi_tree_item[index];
-                    reset_iterator(index, dsc);
-                }
-                else return -EINVAL;
-
-                progress = sizeof(uint32_t) /* index */;
-            }
-            break;
         }
         cursor += progress;
     }

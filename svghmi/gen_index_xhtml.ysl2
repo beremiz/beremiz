@@ -1,7 +1,7 @@
 include yslt_noindent.yml2
 
 // overrides yslt's output function to set CDATA
-decl output(method, cdata-section-elements="script");
+decl output(method, cdata-section-elements="xhtml:script");
 
 istylesheet
             /* From Inkscape */
@@ -11,6 +11,7 @@ istylesheet
             xmlns:svg="http://www.w3.org/2000/svg"
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+            xmlns:xhtml="http://www.w3.org/1999/xhtml"
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
@@ -163,7 +164,8 @@ istylesheet
 
     function "scripts"
     {
-        /* paste hmitree hash stored in hmi tree root node */
+        | (function(){
+        |
         | var hmi_hash = [«$hmitree/@hash»]; 
 
         /* TODO re-enable
@@ -194,7 +196,7 @@ istylesheet
             foreach "$widget/arg"
             |         "«@value»"`if "position()!=last()" > ,`
             |     ],
-            |     paths: [
+            |     indexes: [
             foreach "$widget/path" {
                 const "hmipath","@value";
                 const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
@@ -207,19 +209,10 @@ istylesheet
         }
         | }
         |
-        | var hmi_index = [
+        | var hmitree_types = [
 
-        const "svg","/"; /* foreach loses document root */
         foreach "$indexed_hmitree/*" {
-            | {   /* «@index»  «@hmipath» */
-            |     type: "«local-name()»",
-            |     ids: [
-            const "hmipath","@hmipath";
-            foreach "$svg//*[substring-after(@inkscape:label,'@') = $hmipath]" {
-            |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
-            }
-            |     ]
-            | }`if "position()!=last()" > ,`
+            | /* «@index»  «@hmipath» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
         }
 
         | ]
@@ -238,17 +231,7 @@ istylesheet
             |         id: "«@id»",
             |         widgets: [
             foreach "$page_ids" {
-            |             "«.»"`if "position()!=last()" > ,`
-            }
-            |         ]
-            |         subscriptions: [
-            foreach "$page_elements" {
-                const "hmipaths", "func:parselabel(@inkscape:label)/widget/path/@value";
-                const "notlast", "position()!=last()";
-                foreach "$hmipaths" {
-                    const "hmipath",".";
-            |             «$indexed_hmitree/*[@hmipath = $hmipath]/@index»`if "$notlast or position()!=last()" > ,`
-                }
+            |             hmi_widgets.«.»`if "position()!=last()" > ,`
             }
             |         ]
             |     }`if "position()!=last()" > ,`
@@ -259,6 +242,7 @@ istylesheet
         | var default_page = "«$default_page»";
 
         include text svghmi.js
+        | })();
     }
 
     /*

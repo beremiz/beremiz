@@ -16,7 +16,7 @@ xsltfiles := $(patsubst %.ysl2, %.xslt, $(ysl2files))
 
 all:$(xsltfiles)
 
-%.xslt: %.ysl2 ../yslt_noindent.yml2
+%.xslt: %.ysl2 svghmi.js ../yslt_noindent.yml2
 	$(yml2path)/yml2c -I $(yml2path):../ $< -o $@.tmp
 	xmlstarlet fo $@.tmp > $@
 	rm $@.tmp
