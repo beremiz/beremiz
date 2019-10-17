@@ -65,11 +65,13 @@ static int traverse_hmi_tree(hmi_tree_iterator fp)
 {
     unsigned int i;
     for(i = 0; i < sizeof(hmi_tree_item)/sizeof(hmi_tree_item_t); i++){
-        int res;
         hmi_tree_item_t *dsc = &hmi_tree_item[i];
-        if(res = (*fp)(i, dsc))
+        int res = (*fp)(i, dsc);
+        if(res != 0){
             return res;
+        }
     }
+    return 0;
 }
 
 #define __Unpack_desc_type hmi_tree_item_t
@@ -116,16 +118,16 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 
 static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    int res = 0;
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
 
     if(dsc->wstate == buf_tosend)
     {
         uint32_t sz = __get_type_enum_size(dsc->type);
-        if(sbufidx + sizeof(uint32_t) + sz <  sizeof(sbuf))
+        if(sbufidx + sizeof(uint32_t) + sz <=  sizeof(sbuf))
         {
             void *src_p = &wbuf[dsc->buf_index];
             void *dst_p = &sbuf[sbufidx];
+            /* TODO : force into little endian */
             memcpy(dst_p, &index, sizeof(uint32_t));
             memcpy(dst_p + sizeof(uint32_t), src_p, sz);
             dsc->wstate = buf_free;
@@ -133,12 +135,14 @@ static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
         }
         else
         {
-            res = EOVERFLOW;
+            printf("BUG!!! %%d + %%ld + %%d >  %%ld \n", sbufidx, sizeof(uint32_t), sz,  sizeof(sbuf));
+            AtomicCompareExchange(&dsc->wlock, 1, 0);
+            return EOVERFLOW; 
         }
     }
 
     AtomicCompareExchange(&dsc->wlock, 1, 0);
-    return res; 
+    return 0; 
 }
 
 static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
@@ -224,13 +228,18 @@ int svghmi_send_collect(uint32_t *size, char **ptr){
 
     if(do_collect) {
         int res;
-        memcpy(&sbuf[0], &hmi_hash[0], HMI_HASH_SIZE);
         sbufidx = HMI_HASH_SIZE;
         if((res = traverse_hmi_tree(send_iterator)) == 0)
         {
-            *ptr = &sbuf[0];
-            *size = sbufidx;
+            if(sbufidx > HMI_HASH_SIZE){
+                memcpy(&sbuf[0], &hmi_hash[0], HMI_HASH_SIZE);
+                *ptr = &sbuf[0];
+                *size = sbufidx;
+                return 0;
+            }
+            return ENODATA;
         }
+        // printf("collected BAD result %%d\n", res);
         return res;
     }
     else
@@ -249,7 +258,6 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
     const uint8_t* cursor = ptr + HMI_HASH_SIZE;
     const uint8_t* end = ptr + size;
 
-    printf("svghmi_recv_dispatch %%d\n",size);
 
     /* match hmitree fingerprint */
     if(size <= HMI_HASH_SIZE || memcmp(ptr, hmi_hash, HMI_HASH_SIZE) != 0)
@@ -289,9 +297,15 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                         AtomicCompareExchange(&dsc->rlock, 1, 0);
                         progress = sz + sizeof(uint32_t) /* index */;
                     }
-                    else return -EINVAL;
+                    else 
+                    {
+                        return -EINVAL;
+                    }
                 }
-                else return -EINVAL;
+                else 
+                {
+                    return -EINVAL;
+                }
             }
             break;
 
@@ -311,13 +325,19 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                 {
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
                     update_refresh_period(dsc, refresh_period_ms);
+                    printf("OK\n");
                 }
-                else return -EINVAL;
+                else 
+                {
+                    return -EINVAL;
+                }
 
                 progress = sizeof(uint32_t) /* index */ + 
                            sizeof(uint16_t) /* refresh period */;
             }
             break;
+            default:
+                printf("svghmi_recv_dispatch unknown %%d\n",cmd);
 
         }
         cursor += progress;

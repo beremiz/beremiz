@@ -179,7 +179,7 @@
     <func:result select="exsl:node-set($ast)"/>
   </func:function>
   <xsl:template name="scripts">
-    <xsl:text>(function(){
+    <xsl:text>//(function(){
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -319,7 +319,7 @@
 </xsl:text>
     <xsl:text>function dispatch_value(index, value) {
 </xsl:text>
-    <xsl:text>    console.log("dispatch_value("+index+value+")");
+    <xsl:text>    console.log("dispatch_value("+index+", "+value+")");
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -357,55 +357,75 @@
 </xsl:text>
     <xsl:text>    let i = 0;
 </xsl:text>
-    <xsl:text>    for(let hash_int of hmi_hash) {
+    <xsl:text>    console.log("Recv something.");
 </xsl:text>
-    <xsl:text>        if(hash_int != dv.getUint8(i)){
+    <xsl:text>    try {
 </xsl:text>
-    <xsl:text>            console.log("Recv non maching hash. Reload.");
+    <xsl:text>        for(let hash_int of hmi_hash) {
 </xsl:text>
-    <xsl:text>
+    <xsl:text>            if(hash_int != dv.getUint8(i)){
 </xsl:text>
-    <xsl:text>            // 1003 is for "Unsupported Data"
+    <xsl:text>                throw new Error("Hash doesn't match")
 </xsl:text>
-    <xsl:text>            ws.close(1003,"Hash doesn't match");
+    <xsl:text>            };
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            // TODO : remove debug alert ?
-</xsl:text>
-    <xsl:text>            alert("HMI will be reloaded.");
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            // force reload ignoring cache
-</xsl:text>
-    <xsl:text>            location.reload(true);
+    <xsl:text>            i++;
 </xsl:text>
     <xsl:text>        };
 </xsl:text>
-    <xsl:text>        i++;
+    <xsl:text>
 </xsl:text>
-    <xsl:text>    };
+    <xsl:text>        console.log("Recv something GOOD.");
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    while(i &lt; data.length){
+    <xsl:text>        while(i &lt; data.byteLength){
 </xsl:text>
-    <xsl:text>        let index = dv.getUint32(i);
+    <xsl:text>            let index = dv.getUint32(i, true);
 </xsl:text>
-    <xsl:text>        i += 4;
+    <xsl:text>            console.log("Recv something index is "+index);
 </xsl:text>
-    <xsl:text>        let iectype = hmitree_types[index];
+    <xsl:text>            i += 4;
 </xsl:text>
-    <xsl:text>        let [dvgetter, bytesize] = dvgetters[iectypes];
+    <xsl:text>            let iectype = hmitree_types[index];
 </xsl:text>
-    <xsl:text>        value = dvgetter.call(dv,i);
+    <xsl:text>            if(iectype != undefined){
 </xsl:text>
-    <xsl:text>        dispatch_value(index, value);
+    <xsl:text>                let [dvgetter, bytesize] = dvgetters[iectype];
 </xsl:text>
-    <xsl:text>        i += bytesize;
+    <xsl:text>                let value = dvgetter.call(dv,i,true);
 </xsl:text>
-    <xsl:text>    };
+    <xsl:text>                dispatch_value(index, value);
+</xsl:text>
+    <xsl:text>                i += bytesize;
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>                throw new Error("Unknown index "+index)
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        };
+</xsl:text>
+    <xsl:text>    } catch(err) {
+</xsl:text>
+    <xsl:text>        // 1003 is for "Unsupported Data"
+</xsl:text>
+    <xsl:text>        // ws.close(1003, err.message);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // TODO : remove debug alert ?
+</xsl:text>
+    <xsl:text>        alert("Error : "+err.message+"\nHMI will be reloaded.");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // force reload ignoring cache
+</xsl:text>
+    <xsl:text>        location.reload(true);
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -417,11 +437,7 @@
 </xsl:text>
     <xsl:text>    if(data.length &gt; 0) {
 </xsl:text>
-    <xsl:text>        ws.send(new Blob([
-</xsl:text>
-    <xsl:text>            new Uint8Array(hmi_hash), 
-</xsl:text>
-    <xsl:text>            data]));
+    <xsl:text>        ws.send(new Blob([new Uint8Array(hmi_hash)].concat(data)));
 </xsl:text>
     <xsl:text>    };
 </xsl:text>
@@ -481,7 +497,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        let new_period;
+    <xsl:text>        let new_period = 0;
 </xsl:text>
     <xsl:text>        if(widgets.size &gt; 0) {
 </xsl:text>
@@ -489,33 +505,31 @@
 </xsl:text>
     <xsl:text>            for(let widget of widgets)
 </xsl:text>
-    <xsl:text>                if(maxfreq &lt; widgets.frequency)
+    <xsl:text>                if(maxfreq &lt; widget.frequency)
 </xsl:text>
-    <xsl:text>                    maxfreq = widgets.frequency;
+    <xsl:text>                    maxfreq = widget.frequency;
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            new_period = 1000/maxfreq;
+    <xsl:text>            if(maxfreq != 0)
 </xsl:text>
-    <xsl:text>        } else {
-</xsl:text>
-    <xsl:text>            new_period = 0;
+    <xsl:text>                new_period = 1000/maxfreq;
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>
+    <xsl:text>         
 </xsl:text>
     <xsl:text>        if(previous_period != new_period) {
 </xsl:text>
     <xsl:text>            subscriptions[index] = new_period;
 </xsl:text>
-    <xsl:text>            delta.push([
+    <xsl:text>            delta.push(new Blob([
 </xsl:text>
     <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
 </xsl:text>
     <xsl:text>                new Uint32Array([index]), 
 </xsl:text>
-    <xsl:text>                new Uint16Array([new_period])]);
+    <xsl:text>                new Uint16Array([new_period])]));
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -613,13 +627,27 @@
 </xsl:text>
     <xsl:text>    switch_page(default_page);
 </xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>})();
+    <xsl:text>ws.onclose = function (evt) {
+</xsl:text>
+    <xsl:text>    // TODO : add visible notification while waiting for reload
+</xsl:text>
+    <xsl:text>    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in 10s.");
+</xsl:text>
+    <xsl:text>    // TODO : re-enable auto reload when not in debug
+</xsl:text>
+    <xsl:text>    //window.setTimeout(() =&gt; location.reload(true), 10000);
+</xsl:text>
+    <xsl:text>    alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>//})();
 </xsl:text>
   </xsl:template>
   <xsl:template mode="page_desc" match="*"/>

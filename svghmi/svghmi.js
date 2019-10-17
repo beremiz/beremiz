@@ -1,7 +1,7 @@
 // svghmi.js
 
 function dispatch_value(index, value) {
-    console.log("dispatch_value("+index+value+")");
+    console.log("dispatch_value("+index+", "+value+")");
 };
 
 // Open WebSocket to relative "/ws" address
@@ -20,39 +20,44 @@ ws.onmessage = function (evt) {
     let data = evt.data;
     let dv = new DataView(data);
     let i = 0;
-    for(let hash_int of hmi_hash) {
-        if(hash_int != dv.getUint8(i)){
-            console.log("Recv non maching hash. Reload.");
-
-            // 1003 is for "Unsupported Data"
-            ws.close(1003,"Hash doesn't match");
-
-            // TODO : remove debug alert ?
-            alert("HMI will be reloaded.");
-
-            // force reload ignoring cache
-            location.reload(true);
+    try {
+        for(let hash_int of hmi_hash) {
+            if(hash_int != dv.getUint8(i)){
+                throw new Error("Hash doesn't match")
+            };
+            i++;
         };
-        i++;
-    };
 
-    while(i < data.length){
-        let index = dv.getUint32(i);
-        i += 4;
-        let iectype = hmitree_types[index];
-        let [dvgetter, bytesize] = dvgetters[iectypes];
-        value = dvgetter.call(dv,i);
-        dispatch_value(index, value);
-        i += bytesize;
-    };
+        while(i < data.byteLength){
+            let index = dv.getUint32(i, true);
+            console.log("Recv something index is "+index);
+            i += 4;
+            let iectype = hmitree_types[index];
+            if(iectype != undefined){
+                let [dvgetter, bytesize] = dvgetters[iectype];
+                let value = dvgetter.call(dv,i,true);
+                dispatch_value(index, value);
+                i += bytesize;
+            } else {
+                throw new Error("Unknown index "+index)
+            }
+        };
+    } catch(err) {
+        // 1003 is for "Unsupported Data"
+        // ws.close(1003, err.message);
+
+        // TODO : remove debug alert ?
+        alert("Error : "+err.message+"\\\\nHMI will be reloaded.");
+
+        // force reload ignoring cache
+        location.reload(true);
+    }
 };
 
 
 function send_blob(data) {
     if(data.length > 0) {
-        ws.send(new Blob([
-            new Uint8Array(hmi_hash), 
-            data]));
+        ws.send(new Blob([new Uint8Array(hmi_hash)].concat(data)));
     };
 };
 
@@ -82,24 +87,23 @@ function update_subscriptions() {
         // periods are in ms
         let previous_period = subscriptions[index];
 
-        let new_period;
+        let new_period = 0;
         if(widgets.size > 0) {
             let maxfreq = 0;
             for(let widget of widgets)
-                if(maxfreq < widgets.frequency)
-                    maxfreq = widgets.frequency;
+                if(maxfreq < widget.frequency)
+                    maxfreq = widget.frequency;
 
-            new_period = 1000/maxfreq;
-        } else {
-            new_period = 0;
+            if(maxfreq != 0)
+                new_period = 1000/maxfreq;
         }
 
         if(previous_period != new_period) {
             subscriptions[index] = new_period;
-            delta.push([
+            delta.push(new Blob([
                 new Uint8Array([2]), /* subscribe = 2 */
                 new Uint32Array([index]), 
-                new Uint16Array([new_period])]);
+                new Uint16Array([new_period])]));
         }
         
     }
@@ -148,6 +152,13 @@ ws.onopen = function (evt) {
     send_reset();
     // show main page
     switch_page(default_page);
-
 };
 
+ws.onclose = function (evt) {
+    // TODO : add visible notification while waiting for reload
+    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in 10s.");
+    // TODO : re-enable auto reload when not in debug
+    //window.setTimeout(() => location.reload(true), 10000);
+    alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
+
+};
