@@ -6,6 +6,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+import errno
 
 from twisted.web.server import Site
 from twisted.web.resource import Resource
@@ -13,6 +14,7 @@ from twisted.internet import reactor
 from twisted.web.static import File
 
 from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
+from autobahn.websocket.protocol import WebSocketProtocol
 from autobahn.twisted.resource import  WebSocketResource
 
 # TODO multiclient :
@@ -25,7 +27,7 @@ svghmi_send_collect = PLCBinary.svghmi_send_collect
 svghmi_send_collect.restype = ctypes.c_int # error or 0
 svghmi_send_collect.argtypes = [
     ctypes.POINTER(ctypes.c_uint32),  # size
-    ctypes.POINTER(ctypes.c_char_p)]  # data ptr
+    ctypes.POINTER(ctypes.c_void_p)]  # data ptr
 # TODO multiclient : switch to arrays
 
 svghmi_recv_dispatch = PLCBinary.svghmi_recv_dispatch
@@ -38,10 +40,11 @@ svghmi_recv_dispatch.argtypes = [
 class HMISession(object):
     def __init__(self, protocol_instance):
         global svghmi_session
-
-        # TODO: kill existing session for robustness
-        assert(svghmi_session is None)
-
+        
+        # Single client :
+        # Creating a new HMISession closes pre-existing HMISession
+        if svghmi_session is not None:
+            svghmi_session.close()
         svghmi_session = self
         self.protocol_instance = protocol_instance
 
@@ -50,13 +53,11 @@ class HMISession(object):
         # get a unique bit index amont other svghmi_sessions,
         # so that we can match flags passed by C->python callback
 
-    def __del__(self):
+    def close(self):
         global svghmi_session
-        assert(svghmi_session)
-        svghmi_session = None
-
-        # TODO multiclient :
-        # svghmi_sessions.remove(self)
+        if svghmi_session == self:
+            svghmi_session = None
+        self.protocol_instance.sendClose(WebSocketProtocol.CLOSE_STATUS_CODE_NORMAL)
 
     def onMessage(self, msg):
         # pass message to the C side recieve_message()
@@ -66,7 +67,8 @@ class HMISession(object):
 
 
     def sendMessage(self, msg):
-        self.sendMessage(msg, True)
+        self.protocol_instance.sendMessage(msg, True)
+        return 0
 
 class HMIProtocol(WebSocketServerProtocol):
 
@@ -75,18 +77,15 @@ class HMIProtocol(WebSocketServerProtocol):
         WebSocketServerProtocol.__init__(self, *args, **kwargs)
 
     def onOpen(self):
+        assert(self._hmi_session is None)
         self._hmi_session = HMISession(self)
-        print "open"
 
     def onClose(self, wasClean, code, reason):
-        del self._hmi_session
         self._hmi_session = None
-        print "close"
 
     def onMessage(self, msg, isBinary):
+        assert(self._hmi_session is not None)
         self._hmi_session.onMessage(msg)
-        # print msg
-        #self.sendMessage(msg, binary)
 
 class HMIWebSocketServerFactory(WebSocketServerFactory):
     protocol = HMIProtocol
@@ -98,14 +97,17 @@ svghmi_send_thread = None
 def SendThreadProc():
    global svghmi_session
    size = ctypes.c_uint32()
-   ptr = ctypes.c_char_p()
+   ptr = ctypes.c_void_p()
    res = 0
-   while svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr)) == 0 and \
-         svghmi_session is not None and \
-         svghmi_session.sendMessage(ctypes.string_at(ptr,size)) == 0:
-         pass
+   while True:
+       res=svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr))
+       if res == 0:
+           # TODO multiclient : dispatch to sessions
+           if svghmi_session is not None:
+               svghmi_session.sendMessage(ctypes.string_at(ptr.value,size.value))
+       elif res not in [errno.EAGAIN, errno.ENODATA]:
+           break
 
-       # TODO multiclient : dispatch to sessions
 
 
 
@@ -125,7 +127,9 @@ def _runtime_svghmi0_start():
 
 # Called by PLCObject at stop
 def _runtime_svghmi0_stop():
-    global svghmi_listener, svghmi_root, svghmi_send_thread
+    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session
+    if svghmi_session is not None:
+        svghmi_session.close()
     svghmi_root.delEntity("ws")
     svghmi_root = None
     svghmi_listener.stopListening()

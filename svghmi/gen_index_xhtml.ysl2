@@ -164,7 +164,7 @@ istylesheet
 
     function "scripts"
     {
-        | (function(){
+        | //(function(){
         |
         | var hmi_hash = [«$hmitree/@hash»]; 
 
@@ -242,7 +242,7 @@ istylesheet
         | var default_page = "«$default_page»";
 
         include text svghmi.js
-        | })();
+        | //})();
     }
 
     /*
