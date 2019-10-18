@@ -1,7 +1,25 @@
 // svghmi.js
 
 function dispatch_value(index, value) {
-    console.log("dispatch_value("+index+", "+value+")");
+    let widgets = subscribers[index];
+
+    if(widgets.size > 0) {
+        for(let widget of widgets){
+            let idxidx = widget.indexes.indexOf(index);
+            if(idxidx == -1){
+                throw new Error("Dispatching to widget not interested, should not happen.");
+            }
+            let d = widget.dispatch;
+            if(typeof(d) == "function" && idxidx == 0){
+                return d.call(widget,value);
+            }else if(typeof(d) == "object" && d.length >= idxidx){
+                d[idxidx].call(widget,value);
+            }/* else dispatch_0, ..., dispatch_n ? */
+            /*else {
+                throw new Error("Dunno how to dispatch to widget at index = " + index);
+            }*/
+        }
+    }
 };
 
 // Open WebSocket to relative "/ws" address
@@ -23,14 +41,13 @@ ws.onmessage = function (evt) {
     try {
         for(let hash_int of hmi_hash) {
             if(hash_int != dv.getUint8(i)){
-                throw new Error("Hash doesn't match")
+                throw new Error("Hash doesn't match");
             };
             i++;
         };
 
         while(i < data.byteLength){
             let index = dv.getUint32(i, true);
-            console.log("Recv something index is "+index);
             i += 4;
             let iectype = hmitree_types[index];
             if(iectype != undefined){

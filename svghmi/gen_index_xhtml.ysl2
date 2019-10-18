@@ -191,7 +191,6 @@ istylesheet
             const "widget", "func:parselabel(@inkscape:label)/widget";
             | «@id»: {
             |     type: "«$widget/@type»",
-            |     frequency: `apply "$widget", mode="refresh_frequency"`,
             |     args: [
             foreach "$widget/arg"
             |         "«@value»"`if "position()!=last()" > ,`
@@ -204,7 +203,9 @@ istylesheet
                     error > No match for HMI «$hmipath»;
             |         «$hmitree_match/@index»`if "position()!=last()" > ,`
             }
-            |     ]
+            |     ],
+            |     element: document.getElementById("«@id»"),
+            apply "$widget", mode="widget_defs" with "hmi_element",".";
             | }`if "position()!=last()" > ,`
         }
         | }
@@ -306,8 +307,33 @@ istylesheet
         };
     }
 
-    template "widget", mode="refresh_frequency" > 10
+    template "widget[@type='Display']", mode="widget_defs" {
+        param "hmi_element";
+        | frequency: 5,
+        | dispatch: function(value) {
+        choose {
+            when "$hmi_element[self::svg:text]"{
+            // TODO : care about <tspan> ?
+        |   this.element.textContent = String(value);
+            }
+            otherwise {
+                error "Display widget as a group not implemented";
+            }
+        }
+        | },
+
+    }
+    template "widget[@type='Meter']", mode="widget_defs" {
+        |     frequency: 10,
+    }
+    template "widget[@type='Input']", mode="widget_defs" {
+        |     frequency: 5,
+    }
+    //    |     frequency: 10`apply ".", mode="refresh_frequency"`,
+    // template "widget", mode="refresh_frequency" > 10
+    /*
     template "widget[@type='Meter']", mode="refresh_frequency" > 10
     template "widget[@type='Display']", mode="refresh_frequency" > 5
     template "widget[@type='Input']", mode="refresh_frequency" > 5
+    */
 }
