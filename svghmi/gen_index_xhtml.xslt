@@ -198,10 +198,6 @@
       <xsl:value-of select="$widget/@type"/>
       <xsl:text>",
 </xsl:text>
-      <xsl:text>    frequency: </xsl:text>
-      <xsl:apply-templates mode="refresh_frequency" select="$widget"/>
-      <xsl:text>,
-</xsl:text>
       <xsl:text>    args: [
 </xsl:text>
       <xsl:for-each select="$widget/arg">
@@ -236,8 +232,15 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>    ]
+      <xsl:text>    ],
 </xsl:text>
+      <xsl:text>    element: document.getElementById("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"),
+</xsl:text>
+      <xsl:apply-templates mode="widget_defs" select="$widget">
+        <xsl:with-param name="hmi_element" select="."/>
+      </xsl:apply-templates>
       <xsl:text>}</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
@@ -319,7 +322,43 @@
 </xsl:text>
     <xsl:text>function dispatch_value(index, value) {
 </xsl:text>
-    <xsl:text>    console.log("dispatch_value("+index+", "+value+")");
+    <xsl:text>    let widgets = subscribers[index];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(widgets.size &gt; 0) {
+</xsl:text>
+    <xsl:text>        for(let widget of widgets){
+</xsl:text>
+    <xsl:text>            let idxidx = widget.indexes.indexOf(index);
+</xsl:text>
+    <xsl:text>            if(idxidx == -1){
+</xsl:text>
+    <xsl:text>                throw new Error("Dispatching to widget not interested, should not happen.");
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            let d = widget.dispatch;
+</xsl:text>
+    <xsl:text>            if(typeof(d) == "function" &amp;&amp; idxidx == 0){
+</xsl:text>
+    <xsl:text>                return d.call(widget,value);
+</xsl:text>
+    <xsl:text>            }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
+</xsl:text>
+    <xsl:text>                d[idxidx].call(widget,value);
+</xsl:text>
+    <xsl:text>            }/* else dispatch_0, ..., dispatch_n ? */
+</xsl:text>
+    <xsl:text>            /*else {
+</xsl:text>
+    <xsl:text>                throw new Error("Dunno how to dispatch to widget at index = " + index);
+</xsl:text>
+    <xsl:text>            }*/
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -357,7 +396,7 @@
 </xsl:text>
     <xsl:text>    let i = 0;
 </xsl:text>
-    <xsl:text>    console.log("Recv something.");
+    <xsl:text>    //console.log("Recv something.");
 </xsl:text>
     <xsl:text>    try {
 </xsl:text>
@@ -365,7 +404,7 @@
 </xsl:text>
     <xsl:text>            if(hash_int != dv.getUint8(i)){
 </xsl:text>
-    <xsl:text>                throw new Error("Hash doesn't match")
+    <xsl:text>                throw new Error("Hash doesn't match");
 </xsl:text>
     <xsl:text>            };
 </xsl:text>
@@ -375,7 +414,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        console.log("Recv something GOOD.");
+    <xsl:text>        //console.log("Recv something GOOD.");
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -383,7 +422,7 @@
 </xsl:text>
     <xsl:text>            let index = dv.getUint32(i, true);
 </xsl:text>
-    <xsl:text>            console.log("Recv something index is "+index);
+    <xsl:text>            //console.log("Recv something index is "+index);
 </xsl:text>
     <xsl:text>            i += 4;
 </xsl:text>
@@ -722,16 +761,30 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template mode="refresh_frequency" match="widget">
-    <xsl:text>10</xsl:text>
+  <xsl:template mode="widget_defs" match="widget[@type='Display']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 5,
+</xsl:text>
+    <xsl:text>dispatch: function(value) {
+</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$hmi_element[self::svg:text]">
+        <xsl:text>  this.element.textContent = String(value);
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message terminate="yes">Display widget as a group not implemented</xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>},
+</xsl:text>
   </xsl:template>
-  <xsl:template mode="refresh_frequency" match="widget[@type='Meter']">
-    <xsl:text>10</xsl:text>
+  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
+    <xsl:text>    frequency: 10,
+</xsl:text>
   </xsl:template>
-  <xsl:template mode="refresh_frequency" match="widget[@type='Display']">
-    <xsl:text>5</xsl:text>
-  </xsl:template>
-  <xsl:template mode="refresh_frequency" match="widget[@type='Input']">
-    <xsl:text>5</xsl:text>
+  <xsl:template mode="widget_defs" match="widget[@type='Input']">
+    <xsl:text>    frequency: 5,
+</xsl:text>
   </xsl:template>
 </xsl:stylesheet>
