@@ -326,6 +326,10 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    // TODO : value cache
+</xsl:text>
+    <xsl:text>    
+</xsl:text>
     <xsl:text>    if(widgets.size &gt; 0) {
 </xsl:text>
     <xsl:text>        for(let widget of widgets){
@@ -359,6 +363,26 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function init_widgets() {
+</xsl:text>
+    <xsl:text>    Object.keys(hmi_widgets).forEach(function(id) {
+</xsl:text>
+    <xsl:text>        let widget = hmi_widgets[id];
+</xsl:text>
+    <xsl:text>        let init = widget.init;
+</xsl:text>
+    <xsl:text>        if(typeof(init) == "function"){
+</xsl:text>
+    <xsl:text>            return init.call(widget);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    });
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -582,11 +606,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function update_value(index, value) {
+    <xsl:text>function send_hmi_value(index, value) {
 </xsl:text>
     <xsl:text>    iectype = hmitree_types[index];
 </xsl:text>
-    <xsl:text>    jstype = typedarray_types[iectypes];
+    <xsl:text>    jstype = typedarray_types[iectype];
 </xsl:text>
     <xsl:text>    send_blob([
 </xsl:text>
@@ -599,6 +623,22 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function change_hmi_value(index, opstr) {
+</xsl:text>
+    <xsl:text>    let op = opstr[0];
+</xsl:text>
+    <xsl:text>    if(op == "=")
+</xsl:text>
+    <xsl:text>        return send_hmi_value(index, Number(opstr.slice(1)));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    alert('Change '+opstr+" TODO !!! (index :"+index+")");
+</xsl:text>
+    <xsl:text>}
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -659,6 +699,8 @@
     <xsl:text>// Once connection established
 </xsl:text>
     <xsl:text>ws.onopen = function (evt) {
+</xsl:text>
+    <xsl:text>    init_widgets();
 </xsl:text>
     <xsl:text>    send_reset();
 </xsl:text>
@@ -773,17 +815,72 @@
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message terminate="yes">Display widget as a group not implemented</xsl:message>
+        <xsl:message terminate="yes">
+          <xsl:text>Display widget as a group not implemented</xsl:text>
+        </xsl:message>
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>},
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Meter']">
-    <xsl:text>    frequency: 10,
+    <xsl:text>frequency: 10,
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 5,
+</xsl:text>
+    <xsl:variable name="value_elt_id" select="$hmi_element//*[self::svg:text][@inkscape:label='value'][1]/@id"/>
+    <xsl:if test="not($value_elt_id)">
+      <xsl:message terminate="yes">
+        <xsl:text>Input widget must have a text element</xsl:text>
+      </xsl:message>
+    </xsl:if>
+    <xsl:text>value_elt: document.getElementById("</xsl:text>
+    <xsl:value-of select="$value_elt_id"/>
+    <xsl:text>"),
+</xsl:text>
+    <xsl:text>dispatch: function(value) {
+</xsl:text>
+    <xsl:text>    this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:if test="$edit_elt_id">
+      <xsl:text>    document.getElementById("</xsl:text>
+      <xsl:value-of select="$edit_elt_id"/>
+      <xsl:text>").addEventListener(
+</xsl:text>
+      <xsl:text>        "click", 
+</xsl:text>
+      <xsl:text>        evt =&gt; alert('XXX TODO : Edit value'));
+</xsl:text>
+    </xsl:if>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-][0-9]+')]">
+      <xsl:text>    document.getElementById("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>").addEventListener(
+</xsl:text>
+      <xsl:text>        "click", 
+</xsl:text>
+      <xsl:text>        evt =&gt; change_hmi_value(this.indexes[0], "</xsl:text>
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text>"));
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>},
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Button']"/>
+  <xsl:template mode="widget_defs" match="widget[@type='Toggle']">
+    <xsl:text>    frequency: 5,
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Change']">
     <xsl:text>    frequency: 5,
 </xsl:text>
   </xsl:template>
