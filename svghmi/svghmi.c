@@ -286,7 +286,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                     void *dst_p = &rbuf[dsc->buf_index];
                     uint32_t sz = __get_type_enum_size(dsc->type);
 
-                    if((valptr + sz) < end)
+                    if((valptr + sz) <= end)
                     {
                         // rescheduling spinlock until free
                         while(AtomicCompareExchange(&dsc->rlock, 0, 1)) sched_yield();

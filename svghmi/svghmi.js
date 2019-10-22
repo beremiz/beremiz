@@ -129,10 +129,10 @@ function update_subscriptions() {
 
         if(previous_period != new_period) {
             subscriptions[index] = new_period;
-            delta.push(new Blob([
+            delta.push(
                 new Uint8Array([2]), /* subscribe = 2 */
                 new Uint32Array([index]), 
-                new Uint16Array([new_period])]));
+                new Uint16Array([new_period]));
         }
         
     }
@@ -140,12 +140,12 @@ function update_subscriptions() {
 };
 
 function send_hmi_value(index, value) {
-    iectype = hmitree_types[index];
-    jstype = typedarray_types[iectype];
+    let iectype = hmitree_types[index];
+    let jstype = typedarray_types[iectype];
     send_blob([
         new Uint8Array([0]),  /* setval = 0 */
-        new jstype([value])
-        ]);
+        new Uint32Array([index]), 
+        new jstype([value])]);
 
 };
 
