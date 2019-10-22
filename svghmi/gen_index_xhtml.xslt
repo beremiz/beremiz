@@ -586,13 +586,13 @@
 </xsl:text>
     <xsl:text>            subscriptions[index] = new_period;
 </xsl:text>
-    <xsl:text>            delta.push(new Blob([
+    <xsl:text>            delta.push(
 </xsl:text>
     <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
 </xsl:text>
     <xsl:text>                new Uint32Array([index]), 
 </xsl:text>
-    <xsl:text>                new Uint16Array([new_period])]));
+    <xsl:text>                new Uint16Array([new_period]));
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -608,17 +608,17 @@
 </xsl:text>
     <xsl:text>function send_hmi_value(index, value) {
 </xsl:text>
-    <xsl:text>    iectype = hmitree_types[index];
+    <xsl:text>    let iectype = hmitree_types[index];
 </xsl:text>
-    <xsl:text>    jstype = typedarray_types[iectype];
+    <xsl:text>    let jstype = typedarray_types[iectype];
 </xsl:text>
     <xsl:text>    send_blob([
 </xsl:text>
     <xsl:text>        new Uint8Array([0]),  /* setval = 0 */
 </xsl:text>
-    <xsl:text>        new jstype([value])
+    <xsl:text>        new Uint32Array([index]), 
 </xsl:text>
-    <xsl:text>        ]);
+    <xsl:text>        new jstype([value])]);
 </xsl:text>
     <xsl:text>
 </xsl:text>
