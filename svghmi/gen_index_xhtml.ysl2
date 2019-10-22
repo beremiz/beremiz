@@ -317,16 +317,47 @@ istylesheet
         |   this.element.textContent = String(value);
             }
             otherwise {
-                error "Display widget as a group not implemented";
+                error > Display widget as a group not implemented
             }
         }
         | },
 
     }
     template "widget[@type='Meter']", mode="widget_defs" {
-        |     frequency: 10,
+        | frequency: 10,
     }
     template "widget[@type='Input']", mode="widget_defs" {
+        param "hmi_element";
+        | frequency: 5,
+        const "value_elt_id","$hmi_element//*[self::svg:text][@inkscape:label='value'][1]/@id";
+        if "not($value_elt_id)" error > Input widget must have a text element
+        | value_elt: document.getElementById("«$value_elt_id»"),
+        | dispatch: function(value) {
+        |     this.value_elt.textContent = String(value);
+        | },
+        const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
+        | init: function() {
+        if "$edit_elt_id" {
+        |     document.getElementById("«$edit_elt_id»").addEventListener(
+        |         "click", 
+        |         evt => alert('XXX TODO : Edit value'));
+        }
+        foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-][0-9]+')]" {
+        |     document.getElementById("«@id»").addEventListener(
+        |         "click", 
+        |         evt => change_hmi_value(this.indexes[0], "«@inkscape:label»"));
+        }
+        | },
+    }
+    template "widget[@type='Button']", mode="widget_defs" {
+    }
+    template "widget[@type='Toggle']", mode="widget_defs" {
+        |     frequency: 5,
+    }
+    template "widget[@type='Change']", mode="widget_defs" {
+        // HMI:Change:-10@/PUMP/VALUE 
+        // HMI:Change:+1@/PUMP/VALUE 
+        // HMI:Change:=42@/PUMP/VALUE 
         |     frequency: 5,
     }
     //    |     frequency: 10`apply ".", mode="refresh_frequency"`,

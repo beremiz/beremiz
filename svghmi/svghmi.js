@@ -3,6 +3,8 @@
 function dispatch_value(index, value) {
     let widgets = subscribers[index];
 
+    // TODO : value cache
+    
     if(widgets.size > 0) {
         for(let widget of widgets){
             let idxidx = widget.indexes.indexOf(index);
@@ -20,6 +22,16 @@ function dispatch_value(index, value) {
             }*/
         }
     }
+};
+
+function init_widgets() {
+    Object.keys(hmi_widgets).forEach(function(id) {
+        let widget = hmi_widgets[id];
+        let init = widget.init;
+        if(typeof(init) == "function"){
+            return init.call(widget);
+        }
+    });
 };
 
 // Open WebSocket to relative "/ws" address
@@ -127,15 +139,23 @@ function update_subscriptions() {
     send_blob(delta);
 };
 
-function update_value(index, value) {
+function send_hmi_value(index, value) {
     iectype = hmitree_types[index];
-    jstype = typedarray_types[iectypes];
+    jstype = typedarray_types[iectype];
     send_blob([
         new Uint8Array([0]),  /* setval = 0 */
         new jstype([value])
         ]);
 
 };
+
+function change_hmi_value(index, opstr) {
+    let op = opstr[0];
+    if(op == "=")
+        return send_hmi_value(index, Number(opstr.slice(1)));
+
+    alert('Change '+opstr+" TODO !!! (index :"+index+")");
+}
 
 var current_page;
 
@@ -166,6 +186,7 @@ function switch_page(page_name) {
 
 // Once connection established
 ws.onopen = function (evt) {
+    init_widgets();
     send_reset();
     // show main page
     switch_page(default_page);
