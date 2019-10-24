@@ -1006,7 +1006,7 @@ class Viewer(EditorPanel, DebugViewer):
                     if connectorname == "":
                         iec_path = "%s.%s%d" % (instance_path, block.GetType(), block.GetId())
                     else:
-                        iec_path = "%s.%s%d_%s" % (instance_path, block.GetType(), block.GetId(), connectorname)
+                        iec_path = "%s._TMP_%s%d_%s" % (instance_path, block.GetType(), block.GetId(), connectorname)
             elif isinstance(block, FBD_Variable):
                 iec_path = "%s.%s" % (instance_path, block.GetName())
             elif isinstance(block, FBD_Connector):
