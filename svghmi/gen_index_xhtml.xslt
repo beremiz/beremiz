@@ -320,15 +320,15 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function dispatch_value(index, value) {
 </xsl:text>
     <xsl:text>    let widgets = subscribers[index];
 </xsl:text>
     <xsl:text>
-</xsl:text>
-    <xsl:text>    // TODO : value cache
-</xsl:text>
-    <xsl:text>    
 </xsl:text>
     <xsl:text>    if(widgets.size &gt; 0) {
 </xsl:text>
@@ -363,6 +363,12 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    cache[index] = value;
+</xsl:text>
+    <xsl:text>    
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -622,6 +628,8 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    cache[index] = value;
+</xsl:text>
     <xsl:text>};
 </xsl:text>
     <xsl:text>
@@ -630,13 +638,39 @@
 </xsl:text>
     <xsl:text>    let op = opstr[0];
 </xsl:text>
-    <xsl:text>    if(op == "=")
+    <xsl:text>    let given_val = opstr.slice(1);
 </xsl:text>
-    <xsl:text>        return send_hmi_value(index, Number(opstr.slice(1)));
+    <xsl:text>    let old_val = cache[index]
 </xsl:text>
-    <xsl:text>
+    <xsl:text>    let new_val;
 </xsl:text>
-    <xsl:text>    alert('Change '+opstr+" TODO !!! (index :"+index+")");
+    <xsl:text>    switch(op){
+</xsl:text>
+    <xsl:text>      case "=":
+</xsl:text>
+    <xsl:text>        eval("new_val"+opstr);
+</xsl:text>
+    <xsl:text>        break;
+</xsl:text>
+    <xsl:text>      case "+":
+</xsl:text>
+    <xsl:text>      case "-":
+</xsl:text>
+    <xsl:text>      case "*":
+</xsl:text>
+    <xsl:text>      case "/":
+</xsl:text>
+    <xsl:text>        if(old_val != undefined)
+</xsl:text>
+    <xsl:text>            new_val = eval("old_val"+opstr);
+</xsl:text>
+    <xsl:text>        break;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
+</xsl:text>
+    <xsl:text>        return send_hmi_value(index, new_val);
 </xsl:text>
     <xsl:text>}
 </xsl:text>
