@@ -1,10 +1,10 @@
 // svghmi.js
 
+var cache = hmitree_types.map(_ignored => undefined);
+
 function dispatch_value(index, value) {
     let widgets = subscribers[index];
 
-    // TODO : value cache
-    
     if(widgets.size > 0) {
         for(let widget of widgets){
             let idxidx = widget.indexes.indexOf(index);
@@ -22,6 +22,9 @@ function dispatch_value(index, value) {
             }*/
         }
     }
+
+    cache[index] = value;
+    
 };
 
 function init_widgets() {
@@ -147,14 +150,28 @@ function send_hmi_value(index, value) {
         new Uint32Array([index]), 
         new jstype([value])]);
 
+    cache[index] = value;
 };
 
 function change_hmi_value(index, opstr) {
     let op = opstr[0];
-    if(op == "=")
-        return send_hmi_value(index, Number(opstr.slice(1)));
-
-    alert('Change '+opstr+" TODO !!! (index :"+index+")");
+    let given_val = opstr.slice(1);
+    let old_val = cache[index]
+    let new_val;
+    switch(op){
+      case "=":
+        eval("new_val"+opstr);
+        break;
+      case "+":
+      case "-":
+      case "*":
+      case "/":
+        if(old_val != undefined)
+            new_val = eval("old_val"+opstr);
+        break;
+    }
+    if(new_val != undefined && old_val != new_val)
+        return send_hmi_value(index, new_val);
 }
 
 var current_page;
