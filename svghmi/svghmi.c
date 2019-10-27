@@ -31,6 +31,7 @@ static uint16_t ticktime_ms = (ticktime_ns>1000000)?
 
 typedef enum {
     buf_free = 0,
+    buf_new,
     buf_set,
     buf_tosend
 } buf_state_t;
@@ -89,6 +90,7 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
                     dsc->age_ms += ticktime_ms;
                 }else{
                     dsc->wstate = buf_tosend;
+                    global_write_dirty = 1;
                 }
             }
         }
@@ -100,14 +102,18 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 
         /* if new value differs from previous one */
         USINT sz = __get_type_enum_size(dsc->type);
-        if(memcmp(dest_p, visible_value_p, sz) != 0){
+        if(dsc->wstate == buf_new || memcmp(dest_p, visible_value_p, sz) != 0){
             /* copy and flag as set */
             memcpy(dest_p, visible_value_p, sz);
-            if(dsc->wstate == buf_free) {
-                dsc->wstate = buf_set;
+            if(dsc->wstate == buf_new || dsc->wstate == buf_free) {
+                if(dsc->wstate == buf_new || ticktime_ms > dsc->refresh_period_ms){
+                    dsc->wstate = buf_tosend;
+                    global_write_dirty = 1;
+                } else {
+                    dsc->wstate = buf_set;
+                }
                 dsc->age_ms = 0;
             }
-            global_write_dirty = 1;
         }
 
         AtomicCompareExchange(&dsc->wlock, 1, 0);
@@ -168,6 +174,11 @@ inline void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_
 {
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
     dsc->refresh_period_ms = refresh_period_ms;
+    if(refresh_period_ms) {
+        dsc->wstate = buf_new;
+    } else {
+        dsc->wstate = buf_free;
+    }
     AtomicCompareExchange(&dsc->wlock, 1, 0);
 }
 

@@ -5,6 +5,9 @@ var cache = hmitree_types.map(_ignored => undefined);
 function dispatch_value(index, value) {
     let widgets = subscribers[index];
 
+    let oldval = cache[index];
+    cache[index] = value;
+
     if(widgets.size > 0) {
         for(let widget of widgets){
             let idxidx = widget.indexes.indexOf(index);
@@ -13,18 +16,15 @@ function dispatch_value(index, value) {
             }
             let d = widget.dispatch;
             if(typeof(d) == "function" && idxidx == 0){
-                return d.call(widget,value);
+                return d.call(widget, value, oldval);
             }else if(typeof(d) == "object" && d.length >= idxidx){
-                d[idxidx].call(widget,value);
+                return d[idxidx].call(widget, value, oldval);
             }/* else dispatch_0, ..., dispatch_n ? */
             /*else {
                 throw new Error("Dunno how to dispatch to widget at index = " + index);
             }*/
         }
     }
-
-    cache[index] = value;
-    
 };
 
 function init_widgets() {
