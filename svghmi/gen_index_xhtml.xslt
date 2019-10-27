@@ -330,6 +330,12 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    let oldval = cache[index];
+</xsl:text>
+    <xsl:text>    cache[index] = value;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    if(widgets.size &gt; 0) {
 </xsl:text>
     <xsl:text>        for(let widget of widgets){
@@ -346,11 +352,11 @@
 </xsl:text>
     <xsl:text>            if(typeof(d) == "function" &amp;&amp; idxidx == 0){
 </xsl:text>
-    <xsl:text>                return d.call(widget,value);
+    <xsl:text>                return d.call(widget, value, oldval);
 </xsl:text>
     <xsl:text>            }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
 </xsl:text>
-    <xsl:text>                d[idxidx].call(widget,value);
+    <xsl:text>                return d[idxidx].call(widget, value, oldval);
 </xsl:text>
     <xsl:text>            }/* else dispatch_0, ..., dispatch_n ? */
 </xsl:text>
@@ -363,12 +369,6 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    cache[index] = value;
-</xsl:text>
-    <xsl:text>    
 </xsl:text>
     <xsl:text>};
 </xsl:text>
