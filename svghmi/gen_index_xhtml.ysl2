@@ -345,7 +345,9 @@ istylesheet
         foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-][0-9]+')]" {
         |     document.getElementById("«@id»").addEventListener(
         |         "click", 
-        |         evt => change_hmi_value(this.indexes[0], "«@inkscape:label»"));
+        |         evt => {let new_val = change_hmi_value(this.indexes[0], "«@inkscape:label»");
+        |                 this.value_elt.textContent = String(new_val);});
+                          /* could gray out value until refreshed */
         }
         | },
     }
