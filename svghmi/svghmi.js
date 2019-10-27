@@ -134,10 +134,9 @@ function update_subscriptions() {
             subscriptions[index] = new_period;
             delta.push(
                 new Uint8Array([2]), /* subscribe = 2 */
-                new Uint32Array([index]), 
+                new Uint32Array([index]),
                 new Uint16Array([new_period]));
         }
-        
     }
     send_blob(delta);
 };
@@ -171,7 +170,8 @@ function change_hmi_value(index, opstr) {
         break;
     }
     if(new_val != undefined && old_val != new_val)
-        return send_hmi_value(index, new_val);
+        send_hmi_value(index, new_val);
+    return new_val;
 }
 
 var current_page;

@@ -426,8 +426,6 @@
 </xsl:text>
     <xsl:text>    let i = 0;
 </xsl:text>
-    <xsl:text>    //console.log("Recv something.");
-</xsl:text>
     <xsl:text>    try {
 </xsl:text>
     <xsl:text>        for(let hash_int of hmi_hash) {
@@ -444,15 +442,9 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        //console.log("Recv something GOOD.");
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>        while(i &lt; data.byteLength){
 </xsl:text>
     <xsl:text>            let index = dv.getUint32(i, true);
-</xsl:text>
-    <xsl:text>            //console.log("Recv something index is "+index);
 </xsl:text>
     <xsl:text>            i += 4;
 </xsl:text>
@@ -586,7 +578,7 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>         
+    <xsl:text>
 </xsl:text>
     <xsl:text>        if(previous_period != new_period) {
 </xsl:text>
@@ -596,13 +588,11 @@
 </xsl:text>
     <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
 </xsl:text>
-    <xsl:text>                new Uint32Array([index]), 
+    <xsl:text>                new Uint32Array([index]),
 </xsl:text>
     <xsl:text>                new Uint16Array([new_period]));
 </xsl:text>
     <xsl:text>        }
-</xsl:text>
-    <xsl:text>        
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -670,7 +660,9 @@
 </xsl:text>
     <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
 </xsl:text>
-    <xsl:text>        return send_hmi_value(index, new_val);
+    <xsl:text>        send_hmi_value(index, new_val);
+</xsl:text>
+    <xsl:text>    return new_val;
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -901,9 +893,11 @@
 </xsl:text>
       <xsl:text>        "click", 
 </xsl:text>
-      <xsl:text>        evt =&gt; change_hmi_value(this.indexes[0], "</xsl:text>
+      <xsl:text>        evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
       <xsl:value-of select="@inkscape:label"/>
-      <xsl:text>"));
+      <xsl:text>");
+</xsl:text>
+      <xsl:text>                this.value_elt.textContent = String(new_val);});
 </xsl:text>
     </xsl:for-each>
     <xsl:text>},
