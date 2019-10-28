@@ -188,13 +188,16 @@ function switch_page(page_name) {
             subscribers[index].delete(widget);
         }
     }
-    /* add new subsribers if any */
-    if(new_desc) for(let widget of new_desc.widgets){
-        for(let index of widget.indexes){
-            subscribers[index].add(widget);
-        }
-    }
 
+    if(new_desc) {
+        /* add new subsribers if any */
+        for(let widget of new_desc.widgets){
+            for(let index of widget.indexes){
+                subscribers[index].add(widget);
+            }
+        }
+        svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+    }
     current_page = page_name;
 
     update_subscriptions();

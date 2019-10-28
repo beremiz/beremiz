@@ -3,6 +3,11 @@ include yslt_noindent.yml2
 // overrides yslt's output function to set CDATA
 decl output(method, cdata-section-elements="xhtml:script");
 
+in xsl decl labels(*ptr, name="defs_by_labels") alias call-template {
+    with "hmi_element", "$hmi_element";
+    with "labels"{test *ptr};
+};
+
 istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -25,6 +30,7 @@ istylesheet
     const "geometry", "ns:GetSVGGeometry()";
     const "hmitree", "ns:GetHMITree()";
 
+    const "svg_root_id", "/svg:svg/@id";
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
     const "hmi_geometry", "$geometry[@Id = $hmi_elements/@id]";
 
@@ -96,9 +102,19 @@ istylesheet
      *  - copy every attributes 
      *  - copy every sub-elements
      */
-    template "@* | node()", mode="identity_svg" {
+    template "@* | node()", mode="inline_svg" {
       /* use real xsl:copy instead copy-of alias from yslt.yml2 */
-      xsl:copy apply "@* | node()", mode="identity_svg";
+      xsl:copy apply "@* | node()", mode="inline_svg";
+    }
+
+    /* replaces inkscape's height and width hints. forces fit */
+    template "svg:svg/@width", mode="inline_svg";
+    template "svg:svg/@height", mode="inline_svg";
+    template "svg:svg", mode="inline_svg" xsl:copy {
+        attrib "preserveAspectRatio" > none
+        attrib "height" > 100vh
+        attrib "width" > 100vw
+        apply "@* | node()", mode="inline_svg";
     }
 
     /*const "mark" > =HMI=\n*/
@@ -106,21 +122,21 @@ istylesheet
     /* copy root node and add geometry as comment for a test */
     template "/" { 
         comment > Made with SVGHMI. https://beremiz.org
+        /* DEBUG DATA
+        comment {
+            apply "$hmi_geometry", mode="testgeo";
+        }
+        comment {
+            apply "$hmitree", mode="testtree";
+        }
+        comment {
+            apply "$indexed_hmitree", mode="testtree";
+        }
+        */
         html xmlns="http://www.w3.org/1999/xhtml" {
             head;
-            body style="margin:0;" {
-                xsl:copy {
-                    comment {
-                        apply "$hmi_geometry", mode="testgeo";
-                    }
-                    comment {
-                        apply "$hmitree", mode="testtree";
-                    }
-                    comment {
-                        apply "$indexed_hmitree", mode="testtree";
-                    }
-                    apply "@* | node()", mode="identity_svg";
-                }
+            body style="margin:0;overflow:hidden;" {
+                apply "svg:svg", mode="inline_svg";
                 script{
                     call "scripts";
                 }
@@ -230,6 +246,7 @@ istylesheet
             const "page_elements", "$hmi_elements[@id = $page_ids]";
             |     "«$desc/arg[1]/@value»": {
             |         id: "«@id»",
+            |         bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
             |         widgets: [
             foreach "$page_ids" {
             |             hmi_widgets.«.»`if "position()!=last()" > ,`
@@ -241,7 +258,7 @@ istylesheet
 
         |
         | var default_page = "«$default_page»";
-
+        | var svg_root = document.getElementById("«$svg_root_id»");
         include text svghmi.js
         | //})();
     }
@@ -307,6 +324,20 @@ istylesheet
         };
     }
 
+
+    function "defs_by_labels" {
+        param "labels","''";
+        param "mandatory","'yes'";
+        param "hmi_element";
+        foreach "str:split($labels)" {
+            const "name",".";
+            const "elt_id","$hmi_element//*[@inkscape:label=$name][1]/@id";
+            if "$mandatory='yes' and not($elt_id)" error > Meter widget must have a «$name» element
+            | «$name»_elt: document.getElementById("«$elt_id»"),
+        }
+    }
+
+
     template "widget[@type='Display']", mode="widget_defs" {
         param "hmi_element";
         | frequency: 5,
@@ -326,12 +357,7 @@ istylesheet
     template "widget[@type='Meter']", mode="widget_defs" {
         param "hmi_element";
         | frequency: 10,
-        foreach "str:split('value min max needle range')" {
-            const "name",".";
-            const "elt_id","$hmi_element//*[@inkscape:label=$name][1]/@id";
-            if "not($elt_id)" error > Meter widget must have a «$name» element
-            | «$name»_elt: document.getElementById("«$elt_id»"),
-        }
+        labels("value min max needle range");
         | dispatch: function(value) {
         |     this.value_elt.textContent = String(value);
         |     let [min,max,totallength] = this.range;
@@ -350,9 +376,7 @@ istylesheet
     template "widget[@type='Input']", mode="widget_defs" {
         param "hmi_element";
         | frequency: 5,
-        const "value_elt_id","$hmi_element//*[self::svg:text][@inkscape:label='value'][1]/@id";
-        if "not($value_elt_id)" error > Input widget must have a text element
-        | value_elt: document.getElementById("«$value_elt_id»"),
+        labels("value");
         | dispatch: function(value) {
         |     this.value_elt.textContent = String(value);
         | },
@@ -378,16 +402,13 @@ istylesheet
         |     frequency: 5,
     }
     template "widget[@type='Change']", mode="widget_defs" {
-        // HMI:Change:-10@/PUMP/VALUE 
-        // HMI:Change:+1@/PUMP/VALUE 
-        // HMI:Change:=42@/PUMP/VALUE 
         |     frequency: 5,
     }
-    //    |     frequency: 10`apply ".", mode="refresh_frequency"`,
-    // template "widget", mode="refresh_frequency" > 10
-    /*
-    template "widget[@type='Meter']", mode="refresh_frequency" > 10
-    template "widget[@type='Display']", mode="refresh_frequency" > 5
-    template "widget[@type='Input']", mode="refresh_frequency" > 5
-    */
+    template "widget[@type='Jump']", mode="widget_defs" {
+        | init: function() {
+        |     this.element.addEventListener(
+        |         "click", 
+        |         evt => switch_page(this.args[0]));
+        | },
+    }
 }
