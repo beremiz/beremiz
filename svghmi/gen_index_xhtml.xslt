@@ -850,7 +850,50 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Meter']">
+    <xsl:param name="hmi_element"/>
     <xsl:text>frequency: 10,
+</xsl:text>
+    <xsl:for-each select="str:split('value min max needle range')">
+      <xsl:variable name="name" select="."/>
+      <xsl:variable name="elt_id" select="$hmi_element//*[@inkscape:label=$name][1]/@id"/>
+      <xsl:if test="not($elt_id)">
+        <xsl:message terminate="yes">
+          <xsl:text>Meter widget must have a </xsl:text>
+          <xsl:value-of select="$name"/>
+          <xsl:text> element</xsl:text>
+        </xsl:message>
+      </xsl:if>
+      <xsl:value-of select="$name"/>
+      <xsl:text>_elt: document.getElementById("</xsl:text>
+      <xsl:value-of select="$elt_id"/>
+      <xsl:text>"),
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>dispatch: function(value) {
+</xsl:text>
+    <xsl:text>    this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>    let [min,max,totallength] = this.range;
+</xsl:text>
+    <xsl:text>    let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+</xsl:text>
+    <xsl:text>    let tip = this.range_elt.getPointAtLength(length);
+</xsl:text>
+    <xsl:text>    this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>origin: undefined,
+</xsl:text>
+    <xsl:text>range: undefined,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
+</xsl:text>
+    <xsl:text>    this.origin = this.needle_elt.getPointAtLength(0);
+</xsl:text>
+    <xsl:text>},
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
