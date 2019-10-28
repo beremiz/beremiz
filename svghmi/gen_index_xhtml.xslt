@@ -3,6 +3,7 @@
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
+  <xsl:variable name="svg_root_id" select="/svg:svg/@id"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmi_geometry" select="$geometry[@Id = $hmi_elements/@id]"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
@@ -97,9 +98,25 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template mode="identity_svg" match="@* | node()">
+  <xsl:template mode="inline_svg" match="@* | node()">
     <xsl:copy>
-      <xsl:apply-templates mode="identity_svg" select="@* | node()"/>
+      <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template mode="inline_svg" match="svg:svg/@width"/>
+  <xsl:template mode="inline_svg" match="svg:svg/@height"/>
+  <xsl:template mode="inline_svg" match="svg:svg">
+    <xsl:copy>
+      <xsl:attribute name="preserveAspectRatio">
+        <xsl:text>none</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="height">
+        <xsl:text>100vh</xsl:text>
+      </xsl:attribute>
+      <xsl:attribute name="width">
+        <xsl:text>100vw</xsl:text>
+      </xsl:attribute>
+      <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
     </xsl:copy>
   </xsl:template>
   <xsl:template match="/">
@@ -108,19 +125,8 @@
     </xsl:comment>
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head/>
-      <body style="margin:0;">
-        <xsl:copy>
-          <xsl:comment>
-            <xsl:apply-templates mode="testgeo" select="$hmi_geometry"/>
-          </xsl:comment>
-          <xsl:comment>
-            <xsl:apply-templates mode="testtree" select="$hmitree"/>
-          </xsl:comment>
-          <xsl:comment>
-            <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
-          </xsl:comment>
-          <xsl:apply-templates mode="identity_svg" select="@* | node()"/>
-        </xsl:copy>
+      <body style="margin:0;overflow:hidden;">
+        <xsl:apply-templates mode="inline_svg" select="svg:svg"/>
         <script>
           <xsl:call-template name="scripts"/>
         </script>
@@ -288,6 +294,16 @@
       <xsl:value-of select="@id"/>
       <xsl:text>",
 </xsl:text>
+      <xsl:text>        bbox: [</xsl:text>
+      <xsl:value-of select="$p/@x"/>
+      <xsl:text>, </xsl:text>
+      <xsl:value-of select="$p/@y"/>
+      <xsl:text>, </xsl:text>
+      <xsl:value-of select="$p/@w"/>
+      <xsl:text>, </xsl:text>
+      <xsl:value-of select="$p/@h"/>
+      <xsl:text>],
+</xsl:text>
       <xsl:text>        widgets: [
 </xsl:text>
       <xsl:for-each select="$page_ids">
@@ -315,6 +331,10 @@
     <xsl:text>var default_page = "</xsl:text>
     <xsl:value-of select="$default_page"/>
     <xsl:text>";
+</xsl:text>
+    <xsl:text>var svg_root = document.getElementById("</xsl:text>
+    <xsl:value-of select="$svg_root_id"/>
+    <xsl:text>");
 </xsl:text>
     <xsl:text>// svghmi.js
 </xsl:text>
@@ -696,19 +716,25 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    /* add new subsribers if any */
+    <xsl:text>
 </xsl:text>
-    <xsl:text>    if(new_desc) for(let widget of new_desc.widgets){
+    <xsl:text>    if(new_desc) {
 </xsl:text>
-    <xsl:text>        for(let index of widget.indexes){
+    <xsl:text>        /* add new subsribers if any */
 </xsl:text>
-    <xsl:text>            subscribers[index].add(widget);
+    <xsl:text>        for(let widget of new_desc.widgets){
+</xsl:text>
+    <xsl:text>            for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>                subscribers[index].add(widget);
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    }
+    <xsl:text>        svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
 </xsl:text>
-    <xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>    current_page = page_name;
 </xsl:text>
@@ -829,6 +855,27 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
+  <xsl:template name="defs_by_labels">
+    <xsl:param name="labels" select="''"/>
+    <xsl:param name="mandatory" select="'yes'"/>
+    <xsl:param name="hmi_element"/>
+    <xsl:for-each select="str:split($labels)">
+      <xsl:variable name="name" select="."/>
+      <xsl:variable name="elt_id" select="$hmi_element//*[@inkscape:label=$name][1]/@id"/>
+      <xsl:if test="$mandatory='yes' and not($elt_id)">
+        <xsl:message terminate="yes">
+          <xsl:text>Meter widget must have a </xsl:text>
+          <xsl:value-of select="$name"/>
+          <xsl:text> element</xsl:text>
+        </xsl:message>
+      </xsl:if>
+      <xsl:value-of select="$name"/>
+      <xsl:text>_elt: document.getElementById("</xsl:text>
+      <xsl:value-of select="$elt_id"/>
+      <xsl:text>"),
+</xsl:text>
+    </xsl:for-each>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
     <xsl:text>frequency: 5,
@@ -853,22 +900,12 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>frequency: 10,
 </xsl:text>
-    <xsl:for-each select="str:split('value min max needle range')">
-      <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt_id" select="$hmi_element//*[@inkscape:label=$name][1]/@id"/>
-      <xsl:if test="not($elt_id)">
-        <xsl:message terminate="yes">
-          <xsl:text>Meter widget must have a </xsl:text>
-          <xsl:value-of select="$name"/>
-          <xsl:text> element</xsl:text>
-        </xsl:message>
-      </xsl:if>
-      <xsl:value-of select="$name"/>
-      <xsl:text>_elt: document.getElementById("</xsl:text>
-      <xsl:value-of select="$elt_id"/>
-      <xsl:text>"),
-</xsl:text>
-    </xsl:for-each>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <test>value min max needle range</test>
+      </xsl:with-param>
+    </xsl:call-template>
     <xsl:text>dispatch: function(value) {
 </xsl:text>
     <xsl:text>    this.value_elt.textContent = String(value);
@@ -900,16 +937,12 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>frequency: 5,
 </xsl:text>
-    <xsl:variable name="value_elt_id" select="$hmi_element//*[self::svg:text][@inkscape:label='value'][1]/@id"/>
-    <xsl:if test="not($value_elt_id)">
-      <xsl:message terminate="yes">
-        <xsl:text>Input widget must have a text element</xsl:text>
-      </xsl:message>
-    </xsl:if>
-    <xsl:text>value_elt: document.getElementById("</xsl:text>
-    <xsl:value-of select="$value_elt_id"/>
-    <xsl:text>"),
-</xsl:text>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <test>value</test>
+      </xsl:with-param>
+    </xsl:call-template>
     <xsl:text>dispatch: function(value) {
 </xsl:text>
     <xsl:text>    this.value_elt.textContent = String(value);
@@ -953,6 +986,18 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Change']">
     <xsl:text>    frequency: 5,
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Jump']">
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    this.element.addEventListener(
+</xsl:text>
+    <xsl:text>        "click", 
+</xsl:text>
+    <xsl:text>        evt =&gt; switch_page(this.args[0]));
+</xsl:text>
+    <xsl:text>},
 </xsl:text>
   </xsl:template>
 </xsl:stylesheet>
