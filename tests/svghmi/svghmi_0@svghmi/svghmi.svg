@@ -80,8 +80,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.84375"
-     inkscape:cx="-391.07334"
-     inkscape:cy="346.23071"
+     inkscape:cx="197.3711"
+     inkscape:cy="361.63812"
      inkscape:window-width="1600"
      inkscape:window-height="886"
      inkscape:window-x="0"
@@ -323,7 +323,7 @@
        sodipodi:nodetypes="cc"
        inkscape:label="needle" />
     <text
-       inkscape:label="minimum"
+       inkscape:label="min"
        id="text4505"
        y="4.9187088"
        x="49.132977"
@@ -335,7 +335,7 @@
          id="tspan4503"
          sodipodi:role="line">0</tspan></text>
     <text
-       inkscape:label="maximum"
+       inkscape:label="max"
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="127.48073"
@@ -345,7 +345,7 @@
          id="tspan4507"
          x="127.48073"
          y="-78.144218"
-         style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.26458332px">10</tspan></text>
+         style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.26458332px">10000</tspan></text>
     <text
        inkscape:label="value"
        id="text4517"

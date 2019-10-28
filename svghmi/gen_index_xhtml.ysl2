@@ -324,8 +324,29 @@ istylesheet
 
     }
     template "widget[@type='Meter']", mode="widget_defs" {
+        param "hmi_element";
         | frequency: 10,
+        foreach "str:split('value min max needle range')" {
+            const "name",".";
+            const "elt_id","$hmi_element//*[@inkscape:label=$name][1]/@id";
+            if "not($elt_id)" error > Meter widget must have a «$name» element
+            | «$name»_elt: document.getElementById("«$elt_id»"),
+        }
+        | dispatch: function(value) {
+        |     this.value_elt.textContent = String(value);
+        |     let [min,max,totallength] = this.range;
+        |     let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+        |     let tip = this.range_elt.getPointAtLength(length);
+        |     this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
+        | },
+        | origin: undefined,
+        | range: undefined,
+        | init: function() {
+        |     this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
+        |     this.origin = this.needle_elt.getPointAtLength(0);
+        | },
     }
+
     template "widget[@type='Input']", mode="widget_defs" {
         param "hmi_element";
         | frequency: 5,
