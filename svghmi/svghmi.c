@@ -175,6 +175,7 @@ inline void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
     dsc->refresh_period_ms = refresh_period_ms;
     if(refresh_period_ms) {
+        /* TODO : maybe only if was null before for optimization */
         dsc->wstate = buf_new;
     } else {
         dsc->wstate = buf_free;
