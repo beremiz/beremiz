@@ -180,7 +180,6 @@ function switch_page(page_name) {
     let old_desc = page_desc[current_page];
     let new_desc = page_desc[page_name];
     /* TODO hide / show widgets */
-    /* TODO move viewport */
 
     /* remove subsribers of previous page if any */
     if(old_desc) for(let widget of old_desc.widgets){
@@ -197,6 +196,7 @@ function switch_page(page_name) {
             }
         }
         svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+        // TODO dispatch current cache in newly opened page
     }
     current_page = page_name;
 

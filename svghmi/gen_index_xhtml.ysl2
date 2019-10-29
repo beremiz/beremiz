@@ -5,7 +5,7 @@ decl output(method, cdata-section-elements="xhtml:script");
 
 in xsl decl labels(*ptr, name="defs_by_labels") alias call-template {
     with "hmi_element", "$hmi_element";
-    with "labels"{test *ptr};
+    with "labels"{text *ptr};
 };
 
 istylesheet
@@ -144,6 +144,19 @@ istylesheet
         }
     }
 
+    /*
+        Parses:
+        "HMI:WidgetType:param1:param2@path1@path2"
+
+        Into:
+        widget type="WidgetType" {
+            arg value="param1";
+            arg value="param2";
+            path value="path1";
+            path value="path2";
+        }
+    */
+
     func:function name="func:parselabel" {
         param "label";
         const "description", "substring-after($label,'HMI:')";
@@ -263,53 +276,38 @@ istylesheet
         | //})();
     }
 
+    // template "*", mode="code_from_descs" {
+    //     ||
+    //     {
+    //         var path, role, name, priv;
+    //         var id = "«@id»";
+    //     ||
+
+    //     /* if label is used, use it as default name */
+    //     if "@inkscape:label"
+    //         |> name = "«@inkscape:label»";
+
+    //     | /* -------------- */
+
+    //     // this breaks indent, but fixing indent could break string literals
+    //     value "substring-after(svg:desc, $mark)";
+    //     // nobody reads generated code anyhow...
+
+    //     ||
+
+    //         /* -------------- */
+    //         res.push({
+    //             path:path,
+    //             role:role,
+    //             name:name,
+    //             priv:priv
+    //         })
+    //     }
+    //     ||
+    // }
+
+
     /*
-        Parses:
-        "HMI:WidgetType:param1:param2@path1@path2"
-
-        Into:
-        widget type="WidgetType" {
-            arg value="param1";
-            arg value="param2";
-            path value="path1";
-            path value="path2";
-        }
-    */
-
-    template "*", mode="page_desc" {
-    }
-
-    template "*", mode="code_from_descs" {
-        ||
-        {
-            var path, role, name, priv;
-            var id = "«@id»";
-        ||
-
-        /* if label is used, use it as default name */
-        if "@inkscape:label"
-            |> name = "«@inkscape:label»";
-
-        | /* -------------- */
-
-        // this breaks indent, but fixing indent could break string literals
-        value "substring-after(svg:desc, $mark)";
-        // nobody reads generated code anyhow...
-
-        ||
-
-            /* -------------- */
-            res.push({
-                path:path,
-                role:role,
-                name:name,
-                priv:priv
-            })
-        }
-        ||
-    }
-
-
     template "bbox", mode="testgeo"{
         | ID: «@Id» x: «@x» y: «@y» w: «@w» h: «@h»
     }
@@ -323,7 +321,7 @@ istylesheet
             with "indent" value "concat($indent,'>')"
         };
     }
-
+    */
 
     function "defs_by_labels" {
         param "labels","''";
@@ -363,6 +361,7 @@ istylesheet
         |     let [min,max,totallength] = this.range;
         |     let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
         |     let tip = this.range_elt.getPointAtLength(length);
+        // TODO : deal with transformations between needle and range
         |     this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
         | },
         | origin: undefined,
