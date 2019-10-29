@@ -117,8 +117,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.8046875"
-     inkscape:cx="283.03663"
-     inkscape:cy="-454.38089"
+     inkscape:cx="478.76479"
+     inkscape:cy="-403.42943"
      inkscape:window-width="1600"
      inkscape:window-height="886"
      inkscape:window-x="0"
@@ -679,13 +679,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="134.69675"
-       y="-16.777117"
+       x="-20.624428"
+       y="-109.67243"
        id="text104"
-       inkscape:label="value"><tspan
+       inkscape:label="value"
+       transform="rotate(90)"><tspan
          sodipodi:role="line"
-         x="134.69675"
-         y="-16.777117"
+         x="-20.624428"
+         y="-109.67243"
          style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.26458332px"
          id="tspan102">000</tspan></text>
     <text

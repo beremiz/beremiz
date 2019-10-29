@@ -700,8 +700,6 @@
 </xsl:text>
     <xsl:text>    /* TODO hide / show widgets */
 </xsl:text>
-    <xsl:text>    /* TODO move viewport */
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    /* remove subsribers of previous page if any */
@@ -783,78 +781,6 @@
     <xsl:text>//})();
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="page_desc" match="*"/>
-  <xsl:template mode="code_from_descs" match="*">
-    <xsl:text>{
-</xsl:text>
-    <xsl:text>    var path, role, name, priv;
-</xsl:text>
-    <xsl:text>    var id = "</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>";
-</xsl:text>
-    <xsl:if test="@inkscape:label">
-      <xsl:text>name = "</xsl:text>
-      <xsl:value-of select="@inkscape:label"/>
-      <xsl:text>";
-</xsl:text>
-    </xsl:if>
-    <xsl:text>/* -------------- */
-</xsl:text>
-    <xsl:value-of select="substring-after(svg:desc, $mark)"/>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    /* -------------- */
-</xsl:text>
-    <xsl:text>    res.push({
-</xsl:text>
-    <xsl:text>        path:path,
-</xsl:text>
-    <xsl:text>        role:role,
-</xsl:text>
-    <xsl:text>        name:name,
-</xsl:text>
-    <xsl:text>        priv:priv
-</xsl:text>
-    <xsl:text>    })
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="testgeo" match="bbox">
-    <xsl:text>ID: </xsl:text>
-    <xsl:value-of select="@Id"/>
-    <xsl:text> x: </xsl:text>
-    <xsl:value-of select="@x"/>
-    <xsl:text> y: </xsl:text>
-    <xsl:value-of select="@y"/>
-    <xsl:text> w: </xsl:text>
-    <xsl:value-of select="@w"/>
-    <xsl:text> h: </xsl:text>
-    <xsl:value-of select="@h"/>
-    <xsl:text>
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="testtree" match="*">
-    <xsl:param name="indent" select="''"/>
-    <xsl:value-of select="$indent"/>
-    <xsl:text> </xsl:text>
-    <xsl:value-of select="local-name()"/>
-    <xsl:text> </xsl:text>
-    <xsl:for-each select="@*">
-      <xsl:value-of select="local-name()"/>
-      <xsl:text>=</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text> </xsl:text>
-    </xsl:for-each>
-    <xsl:text>
-</xsl:text>
-    <xsl:apply-templates mode="testtree" select="*">
-      <xsl:with-param name="indent">
-        <xsl:value-of select="concat($indent,'&gt;')"/>
-      </xsl:with-param>
-    </xsl:apply-templates>
-  </xsl:template>
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>
     <xsl:param name="mandatory" select="'yes'"/>
@@ -903,7 +829,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <test>value min max needle range</test>
+        <xsl:text>value min max needle range</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:text>dispatch: function(value) {
@@ -940,7 +866,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <test>value</test>
+        <xsl:text>value</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:text>dispatch: function(value) {
