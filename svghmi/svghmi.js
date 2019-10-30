@@ -2,6 +2,22 @@
 
 var cache = hmitree_types.map(_ignored => undefined);
 
+function dispatch_value_to_widget(widget, index, value, oldval) {
+    let idxidx = widget.indexes.indexOf(index);
+    if(idxidx == -1){
+        throw new Error("Dispatching to widget not interested, should not happen.");
+    }
+    let d = widget.dispatch;
+    if(typeof(d) == "function" && idxidx == 0){
+        return d.call(widget, value, oldval);
+    }else if(typeof(d) == "object" && d.length >= idxidx){
+        return d[idxidx].call(widget, value, oldval);
+    }/* else dispatch_0, ..., dispatch_n ? */
+    /*else {
+        throw new Error("Dunno how to dispatch to widget at index = " + index);
+    }*/
+}
+
 function dispatch_value(index, value) {
     let widgets = subscribers[index];
 
@@ -10,19 +26,7 @@ function dispatch_value(index, value) {
 
     if(widgets.size > 0) {
         for(let widget of widgets){
-            let idxidx = widget.indexes.indexOf(index);
-            if(idxidx == -1){
-                throw new Error("Dispatching to widget not interested, should not happen.");
-            }
-            let d = widget.dispatch;
-            if(typeof(d) == "function" && idxidx == 0){
-                return d.call(widget, value, oldval);
-            }else if(typeof(d) == "object" && d.length >= idxidx){
-                return d[idxidx].call(widget, value, oldval);
-            }/* else dispatch_0, ..., dispatch_n ? */
-            /*else {
-                throw new Error("Dunno how to dispatch to widget at index = " + index);
-            }*/
+            dispatch_value_to_widget(widget, index, value, oldval);
         }
     }
 };
@@ -193,6 +197,10 @@ function switch_page(page_name) {
         for(let widget of new_desc.widgets){
             for(let index of widget.indexes){
                 subscribers[index].add(widget);
+                let cached_val = cache[index];
+                if(cached_val != undefined)
+                    dispatch_value_to_widget(widget, index, cached_val, cached_val);
+                
             }
         }
         svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
