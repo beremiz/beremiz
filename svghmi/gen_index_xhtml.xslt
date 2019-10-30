@@ -344,6 +344,38 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
+</xsl:text>
+    <xsl:text>    let idxidx = widget.indexes.indexOf(index);
+</xsl:text>
+    <xsl:text>    if(idxidx == -1){
+</xsl:text>
+    <xsl:text>        throw new Error("Dispatching to widget not interested, should not happen.");
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    let d = widget.dispatch;
+</xsl:text>
+    <xsl:text>    if(typeof(d) == "function" &amp;&amp; idxidx == 0){
+</xsl:text>
+    <xsl:text>        return d.call(widget, value, oldval);
+</xsl:text>
+    <xsl:text>    }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
+</xsl:text>
+    <xsl:text>        return d[idxidx].call(widget, value, oldval);
+</xsl:text>
+    <xsl:text>    }/* else dispatch_0, ..., dispatch_n ? */
+</xsl:text>
+    <xsl:text>    /*else {
+</xsl:text>
+    <xsl:text>        throw new Error("Dunno how to dispatch to widget at index = " + index);
+</xsl:text>
+    <xsl:text>    }*/
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function dispatch_value(index, value) {
 </xsl:text>
     <xsl:text>    let widgets = subscribers[index];
@@ -360,31 +392,7 @@
 </xsl:text>
     <xsl:text>        for(let widget of widgets){
 </xsl:text>
-    <xsl:text>            let idxidx = widget.indexes.indexOf(index);
-</xsl:text>
-    <xsl:text>            if(idxidx == -1){
-</xsl:text>
-    <xsl:text>                throw new Error("Dispatching to widget not interested, should not happen.");
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>            let d = widget.dispatch;
-</xsl:text>
-    <xsl:text>            if(typeof(d) == "function" &amp;&amp; idxidx == 0){
-</xsl:text>
-    <xsl:text>                return d.call(widget, value, oldval);
-</xsl:text>
-    <xsl:text>            }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
-</xsl:text>
-    <xsl:text>                return d[idxidx].call(widget, value, oldval);
-</xsl:text>
-    <xsl:text>            }/* else dispatch_0, ..., dispatch_n ? */
-</xsl:text>
-    <xsl:text>            /*else {
-</xsl:text>
-    <xsl:text>                throw new Error("Dunno how to dispatch to widget at index = " + index);
-</xsl:text>
-    <xsl:text>            }*/
+    <xsl:text>            dispatch_value_to_widget(widget, index, value, oldval);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -726,11 +734,21 @@
 </xsl:text>
     <xsl:text>                subscribers[index].add(widget);
 </xsl:text>
+    <xsl:text>                let cached_val = cache[index];
+</xsl:text>
+    <xsl:text>                if(cached_val != undefined)
+</xsl:text>
+    <xsl:text>                    dispatch_value_to_widget(widget, index, cached_val, cached_val);
+</xsl:text>
+    <xsl:text>                
+</xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>        svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+</xsl:text>
+    <xsl:text>        // TODO dispatch current cache in newly opened page
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
