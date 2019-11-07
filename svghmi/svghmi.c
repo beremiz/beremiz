@@ -170,7 +170,7 @@ static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
     return 0;
 }
 
-inline void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_ms)
+void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_ms)
 {
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
     dsc->refresh_period_ms = refresh_period_ms;
