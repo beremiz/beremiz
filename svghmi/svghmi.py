@@ -340,10 +340,10 @@ class SVGHMI(object):
 
         res = ([], "", False)
 
-        target_fname = "sghmi_"+location_str+".xhtml"
+        target_fname = "svghmi_"+location_str+".xhtml"
 
         target_path = os.path.join(self._getBuildPath(), target_fname)
-        target_file = open(target_path, 'w')
+        target_file = open(target_path, 'wb')
 
         if os.path.exists(svgfile):
 
@@ -385,7 +385,7 @@ class SVGHMI(object):
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
 def _runtime_svghmi1_%(location)s_start():
-    svghmi_root.putChild('%(view_name)s',File('%(xhtml)s'))
+    svghmi_root.putChild('%(view_name)s',File('%(xhtml)s', defaultType='application/xhtml+xml'))
 
 def _runtime_svghmi1_%(location)s_stop():
     svghmi_root.delEntity('%(view_name)s')
