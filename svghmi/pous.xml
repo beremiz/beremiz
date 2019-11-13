@@ -36,12 +36,7 @@
           <BOOL/>
         </baseType>
       </dataType>
-      <dataType name="HMI_CLASS">
-        <baseType>
-          <BOOL/>
-        </baseType>
-      </dataType>
-      <dataType name="HMI_LABEL">
+      <dataType name="HMI_NODE">
         <baseType>
           <BOOL/>
         </baseType>
