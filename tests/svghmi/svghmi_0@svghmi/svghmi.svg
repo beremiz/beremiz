@@ -113,12 +113,12 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g110"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
      inkscape:zoom="0.8046875"
-     inkscape:cx="478.76479"
-     inkscape:cy="-403.42943"
+     inkscape:cx="959.69683"
+     inkscape:cy="656.6094"
      inkscape:window-width="1600"
      inkscape:window-height="886"
      inkscape:window-x="0"
@@ -321,7 +321,7 @@
        inkscape:label="=0" />
   </g>
   <text
-     inkscape:label="HMI:Display@/PUMP/PRESSURE"
+     inkscape:label="HMI:Display@/PUMP0/PRESSURE"
      id="text823"
      y="218.24219"
      x="756.32812"
@@ -335,7 +335,7 @@
   <g
      id="g4523"
      transform="matrix(3.7795276,0,0,3.7795276,308.51002,630.30393)"
-     inkscape:label="HMI:Meter@/PUMP/SLOTH">
+     inkscape:label="HMI:Meter@/PUMP0/SLOTH">
     <path
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#3ee800;stroke-width:26.45833397;stroke-miterlimit:4;stroke-dasharray:2.64583333, 2.64583333;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="path4499"
@@ -635,7 +635,7 @@
          sodipodi:role="line">Home</tspan></text>
   </g>
   <g
-     inkscape:label="HMI:Meter@/PUMP/SLOTH"
+     inkscape:label="HMI:Meter@/PUMP0/SLOTH"
      transform="matrix(7.5590552,0,0,7.5590552,-244.3956,1321.2434)"
      id="g110">
     <path
@@ -892,7 +892,7 @@
      x="736.32812"
      y="1478.2422"
      id="text995"
-     inkscape:label="HMI:Display@/PUMP/PRESSURE"><tspan
+     inkscape:label="HMI:Display@/PUMP0/PRESSURE"><tspan
        sodipodi:role="line"
        id="tspan993"
        x="736.32812"

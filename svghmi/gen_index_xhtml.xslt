@@ -33,10 +33,7 @@
       <xsl:text>HMI_ROOT</xsl:text>
     </noindex>
     <noindex>
-      <xsl:text>HMI_LABEL</xsl:text>
-    </noindex>
-    <noindex>
-      <xsl:text>HMI_CLASS</xsl:text>
+      <xsl:text>HMI_NODE</xsl:text>
     </noindex>
     <noindex>
       <xsl:text>HMI_PLC_STATUS</xsl:text>
@@ -122,6 +119,15 @@
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
+    </xsl:comment>
+    <xsl:comment>
+      <xsl:apply-templates mode="testgeo" select="$hmi_geometry"/>
+    </xsl:comment>
+    <xsl:comment>
+      <xsl:apply-templates mode="testtree" select="$hmitree"/>
+    </xsl:comment>
+    <xsl:comment>
+      <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
     </xsl:comment>
     <html xmlns="http://www.w3.org/1999/xhtml">
       <head/>
@@ -225,9 +231,9 @@
         <xsl:variable name="hmitree_match" select="$indexed_hmitree/*[@hmipath = $hmipath]"/>
         <xsl:if test="count($hmitree_match) = 0">
           <xsl:message terminate="yes">
-            <xsl:text>No match for HMI </xsl:text>
+            <xsl:text>No match for path "</xsl:text>
             <xsl:value-of select="$hmipath"/>
-            <xsl:text>;</xsl:text>
+            <xsl:text>" in HMI tree</xsl:text>
           </xsl:message>
         </xsl:if>
         <xsl:text>        </xsl:text>
@@ -798,6 +804,40 @@
 </xsl:text>
     <xsl:text>//})();
 </xsl:text>
+  </xsl:template>
+  <xsl:template mode="testgeo" match="bbox">
+    <xsl:text>ID: </xsl:text>
+    <xsl:value-of select="@Id"/>
+    <xsl:text> x: </xsl:text>
+    <xsl:value-of select="@x"/>
+    <xsl:text> y: </xsl:text>
+    <xsl:value-of select="@y"/>
+    <xsl:text> w: </xsl:text>
+    <xsl:value-of select="@w"/>
+    <xsl:text> h: </xsl:text>
+    <xsl:value-of select="@h"/>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="testtree" match="*">
+    <xsl:param name="indent" select="''"/>
+    <xsl:value-of select="$indent"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> </xsl:text>
+    <xsl:for-each select="@*">
+      <xsl:value-of select="local-name()"/>
+      <xsl:text>=</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text> </xsl:text>
+    </xsl:for-each>
+    <xsl:text>
+</xsl:text>
+    <xsl:apply-templates mode="testtree" select="*">
+      <xsl:with-param name="indent">
+        <xsl:value-of select="concat($indent,'&gt;')"/>
+      </xsl:with-param>
+    </xsl:apply-templates>
   </xsl:template>
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>

@@ -25,8 +25,7 @@ from runtime.typemapping import DebugTypesSize
 import targets
 
 HMI_TYPES_DESC = {
-    "HMI_CLASS":{},
-    "HMI_LABEL":{},
+    "HMI_NODE":{},
     "HMI_STRING":{},
     "HMI_INT":{},
     "HMI_REAL":{}
@@ -35,19 +34,21 @@ HMI_TYPES_DESC = {
 HMI_TYPES = HMI_TYPES_DESC.keys()
 
 from XSLTransform import XSLTransform
+from lxml.etree import XSLTApplyError
 
 ScriptDirectory = paths.AbsDir(__file__)
 
 class HMITreeNode(object):
-    def __init__(self, path, name, nodetype, iectype = None, vartype = None):
+    def __init__(self, path, name, nodetype, iectype = None, vartype = None, hmiclass = None):
         self.path = path
         self.name = name
         self.nodetype = nodetype
+        self.hmiclass = hmiclass
 
         if iectype is not None:
             self.iectype = iectype
             self.vartype = vartype
-        if nodetype in ["HMI_LABEL", "HMI_ROOT"]:
+        if nodetype in ["HMI_NODE", "HMI_ROOT"]:
             self.children = []
 
     def pprint(self, indent = 0):
@@ -73,7 +74,7 @@ class HMITreeNode(object):
                 if in_common > known_best_match:
                     known_best_match = in_common
                     best_child = child
-        if best_child is not None and best_child.nodetype == "HMI_LABEL":
+        if best_child is not None and best_child.nodetype == "HMI_NODE":
             best_child.place_node(node)
         else:
             self.children.append(node)
@@ -136,12 +137,12 @@ class SVGHMILibrary(POULibrary):
            +->v1 HMI_INT
            +->v2 HMI_INT
            +->fb0 (type mhoo)
-           |   +->va HMI_LABEL
+           |   +->va HMI_NODE
            |   +->v3 HMI_INT
            |   +->v4 HMI_INT
            |
            +->fb1 (type mhoo)
-           |   +->va HMI_LABEL
+           |   +->va HMI_NODE
            |   +->v3 HMI_INT
            |   +->v4 HMI_INT
            |
@@ -152,11 +153,11 @@ class SVGHMILibrary(POULibrary):
           hmi0
            +->v1
            +->v2
-           +->fb0_va
+           +->fb0 class:va
            |   +-> v3
            |   +-> v4
            |
-           +->fb1_va
+           +->fb1 class:va
            |   +-> v3
            |   +-> v4
            |
@@ -180,7 +181,14 @@ class SVGHMILibrary(POULibrary):
             # ignores variables starting with _TMP_
             if path[-1].startswith("_TMP_"):
                 continue
-            new_node = HMITreeNode(path, path[-1], v["derived"], v["type"], v["vartype"])
+            derived = v["derived"]
+            kwargs={}
+            if derived == "HMI_NODE":
+                name = path[-2]
+                kwargs['hmiclass'] = path[-1]
+            else:
+                name = path[-1]
+            new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], **kwargs)
             hmi_tree_root.place_node(new_node)
 
         variable_decl_array = []
@@ -189,7 +197,7 @@ class SVGHMILibrary(POULibrary):
         item_count = 0
         for node in hmi_tree_root.traverse():
             if hasattr(node, "iectype") and \
-               node.nodetype not in ["HMI_CLASS", "HMI_LABEL"]:
+               node.nodetype not in ["HMI_NODE"]:
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
                     "{&(" + ".".join(node.path) + "), " + node.iectype + {
@@ -357,7 +365,10 @@ class SVGHMI(object):
             svgdom = etree.parse(svgfile)
 
             # call xslt transform on Inkscape's SVG to generate XHTML
-            result = transform.transform(svgdom)
+            try:
+                result = transform.transform(svgdom)
+            except XSLTApplyError as e:
+                self.FatalError("SVGHMI " + view_name  + ": " + e.message)
            
             result.write(target_file, encoding="utf-8")
             # print(str(result))
