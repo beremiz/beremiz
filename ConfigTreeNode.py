@@ -670,3 +670,14 @@ class ConfigTreeNode(object):
                     msg = _("Could not add child \"{a1}\", type {a2} :\n{a3}\n").format(a1=pname, a2=ptype, a3=text(exc))
                     self.GetCTRoot().logger.write_error(msg)
                     self.GetCTRoot().logger.write_error(traceback.format_exc())
+
+
+    def FatalError(self, message):
+        """ Raise an exception that will trigger error message intended to 
+            the user, but without backtrace since it is not a software error """
+
+        raise UserAddressedException(message)
+
+class UserAddressedException(Exception):
+    pass
+

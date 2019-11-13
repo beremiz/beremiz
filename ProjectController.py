@@ -63,7 +63,7 @@ from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
 from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
 from runtime import PlcStatus
-from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
+from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage, UserAddressedException
 
 base_folder = paths.AbsParentDir(__file__)
 
@@ -1171,7 +1171,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         try:
             LibCFilesAndCFLAGS, LibLDFLAGS, LibExtraFiles = self.GetLibrariesCCode(
                 buildpath)
-        except Exception:
+        except UserAddressedException as e:
+            self.logger.write_error(e.message)
+            return False
+        except Exception as e:
             self.logger.write_error(
                 _("Runtime library extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
@@ -1182,6 +1185,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
             CTNLocationCFilesAndCFLAGS, CTNLDFLAGS, CTNExtraFiles = self._Generate_C(
                 buildpath,
                 self.PLCGeneratedLocatedVars)
+        except UserAddressedException as e:
+            self.logger.write_error(e.message)
+            return False
         except Exception:
             self.logger.write_error(
                 _("Runtime IO extensions C code generation failed !\n"))
