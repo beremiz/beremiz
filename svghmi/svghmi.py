@@ -85,6 +85,9 @@ class HMITreeNode(object):
         if self.path is not None:
             attribs["path"] = ".".join(self.path)
 
+        if self.hmiclass is not None:
+            attribs["class"] = self.hmiclass
+
         if add_hash:
             attribs["hash"] = ",".join(map(str,self.hash()))
 
