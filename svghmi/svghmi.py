@@ -12,17 +12,23 @@ import shutil
 from itertools import izip, imap
 from pprint import pprint, pformat
 import hashlib
+import weakref
 
 import wx
+import wx.dataview as dv
+
+from lxml import etree
+from lxml.etree import XSLTApplyError
 
 import util.paths as paths
 from POULibrary import POULibrary
 from docutil import open_svg, get_inkscape_path
-from lxml import etree
 
 from util.ProcessLogger import ProcessLogger
 from runtime.typemapping import DebugTypesSize
 import targets
+from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from XSLTransform import XSLTransform
 
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
@@ -33,8 +39,6 @@ HMI_TYPES_DESC = {
 
 HMI_TYPES = HMI_TYPES_DESC.keys()
 
-from XSLTransform import XSLTransform
-from lxml.etree import XSLTApplyError
 
 ScriptDirectory = paths.AbsDir(__file__)
 
@@ -127,12 +131,14 @@ class HMITreeNode(object):
 
 hmi_tree_root = None
 
+hmi_tree_updated = None
+
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root, hmi_tree_unique_id 
+        global hmi_tree_root, hmi_tree_updated, hmi_tree_unique_id 
 
         """
         PLC Instance Tree:
@@ -193,6 +199,9 @@ class SVGHMILibrary(POULibrary):
                 name = path[-1]
             new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], **kwargs)
             hmi_tree_root.place_node(new_node)
+
+        if hmi_tree_updated is not None:
+            hmi_tree_updated()
 
         variable_decl_array = []
         extern_variables_declarations = []
@@ -262,6 +271,69 @@ class SVGHMILibrary(POULibrary):
         return ((["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), "",
                 ("runtime_svghmi0.py", open(runtimefile_path, "rb")))
 
+
+class SVGHMIEditor(ConfTreeNodeEditor):
+    CONFNODEEDITOR_TABS = [
+        (_("HMI Tree"), "CreateHMITreeView")]
+
+    def SVGHMIEditorUpdater(self):
+        selfref = weakref.ref(self)
+        def SVGHMIEditorUpdate():
+            o = selfref()
+            if o is not None:
+                wx.CallAfter(o.MakeTree)
+        return SVGHMIEditorUpdate
+
+    def CreateHMITreeView(self, parent):
+        global hmi_tree_updated 
+
+        dvtc = dv.DataViewTreeCtrl(parent)
+        isz = (16,16)
+        self.ImageList = il = wx.ImageList(*isz)
+        self.fldridx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER,      wx.ART_OTHER, isz))
+        self.fldropenidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER_OPEN, wx.ART_OTHER, isz))
+        self.fileidx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
+        dvtc.SetImageList(il)
+
+
+        self.HMITreeView = dvtc
+        hmi_tree_updated = self.SVGHMIEditorUpdater()
+        self.MakeTree()
+        return self.HMITreeView
+
+    def _recurseTree(self, current_hmitree_root, current_dvtc_root):
+        dvtc = self.HMITreeView
+        for c in current_hmitree_root.children:
+            if hasattr(c, "children"):
+                display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
+                               if c.hmiclass is not None else c.name
+                dvtc_child = dvtc.AppendContainer(
+                                 current_dvtc_root, display_name,
+                                 self.fldridx, self.fldropenidx)
+
+                self._recurseTree(c,dvtc_child)
+            else:
+                display_name = '{} {}'.format(c.nodetype[4:], c.name)
+                dvtc.AppendContainer(
+                    current_dvtc_root, display_name,
+                    self.fileidx, self.fileidx)
+
+    def MakeTree(self):
+        global hmi_tree_root 
+        
+        dvtc = self.HMITreeView
+
+        dvtc.Freeze()
+        dvtc.DeleteAllItems()
+
+        root_display_name = _("Please build to see HMI Tree") if hmi_tree_root is None else "HMI"
+        root = dvtc.AppendContainer(dv.NullDataViewItem,
+                                    root_display_name,
+                                    self.fldridx, self.fldropenidx)
+        if hmi_tree_root is not None:
+            self._recurseTree(hmi_tree_root, root)
+        dvtc.Thaw()
+
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -274,7 +346,8 @@ class SVGHMI(object):
       </xsd:element>
     </xsd:schema>
     """
-    # TODO : add comma separated supported language list
+
+    EditorType = SVGHMIEditor
 
     ConfNodeMethods = [
         {
