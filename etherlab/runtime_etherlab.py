@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz
+#
+# Copyright (C) 2011-2014: Laurent BESSARD, Edouard TISSERANT
+#                          RTES Lab : CRKim, JBLee, youcu
+#                          Higen Motor : Donggu Kang
+#
+# See COPYING file for copyrights details.
+
 import os,subprocess,sys,ctypes
 from threading import Thread
 import ctypes,time,re
@@ -42,7 +53,7 @@ def SDOThreadProc(*params):
         PLCObject.LogMessage(
             LogLevelsDict["WARNING"], 
             "%s : %s"%(command,output))
-    
+
 def EthercatSDOUpload(pos, index, subindex, var_type):
     global SDOThread
     SDOThread = Thread(target=SDOThreadProc, args=["upload", pos, var_type, index, subindex])

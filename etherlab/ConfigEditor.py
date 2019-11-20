@@ -141,6 +141,9 @@ class NodeVariablesSizer(wx.FlexGridSizer):
                     self.VariablesGrid.SetItemText(item, str(idx), 0)
                 else:
                     value = entry.get(colname, "")
+                    # add jblee
+                    if value is None:
+                        value = ""
                     if colname == "Access":
                         value = GetAccessValue(value, entry.get("PDOMapping", ""))
                     self.VariablesGrid.SetItemText(item, value, col)
@@ -284,7 +287,7 @@ class NodeEditor(ConfTreeNodeEditor):
         
         # add Contoler for use EthercatSlave.py Method
         self.Controler = controler
-        
+
     def GetBufferState(self):
         return False, False
         
@@ -299,17 +302,35 @@ class NodeEditor(ConfTreeNodeEditor):
             style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
         self.EtherCATManagementEditor.Bind(wx.EVT_SIZE, self.OnResize)
 
+        #self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
+
         self.EtherCATManagermentEditor_Main_Sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
         self.EtherCATManagermentEditor_Main_Sizer.AddGrowableCol(0)
         self.EtherCATManagermentEditor_Main_Sizer.AddGrowableRow(0)
         
         self.EtherCATManagementTreebook = EtherCATManagementTreebook(self.EtherCATManagementEditor, self.Controler, self)
-          
+        #except:
+        #try:
+        #    self.EtherCATManagementTreebook = EtherCATManagementTreebook(self.EtherCATManagementEditor, self.Controler, self)
+        #except:
+        #    self.EtherCATManagementTreebook = wx.Treebook(self.EtherCATManagementEditor, -1)
+        #    self.Controler.CommonMethod.CreateErrorDialog(\
+        #        "failed to open EtherCAT Management.\nplease remove the slave and try it again.")
+
         self.EtherCATManagermentEditor_Main_Sizer.AddSizer(self.EtherCATManagementTreebook, border=10, flag=wx.GROW)
 
         self.EtherCATManagementEditor.SetSizer(self.EtherCATManagermentEditor_Main_Sizer)
         return self.EtherCATManagementEditor
     
+    """
+    def OnPageChanged(self, event):
+        try:
+            print "OnPageChanged"
+            self.EtherCATManagementTreebook.SDOPanel.SDOMonitorThread.Stop();
+        except:
+            pass
+    """
+
     def OnResize(self, event):
         self.EtherCATManagementEditor.GetBestSize()
         xstart, ystart = self.EtherCATManagementEditor.GetViewStart()
@@ -595,20 +616,18 @@ class MasterEditor(ConfTreeNodeEditor):
     
     def _create_MasterStateEditor(self, prnt):
         self.MasterStateEditor = wx.ScrolledWindow(prnt, style=wx.TAB_TRAVERSAL|wx.HSCROLL|wx.VSCROLL)
-        self.MasterStateEditor.Bind(wx.EVT_SIZE, self.OnResize)
+        self.MasterStateEditor.Bind(wx.EVT_SIZE, self.OnResize2)
         
-        self.MasterStateEditor_Panel_Main_Sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
-        self.MasterStateEditor_Panel_Main_Sizer.AddGrowableCol(0)
-        self.MasterStateEditor_Panel_Main_Sizer.AddGrowableRow(0)
-        
+        self.MasterStateEditor_Panel_Main_Sizer = wx.BoxSizer(wx.VERTICAL)
+
         self.MasterStateEditor_Panel = MasterStatePanelClass(self.MasterStateEditor, self.Controler)
         
-        self.MasterStateEditor_Panel_Main_Sizer.AddSizer(self.MasterStateEditor_Panel, border=10, flag=wx.GROW)
+        self.MasterStateEditor_Panel_Main_Sizer.AddSizer(self.MasterStateEditor_Panel, border=10, flag=wx.EXPAND)
          
         self.MasterStateEditor.SetSizer(self.MasterStateEditor_Panel_Main_Sizer)
         return self.MasterStateEditor
     
-    def OnResize(self, event):
+    def OnResize2(self, event):
         self.MasterStateEditor.GetBestSize()
         xstart, ystart = self.MasterStateEditor.GetViewStart()
         window_size = self.MasterStateEditor.GetClientSize()
@@ -1019,6 +1038,7 @@ class MasterEditor(ConfTreeNodeEditor):
                 if value not in self.Controler.GetSlaves():
                     message = _("No slave defined at position %d!") % value
                 old_value = self.StartupCommandsTable.GetOldValue()
+
                 command = self.StartupCommandsTable.GetRow(row)
                 if message is None and old_value != command["Position"]:
                     self.Controler.RemoveStartupCommand(
@@ -1054,33 +1074,6 @@ class MasterEditor(ConfTreeNodeEditor):
                 maxx / SCROLLBAR_UNIT, maxy / SCROLLBAR_UNIT, posx, posy)
         event.Skip()
         
-    #def OnButtonClick(self, event):
-    #    self.MasterState = self.Controler.getMasterState()
-    #    if self.MasterState:
-    #        self.Phase.SetValue(self.MasterState["phase"])
-    #        self.Active.SetValue(self.MasterState["active"])
-    #        self.SlaveCount.SetValue(self.MasterState["slave"])
-    #        self.MacAddress.SetValue(self.MasterState["MAC"])
-    #        self.LinkState.SetValue(self.MasterState["link"])
-    #        self.TxFrames.SetValue(self.MasterState["TXframe"])
-    #        self.RxFrames.SetValue(self.MasterState["RXframe"])
-    #        self.TxByte.SetValue(self.MasterState["TXbyte"])
-    #        self.TxError.SetValue(self.MasterState["TXerror"])
-    #        self.LostFrames.SetValue(self.MasterState["lost"])
-            
-    #        self.TxFrameRate1.SetValue(self.MasterState["TXframerate1"])
-    #        self.TxFrameRate2.SetValue(self.MasterState["TXframerate2"])
-    #        self.TxFrameRate3.SetValue(self.MasterState["TXframerate3"])
-    #        self.TxRate1.SetValue(self.MasterState["TXrate1"])
-    #        self.TxRate2.SetValue(self.MasterState["TXrate2"])
-    #        self.TxRate3.SetValue(self.MasterState["TXrate3"])
-    #        self.LossRate1.SetValue(self.MasterState["loss1"])
-    #        self.LossRate2.SetValue(self.MasterState["loss2"])
-    #        self.LossRate3.SetValue(self.MasterState["loss3"])
-    #        self.FrameLoss1.SetValue(self.MasterState["frameloss1"])
-    #        self.FrameLoss2.SetValue(self.MasterState["frameloss2"])
-    #        self.FrameLoss3.SetValue(self.MasterState["frameloss3"])
-    
 class LibraryEditorSizer(wx.FlexGridSizer):
     
     def __init__(self, parent, module_library, buttons):

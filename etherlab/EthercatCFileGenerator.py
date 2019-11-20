@@ -68,6 +68,38 @@ SLAVE_OUTPUT_PDO_DEFAULT_VALUE = """
     }
 """
 
+SLAVE_OUTPUT_PDO_DEFAULT_VALUE_BIT = """
+    {
+        uint8_t value[%(data_size)d];
+        if (ecrt_master_sdo_upload(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &result_size, &abort_code)) {
+            SLOGF(LOG_CRITICAL, "EtherCAT failed to get default value for output PDO in slave %(device_type)s at alias %(alias)d and position %(position)d. Error: %%ud", abort_code);
+            goto ecat_failed;
+        }
+        %(real_var)s = EC_READ_%(data_type)s((uint8_t *)value, %(subindex)d);
+    }
+"""
+
+
+SLAVE_INPUT_PDO_DEFAULT_VALUE = """
+    {
+        uint8_t value[%(data_size)d];
+        if (ecrt_master_sdo_upload(master, %(slave)d, 0x%(index).4x, 0x%(subindex).2x, (uint8_t *)value, %(data_size)d, &result_size, &abort_code)) {
+            SLOGF(LOG_CRITICAL, "EtherCAT failed to get default value for input PDO in slave %(device_type)s at alias %(alias)d and position %(position)d. Error: %%ud", abort_code);
+            goto ecat_failed;
+        }
+        %(real_var)s = EC_READ_%(data_type)s((uint8_t *)value);
+    }
+"""
+
+DC_VARIABLE ="""
+#define DC_ENABLE       %(dc_flag)d
+"""
+
+CONFIG_DC = """
+    ecrt_slave_config_dc (slave%(slave)d, 0x0%(assign_activate)ld, %(sync0_cycle_time)d, %(sync0_shift_time)d, %(sync1_cycle_time)d, %(sync1_shift_time)d);
+"""
+
+
 def ConfigureVariable(entry_infos, str_completion):
     entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if entry_infos["data_type"] is None:
@@ -167,7 +199,6 @@ class _EthercatCFileGenerator:
             raise ValueError, _("Definition conflict for location \"%s\"") % name 
         
     def GenerateCFile(self, filepath, location_str, master_number):
-        
         # Extract etherlab master code template
         plc_etherlab_filepath = os.path.join(os.path.split(__file__)[0], "plc_etherlab.c")
         plc_etherlab_file = open(plc_etherlab_filepath, 'r')
@@ -184,10 +215,15 @@ class _EthercatCFileGenerator:
             "pdos_configuration_declaration": "",
             "slaves_declaration": "",
             "slaves_configuration": "",
+            # add jblee
+            "slaves_input_pdos_default_values_extraction": "",
             "slaves_output_pdos_default_values_extraction": "",
             "slaves_initialization": "",
             "retrieve_variables": [],
             "publish_variables": [],
+            #-----------This Code templete for dc -------------------#
+            "dc_variable" : "",
+            "config_dc": ""
         }
         
         # Initialize variable storing variable mapping state
@@ -199,6 +235,9 @@ class _EthercatCFileGenerator:
         self.Slaves.sort()
         # Initialize dictionary storing alias auto-increment position values
         alias = {}
+
+        # add jblee
+        slotNumber = 1
         
         # Generating code for each slave
         for (slave_idx, slave_alias, slave) in self.Slaves:
@@ -221,6 +260,7 @@ class _EthercatCFileGenerator:
             
             # Extract slave device object dictionary entries
             device_entries = device.GetEntriesList()
+            #device_entries = self.Controler.CTNParent.GetEntriesList()
             
             # Adding code for declaring slave in master code template strings
             for element in ["vendor", "product_code", "revision_number"]:
@@ -230,15 +270,17 @@ class _EthercatCFileGenerator:
             # Extract slave device CoE informations
             device_coe = device.getCoE()
             if device_coe is not None:
-                
                 # If device support CanOpen over Ethernet, adding code for calling 
                 # init commands when initializing slave in master code template strings
                 initCmds = []
+                
                 for initCmd in device_coe.getInitCmd():
                     initCmds.append({
                         "Index": ExtractHexDecValue(initCmd.getIndex()),
                         "Subindex": ExtractHexDecValue(initCmd.getSubIndex()),
-                        "Value": initCmd.getData().getcontent()})
+                        #"Value": initCmd.getData().getcontent()})
+                        "Value": int(initCmd.getData().text, 16)})
+                
                 initCmds.extend(slave.getStartupCommands())
                 for initCmd in initCmds:
                     index = initCmd["Index"]
@@ -264,11 +306,11 @@ class _EthercatCFileGenerator:
                 PdoAssign = PdoConfig = False
             
             # Test if slave has a configuration or need one
-            if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 and PdoConfig and PdoAssign:
-                
+            #if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 and PdoConfig and PdoAssign:
+            if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 or device.getSlots() is not None:
                 str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
                 str_completion["slaves_configuration"] += SLAVE_CONFIGURATION_TEMPLATE % type_infos
-                
+
                 # Initializing 
                 pdos_infos = {
                     "pdos_entries_infos": [],
@@ -304,28 +346,122 @@ class _EthercatCFileGenerator:
                 pdos_index = []
                 exclusive_pdos = {}
                 selected_pdos = []
-                for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+
+                # add jblee
+                TxPdoData = []
+                RxPdoData = []
+                PdoData = []
+
+                # add jblee
+                if len(device.getTxPdo() + device.getRxPdo()) > 0:
+                    for pdo in device.getTxPdo():
+                        PdoData.append((pdo, "Inputs"))
+                    for pdo in device.getRxPdo():
+                        PdoData.append((pdo, "Outputs"))               
+
+                # mod jblee
+                #for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
+                #                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                #for pdo, pdo_type in (TxPdoData + RxPdoData):
+                data_files = os.listdir(self.Controler.CTNPath())
+                PDODataList = []
+                MDPData = []
+                RxPDOData = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getRxPDO()
+                TxPDOData = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getTxPDO()
+                PDOList = RxPDOData.split() + TxPDOData.split()
+                for PDOIndex in PDOList:
+                    if PDOIndex in ["RxPDO", "TxPDO", "None"]:
+                        continue
+                    PDODataList.append(int(PDOIndex, 0))
+
+                # add jblee for DC Configuration
+                dc_enable = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Enable()
+                sync0_cycle_time = 0
+                sync0_shift_time = 0
+                sync1_cycle_time = 0
+                sync1_shift_time = 0
+                if dc_enable :
+                    sync0_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Cycle_Time()
+                    if sync0_cycle_token != "None":
+                        sync0_cycle_time = int(sync0_cycle_token.split("_")[1]) * 1000
+                    sync0_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Shift_Time()
+                    if sync0_shift_token != "None":
+                        sync0_shift_time = int(sync0_shift_token) * 1000
+                    sync1_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Cycle_Time()
+                    if sync1_cycle_token != "None":
+                        sync1_cycle_time = int(sync1_cycle_token.split("_")[1]) * 1000
+                    sync1_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Shift_Time()
+                    if sync1_shift_token != "None":
+                        sync1_shift_time = int(sync1_shift_token) * 1000
                     
+                    dc_config_data = {
+                        "slave" : slave_idx,
+                        "assign_activate" : int(self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Assign_Activate()),
+                        "sync0_cycle_time" : sync0_cycle_time,
+                        "sync0_shift_time" : sync0_shift_time,
+                        "sync1_cycle_time" : sync1_cycle_time,
+                        "sync1_shift_time" : sync1_shift_time,
+                    }
+
+                    if dc_enable and not str_completion["dc_variable"] :
+                        str_completion["dc_variable"] += DC_VARIABLE % {"dc_flag" : dc_enable}
+                    str_completion["config_dc"] += CONFIG_DC % dc_config_data
+
+                for data_file in data_files:
+                    slave_path = os.path.join(self.Controler.CTNPath(), data_file)
+                    if os.path.isdir(slave_path):
+                        CheckConfNodePath = os.path.join(slave_path, "baseconfnode.xml")
+                        confNodeFile = open(CheckConfNodePath, 'r')
+                        checklines = confNodeFile.readlines()
+                        confNodeFile.close()
+                        # checklines(ex) : <BaseParams xmlns:xsd="http://www.w3.org/2001/XMLSchema" IEC_Channel="0" Name="EthercatSlave_0"/>
+                        # checklines[1].split() : [<BaseParams, xmlns:xsd="http://www.w3.org/2001/XMLSchema",
+                        #                           IEC_Channel="0", Name="EthercatSlave_0"/>]
+                        # checklines[1].split()[2] : IEC_Channel="0"
+                        # checklines[1].split()[2].split("\"") = [IEC_Channel=, 0, ]
+                        pos_check = int(checklines[1].split()[2].split("\"")[1])
+                        if slave_idx == pos_check:
+                            MDPDataFilePath = os.path.join(slave_path, "DataForMDP.txt")
+                            if os.path.isfile(MDPDataFilePath):
+                                MDPDataFile = open(MDPDataFilePath, 'r')
+                                MDPData = MDPDataFile.readlines()
+                                MDPDataFile.close()
+
+                        for MDPLine in MDPData:
+                            if MDPLine == "\n":
+                                continue
+                            module_pos = int(MDPLine.split()[-1])
+                            module = self.Controler.CTNParent.GetSelectModule(module_pos)
+                            for pdo in module.getTxPdo():
+                                PdoData.append((pdo, "Inputs"))
+                                PDODataList.append(ExtractHexDecValue(pdo.getIndex().getcontent()))
+                            for pdo in module.getRxPdo():
+                                PdoData.append((pdo, "Outputs"))
+                                PDODataList.append(ExtractHexDecValue(pdo.getIndex().getcontent()))
+
+                for pdo, pdo_type in PdoData:
                     pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
                     pdos_index.append(pdo_index)
-                    
+
+                    if PDODataList and (pdo_index in PDODataList):
+                        continue
+
                     excluded_list = pdo.getExclude()
                     if len(excluded_list) > 0:
                         exclusion_list = [pdo_index]
                         for excluded in excluded_list:
                             exclusion_list.append(ExtractHexDecValue(excluded.getcontent()))
-                        exclusion_list.sort()
-                        
-                        exclusion_scope = exclusive_pdos.setdefault(tuple(exclusion_list), [])
-                        
+                        exclusion_list.sort()                     
+                        exclusion_scope = exclusive_pdos.setdefault(tuple(exclusion_list), [])                   
                         entries = pdo.getEntry()
+
                         pdo_mapping_match = {
                             "index": pdo_index, 
                             "matching": 0, 
                             "count": len(entries), 
                             "assigned": pdo.getSm() is not None
                         }
+
                         exclusion_scope.append(pdo_mapping_match)
                         
                         for entry in entries:
@@ -352,30 +488,57 @@ class _EthercatCFileGenerator:
                     excluded_pdos.extend([pdo["index"] 
                         for pdo in exclusion_scope[start_excluding_index:] 
                         if PdoAssign or not pdo["assigned"]])
-                
-                for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                    entries = pdo.getEntry()
+
+                # mod jblee
+                #for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
+                #                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
+                #for pdo, pdo_type in (TxPdoData + RxPdoData):
+                entry_check_list = []
+                index_padding = 1
+                for pdo, pdo_type in PdoData:
+                    entries = pdo.getEntry()                   
                     
                     pdo_index = ExtractHexDecValue(pdo.getIndex().getcontent())
                     if pdo_index in excluded_pdos:
                         continue
+                    if PDODataList and (pdo_index not in PDODataList):
+                        continue
                     
-                    pdo_needed = pdo_index in selected_pdos
-                    
-                    entries_infos = []
-                    
+                    #pdo_needed = pdo_index in selected_pdos
+                    pdo_needed = pdo_index in PDODataList
+
+                    if len(MDPData) > 0:
+                        pdo_index += index_padding
+                        index_padding += 1
+
+                    entries_infos = []                   
                     for entry in entries:
                         index = ExtractHexDecValue(entry.getIndex().getcontent())
                         subindex = ExtractHexDecValue(entry.getSubIndex())
+
+                        # add jblee
+                        if len(MDPData) > 0:
+                            increse = self.Controler.CTNParent.GetMDPInfos(type_infos)                          
+                            if increse and index != 0:
+                                index += int(increse[0][2]) * slotNumber
+                                
                         entry_infos = {
                             "index": index,
                             "subindex": subindex,
                             "name": ExtractName(entry.getName()),
                             "bitlen": entry.getBitLen(),
                         }
+
                         entry_infos.update(type_infos)
+                        #temp_data = "    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos
+                        check_data = "{0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}" % entry_infos
+                        if entry_check_list and check_data in entry_check_list:
+                            if (entry_infos["index"] == 0) or (entry_infos["name"] == None):
+                                pass
+                            else: 
+                                continue
                         entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
+                        entry_check_list.append(check_data)
                         
                         entry_declaration = slave_variables.get((index, subindex), None)
                         if entry_declaration is not None and not entry_declaration["mapped"]:
@@ -399,7 +562,7 @@ class _EthercatCFileGenerator:
                                 raise ValueError, _("Wrong direction for location \"%s\"!") % entry_infos["var_name"]
                             
                             ConfigureVariable(entry_infos, str_completion)
-                        
+                            
                         elif pdo_type == "Outputs" and entry.getDataType() is not None and device_coe is not None:
                             data_type = entry.getDataType().getcontent()
                             entry_infos["dir"] = "Q"
@@ -409,16 +572,34 @@ class _EthercatCFileGenerator:
                             entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
                             
                             ConfigureVariable(entry_infos, str_completion)
+
+                            if entry_infos["data_type"] == "BIT" :
+                                str_completion["slaves_output_pdos_default_values_extraction"] += \
+                                    SLAVE_OUTPUT_PDO_DEFAULT_VALUE_BIT % entry_infos
+                            else :
+                                str_completion["slaves_output_pdos_default_values_extraction"] += \
+                                    SLAVE_OUTPUT_PDO_DEFAULT_VALUE % entry_infos
+
+                        elif pdo_type == "Inputs" and entry.getDataType() is not None and device_coe is not None:
+                            data_type = entry.getDataType().getcontent()
+                            entry_infos["dir"] = "I"
+                            entry_infos["data_size"] = max(1, entry_infos["bitlen"] / 8)
+                            entry_infos["data_type"] = DATATYPECONVERSION.get(data_type)
+                            entry_infos["var_type"] = data_type
+                            entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
                             
-                            str_completion["slaves_output_pdos_default_values_extraction"] += \
-                                SLAVE_OUTPUT_PDO_DEFAULT_VALUE % entry_infos
+                            ConfigureVariable(entry_infos, str_completion)
                             
+                            str_completion["slaves_input_pdos_default_values_extraction"] += \
+                                SLAVE_INPUT_PDO_DEFAULT_VALUE % entry_infos
+                    
                     if pdo_needed:
                         for excluded in pdo.getExclude():
                             excluded_index = ExtractHexDecValue(excluded.getcontent())
                             if excluded_index not in excluded_pdos:
                                 excluded_pdos.append(excluded_index)
                         
+                        ############################################################
                         sm = pdo.getSm()
                         if sm is None:
                             for sm_idx, sync_manager in enumerate(sync_managers):
@@ -426,7 +607,7 @@ class _EthercatCFileGenerator:
                                     sm = sm_idx
                         if sm is None:
                             raise ValueError, _("No sync manager available for %s pdo!") % pdo_type
-                            
+                        
                         sync_managers[sm]["pdos_number"] += 1
                         sync_managers[sm]["pdos"].append(
                             {"slave": slave_idx,
@@ -436,6 +617,10 @@ class _EthercatCFileGenerator:
                              "entries": entries_infos,
                              "entries_number": len(entries_infos),
                              "fixed": pdo.getFixed() == True})
+                        #############################################################
+
+                    # for MDP
+                    slotNumber += 1
             
                 if PdoConfig and PdoAssign:
                     dynamic_pdos = {}
@@ -459,7 +644,7 @@ class _EthercatCFileGenerator:
                             if entry is None:
                                 raise ValueError, _("Unknown entry index 0x%4.4x, subindex 0x%2.2x for device %s") % \
                                                  (index, subindex, type_infos["device_type"])
-                            
+
                             entry_infos = {
                                 "index": index,
                                 "subindex": subindex,
@@ -526,8 +711,8 @@ class _EthercatCFileGenerator:
                 
                 pdo_offset = 0
                 entry_offset = 0
+                slotNumber = 1
                 for sync_manager_infos in sync_managers:
-                
                     for pdo_infos in sync_manager_infos["pdos"]:
                         pdo_infos["offset"] = entry_offset
                         pdo_entries = pdo_infos["entries"]
@@ -550,11 +735,11 @@ class _EthercatCFileGenerator:
                 
                 str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
             
-            for (index, subindex), entry_declaration in slave_variables.iteritems():
-                if not entry_declaration["mapped"]:
-                    message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
-                                    (index, subindex, type_infos["device_type"])
-                    self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
+            #for (index, subindex), entry_declaration in slave_variables.iteritems():
+            #    if not entry_declaration["mapped"]:
+            #        message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
+            #                        (index, subindex, type_infos["device_type"])
+            #        self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
                     
         for element in ["used_pdo_entry_offset_variables_declaration", 
                         "used_pdo_entry_configuration", 
