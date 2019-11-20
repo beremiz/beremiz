@@ -18,6 +18,7 @@ from ConfigEditor import NodeEditor
 
 #------------------------------------------
 from CommonEtherCATFunction import _CommonSlave 
+from dialogs import BrowseValuesLibraryDialog
 #------------------------------------------
 
 
@@ -70,6 +71,8 @@ class _EthercatSlaveCTN:
     def __init__(self):
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
+        self.SelectedRxPDOIndex = []
+        self.SelectedTxPDOIndex = []
     
     def GetIconName(self):
         return "Slave"
@@ -119,7 +122,7 @@ class _EthercatSlaveCTN:
     def SetParamsAttribute(self, path, value):
         self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
-        
+
         if path == "SlaveParams.Type":
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
