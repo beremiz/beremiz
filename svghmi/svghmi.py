@@ -57,17 +57,17 @@ class HMITreeNode(object):
 
     def pprint(self, indent = 0):
         res = ">"*indent + pformat(self.__dict__, indent = indent, depth = 1) + "\n"
-        if hasattr(self, "children"): 
+        if hasattr(self, "children"):
             res += "\n".join([child.pprint(indent = indent + 1)
                               for child in self.children])
             res += "\n"
-            
+
         return res
 
     def place_node(self, node):
         best_child = None
         known_best_match = 0
-        for child in self.children : 
+        for child in self.children:
             if child.path is not None:
                 in_common = 0
                 for child_path_item, node_path_item in izip(child.path, node.path):
@@ -82,7 +82,7 @@ class HMITreeNode(object):
             best_child.place_node(node)
         else:
             self.children.append(node)
-            
+
     def etree(self, add_hash=False):
 
         attribs = dict(name=self.name)
@@ -97,7 +97,7 @@ class HMITreeNode(object):
 
         res = etree.Element(self.nodetype, **attribs)
 
-        if hasattr(self, "children"): 
+        if hasattr(self, "children"):
             for child_etree in imap(lambda c:c.etree(), self.children):
                 res.append(child_etree)
 
@@ -105,7 +105,7 @@ class HMITreeNode(object):
 
     def traverse(self):
         yield self
-        if hasattr(self, "children"): 
+        if hasattr(self, "children"):
             for c in self.children:
                 for yoodl in c.traverse():
                     yield yoodl
@@ -116,29 +116,29 @@ class HMITreeNode(object):
         s = hashlib.new('md5')
         self._hash(s)
         # limit size to HMI_HASH_SIZE as in svghmi.c
-        return map(ord,s.digest())[:8] 
+        return map(ord,s.digest())[:8]
 
     def _hash(self, s):
         s.update(str((self.name,self.nodetype)))
-        if hasattr(self, "children"): 
+        if hasattr(self, "children"):
             for c in self.children:
                 c._hash(s)
 
 # module scope for HMITree root
 # so that CTN can use HMITree deduced in Library
-# note: this only works because library's Generate_C is 
+# note: this only works because library's Generate_C is
 #       systematicaly invoked before CTN's CTNGenerate_C
 
 hmi_tree_root = None
 
-hmi_tree_updated = None
+on_hmitree_update = None
 
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root, hmi_tree_updated, hmi_tree_unique_id 
+        global hmi_tree_root, on_hmitree_update, hmi_tree_unique_id
 
         """
         PLC Instance Tree:
@@ -179,7 +179,7 @@ class SVGHMILibrary(POULibrary):
 
         hmi_tree_root = HMITreeNode(None, "/", "HMI_ROOT")
 
-        # add special nodes 
+        # add special nodes
         map(lambda (n,t): hmi_tree_root.children.append(HMITreeNode(None,n,t)), [
                 ("plc_status", "HMI_PLC_STATUS"),
                 ("current_page", "HMI_CURRENT_PAGE")])
@@ -200,8 +200,8 @@ class SVGHMILibrary(POULibrary):
             new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], **kwargs)
             hmi_tree_root.place_node(new_node)
 
-        if hmi_tree_updated is not None:
-            hmi_tree_updated()
+        if on_hmitree_update is not None:
+            on_hmitree_update()
 
         variable_decl_array = []
         extern_variables_declarations = []
@@ -243,7 +243,7 @@ class SVGHMILibrary(POULibrary):
         svghmi_c_file = open(svghmi_c_filepath, 'r')
         svghmi_c_code = svghmi_c_file.read()
         svghmi_c_file.close()
-        svghmi_c_code = svghmi_c_code % { 
+        svghmi_c_code = svghmi_c_code % {
             "variable_decl_array": ",\n".join(variable_decl_array),
             "extern_variables_declarations": "\n".join(extern_variables_declarations),
             "buffer_size": buf_index,
@@ -445,7 +445,7 @@ class SVGHMI(object):
                 result = transform.transform(svgdom)
             except XSLTApplyError as e:
                 self.FatalError("SVGHMI " + view_name  + ": " + e.message)
-           
+
             result.write(target_file, encoding="utf-8")
             # print(str(result))
             # print(transform.xslt.error_log)
@@ -455,7 +455,7 @@ class SVGHMI(object):
             #   - ... maybe something to have a global view of what is declared in SVG.
 
         else:
-            # TODO : use default svg that expose the HMI tree as-is 
+            # TODO : use default svg that expose the HMI tree as-is
             target_file.write("""<!DOCTYPE html>
 <html>
 <body>

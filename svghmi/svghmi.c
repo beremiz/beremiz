@@ -337,7 +337,6 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                 {
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
                     update_refresh_period(dsc, refresh_period_ms);
-                    printf("OK\n");
                 }
                 else 
                 {
