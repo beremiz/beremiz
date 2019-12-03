@@ -272,9 +272,57 @@ class SVGHMILibrary(POULibrary):
                 ("runtime_svghmi0.py", open(runtimefile_path, "rb")))
 
 
-class SVGHMIEditor(ConfTreeNodeEditor):
-    CONFNODEEDITOR_TABS = [
-        (_("HMI Tree"), "CreateHMITreeView")]
+class HMITreeSelector(wx.TreeCtrl):
+    def __init__(self, parent):
+        global on_hmitree_update
+        wx.TreeCtrl.__init__(self,parent,style=wx.TR_MULTIPLE)# | wx.TR_HIDE_ROOT)
+
+        isz = (16,16)
+        self.il = il = wx.ImageList(*isz)
+        self.fldridx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER,      wx.ART_OTHER, isz))
+        self.fldropenidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER_OPEN, wx.ART_OTHER, isz))
+        self.fileidx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
+        self.SetImageList(il)
+
+        on_hmitree_update = self.SVGHMIEditorUpdater()
+        self.MakeTree()
+
+    def _recurseTree(self, current_hmitree_root, current_tc_root):
+        for c in current_hmitree_root.children:
+            if hasattr(c, "children"):
+                display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
+                               if c.hmiclass is not None else c.name
+                tc_child = self.AppendItem(current_tc_root, display_name)
+                self.SetPyData(tc_child, None)
+                self.SetItemImage(tc_child, self.fldridx, wx.TreeItemIcon_Normal)
+                self.SetItemImage(tc_child, self.fldropenidx, wx.TreeItemIcon_Expanded)
+
+                self._recurseTree(c,tc_child)
+            else:
+                display_name = '{} {}'.format(c.nodetype[4:], c.name)
+                tc_child = self.AppendItem(current_tc_root, display_name)
+                self.SetPyData(tc_child, None)
+                self.SetItemImage(tc_child, self.fileidx, wx.TreeItemIcon_Normal)
+                self.SetItemImage(tc_child, self.fileidx, wx.TreeItemIcon_Expanded)
+
+    def MakeTree(self):
+        global hmi_tree_root
+
+        self.Freeze()
+
+        self.root = None
+        self.DeleteAllItems()
+
+        root_display_name = _("Please build to see HMI Tree") if hmi_tree_root is None else "HMI"
+        self.root = self.AddRoot(root_display_name)
+        self.SetPyData(self.root, None)
+        self.SetItemImage(self.root, self.fldridx, wx.TreeItemIcon_Normal)
+        self.SetItemImage(self.root, self.fldropenidx, wx.TreeItemIcon_Expanded)
+
+        if hmi_tree_root is not None:
+            self._recurseTree(hmi_tree_root, self.root)
+
+        self.Thaw()
 
     def SVGHMIEditorUpdater(self):
         selfref = weakref.ref(self)
@@ -284,55 +332,26 @@ class SVGHMIEditor(ConfTreeNodeEditor):
                 wx.CallAfter(o.MakeTree)
         return SVGHMIEditorUpdate
 
+class HMITreeView(wx.SplitterWindow):
+
+    def __init__(self, parent):
+        wx.SplitterWindow.__init__(self, parent,
+                                   style=wx.SUNKEN_BORDER | wx.SP_3D)
+
+        self.SelectionTree = HMITreeSelector(self)
+        #self.Staging = wx.Panel(self)
+        #self.SplitHorizontally(self.SelectionTree, self.Staging, 200)
+        self.Initialize(self.SelectionTree)
+
+
+class SVGHMIEditor(ConfTreeNodeEditor):
+    CONFNODEEDITOR_TABS = [
+        (_("HMI Tree"), "CreateHMITreeView")]
+
     def CreateHMITreeView(self, parent):
-        global hmi_tree_updated 
+        #self.HMITreeView = HMITreeView(self)
+        return HMITreeSelector(parent)
 
-        dvtc = dv.DataViewTreeCtrl(parent)
-        isz = (16,16)
-        self.ImageList = il = wx.ImageList(*isz)
-        self.fldridx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER,      wx.ART_OTHER, isz))
-        self.fldropenidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER_OPEN, wx.ART_OTHER, isz))
-        self.fileidx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
-        dvtc.SetImageList(il)
-
-
-        self.HMITreeView = dvtc
-        hmi_tree_updated = self.SVGHMIEditorUpdater()
-        self.MakeTree()
-        return self.HMITreeView
-
-    def _recurseTree(self, current_hmitree_root, current_dvtc_root):
-        dvtc = self.HMITreeView
-        for c in current_hmitree_root.children:
-            if hasattr(c, "children"):
-                display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
-                               if c.hmiclass is not None else c.name
-                dvtc_child = dvtc.AppendContainer(
-                                 current_dvtc_root, display_name,
-                                 self.fldridx, self.fldropenidx)
-
-                self._recurseTree(c,dvtc_child)
-            else:
-                display_name = '{} {}'.format(c.nodetype[4:], c.name)
-                dvtc.AppendContainer(
-                    current_dvtc_root, display_name,
-                    self.fileidx, self.fileidx)
-
-    def MakeTree(self):
-        global hmi_tree_root 
-        
-        dvtc = self.HMITreeView
-
-        dvtc.Freeze()
-        dvtc.DeleteAllItems()
-
-        root_display_name = _("Please build to see HMI Tree") if hmi_tree_root is None else "HMI"
-        root = dvtc.AppendContainer(dv.NullDataViewItem,
-                                    root_display_name,
-                                    self.fldridx, self.fldropenidx)
-        if hmi_tree_root is not None:
-            self._recurseTree(hmi_tree_root, root)
-        dvtc.Thaw()
 
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
