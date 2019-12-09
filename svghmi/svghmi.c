@@ -189,8 +189,8 @@ static int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
     return 0;
 }
 
-static pthread_cond_t svghmi_send_WakeCond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t svghmi_send_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
+void SVGHMI_SuspendFromPythonThread(void);
+void SVGHMI_WakeupFromRTThread(void);
 
 static int continue_collect;
 
@@ -199,20 +199,15 @@ int __init_svghmi()
     bzero(rbuf,sizeof(rbuf));
     bzero(wbuf,sizeof(wbuf));
 
-    pthread_mutex_lock(&svghmi_send_WakeCondLock);
     continue_collect = 1;
-    pthread_cond_signal(&svghmi_send_WakeCond);
-    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
 
     return 0;
 }
 
 void __cleanup_svghmi()
 {
-    pthread_mutex_lock(&svghmi_send_WakeCondLock);
     continue_collect = 0;
-    pthread_cond_signal(&svghmi_send_WakeCond);
-    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
+    SVGHMI_WakeupFromRTThread();
 }
 
 void __retrieve_svghmi()
@@ -225,20 +220,16 @@ void __publish_svghmi()
     global_write_dirty = 0;
     traverse_hmi_tree(write_iterator);
     if(global_write_dirty) {
-        pthread_cond_signal(&svghmi_send_WakeCond);
+        SVGHMI_WakeupFromRTThread();
     }
 }
 
 /* PYTHON CALLS */
 int svghmi_send_collect(uint32_t *size, char **ptr){
 
-    int do_collect;
-    pthread_mutex_lock(&svghmi_send_WakeCondLock);
-    pthread_cond_wait(&svghmi_send_WakeCond, &svghmi_send_WakeCondLock);
-    do_collect = continue_collect;
-    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
+    SVGHMI_SuspendFromPythonThread();
 
-    if(do_collect) {
+    if(continue_collect) {
         int res;
         sbufidx = HMI_HASH_SIZE;
         if((res = traverse_hmi_tree(send_iterator)) == 0)

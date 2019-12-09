@@ -235,3 +235,18 @@ void LockPython(void)
 {
     pthread_mutex_lock(&python_mutex);
 }
+
+static pthread_cond_t svghmi_send_WakeCond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t svghmi_send_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
+
+void SVGHMI_SuspendFromPythonThread(void)
+{
+    pthread_mutex_lock(&svghmi_send_WakeCondLock);
+    pthread_cond_wait(&svghmi_send_WakeCond, &svghmi_send_WakeCondLock);
+    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
+}
+
+void SVGHMI_WakeupFromRTThread(void)
+{
+    pthread_cond_signal(&svghmi_send_WakeCond);
+}
