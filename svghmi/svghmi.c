@@ -198,7 +198,11 @@ int __init_svghmi()
 {
     bzero(rbuf,sizeof(rbuf));
     bzero(wbuf,sizeof(wbuf));
+
+    pthread_mutex_lock(&svghmi_send_WakeCondLock);
     continue_collect = 1;
+    pthread_cond_signal(&svghmi_send_WakeCond);
+    pthread_mutex_unlock(&svghmi_send_WakeCondLock);
 
     return 0;
 }
@@ -230,12 +234,8 @@ int svghmi_send_collect(uint32_t *size, char **ptr){
 
     int do_collect;
     pthread_mutex_lock(&svghmi_send_WakeCondLock);
+    pthread_cond_wait(&svghmi_send_WakeCond, &svghmi_send_WakeCondLock);
     do_collect = continue_collect;
-    if(do_collect)
-    {
-        pthread_cond_wait(&svghmi_send_WakeCond, &svghmi_send_WakeCondLock);
-        do_collect = continue_collect;
-    }
     pthread_mutex_unlock(&svghmi_send_WakeCondLock);
 
     if(do_collect) {
