@@ -95,18 +95,23 @@ svghmi_listener = None
 svghmi_send_thread = None
 
 def SendThreadProc():
-   global svghmi_session
-   size = ctypes.c_uint32()
-   ptr = ctypes.c_void_p()
-   res = 0
-   while True:
-       res=svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr))
-       if res == 0:
-           # TODO multiclient : dispatch to sessions
-           if svghmi_session is not None:
-               svghmi_session.sendMessage(ctypes.string_at(ptr.value,size.value))
-       elif res not in [errno.EAGAIN, errno.ENODATA]:
-           break
+    global svghmi_session
+    size = ctypes.c_uint32()
+    ptr = ctypes.c_void_p()
+    res = 0
+    while True:
+        res=svghmi_send_collect(ctypes.byref(size), ctypes.byref(ptr))
+        if res == 0:
+            # TODO multiclient : dispatch to sessions
+            if svghmi_session is not None:
+                svghmi_session.sendMessage(ctypes.string_at(ptr.value,size.value))
+        elif res == errno.ENODATA:
+            # this happens when there is no data after wakeup
+            # because of hmi data refresh period longer than PLC common ticktime
+            pass 
+        else:
+            # this happens when finishing
+            break
 
 
 
