@@ -26,6 +26,8 @@ unsigned int PLC_state = 0;
 #define PLC_STATE_WAITDEBUG_PIPE_CREATED       64
 #define PLC_STATE_WAITPYTHON_FILE_OPENED       128
 #define PLC_STATE_WAITPYTHON_PIPE_CREATED      256
+#define PLC_STATE_SVGHMI_FILE_OPENED           512
+#define PLC_STATE_SVGHMI_PIPE_CREATED          1024
 
 #define WAITDEBUG_PIPE_DEVICE        "/dev/rtp0"
 #define WAITDEBUG_PIPE_MINOR         0
@@ -35,6 +37,8 @@ unsigned int PLC_state = 0;
 #define WAITPYTHON_PIPE_MINOR        2
 #define PYTHON_PIPE_DEVICE           "/dev/rtp3"
 #define PYTHON_PIPE_MINOR            3
+#define SVGHMI_PIPE_DEVICE           "/dev/rtp4"
+#define SVGHMI_PIPE_MINOR            4
 #define PIPE_SIZE                    1 
 
 // rt-pipes commands
@@ -68,10 +72,12 @@ RT_PIPE WaitDebug_pipe;
 RT_PIPE WaitPython_pipe;
 RT_PIPE Debug_pipe;
 RT_PIPE Python_pipe;
+RT_PIPE svghmi_pipe;
 int WaitDebug_pipe_fd;
 int WaitPython_pipe_fd;
 int Debug_pipe_fd;
 int Python_pipe_fd;
+int svghmi_pipe_fd;
 
 int PLC_shutdown = 0;
 
@@ -112,6 +118,16 @@ void PLC_cleanup_all(void)
     if (PLC_state & PLC_STATE_TASK_CREATED) {
         rt_task_delete(&PLC_task);
         PLC_state &= ~PLC_STATE_TASK_CREATED;
+    }
+
+    if (PLC_state & PLC_STATE_SVGHMI_PIPE_CREATED) {
+        rt_pipe_delete(&svghmi_pipe);
+        PLC_state &= ~PLC_STATE_SVGHMI_PIPE_CREATED;
+    }
+
+    if (PLC_state & PLC_STATE_SVGHMI_FILE_OPENED) {
+        close(svghmi_pipe_fd);
+        PLC_state &= ~PLC_STATE_SVGHMI_FILE_OPENED;
     }
 
     if (PLC_state & PLC_STATE_WAITDEBUG_PIPE_CREATED) {
@@ -239,6 +255,16 @@ int startPLC(int argc,char **argv)
     if((WaitPython_pipe_fd = open(WAITPYTHON_PIPE_DEVICE, O_RDWR)) == -1)
         _startPLCLog(FO WAITPYTHON_PIPE_DEVICE);
     PLC_state |= PLC_STATE_WAITPYTHON_FILE_OPENED;
+
+    /* create svghmi_pipe */
+    if(rt_pipe_create(&svghmi_pipe, "svghmi_pipe", SVGHMI_PIPE_MINOR, PIPE_SIZE) < 0)
+        _startPLCLog(FO "svghmi_pipe real-time end");
+    PLC_state |= PLC_STATE_SVGHMI_PIPE_CREATED;
+
+    /* open svghmi_pipe*/
+    if((svghmi_pipe_fd = open(SVGHMI_PIPE_DEVICE, O_RDWR)) == -1)
+        _startPLCLog(FO SVGHMI_PIPE_DEVICE);
+    PLC_state |= PLC_STATE_SVGHMI_FILE_OPENED;
 
     /*** create PLC task ***/
     if(rt_task_create(&PLC_task, "PLC_task", 0, 50, T_JOINABLE))
@@ -393,6 +419,18 @@ void UnLockPython(void)
            rt_pipe_write(&Python_pipe, &cmd, sizeof(cmd), P_NORMAL);
         }/* otherwise, no signaling from non real time */
     }    /* as plc does not wait for lock. */
+}
+
+void SVGHMI_SuspendFromPythonThread(void)
+{
+    char cmd = 1; /*whatever*/
+    read(svghmi_pipe_fd, &cmd, sizeof(cmd));
+}
+
+void SVGHMI_WakeupFromRTThread(void)
+{
+    char cmd;
+    rt_pipe_write(&svghmi_pipe, &cmd, sizeof(cmd), P_NORMAL);
 }
 
 #ifndef HAVE_RETAIN
