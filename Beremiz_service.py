@@ -30,6 +30,7 @@ import os
 import sys
 import getopt
 import threading
+import shlex
 from threading import Thread, Semaphore, Lock, currentThread
 from builtins import str as text
 from past.builtins import execfile
@@ -44,6 +45,10 @@ from runtime import default_evaluator
 from runtime.Stunnel import ensurePSK
 import util.paths as paths
 
+try:
+    from runtime.spawn_subprocess import Popen
+except ImportError:
+    from subprocess import Popen
 
 def version():
     from version import app_version
@@ -72,7 +77,7 @@ Usage of Beremiz PLC execution service :\n
 
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:h", ["help", "version"])
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:h", ["help", "version", "status-change=", "on-plc-start=", "on-plc-stop="])
 except getopt.GetoptError as err:
     # print help information and exit:
     print(str(err))  # will print something like "option -a not recognized"
@@ -93,6 +98,13 @@ enabletwisted = True
 havetwisted = False
 
 extensions = []
+statuschange = []
+def status_change_call_factory(wanted, args):
+    def status_change_call(status):
+        if wanted is None or status is wanted:
+            cmd = shlex.split(args.format(status))
+            Popen(cmd)
+    return status_change_call
 
 for o, a in opts:
     if o == "-h" or o == "--help":
@@ -101,6 +113,12 @@ for o, a in opts:
     if o == "--version":
         version()
         sys.exit()
+    if o == "--on-plc-start":
+        statuschange.append(status_change_call_factory(PlcStatus.Started, a))
+    elif o == "--on-plc-stop":
+        statuschange.append(status_change_call_factory(PlcStatus.Stopped, a))
+    elif o == "--status-change":
+        statuschange.append(status_change_call_factory(None, a))
     elif o == "-i":
         if len(a.split(".")) == 4:
             interface = a
@@ -401,7 +419,6 @@ if enabletwisted:
             havetwisted = False
 
 pyruntimevars = {}
-statuschange = []
 
 if havetwisted:
     if havewx:
