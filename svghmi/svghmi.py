@@ -10,7 +10,7 @@ from __future__ import absolute_import
 import os
 import shutil
 from itertools import izip, imap
-from pprint import pprint, pformat
+from pprint import pformat
 import hashlib
 import weakref
 
@@ -43,7 +43,7 @@ HMI_TYPES = HMI_TYPES_DESC.keys()
 ScriptDirectory = paths.AbsDir(__file__)
 
 class HMITreeNode(object):
-    def __init__(self, path, name, nodetype, iectype = None, vartype = None, hmiclass = None):
+    def __init__(self, path, name, nodetype, iectype = None, vartype = None, cpath = None, hmiclass = None):
         self.path = path
         self.name = name
         self.nodetype = nodetype
@@ -52,6 +52,8 @@ class HMITreeNode(object):
         if iectype is not None:
             self.iectype = iectype
             self.vartype = vartype
+            self.cpath = cpath
+
         if nodetype in ["HMI_NODE", "HMI_ROOT"]:
             self.children = []
 
@@ -133,12 +135,15 @@ hmi_tree_root = None
 
 on_hmitree_update = None
 
+SPECIAL_NODES = [("heartbeat", "HMI_INT")]
+                 # ("current_page", "HMI_STRING")])
+
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root, on_hmitree_update, hmi_tree_unique_id
+        global hmi_tree_root, on_hmitree_update
 
         """
         PLC Instance Tree:
@@ -179,25 +184,21 @@ class SVGHMILibrary(POULibrary):
 
         hmi_tree_root = HMITreeNode(None, "/", "HMI_ROOT")
 
-        # add special nodes
-        map(lambda (n,t): hmi_tree_root.children.append(HMITreeNode(None,n,t)), [
-                ("plc_status", "HMI_PLC_STATUS"),
-                ("current_page", "HMI_CURRENT_PAGE")])
-
         # deduce HMI tree from PLC HMI_* instances
         for v in hmi_types_instances:
-            path = v["C_path"].split(".")
+            path = v["IEC_path"].split(".")
             # ignores variables starting with _TMP_
             if path[-1].startswith("_TMP_"):
                 continue
             derived = v["derived"]
             kwargs={}
             if derived == "HMI_NODE":
+                # TODO : make problem if HMI_NODE used in CONFIG or RESOURCE
                 name = path[-2]
                 kwargs['hmiclass'] = path[-1]
             else:
                 name = path[-1]
-            new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], **kwargs)
+            new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], v["C_path"], **kwargs)
             hmi_tree_root.place_node(new_node)
 
         if on_hmitree_update is not None:
@@ -207,12 +208,26 @@ class SVGHMILibrary(POULibrary):
         extern_variables_declarations = []
         buf_index = 0
         item_count = 0
+        found_heartbeat = False
+
+        # find heartbeat in hmi tree
+        # it is supposed to come first, but some HMI_* intances 
+        # in config's globals might shift them
+        hearbeat_IEC_path = ['CONFIG', 'HEARTBEAT']
         for node in hmi_tree_root.traverse():
-            if hasattr(node, "iectype") and \
-               node.nodetype not in ["HMI_NODE"]:
+            if node.path == hearbeat_IEC_path:
+                hmi_tree_hearbeat_index = item_count
+                found_heartbeat = True
+                extern_variables_declarations += [
+                    "#define heartbeat_index "+str(hmi_tree_hearbeat_index)
+                ]
+                break;
+
+        for node in hmi_tree_root.traverse():
+            if hasattr(node, "iectype") and node.nodetype != "HMI_NODE":
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
-                    "{&(" + ".".join(node.path) + "), " + node.iectype + {
+                    "{&(" + node.cpath + "), " + node.iectype + {
                         "EXT": "_P_ENUM",
                         "IN":  "_P_ENUM",
                         "MEM": "_O_ENUM",
@@ -226,11 +241,13 @@ class SVGHMILibrary(POULibrary):
                     extern_variables_declarations += [
                         "extern __IEC_" + node.iectype + "_" +
                         "t" if node.vartype is "VAR" else "p"
-                        + ".".join(node.path) + ";"]
+                        + node.cpath + ";"]
+                
+        assert(found_heartbeat)
 
         # TODO : filter only requiered external declarations
         for v in varlist :
-            if v["C_path"].find('.') < 0 and v["vartype"] == "FB" :
+            if v["C_path"].find('.') < 0 :  # and v["vartype"] == "FB" :
                 extern_variables_declarations += [
                     "extern %(type)s %(C_path)s;" % v]
 
@@ -530,3 +547,10 @@ def _runtime_svghmi1_%(location)s_stop():
             if not os.path.isfile(svgfile):
                 svgfile = None
             open_svg(svgfile)
+
+    def CTNGlobalInstances(self):
+        # view_name = self.BaseParams.getName()
+        # return [ (view_name + "_" + name, iec_type, "") for name, iec_type in SPECIAL_NODES]
+        # TODO : move to library level for multiple hmi
+        return [(name, iec_type, "") for name, iec_type in SPECIAL_NODES]
+

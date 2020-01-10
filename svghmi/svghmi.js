@@ -115,6 +115,19 @@ var subscriptions =  hmitree_types.map(_ignored => 0);
 // hmitree indexed array of Sets of widgets objects
 var subscribers = hmitree_types.map(_ignored => new Set());
 
+// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
+// Since dispatch directly calls change_hmi_value, 
+// PLC will periodically send variable at given frequency
+subscribers[heartbeat_index].add({
+    /* type: "Watchdog", */
+    frequency: 1,
+    indexes: [heartbeat_index],
+    dispatch: function(value) {
+        console.log("Heartbeat" + value);
+        change_hmi_value(this.indexes[0], "+1");
+    }
+});
+
 function update_subscriptions() {
     let delta = [];
     for(let index = 0; index < subscribers.length; index++){
@@ -123,6 +136,7 @@ function update_subscriptions() {
         // periods are in ms
         let previous_period = subscriptions[index];
 
+        // subscribing with a zero period is unsubscribing
         let new_period = 0;
         if(widgets.size > 0) {
             let maxfreq = 0;

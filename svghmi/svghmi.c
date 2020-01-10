@@ -257,16 +257,19 @@ typedef enum {
     subscribe = 2
 } cmd_from_JS;
 
+// Returns :
+//   0 is OK, <0 is error, 1 is heartbeat
 int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
     const uint8_t* cursor = ptr + HMI_HASH_SIZE;
     const uint8_t* end = ptr + size;
 
+    int was_hearbeat = 0;
 
     /* match hmitree fingerprint */
     if(size <= HMI_HASH_SIZE || memcmp(ptr, hmi_hash, HMI_HASH_SIZE) != 0)
     {
         printf("svghmi_recv_dispatch MISMATCH !!\n");
-        return EINVAL;
+        return -EINVAL;
     }
 
     while(cursor < end)
@@ -279,6 +282,9 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
             {
                 uint32_t index = *(uint32_t*)(cursor);
                 uint8_t const *valptr = cursor + sizeof(uint32_t);
+                
+                if(index == heartbeat_index)
+                    was_hearbeat = 1;
 
                 if(index < HMI_ITEM_COUNT)
                 {
@@ -344,6 +350,6 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
         }
         cursor += progress;
     }
-    return 0;
+    return was_hearbeat;
 }
 
