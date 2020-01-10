@@ -13,6 +13,7 @@ from itertools import izip, imap
 from pprint import pformat
 import hashlib
 import weakref
+import shlex
 
 import wx
 import wx.dataview as dv
@@ -375,8 +376,9 @@ class SVGHMI(object):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="SVGHMI">
         <xsd:complexType>
-          <xsd:attribute name="enableHTTP" type="xsd:boolean" use="optional" default="false"/>
-          <xsd:attribute name="bindAddress" type="xsd:string" use="optional" default="localhost"/>
+          <xsd:attribute name="OnStart" type="xsd:string" use="optional"/>
+          <xsd:attribute name="OnStop" type="xsd:string" use="optional"/>
+          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional"/>
           <xsd:attribute name="port" type="xsd:string" use="optional" default="8080"/>
         </xsd:complexType>
       </xsd:element>
@@ -503,19 +505,37 @@ class SVGHMI(object):
         target_file.close()
 
         res += ((target_fname, open(target_path, "rb")),)
+        
+        svghmi_cmds = {}
+        for thing in ["Start", "Stop", "Watchdog"]:
+             given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
+             if given_command:
+                 svghmi_cmds[thing] = shlex.split(given_command)
 
         runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
+# TODO : multi        
+svghmi_cmds = %(svghmi_cmds)s
+def svghmi_cmd(cmd):
+    if cmd in svghmi_cmds:
+        Popen(svghmi_cmds[cmd])
+
+def watchdog_trigger():
+    svghmi_cmd("Watchdog")
+
 def _runtime_svghmi1_%(location)s_start():
     svghmi_root.putChild('%(view_name)s',File('%(xhtml)s', defaultType='application/xhtml+xml'))
+    svghmi_cmd("Start")
 
 def _runtime_svghmi1_%(location)s_stop():
     svghmi_root.delEntity('%(view_name)s')
+    svghmi_cmd("Stop")
 
         """ % {"location": location_str,
                "xhtml": target_fname,
-               "view_name": view_name})
+               "view_name": view_name,
+               "svghmi_cmds": repr(svghmi_cmds)})
 
         runtimefile.close()
 

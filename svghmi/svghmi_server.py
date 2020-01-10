@@ -9,6 +9,11 @@ from __future__ import absolute_import
 import errno
 from threading import RLock, Timer
 
+try:
+    from runtime.spawn_subprocess import Popen
+except ImportError:
+    from subprocess import Popen
+
 from twisted.web.server import Site
 from twisted.web.resource import Resource
 from twisted.internet import reactor
