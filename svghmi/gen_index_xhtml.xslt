@@ -264,6 +264,12 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var heartbeat_index = </xsl:text>
+    <xsl:value-of select="$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index"/>
+    <xsl:text>;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var hmitree_types = [
 </xsl:text>
     <xsl:for-each select="$indexed_hmitree/*">
@@ -576,6 +582,32 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
+</xsl:text>
+    <xsl:text>// Since dispatch directly calls change_hmi_value, 
+</xsl:text>
+    <xsl:text>// PLC will periodically send variable at given frequency
+</xsl:text>
+    <xsl:text>subscribers[heartbeat_index].add({
+</xsl:text>
+    <xsl:text>    /* type: "Watchdog", */
+</xsl:text>
+    <xsl:text>    frequency: 1,
+</xsl:text>
+    <xsl:text>    indexes: [heartbeat_index],
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        console.log("Heartbeat" + value);
+</xsl:text>
+    <xsl:text>        change_hmi_value(this.indexes[0], "+1");
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>});
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function update_subscriptions() {
 </xsl:text>
     <xsl:text>    let delta = [];
@@ -591,6 +623,8 @@
     <xsl:text>        let previous_period = subscriptions[index];
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        // subscribing with a zero period is unsubscribing
 </xsl:text>
     <xsl:text>        let new_period = 0;
 </xsl:text>

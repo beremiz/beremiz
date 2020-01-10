@@ -7,6 +7,7 @@
 
 from __future__ import absolute_import
 import errno
+from threading import RLock, Timer
 
 from twisted.web.server import Site
 from twisted.web.resource import Resource
@@ -20,8 +21,10 @@ from autobahn.twisted.resource import  WebSocketResource
 # TODO multiclient :
 # session list lock
 # svghmi_sessions = []
+# svghmi_watchdogs = []
 
 svghmi_session = None
+svghmi_watchdog = None
 
 svghmi_send_collect = PLCBinary.svghmi_send_collect
 svghmi_send_collect.restype = ctypes.c_int # error or 0
@@ -61,14 +64,44 @@ class HMISession(object):
 
     def onMessage(self, msg):
         # pass message to the C side recieve_message()
-        svghmi_recv_dispatch(len(msg), msg)
+        return svghmi_recv_dispatch(len(msg), msg)
 
         # TODO multiclient : pass client index as well
-
 
     def sendMessage(self, msg):
         self.protocol_instance.sendMessage(msg, True)
         return 0
+
+class Watchdog(object):
+    def __init__(self, initial_timeout, callback):
+        self._callback = callback
+        self.lock = RLock()
+        self.initial_timeout = initial_timeout
+        self.callback = callback
+        with self.lock:
+            self._start()
+
+    def _start(self):
+        self.timer = Timer(self.initial_timeout, self.trigger)
+        self.timer.start()
+
+    def _stop(self):
+        if self.timer is not None:
+            self.timer.cancel()
+            self.timer = None
+
+    def cancel(self):
+        with self.lock:
+            self._stop()
+
+    def feed(self):
+        with self.lock:
+            self._stop()
+            self._start()
+
+    def trigger(self):
+        self._callback()
+        self.feed()
 
 class HMIProtocol(WebSocketServerProtocol):
 
@@ -85,7 +118,11 @@ class HMIProtocol(WebSocketServerProtocol):
 
     def onMessage(self, msg, isBinary):
         assert(self._hmi_session is not None)
-        self._hmi_session.onMessage(msg)
+
+        result = self._hmi_session.onMessage(msg)
+        if result == 1 :  # was heartbeat
+            if svghmi_watchdog is not None:
+                svghmi_watchdog.feed()
 
 class HMIWebSocketServerFactory(WebSocketServerFactory):
     protocol = HMIProtocol
@@ -114,11 +151,13 @@ def SendThreadProc():
             break
 
 
-
+def watchdog_trigger():
+    print("SVGHMI watchdog trigger")
+    
 
 # Called by PLCObject at start
 def _runtime_svghmi0_start():
-    global svghmi_listener, svghmi_root, svghmi_send_thread
+    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_watchdog
 
     svghmi_root = Resource()
     svghmi_root.putChild("ws", WebSocketResource(HMIWebSocketServerFactory()))
@@ -129,10 +168,16 @@ def _runtime_svghmi0_start():
     svghmi_send_thread = Thread(target=SendThreadProc, name="SVGHMI Send")
     svghmi_send_thread.start()
 
+    svghmi_watchdog = Watchdog(5, watchdog_trigger)
 
 # Called by PLCObject at stop
 def _runtime_svghmi0_stop():
-    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session
+    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session, svghmi_watchdog
+
+    if svghmi_watchdog is not None:
+        svghmi_watchdog.cancel()
+        svghmi_watchdog = None
+
     if svghmi_session is not None:
         svghmi_session.close()
     svghmi_root.delEntity("ws")

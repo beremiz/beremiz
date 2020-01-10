@@ -238,6 +238,8 @@ istylesheet
         }
         | }
         |
+        | var heartbeat_index = «$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index»;
+        |
         | var hmitree_types = [
 
         foreach "$indexed_hmitree/*" {
