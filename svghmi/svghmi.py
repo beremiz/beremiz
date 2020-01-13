@@ -379,7 +379,6 @@ class SVGHMI(object):
           <xsd:attribute name="OnStart" type="xsd:string" use="optional"/>
           <xsd:attribute name="OnStop" type="xsd:string" use="optional"/>
           <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional"/>
-          <xsd:attribute name="port" type="xsd:string" use="optional" default="8080"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -509,33 +508,30 @@ class SVGHMI(object):
         svghmi_cmds = {}
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
-             if given_command:
-                 svghmi_cmds[thing] = shlex.split(given_command)
+             svghmi_cmds[thing] = (
+                "Popen(" +
+                repr(shlex.split(given_command.format(port="8008", name=view_name))) + 
+                ")") if given_command else "# no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
 # TODO : multi        
-svghmi_cmds = %(svghmi_cmds)s
-def svghmi_cmd(cmd):
-    if cmd in svghmi_cmds:
-        Popen(svghmi_cmds[cmd])
-
 def watchdog_trigger():
-    svghmi_cmd("Watchdog")
+    {svghmi_cmds.Watchdog}
 
-def _runtime_svghmi1_%(location)s_start():
-    svghmi_root.putChild('%(view_name)s',File('%(xhtml)s', defaultType='application/xhtml+xml'))
-    svghmi_cmd("Start")
+def _runtime_svghmi1_{location}_start():
+    svghmi_root.putChild('{view_name}',File('{xhtml}', defaultType='application/xhtml+xml'))
+    {svghmi_cmds.Start}
 
-def _runtime_svghmi1_%(location)s_stop():
-    svghmi_root.delEntity('%(view_name)s')
-    svghmi_cmd("Stop")
+def _runtime_svghmi1_{location}_stop():
+    svghmi_root.delEntity('{view_name}')
+    {svghmi_cmds.Stop}
 
-        """ % {"location": location_str,
-               "xhtml": target_fname,
-               "view_name": view_name,
-               "svghmi_cmds": repr(svghmi_cmds)})
+        """.format(location=location_str,
+                   xhtml=target_fname,
+                   view_name=view_name,
+                   svghmi_cmds=type("dicobj",(object,),svghmi_cmds)))
 
         runtimefile.close()
 
