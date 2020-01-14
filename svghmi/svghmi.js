@@ -46,9 +46,17 @@ var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/,
 ws.binaryType = 'arraybuffer';
 
 const dvgetters = {
-    INT: [DataView.prototype.getInt16, 2],
-    BOOL: [DataView.prototype.getInt8, 1]
-    /* TODO */
+    INT: (dv,offset) => [dv.getInt16(offset, true), 2],
+    BOOL: (dv,offset) => [dv.getInt8(offset, true), 1],
+    STRING: (dv, offset) => {
+        size = dv.getInt8(offset);
+        return [
+            String.fromCharCode.apply(null, new Uint8Array(
+                dv.buffer, /* original buffer */
+                offset + 1, /* string starts after size*/
+                size /* size of string */
+            )), size + 1]; /* total increment */
+    }
 };
 
 // Register message reception handler 
@@ -70,8 +78,8 @@ ws.onmessage = function (evt) {
             i += 4;
             let iectype = hmitree_types[index];
             if(iectype != undefined){
-                let [dvgetter, bytesize] = dvgetters[iectype];
-                let value = dvgetter.call(dv,i,true);
+                let dvgetter = dvgetters[iectype];
+                let [value, bytesize] = dvgetter(dv,i);
                 dispatch_value(index, value);
                 i += bytesize;
             } else {

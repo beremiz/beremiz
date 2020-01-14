@@ -116,14 +116,14 @@
      inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="0.8046875"
-     inkscape:cx="959.69683"
-     inkscape:cy="656.6094"
-     inkscape:window-width="1600"
-     inkscape:window-height="886"
+     inkscape:zoom="1.2321777"
+     inkscape:cx="398.68209"
+     inkscape:cy="328.86048"
+     inkscape:window-width="1920"
+     inkscape:window-height="2105"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1"
+     inkscape:window-maximized="0"
      showguides="true"
      inkscape:guide-bbox="true" />
   <rect
@@ -898,4 +898,28 @@
        x="736.32812"
        y="1478.2422"
        style="fill:#82ff77;fill-opacity:1;stroke-width:1px;">8888</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:80px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="98.164062"
+     y="489.12109"
+     id="text134"
+     inkscape:label="HMI:Display@/PUMP0/STROUT"><tspan
+       sodipodi:role="line"
+       id="tspan132"
+       x="98.164062"
+       y="489.12109"
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.5px">8888</tspan></text>
+  <text
+     inkscape:label="HMI:Display@/PUMP0/BOOLOUT"
+     id="text138"
+     y="569.12109"
+     x="98.164062"
+     style="font-style:normal;font-weight:normal;font-size:80px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.5px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     xml:space="preserve"><tspan
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.5px"
+       y="569.12109"
+       x="98.164062"
+       id="tspan136"
+       sodipodi:role="line">8888</tspan></text>
 </svg>
