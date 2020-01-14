@@ -14,6 +14,10 @@
             forced_value_p = &((__IEC_##TYPENAME##_p *)varp)->fvalue;\
             break;
 
+#define __Is_a_string(dsc) (dsc->type == STRING_ENUM)   ||\
+                           (dsc->type == STRING_P_ENUM) ||\
+                           (dsc->type == STRING_O_ENUM)
+
 static void* UnpackVar(__Unpack_desc_type *dsc, void **real_value_p, char *flags)
 {
     void *varp = dsc->ptr;

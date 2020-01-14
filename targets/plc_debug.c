@@ -100,7 +100,7 @@ extern void InitRetain(void);
 void __init_debug(void)
 {
     /* init local static vars */
-#ifndef TARGET_ONLINE_DEBUG_DISABLE	
+#ifndef TARGET_ONLINE_DEBUG_DISABLE
     buffer_cursor = debug_buffer;
     buffer_state = BUFFER_FREE;
 #endif
@@ -109,9 +109,9 @@ void __init_debug(void)
     InitRetain();
     /* Iterate over all variables to fill debug buffer */
     if(CheckRetainBuffer()){
-    	__for_each_variable_do(RemindIterator);
+        __for_each_variable_do(RemindIterator);
     }else{
-    	char mstr[] = "RETAIN memory invalid - defaults used";
+        char mstr[] = "RETAIN memory invalid - defaults used";
         LogMessage(LOG_WARNING, mstr, sizeof(mstr));
     }
     retain_offset = 0;
@@ -124,7 +124,7 @@ extern unsigned long __tick;
 
 void __cleanup_debug(void)
 {
-#ifndef TARGET_ONLINE_DEBUG_DISABLE	
+#ifndef TARGET_ONLINE_DEBUG_DISABLE
     buffer_cursor = debug_buffer;
     InitiateDebugTransfer();
 #endif    
@@ -150,16 +150,14 @@ static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
     if(flags & ( __IEC_DEBUG_FLAG | __IEC_RETAIN_FLAG)){
         USINT size = __get_type_enum_size(dsc->type);
 
-#ifndef TARGET_ONLINE_DEBUG_DISABLE	
+#ifndef TARGET_ONLINE_DEBUG_DISABLE
         if(flags & __IEC_DEBUG_FLAG){
             /* copy visible variable to buffer */;
             if(do_debug){
                 /* compute next cursor positon.
                    No need to check overflow, as BUFFER_SIZE
                    is computed large enough */
-		if((dsc->type == STRING_ENUM)   ||
-		   (dsc->type == STRING_P_ENUM) ||
-		   (dsc->type == STRING_O_ENUM)){
+                if(__Is_a_string(dsc)){
                     /* optimization for strings */
                     size = ((STRING*)visible_value_p)->len + 1;
                 }
@@ -174,7 +172,7 @@ static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
                 memcpy(real_value_p, visible_value_p, size);
             }
         }
-#endif	
+#endif
 
         if(flags & __IEC_RETAIN_FLAG){
             /* compute next cursor positon*/
