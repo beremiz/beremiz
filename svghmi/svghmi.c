@@ -102,6 +102,9 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 
         /* if new value differs from previous one */
         USINT sz = __get_type_enum_size(dsc->type);
+        if(__Is_a_string(dsc)){
+            sz = ((STRING*)visible_value_p)->len + 1;
+        }
         if(dsc->wstate == buf_new || memcmp(dest_p, visible_value_p, sz) != 0){
             /* copy and flag as set */
             memcpy(dest_p, visible_value_p, sz);
@@ -133,6 +136,9 @@ static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
         {
             void *src_p = &wbuf[dsc->buf_index];
             void *dst_p = &sbuf[sbufidx];
+            if(__Is_a_string(dsc)){
+                sz = ((STRING*)src_p)->len + 1;
+            }
             /* TODO : force into little endian */
             memcpy(dst_p, &index, sizeof(uint32_t));
             memcpy(dst_p + sizeof(uint32_t), src_p, sz);

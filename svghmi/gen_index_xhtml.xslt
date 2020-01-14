@@ -444,11 +444,27 @@
 </xsl:text>
     <xsl:text>const dvgetters = {
 </xsl:text>
-    <xsl:text>    INT: [DataView.prototype.getInt16, 2],
+    <xsl:text>    INT: (dv,offset) =&gt; [dv.getInt16(offset, true), 2],
 </xsl:text>
-    <xsl:text>    BOOL: [DataView.prototype.getInt8, 1]
+    <xsl:text>    BOOL: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
 </xsl:text>
-    <xsl:text>    /* TODO */
+    <xsl:text>    STRING: (dv, offset) =&gt; {
+</xsl:text>
+    <xsl:text>        size = dv.getInt8(offset);
+</xsl:text>
+    <xsl:text>        return [
+</xsl:text>
+    <xsl:text>            String.fromCharCode.apply(null, new Uint8Array(
+</xsl:text>
+    <xsl:text>                dv.buffer, /* original buffer */
+</xsl:text>
+    <xsl:text>                offset + 1, /* string starts after size*/
+</xsl:text>
+    <xsl:text>                size /* size of string */
+</xsl:text>
+    <xsl:text>            )), size + 1]; /* total increment */
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -492,9 +508,9 @@
 </xsl:text>
     <xsl:text>            if(iectype != undefined){
 </xsl:text>
-    <xsl:text>                let [dvgetter, bytesize] = dvgetters[iectype];
+    <xsl:text>                let dvgetter = dvgetters[iectype];
 </xsl:text>
-    <xsl:text>                let value = dvgetter.call(dv,i,true);
+    <xsl:text>                let [value, bytesize] = dvgetter(dv,i);
 </xsl:text>
     <xsl:text>                dispatch_value(index, value);
 </xsl:text>
