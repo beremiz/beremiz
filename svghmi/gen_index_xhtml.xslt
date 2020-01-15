@@ -614,7 +614,7 @@
 </xsl:text>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>        console.log("Heartbeat" + value);
+    <xsl:text>        // console.log("Heartbeat" + value);
 </xsl:text>
     <xsl:text>        change_hmi_value(this.indexes[0], "+1");
 </xsl:text>

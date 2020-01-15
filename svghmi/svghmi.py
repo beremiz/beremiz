@@ -211,20 +211,15 @@ class SVGHMILibrary(POULibrary):
         item_count = 0
         found_heartbeat = False
 
-        # find heartbeat in hmi tree
-        # it is supposed to come first, but some HMI_* intances 
-        # in config's globals might shift them
         hearbeat_IEC_path = ['CONFIG', 'HEARTBEAT']
+
         for node in hmi_tree_root.traverse():
-            if node.path == hearbeat_IEC_path:
+            if not found_heartbeat and node.path == hearbeat_IEC_path:
                 hmi_tree_hearbeat_index = item_count
                 found_heartbeat = True
                 extern_variables_declarations += [
                     "#define heartbeat_index "+str(hmi_tree_hearbeat_index)
                 ]
-                break;
-
-        for node in hmi_tree_root.traverse():
             if hasattr(node, "iectype") and node.nodetype != "HMI_NODE":
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
@@ -243,12 +238,12 @@ class SVGHMILibrary(POULibrary):
                         "extern __IEC_" + node.iectype + "_" +
                         "t" if node.vartype is "VAR" else "p"
                         + node.cpath + ";"]
-                
+
         assert(found_heartbeat)
 
         # TODO : filter only requiered external declarations
-        for v in varlist :
-            if v["C_path"].find('.') < 0 :  # and v["vartype"] == "FB" :
+        for v in varlist:
+            if v["C_path"].find('.') < 0:
                 extern_variables_declarations += [
                     "extern %(type)s %(C_path)s;" % v]
 
@@ -504,34 +499,34 @@ class SVGHMI(object):
         target_file.close()
 
         res += ((target_fname, open(target_path, "rb")),)
-        
+
         svghmi_cmds = {}
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
              svghmi_cmds[thing] = (
                 "Popen(" +
-                repr(shlex.split(given_command.format(port="8008", name=view_name))) + 
+                repr(shlex.split(given_command.format(port="8008", name=view_name))) +
                 ")") if given_command else "# no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
-# TODO : multi        
+# TODO : multi
 def watchdog_trigger():
-    {svghmi_cmds.Watchdog}
+    {svghmi_cmds[Watchdog]}
 
 def _runtime_svghmi1_{location}_start():
     svghmi_root.putChild('{view_name}',File('{xhtml}', defaultType='application/xhtml+xml'))
-    {svghmi_cmds.Start}
+    {svghmi_cmds[Start]}
 
 def _runtime_svghmi1_{location}_stop():
     svghmi_root.delEntity('{view_name}')
-    {svghmi_cmds.Stop}
+    {svghmi_cmds[Stop]}
 
         """.format(location=location_str,
                    xhtml=target_fname,
                    view_name=view_name,
-                   svghmi_cmds=type("dicobj",(object,),svghmi_cmds)))
+                   svghmi_cmds=svghmi_cmds))
 
         runtimefile.close()
 
