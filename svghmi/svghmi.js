@@ -131,7 +131,7 @@ subscribers[heartbeat_index].add({
     frequency: 1,
     indexes: [heartbeat_index],
     dispatch: function(value) {
-        console.log("Heartbeat" + value);
+        // console.log("Heartbeat" + value);
         change_hmi_value(this.indexes[0], "+1");
     }
 });
