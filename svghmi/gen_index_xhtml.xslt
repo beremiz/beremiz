@@ -470,7 +470,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>// Register message reception handler 
+    <xsl:text>// Register message reception handler
 </xsl:text>
     <xsl:text>ws.onmessage = function (evt) {
 </xsl:text>
@@ -564,9 +564,29 @@
 </xsl:text>
     <xsl:text>const typedarray_types = {
 </xsl:text>
-    <xsl:text>    INT: Int16Array,
+    <xsl:text>    INT: (number) =&gt; new Int16Array([number]),
 </xsl:text>
-    <xsl:text>    BOOL: Uint8Array
+    <xsl:text>    BOOL: (truth) =&gt; new Int16Array([truth]),
+</xsl:text>
+    <xsl:text>    STRING: (str) =&gt; {
+</xsl:text>
+    <xsl:text>        // beremiz default string max size is 128
+</xsl:text>
+    <xsl:text>        str = str.slice(0,128);
+</xsl:text>
+    <xsl:text>        binary = new Uint8Array(str.length + 1);
+</xsl:text>
+    <xsl:text>        binary[0] = str.length;
+</xsl:text>
+    <xsl:text>        for(var i = 0; i &lt; str.length; i++){
+</xsl:text>
+    <xsl:text>            binary[i+1] = str.charCodeAt(i);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return binary;
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>    /* TODO */
 </xsl:text>
@@ -600,7 +620,7 @@
 </xsl:text>
     <xsl:text>// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
 </xsl:text>
-    <xsl:text>// Since dispatch directly calls change_hmi_value, 
+    <xsl:text>// Since dispatch directly calls change_hmi_value,
 </xsl:text>
     <xsl:text>// PLC will periodically send variable at given frequency
 </xsl:text>
@@ -616,7 +636,7 @@
 </xsl:text>
     <xsl:text>        // console.log("Heartbeat" + value);
 </xsl:text>
-    <xsl:text>        change_hmi_value(this.indexes[0], "+1");
+    <xsl:text>        change_hmi_value(heartbeat_index, "+1");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -690,15 +710,15 @@
 </xsl:text>
     <xsl:text>    let iectype = hmitree_types[index];
 </xsl:text>
-    <xsl:text>    let jstype = typedarray_types[iectype];
+    <xsl:text>    let tobinary = typedarray_types[iectype];
 </xsl:text>
     <xsl:text>    send_blob([
 </xsl:text>
     <xsl:text>        new Uint8Array([0]),  /* setval = 0 */
 </xsl:text>
-    <xsl:text>        new Uint32Array([index]), 
+    <xsl:text>        new Uint32Array([index]),
 </xsl:text>
-    <xsl:text>        new jstype([value])]);
+    <xsl:text>        tobinary(value)]);
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -795,8 +815,6 @@
     <xsl:text>                if(cached_val != undefined)
 </xsl:text>
     <xsl:text>                    dispatch_value_to_widget(widget, index, cached_val, cached_val);
-</xsl:text>
-    <xsl:text>                
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -967,6 +985,19 @@
     <xsl:text>},
 </xsl:text>
   </xsl:template>
+  <func:function name="func:escape_quotes">
+    <xsl:param name="txt"/>
+    <xsl:variable name="frst" select="substring-before($txt,'&quot;')"/>
+    <xsl:variable name="frstln" select="string-length($frst)"/>
+    <xsl:choose>
+      <xsl:when test="$frstln &gt; 0 and string-length($txt) &gt; $frstln">
+        <func:result select="concat($frst,'\&quot;',func:escape_quotes(substring-after($txt,'&quot;')))"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$txt"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
     <xsl:text>frequency: 5,
@@ -996,7 +1027,7 @@
       <xsl:text>        evt =&gt; alert('XXX TODO : Edit value'));
 </xsl:text>
     </xsl:if>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-][0-9]+')]">
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
       <xsl:text>    document.getElementById("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>").addEventListener(
@@ -1004,7 +1035,7 @@
       <xsl:text>        "click", 
 </xsl:text>
       <xsl:text>        evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
-      <xsl:value-of select="@inkscape:label"/>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
       <xsl:text>");
 </xsl:text>
       <xsl:text>                this.value_elt.textContent = String(new_val);});
