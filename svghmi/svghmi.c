@@ -300,7 +300,10 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                     void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
                     void *dst_p = &rbuf[dsc->buf_index];
                     uint32_t sz = __get_type_enum_size(dsc->type);
-#warning TODO: size of string in recv
+
+                    if(__Is_a_string(dsc)){
+                        sz = ((STRING*)valptr)->len + 1;
+                    }
 
                     if((valptr + sz) <= end)
                     {

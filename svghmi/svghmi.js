@@ -59,7 +59,7 @@ const dvgetters = {
     }
 };
 
-// Register message reception handler 
+// Register message reception handler
 ws.onmessage = function (evt) {
 
     let data = evt.data;
@@ -106,8 +106,18 @@ function send_blob(data) {
 };
 
 const typedarray_types = {
-    INT: Int16Array,
-    BOOL: Uint8Array
+    INT: (number) => new Int16Array([number]),
+    BOOL: (truth) => new Int16Array([truth]),
+    STRING: (str) => {
+        // beremiz default string max size is 128
+        str = str.slice(0,128);
+        binary = new Uint8Array(str.length + 1);
+        binary[0] = str.length;
+        for(var i = 0; i < str.length; i++){
+            binary[i+1] = str.charCodeAt(i);
+        }
+        return binary;
+    }
     /* TODO */
 };
 
@@ -124,7 +134,7 @@ var subscriptions =  hmitree_types.map(_ignored => 0);
 var subscribers = hmitree_types.map(_ignored => new Set());
 
 // artificially subscribe the watchdog widget to "/heartbeat" hmi variable
-// Since dispatch directly calls change_hmi_value, 
+// Since dispatch directly calls change_hmi_value,
 // PLC will periodically send variable at given frequency
 subscribers[heartbeat_index].add({
     /* type: "Watchdog", */
@@ -132,7 +142,7 @@ subscribers[heartbeat_index].add({
     indexes: [heartbeat_index],
     dispatch: function(value) {
         // console.log("Heartbeat" + value);
-        change_hmi_value(this.indexes[0], "+1");
+        change_hmi_value(heartbeat_index, "+1");
     }
 });
 
@@ -169,11 +179,11 @@ function update_subscriptions() {
 
 function send_hmi_value(index, value) {
     let iectype = hmitree_types[index];
-    let jstype = typedarray_types[iectype];
+    let tobinary = typedarray_types[iectype];
     send_blob([
         new Uint8Array([0]),  /* setval = 0 */
-        new Uint32Array([index]), 
-        new jstype([value])]);
+        new Uint32Array([index]),
+        tobinary(value)]);
 
     cache[index] = value;
 };
@@ -222,7 +232,6 @@ function switch_page(page_name) {
                 let cached_val = cache[index];
                 if(cached_val != undefined)
                     dispatch_value_to_widget(widget, index, cached_val, cached_val);
-                
             }
         }
         svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));

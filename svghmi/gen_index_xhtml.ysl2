@@ -373,6 +373,21 @@ istylesheet
         | },
     }
 
+    def "func:escape_quotes" {
+        param "txt";
+        // have to use a python string to enter escaped quote
+        const "frst", !"substring-before($txt,'\"')"!;
+        const "frstln", "string-length($frst)";
+        choose {
+            when "$frstln > 0 and string-length($txt) > $frstln" {
+                result !"concat($frst,'\\\"',func:escape_quotes(substring-after($txt,'\"')))"!;
+            }
+            otherwise {
+                result "$txt";
+            }
+        }
+    }
+
     template "widget[@type='Input']", mode="widget_defs" {
         param "hmi_element";
         | frequency: 5,
@@ -387,10 +402,10 @@ istylesheet
         |         "click", 
         |         evt => alert('XXX TODO : Edit value'));
         }
-        foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-][0-9]+')]" {
+        foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
         |     document.getElementById("«@id»").addEventListener(
         |         "click", 
-        |         evt => {let new_val = change_hmi_value(this.indexes[0], "«@inkscape:label»");
+        |         evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
         |                 this.value_elt.textContent = String(new_val);});
                           /* could gray out value until refreshed */
         }
