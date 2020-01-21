@@ -193,3 +193,11 @@ def _runtime_svghmi0_stop():
     svghmi_send_thread.join()
     svghmi_send_thread = None
 
+
+class NoCacheFile(File):
+    def render_GET(self, request):
+        request.setHeader(b"Cache-Control", b"no-cache, no-store")
+        return File.render_GET(self, request)
+    render_HEAD = render_GET
+
+
