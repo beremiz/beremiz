@@ -516,7 +516,7 @@ def watchdog_trigger():
     {svghmi_cmds[Watchdog]}
 
 def _runtime_svghmi1_{location}_start():
-    svghmi_root.putChild('{view_name}',File('{xhtml}', defaultType='application/xhtml+xml'))
+    svghmi_root.putChild('{view_name}', NoCacheFile('{xhtml}', defaultType='application/xhtml+xml'))
     {svghmi_cmds[Start]}
 
 def _runtime_svghmi1_{location}_stop():
