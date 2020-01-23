@@ -102,14 +102,15 @@ class Watchdog(object):
         with self.lock:
             self._stop()
 
-    def feed(self):
+    def feed(self, rearm=True):
         with self.lock:
             self._stop()
-            self._start(rearm=True)
+            self._start(rearm)
 
     def trigger(self):
         self._callback()
-        self.feed()
+        # wait for initial timeout on re-start
+        self.feed(rearm=False)
 
 class HMIProtocol(WebSocketServerProtocol):
 
