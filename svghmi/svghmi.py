@@ -374,6 +374,8 @@ class SVGHMI(object):
           <xsd:attribute name="OnStart" type="xsd:string" use="optional"/>
           <xsd:attribute name="OnStop" type="xsd:string" use="optional"/>
           <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional"/>
+          <xsd:attribute name="WatchdogInitial" type="xsd:integer" use="optional"/>
+          <xsd:attribute name="WatchdogInterval" type="xsd:integer" use="optional"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -511,22 +513,42 @@ class SVGHMI(object):
         runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
-# TODO : multi
-def watchdog_trigger():
+# TODO : multiple watchdog (one for each svghmi instance)
+def svghmi_watchdog_trigger():
     {svghmi_cmds[Watchdog]}
 
+svghmi_watchdog = None
+
 def _runtime_svghmi1_{location}_start():
-    svghmi_root.putChild('{view_name}', NoCacheFile('{xhtml}', defaultType='application/xhtml+xml'))
+    global svghmi_watchdog
+    svghmi_root.putChild(
+        '{view_name}',
+        NoCacheFile('{xhtml}',
+        defaultType='application/xhtml+xml'))
+
     {svghmi_cmds[Start]}
 
+    svghmi_watchdog = Watchdog(
+        {watchdog_initial}, 
+        {watchdog_interval}, 
+        svghmi_watchdog_trigger)
+
 def _runtime_svghmi1_{location}_stop():
+    global svghmi_watchdog
+    if svghmi_watchdog is not None:
+        svghmi_watchdog.cancel()
+        svghmi_watchdog = None
+
     svghmi_root.delEntity('{view_name}')
     {svghmi_cmds[Stop]}
 
         """.format(location=location_str,
                    xhtml=target_fname,
                    view_name=view_name,
-                   svghmi_cmds=svghmi_cmds))
+                   svghmi_cmds=svghmi_cmds,
+                   watchdog_initial = self.GetParamsAttributes("SVGHMI.WatchdogInitial")["value"],
+                   watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
+                   ))
 
         runtimefile.close()
 
