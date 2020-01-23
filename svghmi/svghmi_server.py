@@ -78,17 +78,20 @@ class HMISession(object):
         return 0
 
 class Watchdog(object):
-    def __init__(self, initial_timeout, callback):
+    def __init__(self, initial_timeout, interval, callback):
         self._callback = callback
         self.lock = RLock()
         self.initial_timeout = initial_timeout
+        self.interval = interval
         self.callback = callback
         with self.lock:
             self._start()
 
-    def _start(self):
-        self.timer = Timer(self.initial_timeout, self.trigger)
-        self.timer.start()
+    def _start(self, rearm=False):
+        duration = self.interval if rearm else self.initial_timeout
+        if duration:
+            self.timer = Timer(duration, self.trigger)
+            self.timer.start()
 
     def _stop(self):
         if self.timer is not None:
@@ -102,7 +105,7 @@ class Watchdog(object):
     def feed(self):
         with self.lock:
             self._stop()
-            self._start()
+            self._start(rearm=True)
 
     def trigger(self):
         self._callback()
@@ -162,7 +165,7 @@ def watchdog_trigger():
 
 # Called by PLCObject at start
 def _runtime_svghmi0_start():
-    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_watchdog
+    global svghmi_listener, svghmi_root, svghmi_send_thread
 
     svghmi_root = Resource()
     svghmi_root.putChild("ws", WebSocketResource(HMIWebSocketServerFactory()))
@@ -173,15 +176,10 @@ def _runtime_svghmi0_start():
     svghmi_send_thread = Thread(target=SendThreadProc, name="SVGHMI Send")
     svghmi_send_thread.start()
 
-    svghmi_watchdog = Watchdog(5, watchdog_trigger)
 
 # Called by PLCObject at stop
 def _runtime_svghmi0_stop():
-    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session, svghmi_watchdog
-
-    if svghmi_watchdog is not None:
-        svghmi_watchdog.cancel()
-        svghmi_watchdog = None
+    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session
 
     if svghmi_session is not None:
         svghmi_session.close()
