@@ -203,8 +203,9 @@
 </xsl:text>
     <xsl:for-each select="$hmi_elements">
       <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
+      <xsl:text>"</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>: {
+      <xsl:text>": {
 </xsl:text>
       <xsl:text>    type: "</xsl:text>
       <xsl:value-of select="$widget/@type"/>
@@ -319,8 +320,9 @@
       <xsl:text>        widgets: [
 </xsl:text>
       <xsl:for-each select="$page_ids">
-        <xsl:text>            hmi_widgets.</xsl:text>
+        <xsl:text>            hmi_widgets["</xsl:text>
         <xsl:value-of select="."/>
+        <xsl:text>"]</xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
         </xsl:if>
