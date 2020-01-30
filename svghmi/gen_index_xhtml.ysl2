@@ -217,7 +217,7 @@ istylesheet
         | var hmi_widgets = {
         foreach "$hmi_elements" {
             const "widget", "func:parselabel(@inkscape:label)/widget";
-            | «@id»: {
+            | "«@id»": {
             |     type: "«$widget/@type»",
             |     args: [
             foreach "$widget/arg"
@@ -263,7 +263,7 @@ istylesheet
             |         bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
             |         widgets: [
             foreach "$page_ids" {
-            |             hmi_widgets.«.»`if "position()!=last()" > ,`
+            |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
             }
             |         ]
             |     }`if "position()!=last()" > ,`
