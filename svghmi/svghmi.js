@@ -3,19 +3,18 @@
 var cache = hmitree_types.map(_ignored => undefined);
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
-    let idxidx = widget.indexes.indexOf(index);
-    if(idxidx == -1){
-        throw new Error("Dispatching to widget not interested, should not happen.");
+    try {
+        let idxidx = widget.indexes.indexOf(index);
+        let d = widget.dispatch;
+        if(typeof(d) == "function" && idxidx == 0){
+            d.call(widget, value, oldval);
+        }else if(typeof(d) == "object" && d.length >= idxidx){
+            d[idxidx].call(widget, value, oldval);
+        }/* else dispatch_0, ..., dispatch_n ? */
+        /*else {
+            throw new Error("Dunno how to dispatch to widget at index = " + index);
+        }*/
     }
-    let d = widget.dispatch;
-    if(typeof(d) == "function" && idxidx == 0){
-        return d.call(widget, value, oldval);
-    }else if(typeof(d) == "object" && d.length >= idxidx){
-        return d[idxidx].call(widget, value, oldval);
-    }/* else dispatch_0, ..., dispatch_n ? */
-    /*else {
-        throw new Error("Dunno how to dispatch to widget at index = " + index);
-    }*/
 }
 
 function dispatch_value(index, value) {
@@ -36,7 +35,12 @@ function init_widgets() {
         let widget = hmi_widgets[id];
         let init = widget.init;
         if(typeof(init) == "function"){
-            return init.call(widget);
+            try {
+                init.call(widget);
+            } catch(err) {
+                console.log("Widget initialization error : "+err.message);
+
+            }
         }
     });
 };

@@ -230,20 +230,24 @@
       <xsl:for-each select="$widget/path">
         <xsl:variable name="hmipath" select="@value"/>
         <xsl:variable name="hmitree_match" select="$indexed_hmitree/*[@hmipath = $hmipath]"/>
-        <xsl:if test="count($hmitree_match) = 0">
-          <xsl:message terminate="yes">
-            <xsl:text>No match for path "</xsl:text>
-            <xsl:value-of select="$hmipath"/>
-            <xsl:text>" in HMI tree</xsl:text>
-          </xsl:message>
-        </xsl:if>
-        <xsl:text>        </xsl:text>
-        <xsl:value-of select="$hmitree_match/@index"/>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-        <xsl:text>
+        <xsl:choose>
+          <xsl:when test="count($hmitree_match) = 0">
+            <xsl:message terminate="no">
+              <xsl:text>No match for path "</xsl:text>
+              <xsl:value-of select="$hmipath"/>
+              <xsl:text>" in HMI tree</xsl:text>
+            </xsl:message>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>        </xsl:text>
+            <xsl:value-of select="$hmitree_match/@index"/>
+            <xsl:if test="position()!=last()">
+              <xsl:text>,</xsl:text>
+            </xsl:if>
+            <xsl:text>
 </xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:for-each>
       <xsl:text>    ],
 </xsl:text>
@@ -360,31 +364,29 @@
 </xsl:text>
     <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
 </xsl:text>
-    <xsl:text>    let idxidx = widget.indexes.indexOf(index);
+    <xsl:text>    try {
 </xsl:text>
-    <xsl:text>    if(idxidx == -1){
+    <xsl:text>        let idxidx = widget.indexes.indexOf(index);
 </xsl:text>
-    <xsl:text>        throw new Error("Dispatching to widget not interested, should not happen.");
+    <xsl:text>        let d = widget.dispatch;
+</xsl:text>
+    <xsl:text>        if(typeof(d) == "function" &amp;&amp; idxidx == 0){
+</xsl:text>
+    <xsl:text>            d.call(widget, value, oldval);
+</xsl:text>
+    <xsl:text>        }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
+</xsl:text>
+    <xsl:text>            d[idxidx].call(widget, value, oldval);
+</xsl:text>
+    <xsl:text>        }/* else dispatch_0, ..., dispatch_n ? */
+</xsl:text>
+    <xsl:text>        /*else {
+</xsl:text>
+    <xsl:text>            throw new Error("Dunno how to dispatch to widget at index = " + index);
+</xsl:text>
+    <xsl:text>        }*/
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>    let d = widget.dispatch;
-</xsl:text>
-    <xsl:text>    if(typeof(d) == "function" &amp;&amp; idxidx == 0){
-</xsl:text>
-    <xsl:text>        return d.call(widget, value, oldval);
-</xsl:text>
-    <xsl:text>    }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
-</xsl:text>
-    <xsl:text>        return d[idxidx].call(widget, value, oldval);
-</xsl:text>
-    <xsl:text>    }/* else dispatch_0, ..., dispatch_n ? */
-</xsl:text>
-    <xsl:text>    /*else {
-</xsl:text>
-    <xsl:text>        throw new Error("Dunno how to dispatch to widget at index = " + index);
-</xsl:text>
-    <xsl:text>    }*/
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -426,7 +428,17 @@
 </xsl:text>
     <xsl:text>        if(typeof(init) == "function"){
 </xsl:text>
-    <xsl:text>            return init.call(widget);
+    <xsl:text>            try {
+</xsl:text>
+    <xsl:text>                init.call(widget);
+</xsl:text>
+    <xsl:text>            } catch(err) {
+</xsl:text>
+    <xsl:text>                console.log("Widget initialization error : "+err.message);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -913,12 +925,14 @@
     <xsl:param name="labels" select="''"/>
     <xsl:param name="mandatory" select="'yes'"/>
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="widget_type" select="@type"/>
     <xsl:for-each select="str:split($labels)">
       <xsl:variable name="name" select="."/>
       <xsl:variable name="elt_id" select="$hmi_element//*[@inkscape:label=$name][1]/@id"/>
       <xsl:if test="$mandatory='yes' and not($elt_id)">
-        <xsl:message terminate="yes">
-          <xsl:text>Meter widget must have a </xsl:text>
+        <xsl:message terminate="no">
+          <xsl:value-of select="$widget_type"/>
+          <xsl:text> widget must have a </xsl:text>
           <xsl:value-of select="$name"/>
           <xsl:text> element</xsl:text>
         </xsl:message>
@@ -942,7 +956,7 @@
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:message terminate="yes">
+        <xsl:message terminate="no">
           <xsl:text>Display widget as a group not implemented</xsl:text>
         </xsl:message>
       </xsl:otherwise>
