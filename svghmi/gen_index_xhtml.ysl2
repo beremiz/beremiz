@@ -227,9 +227,14 @@ istylesheet
             foreach "$widget/path" {
                 const "hmipath","@value";
                 const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
-                if "count($hmitree_match) = 0"
-                    error > No match for path "«$hmipath»" in HMI tree
+                choose {
+                    when "count($hmitree_match) = 0" {
+                        warning > No match for path "«$hmipath»" in HMI tree
+                    }
+                    otherwise {
             |         «$hmitree_match/@index»`if "position()!=last()" > ,`
+                    }
+                }
             }
             |     ],
             |     element: document.getElementById("«@id»"),
@@ -328,10 +333,12 @@ istylesheet
         param "labels","''";
         param "mandatory","'yes'";
         param "hmi_element";
+        const "widget_type","@type";
         foreach "str:split($labels)" {
             const "name",".";
             const "elt_id","$hmi_element//*[@inkscape:label=$name][1]/@id";
-            if "$mandatory='yes' and not($elt_id)" error > Meter widget must have a «$name» element
+            if "$mandatory='yes' and not($elt_id)"
+                warning > «$widget_type» widget must have a «$name» element
             | «$name»_elt: document.getElementById("«$elt_id»"),
         }
     }
@@ -347,7 +354,7 @@ istylesheet
         |   this.element.textContent = String(value);
             }
             otherwise {
-                error > Display widget as a group not implemented
+                warning > Display widget as a group not implemented
             }
         }
         | },

@@ -475,10 +475,14 @@ class SVGHMI(object):
             svgdom = etree.parse(svgfile)
 
             # call xslt transform on Inkscape's SVG to generate XHTML
-            try:
+            try: 
                 result = transform.transform(svgdom)
             except XSLTApplyError as e:
                 self.FatalError("SVGHMI " + view_name  + ": " + e.message)
+            finally:
+                for entry in transform.get_error_log():
+                    message = "SVGHMI: "+ entry.message + "\n" 
+                    self.GetCTRoot().logger.write_warning(message)
 
             result.write(target_file, encoding="utf-8")
             # print(str(result))
@@ -508,7 +512,7 @@ class SVGHMI(object):
              svghmi_cmds[thing] = (
                 "Popen(" +
                 repr(shlex.split(given_command.format(port="8008", name=view_name))) +
-                ")") if given_command else "# no command given"
+                ")") if given_command else "pass # no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
