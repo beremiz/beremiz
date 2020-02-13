@@ -92,6 +92,8 @@ class Watchdog(object):
         if duration:
             self.timer = Timer(duration, self.trigger)
             self.timer.start()
+        else:
+            self.timer = None
 
     def _stop(self):
         if self.timer is not None:
