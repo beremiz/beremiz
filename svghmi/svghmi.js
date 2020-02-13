@@ -14,6 +14,8 @@ function dispatch_value_to_widget(widget, index, value, oldval) {
         /*else {
             throw new Error("Dunno how to dispatch to widget at index = " + index);
         }*/
+    } catch(err) {
+        console.log(err);
     }
 }
 
@@ -38,8 +40,7 @@ function init_widgets() {
             try {
                 init.call(widget);
             } catch(err) {
-                console.log("Widget initialization error : "+err.message);
-
+                console.log(err);
             }
         }
     });

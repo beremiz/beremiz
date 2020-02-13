@@ -8,6 +8,12 @@ in xsl decl labels(*ptr, name="defs_by_labels") alias call-template {
     with "labels"{text *ptr};
 };
 
+in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
+    with "hmi_element", "$hmi_element";
+    with "labels"{text *ptr};
+    with "mandatory","'no'";
+};
+
 istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -337,9 +343,18 @@ istylesheet
         foreach "str:split($labels)" {
             const "name",".";
             const "elt_id","$hmi_element//*[@inkscape:label=$name][1]/@id";
-            if "$mandatory='yes' and not($elt_id)"
-                warning > «$widget_type» widget must have a «$name» element
-            | «$name»_elt: document.getElementById("«$elt_id»"),
+            choose {
+                when "not($elt_id)" {
+                    if "$mandatory='yes'" {
+                        // TODO FIXME error > «$widget_type» widget must have a «$name» element
+                        warning > «$widget_type» widget must have a «$name» element
+                    }
+                    // otherwise produce nothing 
+                }
+                otherwise {
+                    | «$name»_elt: document.getElementById("«$elt_id»"),
+                }
+            }
         }
     }
 
@@ -397,9 +412,14 @@ istylesheet
 
     template "widget[@type='Input']", mode="widget_defs" {
         param "hmi_element";
-        | frequency: 5,
-        labels("value");
+        const "value_elt" {
+            optional_labels("value");
+        }
+        value "$value_elt";
+        if "$value_elt"
+            | frequency: 5,
         | dispatch: function(value) {
+        if "$value_elt"
         |     this.value_elt.textContent = String(value);
         | },
         const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
