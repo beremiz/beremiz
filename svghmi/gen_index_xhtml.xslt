@@ -386,6 +386,10 @@
 </xsl:text>
     <xsl:text>        }*/
 </xsl:text>
+    <xsl:text>    } catch(err) {
+</xsl:text>
+    <xsl:text>        console.log(err);
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>}
@@ -434,9 +438,7 @@
 </xsl:text>
     <xsl:text>            } catch(err) {
 </xsl:text>
-    <xsl:text>                console.log("Widget initialization error : "+err.message);
-</xsl:text>
-    <xsl:text>
+    <xsl:text>                console.log(err);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -929,19 +931,25 @@
     <xsl:for-each select="str:split($labels)">
       <xsl:variable name="name" select="."/>
       <xsl:variable name="elt_id" select="$hmi_element//*[@inkscape:label=$name][1]/@id"/>
-      <xsl:if test="$mandatory='yes' and not($elt_id)">
-        <xsl:message terminate="no">
-          <xsl:value-of select="$widget_type"/>
-          <xsl:text> widget must have a </xsl:text>
+      <xsl:choose>
+        <xsl:when test="not($elt_id)">
+          <xsl:if test="$mandatory='yes'">
+            <xsl:message terminate="no">
+              <xsl:value-of select="$widget_type"/>
+              <xsl:text> widget must have a </xsl:text>
+              <xsl:value-of select="$name"/>
+              <xsl:text> element</xsl:text>
+            </xsl:message>
+          </xsl:if>
+        </xsl:when>
+        <xsl:otherwise>
           <xsl:value-of select="$name"/>
-          <xsl:text> element</xsl:text>
-        </xsl:message>
-      </xsl:if>
-      <xsl:value-of select="$name"/>
-      <xsl:text>_elt: document.getElementById("</xsl:text>
-      <xsl:value-of select="$elt_id"/>
-      <xsl:text>"),
+          <xsl:text>_elt: document.getElementById("</xsl:text>
+          <xsl:value-of select="$elt_id"/>
+          <xsl:text>"),
 </xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
     </xsl:for-each>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
@@ -1016,18 +1024,26 @@
   </func:function>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>frequency: 5,
+    <xsl:variable name="value_elt">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>value</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$value_elt"/>
+    <xsl:if test="$value_elt">
+      <xsl:text>frequency: 5,
 </xsl:text>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>value</xsl:text>
-      </xsl:with-param>
-    </xsl:call-template>
+    </xsl:if>
     <xsl:text>dispatch: function(value) {
 </xsl:text>
-    <xsl:text>    this.value_elt.textContent = String(value);
+    <xsl:if test="$value_elt">
+      <xsl:text>    this.value_elt.textContent = String(value);
 </xsl:text>
+    </xsl:if>
     <xsl:text>},
 </xsl:text>
     <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
