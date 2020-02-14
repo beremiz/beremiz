@@ -116,6 +116,16 @@
       <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
     </xsl:copy>
   </xsl:template>
+  <xsl:template mode="inline_svg" match="svg:svg[@viewBox!=concat('0 0 ', @width, ' ', @height)]">
+    <xsl:message terminate="yes">
+      <xsl:text>Scale other than 1.000 in Inkscape's document properties is not supported</xsl:text>
+    </xsl:message>
+  </xsl:template>
+  <xsl:template mode="inline_svg" match="sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']">
+    <xsl:message terminate="yes">
+      <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
+    </xsl:message>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
