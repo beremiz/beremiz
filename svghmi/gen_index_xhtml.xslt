@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func" version="1.0" exclude-result-prefixes="ns str regexp exsl func">
+<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func" version="1.0" exclude-result-prefixes="ns str regexp exsl func">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -118,7 +118,7 @@
   </xsl:template>
   <xsl:template mode="inline_svg" match="svg:svg[@viewBox!=concat('0 0 ', @width, ' ', @height)]">
     <xsl:message terminate="yes">
-      <xsl:text>Scale other than 1.000 in Inkscape's document properties is not supported</xsl:text>
+      <xsl:text>ViewBox settings other than X=0, Y=0 and Scale=1 are not supported</xsl:text>
     </xsl:message>
   </xsl:template>
   <xsl:template mode="inline_svg" match="sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']">
@@ -199,6 +199,21 @@
       </xsl:if>
     </xsl:variable>
     <func:result select="exsl:node-set($ast)"/>
+  </func:function>
+  <func:function name="func:refered_elements">
+    <xsl:param name="elems"/>
+    <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
+    <xsl:variable name="clones" select="$descend[self::svg:use]"/>
+    <xsl:variable name="reals" select="$descend[not(self::svg:use)]"/>
+    <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
+    <xsl:choose>
+      <xsl:when test="$originals">
+        <func:result select="$reals | func:refered_elements($originals)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$reals"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </func:function>
   <xsl:template name="scripts">
     <xsl:text>//(function(){
@@ -312,7 +327,8 @@
       <xsl:variable name="page" select="."/>
       <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
       <xsl:variable name="page_ids" select="$hmi_geometry[@Id != $page/@id and &#10;                                @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                                @x+@w &lt;= $p/@x+$p/@w and @y+@h &lt;= $p/@y+$p/@h]/@Id"/>
-      <xsl:variable name="page_elements" select="$hmi_elements[@id = $page_ids]"/>
+      <xsl:variable name="page_sub_ids" select="func:refered_elements($page)[@id = $hmi_elements/@id]/@id"/>
+      <xsl:variable name="all_page_ids" select="$page_ids | $page_sub_ids[not(. = $page_ids)]"/>
       <xsl:text>    "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
@@ -333,7 +349,7 @@
 </xsl:text>
       <xsl:text>        widgets: [
 </xsl:text>
-      <xsl:for-each select="$page_ids">
+      <xsl:for-each select="$all_page_ids">
         <xsl:text>            hmi_widgets["</xsl:text>
         <xsl:value-of select="."/>
         <xsl:text>"]</xsl:text>
@@ -1096,13 +1112,18 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>on_click: function() {
+</xsl:text>
+    <xsl:text>    switch_page(this.args[0]);
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
     <xsl:text>init: function() {
 </xsl:text>
-    <xsl:text>    this.element.addEventListener(
-</xsl:text>
-    <xsl:text>        "click", 
-</xsl:text>
-    <xsl:text>        evt =&gt; switch_page(this.args[0]));
+    <xsl:text>    this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click()");
 </xsl:text>
     <xsl:text>},
 </xsl:text>

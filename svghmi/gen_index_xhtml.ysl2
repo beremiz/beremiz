@@ -20,6 +20,7 @@ istylesheet
             xmlns:cc="http://creativecommons.org/ns#"
             xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
             xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
@@ -204,6 +205,21 @@ istylesheet
         func:result select="exsl:node-set($ast)"
     }
 
+    // returns all directly or indirectly refered elements
+    func:function name="func:refered_elements" {
+        param "elems";
+        const "descend", "$elems/descendant-or-self::svg:*";
+        const "clones", "$descend[self::svg:use]";
+        const "reals", "$descend[not(self::svg:use)]";
+        const "originals", "//svg:*[concat('#',@id) = $clones/@xlink:href]";
+        choose {
+            when "$originals" 
+                func:result select="$reals | func:refered_elements($originals)";
+            otherwise
+                func:result select="$reals";
+        }
+    }
+
     function "scripts"
     {
         | //(function(){
@@ -276,12 +292,13 @@ istylesheet
             const "page_ids","""$hmi_geometry[@Id != $page/@id and 
                                 @x >= $p/@x and @y >= $p/@y and 
                                 @x+@w <= $p/@x+$p/@w and @y+@h <= $p/@y+$p/@h]/@Id""";
-            const "page_elements", "$hmi_elements[@id = $page_ids]";
+            const "page_sub_ids", "func:refered_elements($page)[@id = $hmi_elements/@id]/@id";
+            const "all_page_ids","$page_ids | $page_sub_ids[not(. = $page_ids)]"; 
             |     "«$desc/arg[1]/@value»": {
             |         id: "«@id»",
             |         bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
             |         widgets: [
-            foreach "$page_ids" {
+            foreach "$all_page_ids" {
             |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
             }
             |         ]
@@ -455,10 +472,17 @@ istylesheet
         |     frequency: 5,
     }
     template "widget[@type='Jump']", mode="widget_defs" {
+        param "hmi_element";
+        | on_click: function() {
+        |     switch_page(this.args[0]);
+        | },
         | init: function() {
-        |     this.element.addEventListener(
-        |         "click", 
-        |         evt => switch_page(this.args[0]));
+        /* registering event this way doies not "click" through svg:use 
+        |     this.element.onclick = evt => switch_page(this.args[0]);
+        event must be registered by adding attribute to element instead
+        TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
+        */
+        |     this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
         | },
     }
 }
