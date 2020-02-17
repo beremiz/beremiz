@@ -468,12 +468,37 @@ istylesheet
     template "widget[@type='Toggle']", mode="widget_defs" {
         |     frequency: 5,
     }
-    template "widget[@type='Change']", mode="widget_defs" {
-        |     frequency: 5,
+    template "widget[@type='Switch']", mode="widget_defs" {
+        param "hmi_element";
+        | frequency: 5,
+        | dispatch: function(value) {
+        |     for(let choice of this.choices){
+        |         if(value != choice.value){
+        |             choice.elt.setAttribute("style", "display:none");
+        |         } else {
+        |             choice.elt.setAttribute("style", choice.style);
+        |         }
+        |     }
+        | },
+        | init: function() {
+        |     // Hello Switch
+        | },
+        | choices: [
+        const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+)(#.*)?$'"!;
+        foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
+            const "literal", "regexp:match(@inkscape:label,$regex)[2]";
+        |     {
+        |         elt:document.getElementById("«@id»"),
+        |         style:"«@style»",
+        |         value:«$literal»
+        |     }`if "position()!=last()" > ,`
+        }
+        | ],
     }
     template "widget[@type='Jump']", mode="widget_defs" {
         param "hmi_element";
-        | on_click: function() {
+        | on_click: function(evt) {
+        |     console.log(evt);
         |     switch_page(this.args[0]);
         | },
         | init: function() {
@@ -482,7 +507,7 @@ istylesheet
         event must be registered by adding attribute to element instead
         TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
         */
-        |     this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
+        |     this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
         | },
     }
 }
