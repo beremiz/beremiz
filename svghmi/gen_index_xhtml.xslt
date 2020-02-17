@@ -1107,13 +1107,68 @@
     <xsl:text>    frequency: 5,
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Change']">
-    <xsl:text>    frequency: 5,
+  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 5,
+</xsl:text>
+    <xsl:text>dispatch: function(value) {
+</xsl:text>
+    <xsl:text>    for(let choice of this.choices){
+</xsl:text>
+    <xsl:text>        if(value != choice.value){
+</xsl:text>
+    <xsl:text>            choice.elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            choice.elt.setAttribute("style", choice.style);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    // Hello Switch
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>choices: [
+</xsl:text>
+    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+)(#.*)?$'"/>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,$regex)]">
+      <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
+      <xsl:text>    {
+</xsl:text>
+      <xsl:text>        elt:document.getElementById("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"),
+</xsl:text>
+      <xsl:text>        style:"</xsl:text>
+      <xsl:value-of select="@style"/>
+      <xsl:text>",
+</xsl:text>
+      <xsl:text>        value:</xsl:text>
+      <xsl:value-of select="$literal"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>    }</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>],
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>on_click: function() {
+    <xsl:text>on_click: function(evt) {
+</xsl:text>
+    <xsl:text>    console.log(evt);
 </xsl:text>
     <xsl:text>    switch_page(this.args[0]);
 </xsl:text>
@@ -1123,7 +1178,7 @@
 </xsl:text>
     <xsl:text>    this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
     <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click()");
+    <xsl:text>'].on_click(evt)");
 </xsl:text>
     <xsl:text>},
 </xsl:text>
