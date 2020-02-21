@@ -299,7 +299,7 @@ istylesheet
             const "page_sub_ids", "func:refered_elements($page)[@id = $hmi_elements/@id]/@id";
             const "all_page_ids","$page_ids | $page_sub_ids[not(. = $page_ids)]"; 
             |     "«$desc/arg[1]/@value»": {
-            |         id: "«@id»",
+            |         widget: hmi_widgets["«@id»"],
             |         bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
             |         widgets: [
             foreach "$all_page_ids" {
