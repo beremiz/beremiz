@@ -133,6 +133,43 @@ istylesheet
         error > All units must be set to "px" in Inkscape's document properties
     }
 
+    /* clone unlinkink until widget for better perf with webkit */
+    svgtmpl "svg:use", mode="inline_svg" 
+    {
+        g{
+            attrib "style" > «@style»
+            attrib "transform" > «@transform»
+            /* keep same id and label in case it is a widget */
+            //attrib "inkscape:label","@inkscape:label";
+            attrib "id" > «@id»
+            const "targetid","substring-after(@xlink:href,'#')";
+            apply "//svg:*[@id = $targetid]", mode="unlink_clone";
+        }
+    }
+    svgtmpl "@*", mode="unlink_clone" xsl:copy;
+    svgtmpl "svg:*", mode="unlink_clone" {
+        choose {
+            when "@id = $hmi_elements/@id" {
+                use{
+                    attrib "xlink:href" > «concat('#',@id)»
+                }
+            }
+            otherwise {
+                xsl:copy apply "@* | node()", mode="unlink_clone";
+            }
+        }
+    }
+
+    // template "svg:use/@style", mode="inline_svg"{
+    //     attrib "style" > all:initial;
+    //     //«.»
+    // }
+
+    // template "svg:*[concat('#',@id) = //svg:use/@xlink:href]/@style", mode="inline_svg"{
+    //     attrib "style" > all:unset;
+    //     //«.»
+    // }
+
     /*const "mark" > =HMI=\n*/
 
     /* copy root node and add geometry as comment for a test */
