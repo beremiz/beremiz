@@ -14,6 +14,8 @@ in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
     with "mandatory","'no'";
 };
 
+in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
+
 istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -116,7 +118,7 @@ istylesheet
     /* replaces inkscape's height and width hints. forces fit */
     template "svg:svg/@width", mode="inline_svg";
     template "svg:svg/@height", mode="inline_svg";
-    template "svg:svg", mode="inline_svg" xsl:copy {
+    svgtmpl "svg:svg", mode="inline_svg" svg {
         attrib "preserveAspectRatio" > none
         attrib "height" > 100vh
         attrib "width" > 100vw
@@ -147,7 +149,9 @@ istylesheet
             apply "$indexed_hmitree", mode="testtree";
         }
         /**/
-        html xmlns="http://www.w3.org/1999/xhtml" {
+        html xmlns="http://www.w3.org/1999/xhtml"
+             xmlns:svg="http://www.w3.org/2000/svg"
+             xmlns:xlink="http://www.w3.org/1999/xlink" {
             head;
             body style="margin:0;overflow:hidden;" {
                 apply "svg:svg", mode="inline_svg";
