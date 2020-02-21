@@ -102,8 +102,8 @@
   </xsl:template>
   <xsl:template mode="inline_svg" match="svg:svg/@width"/>
   <xsl:template mode="inline_svg" match="svg:svg/@height"/>
-  <xsl:template mode="inline_svg" match="svg:svg">
-    <xsl:copy>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:svg">
+    <svg>
       <xsl:attribute name="preserveAspectRatio">
         <xsl:text>none</xsl:text>
       </xsl:attribute>
@@ -114,7 +114,7 @@
         <xsl:text>100vw</xsl:text>
       </xsl:attribute>
       <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
-    </xsl:copy>
+    </svg>
   </xsl:template>
   <xsl:template mode="inline_svg" match="svg:svg[@viewBox!=concat('0 0 ', @width, ' ', @height)]">
     <xsl:message terminate="yes">
@@ -125,6 +125,40 @@
     <xsl:message terminate="yes">
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
+    <g>
+      <xsl:attribute name="style">
+        <xsl:value-of select="@style"/>
+      </xsl:attribute>
+      <xsl:attribute name="transform">
+        <xsl:value-of select="@transform"/>
+      </xsl:attribute>
+      <xsl:attribute name="id">
+        <xsl:value-of select="@id"/>
+      </xsl:attribute>
+      <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+      <xsl:apply-templates mode="unlink_clone" select="//svg:*[@id = $targetid]"/>
+    </g>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@*">
+    <xsl:copy/>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
+    <xsl:choose>
+      <xsl:when test="@id = $hmi_elements/@id">
+        <use>
+          <xsl:attribute name="xlink:href">
+            <xsl:value-of select="concat('#',@id)"/>
+          </xsl:attribute>
+        </use>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy>
+          <xsl:apply-templates mode="unlink_clone" select="@* | node()"/>
+        </xsl:copy>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
@@ -139,7 +173,7 @@
     <xsl:comment>
       <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
     </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml">
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
         <xsl:apply-templates mode="inline_svg" select="svg:svg"/>
@@ -333,9 +367,9 @@
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
 </xsl:text>
-      <xsl:text>        id: "</xsl:text>
+      <xsl:text>        widget: hmi_widgets["</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>",
+      <xsl:text>"],
 </xsl:text>
       <xsl:text>        bbox: [</xsl:text>
       <xsl:value-of select="$p/@x"/>
@@ -824,17 +858,43 @@
 </xsl:text>
     <xsl:text>    let new_desc = page_desc[page_name];
 </xsl:text>
-    <xsl:text>    /* TODO hide / show widgets */
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(new_desc == undefined){
+</xsl:text>
+    <xsl:text>        return;
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    /* remove subsribers of previous page if any */
 </xsl:text>
-    <xsl:text>    if(old_desc) for(let widget of old_desc.widgets){
+    <xsl:text>    if(old_desc){
 </xsl:text>
-    <xsl:text>        for(let index of widget.indexes){
+    <xsl:text>        for(let widget of old_desc.widgets){
 </xsl:text>
-    <xsl:text>            subscribers[index].delete(widget);
+    <xsl:text>            for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>                subscribers[index].delete(widget);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        old_desc.widget.element.style.display = "none";
+</xsl:text>
+    <xsl:text>    } else {
+</xsl:text>
+    <xsl:text>        /* initial page switch : set everybody hidden */
+</xsl:text>
+    <xsl:text>        for(let name in page_desc){
+</xsl:text>
+    <xsl:text>            if(name != new_desc){
+</xsl:text>
+    <xsl:text>                page_desc[name].widget.element.style.display = "none";
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -842,31 +902,33 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    if(new_desc) {
+    <xsl:text>    /* add new subsribers if any */
 </xsl:text>
-    <xsl:text>        /* add new subsribers if any */
+    <xsl:text>    for(let widget of new_desc.widgets){
 </xsl:text>
-    <xsl:text>        for(let widget of new_desc.widgets){
+    <xsl:text>        for(let index of widget.indexes){
 </xsl:text>
-    <xsl:text>            for(let index of widget.indexes){
+    <xsl:text>            subscribers[index].add(widget);
 </xsl:text>
-    <xsl:text>                subscribers[index].add(widget);
+    <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
-    <xsl:text>                let cached_val = cache[index];
+    <xsl:text>            let cached_val = cache[index];
 </xsl:text>
-    <xsl:text>                if(cached_val != undefined)
+    <xsl:text>            if(cached_val != undefined)
 </xsl:text>
-    <xsl:text>                    dispatch_value_to_widget(widget, index, cached_val, cached_val);
-</xsl:text>
-    <xsl:text>            }
+    <xsl:text>                dispatch_value_to_widget(widget, index, cached_val, cached_val);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-</xsl:text>
-    <xsl:text>        // TODO dispatch current cache in newly opened page
-</xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    new_desc.widget.element.style.display = "inline";
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
 </xsl:text>
     <xsl:text>    current_page = page_name;
 </xsl:text>
