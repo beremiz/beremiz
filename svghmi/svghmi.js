@@ -220,28 +220,42 @@ var current_page;
 function switch_page(page_name) {
     let old_desc = page_desc[current_page];
     let new_desc = page_desc[page_name];
-    /* TODO hide / show widgets */
+
+    if(new_desc == undefined){
+        return;
+    }
 
     /* remove subsribers of previous page if any */
-    if(old_desc) for(let widget of old_desc.widgets){
-        for(let index of widget.indexes){
-            subscribers[index].delete(widget);
+    if(old_desc){
+        for(let widget of old_desc.widgets){
+            for(let index of widget.indexes){
+                subscribers[index].delete(widget);
+            }
+        }
+        old_desc.widget.element.style.display = "none";
+    } else {
+        /* initial page switch : set everybody hidden */
+        for(let name in page_desc){
+            if(name != new_desc){
+                page_desc[name].widget.element.style.display = "none";
+            }
         }
     }
 
-    if(new_desc) {
-        /* add new subsribers if any */
-        for(let widget of new_desc.widgets){
-            for(let index of widget.indexes){
-                subscribers[index].add(widget);
-                let cached_val = cache[index];
-                if(cached_val != undefined)
-                    dispatch_value_to_widget(widget, index, cached_val, cached_val);
-            }
+    /* add new subsribers if any */
+    for(let widget of new_desc.widgets){
+        for(let index of widget.indexes){
+            subscribers[index].add(widget);
+            /* dispatch current cache in newly opened page widgets */
+            let cached_val = cache[index];
+            if(cached_val != undefined)
+                dispatch_value_to_widget(widget, index, cached_val, cached_val);
         }
-        svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-        // TODO dispatch current cache in newly opened page
     }
+
+    new_desc.widget.element.style.display = "inline";
+
+    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_page = page_name;
 
     update_subscriptions();
