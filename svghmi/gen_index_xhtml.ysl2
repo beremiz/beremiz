@@ -72,6 +72,10 @@ istylesheet
     const "_indexed_hmitree" apply "$hmitree", mode="index";
     const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
+
+    // TODO globally discardable elements, not (used by | ancestor of) any page
+
+
     template "*", mode="index" {
         param "index", "0";
         param "parentpath", "''";
@@ -113,6 +117,7 @@ istylesheet
     template "@* | node()", mode="inline_svg" {
       /* use real xsl:copy instead copy-of alias from yslt.yml2 */
       xsl:copy apply "@* | node()", mode="inline_svg";
+      /* TODO filter out globally discardable elements */
     }
 
     /* replaces inkscape's height and width hints. forces fit */
@@ -133,32 +138,35 @@ istylesheet
         error > All units must be set to "px" in Inkscape's document properties
     }
 
-    /* clone unlinkink until widget for better perf with webkit */
-    svgtmpl "svg:use", mode="inline_svg" 
-    {
-        g{
-            attrib "style" > «@style»
-            attrib "transform" > «@transform»
-            /* keep same id and label in case it is a widget */
-            //attrib "inkscape:label","@inkscape:label";
-            attrib "id" > «@id»
-            const "targetid","substring-after(@xlink:href,'#')";
-            apply "//svg:*[@id = $targetid]", mode="unlink_clone";
-        }
-    }
-    svgtmpl "@*", mode="unlink_clone" xsl:copy;
-    svgtmpl "svg:*", mode="unlink_clone" {
-        choose {
-            when "@id = $hmi_elements/@id" {
-                use{
-                    attrib "xlink:href" > «concat('#',@id)»
-                }
-            }
-            otherwise {
-                xsl:copy apply "@* | node()", mode="unlink_clone";
-            }
-        }
-    }
+    
+    //// Commented out before implementing runtime DOM remove/append on page switch - would have side effect
+    ////
+    //// /* clone unlinkink until widget for better perf with webkit */
+    //// svgtmpl "svg:use", mode="inline_svg" 
+    //// {
+    ////     g{
+    ////         attrib "style" > «@style»
+    ////         attrib "transform" > «@transform»
+    ////         /* keep same id and label in case it is a widget */
+    ////         //attrib "inkscape:label","@inkscape:label";
+    ////         attrib "id" > «@id»
+    ////         const "targetid","substring-after(@xlink:href,'#')";
+    ////         apply "//svg:*[@id = $targetid]", mode="unlink_clone";
+    ////     }
+    //// }
+    //// svgtmpl "@*", mode="unlink_clone" xsl:copy;
+    //// svgtmpl "svg:*", mode="unlink_clone" {
+    ////     choose {
+    ////         when "@id = $hmi_elements/@id" {
+    ////             use{
+    ////                 attrib "xlink:href" > «concat('#',@id)»
+    ////             }
+    ////         }
+    ////         otherwise {
+    ////             xsl:copy apply "@* | node()", mode="unlink_clone";
+    ////         }
+    ////     }
+    //// }
 
     // template "svg:use/@style", mode="inline_svg"{
     //     attrib "style" > all:initial;
@@ -212,7 +220,7 @@ istylesheet
         }
     */
 
-    func:function name="func:parselabel" {
+    def "func:parselabel" {
         param "label";
         const "description", "substring-after($label,'HMI:')";
 
@@ -243,22 +251,49 @@ istylesheet
             }
         }
 
-        func:result select="exsl:node-set($ast)"
+        result "exsl:node-set($ast)";
     }
 
     // returns all directly or indirectly refered elements
-    func:function name="func:refered_elements" {
+    def "func:refered_elements" {
         param "elems";
         const "descend", "$elems/descendant-or-self::svg:*";
         const "clones", "$descend[self::svg:use]";
-        const "reals", "$descend[not(self::svg:use)]";
         const "originals", "//svg:*[concat('#',@id) = $clones/@xlink:href]";
         choose {
             when "$originals" 
-                func:result select="$reals | func:refered_elements($originals)";
+                result "$descend | func:refered_elements($originals)";
             otherwise
-                func:result select="$reals";
+                result "$descend";
         }
+    }
+
+    // return included geometry a given element
+    def "func:included_geometry" {
+        param "elt";
+        const "g", "$geometry[@Id = $elt/@id]"; 
+        result """$geometry[@Id != $elt/@id and
+                           @x >= $g/@x and @y >= $g/@y and 
+                           @x+@w <= $g/@x+$g/@w and @y+@h <= $g/@y+$g/@h]""";
+
+    }
+
+    def "func:sumarized_elements" {
+        param "elements";
+        const "short_list", "$elements[not(ancestor::*/@id = $elements/@id)]";
+        /* TODO exclude globally discardable elements from group fulfillment check */
+        const "filled_groups", "$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]";
+        const "groups_to_add", "$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]";
+        result "$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]";
+    }
+
+    def "func:all_related_elements" {
+        param "page";
+        const "page_included_geometry", "func:included_geometry($page)";
+        const "page_sub_elements", "func:refered_elements($page)";
+
+        const "page_included_elements", "//svg:*[@id = $page_included_geometry/@Id]";
+        result "$page_sub_elements | $page_included_elements";
     }
 
     function "scripts"
@@ -324,23 +359,31 @@ istylesheet
 
         | ]
         |
+
         | var page_desc = {
 
         foreach "$hmi_pages" {
             const "desc", "func:parselabel(@inkscape:label)/widget";
-            const "page", "."; 
-            const "p", "$hmi_geometry[@Id = $page/@id]"; 
-            const "page_ids","""$hmi_geometry[@Id != $page/@id and 
-                                @x >= $p/@x and @y >= $p/@y and 
-                                @x+@w <= $p/@x+$p/@w and @y+@h <= $p/@y+$p/@h]/@Id""";
-            const "page_sub_ids", "func:refered_elements($page)[@id = $hmi_elements/@id]/@id";
-            const "all_page_ids","$page_ids | $page_sub_ids[not(. = $page_ids)]"; 
+            const "page", ".";
+            const "p", "$geometry[@Id = $page/@id]"; 
+
+            const "page_all_elements", "func:all_related_elements($page)";
+
+            const "all_page_ids","$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id";
+
+            const "shorter_list", "func:sumarized_elements($page_all_elements)";
+
             |     "«$desc/arg[1]/@value»": {
             |         widget: hmi_widgets["«@id»"],
             |         bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
             |         widgets: [
             foreach "$all_page_ids" {
             |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
+            }
+            |         ]
+            |         required_elements: [
+            foreach "$shorter_list" {
+            |             "«@id»",
             }
             |         ]
             |     }`if "position()!=last()" > ,`

@@ -126,40 +126,6 @@
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
-    <g>
-      <xsl:attribute name="style">
-        <xsl:value-of select="@style"/>
-      </xsl:attribute>
-      <xsl:attribute name="transform">
-        <xsl:value-of select="@transform"/>
-      </xsl:attribute>
-      <xsl:attribute name="id">
-        <xsl:value-of select="@id"/>
-      </xsl:attribute>
-      <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
-      <xsl:apply-templates mode="unlink_clone" select="//svg:*[@id = $targetid]"/>
-    </g>
-  </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@*">
-    <xsl:copy/>
-  </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
-    <xsl:choose>
-      <xsl:when test="@id = $hmi_elements/@id">
-        <use>
-          <xsl:attribute name="xlink:href">
-            <xsl:value-of select="concat('#',@id)"/>
-          </xsl:attribute>
-        </use>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:copy>
-          <xsl:apply-templates mode="unlink_clone" select="@* | node()"/>
-        </xsl:copy>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -238,16 +204,34 @@
     <xsl:param name="elems"/>
     <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
     <xsl:variable name="clones" select="$descend[self::svg:use]"/>
-    <xsl:variable name="reals" select="$descend[not(self::svg:use)]"/>
     <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
     <xsl:choose>
       <xsl:when test="$originals">
-        <func:result select="$reals | func:refered_elements($originals)"/>
+        <func:result select="$descend | func:refered_elements($originals)"/>
       </xsl:when>
       <xsl:otherwise>
-        <func:result select="$reals"/>
+        <func:result select="$descend"/>
       </xsl:otherwise>
     </xsl:choose>
+  </func:function>
+  <func:function name="func:included_geometry">
+    <xsl:param name="elt"/>
+    <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
+    <func:result select="$geometry[@Id != $elt/@id and&#10;                           @x &gt;= $g/@x and @y &gt;= $g/@y and &#10;                           @x+@w &lt;= $g/@x+$g/@w and @y+@h &lt;= $g/@y+$g/@h]"/>
+  </func:function>
+  <func:function name="func:sumarized_elements">
+    <xsl:param name="elements"/>
+    <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
+    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]"/>
+    <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
+    <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
+  </func:function>
+  <func:function name="func:all_related_elements">
+    <xsl:param name="page"/>
+    <xsl:variable name="page_included_geometry" select="func:included_geometry($page)"/>
+    <xsl:variable name="page_sub_elements" select="func:refered_elements($page)"/>
+    <xsl:variable name="page_included_elements" select="//svg:*[@id = $page_included_geometry/@Id]"/>
+    <func:result select="$page_sub_elements | $page_included_elements"/>
   </func:function>
   <xsl:template name="scripts">
     <xsl:text>//(function(){
@@ -359,10 +343,10 @@
     <xsl:for-each select="$hmi_pages">
       <xsl:variable name="desc" select="func:parselabel(@inkscape:label)/widget"/>
       <xsl:variable name="page" select="."/>
-      <xsl:variable name="p" select="$hmi_geometry[@Id = $page/@id]"/>
-      <xsl:variable name="page_ids" select="$hmi_geometry[@Id != $page/@id and &#10;                                @x &gt;= $p/@x and @y &gt;= $p/@y and &#10;                                @x+@w &lt;= $p/@x+$p/@w and @y+@h &lt;= $p/@y+$p/@h]/@Id"/>
-      <xsl:variable name="page_sub_ids" select="func:refered_elements($page)[@id = $hmi_elements/@id]/@id"/>
-      <xsl:variable name="all_page_ids" select="$page_ids | $page_sub_ids[not(. = $page_ids)]"/>
+      <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
+      <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
+      <xsl:variable name="all_page_ids" select="$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id"/>
+      <xsl:variable name="shorter_list" select="func:sumarized_elements($page_all_elements)"/>
       <xsl:text>    "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
@@ -391,6 +375,16 @@
           <xsl:text>,</xsl:text>
         </xsl:if>
         <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>        ]
+</xsl:text>
+      <xsl:text>        required_elements: [
+</xsl:text>
+      <xsl:for-each select="$shorter_list">
+        <xsl:text>            "</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>",
 </xsl:text>
       </xsl:for-each>
       <xsl:text>        ]
@@ -852,6 +846,32 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>function prepare_svg() {
+</xsl:text>
+    <xsl:text>    /* set everybody hidden initially for better performance */
+</xsl:text>
+    <xsl:text>    for(let widget in hmi_widgets){
+</xsl:text>
+    <xsl:text>        if(widget.element != undefined)
+</xsl:text>
+    <xsl:text>            widget.element.style.display = "none";
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>        /*for(let name in page_desc){
+</xsl:text>
+    <xsl:text>            if(name != new_desc){
+</xsl:text>
+    <xsl:text>                page_desc[name].widget.element.style.display = "none";
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }*/
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function switch_page(page_name) {
 </xsl:text>
     <xsl:text>    let old_desc = page_desc[current_page];
@@ -862,17 +882,29 @@
 </xsl:text>
     <xsl:text>    if(new_desc == undefined){
 </xsl:text>
+    <xsl:text>        /* TODO LOG ERROR */
+</xsl:text>
     <xsl:text>        return;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    /* remove subsribers of previous page if any */
-</xsl:text>
     <xsl:text>    if(old_desc){
 </xsl:text>
     <xsl:text>        for(let widget of old_desc.widgets){
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            /* hide widget */
+</xsl:text>
+    <xsl:text>            if(widget.element != undefined)
+</xsl:text>
+    <xsl:text>                widget.element.style.display = "none";
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            /* remove subsribers */
 </xsl:text>
     <xsl:text>            for(let index of widget.indexes){
 </xsl:text>
@@ -884,27 +916,23 @@
 </xsl:text>
     <xsl:text>        old_desc.widget.element.style.display = "none";
 </xsl:text>
-    <xsl:text>    } else {
-</xsl:text>
-    <xsl:text>        /* initial page switch : set everybody hidden */
-</xsl:text>
-    <xsl:text>        for(let name in page_desc){
-</xsl:text>
-    <xsl:text>            if(name != new_desc){
-</xsl:text>
-    <xsl:text>                page_desc[name].widget.element.style.display = "none";
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    /* add new subsribers if any */
-</xsl:text>
     <xsl:text>    for(let widget of new_desc.widgets){
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        /* unhide widget */
+</xsl:text>
+    <xsl:text>        if(widget.element != undefined)
+</xsl:text>
+    <xsl:text>            widget.element.style.display = "inline";
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        /* add widget's subsribers */
 </xsl:text>
     <xsl:text>        for(let index of widget.indexes){
 </xsl:text>
@@ -951,6 +979,8 @@
     <xsl:text>    send_reset();
 </xsl:text>
     <xsl:text>    // show main page
+</xsl:text>
+    <xsl:text>    prepare_svg();
 </xsl:text>
     <xsl:text>    switch_page(default_page);
 </xsl:text>
