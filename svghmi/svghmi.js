@@ -217,33 +217,50 @@ function change_hmi_value(index, opstr) {
 
 var current_page;
 
+function prepare_svg() {
+    /* set everybody hidden initially for better performance */
+    for(let widget in hmi_widgets){
+        if(widget.element != undefined)
+            widget.element.style.display = "none";
+    }
+        /*for(let name in page_desc){
+            if(name != new_desc){
+                page_desc[name].widget.element.style.display = "none";
+            }
+        }*/
+};
+
 function switch_page(page_name) {
     let old_desc = page_desc[current_page];
     let new_desc = page_desc[page_name];
 
     if(new_desc == undefined){
+        /* TODO LOG ERROR */
         return;
     }
 
-    /* remove subsribers of previous page if any */
     if(old_desc){
         for(let widget of old_desc.widgets){
+
+            /* hide widget */
+            if(widget.element != undefined)
+                widget.element.style.display = "none";
+
+            /* remove subsribers */
             for(let index of widget.indexes){
                 subscribers[index].delete(widget);
             }
         }
         old_desc.widget.element.style.display = "none";
-    } else {
-        /* initial page switch : set everybody hidden */
-        for(let name in page_desc){
-            if(name != new_desc){
-                page_desc[name].widget.element.style.display = "none";
-            }
-        }
     }
 
-    /* add new subsribers if any */
     for(let widget of new_desc.widgets){
+
+        /* unhide widget */
+        if(widget.element != undefined)
+            widget.element.style.display = "inline";
+
+        /* add widget's subsribers */
         for(let index of widget.indexes){
             subscribers[index].add(widget);
             /* dispatch current cache in newly opened page widgets */
@@ -267,6 +284,7 @@ ws.onopen = function (evt) {
     init_widgets();
     send_reset();
     // show main page
+    prepare_svg();
     switch_page(default_page);
 };
 
