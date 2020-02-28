@@ -78,6 +78,7 @@ istylesheet
         param "elems";
         const "descend", "$elems/descendant-or-self::svg:*";
         const "clones", "$descend[self::svg:use]";
+        // TODO optimize using Xpath' id()
         const "originals", "//svg:*[concat('#',@id) = $clones/@xlink:href]";
         choose {
             when "$originals" 
@@ -98,16 +99,89 @@ istylesheet
         const "d1", "$a1 >= $b1";
         choose {
             when "not($d0) and $d1"
-                result "3"; /* a included in b */
+                // b contained in a
+                //   a0<b0 b1<a1
+                // a +--------+
+                // b    +--+
+                result "3";
             when "$d0 and not($d1)"
-                result "2"; /* b included in a */
-            when "$d0 = $d1 and $b0 < $a1"
-                result "1"; /* a and b are overlapped */
+                // a contained in b
+                //   b0<a0 a1<b1
+                // a    +--+
+                // b +--------+
+                result "2";
+            when "$d0 and $d1 and $a0 < $b1"
+                // a and b are overlapped 
+                //   b0<a0<b1<a1
+                // a    +-----+
+                // b +-----+
+                result "1";
+            when "not($d0) and not($d1) and $b0 < $a1"
+                // a and b are overlapped
+                //   a0<b0<a1<b1
+                // a +-----+
+                // b    +-----+
+                result "1";
             otherwise
                 result "0"; /* no intersection*/
         }
     }
 
+    // returns :
+    // 0 - no intersection
+    //            .-----.
+    //    .-----. |    b|
+    //    |     | |     |
+    //    |     | '-----'
+    //    |a    |
+    //    '-----'
+    //
+    // 1 - overlapping
+    //        .-----.
+    //    .---|--. b|
+    //    |   |  |  |
+    //    |   '-----'
+    //    |a     |
+    //    '------'
+    //
+    // 2 - overlapping 
+    //        .-----.    
+    //        |  a  |
+    //    .---|-----|---.
+    //    |   '-----'   |
+    //    | b           |
+    //    '-------------'
+    //
+    // 3 - overlapping 
+    //        .-----.    
+    //        |  b  |    
+    //    .---|-----|---.
+    //    |   '-----'   |
+    //    | a           |
+    //    '-------------'
+    //
+    // 4 - a contained in b
+    //    .-------------.
+    //    |   .-----.   |
+    //    |   |  a  |   |
+    //    |b  '-----'   |
+    //    '-------------'
+    //
+    // 6 - overlapping
+    //        .----.    
+    //        |   b|    
+    //    .---|----|---.
+    //    |a  |    |   |
+    //    '---|----|---'
+    //        '----'
+    //
+    // 9 - b contained in a
+    //    .-------------.
+    //    |   .-----.   |
+    //    |   |  b  |   |
+    //    |a  '-----'   |
+    //    '-------------'
+    //
     def "func:intersect" {
         param "a";
         param "b";
@@ -116,20 +190,26 @@ istylesheet
 
         choose{
             when "$x_intersect != 0"{
-                const "y_intersect", "func:intersect_1d($a/@y, $a/@y+$a/@w, $b/@y, $b/@y+$b/@w)";
+                const "y_intersect", "func:intersect_1d($a/@y, $a/@y+$a/@h, $b/@y, $b/@y+$b/@h)";
                 result "$x_intersect * $y_intersect";
             }
             otherwise result "0";
         }
     }
 
-    // return overlapping geometry a given element
+    // return overlapping geometry for a given element
+    // all intersercting element are returned
+    // except groups, that must be contained to be counted in
     def "func:overlapping_geometry" {
         param "elt";
-        /* only included groups are returned */
-        /* all other elemenst are returne when overlapping*/
         const "g", "$geometry[@Id = $elt/@id]"; 
-        result """$geometry[@Id != $elt/@id and func:intersect(., $g) = 4]""";
+        const "candidates", "$geometry[@Id != $elt/@id]";
+        result "$candidates[func:intersect($g, .) = 9]";
+/*
+        const "groups", "$candidates[@Id = //svg:g/@id]"; 
+        const "graphic", "$candidates[@Id != $groups/@Id]"; 
+        result "$groups[func:intersect($g, .) = 9] | $graphic[func:intersect($g, .) > 0]";
+        */
     }
 
     def "func:sumarized_elements" {
