@@ -100,18 +100,12 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <xsl:variable name="groups" select="/svg:svg | //svg:g"/>
   <func:function name="func:overlapping_geometry">
     <xsl:param name="elt"/>
     <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
-    <func:result select="$candidates[func:intersect($g, .) = 9]"/>
-  </func:function>
-  <func:function name="func:sumarized_elements">
-    <xsl:param name="elements"/>
-    <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
-    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]"/>
-    <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
-    <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
+    <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                              (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
   <func:function name="func:all_related_elements">
     <xsl:param name="page"/>
@@ -119,6 +113,26 @@
     <xsl:variable name="page_overlapping_elements" select="//svg:*[@id = $page_overlapping_geometry/@Id]"/>
     <xsl:variable name="page_sub_elements" select="func:refered_elements($page | $page_overlapping_elements)"/>
     <func:result select="$page_sub_elements"/>
+  </func:function>
+  <func:function name="func:required_elements">
+    <xsl:param name="pages"/>
+    <xsl:choose>
+      <xsl:when test="$pages">
+        <func:result select="func:all_related_elements($pages[1])&#10;                          | func:required_elements($pages[position()!=1])"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="/.."/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;           | func:required_elements($hmi_pages)/ancestor-or-self::svg:*"/>
+  <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
+  <func:function name="func:sumarized_elements">
+    <xsl:param name="elements"/>
+    <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
+    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;            not(descendant::*[&#10;                not(self::svg:g) and &#10;                not(@id = $discardable_elements/@id) and&#10;                not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;            ])]"/>
+    <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
+    <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
   </func:function>
   <func:function name="func:detachable_elements">
     <xsl:param name="pages"/>
@@ -132,9 +146,6 @@
     </xsl:choose>
   </func:function>
   <xsl:variable name="detachable_elements" select="func:detachable_elements($hmi_pages)"/>
-  <xsl:variable name="essential_elements" select="$detachable_elements | /svg:svg/svg:defs"/>
-  <xsl:variable name="required_elements" select="$essential_elements//svg:* | $essential_elements/ancestor-or-self::svg:*"/>
-  <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
     <xsl:param name="parentpath" select="''"/>
@@ -184,9 +195,11 @@
     </xsl:apply-templates>
   </xsl:template>
   <xsl:template mode="inline_svg" match="@* | node()">
-    <xsl:copy>
-      <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
-    </xsl:copy>
+    <xsl:if test="not(@id = $discardable_elements/@id)">
+      <xsl:copy>
+        <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
+      </xsl:copy>
+    </xsl:if>
   </xsl:template>
   <xsl:template mode="inline_svg" match="svg:svg/@width"/>
   <xsl:template mode="inline_svg" match="svg:svg/@height"/>
