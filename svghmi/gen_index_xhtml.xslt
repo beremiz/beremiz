@@ -75,7 +75,10 @@
       <xsl:when test="$d0 and not($d1)">
         <func:result select="2"/>
       </xsl:when>
-      <xsl:when test="$d0 = $d1 and $b0 &lt; $a1">
+      <xsl:when test="$d0 and $d1 and $a0 &lt; $b1">
+        <func:result select="1"/>
+      </xsl:when>
+      <xsl:when test="not($d0) and not($d1) and $b0 &lt; $a1">
         <func:result select="1"/>
       </xsl:when>
       <xsl:otherwise>
@@ -89,7 +92,7 @@
     <xsl:variable name="x_intersect" select="func:intersect_1d($a/@x, $a/@x+$a/@w, $b/@x, $b/@x+$b/@w)"/>
     <xsl:choose>
       <xsl:when test="$x_intersect != 0">
-        <xsl:variable name="y_intersect" select="func:intersect_1d($a/@y, $a/@y+$a/@w, $b/@y, $b/@y+$b/@w)"/>
+        <xsl:variable name="y_intersect" select="func:intersect_1d($a/@y, $a/@y+$a/@h, $b/@y, $b/@y+$b/@h)"/>
         <func:result select="$x_intersect * $y_intersect"/>
       </xsl:when>
       <xsl:otherwise>
@@ -100,7 +103,8 @@
   <func:function name="func:overlapping_geometry">
     <xsl:param name="elt"/>
     <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
-    <func:result select="$geometry[@Id != $elt/@id and func:intersect(., $g) = 4]"/>
+    <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
+    <func:result select="$candidates[func:intersect($g, .) = 9]"/>
   </func:function>
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
