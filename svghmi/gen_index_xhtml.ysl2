@@ -73,8 +73,98 @@ istylesheet
     const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
 
-    // TODO globally discardable elements, not (used by | ancestor of) any page
+    // returns all directly or indirectly refered elements
+    def "func:refered_elements" {
+        param "elems";
+        const "descend", "$elems/descendant-or-self::svg:*";
+        const "clones", "$descend[self::svg:use]";
+        const "originals", "//svg:*[concat('#',@id) = $clones/@xlink:href]";
+        choose {
+            when "$originals" 
+                result "$descend | func:refered_elements($originals)";
+            otherwise
+                result "$descend";
+        }
+    }
 
+    def "func:intersect_1d" {
+        /* it is assumed that a1 > a0 and b1 > b0 */
+        param "a0";
+        param "a1";
+        param "b0";
+        param "b1";
+
+        const "d0", "$a0 >= $b0";
+        const "d1", "$a1 >= $b1";
+        choose {
+            when "not($d0) and $d1"
+                result "3"; /* a included in b */
+            when "$d0 and not($d1)"
+                result "2"; /* b included in a */
+            when "$d0 = $d1 and $b0 < $a1"
+                result "1"; /* a and b are overlapped */
+            otherwise
+                result "0"; /* no intersection*/
+        }
+    }
+
+    def "func:intersect" {
+        param "a";
+        param "b";
+
+        const "x_intersect", "func:intersect_1d($a/@x, $a/@x+$a/@w, $b/@x, $b/@x+$b/@w)";
+
+        choose{
+            when "$x_intersect != 0"{
+                const "y_intersect", "func:intersect_1d($a/@y, $a/@y+$a/@w, $b/@y, $b/@y+$b/@w)";
+                result "$x_intersect * $y_intersect";
+            }
+            otherwise result "0";
+        }
+    }
+
+    // return overlapping geometry a given element
+    def "func:overlapping_geometry" {
+        param "elt";
+        /* only included groups are returned */
+        /* all other elemenst are returne when overlapping*/
+        const "g", "$geometry[@Id = $elt/@id]"; 
+        result """$geometry[@Id != $elt/@id and func:intersect(., $g) = 4]""";
+    }
+
+    def "func:sumarized_elements" {
+        param "elements";
+        const "short_list", "$elements[not(ancestor::*/@id = $elements/@id)]";
+        /* TODO exclude globally discardable elements from group fulfillment check */
+        const "filled_groups", "$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]";
+        const "groups_to_add", "$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]";
+        result "$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]";
+    }
+
+    def "func:all_related_elements" {
+        param "page";
+        const "page_overlapping_geometry", "func:overlapping_geometry($page)";
+        const "page_overlapping_elements", "//svg:*[@id = $page_overlapping_geometry/@Id]";
+        const "page_sub_elements", "func:refered_elements($page | $page_overlapping_elements)";
+        result "$page_sub_elements";
+    }
+
+    def "func:detachable_elements" {
+        param "pages"; 
+        choose{
+            when "$pages"{
+                result """func:sumarized_elements(func:all_related_elements($pages[1]))
+                          | func:detachable_elements($pages[position()!=1])""";
+            }otherwise{
+                result "/..";
+            }
+        }
+    }
+    
+    const "detachable_elements", "func:detachable_elements($hmi_pages)";
+    const "essential_elements", "$detachable_elements | /svg:svg/svg:defs";
+    const "required_elements", "$essential_elements//svg:* | $essential_elements/ancestor-or-self::svg:*";
+    const "discardable_elements", "//svg:*[not(@id = $required_elements/@id)]";
 
     template "*", mode="index" {
         param "index", "0";
@@ -193,6 +283,18 @@ istylesheet
         comment {
             apply "$indexed_hmitree", mode="testtree";
         }
+        comment {
+            | Detachable :
+            foreach "$detachable_elements"{
+                | «@id»
+            }
+        }
+        comment {
+            | Discardable :
+            foreach "$discardable_elements"{
+                | «@id»
+            }
+        }
         /**/
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"
@@ -252,48 +354,6 @@ istylesheet
         }
 
         result "exsl:node-set($ast)";
-    }
-
-    // returns all directly or indirectly refered elements
-    def "func:refered_elements" {
-        param "elems";
-        const "descend", "$elems/descendant-or-self::svg:*";
-        const "clones", "$descend[self::svg:use]";
-        const "originals", "//svg:*[concat('#',@id) = $clones/@xlink:href]";
-        choose {
-            when "$originals" 
-                result "$descend | func:refered_elements($originals)";
-            otherwise
-                result "$descend";
-        }
-    }
-
-    // return included geometry a given element
-    def "func:included_geometry" {
-        param "elt";
-        const "g", "$geometry[@Id = $elt/@id]"; 
-        result """$geometry[@Id != $elt/@id and
-                           @x >= $g/@x and @y >= $g/@y and 
-                           @x+@w <= $g/@x+$g/@w and @y+@h <= $g/@y+$g/@h]""";
-
-    }
-
-    def "func:sumarized_elements" {
-        param "elements";
-        const "short_list", "$elements[not(ancestor::*/@id = $elements/@id)]";
-        /* TODO exclude globally discardable elements from group fulfillment check */
-        const "filled_groups", "$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]";
-        const "groups_to_add", "$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]";
-        result "$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]";
-    }
-
-    def "func:all_related_elements" {
-        param "page";
-        const "page_included_geometry", "func:included_geometry($page)";
-        const "page_sub_elements", "func:refered_elements($page)";
-
-        const "page_included_elements", "//svg:*[@id = $page_included_geometry/@Id]";
-        result "$page_sub_elements | $page_included_elements";
     }
 
     function "scripts"
@@ -380,7 +440,7 @@ istylesheet
             foreach "$all_page_ids" {
             |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
             }
-            |         ]
+            |         ],
             |         required_elements: [
             foreach "$shorter_list" {
             |             "«@id»",
