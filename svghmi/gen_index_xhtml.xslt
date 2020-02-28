@@ -47,6 +47,90 @@
     <xsl:apply-templates mode="index" select="$hmitree"/>
   </xsl:variable>
   <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
+  <func:function name="func:refered_elements">
+    <xsl:param name="elems"/>
+    <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
+    <xsl:variable name="clones" select="$descend[self::svg:use]"/>
+    <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
+    <xsl:choose>
+      <xsl:when test="$originals">
+        <func:result select="$descend | func:refered_elements($originals)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$descend"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <func:function name="func:intersect_1d">
+    <xsl:param name="a0"/>
+    <xsl:param name="a1"/>
+    <xsl:param name="b0"/>
+    <xsl:param name="b1"/>
+    <xsl:variable name="d0" select="$a0 &gt;= $b0"/>
+    <xsl:variable name="d1" select="$a1 &gt;= $b1"/>
+    <xsl:choose>
+      <xsl:when test="not($d0) and $d1">
+        <func:result select="3"/>
+      </xsl:when>
+      <xsl:when test="$d0 and not($d1)">
+        <func:result select="2"/>
+      </xsl:when>
+      <xsl:when test="$d0 = $d1 and $b0 &lt; $a1">
+        <func:result select="1"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="0"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <func:function name="func:intersect">
+    <xsl:param name="a"/>
+    <xsl:param name="b"/>
+    <xsl:variable name="x_intersect" select="func:intersect_1d($a/@x, $a/@x+$a/@w, $b/@x, $b/@x+$b/@w)"/>
+    <xsl:choose>
+      <xsl:when test="$x_intersect != 0">
+        <xsl:variable name="y_intersect" select="func:intersect_1d($a/@y, $a/@y+$a/@w, $b/@y, $b/@y+$b/@w)"/>
+        <func:result select="$x_intersect * $y_intersect"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="0"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <func:function name="func:overlapping_geometry">
+    <xsl:param name="elt"/>
+    <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
+    <func:result select="$geometry[@Id != $elt/@id and func:intersect(., $g) = 4]"/>
+  </func:function>
+  <func:function name="func:sumarized_elements">
+    <xsl:param name="elements"/>
+    <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
+    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]"/>
+    <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
+    <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
+  </func:function>
+  <func:function name="func:all_related_elements">
+    <xsl:param name="page"/>
+    <xsl:variable name="page_overlapping_geometry" select="func:overlapping_geometry($page)"/>
+    <xsl:variable name="page_overlapping_elements" select="//svg:*[@id = $page_overlapping_geometry/@Id]"/>
+    <xsl:variable name="page_sub_elements" select="func:refered_elements($page | $page_overlapping_elements)"/>
+    <func:result select="$page_sub_elements"/>
+  </func:function>
+  <func:function name="func:detachable_elements">
+    <xsl:param name="pages"/>
+    <xsl:choose>
+      <xsl:when test="$pages">
+        <func:result select="func:sumarized_elements(func:all_related_elements($pages[1]))&#10;                          | func:detachable_elements($pages[position()!=1])"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="/.."/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <xsl:variable name="detachable_elements" select="func:detachable_elements($hmi_pages)"/>
+  <xsl:variable name="essential_elements" select="$detachable_elements | /svg:svg/svg:defs"/>
+  <xsl:variable name="required_elements" select="$essential_elements//svg:* | $essential_elements/ancestor-or-self::svg:*"/>
+  <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
     <xsl:param name="parentpath" select="''"/>
@@ -139,6 +223,24 @@
     <xsl:comment>
       <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
     </xsl:comment>
+    <xsl:comment>
+      <xsl:text>Detachable :
+</xsl:text>
+      <xsl:for-each select="$detachable_elements">
+        <xsl:value-of select="@id"/>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+    </xsl:comment>
+    <xsl:comment>
+      <xsl:text>Discardable :
+</xsl:text>
+      <xsl:for-each select="$discardable_elements">
+        <xsl:value-of select="@id"/>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+    </xsl:comment>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
@@ -199,39 +301,6 @@
       </xsl:if>
     </xsl:variable>
     <func:result select="exsl:node-set($ast)"/>
-  </func:function>
-  <func:function name="func:refered_elements">
-    <xsl:param name="elems"/>
-    <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
-    <xsl:variable name="clones" select="$descend[self::svg:use]"/>
-    <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
-    <xsl:choose>
-      <xsl:when test="$originals">
-        <func:result select="$descend | func:refered_elements($originals)"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <func:result select="$descend"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </func:function>
-  <func:function name="func:included_geometry">
-    <xsl:param name="elt"/>
-    <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
-    <func:result select="$geometry[@Id != $elt/@id and&#10;                           @x &gt;= $g/@x and @y &gt;= $g/@y and &#10;                           @x+@w &lt;= $g/@x+$g/@w and @y+@h &lt;= $g/@y+$g/@h]"/>
-  </func:function>
-  <func:function name="func:sumarized_elements">
-    <xsl:param name="elements"/>
-    <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
-    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[not(descendant::*[not(self::svg:g)][not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)])]"/>
-    <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
-    <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
-  </func:function>
-  <func:function name="func:all_related_elements">
-    <xsl:param name="page"/>
-    <xsl:variable name="page_included_geometry" select="func:included_geometry($page)"/>
-    <xsl:variable name="page_sub_elements" select="func:refered_elements($page)"/>
-    <xsl:variable name="page_included_elements" select="//svg:*[@id = $page_included_geometry/@Id]"/>
-    <func:result select="$page_sub_elements | $page_included_elements"/>
   </func:function>
   <xsl:template name="scripts">
     <xsl:text>//(function(){
@@ -377,7 +446,7 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>        ]
+      <xsl:text>        ],
 </xsl:text>
       <xsl:text>        required_elements: [
 </xsl:text>
@@ -846,27 +915,33 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>// function prepare_svg() {
+</xsl:text>
+    <xsl:text>//     /* set everybody hidden initially for better performance */
+</xsl:text>
+    <xsl:text>//     for(let [elt,elt_parent] in detachable_elements){
+</xsl:text>
+    <xsl:text>//         elt_parent.removeChild(elt)
+</xsl:text>
+    <xsl:text>//     }
+</xsl:text>
+    <xsl:text>// };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function prepare_svg() {
 </xsl:text>
     <xsl:text>    /* set everybody hidden initially for better performance */
 </xsl:text>
-    <xsl:text>    for(let widget in hmi_widgets){
+    <xsl:text>    for(let widget_id in hmi_widgets){
+</xsl:text>
+    <xsl:text>        let widget = hmi_widgets[widget_id];
 </xsl:text>
     <xsl:text>        if(widget.element != undefined)
 </xsl:text>
     <xsl:text>            widget.element.style.display = "none";
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>        /*for(let name in page_desc){
-</xsl:text>
-    <xsl:text>            if(name != new_desc){
-</xsl:text>
-    <xsl:text>                page_desc[name].widget.element.style.display = "none";
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }*/
 </xsl:text>
     <xsl:text>};
 </xsl:text>
