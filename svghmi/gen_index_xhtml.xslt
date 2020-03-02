@@ -489,10 +489,12 @@
       </xsl:for-each>
       <xsl:text>        ],
 </xsl:text>
-      <xsl:text>        required_detachables: [
+      <xsl:text>        required_detachables: {
 </xsl:text>
       <xsl:for-each select="$required_detachables">
-        <xsl:text>            detachable_elements["</xsl:text>
+        <xsl:text>            "</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>": detachable_elements["</xsl:text>
         <xsl:value-of select="@id"/>
         <xsl:text>"]</xsl:text>
         <xsl:if test="position()!=last()">
@@ -501,7 +503,7 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>        ]
+      <xsl:text>        }
 </xsl:text>
       <xsl:text>    }</xsl:text>
       <xsl:if test="position()!=last()">

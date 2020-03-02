@@ -549,11 +549,11 @@ istylesheet
             |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
             }
             |         ],
-            |         required_detachables: [
+            |         required_detachables: {
             foreach "$required_detachables" {
-            |             detachable_elements["«@id»"]`if "position()!=last()" > ,`
+            |             "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
             }
-            |         ]
+            |         }
             |     }`if "position()!=last()" > ,`
         }
         | }
