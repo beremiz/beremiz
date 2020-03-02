@@ -459,6 +459,8 @@ istylesheet
     {
         | //(function(){
         |
+        | id = idstr => document.getElementById(idstr);
+        |
         | var hmi_hash = [«$hmitree/@hash»]; 
 
         /* TODO re-enable
@@ -502,7 +504,7 @@ istylesheet
                 }
             }
             |     ],
-            |     element: document.getElementById("«@id»"),
+            |     element: id("«@id»"),
             apply "$widget", mode="widget_defs" with "hmi_element",".";
             | }`if "position()!=last()" > ,`
         }
@@ -519,6 +521,13 @@ istylesheet
         | ]
         |
 
+        | var detachable_elements = {
+        foreach "$detachable_elements"{
+        |     "«@id»" : {element: id("«@id»"), parent:id("«../@id»")}`if "position()!=last()" > ,`
+        }
+        | }
+
+        |
         | var page_desc = {
 
         foreach "$hmi_pages" {
@@ -530,7 +539,7 @@ istylesheet
 
             const "all_page_ids","$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id";
 
-            const "shorter_list", "func:sumarized_elements($page_all_elements)";
+            const "required_detachables", "func:sumarized_elements($page_all_elements)";
 
             |     "«$desc/arg[1]/@value»": {
             |         widget: hmi_widgets["«@id»"],
@@ -540,9 +549,9 @@ istylesheet
             |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
             }
             |         ],
-            |         required_elements: [
-            foreach "$shorter_list" {
-            |             "«@id»",
+            |         required_detachables: [
+            foreach "$required_detachables" {
+            |             detachable_elements["«@id»"]`if "position()!=last()" > ,`
             }
             |         ]
             |     }`if "position()!=last()" > ,`
@@ -551,7 +560,7 @@ istylesheet
 
         |
         | var default_page = "«$default_page»";
-        | var svg_root = document.getElementById("«$svg_root_id»");
+        | var svg_root = id("«$svg_root_id»");
         include text svghmi.js
         | //})();
     }
@@ -620,7 +629,7 @@ istylesheet
                     // otherwise produce nothing 
                 }
                 otherwise {
-                    | «$name»_elt: document.getElementById("«$elt_id»"),
+                    | «$name»_elt: id("«$elt_id»"),
                 }
             }
         }
@@ -693,12 +702,12 @@ istylesheet
         const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
         | init: function() {
         if "$edit_elt_id" {
-        |     document.getElementById("«$edit_elt_id»").addEventListener(
+        |     id("«$edit_elt_id»").addEventListener(
         |         "click", 
         |         evt => alert('XXX TODO : Edit value'));
         }
         foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
-        |     document.getElementById("«@id»").addEventListener(
+        |     id("«@id»").addEventListener(
         |         "click", 
         |         evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
         |                 this.value_elt.textContent = String(new_val);});
@@ -731,7 +740,7 @@ istylesheet
         foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
             const "literal", "regexp:match(@inkscape:label,$regex)[2]";
         |     {
-        |         elt:document.getElementById("«@id»"),
+        |         elt:id("«@id»"),
         |         style:"«@style»",
         |         value:«$literal»
         |     }`if "position()!=last()" > ,`
