@@ -484,13 +484,13 @@ istylesheet
         | var hmi_widgets = {
         foreach "$hmi_elements" {
             const "widget", "func:parselabel(@inkscape:label)/widget";
-            | "«@id»": {
-            |     type: "«$widget/@type»",
-            |     args: [
+        |     "«@id»": {
+        |         type: "«$widget/@type»",
+        |         args: [
             foreach "$widget/arg"
-            |         "«@value»"`if "position()!=last()" > ,`
-            |     ],
-            |     indexes: [
+        |             "«@value»"`if "position()!=last()" > ,`
+        |         ],
+        |         indexes: [
             foreach "$widget/path" {
                 const "hmipath","@value";
                 const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
@@ -499,14 +499,14 @@ istylesheet
                         warning > No match for path "«$hmipath»" in HMI tree
                     }
                     otherwise {
-            |         «$hmitree_match/@index»`if "position()!=last()" > ,`
+        |             «$hmitree_match/@index»`if "position()!=last()" > ,`
                     }
                 }
             }
-            |     ],
-            |     element: id("«@id»"),
+        |         ],
+        |         element: id("«@id»"),
             apply "$widget", mode="widget_defs" with "hmi_element",".";
-            | }`if "position()!=last()" > ,`
+        |     }`if "position()!=last()" > ,`
         }
         | }
         |
@@ -515,7 +515,7 @@ istylesheet
         | var hmitree_types = [
 
         foreach "$indexed_hmitree/*" {
-            | /* «@index»  «@hmipath» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
+        |     /* «@index»  «@hmipath» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
         }
 
         | ]
