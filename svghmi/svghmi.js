@@ -218,16 +218,10 @@ function change_hmi_value(index, opstr) {
 var current_page;
 
 function prepare_svg() {
-    /* set everybody hidden initially for better performance */
-    for(let widget in hmi_widgets){
-        if(widget.element != undefined)
-            widget.element.style.display = "none";
+    for(let eltid in detachable_elements){
+        let [element,parent] = detachable_elements[eltid];
+        parent.removeChild(element);
     }
-        /*for(let name in page_desc){
-            if(name != new_desc){
-                page_desc[name].widget.element.style.display = "none";
-            }
-        }*/
 };
 
 function switch_page(page_name) {
@@ -241,25 +235,31 @@ function switch_page(page_name) {
 
     if(old_desc){
         for(let widget of old_desc.widgets){
-
-            /* hide widget */
-            if(widget.element != undefined)
-                widget.element.style.display = "none";
-
             /* remove subsribers */
             for(let index of widget.indexes){
                 subscribers[index].delete(widget);
             }
         }
-        old_desc.widget.element.style.display = "none";
+        for(let eltid in old_desc.required_detachables){
+            if(!(eltid in new_desc.required_detachables)){
+                let [element, parent] = old_desc.required_detachables[eltid];
+                parent.removeChild(element);
+            }
+        }
+        for(let eltid in new_desc.required_detachables){
+            if(!(eltid in old_desc.required_detachables)){
+                let [element, parent] = new_desc.required_detachables[eltid];
+                parent.appendChild(element);
+            }
+        }
+    }else{
+        for(let eltid in new_desc.required_detachables){
+            let [element, parent] = new_desc.required_detachables[eltid];
+            parent.appendChild(element);
+        }
     }
 
     for(let widget of new_desc.widgets){
-
-        /* unhide widget */
-        if(widget.element != undefined)
-            widget.element.style.display = "inline";
-
         /* add widget's subsribers */
         for(let index of widget.indexes){
             subscribers[index].add(widget);
@@ -269,8 +269,6 @@ function switch_page(page_name) {
                 dispatch_value_to_widget(widget, index, cached_val, cached_val);
         }
     }
-
-    new_desc.widget.element.style.display = "inline";
 
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_page = page_name;

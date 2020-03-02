@@ -336,18 +336,18 @@
 </xsl:text>
     <xsl:for-each select="$hmi_elements">
       <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
-      <xsl:text>"</xsl:text>
+      <xsl:text>    "</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>": {
 </xsl:text>
-      <xsl:text>    type: "</xsl:text>
+      <xsl:text>        type: "</xsl:text>
       <xsl:value-of select="$widget/@type"/>
       <xsl:text>",
 </xsl:text>
-      <xsl:text>    args: [
+      <xsl:text>        args: [
 </xsl:text>
       <xsl:for-each select="$widget/arg">
-        <xsl:text>        "</xsl:text>
+        <xsl:text>            "</xsl:text>
         <xsl:value-of select="@value"/>
         <xsl:text>"</xsl:text>
         <xsl:if test="position()!=last()">
@@ -356,9 +356,9 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>    ],
+      <xsl:text>        ],
 </xsl:text>
-      <xsl:text>    indexes: [
+      <xsl:text>        indexes: [
 </xsl:text>
       <xsl:for-each select="$widget/path">
         <xsl:variable name="hmipath" select="@value"/>
@@ -372,7 +372,7 @@
             </xsl:message>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:text>        </xsl:text>
+            <xsl:text>            </xsl:text>
             <xsl:value-of select="$hmitree_match/@index"/>
             <xsl:if test="position()!=last()">
               <xsl:text>,</xsl:text>
@@ -382,16 +382,16 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:text>    ],
+      <xsl:text>        ],
 </xsl:text>
-      <xsl:text>    element: id("</xsl:text>
+      <xsl:text>        element: id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
       <xsl:apply-templates mode="widget_defs" select="$widget">
         <xsl:with-param name="hmi_element" select="."/>
       </xsl:apply-templates>
-      <xsl:text>}</xsl:text>
+      <xsl:text>    }</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -411,7 +411,7 @@
     <xsl:text>var hmitree_types = [
 </xsl:text>
     <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:text>/* </xsl:text>
+      <xsl:text>    /* </xsl:text>
       <xsl:value-of select="@index"/>
       <xsl:text>  </xsl:text>
       <xsl:value-of select="@hmipath"/>
@@ -433,11 +433,11 @@
     <xsl:for-each select="$detachable_elements">
       <xsl:text>    "</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>" : {element: id("</xsl:text>
+      <xsl:text>":[id("</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>"), parent:id("</xsl:text>
+      <xsl:text>"), id("</xsl:text>
       <xsl:value-of select="../@id"/>
-      <xsl:text>")}</xsl:text>
+      <xsl:text>")]</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -964,25 +964,13 @@
 </xsl:text>
     <xsl:text>function prepare_svg() {
 </xsl:text>
-    <xsl:text>    /* set everybody hidden initially for better performance */
+    <xsl:text>    for(let eltid in detachable_elements){
 </xsl:text>
-    <xsl:text>    for(let widget in hmi_widgets){
+    <xsl:text>        let [element,parent] = detachable_elements[eltid];
 </xsl:text>
-    <xsl:text>        if(widget.element != undefined)
-</xsl:text>
-    <xsl:text>            widget.element.style.display = "none";
+    <xsl:text>        parent.removeChild(element);
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>        /*for(let name in page_desc){
-</xsl:text>
-    <xsl:text>            if(name != new_desc){
-</xsl:text>
-    <xsl:text>                page_desc[name].widget.element.style.display = "none";
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }*/
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -1010,16 +998,6 @@
 </xsl:text>
     <xsl:text>        for(let widget of old_desc.widgets){
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            /* hide widget */
-</xsl:text>
-    <xsl:text>            if(widget.element != undefined)
-</xsl:text>
-    <xsl:text>                widget.element.style.display = "none";
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>            /* remove subsribers */
 </xsl:text>
     <xsl:text>            for(let index of widget.indexes){
@@ -1030,23 +1008,45 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        old_desc.widget.element.style.display = "none";
+    <xsl:text>        for(let eltid in old_desc.required_detachables){
+</xsl:text>
+    <xsl:text>            if(!(eltid in new_desc.required_detachables)){
+</xsl:text>
+    <xsl:text>                let [element, parent] = old_desc.required_detachables[eltid];
+</xsl:text>
+    <xsl:text>                parent.removeChild(element);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        for(let eltid in new_desc.required_detachables){
+</xsl:text>
+    <xsl:text>            if(!(eltid in old_desc.required_detachables)){
+</xsl:text>
+    <xsl:text>                let [element, parent] = new_desc.required_detachables[eltid];
+</xsl:text>
+    <xsl:text>                parent.appendChild(element);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }else{
+</xsl:text>
+    <xsl:text>        for(let eltid in new_desc.required_detachables){
+</xsl:text>
+    <xsl:text>            let [element, parent] = new_desc.required_detachables[eltid];
+</xsl:text>
+    <xsl:text>            parent.appendChild(element);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    for(let widget of new_desc.widgets){
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        /* unhide widget */
-</xsl:text>
-    <xsl:text>        if(widget.element != undefined)
-</xsl:text>
-    <xsl:text>            widget.element.style.display = "inline";
-</xsl:text>
-    <xsl:text>
 </xsl:text>
     <xsl:text>        /* add widget's subsribers */
 </xsl:text>
@@ -1065,10 +1065,6 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    new_desc.widget.element.style.display = "inline";
 </xsl:text>
     <xsl:text>
 </xsl:text>

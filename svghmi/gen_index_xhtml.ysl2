@@ -523,7 +523,7 @@ istylesheet
 
         | var detachable_elements = {
         foreach "$detachable_elements"{
-        |     "«@id»" : {element: id("«@id»"), parent:id("«../@id»")}`if "position()!=last()" > ,`
+        |     "«@id»":[id("«@id»"), id("«../@id»")]`if "position()!=last()" > ,`
         }
         | }
 
