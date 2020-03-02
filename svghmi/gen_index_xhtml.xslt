@@ -324,6 +324,10 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>id = idstr =&gt; document.getElementById(idstr);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var hmi_hash = [</xsl:text>
     <xsl:value-of select="$hmitree/@hash"/>
     <xsl:text>]; 
@@ -380,7 +384,7 @@
       </xsl:for-each>
       <xsl:text>    ],
 </xsl:text>
-      <xsl:text>    element: document.getElementById("</xsl:text>
+      <xsl:text>    element: id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
@@ -424,6 +428,26 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var detachable_elements = {
+</xsl:text>
+    <xsl:for-each select="$detachable_elements">
+      <xsl:text>    "</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>" : {element: id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"), parent:id("</xsl:text>
+      <xsl:value-of select="../@id"/>
+      <xsl:text>")}</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var page_desc = {
 </xsl:text>
     <xsl:for-each select="$hmi_pages">
@@ -432,7 +456,7 @@
       <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
       <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
       <xsl:variable name="all_page_ids" select="$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id"/>
-      <xsl:variable name="shorter_list" select="func:sumarized_elements($page_all_elements)"/>
+      <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)"/>
       <xsl:text>    "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
@@ -465,12 +489,16 @@
       </xsl:for-each>
       <xsl:text>        ],
 </xsl:text>
-      <xsl:text>        required_elements: [
+      <xsl:text>        required_detachables: [
 </xsl:text>
-      <xsl:for-each select="$shorter_list">
-        <xsl:text>            "</xsl:text>
+      <xsl:for-each select="$required_detachables">
+        <xsl:text>            detachable_elements["</xsl:text>
         <xsl:value-of select="@id"/>
-        <xsl:text>",
+        <xsl:text>"]</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
 </xsl:text>
       </xsl:for-each>
       <xsl:text>        ]
@@ -490,7 +518,7 @@
     <xsl:value-of select="$default_page"/>
     <xsl:text>";
 </xsl:text>
-    <xsl:text>var svg_root = document.getElementById("</xsl:text>
+    <xsl:text>var svg_root = id("</xsl:text>
     <xsl:value-of select="$svg_root_id"/>
     <xsl:text>");
 </xsl:text>
@@ -932,33 +960,27 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>// function prepare_svg() {
-</xsl:text>
-    <xsl:text>//     /* set everybody hidden initially for better performance */
-</xsl:text>
-    <xsl:text>//     for(let [elt,elt_parent] in detachable_elements){
-</xsl:text>
-    <xsl:text>//         elt_parent.removeChild(elt)
-</xsl:text>
-    <xsl:text>//     }
-</xsl:text>
-    <xsl:text>// };
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>function prepare_svg() {
 </xsl:text>
     <xsl:text>    /* set everybody hidden initially for better performance */
 </xsl:text>
-    <xsl:text>    for(let widget_id in hmi_widgets){
-</xsl:text>
-    <xsl:text>        let widget = hmi_widgets[widget_id];
+    <xsl:text>    for(let widget in hmi_widgets){
 </xsl:text>
     <xsl:text>        if(widget.element != undefined)
 </xsl:text>
     <xsl:text>            widget.element.style.display = "none";
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>        /*for(let name in page_desc){
+</xsl:text>
+    <xsl:text>            if(name != new_desc){
+</xsl:text>
+    <xsl:text>                page_desc[name].widget.element.style.display = "none";
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }*/
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -1154,7 +1176,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:value-of select="$name"/>
-          <xsl:text>_elt: document.getElementById("</xsl:text>
+          <xsl:text>_elt: id("</xsl:text>
           <xsl:value-of select="$elt_id"/>
           <xsl:text>"),
 </xsl:text>
@@ -1260,7 +1282,7 @@
     <xsl:text>init: function() {
 </xsl:text>
     <xsl:if test="$edit_elt_id">
-      <xsl:text>    document.getElementById("</xsl:text>
+      <xsl:text>    id("</xsl:text>
       <xsl:value-of select="$edit_elt_id"/>
       <xsl:text>").addEventListener(
 </xsl:text>
@@ -1270,7 +1292,7 @@
 </xsl:text>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
-      <xsl:text>    document.getElementById("</xsl:text>
+      <xsl:text>    id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>").addEventListener(
 </xsl:text>
@@ -1326,7 +1348,7 @@
       <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
       <xsl:text>    {
 </xsl:text>
-      <xsl:text>        elt:document.getElementById("</xsl:text>
+      <xsl:text>        elt:id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
