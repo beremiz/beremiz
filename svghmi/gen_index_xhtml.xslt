@@ -261,9 +261,13 @@
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
-        <xsl:apply-templates mode="inline_svg" select="svg:svg"/>
+        <xsl:variable name="_result_svg">
+          <xsl:apply-templates mode="inline_svg" select="svg:svg"/>
+        </xsl:variable>
+        <xsl:copy-of select="$_result_svg"/>
+        <xsl:variable name="result_svg" select="exsl:node-set($_result_svg)"/>
         <script>
-          <xsl:call-template name="scripts"/>
+          <xsl:apply-templates mode="scripts" select="svg:svg"/>
         </script>
       </body>
     </html>
@@ -319,7 +323,7 @@
     </xsl:variable>
     <func:result select="exsl:node-set($ast)"/>
   </func:function>
-  <xsl:template name="scripts">
+  <xsl:template mode="scripts" match="svg:svg">
     <xsl:text>//(function(){
 </xsl:text>
     <xsl:text>
@@ -336,18 +340,18 @@
 </xsl:text>
     <xsl:for-each select="$hmi_elements">
       <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
-      <xsl:text>    "</xsl:text>
+      <xsl:text>  "</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>": {
 </xsl:text>
-      <xsl:text>        type: "</xsl:text>
+      <xsl:text>    type: "</xsl:text>
       <xsl:value-of select="$widget/@type"/>
       <xsl:text>",
 </xsl:text>
-      <xsl:text>        args: [
+      <xsl:text>    args: [
 </xsl:text>
       <xsl:for-each select="$widget/arg">
-        <xsl:text>            "</xsl:text>
+        <xsl:text>        "</xsl:text>
         <xsl:value-of select="@value"/>
         <xsl:text>"</xsl:text>
         <xsl:if test="position()!=last()">
@@ -356,9 +360,9 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>        ],
+      <xsl:text>    ],
 </xsl:text>
-      <xsl:text>        indexes: [
+      <xsl:text>    indexes: [
 </xsl:text>
       <xsl:for-each select="$widget/path">
         <xsl:variable name="hmipath" select="@value"/>
@@ -457,15 +461,15 @@
       <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
       <xsl:variable name="all_page_ids" select="$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id"/>
       <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)"/>
-      <xsl:text>    "</xsl:text>
+      <xsl:text>  "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
 </xsl:text>
-      <xsl:text>        widget: hmi_widgets["</xsl:text>
+      <xsl:text>    widget: hmi_widgets["</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"],
 </xsl:text>
-      <xsl:text>        bbox: [</xsl:text>
+      <xsl:text>    bbox: [</xsl:text>
       <xsl:value-of select="$p/@x"/>
       <xsl:text>, </xsl:text>
       <xsl:value-of select="$p/@y"/>
@@ -475,10 +479,10 @@
       <xsl:value-of select="$p/@h"/>
       <xsl:text>],
 </xsl:text>
-      <xsl:text>        widgets: [
+      <xsl:text>    widgets: [
 </xsl:text>
       <xsl:for-each select="$all_page_ids">
-        <xsl:text>            hmi_widgets["</xsl:text>
+        <xsl:text>        hmi_widgets["</xsl:text>
         <xsl:value-of select="."/>
         <xsl:text>"]</xsl:text>
         <xsl:if test="position()!=last()">
@@ -487,12 +491,12 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>        ],
+      <xsl:text>    ],
 </xsl:text>
-      <xsl:text>        required_detachables: {
+      <xsl:text>    required_detachables: {
 </xsl:text>
       <xsl:for-each select="$required_detachables">
-        <xsl:text>            "</xsl:text>
+        <xsl:text>        "</xsl:text>
         <xsl:value-of select="@id"/>
         <xsl:text>": detachable_elements["</xsl:text>
         <xsl:value-of select="@id"/>
@@ -503,9 +507,9 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>        }
+      <xsl:text>    }
 </xsl:text>
-      <xsl:text>    }</xsl:text>
+      <xsl:text>  }</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -1173,6 +1177,7 @@
           </xsl:if>
         </xsl:when>
         <xsl:otherwise>
+          <xsl:text>    </xsl:text>
           <xsl:value-of select="$name"/>
           <xsl:text>_elt: id("</xsl:text>
           <xsl:value-of select="$elt_id"/>
@@ -1184,13 +1189,13 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>frequency: 5,
+    <xsl:text>    frequency: 5,
 </xsl:text>
-    <xsl:text>dispatch: function(value) {
+    <xsl:text>    dispatch: function(value) {
 </xsl:text>
     <xsl:choose>
       <xsl:when test="$hmi_element[self::svg:text]">
-        <xsl:text>  this.element.textContent = String(value);
+        <xsl:text>      this.element.textContent = String(value);
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -1199,12 +1204,12 @@
         </xsl:message>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Meter']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>frequency: 10,
+    <xsl:text>    frequency: 10,
 </xsl:text>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -1212,31 +1217,31 @@
         <xsl:text>value min max needle range</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
-    <xsl:text>dispatch: function(value) {
+    <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>    this.value_elt.textContent = String(value);
+    <xsl:text>        this.value_elt.textContent = String(value);
 </xsl:text>
-    <xsl:text>    let [min,max,totallength] = this.range;
+    <xsl:text>        let [min,max,totallength] = this.range;
 </xsl:text>
-    <xsl:text>    let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
 </xsl:text>
-    <xsl:text>    let tip = this.range_elt.getPointAtLength(length);
+    <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
 </xsl:text>
-    <xsl:text>    this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
+    <xsl:text>        this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
 </xsl:text>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
-    <xsl:text>origin: undefined,
+    <xsl:text>    origin: undefined,
 </xsl:text>
-    <xsl:text>range: undefined,
+    <xsl:text>    range: undefined,
 </xsl:text>
-    <xsl:text>init: function() {
+    <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>    this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
+    <xsl:text>        this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
 </xsl:text>
-    <xsl:text>    this.origin = this.needle_elt.getPointAtLength(0);
+    <xsl:text>        this.origin = this.needle_elt.getPointAtLength(0);
 </xsl:text>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
   </xsl:template>
   <func:function name="func:escape_quotes">

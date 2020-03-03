@@ -484,13 +484,13 @@ istylesheet
         | var hmi_widgets = {
         foreach "$hmi_elements" {
             const "widget", "func:parselabel(@inkscape:label)/widget";
-        |     "«@id»": {
-        |         type: "«$widget/@type»",
-        |         args: [
+        |   "«@id»": {
+        |     type: "«$widget/@type»",
+        |     args: [
             foreach "$widget/arg"
-        |             "«@value»"`if "position()!=last()" > ,`
-        |         ],
-        |         indexes: [
+        |         "«@value»"`if "position()!=last()" > ,`
+        |     ],
+        |     indexes: [
             foreach "$widget/path" {
                 const "hmipath","@value";
                 const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
@@ -541,20 +541,20 @@ istylesheet
 
             const "required_detachables", "func:sumarized_elements($page_all_elements)";
 
-            |     "«$desc/arg[1]/@value»": {
-            |         widget: hmi_widgets["«@id»"],
-            |         bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
-            |         widgets: [
+            |   "«$desc/arg[1]/@value»": {
+            |     widget: hmi_widgets["«@id»"],
+            |     bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
+            |     widgets: [
             foreach "$all_page_ids" {
-            |             hmi_widgets["«.»"]`if "position()!=last()" > ,`
+            |         hmi_widgets["«.»"]`if "position()!=last()" > ,`
             }
-            |         ],
-            |         required_detachables: {
+            |     ],
+            |     required_detachables: {
             foreach "$required_detachables" {
-            |             "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
+            |         "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
             }
-            |         }
-            |     }`if "position()!=last()" > ,`
+            |     }
+            |   }`if "position()!=last()" > ,`
         }
         | }
 
@@ -629,7 +629,7 @@ istylesheet
                     // otherwise produce nothing 
                 }
                 otherwise {
-                    | «$name»_elt: id("«$elt_id»"),
+                    |     «$name»_elt: id("«$elt_id»"),
                 }
             }
         }
@@ -638,38 +638,37 @@ istylesheet
 
     template "widget[@type='Display']", mode="widget_defs" {
         param "hmi_element";
-        | frequency: 5,
-        | dispatch: function(value) {
+        |     frequency: 5,
+        |     dispatch: function(value) {
         choose {
             when "$hmi_element[self::svg:text]"{
             // TODO : care about <tspan> ?
-        |   this.element.textContent = String(value);
+        |       this.element.textContent = String(value);
             }
             otherwise {
                 warning > Display widget as a group not implemented
             }
         }
-        | },
+        |     },
 
     }
     template "widget[@type='Meter']", mode="widget_defs" {
         param "hmi_element";
-        | frequency: 10,
+        |     frequency: 10,
         labels("value min max needle range");
-        | dispatch: function(value) {
-        |     this.value_elt.textContent = String(value);
-        |     let [min,max,totallength] = this.range;
-        |     let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
-        |     let tip = this.range_elt.getPointAtLength(length);
-        // TODO : deal with transformations between needle and range
-        |     this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
-        | },
-        | origin: undefined,
-        | range: undefined,
-        | init: function() {
-        |     this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
-        |     this.origin = this.needle_elt.getPointAtLength(0);
-        | },
+        |     dispatch: function(value) {
+        |         this.value_elt.textContent = String(value);
+        |         let [min,max,totallength] = this.range;
+        |         let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+        |         let tip = this.range_elt.getPointAtLength(length);
+        |         this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
+        |     },
+        |     origin: undefined,
+        |     range: undefined,
+        |     init: function() {
+        |         this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
+        |         this.origin = this.needle_elt.getPointAtLength(0);
+        |     },
     }
 
     def "func:escape_quotes" {
