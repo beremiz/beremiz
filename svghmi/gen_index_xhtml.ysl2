@@ -694,26 +694,29 @@ istylesheet
         }
         value "$value_elt";
         if "$value_elt"
-            | frequency: 5,
-        | dispatch: function(value) {
+        |     frequency: 5,
+
+        |     dispatch: function(value) {
+
         if "$value_elt"
-        |     this.value_elt.textContent = String(value);
-        | },
+        |         this.value_elt.textContent = String(value);
+
+        |     },
         const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
-        | init: function() {
+        |     init: function() {
         if "$edit_elt_id" {
-        |     id("«$edit_elt_id»").addEventListener(
-        |         "click", 
-        |         evt => alert('XXX TODO : Edit value'));
+        |         id("«$edit_elt_id»").addEventListener(
+        |             "click", 
+        |             evt => alert('XXX TODO : Edit value'));
         }
         foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
-        |     id("«@id»").addEventListener(
-        |         "click", 
-        |         evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
-        |                 this.value_elt.textContent = String(new_val);});
-                          /* could gray out value until refreshed */
+        |         id("«@id»").addEventListener(
+        |             "click", 
+        |             evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
+        |                     this.value_elt.textContent = String(new_val);});
+                              /* TODO gray out value until refreshed */
         }
-        | },
+        |     },
     }
     template "widget[@type='Button']", mode="widget_defs" {
     }
@@ -722,44 +725,44 @@ istylesheet
     }
     template "widget[@type='Switch']", mode="widget_defs" {
         param "hmi_element";
-        | frequency: 5,
-        | dispatch: function(value) {
-        |     for(let choice of this.choices){
-        |         if(value != choice.value){
-        |             choice.elt.setAttribute("style", "display:none");
-        |         } else {
-        |             choice.elt.setAttribute("style", choice.style);
+        |     frequency: 5,
+        |     dispatch: function(value) {
+        |         for(let choice of this.choices){
+        |             if(value != choice.value){
+        |                 choice.elt.setAttribute("style", "display:none");
+        |             } else {
+        |                 choice.elt.setAttribute("style", choice.style);
+        |             }
         |         }
-        |     }
-        | },
-        | init: function() {
-        |     // Hello Switch
-        | },
-        | choices: [
+        |     },
+        |     init: function() {
+        |         // Hello Switch
+        |     },
+        |     choices: [
         const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+)(#.*)?$'"!;
         foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
             const "literal", "regexp:match(@inkscape:label,$regex)[2]";
-        |     {
-        |         elt:id("«@id»"),
-        |         style:"«@style»",
-        |         value:«$literal»
-        |     }`if "position()!=last()" > ,`
+        |         {
+        |             elt:id("«@id»"),
+        |             style:"«@style»",
+        |             value:«$literal»
+        |         }`if "position()!=last()" > ,`
         }
-        | ],
+        |     ],
     }
     template "widget[@type='Jump']", mode="widget_defs" {
         param "hmi_element";
-        | on_click: function(evt) {
-        |     console.log(evt);
-        |     switch_page(this.args[0]);
-        | },
-        | init: function() {
+        |     on_click: function(evt) {
+        |         console.log(evt);
+        |         switch_page(this.args[0]);
+        |     },
+        |     init: function() {
         /* registering event this way doies not "click" through svg:use 
         |     this.element.onclick = evt => switch_page(this.args[0]);
         event must be registered by adding attribute to element instead
         TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
         */
-        |     this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
-        | },
+        |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
+        |     },
     }
 }

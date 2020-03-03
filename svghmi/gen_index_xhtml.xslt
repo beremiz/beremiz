@@ -1265,45 +1265,45 @@
     </xsl:variable>
     <xsl:value-of select="$value_elt"/>
     <xsl:if test="$value_elt">
-      <xsl:text>frequency: 5,
+      <xsl:text>    frequency: 5,
 </xsl:text>
     </xsl:if>
-    <xsl:text>dispatch: function(value) {
+    <xsl:text>    dispatch: function(value) {
 </xsl:text>
     <xsl:if test="$value_elt">
-      <xsl:text>    this.value_elt.textContent = String(value);
+      <xsl:text>        this.value_elt.textContent = String(value);
 </xsl:text>
     </xsl:if>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
     <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
-    <xsl:text>init: function() {
+    <xsl:text>    init: function() {
 </xsl:text>
     <xsl:if test="$edit_elt_id">
-      <xsl:text>    id("</xsl:text>
+      <xsl:text>        id("</xsl:text>
       <xsl:value-of select="$edit_elt_id"/>
       <xsl:text>").addEventListener(
 </xsl:text>
-      <xsl:text>        "click", 
+      <xsl:text>            "click", 
 </xsl:text>
-      <xsl:text>        evt =&gt; alert('XXX TODO : Edit value'));
+      <xsl:text>            evt =&gt; alert('XXX TODO : Edit value'));
 </xsl:text>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
-      <xsl:text>    id("</xsl:text>
+      <xsl:text>        id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>").addEventListener(
 </xsl:text>
-      <xsl:text>        "click", 
+      <xsl:text>            "click", 
 </xsl:text>
-      <xsl:text>        evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
+      <xsl:text>            evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
       <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
       <xsl:text>");
 </xsl:text>
-      <xsl:text>                this.value_elt.textContent = String(new_val);});
+      <xsl:text>                    this.value_elt.textContent = String(new_val);});
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Button']"/>
@@ -1313,78 +1313,78 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Switch']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>frequency: 5,
+    <xsl:text>    frequency: 5,
 </xsl:text>
-    <xsl:text>dispatch: function(value) {
+    <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>    for(let choice of this.choices){
+    <xsl:text>        for(let choice of this.choices){
 </xsl:text>
-    <xsl:text>        if(value != choice.value){
+    <xsl:text>            if(value != choice.value){
 </xsl:text>
-    <xsl:text>            choice.elt.setAttribute("style", "display:none");
+    <xsl:text>                choice.elt.setAttribute("style", "display:none");
 </xsl:text>
-    <xsl:text>        } else {
+    <xsl:text>            } else {
 </xsl:text>
-    <xsl:text>            choice.elt.setAttribute("style", choice.style);
+    <xsl:text>                choice.elt.setAttribute("style", choice.style);
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    }
+    <xsl:text>    },
 </xsl:text>
-    <xsl:text>},
+    <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>init: function() {
+    <xsl:text>        // Hello Switch
 </xsl:text>
-    <xsl:text>    // Hello Switch
+    <xsl:text>    },
 </xsl:text>
-    <xsl:text>},
-</xsl:text>
-    <xsl:text>choices: [
+    <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+)(#.*)?$'"/>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,$regex)]">
       <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
-      <xsl:text>    {
+      <xsl:text>        {
 </xsl:text>
-      <xsl:text>        elt:id("</xsl:text>
+      <xsl:text>            elt:id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
-      <xsl:text>        style:"</xsl:text>
+      <xsl:text>            style:"</xsl:text>
       <xsl:value-of select="@style"/>
       <xsl:text>",
 </xsl:text>
-      <xsl:text>        value:</xsl:text>
+      <xsl:text>            value:</xsl:text>
       <xsl:value-of select="$literal"/>
       <xsl:text>
 </xsl:text>
-      <xsl:text>    }</xsl:text>
+      <xsl:text>        }</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>],
+    <xsl:text>    ],
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>on_click: function(evt) {
+    <xsl:text>    on_click: function(evt) {
 </xsl:text>
-    <xsl:text>    console.log(evt);
+    <xsl:text>        console.log(evt);
 </xsl:text>
-    <xsl:text>    switch_page(this.args[0]);
+    <xsl:text>        switch_page(this.args[0]);
 </xsl:text>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
-    <xsl:text>init: function() {
+    <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>    this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_click(evt)");
 </xsl:text>
-    <xsl:text>},
+    <xsl:text>    },
 </xsl:text>
   </xsl:template>
 </xsl:stylesheet>
