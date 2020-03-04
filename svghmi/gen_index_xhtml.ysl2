@@ -15,6 +15,7 @@ in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
 };
 
 in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
+in xsl decl svgfunc(name, xmlns="http://www.w3.org/2000/svg") alias template;
 
 istylesheet
             /* From Inkscape */
@@ -29,8 +30,8 @@ istylesheet
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
-            extension-element-prefixes="ns func"
-            exclude-result-prefixes="ns str regexp exsl func" {
+            extension-element-prefixes="ns func exsl regexp str dyn"
+            exclude-result-prefixes="ns str regexp exsl func dyn" {
 
     /* This retrieves geometry obtained through "inkscape -S"
      * already parsed by python and presented as a list of
@@ -330,47 +331,88 @@ istylesheet
         error > All units must be set to "px" in Inkscape's document properties
     }
 
-    
-    //// Commented out before implementing runtime DOM remove/append on page switch - would have side effect
-    ////
-    //// /* clone unlinkink until widget for better perf with webkit */
-    //// svgtmpl "svg:use", mode="inline_svg" 
-    //// {
-    ////     g{
-    ////         attrib "style" > «@style»
-    ////         attrib "transform" > «@transform»
-    ////         /* keep same id and label in case it is a widget */
-    ////         //attrib "inkscape:label","@inkscape:label";
-    ////         attrib "id" > «@id»
-    ////         const "targetid","substring-after(@xlink:href,'#')";
-    ////         apply "//svg:*[@id = $targetid]", mode="unlink_clone";
-    ////     }
-    //// }
-    //// svgtmpl "@*", mode="unlink_clone" xsl:copy;
-    //// svgtmpl "svg:*", mode="unlink_clone" {
-    ////     choose {
-    ////         when "@id = $hmi_elements/@id" {
-    ////             use{
-    ////                 attrib "xlink:href" > «concat('#',@id)»
-    ////             }
-    ////         }
-    ////         otherwise {
-    ////             xsl:copy apply "@* | node()", mode="unlink_clone";
-    ////         }
-    ////     }
-    //// }
 
-    // template "svg:use/@style", mode="inline_svg"{
-    //     attrib "style" > all:initial;
-    //     //«.»
-    // }
+    //////////////// Clone Unlinking
 
-    // template "svg:*[concat('#',@id) = //svg:use/@xlink:href]/@style", mode="inline_svg"{
-    //     attrib "style" > all:unset;
-    //     //«.»
-    // }
+    // svg:use (inkscape's clones) inside a widgets are
+    // replaced by real elements they refer in order to :
+    //  - allow finding "needle" element in "meter" widget,
+    //    even if "needle" is in a group refered by a svg use.
+    //  - if "needle" is visible through a svg:use for
+    //    each instance of the widget, then needle would show
+    //    the same position in all instances
+    //
+    // For now, clone unlinkink applies to descendants of all widget except HMI:Page
+    // TODO: narrow application of clone unlinking to active elements,
+    //       while keeping static decoration cloned
+    const "to_unlink", "$hmi_elements[not(@id = $hmi_pages)]//svg:use";
+    svgtmpl "svg:use", mode="inline_svg"
+    {
+        choose {
+            when "@id = $to_unlink/@id"
+                call "unlink_clone";
+            otherwise
+                xsl:copy apply "@* | node()", mode="inline_svg";
+        }
+    }
+
+    // to unlink a clone, an group containing a copy of target element is created
+    // that way, style and transforms can be preserved
+    const "_excluded_use_attrs" {
+        name > href
+        name > width
+        name > height
+        name > x
+        name > y
+    }
+    const "excluded_use_attrs","exsl:node-set($_excluded_use_attrs)";
+
+    svgfunc "unlink_clone"{
+        g{
+            // include non excluded attributes
+            foreach "@*[not(local-name() = $excluded_use_attrs/name)]"
+                attrib "{name()}" > «.»
+
+            const "targetid","substring-after(@xlink:href,'#')";
+            apply "//svg:*[@id = $targetid]", mode="unlink_clone"{
+                with "seed","@id";
+            }
+        }
+    }
+
+    // clone unlinking is really similar to deep-copy
+    // all nodes are sytematically copied
+    svgtmpl "@id", mode="unlink_clone" {
+        param "seed";
+        attrib "id" > «$seed»_«.»
+    }
+
+    svgtmpl "@*", mode="unlink_clone" xsl:copy;
+
+    // copying widgets would have unwanted effect
+    // instead widget is refered through a svg:use.
+    svgtmpl "svg:*", mode="unlink_clone" {
+        param "seed";
+        choose {
+            // node recursive copy ends when finding a widget
+            when "@id = $hmi_elements/@id" {
+                // place a clone instead of copying
+                use{
+                    attrib "xlink:href" > «concat('#',@id)»
+                }
+            }
+            otherwise {
+                xsl:copy apply "@* | node()", mode="unlink_clone" {
+                    with "seed","$seed";
+                }
+            }
+        }
+    }
 
     /*const "mark" > =HMI=\n*/
+
+    const "result_svg" apply "/", mode="inline_svg";
+    const "result_svg_ns", "exsl:node-set($result_svg)";
 
     /* copy root node and add geometry as comment for a test */
     template "/" {
@@ -397,13 +439,19 @@ istylesheet
                 | «@id»
             }
         }
+        comment {
+            | Unlinked :
+            foreach "$to_unlink"{
+                | «@id»
+            }
+        }
         /**/
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"
              xmlns:xlink="http://www.w3.org/1999/xlink" {
             head;
             body style="margin:0;overflow:hidden;" {
-                apply "svg:svg", mode="inline_svg";
+                copy "$result_svg";
                 script{
                     call "scripts";
                 }
@@ -622,7 +670,7 @@ istylesheet
         const "widget_type","@type";
         foreach "str:split($labels)" {
             const "name",".";
-            const "elt_id","$hmi_element//*[@inkscape:label=$name][1]/@id";
+            const "elt_id","$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id";
             choose {
                 when "not($elt_id)" {
                     if "$mandatory='yes'" {

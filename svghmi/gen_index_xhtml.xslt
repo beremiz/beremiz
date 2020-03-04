@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func" version="1.0" exclude-result-prefixes="ns str regexp exsl func">
+<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns str regexp exsl func dyn">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -100,9 +100,9 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="groups" select="/svg:svg | //svg:g"/>
   <func:function name="func:overlapping_geometry">
     <xsl:param name="elt"/>
+    <xsl:variable name="groups" select="/svg:svg | //svg:g"/>
     <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                              (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
@@ -130,7 +130,7 @@
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
     <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
-    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;            not(descendant::*[&#10;                not(self::svg:g) and &#10;                not(@id = $discardable_elements/@id) and&#10;                not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;            ])]"/>
+    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;            not(descendant::*[&#10;                not(self::svg:g) and&#10;                not(@id = $discardable_elements/@id) and&#10;                not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;            ])]"/>
     <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
     <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
   </func:function>
@@ -227,6 +227,84 @@
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
   </xsl:template>
+  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages)]//svg:use"/>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
+    <xsl:choose>
+      <xsl:when test="@id = $to_unlink/@id">
+        <xsl:call-template name="unlink_clone"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy>
+          <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
+        </xsl:copy>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  <xsl:variable name="_excluded_use_attrs">
+    <name>
+      <xsl:text>href</xsl:text>
+    </name>
+    <name>
+      <xsl:text>width</xsl:text>
+    </name>
+    <name>
+      <xsl:text>height</xsl:text>
+    </name>
+    <name>
+      <xsl:text>x</xsl:text>
+    </name>
+    <name>
+      <xsl:text>y</xsl:text>
+    </name>
+  </xsl:variable>
+  <xsl:variable name="excluded_use_attrs" select="exsl:node-set($_excluded_use_attrs)"/>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" name="unlink_clone">
+    <g>
+      <xsl:for-each select="@*[not(local-name() = $excluded_use_attrs/name)]">
+        <xsl:attribute name="{name()}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:for-each>
+      <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+      <xsl:apply-templates mode="unlink_clone" select="//svg:*[@id = $targetid]">
+        <xsl:with-param name="seed" select="@id"/>
+      </xsl:apply-templates>
+    </g>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@id">
+    <xsl:param name="seed"/>
+    <xsl:attribute name="id">
+      <xsl:value-of select="$seed"/>
+      <xsl:text>_</xsl:text>
+      <xsl:value-of select="."/>
+    </xsl:attribute>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@*">
+    <xsl:copy/>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
+    <xsl:param name="seed"/>
+    <xsl:choose>
+      <xsl:when test="@id = $hmi_elements/@id">
+        <use>
+          <xsl:attribute name="xlink:href">
+            <xsl:value-of select="concat('#',@id)"/>
+          </xsl:attribute>
+        </use>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy>
+          <xsl:apply-templates mode="unlink_clone" select="@* | node()">
+            <xsl:with-param name="seed" select="$seed"/>
+          </xsl:apply-templates>
+        </xsl:copy>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+  <xsl:variable name="result_svg">
+    <xsl:apply-templates mode="inline_svg" select="/"/>
+  </xsl:variable>
+  <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -258,16 +336,21 @@
 </xsl:text>
       </xsl:for-each>
     </xsl:comment>
+    <xsl:comment>
+      <xsl:text>Unlinked :
+</xsl:text>
+      <xsl:for-each select="$to_unlink">
+        <xsl:value-of select="@id"/>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+    </xsl:comment>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
-        <xsl:variable name="_result_svg">
-          <xsl:apply-templates mode="inline_svg" select="svg:svg"/>
-        </xsl:variable>
-        <xsl:copy-of select="$_result_svg"/>
-        <xsl:variable name="result_svg" select="exsl:node-set($_result_svg)"/>
+        <xsl:copy-of select="$result_svg"/>
         <script>
-          <xsl:apply-templates mode="scripts" select="svg:svg"/>
+          <xsl:call-template name="scripts"/>
         </script>
       </body>
     </html>
@@ -323,7 +406,7 @@
     </xsl:variable>
     <func:result select="exsl:node-set($ast)"/>
   </func:function>
-  <xsl:template mode="scripts" match="svg:svg">
+  <xsl:template name="scripts">
     <xsl:text>//(function(){
 </xsl:text>
     <xsl:text>
@@ -386,16 +469,16 @@
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
-      <xsl:text>        ],
+      <xsl:text>    ],
 </xsl:text>
-      <xsl:text>        element: id("</xsl:text>
+      <xsl:text>    element: id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
       <xsl:apply-templates mode="widget_defs" select="$widget">
         <xsl:with-param name="hmi_element" select="."/>
       </xsl:apply-templates>
-      <xsl:text>    }</xsl:text>
+      <xsl:text>  }</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -1142,12 +1225,10 @@
     <xsl:value-of select="$indent"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="local-name()"/>
-    <xsl:text> </xsl:text>
     <xsl:for-each select="@*">
       <xsl:value-of select="local-name()"/>
       <xsl:text>=</xsl:text>
       <xsl:value-of select="."/>
-      <xsl:text> </xsl:text>
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
@@ -1164,7 +1245,7 @@
     <xsl:variable name="widget_type" select="@type"/>
     <xsl:for-each select="str:split($labels)">
       <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt_id" select="$hmi_element//*[@inkscape:label=$name][1]/@id"/>
+      <xsl:variable name="elt_id" select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id"/>
       <xsl:choose>
         <xsl:when test="not($elt_id)">
           <xsl:if test="$mandatory='yes'">
