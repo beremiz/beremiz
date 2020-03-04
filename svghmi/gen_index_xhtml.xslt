@@ -423,6 +423,7 @@
 </xsl:text>
     <xsl:for-each select="$hmi_elements">
       <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
+      <xsl:variable name="eltid" select="@id"/>
       <xsl:text>  "</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>": {
@@ -453,7 +454,11 @@
         <xsl:choose>
           <xsl:when test="count($hmitree_match) = 0">
             <xsl:message terminate="no">
-              <xsl:text>No match for path "</xsl:text>
+              <xsl:text>Widget </xsl:text>
+              <xsl:value-of select="$widget/@type"/>
+              <xsl:text> id="</xsl:text>
+              <xsl:value-of select="$eltid"/>
+              <xsl:text>" : No match for path "</xsl:text>
               <xsl:value-of select="$hmipath"/>
               <xsl:text>" in HMI tree</xsl:text>
             </xsl:message>
@@ -1295,12 +1300,21 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>value min max needle range</xsl:text>
+        <xsl:text>needle range</xsl:text>
       </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>        this.value_elt.textContent = String(value);
+    <xsl:text>        if(this.value_elt)
+</xsl:text>
+    <xsl:text>            this.value_elt.textContent = String(value);
 </xsl:text>
     <xsl:text>        let [min,max,totallength] = this.range;
 </xsl:text>
@@ -1318,7 +1332,11 @@
 </xsl:text>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>        this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
+    <xsl:text>        let min = this.min_elt ? Number(this.min_elt.textContent) : 0;
+</xsl:text>
+    <xsl:text>        let max = this.max_elt ? Number(this.max_elt.textContent) : 100;
+</xsl:text>
+    <xsl:text>        this.range = [min, max, this.range_elt.getTotalLength()]
 </xsl:text>
     <xsl:text>        this.origin = this.needle_elt.getPointAtLength(0);
 </xsl:text>

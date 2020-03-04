@@ -535,6 +535,7 @@ istylesheet
         | var hmi_widgets = {
         foreach "$hmi_elements" {
             const "widget", "func:parselabel(@inkscape:label)/widget";
+            const "eltid","@id";
         |   "«@id»": {
         |     type: "«$widget/@type»",
         |     args: [
@@ -547,7 +548,7 @@ istylesheet
                 const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
                 choose {
                     when "count($hmitree_match) = 0" {
-                        warning > No match for path "«$hmipath»" in HMI tree
+                        warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«$hmipath»" in HMI tree
                     }
                     otherwise {
         |             «$hmitree_match/@index»`if "position()!=last()" > ,`
@@ -706,9 +707,11 @@ istylesheet
     template "widget[@type='Meter']", mode="widget_defs" {
         param "hmi_element";
         |     frequency: 10,
-        labels("value min max needle range");
+        labels("needle range");
+        optional_labels("value min max");
         |     dispatch: function(value) {
-        |         this.value_elt.textContent = String(value);
+        |         if(this.value_elt)
+        |             this.value_elt.textContent = String(value);
         |         let [min,max,totallength] = this.range;
         |         let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
         |         let tip = this.range_elt.getPointAtLength(length);
@@ -717,7 +720,9 @@ istylesheet
         |     origin: undefined,
         |     range: undefined,
         |     init: function() {
-        |         this.range = [Number(this.min_elt.textContent), Number(this.max_elt.textContent), this.range_elt.getTotalLength()]
+        |         let min = this.min_elt ? Number(this.min_elt.textContent) : 0;
+        |         let max = this.max_elt ? Number(this.max_elt.textContent) : 100;
+        |         this.range = [min, max, this.range_elt.getTotalLength()]
         |         this.origin = this.needle_elt.getPointAtLength(0);
         |     },
     }
