@@ -554,10 +554,10 @@ istylesheet
                     }
                 }
             }
-        |         ],
-        |         element: id("«@id»"),
+        |     ],
+        |     element: id("«@id»"),
             apply "$widget", mode="widget_defs" with "hmi_element",".";
-        |     }`if "position()!=last()" > ,`
+        |   }`if "position()!=last()" > ,`
         }
         | }
         |
@@ -584,7 +584,7 @@ istylesheet
         foreach "$hmi_pages" {
             const "desc", "func:parselabel(@inkscape:label)/widget";
             const "page", ".";
-            const "p", "$geometry[@Id = $page/@id]"; 
+            const "p", "$geometry[@Id = $page/@id]";
 
             const "page_all_elements", "func:all_related_elements($page)";
 
@@ -654,8 +654,8 @@ istylesheet
 
     template "*", mode="testtree"{
         param "indent", "''";
-        > «$indent» «local-name()» 
-        foreach "@*" > «local-name()»=«.» 
+        > «$indent» «local-name()»
+        foreach "@*" > «local-name()»=«.»
         > \n
         apply "*", mode="testtree" {
             with "indent" value "concat($indent,'>')"
