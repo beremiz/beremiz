@@ -260,9 +260,9 @@ istylesheet
         }
     }
 
-    const "detachable_elements", "func:detachable_elements($hmi_pages)";
-
-
+    // Avoid nested detachables
+    const "_detachable_elements", "func:detachable_elements($hmi_pages)";
+    const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
     //////////////// HMI Tree Index
 
@@ -591,7 +591,11 @@ istylesheet
 
             const "all_page_ids","$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id";
 
-            const "required_detachables", "func:sumarized_elements($page_all_elements)";
+            // Take closest ancestor in detachable_elements
+            // since nested detachable elements are filtered out
+            const "required_detachables", 
+                """func:sumarized_elements($page_all_elements)/
+                   ancestor-or-self::*[@id = $detachable_elements/@id]""";
 
             |   "«$desc/arg[1]/@value»": {
             |     widget: hmi_widgets["«@id»"],

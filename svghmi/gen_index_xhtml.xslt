@@ -145,7 +145,8 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="detachable_elements" select="func:detachable_elements($hmi_pages)"/>
+  <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages)"/>
+  <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
   <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
     <xsl:param name="parentpath" select="''"/>
@@ -548,7 +549,7 @@
       <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
       <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
       <xsl:variable name="all_page_ids" select="$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id"/>
-      <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)"/>
+      <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;                   ancestor-or-self::*[@id = $detachable_elements/@id]"/>
       <xsl:text>  "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
       <xsl:text>": {
