@@ -1332,9 +1332,17 @@
 </xsl:text>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>        let min = this.min_elt ? Number(this.min_elt.textContent) : 0;
+    <xsl:text>        let min = this.min_elt ?
 </xsl:text>
-    <xsl:text>        let max = this.max_elt ? Number(this.max_elt.textContent) : 100;
+    <xsl:text>                    Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>        let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
 </xsl:text>
     <xsl:text>        this.range = [min, max, this.range_elt.getTotalLength()]
 </xsl:text>
