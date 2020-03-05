@@ -720,8 +720,12 @@ istylesheet
         |     origin: undefined,
         |     range: undefined,
         |     init: function() {
-        |         let min = this.min_elt ? Number(this.min_elt.textContent) : 0;
-        |         let max = this.max_elt ? Number(this.max_elt.textContent) : 100;
+        |         let min = this.min_elt ?
+        |                     Number(this.min_elt.textContent) :
+        |                     this.args.length >= 1 ? this.args[0] : 0;
+        |         let max = this.max_elt ?
+        |                     Number(this.max_elt.textContent) :
+        |                     this.args.length >= 2 ? this.args[1] : 100;
         |         this.range = [min, max, this.range_elt.getTotalLength()]
         |         this.origin = this.needle_elt.getPointAtLength(0);
         |     },
