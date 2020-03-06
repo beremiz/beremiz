@@ -625,6 +625,8 @@
 </xsl:text>
     <xsl:text>var updates = {};
 </xsl:text>
+    <xsl:text>var page_switch = null;
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
@@ -753,9 +755,21 @@
 </xsl:text>
     <xsl:text>// Apply updates recieved through ws.onmessage to subscribed widgets
 </xsl:text>
-    <xsl:text>// Called on requestAnimationFram, modifies DOM
+    <xsl:text>// Do the page swith if any one pending
 </xsl:text>
-    <xsl:text>function apply_pending_updates() {
+    <xsl:text>// Called on requestAnimationFrame, modifies DOM
+</xsl:text>
+    <xsl:text>function animate() {
+</xsl:text>
+    <xsl:text>    if(page_switch != null){
+</xsl:text>
+    <xsl:text>        do_switch_page(page_switch);
+</xsl:text>
+    <xsl:text>        page_switch=null;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    for(let index in updates){
 </xsl:text>
@@ -768,6 +782,24 @@
     <xsl:text>        delete updates[index];
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var requestAnimationFrameID = null;
+</xsl:text>
+    <xsl:text>function requestHMIAnimation() {
+</xsl:text>
+    <xsl:text>    if(requestAnimationFrameID != null){
+</xsl:text>
+    <xsl:text>        window.cancelAnimationFrame(requestAnimationFrameID);
+</xsl:text>
+    <xsl:text>        requestAnimationFrameID = null;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    requestAnimationFrameID = window.requestAnimationFrame(animate);
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -833,7 +865,7 @@
 </xsl:text>
     <xsl:text>        // register for rendering on next frame, since there are updates
 </xsl:text>
-    <xsl:text>        window.requestAnimationFrame(apply_pending_updates);
+    <xsl:text>        window.requestAnimationFrame(animate);
 </xsl:text>
     <xsl:text>    } catch(err) {
 </xsl:text>
@@ -1103,6 +1135,16 @@
 </xsl:text>
     <xsl:text>function switch_page(page_name) {
 </xsl:text>
+    <xsl:text>    page_switch = page_name;
+</xsl:text>
+    <xsl:text>    window.requestAnimationFrame(animate);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function do_switch_page(page_name) {
+</xsl:text>
     <xsl:text>    let old_desc = page_desc[current_page];
 </xsl:text>
     <xsl:text>    let new_desc = page_desc[page_name];
@@ -1195,11 +1237,13 @@
 </xsl:text>
     <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
 </xsl:text>
+    <xsl:text>    
+</xsl:text>
     <xsl:text>    current_page = page_name;
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    update_subscriptions();
+    <xsl:text>    window.setTimeout(update_subscriptions,0);
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -1408,14 +1452,15 @@
         <xsl:with-param name="mandatory" select="'no'"/>
       </xsl:call-template>
     </xsl:variable>
+    <xsl:variable name="have_value" select="string-length($value_elt)&gt;0"/>
     <xsl:value-of select="$value_elt"/>
-    <xsl:if test="$value_elt">
+    <xsl:if test="$have_value">
       <xsl:text>    frequency: 5,
 </xsl:text>
     </xsl:if>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:if test="$value_elt">
+    <xsl:if test="$have_value">
       <xsl:text>        this.value_elt.textContent = String(value);
 </xsl:text>
     </xsl:if>
@@ -1445,7 +1490,11 @@
       <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
       <xsl:text>");
 </xsl:text>
-      <xsl:text>                    this.value_elt.textContent = String(new_val);});
+      <xsl:if test="$have_value">
+        <xsl:text>                    this.value_elt.textContent = String(new_val);
+</xsl:text>
+      </xsl:if>
+      <xsl:text>                   });
 </xsl:text>
     </xsl:for-each>
     <xsl:text>    },

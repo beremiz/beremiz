@@ -755,13 +755,14 @@ istylesheet
         const "value_elt" {
             optional_labels("value");
         }
+        const "have_value","string-length($value_elt)>0";
         value "$value_elt";
-        if "$value_elt"
+        if "$have_value"
         |     frequency: 5,
 
         |     dispatch: function(value) {
 
-        if "$value_elt"
+        if "$have_value"
         |         this.value_elt.textContent = String(value);
 
         |     },
@@ -776,7 +777,10 @@ istylesheet
         |         id("«@id»").addEventListener(
         |             "click", 
         |             evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
-        |                     this.value_elt.textContent = String(new_val);});
+            if "$have_value"{
+        |                     this.value_elt.textContent = String(new_val);
+            }
+        |                    });
                               /* TODO gray out value until refreshed */
         }
         |     },
