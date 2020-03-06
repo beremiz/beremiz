@@ -2,6 +2,7 @@
 
 var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
+var page_switch = null;
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
@@ -66,14 +67,29 @@ const dvgetters = {
 };
 
 // Apply updates recieved through ws.onmessage to subscribed widgets
+// Do the page swith if any one pending
 // Called on requestAnimationFrame, modifies DOM
-function apply_pending_updates() {
+function animate() {
+    if(page_switch != null){
+        do_switch_page(page_switch);
+        page_switch=null;
+    }
+
     for(let index in updates){
         // serving as a key, index becomes a string
         // -> pass Number(index) instead
         dispatch_value(Number(index), updates[index]);
         delete updates[index];
     }
+}
+
+var requestAnimationFrameID = null;
+function requestHMIAnimation() {
+    if(requestAnimationFrameID != null){
+        window.cancelAnimationFrame(requestAnimationFrameID);
+        requestAnimationFrameID = null;
+    }
+    requestAnimationFrameID = window.requestAnimationFrame(animate);
 }
 
 // Message reception handler
@@ -106,7 +122,7 @@ ws.onmessage = function (evt) {
             }
         };
         // register for rendering on next frame, since there are updates
-        window.requestAnimationFrame(apply_pending_updates);
+        window.requestAnimationFrame(animate);
     } catch(err) {
         // 1003 is for "Unsupported Data"
         // ws.close(1003, err.message);
@@ -241,6 +257,11 @@ function prepare_svg() {
 };
 
 function switch_page(page_name) {
+    page_switch = page_name;
+    window.requestAnimationFrame(animate);
+}
+
+function do_switch_page(page_name) {
     let old_desc = page_desc[current_page];
     let new_desc = page_desc[page_name];
 
@@ -289,7 +310,7 @@ function switch_page(page_name) {
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_page = page_name;
 
-    update_subscriptions();
+    window.setTimeout(update_subscriptions,0);
 };
 
 
