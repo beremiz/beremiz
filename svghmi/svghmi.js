@@ -1,6 +1,7 @@
 // svghmi.js
 
 var cache = hmitree_types.map(_ignored => undefined);
+var updates = {};
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
@@ -64,7 +65,20 @@ const dvgetters = {
     }
 };
 
-// Register message reception handler
+// Apply updates recieved through ws.onmessage to subscribed widgets
+// Called on requestAnimationFrame, modifies DOM
+function apply_pending_updates() {
+    for(let index in updates){
+        // serving as a key, index becomes a string
+        // -> pass Number(index) instead
+        dispatch_value(Number(index), updates[index]);
+        delete updates[index];
+    }
+}
+
+// Message reception handler
+// Hash is verified and HMI values updates resulting from binary parsing
+// are stored until browser can compute next frame, DOM is left untouched
 ws.onmessage = function (evt) {
 
     let data = evt.data;
@@ -85,12 +99,14 @@ ws.onmessage = function (evt) {
             if(iectype != undefined){
                 let dvgetter = dvgetters[iectype];
                 let [value, bytesize] = dvgetter(dv,i);
-                dispatch_value(index, value);
+                updates[index] = value;
                 i += bytesize;
             } else {
-                throw new Error("Unknown index "+index)
+                throw new Error("Unknown index "+index);
             }
         };
+        // register for rendering on next frame, since there are updates
+        window.requestAnimationFrame(apply_pending_updates);
     } catch(err) {
         // 1003 is for "Unsupported Data"
         // ws.close(1003, err.message);

@@ -623,6 +623,8 @@
 </xsl:text>
     <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
 </xsl:text>
+    <xsl:text>var updates = {};
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
@@ -749,7 +751,33 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>// Register message reception handler
+    <xsl:text>// Apply updates recieved through ws.onmessage to subscribed widgets
+</xsl:text>
+    <xsl:text>// Called on requestAnimationFram, modifies DOM
+</xsl:text>
+    <xsl:text>function apply_pending_updates() {
+</xsl:text>
+    <xsl:text>    for(let index in updates){
+</xsl:text>
+    <xsl:text>        // serving as a key, index becomes a string
+</xsl:text>
+    <xsl:text>        // -&gt; pass Number(index) instead
+</xsl:text>
+    <xsl:text>        dispatch_value(Number(index), updates[index]);
+</xsl:text>
+    <xsl:text>        delete updates[index];
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>// Message reception handler
+</xsl:text>
+    <xsl:text>// Hash is verified and HMI values updates resulting from binary parsing
+</xsl:text>
+    <xsl:text>// are stored until browser can compute next frame, DOM is left untouched
 </xsl:text>
     <xsl:text>ws.onmessage = function (evt) {
 </xsl:text>
@@ -791,17 +819,21 @@
 </xsl:text>
     <xsl:text>                let [value, bytesize] = dvgetter(dv,i);
 </xsl:text>
-    <xsl:text>                dispatch_value(index, value);
+    <xsl:text>                updates[index] = value;
 </xsl:text>
     <xsl:text>                i += bytesize;
 </xsl:text>
     <xsl:text>            } else {
 </xsl:text>
-    <xsl:text>                throw new Error("Unknown index "+index)
+    <xsl:text>                throw new Error("Unknown index "+index);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>        };
+</xsl:text>
+    <xsl:text>        // register for rendering on next frame, since there are updates
+</xsl:text>
+    <xsl:text>        window.requestAnimationFrame(apply_pending_updates);
 </xsl:text>
     <xsl:text>    } catch(err) {
 </xsl:text>
