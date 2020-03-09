@@ -149,12 +149,12 @@ static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
         {
             printf("BUG!!! %%d + %%ld + %%d >  %%ld \n", sbufidx, sizeof(uint32_t), sz,  sizeof(sbuf));
             AtomicCompareExchange(&dsc->wlock, 1, 0);
-            return EOVERFLOW; 
+            return EOVERFLOW;
         }
     }
 
     AtomicCompareExchange(&dsc->wlock, 1, 0);
-    return 0; 
+    return 0;
 }
 
 static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
@@ -288,7 +288,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
             {
                 uint32_t index = *(uint32_t*)(cursor);
                 uint8_t const *valptr = cursor + sizeof(uint32_t);
-                
+
                 if(index == heartbeat_index)
                     was_hearbeat = 1;
 
@@ -316,12 +316,12 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                         AtomicCompareExchange(&dsc->rlock, 1, 0);
                         progress = sz + sizeof(uint32_t) /* index */;
                     }
-                    else 
+                    else
                     {
                         return -EINVAL;
                     }
                 }
-                else 
+                else
                 {
                     return -EINVAL;
                 }
@@ -345,12 +345,12 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
                     update_refresh_period(dsc, refresh_period_ms);
                 }
-                else 
+                else
                 {
                     return -EINVAL;
                 }
 
-                progress = sizeof(uint32_t) /* index */ + 
+                progress = sizeof(uint32_t) /* index */ +
                            sizeof(uint16_t) /* refresh period */;
             }
             break;
