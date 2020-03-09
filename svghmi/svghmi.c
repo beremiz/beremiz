@@ -105,10 +105,13 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
         if(__Is_a_string(dsc)){
             sz = ((STRING*)visible_value_p)->len + 1;
         }
-        if(dsc->wstate == buf_new || memcmp(dest_p, visible_value_p, sz) != 0){
+        if(dsc->wstate == buf_new /* just subscribed 
+           or already subscribed having value change */
+           || (dsc->refresh_period_ms > 0 && memcmp(dest_p, visible_value_p, sz) != 0)){
             /* copy and flag as set */
             memcpy(dest_p, visible_value_p, sz);
-            if(dsc->wstate == buf_new || dsc->wstate == buf_free) {
+            /* if not already marked/signaled, do it */
+            if(dsc->wstate != buf_set && dsc->wstate != buf_tosend) {
                 if(dsc->wstate == buf_new || ticktime_ms > dsc->refresh_period_ms){
                     dsc->wstate = buf_tosend;
                     global_write_dirty = 1;
@@ -179,13 +182,15 @@ static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
 void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_ms)
 {
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
-    dsc->refresh_period_ms = refresh_period_ms;
     if(refresh_period_ms) {
-        /* TODO : maybe only if was null before for optimization */
-        dsc->wstate = buf_new;
+        if(!dsc->refresh_period_ms)
+        {
+            dsc->wstate = buf_new;
+        }
     } else {
         dsc->wstate = buf_free;
     }
+    dsc->refresh_period_ms = refresh_period_ms;
     AtomicCompareExchange(&dsc->wlock, 1, 0);
 }
 
