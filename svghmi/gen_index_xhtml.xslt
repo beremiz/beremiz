@@ -1237,8 +1237,6 @@
 </xsl:text>
     <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
 </xsl:text>
-    <xsl:text>    
-</xsl:text>
     <xsl:text>    current_page = page_name;
 </xsl:text>
     <xsl:text>
