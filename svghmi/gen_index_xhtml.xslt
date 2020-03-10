@@ -625,8 +625,6 @@
 </xsl:text>
     <xsl:text>var updates = {};
 </xsl:text>
-    <xsl:text>var page_switch = null;
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
@@ -761,11 +759,9 @@
 </xsl:text>
     <xsl:text>function animate() {
 </xsl:text>
-    <xsl:text>    if(page_switch != null){
+    <xsl:text>    if(current_subscribed_page != current_visible_page){
 </xsl:text>
-    <xsl:text>        do_switch_page(page_switch);
-</xsl:text>
-    <xsl:text>        page_switch=null;
+    <xsl:text>        switch_visible_page(current_subscribed_page);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -783,6 +779,8 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    requestAnimationFrameID = null;
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -791,15 +789,11 @@
 </xsl:text>
     <xsl:text>function requestHMIAnimation() {
 </xsl:text>
-    <xsl:text>    if(requestAnimationFrameID != null){
+    <xsl:text>    if(requestAnimationFrameID == null){
 </xsl:text>
-    <xsl:text>        window.cancelAnimationFrame(requestAnimationFrameID);
-</xsl:text>
-    <xsl:text>        requestAnimationFrameID = null;
+    <xsl:text>        requestAnimationFrameID = window.requestAnimationFrame(animate);
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>    requestAnimationFrameID = window.requestAnimationFrame(animate);
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -865,7 +859,7 @@
 </xsl:text>
     <xsl:text>        // register for rendering on next frame, since there are updates
 </xsl:text>
-    <xsl:text>        window.requestAnimationFrame(animate);
+    <xsl:text>        requestHMIAnimation();
 </xsl:text>
     <xsl:text>    } catch(err) {
 </xsl:text>
@@ -1115,7 +1109,9 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>var current_page;
+    <xsl:text>var current_visible_page;
+</xsl:text>
+    <xsl:text>var current_subscribed_page;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1135,17 +1131,33 @@
 </xsl:text>
     <xsl:text>function switch_page(page_name) {
 </xsl:text>
-    <xsl:text>    page_switch = page_name;
+    <xsl:text>    if(current_subscribed_page != current_visible_page){
 </xsl:text>
-    <xsl:text>    window.requestAnimationFrame(animate);
+    <xsl:text>        /* page switch already going */
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>        /* TODO LOG ERROR */
+</xsl:text>
+    <xsl:text>        return;
+</xsl:text>
+    <xsl:text>    } else if(page_name == current_visible_page){
+</xsl:text>
+    <xsl:text>        /* already in that page */
+</xsl:text>
+    <xsl:text>        /* TODO LOG ERROR */
+</xsl:text>
+    <xsl:text>        return;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    switch_subscribed_page(page_name);
+</xsl:text>
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function do_switch_page(page_name) {
+    <xsl:text>function switch_subscribed_page(page_name) {
 </xsl:text>
-    <xsl:text>    let old_desc = page_desc[current_page];
+    <xsl:text>    let old_desc = page_desc[current_subscribed_page];
 </xsl:text>
     <xsl:text>    let new_desc = page_desc[page_name];
 </xsl:text>
@@ -1174,6 +1186,48 @@
     <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    for(let widget of new_desc.widgets){
+</xsl:text>
+    <xsl:text>        /* add widget's subsribers */
+</xsl:text>
+    <xsl:text>        for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>            subscribers[index].add(widget);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    update_subscriptions();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    current_subscribed_page = page_name;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    requestHMIAnimation();
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function switch_visible_page(page_name) {
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let old_desc = page_desc[current_visible_page];
+</xsl:text>
+    <xsl:text>    let new_desc = page_desc[page_name];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(old_desc){
 </xsl:text>
     <xsl:text>        for(let eltid in old_desc.required_detachables){
 </xsl:text>
@@ -1215,11 +1269,7 @@
 </xsl:text>
     <xsl:text>    for(let widget of new_desc.widgets){
 </xsl:text>
-    <xsl:text>        /* add widget's subsribers */
-</xsl:text>
     <xsl:text>        for(let index of widget.indexes){
-</xsl:text>
-    <xsl:text>            subscribers[index].add(widget);
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
@@ -1237,11 +1287,7 @@
 </xsl:text>
     <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
 </xsl:text>
-    <xsl:text>    current_page = page_name;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    window.setTimeout(update_subscriptions,0);
+    <xsl:text>    current_visible_page = page_name;
 </xsl:text>
     <xsl:text>};
 </xsl:text>
