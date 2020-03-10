@@ -2,7 +2,6 @@
 
 var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
-var page_switch = null;
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
@@ -70,9 +69,8 @@ const dvgetters = {
 // Do the page swith if any one pending
 // Called on requestAnimationFrame, modifies DOM
 function animate() {
-    if(page_switch != null){
-        do_switch_page(page_switch);
-        page_switch=null;
+    if(current_subscribed_page != current_visible_page){
+        switch_visible_page(current_subscribed_page);
     }
 
     for(let index in updates){
@@ -81,15 +79,14 @@ function animate() {
         dispatch_value(Number(index), updates[index]);
         delete updates[index];
     }
+    requestAnimationFrameID = null;
 }
 
 var requestAnimationFrameID = null;
 function requestHMIAnimation() {
-    if(requestAnimationFrameID != null){
-        window.cancelAnimationFrame(requestAnimationFrameID);
-        requestAnimationFrameID = null;
+    if(requestAnimationFrameID == null){
+        requestAnimationFrameID = window.requestAnimationFrame(animate);
     }
-    requestAnimationFrameID = window.requestAnimationFrame(animate);
 }
 
 // Message reception handler
@@ -122,7 +119,7 @@ ws.onmessage = function (evt) {
             }
         };
         // register for rendering on next frame, since there are updates
-        window.requestAnimationFrame(animate);
+        requestHMIAnimation();
     } catch(err) {
         // 1003 is for "Unsupported Data"
         // ws.close(1003, err.message);
@@ -247,7 +244,8 @@ function change_hmi_value(index, opstr) {
     return new_val;
 }
 
-var current_page;
+var current_visible_page;
+var current_subscribed_page;
 
 function prepare_svg() {
     for(let eltid in detachable_elements){
@@ -257,12 +255,20 @@ function prepare_svg() {
 };
 
 function switch_page(page_name) {
-    page_switch = page_name;
-    window.requestAnimationFrame(animate);
-}
+    if(current_subscribed_page != current_visible_page){
+        /* page switch already going */
+        /* TODO LOG ERROR */
+        return;
+    } else if(page_name == current_visible_page){
+        /* already in that page */
+        /* TODO LOG ERROR */
+        return;
+    }
+    switch_subscribed_page(page_name);
+};
 
-function do_switch_page(page_name) {
-    let old_desc = page_desc[current_page];
+function switch_subscribed_page(page_name) {
+    let old_desc = page_desc[current_subscribed_page];
     let new_desc = page_desc[page_name];
 
     if(new_desc == undefined){
@@ -277,6 +283,27 @@ function do_switch_page(page_name) {
                 subscribers[index].delete(widget);
             }
         }
+    }
+    for(let widget of new_desc.widgets){
+        /* add widget's subsribers */
+        for(let index of widget.indexes){
+            subscribers[index].add(widget);
+        }
+    }
+
+    update_subscriptions();
+
+    current_subscribed_page = page_name;
+
+    requestHMIAnimation();
+}
+
+function switch_visible_page(page_name) {
+
+    let old_desc = page_desc[current_visible_page];
+    let new_desc = page_desc[page_name];
+
+    if(old_desc){
         for(let eltid in old_desc.required_detachables){
             if(!(eltid in new_desc.required_detachables)){
                 let [element, parent] = old_desc.required_detachables[eltid];
@@ -297,9 +324,7 @@ function do_switch_page(page_name) {
     }
 
     for(let widget of new_desc.widgets){
-        /* add widget's subsribers */
         for(let index of widget.indexes){
-            subscribers[index].add(widget);
             /* dispatch current cache in newly opened page widgets */
             let cached_val = cache[index];
             if(cached_val != undefined)
@@ -308,9 +333,7 @@ function do_switch_page(page_name) {
     }
 
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-    current_page = page_name;
-
-    window.setTimeout(update_subscriptions,0);
+    current_visible_page = page_name;
 };
 
 
