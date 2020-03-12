@@ -82,7 +82,6 @@ function animate() {
     if(current_subscribed_page != current_visible_page){
         switch_visible_page(current_subscribed_page);
     }
-    console.log("no page switch");
     apply_updates();
     requestAnimationFrameID = null;
 }
