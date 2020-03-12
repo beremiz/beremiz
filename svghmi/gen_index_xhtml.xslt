@@ -753,19 +753,7 @@
 </xsl:text>
     <xsl:text>// Apply updates recieved through ws.onmessage to subscribed widgets
 </xsl:text>
-    <xsl:text>// Do the page swith if any one pending
-</xsl:text>
-    <xsl:text>// Called on requestAnimationFrame, modifies DOM
-</xsl:text>
-    <xsl:text>function animate() {
-</xsl:text>
-    <xsl:text>    if(current_subscribed_page != current_visible_page){
-</xsl:text>
-    <xsl:text>        switch_visible_page(current_subscribed_page);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
+    <xsl:text>function apply_updates() {
 </xsl:text>
     <xsl:text>    for(let index in updates){
 </xsl:text>
@@ -779,13 +767,33 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>// Called on requestAnimationFrame, modifies DOM
+</xsl:text>
+    <xsl:text>var requestAnimationFrameID = null;
+</xsl:text>
+    <xsl:text>function animate() {
+</xsl:text>
+    <xsl:text>    // Do the page swith if any one pending
+</xsl:text>
+    <xsl:text>    if(current_subscribed_page != current_visible_page){
+</xsl:text>
+    <xsl:text>        switch_visible_page(current_subscribed_page);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    console.log("no page switch");
+</xsl:text>
+    <xsl:text>    apply_updates();
+</xsl:text>
     <xsl:text>    requestAnimationFrameID = null;
 </xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
-</xsl:text>
-    <xsl:text>var requestAnimationFrameID = null;
 </xsl:text>
     <xsl:text>function requestHMIAnimation() {
 </xsl:text>
