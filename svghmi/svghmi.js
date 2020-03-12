@@ -66,23 +66,27 @@ const dvgetters = {
 };
 
 // Apply updates recieved through ws.onmessage to subscribed widgets
-// Do the page swith if any one pending
-// Called on requestAnimationFrame, modifies DOM
-function animate() {
-    if(current_subscribed_page != current_visible_page){
-        switch_visible_page(current_subscribed_page);
-    }
-
+function apply_updates() {
     for(let index in updates){
         // serving as a key, index becomes a string
         // -> pass Number(index) instead
         dispatch_value(Number(index), updates[index]);
         delete updates[index];
     }
+}
+
+// Called on requestAnimationFrame, modifies DOM
+var requestAnimationFrameID = null;
+function animate() {
+    // Do the page swith if any one pending
+    if(current_subscribed_page != current_visible_page){
+        switch_visible_page(current_subscribed_page);
+    }
+    console.log("no page switch");
+    apply_updates();
     requestAnimationFrameID = null;
 }
 
-var requestAnimationFrameID = null;
 function requestHMIAnimation() {
     if(requestAnimationFrameID == null){
         requestAnimationFrameID = window.requestAnimationFrame(animate);
