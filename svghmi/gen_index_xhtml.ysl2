@@ -663,8 +663,8 @@ istylesheet
 
     template "*", mode="testtree"{
         param "indent", "''";
-        > «$indent» «local-name()»
-        foreach "@*" > «local-name()»=«.»
+        > «$indent» «local-name()» 
+        foreach "@*" > «local-name()»="«.»" 
         > \n
         apply "*", mode="testtree" {
             with "indent" value "concat($indent,'>')"
