@@ -69,8 +69,6 @@ istylesheet
         noindex > HMI_CURRENT_PAGE
     }
     const "categories", "exsl:node-set($_categories)";
-    const "_indexed_hmitree" apply "$hmitree", mode="index";
-    const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
 
     // returns all directly or indirectly refered elements
@@ -263,7 +261,11 @@ istylesheet
     const "_detachable_elements", "func:detachable_elements($hmi_pages)";
     const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
+
     //////////////// HMI Tree Index
+
+    const "_indexed_hmitree" apply "$hmitree", mode="index";
+    const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
     template "*", mode="index" {
         param "index", "0";
@@ -822,7 +824,6 @@ istylesheet
     template "widget[@type='Jump']", mode="widget_defs" {
         param "hmi_element";
         |     on_click: function(evt) {
-        |         console.log(evt);
         |         switch_page(this.args[0]);
         |     },
         |     init: function() {

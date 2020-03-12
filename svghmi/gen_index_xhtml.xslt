@@ -33,9 +33,6 @@
       <xsl:text>HMI_ROOT</xsl:text>
     </noindex>
     <noindex>
-      <xsl:text>HMI_NODE</xsl:text>
-    </noindex>
-    <noindex>
       <xsl:text>HMI_PLC_STATUS</xsl:text>
     </noindex>
     <noindex>
@@ -43,10 +40,6 @@
     </noindex>
   </xsl:variable>
   <xsl:variable name="categories" select="exsl:node-set($_categories)"/>
-  <xsl:variable name="_indexed_hmitree">
-    <xsl:apply-templates mode="index" select="$hmitree"/>
-  </xsl:variable>
-  <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
   <func:function name="func:refered_elements">
     <xsl:param name="elems"/>
     <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
@@ -147,6 +140,10 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
+  <xsl:variable name="_indexed_hmitree">
+    <xsl:apply-templates mode="index" select="$hmitree"/>
+  </xsl:variable>
+  <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
   <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
     <xsl:param name="parentpath" select="''"/>
@@ -176,6 +173,12 @@
               <xsl:copy/>
             </xsl:for-each>
           </xsl:copy>
+          <xsl:apply-templates mode="index" select="*[1]">
+            <xsl:with-param name="index" select="$index + 1"/>
+            <xsl:with-param name="parentpath">
+              <xsl:value-of select="$path"/>
+            </xsl:with-param>
+          </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates mode="index" select="*[1]">
@@ -785,8 +788,6 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    console.log("no page switch");
-</xsl:text>
     <xsl:text>    apply_updates();
 </xsl:text>
     <xsl:text>    requestAnimationFrameID = null;
@@ -1359,10 +1360,12 @@
     <xsl:value-of select="$indent"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="local-name()"/>
+    <xsl:text> </xsl:text>
     <xsl:for-each select="@*">
       <xsl:value-of select="local-name()"/>
-      <xsl:text>=</xsl:text>
+      <xsl:text>="</xsl:text>
       <xsl:value-of select="."/>
+      <xsl:text>" </xsl:text>
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
@@ -1617,8 +1620,6 @@
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    on_click: function(evt) {
-</xsl:text>
-    <xsl:text>        console.log(evt);
 </xsl:text>
     <xsl:text>        switch_page(this.args[0]);
 </xsl:text>
