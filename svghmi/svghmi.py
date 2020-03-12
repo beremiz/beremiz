@@ -220,7 +220,7 @@ class SVGHMILibrary(POULibrary):
                 extern_variables_declarations += [
                     "#define heartbeat_index "+str(hmi_tree_hearbeat_index)
                 ]
-            if hasattr(node, "iectype") and node.nodetype != "HMI_NODE":
+            if hasattr(node, "iectype"):
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
                     "{&(" + node.cpath + "), " + node.iectype + {

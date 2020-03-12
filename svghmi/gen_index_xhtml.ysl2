@@ -65,7 +65,6 @@ istylesheet
 
     const "_categories" {
         noindex > HMI_ROOT
-        noindex > HMI_NODE
         noindex > HMI_PLC_STATUS
         noindex > HMI_CURRENT_PAGE
     }
@@ -282,7 +281,10 @@ istylesheet
                         attrib "hmipath" > «$path»
                         foreach "@*" xsl:copy;
                     }
-                    /* no node expected below value nodes */
+                    apply "*[1]", mode="index"{
+                         with "index", "$index + 1";
+                         with "parentpath" > «$path»
+                    }
                 }
                 otherwise {
                     apply "*[1]", mode="index"{
