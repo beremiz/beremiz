@@ -305,6 +305,11 @@ istylesheet
     }
 
 
+    def "func:is_descendant_path" {
+        param "ancest";
+        param "descend";
+        result "starts-with($descend,$ancest)";
+    }
 
     //////////////// Inline SVG
 
@@ -501,8 +506,12 @@ istylesheet
             }
             const "paths", "substring-after($description,'@')";
             foreach "str:split($paths, '@')" {
-                path {
+                if "string-length(.) > 0" path {
                     attrib "value" > «.»
+                    const "path", ".";
+                    const "item", "$indexed_hmitree/*[@hmipath = $path]";
+                    if "count($item) = 1"
+                        attrib "index" > «$item/@index»
                 }
             }
         }
@@ -548,14 +557,12 @@ istylesheet
         |     ],
         |     indexes: [
             foreach "$widget/path" {
-                const "hmipath","@value";
-                const "hmitree_match","$indexed_hmitree/*[@hmipath = $hmipath]";
                 choose {
-                    when "count($hmitree_match) = 0" {
-                        warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«$hmipath»" in HMI tree
+                    when "not(@index)" {
+                        warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
                     }
                     otherwise {
-        |             «$hmitree_match/@index»`if "position()!=last()" > ,`
+        |             «@index»`if "position()!=last()" > ,`
                     }
                 }
             }
@@ -593,7 +600,10 @@ istylesheet
 
             const "page_all_elements", "func:all_related_elements($page)";
 
-            const "all_page_ids","$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id";
+            const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
+
+            const "page_relative_widgets",
+                "$all_page_widgets[func:is_descendant_path($desc/path/@value, path/@value)]";
 
             // Take closest ancestor in detachable_elements
             // since nested detachable elements are filtered out
@@ -604,9 +614,19 @@ istylesheet
             |   "«$desc/arg[1]/@value»": {
             |     widget: hmi_widgets["«@id»"],
             |     bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
-            |     widgets: [
-            foreach "$all_page_ids" {
-            |         hmi_widgets["«.»"]`if "position()!=last()" > ,`
+            if "$desc/path/@value" {
+                if "count($desc/path/@index)=0"
+                    warning > Page id="«$page/@id»" : No match for path "«$desc/path/@value»" in HMI tree
+            |     page_index: «$desc/path/@index»,
+            }
+            |     relative_widgets: [
+            foreach "$page_relative_widgets" {
+            |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+            }
+            |     ],
+            |     absolute_widgets: [
+            foreach "$all_page_widgets[not(@id = $page_relative_widgets/@id)]" {
+            |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
             }
             |     ],
             |     required_detachables: {
@@ -824,7 +844,7 @@ istylesheet
     template "widget[@type='Jump']", mode="widget_defs" {
         param "hmi_element";
         |     on_click: function(evt) {
-        |         switch_page(this.args[0]);
+        |         switch_page(this.args[0], this.indexes[0]);
         |     },
         |     init: function() {
         /* registering event this way doies not "click" through svg:use 
