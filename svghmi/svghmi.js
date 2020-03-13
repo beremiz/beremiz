@@ -5,13 +5,19 @@ var updates = {};
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
-        let idxidx = widget.indexes.indexOf(index);
+        let idx = widget.offset ? index - widget.offset : index;
+        let idxidx = widget.indexes.indexOf(idx);
         let d = widget.dispatch;
+        console.log(index, idx, idxidx, value);
         if(typeof(d) == "function" && idxidx == 0){
             d.call(widget, value, oldval);
-        }else if(typeof(d) == "object" && d.length >= idxidx){
+        }
+        /* TODO deal with multiple paths
+           and dispatch according to index+page_offset */
+        /*else if(typeof(d) == "object" && d.length >= idxidx){
             d[idxidx].call(widget, value, oldval);
-        }/* else dispatch_0, ..., dispatch_n ? */
+        }*/
+        /* else dispatch_0, ..., dispatch_n ? */
         /*else {
             throw new Error("Dunno how to dispatch to widget at index = " + index);
         }*/
@@ -257,7 +263,7 @@ function prepare_svg() {
     }
 };
 
-function switch_page(page_name, root_index) {
+function switch_page(page_name, page_index) {
     if(current_subscribed_page != current_visible_page){
         /* page switch already going */
         /* TODO LOG ERROR */
@@ -267,7 +273,7 @@ function switch_page(page_name, root_index) {
         /* TODO LOG ERROR */
         return;
     }
-    switch_subscribed_page(page_name);
+    switch_subscribed_page(page_name, page_index);
 };
 
 function* chain(a,b){
@@ -275,7 +281,7 @@ function* chain(a,b){
     yield* b;
 };
 
-function switch_subscribed_page(page_name) {
+function switch_subscribed_page(page_name, page_index) {
     let old_desc = page_desc[current_subscribed_page];
     let new_desc = page_desc[page_name];
 
@@ -284,18 +290,40 @@ function switch_subscribed_page(page_name) {
         return;
     }
 
+    if(page_index == undefined){
+        page_index = new_desc.page_index;
+    }
+
     if(old_desc){
-        for(let widget of chain(old_desc.absolute_widgets,old_desc.relative_widgets)){
+        for(let widget of old_desc.absolute_widgets){
             /* remove subsribers */
             for(let index of widget.indexes){
                 subscribers[index].delete(widget);
             }
         }
+        for(let widget of old_desc.relative_widgets){
+            /* remove subsribers */
+            for(let index of widget.indexes){
+                let idx = widget.offset ? index + widget.offset : index;
+                subscribers[idx].delete(widget);
+            }
+            /* lose the offset */
+            delete widget.offset;
+        }
     }
-    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
+    for(let widget of new_desc.absolute_widgets){
         /* add widget's subsribers */
         for(let index of widget.indexes){
             subscribers[index].add(widget);
+        }
+    }
+    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+    for(let widget of new_desc.relative_widgets){
+        /* set the offset because relative */
+        widget.offset = new_offset;
+        /* add widget's subsribers */
+        for(let index of widget.indexes){
+            subscribers[index + new_offset].add(widget);
         }
     }
 

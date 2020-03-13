@@ -306,9 +306,9 @@ istylesheet
 
 
     def "func:is_descendant_path" {
-        param "ancest";
         param "descend";
-        result "starts-with($descend,$ancest)";
+        param "ancest";
+        result "string-length($ancest) > 0 and starts-with($descend,$ancest)";
     }
 
     //////////////// Inline SVG
@@ -603,7 +603,7 @@ istylesheet
             const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
 
             const "page_relative_widgets",
-                "$all_page_widgets[func:is_descendant_path($desc/path/@value, path/@value)]";
+                "$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]";
 
             // Take closest ancestor in detachable_elements
             // since nested detachable elements are filtered out

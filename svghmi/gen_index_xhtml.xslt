@@ -199,9 +199,9 @@
     </xsl:apply-templates>
   </xsl:template>
   <func:function name="func:is_descendant_path">
-    <xsl:param name="ancest"/>
     <xsl:param name="descend"/>
-    <func:result select="starts-with($descend,$ancest)"/>
+    <xsl:param name="ancest"/>
+    <func:result select="string-length($ancest) &gt; 0 and starts-with($descend,$ancest)"/>
   </func:function>
   <xsl:template mode="inline_svg" match="@* | node()">
     <xsl:if test="not(@id = $discardable_elements/@id)">
@@ -564,7 +564,7 @@
       <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
       <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
       <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
-      <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path($desc/path/@value, path/@value)]"/>
+      <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]"/>
       <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;                   ancestor-or-self::*[@id = $detachable_elements/@id]"/>
       <xsl:text>  "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
@@ -676,19 +676,31 @@
 </xsl:text>
     <xsl:text>    try {
 </xsl:text>
-    <xsl:text>        let idxidx = widget.indexes.indexOf(index);
+    <xsl:text>        let idx = widget.offset ? index - widget.offset : index;
+</xsl:text>
+    <xsl:text>        let idxidx = widget.indexes.indexOf(idx);
 </xsl:text>
     <xsl:text>        let d = widget.dispatch;
+</xsl:text>
+    <xsl:text>        console.log(index, idx, idxidx, value);
 </xsl:text>
     <xsl:text>        if(typeof(d) == "function" &amp;&amp; idxidx == 0){
 </xsl:text>
     <xsl:text>            d.call(widget, value, oldval);
 </xsl:text>
-    <xsl:text>        }else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        /* TODO deal with multiple paths
+</xsl:text>
+    <xsl:text>           and dispatch according to index+page_offset */
+</xsl:text>
+    <xsl:text>        /*else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
 </xsl:text>
     <xsl:text>            d[idxidx].call(widget, value, oldval);
 </xsl:text>
-    <xsl:text>        }/* else dispatch_0, ..., dispatch_n ? */
+    <xsl:text>        }*/
+</xsl:text>
+    <xsl:text>        /* else dispatch_0, ..., dispatch_n ? */
 </xsl:text>
     <xsl:text>        /*else {
 </xsl:text>
@@ -1180,7 +1192,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function switch_page(page_name, root_index) {
+    <xsl:text>function switch_page(page_name, page_index) {
 </xsl:text>
     <xsl:text>    if(current_subscribed_page != current_visible_page){
 </xsl:text>
@@ -1200,7 +1212,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    switch_subscribed_page(page_name);
+    <xsl:text>    switch_subscribed_page(page_name, page_index);
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -1216,7 +1228,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function switch_subscribed_page(page_name) {
+    <xsl:text>function switch_subscribed_page(page_name, page_index) {
 </xsl:text>
     <xsl:text>    let old_desc = page_desc[current_subscribed_page];
 </xsl:text>
@@ -1234,9 +1246,17 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    if(page_index == undefined){
+</xsl:text>
+    <xsl:text>        page_index = new_desc.page_index;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    if(old_desc){
 </xsl:text>
-    <xsl:text>        for(let widget of chain(old_desc.absolute_widgets,old_desc.relative_widgets)){
+    <xsl:text>        for(let widget of old_desc.absolute_widgets){
 </xsl:text>
     <xsl:text>            /* remove subsribers */
 </xsl:text>
@@ -1248,15 +1268,51 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>        for(let widget of old_desc.relative_widgets){
+</xsl:text>
+    <xsl:text>            /* remove subsribers */
+</xsl:text>
+    <xsl:text>            for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>                let idx = widget.offset ? index + widget.offset : index;
+</xsl:text>
+    <xsl:text>                subscribers[idx].delete(widget);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            /* lose the offset */
+</xsl:text>
+    <xsl:text>            delete widget.offset;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
+    <xsl:text>    for(let widget of new_desc.absolute_widgets){
 </xsl:text>
     <xsl:text>        /* add widget's subsribers */
 </xsl:text>
     <xsl:text>        for(let index of widget.indexes){
 </xsl:text>
     <xsl:text>            subscribers[index].add(widget);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+</xsl:text>
+    <xsl:text>    for(let widget of new_desc.relative_widgets){
+</xsl:text>
+    <xsl:text>        /* set the offset because relative */
+</xsl:text>
+    <xsl:text>        widget.offset = new_offset;
+</xsl:text>
+    <xsl:text>        /* add widget's subsribers */
+</xsl:text>
+    <xsl:text>        for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>            subscribers[index + new_offset].add(widget);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
