@@ -257,7 +257,7 @@ function prepare_svg() {
     }
 };
 
-function switch_page(page_name) {
+function switch_page(page_name, root_index) {
     if(current_subscribed_page != current_visible_page){
         /* page switch already going */
         /* TODO LOG ERROR */
@@ -270,6 +270,11 @@ function switch_page(page_name) {
     switch_subscribed_page(page_name);
 };
 
+function* chain(a,b){
+    yield* a;
+    yield* b;
+};
+
 function switch_subscribed_page(page_name) {
     let old_desc = page_desc[current_subscribed_page];
     let new_desc = page_desc[page_name];
@@ -280,14 +285,14 @@ function switch_subscribed_page(page_name) {
     }
 
     if(old_desc){
-        for(let widget of old_desc.widgets){
+        for(let widget of chain(old_desc.absolute_widgets,old_desc.relative_widgets)){
             /* remove subsribers */
             for(let index of widget.indexes){
                 subscribers[index].delete(widget);
             }
         }
     }
-    for(let widget of new_desc.widgets){
+    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
         /* add widget's subsribers */
         for(let index of widget.indexes){
             subscribers[index].add(widget);
@@ -326,7 +331,7 @@ function switch_visible_page(page_name) {
         }
     }
 
-    for(let widget of new_desc.widgets){
+    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
         for(let index of widget.indexes){
             /* dispatch current cache in newly opened page widgets */
             let cached_val = cache[index];

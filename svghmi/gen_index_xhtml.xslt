@@ -198,6 +198,11 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
+  <func:function name="func:is_descendant_path">
+    <xsl:param name="ancest"/>
+    <xsl:param name="descend"/>
+    <func:result select="starts-with($descend,$ancest)"/>
+  </func:function>
   <xsl:template mode="inline_svg" match="@* | node()">
     <xsl:if test="not(@id = $discardable_elements/@id)">
       <xsl:copy>
@@ -399,11 +404,20 @@
           </xsl:for-each>
           <xsl:variable name="paths" select="substring-after($description,'@')"/>
           <xsl:for-each select="str:split($paths, '@')">
-            <path>
-              <xsl:attribute name="value">
-                <xsl:value-of select="."/>
-              </xsl:attribute>
-            </path>
+            <xsl:if test="string-length(.) &gt; 0">
+              <path>
+                <xsl:attribute name="value">
+                  <xsl:value-of select="."/>
+                </xsl:attribute>
+                <xsl:variable name="path" select="."/>
+                <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
+                <xsl:if test="count($item) = 1">
+                  <xsl:attribute name="index">
+                    <xsl:value-of select="$item/@index"/>
+                  </xsl:attribute>
+                </xsl:if>
+              </path>
+            </xsl:if>
           </xsl:for-each>
         </widget>
       </xsl:if>
@@ -453,23 +467,21 @@
       <xsl:text>    indexes: [
 </xsl:text>
       <xsl:for-each select="$widget/path">
-        <xsl:variable name="hmipath" select="@value"/>
-        <xsl:variable name="hmitree_match" select="$indexed_hmitree/*[@hmipath = $hmipath]"/>
         <xsl:choose>
-          <xsl:when test="count($hmitree_match) = 0">
+          <xsl:when test="not(@index)">
             <xsl:message terminate="no">
               <xsl:text>Widget </xsl:text>
               <xsl:value-of select="$widget/@type"/>
               <xsl:text> id="</xsl:text>
               <xsl:value-of select="$eltid"/>
               <xsl:text>" : No match for path "</xsl:text>
-              <xsl:value-of select="$hmipath"/>
+              <xsl:value-of select="@value"/>
               <xsl:text>" in HMI tree</xsl:text>
             </xsl:message>
           </xsl:when>
           <xsl:otherwise>
             <xsl:text>            </xsl:text>
-            <xsl:value-of select="$hmitree_match/@index"/>
+            <xsl:value-of select="@index"/>
             <xsl:if test="position()!=last()">
               <xsl:text>,</xsl:text>
             </xsl:if>
@@ -551,7 +563,8 @@
       <xsl:variable name="page" select="."/>
       <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
       <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-      <xsl:variable name="all_page_ids" select="$page_all_elements[@id = $hmi_elements/@id and @id != $page/@id]/@id"/>
+      <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
+      <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path($desc/path/@value, path/@value)]"/>
       <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;                   ancestor-or-self::*[@id = $detachable_elements/@id]"/>
       <xsl:text>  "</xsl:text>
       <xsl:value-of select="$desc/arg[1]/@value"/>
@@ -571,11 +584,40 @@
       <xsl:value-of select="$p/@h"/>
       <xsl:text>],
 </xsl:text>
-      <xsl:text>    widgets: [
+      <xsl:if test="$desc/path/@value">
+        <xsl:if test="count($desc/path/@index)=0">
+          <xsl:message terminate="no">
+            <xsl:text>Page id="</xsl:text>
+            <xsl:value-of select="$page/@id"/>
+            <xsl:text>" : No match for path "</xsl:text>
+            <xsl:value-of select="$desc/path/@value"/>
+            <xsl:text>" in HMI tree</xsl:text>
+          </xsl:message>
+        </xsl:if>
+        <xsl:text>    page_index: </xsl:text>
+        <xsl:value-of select="$desc/path/@index"/>
+        <xsl:text>,
 </xsl:text>
-      <xsl:for-each select="$all_page_ids">
+      </xsl:if>
+      <xsl:text>    relative_widgets: [
+</xsl:text>
+      <xsl:for-each select="$page_relative_widgets">
         <xsl:text>        hmi_widgets["</xsl:text>
-        <xsl:value-of select="."/>
+        <xsl:value-of select="@id"/>
+        <xsl:text>"]</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>    ],
+</xsl:text>
+      <xsl:text>    absolute_widgets: [
+</xsl:text>
+      <xsl:for-each select="$all_page_widgets[not(@id = $page_relative_widgets/@id)]">
+        <xsl:text>        hmi_widgets["</xsl:text>
+        <xsl:value-of select="@id"/>
         <xsl:text>"]</xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
@@ -1138,7 +1180,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function switch_page(page_name) {
+    <xsl:text>function switch_page(page_name, root_index) {
 </xsl:text>
     <xsl:text>    if(current_subscribed_page != current_visible_page){
 </xsl:text>
@@ -1164,6 +1206,16 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>function* chain(a,b){
+</xsl:text>
+    <xsl:text>    yield* a;
+</xsl:text>
+    <xsl:text>    yield* b;
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function switch_subscribed_page(page_name) {
 </xsl:text>
     <xsl:text>    let old_desc = page_desc[current_subscribed_page];
@@ -1184,7 +1236,7 @@
 </xsl:text>
     <xsl:text>    if(old_desc){
 </xsl:text>
-    <xsl:text>        for(let widget of old_desc.widgets){
+    <xsl:text>        for(let widget of chain(old_desc.absolute_widgets,old_desc.relative_widgets)){
 </xsl:text>
     <xsl:text>            /* remove subsribers */
 </xsl:text>
@@ -1198,7 +1250,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    for(let widget of new_desc.widgets){
+    <xsl:text>    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
 </xsl:text>
     <xsl:text>        /* add widget's subsribers */
 </xsl:text>
@@ -1276,7 +1328,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    for(let widget of new_desc.widgets){
+    <xsl:text>    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
 </xsl:text>
     <xsl:text>        for(let index of widget.indexes){
 </xsl:text>
@@ -1621,7 +1673,7 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>    on_click: function(evt) {
 </xsl:text>
-    <xsl:text>        switch_page(this.args[0]);
+    <xsl:text>        switch_page(this.args[0], this.indexes[0]);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
