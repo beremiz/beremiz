@@ -690,15 +690,11 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        /* TODO deal with multiple paths
-</xsl:text>
-    <xsl:text>           and dispatch according to index+page_offset */
-</xsl:text>
-    <xsl:text>        /*else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
+    <xsl:text>        else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
 </xsl:text>
     <xsl:text>            d[idxidx].call(widget, value, oldval);
 </xsl:text>
-    <xsl:text>        }*/
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>        /* else dispatch_0, ..., dispatch_n ? */
 </xsl:text>
