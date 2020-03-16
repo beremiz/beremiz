@@ -12,11 +12,9 @@ function dispatch_value_to_widget(widget, index, value, oldval) {
         if(typeof(d) == "function" && idxidx == 0){
             d.call(widget, value, oldval);
         }
-        /* TODO deal with multiple paths
-           and dispatch according to index+page_offset */
-        /*else if(typeof(d) == "object" && d.length >= idxidx){
+        else if(typeof(d) == "object" && d.length >= idxidx){
             d[idxidx].call(widget, value, oldval);
-        }*/
+        }
         /* else dispatch_0, ..., dispatch_n ? */
         /*else {
             throw new Error("Dunno how to dispatch to widget at index = " + index);
