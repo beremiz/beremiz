@@ -36,47 +36,14 @@ istylesheet
             exclude-result-prefixes="ns str regexp exsl func dyn" {
 
 
-    const "svg_root_id", "/svg:svg/@id";
-    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
-
-    const "hmi_pages", "$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']";
-
-    const "default_page" choose {
-        when "count($hmi_pages) > 1" {
-            const "Home_page", 
-                "$hmi_pages[func:parselabel(@inkscape:label)/widget/arg[1]/@value = 'Home']";
-            choose {
-                when "$Home_page" > Home
-                otherwise {
-                    error "No Home page defined!";
-                }
-            }
-        }
-        when "count($hmi_pages) = 0" {
-            error "No page defined!";
-        }
-        otherwise > «func:parselabel($hmi_pages/@inkscape:label)/widget/arg[1]/@value»
-    }
-
-    const "_categories" {
-        noindex > HMI_ROOT
-        noindex > HMI_PLC_STATUS
-        noindex > HMI_CURRENT_PAGE
-    }
-    const "categories", "exsl:node-set($_categories)";
+    include hmi_tree.ysl2
 
     include geometry.ysl2
 
-    include detachable_elements.ysl2
+    const "svg_root_id", "/svg:svg/@id";
+    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
 
-    include hmi_tree.ysl2
-
-
-    def "func:is_descendant_path" {
-        param "descend";
-        param "ancest";
-        result "string-length($ancest) > 0 and starts-with($descend,$ancest)";
-    }
+    include detachable_pages.ysl2
 
     //////////////// Inline SVG
 
@@ -230,43 +197,6 @@ istylesheet
         }
     */
 
-    def "func:parselabel" {
-        param "label";
-        const "description", "substring-after($label,'HMI:')";
-
-        const "_args", "substring-before($description,'@')";
-        const "args" choose {
-            when "$_args" value "$_args";
-            otherwise value "$description";
-        }
-
-        const "_type", "substring-before($args,':')";
-        const "type" choose {
-            when "$_type" value "$_type";
-            otherwise value "$args";
-        }
-
-        const "ast" if "$type" widget {
-            attrib "type" > «$type»
-            foreach "str:split(substring-after($args, ':'), ':')" {
-                arg {
-                    attrib "value" > «.»
-                }
-            }
-            const "paths", "substring-after($description,'@')";
-            foreach "str:split($paths, '@')" {
-                if "string-length(.) > 0" path {
-                    attrib "value" > «.»
-                    const "path", ".";
-                    const "item", "$indexed_hmitree/*[@hmipath = $path]";
-                    if "count($item) = 1"
-                        attrib "index" > «$item/@index»
-                }
-            }
-        }
-
-        result "exsl:node-set($ast)";
-    }
 
     function "scripts"
     {
@@ -341,50 +271,7 @@ istylesheet
 
         |
         | var page_desc = {
-
-        foreach "$hmi_pages" {
-            const "desc", "func:parselabel(@inkscape:label)/widget";
-            const "page", ".";
-            const "p", "$geometry[@Id = $page/@id]";
-
-            const "page_all_elements", "func:all_related_elements($page)";
-
-            const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
-
-            const "page_relative_widgets",
-                "$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]";
-
-            // Take closest ancestor in detachable_elements
-            // since nested detachable elements are filtered out
-            const "required_detachables", 
-                """func:sumarized_elements($page_all_elements)/
-                   ancestor-or-self::*[@id = $detachable_elements/@id]""";
-
-            |   "«$desc/arg[1]/@value»": {
-            |     widget: hmi_widgets["«@id»"],
-            |     bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
-            if "$desc/path/@value" {
-                if "count($desc/path/@index)=0"
-                    warning > Page id="«$page/@id»" : No match for path "«$desc/path/@value»" in HMI tree
-            |     page_index: «$desc/path/@index»,
-            }
-            |     relative_widgets: [
-            foreach "$page_relative_widgets" {
-            |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
-            }
-            |     ],
-            |     absolute_widgets: [
-            foreach "$all_page_widgets[not(@id = $page_relative_widgets/@id)]" {
-            |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
-            }
-            |     ],
-            |     required_detachables: {
-            foreach "$required_detachables" {
-            |         "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
-            }
-            |     }
-            |   }`if "position()!=last()" > ,`
-        }
+        apply "$hmi_pages", mode="page_desc";
         | }
 
         |

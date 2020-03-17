@@ -4,6 +4,25 @@
 // and decide where to cut when removing/attaching 
 // pages elements on page switch
 
+const "hmi_pages", "$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']";
+
+const "default_page" choose {
+    when "count($hmi_pages) > 1" {
+        const "Home_page", 
+            "$hmi_pages[func:parselabel(@inkscape:label)/widget/arg[1]/@value = 'Home']";
+        choose {
+            when "$Home_page" > Home
+            otherwise {
+                error "No Home page defined!";
+            }
+        }
+    }
+    when "count($hmi_pages) = 0" {
+        error "No page defined!";
+    }
+    otherwise > «func:parselabel($hmi_pages/@inkscape:label)/widget/arg[1]/@value»
+}
+
 // returns all directly or indirectly refered elements
 def "func:refered_elements" {
     param "elems";
@@ -72,6 +91,56 @@ def "func:detachable_elements" {
 // Avoid nested detachables
 const "_detachable_elements", "func:detachable_elements($hmi_pages)";
 const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
+
+def "func:is_descendant_path" {
+    param "descend";
+    param "ancest";
+    result "string-length($ancest) > 0 and starts-with($descend,$ancest)";
+}
+
+template "svg:*", mode="page_desc" {
+    const "desc", "func:parselabel(@inkscape:label)/widget";
+    const "page", ".";
+    const "p", "$geometry[@Id = $page/@id]";
+
+    const "page_all_elements", "func:all_related_elements($page)";
+
+    const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
+
+    const "page_relative_widgets",
+        "$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]";
+
+    // Take closest ancestor in detachable_elements
+    // since nested detachable elements are filtered out
+    const "required_detachables", 
+        """func:sumarized_elements($page_all_elements)/
+           ancestor-or-self::*[@id = $detachable_elements/@id]""";
+
+    |   "«$desc/arg[1]/@value»": {
+    |     widget: hmi_widgets["«@id»"],
+    |     bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
+    if "$desc/path/@value" {
+        if "count($desc/path/@index)=0"
+            warning > Page id="«$page/@id»" : No match for path "«$desc/path/@value»" in HMI tree
+    |     page_index: «$desc/path/@index»,
+    }
+    |     relative_widgets: [
+    foreach "$page_relative_widgets" {
+    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+    }
+    |     ],
+    |     absolute_widgets: [
+    foreach "$all_page_widgets[not(@id = $page_relative_widgets/@id)]" {
+    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+    }
+    |     ],
+    |     required_detachables: {
+    foreach "$required_detachables" {
+    |         "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
+    }
+    |     }
+    |   }`if "position()!=last()" > ,`
+}
 
 function "debug_detachables" {
     foreach "$detachable_elements"{
