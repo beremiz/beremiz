@@ -36,12 +36,11 @@ istylesheet
             exclude-result-prefixes="ns str regexp exsl func dyn" {
 
 
+    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
+
     include hmi_tree.ysl2
 
     include geometry.ysl2
-
-    const "svg_root_id", "/svg:svg/@id";
-    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
 
     include detachable_pages.ysl2
 
@@ -159,7 +158,7 @@ istylesheet
 
         |
         | var default_page = "«$default_page»";
-        | var svg_root = id("«$svg_root_id»");
+        | var svg_root = id("«/svg:svg/@id»");
         include text svghmi.js
         | //})();
     }
