@@ -60,6 +60,8 @@ istylesheet
 
     include inline_svg.ysl2
 
+    include widget_common.ysl2
+
     template "/" {
         comment > Made with SVGHMI. https://beremiz.org
 
@@ -120,31 +122,7 @@ istylesheet
         */
 
         | var hmi_widgets = {
-        foreach "$hmi_elements" {
-            const "widget", "func:parselabel(@inkscape:label)/widget";
-            const "eltid","@id";
-        |   "«@id»": {
-        |     type: "«$widget/@type»",
-        |     args: [
-            foreach "$widget/arg"
-        |         "«@value»"`if "position()!=last()" > ,`
-        |     ],
-        |     indexes: [
-            foreach "$widget/path" {
-                choose {
-                    when "not(@index)" {
-                        warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
-                    }
-                    otherwise {
-        |             «@index»`if "position()!=last()" > ,`
-                    }
-                }
-            }
-        |     ],
-        |     element: id("«@id»"),
-            apply "$widget", mode="widget_defs" with "hmi_element",".";
-        |   }`if "position()!=last()" > ,`
-        }
+        apply "$hmi_elements", mode="hmi_elements";
         | }
         |
         | var heartbeat_index = «$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index»;
@@ -205,31 +183,6 @@ istylesheet
     //     }
     //     ||
     // }
-
-
-
-    function "defs_by_labels" {
-        param "labels","''";
-        param "mandatory","'yes'";
-        param "hmi_element";
-        const "widget_type","@type";
-        foreach "str:split($labels)" {
-            const "name",".";
-            const "elt_id","$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id";
-            choose {
-                when "not($elt_id)" {
-                    if "$mandatory='yes'" {
-                        // TODO FIXME error > «$widget_type» widget must have a «$name» element
-                        warning > «$widget_type» widget must have a «$name» element
-                    }
-                    // otherwise produce nothing
-                }
-                otherwise {
-                    |     «$name»_elt: id("«$elt_id»"),
-                }
-            }
-        }
-    }
 
 
     template "widget[@type='Display']", mode="widget_defs" {
