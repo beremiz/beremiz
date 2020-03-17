@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns str regexp exsl func dyn">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+  <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="_categories">
     <noindex>
@@ -166,7 +167,7 @@
   <xsl:template name="debug_geometry">
     <xsl:text>ID, x, y, w, h
 </xsl:text>
-    <xsl:for-each select="$geometry[@Id = $hmi_elements/@id]">
+    <xsl:for-each select="$geometry">
       <xsl:text> </xsl:text>
       <xsl:value-of select="@Id"/>
       <xsl:text> </xsl:text>
@@ -227,8 +228,6 @@
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
-  <xsl:variable name="svg_root_id" select="/svg:svg/@id"/>
-  <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
   <xsl:variable name="default_page">
     <xsl:choose>
@@ -568,15 +567,6 @@
       <xsl:text>
 </xsl:text>
     </xsl:comment>
-    <xsl:comment>
-      <xsl:text>Unlinked :
-</xsl:text>
-      <xsl:for-each select="$to_unlink">
-        <xsl:value-of select="@id"/>
-        <xsl:text>
-</xsl:text>
-      </xsl:for-each>
-    </xsl:comment>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
@@ -731,7 +721,7 @@
     <xsl:text>";
 </xsl:text>
     <xsl:text>var svg_root = id("</xsl:text>
-    <xsl:value-of select="$svg_root_id"/>
+    <xsl:value-of select="/svg:svg/@id"/>
     <xsl:text>");
 </xsl:text>
     <xsl:text>// svghmi.js
