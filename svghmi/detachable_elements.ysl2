@@ -73,3 +73,9 @@ def "func:detachable_elements" {
 const "_detachable_elements", "func:detachable_elements($hmi_pages)";
 const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
+function "debug_detachables" {
+    foreach "$detachable_elements"{
+        |  «@id»
+    }
+}
+!debug_output_calls.append("debug_detachables")
