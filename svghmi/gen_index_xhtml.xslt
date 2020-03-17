@@ -521,6 +521,13 @@
     <xsl:apply-templates mode="inline_svg" select="/"/>
   </xsl:variable>
   <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
+  <xsl:template name="debug_unlink">
+    <xsl:for-each select="$to_unlink">
+      <xsl:value-of select="@id"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -549,6 +556,15 @@
       <xsl:text>debug_detachables:
 </xsl:text>
       <xsl:call-template name="debug_detachables"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:comment>
+    <xsl:comment>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>debug_unlink:
+</xsl:text>
+      <xsl:call-template name="debug_unlink"/>
       <xsl:text>
 </xsl:text>
     </xsl:comment>
