@@ -264,16 +264,9 @@ istylesheet
         comment > Made with SVGHMI. https://beremiz.org
 
         // use python to call all debug output from included definitions
-        // '&bug' is a workaround for old pyPEG that choke on empty python results
-        !"&bug "+"\n".join(["comment {|\n| %s:\n call \"%s\";\n| \n}"%(n,n) for n in debug_output_calls])!
+        // '&bug' is a workaround for pyPEG that choke on yml2 python results not parsing to a single call
+        !"&bug {"+"\n".join(["comment {\n| \n| %s:\n call \"%s\";\n| \n}"%(n,n) for n in debug_output_calls]) +"}"!
 
-        // TODO
-        comment {
-            apply "$hmitree", mode="testtree";
-        }
-        comment {
-            apply "$indexed_hmitree", mode="testtree";
-        }
         comment {
             | Detachable :
             foreach "$detachable_elements"{
@@ -514,17 +507,6 @@ istylesheet
     // }
 
 
-    /**/
-    template "*", mode="testtree"{
-        param "indent", "''";
-        > «$indent» «local-name()» 
-        foreach "@*" > «local-name()»="«.»" 
-        > \n
-        apply "*", mode="testtree" {
-            with "indent" value "concat($indent,'>')"
-        };
-    }
-    /**/
 
     function "defs_by_labels" {
         param "labels","''";

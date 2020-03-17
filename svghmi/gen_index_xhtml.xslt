@@ -215,6 +215,36 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
+  <xsl:template mode="testtree" match="*">
+    <xsl:param name="indent" select="''"/>
+    <xsl:value-of select="$indent"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> </xsl:text>
+    <xsl:for-each select="@*">
+      <xsl:value-of select="local-name()"/>
+      <xsl:text>="</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>" </xsl:text>
+    </xsl:for-each>
+    <xsl:text>
+</xsl:text>
+    <xsl:apply-templates mode="testtree" select="*">
+      <xsl:with-param name="indent">
+        <xsl:value-of select="concat($indent,'&gt;')"/>
+      </xsl:with-param>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template name="debug_hmitree">
+    <xsl:text>Raw HMI tree
+</xsl:text>
+    <xsl:apply-templates mode="testtree" select="$hmitree"/>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>Indexed HMI tree
+</xsl:text>
+    <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
+  </xsl:template>
   <func:function name="func:is_descendant_path">
     <xsl:param name="descend"/>
     <xsl:param name="ancest"/>
@@ -345,10 +375,13 @@
 </xsl:text>
     </xsl:comment>
     <xsl:comment>
-      <xsl:apply-templates mode="testtree" select="$hmitree"/>
-    </xsl:comment>
-    <xsl:comment>
-      <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>debug_hmitree:
+</xsl:text>
+      <xsl:call-template name="debug_hmitree"/>
+      <xsl:text>
+</xsl:text>
     </xsl:comment>
     <xsl:comment>
       <xsl:text>Detachable :
@@ -1467,26 +1500,6 @@
 </xsl:text>
     <xsl:text>//})();
 </xsl:text>
-  </xsl:template>
-  <xsl:template mode="testtree" match="*">
-    <xsl:param name="indent" select="''"/>
-    <xsl:value-of select="$indent"/>
-    <xsl:text> </xsl:text>
-    <xsl:value-of select="local-name()"/>
-    <xsl:text> </xsl:text>
-    <xsl:for-each select="@*">
-      <xsl:value-of select="local-name()"/>
-      <xsl:text>="</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>" </xsl:text>
-    </xsl:for-each>
-    <xsl:text>
-</xsl:text>
-    <xsl:apply-templates mode="testtree" select="*">
-      <xsl:with-param name="indent">
-        <xsl:value-of select="concat($indent,'&gt;')"/>
-      </xsl:with-param>
-    </xsl:apply-templates>
   </xsl:template>
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>
