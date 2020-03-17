@@ -45,3 +45,22 @@ template "*", mode="index" {
         with "parentpath" > «$parentpath»
     }
 }
+
+// Debug data
+template "*", mode="testtree"{
+    param "indent", "''";
+    > «$indent» «local-name()» 
+    foreach "@*" > «local-name()»="«.»" 
+    > \n
+    apply "*", mode="testtree" {
+        with "indent" value "concat($indent,'>')"
+    };
+}
+function "debug_hmitree" {
+    | Raw HMI tree
+    apply "$hmitree", mode="testtree";
+    |
+    | Indexed HMI tree
+    apply "$indexed_hmitree", mode="testtree";
+}
+!debug_output_calls.append("debug_hmitree")
