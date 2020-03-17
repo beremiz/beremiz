@@ -17,7 +17,21 @@ in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
 in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
 in xsl decl svgfunc(name, xmlns="http://www.w3.org/2000/svg") alias template;
 
-!debug_output_calls = []
+!!
+debug_output_calls = []
+def gen_debug_calls():
+    # '&bug' is a workaround for pyPEG that choke on
+    # yml2 python results not parsing down into a single yml2 call
+    return ("&bug {"+
+        "\n".join(["""
+            comment {
+                |
+                | %s:
+                call "%s";
+                | 
+            }"""%(n,n) for n in debug_output_calls])+
+        "}")
+!!
 
 istylesheet
             /* From Inkscape */
@@ -50,8 +64,7 @@ istylesheet
         comment > Made with SVGHMI. https://beremiz.org
 
         // use python to call all debug output from included definitions
-        // '&bug' is a workaround for pyPEG that choke on yml2 python results not parsing to a single call
-        !"&bug {"+"\n".join(["comment {\n| \n| %s:\n call \"%s\";\n| \n}"%(n,n) for n in debug_output_calls]) +"}"!
+        python gen_debug_calls;
 
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"
