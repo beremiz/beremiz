@@ -198,18 +198,6 @@ istylesheet
         !"&bug {"+"\n".join(["comment {\n| \n| %s:\n call \"%s\";\n| \n}"%(n,n) for n in debug_output_calls]) +"}"!
 
         comment {
-            | Detachable :
-            foreach "$detachable_elements"{
-                | «@id»
-            }
-        }
-        comment {
-            | Discardable :
-            foreach "$discardable_elements"{
-                | «@id»
-            }
-        }
-        comment {
             | Unlinked :
             foreach "$to_unlink"{
                 | «@id»

@@ -156,6 +156,14 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
+  <xsl:template name="debug_detachables">
+    <xsl:for-each select="$detachable_elements">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+  </xsl:template>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="_indexed_hmitree">
     <xsl:apply-templates mode="index" select="$hmitree"/>
@@ -377,29 +385,20 @@
     <xsl:comment>
       <xsl:text>
 </xsl:text>
+      <xsl:text>debug_detachables:
+</xsl:text>
+      <xsl:call-template name="debug_detachables"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:comment>
+    <xsl:comment>
+      <xsl:text>
+</xsl:text>
       <xsl:text>debug_hmitree:
 </xsl:text>
       <xsl:call-template name="debug_hmitree"/>
       <xsl:text>
 </xsl:text>
-    </xsl:comment>
-    <xsl:comment>
-      <xsl:text>Detachable :
-</xsl:text>
-      <xsl:for-each select="$detachable_elements">
-        <xsl:value-of select="@id"/>
-        <xsl:text>
-</xsl:text>
-      </xsl:for-each>
-    </xsl:comment>
-    <xsl:comment>
-      <xsl:text>Discardable :
-</xsl:text>
-      <xsl:for-each select="$discardable_elements">
-        <xsl:value-of select="@id"/>
-        <xsl:text>
-</xsl:text>
-      </xsl:for-each>
     </xsl:comment>
     <xsl:comment>
       <xsl:text>Unlinked :
