@@ -1,6 +1,19 @@
-// bbox_intersect.ysl2
+// geometry.ysl2
 //
-// bounding boxes intersection tests
+// Geometry (bounding box intersection) definitions
+
+// This retrieves geometry obtained through "inkscape -S"
+// already parsed by python and presented as a list of
+// <bbox x="0" y="0" w="42" h="42">
+const "geometry", "ns:GetSVGGeometry()";
+
+// Debug data
+function "debug_geometry" {
+    | GEOMETRY : ID, x, y, w, h
+    foreach "$geometry[@Id = $hmi_elements/@id]"
+        |  «@Id» «@x» «@y» «@w» «@h»
+}
+!debug_output_calls.append("debug_geometry")
 
 // Rates 1D intersection of 2 segments A and B
 // described respectively with a0,a1 and b0,b1
@@ -117,4 +130,16 @@ def "func:intersect" {
         }
         otherwise result "0";
     }
+}
+
+// return overlapping geometry for a given element
+// all intersercting element are returned
+// except groups, that must be contained to be counted in
+def "func:overlapping_geometry" {
+    param "elt";
+    const "groups", "/svg:svg | //svg:g";
+    const "g", "$geometry[@Id = $elt/@id]"; 
+    const "candidates", "$geometry[@Id != $elt/@id]";
+    result """$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or 
+                          (not(@Id = $groups/@id) and (func:intersect($g, .) > 0 ))]""";
 }

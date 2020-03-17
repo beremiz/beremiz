@@ -1,11 +1,8 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns str regexp exsl func dyn">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
-  <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
-  <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="svg_root_id" select="/svg:svg/@id"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
-  <xsl:variable name="hmi_geometry" select="$geometry[@Id = $hmi_elements/@id]"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
   <xsl:variable name="default_page">
     <xsl:choose>
@@ -54,6 +51,25 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
+  <xsl:template name="debug_geometry">
+    <xsl:text>GEOMETRY : ID, x, y, w, h
+</xsl:text>
+    <xsl:for-each select="$geometry[@Id = $hmi_elements/@id]">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@Id"/>
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@x"/>
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@y"/>
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@w"/>
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@h"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+  </xsl:template>
   <func:function name="func:intersect_1d">
     <xsl:param name="a0"/>
     <xsl:param name="a1"/>
@@ -98,7 +114,7 @@
     <xsl:variable name="groups" select="/svg:svg | //svg:g"/>
     <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
-    <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                              (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
+    <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
   <func:function name="func:all_related_elements">
     <xsl:param name="page"/>
@@ -140,6 +156,7 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
+  <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="_indexed_hmitree">
     <xsl:apply-templates mode="index" select="$hmitree"/>
   </xsl:variable>
@@ -319,7 +336,13 @@
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
     <xsl:comment>
-      <xsl:apply-templates mode="testgeo" select="$hmi_geometry"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>debug_geometry:
+</xsl:text>
+      <xsl:call-template name="debug_geometry"/>
+      <xsl:text>
+</xsl:text>
     </xsl:comment>
     <xsl:comment>
       <xsl:apply-templates mode="testtree" select="$hmitree"/>
@@ -1443,20 +1466,6 @@
     <xsl:text>};
 </xsl:text>
     <xsl:text>//})();
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="testgeo" match="bbox">
-    <xsl:text>ID: </xsl:text>
-    <xsl:value-of select="@Id"/>
-    <xsl:text> x: </xsl:text>
-    <xsl:value-of select="@x"/>
-    <xsl:text> y: </xsl:text>
-    <xsl:value-of select="@y"/>
-    <xsl:text> w: </xsl:text>
-    <xsl:value-of select="@w"/>
-    <xsl:text> h: </xsl:text>
-    <xsl:value-of select="@h"/>
-    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="testtree" match="*">
