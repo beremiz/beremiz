@@ -527,6 +527,103 @@
 </xsl:text>
     </xsl:for-each>
   </xsl:template>
+  <xsl:template mode="hmi_elements" match="svg:*">
+    <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
+    <xsl:variable name="eltid" select="@id"/>
+    <xsl:text>  "</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>": {
+</xsl:text>
+    <xsl:text>    type: "</xsl:text>
+    <xsl:value-of select="$widget/@type"/>
+    <xsl:text>",
+</xsl:text>
+    <xsl:text>    args: [
+</xsl:text>
+    <xsl:for-each select="$widget/arg">
+      <xsl:text>        "</xsl:text>
+      <xsl:value-of select="@value"/>
+      <xsl:text>"</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
+    <xsl:text>    indexes: [
+</xsl:text>
+    <xsl:for-each select="$widget/path">
+      <xsl:choose>
+        <xsl:when test="not(@index)">
+          <xsl:message terminate="no">
+            <xsl:text>Widget </xsl:text>
+            <xsl:value-of select="$widget/@type"/>
+            <xsl:text> id="</xsl:text>
+            <xsl:value-of select="$eltid"/>
+            <xsl:text>" : No match for path "</xsl:text>
+            <xsl:value-of select="@value"/>
+            <xsl:text>" in HMI tree</xsl:text>
+          </xsl:message>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>            </xsl:text>
+          <xsl:value-of select="@index"/>
+          <xsl:if test="position()!=last()">
+            <xsl:text>,</xsl:text>
+          </xsl:if>
+          <xsl:text>
+</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
+    <xsl:text>    element: id("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>"),
+</xsl:text>
+    <xsl:apply-templates mode="widget_defs" select="$widget">
+      <xsl:with-param name="hmi_element" select="."/>
+    </xsl:apply-templates>
+    <xsl:text>  }</xsl:text>
+    <xsl:if test="position()!=last()">
+      <xsl:text>,</xsl:text>
+    </xsl:if>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <xsl:template name="defs_by_labels">
+    <xsl:param name="labels" select="''"/>
+    <xsl:param name="mandatory" select="'yes'"/>
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="widget_type" select="@type"/>
+    <xsl:for-each select="str:split($labels)">
+      <xsl:variable name="name" select="."/>
+      <xsl:variable name="elt_id" select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id"/>
+      <xsl:choose>
+        <xsl:when test="not($elt_id)">
+          <xsl:if test="$mandatory='yes'">
+            <xsl:message terminate="no">
+              <xsl:value-of select="$widget_type"/>
+              <xsl:text> widget must have a </xsl:text>
+              <xsl:value-of select="$name"/>
+              <xsl:text> element</xsl:text>
+            </xsl:message>
+          </xsl:if>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>    </xsl:text>
+          <xsl:value-of select="$name"/>
+          <xsl:text>_elt: id("</xsl:text>
+          <xsl:value-of select="$elt_id"/>
+          <xsl:text>"),
+</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -592,73 +689,7 @@
 </xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
-    <xsl:for-each select="$hmi_elements">
-      <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
-      <xsl:variable name="eltid" select="@id"/>
-      <xsl:text>  "</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>": {
-</xsl:text>
-      <xsl:text>    type: "</xsl:text>
-      <xsl:value-of select="$widget/@type"/>
-      <xsl:text>",
-</xsl:text>
-      <xsl:text>    args: [
-</xsl:text>
-      <xsl:for-each select="$widget/arg">
-        <xsl:text>        "</xsl:text>
-        <xsl:value-of select="@value"/>
-        <xsl:text>"</xsl:text>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-        <xsl:text>
-</xsl:text>
-      </xsl:for-each>
-      <xsl:text>    ],
-</xsl:text>
-      <xsl:text>    indexes: [
-</xsl:text>
-      <xsl:for-each select="$widget/path">
-        <xsl:choose>
-          <xsl:when test="not(@index)">
-            <xsl:message terminate="no">
-              <xsl:text>Widget </xsl:text>
-              <xsl:value-of select="$widget/@type"/>
-              <xsl:text> id="</xsl:text>
-              <xsl:value-of select="$eltid"/>
-              <xsl:text>" : No match for path "</xsl:text>
-              <xsl:value-of select="@value"/>
-              <xsl:text>" in HMI tree</xsl:text>
-            </xsl:message>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>            </xsl:text>
-            <xsl:value-of select="@index"/>
-            <xsl:if test="position()!=last()">
-              <xsl:text>,</xsl:text>
-            </xsl:if>
-            <xsl:text>
-</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each>
-      <xsl:text>    ],
-</xsl:text>
-      <xsl:text>    element: id("</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>"),
-</xsl:text>
-      <xsl:apply-templates mode="widget_defs" select="$widget">
-        <xsl:with-param name="hmi_element" select="."/>
-      </xsl:apply-templates>
-      <xsl:text>  }</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
+    <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1506,36 +1537,6 @@
 </xsl:text>
     <xsl:text>//})();
 </xsl:text>
-  </xsl:template>
-  <xsl:template name="defs_by_labels">
-    <xsl:param name="labels" select="''"/>
-    <xsl:param name="mandatory" select="'yes'"/>
-    <xsl:param name="hmi_element"/>
-    <xsl:variable name="widget_type" select="@type"/>
-    <xsl:for-each select="str:split($labels)">
-      <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt_id" select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id"/>
-      <xsl:choose>
-        <xsl:when test="not($elt_id)">
-          <xsl:if test="$mandatory='yes'">
-            <xsl:message terminate="no">
-              <xsl:value-of select="$widget_type"/>
-              <xsl:text> widget must have a </xsl:text>
-              <xsl:value-of select="$name"/>
-              <xsl:text> element</xsl:text>
-            </xsl:message>
-          </xsl:if>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>    </xsl:text>
-          <xsl:value-of select="$name"/>
-          <xsl:text>_elt: id("</xsl:text>
-          <xsl:value-of select="$elt_id"/>
-          <xsl:text>"),
-</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:for-each>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>

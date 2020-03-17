@@ -1,0 +1,61 @@
+in xsl decl labels(*ptr, name="defs_by_labels") alias call-template {
+    with "hmi_element", "$hmi_element";
+    with "labels"{text *ptr};
+};
+
+in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
+    with "hmi_element", "$hmi_element";
+    with "labels"{text *ptr};
+    with "mandatory","'no'";
+};
+
+template "svg:*", mode="hmi_elements" {
+    const "widget", "func:parselabel(@inkscape:label)/widget";
+    const "eltid","@id";
+    |   "«@id»": {
+    |     type: "«$widget/@type»",
+    |     args: [
+        foreach "$widget/arg"
+    |         "«@value»"`if "position()!=last()" > ,`
+    |     ],
+    |     indexes: [
+    foreach "$widget/path" {
+        choose {
+            when "not(@index)" {
+                warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
+            }
+            otherwise {
+    |             «@index»`if "position()!=last()" > ,`
+            }
+        }
+    }
+    |     ],
+    |     element: id("«@id»"),
+    apply "$widget", mode="widget_defs" with "hmi_element",".";
+    |   }`if "position()!=last()" > ,`
+}
+
+
+function "defs_by_labels" {
+    param "labels","''";
+    param "mandatory","'yes'";
+    param "hmi_element";
+    const "widget_type","@type";
+    foreach "str:split($labels)" {
+        const "name",".";
+        const "elt_id","$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id";
+        choose {
+            when "not($elt_id)" {
+                if "$mandatory='yes'" {
+                    // TODO FIXME error > «$widget_type» widget must have a «$name» element
+                    warning > «$widget_type» widget must have a «$name» element
+                }
+                // otherwise produce nothing
+            }
+            otherwise {
+                |     «$name»_elt: id("«$elt_id»"),
+            }
+        }
+    }
+}
+
