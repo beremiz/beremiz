@@ -4,6 +4,12 @@
 // HMI Tree computed from VARIABLES.CSV in svghmi.py
 const "hmitree", "ns:GetHMITree()";
 
+const "_categories" {
+    noindex > HMI_ROOT
+    noindex > HMI_PLC_STATUS
+    noindex > HMI_CURRENT_PAGE
+}
+const "categories", "exsl:node-set($_categories)";
 
 // HMI Tree Index
 const "_indexed_hmitree" apply "$hmitree", mode="index";
@@ -44,6 +50,44 @@ template "*", mode="index" {
         with "index", "$index + count(exsl:node-set($content)/*)";
         with "parentpath" > «$parentpath»
     }
+}
+
+def "func:parselabel" {
+    param "label";
+    const "description", "substring-after($label,'HMI:')";
+
+    const "_args", "substring-before($description,'@')";
+    const "args" choose {
+        when "$_args" value "$_args";
+        otherwise value "$description";
+    }
+
+    const "_type", "substring-before($args,':')";
+    const "type" choose {
+        when "$_type" value "$_type";
+        otherwise value "$args";
+    }
+
+    const "ast" if "$type" widget {
+        attrib "type" > «$type»
+        foreach "str:split(substring-after($args, ':'), ':')" {
+            arg {
+                attrib "value" > «.»
+            }
+        }
+        const "paths", "substring-after($description,'@')";
+        foreach "str:split($paths, '@')" {
+            if "string-length(.) > 0" path {
+                attrib "value" > «.»
+                const "path", ".";
+                const "item", "$indexed_hmitree/*[@hmipath = $path]";
+                if "count($item) = 1"
+                    attrib "index" > «$item/@index»
+            }
+        }
+    }
+
+    result "exsl:node-set($ast)";
 }
 
 // Debug data
