@@ -12,11 +12,12 @@
 yml2path ?= $(abspath ../../yml2)
 
 ysl2files := gen_index_xhtml.ysl2
+ysl2includes := geometry.ysl2 hmi_tree.ysl2
 xsltfiles := $(patsubst %.ysl2, %.xslt, $(ysl2files))
 
 all:$(xsltfiles)
 
-%.xslt: %.ysl2 svghmi.js ../yslt_noindent.yml2
+%.xslt: %.ysl2 $(ysl2includes) svghmi.js ../yslt_noindent.yml2
 	$(yml2path)/yml2c -I $(yml2path):../ $< -o $@.tmp
 	xmlstarlet fo $@.tmp > $@
 	rm $@.tmp

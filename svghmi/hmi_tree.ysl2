@@ -1,0 +1,47 @@
+// hmi_tree.ysl2
+
+
+// HMI Tree computed from VARIABLES.CSV in svghmi.py
+const "hmitree", "ns:GetHMITree()";
+
+
+// HMI Tree Index
+const "_indexed_hmitree" apply "$hmitree", mode="index";
+const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
+
+template "*", mode="index" {
+    param "index", "0";
+    param "parentpath", "''";
+    const "content" {
+        const "path"
+            choose {
+                when "local-name() = 'HMI_ROOT'" > «$parentpath»
+                otherwise > «$parentpath»/«@name»
+            }
+        choose {
+            when "not(local-name() = $categories/noindex)" {
+                xsl:copy {
+                    attrib "index" > «$index»
+                    attrib "hmipath" > «$path»
+                    foreach "@*" xsl:copy;
+                }
+                apply "*[1]", mode="index"{
+                     with "index", "$index + 1";
+                     with "parentpath" > «$path»
+                }
+            }
+            otherwise {
+                apply "*[1]", mode="index"{
+                    with "index", "$index";
+                    with "parentpath" > «$path»
+                }
+            }
+        }
+    }
+
+    copy "$content";
+    apply "following-sibling::*[1]", mode="index" {
+        with "index", "$index + count(exsl:node-set($content)/*)";
+        with "parentpath" > «$parentpath»
+    }
+}
