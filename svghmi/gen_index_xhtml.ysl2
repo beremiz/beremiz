@@ -81,20 +81,6 @@ istylesheet
         }
     }
 
-    /*
-        Parses:
-        "HMI:WidgetType:param1:param2@path1@path2"
-
-        Into:
-        widget type="WidgetType" {
-            arg value="param1";
-            arg value="param2";
-            path value="path1";
-            path value="path2";
-        }
-    */
-
-
     function "scripts"
     {
         | //(function(){
