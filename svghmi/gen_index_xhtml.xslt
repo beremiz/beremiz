@@ -37,23 +37,9 @@
     </noindex>
   </xsl:variable>
   <xsl:variable name="categories" select="exsl:node-set($_categories)"/>
-  <func:function name="func:refered_elements">
-    <xsl:param name="elems"/>
-    <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
-    <xsl:variable name="clones" select="$descend[self::svg:use]"/>
-    <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
-    <xsl:choose>
-      <xsl:when test="$originals">
-        <func:result select="$descend | func:refered_elements($originals)"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <func:result select="$descend"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </func:function>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:template name="debug_geometry">
-    <xsl:text>GEOMETRY : ID, x, y, w, h
+    <xsl:text>ID, x, y, w, h
 </xsl:text>
     <xsl:for-each select="$geometry[@Id = $hmi_elements/@id]">
       <xsl:text> </xsl:text>
@@ -116,6 +102,20 @@
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
+  <func:function name="func:refered_elements">
+    <xsl:param name="elems"/>
+    <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
+    <xsl:variable name="clones" select="$descend[self::svg:use]"/>
+    <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
+    <xsl:choose>
+      <xsl:when test="$originals">
+        <func:result select="$descend | func:refered_elements($originals)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$descend"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
   <func:function name="func:all_related_elements">
     <xsl:param name="page"/>
     <xsl:variable name="page_overlapping_geometry" select="func:overlapping_geometry($page)"/>
@@ -127,19 +127,19 @@
     <xsl:param name="pages"/>
     <xsl:choose>
       <xsl:when test="$pages">
-        <func:result select="func:all_related_elements($pages[1])&#10;                          | func:required_elements($pages[position()!=1])"/>
+        <func:result select="func:all_related_elements($pages[1])&#10;                      | func:required_elements($pages[position()!=1])"/>
       </xsl:when>
       <xsl:otherwise>
         <func:result select="/.."/>
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;           | func:required_elements($hmi_pages)/ancestor-or-self::svg:*"/>
+  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;       | func:required_elements($hmi_pages)/ancestor-or-self::svg:*"/>
   <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
     <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
-    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;            not(descendant::*[&#10;                not(self::svg:g) and&#10;                not(@id = $discardable_elements/@id) and&#10;                not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;            ])]"/>
+    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;        not(descendant::*[&#10;            not(self::svg:g) and&#10;            not(@id = $discardable_elements/@id) and&#10;            not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;        ])]"/>
     <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
     <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
   </func:function>
@@ -147,7 +147,7 @@
     <xsl:param name="pages"/>
     <xsl:choose>
       <xsl:when test="$pages">
-        <func:result select="func:sumarized_elements(func:all_related_elements($pages[1]))&#10;                          | func:detachable_elements($pages[position()!=1])"/>
+        <func:result select="func:sumarized_elements(func:all_related_elements($pages[1]))&#10;                      | func:detachable_elements($pages[position()!=1])"/>
       </xsl:when>
       <xsl:otherwise>
         <func:result select="/.."/>

@@ -9,7 +9,7 @@ const "geometry", "ns:GetSVGGeometry()";
 
 // Debug data
 function "debug_geometry" {
-    | GEOMETRY : ID, x, y, w, h
+    | ID, x, y, w, h
     foreach "$geometry[@Id = $hmi_elements/@id]"
         |  «@Id» «@x» «@y» «@w» «@h»
 }
