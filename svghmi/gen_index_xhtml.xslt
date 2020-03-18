@@ -133,6 +133,17 @@
     </xsl:variable>
     <func:result select="exsl:node-set($ast)"/>
   </func:function>
+  <func:function name="func:parselabels">
+    <xsl:param name="nodes"/>
+    <xsl:choose>
+      <xsl:when test="$nodes">
+        <func:result select="func:parselabel($nodes[1]/@inkscape:label)&#10;                      | func:parselabels($nodes[position()!=1])"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="/.."/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
   <xsl:template mode="testtree" match="*">
     <xsl:param name="indent" select="''"/>
     <xsl:value-of select="$indent"/>
@@ -314,7 +325,7 @@
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
     <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
+    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id][not(func:parselabels(ancestor::svg:*)/widget/@type = 'ForEach')]"/>
     <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]"/>
     <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
     <xsl:text>  "</xsl:text>
