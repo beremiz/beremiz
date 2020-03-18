@@ -1,0 +1,37 @@
+// widget_input.ysl2
+
+template "widget[@type='Input']", mode="widget_defs" {
+    param "hmi_element";
+    const "value_elt" {
+        optional_labels("value");
+    }
+    const "have_value","string-length($value_elt)>0";
+    value "$value_elt";
+    if "$have_value"
+    |     frequency: 5,
+
+    |     dispatch: function(value) {
+
+    if "$have_value"
+    |         this.value_elt.textContent = String(value);
+
+    |     },
+    const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
+    |     init: function() {
+    if "$edit_elt_id" {
+    |         id("«$edit_elt_id»").addEventListener(
+    |             "click", 
+    |             evt => alert('XXX TODO : Edit value'));
+    }
+    foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
+    |         id("«@id»").addEventListener(
+    |             "click", 
+    |             evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
+        if "$have_value"{
+    |                     this.value_elt.textContent = String(new_val);
+        }
+    |                    });
+                          /* TODO gray out value until refreshed */
+    }
+    |     },
+}

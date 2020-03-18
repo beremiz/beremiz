@@ -60,7 +60,9 @@ istylesheet
 
     include inline_svg.ysl2
 
-    include widget_common.ysl2
+    include widgets_common.ysl2
+
+    include widget_*.ysl2
 
     template "/" {
         comment > Made with SVGHMI. https://beremiz.org
@@ -73,6 +75,7 @@ istylesheet
              xmlns:xlink="http://www.w3.org/1999/xlink" {
             head;
             body style="margin:0;overflow:hidden;" {
+                // Inline SVG
                 copy "$result_svg";
                 script{
                     call "scripts";
@@ -83,29 +86,10 @@ istylesheet
 
     function "scripts"
     {
-        | //(function(){
         |
         | id = idstr => document.getElementById(idstr);
         |
         | var hmi_hash = [«$hmitree/@hash»]; 
-
-        /* TODO re-enable
-        ||
-        function evaluate_js_from_descriptions() {
-            var Page;
-            var Input;
-            var Display;
-            var res = [];
-        ||
-        const "midmark" > \n«$mark»
-        apply """//*[contains(child::svg:desc, $midmark) or \
-                     starts-with(child::svg:desc, $mark)]""",2 
-              mode="code_from_descs";
-        ||
-            return res;
-        }
-        ||
-        */
 
         | var hmi_widgets = {
         apply "$hmi_elements", mode="hmi_elements";
@@ -137,177 +121,5 @@ istylesheet
         | var default_page = "«$default_page»";
         | var svg_root = id("«/svg:svg/@id»");
         include text svghmi.js
-        | //})();
-    }
-
-    // template "*", mode="code_from_descs" {
-    //     ||
-    //     {
-    //         var path, role, name, priv;
-    //         var id = "«@id»";
-    //     ||
-
-    //     /* if label is used, use it as default name */
-    //     if "@inkscape:label"
-    //         |> name = "«@inkscape:label»";
-
-    //     | /* -------------- */
-
-    //     // this breaks indent, but fixing indent could break string literals
-    //     value "substring-after(svg:desc, $mark)";
-    //     // nobody reads generated code anyhow...
-
-    //     ||
-
-    //         /* -------------- */
-    //         res.push({
-    //             path:path,
-    //             role:role,
-    //             name:name,
-    //             priv:priv
-    //         })
-    //     }
-    //     ||
-    // }
-
-
-    template "widget[@type='Display']", mode="widget_defs" {
-        param "hmi_element";
-        |     frequency: 5,
-        |     dispatch: function(value) {
-        choose {
-            when "$hmi_element[self::svg:text]"{
-            // TODO : care about <tspan> ?
-        |       this.element.textContent = String(value);
-            }
-            otherwise {
-                warning > Display widget as a group not implemented
-            }
-        }
-        |     },
-
-    }
-    template "widget[@type='Meter']", mode="widget_defs" {
-        param "hmi_element";
-        |     frequency: 10,
-        labels("needle range");
-        optional_labels("value min max");
-        |     dispatch: function(value) {
-        |         if(this.value_elt)
-        |             this.value_elt.textContent = String(value);
-        |         let [min,max,totallength] = this.range;
-        |         let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
-        |         let tip = this.range_elt.getPointAtLength(length);
-        |         this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
-        |     },
-        |     origin: undefined,
-        |     range: undefined,
-        |     init: function() {
-        |         let min = this.min_elt ?
-        |                     Number(this.min_elt.textContent) :
-        |                     this.args.length >= 1 ? this.args[0] : 0;
-        |         let max = this.max_elt ?
-        |                     Number(this.max_elt.textContent) :
-        |                     this.args.length >= 2 ? this.args[1] : 100;
-        |         this.range = [min, max, this.range_elt.getTotalLength()]
-        |         this.origin = this.needle_elt.getPointAtLength(0);
-        |     },
-    }
-
-    def "func:escape_quotes" {
-        param "txt";
-        // have to use a python string to enter escaped quote
-        const "frst", !"substring-before($txt,'\"')"!;
-        const "frstln", "string-length($frst)";
-        choose {
-            when "$frstln > 0 and string-length($txt) > $frstln" {
-                result !"concat($frst,'\\\"',func:escape_quotes(substring-after($txt,'\"')))"!;
-            }
-            otherwise {
-                result "$txt";
-            }
-        }
-    }
-
-    template "widget[@type='Input']", mode="widget_defs" {
-        param "hmi_element";
-        const "value_elt" {
-            optional_labels("value");
-        }
-        const "have_value","string-length($value_elt)>0";
-        value "$value_elt";
-        if "$have_value"
-        |     frequency: 5,
-
-        |     dispatch: function(value) {
-
-        if "$have_value"
-        |         this.value_elt.textContent = String(value);
-
-        |     },
-        const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
-        |     init: function() {
-        if "$edit_elt_id" {
-        |         id("«$edit_elt_id»").addEventListener(
-        |             "click", 
-        |             evt => alert('XXX TODO : Edit value'));
-        }
-        foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
-        |         id("«@id»").addEventListener(
-        |             "click", 
-        |             evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
-            if "$have_value"{
-        |                     this.value_elt.textContent = String(new_val);
-            }
-        |                    });
-                              /* TODO gray out value until refreshed */
-        }
-        |     },
-    }
-    template "widget[@type='Button']", mode="widget_defs" {
-    }
-    template "widget[@type='Toggle']", mode="widget_defs" {
-        |     frequency: 5,
-    }
-    template "widget[@type='Switch']", mode="widget_defs" {
-        param "hmi_element";
-        |     frequency: 5,
-        |     dispatch: function(value) {
-        |         for(let choice of this.choices){
-        |             if(value != choice.value){
-        |                 choice.elt.setAttribute("style", "display:none");
-        |             } else {
-        |                 choice.elt.setAttribute("style", choice.style);
-        |             }
-        |         }
-        |     },
-        |     init: function() {
-        |         // Hello Switch
-        |     },
-        |     choices: [
-        const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+)(#.*)?$'"!;
-        foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
-            const "literal", "regexp:match(@inkscape:label,$regex)[2]";
-        |         {
-        |             elt:id("«@id»"),
-        |             style:"«@style»",
-        |             value:«$literal»
-        |         }`if "position()!=last()" > ,`
-        }
-        |     ],
-    }
-    template "widget[@type='Jump']", mode="widget_defs" {
-        param "hmi_element";
-        |     on_click: function(evt) {
-        |         switch_page(this.args[0], this.indexes[0]);
-        |     },
-        |     init: function() {
-        /* registering event this way doies not "click" through svg:use 
-        |     this.element.onclick = evt => switch_page(this.args[0]);
-        event must be registered by adding attribute to element instead
-        TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
-        */
-        |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
-        |     },
     }
 }
