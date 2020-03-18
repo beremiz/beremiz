@@ -12,7 +12,7 @@
 yml2path ?= $(abspath ../../yml2)
 
 ysl2files := gen_index_xhtml.ysl2
-ysl2includes := geometry.ysl2 hmi_tree.ysl2
+ysl2includes := $(filter-out $(ysl2files), $(wildcard *.ysl2))
 xsltfiles := $(patsubst %.ysl2, %.xslt, $(ysl2files))
 
 all:$(xsltfiles)
