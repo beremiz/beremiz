@@ -59,3 +59,18 @@ function "defs_by_labels" {
     }
 }
 
+def "func:escape_quotes" {
+    param "txt";
+    // have to use a python string to enter escaped quote
+    const "frst", !"substring-before($txt,'\"')"!;
+    const "frstln", "string-length($frst)";
+    choose {
+        when "$frstln > 0 and string-length($txt) > $frstln" {
+            result !"concat($frst,'\\\"',func:escape_quotes(substring-after($txt,'\"')))"!;
+        }
+        otherwise {
+            result "$txt";
+        }
+    }
+}
+

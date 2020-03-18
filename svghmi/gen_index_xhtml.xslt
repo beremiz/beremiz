@@ -624,6 +624,230 @@
       </xsl:choose>
     </xsl:for-each>
   </xsl:template>
+  <func:function name="func:escape_quotes">
+    <xsl:param name="txt"/>
+    <xsl:variable name="frst" select="substring-before($txt,'&quot;')"/>
+    <xsl:variable name="frstln" select="string-length($frst)"/>
+    <xsl:choose>
+      <xsl:when test="$frstln &gt; 0 and string-length($txt) &gt; $frstln">
+        <func:result select="concat($frst,'\&quot;',func:escape_quotes(substring-after($txt,'&quot;')))"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$txt"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <xsl:template mode="widget_defs" match="widget[@type='Display']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    frequency: 5,
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$hmi_element[self::svg:text]">
+        <xsl:text>      this.element.textContent = String(value);
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message terminate="no">
+          <xsl:text>Display widget as a group not implemented</xsl:text>
+        </xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Input']">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="value_elt">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>value</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_value" select="string-length($value_elt)&gt;0"/>
+    <xsl:value-of select="$value_elt"/>
+    <xsl:if test="$have_value">
+      <xsl:text>    frequency: 5,
+</xsl:text>
+    </xsl:if>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:if test="$have_value">
+      <xsl:text>        this.value_elt.textContent = String(value);
+</xsl:text>
+    </xsl:if>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:if test="$edit_elt_id">
+      <xsl:text>        id("</xsl:text>
+      <xsl:value-of select="$edit_elt_id"/>
+      <xsl:text>").addEventListener(
+</xsl:text>
+      <xsl:text>            "click", 
+</xsl:text>
+      <xsl:text>            evt =&gt; alert('XXX TODO : Edit value'));
+</xsl:text>
+    </xsl:if>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
+      <xsl:text>        id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>").addEventListener(
+</xsl:text>
+      <xsl:text>            "click", 
+</xsl:text>
+      <xsl:text>            evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:text>");
+</xsl:text>
+      <xsl:if test="$have_value">
+        <xsl:text>                    this.value_elt.textContent = String(new_val);
+</xsl:text>
+      </xsl:if>
+      <xsl:text>                   });
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Jump']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    on_click: function(evt) {
+</xsl:text>
+    <xsl:text>        switch_page(this.args[0], this.indexes[0]);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click(evt)");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    frequency: 10,
+</xsl:text>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>needle range</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        if(this.value_elt)
+</xsl:text>
+    <xsl:text>            this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>        let [min,max,totallength] = this.range;
+</xsl:text>
+    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+</xsl:text>
+    <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
+</xsl:text>
+    <xsl:text>        this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    origin: undefined,
+</xsl:text>
+    <xsl:text>    range: undefined,
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        let min = this.min_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>        let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>        this.range = [min, max, this.range_elt.getTotalLength()]
+</xsl:text>
+    <xsl:text>        this.origin = this.needle_elt.getPointAtLength(0);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    frequency: 5,
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        for(let choice of this.choices){
+</xsl:text>
+    <xsl:text>            if(value != choice.value){
+</xsl:text>
+    <xsl:text>                choice.elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>                choice.elt.setAttribute("style", choice.style);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        // Hello Switch
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    choices: [
+</xsl:text>
+    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+)(#.*)?$'"/>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,$regex)]">
+      <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
+      <xsl:text>        {
+</xsl:text>
+      <xsl:text>            elt:id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"),
+</xsl:text>
+      <xsl:text>            style:"</xsl:text>
+      <xsl:value-of select="@style"/>
+      <xsl:text>",
+</xsl:text>
+      <xsl:text>            value:</xsl:text>
+      <xsl:value-of select="$literal"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>        }</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -675,8 +899,6 @@
     </html>
   </xsl:template>
   <xsl:template name="scripts">
-    <xsl:text>//(function(){
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>id = idstr =&gt; document.getElementById(idstr);
@@ -1534,237 +1756,6 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>};
-</xsl:text>
-    <xsl:text>//})();
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Display']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 5,
-</xsl:text>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:choose>
-      <xsl:when test="$hmi_element[self::svg:text]">
-        <xsl:text>      this.element.textContent = String(value);
-</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message terminate="no">
-          <xsl:text>Display widget as a group not implemented</xsl:text>
-        </xsl:message>
-      </xsl:otherwise>
-    </xsl:choose>
-    <xsl:text>    },
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 10,
-</xsl:text>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>needle range</xsl:text>
-      </xsl:with-param>
-    </xsl:call-template>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>value min max</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
-    </xsl:call-template>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:text>        if(this.value_elt)
-</xsl:text>
-    <xsl:text>            this.value_elt.textContent = String(value);
-</xsl:text>
-    <xsl:text>        let [min,max,totallength] = this.range;
-</xsl:text>
-    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
-</xsl:text>
-    <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
-</xsl:text>
-    <xsl:text>        this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    origin: undefined,
-</xsl:text>
-    <xsl:text>    range: undefined,
-</xsl:text>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:text>        let min = this.min_elt ?
-</xsl:text>
-    <xsl:text>                    Number(this.min_elt.textContent) :
-</xsl:text>
-    <xsl:text>                    this.args.length &gt;= 1 ? this.args[0] : 0;
-</xsl:text>
-    <xsl:text>        let max = this.max_elt ?
-</xsl:text>
-    <xsl:text>                    Number(this.max_elt.textContent) :
-</xsl:text>
-    <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
-</xsl:text>
-    <xsl:text>        this.range = [min, max, this.range_elt.getTotalLength()]
-</xsl:text>
-    <xsl:text>        this.origin = this.needle_elt.getPointAtLength(0);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-  </xsl:template>
-  <func:function name="func:escape_quotes">
-    <xsl:param name="txt"/>
-    <xsl:variable name="frst" select="substring-before($txt,'&quot;')"/>
-    <xsl:variable name="frstln" select="string-length($frst)"/>
-    <xsl:choose>
-      <xsl:when test="$frstln &gt; 0 and string-length($txt) &gt; $frstln">
-        <func:result select="concat($frst,'\&quot;',func:escape_quotes(substring-after($txt,'&quot;')))"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <func:result select="$txt"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </func:function>
-  <xsl:template mode="widget_defs" match="widget[@type='Input']">
-    <xsl:param name="hmi_element"/>
-    <xsl:variable name="value_elt">
-      <xsl:call-template name="defs_by_labels">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
-        <xsl:with-param name="labels">
-          <xsl:text>value</xsl:text>
-        </xsl:with-param>
-        <xsl:with-param name="mandatory" select="'no'"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="have_value" select="string-length($value_elt)&gt;0"/>
-    <xsl:value-of select="$value_elt"/>
-    <xsl:if test="$have_value">
-      <xsl:text>    frequency: 5,
-</xsl:text>
-    </xsl:if>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:if test="$have_value">
-      <xsl:text>        this.value_elt.textContent = String(value);
-</xsl:text>
-    </xsl:if>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:if test="$edit_elt_id">
-      <xsl:text>        id("</xsl:text>
-      <xsl:value-of select="$edit_elt_id"/>
-      <xsl:text>").addEventListener(
-</xsl:text>
-      <xsl:text>            "click", 
-</xsl:text>
-      <xsl:text>            evt =&gt; alert('XXX TODO : Edit value'));
-</xsl:text>
-    </xsl:if>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
-      <xsl:text>        id("</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>").addEventListener(
-</xsl:text>
-      <xsl:text>            "click", 
-</xsl:text>
-      <xsl:text>            evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
-      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
-      <xsl:text>");
-</xsl:text>
-      <xsl:if test="$have_value">
-        <xsl:text>                    this.value_elt.textContent = String(new_val);
-</xsl:text>
-      </xsl:if>
-      <xsl:text>                   });
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>    },
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Button']"/>
-  <xsl:template mode="widget_defs" match="widget[@type='Toggle']">
-    <xsl:text>    frequency: 5,
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 5,
-</xsl:text>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:text>        for(let choice of this.choices){
-</xsl:text>
-    <xsl:text>            if(value != choice.value){
-</xsl:text>
-    <xsl:text>                choice.elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>            } else {
-</xsl:text>
-    <xsl:text>                choice.elt.setAttribute("style", choice.style);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:text>        // Hello Switch
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    choices: [
-</xsl:text>
-    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+)(#.*)?$'"/>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,$regex)]">
-      <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
-      <xsl:text>        {
-</xsl:text>
-      <xsl:text>            elt:id("</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>"),
-</xsl:text>
-      <xsl:text>            style:"</xsl:text>
-      <xsl:value-of select="@style"/>
-      <xsl:text>",
-</xsl:text>
-      <xsl:text>            value:</xsl:text>
-      <xsl:value-of select="$literal"/>
-      <xsl:text>
-</xsl:text>
-      <xsl:text>        }</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>    ],
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Jump']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    on_click: function(evt) {
-</xsl:text>
-    <xsl:text>        switch_page(this.args[0], this.indexes[0]);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click(evt)");
-</xsl:text>
-    <xsl:text>    },
 </xsl:text>
   </xsl:template>
 </xsl:stylesheet>
