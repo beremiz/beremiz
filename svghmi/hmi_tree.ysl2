@@ -101,6 +101,18 @@ def "func:parselabel" {
     result "exsl:node-set($ast)";
 }
 
+def "func:parselabels" {
+    param "nodes"; 
+    choose{
+        when "$nodes"{
+            result """func:parselabel($nodes[1]/@inkscape:label)
+                      | func:parselabels($nodes[position()!=1])""";
+        }otherwise{
+            result "/..";
+        }
+    }
+}
+
 // Debug data
 template "*", mode="testtree"{
     param "indent", "''";
