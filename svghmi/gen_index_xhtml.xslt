@@ -579,6 +579,8 @@
     </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
+    <xsl:text>    offset: 0,
+</xsl:text>
     <xsl:text>    indexes: [
 </xsl:text>
     <xsl:for-each select="$widget/path">
@@ -614,6 +616,9 @@
     <xsl:apply-templates mode="widget_defs" select="$widget">
       <xsl:with-param name="hmi_element" select="."/>
     </xsl:apply-templates>
+    <xsl:apply-templates mode="widget_subscribe" select="$widget">
+      <xsl:with-param name="hmi_element" select="."/>
+    </xsl:apply-templates>
     <xsl:text>  }</xsl:text>
     <xsl:if test="position()!=last()">
       <xsl:text>,</xsl:text>
@@ -621,6 +626,13 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_subscribe" match="widget">
+    <xsl:text>    sub: subscribe,
+</xsl:text>
+    <xsl:text>    unsub: unsubscribe,
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_subscribe" match="widget[@type='Page']"/>
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>
     <xsl:param name="mandatory" select="'yes'"/>
@@ -1024,8 +1036,6 @@
 </xsl:text>
     <xsl:text>        let d = widget.dispatch;
 </xsl:text>
-    <xsl:text>        console.log(index, idx, idxidx, value);
-</xsl:text>
     <xsl:text>        if(typeof(d) == "function" &amp;&amp; idxidx == 0){
 </xsl:text>
     <xsl:text>            d.call(widget, value, oldval);
@@ -1372,8 +1382,6 @@
 </xsl:text>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>        // console.log("Heartbeat" + value);
-</xsl:text>
     <xsl:text>        change_hmi_value(heartbeat_index, "+1");
 </xsl:text>
     <xsl:text>    }
@@ -1566,6 +1574,46 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>function unsubscribe(){
+</xsl:text>
+    <xsl:text>    widget = this;
+</xsl:text>
+    <xsl:text>    /* remove subsribers */
+</xsl:text>
+    <xsl:text>    for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>        let idx = index + widget.offset;
+</xsl:text>
+    <xsl:text>        subscribers[idx].delete(widget);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    widget.offset = 0;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function subscribe(new_offset=0){
+</xsl:text>
+    <xsl:text>    widget = this;
+</xsl:text>
+    <xsl:text>    /* set the offset because relative */
+</xsl:text>
+    <xsl:text>    widget.offset = new_offset;
+</xsl:text>
+    <xsl:text>    /* add widget's subsribers */
+</xsl:text>
+    <xsl:text>    for(let index of widget.indexes){
+</xsl:text>
+    <xsl:text>        subscribers[index + new_offset].add(widget);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function switch_subscribed_page(page_name, page_index) {
 </xsl:text>
     <xsl:text>    let old_desc = page_desc[current_subscribed_page];
@@ -1594,67 +1642,17 @@
 </xsl:text>
     <xsl:text>    if(old_desc){
 </xsl:text>
-    <xsl:text>        for(let widget of old_desc.absolute_widgets){
+    <xsl:text>        old_desc.absolute_widgets.map(w=&gt;w.unsub());
 </xsl:text>
-    <xsl:text>            /* remove subsribers */
-</xsl:text>
-    <xsl:text>            for(let index of widget.indexes){
-</xsl:text>
-    <xsl:text>                subscribers[index].delete(widget);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        for(let widget of old_desc.relative_widgets){
-</xsl:text>
-    <xsl:text>            /* remove subsribers */
-</xsl:text>
-    <xsl:text>            for(let index of widget.indexes){
-</xsl:text>
-    <xsl:text>                let idx = widget.offset ? index + widget.offset : index;
-</xsl:text>
-    <xsl:text>                subscribers[idx].delete(widget);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>            /* lose the offset */
-</xsl:text>
-    <xsl:text>            delete widget.offset;
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>        old_desc.relative_widgets.map(w=&gt;w.unsub());
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    for(let widget of new_desc.absolute_widgets){
-</xsl:text>
-    <xsl:text>        /* add widget's subsribers */
-</xsl:text>
-    <xsl:text>        for(let index of widget.indexes){
-</xsl:text>
-    <xsl:text>            subscribers[index].add(widget);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
+    <xsl:text>    new_desc.absolute_widgets.map(w=&gt;w.sub());
 </xsl:text>
     <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
 </xsl:text>
-    <xsl:text>    for(let widget of new_desc.relative_widgets){
-</xsl:text>
-    <xsl:text>        /* set the offset because relative */
-</xsl:text>
-    <xsl:text>        widget.offset = new_offset;
-</xsl:text>
-    <xsl:text>        /* add widget's subsribers */
-</xsl:text>
-    <xsl:text>        for(let index of widget.indexes){
-</xsl:text>
-    <xsl:text>            subscribers[index + new_offset].add(widget);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
+    <xsl:text>    new_desc.relative_widgets.map(w=&gt;w.sub(new_offset));
 </xsl:text>
     <xsl:text>
 </xsl:text>

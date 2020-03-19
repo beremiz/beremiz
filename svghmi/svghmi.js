@@ -8,7 +8,6 @@ function dispatch_value_to_widget(widget, index, value, oldval) {
         let idx = widget.offset ? index - widget.offset : index;
         let idxidx = widget.indexes.indexOf(idx);
         let d = widget.dispatch;
-        console.log(index, idx, idxidx, value);
         if(typeof(d) == "function" && idxidx == 0){
             d.call(widget, value, oldval);
         }
@@ -182,7 +181,6 @@ subscribers[heartbeat_index].add({
     frequency: 1,
     indexes: [heartbeat_index],
     dispatch: function(value) {
-        // console.log("Heartbeat" + value);
         change_hmi_value(heartbeat_index, "+1");
     }
 });
@@ -279,6 +277,26 @@ function* chain(a,b){
     yield* b;
 };
 
+function unsubscribe(){
+    widget = this;
+    /* remove subsribers */
+    for(let index of widget.indexes){
+        let idx = index + widget.offset;
+        subscribers[idx].delete(widget);
+    }
+    widget.offset = 0;
+}
+
+function subscribe(new_offset=0){
+    widget = this;
+    /* set the offset because relative */
+    widget.offset = new_offset;
+    /* add widget's subsribers */
+    for(let index of widget.indexes){
+        subscribers[index + new_offset].add(widget);
+    }
+}
+
 function switch_subscribed_page(page_name, page_index) {
     let old_desc = page_desc[current_subscribed_page];
     let new_desc = page_desc[page_name];
@@ -293,37 +311,12 @@ function switch_subscribed_page(page_name, page_index) {
     }
 
     if(old_desc){
-        for(let widget of old_desc.absolute_widgets){
-            /* remove subsribers */
-            for(let index of widget.indexes){
-                subscribers[index].delete(widget);
-            }
-        }
-        for(let widget of old_desc.relative_widgets){
-            /* remove subsribers */
-            for(let index of widget.indexes){
-                let idx = widget.offset ? index + widget.offset : index;
-                subscribers[idx].delete(widget);
-            }
-            /* lose the offset */
-            delete widget.offset;
-        }
+        old_desc.absolute_widgets.map(w=>w.unsub());
+        old_desc.relative_widgets.map(w=>w.unsub());
     }
-    for(let widget of new_desc.absolute_widgets){
-        /* add widget's subsribers */
-        for(let index of widget.indexes){
-            subscribers[index].add(widget);
-        }
-    }
+    new_desc.absolute_widgets.map(w=>w.sub());
     var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
-    for(let widget of new_desc.relative_widgets){
-        /* set the offset because relative */
-        widget.offset = new_offset;
-        /* add widget's subsribers */
-        for(let index of widget.indexes){
-            subscribers[index + new_offset].add(widget);
-        }
-    }
+    new_desc.relative_widgets.map(w=>w.sub(new_offset));
 
     update_subscriptions();
 
