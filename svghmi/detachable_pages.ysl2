@@ -98,6 +98,10 @@ def "func:is_descendant_path" {
 }
 
 
+const "forEach_widgets_ids", "$parsed_widgets/widget[@type = 'ForEach']/@id";
+const "forEach_widgets", "$hmi_elements[@id = $forEach_widgets_ids]";
+const "in_forEach_widget_ids", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id";
+
 template "svg:*", mode="page_desc" {
     const "desc", "func:widget(@id)";
     const "page", ".";
@@ -105,8 +109,7 @@ template "svg:*", mode="page_desc" {
 
     const "page_all_elements", "func:all_related_elements($page)";
 
-    const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
-
+    const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id and not(@id=$in_forEach_widget_ids)]";
     const "page_relative_widgets",
         "$all_page_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]";
 
@@ -143,8 +146,13 @@ template "svg:*", mode="page_desc" {
 }
 
 function "debug_detachables" {
+    | DETACHABLES:
     foreach "$detachable_elements"{
         |  «@id»
+    }
+    | In Foreach:
+    foreach "$in_forEach_widget_ids"{
+        |  «.»
     }
 }
 !debug_output_calls.append("debug_detachables")

@@ -323,12 +323,15 @@
     <xsl:param name="ancest"/>
     <func:result select="string-length($ancest) &gt; 0 and starts-with($descend,$ancest)"/>
   </func:function>
+  <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
+  <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
+  <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
   <xsl:template mode="page_desc" match="svg:*">
     <xsl:variable name="desc" select="func:widget(@id)"/>
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
     <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
+    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id and not(@id=$in_forEach_widget_ids)]"/>
     <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]"/>
     <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
     <xsl:text>  "</xsl:text>
@@ -416,9 +419,19 @@
 </xsl:text>
   </xsl:template>
   <xsl:template name="debug_detachables">
+    <xsl:text>DETACHABLES:
+</xsl:text>
     <xsl:for-each select="$detachable_elements">
       <xsl:text> </xsl:text>
       <xsl:value-of select="@id"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>In Foreach:
+</xsl:text>
+    <xsl:for-each select="$in_forEach_widget_ids">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="."/>
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
