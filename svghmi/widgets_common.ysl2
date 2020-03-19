@@ -17,9 +17,10 @@ template "svg:*", mode="hmi_elements" {
     |   "«@id»": {
     |     type: "«$widget/@type»",
     |     args: [
-        foreach "$widget/arg"
+    foreach "$widget/arg"
     |         "«@value»"`if "position()!=last()" > ,`
     |     ],
+    |     offset: 0,
     |     indexes: [
     foreach "$widget/path" {
         choose {
@@ -34,9 +35,17 @@ template "svg:*", mode="hmi_elements" {
     |     ],
     |     element: id("«@id»"),
     apply "$widget", mode="widget_defs" with "hmi_element",".";
+    apply "$widget", mode="widget_subscribe" with "hmi_element",".";
     |   }`if "position()!=last()" > ,`
 }
 
+// default : normal subscribing
+template "widget", mode="widget_subscribe" {
+    |     sub: subscribe,
+    |     unsub: unsubscribe,
+}
+// page aren't subscribers
+template "widget[@type='Page']", mode="widget_subscribe";
 
 function "defs_by_labels" {
     param "labels","''";
