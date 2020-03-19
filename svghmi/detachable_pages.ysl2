@@ -4,12 +4,13 @@
 // and decide where to cut when removing/attaching 
 // pages elements on page switch
 
-const "hmi_pages", "$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']";
+const "hmi_pages_ids", "$parsed_widgets/widget[@type = 'Page']/@id";
+const "hmi_pages", "$hmi_elements[@id = $hmi_pages_ids]";
 
 const "default_page" choose {
     when "count($hmi_pages) > 1" {
         const "Home_page", 
-            "$hmi_pages[func:parselabel(@inkscape:label)/widget/arg[1]/@value = 'Home']";
+            "$hmi_pages[func:widget(@id)/arg[1]/@value = 'Home']";
         choose {
             when "$Home_page" > Home
             otherwise {
@@ -20,7 +21,7 @@ const "default_page" choose {
     when "count($hmi_pages) = 0" {
         error "No page defined!";
     }
-    otherwise > «func:parselabel($hmi_pages/@inkscape:label)/widget/arg[1]/@value»
+    otherwise > «func:widget($hmi_pages/@id)/arg[1]/@value»
 }
 
 // returns all directly or indirectly refered elements
@@ -100,16 +101,16 @@ def "func:is_descendant_path" {
 
 
 template "svg:*", mode="page_desc" {
-    const "desc", "func:parselabel(@inkscape:label)/widget";
+    const "desc", "func:widget(@id)";
     const "page", ".";
     const "p", "$geometry[@Id = $page/@id]";
 
     const "page_all_elements", "func:all_related_elements($page)";
 
-    const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id][not(func:parselabels(ancestor::svg:*)/widget/@type = 'ForEach')]";
+    const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
 
     const "page_relative_widgets",
-        "$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]";
+        "$all_page_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]";
 
     // Take closest ancestor in detachable_elements
     // since nested detachable elements are filtered out

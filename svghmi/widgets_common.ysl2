@@ -12,7 +12,7 @@ in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
 };
 
 template "svg:*", mode="hmi_elements" {
-    const "widget", "func:parselabel(@inkscape:label)/widget";
+    const "widget", "func:widget(@id)";
     const "eltid","@id";
     |   "«@id»": {
     |     type: "«$widget/@type»",

@@ -63,8 +63,8 @@ template "*", mode="index" {
 //      path value="path2";
 //  }
 //
-def "func:parselabel" {
-    param "label";
+template "*", mode="parselabel" {
+    const "label","@inkscape:label";
     const "description", "substring-after($label,'HMI:')";
 
     const "_args", "substring-before($description,'@')";
@@ -79,7 +79,8 @@ def "func:parselabel" {
         otherwise value "$args";
     }
 
-    const "ast" if "$type" widget {
+    if "$type" widget {
+        attrib "id" > «@id»
         attrib "type" > «$type»
         foreach "str:split(substring-after($args, ':'), ':')" {
             arg {
@@ -97,21 +98,16 @@ def "func:parselabel" {
             }
         }
     }
-
-    result "exsl:node-set($ast)";
 }
 
-def "func:parselabels" {
-    param "nodes"; 
-    choose{
-        when "$nodes"{
-            result """func:parselabel($nodes[1]/@inkscape:label)
-                      | func:parselabels($nodes[position()!=1])""";
-        }otherwise{
-            result "/..";
-        }
-    }
+const "_parsed_widgets" apply "$hmi_elements", mode="parselabel";
+const "parsed_widgets","exsl:node-set($_parsed_widgets)";
+
+def "func:widget" {
+    param "id";
+    result "$parsed_widgets/widget[@id = $id]";
 }
+
 
 // Debug data
 template "*", mode="testtree"{
@@ -129,5 +125,9 @@ function "debug_hmitree" {
     |
     | Indexed HMI tree
     apply "$indexed_hmitree", mode="testtree";
+    |
+    | Parsed Widgets
+    copy "_parsed_widgets";
+    apply "$parsed_widgets", mode="testtree";
 }
 !debug_output_calls.append("debug_hmitree")

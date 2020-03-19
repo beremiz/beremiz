@@ -73,8 +73,8 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <func:function name="func:parselabel">
-    <xsl:param name="label"/>
+  <xsl:template mode="parselabel" match="*">
+    <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
     <xsl:variable name="_args" select="substring-before($description,'@')"/>
     <xsl:variable name="args">
@@ -98,51 +98,48 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="ast">
-      <xsl:if test="$type">
-        <widget>
-          <xsl:attribute name="type">
-            <xsl:value-of select="$type"/>
-          </xsl:attribute>
-          <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
-            <arg>
+    <xsl:if test="$type">
+      <widget>
+        <xsl:attribute name="id">
+          <xsl:value-of select="@id"/>
+        </xsl:attribute>
+        <xsl:attribute name="type">
+          <xsl:value-of select="$type"/>
+        </xsl:attribute>
+        <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
+          <arg>
+            <xsl:attribute name="value">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </arg>
+        </xsl:for-each>
+        <xsl:variable name="paths" select="substring-after($description,'@')"/>
+        <xsl:for-each select="str:split($paths, '@')">
+          <xsl:if test="string-length(.) &gt; 0">
+            <path>
               <xsl:attribute name="value">
                 <xsl:value-of select="."/>
               </xsl:attribute>
-            </arg>
-          </xsl:for-each>
-          <xsl:variable name="paths" select="substring-after($description,'@')"/>
-          <xsl:for-each select="str:split($paths, '@')">
-            <xsl:if test="string-length(.) &gt; 0">
-              <path>
-                <xsl:attribute name="value">
-                  <xsl:value-of select="."/>
+              <xsl:variable name="path" select="."/>
+              <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
+              <xsl:if test="count($item) = 1">
+                <xsl:attribute name="index">
+                  <xsl:value-of select="$item/@index"/>
                 </xsl:attribute>
-                <xsl:variable name="path" select="."/>
-                <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
-                <xsl:if test="count($item) = 1">
-                  <xsl:attribute name="index">
-                    <xsl:value-of select="$item/@index"/>
-                  </xsl:attribute>
-                </xsl:if>
-              </path>
-            </xsl:if>
-          </xsl:for-each>
-        </widget>
-      </xsl:if>
-    </xsl:variable>
-    <func:result select="exsl:node-set($ast)"/>
-  </func:function>
-  <func:function name="func:parselabels">
-    <xsl:param name="nodes"/>
-    <xsl:choose>
-      <xsl:when test="$nodes">
-        <func:result select="func:parselabel($nodes[1]/@inkscape:label)&#10;                      | func:parselabels($nodes[position()!=1])"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <func:result select="/.."/>
-      </xsl:otherwise>
-    </xsl:choose>
+              </xsl:if>
+            </path>
+          </xsl:if>
+        </xsl:for-each>
+      </widget>
+    </xsl:if>
+  </xsl:template>
+  <xsl:variable name="_parsed_widgets">
+    <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
+  </xsl:variable>
+  <xsl:variable name="parsed_widgets" select="exsl:node-set($_parsed_widgets)"/>
+  <func:function name="func:widget">
+    <xsl:param name="id"/>
+    <func:result select="$parsed_widgets/widget[@id = $id]"/>
   </func:function>
   <xsl:template mode="testtree" match="*">
     <xsl:param name="indent" select="''"/>
@@ -173,6 +170,12 @@
     <xsl:text>Indexed HMI tree
 </xsl:text>
     <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>Parsed Widgets
+</xsl:text>
+    <xsl:copy-of select="_parsed_widgets"/>
+    <xsl:apply-templates mode="testtree" select="$parsed_widgets"/>
   </xsl:template>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <xsl:template name="debug_geometry">
@@ -239,11 +242,12 @@
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
-  <xsl:variable name="hmi_pages" select="$hmi_elements[func:parselabel(@inkscape:label)/widget/@type = 'Page']"/>
+  <xsl:variable name="hmi_pages_ids" select="$parsed_widgets/widget[@type = 'Page']/@id"/>
+  <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_ids]"/>
   <xsl:variable name="default_page">
     <xsl:choose>
       <xsl:when test="count($hmi_pages) &gt; 1">
-        <xsl:variable name="Home_page" select="$hmi_pages[func:parselabel(@inkscape:label)/widget/arg[1]/@value = 'Home']"/>
+        <xsl:variable name="Home_page" select="$hmi_pages[func:widget(@id)/arg[1]/@value = 'Home']"/>
         <xsl:choose>
           <xsl:when test="$Home_page">
             <xsl:text>Home</xsl:text>
@@ -257,7 +261,7 @@
         <xsl:message terminate="yes">No page defined!</xsl:message>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:value-of select="func:parselabel($hmi_pages/@inkscape:label)/widget/arg[1]/@value"/>
+        <xsl:value-of select="func:widget($hmi_pages/@id)/arg[1]/@value"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
@@ -321,12 +325,12 @@
     <func:result select="string-length($ancest) &gt; 0 and starts-with($descend,$ancest)"/>
   </func:function>
   <xsl:template mode="page_desc" match="svg:*">
-    <xsl:variable name="desc" select="func:parselabel(@inkscape:label)/widget"/>
+    <xsl:variable name="desc" select="func:widget(@id)"/>
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
     <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id][not(func:parselabels(ancestor::svg:*)/widget/@type = 'ForEach')]"/>
-    <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path(func:parselabel(@inkscape:label)/widget/path/@value, $desc/path/@value)]"/>
+    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
+    <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]"/>
     <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="$desc/arg[1]/@value"/>
@@ -539,7 +543,7 @@
     </xsl:for-each>
   </xsl:template>
   <xsl:template mode="hmi_elements" match="svg:*">
-    <xsl:variable name="widget" select="func:parselabel(@inkscape:label)/widget"/>
+    <xsl:variable name="widget" select="func:widget(@id)"/>
     <xsl:variable name="eltid" select="@id"/>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="@id"/>
