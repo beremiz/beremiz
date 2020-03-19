@@ -242,14 +242,13 @@
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
-  <xsl:variable name="hmi_pages_ids" select="$parsed_widgets/widget[@type = 'Page']/@id"/>
-  <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_ids]"/>
+  <xsl:variable name="hmi_pages_descs" select="$parsed_widgets/widget[@type = 'Page']"/>
+  <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_descs/@id]"/>
   <xsl:variable name="default_page">
     <xsl:choose>
       <xsl:when test="count($hmi_pages) &gt; 1">
-        <xsl:variable name="Home_page" select="$hmi_pages[func:widget(@id)/arg[1]/@value = 'Home']"/>
         <xsl:choose>
-          <xsl:when test="$Home_page">
+          <xsl:when test="$hmi_pages_descs/arg[1]/@value = 'Home'">
             <xsl:text>Home</xsl:text>
           </xsl:when>
           <xsl:otherwise>

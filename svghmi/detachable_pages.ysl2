@@ -1,18 +1,16 @@
 // detachable_pages.ysl2
 //
 // compute what elements are required by pages
-// and decide where to cut when removing/attaching 
+// and decide where to cut when removing/attaching
 // pages elements on page switch
 
-const "hmi_pages_ids", "$parsed_widgets/widget[@type = 'Page']/@id";
-const "hmi_pages", "$hmi_elements[@id = $hmi_pages_ids]";
+const "hmi_pages_descs", "$parsed_widgets/widget[@type = 'Page']";
+const "hmi_pages", "$hmi_elements[@id = $hmi_pages_descs/@id]";
 
 const "default_page" choose {
     when "count($hmi_pages) > 1" {
-        const "Home_page", 
-            "$hmi_pages[func:widget(@id)/arg[1]/@value = 'Home']";
         choose {
-            when "$Home_page" > Home
+            when "$hmi_pages_descs/arg[1]/@value = 'Home'" > Home
             otherwise {
                 error "No Home page defined!";
             }
