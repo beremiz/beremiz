@@ -57,6 +57,7 @@ ws.binaryType = 'arraybuffer';
 const dvgetters = {
     INT: (dv,offset) => [dv.getInt16(offset, true), 2],
     BOOL: (dv,offset) => [dv.getInt8(offset, true), 1],
+    NODE: (dv,offset) => [dv.getInt8(offset, true), 1],
     STRING: (dv, offset) => {
         size = dv.getInt8(offset);
         return [
@@ -148,6 +149,7 @@ function send_blob(data) {
 const typedarray_types = {
     INT: (number) => new Int16Array([number]),
     BOOL: (truth) => new Int16Array([truth]),
+    NODE: (truth) => new Int16Array([truth]),
     STRING: (str) => {
         // beremiz default string max size is 128
         str = str.slice(0,128);

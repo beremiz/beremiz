@@ -5,9 +5,6 @@
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="_categories">
     <noindex>
-      <xsl:text>HMI_ROOT</xsl:text>
-    </noindex>
-    <noindex>
       <xsl:text>HMI_PLC_STATUS</xsl:text>
     </noindex>
     <noindex>
@@ -25,8 +22,12 @@
     <xsl:variable name="content">
       <xsl:variable name="path">
         <xsl:choose>
-          <xsl:when test="local-name() = 'HMI_ROOT'">
-            <xsl:value-of select="$parentpath"/>
+          <xsl:when test="count(ancestor::*)=0">
+            <xsl:text>/</xsl:text>
+          </xsl:when>
+          <xsl:when test="count(ancestor::*)=1">
+            <xsl:text>/</xsl:text>
+            <xsl:value-of select="@name"/>
           </xsl:when>
           <xsl:otherwise>
             <xsl:value-of select="$parentpath"/>
@@ -597,8 +598,11 @@
           </xsl:message>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text>            </xsl:text>
+          <xsl:text>        </xsl:text>
           <xsl:value-of select="@index"/>
+          <xsl:text> /*</xsl:text>
+          <xsl:value-of select="$widget/path"/>
+          <xsl:text>*/ </xsl:text>
           <xsl:if test="position()!=last()">
             <xsl:text>,</xsl:text>
           </xsl:if>
@@ -676,6 +680,51 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    frequency: 2,
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>                    // do something
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
+      <xsl:text>        id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>").addEventListener(
+</xsl:text>
+      <xsl:text>            "click", 
+</xsl:text>
+      <xsl:text>            evt =&gt; {let new_val = "</xsl:text>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:text>");
+</xsl:text>
+      <xsl:text>                    // do something with new_val
+</xsl:text>
+      <xsl:text>                   });
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
+    <xsl:text>    sub: function(off){
+</xsl:text>
+    <xsl:text>        subscribe.call(this,off)
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    unsub: function(){
+</xsl:text>
+    <xsl:text>        unsubscribe.call(this)
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    frequency: 5,
@@ -1134,6 +1183,8 @@
 </xsl:text>
     <xsl:text>    BOOL: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
 </xsl:text>
+    <xsl:text>    NODE: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+</xsl:text>
     <xsl:text>    STRING: (dv, offset) =&gt; {
 </xsl:text>
     <xsl:text>        size = dv.getInt8(offset);
@@ -1315,6 +1366,8 @@
     <xsl:text>    INT: (number) =&gt; new Int16Array([number]),
 </xsl:text>
     <xsl:text>    BOOL: (truth) =&gt; new Int16Array([truth]),
+</xsl:text>
+    <xsl:text>    NODE: (truth) =&gt; new Int16Array([truth]),
 </xsl:text>
     <xsl:text>    STRING: (str) =&gt; {
 </xsl:text>

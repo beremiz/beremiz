@@ -5,7 +5,6 @@
 const "hmitree", "ns:GetHMITree()";
 
 const "_categories" {
-    noindex > HMI_ROOT
     noindex > HMI_PLC_STATUS
     noindex > HMI_CURRENT_PAGE
 }
@@ -21,7 +20,8 @@ template "*", mode="index" {
     const "content" {
         const "path"
             choose {
-                when "local-name() = 'HMI_ROOT'" > «$parentpath»
+                when "count(ancestor::*)=0" > /
+                when "count(ancestor::*)=1" > /«@name»
                 otherwise > «$parentpath»/«@name»
             }
         choose {
