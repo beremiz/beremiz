@@ -1,0 +1,28 @@
+
+template "widget[@type='ForEach']", mode="widget_defs" {
+    param "hmi_element";
+    |     frequency: 2,
+    |     dispatch: function(value) {
+    |                     // do something
+    |     },
+    |     init: function() {
+    foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
+    |         id("«@id»").addEventListener(
+    |             "click", 
+    |             evt => {let new_val = "«func:escape_quotes(@inkscape:label)»");
+    |                     // do something with new_val
+    |                    });
+    }
+    |     },
+}
+
+template "widget[@type='ForEach']", mode="widget_subscribe"{
+    // param "hmi_element";
+    |     sub: function(off){
+    |         subscribe.call(this,off)
+    |     },
+
+    |     unsub: function(){
+    |         unsubscribe.call(this)
+    |     },
+}
