@@ -6,23 +6,32 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     |     dispatch: function(value) {
     |                     // do something
     |     },
-    |     init: function() {
-    foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
-    |         id("«@id»").addEventListener(
-    |             "click", 
-    |             evt => {let new_val = "«func:escape_quotes(@inkscape:label)»");
-    |                     // do something with new_val
-    |                    });
+    |     index_pool: [
+    |     ],
+    |     buttons: [
+    const "class","arg[1]/@value";
+    const "prefix","concat($class,':')";
+    const "buttons_regex","concat('^',$prefix,'[+\-][0-9]+')";
+    foreach "$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]" {
+    |         ["«substring-after(@inkscape:label, concat(arg[1]/@value, ':'))»", id("«@id»")]`if "position()!=last()" > ,`
     }
+    |     ],
+    |     init: function() {
+    |         /* TODO elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");*/
     |     },
 
-    |     widgets: [
-    const "labels_regex","concat('^',arg[1]/@value,':[0-9]+')";
-    foreach "$hmi_element/*[regexp:test(@inkscape:label, $labels_regex)]" {
-    |       [ /* «@inkscape:label» */
-        const "elt",".";
-        //foreach "$hmi_elements[ancestor::svg:*/@id = $_id]" {
-        foreach "func:refered_elements(.)[@id = $hmi_elements/@id][not(@id = $elt/@id)]" {
+    |     items: [
+    const "base_path","path/@value";
+    const "items_regex","concat('^',$prefix,'[0-9]+')";
+    const "unordered_items","$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]";
+    foreach "$unordered_items" {
+        const "elt_label","concat($prefix, string(position()))"; 
+        const "elt","$unordered_items[@inkscape:label = $elt_label]";
+        
+    |   /* `apply "func:get_hmi_tree_elt($base_path)", mode="testtree";` */
+    |       [ /* «$elt_label» */
+        if "count($elt)=0" error > Missing item labeled «$elt_label» in ForEach widget «$hmi_element/@id»
+        foreach "func:refered_elements($elt)[@id = $hmi_elements/@id][not(@id = $elt/@id)]" {
     |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
         }
     |       ]`if "position()!=last()" > ,`
