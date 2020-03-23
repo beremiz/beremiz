@@ -28,7 +28,7 @@ template "svg:*", mode="hmi_elements" {
                 warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
             }
             otherwise {
-    |         «@index» /*«$widget/path»*/ `if "position()!=last()" > ,`
+    |         «@index» /* «@value» */ `if "position()!=last()" > ,`
             }
         }
     }

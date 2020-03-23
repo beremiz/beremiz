@@ -74,6 +74,49 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
+  <func:function name="func:get_hmi_tree_elt">
+    <xsl:param name="path"/>
+    <xsl:param name="root" select="$hmitree"/>
+    <xsl:message>
+      <xsl:text>get_hmi_tree_elt </xsl:text>
+      <xsl:value-of select="$path"/>
+    </xsl:message>
+    <xsl:if test="not(starts-with($path, '/'))">
+      <xsl:message terminate="yes">
+        <xsl:text>Given path "</xsl:text>
+        <xsl:value-of select="$path"/>
+        <xsl:text>" should start with a "/"</xsl:text>
+      </xsl:message>
+    </xsl:if>
+    <xsl:variable name="stripped" select="substring($path, 2)"/>
+    <xsl:variable name="token">
+      <xsl:choose>
+        <xsl:when test="contains($stripped, '/')">
+          <xsl:value-of select="substring-before($stripped, '/')"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$stripped"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="string-length($token) = 0">
+        <func:result select="$root"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="rest" select="substring-after($stripped, $token)"/>
+        <xsl:variable name="match" select="$root/*[@name = $token]"/>
+        <xsl:choose>
+          <xsl:when test="string-length($rest) &gt; 0">
+            <func:result select="func:get_hmi_tree_el($rest, $match)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <func:result select="$match"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
@@ -600,9 +643,9 @@
         <xsl:otherwise>
           <xsl:text>        </xsl:text>
           <xsl:value-of select="@index"/>
-          <xsl:text> /*</xsl:text>
-          <xsl:value-of select="$widget/path"/>
-          <xsl:text>*/ </xsl:text>
+          <xsl:text> /* </xsl:text>
+          <xsl:value-of select="@value"/>
+          <xsl:text> */ </xsl:text>
           <xsl:if test="position()!=last()">
             <xsl:text>,</xsl:text>
           </xsl:if>
@@ -711,36 +754,62 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    init: function() {
+    <xsl:text>    index_pool: [
 </xsl:text>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
-      <xsl:text>        id("</xsl:text>
+    <xsl:text>    ],
+</xsl:text>
+    <xsl:text>    buttons: [
+</xsl:text>
+    <xsl:variable name="class" select="arg[1]/@value"/>
+    <xsl:variable name="prefix" select="concat($class,':')"/>
+    <xsl:variable name="buttons_regex" select="concat('^',$prefix,'[+\-][0-9]+')"/>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]">
+      <xsl:text>        ["</xsl:text>
+      <xsl:value-of select="substring-after(@inkscape:label, concat(arg[1]/@value, ':'))"/>
+      <xsl:text>", id("</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>").addEventListener(
-</xsl:text>
-      <xsl:text>            "click", 
-</xsl:text>
-      <xsl:text>            evt =&gt; {let new_val = "</xsl:text>
-      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
-      <xsl:text>");
-</xsl:text>
-      <xsl:text>                    // do something with new_val
-</xsl:text>
-      <xsl:text>                   });
+      <xsl:text>")]</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        /* TODO elt.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click(evt)");*/
+</xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    widgets: [
+    <xsl:text>    items: [
 </xsl:text>
-    <xsl:variable name="labels_regex" select="concat('^',arg[1]/@value,':[0-9]+')"/>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label, $labels_regex)]">
-      <xsl:text>      [ /* </xsl:text>
-      <xsl:value-of select="@inkscape:label"/>
+    <xsl:variable name="base_path" select="path/@value"/>
+    <xsl:variable name="items_regex" select="concat('^',$prefix,'[0-9]+')"/>
+    <xsl:variable name="unordered_items" select="$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]"/>
+    <xsl:for-each select="$unordered_items">
+      <xsl:variable name="elt_label" select="concat($prefix, string(position()))"/>
+      <xsl:variable name="elt" select="$unordered_items[@inkscape:label = $elt_label]"/>
+      <xsl:text>  /* </xsl:text>
+      <xsl:apply-templates mode="testtree" select="func:get_hmi_tree_elt($base_path)"/>
       <xsl:text> */
 </xsl:text>
-      <xsl:variable name="elt" select="."/>
-      <xsl:for-each select="func:refered_elements(.)[@id = $hmi_elements/@id][not(@id = $elt/@id)]">
+      <xsl:text>      [ /* </xsl:text>
+      <xsl:value-of select="$elt_label"/>
+      <xsl:text> */
+</xsl:text>
+      <xsl:if test="count($elt)=0">
+        <xsl:message terminate="yes">
+          <xsl:text>Missing item labeled </xsl:text>
+          <xsl:value-of select="$elt_label"/>
+          <xsl:text> in ForEach widget </xsl:text>
+          <xsl:value-of select="$hmi_element/@id"/>
+        </xsl:message>
+      </xsl:if>
+      <xsl:for-each select="func:refered_elements($elt)[@id = $hmi_elements/@id][not(@id = $elt/@id)]">
         <xsl:text>        hmi_widgets["</xsl:text>
         <xsl:value-of select="@id"/>
         <xsl:text>"]</xsl:text>
@@ -763,13 +832,13 @@
   <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
     <xsl:text>    sub: function(off){
 </xsl:text>
-    <xsl:text>        subscribe.call(this,off)
+    <xsl:text>        subscribe.call(this,off);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    unsub: function(){
 </xsl:text>
-    <xsl:text>        unsubscribe.call(this)
+    <xsl:text>        unsubscribe.call(this);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
