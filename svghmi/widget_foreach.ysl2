@@ -1,6 +1,7 @@
 
 template "widget[@type='ForEach']", mode="widget_defs" {
     param "hmi_element";
+    const "widgets", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]";
     |     frequency: 2,
     |     dispatch: function(value) {
     |                     // do something
@@ -14,15 +15,30 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     |                    });
     }
     |     },
+
+    |     widgets: [
+    const "labels_regex","concat('^',arg[1]/@value,':[0-9]+')";
+    foreach "$hmi_element/*[regexp:test(@inkscape:label, $labels_regex)]" {
+    |       [ /* «@inkscape:label» */
+        const "elt",".";
+        //foreach "$hmi_elements[ancestor::svg:*/@id = $_id]" {
+        foreach "func:refered_elements(.)[@id = $hmi_elements/@id][not(@id = $elt/@id)]" {
+    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+        }
+    |       ]`if "position()!=last()" > ,`
+    }
+    |     ],
 }
 
 template "widget[@type='ForEach']", mode="widget_subscribe"{
     // param "hmi_element";
     |     sub: function(off){
-    |         subscribe.call(this,off)
+    |         subscribe.call(this,off);
+        /* TODO */
     |     },
 
     |     unsub: function(){
-    |         unsubscribe.call(this)
+    |         unsubscribe.call(this);
+        /* TODO */
     |     },
 }

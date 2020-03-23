@@ -680,8 +680,29 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <xsl:template mode="widget_defs" match="widget[@type='Display']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    frequency: 5,
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$hmi_element[self::svg:text]">
+        <xsl:text>      this.element.textContent = String(value);
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message terminate="no">
+          <xsl:text>Display widget as a group not implemented</xsl:text>
+        </xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="widgets" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]"/>
     <xsl:text>    frequency: 2,
 </xsl:text>
     <xsl:text>    dispatch: function(value) {
@@ -710,6 +731,34 @@
     </xsl:for-each>
     <xsl:text>    },
 </xsl:text>
+    <xsl:text>    widgets: [
+</xsl:text>
+    <xsl:variable name="labels_regex" select="concat('^',arg[1]/@value,':[0-9]+')"/>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label, $labels_regex)]">
+      <xsl:text>      [ /* </xsl:text>
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text> */
+</xsl:text>
+      <xsl:variable name="elt" select="."/>
+      <xsl:for-each select="func:refered_elements(.)[@id = $hmi_elements/@id][not(@id = $elt/@id)]">
+        <xsl:text>        hmi_widgets["</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>"]</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>      ]</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
     <xsl:text>    sub: function(off){
@@ -722,26 +771,6 @@
 </xsl:text>
     <xsl:text>        unsubscribe.call(this)
 </xsl:text>
-    <xsl:text>    },
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Display']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 5,
-</xsl:text>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:choose>
-      <xsl:when test="$hmi_element[self::svg:text]">
-        <xsl:text>      this.element.textContent = String(value);
-</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message terminate="no">
-          <xsl:text>Display widget as a group not implemented</xsl:text>
-        </xsl:message>
-      </xsl:otherwise>
-    </xsl:choose>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
