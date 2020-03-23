@@ -74,49 +74,6 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <func:function name="func:get_hmi_tree_elt">
-    <xsl:param name="path"/>
-    <xsl:param name="root" select="$hmitree"/>
-    <xsl:message>
-      <xsl:text>get_hmi_tree_elt </xsl:text>
-      <xsl:value-of select="$path"/>
-    </xsl:message>
-    <xsl:if test="not(starts-with($path, '/'))">
-      <xsl:message terminate="yes">
-        <xsl:text>Given path "</xsl:text>
-        <xsl:value-of select="$path"/>
-        <xsl:text>" should start with a "/"</xsl:text>
-      </xsl:message>
-    </xsl:if>
-    <xsl:variable name="stripped" select="substring($path, 2)"/>
-    <xsl:variable name="token">
-      <xsl:choose>
-        <xsl:when test="contains($stripped, '/')">
-          <xsl:value-of select="substring-before($stripped, '/')"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="$stripped"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="string-length($token) = 0">
-        <func:result select="$root"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:variable name="rest" select="substring-after($stripped, $token)"/>
-        <xsl:variable name="match" select="$root/*[@name = $token]"/>
-        <xsl:choose>
-          <xsl:when test="string-length($rest) &gt; 0">
-            <func:result select="func:get_hmi_tree_el($rest, $match)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <func:result select="$match"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:otherwise>
-    </xsl:choose>
-  </func:function>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
@@ -184,6 +141,11 @@
   <func:function name="func:widget">
     <xsl:param name="id"/>
     <func:result select="$parsed_widgets/widget[@id = $id]"/>
+  </func:function>
+  <func:function name="func:is_descendant_path">
+    <xsl:param name="descend"/>
+    <xsl:param name="ancest"/>
+    <func:result select="string-length($ancest) &gt; 0 and starts-with($descend,$ancest)"/>
   </func:function>
   <xsl:template mode="testtree" match="*">
     <xsl:param name="indent" select="''"/>
@@ -362,11 +324,6 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
-  <func:function name="func:is_descendant_path">
-    <xsl:param name="descend"/>
-    <xsl:param name="ancest"/>
-    <func:result select="string-length($ancest) &gt; 0 and starts-with($descend,$ancest)"/>
-  </func:function>
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
   <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
   <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
@@ -746,21 +703,28 @@
   <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="widgets" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]"/>
-    <xsl:text>    frequency: 2,
-</xsl:text>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:text>                    // do something
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
+    <xsl:variable name="class" select="arg[1]/@value"/>
+    <xsl:variable name="base_path" select="path/@value"/>
+    <xsl:variable name="hmi_index_base" select="$indexed_hmitree/*[@hmipath = $base_path]"/>
+    <xsl:variable name="hmi_tree_base" select="$hmitree/descendant-or-self::*[@path = $hmi_index_base/@path]"/>
+    <xsl:variable name="hmi_tree_items" select="$hmi_tree_base/*[@class = $class]"/>
+    <xsl:variable name="hmi_index_items" select="$indexed_hmitree/*[@path = $hmi_tree_items/@path]"/>
+    <xsl:variable name="items_paths" select="$hmi_index_items/@hmipath"/>
     <xsl:text>    index_pool: [
 </xsl:text>
+    <xsl:for-each select="$hmi_index_items">
+      <xsl:text>      </xsl:text>
+      <xsl:value-of select="@index"/>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
     <xsl:text>    buttons: [
 </xsl:text>
-    <xsl:variable name="class" select="arg[1]/@value"/>
     <xsl:variable name="prefix" select="concat($class,':')"/>
     <xsl:variable name="buttons_regex" select="concat('^',$prefix,'[+\-][0-9]+')"/>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]">
@@ -787,19 +751,18 @@
 </xsl:text>
     <xsl:text>    items: [
 </xsl:text>
-    <xsl:variable name="base_path" select="path/@value"/>
     <xsl:variable name="items_regex" select="concat('^',$prefix,'[0-9]+')"/>
     <xsl:variable name="unordered_items" select="$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]"/>
     <xsl:for-each select="$unordered_items">
       <xsl:variable name="elt_label" select="concat($prefix, string(position()))"/>
       <xsl:variable name="elt" select="$unordered_items[@inkscape:label = $elt_label]"/>
-      <xsl:text>  /* </xsl:text>
-      <xsl:apply-templates mode="testtree" select="func:get_hmi_tree_elt($base_path)"/>
-      <xsl:text> */
-</xsl:text>
-      <xsl:text>      [ /* </xsl:text>
+      <xsl:variable name="pos" select="position()"/>
+      <xsl:variable name="item_path" select="$items_paths[$pos]"/>
+      <xsl:text>      [ /* item="</xsl:text>
       <xsl:value-of select="$elt_label"/>
-      <xsl:text> */
+      <xsl:text>" path="</xsl:text>
+      <xsl:value-of select="$item_path"/>
+      <xsl:text>" */
 </xsl:text>
       <xsl:if test="count($elt)=0">
         <xsl:message terminate="yes">
@@ -810,6 +773,19 @@
         </xsl:message>
       </xsl:if>
       <xsl:for-each select="func:refered_elements($elt)[@id = $hmi_elements/@id][not(@id = $elt/@id)]">
+        <xsl:if test="not(func:is_descendant_path(func:widget(@id)/path/@value, $item_path))">
+          <xsl:message terminate="yes">
+            <xsl:text>Widget id="</xsl:text>
+            <xsl:value-of select="@id"/>
+            <xsl:text>" label="</xsl:text>
+            <xsl:value-of select="@inkscape:label"/>
+            <xsl:text>" is having wrong path. Accroding to ForEach widget ancestor id="</xsl:text>
+            <xsl:value-of select="$hmi_element/@id"/>
+            <xsl:text>", path should be descendant of </xsl:text>
+            <xsl:value-of select="$item_path"/>
+            <xsl:text>.</xsl:text>
+          </xsl:message>
+        </xsl:if>
         <xsl:text>        hmi_widgets["</xsl:text>
         <xsl:value-of select="@id"/>
         <xsl:text>"]</xsl:text>
@@ -832,13 +808,13 @@
   <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
     <xsl:text>    sub: function(off){
 </xsl:text>
-    <xsl:text>        subscribe.call(this,off);
+    <xsl:text>        /*subscribe.call(this,off);*/
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    unsub: function(){
 </xsl:text>
-    <xsl:text>        unsubscribe.call(this);
+    <xsl:text>        /*unsubscribe.call(this);*/
 </xsl:text>
     <xsl:text>    },
 </xsl:text>

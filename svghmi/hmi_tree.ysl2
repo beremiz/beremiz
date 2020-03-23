@@ -52,36 +52,6 @@ template "*", mode="index" {
     }
 }
 
-def "func:get_hmi_tree_elt" {
-    param "path";
-    param "root", "$hmitree";
-    message > get_hmi_tree_elt «$path»
-    if "not(starts-with($path, '/'))" error > Given path "«$path»" should start with a "/"
-    const "stripped", "substring($path, 2)";
-    const "token" choose {
-        when "contains($stripped, '/')" value "substring-before($stripped, '/')";
-        otherwise value "$stripped";
-    }
-
-    choose {
-        when "string-length($token) = 0"{
-            result "$root";
-        }
-        otherwise{
-            const "rest", "substring-after($stripped, $token)";
-            const "match", "$root/*[@name = $token]";
-            choose {
-                when "string-length($rest) > 0"{
-                    result "func:get_hmi_tree_el($rest, $match)";
-                }
-                otherwise{
-                    result "$match";
-                }
-            }
-        }
-    }
-}
-
 //  Parses:
 //  "HMI:WidgetType:param1:param2@path1@path2"
 //
@@ -136,6 +106,14 @@ const "parsed_widgets","exsl:node-set($_parsed_widgets)";
 def "func:widget" {
     param "id";
     result "$parsed_widgets/widget[@id = $id]";
+}
+
+
+def "func:is_descendant_path" {
+    param "descend";
+    param "ancest";
+    // TODO : use HMI tree to answer more accurately
+    result "string-length($ancest) > 0 and starts-with($descend,$ancest)";
 }
 
 

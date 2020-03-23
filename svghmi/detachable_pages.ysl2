@@ -91,13 +91,6 @@ def "func:detachable_elements" {
 const "_detachable_elements", "func:detachable_elements($hmi_pages)";
 const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
-def "func:is_descendant_path" {
-    param "descend";
-    param "ancest";
-    result "string-length($ancest) > 0 and starts-with($descend,$ancest)";
-}
-
-
 const "forEach_widgets_ids", "$parsed_widgets/widget[@type = 'ForEach']/@id";
 const "forEach_widgets", "$hmi_elements[@id = $forEach_widgets_ids]";
 const "in_forEach_widget_ids", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id";

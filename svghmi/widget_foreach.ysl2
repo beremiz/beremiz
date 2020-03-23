@@ -2,14 +2,21 @@
 template "widget[@type='ForEach']", mode="widget_defs" {
     param "hmi_element";
     const "widgets", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]";
-    |     frequency: 2,
-    |     dispatch: function(value) {
-    |                     // do something
-    |     },
+
+    const "class","arg[1]/@value";
+
+    const "base_path","path/@value";
+    const "hmi_index_base", "$indexed_hmitree/*[@hmipath = $base_path]";
+    const "hmi_tree_base", "$hmitree/descendant-or-self::*[@path = $hmi_index_base/@path]";
+    const "hmi_tree_items", "$hmi_tree_base/*[@class = $class]";
+    const "hmi_index_items", "$indexed_hmitree/*[@path = $hmi_tree_items/@path]"; 
+    const "items_paths", "$hmi_index_items/@hmipath"; 
     |     index_pool: [
+    foreach "$hmi_index_items" {
+    |       «@index»`if "position()!=last()" > ,`
+    }
     |     ],
     |     buttons: [
-    const "class","arg[1]/@value";
     const "prefix","concat($class,':')";
     const "buttons_regex","concat('^',$prefix,'[+\-][0-9]+')";
     foreach "$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]" {
@@ -21,17 +28,18 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     |     },
 
     |     items: [
-    const "base_path","path/@value";
     const "items_regex","concat('^',$prefix,'[0-9]+')";
     const "unordered_items","$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]";
     foreach "$unordered_items" {
         const "elt_label","concat($prefix, string(position()))"; 
         const "elt","$unordered_items[@inkscape:label = $elt_label]";
-        
-    |   /* `apply "func:get_hmi_tree_elt($base_path)", mode="testtree";` */
-    |       [ /* «$elt_label» */
+        const "pos","position()";
+        const "item_path", "$items_paths[$pos]";
+    |       [ /* item="«$elt_label»" path="«$item_path»" */
         if "count($elt)=0" error > Missing item labeled «$elt_label» in ForEach widget «$hmi_element/@id»
         foreach "func:refered_elements($elt)[@id = $hmi_elements/@id][not(@id = $elt/@id)]" {
+            if "not(func:is_descendant_path(func:widget(@id)/path/@value, $item_path))"
+                error > Widget id="«@id»" label="«@inkscape:label»" is having wrong path. Accroding to ForEach widget ancestor id="«$hmi_element/@id»", path should be descendant of «$item_path».
     |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
         }
     |       ]`if "position()!=last()" > ,`
@@ -42,12 +50,12 @@ template "widget[@type='ForEach']", mode="widget_defs" {
 template "widget[@type='ForEach']", mode="widget_subscribe"{
     // param "hmi_element";
     |     sub: function(off){
-    |         subscribe.call(this,off);
+    |         /*subscribe.call(this,off);*/
         /* TODO */
     |     },
 
     |     unsub: function(){
-    |         unsubscribe.call(this);
+    |         /*unsubscribe.call(this);*/
         /* TODO */
     |     },
 }
