@@ -747,9 +747,7 @@
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_click(evt)");*/
 </xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    items: [
+    <xsl:text>        this.items = [
 </xsl:text>
     <xsl:variable name="items_regex" select="concat('^',$prefix,'[0-9]+')"/>
     <xsl:variable name="unordered_items" select="$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]"/>
@@ -758,7 +756,7 @@
       <xsl:variable name="elt" select="$unordered_items[@inkscape:label = $elt_label]"/>
       <xsl:variable name="pos" select="position()"/>
       <xsl:variable name="item_path" select="$items_paths[$pos]"/>
-      <xsl:text>      [ /* item="</xsl:text>
+      <xsl:text>          [ /* item="</xsl:text>
       <xsl:value-of select="$elt_label"/>
       <xsl:text>" path="</xsl:text>
       <xsl:value-of select="$item_path"/>
@@ -786,7 +784,7 @@
             <xsl:text>.</xsl:text>
           </xsl:message>
         </xsl:if>
-        <xsl:text>        hmi_widgets["</xsl:text>
+        <xsl:text>            hmi_widgets["</xsl:text>
         <xsl:value-of select="@id"/>
         <xsl:text>"]</xsl:text>
         <xsl:if test="position()!=last()">
@@ -795,26 +793,30 @@
         <xsl:text>
 </xsl:text>
       </xsl:for-each>
-      <xsl:text>      ]</xsl:text>
+      <xsl:text>          ]</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>    ],
+    <xsl:text>        ]
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    item_offset: 0,
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
     <xsl:text>    sub: function(off){
 </xsl:text>
-    <xsl:text>        /*subscribe.call(this,off);*/
+    <xsl:text>        subscribe_foreach.call(this,off);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    unsub: function(){
 </xsl:text>
-    <xsl:text>        /*unsubscribe.call(this);*/
+    <xsl:text>        unsubscribe_foreach.call(this);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1315,6 +1317,14 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(current_subscribed_page_index != current_visible_page_index){
+</xsl:text>
+    <xsl:text>        apply_cache();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>    apply_updates();
 </xsl:text>
     <xsl:text>    requestAnimationFrameID = null;
@@ -1649,6 +1659,10 @@
 </xsl:text>
     <xsl:text>var current_subscribed_page;
 </xsl:text>
+    <xsl:text>var current_visible_page_index;
+</xsl:text>
+    <xsl:text>var current_subscribed_page_index;
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function prepare_svg() {
@@ -1675,15 +1689,15 @@
 </xsl:text>
     <xsl:text>        return;
 </xsl:text>
-    <xsl:text>    } else if(page_name == current_visible_page){
-</xsl:text>
-    <xsl:text>        /* already in that page */
-</xsl:text>
-    <xsl:text>        /* TODO LOG ERROR */
-</xsl:text>
-    <xsl:text>        return;
-</xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(page_name == undefined)
+</xsl:text>
+    <xsl:text>        page_name = current_subscribed_page;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    switch_subscribed_page(page_name, page_index);
 </xsl:text>
@@ -1703,19 +1717,17 @@
 </xsl:text>
     <xsl:text>function unsubscribe(){
 </xsl:text>
-    <xsl:text>    widget = this;
-</xsl:text>
     <xsl:text>    /* remove subsribers */
 </xsl:text>
-    <xsl:text>    for(let index of widget.indexes){
+    <xsl:text>    for(let index of this.indexes){
 </xsl:text>
-    <xsl:text>        let idx = index + widget.offset;
+    <xsl:text>        let idx = index + this.offset;
 </xsl:text>
-    <xsl:text>        subscribers[idx].delete(widget);
+    <xsl:text>        subscribers[idx].delete(this);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    widget.offset = 0;
+    <xsl:text>    this.offset = 0;
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -1723,17 +1735,55 @@
 </xsl:text>
     <xsl:text>function subscribe(new_offset=0){
 </xsl:text>
-    <xsl:text>    widget = this;
-</xsl:text>
     <xsl:text>    /* set the offset because relative */
 </xsl:text>
-    <xsl:text>    widget.offset = new_offset;
+    <xsl:text>    this.offset = new_offset;
 </xsl:text>
-    <xsl:text>    /* add widget's subsribers */
+    <xsl:text>    /* add this's subsribers */
 </xsl:text>
-    <xsl:text>    for(let index of widget.indexes){
+    <xsl:text>    for(let index of this.indexes){
 </xsl:text>
-    <xsl:text>        subscribers[index + new_offset].add(widget);
+    <xsl:text>        subscribers[index + new_offset].add(this);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function unsubscribe_foreach(){
+</xsl:text>
+    <xsl:text>    for(let item of this.items){
+</xsl:text>
+    <xsl:text>        for(let widget of item) {
+</xsl:text>
+    <xsl:text>            unsubscribe.call(widget);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function subscribe_foreach(new_offset=0){
+</xsl:text>
+    <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
+</xsl:text>
+    <xsl:text>        let item = this.items[i];
+</xsl:text>
+    <xsl:text>        let orig_item_index = this.index_pool[i];
+</xsl:text>
+    <xsl:text>        let item_index = this.index_pool[i+this.item_offset];
+</xsl:text>
+    <xsl:text>        let item_index_offset = item_index - orig_item_index;
+</xsl:text>
+    <xsl:text>        for(let widget of item) {
+</xsl:text>
+    <xsl:text>            subscribe.call(widget,new_offset + item_index_offset);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1788,6 +1838,8 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    current_subscribed_page = page_name;
+</xsl:text>
+    <xsl:text>    current_subscribed_page_index = page_index;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1847,29 +1899,41 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+</xsl:text>
+    <xsl:text>    current_visible_page = page_name;
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>    
+</xsl:text>
+    <xsl:text>function apply_cache() {
+</xsl:text>
+    <xsl:text>    let new_desc = page_desc[current_visible_page];
+</xsl:text>
     <xsl:text>    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
 </xsl:text>
     <xsl:text>        for(let index of widget.indexes){
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
-    <xsl:text>            let cached_val = cache[index];
+    <xsl:text>            let realindex = index+widget.offset;
+</xsl:text>
+    <xsl:text>            let cached_val = cache[realindex];
 </xsl:text>
     <xsl:text>            if(cached_val != undefined)
 </xsl:text>
-    <xsl:text>                dispatch_value_to_widget(widget, index, cached_val, cached_val);
+    <xsl:text>                dispatch_value_to_widget(widget, realindex, cached_val, cached_val);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    current_visible_page_index = current_subscribed_page_index;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
     <xsl:text>
-</xsl:text>
-    <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-</xsl:text>
-    <xsl:text>    current_visible_page = page_name;
-</xsl:text>
-    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
