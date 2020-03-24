@@ -723,29 +723,23 @@
     </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
-    <xsl:text>    buttons: [
+    <xsl:text>    init: function() {
 </xsl:text>
     <xsl:variable name="prefix" select="concat($class,':')"/>
     <xsl:variable name="buttons_regex" select="concat('^',$prefix,'[+\-][0-9]+')"/>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]">
-      <xsl:text>        ["</xsl:text>
-      <xsl:value-of select="substring-after(@inkscape:label, concat(arg[1]/@value, ':'))"/>
-      <xsl:text>", id("</xsl:text>
+    <xsl:variable name="buttons" select="$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]"/>
+    <xsl:for-each select="$buttons">
+      <xsl:variable name="op" select="substring-after(@inkscape:label, $prefix)"/>
+      <xsl:text>        id("</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>")]</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
+      <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
+      <xsl:value-of select="$hmi_element/@id"/>
+      <xsl:text>'].on_click('</xsl:text>
+      <xsl:value-of select="$op"/>
+      <xsl:text>', evt)");
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>    ],
-</xsl:text>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:text>        /* TODO elt.setAttribute("onclick", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click(evt)");*/
+    <xsl:text>
 </xsl:text>
     <xsl:text>        this.items = [
 </xsl:text>
@@ -779,9 +773,9 @@
             <xsl:value-of select="@inkscape:label"/>
             <xsl:text>" is having wrong path. Accroding to ForEach widget ancestor id="</xsl:text>
             <xsl:value-of select="$hmi_element/@id"/>
-            <xsl:text>", path should be descendant of </xsl:text>
+            <xsl:text>", path should be descendant of "</xsl:text>
             <xsl:value-of select="$item_path"/>
-            <xsl:text>.</xsl:text>
+            <xsl:text>".</xsl:text>
           </xsl:message>
         </xsl:if>
         <xsl:text>            hmi_widgets["</xsl:text>
@@ -804,19 +798,25 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+    <xsl:text>    on_click: function(opstr, evt) {
+</xsl:text>
+    <xsl:text>        console.log(opstr);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
     <xsl:text>    item_offset: 0,
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
     <xsl:text>    sub: function(off){
 </xsl:text>
-    <xsl:text>        subscribe_foreach.call(this,off);
+    <xsl:text>        foreach_subscribe.call(this,off);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    unsub: function(){
 </xsl:text>
-    <xsl:text>        unsubscribe_foreach.call(this);
+    <xsl:text>        foreach_unsubscribe.call(this);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1751,7 +1751,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function unsubscribe_foreach(){
+    <xsl:text>function foreach_unsubscribe(){
 </xsl:text>
     <xsl:text>    for(let item of this.items){
 </xsl:text>
@@ -1767,7 +1767,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function subscribe_foreach(new_offset=0){
+    <xsl:text>function foreach_subscribe(new_offset=0){
 </xsl:text>
     <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
 </xsl:text>

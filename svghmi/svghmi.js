@@ -303,7 +303,7 @@ function subscribe(new_offset=0){
     }
 }
 
-function unsubscribe_foreach(){
+function foreach_unsubscribe(){
     for(let item of this.items){
         for(let widget of item) {
             unsubscribe.call(widget);
@@ -311,7 +311,7 @@ function unsubscribe_foreach(){
     }
 }
 
-function subscribe_foreach(new_offset=0){
+function foreach_subscribe(new_offset=0){
     for(let i = 0; i < this.items.length; i++) {
         let item = this.items[i];
         let orig_item_index = this.index_pool[i];
