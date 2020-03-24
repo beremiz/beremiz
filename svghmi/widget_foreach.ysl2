@@ -25,9 +25,8 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     |     ],
     |     init: function() {
     |         /* TODO elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");*/
-    |     },
 
-    |     items: [
+    |         this.items = [
     const "items_regex","concat('^',$prefix,'[0-9]+')";
     const "unordered_items","$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]";
     foreach "$unordered_items" {
@@ -35,27 +34,27 @@ template "widget[@type='ForEach']", mode="widget_defs" {
         const "elt","$unordered_items[@inkscape:label = $elt_label]";
         const "pos","position()";
         const "item_path", "$items_paths[$pos]";
-    |       [ /* item="«$elt_label»" path="«$item_path»" */
+    |           [ /* item="«$elt_label»" path="«$item_path»" */
         if "count($elt)=0" error > Missing item labeled «$elt_label» in ForEach widget «$hmi_element/@id»
         foreach "func:refered_elements($elt)[@id = $hmi_elements/@id][not(@id = $elt/@id)]" {
             if "not(func:is_descendant_path(func:widget(@id)/path/@value, $item_path))"
                 error > Widget id="«@id»" label="«@inkscape:label»" is having wrong path. Accroding to ForEach widget ancestor id="«$hmi_element/@id»", path should be descendant of «$item_path».
-    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+    |             hmi_widgets["«@id»"]`if "position()!=last()" > ,`
         }
-    |       ]`if "position()!=last()" > ,`
+    |           ]`if "position()!=last()" > ,`
     }
-    |     ],
+    |         ]
+    |     },
+    |     item_offset: 0,
 }
 
 template "widget[@type='ForEach']", mode="widget_subscribe"{
     // param "hmi_element";
     |     sub: function(off){
-    |         /*subscribe.call(this,off);*/
-        /* TODO */
+    |         subscribe_foreach.call(this,off);
     |     },
 
     |     unsub: function(){
-    |         /*unsubscribe.call(this);*/
-        /* TODO */
+    |         unsubscribe_foreach.call(this);
     |     },
 }

@@ -86,6 +86,10 @@ function animate() {
     if(current_subscribed_page != current_visible_page){
         switch_visible_page(current_subscribed_page);
     }
+
+    if(current_subscribed_page_index != current_visible_page_index){
+        apply_cache();
+    }
     apply_updates();
     requestAnimationFrameID = null;
 }
@@ -253,6 +257,8 @@ function change_hmi_value(index, opstr) {
 
 var current_visible_page;
 var current_subscribed_page;
+var current_visible_page_index;
+var current_subscribed_page_index;
 
 function prepare_svg() {
     for(let eltid in detachable_elements){
@@ -266,11 +272,11 @@ function switch_page(page_name, page_index) {
         /* page switch already going */
         /* TODO LOG ERROR */
         return;
-    } else if(page_name == current_visible_page){
-        /* already in that page */
-        /* TODO LOG ERROR */
-        return;
     }
+
+    if(page_name == undefined)
+        page_name = current_subscribed_page;
+
     switch_subscribed_page(page_name, page_index);
 };
 
@@ -280,22 +286,40 @@ function* chain(a,b){
 };
 
 function unsubscribe(){
-    widget = this;
     /* remove subsribers */
-    for(let index of widget.indexes){
-        let idx = index + widget.offset;
-        subscribers[idx].delete(widget);
+    for(let index of this.indexes){
+        let idx = index + this.offset;
+        subscribers[idx].delete(this);
     }
-    widget.offset = 0;
+    this.offset = 0;
 }
 
 function subscribe(new_offset=0){
-    widget = this;
     /* set the offset because relative */
-    widget.offset = new_offset;
-    /* add widget's subsribers */
-    for(let index of widget.indexes){
-        subscribers[index + new_offset].add(widget);
+    this.offset = new_offset;
+    /* add this's subsribers */
+    for(let index of this.indexes){
+        subscribers[index + new_offset].add(this);
+    }
+}
+
+function unsubscribe_foreach(){
+    for(let item of this.items){
+        for(let widget of item) {
+            unsubscribe.call(widget);
+        }
+    }
+}
+
+function subscribe_foreach(new_offset=0){
+    for(let i = 0; i < this.items.length; i++) {
+        let item = this.items[i];
+        let orig_item_index = this.index_pool[i];
+        let item_index = this.index_pool[i+this.item_offset];
+        let item_index_offset = item_index - orig_item_index;
+        for(let widget of item) {
+            subscribe.call(widget,new_offset + item_index_offset);
+        }
     }
 }
 
@@ -323,6 +347,7 @@ function switch_subscribed_page(page_name, page_index) {
     update_subscriptions();
 
     current_subscribed_page = page_name;
+    current_subscribed_page_index = page_index;
 
     requestHMIAnimation();
 }
@@ -352,18 +377,24 @@ function switch_visible_page(page_name) {
         }
     }
 
-    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
-        for(let index of widget.indexes){
-            /* dispatch current cache in newly opened page widgets */
-            let cached_val = cache[index];
-            if(cached_val != undefined)
-                dispatch_value_to_widget(widget, index, cached_val, cached_val);
-        }
-    }
-
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_visible_page = page_name;
 };
+    
+function apply_cache() {
+    let new_desc = page_desc[current_visible_page];
+    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
+        for(let index of widget.indexes){
+            /* dispatch current cache in newly opened page widgets */
+            let realindex = index+widget.offset;
+            let cached_val = cache[realindex];
+            if(cached_val != undefined)
+                dispatch_value_to_widget(widget, realindex, cached_val, cached_val);
+        }
+    }
+    current_visible_page_index = current_subscribed_page_index;
+}
+
 
 
 // Once connection established
