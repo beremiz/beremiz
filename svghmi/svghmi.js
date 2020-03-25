@@ -347,9 +347,15 @@ function foreach_apply_cache() {
 function foreach_onclick(opstr, evt) {
     new_item_offset = eval(String(this.item_offset)+opstr)
     if(new_item_offset + this.items.length > this.index_pool.length) {
-        new_item_offset = 0;
+        if(this.item_offset + this.items.length == this.index_pool.length)
+            new_item_offset = 0;
+        else
+            new_item_offset = this.index_pool.length - this.items.length;
     } else if(new_item_offset < 0) {
-        new_item_offset = this.index_pool.length - this.items.length;
+        if(this.item_offset == 0)
+            new_item_offset = this.index_pool.length - this.items.length;
+        else
+            new_item_offset = 0;
     }
     this.item_offset = new_item_offset;
     off = this.offset;

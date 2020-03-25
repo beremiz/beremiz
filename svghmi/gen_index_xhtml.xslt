@@ -1833,11 +1833,23 @@
 </xsl:text>
     <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
 </xsl:text>
-    <xsl:text>        new_item_offset = 0;
+    <xsl:text>        if(this.item_offset + this.items.length == this.index_pool.length)
+</xsl:text>
+    <xsl:text>            new_item_offset = 0;
+</xsl:text>
+    <xsl:text>        else
+</xsl:text>
+    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
 </xsl:text>
     <xsl:text>    } else if(new_item_offset &lt; 0) {
 </xsl:text>
-    <xsl:text>        new_item_offset = this.index_pool.length - this.items.length;
+    <xsl:text>        if(this.item_offset == 0)
+</xsl:text>
+    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+    <xsl:text>        else
+</xsl:text>
+    <xsl:text>            new_item_offset = 0;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
