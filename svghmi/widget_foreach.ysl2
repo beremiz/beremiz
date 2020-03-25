@@ -44,19 +44,14 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     }
     |         ]
     |     },
-    |     on_click: function(opstr, evt) {
-    |         console.log(opstr);
-    |     },
     |     item_offset: 0,
+    |     on_click: foreach_onclick,
 }
 
 template "widget[@type='ForEach']", mode="widget_subscribe"{
     // param "hmi_element";
-    |     sub: function(off){
-    |         foreach_subscribe.call(this,off);
-    |     },
-
-    |     unsub: function(){
-    |         foreach_unsubscribe.call(this);
-    |     },
+    |     sub: foreach_subscribe,
+    |     unsub: foreach_unsubscribe,
+    |     apply_cache: foreach_apply_cache,
 }
+
