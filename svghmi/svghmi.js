@@ -2,6 +2,7 @@
 
 var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
+var need_cache_apply = []; 
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
@@ -87,9 +88,10 @@ function animate() {
         switch_visible_page(current_subscribed_page);
     }
 
-    if(current_subscribed_page_index != current_visible_page_index){
-        apply_cache();
+    while(widget = need_cache_apply.pop()){
+        widget.apply_cache();
     }
+
     apply_updates();
     requestAnimationFrameID = null;
 }
@@ -257,8 +259,6 @@ function change_hmi_value(index, opstr) {
 
 var current_visible_page;
 var current_subscribed_page;
-var current_visible_page_index;
-var current_subscribed_page_index;
 
 function prepare_svg() {
     for(let eltid in detachable_elements){
@@ -301,6 +301,7 @@ function subscribe(new_offset=0){
     for(let index of this.indexes){
         subscribers[index + new_offset].add(this);
     }
+    need_cache_apply.push(this); 
 }
 
 function foreach_unsubscribe(){
@@ -309,18 +310,55 @@ function foreach_unsubscribe(){
             unsubscribe.call(widget);
         }
     }
+    this.offset = 0;
 }
 
-function foreach_subscribe(new_offset=0){
+function foreach_widgets_do(new_offset, todo){
+    this.offset = new_offset;
     for(let i = 0; i < this.items.length; i++) {
         let item = this.items[i];
         let orig_item_index = this.index_pool[i];
         let item_index = this.index_pool[i+this.item_offset];
         let item_index_offset = item_index - orig_item_index;
         for(let widget of item) {
-            subscribe.call(widget,new_offset + item_index_offset);
+            todo.call(widget, new_offset + item_index_offset);
         }
     }
+}
+
+function foreach_subscribe(new_offset=0){
+    foreach_widgets_do.call(this, new_offset, subscribe);
+}
+
+function widget_apply_cache() {
+    for(let index of this.indexes){
+        /* dispatch current cache in newly opened page widgets */
+        let realindex = index+this.offset;
+        let cached_val = cache[realindex];
+        if(cached_val != undefined)
+            dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+    }
+}
+
+function foreach_apply_cache() {
+    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
+}
+
+function foreach_onclick(opstr, evt) {
+    new_item_offset = eval(String(this.item_offset)+opstr)
+    if(new_item_offset + this.items.length > this.index_pool.length) {
+        new_item_offset = 0;
+    } else if(new_item_offset < 0) {
+        new_item_offset = this.index_pool.length - this.items.length;
+    }
+    this.item_offset = new_item_offset;
+    off = this.offset;
+    foreach_unsubscribe.call(this);
+    foreach_subscribe.call(this,off);
+    update_subscriptions();
+    need_cache_apply.push(this);
+    requestHMIAnimation();
+    console.log(opstr, new_item_offset);
 }
 
 function switch_subscribed_page(page_name, page_index) {
@@ -347,7 +385,6 @@ function switch_subscribed_page(page_name, page_index) {
     update_subscriptions();
 
     current_subscribed_page = page_name;
-    current_subscribed_page_index = page_index;
 
     requestHMIAnimation();
 }
@@ -380,22 +417,6 @@ function switch_visible_page(page_name) {
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_visible_page = page_name;
 };
-    
-function apply_cache() {
-    let new_desc = page_desc[current_visible_page];
-    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
-        for(let index of widget.indexes){
-            /* dispatch current cache in newly opened page widgets */
-            let realindex = index+widget.offset;
-            let cached_val = cache[realindex];
-            if(cached_val != undefined)
-                dispatch_value_to_widget(widget, realindex, cached_val, cached_val);
-        }
-    }
-    current_visible_page_index = current_subscribed_page_index;
-}
-
-
 
 // Once connection established
 ws.onopen = function (evt) {

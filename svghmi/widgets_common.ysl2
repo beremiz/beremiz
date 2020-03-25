@@ -43,6 +43,7 @@ template "svg:*", mode="hmi_elements" {
 template "widget", mode="widget_subscribe" {
     |     sub: subscribe,
     |     unsub: unsubscribe,
+    |     apply_cache: widget_apply_cache,
 }
 // page aren't subscribers
 template "widget[@type='Page']", mode="widget_subscribe";

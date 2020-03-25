@@ -635,6 +635,8 @@
 </xsl:text>
     <xsl:text>    unsub: unsubscribe,
 </xsl:text>
+    <xsl:text>    apply_cache: widget_apply_cache,
+</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget[@type='Page']"/>
   <xsl:template name="defs_by_labels">
@@ -798,27 +800,17 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    on_click: function(opstr, evt) {
-</xsl:text>
-    <xsl:text>        console.log(opstr);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
     <xsl:text>    item_offset: 0,
+</xsl:text>
+    <xsl:text>    on_click: foreach_onclick,
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
-    <xsl:text>    sub: function(off){
+    <xsl:text>    sub: foreach_subscribe,
 </xsl:text>
-    <xsl:text>        foreach_subscribe.call(this,off);
+    <xsl:text>    unsub: foreach_unsubscribe,
 </xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    unsub: function(){
-</xsl:text>
-    <xsl:text>        foreach_unsubscribe.call(this);
-</xsl:text>
-    <xsl:text>    },
+    <xsl:text>    apply_cache: foreach_apply_cache,
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
@@ -1149,6 +1141,8 @@
 </xsl:text>
     <xsl:text>var updates = {};
 </xsl:text>
+    <xsl:text>var need_cache_apply = []; 
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
@@ -1319,11 +1313,13 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    if(current_subscribed_page_index != current_visible_page_index){
+    <xsl:text>    while(widget = need_cache_apply.pop()){
 </xsl:text>
-    <xsl:text>        apply_cache();
+    <xsl:text>        widget.apply_cache();
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    apply_updates();
 </xsl:text>
@@ -1659,10 +1655,6 @@
 </xsl:text>
     <xsl:text>var current_subscribed_page;
 </xsl:text>
-    <xsl:text>var current_visible_page_index;
-</xsl:text>
-    <xsl:text>var current_subscribed_page_index;
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function prepare_svg() {
@@ -1747,6 +1739,8 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    need_cache_apply.push(this); 
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1763,11 +1757,15 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    this.offset = 0;
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function foreach_subscribe(new_offset=0){
+    <xsl:text>function foreach_widgets_do(new_offset, todo){
+</xsl:text>
+    <xsl:text>    this.offset = new_offset;
 </xsl:text>
     <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
 </xsl:text>
@@ -1781,11 +1779,81 @@
 </xsl:text>
     <xsl:text>        for(let widget of item) {
 </xsl:text>
-    <xsl:text>            subscribe.call(widget,new_offset + item_index_offset);
+    <xsl:text>            todo.call(widget, new_offset + item_index_offset);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_subscribe(new_offset=0){
+</xsl:text>
+    <xsl:text>    foreach_widgets_do.call(this, new_offset, subscribe);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function widget_apply_cache() {
+</xsl:text>
+    <xsl:text>    for(let index of this.indexes){
+</xsl:text>
+    <xsl:text>        /* dispatch current cache in newly opened page widgets */
+</xsl:text>
+    <xsl:text>        let realindex = index+this.offset;
+</xsl:text>
+    <xsl:text>        let cached_val = cache[realindex];
+</xsl:text>
+    <xsl:text>        if(cached_val != undefined)
+</xsl:text>
+    <xsl:text>            dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_apply_cache() {
+</xsl:text>
+    <xsl:text>    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_onclick(opstr, evt) {
+</xsl:text>
+    <xsl:text>    new_item_offset = eval(String(this.item_offset)+opstr)
+</xsl:text>
+    <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
+</xsl:text>
+    <xsl:text>        new_item_offset = 0;
+</xsl:text>
+    <xsl:text>    } else if(new_item_offset &lt; 0) {
+</xsl:text>
+    <xsl:text>        new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    this.item_offset = new_item_offset;
+</xsl:text>
+    <xsl:text>    off = this.offset;
+</xsl:text>
+    <xsl:text>    foreach_unsubscribe.call(this);
+</xsl:text>
+    <xsl:text>    foreach_subscribe.call(this,off);
+</xsl:text>
+    <xsl:text>    update_subscriptions();
+</xsl:text>
+    <xsl:text>    need_cache_apply.push(this);
+</xsl:text>
+    <xsl:text>    requestHMIAnimation();
+</xsl:text>
+    <xsl:text>    console.log(opstr, new_item_offset);
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -1838,8 +1906,6 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    current_subscribed_page = page_name;
-</xsl:text>
-    <xsl:text>    current_subscribed_page_index = page_index;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1904,38 +1970,6 @@
     <xsl:text>    current_visible_page = page_name;
 </xsl:text>
     <xsl:text>};
-</xsl:text>
-    <xsl:text>    
-</xsl:text>
-    <xsl:text>function apply_cache() {
-</xsl:text>
-    <xsl:text>    let new_desc = page_desc[current_visible_page];
-</xsl:text>
-    <xsl:text>    for(let widget of chain(new_desc.absolute_widgets,new_desc.relative_widgets)){
-</xsl:text>
-    <xsl:text>        for(let index of widget.indexes){
-</xsl:text>
-    <xsl:text>            /* dispatch current cache in newly opened page widgets */
-</xsl:text>
-    <xsl:text>            let realindex = index+widget.offset;
-</xsl:text>
-    <xsl:text>            let cached_val = cache[realindex];
-</xsl:text>
-    <xsl:text>            if(cached_val != undefined)
-</xsl:text>
-    <xsl:text>                dispatch_value_to_widget(widget, realindex, cached_val, cached_val);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    current_visible_page_index = current_subscribed_page_index;
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
