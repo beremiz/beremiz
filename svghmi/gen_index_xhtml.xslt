@@ -876,7 +876,9 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>    on_click: function(evt) {
 </xsl:text>
-    <xsl:text>        switch_page(this.args[0], this.indexes[0]);
+    <xsl:text>        const index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+</xsl:text>
+    <xsl:text>        switch_page(this.args[0], index);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
