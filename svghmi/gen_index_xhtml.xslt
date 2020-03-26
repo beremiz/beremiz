@@ -694,6 +694,33 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <xsl:template mode="widget_defs" match="widget[@type='Back']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    on_click: function(evt) {
+</xsl:text>
+    <xsl:text>        console.log("Back !");
+</xsl:text>
+    <xsl:text>        if(jump_history.length &gt; 1){
+</xsl:text>
+    <xsl:text>           jump_history.pop();
+</xsl:text>
+    <xsl:text>           let [page_name, index] = jump_history.pop();
+</xsl:text>
+    <xsl:text>           switch_page(page_name, index);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click(evt)");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    frequency: 5,
@@ -890,7 +917,9 @@
 </xsl:text>
     <xsl:text>        const index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
 </xsl:text>
-    <xsl:text>        switch_page(this.args[0], index);
+    <xsl:text>        const name = this.args[0];
+</xsl:text>
+    <xsl:text>        switch_page(name, index);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1194,6 +1223,8 @@
     <xsl:text>var updates = {};
 </xsl:text>
     <xsl:text>var need_cache_apply = []; 
+</xsl:text>
+    <xsl:text>var jump_history = [[default_page, undefined]];
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1731,7 +1762,7 @@
 </xsl:text>
     <xsl:text>        /* TODO LOG ERROR */
 </xsl:text>
-    <xsl:text>        return;
+    <xsl:text>        return false;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1743,7 +1774,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    switch_subscribed_page(page_name, page_index);
+    <xsl:text>    return switch_subscribed_page(page_name, page_index);
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -1935,7 +1966,7 @@
 </xsl:text>
     <xsl:text>        /* TODO LOG ERROR */
 </xsl:text>
-    <xsl:text>        return;
+    <xsl:text>        return false;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1974,6 +2005,14 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    requestHMIAnimation();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    jump_history.push([page_name, page_index]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    return true;
 </xsl:text>
     <xsl:text>}
 </xsl:text>

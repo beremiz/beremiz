@@ -3,6 +3,7 @@
 var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
 var need_cache_apply = []; 
+var jump_history = [[default_page, undefined]];
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
@@ -271,13 +272,13 @@ function switch_page(page_name, page_index) {
     if(current_subscribed_page != current_visible_page){
         /* page switch already going */
         /* TODO LOG ERROR */
-        return;
+        return false;
     }
 
     if(page_name == undefined)
         page_name = current_subscribed_page;
 
-    switch_subscribed_page(page_name, page_index);
+    return switch_subscribed_page(page_name, page_index);
 };
 
 function* chain(a,b){
@@ -373,7 +374,7 @@ function switch_subscribed_page(page_name, page_index) {
 
     if(new_desc == undefined){
         /* TODO LOG ERROR */
-        return;
+        return false;
     }
 
     if(page_index == undefined){
@@ -393,6 +394,10 @@ function switch_subscribed_page(page_name, page_index) {
     current_subscribed_page = page_name;
 
     requestHMIAnimation();
+
+    jump_history.push([page_name, page_index]);
+
+    return true;
 }
 
 function switch_visible_page(page_name) {

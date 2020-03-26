@@ -5,7 +5,8 @@ template "widget[@type='Jump']", mode="widget_defs" {
 
     |     on_click: function(evt) {
     |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
-    |         switch_page(this.args[0], index);
+    |         const name = this.args[0];
+    |         switch_page(name, index);
     |     },
     |     init: function() {
     /* registering event this way does not "click" through svg:use 
