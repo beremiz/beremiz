@@ -116,6 +116,13 @@ def "func:is_descendant_path" {
     result "string-length($ancest) > 0 and starts-with($descend,$ancest)";
 }
 
+def "func:same_class_paths" {
+    param "a";
+    param "b";
+    const "class_a", "$indexed_hmitree/*[@hmipath = $a]/@class";
+    const "class_b", "$indexed_hmitree/*[@hmipath = $b]/@class";
+    result "$class_a and $class_b and $class_a = $class_b";
+}
 
 // Debug data
 template "*", mode="testtree"{
