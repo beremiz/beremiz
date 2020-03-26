@@ -3,26 +3,35 @@
 template "widget[@type='Jump']", mode="widget_defs" {
     param "hmi_element";
 
-    /* check that given path is compatible with page's reference path */
-    if "count(arg) > 0 and count(path) > 0" {
-        const "target_page_name", "arg[1]/@value";
-        const "target_page_desc", "$hmi_pages_descs[arg[1]/@value = $target_page_name]";
-        const "target_page_path", "$target_page_desc/path[1]/@value";
-        if "not(func:same_class_paths($target_page_path, path[1]/@value))"
-            warning > Jump id="«@id»" to page "«$target_page_name»" with incompatible path "«path[1]/@value»"
-    }
-    /* TODO check that path is also matching in case of implicit local jump (no page name given) */
-
     |     on_click: function(evt) {
     |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
     |         switch_page(this.args[0], index);
     |     },
     |     init: function() {
-    /* registering event this way doies not "click" through svg:use 
+    /* registering event this way does not "click" through svg:use 
     |     this.element.onclick = evt => switch_page(this.args[0]);
     event must be registered by adding attribute to element instead
     TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
     */
     |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
     |     },
+}
+
+template "widget[@type='Jump']", mode="per_page_widget_template"{
+    param "page_desc";
+    /* check that given path is compatible with page's reference path */
+    if "path" {
+        /* when no page name provided, check for same page */
+        const "target_page_name" choose {
+            when "arg" value "arg[1]/@value";
+            otherwise value "$page_desc/arg[1]/@value";
+        }
+        const "target_page_path" choose {
+            when "arg" value "$hmi_pages_descs[arg[1]/@value = $target_page_name]/path[1]/@value";
+            otherwise value "$page_desc/path[1]/@value";
+        }
+
+        if "not(func:same_class_paths($target_page_path, path[1]/@value))"
+            error > Jump id="«@id»" to page "«$target_page_name»" with incompatible path "«path[1]/@value» (must be same class as "«$target_page_path»")
+    }
 }
