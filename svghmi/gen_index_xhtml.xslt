@@ -147,6 +147,13 @@
     <xsl:param name="ancest"/>
     <func:result select="string-length($ancest) &gt; 0 and starts-with($descend,$ancest)"/>
   </func:function>
+  <func:function name="func:same_class_paths">
+    <xsl:param name="a"/>
+    <xsl:param name="b"/>
+    <xsl:variable name="class_a" select="$indexed_hmitree/*[@hmipath = $a]/@class"/>
+    <xsl:variable name="class_b" select="$indexed_hmitree/*[@hmipath = $b]/@class"/>
+    <func:result select="$class_a and $class_b and $class_a = $class_b"/>
+  </func:function>
   <xsl:template mode="testtree" match="*">
     <xsl:param name="indent" select="''"/>
     <xsl:value-of select="$indent"/>
@@ -332,8 +339,9 @@
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
     <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id and not(@id=$in_forEach_widget_ids)]"/>
-    <xsl:variable name="page_relative_widgets" select="$all_page_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]"/>
+    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
+    <xsl:variable name="page_managed_widgets" select="$all_page_widgets[not(@id=$in_forEach_widget_ids)]"/>
+    <xsl:variable name="page_relative_widgets" select="$page_managed_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]"/>
     <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="$desc/arg[1]/@value"/>
@@ -384,7 +392,7 @@
 </xsl:text>
     <xsl:text>    absolute_widgets: [
 </xsl:text>
-    <xsl:for-each select="$all_page_widgets[not(@id = $page_relative_widgets/@id)]">
+    <xsl:for-each select="$page_managed_widgets[not(@id = $page_relative_widgets/@id)]">
       <xsl:text>        hmi_widgets["</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"]</xsl:text>
@@ -412,6 +420,9 @@
     </xsl:for-each>
     <xsl:text>    }
 </xsl:text>
+    <xsl:apply-templates mode="per_page_widget_template" select="$parsed_widgets/widget[@id = $all_page_widgets/@id]">
+      <xsl:with-param name="page_desc" select="$desc"/>
+    </xsl:apply-templates>
     <xsl:text>  }</xsl:text>
     <xsl:if test="position()!=last()">
       <xsl:text>,</xsl:text>
@@ -419,6 +430,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="per_page_widget_template" match="*"/>
   <xsl:template name="debug_detachables">
     <xsl:text>DETACHABLES:
 </xsl:text>
@@ -890,6 +902,44 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+  </xsl:template>
+  <xsl:template mode="per_page_widget_template" match="widget[@type='Jump']">
+    <xsl:param name="page_desc"/>
+    <xsl:if test="path">
+      <xsl:variable name="target_page_name">
+        <xsl:choose>
+          <xsl:when test="arg">
+            <xsl:value-of select="arg[1]/@value"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$page_desc/arg[1]/@value"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:variable name="target_page_path">
+        <xsl:choose>
+          <xsl:when test="arg">
+            <xsl:value-of select="$hmi_pages_descs[arg[1]/@value = $target_page_name]/path[1]/@value"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$page_desc/path[1]/@value"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:if test="not(func:same_class_paths($target_page_path, path[1]/@value))">
+        <xsl:message terminate="yes">
+          <xsl:text>Jump id="</xsl:text>
+          <xsl:value-of select="@id"/>
+          <xsl:text>" to page "</xsl:text>
+          <xsl:value-of select="$target_page_name"/>
+          <xsl:text>" with incompatible path "</xsl:text>
+          <xsl:value-of select="path[1]/@value"/>
+          <xsl:text> (must be same class as "</xsl:text>
+          <xsl:value-of select="$target_page_path"/>
+          <xsl:text>")</xsl:text>
+        </xsl:message>
+      </xsl:if>
+    </xsl:if>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Meter']">
     <xsl:param name="hmi_element"/>
