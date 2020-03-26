@@ -2,6 +2,17 @@
 
 template "widget[@type='Jump']", mode="widget_defs" {
     param "hmi_element";
+
+    /* check that given path is compatible with page's reference path */
+    if "count(arg) > 0 and count(path) > 0" {
+        const "target_page_name", "arg[1]/@value";
+        const "target_page_desc", "$hmi_pages_descs[arg[1]/@value = $target_page_name]";
+        const "target_page_path", "$target_page_desc/path[1]/@value";
+        if "not(func:same_class_paths($target_page_path, path[1]/@value))"
+            warning > Jump id="«@id»" to page "«$target_page_name»" with incompatible path "«path[1]/@value»"
+    }
+    /* TODO check that path is also matching in case of implicit local jump (no page name given) */
+
     |     on_click: function(evt) {
     |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
     |         switch_page(this.args[0], index);
