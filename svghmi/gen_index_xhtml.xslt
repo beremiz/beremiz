@@ -404,6 +404,28 @@
     </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
+    <xsl:text>    jumps: [
+</xsl:text>
+    <xsl:for-each select="$parsed_widgets/widget[@id = $all_page_widgets/@id and @type='Jump']">
+      <xsl:variable name="_id" select="@id"/>
+      <xsl:variable name="opts">
+        <xsl:call-template name="jump_widget_activity">
+          <xsl:with-param name="hmi_element" select="$hmi_elements[@id=$_id]"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:if test="string-length($opts)&gt;0">
+        <xsl:text>        hmi_widgets["</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>"]</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
     <xsl:text>    required_detachables: {
 </xsl:text>
     <xsl:for-each select="$required_detachables">
@@ -911,8 +933,25 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
+  <xsl:template name="jump_widget_activity">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="opts">
+      <xsl:call-template name="jump_widget_activity">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_opt" select="string-length($opts)&gt;0"/>
+    <xsl:value-of select="$opts"/>
     <xsl:text>    on_click: function(evt) {
 </xsl:text>
     <xsl:text>        const index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
@@ -923,12 +962,54 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+    <xsl:if test="$have_opt">
+      <xsl:text>    notify_page_change: function(page_name, index){
+</xsl:text>
+      <xsl:text>        const ref_index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+</xsl:text>
+      <xsl:text>        const ref_name = this.args[0];
+</xsl:text>
+      <xsl:text>        if((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index) {
+</xsl:text>
+      <xsl:text>             console.log("active", ref_name, ref_index, page_name, index);
+</xsl:text>
+      <xsl:text>             /* show active */ 
+</xsl:text>
+      <xsl:text>             this.active_elt.setAttribute("style", this.active_elt_style);
+</xsl:text>
+      <xsl:text>             /* hide inactive */ 
+</xsl:text>
+      <xsl:text>             this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+      <xsl:text>        } else {
+</xsl:text>
+      <xsl:text>             console.log("inactive",ref_name, ref_index,  page_name, index);
+</xsl:text>
+      <xsl:text>             /* show inactive */ 
+</xsl:text>
+      <xsl:text>             this.inactive_elt.setAttribute("style", this.inactive_elt_style);
+</xsl:text>
+      <xsl:text>             /* hide active */ 
+</xsl:text>
+      <xsl:text>             this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+      <xsl:text>        }
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
+    </xsl:if>
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_click(evt)");
 </xsl:text>
+    <xsl:if test="$have_opt">
+      <xsl:text>        this.active_elt_style = this.active_elt.getAttribute("style");
+</xsl:text>
+      <xsl:text>        this.inactive_elt_style = this.inactive_elt.getAttribute("style");
+</xsl:text>
+    </xsl:if>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
@@ -1224,6 +1305,8 @@
 </xsl:text>
     <xsl:text>var need_cache_apply = []; 
 </xsl:text>
+    <xsl:text>var jumps_need_update = false;
+</xsl:text>
     <xsl:text>var jump_history = [[default_page, undefined]];
 </xsl:text>
     <xsl:text>
@@ -1401,6 +1484,10 @@
     <xsl:text>        widget.apply_cache();
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(jumps_need_update) update_jumps();
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1738,6 +1825,8 @@
 </xsl:text>
     <xsl:text>var current_subscribed_page;
 </xsl:text>
+    <xsl:text>var current_page_index;
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function prepare_svg() {
@@ -1774,7 +1863,71 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    return switch_subscribed_page(page_name, page_index);
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let old_desc = page_desc[current_subscribed_page];
+</xsl:text>
+    <xsl:text>    let new_desc = page_desc[page_name];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(new_desc == undefined){
+</xsl:text>
+    <xsl:text>        /* TODO LOG ERROR */
+</xsl:text>
+    <xsl:text>        return false;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(page_index == undefined){
+</xsl:text>
+    <xsl:text>        page_index = new_desc.page_index;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    if(old_desc){
+</xsl:text>
+    <xsl:text>        old_desc.absolute_widgets.map(w=&gt;w.unsub());
+</xsl:text>
+    <xsl:text>        old_desc.relative_widgets.map(w=&gt;w.unsub());
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    new_desc.absolute_widgets.map(w=&gt;w.sub());
+</xsl:text>
+    <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+</xsl:text>
+    <xsl:text>    new_desc.relative_widgets.map(w=&gt;w.sub(new_offset));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    update_subscriptions();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    current_subscribed_page = page_name;
+</xsl:text>
+    <xsl:text>    current_page_index = page_index;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    jumps_need_update = true;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    requestHMIAnimation();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    jump_history.push([page_name, page_index]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    return true;
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -1946,6 +2099,8 @@
 </xsl:text>
     <xsl:text>    need_cache_apply.push(this);
 </xsl:text>
+    <xsl:text>    jumps_need_update = true;
+</xsl:text>
     <xsl:text>    requestHMIAnimation();
 </xsl:text>
     <xsl:text>    console.log(opstr, new_item_offset);
@@ -1953,68 +2108,6 @@
     <xsl:text>}
 </xsl:text>
     <xsl:text>
-</xsl:text>
-    <xsl:text>function switch_subscribed_page(page_name, page_index) {
-</xsl:text>
-    <xsl:text>    let old_desc = page_desc[current_subscribed_page];
-</xsl:text>
-    <xsl:text>    let new_desc = page_desc[page_name];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(new_desc == undefined){
-</xsl:text>
-    <xsl:text>        /* TODO LOG ERROR */
-</xsl:text>
-    <xsl:text>        return false;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(page_index == undefined){
-</xsl:text>
-    <xsl:text>        page_index = new_desc.page_index;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(old_desc){
-</xsl:text>
-    <xsl:text>        old_desc.absolute_widgets.map(w=&gt;w.unsub());
-</xsl:text>
-    <xsl:text>        old_desc.relative_widgets.map(w=&gt;w.unsub());
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    new_desc.absolute_widgets.map(w=&gt;w.sub());
-</xsl:text>
-    <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
-</xsl:text>
-    <xsl:text>    new_desc.relative_widgets.map(w=&gt;w.sub(new_offset));
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    update_subscriptions();
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    current_subscribed_page = page_name;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    requestHMIAnimation();
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    jump_history.push([page_name, page_index]);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    return true;
-</xsl:text>
-    <xsl:text>}
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -2073,6 +2166,18 @@
     <xsl:text>    current_visible_page = page_name;
 </xsl:text>
     <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function update_jumps() {
+</xsl:text>
+    <xsl:text>    page_desc[current_visible_page].jumps.map(w=&gt;w.notify_page_change(current_visible_page,current_page_index));
+</xsl:text>
+    <xsl:text>    jumps_need_update = false;
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>

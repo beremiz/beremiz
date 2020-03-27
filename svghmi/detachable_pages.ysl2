@@ -131,11 +131,20 @@ template "svg:*", mode="page_desc" {
     |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
     }
     |     ],
+    |     jumps: [
+    foreach "$parsed_widgets/widget[@id = $all_page_widgets/@id and @type='Jump']" {
+        const "_id","@id";
+        const "opts" call "jump_widget_activity" with "hmi_element", "$hmi_elements[@id=$_id]";
+        if "string-length($opts)>0"
+    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+    }
+    |     ],
     |     required_detachables: {
     foreach "$required_detachables" {
     |         "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
     }
     |     }
+    /* TODO generate some code for init() instead */
     apply "$parsed_widgets/widget[@id = $all_page_widgets/@id]", mode="per_page_widget_template"{
         with "page_desc", "$desc";
     }
