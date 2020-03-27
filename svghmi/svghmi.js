@@ -3,6 +3,7 @@
 var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
 var need_cache_apply = []; 
+var jumps_need_update = false;
 var jump_history = [[default_page, undefined]];
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
@@ -92,6 +93,8 @@ function animate() {
     while(widget = need_cache_apply.pop()){
         widget.apply_cache();
     }
+
+    if(jumps_need_update) update_jumps();
 
     apply_updates();
     requestAnimationFrameID = null;
@@ -260,6 +263,7 @@ function change_hmi_value(index, opstr) {
 
 var current_visible_page;
 var current_subscribed_page;
+var current_page_index;
 
 function prepare_svg() {
     for(let eltid in detachable_elements){
@@ -278,7 +282,39 @@ function switch_page(page_name, page_index) {
     if(page_name == undefined)
         page_name = current_subscribed_page;
 
-    return switch_subscribed_page(page_name, page_index);
+
+    let old_desc = page_desc[current_subscribed_page];
+    let new_desc = page_desc[page_name];
+
+    if(new_desc == undefined){
+        /* TODO LOG ERROR */
+        return false;
+    }
+
+    if(page_index == undefined){
+        page_index = new_desc.page_index;
+    }
+
+    if(old_desc){
+        old_desc.absolute_widgets.map(w=>w.unsub());
+        old_desc.relative_widgets.map(w=>w.unsub());
+    }
+    new_desc.absolute_widgets.map(w=>w.sub());
+    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+    new_desc.relative_widgets.map(w=>w.sub(new_offset));
+
+    update_subscriptions();
+
+    current_subscribed_page = page_name;
+    current_page_index = page_index;
+
+    jumps_need_update = true;
+
+    requestHMIAnimation();
+
+    jump_history.push([page_name, page_index]);
+
+    return true;
 };
 
 function* chain(a,b){
@@ -364,41 +400,11 @@ function foreach_onclick(opstr, evt) {
     foreach_subscribe.call(this,off);
     update_subscriptions();
     need_cache_apply.push(this);
+    jumps_need_update = true;
     requestHMIAnimation();
     console.log(opstr, new_item_offset);
 }
 
-function switch_subscribed_page(page_name, page_index) {
-    let old_desc = page_desc[current_subscribed_page];
-    let new_desc = page_desc[page_name];
-
-    if(new_desc == undefined){
-        /* TODO LOG ERROR */
-        return false;
-    }
-
-    if(page_index == undefined){
-        page_index = new_desc.page_index;
-    }
-
-    if(old_desc){
-        old_desc.absolute_widgets.map(w=>w.unsub());
-        old_desc.relative_widgets.map(w=>w.unsub());
-    }
-    new_desc.absolute_widgets.map(w=>w.sub());
-    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
-    new_desc.relative_widgets.map(w=>w.sub(new_offset));
-
-    update_subscriptions();
-
-    current_subscribed_page = page_name;
-
-    requestHMIAnimation();
-
-    jump_history.push([page_name, page_index]);
-
-    return true;
-}
 
 function switch_visible_page(page_name) {
 
@@ -428,6 +434,12 @@ function switch_visible_page(page_name) {
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_visible_page = page_name;
 };
+
+function update_jumps() {
+    page_desc[current_visible_page].jumps.map(w=>w.notify_page_change(current_visible_page,current_page_index));
+    jumps_need_update = false;
+};
+
 
 // Once connection established
 ws.onopen = function (evt) {

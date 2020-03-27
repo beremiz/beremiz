@@ -1,13 +1,39 @@
 // widget_jump.ysl2
 
+function "jump_widget_activity" {
+    param "hmi_element";
+        optional_labels("active inactive");
+}
+
 template "widget[@type='Jump']", mode="widget_defs" {
     param "hmi_element";
-
+    const "opts" call "jump_widget_activity" with "hmi_element", "$hmi_element";
+    const "have_opt","string-length($opts)>0";
+    value "$opts";
     |     on_click: function(evt) {
     |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
     |         const name = this.args[0];
     |         switch_page(name, index);
     |     },
+    if "$have_opt" {
+    |     notify_page_change: function(page_name, index){
+    |         const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
+    |         const ref_name = this.args[0];
+    |         if((ref_name == undefined || ref_name == page_name) && index == ref_index) {
+    |              console.log("active", ref_name, ref_index, page_name, index);
+    |              /* show active */ 
+    |              this.active_elt.setAttribute("style", this.active_elt_style);
+    |              /* hide inactive */ 
+    |              this.inactive_elt.setAttribute("style", "display:none");
+    |         } else {
+    |              console.log("inactive",ref_name, ref_index,  page_name, index);
+    |              /* show inactive */ 
+    |              this.inactive_elt.setAttribute("style", this.inactive_elt_style);
+    |              /* hide active */ 
+    |              this.active_elt.setAttribute("style", "display:none");
+    |         }
+    |     },
+    }
     |     init: function() {
     /* registering event this way does not "click" through svg:use 
     |     this.element.onclick = evt => switch_page(this.args[0]);
@@ -15,6 +41,10 @@ template "widget[@type='Jump']", mode="widget_defs" {
     TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
     */
     |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
+    if "$have_opt" {
+    |         this.active_elt_style = this.active_elt.getAttribute("style");
+    |         this.inactive_elt_style = this.inactive_elt.getAttribute("style");
+    }
     |     },
 }
 
