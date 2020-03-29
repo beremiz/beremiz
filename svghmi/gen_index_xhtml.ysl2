@@ -17,22 +17,6 @@ in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
 in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
 in xsl decl svgfunc(name, xmlns="http://www.w3.org/2000/svg") alias template;
 
-!!
-debug_output_calls = []
-def gen_debug_calls():
-    # '&bug' is a workaround for pyPEG that choke on
-    # yml2 python results not parsing down into a single yml2 call
-    return ("&bug {"+
-        "\n".join(["""
-            comment {
-                |
-                | %s:
-                call "%s";
-                | 
-            }"""%(n,n) for n in debug_output_calls])+
-        "}")
-!!
-
 istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -43,11 +27,12 @@ istylesheet
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
+            xmlns:reflect="reflect"
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
             extension-element-prefixes="ns func exsl regexp str dyn"
-            exclude-result-prefixes="ns str regexp exsl func dyn" {
+            exclude-result-prefixes="ns str regexp exsl func dyn reflect" {
 
 
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
@@ -64,11 +49,18 @@ istylesheet
 
     include widget_*.ysl2
 
+    template "*[namespace-uri()='reflect']", mode="debug_as_comment" {
+        comment {
+            | «local-name()» :
+            apply ".", mode="debug";
+        }
+    }
+
     template "/" {
         comment > Made with SVGHMI. https://beremiz.org
 
-        // use python to call all debug output from included definitions
-        python gen_debug_calls;
+        // all debug output from included definitions, as comments
+        // apply "document('')/*/reflect:*", mode="debug_as_comment";
 
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"

@@ -153,7 +153,11 @@ template "svg:*", mode="page_desc" {
 
 template "*", mode="per_page_widget_template";
 
-function "debug_detachables" {
+
+reflect:detachable_pages;
+
+template "reflect:detachable-pages", mode="debug" {
+
     | DETACHABLES:
     foreach "$detachable_elements"{
         |  «@id»
@@ -163,4 +167,3 @@ function "debug_detachables" {
         |  «.»
     }
 }
-!debug_output_calls.append("debug_detachables")
