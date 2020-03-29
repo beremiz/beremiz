@@ -7,13 +7,14 @@
 // <bbox x="0" y="0" w="42" h="42">
 const "geometry", "ns:GetSVGGeometry()";
 
+reflect:geometry;
+
 // Debug data
-function "debug_geometry" {
+template "reflect:geometry", mode="debug" {
     | ID, x, y, w, h
     foreach "$geometry"
         |  «@Id» «@x» «@y» «@w» «@h»
 }
-!debug_output_calls.append("debug_geometry")
 
 // Rates 1D intersection of 2 segments A and B
 // described respectively with a0,a1 and b0,b1
