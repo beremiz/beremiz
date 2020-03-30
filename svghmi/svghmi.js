@@ -313,6 +313,8 @@ function switch_page(page_name, page_index) {
     requestHMIAnimation();
 
     jump_history.push([page_name, page_index]);
+    if(jump_history.length > 42)
+        jump_history.shift();
 
     return true;
 };

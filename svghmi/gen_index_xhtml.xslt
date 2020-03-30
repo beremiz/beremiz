@@ -1903,6 +1903,10 @@
 </xsl:text>
     <xsl:text>    jump_history.push([page_name, page_index]);
 </xsl:text>
+    <xsl:text>    if(jump_history.length &gt; 4)
+</xsl:text>
+    <xsl:text>        jump_history.shift();
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    return true;
