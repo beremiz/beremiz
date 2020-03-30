@@ -949,35 +949,76 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
   </xsl:template>
+  <xsl:template name="jump_widget_disability">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>disabled</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
-    <xsl:variable name="opts">
+    <xsl:variable name="activity">
       <xsl:call-template name="jump_widget_activity">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="have_opt" select="string-length($opts)&gt;0"/>
-    <xsl:value-of select="$opts"/>
-    <xsl:text>    on_click: function(evt) {
+    <xsl:variable name="have_activity" select="string-length($activity)&gt;0"/>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="jump_widget_disability">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_disability" select="$have_activity and string-length($disability)&gt;0"/>
+    <xsl:value-of select="$disability"/>
+    <xsl:if test="$have_activity">
+      <xsl:text>    active: false,
 </xsl:text>
-    <xsl:text>        const index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+      <xsl:if test="$have_disability">
+        <xsl:text>    disabled: false,
 </xsl:text>
-    <xsl:text>        const name = this.args[0];
+        <xsl:text>    frequency: 2,
 </xsl:text>
-    <xsl:text>        switch_page(name, index);
+        <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>    },
+        <xsl:text>        this.disabled = !Number(value);
 </xsl:text>
-    <xsl:if test="$have_opt">
-      <xsl:text>    notify_page_change: function(page_name, index){
+        <xsl:text>        console.log("disbled",value);
 </xsl:text>
-      <xsl:text>        const ref_index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+        <xsl:text>        this.update();
 </xsl:text>
-      <xsl:text>        const ref_name = this.args[0];
+        <xsl:text>    },
 </xsl:text>
-      <xsl:text>        if((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index) {
+      </xsl:if>
+      <xsl:text>    update: function(){
 </xsl:text>
-      <xsl:text>             console.log("active", ref_name, ref_index, page_name, index);
+      <xsl:if test="$have_disability">
+        <xsl:text>      if(this.disabled) {
+</xsl:text>
+        <xsl:text>        /* show disabled */ 
+</xsl:text>
+        <xsl:text>        this.disabled_elt.setAttribute("style", this.active_elt_style);
+</xsl:text>
+        <xsl:text>        /* hide inactive */ 
+</xsl:text>
+        <xsl:text>        this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+        <xsl:text>        /* hide active */ 
+</xsl:text>
+        <xsl:text>        this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+        <xsl:text>      } else {
+</xsl:text>
+        <xsl:text>        /* hide disabled */ 
+</xsl:text>
+        <xsl:text>        this.disabled_elt.setAttribute("style", "display:none");
+</xsl:text>
+      </xsl:if>
+      <xsl:text>        if(this.active) {
 </xsl:text>
       <xsl:text>             /* show active */ 
 </xsl:text>
@@ -989,8 +1030,6 @@
 </xsl:text>
       <xsl:text>        } else {
 </xsl:text>
-      <xsl:text>             console.log("inactive",ref_name, ref_index,  page_name, index);
-</xsl:text>
       <xsl:text>             /* show inactive */ 
 </xsl:text>
       <xsl:text>             this.inactive_elt.setAttribute("style", this.inactive_elt_style);
@@ -1001,6 +1040,34 @@
 </xsl:text>
       <xsl:text>        }
 </xsl:text>
+      <xsl:if test="$have_disability">
+        <xsl:text>      }
+</xsl:text>
+      </xsl:if>
+      <xsl:text>    },
+</xsl:text>
+    </xsl:if>
+    <xsl:text>    on_click: function(evt) {
+</xsl:text>
+    <xsl:text>        const index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+</xsl:text>
+    <xsl:text>        const name = this.args[0];
+</xsl:text>
+    <xsl:text>        switch_page(name, index);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:if test="$have_activity">
+      <xsl:text>    notify_page_change: function(page_name, index){
+</xsl:text>
+      <xsl:text>        const ref_index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+</xsl:text>
+      <xsl:text>        const ref_name = this.args[0];
+</xsl:text>
+      <xsl:text>        this.active =((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
+</xsl:text>
+      <xsl:text>        this.update();
+</xsl:text>
       <xsl:text>    },
 </xsl:text>
     </xsl:if>
@@ -1010,14 +1077,51 @@
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_click(evt)");
 </xsl:text>
-    <xsl:if test="$have_opt">
+    <xsl:if test="$have_activity">
       <xsl:text>        this.active_elt_style = this.active_elt.getAttribute("style");
 </xsl:text>
       <xsl:text>        this.inactive_elt_style = this.inactive_elt.getAttribute("style");
 </xsl:text>
     </xsl:if>
+    <xsl:if test="$have_disability">
+      <xsl:text>        this.disabled_elt_style = this.disabled_elt.getAttribute("style");
+</xsl:text>
+    </xsl:if>
     <xsl:text>    },
 </xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_subscribe" match="widget[@type='Jump']">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="activity">
+      <xsl:call-template name="jump_widget_activity">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_activity" select="string-length($activity)&gt;0"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="jump_widget_disability">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_disability" select="$have_activity and string-length($disability)&gt;0"/>
+    <xsl:choose>
+      <xsl:when test="$have_disability">
+        <xsl:text>    sub: subscribe,
+</xsl:text>
+        <xsl:text>    unsub: unsubscribe,
+</xsl:text>
+        <xsl:text>    apply_cache: widget_apply_cache,
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>    sub: function(){},
+</xsl:text>
+        <xsl:text>    unsub: function(){},
+</xsl:text>
+        <xsl:text>    apply_cache: function(){},
+</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   <xsl:template mode="per_page_widget_template" match="widget[@type='Jump']">
     <xsl:param name="page_desc"/>
@@ -1903,7 +2007,7 @@
 </xsl:text>
     <xsl:text>    jump_history.push([page_name, page_index]);
 </xsl:text>
-    <xsl:text>    if(jump_history.length &gt; 4)
+    <xsl:text>    if(jump_history.length &gt; 42)
 </xsl:text>
     <xsl:text>        jump_history.shift();
 </xsl:text>
