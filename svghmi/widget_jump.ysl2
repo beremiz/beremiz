@@ -5,33 +5,70 @@ function "jump_widget_activity" {
         optional_labels("active inactive");
 }
 
+function "jump_widget_disability" {
+    param "hmi_element";
+        optional_labels("disabled");
+}
+
 template "widget[@type='Jump']", mode="widget_defs" {
     param "hmi_element";
-    const "opts" call "jump_widget_activity" with "hmi_element", "$hmi_element";
-    const "have_opt","string-length($opts)>0";
-    value "$opts";
-    |     on_click: function(evt) {
-    |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
-    |         const name = this.args[0];
-    |         switch_page(name, index);
+    const "activity" call "jump_widget_activity" with "hmi_element", "$hmi_element";
+    const "have_activity","string-length($activity)>0";
+    value "$activity";
+    const "disability" call "jump_widget_disability" with "hmi_element", "$hmi_element";
+    const "have_disability","$have_activity and string-length($disability)>0";
+    value "$disability";
+    if "$have_activity" {
+    |     active: false,
+    if "$have_disability" {
+    |     disabled: false,
+    |     frequency: 2,
+    |     dispatch: function(value) {
+    |         this.disabled = !Number(value);
+    |         console.log("disbled",value);
+    |         this.update();
     |     },
-    if "$have_opt" {
-    |     notify_page_change: function(page_name, index){
-    |         const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
-    |         const ref_name = this.args[0];
-    |         if((ref_name == undefined || ref_name == page_name) && index == ref_index) {
-    |              console.log("active", ref_name, ref_index, page_name, index);
+    }
+    |     update: function(){
+    if "$have_disability" {
+    |       if(this.disabled) {
+    |         /* show disabled */ 
+    |         this.disabled_elt.setAttribute("style", this.active_elt_style);
+    |         /* hide inactive */ 
+    |         this.inactive_elt.setAttribute("style", "display:none");
+    |         /* hide active */ 
+    |         this.active_elt.setAttribute("style", "display:none");
+    |       } else {
+    |         /* hide disabled */ 
+    |         this.disabled_elt.setAttribute("style", "display:none");
+    }
+    |         if(this.active) {
     |              /* show active */ 
     |              this.active_elt.setAttribute("style", this.active_elt_style);
     |              /* hide inactive */ 
     |              this.inactive_elt.setAttribute("style", "display:none");
     |         } else {
-    |              console.log("inactive",ref_name, ref_index,  page_name, index);
     |              /* show inactive */ 
     |              this.inactive_elt.setAttribute("style", this.inactive_elt_style);
     |              /* hide active */ 
     |              this.active_elt.setAttribute("style", "display:none");
     |         }
+    if "$have_disability" {
+    |       }
+    }
+    |     },
+    }
+    |     on_click: function(evt) {
+    |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
+    |         const name = this.args[0];
+    |         switch_page(name, index);
+    |     },
+    if "$have_activity" {
+    |     notify_page_change: function(page_name, index){
+    |         const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
+    |         const ref_name = this.args[0];
+    |         this.active =((ref_name == undefined || ref_name == page_name) && index == ref_index);
+    |         this.update();
     |     },
     }
     |     init: function() {
@@ -41,11 +78,35 @@ template "widget[@type='Jump']", mode="widget_defs" {
     TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
     */
     |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
-    if "$have_opt" {
+    if "$have_activity" {
     |         this.active_elt_style = this.active_elt.getAttribute("style");
     |         this.inactive_elt_style = this.inactive_elt.getAttribute("style");
     }
+    if "$have_disability" {
+    |         this.disabled_elt_style = this.disabled_elt.getAttribute("style");
+    }
     |     },
+}
+
+// default : normal subscribing
+template "widget[@type='Jump']", mode="widget_subscribe" {
+    param "hmi_element";
+    const "activity" call "jump_widget_activity" with "hmi_element", "$hmi_element";
+    const "have_activity","string-length($activity)>0";
+    const "disability" call "jump_widget_disability" with "hmi_element", "$hmi_element";
+    const "have_disability","$have_activity and string-length($disability)>0";
+    choose {
+        when "$have_disability" {
+    |     sub: subscribe,
+    |     unsub: unsubscribe,
+    |     apply_cache: widget_apply_cache,
+        }
+        otherwise {
+    |     sub: function(){},
+    |     unsub: function(){},
+    |     apply_cache: function(){},
+        }
+    }
 }
 
 template "widget[@type='Jump']", mode="per_page_widget_template"{
