@@ -1249,7 +1249,7 @@
 </xsl:text>
     <xsl:text>    choices: [
 </xsl:text>
-    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+)(#.*)?$'"/>
+    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,$regex)]">
       <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
       <xsl:text>        {
