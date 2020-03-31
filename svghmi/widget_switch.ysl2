@@ -16,7 +16,7 @@ template "widget[@type='Switch']", mode="widget_defs" {
     |         // Hello Switch
     |     },
     |     choices: [
-    const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+)(#.*)?$'"!;
+    const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
     foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
         const "literal", "regexp:match(@inkscape:label,$regex)[2]";
     |         {
