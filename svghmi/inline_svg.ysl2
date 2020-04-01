@@ -107,8 +107,6 @@ svgtmpl "svg:*", mode="unlink_clone" {
     }
 }
 
-/*const "mark" > =HMI=\n*/
-
 const "result_svg" apply "/", mode="inline_svg";
 const "result_svg_ns", "exsl:node-set($result_svg)";
 
