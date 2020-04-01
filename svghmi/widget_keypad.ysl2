@@ -1,0 +1,4 @@
+// widget_keypad.ysl2
+
+template "widget[@type='Keypad']", mode="widget_defs" {
+}
