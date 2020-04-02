@@ -113,7 +113,8 @@ istylesheet
         foreach "$keypads_descs"{
             const "keypad_id","@id";
             foreach "arg"{
-        |     "«@value»":"«$keypad_id»",
+                const "g", "$geometry[@Id = $keypad_id]"; 
+        |     "«@value»":["«$keypad_id»", «$g/@x», «$g/@y»],
             }
         }
         | }

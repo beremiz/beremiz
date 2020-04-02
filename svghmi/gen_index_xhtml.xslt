@@ -127,6 +127,9 @@
                 <xsl:attribute name="index">
                   <xsl:value-of select="$item/@index"/>
                 </xsl:attribute>
+                <xsl:attribute name="type">
+                  <xsl:value-of select="local-name($item)"/>
+                </xsl:attribute>
               </xsl:if>
             </path>
           </xsl:if>
@@ -259,6 +262,8 @@
   </func:function>
   <xsl:variable name="hmi_pages_descs" select="$parsed_widgets/widget[@type = 'Page']"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_descs/@id]"/>
+  <xsl:variable name="keypads_descs" select="$parsed_widgets/widget[@type = 'Keypad']"/>
+  <xsl:variable name="keypads" select="$hmi_elements[@id = $keypads_descs/@id]"/>
   <xsl:variable name="default_page">
     <xsl:choose>
       <xsl:when test="count($hmi_pages) &gt; 1">
@@ -311,7 +316,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;       | func:required_elements($hmi_pages)/ancestor-or-self::svg:*"/>
+  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;       | func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*"/>
   <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
@@ -331,7 +336,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages)"/>
+  <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages | $keypads)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
   <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
@@ -726,8 +731,6 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>    on_click: function(evt) {
 </xsl:text>
-    <xsl:text>        console.log("Back !");
-</xsl:text>
     <xsl:text>        if(jump_history.length &gt; 1){
 </xsl:text>
     <xsl:text>           jump_history.pop();
@@ -897,7 +900,11 @@
       <xsl:text>    frequency: 5,
 </xsl:text>
     </xsl:if>
+    <xsl:text>    last_val: undefined,
+</xsl:text>
     <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        this.last_val = value;
 </xsl:text>
     <xsl:if test="$have_value">
       <xsl:text>        this.value_elt.textContent = String(value);
@@ -911,31 +918,51 @@
     <xsl:if test="$edit_elt_id">
       <xsl:text>        id("</xsl:text>
       <xsl:value-of select="$edit_elt_id"/>
-      <xsl:text>").addEventListener(
-</xsl:text>
-      <xsl:text>            "click", 
-</xsl:text>
-      <xsl:text>            evt =&gt; alert('XXX TODO : Edit value'));
+      <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
+      <xsl:value-of select="$hmi_element/@id"/>
+      <xsl:text>'].on_edit_click()");
 </xsl:text>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
       <xsl:text>        id("</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>").addEventListener(
-</xsl:text>
-      <xsl:text>            "click", 
-</xsl:text>
-      <xsl:text>            evt =&gt; {let new_val = change_hmi_value(this.indexes[0], "</xsl:text>
+      <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
+      <xsl:value-of select="$hmi_element/@id"/>
+      <xsl:text>'].on_op_click('</xsl:text>
       <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
-      <xsl:text>");
-</xsl:text>
-      <xsl:if test="$have_value">
-        <xsl:text>                    this.value_elt.textContent = String(new_val);
-</xsl:text>
-      </xsl:if>
-      <xsl:text>                   });
+      <xsl:text>')");
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_op_click: function(opstr) {
+</xsl:text>
+    <xsl:text>        let new_val = change_hmi_value(this.indexes[0], opstr);
+</xsl:text>
+    <xsl:if test="$have_value">
+      <xsl:text>        this.value_elt.textContent = String(new_val);
+</xsl:text>
+    </xsl:if>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_edit_click: function(opstr) {
+</xsl:text>
+    <xsl:text>        edit_value("</xsl:text>
+    <xsl:value-of select="path/@value"/>
+    <xsl:text>", "</xsl:text>
+    <xsl:value-of select="path/@type"/>
+    <xsl:text>", this.edit_callback, this.last_val);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    edit_callback: function(new_val) {
+</xsl:text>
+    <xsl:text>        apply_hmi_value(this.indexes[0], opstr);
+</xsl:text>
+    <xsl:if test="$have_value">
+      <xsl:text>        this.value_elt.textContent = String(new_val);
+</xsl:text>
+    </xsl:if>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
@@ -986,8 +1013,6 @@
         <xsl:text>    dispatch: function(value) {
 </xsl:text>
         <xsl:text>        this.disabled = !Number(value);
-</xsl:text>
-        <xsl:text>        console.log("disbled",value);
 </xsl:text>
         <xsl:text>        this.update();
 </xsl:text>
@@ -1161,6 +1186,12 @@
       </xsl:if>
     </xsl:if>
   </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Meter']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    frequency: 10,
@@ -1288,6 +1319,7 @@
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
+    <xsl:apply-templates mode="debug_as_comment" select="document('')/*/reflect:*"/>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
@@ -1365,6 +1397,26 @@
     <xsl:text>var page_desc = {
 </xsl:text>
     <xsl:apply-templates mode="page_desc" select="$hmi_pages"/>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>var keypads = {
+</xsl:text>
+    <xsl:for-each select="$keypads_descs">
+      <xsl:variable name="keypad_id" select="@id"/>
+      <xsl:for-each select="arg">
+        <xsl:variable name="g" select="$geometry[@Id = $keypad_id]"/>
+        <xsl:text>    "</xsl:text>
+        <xsl:value-of select="@value"/>
+        <xsl:text>":["</xsl:text>
+        <xsl:value-of select="$keypad_id"/>
+        <xsl:text>", </xsl:text>
+        <xsl:value-of select="$g/@x"/>
+        <xsl:text>, </xsl:text>
+        <xsl:value-of select="$g/@y"/>
+        <xsl:text>],
+</xsl:text>
+      </xsl:for-each>
+    </xsl:for-each>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1859,6 +1911,20 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>function apply_hmi_value(index, new_val) {
+</xsl:text>
+    <xsl:text>    let old_val = cache[index]
+</xsl:text>
+    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
+</xsl:text>
+    <xsl:text>        send_hmi_value(index, new_val);
+</xsl:text>
+    <xsl:text>    return new_val;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function change_hmi_value(index, opstr) {
 </xsl:text>
     <xsl:text>    let op = opstr[0];
@@ -2189,8 +2255,6 @@
 </xsl:text>
     <xsl:text>    requestHMIAnimation();
 </xsl:text>
-    <xsl:text>    console.log(opstr, new_item_offset);
-</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -2300,6 +2364,48 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var edit_callback;
+</xsl:text>
+    <xsl:text>function edit_value(path, valuetype, callback, initial) {
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let [keypadid, xcoord, ycoord] = keypads[valuetype];
+</xsl:text>
+    <xsl:text>    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
+</xsl:text>
+    <xsl:text>    edit_callback = callback;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let [element, parent] = detachable_elements[keypadid];
+</xsl:text>
+    <xsl:text>    tmpgrp = document.createElement("g");
+</xsl:text>
+    <xsl:text>    tmpgrpattr = document.createAttribute("transform");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let [xdest,ydest] = page_desc[current_visible_page].bbox;
+</xsl:text>
+    <xsl:text>    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+</xsl:text>
+    <xsl:text>    tmpgrp.setAttributeNode(tmpgrpattr);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    tmpgrp.appendChild(element);
+</xsl:text>
+    <xsl:text>    parent.appendChild(tmpgrp);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
 </xsl:stylesheet>

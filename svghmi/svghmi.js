@@ -470,9 +470,20 @@ ws.onclose = function (evt) {
 var edit_callback;
 function edit_value(path, valuetype, callback, initial) {
 
-    keypad = keypads[valuetype];
-    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypad);
+    let [keypadid, xcoord, ycoord] = keypads[valuetype];
+    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
     edit_callback = callback;
+
+    let [element, parent] = detachable_elements[keypadid];
+    tmpgrp = document.createElement("g");
+    tmpgrpattr = document.createAttribute("transform");
+
+    let [xdest,ydest] = page_desc[current_visible_page].bbox;
+    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+    tmpgrp.setAttributeNode(tmpgrpattr);
+
+    tmpgrp.appendChild(element);
+    parent.appendChild(tmpgrp);
 
 };
 
