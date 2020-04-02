@@ -239,6 +239,13 @@ function send_hmi_value(index, value) {
     cache[index] = value;
 };
 
+function apply_hmi_value(index, new_val) {
+    let old_val = cache[index]
+    if(new_val != undefined && old_val != new_val)
+        send_hmi_value(index, new_val);
+    return new_val;
+}
+
 function change_hmi_value(index, opstr) {
     let op = opstr[0];
     let given_val = opstr.slice(1);
@@ -460,3 +467,13 @@ ws.onclose = function (evt) {
     alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
 
 };
+
+var edit_callback;
+function edit_value(path, valuetype, callback, initial) {
+
+    keypad = keypads[valuetype];
+    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypad);
+    edit_callback = callback;
+
+};
+

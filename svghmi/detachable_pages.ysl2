@@ -7,6 +7,9 @@
 const "hmi_pages_descs", "$parsed_widgets/widget[@type = 'Page']";
 const "hmi_pages", "$hmi_elements[@id = $hmi_pages_descs/@id]";
 
+const "keypads_descs", "$parsed_widgets/widget[@type = 'Keypad']";
+const "keypads", "$hmi_elements[@id = $keypads_descs/@id]";
+
 const "default_page" choose {
     when "count($hmi_pages) > 1" {
         choose {
@@ -58,7 +61,7 @@ def "func:required_elements" {
 
 const "required_elements",
     """//svg:defs/descendant-or-self::svg:*
-       | func:required_elements($hmi_pages)/ancestor-or-self::svg:*""";
+       | func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*""";
 
 const "discardable_elements", "//svg:*[not(@id = $required_elements/@id)]";
 
@@ -88,7 +91,7 @@ def "func:detachable_elements" {
 }
 
 // Avoid nested detachables
-const "_detachable_elements", "func:detachable_elements($hmi_pages)";
+const "_detachable_elements", "func:detachable_elements($hmi_pages | $keypads)";
 const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
 const "forEach_widgets_ids", "$parsed_widgets/widget[@type = 'ForEach']/@id";
