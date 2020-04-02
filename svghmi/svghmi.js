@@ -411,7 +411,6 @@ function foreach_onclick(opstr, evt) {
     need_cache_apply.push(this);
     jumps_need_update = true;
     requestHMIAnimation();
-    console.log(opstr, new_item_offset);
 }
 
 
