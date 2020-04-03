@@ -9,9 +9,9 @@ template "widget[@type='Input']", mode="widget_defs" {
     value "$value_elt";
     if "$have_value"
     |     frequency: 5,
-
+    |     last_val: undefined,
     |     dispatch: function(value) {
-
+    |         this.last_val = value;
     if "$have_value"
     |         this.value_elt.textContent = String(value);
 
@@ -19,19 +19,28 @@ template "widget[@type='Input']", mode="widget_defs" {
     const "edit_elt_id","$hmi_element/*[@inkscape:label='edit'][1]/@id";
     |     init: function() {
     if "$edit_elt_id" {
-    |         id("«$edit_elt_id»").addEventListener(
-    |             "click", 
-    |             evt => alert('XXX TODO : Edit value'));
+    |         id("«$edit_elt_id»").setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_edit_click()");
     }
     foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
-    |         id("«@id»").addEventListener(
-    |             "click", 
-    |             evt => {let new_val = change_hmi_value(this.indexes[0], "«func:escape_quotes(@inkscape:label)»");
-        if "$have_value"{
-    |                     this.value_elt.textContent = String(new_val);
-        }
-    |                    });
-                          /* TODO gray out value until refreshed */
+    |         id("«@id»").setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_op_click('«func:escape_quotes(@inkscape:label)»')");
     }
+    |     },
+    |     on_op_click: function(opstr) {
+    |         let new_val = change_hmi_value(this.indexes[0], opstr);
+        if "$have_value"{
+    |         this.value_elt.textContent = String(new_val);
+              /* TODO gray out value until refreshed */
+        }
+    |     },
+    |     on_edit_click: function(opstr) {
+    |         edit_value("«path/@value»", "«path/@type»", this.edit_callback, this.last_val);
+    |     },
+
+    |     edit_callback: function(new_val) {
+    |         apply_hmi_value(this.indexes[0], opstr);
+        if "$have_value"{
+    |         this.value_elt.textContent = String(new_val);
+              /* TODO gray out value until refreshed */
+        }
     |     },
 }

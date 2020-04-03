@@ -109,6 +109,17 @@ istylesheet
         apply "$hmi_pages", mode="page_desc";
         | }
 
+        | var keypads = {
+        foreach "$keypads_descs"{
+            const "keypad_id","@id";
+            foreach "arg"{
+                const "g", "$geometry[@Id = $keypad_id]"; 
+        |     "«@value»":["«$keypad_id»", «$g/@x», «$g/@y»],
+            }
+        }
+        | }
+
+
         |
         | var default_page = "«$default_page»";
         | var svg_root = id("«/svg:svg/@id»");
