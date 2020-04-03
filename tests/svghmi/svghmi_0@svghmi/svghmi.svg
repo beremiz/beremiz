@@ -124,17 +124,17 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="hmi0"
+     inkscape:current-layer="g2432"
      showgrid="false"
      units="px"
      inkscape:zoom="0.35355339"
-     inkscape:cx="-314.31196"
-     inkscape:cy="282.25622"
-     inkscape:window-width="1600"
-     inkscape:window-height="886"
+     inkscape:cx="-418.67433"
+     inkscape:cy="-1206.7258"
+     inkscape:window-width="1800"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
   <rect
@@ -1323,7 +1323,7 @@
        inkscape:label="Background"
        inkscape:connector-curvature="0"
        id="path2136"
-       d="M 54.211084,1.2654702 H 435.7388 V 230.18209 H 54.211084 Z"
+       d="M 54.211099,1.2654702 H 435.73881 V 230.18209 H 54.211099 Z"
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:0.6;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.16776976;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
     <rect
        ry="3.8152773"
@@ -1595,6 +1595,19 @@
          style="font-weight:normal;font-size:9.28803921px;font-family:Arial;fill:#2b2828;stroke-width:0.10514989"
          transform="scale(1.0007154,0.99928514)">+/-</text>
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.31375408px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.30784383px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="252.9579"
+       y="12.333653"
+       id="text509"
+       transform="scale(0.96824589,1.0327955)"
+       inkscape:label="Info"><tspan
+         sodipodi:role="line"
+         id="tspan507"
+         x="252.9579"
+         y="12.333653"
+         style="stroke-width:0.30784383px">information</tspan></text>
   </g>
   <g
      transform="matrix(3.3549332,0,0,3.14525,-181.87457,1556.0198)"
@@ -2275,46 +2288,6 @@
       </g>
     </g>
     <g
-       id="g908"
-       inkscape:label="Shift">
-      <g
-         id="g914"
-         inkscape:label="inactive"
-         style="display:inline;stroke-width:0.47631353"
-         transform="translate(0,-9.5381931)">
-        <path
-           inkscape:connector-curvature="0"
-           d="m 379.96247,195 c -1,0 -2,-1 -2,-3 v -17 c 0,-1 1,-3 2,-3 h 42.96244 c 2,0 3,2 3,3 v 17 c 0,2 -1,3 -3,3 z"
-           id="path910"
-           style="opacity:1;vector-effect:none;fill:#d3d2d2;fill-opacity:1;stroke:none;stroke-width:0.16824308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           sodipodi:nodetypes="sssssssss" />
-        <text
-           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#2b2828;stroke-width:0.36866826"
-           id="text912"
-           y="187.4456"
-           x="392.55679"
-           transform="scale(1.0007154,0.99928514)">Shift</text>
-      </g>
-      <g
-         transform="translate(0,-9.5381931)"
-         style="stroke-width:0.47631353"
-         inkscape:label="active"
-         id="g3592">
-        <path
-           sodipodi:nodetypes="sssssssss"
-           style="opacity:1;vector-effect:none;fill:#4f4c4d;fill-opacity:1;stroke:none;stroke-width:0.16824313;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-           id="path551"
-           d="m 379.96247,195 c -1,0 -2,-1 -2,-3 v -17 c 0,-1 1,-3 2,-3 h 42.96244 c 2,0 3,2 3,3 v 17 c 0,2 -1,3 -3,3 z"
-           inkscape:connector-curvature="0" />
-        <text
-           transform="scale(1.0007154,0.99928514)"
-           x="392.55679"
-           y="187.4456"
-           id="text629"
-           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#ffffff;stroke-width:0.36866826">Shift</text>
-      </g>
-    </g>
-    <g
        transform="translate(335.89988,-58.934803)"
        id="g3544"
        inkscape:label="Esc"
@@ -2333,7 +2306,7 @@
          x="59.288635">Esc</text>
     </g>
     <g
-       inkscape:label="Return"
+       inkscape:label="Enter"
        id="g4291"
        style="stroke-width:0.47631353"
        transform="translate(0,-19.076386)">
@@ -2443,44 +2416,77 @@
          y="38.296417"
          style="text-align:start;text-anchor:start;stroke-width:0.47690967px">text</tspan></text>
     <g
-       id="g868"
+       id="g437"
        inkscape:label="Shift">
       <g
-         inkscape:label="inactive"
-         id="g862"
-         style="display:inline;fill-rule:evenodd;stroke-width:0.47631353"
-         transform="translate(0,-9.5381931)">
+         id="g421"
+         inkscape:label="inactive">
+        <path
+           inkscape:connector-curvature="0"
+           d="m 379.96247,185.46181 c -1,0 -2,-1 -2,-3 v -17 c 0,-1 1,-3 2,-3 h 42.96244 c 2,0 3,2 3,3 v 17 c 0,2 -1,3 -3,3 z"
+           id="path910"
+           style="opacity:1;vector-effect:none;fill:#d3d2d2;fill-opacity:1;stroke:none;stroke-width:0.16824308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           sodipodi:nodetypes="sssssssss" />
+        <text
+           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#2b2828;stroke-width:0.36866826"
+           id="text912"
+           y="177.90059"
+           x="392.55679"
+           transform="scale(1.0007154,0.99928513)">Shift</text>
         <path
            sodipodi:nodetypes="sssssssss"
-           style="opacity:1;vector-effect:none;fill:#d3d2d2;fill-opacity:1;stroke:none;stroke-width:0.16824308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           style="opacity:1;vector-effect:none;fill:#d3d2d2;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.16824308;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
            id="path856"
-           d="m 67.025031,195 c -1,0 -3,-1 -3,-3 v -17 c 0,-1 2,-3 3,-3 H 104 c 1,0 2,2 2,3 v 17 c 0,2 -1,3 -2,3 z"
+           d="m 67.025031,185.46181 c -1,0 -3,-1 -3,-3 v -17 c 0,-1 2,-3 3,-3 H 104 c 1,0 2,2 2,3 v 17 c 0,2 -1,3 -2,3 z"
            inkscape:connector-curvature="0" />
         <text
            x="75.85218"
-           y="187.4456"
+           y="177.90059"
            id="text858"
-           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#2b2828;stroke-width:0.36866826"
-           transform="scale(1.0007154,0.99928514)">Shift</text>
+           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#2b2828;fill-rule:evenodd;stroke-width:0.36866826"
+           transform="scale(1.0007154,0.99928513)">Shift</text>
       </g>
       <g
-         transform="translate(0,-9.5381931)"
-         style="display:inline;fill-rule:evenodd;stroke-width:0.47631353"
-         id="g883"
+         id="g413"
          inkscape:label="active">
         <path
-           inkscape:connector-curvature="0"
-           d="m 67.025031,195 c -1,0 -3,-1 -3,-3 v -17 c 0,-1 2,-3 3,-3 H 104 c 1,0 2,2 2,3 v 17 c 0,2 -1,3 -2,3 z"
-           id="path879"
+           sodipodi:nodetypes="sssssssss"
            style="opacity:1;vector-effect:none;fill:#4f4c4d;fill-opacity:1;stroke:none;stroke-width:0.16824313;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="path551"
+           d="m 379.96247,185.46181 c -1,0 -2,-1 -2,-3 v -17 c 0,-1 1,-3 2,-3 h 42.96244 c 2,0 3,2 3,3 v 17 c 0,2 -1,3 -3,3 z"
+           inkscape:connector-curvature="0" />
+        <text
+           transform="scale(1.0007154,0.99928513)"
+           x="392.55679"
+           y="177.90059"
+           id="text629"
+           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#ffffff;stroke-width:0.36866826">Shift</text>
+        <path
+           inkscape:connector-curvature="0"
+           d="m 67.025031,185.46181 c -1,0 -3,-1 -3,-3 v -17 c 0,-1 2,-3 3,-3 H 104 c 1,0 2,2 2,3 v 17 c 0,2 -1,3 -2,3 z"
+           id="path879"
+           style="opacity:1;vector-effect:none;fill:#4f4c4d;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.16824313;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
            sodipodi:nodetypes="sssssssss" />
         <text
-           transform="scale(1.0007154,0.99928514)"
-           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#ffffff;stroke-width:0.36866826"
+           transform="scale(1.0007154,0.99928513)"
+           style="font-weight:normal;font-size:8.92098808px;font-family:Arial;fill:#ffffff;fill-rule:evenodd;stroke-width:0.36866826"
            id="text881"
-           y="187.4456"
+           y="177.90059"
            x="75.85218">Shift</text>
       </g>
     </g>
+    <text
+       transform="scale(0.96824588,1.0327955)"
+       id="text471"
+       y="12.333657"
+       x="252.9579"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.31375408px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.30784383px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"
+       inkscape:label="Info"><tspan
+         style="stroke-width:0.30784383px"
+         y="12.333657"
+         x="252.9579"
+         id="tspan469"
+         sodipodi:role="line">information</tspan></text>
   </g>
 </svg>

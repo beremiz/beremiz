@@ -33,11 +33,11 @@ template "widget[@type='Input']", mode="widget_defs" {
         }
     |     },
     |     on_edit_click: function(opstr) {
-    |         edit_value("«path/@value»", "«path/@type»", this.edit_callback, this.last_val);
+    |         edit_value("«path/@value»", "«path/@type»", this, this.last_val);
     |     },
 
     |     edit_callback: function(new_val) {
-    |         apply_hmi_value(this.indexes[0], opstr);
+    |         apply_hmi_value(this.indexes[0], new_val);
         if "$have_value"{
     |         this.value_elt.textContent = String(new_val);
               /* TODO gray out value until refreshed */

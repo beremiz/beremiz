@@ -951,13 +951,13 @@
     <xsl:value-of select="path/@value"/>
     <xsl:text>", "</xsl:text>
     <xsl:value-of select="path/@type"/>
-    <xsl:text>", this.edit_callback, this.last_val);
+    <xsl:text>", this, this.last_val);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    edit_callback: function(new_val) {
 </xsl:text>
-    <xsl:text>        apply_hmi_value(this.indexes[0], opstr);
+    <xsl:text>        apply_hmi_value(this.indexes[0], new_val);
 </xsl:text>
     <xsl:if test="$have_value">
       <xsl:text>        this.value_elt.textContent = String(new_val);
@@ -1187,7 +1187,170 @@
     </xsl:if>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>Esc Enter BackSpace Keys Info Value</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>Sign CapsLock Shift Space</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
     <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:for-each select="$hmi_element/*[@inkscape:label = 'Keys']/*">
+      <xsl:text>        id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
+      <xsl:value-of select="$hmi_element/@id"/>
+      <xsl:text>'].on_key_click('</xsl:text>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:text>')");
+</xsl:text>
+    </xsl:for-each>
+    <xsl:for-each select="str:split('Esc Enter BackSpace Sign Space CapsLock Shift')">
+      <xsl:text>        if(this.</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_elt)
+</xsl:text>
+      <xsl:text>            this.</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_elt.setAttribute("onclick", "hmi_widgets['</xsl:text>
+      <xsl:value-of select="$hmi_element/@id"/>
+      <xsl:text>'].on_</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_click()");
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_key_click: function(symbols) {
+</xsl:text>
+    <xsl:text>        var syms = symbols.split(" ");
+</xsl:text>
+    <xsl:text>        this.shift = this.caps;
+</xsl:text>
+    <xsl:text>        this.editstr += syms[this.shift?syms.length:0];
+</xsl:text>
+    <xsl:text>        this.shift = false;
+</xsl:text>
+    <xsl:text>        this.update();
+</xsl:text>
+    <xsl:text>        console.log(symbols);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_Esc_click: function() {
+</xsl:text>
+    <xsl:text>        end_modal.call(this);
+</xsl:text>
+    <xsl:text>        console.log("Esc");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_Enter_click: function() {
+</xsl:text>
+    <xsl:text>        end_modal.call(this);
+</xsl:text>
+    <xsl:text>        callback_obj = this.result_callback_obj;
+</xsl:text>
+    <xsl:text>        callback_obj.edit_callback(this.editstr);
+</xsl:text>
+    <xsl:text>        console.log("Enter");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_BackSpace_click: function() {
+</xsl:text>
+    <xsl:text>        this.editstr = this.editstr.slice(0,this.editstr.length-1);
+</xsl:text>
+    <xsl:text>        this.update();
+</xsl:text>
+    <xsl:text>        console.log("BackSpace");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_Sign_click: function() {
+</xsl:text>
+    <xsl:text>        if(this.editstr[0] == "-")
+</xsl:text>
+    <xsl:text>            this.editstr = this.editstr.slice(1,this.editstr.length);
+</xsl:text>
+    <xsl:text>        else
+</xsl:text>
+    <xsl:text>            this.editstr = "-" + this.editstr;
+</xsl:text>
+    <xsl:text>        console.log("Sign");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_Space_click: function() {
+</xsl:text>
+    <xsl:text>        this.editstr += " ";
+</xsl:text>
+    <xsl:text>        console.log("Space");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    caps: false,
+</xsl:text>
+    <xsl:text>    on_CapsLock_click: function() {
+</xsl:text>
+    <xsl:text>        this.caps = !this.caps;
+</xsl:text>
+    <xsl:text>        console.log("CapsLock");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    shift: false,
+</xsl:text>
+    <xsl:text>    on_Shift_click: function() {
+</xsl:text>
+    <xsl:text>        this.shift = true;
+</xsl:text>
+    <xsl:text>        console.log("Shift");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:variable name="g" select="$geometry[@Id = $hmi_element/@id]"/>
+    <xsl:text>    coordinates: [</xsl:text>
+    <xsl:value-of select="$g/@x"/>
+    <xsl:text>, </xsl:text>
+    <xsl:value-of select="$g/@y"/>
+    <xsl:text>],
+</xsl:text>
+    <xsl:text>    editstr: "",
+</xsl:text>
+    <xsl:text>    result_callback_obj: undefined,
+</xsl:text>
+    <xsl:text>    start_edit: function(info, valuetype, callback_obj, initial) {
+</xsl:text>
+    <xsl:text>        show_modal.call(this);
+</xsl:text>
+    <xsl:text>        this.editstr = initial;
+</xsl:text>
+    <xsl:text>        this.result_callback_obj = callback_obj;
+</xsl:text>
+    <xsl:text>        this.Info_elt.textContent = info;
+</xsl:text>
+    <xsl:text>        this.shift = false;
+</xsl:text>
+    <xsl:text>        this.caps = false;
+</xsl:text>
+    <xsl:text>        this.update();
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    update: function() {
+</xsl:text>
+    <xsl:text>        /* TODO Swith shift and capslock active/inactive elements */
+</xsl:text>
+    <xsl:text>        this.Value_elt.textContent = this.editstr;
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -2367,6 +2530,8 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var xmlns = "http://www.w3.org/2000/svg";
+</xsl:text>
     <xsl:text>var edit_callback;
 </xsl:text>
     <xsl:text>function edit_value(path, valuetype, callback, initial) {
@@ -2379,15 +2544,31 @@
 </xsl:text>
     <xsl:text>    edit_callback = callback;
 </xsl:text>
+    <xsl:text>    let widget = hmi_widgets[keypadid];
+</xsl:text>
+    <xsl:text>    widget.start_edit(path, valuetype, callback, initial);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    let [element, parent] = detachable_elements[keypadid];
+    <xsl:text>var current_modal; /* TODO stack ?*/
 </xsl:text>
-    <xsl:text>    tmpgrp = document.createElement("g");
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function show_modal() {
+</xsl:text>
+    <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    tmpgrp = document.createElementNS(xmlns,"g");
 </xsl:text>
     <xsl:text>    tmpgrpattr = document.createAttribute("transform");
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>    let [xcoord,ycoord] = this.coordinates;
 </xsl:text>
     <xsl:text>    let [xdest,ydest] = page_desc[current_visible_page].bbox;
 </xsl:text>
@@ -2403,9 +2584,27 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    current_modal = [this.element.id, tmpgrp];
+</xsl:text>
     <xsl:text>};
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>function end_modal() {
+</xsl:text>
+    <xsl:text>    let [eltid, tmpgrp] = current_modal;
+</xsl:text>
+    <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    parent.removeChild(tmpgrp);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    current_modal = undefined;
+</xsl:text>
+    <xsl:text>};
 </xsl:text>
   </xsl:template>
 </xsl:stylesheet>

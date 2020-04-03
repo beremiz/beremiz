@@ -474,11 +474,19 @@ function edit_value(path, valuetype, callback, initial) {
     let [keypadid, xcoord, ycoord] = keypads[valuetype];
     console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
     edit_callback = callback;
+    let widget = hmi_widgets[keypadid];
+    widget.start_edit(path, valuetype, callback, initial);
+};
 
-    let [element, parent] = detachable_elements[keypadid];
+var current_modal; /* TODO stack ?*/
+
+function show_modal() {
+    let [element, parent] = detachable_elements[this.element.id];
+
     tmpgrp = document.createElementNS(xmlns,"g");
     tmpgrpattr = document.createAttribute("transform");
 
+    let [xcoord,ycoord] = this.coordinates;
     let [xdest,ydest] = page_desc[current_visible_page].bbox;
     tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
     tmpgrp.setAttributeNode(tmpgrpattr);
@@ -486,5 +494,14 @@ function edit_value(path, valuetype, callback, initial) {
     tmpgrp.appendChild(element);
     parent.appendChild(tmpgrp);
 
+    current_modal = [this.element.id, tmpgrp];
 };
 
+function end_modal() {
+    let [eltid, tmpgrp] = current_modal;
+    let [element, parent] = detachable_elements[this.element.id];
+
+    parent.removeChild(tmpgrp);
+
+    current_modal = undefined;
+};

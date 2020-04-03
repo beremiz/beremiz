@@ -1,6 +1,77 @@
 // widget_keypad.ysl2
 
 template "widget[@type='Keypad']", mode="widget_defs" {
+    param "hmi_element";
+    labels("Esc Enter BackSpace Keys Info Value");
+    optional_labels("Sign CapsLock Shift Space");
     |     init: function() {
+    foreach "$hmi_element/*[@inkscape:label = 'Keys']/*" {
+    |         id("«@id»").setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_key_click('«func:escape_quotes(@inkscape:label)»')");
+    }
+    foreach "str:split('Esc Enter BackSpace Sign Space CapsLock Shift')" {
+    |         if(this.«.»_elt)
+    |             this.«.»_elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_«.»_click()");
+    }
+    |     },
+    |     on_key_click: function(symbols) {
+    |         var syms = symbols.split(" ");
+    |         this.shift = this.caps;
+    |         this.editstr += syms[this.shift?syms.length:0];
+    |         this.shift = false;
+    |         this.update();
+    |         console.log(symbols);
+    |     },
+    |     on_Esc_click: function() {
+    |         end_modal.call(this);
+    |         console.log("Esc");
+    |     },
+    |     on_Enter_click: function() {
+    |         end_modal.call(this);
+    |         callback_obj = this.result_callback_obj;
+    |         callback_obj.edit_callback(this.editstr);
+    |         console.log("Enter");
+    |     },
+    |     on_BackSpace_click: function() {
+    |         this.editstr = this.editstr.slice(0,this.editstr.length-1);
+    |         this.update();
+    |         console.log("BackSpace");
+    |     },
+    |     on_Sign_click: function() {
+    |         if(this.editstr[0] == "-")
+    |             this.editstr = this.editstr.slice(1,this.editstr.length);
+    |         else
+    |             this.editstr = "-" + this.editstr;
+    |         console.log("Sign");
+    |     },
+    |     on_Space_click: function() {
+    |         this.editstr += " ";
+    |         console.log("Space");
+    |     },
+    |     caps: false,
+    |     on_CapsLock_click: function() {
+    |         this.caps = !this.caps;
+    |         console.log("CapsLock");
+    |     },
+    |     shift: false,
+    |     on_Shift_click: function() {
+    |         this.shift = true;
+    |         console.log("Shift");
+    |     },
+    const "g", "$geometry[@Id = $hmi_element/@id]"; 
+    |     coordinates: [«$g/@x», «$g/@y»],
+    |     editstr: "",
+    |     result_callback_obj: undefined,
+    |     start_edit: function(info, valuetype, callback_obj, initial) {
+    |         show_modal.call(this);
+    |         this.editstr = initial;
+    |         this.result_callback_obj = callback_obj;
+    |         this.Info_elt.textContent = info;
+    |         this.shift = false;
+    |         this.caps = false;
+    |         this.update();
+    |     },
+    |     update: function() {
+    |         /* TODO Swith shift and capslock active/inactive elements */
+    |         this.Value_elt.textContent = this.editstr;
     |     },
 }
