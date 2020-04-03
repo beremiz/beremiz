@@ -467,6 +467,7 @@ ws.onclose = function (evt) {
 
 };
 
+var xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
 function edit_value(path, valuetype, callback, initial) {
 
@@ -475,7 +476,7 @@ function edit_value(path, valuetype, callback, initial) {
     edit_callback = callback;
 
     let [element, parent] = detachable_elements[keypadid];
-    tmpgrp = document.createElement("g");
+    tmpgrp = document.createElementNS(xmlns,"g");
     tmpgrpattr = document.createAttribute("transform");
 
     let [xdest,ydest] = page_desc[current_visible_page].bbox;
