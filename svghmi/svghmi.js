@@ -239,6 +239,13 @@ function send_hmi_value(index, value) {
     cache[index] = value;
 };
 
+function apply_hmi_value(index, new_val) {
+    let old_val = cache[index]
+    if(new_val != undefined && old_val != new_val)
+        send_hmi_value(index, new_val);
+    return new_val;
+}
+
 function change_hmi_value(index, opstr) {
     let op = opstr[0];
     let given_val = opstr.slice(1);
@@ -404,7 +411,6 @@ function foreach_onclick(opstr, evt) {
     need_cache_apply.push(this);
     jumps_need_update = true;
     requestHMIAnimation();
-    console.log(opstr, new_item_offset);
 }
 
 
@@ -460,3 +466,24 @@ ws.onclose = function (evt) {
     alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
 
 };
+
+var edit_callback;
+function edit_value(path, valuetype, callback, initial) {
+
+    let [keypadid, xcoord, ycoord] = keypads[valuetype];
+    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
+    edit_callback = callback;
+
+    let [element, parent] = detachable_elements[keypadid];
+    tmpgrp = document.createElement("g");
+    tmpgrpattr = document.createAttribute("transform");
+
+    let [xdest,ydest] = page_desc[current_visible_page].bbox;
+    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+    tmpgrp.setAttributeNode(tmpgrpattr);
+
+    tmpgrp.appendChild(element);
+    parent.appendChild(tmpgrp);
+
+};
+

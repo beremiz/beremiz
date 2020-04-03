@@ -25,7 +25,6 @@ template "widget[@type='Jump']", mode="widget_defs" {
     |     frequency: 2,
     |     dispatch: function(value) {
     |         this.disabled = !Number(value);
-    |         console.log("disbled",value);
     |         this.update();
     |     },
     }
