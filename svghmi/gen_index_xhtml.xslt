@@ -1233,9 +1233,9 @@
 </xsl:text>
     <xsl:text>        var syms = symbols.split(" ");
 </xsl:text>
-    <xsl:text>        this.shift = this.caps;
+    <xsl:text>        this.shift |= this.caps;
 </xsl:text>
-    <xsl:text>        this.editstr += syms[this.shift?syms.length:0];
+    <xsl:text>        this.editstr += syms[this.shift?syms.length-1:0];
 </xsl:text>
     <xsl:text>        this.shift = false;
 </xsl:text>
@@ -1482,7 +1482,6 @@
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
-    <xsl:apply-templates mode="debug_as_comment" select="document('')/*/reflect:*"/>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
