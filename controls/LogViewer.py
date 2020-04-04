@@ -339,7 +339,7 @@ class LogViewer(DebugViewer, wx.Panel):
         if wx.Platform == '__WXMSW__':
             self.Font = wx.Font(8, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier New')
         else:
-            self.Font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='Courier')
+            self.Font = wx.Font(10, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName='FreeMono')
         self.MessagePanel.Bind(wx.EVT_LEFT_UP, self.OnMessagePanelLeftUp)
         self.MessagePanel.Bind(wx.EVT_RIGHT_UP, self.OnMessagePanelRightUp)
         self.MessagePanel.Bind(wx.EVT_LEFT_DCLICK, self.OnMessagePanelLeftDCLick)
