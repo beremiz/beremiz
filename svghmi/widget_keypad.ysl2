@@ -3,12 +3,13 @@
 template "widget[@type='Keypad']", mode="widget_defs" {
     param "hmi_element";
     labels("Esc Enter BackSpace Keys Info Value");
-    optional_labels("Sign CapsLock Shift Space");
+    optional_labels("Sign Space NumDot");
+    activable_labels("CapsLock Shift");
     |     init: function() {
     foreach "$hmi_element/*[@inkscape:label = 'Keys']/*" {
     |         id("«@id»").setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_key_click('«func:escape_quotes(@inkscape:label)»')");
     }
-    foreach "str:split('Esc Enter BackSpace Sign Space CapsLock Shift')" {
+    foreach "str:split('Esc Enter BackSpace Sign Space NumDot CapsLock Shift')" {
     |         if(this.«.»_elt)
     |             this.«.»_elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_«.»_click()");
     }
@@ -19,51 +20,53 @@ template "widget[@type='Keypad']", mode="widget_defs" {
     |         this.editstr += syms[this.shift?syms.length-1:0];
     |         this.shift = false;
     |         this.update();
-    |         console.log(symbols);
     |     },
     |     on_Esc_click: function() {
     |         end_modal.call(this);
-    |         console.log("Esc");
     |     },
     |     on_Enter_click: function() {
     |         end_modal.call(this);
     |         callback_obj = this.result_callback_obj;
     |         callback_obj.edit_callback(this.editstr);
-    |         console.log("Enter");
     |     },
     |     on_BackSpace_click: function() {
     |         this.editstr = this.editstr.slice(0,this.editstr.length-1);
     |         this.update();
-    |         console.log("BackSpace");
     |     },
     |     on_Sign_click: function() {
     |         if(this.editstr[0] == "-")
     |             this.editstr = this.editstr.slice(1,this.editstr.length);
     |         else
     |             this.editstr = "-" + this.editstr;
-    |         console.log("Sign");
+    |         this.update();
+    |     },
+    |     on_NumDot_click: function() {
+    |         if(this.editstr.indexOf(".") == "-1"){
+    |             this.editstr += ".";
+    |             this.update();
+    |         }
     |     },
     |     on_Space_click: function() {
     |         this.editstr += " ";
     |         this.update();
-    |         console.log("Space");
     |     },
     |     caps: false,
+    |     _caps: undefined,
     |     on_CapsLock_click: function() {
     |         this.caps = !this.caps;
     |         this.update();
-    |         console.log("CapsLock");
     |     },
     |     shift: false,
+    |     _shift: undefined,
     |     on_Shift_click: function() {
-    |         this.shift = true;
+    |         this.shift = !this.shift;
     |         this.caps = false;
     |         this.update();
-    |         console.log("Shift");
     |     },
     const "g", "$geometry[@Id = $hmi_element/@id]"; 
     |     coordinates: [«$g/@x», «$g/@y»],
     |     editstr: "",
+    |     _editstr: undefined,
     |     result_callback_obj: undefined,
     |     start_edit: function(info, valuetype, callback_obj, initial) {
     |         show_modal.call(this);
@@ -75,7 +78,17 @@ template "widget[@type='Keypad']", mode="widget_defs" {
     |         this.update();
     |     },
     |     update: function() {
-    |         /* TODO Swith shift and capslock active/inactive elements */
-    |         this.Value_elt.textContent = this.editstr;
+    |         if(this.editstr != this._editstr){
+    |             this._editstr = this.editstr;
+    |             this.Value_elt.textContent = this.editstr;
+    |         }
+    |         if(this.shift != this._shift){
+    |             this._shift = this.shift;
+    |             (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
+    |         }
+    |         if(this.caps != this._caps){
+    |             this._caps = this.caps;
+    |             (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
+    |         }
     |     },
 }
