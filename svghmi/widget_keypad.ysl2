@@ -15,8 +15,8 @@ template "widget[@type='Keypad']", mode="widget_defs" {
     |     },
     |     on_key_click: function(symbols) {
     |         var syms = symbols.split(" ");
-    |         this.shift = this.caps;
-    |         this.editstr += syms[this.shift?syms.length:0];
+    |         this.shift |= this.caps;
+    |         this.editstr += syms[this.shift?syms.length-1:0];
     |         this.shift = false;
     |         this.update();
     |         console.log(symbols);
@@ -45,16 +45,20 @@ template "widget[@type='Keypad']", mode="widget_defs" {
     |     },
     |     on_Space_click: function() {
     |         this.editstr += " ";
+    |         this.update();
     |         console.log("Space");
     |     },
     |     caps: false,
     |     on_CapsLock_click: function() {
     |         this.caps = !this.caps;
+    |         this.update();
     |         console.log("CapsLock");
     |     },
     |     shift: false,
     |     on_Shift_click: function() {
     |         this.shift = true;
+    |         this.caps = false;
+    |         this.update();
     |         console.log("Shift");
     |     },
     const "g", "$geometry[@Id = $hmi_element/@id]"; 
