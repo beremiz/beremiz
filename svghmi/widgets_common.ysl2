@@ -11,6 +11,13 @@ in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
     with "mandatory","'no'";
 };
 
+in xsl decl activable_labels(*ptr, name="defs_by_labels") alias call-template {
+    with "hmi_element", "$hmi_element";
+    with "labels"{text *ptr};
+    with "mandatory","'no'";
+    with "subelements","'active inactive'";
+};
+
 template "svg:*", mode="hmi_elements" {
     const "widget", "func:widget(@id)";
     const "eltid","@id";
@@ -51,21 +58,40 @@ template "widget[@type='Page']", mode="widget_subscribe";
 function "defs_by_labels" {
     param "labels","''";
     param "mandatory","'yes'";
+    param "subelements","/..";
     param "hmi_element";
     const "widget_type","@type";
     foreach "str:split($labels)" {
         const "name",".";
-        const "elt_id","$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id";
+        const "elt","$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]";
         choose {
-            when "not($elt_id)" {
+            when "not($elt/@id)" {
                 if "$mandatory='yes'" {
-                    // TODO FIXME error > «$widget_type» widget must have a «$name» element
-                    warning > «$widget_type» widget must have a «$name» element
+                    error > «$widget_type» widget must have a «$name» element
                 }
                 // otherwise produce nothing
             }
             otherwise {
-                |     «$name»_elt: id("«$elt_id»"),
+                |     «$name»_elt: id("«$elt/@id»"),
+                if "$subelements" {
+                |     «$name»_sub: {
+                    foreach "str:split($subelements)" {
+                        const "subname",".";
+                        const "subelt","$elt/*[@inkscape:label=$subname][1]";
+                        choose {
+                            when "not($subelt/@id)" {
+                                if "$mandatory='yes'" {
+                                    error > «$widget_type» widget must have a «$name»/«$subname» element
+                                }
+                |         /* missing «$name»/«$subname» element */
+                            }
+                            otherwise {
+                |         "«$subname»": id("«$subelt/@id»")`if "position()!=last()" > ,`
+                            }
+                        }
+                    }
+                |     },
+                }
             }
         }
     }

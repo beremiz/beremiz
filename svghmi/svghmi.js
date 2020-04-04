@@ -505,3 +505,20 @@ function end_modal() {
 
     current_modal = undefined;
 };
+
+function widget_active_activable(eltsub) {
+    if(eltsub.inactive_style === undefined)
+        eltsub.inactive_style = eltsub.inactive.getAttribute("style");
+    eltsub.inactive.setAttribute("style", "display:none");
+    if(eltsub.active_style !== undefined)
+            eltsub.active.setAttribute("style", eltsub.active_style);
+    console.log("active", eltsub);
+};
+function widget_inactive_activable(eltsub) {
+    if(eltsub.active_style === undefined)
+        eltsub.active_style = eltsub.active.getAttribute("style");
+    eltsub.active.setAttribute("style", "display:none");
+    if(eltsub.inactive_style !== undefined)
+            eltsub.inactive.setAttribute("style", eltsub.inactive_style);
+    console.log("inactive", eltsub);
+};

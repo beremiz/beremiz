@@ -687,15 +687,16 @@
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>
     <xsl:param name="mandatory" select="'yes'"/>
+    <xsl:param name="subelements" select="/.."/>
     <xsl:param name="hmi_element"/>
     <xsl:variable name="widget_type" select="@type"/>
     <xsl:for-each select="str:split($labels)">
       <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt_id" select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]/@id"/>
+      <xsl:variable name="elt" select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]"/>
       <xsl:choose>
-        <xsl:when test="not($elt_id)">
+        <xsl:when test="not($elt/@id)">
           <xsl:if test="$mandatory='yes'">
-            <xsl:message terminate="no">
+            <xsl:message terminate="yes">
               <xsl:value-of select="$widget_type"/>
               <xsl:text> widget must have a </xsl:text>
               <xsl:value-of select="$name"/>
@@ -707,9 +708,53 @@
           <xsl:text>    </xsl:text>
           <xsl:value-of select="$name"/>
           <xsl:text>_elt: id("</xsl:text>
-          <xsl:value-of select="$elt_id"/>
+          <xsl:value-of select="$elt/@id"/>
           <xsl:text>"),
 </xsl:text>
+          <xsl:if test="$subelements">
+            <xsl:text>    </xsl:text>
+            <xsl:value-of select="$name"/>
+            <xsl:text>_sub: {
+</xsl:text>
+            <xsl:for-each select="str:split($subelements)">
+              <xsl:variable name="subname" select="."/>
+              <xsl:variable name="subelt" select="$elt/*[@inkscape:label=$subname][1]"/>
+              <xsl:choose>
+                <xsl:when test="not($subelt/@id)">
+                  <xsl:if test="$mandatory='yes'">
+                    <xsl:message terminate="yes">
+                      <xsl:value-of select="$widget_type"/>
+                      <xsl:text> widget must have a </xsl:text>
+                      <xsl:value-of select="$name"/>
+                      <xsl:text>/</xsl:text>
+                      <xsl:value-of select="$subname"/>
+                      <xsl:text> element</xsl:text>
+                    </xsl:message>
+                  </xsl:if>
+                  <xsl:text>        /* missing </xsl:text>
+                  <xsl:value-of select="$name"/>
+                  <xsl:text>/</xsl:text>
+                  <xsl:value-of select="$subname"/>
+                  <xsl:text> element */
+</xsl:text>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:text>        "</xsl:text>
+                  <xsl:value-of select="$subname"/>
+                  <xsl:text>": id("</xsl:text>
+                  <xsl:value-of select="$subelt/@id"/>
+                  <xsl:text>")</xsl:text>
+                  <xsl:if test="position()!=last()">
+                    <xsl:text>,</xsl:text>
+                  </xsl:if>
+                  <xsl:text>
+</xsl:text>
+                </xsl:otherwise>
+              </xsl:choose>
+            </xsl:for-each>
+            <xsl:text>    },
+</xsl:text>
+          </xsl:if>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:for-each>
@@ -1197,9 +1242,17 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>Sign CapsLock Shift Space</xsl:text>
+        <xsl:text>Sign Space NumDot</xsl:text>
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>CapsLock Shift</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param name="subelements" select="'active inactive'"/>
     </xsl:call-template>
     <xsl:text>    init: function() {
 </xsl:text>
@@ -1213,7 +1266,7 @@
       <xsl:text>')");
 </xsl:text>
     </xsl:for-each>
-    <xsl:for-each select="str:split('Esc Enter BackSpace Sign Space CapsLock Shift')">
+    <xsl:for-each select="str:split('Esc Enter BackSpace Sign Space NumDot CapsLock Shift')">
       <xsl:text>        if(this.</xsl:text>
       <xsl:value-of select="."/>
       <xsl:text>_elt)
@@ -1241,15 +1294,11 @@
 </xsl:text>
     <xsl:text>        this.update();
 </xsl:text>
-    <xsl:text>        console.log(symbols);
-</xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    on_Esc_click: function() {
 </xsl:text>
     <xsl:text>        end_modal.call(this);
-</xsl:text>
-    <xsl:text>        console.log("Esc");
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1261,8 +1310,6 @@
 </xsl:text>
     <xsl:text>        callback_obj.edit_callback(this.editstr);
 </xsl:text>
-    <xsl:text>        console.log("Enter");
-</xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    on_BackSpace_click: function() {
@@ -1270,8 +1317,6 @@
     <xsl:text>        this.editstr = this.editstr.slice(0,this.editstr.length-1);
 </xsl:text>
     <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>        console.log("BackSpace");
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1285,7 +1330,19 @@
 </xsl:text>
     <xsl:text>            this.editstr = "-" + this.editstr;
 </xsl:text>
-    <xsl:text>        console.log("Sign");
+    <xsl:text>        this.update();
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_NumDot_click: function() {
+</xsl:text>
+    <xsl:text>        if(this.editstr.indexOf(".") == "-1"){
+</xsl:text>
+    <xsl:text>            this.editstr += ".";
+</xsl:text>
+    <xsl:text>            this.update();
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1293,27 +1350,33 @@
 </xsl:text>
     <xsl:text>        this.editstr += " ";
 </xsl:text>
-    <xsl:text>        console.log("Space");
+    <xsl:text>        this.update();
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    caps: false,
 </xsl:text>
+    <xsl:text>    _caps: undefined,
+</xsl:text>
     <xsl:text>    on_CapsLock_click: function() {
 </xsl:text>
     <xsl:text>        this.caps = !this.caps;
 </xsl:text>
-    <xsl:text>        console.log("CapsLock");
+    <xsl:text>        this.update();
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    shift: false,
 </xsl:text>
+    <xsl:text>    _shift: undefined,
+</xsl:text>
     <xsl:text>    on_Shift_click: function() {
 </xsl:text>
-    <xsl:text>        this.shift = true;
+    <xsl:text>        this.shift = !this.shift;
 </xsl:text>
-    <xsl:text>        console.log("Shift");
+    <xsl:text>        this.caps = false;
+</xsl:text>
+    <xsl:text>        this.update();
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1325,6 +1388,8 @@
     <xsl:text>],
 </xsl:text>
     <xsl:text>    editstr: "",
+</xsl:text>
+    <xsl:text>    _editstr: undefined,
 </xsl:text>
     <xsl:text>    result_callback_obj: undefined,
 </xsl:text>
@@ -1348,9 +1413,29 @@
 </xsl:text>
     <xsl:text>    update: function() {
 </xsl:text>
-    <xsl:text>        /* TODO Swith shift and capslock active/inactive elements */
+    <xsl:text>        if(this.editstr != this._editstr){
 </xsl:text>
-    <xsl:text>        this.Value_elt.textContent = this.editstr;
+    <xsl:text>            this._editstr = this.editstr;
+</xsl:text>
+    <xsl:text>            this.Value_elt.textContent = this.editstr;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        if(this.shift != this._shift){
+</xsl:text>
+    <xsl:text>            this._shift = this.shift;
+</xsl:text>
+    <xsl:text>            (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        if(this.caps != this._caps){
+</xsl:text>
+    <xsl:text>            this._caps = this.caps;
+</xsl:text>
+    <xsl:text>            (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -2602,6 +2687,40 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    current_modal = undefined;
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function widget_active_activable(eltsub) {
+</xsl:text>
+    <xsl:text>    if(eltsub.inactive_style === undefined)
+</xsl:text>
+    <xsl:text>        eltsub.inactive_style = eltsub.inactive.getAttribute("style");
+</xsl:text>
+    <xsl:text>    eltsub.inactive.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>    if(eltsub.active_style !== undefined)
+</xsl:text>
+    <xsl:text>            eltsub.active.setAttribute("style", eltsub.active_style);
+</xsl:text>
+    <xsl:text>    console.log("active", eltsub);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>function widget_inactive_activable(eltsub) {
+</xsl:text>
+    <xsl:text>    if(eltsub.active_style === undefined)
+</xsl:text>
+    <xsl:text>        eltsub.active_style = eltsub.active.getAttribute("style");
+</xsl:text>
+    <xsl:text>    eltsub.active.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>    if(eltsub.inactive_style !== undefined)
+</xsl:text>
+    <xsl:text>            eltsub.inactive.setAttribute("style", eltsub.inactive_style);
+</xsl:text>
+    <xsl:text>    console.log("inactive", eltsub);
 </xsl:text>
     <xsl:text>};
 </xsl:text>
