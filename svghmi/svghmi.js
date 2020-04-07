@@ -236,7 +236,8 @@ function send_hmi_value(index, value) {
         new Uint32Array([index]),
         tobinary(value)]);
 
-    cache[index] = value;
+    // DON'T DO THAT unless read_iterator in svghmi.c modifies wbuf as well, not only rbuf
+    // cache[index] = value;
 };
 
 function apply_hmi_value(index, new_val) {

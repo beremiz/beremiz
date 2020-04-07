@@ -27,10 +27,10 @@ template "widget[@type='Input']", mode="widget_defs" {
     |     },
     |     on_op_click: function(opstr) {
     |         let new_val = change_hmi_value(this.indexes[0], opstr);
-        if "$have_value"{
-    |         this.value_elt.textContent = String(new_val);
-              /* TODO gray out value until refreshed */
-        }
+    //     if "$have_value"{
+    // |         this.value_elt.textContent = String(new_val);
+    //           /* TODO gray out value until refreshed */
+    //     }
     |     },
     |     on_edit_click: function(opstr) {
     |         edit_value("«path/@value»", "«path/@type»", this, this.last_val);
@@ -38,9 +38,9 @@ template "widget[@type='Input']", mode="widget_defs" {
 
     |     edit_callback: function(new_val) {
     |         apply_hmi_value(this.indexes[0], new_val);
-        if "$have_value"{
-    |         this.value_elt.textContent = String(new_val);
-              /* TODO gray out value until refreshed */
-        }
+    //     if "$have_value"{
+    // |         this.value_elt.textContent = String(new_val);
+    //           /* TODO gray out value until refreshed */
+    //     }
     |     },
 }
