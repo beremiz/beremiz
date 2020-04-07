@@ -984,10 +984,6 @@
 </xsl:text>
     <xsl:text>        let new_val = change_hmi_value(this.indexes[0], opstr);
 </xsl:text>
-    <xsl:if test="$have_value">
-      <xsl:text>        this.value_elt.textContent = String(new_val);
-</xsl:text>
-    </xsl:if>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    on_edit_click: function(opstr) {
@@ -1004,10 +1000,6 @@
 </xsl:text>
     <xsl:text>        apply_hmi_value(this.indexes[0], new_val);
 </xsl:text>
-    <xsl:if test="$have_value">
-      <xsl:text>        this.value_elt.textContent = String(new_val);
-</xsl:text>
-    </xsl:if>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
@@ -1567,6 +1559,7 @@
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
+    <xsl:apply-templates mode="debug_as_comment" select="document('')/*/reflect:*"/>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
@@ -2152,7 +2145,9 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    cache[index] = value;
+    <xsl:text>    // DON'T DO THAT unless read_iterator in svghmi.c modifies wbuf as well, not only rbuf
+</xsl:text>
+    <xsl:text>    // cache[index] = value;
 </xsl:text>
     <xsl:text>};
 </xsl:text>
@@ -2162,9 +2157,15 @@
 </xsl:text>
     <xsl:text>    let old_val = cache[index]
 </xsl:text>
-    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
+    <xsl:text>    console.log("apply", index, new_val);
+</xsl:text>
+    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val){
+</xsl:text>
+    <xsl:text>        console.log("sending", new_val);
 </xsl:text>
     <xsl:text>        send_hmi_value(index, new_val);
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>    return new_val;
 </xsl:text>
