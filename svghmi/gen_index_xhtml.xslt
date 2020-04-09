@@ -817,6 +817,55 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='DropDown']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>text box</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        this.text_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click()");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:variable name="box_elt" select="$hmi_element/*[@inkscape:label='box'][1]"/>
+    <xsl:variable name="g" select="$geometry[@Id = $box_elt/@id]"/>
+    <xsl:text>    original_box: [</xsl:text>
+    <xsl:value-of select="$g/@x"/>
+    <xsl:text>, </xsl:text>
+    <xsl:value-of select="$g/@y"/>
+    <xsl:text>, </xsl:text>
+    <xsl:value-of select="$g/@w"/>
+    <xsl:text>, </xsl:text>
+    <xsl:value-of select="$g/@h"/>
+    <xsl:text>],
+</xsl:text>
+    <xsl:text>    on_click: function() {
+</xsl:text>
+    <xsl:text>        let [x,y,w,h] = page_desc[current_visible_page].bbox;
+</xsl:text>
+    <xsl:text>        let p = new DOMPoint(this.box_elt.x.baseVal.value, this.box_elt.y.baseVal.value);
+</xsl:text>
+    <xsl:text>        let k = DOMMatrix.fromMatrix(this.box_elt.getCTM());
+</xsl:text>
+    <xsl:text>        let l = DOMMatrix.fromMatrix(this.box_elt.getScreenCTM());
+</xsl:text>
+    <xsl:text>        console.log(p, k.transformPoint(p), l.transformPoint(p));
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="widgets" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]"/>
@@ -2157,15 +2206,9 @@
 </xsl:text>
     <xsl:text>    let old_val = cache[index]
 </xsl:text>
-    <xsl:text>    console.log("apply", index, new_val);
-</xsl:text>
-    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val){
-</xsl:text>
-    <xsl:text>        console.log("sending", new_val);
+    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
 </xsl:text>
     <xsl:text>        send_hmi_value(index, new_val);
-</xsl:text>
-    <xsl:text>    }
 </xsl:text>
     <xsl:text>    return new_val;
 </xsl:text>
