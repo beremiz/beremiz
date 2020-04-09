@@ -1,0 +1,24 @@
+// widget_dropdown.ysl2
+
+template "widget[@type='DropDown']", mode="widget_defs" {
+    param "hmi_element";
+    labels("text box");
+    |     dispatch: function(value) {
+        /* TODO : get selection text by index */
+    |         this.text_elt.textContent = String(value);
+    |     },
+    |     init: function() {
+    |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
+    |     },
+    const "box_elt","$hmi_element/*[@inkscape:label='box'][1]";
+    const "g", "$geometry[@Id = $box_elt/@id]";
+    |     original_box: [«$g/@x», «$g/@y», «$g/@w», «$g/@h»],
+    |     on_click: function() {
+    |         let [x,y,w,h] = page_desc[current_visible_page].bbox;
+    |         let p = new DOMPoint(this.box_elt.x.baseVal.value, this.box_elt.y.baseVal.value);
+    |         let k = DOMMatrix.fromMatrix(this.box_elt.getCTM());
+    |         let l = DOMMatrix.fromMatrix(this.box_elt.getScreenCTM());
+    |         console.log(p, k.transformPoint(p), l.transformPoint(p));
+    |     },
+}
+
