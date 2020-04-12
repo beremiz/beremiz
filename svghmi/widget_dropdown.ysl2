@@ -3,22 +3,116 @@
 template "widget[@type='DropDown']", mode="widget_defs" {
     param "hmi_element";
     labels("text box");
-    |     dispatch: function(value) {
-        /* TODO : get selection text by index */
-    |         this.text_elt.textContent = String(value);
-    |     },
-    |     init: function() {
-    |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
-    |     },
-    const "box_elt","$hmi_element/*[@inkscape:label='box'][1]";
-    const "g", "$geometry[@Id = $box_elt/@id]";
-    |     original_box: [«$g/@x», «$g/@y», «$g/@w», «$g/@h»],
-    |     on_click: function() {
-    |         let [x,y,w,h] = page_desc[current_visible_page].bbox;
-    |         let p = new DOMPoint(this.box_elt.x.baseVal.value, this.box_elt.y.baseVal.value);
-    |         let k = DOMMatrix.fromMatrix(this.box_elt.getCTM());
-    |         let l = DOMMatrix.fromMatrix(this.box_elt.getScreenCTM());
-    |         console.log(p, k.transformPoint(p), l.transformPoint(p));
-    |     },
+||    
+    dispatch: function(value) {
+        let span = this.text_elt.firstElementChild;
+        span.textContent = (value >= 0 && value < this.content.length) ?
+          this.content[value] : String(value);
+    },
+    init: function() {
+        this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
+        this.text_bbox = this.text_elt.getBBox()
+        this.box_bbox = this.box_elt.getBBox()
+        lmargin = this.text_bbox.x - this.box_bbox.x;
+        tmargin = this.text_bbox.y - this.box_bbox.y;
+        rmargin = this.box_bbox.width - this.text_bbox.width - lmargin;
+        bmargin = this.box_bbox.height - this.text_bbox.height - tmargin;
+        this.margins = [lmargin, tmargin, rmargin, bmargin].map(x => Math.max(x,0));
+        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+        //this.content = ["one", "two", "three", "four", "5", "6"];
+        this.offset = 0;
+        this.lift = 0;
+    },
+    on_click: function() {
+        this.open();
+    },
+    try_grow_one: function() {
+        let txt = this.text_elt; 
+        let first = txt.firstElementChild;
+        let bounds = svg_root.getBoundingClientRect(); 
+        let next = first.cloneNode();
+        //next.removeAttribute("x");
+        next.removeAttribute("y");
+        next.setAttribute("dy", "1.1em");
+        next.textContent = "...";
+        txt.appendChild(next);
+        let rect = txt.getBoundingClientRect();
+        console.log("bounds", bounds);
+        console.log("rect", rect);
+        if(rect.bottom > bounds.bottom){
+            let backup = first.getAttribute("dy");
+            first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
+            rect = txt.getBoundingClientRect();
+            if(rect.top > bounds.top){
+                console.log("rect2ok", rect);
+                this.lift += 1;
+            } else {
+                console.log("rect2Nok", rect);
+                if(backup)
+                    first.setAttribute("dy", backup);
+                else
+                    first.removeAttribute("dy");
+                txt.removeChild(next);
+                return false;
+            }
+        }
+        return true;
+    },
+    open: function(){
+        let l = this.content.length;
+        let c = 1;
+        this.lift = 0;
+        this.purge();
+        while(c < l && this.try_grow_one()) c++;
+        let spans = Array.from(this.text_elt.children); 
+        if(c == l) {
+            c = 0;
+            while(c < l){
+                spans[c].textContent = this.content[c];
+                c++;
+            }
+        } else {
+            let slots = c;
+            let elipses = [];
+            if(this.offset != 0) 
+                elipses.push(0);
+            if(this.offset + slots - elipses.length < l)
+                elipses.push(spans.length-1);
+            let i = 0;
+            c = 0;
+            while(c < spans.length){
+                if(elipses.indexOf(c) != -1)
+                    spans[c].textContent = "...";
+                else{
+                    spans[c].textContent = this.content[this.offset + i];
+                    i++;
+                }
+                c++;
+            }
+        }
+        this.adjust_to_text();
+    },
+    purge: function(){
+        let txt = this.text_elt; 
+        for(let span of Array.from(txt.children).slice(1)){
+            txt.removeChild(span)
+        }
+    },
+    adjust_to_text: function(){
+        let [lmargin, tmargin, rmargin, bmargin] = this.margins;
+        let m = this.text_elt.getBBox();
+        this.box_elt.x.baseVal.value = m.x - lmargin;
+        this.box_elt.y.baseVal.value = m.y - tmargin;
+        this.box_elt.width.baseVal.value = lmargin + m.width + rmargin;
+        this.box_elt.height.baseVal.value = tmargin + m.height + bmargin;
+    },
+||
 }
 
+    // |         let p = new DOMPoint(this.box_elt.x.baseVal.value, this.box_elt.y.baseVal.value);
+    // |         let k = DOMMatrix.fromMatrix(this.box_elt.getCTM());
+    // |         let new_corner = k.transformPoint(p);
+    // |         new_corner.y = 0;
+    // |         let nc = k.inverse().transformPoint(new_corner);
+    // |         this.box_elt.x.baseVal.value = nc.x;
+    // |         this.box_elt.y.baseVal.value = nc.y;
