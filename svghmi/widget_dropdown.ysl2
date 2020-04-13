@@ -5,9 +5,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     labels("text box");
 ||    
     dispatch: function(value) {
-        let span = this.text_elt.firstElementChild;
-        span.textContent = (value >= 0 && value < this.content.length) ?
-          this.content[value] : String(value);
+        if(!this.opened) this.set_selection(value);
     },
     init: function() {
         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
@@ -20,91 +18,131 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.margins = [lmargin, tmargin, rmargin, bmargin].map(x => Math.max(x,0));
         this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
         //this.content = ["one", "two", "three", "four", "5", "6"];
-        this.offset = 0;
+        this.menu_offset = 0;
         this.lift = 0;
+        this.opened = false;
+    },
+    on_selection_click: function(selection) {
+        this.set_selection(selection);
     },
     on_click: function() {
-        this.open();
+        if(this.opened){
+            this.close();
+        }else{
+            this.open();
+        }
     },
-    try_grow_one: function() {
+    set_selection: function(value) {
+        this.text_elt.firstElementChild.textContent = 
+          (value >= 0 && value < this.content.length) ?
+            this.content[value] : "?"+String(value)+"?";
+    },
+    grow_text: function(up_to) {
+        let count = 1;
         let txt = this.text_elt; 
         let first = txt.firstElementChild;
         let bounds = svg_root.getBoundingClientRect(); 
-        let next = first.cloneNode();
-        //next.removeAttribute("x");
-        next.removeAttribute("y");
-        next.setAttribute("dy", "1.1em");
-        next.textContent = "...";
-        txt.appendChild(next);
-        let rect = txt.getBoundingClientRect();
-        console.log("bounds", bounds);
-        console.log("rect", rect);
-        if(rect.bottom > bounds.bottom){
-            let backup = first.getAttribute("dy");
-            first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
-            rect = txt.getBoundingClientRect();
-            if(rect.top > bounds.top){
-                console.log("rect2ok", rect);
-                this.lift += 1;
-            } else {
-                console.log("rect2Nok", rect);
-                if(backup)
-                    first.setAttribute("dy", backup);
-                else
-                    first.removeAttribute("dy");
-                txt.removeChild(next);
-                return false;
+        this.lift = 0;
+        while(count < up_to) {
+            let next = first.cloneNode();
+            next.removeAttribute("y");
+            next.setAttribute("dy", "1.1em");
+            next.textContent = "...";
+            txt.appendChild(next);
+            let rect = txt.getBoundingClientRect();
+            if(rect.bottom > bounds.bottom){
+                let backup = first.getAttribute("dy");
+                first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
+                rect = txt.getBoundingClientRect();
+                if(rect.top > bounds.top){
+                    this.lift += 1;
+                } else {
+                    if(backup)
+                        first.setAttribute("dy", backup);
+                    else
+                        first.removeAttribute("dy");
+                    txt.removeChild(next);
+                    return count;
+                }
             }
+            count++;
         }
-        return true;
+        return count;
+    },
+    close: function(){
+        this.reset_text();
+        this.reset_box();
+        this.opened = false;
+    },
+    set_complete_text: function(){
+        let spans = this.text_elt.children; 
+        let c = 0;
+        for(let item of this.content){
+            let span=spans[c];
+            span.textContent = item;
+            span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_selection_click("+c+")");
+            c++;
+        }
+    },
+    set_partial_text: function(){
+        let spans = this.text_elt.children; 
+        let length = this.content.length;
+        let i = this.menu_offset, c = 0;
+        while(c < spans.length){
+            if(c == 0 && i != 0){
+                spans[c].textContent = "...";
+                /* TODO: set onclick */
+            }else if(c == spans.length-1 && i < length - 1)
+                spans[c].textContent = "...";
+                /* TODO: set onclick */
+            else{
+                let span=spans[c];
+                span.textContent = this.content[i];
+                /* TODO: set onclick */
+                span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_selection_click("+i+")");
+                i++;
+            }
+            c++;
+        }
     },
     open: function(){
-        let l = this.content.length;
-        let c = 1;
-        this.lift = 0;
-        this.purge();
-        while(c < l && this.try_grow_one()) c++;
-        let spans = Array.from(this.text_elt.children); 
-        if(c == l) {
-            c = 0;
-            while(c < l){
-                spans[c].textContent = this.content[c];
-                c++;
-            }
+        let length = this.content.length;
+        this.reset_text();
+        let slots = this.grow_text(length);
+        if(slots == length) {
+            this.set_complete_text();
         } else {
-            let slots = c;
-            let elipses = [];
-            if(this.offset != 0) 
-                elipses.push(0);
-            if(this.offset + slots - elipses.length < l)
-                elipses.push(spans.length-1);
-            let i = 0;
-            c = 0;
-            while(c < spans.length){
-                if(elipses.indexOf(c) != -1)
-                    spans[c].textContent = "...";
-                else{
-                    spans[c].textContent = this.content[this.offset + i];
-                    i++;
-                }
-                c++;
-            }
+            this.set_partial_text();
         }
-        this.adjust_to_text();
+        this.adjust_box_to_text();
+        /* TODO disable interaction with background */
+        this.opened = true;
     },
-    purge: function(){
+    reset_text: function(){
         let txt = this.text_elt; 
+        let first = txt.firstElementChild;
+        first.removeAttribute("onclick");
+        first.removeAttribute("dy");
         for(let span of Array.from(txt.children).slice(1)){
             txt.removeChild(span)
         }
     },
-    adjust_to_text: function(){
+    reset_box: function(){
+        let m = this.box_bbox;
+        let b = this.box_elt;
+        b.x.baseVal.value = m.x;
+        b.y.baseVal.value = m.y;
+        b.width.baseVal.value = m.width;
+        b.height.baseVal.value = m.height;
+    },
+    adjust_box_to_text: function(){
         let [lmargin, tmargin, rmargin, bmargin] = this.margins;
         let m = this.text_elt.getBBox();
-        this.box_elt.x.baseVal.value = m.x - lmargin;
-        this.box_elt.y.baseVal.value = m.y - tmargin;
-        this.box_elt.width.baseVal.value = lmargin + m.width + rmargin;
-        this.box_elt.height.baseVal.value = tmargin + m.height + bmargin;
+        let b = this.box_elt;
+        b.x.baseVal.value = m.x - lmargin;
+        b.y.baseVal.value = m.y - tmargin;
+        b.width.baseVal.value = lmargin + m.width + rmargin;
+        b.height.baseVal.value = tmargin + m.height + bmargin;
     },
 ||
 }
