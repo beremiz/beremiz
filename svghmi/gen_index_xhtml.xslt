@@ -827,11 +827,7 @@
     </xsl:call-template>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>        let span = this.text_elt.firstElementChild;
-</xsl:text>
-    <xsl:text>        span.textContent = (value &gt;= 0 &amp;&amp; value &lt; this.content.length) ?
-</xsl:text>
-    <xsl:text>          this.content[value] : String(value);
+    <xsl:text>        if(!this.opened) this.set_selection(value);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -859,19 +855,47 @@
 </xsl:text>
     <xsl:text>        //this.content = ["one", "two", "three", "four", "5", "6"];
 </xsl:text>
-    <xsl:text>        this.offset = 0;
+    <xsl:text>        this.menu_offset = 0;
 </xsl:text>
     <xsl:text>        this.lift = 0;
+</xsl:text>
+    <xsl:text>        this.opened = false;
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_selection_click: function(selection) {
+</xsl:text>
+    <xsl:text>        this.set_selection(selection);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    on_click: function() {
 </xsl:text>
-    <xsl:text>        this.open();
+    <xsl:text>        if(this.opened){
+</xsl:text>
+    <xsl:text>            this.close();
+</xsl:text>
+    <xsl:text>        }else{
+</xsl:text>
+    <xsl:text>            this.open();
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    try_grow_one: function() {
+    <xsl:text>    set_selection: function(value) {
+</xsl:text>
+    <xsl:text>        this.text_elt.firstElementChild.textContent = 
+</xsl:text>
+    <xsl:text>          (value &gt;= 0 &amp;&amp; value &lt; this.content.length) ?
+</xsl:text>
+    <xsl:text>            this.content[value] : "?"+String(value)+"?";
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    grow_text: function(up_to) {
+</xsl:text>
+    <xsl:text>        let count = 1;
 </xsl:text>
     <xsl:text>        let txt = this.text_elt; 
 </xsl:text>
@@ -879,133 +903,171 @@
 </xsl:text>
     <xsl:text>        let bounds = svg_root.getBoundingClientRect(); 
 </xsl:text>
-    <xsl:text>        let next = first.cloneNode();
+    <xsl:text>        this.lift = 0;
 </xsl:text>
-    <xsl:text>        //next.removeAttribute("x");
+    <xsl:text>        while(count &lt; up_to) {
 </xsl:text>
-    <xsl:text>        next.removeAttribute("y");
+    <xsl:text>            let next = first.cloneNode();
 </xsl:text>
-    <xsl:text>        next.setAttribute("dy", "1.1em");
+    <xsl:text>            next.removeAttribute("y");
 </xsl:text>
-    <xsl:text>        next.textContent = "...";
+    <xsl:text>            next.setAttribute("dy", "1.1em");
 </xsl:text>
-    <xsl:text>        txt.appendChild(next);
+    <xsl:text>            next.textContent = "...";
 </xsl:text>
-    <xsl:text>        let rect = txt.getBoundingClientRect();
+    <xsl:text>            txt.appendChild(next);
 </xsl:text>
-    <xsl:text>        console.log("bounds", bounds);
+    <xsl:text>            let rect = txt.getBoundingClientRect();
 </xsl:text>
-    <xsl:text>        console.log("rect", rect);
+    <xsl:text>            if(rect.bottom &gt; bounds.bottom){
 </xsl:text>
-    <xsl:text>        if(rect.bottom &gt; bounds.bottom){
+    <xsl:text>                let backup = first.getAttribute("dy");
 </xsl:text>
-    <xsl:text>            let backup = first.getAttribute("dy");
+    <xsl:text>                first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
 </xsl:text>
-    <xsl:text>            first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
+    <xsl:text>                rect = txt.getBoundingClientRect();
 </xsl:text>
-    <xsl:text>            rect = txt.getBoundingClientRect();
+    <xsl:text>                if(rect.top &gt; bounds.top){
 </xsl:text>
-    <xsl:text>            if(rect.top &gt; bounds.top){
+    <xsl:text>                    this.lift += 1;
 </xsl:text>
-    <xsl:text>                console.log("rect2ok", rect);
+    <xsl:text>                } else {
 </xsl:text>
-    <xsl:text>                this.lift += 1;
+    <xsl:text>                    if(backup)
 </xsl:text>
-    <xsl:text>            } else {
+    <xsl:text>                        first.setAttribute("dy", backup);
 </xsl:text>
-    <xsl:text>                console.log("rect2Nok", rect);
+    <xsl:text>                    else
 </xsl:text>
-    <xsl:text>                if(backup)
+    <xsl:text>                        first.removeAttribute("dy");
 </xsl:text>
-    <xsl:text>                    first.setAttribute("dy", backup);
+    <xsl:text>                    txt.removeChild(next);
 </xsl:text>
-    <xsl:text>                else
+    <xsl:text>                    return count;
 </xsl:text>
-    <xsl:text>                    first.removeAttribute("dy");
-</xsl:text>
-    <xsl:text>                txt.removeChild(next);
-</xsl:text>
-    <xsl:text>                return false;
+    <xsl:text>                }
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
+    <xsl:text>            count++;
+</xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        return true;
+    <xsl:text>        return count;
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    close: function(){
+</xsl:text>
+    <xsl:text>        this.reset_text();
+</xsl:text>
+    <xsl:text>        this.reset_box();
+</xsl:text>
+    <xsl:text>        this.opened = false;
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    set_complete_text: function(){
+</xsl:text>
+    <xsl:text>        let spans = this.text_elt.children; 
+</xsl:text>
+    <xsl:text>        let c = 0;
+</xsl:text>
+    <xsl:text>        for(let item of this.content){
+</xsl:text>
+    <xsl:text>            let span=spans[c];
+</xsl:text>
+    <xsl:text>            span.textContent = item;
+</xsl:text>
+    <xsl:text>            span.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_selection_click("+c+")");
+</xsl:text>
+    <xsl:text>            c++;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    set_partial_text: function(){
+</xsl:text>
+    <xsl:text>        let spans = this.text_elt.children; 
+</xsl:text>
+    <xsl:text>        let length = this.content.length;
+</xsl:text>
+    <xsl:text>        let i = this.menu_offset, c = 0;
+</xsl:text>
+    <xsl:text>        while(c &lt; spans.length){
+</xsl:text>
+    <xsl:text>            if(c == 0 &amp;&amp; i != 0){
+</xsl:text>
+    <xsl:text>                spans[c].textContent = "...";
+</xsl:text>
+    <xsl:text>                /* TODO: set onclick */
+</xsl:text>
+    <xsl:text>            }else if(c == spans.length-1 &amp;&amp; i &lt; length - 1)
+</xsl:text>
+    <xsl:text>                spans[c].textContent = "...";
+</xsl:text>
+    <xsl:text>                /* TODO: set onclick */
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                let span=spans[c];
+</xsl:text>
+    <xsl:text>                span.textContent = this.content[i];
+</xsl:text>
+    <xsl:text>                /* TODO: set onclick */
+</xsl:text>
+    <xsl:text>                span.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_selection_click("+i+")");
+</xsl:text>
+    <xsl:text>                i++;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            c++;
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    open: function(){
 </xsl:text>
-    <xsl:text>        let l = this.content.length;
+    <xsl:text>        let length = this.content.length;
 </xsl:text>
-    <xsl:text>        let c = 1;
+    <xsl:text>        this.reset_text();
 </xsl:text>
-    <xsl:text>        this.lift = 0;
+    <xsl:text>        let slots = this.grow_text(length);
 </xsl:text>
-    <xsl:text>        this.purge();
+    <xsl:text>        if(slots == length) {
 </xsl:text>
-    <xsl:text>        while(c &lt; l &amp;&amp; this.try_grow_one()) c++;
-</xsl:text>
-    <xsl:text>        let spans = Array.from(this.text_elt.children); 
-</xsl:text>
-    <xsl:text>        if(c == l) {
-</xsl:text>
-    <xsl:text>            c = 0;
-</xsl:text>
-    <xsl:text>            while(c &lt; l){
-</xsl:text>
-    <xsl:text>                spans[c].textContent = this.content[c];
-</xsl:text>
-    <xsl:text>                c++;
-</xsl:text>
-    <xsl:text>            }
+    <xsl:text>            this.set_complete_text();
 </xsl:text>
     <xsl:text>        } else {
 </xsl:text>
-    <xsl:text>            let slots = c;
-</xsl:text>
-    <xsl:text>            let elipses = [];
-</xsl:text>
-    <xsl:text>            if(this.offset != 0) 
-</xsl:text>
-    <xsl:text>                elipses.push(0);
-</xsl:text>
-    <xsl:text>            if(this.offset + slots - elipses.length &lt; l)
-</xsl:text>
-    <xsl:text>                elipses.push(spans.length-1);
-</xsl:text>
-    <xsl:text>            let i = 0;
-</xsl:text>
-    <xsl:text>            c = 0;
-</xsl:text>
-    <xsl:text>            while(c &lt; spans.length){
-</xsl:text>
-    <xsl:text>                if(elipses.indexOf(c) != -1)
-</xsl:text>
-    <xsl:text>                    spans[c].textContent = "...";
-</xsl:text>
-    <xsl:text>                else{
-</xsl:text>
-    <xsl:text>                    spans[c].textContent = this.content[this.offset + i];
-</xsl:text>
-    <xsl:text>                    i++;
-</xsl:text>
-    <xsl:text>                }
-</xsl:text>
-    <xsl:text>                c++;
-</xsl:text>
-    <xsl:text>            }
+    <xsl:text>            this.set_partial_text();
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        this.adjust_to_text();
+    <xsl:text>        this.adjust_box_to_text();
+</xsl:text>
+    <xsl:text>        /* TODO disable interaction with background */
+</xsl:text>
+    <xsl:text>        this.opened = true;
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    purge: function(){
+    <xsl:text>    reset_text: function(){
 </xsl:text>
     <xsl:text>        let txt = this.text_elt; 
+</xsl:text>
+    <xsl:text>        let first = txt.firstElementChild;
+</xsl:text>
+    <xsl:text>        first.removeAttribute("onclick");
+</xsl:text>
+    <xsl:text>        first.removeAttribute("dy");
 </xsl:text>
     <xsl:text>        for(let span of Array.from(txt.children).slice(1)){
 </xsl:text>
@@ -1015,19 +1077,37 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    adjust_to_text: function(){
+    <xsl:text>    reset_box: function(){
+</xsl:text>
+    <xsl:text>        let m = this.box_bbox;
+</xsl:text>
+    <xsl:text>        let b = this.box_elt;
+</xsl:text>
+    <xsl:text>        b.x.baseVal.value = m.x;
+</xsl:text>
+    <xsl:text>        b.y.baseVal.value = m.y;
+</xsl:text>
+    <xsl:text>        b.width.baseVal.value = m.width;
+</xsl:text>
+    <xsl:text>        b.height.baseVal.value = m.height;
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    adjust_box_to_text: function(){
 </xsl:text>
     <xsl:text>        let [lmargin, tmargin, rmargin, bmargin] = this.margins;
 </xsl:text>
     <xsl:text>        let m = this.text_elt.getBBox();
 </xsl:text>
-    <xsl:text>        this.box_elt.x.baseVal.value = m.x - lmargin;
+    <xsl:text>        let b = this.box_elt;
 </xsl:text>
-    <xsl:text>        this.box_elt.y.baseVal.value = m.y - tmargin;
+    <xsl:text>        b.x.baseVal.value = m.x - lmargin;
 </xsl:text>
-    <xsl:text>        this.box_elt.width.baseVal.value = lmargin + m.width + rmargin;
+    <xsl:text>        b.y.baseVal.value = m.y - tmargin;
 </xsl:text>
-    <xsl:text>        this.box_elt.height.baseVal.value = tmargin + m.height + bmargin;
+    <xsl:text>        b.width.baseVal.value = lmargin + m.width + rmargin;
+</xsl:text>
+    <xsl:text>        b.height.baseVal.value = tmargin + m.height + bmargin;
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
