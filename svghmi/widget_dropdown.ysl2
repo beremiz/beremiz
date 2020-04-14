@@ -41,9 +41,14 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.move(true);
     },
     set_selection: function(value) {
-        this.text_elt.firstElementChild.textContent = 
-          (value >= 0 && value < this.content.length) ?
-            this.content[value] : "?"+String(value)+"?";
+        let display_str;
+        if(value >= 0 && value < this.content.length){
+            display_str = this.content[value];
+            this.last_selection = value;
+        } else {
+            display_str = "?"+String(value)+"?";
+        }
+        this.text_elt.firstElementChild.textContent = display_str;
     },
     grow_text: function(up_to) {
         let count = 1;
@@ -150,6 +155,12 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         if(slots == length) {
             this.set_complete_text();
         } else {
+            // align to selection
+            let offset = this.last_selection - this.lift;
+            if(offset > 0)
+                this.menu_offset = Math.min(offset + 1, length - slots + 1);
+            else
+                this.menu_offset = 0;
             this.set_partial_text();
         }
         this.adjust_box_to_text();

@@ -905,11 +905,21 @@
 </xsl:text>
     <xsl:text>    set_selection: function(value) {
 </xsl:text>
-    <xsl:text>        this.text_elt.firstElementChild.textContent = 
+    <xsl:text>        let display_str;
 </xsl:text>
-    <xsl:text>          (value &gt;= 0 &amp;&amp; value &lt; this.content.length) ?
+    <xsl:text>        if(value &gt;= 0 &amp;&amp; value &lt; this.content.length){
 </xsl:text>
-    <xsl:text>            this.content[value] : "?"+String(value)+"?";
+    <xsl:text>            display_str = this.content[value];
+</xsl:text>
+    <xsl:text>            this.last_selection = value;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            display_str = "?"+String(value)+"?";
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.text_elt.firstElementChild.textContent = display_str;
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1130,6 +1140,18 @@
     <xsl:text>            this.set_complete_text();
 </xsl:text>
     <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            // align to selection
+</xsl:text>
+    <xsl:text>            let offset = this.last_selection - this.lift;
+</xsl:text>
+    <xsl:text>            if(offset &gt; 0)
+</xsl:text>
+    <xsl:text>                this.menu_offset = Math.min(offset + 1, length - slots + 1);
+</xsl:text>
+    <xsl:text>            else
+</xsl:text>
+    <xsl:text>                this.menu_offset = 0;
 </xsl:text>
     <xsl:text>            this.set_partial_text();
 </xsl:text>
