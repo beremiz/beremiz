@@ -84,12 +84,12 @@ template "widget[@type='DropDown']", mode="widget_defs" {
             e.stopPropagation();
     },
     close: function(){
+        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
         this.reset_text();
         this.reset_box();
         this.element.appendChild(this.button_elt);
-        this.apply_cache();
-        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
         this.opened = false;
+        this.apply_cache();
     },
     set_complete_text: function(){
         let spans = this.text_elt.children; 

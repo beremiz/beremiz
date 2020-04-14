@@ -991,17 +991,17 @@
 </xsl:text>
     <xsl:text>    close: function(){
 </xsl:text>
+    <xsl:text>        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
+</xsl:text>
     <xsl:text>        this.reset_text();
 </xsl:text>
     <xsl:text>        this.reset_box();
 </xsl:text>
     <xsl:text>        this.element.appendChild(this.button_elt);
 </xsl:text>
-    <xsl:text>        this.apply_cache();
-</xsl:text>
-    <xsl:text>        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
-</xsl:text>
     <xsl:text>        this.opened = false;
+</xsl:text>
+    <xsl:text>        this.apply_cache();
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
