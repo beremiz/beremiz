@@ -847,11 +847,19 @@
 </xsl:text>
     <xsl:text>        this.margins = [lmargin, tmargin].map(x =&gt; Math.max(x,0));
 </xsl:text>
-    <xsl:text>        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    <xsl:text>        //this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
 </xsl:text>
-    <xsl:text>                        "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
+    <xsl:text>        //                "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
 </xsl:text>
-    <xsl:text>        //this.content = ["one", "two", "three", "four", "5", "6"];
+    <xsl:text>        this.content = [
+</xsl:text>
+    <xsl:for-each select="arg">
+      <xsl:text>"</xsl:text>
+      <xsl:value-of select="@value"/>
+      <xsl:text>",
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>        ];
 </xsl:text>
     <xsl:text>        this.menu_offset = 0;
 </xsl:text>
