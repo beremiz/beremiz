@@ -867,7 +867,7 @@
 </xsl:text>
     <xsl:text>        this.opened = false;
 </xsl:text>
-    <xsl:text>        this.bound_inhibit_click_elsewhere = this.inhibit_click_elsewhere.bind(this);
+    <xsl:text>        this.bound_close_on_click_elsewhere = this.close_on_click_elsewhere.bind(this);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -977,21 +977,27 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    inhibit_click_elsewhere: function(e) {
+    <xsl:text>    close_on_click_elsewhere: function(e) {
 </xsl:text>
     <xsl:text>        console.log("inhibit", e);
 </xsl:text>
     <xsl:text>        console.log(e.target.parentNode, this.text_elt);
 </xsl:text>
-    <xsl:text>        if(e.target.parentNode !== this.text_elt)
+    <xsl:text>        if(e.target.parentNode !== this.text_elt){
 </xsl:text>
     <xsl:text>            e.stopPropagation();
+</xsl:text>
+    <xsl:text>            if(e.target !== this.box_elt)
+</xsl:text>
+    <xsl:text>                this.close();
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    close: function(){
 </xsl:text>
-    <xsl:text>        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
+    <xsl:text>        document.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
     <xsl:text>        this.reset_text();
 </xsl:text>
@@ -1137,7 +1143,7 @@
 </xsl:text>
     <xsl:text>        // disable interaction with background
 </xsl:text>
-    <xsl:text>        document.addEventListener("click", this.bound_inhibit_click_elsewhere, true);
+    <xsl:text>        document.addEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
     <xsl:text>        this.opened = true;
 </xsl:text>

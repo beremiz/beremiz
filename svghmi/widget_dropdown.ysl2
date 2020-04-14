@@ -22,7 +22,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.menu_offset = 0;
         this.lift = 0;
         this.opened = false;
-        this.bound_inhibit_click_elsewhere = this.inhibit_click_elsewhere.bind(this);
+        this.bound_close_on_click_elsewhere = this.close_on_click_elsewhere.bind(this);
     },
     on_selection_click: function(selection) {
         console.log("selected "+selection);
@@ -77,14 +77,17 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         }
         return count;
     },
-    inhibit_click_elsewhere: function(e) {
+    close_on_click_elsewhere: function(e) {
         console.log("inhibit", e);
         console.log(e.target.parentNode, this.text_elt);
-        if(e.target.parentNode !== this.text_elt)
+        if(e.target.parentNode !== this.text_elt){
             e.stopPropagation();
+            if(e.target !== this.box_elt)
+                this.close();
+        }
     },
     close: function(){
-        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
+        document.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
         this.reset_text();
         this.reset_box();
         this.element.appendChild(this.button_elt);
@@ -153,7 +156,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.element.removeChild(this.button_elt);
         this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
         // disable interaction with background
-        document.addEventListener("click", this.bound_inhibit_click_elsewhere, true);
+        document.addEventListener("click", this.bound_close_on_click_elsewhere, true);
         this.opened = true;
     },
     reset_text: function(){
