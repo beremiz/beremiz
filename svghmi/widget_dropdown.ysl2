@@ -146,6 +146,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         }
         this.adjust_box_to_text();
         this.element.removeChild(this.button_elt);
+        this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
         // disable interaction with background
         document.addEventListener("click", this.bound_inhibit_click_elsewhere, true);
         this.opened = true;
