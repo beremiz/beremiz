@@ -14,9 +14,11 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         lmargin = this.text_bbox.x - this.box_bbox.x;
         tmargin = this.text_bbox.y - this.box_bbox.y;
         this.margins = [lmargin, tmargin].map(x => Math.max(x,0));
-        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-                        "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
-        //this.content = ["one", "two", "three", "four", "5", "6"];
+        //this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        //                "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
+        this.content = [
+        ``foreach "arg" | "«@value»",
+        ];
         this.menu_offset = 0;
         this.lift = 0;
         this.opened = false;
