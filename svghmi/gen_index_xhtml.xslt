@@ -859,6 +859,8 @@
 </xsl:text>
     <xsl:text>        this.opened = false;
 </xsl:text>
+    <xsl:text>        this.bound_inhibit_click_elsewhere = this.inhibit_click_elsewhere.bind(this);
+</xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    on_selection_click: function(selection) {
@@ -867,7 +869,11 @@
 </xsl:text>
     <xsl:text>        this.close();
 </xsl:text>
-    <xsl:text>        this.set_selection(selection);
+    <xsl:text>        let orig = this.indexes[0];
+</xsl:text>
+    <xsl:text>        let idx = this.offset ? orig - this.offset : orig;
+</xsl:text>
+    <xsl:text>        apply_hmi_value(idx, selection);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -963,6 +969,18 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+    <xsl:text>    inhibit_click_elsewhere: function(e) {
+</xsl:text>
+    <xsl:text>        console.log("inhibit", e);
+</xsl:text>
+    <xsl:text>        console.log(e.target.parentNode, this.text_elt);
+</xsl:text>
+    <xsl:text>        if(e.target.parentNode !== this.text_elt)
+</xsl:text>
+    <xsl:text>            e.stopPropagation();
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
     <xsl:text>    close: function(){
 </xsl:text>
     <xsl:text>        this.reset_text();
@@ -970,6 +988,10 @@
     <xsl:text>        this.reset_box();
 </xsl:text>
     <xsl:text>        this.element.appendChild(this.button_elt);
+</xsl:text>
+    <xsl:text>        this.apply_cache();
+</xsl:text>
+    <xsl:text>        document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
 </xsl:text>
     <xsl:text>        this.opened = false;
 </xsl:text>
@@ -1103,7 +1125,11 @@
 </xsl:text>
     <xsl:text>        this.element.removeChild(this.button_elt);
 </xsl:text>
-    <xsl:text>        /* TODO disable interaction with background */
+    <xsl:text>        this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
+</xsl:text>
+    <xsl:text>        // disable interaction with background
+</xsl:text>
+    <xsl:text>        document.addEventListener("click", this.bound_inhibit_click_elsewhere, true);
 </xsl:text>
     <xsl:text>        this.opened = true;
 </xsl:text>
@@ -1327,7 +1353,11 @@
 </xsl:text>
     <xsl:text>    on_op_click: function(opstr) {
 </xsl:text>
-    <xsl:text>        let new_val = change_hmi_value(this.indexes[0], opstr);
+    <xsl:text>        let orig = this.indexes[0];
+</xsl:text>
+    <xsl:text>        let idx = this.offset ? orig - this.offset : orig;
+</xsl:text>
+    <xsl:text>        let new_val = change_hmi_value(idx, opstr);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1343,7 +1373,11 @@
 </xsl:text>
     <xsl:text>    edit_callback: function(new_val) {
 </xsl:text>
-    <xsl:text>        apply_hmi_value(this.indexes[0], new_val);
+    <xsl:text>        let orig = this.indexes[0];
+</xsl:text>
+    <xsl:text>        let idx = this.offset ? orig - this.offset : orig;
+</xsl:text>
+    <xsl:text>        apply_hmi_value(idx, new_val);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>

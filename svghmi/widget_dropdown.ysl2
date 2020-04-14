@@ -25,7 +25,9 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     on_selection_click: function(selection) {
         console.log("selected "+selection);
         this.close();
-        this.set_selection(selection);
+        let orig = this.indexes[0];
+        let idx = this.offset ? orig - this.offset : orig;
+        apply_hmi_value(idx, selection);
     },
     on_button_click: function() {
         this.open();
@@ -83,6 +85,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.reset_text();
         this.reset_box();
         this.element.appendChild(this.button_elt);
+        this.apply_cache();
         document.removeEventListener("click", this.bound_inhibit_click_elsewhere, true);
         this.opened = false;
     },
