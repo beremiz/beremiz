@@ -16,7 +16,8 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         rmargin = this.box_bbox.width - this.text_bbox.width - lmargin;
         bmargin = this.box_bbox.height - this.text_bbox.height - tmargin;
         this.margins = [lmargin, tmargin, rmargin, bmargin].map(x => Math.max(x,0));
-        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+                        "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
         //this.content = ["one", "two", "three", "four", "5", "6"];
         this.menu_offset = 0;
         this.lift = 0;
@@ -27,10 +28,16 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     },
     on_click: function() {
         if(this.opened){
-            this.close();
+            //this.close();
         }else{
             this.open();
         }
+    },
+    on_backward_click:function(){
+        this.move(false);
+    },
+    on_forward_click:function(){
+        this.move(true);
     },
     set_selection: function(value) {
         this.text_elt.firstElementChild.textContent = 
@@ -84,21 +91,39 @@ template "widget[@type='DropDown']", mode="widget_defs" {
             c++;
         }
     },
+    move: function(forward){
+        let contentlength = this.content.length;
+        let spans = this.text_elt.children; 
+        let spanslength = spans.length;
+        if(this.menu_offset != 0) spanslength--;
+        if(this.menu_offset < contentlength - 1) spanslength--;
+        if(forward){
+            this.menu_offset = Math.min(
+                contentlength - spans.length + 1, 
+                this.menu_offset + spanslength);
+        }else{
+            this.menu_offset = Math.max(
+                0, 
+                this.menu_offset - spanslength);
+        }
+        console.log(this.menu_offset);
+        this.set_partial_text();
+    },
     set_partial_text: function(){
         let spans = this.text_elt.children; 
-        let length = this.content.length;
+        let contentlength = this.content.length;
+        let spanslength = spans.length;
         let i = this.menu_offset, c = 0;
-        while(c < spans.length){
+        while(c < spanslength){
+            let span=spans[c];
             if(c == 0 && i != 0){
-                spans[c].textContent = "...";
-                /* TODO: set onclick */
-            }else if(c == spans.length-1 && i < length - 1)
-                spans[c].textContent = "...";
-                /* TODO: set onclick */
-            else{
-                let span=spans[c];
+                span.textContent = "↑  ↑  ↑";
+                span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_backward_click()");
+            }else if(c == spanslength-1 && i < contentlength - 1){
+                span.textContent = "↓  ↓  ↓";
+                span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_forward_click()");
+            }else{
                 span.textContent = this.content[i];
-                /* TODO: set onclick */
                 span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_selection_click("+i+")");
                 i++;
             }

@@ -851,7 +851,9 @@
 </xsl:text>
     <xsl:text>        this.margins = [lmargin, tmargin, rmargin, bmargin].map(x =&gt; Math.max(x,0));
 </xsl:text>
-    <xsl:text>        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+    <xsl:text>        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+</xsl:text>
+    <xsl:text>                        "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
 </xsl:text>
     <xsl:text>        //this.content = ["one", "two", "three", "four", "5", "6"];
 </xsl:text>
@@ -873,13 +875,25 @@
 </xsl:text>
     <xsl:text>        if(this.opened){
 </xsl:text>
-    <xsl:text>            this.close();
+    <xsl:text>            //this.close();
 </xsl:text>
     <xsl:text>        }else{
 </xsl:text>
     <xsl:text>            this.open();
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_backward_click:function(){
+</xsl:text>
+    <xsl:text>        this.move(false);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_forward_click:function(){
+</xsl:text>
+    <xsl:text>        this.move(true);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -989,35 +1003,75 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+    <xsl:text>    move: function(forward){
+</xsl:text>
+    <xsl:text>        let contentlength = this.content.length;
+</xsl:text>
+    <xsl:text>        let spans = this.text_elt.children; 
+</xsl:text>
+    <xsl:text>        let spanslength = spans.length;
+</xsl:text>
+    <xsl:text>        if(this.menu_offset != 0) spanslength--;
+</xsl:text>
+    <xsl:text>        if(this.menu_offset &lt; contentlength - 1) spanslength--;
+</xsl:text>
+    <xsl:text>        if(forward){
+</xsl:text>
+    <xsl:text>            this.menu_offset = Math.min(
+</xsl:text>
+    <xsl:text>                contentlength - spans.length + 1, 
+</xsl:text>
+    <xsl:text>                this.menu_offset + spanslength);
+</xsl:text>
+    <xsl:text>        }else{
+</xsl:text>
+    <xsl:text>            this.menu_offset = Math.max(
+</xsl:text>
+    <xsl:text>                0, 
+</xsl:text>
+    <xsl:text>                this.menu_offset - spanslength);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        console.log(this.menu_offset);
+</xsl:text>
+    <xsl:text>        this.set_partial_text();
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
     <xsl:text>    set_partial_text: function(){
 </xsl:text>
     <xsl:text>        let spans = this.text_elt.children; 
 </xsl:text>
-    <xsl:text>        let length = this.content.length;
+    <xsl:text>        let contentlength = this.content.length;
+</xsl:text>
+    <xsl:text>        let spanslength = spans.length;
 </xsl:text>
     <xsl:text>        let i = this.menu_offset, c = 0;
 </xsl:text>
-    <xsl:text>        while(c &lt; spans.length){
+    <xsl:text>        while(c &lt; spanslength){
+</xsl:text>
+    <xsl:text>            let span=spans[c];
 </xsl:text>
     <xsl:text>            if(c == 0 &amp;&amp; i != 0){
 </xsl:text>
-    <xsl:text>                spans[c].textContent = "...";
+    <xsl:text>                span.textContent = "&#x2191;  &#x2191;  &#x2191;";
 </xsl:text>
-    <xsl:text>                /* TODO: set onclick */
+    <xsl:text>                span.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_backward_click()");
 </xsl:text>
-    <xsl:text>            }else if(c == spans.length-1 &amp;&amp; i &lt; length - 1)
+    <xsl:text>            }else if(c == spanslength-1 &amp;&amp; i &lt; contentlength - 1){
 </xsl:text>
-    <xsl:text>                spans[c].textContent = "...";
+    <xsl:text>                span.textContent = "&#x2193;  &#x2193;  &#x2193;";
 </xsl:text>
-    <xsl:text>                /* TODO: set onclick */
+    <xsl:text>                span.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_forward_click()");
 </xsl:text>
-    <xsl:text>            else{
-</xsl:text>
-    <xsl:text>                let span=spans[c];
+    <xsl:text>            }else{
 </xsl:text>
     <xsl:text>                span.textContent = this.content[i];
-</xsl:text>
-    <xsl:text>                /* TODO: set onclick */
 </xsl:text>
     <xsl:text>                span.setAttribute("onclick", "hmi_widgets['</xsl:text>
     <xsl:value-of select="$hmi_element/@id"/>
