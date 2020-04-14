@@ -2,20 +2,18 @@
 
 template "widget[@type='DropDown']", mode="widget_defs" {
     param "hmi_element";
-    labels("text box");
+    labels("text box button");
 ||    
     dispatch: function(value) {
         if(!this.opened) this.set_selection(value);
     },
     init: function() {
-        this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click()");
+        this.button_elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_button_click()");
         this.text_bbox = this.text_elt.getBBox()
         this.box_bbox = this.box_elt.getBBox()
         lmargin = this.text_bbox.x - this.box_bbox.x;
         tmargin = this.text_bbox.y - this.box_bbox.y;
-        rmargin = this.box_bbox.width - this.text_bbox.width - lmargin;
-        bmargin = this.box_bbox.height - this.text_bbox.height - tmargin;
-        this.margins = [lmargin, tmargin, rmargin, bmargin].map(x => Math.max(x,0));
+        this.margins = [lmargin, tmargin].map(x => Math.max(x,0));
         this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
                         "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
         //this.content = ["one", "two", "three", "four", "5", "6"];
@@ -24,14 +22,12 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.opened = false;
     },
     on_selection_click: function(selection) {
+        console.log("selected "+selection);
+        this.close();
         this.set_selection(selection);
     },
-    on_click: function() {
-        if(this.opened){
-            //this.close();
-        }else{
-            this.open();
-        }
+    on_button_click: function() {
+        this.open();
     },
     on_backward_click:function(){
         this.move(false);
@@ -79,6 +75,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     close: function(){
         this.reset_text();
         this.reset_box();
+        this.element.appendChild(this.button_elt);
         this.opened = false;
     },
     set_complete_text: function(){
@@ -140,6 +137,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
             this.set_partial_text();
         }
         this.adjust_box_to_text();
+        this.element.removeChild(this.button_elt);
         /* TODO disable interaction with background */
         this.opened = true;
     },
@@ -161,13 +159,13 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         b.height.baseVal.value = m.height;
     },
     adjust_box_to_text: function(){
-        let [lmargin, tmargin, rmargin, bmargin] = this.margins;
+        let [lmargin, tmargin] = this.margins;
         let m = this.text_elt.getBBox();
         let b = this.box_elt;
         b.x.baseVal.value = m.x - lmargin;
         b.y.baseVal.value = m.y - tmargin;
-        b.width.baseVal.value = lmargin + m.width + rmargin;
-        b.height.baseVal.value = tmargin + m.height + bmargin;
+        b.width.baseVal.value = 2 * lmargin + m.width;
+        b.height.baseVal.value = 2 * tmargin + m.height;
     },
 ||
 }

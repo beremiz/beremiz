@@ -822,7 +822,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>text box</xsl:text>
+        <xsl:text>text box button</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:text>    dispatch: function(value) {
@@ -833,9 +833,9 @@
 </xsl:text>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:text>        this.button_elt.setAttribute("onclick", "hmi_widgets['</xsl:text>
     <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click()");
+    <xsl:text>'].on_button_click()");
 </xsl:text>
     <xsl:text>        this.text_bbox = this.text_elt.getBBox()
 </xsl:text>
@@ -845,11 +845,7 @@
 </xsl:text>
     <xsl:text>        tmargin = this.text_bbox.y - this.box_bbox.y;
 </xsl:text>
-    <xsl:text>        rmargin = this.box_bbox.width - this.text_bbox.width - lmargin;
-</xsl:text>
-    <xsl:text>        bmargin = this.box_bbox.height - this.text_bbox.height - tmargin;
-</xsl:text>
-    <xsl:text>        this.margins = [lmargin, tmargin, rmargin, bmargin].map(x =&gt; Math.max(x,0));
+    <xsl:text>        this.margins = [lmargin, tmargin].map(x =&gt; Math.max(x,0));
 </xsl:text>
     <xsl:text>        this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
 </xsl:text>
@@ -867,21 +863,17 @@
 </xsl:text>
     <xsl:text>    on_selection_click: function(selection) {
 </xsl:text>
+    <xsl:text>        console.log("selected "+selection);
+</xsl:text>
+    <xsl:text>        this.close();
+</xsl:text>
     <xsl:text>        this.set_selection(selection);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    on_click: function() {
+    <xsl:text>    on_button_click: function() {
 </xsl:text>
-    <xsl:text>        if(this.opened){
-</xsl:text>
-    <xsl:text>            //this.close();
-</xsl:text>
-    <xsl:text>        }else{
-</xsl:text>
-    <xsl:text>            this.open();
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>        this.open();
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -976,6 +968,8 @@
     <xsl:text>        this.reset_text();
 </xsl:text>
     <xsl:text>        this.reset_box();
+</xsl:text>
+    <xsl:text>        this.element.appendChild(this.button_elt);
 </xsl:text>
     <xsl:text>        this.opened = false;
 </xsl:text>
@@ -1107,6 +1101,8 @@
 </xsl:text>
     <xsl:text>        this.adjust_box_to_text();
 </xsl:text>
+    <xsl:text>        this.element.removeChild(this.button_elt);
+</xsl:text>
     <xsl:text>        /* TODO disable interaction with background */
 </xsl:text>
     <xsl:text>        this.opened = true;
@@ -1149,7 +1145,7 @@
 </xsl:text>
     <xsl:text>    adjust_box_to_text: function(){
 </xsl:text>
-    <xsl:text>        let [lmargin, tmargin, rmargin, bmargin] = this.margins;
+    <xsl:text>        let [lmargin, tmargin] = this.margins;
 </xsl:text>
     <xsl:text>        let m = this.text_elt.getBBox();
 </xsl:text>
@@ -1159,9 +1155,9 @@
 </xsl:text>
     <xsl:text>        b.y.baseVal.value = m.y - tmargin;
 </xsl:text>
-    <xsl:text>        b.width.baseVal.value = lmargin + m.width + rmargin;
+    <xsl:text>        b.width.baseVal.value = 2 * lmargin + m.width;
 </xsl:text>
-    <xsl:text>        b.height.baseVal.value = tmargin + m.height + bmargin;
+    <xsl:text>        b.height.baseVal.value = 2 * tmargin + m.height;
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
