@@ -26,7 +26,9 @@ template "widget[@type='Input']", mode="widget_defs" {
     }
     |     },
     |     on_op_click: function(opstr) {
-    |         let new_val = change_hmi_value(this.indexes[0], opstr);
+    |         let orig = this.indexes[0];
+    |         let idx = this.offset ? orig - this.offset : orig;
+    |         let new_val = change_hmi_value(idx, opstr);
     //     if "$have_value"{
     // |         this.value_elt.textContent = String(new_val);
     //           /* TODO gray out value until refreshed */
@@ -37,7 +39,9 @@ template "widget[@type='Input']", mode="widget_defs" {
     |     },
 
     |     edit_callback: function(new_val) {
-    |         apply_hmi_value(this.indexes[0], new_val);
+    |         let orig = this.indexes[0];
+    |         let idx = this.offset ? orig - this.offset : orig;
+    |         apply_hmi_value(idx, new_val);
     //     if "$have_value"{
     // |         this.value_elt.textContent = String(new_val);
     //           /* TODO gray out value until refreshed */
