@@ -3,7 +3,7 @@
 template "widget[@type='DropDown']", mode="widget_defs" {
     param "hmi_element";
     labels("text box button");
-||    
+||
     dispatch: function(value) {
         if(!this.opened) this.set_selection(value);
     },
@@ -14,18 +14,26 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         lmargin = this.text_bbox.x - this.box_bbox.x;
         tmargin = this.text_bbox.y - this.box_bbox.y;
         this.margins = [lmargin, tmargin].map(x => Math.max(x,0));
-        //this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-        //                "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
+
+        // It is assumed that list content conforms to Array interface.
         this.content = [
         ``foreach "arg" | "«@value»",
         ];
+
+        // Index of first visible element in the menu, when opened
         this.menu_offset = 0;
+
+        // How mutch to lift the menu vertically so that it does not cross bottom border
         this.lift = 0;
-        this.opened = false;
+
+        // Event handlers cannot be object method ('this' is unknown)
+        // as a workaround, handler given to addEventListener is bound in advance.
         this.bound_close_on_click_elsewhere = this.close_on_click_elsewhere.bind(this);
+
+        this.opened = false;
     },
+    // Called when a menu entry is clicked
     on_selection_click: function(selection) {
-        console.log("selected "+selection);
         this.close();
         let orig = this.indexes[0];
         let idx = this.offset ? orig - this.offset : orig;
@@ -34,46 +42,61 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     on_button_click: function() {
         this.open();
     },
-    on_backward_click:function(){
-        this.move(false);
+    on_backward_click: function(){
+        this.scroll(false);
     },
     on_forward_click:function(){
-        this.move(true);
+        this.scroll(true);
     },
     set_selection: function(value) {
         let display_str;
         if(value >= 0 && value < this.content.length){
+            // if valid selection resolve content
             display_str = this.content[value];
             this.last_selection = value;
         } else {
+            // otherwise show problem
             display_str = "?"+String(value)+"?";
         }
+        // It is assumed that first span always stays,
+        // and contains selection when menu is closed
         this.text_elt.firstElementChild.textContent = display_str;
     },
     grow_text: function(up_to) {
         let count = 1;
         let txt = this.text_elt; 
         let first = txt.firstElementChild;
+        // Real world (pixels) boundaries of current page
         let bounds = svg_root.getBoundingClientRect(); 
         this.lift = 0;
         while(count < up_to) {
             let next = first.cloneNode();
+            // relative line by line text flow instead of absolute y coordinate
             next.removeAttribute("y");
             next.setAttribute("dy", "1.1em");
+            // default content to allow computing text element bbox
             next.textContent = "...";
+            // append new span to text element
             txt.appendChild(next);
+            // now check if text extended by one row fits to page
+            // FIXME : exclude margins to be more accurate on box size
             let rect = txt.getBoundingClientRect();
             if(rect.bottom > bounds.bottom){
+                // in case of overflow at the bottom, lift up one row
                 let backup = first.getAttribute("dy");
+                // apply lift asr a dy added too first span (y attrib stays)
                 first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
                 rect = txt.getBoundingClientRect();
                 if(rect.top > bounds.top){
                     this.lift += 1;
                 } else {
+                    // if it goes over the top, then backtrack
+                    // restore dy attribute on first span
                     if(backup)
                         first.setAttribute("dy", backup);
                     else
                         first.removeAttribute("dy");
+                    // remove unwanted child
                     txt.removeChild(next);
                     return count;
                 }
@@ -83,22 +106,28 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         return count;
     },
     close_on_click_elsewhere: function(e) {
-        console.log("inhibit", e);
-        console.log(e.target.parentNode, this.text_elt);
+        // inhibit events not targetting spans (menu items)
         if(e.target.parentNode !== this.text_elt){
             e.stopPropagation();
+            // close menu in case click is outside box
             if(e.target !== this.box_elt)
                 this.close();
         }
     },
     close: function(){
-        document.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
+        // Stop hogging all click events
+        svg_root.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
+        // Restore position and sixe of widget elements
         this.reset_text();
         this.reset_box();
+        // Put the button back in place
         this.element.appendChild(this.button_elt);
+        // Mark as closed (to allow dispatch)
         this.opened = false;
+        // Dispatch last cached value
         this.apply_cache();
     },
+    // Set text content when content is smaller than menu (no scrolling)
     set_complete_text: function(){
         let spans = this.text_elt.children; 
         let c = 0;
@@ -109,7 +138,10 @@ template "widget[@type='DropDown']", mode="widget_defs" {
             c++;
         }
     },
-    move: function(forward){
+    // Move partial view :
+    // false : upward, lower value
+    // true  : downward, higher value
+    scroll: function(forward){
         let contentlength = this.content.length;
         let spans = this.text_elt.children; 
         let spanslength = spans.length;
@@ -127,6 +159,8 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         console.log(this.menu_offset);
         this.set_partial_text();
     },
+    // Setup partial view text content
+    // with jumps at first and last entry when appropriate
     set_partial_text: function(){
         let spans = this.text_elt.children; 
         let contentlength = this.content.length;
@@ -150,24 +184,32 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     },
     open: function(){
         let length = this.content.length;
+        // systematically reset text, to strip eventual whitespace spans
         this.reset_text();
+        // grow as much as needed or possible
         let slots = this.grow_text(length);
+        // Depending on final size
         if(slots == length) {
+            // show all at once
             this.set_complete_text();
         } else {
-            // align to selection
+            // eventualy align menu to current selection, compensating for lift
             let offset = this.last_selection - this.lift;
             if(offset > 0)
                 this.menu_offset = Math.min(offset + 1, length - slots + 1);
             else
                 this.menu_offset = 0;
+            // show surrounding values
             this.set_partial_text();
         }
+        // Now that text size is known, we can set the box around it
         this.adjust_box_to_text();
+        // Take button out until menu closed
         this.element.removeChild(this.button_elt);
+        // Place widget in front by moving it to last position among siblings
         this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
         // disable interaction with background
-        document.addEventListener("click", this.bound_close_on_click_elsewhere, true);
+        svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
         this.opened = true;
     },
     reset_text: function(){
@@ -198,11 +240,3 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     },
 ||
 }
-
-    // |         let p = new DOMPoint(this.box_elt.x.baseVal.value, this.box_elt.y.baseVal.value);
-    // |         let k = DOMMatrix.fromMatrix(this.box_elt.getCTM());
-    // |         let new_corner = k.transformPoint(p);
-    // |         new_corner.y = 0;
-    // |         let nc = k.inverse().transformPoint(new_corner);
-    // |         this.box_elt.x.baseVal.value = nc.x;
-    // |         this.box_elt.y.baseVal.value = nc.y;
