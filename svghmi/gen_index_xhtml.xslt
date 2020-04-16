@@ -837,19 +837,25 @@
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_button_click()");
 </xsl:text>
-    <xsl:text>        this.text_bbox = this.text_elt.getBBox()
+    <xsl:text>        // Save original size of rectangle
 </xsl:text>
     <xsl:text>        this.box_bbox = this.box_elt.getBBox()
 </xsl:text>
-    <xsl:text>        lmargin = this.text_bbox.x - this.box_bbox.x;
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        tmargin = this.text_bbox.y - this.box_bbox.y;
+    <xsl:text>        // Compute margins
+</xsl:text>
+    <xsl:text>        text_bbox = this.text_elt.getBBox()
+</xsl:text>
+    <xsl:text>        lmargin = text_bbox.x - this.box_bbox.x;
+</xsl:text>
+    <xsl:text>        tmargin = text_bbox.y - this.box_bbox.y;
 </xsl:text>
     <xsl:text>        this.margins = [lmargin, tmargin].map(x =&gt; Math.max(x,0));
 </xsl:text>
-    <xsl:text>        //this.content = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        //                "eleven", "twelve", "thirteen", "fourteen", "fifteen"];
+    <xsl:text>        // It is assumed that list content conforms to Array interface.
 </xsl:text>
     <xsl:text>        this.content = [
 </xsl:text>
@@ -861,19 +867,35 @@
     </xsl:for-each>
     <xsl:text>        ];
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Index of first visible element in the menu, when opened
+</xsl:text>
     <xsl:text>        this.menu_offset = 0;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // How mutch to lift the menu vertically so that it does not cross bottom border
 </xsl:text>
     <xsl:text>        this.lift = 0;
 </xsl:text>
-    <xsl:text>        this.opened = false;
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Event handlers cannot be object method ('this' is unknown)
+</xsl:text>
+    <xsl:text>        // as a workaround, handler given to addEventListener is bound in advance.
 </xsl:text>
     <xsl:text>        this.bound_close_on_click_elsewhere = this.close_on_click_elsewhere.bind(this);
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.opened = false;
+</xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    on_selection_click: function(selection) {
+    <xsl:text>    // Called when a menu entry is clicked
 </xsl:text>
-    <xsl:text>        console.log("selected "+selection);
+    <xsl:text>    on_selection_click: function(selection) {
 </xsl:text>
     <xsl:text>        this.close();
 </xsl:text>
@@ -891,15 +913,15 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    on_backward_click:function(){
+    <xsl:text>    on_backward_click: function(){
 </xsl:text>
-    <xsl:text>        this.move(false);
+    <xsl:text>        this.scroll(false);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>    on_forward_click:function(){
 </xsl:text>
-    <xsl:text>        this.move(true);
+    <xsl:text>        this.scroll(true);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -909,15 +931,23 @@
 </xsl:text>
     <xsl:text>        if(value &gt;= 0 &amp;&amp; value &lt; this.content.length){
 </xsl:text>
+    <xsl:text>            // if valid selection resolve content
+</xsl:text>
     <xsl:text>            display_str = this.content[value];
 </xsl:text>
     <xsl:text>            this.last_selection = value;
 </xsl:text>
     <xsl:text>        } else {
 </xsl:text>
+    <xsl:text>            // otherwise show problem
+</xsl:text>
     <xsl:text>            display_str = "?"+String(value)+"?";
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>        // It is assumed that first span always stays,
+</xsl:text>
+    <xsl:text>        // and contains selection when menu is closed
 </xsl:text>
     <xsl:text>        this.text_elt.firstElementChild.textContent = display_str;
 </xsl:text>
@@ -931,6 +961,8 @@
 </xsl:text>
     <xsl:text>        let first = txt.firstElementChild;
 </xsl:text>
+    <xsl:text>        // Real world (pixels) boundaries of current page
+</xsl:text>
     <xsl:text>        let bounds = svg_root.getBoundingClientRect(); 
 </xsl:text>
     <xsl:text>        this.lift = 0;
@@ -939,19 +971,33 @@
 </xsl:text>
     <xsl:text>            let next = first.cloneNode();
 </xsl:text>
+    <xsl:text>            // relative line by line text flow instead of absolute y coordinate
+</xsl:text>
     <xsl:text>            next.removeAttribute("y");
 </xsl:text>
     <xsl:text>            next.setAttribute("dy", "1.1em");
 </xsl:text>
+    <xsl:text>            // default content to allow computing text element bbox
+</xsl:text>
     <xsl:text>            next.textContent = "...";
 </xsl:text>
+    <xsl:text>            // append new span to text element
+</xsl:text>
     <xsl:text>            txt.appendChild(next);
+</xsl:text>
+    <xsl:text>            // now check if text extended by one row fits to page
+</xsl:text>
+    <xsl:text>            // FIXME : exclude margins to be more accurate on box size
 </xsl:text>
     <xsl:text>            let rect = txt.getBoundingClientRect();
 </xsl:text>
     <xsl:text>            if(rect.bottom &gt; bounds.bottom){
 </xsl:text>
+    <xsl:text>                // in case of overflow at the bottom, lift up one row
+</xsl:text>
     <xsl:text>                let backup = first.getAttribute("dy");
+</xsl:text>
+    <xsl:text>                // apply lift asr a dy added too first span (y attrib stays)
 </xsl:text>
     <xsl:text>                first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
 </xsl:text>
@@ -963,6 +1009,10 @@
 </xsl:text>
     <xsl:text>                } else {
 </xsl:text>
+    <xsl:text>                    // if it goes over the top, then backtrack
+</xsl:text>
+    <xsl:text>                    // restore dy attribute on first span
+</xsl:text>
     <xsl:text>                    if(backup)
 </xsl:text>
     <xsl:text>                        first.setAttribute("dy", backup);
@@ -970,6 +1020,8 @@
     <xsl:text>                    else
 </xsl:text>
     <xsl:text>                        first.removeAttribute("dy");
+</xsl:text>
+    <xsl:text>                    // remove unwanted child
 </xsl:text>
     <xsl:text>                    txt.removeChild(next);
 </xsl:text>
@@ -989,13 +1041,13 @@
 </xsl:text>
     <xsl:text>    close_on_click_elsewhere: function(e) {
 </xsl:text>
-    <xsl:text>        console.log("inhibit", e);
-</xsl:text>
-    <xsl:text>        console.log(e.target.parentNode, this.text_elt);
+    <xsl:text>        // inhibit events not targetting spans (menu items)
 </xsl:text>
     <xsl:text>        if(e.target.parentNode !== this.text_elt){
 </xsl:text>
     <xsl:text>            e.stopPropagation();
+</xsl:text>
+    <xsl:text>            // close menu in case click is outside box
 </xsl:text>
     <xsl:text>            if(e.target !== this.box_elt)
 </xsl:text>
@@ -1007,19 +1059,31 @@
 </xsl:text>
     <xsl:text>    close: function(){
 </xsl:text>
-    <xsl:text>        document.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
+    <xsl:text>        // Stop hogging all click events
+</xsl:text>
+    <xsl:text>        svg_root.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
+</xsl:text>
+    <xsl:text>        // Restore position and sixe of widget elements
 </xsl:text>
     <xsl:text>        this.reset_text();
 </xsl:text>
     <xsl:text>        this.reset_box();
 </xsl:text>
+    <xsl:text>        // Put the button back in place
+</xsl:text>
     <xsl:text>        this.element.appendChild(this.button_elt);
 </xsl:text>
+    <xsl:text>        // Mark as closed (to allow dispatch)
+</xsl:text>
     <xsl:text>        this.opened = false;
+</xsl:text>
+    <xsl:text>        // Dispatch last cached value
 </xsl:text>
     <xsl:text>        this.apply_cache();
 </xsl:text>
     <xsl:text>    },
+</xsl:text>
+    <xsl:text>    // Set text content when content is smaller than menu (no scrolling)
 </xsl:text>
     <xsl:text>    set_complete_text: function(){
 </xsl:text>
@@ -1043,13 +1107,21 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    move: function(forward){
+    <xsl:text>    // Move partial view :
+</xsl:text>
+    <xsl:text>    // false : upward, lower value
+</xsl:text>
+    <xsl:text>    // true  : downward, higher value
+</xsl:text>
+    <xsl:text>    scroll: function(forward){
 </xsl:text>
     <xsl:text>        let contentlength = this.content.length;
 </xsl:text>
     <xsl:text>        let spans = this.text_elt.children; 
 </xsl:text>
     <xsl:text>        let spanslength = spans.length;
+</xsl:text>
+    <xsl:text>        // reduce accounted menu size according to jumps
 </xsl:text>
     <xsl:text>        if(this.menu_offset != 0) spanslength--;
 </xsl:text>
@@ -1079,6 +1151,10 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+    <xsl:text>    // Setup partial view text content
+</xsl:text>
+    <xsl:text>    // with jumps at first and last entry when appropriate
+</xsl:text>
     <xsl:text>    set_partial_text: function(){
 </xsl:text>
     <xsl:text>        let spans = this.text_elt.children; 
@@ -1093,6 +1169,8 @@
 </xsl:text>
     <xsl:text>            let span=spans[c];
 </xsl:text>
+    <xsl:text>            // backward jump only present if not exactly at start
+</xsl:text>
     <xsl:text>            if(c == 0 &amp;&amp; i != 0){
 </xsl:text>
     <xsl:text>                span.textContent = "&#x2191;  &#x2191;  &#x2191;";
@@ -1101,6 +1179,8 @@
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_backward_click()");
 </xsl:text>
+    <xsl:text>            // presence of forward jump when not right at the end
+</xsl:text>
     <xsl:text>            }else if(c == spanslength-1 &amp;&amp; i &lt; contentlength - 1){
 </xsl:text>
     <xsl:text>                span.textContent = "&#x2193;  &#x2193;  &#x2193;";
@@ -1108,6 +1188,8 @@
     <xsl:text>                span.setAttribute("onclick", "hmi_widgets['</xsl:text>
     <xsl:value-of select="$hmi_element/@id"/>
     <xsl:text>'].on_forward_click()");
+</xsl:text>
+    <xsl:text>            // otherwise normal content
 </xsl:text>
     <xsl:text>            }else{
 </xsl:text>
@@ -1131,17 +1213,25 @@
 </xsl:text>
     <xsl:text>        let length = this.content.length;
 </xsl:text>
+    <xsl:text>        // systematically reset text, to strip eventual whitespace spans
+</xsl:text>
     <xsl:text>        this.reset_text();
+</xsl:text>
+    <xsl:text>        // grow as much as needed or possible
 </xsl:text>
     <xsl:text>        let slots = this.grow_text(length);
 </xsl:text>
+    <xsl:text>        // Depending on final size
+</xsl:text>
     <xsl:text>        if(slots == length) {
+</xsl:text>
+    <xsl:text>            // show all at once
 </xsl:text>
     <xsl:text>            this.set_complete_text();
 </xsl:text>
     <xsl:text>        } else {
 </xsl:text>
-    <xsl:text>            // align to selection
+    <xsl:text>            // eventualy align menu to current selection, compensating for lift
 </xsl:text>
     <xsl:text>            let offset = this.last_selection - this.lift;
 </xsl:text>
@@ -1153,23 +1243,35 @@
 </xsl:text>
     <xsl:text>                this.menu_offset = 0;
 </xsl:text>
+    <xsl:text>            // show surrounding values
+</xsl:text>
     <xsl:text>            this.set_partial_text();
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>        // Now that text size is known, we can set the box around it
+</xsl:text>
     <xsl:text>        this.adjust_box_to_text();
 </xsl:text>
+    <xsl:text>        // Take button out until menu closed
+</xsl:text>
     <xsl:text>        this.element.removeChild(this.button_elt);
+</xsl:text>
+    <xsl:text>        // Rise widget to top by moving it to last position among siblings
 </xsl:text>
     <xsl:text>        this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
 </xsl:text>
     <xsl:text>        // disable interaction with background
 </xsl:text>
-    <xsl:text>        document.addEventListener("click", this.bound_close_on_click_elsewhere, true);
+    <xsl:text>        svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
+</xsl:text>
+    <xsl:text>        // mark as open
 </xsl:text>
     <xsl:text>        this.opened = true;
 </xsl:text>
     <xsl:text>    },
+</xsl:text>
+    <xsl:text>    // Put text element in normalized state
 </xsl:text>
     <xsl:text>    reset_text: function(){
 </xsl:text>
@@ -1177,9 +1279,13 @@
 </xsl:text>
     <xsl:text>        let first = txt.firstElementChild;
 </xsl:text>
+    <xsl:text>        // remove attribute eventually added to first text line while opening
+</xsl:text>
     <xsl:text>        first.removeAttribute("onclick");
 </xsl:text>
     <xsl:text>        first.removeAttribute("dy");
+</xsl:text>
+    <xsl:text>        // keep only the first line of text
 </xsl:text>
     <xsl:text>        for(let span of Array.from(txt.children).slice(1)){
 </xsl:text>
@@ -1188,6 +1294,8 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    },
+</xsl:text>
+    <xsl:text>    // Put rectangle element in saved original state
 </xsl:text>
     <xsl:text>    reset_box: function(){
 </xsl:text>
@@ -1204,6 +1312,8 @@
     <xsl:text>        b.height.baseVal.value = m.height;
 </xsl:text>
     <xsl:text>    },
+</xsl:text>
+    <xsl:text>    // Use margin and text size to compute box size
 </xsl:text>
     <xsl:text>    adjust_box_to_text: function(){
 </xsl:text>

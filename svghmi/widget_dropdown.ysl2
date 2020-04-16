@@ -9,10 +9,13 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     },
     init: function() {
         this.button_elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_button_click()");
-        this.text_bbox = this.text_elt.getBBox()
+        // Save original size of rectangle
         this.box_bbox = this.box_elt.getBBox()
-        lmargin = this.text_bbox.x - this.box_bbox.x;
-        tmargin = this.text_bbox.y - this.box_bbox.y;
+
+        // Compute margins
+        text_bbox = this.text_elt.getBBox()
+        lmargin = text_bbox.x - this.box_bbox.x;
+        tmargin = text_bbox.y - this.box_bbox.y;
         this.margins = [lmargin, tmargin].map(x => Math.max(x,0));
 
         // It is assumed that list content conforms to Array interface.
@@ -145,6 +148,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         let contentlength = this.content.length;
         let spans = this.text_elt.children; 
         let spanslength = spans.length;
+        // reduce accounted menu size according to jumps
         if(this.menu_offset != 0) spanslength--;
         if(this.menu_offset < contentlength - 1) spanslength--;
         if(forward){
@@ -168,12 +172,15 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         let i = this.menu_offset, c = 0;
         while(c < spanslength){
             let span=spans[c];
+            // backward jump only present if not exactly at start
             if(c == 0 && i != 0){
                 span.textContent = "↑  ↑  ↑";
                 span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_backward_click()");
+            // presence of forward jump when not right at the end
             }else if(c == spanslength-1 && i < contentlength - 1){
                 span.textContent = "↓  ↓  ↓";
                 span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_forward_click()");
+            // otherwise normal content
             }else{
                 span.textContent = this.content[i];
                 span.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_selection_click("+i+")");
@@ -206,21 +213,26 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         this.adjust_box_to_text();
         // Take button out until menu closed
         this.element.removeChild(this.button_elt);
-        // Place widget in front by moving it to last position among siblings
+        // Rise widget to top by moving it to last position among siblings
         this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
         // disable interaction with background
         svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
+        // mark as open
         this.opened = true;
     },
+    // Put text element in normalized state
     reset_text: function(){
         let txt = this.text_elt; 
         let first = txt.firstElementChild;
+        // remove attribute eventually added to first text line while opening
         first.removeAttribute("onclick");
         first.removeAttribute("dy");
+        // keep only the first line of text
         for(let span of Array.from(txt.children).slice(1)){
             txt.removeChild(span)
         }
     },
+    // Put rectangle element in saved original state
     reset_box: function(){
         let m = this.box_bbox;
         let b = this.box_elt;
@@ -229,6 +241,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
         b.width.baseVal.value = m.width;
         b.height.baseVal.value = m.height;
     },
+    // Use margin and text size to compute box size
     adjust_box_to_text: function(){
         let [lmargin, tmargin] = this.margins;
         let m = this.text_elt.getBBox();
