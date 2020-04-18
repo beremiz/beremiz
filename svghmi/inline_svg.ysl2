@@ -2,6 +2,11 @@
 //
 // Produce Inline SVG element of resulting XHTML page.
 
+// Since stylesheet output namespace is xhtml, templates that output svg have to be explicitely declared as such 
+in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
+in xsl decl svgfunc(name, xmlns="http://www.w3.org/2000/svg") alias template;
+
+
 // Identity template :
 //  - copy every attributes 
 //  - copy every sub-elements
