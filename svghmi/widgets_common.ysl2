@@ -3,19 +3,22 @@
 in xsl decl labels(*ptr, name="defs_by_labels") alias call-template {
     with "hmi_element", "$hmi_element";
     with "labels"{text *ptr};
+    content;
 };
 
-in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
-    with "hmi_element", "$hmi_element";
-    with "labels"{text *ptr};
-    with "mandatory","'no'";
+decl optional_labels(*ptr) alias - {
+    /* TODO add some per label xslt variable to check if exist */
+    labels(*ptr){
+        with "mandatory","'no'";
+        content;
+    }
 };
 
-in xsl decl activable_labels(*ptr, name="defs_by_labels") alias call-template {
-    with "hmi_element", "$hmi_element";
-    with "labels"{text *ptr};
-    with "mandatory","'no'";
-    with "subelements","'active inactive'";
+decl activable_labels(*ptr) alias - {
+    optional_labels(*ptr) {
+        with "subelements","'active inactive'";
+        content;
+    }
 };
 
 template "svg:*", mode="hmi_elements" {

@@ -3,20 +3,6 @@ include yslt_noindent.yml2
 // overrides yslt's output function to set CDATA
 decl output(method, cdata-section-elements="xhtml:script");
 
-in xsl decl labels(*ptr, name="defs_by_labels") alias call-template {
-    with "hmi_element", "$hmi_element";
-    with "labels"{text *ptr};
-};
-
-in xsl decl optional_labels(*ptr, name="defs_by_labels") alias call-template {
-    with "hmi_element", "$hmi_element";
-    with "labels"{text *ptr};
-    with "mandatory","'no'";
-};
-
-in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
-in xsl decl svgfunc(name, xmlns="http://www.w3.org/2000/svg") alias template;
-
 istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
