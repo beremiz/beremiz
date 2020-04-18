@@ -126,7 +126,7 @@ def "func:same_class_paths" {
     result "$class_a and $class_b and $class_a = $class_b";
 }
 
-reflect:hmi_tree;
+debug:hmi_tree;
 
 // Debug data
 template "*", mode="testtree"{
@@ -138,7 +138,7 @@ template "*", mode="testtree"{
         with "indent" value "concat($indent,'>')"
     };
 }
-template "reflect:hmi-tree", mode="debug" {
+template "debug:hmi-tree", mode="debug" {
     | Raw HMI tree
     apply "$hmitree", mode="testtree";
     |
