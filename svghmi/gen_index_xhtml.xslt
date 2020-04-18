@@ -2072,28 +2072,6 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="debug_as_comment" match="*[namespace-uri()='reflect']">
-    <xsl:comment>
-      <xsl:value-of select="local-name()"/>
-      <xsl:text> :
-</xsl:text>
-      <xsl:apply-templates mode="debug" select="."/>
-    </xsl:comment>
-  </xsl:template>
-  <xsl:template match="/">
-    <xsl:comment>
-      <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
-    </xsl:comment>
-    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
-      <head/>
-      <body style="margin:0;overflow:hidden;">
-        <xsl:copy-of select="$result_svg"/>
-        <script>
-          <xsl:call-template name="scripts"/>
-        </script>
-      </body>
-    </html>
-  </xsl:template>
   <xsl:template name="scripts">
     <xsl:text>
 </xsl:text>
@@ -2103,7 +2081,7 @@
 </xsl:text>
     <xsl:text>var hmi_hash = [</xsl:text>
     <xsl:value-of select="$hmitree/@hash"/>
-    <xsl:text>]; 
+    <xsl:text>];
 </xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
@@ -3243,5 +3221,27 @@
 </xsl:text>
     <xsl:text>};
 </xsl:text>
+  </xsl:template>
+  <xsl:template mode="debug_as_comment" match="*[namespace-uri()='reflect']">
+    <xsl:comment>
+      <xsl:value-of select="local-name()"/>
+      <xsl:text> :
+</xsl:text>
+      <xsl:apply-templates mode="debug" select="."/>
+    </xsl:comment>
+  </xsl:template>
+  <xsl:template match="/">
+    <xsl:comment>
+      <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
+    </xsl:comment>
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+      <head/>
+      <body style="margin:0;overflow:hidden;">
+        <xsl:copy-of select="$result_svg"/>
+        <script>
+          <xsl:call-template name="scripts"/>
+        </script>
+      </body>
+    </html>
   </xsl:template>
 </xsl:stylesheet>
