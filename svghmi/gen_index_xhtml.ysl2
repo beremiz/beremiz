@@ -13,12 +13,12 @@ istylesheet
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
-            xmlns:reflect="reflect"
+            xmlns:debug="debug"
 
             /* Our namespace to invoke python code */
             xmlns:ns="beremiz"
             extension-element-prefixes="ns func exsl regexp str dyn"
-            exclude-result-prefixes="ns str regexp exsl func dyn reflect" {
+            exclude-result-prefixes="ns str regexp exsl func dyn debug" {
 
 
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
@@ -37,7 +37,7 @@ istylesheet
 
     include scripts.ysl2
 
-    template "*[namespace-uri()='reflect']", mode="debug_as_comment" {
+    template "*[namespace-uri()='debug']", mode="debug_as_comment" {
         comment {
             | «local-name()» :
             apply ".", mode="debug";
@@ -48,7 +48,7 @@ istylesheet
         comment > Made with SVGHMI. https://beremiz.org
 
         // all debug output from included definitions, as comments
-        // apply "document('')/*/reflect:*", mode="debug_as_comment";
+        // apply "document('')/*/debug:*", mode="debug_as_comment";
 
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"

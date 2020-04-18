@@ -7,10 +7,10 @@
 // <bbox x="0" y="0" w="42" h="42">
 const "geometry", "ns:GetSVGGeometry()";
 
-reflect:geometry;
+debug:geometry;
 
 // Debug data
-template "reflect:geometry", mode="debug" {
+template "debug:geometry", mode="debug" {
     | ID, x, y, w, h
     foreach "$geometry"
         |  «@Id» «@x» «@y» «@w» «@h»
