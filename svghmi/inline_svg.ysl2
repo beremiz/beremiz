@@ -34,9 +34,8 @@ template "sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']", m
     error > All units must be set to "px" in Inkscape's document properties
 }
 
-
-//////////////// Clone Unlinking
-
+////// Clone unlinking
+//
 // svg:use (inkscape's clones) inside a widgets are
 // replaced by real elements they refer in order to :
 //  - allow finding "needle" element in "meter" widget,
@@ -115,7 +114,13 @@ svgtmpl "svg:*", mode="unlink_clone" {
 const "result_svg" apply "/", mode="inline_svg";
 const "result_svg_ns", "exsl:node-set($result_svg)";
 
-emit "debug:inline-svg" {
+emit "preamble:inline-svg" {
+    | let id = document.getElementById.bind(document);
+    | var svg_root = id("«$svg/@id»");
+}
+
+emit "debug:clone-unlinking" {
+    |
     | Unlinked :
     foreach "$to_unlink"{
         | «@id»

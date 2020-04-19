@@ -14,6 +14,20 @@ const "categories", "exsl:node-set($_categories)";
 const "_indexed_hmitree" apply "$hmitree", mode="index";
 const "indexed_hmitree", "exsl:node-set($_indexed_hmitree)";
 
+emit "preamble:hmi-tree" {
+    | var hmi_hash = [«$hmitree/@hash»];
+    |
+    | var heartbeat_index = «$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index»;
+    |
+    | var hmitree_types = [
+
+    foreach "$indexed_hmitree/*" 
+    |     /* «@index»  «@hmipath» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
+
+    | ]
+    |
+}
+
 template "*", mode="index" {
     param "index", "0";
     param "parentpath", "''";
@@ -110,7 +124,6 @@ def "func:widget" {
     result "$parsed_widgets/widget[@id = $id]";
 }
 
-
 def "func:is_descendant_path" {
     param "descend";
     param "ancest";
@@ -136,6 +149,7 @@ template "*", mode="testtree"{
         with "indent" value "concat($indent,'>')"
     };
 }
+
 emit "debug:hmi-tree" {
     | Raw HMI tree
     apply "$hmitree", mode="testtree";

@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:epilogue="epilogue" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:debug="debug" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+  <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="_categories">
@@ -16,6 +17,41 @@
     <xsl:apply-templates mode="index" select="$hmitree"/>
   </xsl:variable>
   <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
+  <preamble:hmi-tree/>
+  <xsl:template match="preamble:hmi-tree">
+    <xsl:text>var hmi_hash = [</xsl:text>
+    <xsl:value-of select="$hmitree/@hash"/>
+    <xsl:text>];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var heartbeat_index = </xsl:text>
+    <xsl:value-of select="$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index"/>
+    <xsl:text>;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var hmitree_types = [
+</xsl:text>
+    <xsl:for-each select="$indexed_hmitree/*">
+      <xsl:text>    /* </xsl:text>
+      <xsl:value-of select="@index"/>
+      <xsl:text>  </xsl:text>
+      <xsl:value-of select="@hmipath"/>
+      <xsl:text> */ "</xsl:text>
+      <xsl:value-of select="substring(local-name(), 5)"/>
+      <xsl:text>"</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>]
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
     <xsl:param name="parentpath" select="''"/>
@@ -262,8 +298,6 @@
   </func:function>
   <xsl:variable name="hmi_pages_descs" select="$parsed_widgets/widget[@type = 'Page']"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_descs/@id]"/>
-  <xsl:variable name="keypads_descs" select="$parsed_widgets/widget[@type = 'Keypad']"/>
-  <xsl:variable name="keypads" select="$hmi_elements[@id = $keypads_descs/@id]"/>
   <xsl:variable name="default_page">
     <xsl:choose>
       <xsl:when test="count($hmi_pages) &gt; 1">
@@ -284,6 +318,17 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
+  <preamble:default-page/>
+  <xsl:template match="preamble:default-page">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var default_page = "</xsl:text>
+    <xsl:value-of select="$default_page"/>
+    <xsl:text>";
+</xsl:text>
+  </xsl:template>
+  <xsl:variable name="keypads_descs" select="$parsed_widgets/widget[@type = 'Keypad']"/>
+  <xsl:variable name="keypads" select="$hmi_elements[@id = $keypads_descs/@id]"/>
   <func:function name="func:refered_elements">
     <xsl:param name="elems"/>
     <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
@@ -338,6 +383,29 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages | $keypads)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
+  <epilogue:detachable-elements/>
+  <xsl:template match="epilogue:detachable-elements">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var detachable_elements = {
+</xsl:text>
+    <xsl:for-each select="$detachable_elements">
+      <xsl:text>    "</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>":[id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"), id("</xsl:text>
+      <xsl:value-of select="../@id"/>
+      <xsl:text>")]</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
   <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
   <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
@@ -459,9 +527,21 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <epilogue:page-desc/>
+  <xsl:template match="epilogue:page-desc">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var page_desc = {
+</xsl:text>
+    <xsl:apply-templates mode="page_desc" select="$hmi_pages"/>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="per_page_widget_template" match="*"/>
   <debug:detachable-pages/>
   <xsl:template match="debug:detachable-pages">
+    <xsl:text>
+</xsl:text>
     <xsl:text>DETACHABLES:
 </xsl:text>
     <xsl:for-each select="$detachable_elements">
@@ -590,8 +670,19 @@
     <xsl:apply-templates mode="inline_svg" select="/"/>
   </xsl:variable>
   <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
-  <debug:inline-svg/>
-  <xsl:template match="debug:inline-svg">
+  <preamble:inline-svg/>
+  <xsl:template match="preamble:inline-svg">
+    <xsl:text>let id = document.getElementById.bind(document);
+</xsl:text>
+    <xsl:text>var svg_root = id("</xsl:text>
+    <xsl:value-of select="$svg/@id"/>
+    <xsl:text>");
+</xsl:text>
+  </xsl:template>
+  <debug:clone-unlinking/>
+  <xsl:template match="debug:clone-unlinking">
+    <xsl:text>
+</xsl:text>
     <xsl:text>Unlinked :
 </xsl:text>
     <xsl:for-each select="$to_unlink">
@@ -599,14 +690,6 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
-  </xsl:template>
-  <preamble:hmi-widget/>
-  <xsl:template match="preamble:hmi-widget">
-    <xsl:text>var hmi_widgets = {
-</xsl:text>
-    <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
-    <xsl:text>}
-</xsl:text>
   </xsl:template>
   <xsl:template mode="hmi_elements" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
@@ -681,6 +764,14 @@
       <xsl:text>,</xsl:text>
     </xsl:if>
     <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <preamble:hmi-elements/>
+  <xsl:template match="preamble:hmi-elements">
+    <xsl:text>var hmi_widgets = {
+</xsl:text>
+    <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget">
@@ -1756,6 +1847,31 @@
       </xsl:if>
     </xsl:if>
   </xsl:template>
+  <epilogue:keypad/>
+  <xsl:template match="epilogue:keypad">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var keypads = {
+</xsl:text>
+    <xsl:for-each select="$keypads_descs">
+      <xsl:variable name="keypad_id" select="@id"/>
+      <xsl:for-each select="arg">
+        <xsl:variable name="g" select="$geometry[@Id = $keypad_id]"/>
+        <xsl:text>    "</xsl:text>
+        <xsl:value-of select="@value"/>
+        <xsl:text>":["</xsl:text>
+        <xsl:value-of select="$keypad_id"/>
+        <xsl:text>", </xsl:text>
+        <xsl:value-of select="$g/@x"/>
+        <xsl:text>, </xsl:text>
+        <xsl:value-of select="$g/@y"/>
+        <xsl:text>],
+</xsl:text>
+      </xsl:for-each>
+    </xsl:for-each>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
@@ -2080,1153 +2196,6 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template name="scripts">
-    <xsl:text>
-</xsl:text>
-    <xsl:text>id = idstr =&gt; document.getElementById(idstr);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:apply-templates select="document('')/*/preamble:*"/>
-    <xsl:text>var hmi_hash = [</xsl:text>
-    <xsl:value-of select="$hmitree/@hash"/>
-    <xsl:text>];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var heartbeat_index = </xsl:text>
-    <xsl:value-of select="$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index"/>
-    <xsl:text>;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var hmitree_types = [
-</xsl:text>
-    <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:text>    /* </xsl:text>
-      <xsl:value-of select="@index"/>
-      <xsl:text>  </xsl:text>
-      <xsl:value-of select="@hmipath"/>
-      <xsl:text> */ "</xsl:text>
-      <xsl:value-of select="substring(local-name(), 5)"/>
-      <xsl:text>"</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>]
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var detachable_elements = {
-</xsl:text>
-    <xsl:for-each select="$detachable_elements">
-      <xsl:text>    "</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>":[id("</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>"), id("</xsl:text>
-      <xsl:value-of select="../@id"/>
-      <xsl:text>")]</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var page_desc = {
-</xsl:text>
-    <xsl:apply-templates mode="page_desc" select="$hmi_pages"/>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>var keypads = {
-</xsl:text>
-    <xsl:for-each select="$keypads_descs">
-      <xsl:variable name="keypad_id" select="@id"/>
-      <xsl:for-each select="arg">
-        <xsl:variable name="g" select="$geometry[@Id = $keypad_id]"/>
-        <xsl:text>    "</xsl:text>
-        <xsl:value-of select="@value"/>
-        <xsl:text>":["</xsl:text>
-        <xsl:value-of select="$keypad_id"/>
-        <xsl:text>", </xsl:text>
-        <xsl:value-of select="$g/@x"/>
-        <xsl:text>, </xsl:text>
-        <xsl:value-of select="$g/@y"/>
-        <xsl:text>],
-</xsl:text>
-      </xsl:for-each>
-    </xsl:for-each>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var default_page = "</xsl:text>
-    <xsl:value-of select="$default_page"/>
-    <xsl:text>";
-</xsl:text>
-    <xsl:text>var svg_root = id("</xsl:text>
-    <xsl:value-of select="/svg:svg/@id"/>
-    <xsl:text>");
-</xsl:text>
-    <xsl:text>// svghmi.js
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
-</xsl:text>
-    <xsl:text>var updates = {};
-</xsl:text>
-    <xsl:text>var need_cache_apply = []; 
-</xsl:text>
-    <xsl:text>var jumps_need_update = false;
-</xsl:text>
-    <xsl:text>var jump_history = [[default_page, undefined]];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
-</xsl:text>
-    <xsl:text>    try {
-</xsl:text>
-    <xsl:text>        let idx = widget.offset ? index - widget.offset : index;
-</xsl:text>
-    <xsl:text>        let idxidx = widget.indexes.indexOf(idx);
-</xsl:text>
-    <xsl:text>        let d = widget.dispatch;
-</xsl:text>
-    <xsl:text>        if(typeof(d) == "function" &amp;&amp; idxidx == 0){
-</xsl:text>
-    <xsl:text>            d.call(widget, value, oldval);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
-</xsl:text>
-    <xsl:text>            d[idxidx].call(widget, value, oldval);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        /* else dispatch_0, ..., dispatch_n ? */
-</xsl:text>
-    <xsl:text>        /*else {
-</xsl:text>
-    <xsl:text>            throw new Error("Dunno how to dispatch to widget at index = " + index);
-</xsl:text>
-    <xsl:text>        }*/
-</xsl:text>
-    <xsl:text>    } catch(err) {
-</xsl:text>
-    <xsl:text>        console.log(err);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function dispatch_value(index, value) {
-</xsl:text>
-    <xsl:text>    let widgets = subscribers[index];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    let oldval = cache[index];
-</xsl:text>
-    <xsl:text>    cache[index] = value;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(widgets.size &gt; 0) {
-</xsl:text>
-    <xsl:text>        for(let widget of widgets){
-</xsl:text>
-    <xsl:text>            dispatch_value_to_widget(widget, index, value, oldval);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function init_widgets() {
-</xsl:text>
-    <xsl:text>    Object.keys(hmi_widgets).forEach(function(id) {
-</xsl:text>
-    <xsl:text>        let widget = hmi_widgets[id];
-</xsl:text>
-    <xsl:text>        let init = widget.init;
-</xsl:text>
-    <xsl:text>        if(typeof(init) == "function"){
-</xsl:text>
-    <xsl:text>            try {
-</xsl:text>
-    <xsl:text>                init.call(widget);
-</xsl:text>
-    <xsl:text>            } catch(err) {
-</xsl:text>
-    <xsl:text>                console.log(err);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    });
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// Open WebSocket to relative "/ws" address
-</xsl:text>
-    <xsl:text>var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
-</xsl:text>
-    <xsl:text>ws.binaryType = 'arraybuffer';
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>const dvgetters = {
-</xsl:text>
-    <xsl:text>    INT: (dv,offset) =&gt; [dv.getInt16(offset, true), 2],
-</xsl:text>
-    <xsl:text>    BOOL: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
-</xsl:text>
-    <xsl:text>    NODE: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
-</xsl:text>
-    <xsl:text>    STRING: (dv, offset) =&gt; {
-</xsl:text>
-    <xsl:text>        size = dv.getInt8(offset);
-</xsl:text>
-    <xsl:text>        return [
-</xsl:text>
-    <xsl:text>            String.fromCharCode.apply(null, new Uint8Array(
-</xsl:text>
-    <xsl:text>                dv.buffer, /* original buffer */
-</xsl:text>
-    <xsl:text>                offset + 1, /* string starts after size*/
-</xsl:text>
-    <xsl:text>                size /* size of string */
-</xsl:text>
-    <xsl:text>            )), size + 1]; /* total increment */
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// Apply updates recieved through ws.onmessage to subscribed widgets
-</xsl:text>
-    <xsl:text>function apply_updates() {
-</xsl:text>
-    <xsl:text>    for(let index in updates){
-</xsl:text>
-    <xsl:text>        // serving as a key, index becomes a string
-</xsl:text>
-    <xsl:text>        // -&gt; pass Number(index) instead
-</xsl:text>
-    <xsl:text>        dispatch_value(Number(index), updates[index]);
-</xsl:text>
-    <xsl:text>        delete updates[index];
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// Called on requestAnimationFrame, modifies DOM
-</xsl:text>
-    <xsl:text>var requestAnimationFrameID = null;
-</xsl:text>
-    <xsl:text>function animate() {
-</xsl:text>
-    <xsl:text>    // Do the page swith if any one pending
-</xsl:text>
-    <xsl:text>    if(current_subscribed_page != current_visible_page){
-</xsl:text>
-    <xsl:text>        switch_visible_page(current_subscribed_page);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    while(widget = need_cache_apply.pop()){
-</xsl:text>
-    <xsl:text>        widget.apply_cache();
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(jumps_need_update) update_jumps();
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    apply_updates();
-</xsl:text>
-    <xsl:text>    requestAnimationFrameID = null;
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function requestHMIAnimation() {
-</xsl:text>
-    <xsl:text>    if(requestAnimationFrameID == null){
-</xsl:text>
-    <xsl:text>        requestAnimationFrameID = window.requestAnimationFrame(animate);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// Message reception handler
-</xsl:text>
-    <xsl:text>// Hash is verified and HMI values updates resulting from binary parsing
-</xsl:text>
-    <xsl:text>// are stored until browser can compute next frame, DOM is left untouched
-</xsl:text>
-    <xsl:text>ws.onmessage = function (evt) {
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    let data = evt.data;
-</xsl:text>
-    <xsl:text>    let dv = new DataView(data);
-</xsl:text>
-    <xsl:text>    let i = 0;
-</xsl:text>
-    <xsl:text>    try {
-</xsl:text>
-    <xsl:text>        for(let hash_int of hmi_hash) {
-</xsl:text>
-    <xsl:text>            if(hash_int != dv.getUint8(i)){
-</xsl:text>
-    <xsl:text>                throw new Error("Hash doesn't match");
-</xsl:text>
-    <xsl:text>            };
-</xsl:text>
-    <xsl:text>            i++;
-</xsl:text>
-    <xsl:text>        };
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        while(i &lt; data.byteLength){
-</xsl:text>
-    <xsl:text>            let index = dv.getUint32(i, true);
-</xsl:text>
-    <xsl:text>            i += 4;
-</xsl:text>
-    <xsl:text>            let iectype = hmitree_types[index];
-</xsl:text>
-    <xsl:text>            if(iectype != undefined){
-</xsl:text>
-    <xsl:text>                let dvgetter = dvgetters[iectype];
-</xsl:text>
-    <xsl:text>                let [value, bytesize] = dvgetter(dv,i);
-</xsl:text>
-    <xsl:text>                updates[index] = value;
-</xsl:text>
-    <xsl:text>                i += bytesize;
-</xsl:text>
-    <xsl:text>            } else {
-</xsl:text>
-    <xsl:text>                throw new Error("Unknown index "+index);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        };
-</xsl:text>
-    <xsl:text>        // register for rendering on next frame, since there are updates
-</xsl:text>
-    <xsl:text>        requestHMIAnimation();
-</xsl:text>
-    <xsl:text>    } catch(err) {
-</xsl:text>
-    <xsl:text>        // 1003 is for "Unsupported Data"
-</xsl:text>
-    <xsl:text>        // ws.close(1003, err.message);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        // TODO : remove debug alert ?
-</xsl:text>
-    <xsl:text>        alert("Error : "+err.message+"\nHMI will be reloaded.");
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        // force reload ignoring cache
-</xsl:text>
-    <xsl:text>        location.reload(true);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function send_blob(data) {
-</xsl:text>
-    <xsl:text>    if(data.length &gt; 0) {
-</xsl:text>
-    <xsl:text>        ws.send(new Blob([new Uint8Array(hmi_hash)].concat(data)));
-</xsl:text>
-    <xsl:text>    };
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>const typedarray_types = {
-</xsl:text>
-    <xsl:text>    INT: (number) =&gt; new Int16Array([number]),
-</xsl:text>
-    <xsl:text>    BOOL: (truth) =&gt; new Int16Array([truth]),
-</xsl:text>
-    <xsl:text>    NODE: (truth) =&gt; new Int16Array([truth]),
-</xsl:text>
-    <xsl:text>    STRING: (str) =&gt; {
-</xsl:text>
-    <xsl:text>        // beremiz default string max size is 128
-</xsl:text>
-    <xsl:text>        str = str.slice(0,128);
-</xsl:text>
-    <xsl:text>        binary = new Uint8Array(str.length + 1);
-</xsl:text>
-    <xsl:text>        binary[0] = str.length;
-</xsl:text>
-    <xsl:text>        for(var i = 0; i &lt; str.length; i++){
-</xsl:text>
-    <xsl:text>            binary[i+1] = str.charCodeAt(i);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        return binary;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    /* TODO */
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function send_reset() {
-</xsl:text>
-    <xsl:text>    send_blob(new Uint8Array([1])); /* reset = 1 */
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// subscription state, as it should be in hmi server
-</xsl:text>
-    <xsl:text>// hmitree indexed array of integers
-</xsl:text>
-    <xsl:text>var subscriptions =  hmitree_types.map(_ignored =&gt; 0);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// subscription state as needed by widget now
-</xsl:text>
-    <xsl:text>// hmitree indexed array of Sets of widgets objects
-</xsl:text>
-    <xsl:text>var subscribers = hmitree_types.map(_ignored =&gt; new Set());
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
-</xsl:text>
-    <xsl:text>// Since dispatch directly calls change_hmi_value,
-</xsl:text>
-    <xsl:text>// PLC will periodically send variable at given frequency
-</xsl:text>
-    <xsl:text>subscribers[heartbeat_index].add({
-</xsl:text>
-    <xsl:text>    /* type: "Watchdog", */
-</xsl:text>
-    <xsl:text>    frequency: 1,
-</xsl:text>
-    <xsl:text>    indexes: [heartbeat_index],
-</xsl:text>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:text>        change_hmi_value(heartbeat_index, "+1");
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>});
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function update_subscriptions() {
-</xsl:text>
-    <xsl:text>    let delta = [];
-</xsl:text>
-    <xsl:text>    for(let index = 0; index &lt; subscribers.length; index++){
-</xsl:text>
-    <xsl:text>        let widgets = subscribers[index];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        // periods are in ms
-</xsl:text>
-    <xsl:text>        let previous_period = subscriptions[index];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        // subscribing with a zero period is unsubscribing
-</xsl:text>
-    <xsl:text>        let new_period = 0;
-</xsl:text>
-    <xsl:text>        if(widgets.size &gt; 0) {
-</xsl:text>
-    <xsl:text>            let maxfreq = 0;
-</xsl:text>
-    <xsl:text>            for(let widget of widgets)
-</xsl:text>
-    <xsl:text>                if(maxfreq &lt; widget.frequency)
-</xsl:text>
-    <xsl:text>                    maxfreq = widget.frequency;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            if(maxfreq != 0)
-</xsl:text>
-    <xsl:text>                new_period = 1000/maxfreq;
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        if(previous_period != new_period) {
-</xsl:text>
-    <xsl:text>            subscriptions[index] = new_period;
-</xsl:text>
-    <xsl:text>            delta.push(
-</xsl:text>
-    <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
-</xsl:text>
-    <xsl:text>                new Uint32Array([index]),
-</xsl:text>
-    <xsl:text>                new Uint16Array([new_period]));
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    send_blob(delta);
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function send_hmi_value(index, value) {
-</xsl:text>
-    <xsl:text>    let iectype = hmitree_types[index];
-</xsl:text>
-    <xsl:text>    let tobinary = typedarray_types[iectype];
-</xsl:text>
-    <xsl:text>    send_blob([
-</xsl:text>
-    <xsl:text>        new Uint8Array([0]),  /* setval = 0 */
-</xsl:text>
-    <xsl:text>        new Uint32Array([index]),
-</xsl:text>
-    <xsl:text>        tobinary(value)]);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    // DON'T DO THAT unless read_iterator in svghmi.c modifies wbuf as well, not only rbuf
-</xsl:text>
-    <xsl:text>    // cache[index] = value;
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function apply_hmi_value(index, new_val) {
-</xsl:text>
-    <xsl:text>    let old_val = cache[index]
-</xsl:text>
-    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
-</xsl:text>
-    <xsl:text>        send_hmi_value(index, new_val);
-</xsl:text>
-    <xsl:text>    return new_val;
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function change_hmi_value(index, opstr) {
-</xsl:text>
-    <xsl:text>    let op = opstr[0];
-</xsl:text>
-    <xsl:text>    let given_val = opstr.slice(1);
-</xsl:text>
-    <xsl:text>    let old_val = cache[index]
-</xsl:text>
-    <xsl:text>    let new_val;
-</xsl:text>
-    <xsl:text>    switch(op){
-</xsl:text>
-    <xsl:text>      case "=":
-</xsl:text>
-    <xsl:text>        eval("new_val"+opstr);
-</xsl:text>
-    <xsl:text>        break;
-</xsl:text>
-    <xsl:text>      case "+":
-</xsl:text>
-    <xsl:text>      case "-":
-</xsl:text>
-    <xsl:text>      case "*":
-</xsl:text>
-    <xsl:text>      case "/":
-</xsl:text>
-    <xsl:text>        if(old_val != undefined)
-</xsl:text>
-    <xsl:text>            new_val = eval("old_val"+opstr);
-</xsl:text>
-    <xsl:text>        break;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
-</xsl:text>
-    <xsl:text>        send_hmi_value(index, new_val);
-</xsl:text>
-    <xsl:text>    return new_val;
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var current_visible_page;
-</xsl:text>
-    <xsl:text>var current_subscribed_page;
-</xsl:text>
-    <xsl:text>var current_page_index;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function prepare_svg() {
-</xsl:text>
-    <xsl:text>    for(let eltid in detachable_elements){
-</xsl:text>
-    <xsl:text>        let [element,parent] = detachable_elements[eltid];
-</xsl:text>
-    <xsl:text>        parent.removeChild(element);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function switch_page(page_name, page_index) {
-</xsl:text>
-    <xsl:text>    if(current_subscribed_page != current_visible_page){
-</xsl:text>
-    <xsl:text>        /* page switch already going */
-</xsl:text>
-    <xsl:text>        /* TODO LOG ERROR */
-</xsl:text>
-    <xsl:text>        return false;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(page_name == undefined)
-</xsl:text>
-    <xsl:text>        page_name = current_subscribed_page;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    let old_desc = page_desc[current_subscribed_page];
-</xsl:text>
-    <xsl:text>    let new_desc = page_desc[page_name];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(new_desc == undefined){
-</xsl:text>
-    <xsl:text>        /* TODO LOG ERROR */
-</xsl:text>
-    <xsl:text>        return false;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(page_index == undefined){
-</xsl:text>
-    <xsl:text>        page_index = new_desc.page_index;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(old_desc){
-</xsl:text>
-    <xsl:text>        old_desc.absolute_widgets.map(w=&gt;w.unsub());
-</xsl:text>
-    <xsl:text>        old_desc.relative_widgets.map(w=&gt;w.unsub());
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    new_desc.absolute_widgets.map(w=&gt;w.sub());
-</xsl:text>
-    <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
-</xsl:text>
-    <xsl:text>    new_desc.relative_widgets.map(w=&gt;w.sub(new_offset));
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    update_subscriptions();
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    current_subscribed_page = page_name;
-</xsl:text>
-    <xsl:text>    current_page_index = page_index;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    jumps_need_update = true;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    requestHMIAnimation();
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    jump_history.push([page_name, page_index]);
-</xsl:text>
-    <xsl:text>    if(jump_history.length &gt; 42)
-</xsl:text>
-    <xsl:text>        jump_history.shift();
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    return true;
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function* chain(a,b){
-</xsl:text>
-    <xsl:text>    yield* a;
-</xsl:text>
-    <xsl:text>    yield* b;
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function unsubscribe(){
-</xsl:text>
-    <xsl:text>    /* remove subsribers */
-</xsl:text>
-    <xsl:text>    for(let index of this.indexes){
-</xsl:text>
-    <xsl:text>        let idx = index + this.offset;
-</xsl:text>
-    <xsl:text>        subscribers[idx].delete(this);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    this.offset = 0;
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function subscribe(new_offset=0){
-</xsl:text>
-    <xsl:text>    /* set the offset because relative */
-</xsl:text>
-    <xsl:text>    this.offset = new_offset;
-</xsl:text>
-    <xsl:text>    /* add this's subsribers */
-</xsl:text>
-    <xsl:text>    for(let index of this.indexes){
-</xsl:text>
-    <xsl:text>        subscribers[index + new_offset].add(this);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    need_cache_apply.push(this); 
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_unsubscribe(){
-</xsl:text>
-    <xsl:text>    for(let item of this.items){
-</xsl:text>
-    <xsl:text>        for(let widget of item) {
-</xsl:text>
-    <xsl:text>            unsubscribe.call(widget);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    this.offset = 0;
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_widgets_do(new_offset, todo){
-</xsl:text>
-    <xsl:text>    this.offset = new_offset;
-</xsl:text>
-    <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
-</xsl:text>
-    <xsl:text>        let item = this.items[i];
-</xsl:text>
-    <xsl:text>        let orig_item_index = this.index_pool[i];
-</xsl:text>
-    <xsl:text>        let item_index = this.index_pool[i+this.item_offset];
-</xsl:text>
-    <xsl:text>        let item_index_offset = item_index - orig_item_index;
-</xsl:text>
-    <xsl:text>        for(let widget of item) {
-</xsl:text>
-    <xsl:text>            todo.call(widget, new_offset + item_index_offset);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_subscribe(new_offset=0){
-</xsl:text>
-    <xsl:text>    foreach_widgets_do.call(this, new_offset, subscribe);
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function widget_apply_cache() {
-</xsl:text>
-    <xsl:text>    for(let index of this.indexes){
-</xsl:text>
-    <xsl:text>        /* dispatch current cache in newly opened page widgets */
-</xsl:text>
-    <xsl:text>        let realindex = index+this.offset;
-</xsl:text>
-    <xsl:text>        let cached_val = cache[realindex];
-</xsl:text>
-    <xsl:text>        if(cached_val != undefined)
-</xsl:text>
-    <xsl:text>            dispatch_value_to_widget(this, realindex, cached_val, cached_val);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_apply_cache() {
-</xsl:text>
-    <xsl:text>    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_onclick(opstr, evt) {
-</xsl:text>
-    <xsl:text>    new_item_offset = eval(String(this.item_offset)+opstr)
-</xsl:text>
-    <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
-</xsl:text>
-    <xsl:text>        if(this.item_offset + this.items.length == this.index_pool.length)
-</xsl:text>
-    <xsl:text>            new_item_offset = 0;
-</xsl:text>
-    <xsl:text>        else
-</xsl:text>
-    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
-</xsl:text>
-    <xsl:text>    } else if(new_item_offset &lt; 0) {
-</xsl:text>
-    <xsl:text>        if(this.item_offset == 0)
-</xsl:text>
-    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
-</xsl:text>
-    <xsl:text>        else
-</xsl:text>
-    <xsl:text>            new_item_offset = 0;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    this.item_offset = new_item_offset;
-</xsl:text>
-    <xsl:text>    off = this.offset;
-</xsl:text>
-    <xsl:text>    foreach_unsubscribe.call(this);
-</xsl:text>
-    <xsl:text>    foreach_subscribe.call(this,off);
-</xsl:text>
-    <xsl:text>    update_subscriptions();
-</xsl:text>
-    <xsl:text>    need_cache_apply.push(this);
-</xsl:text>
-    <xsl:text>    jumps_need_update = true;
-</xsl:text>
-    <xsl:text>    requestHMIAnimation();
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function switch_visible_page(page_name) {
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    let old_desc = page_desc[current_visible_page];
-</xsl:text>
-    <xsl:text>    let new_desc = page_desc[page_name];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    if(old_desc){
-</xsl:text>
-    <xsl:text>        for(let eltid in old_desc.required_detachables){
-</xsl:text>
-    <xsl:text>            if(!(eltid in new_desc.required_detachables)){
-</xsl:text>
-    <xsl:text>                let [element, parent] = old_desc.required_detachables[eltid];
-</xsl:text>
-    <xsl:text>                parent.removeChild(element);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        for(let eltid in new_desc.required_detachables){
-</xsl:text>
-    <xsl:text>            if(!(eltid in old_desc.required_detachables)){
-</xsl:text>
-    <xsl:text>                let [element, parent] = new_desc.required_detachables[eltid];
-</xsl:text>
-    <xsl:text>                parent.appendChild(element);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }else{
-</xsl:text>
-    <xsl:text>        for(let eltid in new_desc.required_detachables){
-</xsl:text>
-    <xsl:text>            let [element, parent] = new_desc.required_detachables[eltid];
-</xsl:text>
-    <xsl:text>            parent.appendChild(element);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-</xsl:text>
-    <xsl:text>    current_visible_page = page_name;
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function update_jumps() {
-</xsl:text>
-    <xsl:text>    page_desc[current_visible_page].jumps.map(w=&gt;w.notify_page_change(current_visible_page,current_page_index));
-</xsl:text>
-    <xsl:text>    jumps_need_update = false;
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>// Once connection established
-</xsl:text>
-    <xsl:text>ws.onopen = function (evt) {
-</xsl:text>
-    <xsl:text>    init_widgets();
-</xsl:text>
-    <xsl:text>    send_reset();
-</xsl:text>
-    <xsl:text>    // show main page
-</xsl:text>
-    <xsl:text>    prepare_svg();
-</xsl:text>
-    <xsl:text>    switch_page(default_page);
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>ws.onclose = function (evt) {
-</xsl:text>
-    <xsl:text>    // TODO : add visible notification while waiting for reload
-</xsl:text>
-    <xsl:text>    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in 10s.");
-</xsl:text>
-    <xsl:text>    // TODO : re-enable auto reload when not in debug
-</xsl:text>
-    <xsl:text>    //window.setTimeout(() =&gt; location.reload(true), 10000);
-</xsl:text>
-    <xsl:text>    alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var xmlns = "http://www.w3.org/2000/svg";
-</xsl:text>
-    <xsl:text>var edit_callback;
-</xsl:text>
-    <xsl:text>function edit_value(path, valuetype, callback, initial) {
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    let [keypadid, xcoord, ycoord] = keypads[valuetype];
-</xsl:text>
-    <xsl:text>    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
-</xsl:text>
-    <xsl:text>    edit_callback = callback;
-</xsl:text>
-    <xsl:text>    let widget = hmi_widgets[keypadid];
-</xsl:text>
-    <xsl:text>    widget.start_edit(path, valuetype, callback, initial);
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>var current_modal; /* TODO stack ?*/
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function show_modal() {
-</xsl:text>
-    <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    tmpgrp = document.createElementNS(xmlns,"g");
-</xsl:text>
-    <xsl:text>    tmpgrpattr = document.createAttribute("transform");
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    let [xcoord,ycoord] = this.coordinates;
-</xsl:text>
-    <xsl:text>    let [xdest,ydest] = page_desc[current_visible_page].bbox;
-</xsl:text>
-    <xsl:text>    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
-</xsl:text>
-    <xsl:text>    tmpgrp.setAttributeNode(tmpgrpattr);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    tmpgrp.appendChild(element);
-</xsl:text>
-    <xsl:text>    parent.appendChild(tmpgrp);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    current_modal = [this.element.id, tmpgrp];
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function end_modal() {
-</xsl:text>
-    <xsl:text>    let [eltid, tmpgrp] = current_modal;
-</xsl:text>
-    <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    parent.removeChild(tmpgrp);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    current_modal = undefined;
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function widget_active_activable(eltsub) {
-</xsl:text>
-    <xsl:text>    if(eltsub.inactive_style === undefined)
-</xsl:text>
-    <xsl:text>        eltsub.inactive_style = eltsub.inactive.getAttribute("style");
-</xsl:text>
-    <xsl:text>    eltsub.inactive.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>    if(eltsub.active_style !== undefined)
-</xsl:text>
-    <xsl:text>            eltsub.active.setAttribute("style", eltsub.active_style);
-</xsl:text>
-    <xsl:text>    console.log("active", eltsub);
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>function widget_inactive_activable(eltsub) {
-</xsl:text>
-    <xsl:text>    if(eltsub.active_style === undefined)
-</xsl:text>
-    <xsl:text>        eltsub.active_style = eltsub.active.getAttribute("style");
-</xsl:text>
-    <xsl:text>    eltsub.active.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>    if(eltsub.inactive_style !== undefined)
-</xsl:text>
-    <xsl:text>            eltsub.inactive.setAttribute("style", eltsub.inactive_style);
-</xsl:text>
-    <xsl:text>    console.log("inactive", eltsub);
-</xsl:text>
-    <xsl:text>};
-</xsl:text>
-    <xsl:apply-templates select="document('')/*/epilogue:*"/>
-  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -3244,7 +2213,1058 @@
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
         <script>
-          <xsl:call-template name="scripts"/>
+          <xsl:apply-templates select="document('')/*/preamble:*"/>
+          <xsl:apply-templates select="document('')/*/epilogue:*"/>
+          <xsl:text>// svghmi.js
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
+</xsl:text>
+          <xsl:text>var updates = {};
+</xsl:text>
+          <xsl:text>var need_cache_apply = []; 
+</xsl:text>
+          <xsl:text>var jumps_need_update = false;
+</xsl:text>
+          <xsl:text>var jump_history = [[default_page, undefined]];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
+</xsl:text>
+          <xsl:text>    try {
+</xsl:text>
+          <xsl:text>        let idx = widget.offset ? index - widget.offset : index;
+</xsl:text>
+          <xsl:text>        let idxidx = widget.indexes.indexOf(idx);
+</xsl:text>
+          <xsl:text>        let d = widget.dispatch;
+</xsl:text>
+          <xsl:text>        if(typeof(d) == "function" &amp;&amp; idxidx == 0){
+</xsl:text>
+          <xsl:text>            d.call(widget, value, oldval);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>        else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
+</xsl:text>
+          <xsl:text>            d[idxidx].call(widget, value, oldval);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>        /* else dispatch_0, ..., dispatch_n ? */
+</xsl:text>
+          <xsl:text>        /*else {
+</xsl:text>
+          <xsl:text>            throw new Error("Dunno how to dispatch to widget at index = " + index);
+</xsl:text>
+          <xsl:text>        }*/
+</xsl:text>
+          <xsl:text>    } catch(err) {
+</xsl:text>
+          <xsl:text>        console.log(err);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function dispatch_value(index, value) {
+</xsl:text>
+          <xsl:text>    let widgets = subscribers[index];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    let oldval = cache[index];
+</xsl:text>
+          <xsl:text>    cache[index] = value;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(widgets.size &gt; 0) {
+</xsl:text>
+          <xsl:text>        for(let widget of widgets){
+</xsl:text>
+          <xsl:text>            dispatch_value_to_widget(widget, index, value, oldval);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function init_widgets() {
+</xsl:text>
+          <xsl:text>    Object.keys(hmi_widgets).forEach(function(id) {
+</xsl:text>
+          <xsl:text>        let widget = hmi_widgets[id];
+</xsl:text>
+          <xsl:text>        let init = widget.init;
+</xsl:text>
+          <xsl:text>        if(typeof(init) == "function"){
+</xsl:text>
+          <xsl:text>            try {
+</xsl:text>
+          <xsl:text>                init.call(widget);
+</xsl:text>
+          <xsl:text>            } catch(err) {
+</xsl:text>
+          <xsl:text>                console.log(err);
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// Open WebSocket to relative "/ws" address
+</xsl:text>
+          <xsl:text>var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
+</xsl:text>
+          <xsl:text>ws.binaryType = 'arraybuffer';
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>const dvgetters = {
+</xsl:text>
+          <xsl:text>    INT: (dv,offset) =&gt; [dv.getInt16(offset, true), 2],
+</xsl:text>
+          <xsl:text>    BOOL: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+</xsl:text>
+          <xsl:text>    NODE: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+</xsl:text>
+          <xsl:text>    STRING: (dv, offset) =&gt; {
+</xsl:text>
+          <xsl:text>        size = dv.getInt8(offset);
+</xsl:text>
+          <xsl:text>        return [
+</xsl:text>
+          <xsl:text>            String.fromCharCode.apply(null, new Uint8Array(
+</xsl:text>
+          <xsl:text>                dv.buffer, /* original buffer */
+</xsl:text>
+          <xsl:text>                offset + 1, /* string starts after size*/
+</xsl:text>
+          <xsl:text>                size /* size of string */
+</xsl:text>
+          <xsl:text>            )), size + 1]; /* total increment */
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// Apply updates recieved through ws.onmessage to subscribed widgets
+</xsl:text>
+          <xsl:text>function apply_updates() {
+</xsl:text>
+          <xsl:text>    for(let index in updates){
+</xsl:text>
+          <xsl:text>        // serving as a key, index becomes a string
+</xsl:text>
+          <xsl:text>        // -&gt; pass Number(index) instead
+</xsl:text>
+          <xsl:text>        dispatch_value(Number(index), updates[index]);
+</xsl:text>
+          <xsl:text>        delete updates[index];
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// Called on requestAnimationFrame, modifies DOM
+</xsl:text>
+          <xsl:text>var requestAnimationFrameID = null;
+</xsl:text>
+          <xsl:text>function animate() {
+</xsl:text>
+          <xsl:text>    // Do the page swith if any one pending
+</xsl:text>
+          <xsl:text>    if(current_subscribed_page != current_visible_page){
+</xsl:text>
+          <xsl:text>        switch_visible_page(current_subscribed_page);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    while(widget = need_cache_apply.pop()){
+</xsl:text>
+          <xsl:text>        widget.apply_cache();
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(jumps_need_update) update_jumps();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    apply_updates();
+</xsl:text>
+          <xsl:text>    requestAnimationFrameID = null;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function requestHMIAnimation() {
+</xsl:text>
+          <xsl:text>    if(requestAnimationFrameID == null){
+</xsl:text>
+          <xsl:text>        requestAnimationFrameID = window.requestAnimationFrame(animate);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// Message reception handler
+</xsl:text>
+          <xsl:text>// Hash is verified and HMI values updates resulting from binary parsing
+</xsl:text>
+          <xsl:text>// are stored until browser can compute next frame, DOM is left untouched
+</xsl:text>
+          <xsl:text>ws.onmessage = function (evt) {
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    let data = evt.data;
+</xsl:text>
+          <xsl:text>    let dv = new DataView(data);
+</xsl:text>
+          <xsl:text>    let i = 0;
+</xsl:text>
+          <xsl:text>    try {
+</xsl:text>
+          <xsl:text>        for(let hash_int of hmi_hash) {
+</xsl:text>
+          <xsl:text>            if(hash_int != dv.getUint8(i)){
+</xsl:text>
+          <xsl:text>                throw new Error("Hash doesn't match");
+</xsl:text>
+          <xsl:text>            };
+</xsl:text>
+          <xsl:text>            i++;
+</xsl:text>
+          <xsl:text>        };
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        while(i &lt; data.byteLength){
+</xsl:text>
+          <xsl:text>            let index = dv.getUint32(i, true);
+</xsl:text>
+          <xsl:text>            i += 4;
+</xsl:text>
+          <xsl:text>            let iectype = hmitree_types[index];
+</xsl:text>
+          <xsl:text>            if(iectype != undefined){
+</xsl:text>
+          <xsl:text>                let dvgetter = dvgetters[iectype];
+</xsl:text>
+          <xsl:text>                let [value, bytesize] = dvgetter(dv,i);
+</xsl:text>
+          <xsl:text>                updates[index] = value;
+</xsl:text>
+          <xsl:text>                i += bytesize;
+</xsl:text>
+          <xsl:text>            } else {
+</xsl:text>
+          <xsl:text>                throw new Error("Unknown index "+index);
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        };
+</xsl:text>
+          <xsl:text>        // register for rendering on next frame, since there are updates
+</xsl:text>
+          <xsl:text>        requestHMIAnimation();
+</xsl:text>
+          <xsl:text>    } catch(err) {
+</xsl:text>
+          <xsl:text>        // 1003 is for "Unsupported Data"
+</xsl:text>
+          <xsl:text>        // ws.close(1003, err.message);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        // TODO : remove debug alert ?
+</xsl:text>
+          <xsl:text>        alert("Error : "+err.message+"\nHMI will be reloaded.");
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        // force reload ignoring cache
+</xsl:text>
+          <xsl:text>        location.reload(true);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function send_blob(data) {
+</xsl:text>
+          <xsl:text>    if(data.length &gt; 0) {
+</xsl:text>
+          <xsl:text>        ws.send(new Blob([new Uint8Array(hmi_hash)].concat(data)));
+</xsl:text>
+          <xsl:text>    };
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>const typedarray_types = {
+</xsl:text>
+          <xsl:text>    INT: (number) =&gt; new Int16Array([number]),
+</xsl:text>
+          <xsl:text>    BOOL: (truth) =&gt; new Int16Array([truth]),
+</xsl:text>
+          <xsl:text>    NODE: (truth) =&gt; new Int16Array([truth]),
+</xsl:text>
+          <xsl:text>    STRING: (str) =&gt; {
+</xsl:text>
+          <xsl:text>        // beremiz default string max size is 128
+</xsl:text>
+          <xsl:text>        str = str.slice(0,128);
+</xsl:text>
+          <xsl:text>        binary = new Uint8Array(str.length + 1);
+</xsl:text>
+          <xsl:text>        binary[0] = str.length;
+</xsl:text>
+          <xsl:text>        for(var i = 0; i &lt; str.length; i++){
+</xsl:text>
+          <xsl:text>            binary[i+1] = str.charCodeAt(i);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>        return binary;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    /* TODO */
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function send_reset() {
+</xsl:text>
+          <xsl:text>    send_blob(new Uint8Array([1])); /* reset = 1 */
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// subscription state, as it should be in hmi server
+</xsl:text>
+          <xsl:text>// hmitree indexed array of integers
+</xsl:text>
+          <xsl:text>var subscriptions =  hmitree_types.map(_ignored =&gt; 0);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// subscription state as needed by widget now
+</xsl:text>
+          <xsl:text>// hmitree indexed array of Sets of widgets objects
+</xsl:text>
+          <xsl:text>var subscribers = hmitree_types.map(_ignored =&gt; new Set());
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
+</xsl:text>
+          <xsl:text>// Since dispatch directly calls change_hmi_value,
+</xsl:text>
+          <xsl:text>// PLC will periodically send variable at given frequency
+</xsl:text>
+          <xsl:text>subscribers[heartbeat_index].add({
+</xsl:text>
+          <xsl:text>    /* type: "Watchdog", */
+</xsl:text>
+          <xsl:text>    frequency: 1,
+</xsl:text>
+          <xsl:text>    indexes: [heartbeat_index],
+</xsl:text>
+          <xsl:text>    dispatch: function(value) {
+</xsl:text>
+          <xsl:text>        change_hmi_value(heartbeat_index, "+1");
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>});
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function update_subscriptions() {
+</xsl:text>
+          <xsl:text>    let delta = [];
+</xsl:text>
+          <xsl:text>    for(let index = 0; index &lt; subscribers.length; index++){
+</xsl:text>
+          <xsl:text>        let widgets = subscribers[index];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        // periods are in ms
+</xsl:text>
+          <xsl:text>        let previous_period = subscriptions[index];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        // subscribing with a zero period is unsubscribing
+</xsl:text>
+          <xsl:text>        let new_period = 0;
+</xsl:text>
+          <xsl:text>        if(widgets.size &gt; 0) {
+</xsl:text>
+          <xsl:text>            let maxfreq = 0;
+</xsl:text>
+          <xsl:text>            for(let widget of widgets)
+</xsl:text>
+          <xsl:text>                if(maxfreq &lt; widget.frequency)
+</xsl:text>
+          <xsl:text>                    maxfreq = widget.frequency;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>            if(maxfreq != 0)
+</xsl:text>
+          <xsl:text>                new_period = 1000/maxfreq;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        if(previous_period != new_period) {
+</xsl:text>
+          <xsl:text>            subscriptions[index] = new_period;
+</xsl:text>
+          <xsl:text>            delta.push(
+</xsl:text>
+          <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
+</xsl:text>
+          <xsl:text>                new Uint32Array([index]),
+</xsl:text>
+          <xsl:text>                new Uint16Array([new_period]));
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    send_blob(delta);
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function send_hmi_value(index, value) {
+</xsl:text>
+          <xsl:text>    let iectype = hmitree_types[index];
+</xsl:text>
+          <xsl:text>    let tobinary = typedarray_types[iectype];
+</xsl:text>
+          <xsl:text>    send_blob([
+</xsl:text>
+          <xsl:text>        new Uint8Array([0]),  /* setval = 0 */
+</xsl:text>
+          <xsl:text>        new Uint32Array([index]),
+</xsl:text>
+          <xsl:text>        tobinary(value)]);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    // DON'T DO THAT unless read_iterator in svghmi.c modifies wbuf as well, not only rbuf
+</xsl:text>
+          <xsl:text>    // cache[index] = value;
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function apply_hmi_value(index, new_val) {
+</xsl:text>
+          <xsl:text>    let old_val = cache[index]
+</xsl:text>
+          <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
+</xsl:text>
+          <xsl:text>        send_hmi_value(index, new_val);
+</xsl:text>
+          <xsl:text>    return new_val;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function change_hmi_value(index, opstr) {
+</xsl:text>
+          <xsl:text>    let op = opstr[0];
+</xsl:text>
+          <xsl:text>    let given_val = opstr.slice(1);
+</xsl:text>
+          <xsl:text>    let old_val = cache[index]
+</xsl:text>
+          <xsl:text>    let new_val;
+</xsl:text>
+          <xsl:text>    switch(op){
+</xsl:text>
+          <xsl:text>      case "=":
+</xsl:text>
+          <xsl:text>        eval("new_val"+opstr);
+</xsl:text>
+          <xsl:text>        break;
+</xsl:text>
+          <xsl:text>      case "+":
+</xsl:text>
+          <xsl:text>      case "-":
+</xsl:text>
+          <xsl:text>      case "*":
+</xsl:text>
+          <xsl:text>      case "/":
+</xsl:text>
+          <xsl:text>        if(old_val != undefined)
+</xsl:text>
+          <xsl:text>            new_val = eval("old_val"+opstr);
+</xsl:text>
+          <xsl:text>        break;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
+</xsl:text>
+          <xsl:text>        send_hmi_value(index, new_val);
+</xsl:text>
+          <xsl:text>    return new_val;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var current_visible_page;
+</xsl:text>
+          <xsl:text>var current_subscribed_page;
+</xsl:text>
+          <xsl:text>var current_page_index;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function prepare_svg() {
+</xsl:text>
+          <xsl:text>    for(let eltid in detachable_elements){
+</xsl:text>
+          <xsl:text>        let [element,parent] = detachable_elements[eltid];
+</xsl:text>
+          <xsl:text>        parent.removeChild(element);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function switch_page(page_name, page_index) {
+</xsl:text>
+          <xsl:text>    if(current_subscribed_page != current_visible_page){
+</xsl:text>
+          <xsl:text>        /* page switch already going */
+</xsl:text>
+          <xsl:text>        /* TODO LOG ERROR */
+</xsl:text>
+          <xsl:text>        return false;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(page_name == undefined)
+</xsl:text>
+          <xsl:text>        page_name = current_subscribed_page;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    let old_desc = page_desc[current_subscribed_page];
+</xsl:text>
+          <xsl:text>    let new_desc = page_desc[page_name];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(new_desc == undefined){
+</xsl:text>
+          <xsl:text>        /* TODO LOG ERROR */
+</xsl:text>
+          <xsl:text>        return false;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(page_index == undefined){
+</xsl:text>
+          <xsl:text>        page_index = new_desc.page_index;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(old_desc){
+</xsl:text>
+          <xsl:text>        old_desc.absolute_widgets.map(w=&gt;w.unsub());
+</xsl:text>
+          <xsl:text>        old_desc.relative_widgets.map(w=&gt;w.unsub());
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    new_desc.absolute_widgets.map(w=&gt;w.sub());
+</xsl:text>
+          <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+</xsl:text>
+          <xsl:text>    new_desc.relative_widgets.map(w=&gt;w.sub(new_offset));
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    update_subscriptions();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    current_subscribed_page = page_name;
+</xsl:text>
+          <xsl:text>    current_page_index = page_index;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    jumps_need_update = true;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    requestHMIAnimation();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    jump_history.push([page_name, page_index]);
+</xsl:text>
+          <xsl:text>    if(jump_history.length &gt; 42)
+</xsl:text>
+          <xsl:text>        jump_history.shift();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return true;
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function* chain(a,b){
+</xsl:text>
+          <xsl:text>    yield* a;
+</xsl:text>
+          <xsl:text>    yield* b;
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function unsubscribe(){
+</xsl:text>
+          <xsl:text>    /* remove subsribers */
+</xsl:text>
+          <xsl:text>    for(let index of this.indexes){
+</xsl:text>
+          <xsl:text>        let idx = index + this.offset;
+</xsl:text>
+          <xsl:text>        subscribers[idx].delete(this);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    this.offset = 0;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function subscribe(new_offset=0){
+</xsl:text>
+          <xsl:text>    /* set the offset because relative */
+</xsl:text>
+          <xsl:text>    this.offset = new_offset;
+</xsl:text>
+          <xsl:text>    /* add this's subsribers */
+</xsl:text>
+          <xsl:text>    for(let index of this.indexes){
+</xsl:text>
+          <xsl:text>        subscribers[index + new_offset].add(this);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    need_cache_apply.push(this); 
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function foreach_unsubscribe(){
+</xsl:text>
+          <xsl:text>    for(let item of this.items){
+</xsl:text>
+          <xsl:text>        for(let widget of item) {
+</xsl:text>
+          <xsl:text>            unsubscribe.call(widget);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    this.offset = 0;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function foreach_widgets_do(new_offset, todo){
+</xsl:text>
+          <xsl:text>    this.offset = new_offset;
+</xsl:text>
+          <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
+</xsl:text>
+          <xsl:text>        let item = this.items[i];
+</xsl:text>
+          <xsl:text>        let orig_item_index = this.index_pool[i];
+</xsl:text>
+          <xsl:text>        let item_index = this.index_pool[i+this.item_offset];
+</xsl:text>
+          <xsl:text>        let item_index_offset = item_index - orig_item_index;
+</xsl:text>
+          <xsl:text>        for(let widget of item) {
+</xsl:text>
+          <xsl:text>            todo.call(widget, new_offset + item_index_offset);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function foreach_subscribe(new_offset=0){
+</xsl:text>
+          <xsl:text>    foreach_widgets_do.call(this, new_offset, subscribe);
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function widget_apply_cache() {
+</xsl:text>
+          <xsl:text>    for(let index of this.indexes){
+</xsl:text>
+          <xsl:text>        /* dispatch current cache in newly opened page widgets */
+</xsl:text>
+          <xsl:text>        let realindex = index+this.offset;
+</xsl:text>
+          <xsl:text>        let cached_val = cache[realindex];
+</xsl:text>
+          <xsl:text>        if(cached_val != undefined)
+</xsl:text>
+          <xsl:text>            dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function foreach_apply_cache() {
+</xsl:text>
+          <xsl:text>    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function foreach_onclick(opstr, evt) {
+</xsl:text>
+          <xsl:text>    new_item_offset = eval(String(this.item_offset)+opstr)
+</xsl:text>
+          <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
+</xsl:text>
+          <xsl:text>        if(this.item_offset + this.items.length == this.index_pool.length)
+</xsl:text>
+          <xsl:text>            new_item_offset = 0;
+</xsl:text>
+          <xsl:text>        else
+</xsl:text>
+          <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+          <xsl:text>    } else if(new_item_offset &lt; 0) {
+</xsl:text>
+          <xsl:text>        if(this.item_offset == 0)
+</xsl:text>
+          <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+          <xsl:text>        else
+</xsl:text>
+          <xsl:text>            new_item_offset = 0;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    this.item_offset = new_item_offset;
+</xsl:text>
+          <xsl:text>    off = this.offset;
+</xsl:text>
+          <xsl:text>    foreach_unsubscribe.call(this);
+</xsl:text>
+          <xsl:text>    foreach_subscribe.call(this,off);
+</xsl:text>
+          <xsl:text>    update_subscriptions();
+</xsl:text>
+          <xsl:text>    need_cache_apply.push(this);
+</xsl:text>
+          <xsl:text>    jumps_need_update = true;
+</xsl:text>
+          <xsl:text>    requestHMIAnimation();
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function switch_visible_page(page_name) {
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    let old_desc = page_desc[current_visible_page];
+</xsl:text>
+          <xsl:text>    let new_desc = page_desc[page_name];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(old_desc){
+</xsl:text>
+          <xsl:text>        for(let eltid in old_desc.required_detachables){
+</xsl:text>
+          <xsl:text>            if(!(eltid in new_desc.required_detachables)){
+</xsl:text>
+          <xsl:text>                let [element, parent] = old_desc.required_detachables[eltid];
+</xsl:text>
+          <xsl:text>                parent.removeChild(element);
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>        for(let eltid in new_desc.required_detachables){
+</xsl:text>
+          <xsl:text>            if(!(eltid in old_desc.required_detachables)){
+</xsl:text>
+          <xsl:text>                let [element, parent] = new_desc.required_detachables[eltid];
+</xsl:text>
+          <xsl:text>                parent.appendChild(element);
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }else{
+</xsl:text>
+          <xsl:text>        for(let eltid in new_desc.required_detachables){
+</xsl:text>
+          <xsl:text>            let [element, parent] = new_desc.required_detachables[eltid];
+</xsl:text>
+          <xsl:text>            parent.appendChild(element);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+</xsl:text>
+          <xsl:text>    current_visible_page = page_name;
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function update_jumps() {
+</xsl:text>
+          <xsl:text>    page_desc[current_visible_page].jumps.map(w=&gt;w.notify_page_change(current_visible_page,current_page_index));
+</xsl:text>
+          <xsl:text>    jumps_need_update = false;
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// Once connection established
+</xsl:text>
+          <xsl:text>ws.onopen = function (evt) {
+</xsl:text>
+          <xsl:text>    init_widgets();
+</xsl:text>
+          <xsl:text>    send_reset();
+</xsl:text>
+          <xsl:text>    // show main page
+</xsl:text>
+          <xsl:text>    prepare_svg();
+</xsl:text>
+          <xsl:text>    switch_page(default_page);
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>ws.onclose = function (evt) {
+</xsl:text>
+          <xsl:text>    // TODO : add visible notification while waiting for reload
+</xsl:text>
+          <xsl:text>    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in 10s.");
+</xsl:text>
+          <xsl:text>    // TODO : re-enable auto reload when not in debug
+</xsl:text>
+          <xsl:text>    //window.setTimeout(() =&gt; location.reload(true), 10000);
+</xsl:text>
+          <xsl:text>    alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var xmlns = "http://www.w3.org/2000/svg";
+</xsl:text>
+          <xsl:text>var edit_callback;
+</xsl:text>
+          <xsl:text>function edit_value(path, valuetype, callback, initial) {
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    let [keypadid, xcoord, ycoord] = keypads[valuetype];
+</xsl:text>
+          <xsl:text>    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
+</xsl:text>
+          <xsl:text>    edit_callback = callback;
+</xsl:text>
+          <xsl:text>    let widget = hmi_widgets[keypadid];
+</xsl:text>
+          <xsl:text>    widget.start_edit(path, valuetype, callback, initial);
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var current_modal; /* TODO stack ?*/
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function show_modal() {
+</xsl:text>
+          <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    tmpgrp = document.createElementNS(xmlns,"g");
+</xsl:text>
+          <xsl:text>    tmpgrpattr = document.createAttribute("transform");
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    let [xcoord,ycoord] = this.coordinates;
+</xsl:text>
+          <xsl:text>    let [xdest,ydest] = page_desc[current_visible_page].bbox;
+</xsl:text>
+          <xsl:text>    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+</xsl:text>
+          <xsl:text>    tmpgrp.setAttributeNode(tmpgrpattr);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    tmpgrp.appendChild(element);
+</xsl:text>
+          <xsl:text>    parent.appendChild(tmpgrp);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    current_modal = [this.element.id, tmpgrp];
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function end_modal() {
+</xsl:text>
+          <xsl:text>    let [eltid, tmpgrp] = current_modal;
+</xsl:text>
+          <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    parent.removeChild(tmpgrp);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    current_modal = undefined;
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function widget_active_activable(eltsub) {
+</xsl:text>
+          <xsl:text>    if(eltsub.inactive_style === undefined)
+</xsl:text>
+          <xsl:text>        eltsub.inactive_style = eltsub.inactive.getAttribute("style");
+</xsl:text>
+          <xsl:text>    eltsub.inactive.setAttribute("style", "display:none");
+</xsl:text>
+          <xsl:text>    if(eltsub.active_style !== undefined)
+</xsl:text>
+          <xsl:text>            eltsub.active.setAttribute("style", eltsub.active_style);
+</xsl:text>
+          <xsl:text>    console.log("active", eltsub);
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>function widget_inactive_activable(eltsub) {
+</xsl:text>
+          <xsl:text>    if(eltsub.active_style === undefined)
+</xsl:text>
+          <xsl:text>        eltsub.active_style = eltsub.active.getAttribute("style");
+</xsl:text>
+          <xsl:text>    eltsub.active.setAttribute("style", "display:none");
+</xsl:text>
+          <xsl:text>    if(eltsub.inactive_style !== undefined)
+</xsl:text>
+          <xsl:text>            eltsub.inactive.setAttribute("style", eltsub.inactive_style);
+</xsl:text>
+          <xsl:text>    console.log("inactive", eltsub);
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
         </script>
       </body>
     </html>

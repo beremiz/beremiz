@@ -33,7 +33,9 @@ istylesheet
             extension-element-prefixes="ns func exsl regexp str dyn"
             exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue" {
 
+    const "svg", "/svg:svg";
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
+
 
     include hmi_tree.ysl2
 
@@ -47,7 +49,6 @@ istylesheet
 
     include widget_*.ysl2
 
-    include scripts.ysl2
 
     template "/" {
         comment > Made with SVGHMI. https://beremiz.org
@@ -68,7 +69,12 @@ istylesheet
                 // Inline SVG
                 copy "$result_svg";
                 script{
-                    call "scripts";
+                    apply "document('')/*/preamble:*";
+
+                    apply "document('')/*/epilogue:*";
+
+                    include text svghmi.js
+
                 }
             }
         }

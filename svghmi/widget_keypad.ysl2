@@ -1,5 +1,18 @@
 // widget_keypad.ysl2
 
+emit "epilogue:keypad" {
+    |
+    | var keypads = {
+    foreach "$keypads_descs"{
+        const "keypad_id","@id";
+        foreach "arg"{
+            const "g", "$geometry[@Id = $keypad_id]";
+    |     "«@value»":["«$keypad_id»", «$g/@x», «$g/@y»],
+        }
+    }
+    | }
+}
+
 template "widget[@type='Keypad']", mode="widget_defs" {
     param "hmi_element";
     labels("Esc Enter BackSpace Keys Info Value");
