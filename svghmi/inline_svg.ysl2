@@ -115,8 +115,7 @@ svgtmpl "svg:*", mode="unlink_clone" {
 const "result_svg" apply "/", mode="inline_svg";
 const "result_svg_ns", "exsl:node-set($result_svg)";
 
-debug:inline_svg;
-template "debug:inline-svg", mode="debug" {
+emit "debug:inline-svg" {
     | Unlinked :
     foreach "$to_unlink"{
         | «@id»

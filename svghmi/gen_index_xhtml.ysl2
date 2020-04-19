@@ -3,6 +3,14 @@ include yslt_noindent.yml2
 // overrides yslt's output function to set CDATA
 decl output(method, cdata-section-elements="xhtml:script");
 
+// helper to emit some content to internal namespaces
+decl emit(*name) alias - {
+    *name;
+    template *name {
+        content;
+    }
+};
+
 istylesheet
             /* From Inkscape */
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -13,13 +21,17 @@ istylesheet
             xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
             xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
             xmlns:xhtml="http://www.w3.org/1999/xhtml"
+
+            /* Internal namespaces to allow emit code/content from anywhere */
             xmlns:debug="debug"
+            xmlns:preamble="preamble"
+            xmlns:epilogue="epilogue"
 
-            /* Our namespace to invoke python code */
+            /* Namespace to invoke python code */
             xmlns:ns="beremiz"
-            extension-element-prefixes="ns func exsl regexp str dyn"
-            exclude-result-prefixes="ns str regexp exsl func dyn debug" {
 
+            extension-element-prefixes="ns func exsl regexp str dyn"
+            exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue" {
 
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
 
@@ -37,18 +49,16 @@ istylesheet
 
     include scripts.ysl2
 
-    template "*[namespace-uri()='debug']", mode="debug_as_comment" {
-        comment {
-            | «local-name()» :
-            apply ".", mode="debug";
-        }
-    }
-
     template "/" {
         comment > Made with SVGHMI. https://beremiz.org
 
         // all debug output from included definitions, as comments
-        // apply "document('')/*/debug:*", mode="debug_as_comment";
+        foreach "document('')/*/debug:*" {
+            comment {
+                | «local-name()» :
+                apply ".";
+            }
+        }
 
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"
