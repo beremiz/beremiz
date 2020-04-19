@@ -49,6 +49,12 @@ template "svg:*", mode="hmi_elements" {
     |   }`if "position()!=last()" > ,`
 }
 
+emit "preamble:hmi-elements" {
+    | var hmi_widgets = {
+    apply "$hmi_elements", mode="hmi_elements";
+    | }
+}
+
 // default : normal subscribing
 template "widget", mode="widget_subscribe" {
     |     sub: subscribe,

@@ -7,9 +7,6 @@
 const "hmi_pages_descs", "$parsed_widgets/widget[@type = 'Page']";
 const "hmi_pages", "$hmi_elements[@id = $hmi_pages_descs/@id]";
 
-const "keypads_descs", "$parsed_widgets/widget[@type = 'Keypad']";
-const "keypads", "$hmi_elements[@id = $keypads_descs/@id]";
-
 const "default_page" choose {
     when "count($hmi_pages) > 1" {
         choose {
@@ -24,6 +21,14 @@ const "default_page" choose {
     }
     otherwise > «func:widget($hmi_pages/@id)/arg[1]/@value»
 }
+
+emit "preamble:default-page" {
+    |
+    | var default_page = "«$default_page»";
+}
+
+const "keypads_descs", "$parsed_widgets/widget[@type = 'Keypad']";
+const "keypads", "$hmi_elements[@id = $keypads_descs/@id]";
 
 // returns all directly or indirectly refered elements
 def "func:refered_elements" {
@@ -94,6 +99,15 @@ def "func:detachable_elements" {
 const "_detachable_elements", "func:detachable_elements($hmi_pages | $keypads)";
 const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
+emit "epilogue:detachable-elements" {
+    |
+    | var detachable_elements = {
+    foreach "$detachable_elements"{
+    |     "«@id»":[id("«@id»"), id("«../@id»")]`if "position()!=last()" > ,`
+    }
+    | }
+}
+
 const "forEach_widgets_ids", "$parsed_widgets/widget[@type = 'ForEach']/@id";
 const "forEach_widgets", "$hmi_elements[@id = $forEach_widgets_ids]";
 const "in_forEach_widget_ids", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id";
@@ -154,11 +168,18 @@ template "svg:*", mode="page_desc" {
     |   }`if "position()!=last()" > ,`
 }
 
+emit "epilogue:page-desc" {
+    |
+    | var page_desc = {
+    apply "$hmi_pages", mode="page_desc";
+    | }
+}
+
 template "*", mode="per_page_widget_template";
 
 
 emit "debug:detachable-pages" {
-
+    |
     | DETACHABLES:
     foreach "$detachable_elements"{
         |  «@id»
