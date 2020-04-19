@@ -157,9 +157,7 @@ template "svg:*", mode="page_desc" {
 template "*", mode="per_page_widget_template";
 
 
-debug:detachable_pages;
-
-template "debug:detachable-pages", mode="debug" {
+emit "debug:detachable-pages" {
 
     | DETACHABLES:
     foreach "$detachable_elements"{

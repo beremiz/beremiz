@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:debug="debug" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns str regexp exsl func dyn debug">
+<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:epilogue="epilogue" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:debug="debug" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -157,7 +157,6 @@
     <xsl:variable name="class_b" select="$indexed_hmitree/*[@hmipath = $b]/@class"/>
     <func:result select="$class_a and $class_b and $class_a = $class_b"/>
   </func:function>
-  <debug:hmi-tree/>
   <xsl:template mode="testtree" match="*">
     <xsl:param name="indent" select="''"/>
     <xsl:value-of select="$indent"/>
@@ -178,7 +177,8 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template mode="debug" match="debug:hmi-tree">
+  <debug:hmi-tree/>
+  <xsl:template match="debug:hmi-tree">
     <xsl:text>Raw HMI tree
 </xsl:text>
     <xsl:apply-templates mode="testtree" select="$hmitree"/>
@@ -196,7 +196,7 @@
   </xsl:template>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <debug:geometry/>
-  <xsl:template mode="debug" match="debug:geometry">
+  <xsl:template match="debug:geometry">
     <xsl:text>ID, x, y, w, h
 </xsl:text>
     <xsl:for-each select="$geometry">
@@ -461,7 +461,7 @@
   </xsl:template>
   <xsl:template mode="per_page_widget_template" match="*"/>
   <debug:detachable-pages/>
-  <xsl:template mode="debug" match="debug:detachable-pages">
+  <xsl:template match="debug:detachable-pages">
     <xsl:text>DETACHABLES:
 </xsl:text>
     <xsl:for-each select="$detachable_elements">
@@ -591,7 +591,7 @@
   </xsl:variable>
   <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
   <debug:inline-svg/>
-  <xsl:template mode="debug" match="debug:inline-svg">
+  <xsl:template match="debug:inline-svg">
     <xsl:text>Unlinked :
 </xsl:text>
     <xsl:for-each select="$to_unlink">
@@ -599,6 +599,14 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
+  </xsl:template>
+  <preamble:hmi-widget/>
+  <xsl:template match="preamble:hmi-widget">
+    <xsl:text>var hmi_widgets = {
+</xsl:text>
+    <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
+    <xsl:text>}
+</xsl:text>
   </xsl:template>
   <xsl:template mode="hmi_elements" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
@@ -2079,15 +2087,10 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:apply-templates select="document('')/*/jspreamble"/>
+    <xsl:apply-templates select="document('')/*/preamble:*"/>
     <xsl:text>var hmi_hash = [</xsl:text>
     <xsl:value-of select="$hmitree/@hash"/>
     <xsl:text>];
-</xsl:text>
-    <xsl:text>var hmi_widgets = {
-</xsl:text>
-    <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
-    <xsl:text>}
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -3222,20 +3225,20 @@
 </xsl:text>
     <xsl:text>};
 </xsl:text>
-  </xsl:template>
-  <xsl:template mode="debug_as_comment" match="*[namespace-uri()='debug']">
-    <xsl:comment>
-      <xsl:value-of select="local-name()"/>
-      <xsl:text> :
-</xsl:text>
-      <xsl:apply-templates mode="debug" select="."/>
-    </xsl:comment>
+    <xsl:apply-templates select="document('')/*/epilogue:*"/>
   </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
-    <xsl:apply-templates mode="debug_as_comment" select="document('')/*/debug:*"/>
+    <xsl:for-each select="document('')/*/debug:*">
+      <xsl:comment>
+        <xsl:value-of select="local-name()"/>
+        <xsl:text> :
+</xsl:text>
+        <xsl:apply-templates select="."/>
+      </xsl:comment>
+    </xsl:for-each>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
