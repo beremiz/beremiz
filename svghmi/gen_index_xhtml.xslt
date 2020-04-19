@@ -1544,6 +1544,115 @@
     <xsl:text>    apply_cache: foreach_apply_cache,
 </xsl:text>
   </xsl:template>
+  <epilogue:foreach/>
+  <xsl:template match="epilogue:foreach">
+    <xsl:text>function foreach_unsubscribe(){
+</xsl:text>
+    <xsl:text>    for(let item of this.items){
+</xsl:text>
+    <xsl:text>        for(let widget of item) {
+</xsl:text>
+    <xsl:text>            unsubscribe.call(widget);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    this.offset = 0;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_widgets_do(new_offset, todo){
+</xsl:text>
+    <xsl:text>    this.offset = new_offset;
+</xsl:text>
+    <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
+</xsl:text>
+    <xsl:text>        let item = this.items[i];
+</xsl:text>
+    <xsl:text>        let orig_item_index = this.index_pool[i];
+</xsl:text>
+    <xsl:text>        let item_index = this.index_pool[i+this.item_offset];
+</xsl:text>
+    <xsl:text>        let item_index_offset = item_index - orig_item_index;
+</xsl:text>
+    <xsl:text>        for(let widget of item) {
+</xsl:text>
+    <xsl:text>            todo.call(widget, new_offset + item_index_offset);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_subscribe(new_offset=0){
+</xsl:text>
+    <xsl:text>    foreach_widgets_do.call(this, new_offset, subscribe);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_apply_cache() {
+</xsl:text>
+    <xsl:text>    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function foreach_onclick(opstr, evt) {
+</xsl:text>
+    <xsl:text>    new_item_offset = eval(String(this.item_offset)+opstr)
+</xsl:text>
+    <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
+</xsl:text>
+    <xsl:text>        if(this.item_offset + this.items.length == this.index_pool.length)
+</xsl:text>
+    <xsl:text>            new_item_offset = 0;
+</xsl:text>
+    <xsl:text>        else
+</xsl:text>
+    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+    <xsl:text>    } else if(new_item_offset &lt; 0) {
+</xsl:text>
+    <xsl:text>        if(this.item_offset == 0)
+</xsl:text>
+    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+    <xsl:text>        else
+</xsl:text>
+    <xsl:text>            new_item_offset = 0;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    this.item_offset = new_item_offset;
+</xsl:text>
+    <xsl:text>    off = this.offset;
+</xsl:text>
+    <xsl:text>    foreach_unsubscribe.call(this);
+</xsl:text>
+    <xsl:text>    foreach_subscribe.call(this,off);
+</xsl:text>
+    <xsl:text>    update_subscriptions();
+</xsl:text>
+    <xsl:text>    need_cache_apply.push(this);
+</xsl:text>
+    <xsl:text>    jumps_need_update = true;
+</xsl:text>
+    <xsl:text>    requestHMIAnimation();
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="value_elt">
@@ -1846,6 +1955,25 @@
         </xsl:message>
       </xsl:if>
     </xsl:if>
+  </xsl:template>
+  <epilogue:jump/>
+  <xsl:template match="epilogue:jump">
+    <xsl:text>var jumps_need_update = false;
+</xsl:text>
+    <xsl:text>var jump_history = [[default_page, undefined]];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function update_jumps() {
+</xsl:text>
+    <xsl:text>    page_desc[current_visible_page].jumps.map(w=&gt;w.notify_page_change(current_visible_page,current_page_index));
+</xsl:text>
+    <xsl:text>    jumps_need_update = false;
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <epilogue:keypad/>
   <xsl:template match="epilogue:keypad">
@@ -2224,10 +2352,6 @@
           <xsl:text>var updates = {};
 </xsl:text>
           <xsl:text>var need_cache_apply = []; 
-</xsl:text>
-          <xsl:text>var jumps_need_update = false;
-</xsl:text>
-          <xsl:text>var jump_history = [[default_page, undefined]];
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -2921,58 +3045,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function foreach_unsubscribe(){
-</xsl:text>
-          <xsl:text>    for(let item of this.items){
-</xsl:text>
-          <xsl:text>        for(let widget of item) {
-</xsl:text>
-          <xsl:text>            unsubscribe.call(widget);
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>    this.offset = 0;
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function foreach_widgets_do(new_offset, todo){
-</xsl:text>
-          <xsl:text>    this.offset = new_offset;
-</xsl:text>
-          <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
-</xsl:text>
-          <xsl:text>        let item = this.items[i];
-</xsl:text>
-          <xsl:text>        let orig_item_index = this.index_pool[i];
-</xsl:text>
-          <xsl:text>        let item_index = this.index_pool[i+this.item_offset];
-</xsl:text>
-          <xsl:text>        let item_index_offset = item_index - orig_item_index;
-</xsl:text>
-          <xsl:text>        for(let widget of item) {
-</xsl:text>
-          <xsl:text>            todo.call(widget, new_offset + item_index_offset);
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function foreach_subscribe(new_offset=0){
-</xsl:text>
-          <xsl:text>    foreach_widgets_do.call(this, new_offset, subscribe);
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>function widget_apply_cache() {
 </xsl:text>
           <xsl:text>    for(let index of this.indexes){
@@ -2990,62 +3062,6 @@
           <xsl:text>    }
 </xsl:text>
           <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function foreach_apply_cache() {
-</xsl:text>
-          <xsl:text>    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function foreach_onclick(opstr, evt) {
-</xsl:text>
-          <xsl:text>    new_item_offset = eval(String(this.item_offset)+opstr)
-</xsl:text>
-          <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
-</xsl:text>
-          <xsl:text>        if(this.item_offset + this.items.length == this.index_pool.length)
-</xsl:text>
-          <xsl:text>            new_item_offset = 0;
-</xsl:text>
-          <xsl:text>        else
-</xsl:text>
-          <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
-</xsl:text>
-          <xsl:text>    } else if(new_item_offset &lt; 0) {
-</xsl:text>
-          <xsl:text>        if(this.item_offset == 0)
-</xsl:text>
-          <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
-</xsl:text>
-          <xsl:text>        else
-</xsl:text>
-          <xsl:text>            new_item_offset = 0;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>    this.item_offset = new_item_offset;
-</xsl:text>
-          <xsl:text>    off = this.offset;
-</xsl:text>
-          <xsl:text>    foreach_unsubscribe.call(this);
-</xsl:text>
-          <xsl:text>    foreach_subscribe.call(this,off);
-</xsl:text>
-          <xsl:text>    update_subscriptions();
-</xsl:text>
-          <xsl:text>    need_cache_apply.push(this);
-</xsl:text>
-          <xsl:text>    jumps_need_update = true;
-</xsl:text>
-          <xsl:text>    requestHMIAnimation();
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -3104,18 +3120,6 @@
           <xsl:text>    current_visible_page = page_name;
 </xsl:text>
           <xsl:text>};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function update_jumps() {
-</xsl:text>
-          <xsl:text>    page_desc[current_visible_page].jumps.map(w=&gt;w.notify_page_change(current_visible_page,current_page_index));
-</xsl:text>
-          <xsl:text>    jumps_need_update = false;
-</xsl:text>
-          <xsl:text>};
-</xsl:text>
-          <xsl:text>
 </xsl:text>
           <xsl:text>
 </xsl:text>

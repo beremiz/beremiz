@@ -126,3 +126,16 @@ template "widget[@type='Jump']", mode="per_page_widget_template"{
             error > Jump id="«@id»" to page "«$target_page_name»" with incompatible path "«path[1]/@value» (must be same class as "«$target_page_path»")
     }
 }
+
+emit "epilogue:jump"
+||
+var jumps_need_update = false;
+var jump_history = [[default_page, undefined]];
+
+function update_jumps() {
+    page_desc[current_visible_page].jumps.map(w=>w.notify_page_change(current_visible_page,current_page_index));
+    jumps_need_update = false;
+};
+
+||
+
