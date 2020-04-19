@@ -3,8 +3,6 @@
 var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
 var need_cache_apply = []; 
-var jumps_need_update = false;
-var jump_history = [[default_page, undefined]];
 
 function dispatch_value_to_widget(widget, index, value, oldval) {
     try {
@@ -351,32 +349,6 @@ function subscribe(new_offset=0){
     need_cache_apply.push(this); 
 }
 
-function foreach_unsubscribe(){
-    for(let item of this.items){
-        for(let widget of item) {
-            unsubscribe.call(widget);
-        }
-    }
-    this.offset = 0;
-}
-
-function foreach_widgets_do(new_offset, todo){
-    this.offset = new_offset;
-    for(let i = 0; i < this.items.length; i++) {
-        let item = this.items[i];
-        let orig_item_index = this.index_pool[i];
-        let item_index = this.index_pool[i+this.item_offset];
-        let item_index_offset = item_index - orig_item_index;
-        for(let widget of item) {
-            todo.call(widget, new_offset + item_index_offset);
-        }
-    }
-}
-
-function foreach_subscribe(new_offset=0){
-    foreach_widgets_do.call(this, new_offset, subscribe);
-}
-
 function widget_apply_cache() {
     for(let index of this.indexes){
         /* dispatch current cache in newly opened page widgets */
@@ -386,34 +358,6 @@ function widget_apply_cache() {
             dispatch_value_to_widget(this, realindex, cached_val, cached_val);
     }
 }
-
-function foreach_apply_cache() {
-    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
-}
-
-function foreach_onclick(opstr, evt) {
-    new_item_offset = eval(String(this.item_offset)+opstr)
-    if(new_item_offset + this.items.length > this.index_pool.length) {
-        if(this.item_offset + this.items.length == this.index_pool.length)
-            new_item_offset = 0;
-        else
-            new_item_offset = this.index_pool.length - this.items.length;
-    } else if(new_item_offset < 0) {
-        if(this.item_offset == 0)
-            new_item_offset = this.index_pool.length - this.items.length;
-        else
-            new_item_offset = 0;
-    }
-    this.item_offset = new_item_offset;
-    off = this.offset;
-    foreach_unsubscribe.call(this);
-    foreach_subscribe.call(this,off);
-    update_subscriptions();
-    need_cache_apply.push(this);
-    jumps_need_update = true;
-    requestHMIAnimation();
-}
-
 
 function switch_visible_page(page_name) {
 
@@ -443,12 +387,6 @@ function switch_visible_page(page_name) {
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
     current_visible_page = page_name;
 };
-
-function update_jumps() {
-    page_desc[current_visible_page].jumps.map(w=>w.notify_page_change(current_visible_page,current_page_index));
-    jumps_need_update = false;
-};
-
 
 // Once connection established
 ws.onopen = function (evt) {
