@@ -1,6 +1,6 @@
 // widget_keypad.ysl2
 
-emit "epilogue:keypad" {
+emit "declarations:keypad" {
     |
     | var keypads = {
     foreach "$keypads_descs"{

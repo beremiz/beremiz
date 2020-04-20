@@ -55,7 +55,7 @@ template "widget[@type='ForEach']", mode="widget_subscribe"{
     |     apply_cache: foreach_apply_cache,
 }
 
-emit "epilogue:foreach"
+emit "definitions:foreach"
 ||
 function foreach_unsubscribe(){
     for(let item of this.items){

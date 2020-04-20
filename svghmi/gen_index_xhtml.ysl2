@@ -25,13 +25,15 @@ istylesheet
             /* Internal namespaces to allow emit code/content from anywhere */
             xmlns:debug="debug"
             xmlns:preamble="preamble"
+            xmlns:declarations="declarations"
+            xmlns:definitions="definitions"
             xmlns:epilogue="epilogue"
 
             /* Namespace to invoke python code */
             xmlns:ns="beremiz"
 
             extension-element-prefixes="ns func exsl regexp str dyn"
-            exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue" {
+            exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" {
 
     const "svg", "/svg:svg";
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
@@ -69,8 +71,16 @@ istylesheet
                 // Inline SVG
                 copy "$result_svg";
                 script{
+                    | \n//\n//\n// Early independent declarations \n//\n//
                     apply "document('')/*/preamble:*";
 
+                    | \n//\n//\n// Declarations depending on preamble \n//\n//
+                    apply "document('')/*/declarations:*";
+
+                    | \n//\n//\n// Order independent declaration and code \n//\n//
+                    apply "document('')/*/definitions:*";
+
+                    | \n//\n//\n// Statements that needs to be at the end \n//\n//
                     apply "document('')/*/epilogue:*";
 
                     include text svghmi.js

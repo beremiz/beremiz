@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:epilogue="epilogue" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:debug="debug" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue">
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
   <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
@@ -383,8 +383,8 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages | $keypads)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
-  <epilogue:detachable-elements/>
-  <xsl:template match="epilogue:detachable-elements">
+  <declarations:detachable-elements/>
+  <xsl:template match="declarations:detachable-elements">
     <xsl:text>
 </xsl:text>
     <xsl:text>var detachable_elements = {
@@ -527,8 +527,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <epilogue:page-desc/>
-  <xsl:template match="epilogue:page-desc">
+  <declarations:page-desc/>
+  <xsl:template match="declarations:page-desc">
     <xsl:text>
 </xsl:text>
     <xsl:text>var page_desc = {
@@ -1544,8 +1544,8 @@
     <xsl:text>    apply_cache: foreach_apply_cache,
 </xsl:text>
   </xsl:template>
-  <epilogue:foreach/>
-  <xsl:template match="epilogue:foreach">
+  <definitions:foreach/>
+  <xsl:template match="definitions:foreach">
     <xsl:text>function foreach_unsubscribe(){
 </xsl:text>
     <xsl:text>    for(let item of this.items){
@@ -1956,8 +1956,8 @@
       </xsl:if>
     </xsl:if>
   </xsl:template>
-  <epilogue:jump/>
-  <xsl:template match="epilogue:jump">
+  <declarations:jump/>
+  <xsl:template match="declarations:jump">
     <xsl:text>var jumps_need_update = false;
 </xsl:text>
     <xsl:text>var jump_history = [[default_page, undefined]];
@@ -1975,8 +1975,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <epilogue:keypad/>
-  <xsl:template match="epilogue:keypad">
+  <declarations:keypad/>
+  <xsl:template match="declarations:keypad">
     <xsl:text>
 </xsl:text>
     <xsl:text>var keypads = {
@@ -2341,7 +2341,37 @@
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
         <script>
+          <xsl:text>
+//
+//
+// Early independent declarations 
+//
+//
+</xsl:text>
           <xsl:apply-templates select="document('')/*/preamble:*"/>
+          <xsl:text>
+//
+//
+// Declarations depending on preamble 
+//
+//
+</xsl:text>
+          <xsl:apply-templates select="document('')/*/declarations:*"/>
+          <xsl:text>
+//
+//
+// Order independent declaration and code 
+//
+//
+</xsl:text>
+          <xsl:apply-templates select="document('')/*/definitions:*"/>
+          <xsl:text>
+//
+//
+// Statements that needs to be at the end 
+//
+//
+</xsl:text>
           <xsl:apply-templates select="document('')/*/epilogue:*"/>
           <xsl:text>// svghmi.js
 </xsl:text>
