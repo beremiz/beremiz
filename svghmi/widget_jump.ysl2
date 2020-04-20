@@ -127,7 +127,7 @@ template "widget[@type='Jump']", mode="per_page_widget_template"{
     }
 }
 
-emit "epilogue:jump"
+emit "declarations:jump"
 ||
 var jumps_need_update = false;
 var jump_history = [[default_page, undefined]];
