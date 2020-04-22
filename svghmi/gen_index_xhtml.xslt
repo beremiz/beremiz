@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
-  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -894,6 +894,131 @@
     <xsl:text>'].on_click(evt)");
 </xsl:text>
     <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Button']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 5,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    this.element.addEventListener(
+</xsl:text>
+    <xsl:text>      "mousedown",
+</xsl:text>
+    <xsl:text>      evt =&gt; {
+</xsl:text>
+    <xsl:text>          change_hmi_value(this.indexes[0], "=1");
+</xsl:text>
+    <xsl:text>      });
+</xsl:text>
+    <xsl:text>    this.element.addEventListener(
+</xsl:text>
+    <xsl:text>      "mouseup",
+</xsl:text>
+    <xsl:text>      evt =&gt; {
+</xsl:text>
+    <xsl:text>          change_hmi_value(this.indexes[0], "=0");
+</xsl:text>
+    <xsl:text>      });
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 10,
+</xsl:text>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>path</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>dispatch: function(value) {
+</xsl:text>
+    <xsl:text>    if(this.value_elt)
+</xsl:text>
+    <xsl:text>        this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>    let [min,max,start,end] = this.range;
+</xsl:text>
+    <xsl:text>    let [cx,cy] = this.center;
+</xsl:text>
+    <xsl:text>    let [rx,ry] = this.proportions;
+</xsl:text>
+    <xsl:text>    let tip = start + (end-start)*Number(value)/(max-min);
+</xsl:text>
+    <xsl:text>    let size = 0;
+</xsl:text>
+    <xsl:text>    if (tip-start &gt; Math.PI) {
+</xsl:text>
+    <xsl:text>        size = 1;
+</xsl:text>
+    <xsl:text>    } else {
+</xsl:text>
+    <xsl:text>        size = 0;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>range: undefined,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    let start = Number(this.path_elt.getAttribute('sodipodi:start'));
+</xsl:text>
+    <xsl:text>    let end = Number(this.path_elt.getAttribute('sodipodi:end'));
+</xsl:text>
+    <xsl:text>    let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
+</xsl:text>
+    <xsl:text>    let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
+</xsl:text>
+    <xsl:text>    let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
+</xsl:text>
+    <xsl:text>    let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
+</xsl:text>
+    <xsl:text>    if (ry == 0) {
+</xsl:text>
+    <xsl:text>        ry = rx;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    if (start &gt; end) {
+</xsl:text>
+    <xsl:text>        end = end + 2*Math.PI;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    let min = this.min_elt ?
+</xsl:text>
+    <xsl:text>              Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>              this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>    let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>              Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>              this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>    this.range = [min, max, start, end];
+</xsl:text>
+    <xsl:text>    this.center = [cx, cy];
+</xsl:text>
+    <xsl:text>    this.proportions = [rx, ry];
+</xsl:text>
+    <xsl:text>},
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
@@ -2336,7 +2461,7 @@
         <xsl:apply-templates select="."/>
       </xsl:comment>
     </xsl:for-each>
-    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <head/>
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
