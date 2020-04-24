@@ -78,10 +78,15 @@ class HMITreeNode(object):
                         in_common +=1
                     else:
                         break
-                if in_common > known_best_match:
+                # Match can only be HMI_NODE, and the whole path of node
+                # must match candidate node (except for name part)
+                # since candidate would become child of that node
+                if in_common > known_best_match and \
+                   child.nodetype == "HMI_NODE" and \
+                   in_common == len(child.path) - 1:
                     known_best_match = in_common
                     best_child = child
-        if best_child is not None and best_child.nodetype == "HMI_NODE":
+        if best_child is not None:
             best_child.place_node(node)
         else:
             self.children.append(node)
