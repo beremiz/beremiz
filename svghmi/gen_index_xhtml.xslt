@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:epilogue="epilogue" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:debug="debug" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue">
-  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -383,8 +383,8 @@
   </func:function>
   <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages | $keypads)"/>
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
-  <epilogue:detachable-elements/>
-  <xsl:template match="epilogue:detachable-elements">
+  <declarations:detachable-elements/>
+  <xsl:template match="declarations:detachable-elements">
     <xsl:text>
 </xsl:text>
     <xsl:text>var detachable_elements = {
@@ -527,8 +527,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <epilogue:page-desc/>
-  <xsl:template match="epilogue:page-desc">
+  <declarations:page-desc/>
+  <xsl:template match="declarations:page-desc">
     <xsl:text>
 </xsl:text>
     <xsl:text>var page_desc = {
@@ -894,6 +894,131 @@
     <xsl:text>'].on_click(evt)");
 </xsl:text>
     <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Button']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 5,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    this.element.addEventListener(
+</xsl:text>
+    <xsl:text>      "mousedown",
+</xsl:text>
+    <xsl:text>      evt =&gt; {
+</xsl:text>
+    <xsl:text>          change_hmi_value(this.indexes[0], "=1");
+</xsl:text>
+    <xsl:text>      });
+</xsl:text>
+    <xsl:text>    this.element.addEventListener(
+</xsl:text>
+    <xsl:text>      "mouseup",
+</xsl:text>
+    <xsl:text>      evt =&gt; {
+</xsl:text>
+    <xsl:text>          change_hmi_value(this.indexes[0], "=0");
+</xsl:text>
+    <xsl:text>      });
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>frequency: 10,
+</xsl:text>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>path</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>dispatch: function(value) {
+</xsl:text>
+    <xsl:text>    if(this.value_elt)
+</xsl:text>
+    <xsl:text>        this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>    let [min,max,start,end] = this.range;
+</xsl:text>
+    <xsl:text>    let [cx,cy] = this.center;
+</xsl:text>
+    <xsl:text>    let [rx,ry] = this.proportions;
+</xsl:text>
+    <xsl:text>    let tip = start + (end-start)*Number(value)/(max-min);
+</xsl:text>
+    <xsl:text>    let size = 0;
+</xsl:text>
+    <xsl:text>    if (tip-start &gt; Math.PI) {
+</xsl:text>
+    <xsl:text>        size = 1;
+</xsl:text>
+    <xsl:text>    } else {
+</xsl:text>
+    <xsl:text>        size = 0;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>range: undefined,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>    let start = Number(this.path_elt.getAttribute('sodipodi:start'));
+</xsl:text>
+    <xsl:text>    let end = Number(this.path_elt.getAttribute('sodipodi:end'));
+</xsl:text>
+    <xsl:text>    let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
+</xsl:text>
+    <xsl:text>    let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
+</xsl:text>
+    <xsl:text>    let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
+</xsl:text>
+    <xsl:text>    let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
+</xsl:text>
+    <xsl:text>    if (ry == 0) {
+</xsl:text>
+    <xsl:text>        ry = rx;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    if (start &gt; end) {
+</xsl:text>
+    <xsl:text>        end = end + 2*Math.PI;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    let min = this.min_elt ?
+</xsl:text>
+    <xsl:text>              Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>              this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>    let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>              Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>              this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>    this.range = [min, max, start, end];
+</xsl:text>
+    <xsl:text>    this.center = [cx, cy];
+</xsl:text>
+    <xsl:text>    this.proportions = [rx, ry];
+</xsl:text>
+    <xsl:text>},
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
@@ -1544,8 +1669,8 @@
     <xsl:text>    apply_cache: foreach_apply_cache,
 </xsl:text>
   </xsl:template>
-  <epilogue:foreach/>
-  <xsl:template match="epilogue:foreach">
+  <definitions:foreach/>
+  <xsl:template match="definitions:foreach">
     <xsl:text>function foreach_unsubscribe(){
 </xsl:text>
     <xsl:text>    for(let item of this.items){
@@ -1956,8 +2081,8 @@
       </xsl:if>
     </xsl:if>
   </xsl:template>
-  <epilogue:jump/>
-  <xsl:template match="epilogue:jump">
+  <declarations:jump/>
+  <xsl:template match="declarations:jump">
     <xsl:text>var jumps_need_update = false;
 </xsl:text>
     <xsl:text>var jump_history = [[default_page, undefined]];
@@ -1975,8 +2100,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <epilogue:keypad/>
-  <xsl:template match="epilogue:keypad">
+  <declarations:keypad/>
+  <xsl:template match="declarations:keypad">
     <xsl:text>
 </xsl:text>
     <xsl:text>var keypads = {
@@ -2336,12 +2461,42 @@
         <xsl:apply-templates select="."/>
       </xsl:comment>
     </xsl:for-each>
-    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <head/>
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
         <script>
+          <xsl:text>
+//
+//
+// Early independent declarations 
+//
+//
+</xsl:text>
           <xsl:apply-templates select="document('')/*/preamble:*"/>
+          <xsl:text>
+//
+//
+// Declarations depending on preamble 
+//
+//
+</xsl:text>
+          <xsl:apply-templates select="document('')/*/declarations:*"/>
+          <xsl:text>
+//
+//
+// Order independent declaration and code 
+//
+//
+</xsl:text>
+          <xsl:apply-templates select="document('')/*/definitions:*"/>
+          <xsl:text>
+//
+//
+// Statements that needs to be at the end 
+//
+//
+</xsl:text>
           <xsl:apply-templates select="document('')/*/epilogue:*"/>
           <xsl:text>// svghmi.js
 </xsl:text>
