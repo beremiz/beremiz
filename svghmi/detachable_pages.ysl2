@@ -99,7 +99,7 @@ def "func:detachable_elements" {
 const "_detachable_elements", "func:detachable_elements($hmi_pages | $keypads)";
 const "detachable_elements", "$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]";
 
-emit "epilogue:detachable-elements" {
+emit "declarations:detachable-elements" {
     |
     | var detachable_elements = {
     foreach "$detachable_elements"{
@@ -168,7 +168,7 @@ template "svg:*", mode="page_desc" {
     |   }`if "position()!=last()" > ,`
 }
 
-emit "epilogue:page-desc" {
+emit "declarations:page-desc" {
     |
     | var page_desc = {
     apply "$hmi_pages", mode="page_desc";

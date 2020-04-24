@@ -1,0 +1,18 @@
+// widget_button.ysl2
+
+template "widget[@type='Button']", mode="widget_defs" {
+    param "hmi_element";
+    | frequency: 5,
+    | init: function() {
+    |     this.element.addEventListener(
+    |       "mousedown",
+    |       evt => {
+    |           change_hmi_value(this.indexes[0], "=1");
+    |       });
+    |     this.element.addEventListener(
+    |       "mouseup",
+    |       evt => {
+    |           change_hmi_value(this.indexes[0], "=0");
+    |       });
+    | },
+}
