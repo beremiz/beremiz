@@ -47,6 +47,31 @@ template "svg:*", mode="hmi_elements" {
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     apply "$widget", mode="widget_subscribe" with "hmi_element",".";
     |   }`if "position()!=last()" > ,`
+
+def "func:unique_types" {
+    param "elts_with_type";
+    choose {
+        when "count($elts_with_type) > 1" {
+            const "prior_results","func:unique_types($elts_with_type[position()!=last()])";
+            choose {
+                when "$elts_with_type[last()][@type = $prior_results/@type]"{
+                    // type already in
+                    result "$prior_results";
+                }
+                otherwise {
+                    result "$prior_results | $elts_with_type[last()]";
+                }
+            }
+        }
+        otherwise {
+            result "$elts_with_type";
+        }
+    }
+}
+
+emit "preamble:hmi-classes" {
+    const "used_widget_types", "func:unique_types($parsed_widgets/widget)";
+    apply "$used_widget_types", mode="widget_class";
 }
 
 emit "preamble:hmi-elements" {
