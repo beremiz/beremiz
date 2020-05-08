@@ -24,8 +24,7 @@ decl activable_labels(*ptr) alias - {
 template "svg:*", mode="hmi_elements" {
     const "widget", "func:widget(@id)";
     const "eltid","@id";
-    |   "«@id»": {
-    |     type: "«$widget/@type»",
+    |   "«@id»": new «$widget/@type»Widget ({
     |     args: [
     foreach "$widget/arg"
     |         "«@value»"`if "position()!=last()" > ,`
@@ -46,7 +45,8 @@ template "svg:*", mode="hmi_elements" {
     |     element: id("«@id»"),
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     apply "$widget", mode="widget_subscribe" with "hmi_element",".";
-    |   }`if "position()!=last()" > ,`
+    |   })`if "position()!=last()" > ,`
+}
 
 def "func:unique_types" {
     param "elts_with_type";
@@ -69,16 +69,34 @@ def "func:unique_types" {
     }
 }
 
+emit "preamble:widget-base-class" {
+    ||    
+    class Widget {
+        constructor(members){
+            Object.keys(members).forEach(prop => this[prop]=members[prop]);
+        }
+    }
+    ||
+}
+
 emit "preamble:hmi-classes" {
     const "used_widget_types", "func:unique_types($parsed_widgets/widget)";
     apply "$used_widget_types", mode="widget_class";
 }
+
+template "widget", mode="widget_class"
+||
+class «@type»Widget extends Widget{
+    /* empty class, as «@type» widget didn't provide any */
+}
+||
 
 emit "preamble:hmi-elements" {
     | var hmi_widgets = {
     apply "$hmi_elements", mode="hmi_elements";
     | }
 }
+
 
 // default : normal subscribing
 template "widget", mode="widget_subscribe" {

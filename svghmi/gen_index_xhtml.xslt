@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -19,6 +19,14 @@
   <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
   <preamble:hmi-tree/>
   <xsl:template match="preamble:hmi-tree">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var hmi_hash = [</xsl:text>
     <xsl:value-of select="$hmitree/@hash"/>
     <xsl:text>];
@@ -48,6 +56,8 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:text>]
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -215,6 +225,14 @@
   </xsl:template>
   <debug:hmi-tree/>
   <xsl:template match="debug:hmi-tree">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>Raw HMI tree
 </xsl:text>
     <xsl:apply-templates mode="testtree" select="$hmitree"/>
@@ -229,10 +247,20 @@
 </xsl:text>
     <xsl:copy-of select="_parsed_widgets"/>
     <xsl:apply-templates mode="testtree" select="$parsed_widgets"/>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <debug:geometry/>
   <xsl:template match="debug:geometry">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>ID, x, y, w, h
 </xsl:text>
     <xsl:for-each select="$geometry">
@@ -249,6 +277,8 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <func:function name="func:intersect_1d">
     <xsl:param name="a0"/>
@@ -322,9 +352,19 @@
   <xsl:template match="preamble:default-page">
     <xsl:text>
 </xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var default_page = "</xsl:text>
     <xsl:value-of select="$default_page"/>
     <xsl:text>";
+</xsl:text>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:variable name="keypads_descs" select="$parsed_widgets/widget[@type = 'Keypad']"/>
@@ -387,6 +427,14 @@
   <xsl:template match="declarations:detachable-elements">
     <xsl:text>
 </xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var detachable_elements = {
 </xsl:text>
     <xsl:for-each select="$detachable_elements">
@@ -404,6 +452,8 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:text>}
+</xsl:text>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
@@ -531,15 +581,33 @@
   <xsl:template match="declarations:page-desc">
     <xsl:text>
 </xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var page_desc = {
 </xsl:text>
     <xsl:apply-templates mode="page_desc" select="$hmi_pages"/>
     <xsl:text>}
 </xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <xsl:template mode="per_page_widget_template" match="*"/>
   <debug:detachable-pages/>
   <xsl:template match="debug:detachable-pages">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>DETACHABLES:
@@ -558,6 +626,8 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <xsl:template mode="inline_svg" match="@* | node()">
     <xsl:if test="not(@id = $discardable_elements/@id)">
@@ -672,15 +742,33 @@
   <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
   <preamble:inline-svg/>
   <xsl:template match="preamble:inline-svg">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>let id = document.getElementById.bind(document);
 </xsl:text>
     <xsl:text>var svg_root = id("</xsl:text>
     <xsl:value-of select="$svg/@id"/>
     <xsl:text>");
 </xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <debug:clone-unlinking/>
   <xsl:template match="debug:clone-unlinking">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>Unlinked :
@@ -690,17 +778,17 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <xsl:template mode="hmi_elements" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
     <xsl:variable name="eltid" select="@id"/>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="@id"/>
-    <xsl:text>": {
-</xsl:text>
-    <xsl:text>    type: "</xsl:text>
+    <xsl:text>": new </xsl:text>
     <xsl:value-of select="$widget/@type"/>
-    <xsl:text>",
+    <xsl:text>Widget ({
 </xsl:text>
     <xsl:text>    args: [
 </xsl:text>
@@ -759,19 +847,98 @@
     <xsl:apply-templates mode="widget_subscribe" select="$widget">
       <xsl:with-param name="hmi_element" select="."/>
     </xsl:apply-templates>
-    <xsl:text>  }</xsl:text>
+    <xsl:text>  })</xsl:text>
     <xsl:if test="position()!=last()">
       <xsl:text>,</xsl:text>
     </xsl:if>
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <func:function name="func:unique_types">
+    <xsl:param name="elts_with_type"/>
+    <xsl:choose>
+      <xsl:when test="count($elts_with_type) &gt; 1">
+        <xsl:variable name="prior_results" select="func:unique_types($elts_with_type[position()!=last()])"/>
+        <xsl:choose>
+          <xsl:when test="$elts_with_type[last()][@type = $prior_results/@type]">
+            <func:result select="$prior_results"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <func:result select="$prior_results | $elts_with_type[last()]"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$elts_with_type"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <preamble:widget-base-class/>
+  <xsl:template match="preamble:widget-base-class">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>class Widget {
+</xsl:text>
+    <xsl:text>    constructor(members){
+</xsl:text>
+    <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <preamble:hmi-classes/>
+  <xsl:template match="preamble:hmi-classes">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:variable name="used_widget_types" select="func:unique_types($parsed_widgets/widget)"/>
+    <xsl:apply-templates mode="widget_class" select="$used_widget_types"/>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_class" match="widget">
+    <xsl:text>class </xsl:text>
+    <xsl:value-of select="@type"/>
+    <xsl:text>Widget extends Widget{
+</xsl:text>
+    <xsl:text>    /* empty class, as </xsl:text>
+    <xsl:value-of select="@type"/>
+    <xsl:text> widget didn't provide any */
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <preamble:hmi-elements/>
   <xsl:template match="preamble:hmi-elements">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
     <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
     <xsl:text>}
+</xsl:text>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_subscribe" match="widget">
@@ -1671,6 +1838,14 @@
   </xsl:template>
   <definitions:foreach/>
   <xsl:template match="definitions:foreach">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function foreach_unsubscribe(){
 </xsl:text>
     <xsl:text>    for(let item of this.items){
@@ -1774,6 +1949,8 @@
     <xsl:text>    requestHMIAnimation();
 </xsl:text>
     <xsl:text>}
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -2083,6 +2260,14 @@
   </xsl:template>
   <declarations:jump/>
   <xsl:template match="declarations:jump">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var jumps_need_update = false;
 </xsl:text>
     <xsl:text>var jump_history = [[default_page, undefined]];
@@ -2099,9 +2284,19 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <declarations:keypad/>
   <xsl:template match="declarations:keypad">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>var keypads = {
@@ -2123,6 +2318,8 @@
       </xsl:for-each>
     </xsl:for-each>
     <xsl:text>}
+</xsl:text>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
@@ -2453,15 +2650,10 @@
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
-    <xsl:for-each select="document('')/*/debug:*">
-      <xsl:comment>
-        <xsl:value-of select="local-name()"/>
-        <xsl:text> :
-</xsl:text>
-        <xsl:apply-templates select="."/>
-      </xsl:comment>
-    </xsl:for-each>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <xsl:comment>
+      <xsl:apply-templates select="document('')/*/debug:*"/>
+    </xsl:comment>
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
