@@ -7,7 +7,11 @@ decl output(method, cdata-section-elements="xhtml:script");
 decl emit(*name) alias - {
     *name;
     template *name {
+        |
+        | /* «local-name()» */
+        |
         content;
+        |
     }
 };
 
@@ -56,12 +60,7 @@ istylesheet
         comment > Made with SVGHMI. https://beremiz.org
 
         // all debug output from included definitions, as comments
-        foreach "document('')/*/debug:*" {
-            comment {
-                | «local-name()» :
-                apply ".";
-            }
-        }
+        comment apply "document('')/*/debug:*";
 
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"
