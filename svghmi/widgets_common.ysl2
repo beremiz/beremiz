@@ -21,7 +21,7 @@ decl activable_labels(*ptr) alias - {
     }
 };
 
-template "svg:*", mode="hmi_elements" {
+template "svg:*", mode="hmi_widgets" {
     const "widget", "func:widget(@id)";
     const "eltid","@id";
     const "args" foreach "$widget/arg" > "«@value»"`if "position()!=last()" > ,`
@@ -117,9 +117,12 @@ class «@type»Widget extends Widget{
 }
 ||
 
+const "excluded_types", "str:split('Page Lang List')";
+const "excluded_ids","$parsed_widgets/widget[not(@type = $excluded_types)]/@id";
+
 emit "preamble:hmi-elements" {
     | var hmi_widgets = {
-    apply "$hmi_elements", mode="hmi_elements";
+    apply  "$hmi_elements[@id = $excluded_ids]", mode="hmi_widgets";
     | }
 }
 

@@ -131,7 +131,7 @@ template "svg:*", mode="page_desc" {
            ancestor-or-self::*[@id = $detachable_elements/@id]""";
 
     |   "«$desc/arg[1]/@value»": {
-    |     widget: hmi_widgets["«@id»"],
+    //|     widget: hmi_widgets["«@id»"],
     |     bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
     if "$desc/path/@value" {
         if "count($desc/path/@index)=0"

@@ -472,10 +472,6 @@
     <xsl:value-of select="$desc/arg[1]/@value"/>
     <xsl:text>": {
 </xsl:text>
-    <xsl:text>    widget: hmi_widgets["</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>"],
-</xsl:text>
     <xsl:text>    bbox: [</xsl:text>
     <xsl:value-of select="$p/@x"/>
     <xsl:text>, </xsl:text>
@@ -781,7 +777,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="hmi_elements" match="svg:*">
+  <xsl:template mode="hmi_widgets" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
     <xsl:variable name="eltid" select="@id"/>
     <xsl:variable name="args">
@@ -974,6 +970,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <xsl:variable name="excluded_types" select="str:split('Page Lang List')"/>
+  <xsl:variable name="excluded_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
   <preamble:hmi-elements/>
   <xsl:template match="preamble:hmi-elements">
     <xsl:text>
@@ -986,7 +984,7 @@
 </xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
-    <xsl:apply-templates mode="hmi_elements" select="$hmi_elements"/>
+    <xsl:apply-templates mode="hmi_widgets" select="$hmi_elements[@id = $excluded_ids]"/>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
