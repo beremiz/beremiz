@@ -38,7 +38,6 @@ template "svg:*", mode="hmi_elements" {
 
     |   "«@id»": new «$widget/@type»Widget ("«@id»",[«$args»],[«$indexes»],{
     apply "$widget", mode="widget_defs" with "hmi_element",".";
-    apply "$widget", mode="widget_subscribe" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
 }
 
@@ -123,13 +122,6 @@ emit "preamble:hmi-elements" {
     apply "$hmi_elements", mode="hmi_elements";
     | }
 }
-
-
-// default : normal subscribing
-template "widget", mode="widget_subscribe" {
-}
-// page aren't subscribers
-template "widget[@type='Page']", mode="widget_subscribe";
 
 function "defs_by_labels" {
     param "labels","''";
