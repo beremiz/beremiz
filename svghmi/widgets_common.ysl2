@@ -73,6 +73,35 @@ emit "preamble:widget-base-class" {
             this.offset = 0;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
         }
+        unsub(){
+            /* remove subsribers */
+            for(let index of this.indexes){
+                let idx = index + this.offset;
+                subscribers[idx].delete(this);
+            }
+            this.offset = 0;
+        }
+
+        sub(new_offset=0){
+            /* set the offset because relative */
+            this.offset = new_offset;
+            /* add this's subsribers */
+            for(let index of this.indexes){
+                subscribers[index + new_offset].add(this);
+            }
+            need_cache_apply.push(this); 
+        }
+
+        apply_cache() {
+            for(let index of this.indexes){
+                /* dispatch current cache in newly opened page widgets */
+                let realindex = index+this.offset;
+                let cached_val = cache[realindex];
+                if(cached_val != undefined)
+                    dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+            }
+        }
+
     }
     ||
 }
@@ -98,9 +127,6 @@ emit "preamble:hmi-elements" {
 
 // default : normal subscribing
 template "widget", mode="widget_subscribe" {
-    |     sub: subscribe,
-    |     unsub: unsubscribe,
-    |     apply_cache: widget_apply_cache,
 }
 // page aren't subscribers
 template "widget[@type='Page']", mode="widget_subscribe";
