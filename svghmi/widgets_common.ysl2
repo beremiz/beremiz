@@ -24,25 +24,19 @@ decl activable_labels(*ptr) alias - {
 template "svg:*", mode="hmi_elements" {
     const "widget", "func:widget(@id)";
     const "eltid","@id";
-    |   "«@id»": new «$widget/@type»Widget ({
-    |     args: [
-    foreach "$widget/arg"
-    |         "«@value»"`if "position()!=last()" > ,`
-    |     ],
-    |     offset: 0,
-    |     indexes: [
-    foreach "$widget/path" {
+    const "args" foreach "$widget/arg" > "«@value»"`if "position()!=last()" > ,`
+    const "indexes" foreach "$widget/path" {
         choose {
             when "not(@index)" {
                 warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
             }
             otherwise {
-    |         «@index» /* «@value» */ `if "position()!=last()" > ,`
+                > «@index»`if "position()!=last()" > ,`
             }
         }
     }
-    |     ],
-    |     element: id("«@id»"),
+
+    |   "«@id»": new «$widget/@type»Widget ("«@id»",[«$args»],[«$indexes»],{
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     apply "$widget", mode="widget_subscribe" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
@@ -72,7 +66,11 @@ def "func:unique_types" {
 emit "preamble:widget-base-class" {
     ||    
     class Widget {
-        constructor(members){
+        constructor(elt_id,args,indexes,members){
+            this.element = id(elt_id);
+            this.args = args;
+            this.indexes = indexes;
+            this.offset = 0;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
         }
     }
