@@ -784,67 +784,52 @@
   <xsl:template mode="hmi_elements" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
     <xsl:variable name="eltid" select="@id"/>
+    <xsl:variable name="args">
+      <xsl:for-each select="$widget/arg">
+        <xsl:text>"</xsl:text>
+        <xsl:value-of select="@value"/>
+        <xsl:text>"</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:variable name="indexes">
+      <xsl:for-each select="$widget/path">
+        <xsl:choose>
+          <xsl:when test="not(@index)">
+            <xsl:message terminate="no">
+              <xsl:text>Widget </xsl:text>
+              <xsl:value-of select="$widget/@type"/>
+              <xsl:text> id="</xsl:text>
+              <xsl:value-of select="$eltid"/>
+              <xsl:text>" : No match for path "</xsl:text>
+              <xsl:value-of select="@value"/>
+              <xsl:text>" in HMI tree</xsl:text>
+            </xsl:message>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="@index"/>
+            <xsl:if test="position()!=last()">
+              <xsl:text>,</xsl:text>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each>
+    </xsl:variable>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>": new </xsl:text>
     <xsl:value-of select="$widget/@type"/>
-    <xsl:text>Widget ({
-</xsl:text>
-    <xsl:text>    args: [
-</xsl:text>
-    <xsl:for-each select="$widget/arg">
-      <xsl:text>        "</xsl:text>
-      <xsl:value-of select="@value"/>
-      <xsl:text>"</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>    ],
-</xsl:text>
-    <xsl:text>    offset: 0,
-</xsl:text>
-    <xsl:text>    indexes: [
-</xsl:text>
-    <xsl:for-each select="$widget/path">
-      <xsl:choose>
-        <xsl:when test="not(@index)">
-          <xsl:message terminate="no">
-            <xsl:text>Widget </xsl:text>
-            <xsl:value-of select="$widget/@type"/>
-            <xsl:text> id="</xsl:text>
-            <xsl:value-of select="$eltid"/>
-            <xsl:text>" : No match for path "</xsl:text>
-            <xsl:value-of select="@value"/>
-            <xsl:text>" in HMI tree</xsl:text>
-          </xsl:message>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>        </xsl:text>
-          <xsl:value-of select="@index"/>
-          <xsl:text> /* </xsl:text>
-          <xsl:value-of select="@value"/>
-          <xsl:text> */ </xsl:text>
-          <xsl:if test="position()!=last()">
-            <xsl:text>,</xsl:text>
-          </xsl:if>
-          <xsl:text>
-</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:for-each>
-    <xsl:text>    ],
-</xsl:text>
-    <xsl:text>    element: id("</xsl:text>
+    <xsl:text>Widget ("</xsl:text>
     <xsl:value-of select="@id"/>
-    <xsl:text>"),
+    <xsl:text>",[</xsl:text>
+    <xsl:value-of select="$args"/>
+    <xsl:text>],[</xsl:text>
+    <xsl:value-of select="$indexes"/>
+    <xsl:text>],{
 </xsl:text>
     <xsl:apply-templates mode="widget_defs" select="$widget">
-      <xsl:with-param name="hmi_element" select="."/>
-    </xsl:apply-templates>
-    <xsl:apply-templates mode="widget_subscribe" select="$widget">
       <xsl:with-param name="hmi_element" select="."/>
     </xsl:apply-templates>
     <xsl:text>  })</xsl:text>
@@ -885,11 +870,77 @@
 </xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
-    <xsl:text>    constructor(members){
+    <xsl:text>    constructor(elt_id,args,indexes,members){
+</xsl:text>
+    <xsl:text>        this.element = id(elt_id);
+</xsl:text>
+    <xsl:text>        this.args = args;
+</xsl:text>
+    <xsl:text>        this.indexes = indexes;
+</xsl:text>
+    <xsl:text>        this.offset = 0;
 </xsl:text>
     <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>    unsub(){
+</xsl:text>
+    <xsl:text>        /* remove subsribers */
+</xsl:text>
+    <xsl:text>        for(let index of this.indexes){
+</xsl:text>
+    <xsl:text>            let idx = index + this.offset;
+</xsl:text>
+    <xsl:text>            subscribers[idx].delete(this);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.offset = 0;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    sub(new_offset=0){
+</xsl:text>
+    <xsl:text>        /* set the offset because relative */
+</xsl:text>
+    <xsl:text>        this.offset = new_offset;
+</xsl:text>
+    <xsl:text>        /* add this's subsribers */
+</xsl:text>
+    <xsl:text>        for(let index of this.indexes){
+</xsl:text>
+    <xsl:text>            subscribers[index + new_offset].add(this);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        need_cache_apply.push(this); 
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    apply_cache() {
+</xsl:text>
+    <xsl:text>        for(let index of this.indexes){
+</xsl:text>
+    <xsl:text>            /* dispatch current cache in newly opened page widgets */
+</xsl:text>
+    <xsl:text>            let realindex = index+this.offset;
+</xsl:text>
+    <xsl:text>            let cached_val = cache[realindex];
+</xsl:text>
+    <xsl:text>            if(cached_val != undefined)
+</xsl:text>
+    <xsl:text>                dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -941,15 +992,6 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_subscribe" match="widget">
-    <xsl:text>    sub: subscribe,
-</xsl:text>
-    <xsl:text>    unsub: unsubscribe,
-</xsl:text>
-    <xsl:text>    apply_cache: widget_apply_cache,
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_subscribe" match="widget[@type='Page']"/>
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>
     <xsl:param name="mandatory" select="'yes'"/>
@@ -1825,134 +1867,113 @@
 </xsl:text>
     <xsl:text>    item_offset: 0,
 </xsl:text>
-    <xsl:text>    on_click: foreach_onclick,
-</xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_subscribe" match="widget[@type='ForEach']">
-    <xsl:text>    sub: foreach_subscribe,
+  <xsl:template mode="widget_class" match="widget[@type='ForEach']">
+    <xsl:text>class ForEachWidget extends Widget{
 </xsl:text>
-    <xsl:text>    unsub: foreach_unsubscribe,
+    <xsl:text>    unsub(){
 </xsl:text>
-    <xsl:text>    apply_cache: foreach_apply_cache,
+    <xsl:text>        for(let item of this.items){
 </xsl:text>
-  </xsl:template>
-  <definitions:foreach/>
-  <xsl:template match="definitions:foreach">
+    <xsl:text>            for(let widget of item) {
+</xsl:text>
+    <xsl:text>                widget.unsub();
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.offset = 0;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>/* </xsl:text>
-    <xsl:value-of select="local-name()"/>
-    <xsl:text> */
+    <xsl:text>    foreach_widgets_do(new_offset, todo){
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        this.offset = new_offset;
 </xsl:text>
-    <xsl:text>function foreach_unsubscribe(){
+    <xsl:text>        for(let i = 0; i &lt; this.items.length; i++) {
 </xsl:text>
-    <xsl:text>    for(let item of this.items){
+    <xsl:text>            let item = this.items[i];
 </xsl:text>
-    <xsl:text>        for(let widget of item) {
+    <xsl:text>            let orig_item_index = this.index_pool[i];
 </xsl:text>
-    <xsl:text>            unsubscribe.call(widget);
+    <xsl:text>            let item_index = this.index_pool[i+this.item_offset];
+</xsl:text>
+    <xsl:text>            let item_index_offset = item_index - orig_item_index;
+</xsl:text>
+    <xsl:text>            for(let widget of item) {
+</xsl:text>
+    <xsl:text>                todo(widget).call(widget, new_offset + item_index_offset);
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    this.offset = 0;
+    <xsl:text>
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>    sub(new_offset=0){
+</xsl:text>
+    <xsl:text>        this.foreach_widgets_do(new_offset, w=&gt;w.sub);
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function foreach_widgets_do(new_offset, todo){
+    <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>    this.offset = new_offset;
+    <xsl:text>        this.foreach_widgets_do(this.offset, w=&gt;w.apply_cache);
 </xsl:text>
-    <xsl:text>    for(let i = 0; i &lt; this.items.length; i++) {
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>        let item = this.items[i];
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        let orig_item_index = this.index_pool[i];
+    <xsl:text>    on_click(opstr, evt) {
 </xsl:text>
-    <xsl:text>        let item_index = this.index_pool[i+this.item_offset];
+    <xsl:text>        let new_item_offset = eval(String(this.item_offset)+opstr);
 </xsl:text>
-    <xsl:text>        let item_index_offset = item_index - orig_item_index;
+    <xsl:text>        if(new_item_offset + this.items.length &gt; this.index_pool.length) {
 </xsl:text>
-    <xsl:text>        for(let widget of item) {
+    <xsl:text>            if(this.item_offset + this.items.length == this.index_pool.length)
 </xsl:text>
-    <xsl:text>            todo.call(widget, new_offset + item_index_offset);
+    <xsl:text>                new_item_offset = 0;
+</xsl:text>
+    <xsl:text>            else
+</xsl:text>
+    <xsl:text>                new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+    <xsl:text>        } else if(new_item_offset &lt; 0) {
+</xsl:text>
+    <xsl:text>            if(this.item_offset == 0)
+</xsl:text>
+    <xsl:text>                new_item_offset = this.index_pool.length - this.items.length;
+</xsl:text>
+    <xsl:text>            else
+</xsl:text>
+    <xsl:text>                new_item_offset = 0;
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    }
+    <xsl:text>        this.item_offset = new_item_offset;
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>        this.unsub();
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        this.sub(this.offset);
 </xsl:text>
-    <xsl:text>function foreach_subscribe(new_offset=0){
+    <xsl:text>        update_subscriptions();
 </xsl:text>
-    <xsl:text>    foreach_widgets_do.call(this, new_offset, subscribe);
+    <xsl:text>        need_cache_apply.push(this);
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>        jumps_need_update = true;
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_apply_cache() {
-</xsl:text>
-    <xsl:text>    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function foreach_onclick(opstr, evt) {
-</xsl:text>
-    <xsl:text>    new_item_offset = eval(String(this.item_offset)+opstr)
-</xsl:text>
-    <xsl:text>    if(new_item_offset + this.items.length &gt; this.index_pool.length) {
-</xsl:text>
-    <xsl:text>        if(this.item_offset + this.items.length == this.index_pool.length)
-</xsl:text>
-    <xsl:text>            new_item_offset = 0;
-</xsl:text>
-    <xsl:text>        else
-</xsl:text>
-    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
-</xsl:text>
-    <xsl:text>    } else if(new_item_offset &lt; 0) {
-</xsl:text>
-    <xsl:text>        if(this.item_offset == 0)
-</xsl:text>
-    <xsl:text>            new_item_offset = this.index_pool.length - this.items.length;
-</xsl:text>
-    <xsl:text>        else
-</xsl:text>
-    <xsl:text>            new_item_offset = 0;
+    <xsl:text>        requestHMIAnimation();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    this.item_offset = new_item_offset;
-</xsl:text>
-    <xsl:text>    off = this.offset;
-</xsl:text>
-    <xsl:text>    foreach_unsubscribe.call(this);
-</xsl:text>
-    <xsl:text>    foreach_subscribe.call(this,off);
-</xsl:text>
-    <xsl:text>    update_subscriptions();
-</xsl:text>
-    <xsl:text>    need_cache_apply.push(this);
-</xsl:text>
-    <xsl:text>    jumps_need_update = true;
-</xsl:text>
-    <xsl:text>    requestHMIAnimation();
-</xsl:text>
     <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
@@ -2180,45 +2201,22 @@
       <xsl:text>        this.inactive_elt_style = this.inactive_elt.getAttribute("style");
 </xsl:text>
     </xsl:if>
-    <xsl:if test="$have_disability">
-      <xsl:text>        this.disabled_elt_style = this.disabled_elt.getAttribute("style");
-</xsl:text>
-    </xsl:if>
-    <xsl:text>    },
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_subscribe" match="widget[@type='Jump']">
-    <xsl:param name="hmi_element"/>
-    <xsl:variable name="activity">
-      <xsl:call-template name="jump_widget_activity">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="have_activity" select="string-length($activity)&gt;0"/>
-    <xsl:variable name="disability">
-      <xsl:call-template name="jump_widget_disability">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="have_disability" select="$have_activity and string-length($disability)&gt;0"/>
     <xsl:choose>
       <xsl:when test="$have_disability">
-        <xsl:text>    sub: subscribe,
-</xsl:text>
-        <xsl:text>    unsub: unsubscribe,
-</xsl:text>
-        <xsl:text>    apply_cache: widget_apply_cache,
+        <xsl:text>        this.disabled_elt_style = this.disabled_elt.getAttribute("style");
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>    sub: function(){},
+        <xsl:text>        this.sub = function(){};
 </xsl:text>
-        <xsl:text>    unsub: function(){},
+        <xsl:text>        this.unsub = function(){};
 </xsl:text>
-        <xsl:text>    apply_cache: function(){},
+        <xsl:text>        this.apply_cache = function(){};
 </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:text>    },
+</xsl:text>
   </xsl:template>
   <xsl:template mode="per_page_widget_template" match="widget[@type='Jump']">
     <xsl:param name="page_desc"/>
@@ -3341,74 +3339,6 @@
           <xsl:text>    return true;
 </xsl:text>
           <xsl:text>};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function* chain(a,b){
-</xsl:text>
-          <xsl:text>    yield* a;
-</xsl:text>
-          <xsl:text>    yield* b;
-</xsl:text>
-          <xsl:text>};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function unsubscribe(){
-</xsl:text>
-          <xsl:text>    /* remove subsribers */
-</xsl:text>
-          <xsl:text>    for(let index of this.indexes){
-</xsl:text>
-          <xsl:text>        let idx = index + this.offset;
-</xsl:text>
-          <xsl:text>        subscribers[idx].delete(this);
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>    this.offset = 0;
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function subscribe(new_offset=0){
-</xsl:text>
-          <xsl:text>    /* set the offset because relative */
-</xsl:text>
-          <xsl:text>    this.offset = new_offset;
-</xsl:text>
-          <xsl:text>    /* add this's subsribers */
-</xsl:text>
-          <xsl:text>    for(let index of this.indexes){
-</xsl:text>
-          <xsl:text>        subscribers[index + new_offset].add(this);
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>    need_cache_apply.push(this); 
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function widget_apply_cache() {
-</xsl:text>
-          <xsl:text>    for(let index of this.indexes){
-</xsl:text>
-          <xsl:text>        /* dispatch current cache in newly opened page widgets */
-</xsl:text>
-          <xsl:text>        let realindex = index+this.offset;
-</xsl:text>
-          <xsl:text>        let cached_val = cache[realindex];
-</xsl:text>
-          <xsl:text>        if(cached_val != undefined)
-</xsl:text>
-          <xsl:text>            dispatch_value_to_widget(this, realindex, cached_val, cached_val);
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>}
 </xsl:text>
           <xsl:text>
 </xsl:text>
