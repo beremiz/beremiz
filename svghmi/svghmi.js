@@ -325,40 +325,6 @@ function switch_page(page_name, page_index) {
     return true;
 };
 
-function* chain(a,b){
-    yield* a;
-    yield* b;
-};
-
-function unsubscribe(){
-    /* remove subsribers */
-    for(let index of this.indexes){
-        let idx = index + this.offset;
-        subscribers[idx].delete(this);
-    }
-    this.offset = 0;
-}
-
-function subscribe(new_offset=0){
-    /* set the offset because relative */
-    this.offset = new_offset;
-    /* add this's subsribers */
-    for(let index of this.indexes){
-        subscribers[index + new_offset].add(this);
-    }
-    need_cache_apply.push(this); 
-}
-
-function widget_apply_cache() {
-    for(let index of this.indexes){
-        /* dispatch current cache in newly opened page widgets */
-        let realindex = index+this.offset;
-        let cached_val = cache[realindex];
-        if(cached_val != undefined)
-            dispatch_value_to_widget(this, realindex, cached_val, cached_val);
-    }
-}
-
 function switch_visible_page(page_name) {
 
     let old_desc = page_desc[current_visible_page];
