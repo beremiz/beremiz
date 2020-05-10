@@ -45,69 +45,62 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     |         ]
     |     },
     |     item_offset: 0,
-    |     on_click: foreach_onclick,
 }
 
-template "widget[@type='ForEach']", mode="widget_subscribe"{
-    // param "hmi_element";
-    |     sub: foreach_subscribe,
-    |     unsub: foreach_unsubscribe,
-    |     apply_cache: foreach_apply_cache,
-}
-
-emit "definitions:foreach"
+template "widget[@type='ForEach']", mode="widget_class"
 ||
-function foreach_unsubscribe(){
-    for(let item of this.items){
-        for(let widget of item) {
-            unsubscribe.call(widget);
+class ForEachWidget extends Widget{
+    unsub(){
+        for(let item of this.items){
+            for(let widget of item) {
+                widget.unsub();
+            }
+        }
+        this.offset = 0;
+    }
+
+    foreach_widgets_do(new_offset, todo){
+        this.offset = new_offset;
+        for(let i = 0; i < this.items.length; i++) {
+            let item = this.items[i];
+            let orig_item_index = this.index_pool[i];
+            let item_index = this.index_pool[i+this.item_offset];
+            let item_index_offset = item_index - orig_item_index;
+            for(let widget of item) {
+                todo(widget).call(widget, new_offset + item_index_offset);
+            }
         }
     }
-    this.offset = 0;
-}
 
-function foreach_widgets_do(new_offset, todo){
-    this.offset = new_offset;
-    for(let i = 0; i < this.items.length; i++) {
-        let item = this.items[i];
-        let orig_item_index = this.index_pool[i];
-        let item_index = this.index_pool[i+this.item_offset];
-        let item_index_offset = item_index - orig_item_index;
-        for(let widget of item) {
-            todo.call(widget, new_offset + item_index_offset);
+    sub(new_offset=0){
+        this.foreach_widgets_do(new_offset, w=>w.sub);
+    }
+
+    apply_cache() {
+        this.foreach_widgets_do(this.offset, w=>w.apply_cache);
+    }
+
+    on_click(opstr, evt) {
+        let new_item_offset = eval(String(this.item_offset)+opstr);
+        if(new_item_offset + this.items.length > this.index_pool.length) {
+            if(this.item_offset + this.items.length == this.index_pool.length)
+                new_item_offset = 0;
+            else
+                new_item_offset = this.index_pool.length - this.items.length;
+        } else if(new_item_offset < 0) {
+            if(this.item_offset == 0)
+                new_item_offset = this.index_pool.length - this.items.length;
+            else
+                new_item_offset = 0;
         }
+        this.item_offset = new_item_offset;
+        this.unsub();
+        this.sub(this.offset);
+        update_subscriptions();
+        need_cache_apply.push(this);
+        jumps_need_update = true;
+        requestHMIAnimation();
     }
 }
-
-function foreach_subscribe(new_offset=0){
-    foreach_widgets_do.call(this, new_offset, subscribe);
-}
-
-function foreach_apply_cache() {
-    foreach_widgets_do.call(this, this.offset, widget_apply_cache);
-}
-
-function foreach_onclick(opstr, evt) {
-    new_item_offset = eval(String(this.item_offset)+opstr)
-    if(new_item_offset + this.items.length > this.index_pool.length) {
-        if(this.item_offset + this.items.length == this.index_pool.length)
-            new_item_offset = 0;
-        else
-            new_item_offset = this.index_pool.length - this.items.length;
-    } else if(new_item_offset < 0) {
-        if(this.item_offset == 0)
-            new_item_offset = this.index_pool.length - this.items.length;
-        else
-            new_item_offset = 0;
-    }
-    this.item_offset = new_item_offset;
-    off = this.offset;
-    foreach_unsubscribe.call(this);
-    foreach_subscribe.call(this,off);
-    update_subscriptions();
-    need_cache_apply.push(this);
-    jumps_need_update = true;
-    requestHMIAnimation();
-}
-
 ||
+
