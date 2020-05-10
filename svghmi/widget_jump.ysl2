@@ -81,31 +81,17 @@ template "widget[@type='Jump']", mode="widget_defs" {
     |         this.active_elt_style = this.active_elt.getAttribute("style");
     |         this.inactive_elt_style = this.inactive_elt.getAttribute("style");
     }
-    if "$have_disability" {
-    |         this.disabled_elt_style = this.disabled_elt.getAttribute("style");
-    }
-    |     },
-}
-
-// default : normal subscribing
-template "widget[@type='Jump']", mode="widget_subscribe" {
-    param "hmi_element";
-    const "activity" call "jump_widget_activity" with "hmi_element", "$hmi_element";
-    const "have_activity","string-length($activity)>0";
-    const "disability" call "jump_widget_disability" with "hmi_element", "$hmi_element";
-    const "have_disability","$have_activity and string-length($disability)>0";
     choose {
         when "$have_disability" {
-    |     sub: subscribe,
-    |     unsub: unsubscribe,
-    |     apply_cache: widget_apply_cache,
+    |         this.disabled_elt_style = this.disabled_elt.getAttribute("style");
         }
         otherwise {
-    |     sub: function(){},
-    |     unsub: function(){},
-    |     apply_cache: function(){},
+    |         this.sub = function(){};
+    |         this.unsub = function(){};
+    |         this.apply_cache = function(){};
         }
     }
+    |     },
 }
 
 template "widget[@type='Jump']", mode="per_page_widget_template"{
