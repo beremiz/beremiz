@@ -253,7 +253,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Setup debug information
         self.IECdebug_datas = {}
 
-        self.DebugTimer = None
+        self.DebugUpdatePending = False
         self.ResetIECProgramsAndVariables()
 
         # In both new or load scenario, no need to save
@@ -275,8 +275,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.debug_status = PlcStatus.Stopped
 
     def __del__(self):
-        if self.DebugTimer:
-            self.DebugTimer.cancel()
         self.KillDebugThread()
 
     def LoadLibraries(self):
@@ -1536,7 +1534,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return debug_status, ticks, buffers
 
     def RegisterDebugVarToConnector(self):
-        self.DebugTimer = None
         Idxs = []
         self.TracedIECPath = []
         self.TracedIECTypes = []
@@ -1575,25 +1572,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._connector.SetTraceVariablesList([])
                 self.DebugToken = None
             self.debug_status, _debug_ticks, _buffers = self.SnapshotAndResetDebugValuesBuffers()
+        self.DebugUpdatePending = False
 
     def IsPLCStarted(self):
         return self.previous_plcstate == PlcStatus.Started
 
-    def ReArmDebugRegisterTimer(self):
-        if self.DebugTimer is not None:
-            self.DebugTimer.cancel()
-
-        # Prevent to call RegisterDebugVarToConnector when PLC is not started
-        # If an output location var is forced it's leads to segmentation fault in runtime
-        # Links between PLC located variables and real variables are not ready
-        if self.IsPLCStarted():
-            # Timer to prevent rapid-fire when registering many variables
-            # use wx.CallAfter use keep using same thread. TODO : use wx.Timer
-            # instead
-            self.DebugTimer = Timer(
-                0.5, wx.CallAfter, args=[self.RegisterDebugVarToConnector])
-            # Rearm anti-rapid-fire timer
-            self.DebugTimer.start()
+    def AppendDebugUpdate(self):
+        if not self.DebugUpdatePending :
+            wx.CallAfter(self.RegisterDebugVarToConnector)
+            self.DebugUpdatePending = True
 
     def GetDebugIECVariableType(self, IECPath):
         _Idx, IEC_Type = self._IECPathToIdx.get(IECPath, (None, None))
@@ -1623,7 +1610,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         IECdebug_data[0][callableobj] = buffer_list
 
-        self.ReArmDebugRegisterTimer()
+        self.AppendDebugUpdate()
 
         return IECdebug_data[1]
 
@@ -1639,12 +1626,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     IECdebug_data[0].itervalues(),
                     False)
 
-        self.ReArmDebugRegisterTimer()
+        self.AppendDebugUpdate()
 
     def UnsubscribeAllDebugIECVariable(self):
         self.IECdebug_datas = {}
 
-        self.ReArmDebugRegisterTimer()
+        self.AppendDebugUpdate()
 
     def ForceDebugIECVariable(self, IECPath, fvalue):
         if IECPath not in self.IECdebug_datas:
@@ -1655,7 +1642,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         IECdebug_data[2] = "Forced"
         IECdebug_data[3] = fvalue
 
-        self.ReArmDebugRegisterTimer()
+        self.AppendDebugUpdate()
 
     def ReleaseDebugIECVariable(self, IECPath):
         if IECPath not in self.IECdebug_datas:
@@ -1666,7 +1653,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         IECdebug_data[2] = "Registered"
         IECdebug_data[3] = None
 
-        self.ReArmDebugRegisterTimer()
+        self.AppendDebugUpdate()
 
     def CallWeakcallables(self, IECPath, function_name, *cargs):
         data_tuple = self.IECdebug_datas.get(IECPath, None)
