@@ -70,6 +70,7 @@ class HMITreeNode(object):
     def place_node(self, node):
         best_child = None
         known_best_match = 0
+        potential_siblings = {}
         for child in self.children:
             if child.path is not None:
                 in_common = 0
@@ -86,10 +87,25 @@ class HMITreeNode(object):
                    in_common == len(child.path) - 1:
                     known_best_match = in_common
                     best_child = child
+                else:
+                    potential_siblings[child.path[
+                        -2 if child.nodetype == "HMI_NODE" else -1]] = child
         if best_child is not None:
-            best_child.place_node(node)
+            if node.nodetype == "HMI_NODE" and best_child.path[:-1] == node.path[:-1]:
+                return "Duplicate_HMI_NODE", best_child
+            return best_child.place_node(node)
         else:
+            candidate_name = node.path[-2 if node.nodetype == "HMI_NODE" else -1]
+            if candidate_name in potential_siblings:
+                return "Non_Unique", potential_siblings[candidate_name]
+
+            if node.nodetype == "HMI_NODE" and len(self.children) > 0:
+                prev = self.children[-1]
+                if prev.path[:-1] == node.path[:-1]:
+                    return "Late_HMI_NODE",prev
+
             self.children.append(node)
+            return None
 
     def etree(self, add_hash=False):
 
@@ -195,7 +211,7 @@ class SVGHMILibrary(POULibrary):
         for i,v in enumerate(hmi_types_instances):
             path = v["IEC_path"].split(".")
             derived = v["derived"]
-            if derived == "HMI_NODE" and ['CONFIG', 'HEARTBEAT'] :
+            if derived == "HMI_NODE":
                 hmi_tree_root = HMITreeNode(path, "", derived, v["type"], v["vartype"], v["C_path"])
                 hmi_types_instances.pop(i)
                 break
@@ -217,7 +233,32 @@ class SVGHMILibrary(POULibrary):
             else:
                 name = path[-1]
             new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], v["C_path"], **kwargs)
-            hmi_tree_root.place_node(new_node)
+            placement_result = hmi_tree_root.place_node(new_node)
+            if placement_result is not None:
+                cause, problematic_node = placement_result
+                if cause == "Non_Unique":
+                    message = _("HMI tree nodes paths are not unique.\nConflicting variable: {} {}").format(
+                        ".".join(problematic_node.path),
+                        ".".join(new_node.path))
+
+                    last_FB = None 
+                    for v in varlist:
+                        if v["vartype"] == "FB":
+                            last_FB = v 
+                        if v["C_path"] == problematic_node:
+                            break
+                    if last_FB is not None:
+                        failing_parent = last_FB["type"]
+                        message += "\n"
+                        message += _("Solution: Add HMI_NODE at beginning of {}").format(failing_parent)
+
+                elif cause in ["Late_HMI_NODE", "Duplicate_HMI_NODE"]:
+                    cause, problematic_node = placement_result
+                    message = _("There must be only one occurrence of HMI_NODE before any HMI_* variable in POU.\nConflicting variable: {} {}").format(
+                        ".".join(problematic_node.path),
+                        ".".join(new_node.path))
+
+                self.FatalError("SVGHMI : " + message)
 
         if on_hmitree_update is not None:
             on_hmitree_update()
