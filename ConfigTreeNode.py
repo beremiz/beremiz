@@ -678,6 +678,7 @@ class ConfigTreeNode(object):
 
         raise UserAddressedException(message)
 
+# Exception type for problems that user has to take action in order to fix
 class UserAddressedException(Exception):
     pass
 

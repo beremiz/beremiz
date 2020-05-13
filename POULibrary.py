@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from weakref import ref
 
+from ConfigTreeNode import UserAddressedException
 
 class POULibrary(object):
     def __init__(self, CTR, LibName, TypeStack):
@@ -59,6 +60,11 @@ class POULibrary(object):
         # Pure python or IEC libs doesn't produce C code
         return ((""), [], False), ""
 
+    def FatalError(self, message):
+        """ Raise an exception that will trigger error message intended to 
+            the user, but without backtrace since it is not a software error """
+
+        raise UserAddressedException(message)
 
 def SimplePOULibraryFactory(path):
     class SimplePOULibrary(POULibrary):
