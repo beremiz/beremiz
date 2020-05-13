@@ -207,9 +207,11 @@ function update_subscriptions() {
         let new_period = 0;
         if(widgets.size > 0) {
             let maxfreq = 0;
-            for(let widget of widgets)
-                if(maxfreq < widget.frequency)
-                    maxfreq = widget.frequency;
+            for(let widget of widgets){
+                let wf = widget.frequency;
+                if(wf != undefined && maxfreq < wf)
+                    maxfreq = wf;
+            }
 
             if(maxfreq != 0)
                 new_period = 1000/maxfreq;
