@@ -1,17 +1,17 @@
 // widget_back.ysl2
 
-template "widget[@type='Back']", mode="widget_defs" {
-    param "hmi_element";
-
-    |     on_click: function(evt) {
-    |         if(jump_history.length > 1){
-    |            jump_history.pop();
-    |            let [page_name, index] = jump_history.pop();
-    |            switch_page(page_name, index);
-    |         }
-    |     },
-    |     init: function() {
-    |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
-    |     },
-}
-
+template "widget[@type='Back']", mode="widget_class"
+    ||
+    class BackWidget extends Widget{
+        on_click(evt) {
+            if(jump_history.length > 1){
+               jump_history.pop();
+               let [page_name, index] = jump_history.pop();
+               switch_page(page_name, index);
+            }
+        }
+        init() {
+            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+        }
+    }
+    ||
