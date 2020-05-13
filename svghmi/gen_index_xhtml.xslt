@@ -866,6 +866,10 @@
 </xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
+    <xsl:text>    offset = 0;
+</xsl:text>
+    <xsl:text>    frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
+</xsl:text>
     <xsl:text>    constructor(elt_id,args,indexes,members){
 </xsl:text>
     <xsl:text>        this.element_id = elt_id;
@@ -875,8 +879,6 @@
     <xsl:text>        this.args = args;
 </xsl:text>
     <xsl:text>        this.indexes = indexes;
-</xsl:text>
-    <xsl:text>        this.offset = 0;
 </xsl:text>
     <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
 </xsl:text>
@@ -1114,6 +1116,10 @@
     <xsl:text>    frequency = 5;
 </xsl:text>
     <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        // TODO : use attributes to allow interaction through svg:use
+</xsl:text>
+    <xsl:text>        // TODO : deal with dragging
 </xsl:text>
     <xsl:text>        this.element.addEventListener(
 </xsl:text>
@@ -2592,11 +2598,12 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 5,
+  <xsl:template mode="widget_class" match="widget[@type='Switch']">
+    <xsl:text>class SwitchWidget extends Widget{
 </xsl:text>
-    <xsl:text>    dispatch: function(value) {
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    dispatch(value) {
 </xsl:text>
     <xsl:text>        for(let choice of this.choices){
 </xsl:text>
@@ -2612,14 +2619,13 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>    init: function() {
+    <xsl:text>}
 </xsl:text>
-    <xsl:text>        // Hello Switch
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
+    <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
