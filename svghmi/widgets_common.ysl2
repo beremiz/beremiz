@@ -66,12 +66,14 @@ emit "preamble:widget-base-class" {
     ||    
     class Widget {
         constructor(elt_id,args,indexes,members){
+            this.element_id = elt_id;
             this.element = id(elt_id);
             this.args = args;
             this.indexes = indexes;
             this.offset = 0;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
         }
+
         unsub(){
             /* remove subsribers */
             for(let index of this.indexes){
