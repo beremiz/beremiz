@@ -69,15 +69,48 @@ const "_excluded_use_attrs" {
 }
 const "excluded_use_attrs","exsl:node-set($_excluded_use_attrs)";
 
-svgfunc "unlink_clone"{
-    g{
-        // include non excluded attributes
-        foreach "@*[not(local-name() = $excluded_use_attrs/name)]"
-            attrib "{name()}" > «.»
+const "_merge_use_attrs" {
+    name > transform
+    name > style
+}
+const "merge_use_attrs","exsl:node-set($_merge_use_attrs)";
 
-        const "targetid","substring-after(@xlink:href,'#')";
-        apply "//svg:*[@id = $targetid]", mode="unlink_clone"{
-            with "seed","@id";
+svgfunc "unlink_clone"{
+    const "targetid","substring-after(@xlink:href,'#')";
+    const "target", "//svg:*[@id = $targetid]";
+    g{
+        choose {
+            when "$target[self::svg:g]" {
+                foreach "@*[not(local-name() = $excluded_use_attrs/name | $merge_use_attrs)]"
+                    attrib "{name()}" > «.»
+
+                if "@style | $target/@style"
+                    attrib "style" {
+                        > «@style»
+                        if "@style and $target/@style" > ;
+                        > «$target/@style»
+                    }
+
+                if "@transform | $target/@transform"
+                    attrib "transform" {
+                        > «@transform»
+                        if "@transform and $target/@transform" >  
+                        > «$target/@transform»
+                    }
+
+                apply "$target/*", mode="unlink_clone"{
+                    with "seed","@id";
+                }
+            }
+            otherwise {
+                // include non excluded attributes
+                foreach "@*[not(local-name() = $excluded_use_attrs/name)]"
+                    attrib "{name()}" > «.»
+
+                apply "$target", mode="unlink_clone"{
+                    with "seed","@id";
+                }
+            }
         }
     }
 }
