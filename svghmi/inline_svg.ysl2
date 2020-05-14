@@ -47,7 +47,7 @@ template "sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']", m
 // For now, clone unlinkink applies to descendants of all widget except HMI:Page
 // TODO: narrow application of clone unlinking to active elements,
 //       while keeping static decoration cloned
-const "to_unlink", "$hmi_elements[not(@id = $hmi_pages)]//svg:use";
+const "to_unlink", "$hmi_elements[not(@id = $hmi_pages)]/descendant-or-self::svg:use";
 svgtmpl "svg:use", mode="inline_svg"
 {
     choose {
