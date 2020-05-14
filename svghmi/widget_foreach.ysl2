@@ -1,7 +1,6 @@
 
 template "widget[@type='ForEach']", mode="widget_defs" {
     param "hmi_element";
-    const "widgets", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]";
 
     const "class","arg[1]/@value";
 

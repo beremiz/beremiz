@@ -866,7 +866,13 @@
 </xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
+    <xsl:text>    offset = 0;
+</xsl:text>
+    <xsl:text>    frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
+</xsl:text>
     <xsl:text>    constructor(elt_id,args,indexes,members){
+</xsl:text>
+    <xsl:text>        this.element_id = elt_id;
 </xsl:text>
     <xsl:text>        this.element = id(elt_id);
 </xsl:text>
@@ -874,11 +880,11 @@
 </xsl:text>
     <xsl:text>        this.indexes = indexes;
 </xsl:text>
-    <xsl:text>        this.offset = 0;
-</xsl:text>
     <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    unsub(){
 </xsl:text>
@@ -1078,9 +1084,10 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:template mode="widget_defs" match="widget[@type='Back']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    on_click: function(evt) {
+  <xsl:template mode="widget_class" match="widget[@type='Back']">
+    <xsl:text>class BackWidget extends Widget{
+</xsl:text>
+    <xsl:text>    on_click(evt) {
 </xsl:text>
     <xsl:text>        if(jump_history.length &gt; 1){
 </xsl:text>
@@ -1092,44 +1099,51 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>    init: function() {
+    <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click(evt)");
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Button']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>frequency: 5,
+  <xsl:template mode="widget_class" match="widget[@type='Button']">
+    <xsl:text>class ButtonWidget extends Widget{
 </xsl:text>
-    <xsl:text>init: function() {
+    <xsl:text>    frequency = 5;
 </xsl:text>
-    <xsl:text>    this.element.addEventListener(
+    <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>      "mousedown",
+    <xsl:text>        // TODO : use attributes to allow interaction through svg:use
 </xsl:text>
-    <xsl:text>      evt =&gt; {
+    <xsl:text>        // TODO : deal with dragging
 </xsl:text>
-    <xsl:text>          change_hmi_value(this.indexes[0], "=1");
+    <xsl:text>        this.element.addEventListener(
 </xsl:text>
-    <xsl:text>      });
+    <xsl:text>          "mousedown",
 </xsl:text>
-    <xsl:text>    this.element.addEventListener(
+    <xsl:text>          evt =&gt; {
 </xsl:text>
-    <xsl:text>      "mouseup",
+    <xsl:text>              change_hmi_value(this.indexes[0], "=1");
 </xsl:text>
-    <xsl:text>      evt =&gt; {
+    <xsl:text>          });
 </xsl:text>
-    <xsl:text>          change_hmi_value(this.indexes[0], "=0");
+    <xsl:text>        this.element.addEventListener(
 </xsl:text>
-    <xsl:text>      });
+    <xsl:text>          "mouseup",
 </xsl:text>
-    <xsl:text>},
+    <xsl:text>          evt =&gt; {
+</xsl:text>
+    <xsl:text>              change_hmi_value(this.indexes[0], "=0");
+</xsl:text>
+    <xsl:text>          });
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
@@ -1767,7 +1781,6 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
     <xsl:param name="hmi_element"/>
-    <xsl:variable name="widgets" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]"/>
     <xsl:variable name="class" select="arg[1]/@value"/>
     <xsl:variable name="base_path" select="path/@value"/>
     <xsl:variable name="hmi_index_base" select="$indexed_hmitree/*[@hmipath = $base_path]"/>
@@ -2585,11 +2598,12 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 5,
+  <xsl:template mode="widget_class" match="widget[@type='Switch']">
+    <xsl:text>class SwitchWidget extends Widget{
 </xsl:text>
-    <xsl:text>    dispatch: function(value) {
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    dispatch(value) {
 </xsl:text>
     <xsl:text>        for(let choice of this.choices){
 </xsl:text>
@@ -2605,14 +2619,13 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>    init: function() {
+    <xsl:text>}
 </xsl:text>
-    <xsl:text>        // Hello Switch
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
+    <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
@@ -3104,11 +3117,15 @@
 </xsl:text>
           <xsl:text>            let maxfreq = 0;
 </xsl:text>
-          <xsl:text>            for(let widget of widgets)
+          <xsl:text>            for(let widget of widgets){
 </xsl:text>
-          <xsl:text>                if(maxfreq &lt; widget.frequency)
+          <xsl:text>                let wf = widget.frequency;
 </xsl:text>
-          <xsl:text>                    maxfreq = widget.frequency;
+          <xsl:text>                if(wf != undefined &amp;&amp; maxfreq &lt; wf)
+</xsl:text>
+          <xsl:text>                    maxfreq = wf;
+</xsl:text>
+          <xsl:text>            }
 </xsl:text>
           <xsl:text>
 </xsl:text>
