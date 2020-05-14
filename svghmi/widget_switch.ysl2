@@ -20,7 +20,7 @@ template "widget[@type='Switch']", mode="widget_defs" {
     param "hmi_element";
     |     choices: [
     const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
-    foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
+    foreach "$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]" {
         const "literal", "regexp:match(@inkscape:label,$regex)[2]";
     |         {
     |             elt:id("«@id»"),

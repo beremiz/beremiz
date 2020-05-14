@@ -658,7 +658,7 @@
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages)]//svg:use"/>
+  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages)]/descendant-or-self::svg:use"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
     <xsl:choose>
       <xsl:when test="@id = $to_unlink/@id">
@@ -689,17 +689,59 @@
     </name>
   </xsl:variable>
   <xsl:variable name="excluded_use_attrs" select="exsl:node-set($_excluded_use_attrs)"/>
+  <xsl:variable name="_merge_use_attrs">
+    <name>
+      <xsl:text>transform</xsl:text>
+    </name>
+    <name>
+      <xsl:text>style</xsl:text>
+    </name>
+  </xsl:variable>
+  <xsl:variable name="merge_use_attrs" select="exsl:node-set($_merge_use_attrs)"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" name="unlink_clone">
+    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+    <xsl:variable name="target" select="//svg:*[@id = $targetid]"/>
     <g>
-      <xsl:for-each select="@*[not(local-name() = $excluded_use_attrs/name)]">
-        <xsl:attribute name="{name()}">
-          <xsl:value-of select="."/>
-        </xsl:attribute>
-      </xsl:for-each>
-      <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
-      <xsl:apply-templates mode="unlink_clone" select="//svg:*[@id = $targetid]">
-        <xsl:with-param name="seed" select="@id"/>
-      </xsl:apply-templates>
+      <xsl:choose>
+        <xsl:when test="$target[self::svg:g]">
+          <xsl:for-each select="@*[not(local-name() = $excluded_use_attrs/name | $merge_use_attrs)]">
+            <xsl:attribute name="{name()}">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </xsl:for-each>
+          <xsl:if test="@style | $target/@style">
+            <xsl:attribute name="style">
+              <xsl:value-of select="@style"/>
+              <xsl:if test="@style and $target/@style">
+                <xsl:text>;</xsl:text>
+              </xsl:if>
+              <xsl:value-of select="$target/@style"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:if test="@transform | $target/@transform">
+            <xsl:attribute name="transform">
+              <xsl:value-of select="@transform"/>
+              <xsl:if test="@transform and $target/@transform">
+                <xsl:text> </xsl:text>
+              </xsl:if>
+              <xsl:value-of select="$target/@transform"/>
+            </xsl:attribute>
+          </xsl:if>
+          <xsl:apply-templates mode="unlink_clone" select="$target/*">
+            <xsl:with-param name="seed" select="@id"/>
+          </xsl:apply-templates>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:for-each select="@*[not(local-name() = $excluded_use_attrs/name)]">
+            <xsl:attribute name="{name()}">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </xsl:for-each>
+          <xsl:apply-templates mode="unlink_clone" select="$target">
+            <xsl:with-param name="seed" select="@id"/>
+          </xsl:apply-templates>
+        </xsl:otherwise>
+      </xsl:choose>
     </g>
   </xsl:template>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@id">
@@ -1116,10 +1158,6 @@
     <xsl:text>    frequency = 5;
 </xsl:text>
     <xsl:text>    init() {
-</xsl:text>
-    <xsl:text>        // TODO : use attributes to allow interaction through svg:use
-</xsl:text>
-    <xsl:text>        // TODO : deal with dragging
 </xsl:text>
     <xsl:text>        this.element.addEventListener(
 </xsl:text>
@@ -2629,7 +2667,7 @@
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,$regex)]">
+    <xsl:for-each select="$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]">
       <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
       <xsl:text>        {
 </xsl:text>
