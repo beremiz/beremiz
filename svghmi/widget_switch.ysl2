@@ -1,20 +1,23 @@
 // widget_switch.ysl2
 
+template "widget[@type='Switch']", mode="widget_class"
+    ||
+    class SwitchWidget extends Widget{
+        frequency = 5;
+        dispatch(value) {
+            for(let choice of this.choices){
+                if(value != choice.value){
+                    choice.elt.setAttribute("style", "display:none");
+                } else {
+                    choice.elt.setAttribute("style", choice.style);
+                }
+            }
+        }
+    }
+    ||
+
 template "widget[@type='Switch']", mode="widget_defs" {
     param "hmi_element";
-    |     frequency: 5,
-    |     dispatch: function(value) {
-    |         for(let choice of this.choices){
-    |             if(value != choice.value){
-    |                 choice.elt.setAttribute("style", "display:none");
-    |             } else {
-    |                 choice.elt.setAttribute("style", choice.style);
-    |             }
-    |         }
-    |     },
-    |     init: function() {
-    |         // Hello Switch
-    |     },
     |     choices: [
     const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
     foreach "$hmi_element/*[regexp:test(@inkscape:label,$regex)]" {
