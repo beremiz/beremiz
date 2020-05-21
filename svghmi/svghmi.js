@@ -247,25 +247,44 @@ function apply_hmi_value(index, new_val) {
     return new_val;
 }
 
+quotes = {"'":null, '"':null};
+
 function change_hmi_value(index, opstr) {
     let op = opstr[0];
-    let given_val = opstr.slice(1);
-    let old_val = cache[index]
+    let given_val;
+    if(opstr.length < 2) 
+        return undefined; // TODO raise
+    if(opstr[1] in quotes){
+        if(opstr.length < 3) 
+            return undefined; // TODO raise
+        if(opstr[opstr.length-1] == opstr[1]){
+            given_val = opstr.slice(2,opstr.length-1);
+        }
+    } else {
+        given_val = Number(opstr.slice(1));
+    }
+    let old_val = cache[index];
     let new_val;
     switch(op){
       case "=":
-        eval("new_val"+opstr);
+        new_val = given_val;
         break;
       case "+":
+        new_val = old_val + given_val;
+        break;
       case "-":
+        new_val = old_val - given_val;
+        break;
       case "*":
+        new_val = old_val * given_val;
+        break;
       case "/":
-        if(old_val != undefined)
-            new_val = eval("old_val"+opstr);
+        new_val = old_val / given_val;
         break;
     }
     if(new_val != undefined && old_val != new_val)
         send_hmi_value(index, new_val);
+    // TODO else raise
     return new_val;
 }
 
