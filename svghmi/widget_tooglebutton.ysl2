@@ -1,0 +1,30 @@
+// widget_tooglebutton.ysl2
+
+template "widget[@type='ToggleButton']", mode="widget_defs" {
+    param "hmi_element";
+    labels("active inactive");
+    |     frequency: 5,
+    |     state: 0,
+    |     dispatch: function(value) {
+    |         this.state = value;
+    |         if (this.state) {
+    |             this.active_elt.setAttribute("style", this.active_style);
+    |             this.inactive_elt.setAttribute("style", "display:none");
+    |             this.state = 0;
+    |         } else {
+    |             this.inactive_elt.setAttribute("style", this.inactive_style);
+    |             this.active_elt.setAttribute("style", "display:none");
+    |             this.state = 1;
+    |         }
+    |     },
+    |     on_click: function(evt) {
+    |         change_hmi_value(this.indexes[0], "="+this.state);
+    |     },
+    |     active_style: undefined,
+    |     inactive_style: undefined,
+    |     init: function() {
+    |         this.active_style = this.active_elt.style.cssText;
+    |         this.inactive_style = this.inactive_elt.style.cssText;
+    |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
+    |     },
+}

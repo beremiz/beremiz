@@ -2729,6 +2729,65 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:text>    frequency: 5,
+</xsl:text>
+    <xsl:text>    state: 0,
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        this.state = value;
+</xsl:text>
+    <xsl:text>        if (this.state) {
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.state = 0;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.state = 1;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_click: function(evt) {
+</xsl:text>
+    <xsl:text>        change_hmi_value(this.indexes[0], "="+this.state);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    active_style: undefined,
+</xsl:text>
+    <xsl:text>    inactive_style: undefined,
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.active_style = this.active_elt.style.cssText;
+</xsl:text>
+    <xsl:text>        this.inactive_style = this.inactive_elt.style.cssText;
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click(evt)");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
