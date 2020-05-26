@@ -1152,40 +1152,72 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Button']">
-    <xsl:text>class ButtonWidget extends Widget{
+  <xsl:template mode="widget_defs" match="widget[@type='Button']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>frequency: 5,
 </xsl:text>
-    <xsl:text>    frequency = 5;
+    <xsl:text>on_mouse_down: function(evt) {
 </xsl:text>
-    <xsl:text>    init() {
+    <xsl:text>    if (this.active_style &amp;&amp; this.inactive_style) {
 </xsl:text>
-    <xsl:text>        // TODO : use attributes to allow interaction through svg:use
+    <xsl:text>        this.active_elt.setAttribute("style", this.active_style);
 </xsl:text>
-    <xsl:text>        // TODO : deal with dragging
-</xsl:text>
-    <xsl:text>        this.element.addEventListener(
-</xsl:text>
-    <xsl:text>          "mousedown",
-</xsl:text>
-    <xsl:text>          evt =&gt; {
-</xsl:text>
-    <xsl:text>              change_hmi_value(this.indexes[0], "=1");
-</xsl:text>
-    <xsl:text>          });
-</xsl:text>
-    <xsl:text>        this.element.addEventListener(
-</xsl:text>
-    <xsl:text>          "mouseup",
-</xsl:text>
-    <xsl:text>          evt =&gt; {
-</xsl:text>
-    <xsl:text>              change_hmi_value(this.indexes[0], "=0");
-</xsl:text>
-    <xsl:text>          });
+    <xsl:text>        this.inactive_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>    change_hmi_value(this.indexes[0], "=1");
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>on_mouse_up: function(evt) {
+</xsl:text>
+    <xsl:text>    if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>        this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    change_hmi_value(this.indexes[0], "=0");
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>active_style: undefined,
+</xsl:text>
+    <xsl:text>inactive_style: undefined,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>  this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>  this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>  if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>      this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>      this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>  }
+</xsl:text>
+    <xsl:text>  this.element.setAttribute("onmousedown", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_mouse_down(evt)");
+</xsl:text>
+    <xsl:text>  this.element.setAttribute("onmouseup", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_mouse_up(evt)");
+</xsl:text>
+    <xsl:text>},
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
@@ -3270,8 +3302,6 @@
           <xsl:text>        given_val = Number(opstr.slice(1));
 </xsl:text>
           <xsl:text>    }
-</xsl:text>
-          <xsl:text>    console.log(opstr, given_val);
 </xsl:text>
           <xsl:text>    let old_val = cache[index];
 </xsl:text>
