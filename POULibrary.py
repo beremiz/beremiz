@@ -26,7 +26,10 @@
 from __future__ import absolute_import
 from weakref import ref
 
-from ConfigTreeNode import UserAddressedException
+# Exception type for problems that user has to take action in order to fix
+class UserAddressedException(Exception):
+    pass
+
 
 class POULibrary(object):
     def __init__(self, CTR, LibName, TypeStack):

@@ -63,7 +63,8 @@ from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
 from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
 from runtime import PlcStatus
-from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage, UserAddressedException
+from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
+from POULibrary import UserAddressedException
 
 base_folder = paths.AbsParentDir(__file__)
 
