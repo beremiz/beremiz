@@ -46,6 +46,7 @@ from lxml import etree
 from xmlclass import GenerateParserFromXSDstring
 from PLCControler import LOCATION_CONFNODE
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from POULibrary import UserAddressedException
 
 _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -677,8 +678,4 @@ class ConfigTreeNode(object):
             the user, but without backtrace since it is not a software error """
 
         raise UserAddressedException(message)
-
-# Exception type for problems that user has to take action in order to fix
-class UserAddressedException(Exception):
-    pass
 
