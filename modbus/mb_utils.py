@@ -184,7 +184,7 @@ def GetClientRequestPrinted(self, child, nodeid):
 
     req_init_template = '''/*request %(locreqstr)s*/
 {"%(locreqstr)s", %(nodeid)s, %(slaveid)s, %(iotype)s, %(func_nr)s, %(address)s , %(count)s,
-DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */,
+DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */,
 {%(buffer)s}, {%(buffer)s}}'''
 
     timeout = int(GetCTVal(child, 4))
@@ -198,6 +198,7 @@ DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(t
         "slaveid": GetCTVal(child, 1),
         "address": GetCTVal(child, 3),
         "count": GetCTVal(child, 2),
+        "write_on_change": GetCTVal(child, 5),
         "timeout": timeout,
         "timeout_s": timeout_s,
         "timeout_ns": timeout_ns,
@@ -222,5 +223,11 @@ DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(t
         self.GetCTRoot().logger.write_error(
             "Modbus plugin: Invalid number of channels in TCP client request node %(locreqstr)s (start_address + nr_channels must be less than 65536)\nModbus plugin: Aborting C code generation for this node\n" % request_dict)
         return None
+    if (request_dict["write_on_change"] and (request_dict["iotype"] == 'req_input')):
+        self.GetCTRoot().logger.write_error(
+            "Modbus plugin: (warning) MB client request node %(locreqstr)s has option 'write_on_change' enabled.\nModbus plugin: This option will be ignored by the Modbus read function.\n" % request_dict)
+        # NOTE: this is only a warning (we don't wish to abort code generation) so following line must be left commented out!
+        # return None
+    
 
     return req_init_template % request_dict

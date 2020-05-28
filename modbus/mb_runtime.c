@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 #include <string.h>  /* required for memcpy() */
+#include <time.h>
+#include <signal.h>
 #include "mb_slave_and_master.h"
 #include "MB_%(locstr)s.h"
 
@@ -299,10 +301,42 @@ static void *__mb_client_thread(void *_index)  {
 	// Enable thread cancelation. Enabled is default, but set it anyway to be safe.
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	
-	// get the current time
-	clock_gettime(CLOCK_MONOTONIC, &next_cycle);
+	// configure the timer for periodic activation
+    {
+      struct itimerspec timerspec;
+      timerspec.it_interval.tv_sec  = period_sec;
+      timerspec.it_interval.tv_nsec = period_nsec;
+      timerspec.it_value            = timerspec.it_interval;
+      
+      if (timer_settime(client_nodes[client_node_id].timer_id, 0 /* flags */, &timerspec, NULL) < 0)
+        fprintf(stderr, "Modbus plugin: Error configuring periodic activation timer for Modbus client %%s.\n", client_nodes[client_node_id].location);          
+    }
 
-	// loop the communication with the client
+    /* loop the communication with the client
+     * 
+         * When the client thread has difficulty communicating with remote client and/or server (network issues, for example),
+         * then the communications get delayed and we will fall behind in the period. 
+         * 
+         * This is OK. Note that if the condition variable were to be signaled multiple times while the client thread is inside the same
+         * Modbus transaction, then all those signals would be ignored.
+         * However, and since we keep the mutex locked during the communication cycle, it is not possible to signal the condition variable
+         * during that time (it is only possible while the thread is blocked during the call to pthread_cond_wait().
+         * 
+         * This means that when network issues eventually get resolved, we will NOT have a bunch of delayed activations to handle
+         * in quick succession (which would goble up CPU time). 
+         * 
+         * Notice that the above property is valid whether the communication cycle is run with the mutex locked, or unlocked.
+         * Since it makes it easier to implement the correct semantics for the other activation methods if the communication cycle
+         * is run with the mutex locked, then that is what we do.
+         * 
+     * Note that during all the communication cycle we will keep locked the mutex 
+     * (i.e. the mutex used together with the condition variable that will activate a new communication cycle)
+     * 
+     * Note that we never get to explicitly unlock this mutex. It will only be unlocked by the pthread_cond_wait()
+     * call at the end of the cycle.
+     */
+    pthread_mutex_lock(&(client_nodes[client_node_id].mutex));
+
 	while (1) {
 		/*
 		struct timespec cur_time;
@@ -311,9 +345,22 @@ static void *__mb_client_thread(void *_index)  {
 		*/
 		int req;
 		for (req=0; req < NUMBER_OF_CLIENT_REQTS; req ++){
-			/*just do the requests belonging to the client */
+			/* just do the requests belonging to the client */
 			if (client_requests[req].client_node_id != client_node_id)
 				continue;
+            
+            /* only do the request if:
+             *   - this request was explictly asked to be executed by the client program
+             *  OR
+             *   - the client thread was activated periodically
+             *     (in which case we execute all the requests belonging to the client node)
+             */
+            if ((client_requests[req].flag_exec_req == 0) && (client_nodes[client_requests[req].client_node_id].periodic_act == 0))
+                continue;
+            
+            //fprintf(stderr, "Modbus plugin: RUNNING<###> of Modbus request %%d  (periodic = %%d  flag_exec_req = %%d)\n", 
+            //        req, client_nodes[client_requests[req].client_node_id].periodic_act, client_requests[req].flag_exec_req );
+            
 			int res_tmp = __execute_mb_request(req);
 			switch (res_tmp) {
 			  case PORT_FAILURE: {
@@ -357,41 +404,89 @@ static void *__mb_client_thread(void *_index)  {
 				break;
 			  }
 			}
-		}
-		// Determine absolute time instant for starting the next cycle
-		struct timespec prev_cycle, now;
-		prev_cycle = next_cycle;
-		timespec_add(next_cycle, period_sec, period_nsec);
-		/* NOTE A:
-		 * When we have difficulty communicating with remote client and/or server, then the communications get delayed and we will
-		 * fall behind in the period. This means that when communication is re-established we may end up running this loop continuously
-		 * for some time until we catch up.
-		 * This is undesirable, so we detect it by making sure the next_cycle will start in the future.
-		 * When this happens we will switch from a purely periodic task _activation_ sequence, to a fixed task suspension interval.
-		 * 
-		 * NOTE B:
-		 * It probably does not make sense to check for overflow of timer - so we don't do it for now!
-		 * Even in 32 bit systems this will take at least 68 years since the computer booted
-		 * (remember, we are using CLOCK_MONOTONIC, which should start counting from 0
-		 * every time the system boots). On 64 bit systems, it will take over 
-		 * 10^11 years to overflow.
-		 */
-		clock_gettime(CLOCK_MONOTONIC, &now);
-		if (  ((now.tv_sec > next_cycle.tv_sec) || ((now.tv_sec == next_cycle.tv_sec) && (now.tv_nsec > next_cycle.tv_nsec)))
-		   /* We are falling behind. See NOTE A above */
-		   || (next_cycle.tv_sec < prev_cycle.tv_sec)
-		   /* Timer overflow. See NOTE B above */
-		   ) {
-			next_cycle = now;
-			timespec_add(next_cycle, period_sec, period_nsec);
-		}
+        
+            /* We have just finished excuting a client transcation request.
+             * If the current cycle was activated by user request we reset the flag used to ask to run it
+             */
+            if (0 != client_requests[req].flag_exec_req) {
+                client_requests[req].flag_exec_req     = 0;
+                client_requests[req].flag_exec_started = 0;   
+            }
+            
+            //fprintf(stderr, "Modbus plugin: RUNNING<---> of Modbus request %%d  (periodic = %%d  flag_exec_req = %%d)\n", 
+            //        req, client_nodes[client_requests[req].client_node_id].periodic_act, client_requests[req].flag_exec_req );
+        }
 
-		clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle, NULL);
+        // Wait for signal (from timer or explicit request from user program) before starting the next cycle
+        {
+            // No need to lock the mutex. Is is already locked just before the while(1) loop.
+            // Read the comment there to understand why.
+            // pthread_mutex_lock(&(client_nodes[client_node_id].mutex));
+            
+            /* the client thread has just finished a cycle, so all the flags used to signal an activation
+             * and specify the activation source (periodic, user request, ...)
+             * get reset here, before waiting for a new activation.
+             */
+            client_nodes[client_node_id].periodic_act = 0;            
+            client_nodes[client_node_id].execute_req  = 0;
+            
+            while (client_nodes[client_node_id].execute_req == 0)
+                pthread_cond_wait(&(client_nodes[client_node_id].condv),
+                                &(client_nodes[client_node_id].mutex)); 
+                            
+            // We run the communication cycle with the mutex locked.
+            // Read the comment just above the while(1) to understand why.
+            // pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
+        }
 	}
 
 	// humour the compiler.
 	return NULL;
 }
+
+
+
+/* Function to activate a client node's thread */
+/* returns -1 if it could not send the signal */
+static int __signal_client_thread(int client_node_id) {
+    /* We TRY to signal the client thread.
+     * We do this because this function can be called at the end of the PLC scan cycle
+     * and we don't want it to block at that time.
+     */
+    if (pthread_mutex_trylock(&(client_nodes[client_node_id].mutex)) != 0)
+        return -1;
+    client_nodes[client_node_id].execute_req = 1; // tell the thread to execute
+    pthread_cond_signal (&(client_nodes[client_node_id].condv));
+    pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
+    return 0;
+}
+
+
+
+/* Function that will be called whenever a client node's periodic timer expires. */
+/* The client node's thread will be waiting on a condition variable, so this function simply signals that 
+ * condition variable.
+ * 
+ * The same callback function is called by the timers of all client nodes. The id of the client node
+ * in question will be passed as a parameter to the call back function.
+ */
+void __client_node_timer_callback_function(union sigval sigev_value) {
+    /* signal the client node's condition variable on which the client node's thread should be waiting... */
+    /* Since the communication cycle is run with the mutex locked, we use trylock() instead of lock() */
+    //pthread_mutex_lock  (&(client_nodes[sigev_value.sival_int].mutex));
+    if (pthread_mutex_trylock (&(client_nodes[sigev_value.sival_int].mutex)) != 0)
+        /* we never get to signal the thread for activation. But that is OK.
+         * If it still in the communication cycle (during which the mutex is kept locked)
+         * then that means that the communication cycle is falling behing in the periodic 
+         * communication cycle, and we therefore need to skip a period.
+         */
+        return;
+    client_nodes[sigev_value.sival_int].execute_req  = 1; // tell the thread to execute
+    client_nodes[sigev_value.sival_int].periodic_act = 1; // tell the thread the activation was done by periodic timer   
+    pthread_cond_signal (&(client_nodes[sigev_value.sival_int].condv));
+    pthread_mutex_unlock(&(client_nodes[sigev_value.sival_int].mutex));
+}
+
 
 
 int __cleanup_%(locstr)s ();
@@ -421,9 +516,14 @@ int __init_%(locstr)s (int argc, char **argv){
 		return -1;
 	}
 	
-	/* init the mutex for each client request */
+	/* init each client request */
 	/* Must be done _before_ launching the client threads!! */
 	for (index=0; index < NUMBER_OF_CLIENT_REQTS; index ++){
+        /* make sure flags connected to user program MB transaction start request are all reset */
+        client_requests[index].flag_exec_req     = 0;
+        client_requests[index].flag_exec_started = 0;        
+        /* init the mutex for each client request */
+        /* Must be done _before_ launching the client threads!! */
 		if (pthread_mutex_init(&(client_requests[index].coms_buf_mutex), NULL)) {
 			fprintf(stderr, "Modbus plugin: Error initializing request for modbus client node %%s\n", client_nodes[client_requests[index].client_node_id].location);
 			goto error_exit;
@@ -443,6 +543,39 @@ int __init_%(locstr)s (int argc, char **argv){
 		}
 		client_nodes[index].init_state = 1; // we have created the node 
 		
+		/* initialize the mutex variable that will be used by the thread handling the client node */
+        if (pthread_mutex_init(&(client_nodes[index].mutex), NULL) < 0) {
+			fprintf(stderr, "Modbus plugin: Error creating mutex for modbus client node %%s\n", client_nodes[index].location);
+			goto error_exit;                
+        }
+		client_nodes[index].init_state = 2; // we have created the mutex
+		
+		/* initialize the condition variable that will be used by the thread handling the client node */
+        if (pthread_cond_init(&(client_nodes[index].condv), NULL) < 0) {
+			fprintf(stderr, "Modbus plugin: Error creating condition variable for modbus client node %%s\n", client_nodes[index].location);
+			goto error_exit;                
+        }
+        client_nodes[index].execute_req = 0; //variable associated with condition variable
+		client_nodes[index].init_state = 3; // we have created the condition variable
+		
+		/* initialize the timer that will be used to periodically activate the client node */
+        {
+            // start off by reseting the flag that will be set whenever the timer expires
+            client_nodes[index].periodic_act = 0;
+
+            struct sigevent evp;
+            evp.sigev_notify            = SIGEV_THREAD; /* Notification method - call a function in a new thread context */
+            evp.sigev_value.sival_int   = index;        /* Data passed to function upon notification - used to indentify which client node to activate */
+            evp.sigev_notify_function   = __client_node_timer_callback_function; /* function to call upon timer expiration */
+            evp.sigev_notify_attributes = NULL;         /* attributes for new thread in which sigev_notify_function will be called/executed */
+            
+            if (timer_create(CLOCK_MONOTONIC, &evp, &(client_nodes[index].timer_id)) < 0) {
+                fprintf(stderr, "Modbus plugin: Error creating timer for modbus client node %%s\n", client_nodes[index].location);
+                goto error_exit;                
+            }
+        }
+        client_nodes[index].init_state = 4; // we have created the timer
+
 		/* launch a thread to handle this client node */
 		{
 			int res = 0;
@@ -450,11 +583,11 @@ int __init_%(locstr)s (int argc, char **argv){
 			res |= pthread_attr_init(&attr);
 			res |= pthread_create(&(client_nodes[index].thread_id), &attr, &__mb_client_thread, (void *)((char *)NULL + index));
 			if (res !=  0) {
-				fprintf(stderr, "Modbus plugin: Error starting modbus client thread for node %%s\n", client_nodes[index].location);
+				fprintf(stderr, "Modbus plugin: Error starting thread for modbus client node %%s\n", client_nodes[index].location);
 				goto error_exit;
 			}
 		}
-		client_nodes[index].init_state = 2; // we have created the node and a thread
+		client_nodes[index].init_state = 5; // we have created the thread
 	}
 
 	/* init each local server */
@@ -499,9 +632,26 @@ void __publish_%(locstr)s (){
 	int index;
 
 	for (index=0; index < NUMBER_OF_CLIENT_REQTS; index ++){
-		/*just do the output requests */
+		/* synchronize the PLC and MB buffers only for the output requests */
 		if (client_requests[index].req_type == req_output){
+            
+            // lock the mutex brefore copying the data
 			if(pthread_mutex_trylock(&(client_requests[index].coms_buf_mutex)) == 0){
+                
+                // Check if user configured this MB request to be activated whenever the data to be written changes
+                if (client_requests[index].write_on_change) {
+                    // Let's check if the data did change...
+                    // compare the data in plcv_buffer to coms_buffer
+                    int res;
+                    res = memcmp((void *)client_requests[index].coms_buffer /* buf 1 */,
+                                 (void *)client_requests[index].plcv_buffer /* buf 2*/,
+                                 REQ_BUF_SIZE * sizeof(u16) /* size in bytes */);
+                    
+                    // if data changed, activate execution request 
+                    if (0 != res)
+                        client_requests[index].flag_exec_req = 1;
+                }
+                
                 // copy from plcv_buffer to coms_buffer
                 memcpy((void *)client_requests[index].coms_buffer /* destination */,
                        (void *)client_requests[index].plcv_buffer /* source */,
@@ -509,7 +659,33 @@ void __publish_%(locstr)s (){
                 pthread_mutex_unlock(&(client_requests[index].coms_buf_mutex));
             }
 		}
-	}
+        /* if the user program set the execution request flag, then activate the thread
+         *  that handles this Modbus client transaction so it gets a chance to be executed
+         *  (but don't activate the thread if it has already been activated!)
+         * 
+         * NOTE that we do this, for both the IN and OUT mapped location, under this
+         *  __publish_() function. The scan cycle of the PLC works as follows:
+         *   - call __retrieve_()
+         *   - execute user programs
+         *   - call __publish_()
+         *   - insert <delay> until time to start next periodic/cyclic scan cycle
+         * 
+         *  In an attempt to be able to run the MB transactions during the <delay>
+         *  interval in which not much is going on, we handle the user program
+         *  requests to execute a specific MB transaction in this __publish_()
+         *  function.
+         */
+        if ((client_requests[index].flag_exec_req != 0) && (0 == client_requests[index].flag_exec_started)) {
+            int client_node_id = client_requests[index].client_node_id;
+            if (__signal_client_thread(client_node_id) >= 0) {
+                /* - upon success, set flag_exec_started
+                 * - both flags (flag_exec_req and flag_exec_started) will be reset
+                 *   once the transaction has completed.
+                 */
+                client_requests[index].flag_exec_started = 1;    
+            }
+        }                    
+    }
 }
 
 
@@ -544,12 +720,39 @@ int __cleanup_%(locstr)s (){
 	/* kill thread and close connections of each modbus client node */
 	for (index=0; index < NUMBER_OF_CLIENT_NODES; index++) {
 		close = 0;
-		if (client_nodes[index].init_state >= 2) {
+		if (client_nodes[index].init_state >= 5) {
 			// thread was launched, so we try to cancel it!
 			close  = pthread_cancel(client_nodes[index].thread_id);
 			close |= pthread_join  (client_nodes[index].thread_id, NULL);
 			if (close < 0)
-				fprintf(stderr, "Modbus plugin: Error closing thread for modbus client %%s\n", client_nodes[index].location);
+				fprintf(stderr, "Modbus plugin: Error closing thread for modbus client node %%s\n", client_nodes[index].location);
+		}
+		res |= close;
+
+		close = 0;
+		if (client_nodes[index].init_state >= 4) {
+			// timer was created, so we try to destroy it!
+			close  = timer_delete(client_nodes[index].timer_id);
+			if (close < 0)
+				fprintf(stderr, "Modbus plugin: Error destroying timer for modbus client node %%s\n", client_nodes[index].location);
+		}
+		res |= close;
+
+		close = 0;
+		if (client_nodes[index].init_state >= 3) {
+			// condition variable was created, so we try to destroy it!
+			close  = pthread_cond_destroy(&(client_nodes[index].condv));
+			if (close < 0)
+				fprintf(stderr, "Modbus plugin: Error destroying condition variable for modbus client node %%s\n", client_nodes[index].location);
+		}
+		res |= close;
+
+		close = 0;
+		if (client_nodes[index].init_state >= 2) {
+			// mutex was created, so we try to destroy it!
+			close  = pthread_mutex_destroy(&(client_nodes[index].mutex));
+			if (close < 0)
+				fprintf(stderr, "Modbus plugin: Error destroying mutex for modbus client node %%s\n", client_nodes[index].location);
 		}
 		res |= close;
 

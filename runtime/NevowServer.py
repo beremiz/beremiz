@@ -179,7 +179,13 @@ class ConfigurableBindings(configurable.Configurable):
 
         setattr(self, 'action_' + name, callback)
 
-        self.bindingsNames.append(name)
+        if name not in self.bindingsNames:
+            self.bindingsNames.append(name)
+
+
+    def delSettings(self, name):
+        if name in self.bindingsNames:
+            self.bindingsNames.remove(name)
 
 
 ConfigurableSettings = ConfigurableBindings()
