@@ -451,17 +451,27 @@ class PLCObject(object):
         self.PythonThreadCond.notify()
         self.PythonThreadCondLock.release()
 
+    def _fail(msg):
+        self.LogMessage(0, msg)
+        self.PLCStatus = PlcStatus.Broken
+        self.StatusChange()
+
+    def PreStartPLC(self):
+        """ 
+        Here goes actions to be taken just before PLC starts, 
+        with all libraries and python object already created.
+        For example : restore saved proprietary parameters
+        """
+        pass
+
     @RunInMain
     def StartPLC(self):
 
-        def fail(msg):
-            self.LogMessage(0, msg)
-            self.PLCStatus = PlcStatus.Broken
-            self.StatusChange()
-
         if self.PLClibraryHandle is None:
             if not self.LoadPLC():
-                fail(_("Problem starting PLC : can't load PLC"))
+                self._fail(_("Problem starting PLC : can't load PLC"))
+
+        self.PreStartPLC()
 
         if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
             c_argv = ctypes.c_char_p * len(self.argv)
@@ -472,7 +482,7 @@ class PLCObject(object):
                 self.PythonThreadCommand("Activate")
                 self.LogMessage("PLC started")
             else:
-                fail(_("Problem starting PLC : error %d" % res))
+                self._fail(_("Problem starting PLC : error %d" % res))
 
     @RunInMain
     def StopPLC(self):
