@@ -475,6 +475,8 @@ def installThreadExcepthook():
 
 installThreadExcepthook()
 havewamp = False
+haveBNconf = False
+
 
 if havetwisted:
     if webport is not None:
@@ -483,8 +485,17 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("Nevow/Athena import failed :"))
             webport = None
-        NS.WorkingDir = WorkingDir
+        NS.WorkingDir = WorkingDir  # bug? what happens if import fails?
 
+    # Try to add support for BACnet configuration via web server interface
+    # NOTE:BACnet web config only makes sense if web server is available
+    if webport is not None:
+        try:
+            import runtime.BACnet_config as BNconf
+            haveBNconf = True
+        except Exception:
+            LogMessageAndException(_("BACnet configuration web interface - import failed :"))
+        
     try:
         import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
         WC.WorkingDir = WorkingDir
@@ -506,6 +517,8 @@ if servicename is not None and PSKpath is not None:
 runtime.CreatePLCObjectSingleton(
     WorkingDir, argv, statuschange, evaluator, pyruntimevars)
 
+plcobj = runtime.GetPLCObjectSingleton()
+
 pyroserver = PyroServer(servicename, interface, port)
 
 if havewx:
@@ -520,6 +533,12 @@ if havetwisted:
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception:
             LogMessageAndException(_("Nevow Web service failed. "))
+
+    if haveBNconf:
+        try:
+            BNconf.init(plcobj, NS, WorkingDir)
+        except Exception:
+            LogMessageAndException(_("BACnet web configuration failed startup. "))
 
     if havewamp:
         try:
@@ -584,7 +603,6 @@ except KeyboardInterrupt:
 pyroserver.Quit()
 pyro_thread.join()
 
-plcobj = runtime.GetPLCObjectSingleton()
 plcobj.StopPLC()
 plcobj.UnLoadPLC()
 
