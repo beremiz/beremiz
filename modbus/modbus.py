@@ -83,6 +83,7 @@ class _RequestPlug(object):
                 </xsd:restriction>
             </xsd:simpleType>
           </xsd:attribute>
+          <xsd:attribute name="Write_on_change" type="xsd:boolean" use="optional" default="false"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -115,7 +116,29 @@ class _RequestPlug(object):
         datatacc = modbus_function_dict[function][6]
         # 'Coil', 'Holding Register', 'Input Discrete' or 'Input Register'
         dataname = modbus_function_dict[function][7]
+        # start off with a boolean entry
+        # This is a flag used to allow the user program to control when to 
+        # execute the Modbus request.
+        # NOTE: If the Modbus request has a 'current_location' of
+        #          %QX1.2.3
+        #       then the execution control flag will be
+        #          %QX1.2.3.0.0
+        #       and all the Modbus registers/coils will be
+        #          %QX1.2.3.0
+        #          %QX1.2.3.1
+        #          %QX1.2.3.2
+        #            ..
+        #          %QX1.2.3.n
         entries = []
+        entries.append({
+            "name": "Exec. request flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 1,           # BOOL flag
+            "IEC_type": "BOOL",  # BOOL flag
+            "var_name": "var_name",
+            "location": "X" + ".".join([str(i) for i in current_location]) + ".0.0",
+            "description": "MB request execution control flag",
+            "children": []})        
         for offset in range(address, address + count):
             entries.append({
                 "name": dataname + " " + str(offset),
@@ -270,7 +293,7 @@ class _ModbusTCPclientPlug(object):
           <xsd:attribute name="Invocation_Rate_in_ms" use="optional" default="100">
             <xsd:simpleType>
                 <xsd:restriction base="xsd:unsignedLong">
-                    <xsd:minInclusive value="1"/>
+                    <xsd:minInclusive value="0"/>
                     <xsd:maxInclusive value="2147483647"/>
                 </xsd:restriction>
             </xsd:simpleType>
@@ -388,7 +411,7 @@ class _ModbusRTUclientPlug(object):
           <xsd:attribute name="Invocation_Rate_in_ms" use="optional" default="100">
             <xsd:simpleType>
                 <xsd:restriction base="xsd:integer">
-                    <xsd:minInclusive value="1"/>
+                    <xsd:minInclusive value="0"/>
                     <xsd:maxInclusive value="2147483647"/>
                 </xsd:restriction>
             </xsd:simpleType>
@@ -720,11 +743,31 @@ class RootClass(object):
                     for iecvar in subchild.GetLocations():
                         # absloute address - start address
                         relative_addr = iecvar["LOC"][3] - int(GetCTVal(subchild, 3))
-                        # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(subchild, 2))):
+                        # test if the located variable 
+                        #    (a) has relative address in request specified range
+                        #  AND is NOT
+                        #    (b) is a control flag added by this modbus plugin
+                        #        to control its execution at runtime.
+                        #        Currently, we only add the "Execution Control Flag"
+                        #        to each client request (one flag per request)
+                        #        to control when to execute the request (if not executed periodically)
+                        #        While all Modbus registers/coils are mapped onto a location
+                        #        with 4 numbers (e.g. %QX0.1.2.55), this control flag is mapped
+                        #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
+                        #        two numbers are always '0.0', and the first two identify the request.
+                        #        In the following if, we check for this condition by checking
+                        #        if their are at least 4 or more number in the location's address.
+                        if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
+                            and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append(
                                     "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
+                                loc_vars_list.append(str(iecvar["NAME"]))
+                        # Now add the located variable in case it is a flag (condition (b) above
+                        if  len(iecvar["LOC"]) >= 5:       # condition (b) explained above
+                            if str(iecvar["NAME"]) not in loc_vars_list:
+                                loc_vars.append(
+                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
                                 loc_vars_list.append(str(iecvar["NAME"]))
                     client_requestid += 1
                 tcpclient_node_count += 1
@@ -745,11 +788,31 @@ class RootClass(object):
                     for iecvar in subchild.GetLocations():
                         # absloute address - start address
                         relative_addr = iecvar["LOC"][3] - int(GetCTVal(subchild, 3))
-                        # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(subchild, 2))):
+                        # test if the located variable 
+                        #    (a) has relative address in request specified range
+                        #  AND is NOT
+                        #    (b) is a control flag added by this modbus plugin
+                        #        to control its execution at runtime.
+                        #        Currently, we only add the "Execution Control Flag"
+                        #        to each client request (one flag per request)
+                        #        to control when to execute the request (if not executed periodically)
+                        #        While all Modbus registers/coils are mapped onto a location
+                        #        with 4 numbers (e.g. %QX0.1.2.55), this control flag is mapped
+                        #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
+                        #        two numbers are always '0.0', and the first two identify the request.
+                        #        In the following if, we check for this condition by checking
+                        #        if their are at least 4 or more number in the location's address.
+                        if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
+                            and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append(
                                     "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
+                                loc_vars_list.append(str(iecvar["NAME"]))
+                        # Now add the located variable in case it is a flag (condition (b) above
+                        if  len(iecvar["LOC"]) >= 5:       # condition (b) explained above
+                            if str(iecvar["NAME"]) not in loc_vars_list:
+                                loc_vars.append(
+                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
                                 loc_vars_list.append(str(iecvar["NAME"]))
                     client_requestid += 1
                 rtuclient_node_count += 1

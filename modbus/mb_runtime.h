@@ -54,11 +54,32 @@ typedef struct{
 typedef struct{
 	    const char *location;
 	    node_addr_t	node_address;
-	    int		mb_nd;
+	    int		mb_nd;      // modbus library node used for this client
 	    int		init_state; // store how far along the client's initialization has progressed
-	    u64		comm_period;
+	    u64		comm_period;// period to use when periodically sending requests to remote server
 	    int		prev_error; // error code of the last printed error message (0 when no error) 
-	    pthread_t	thread_id;  // thread handling all communication with this client
+	    pthread_t   thread_id;  // thread handling all communication for this client node
+	    timer_t      timer_id;  // timer used to periodically activate this client node's thread
+	    pthread_mutex_t mutex;  // mutex to be used with the following condition variable
+        pthread_cond_t  condv;  // used to signal the client thread when to start new modbus transactions
+        int       execute_req;  /* used, in association with condition variable,  
+                                 *   to signal when to send the modbus request to the server
+                                 * Note that we cannot simply rely on the condition variable to signal
+                                 *   when to activate the client thread, as the call to 
+                                 *   pthread_cond_wait() may return without having been signaled!
+                                 *   From the manual:
+                                 *      Spurious  wakeups  from  the
+                                 *      pthread_cond_timedwait() or pthread_cond_wait()  functions  may  occur.
+                                 *      Since  the  return from pthread_cond_timedwait() or pthread_cond_wait()
+                                 *      does not imply anything about the value of this predicate,  the  predi-
+                                 *      cate should be re-evaluated upon such return.
+                                 */
+        int      periodic_act;  /* (boolen) flag will be set when the client node's thread was activated 
+                                 * (by signaling the above condition variable) by the periodic timer.
+                                 * Note that this same thread may also be activated (condition variable is signaled)
+                                 * by other sources, such as when the user program requests that a specific 
+                                 * client MB transation be executed (flag_exec_req in client_request_t)
+                                 */
 	} client_node_t;
 
 
@@ -82,11 +103,37 @@ typedef struct{
 	    u8		error_code; // modbus error code (if any) of current request
 	    int		prev_error; // error code of the last printed error message (0 when no error) 
 	    struct timespec resp_timeout;
+	    u8		write_on_change; // boolean flag. If true => execute MB request when data to send changes
 	      // buffer used to store located PLC variables
 	    u16		plcv_buffer[REQ_BUF_SIZE];
 	      // buffer used to store data coming from / going to server
 	    u16		coms_buffer[REQ_BUF_SIZE]; 
 	    pthread_mutex_t coms_buf_mutex; // mutex to access coms_buffer[]
+          /* boolean flag that will be mapped onto a (BOOL) located variable 
+           * (u16 because IEC 61131-3 BOOL are mapped onto u16 in C code! )
+           *    -> allow PLC program to request when to start the MB transaction
+           *    -> will be reset once the MB transaction has completed
+           */
+        u16     flag_exec_req;  
+          /* flag that works in conjunction with flag_exec_req
+           * (does not really need to be u16 as it is not mapped onto a located variable. )
+           *    -> used by internal logic to indicate that the client thread 
+           *       that will be executing the MB transaction
+           *       requested by flag exec_req has already been activated.
+           *    -> will be reset once the MB transaction has completed
+           */
+        u16     flag_exec_started;  
+          /* flag that will be mapped onto a (WORD) located variable 
+           * (u16 because the flag is a word! )
+           *    -> MSByte will store the result of the last executed MB transaction
+           *         1 -> error accessing IP network, or serial interface
+           *         2 -> reply received from server was an invalid frame
+           *         3 -> server did not reply before timeout expired
+           *         4 -> server returned a valid error frame
+           *    -> if the MSByte is 4, the LSByte will store the MB error code returned by the server
+           *    -> will be reset (set to 0) once this MB transaction has completed sucesfully
+           */
+        u16     flag_exec_status;  
 	} client_request_t;
 
 
