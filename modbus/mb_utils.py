@@ -57,14 +57,12 @@ def GetTCPServerNodePrinted(self, child):
     params: child - the correspondent subplugin in Beremiz
     """
     node_init_template = '''/*node %(locnodestr)s*/
-{"%(locnodestr)s", "%(config_name)s", %(slaveid)s, {naf_tcp, {.tcp = {%(host)s, "%(port)s", DEF_CLOSE_ON_SILENCE}}}, -1 /* mb_nd */, 0 /* init_state */}'''
+{"%(locnodestr)s", "%(config_name)s", "%(host)s", "%(port)s", %(slaveid)s, {naf_tcp, {.tcp = {NULL, NULL, DEF_CLOSE_ON_SILENCE}}}, -1 /* mb_nd */, 0 /* init_state */}'''
 
     location = ".".join(map(str, child.GetCurrentLocation()))
     config_name, host, port, slaveid = GetCTVals(child, range(4))
     if host == "#ANY#":
-        host = 'INADDR_ANY'
-    else:
-        host = '"' + host + '"'
+        host = ''
     # slaveid = GetCTVal(child, 2)
     # if int(slaveid) not in xrange(256):
         # self.GetCTRoot().logger.write_error("Error: Wrong slave ID in %s server node\nModbus Plugin C code returns empty\n"%location)
@@ -121,7 +119,7 @@ def GetRTUSlaveNodePrinted(self, child):
     params: child - the correspondent subplugin in Beremiz
     """
     node_init_template = '''/*node %(locnodestr)s*/
-{"%(locnodestr)s", "%(config_name)s", %(slaveid)s, {naf_rtu, {.rtu = {"%(device)s", %(baud)s /*baud*/, %(parity)s /*parity*/, 8 /*data bits*/, %(stopbits)s, 0 /* ignore echo */}}}, -1 /* mb_nd */, 0 /* init_state */}'''
+{"%(locnodestr)s", "%(config_name)s", "%(device)s", "",%(slaveid)s, {naf_rtu, {.rtu = {NULL, %(baud)s /*baud*/, %(parity)s /*parity*/, 8 /*data bits*/, %(stopbits)s, 0 /* ignore echo */}}}, -1 /* mb_nd */, 0 /* init_state */}'''
 
     location = ".".join(map(str, child.GetCurrentLocation()))
     config_name, device, baud, parity, stopbits, slaveid = GetCTVals(child, range(6))

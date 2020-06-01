@@ -513,6 +513,16 @@ int __init_%(locstr)s (int argc, char **argv){
 		//   -1  -->    modbus node created!; no thread  created
 		//  >=0  -->    modbus node created!;    thread  created!
 		server_nodes[index].mb_nd = -2; 
+        /* see comment in mb_runtime.h to understad why we need to initialize these entries */
+        switch (server_nodes[index].node_address.naf) {
+            case naf_tcp:
+                server_nodes[index].node_address.addr.tcp.host    = server_nodes[index].str1;
+                server_nodes[index].node_address.addr.tcp.service = server_nodes[index].str2;
+                break;
+            case naf_rtu:
+                server_nodes[index].node_address.addr.rtu.device  = server_nodes[index].str1;
+                break;
+        }
 	}
 
 	/* modbus library init */
@@ -919,12 +929,13 @@ u64                __modbus_get_ClientNode_comm_period(int nodeid)  {return clie
 const char *       __modbus_get_ClientNode_addr_type  (int nodeid)  {return addr_type_str[client_nodes[nodeid].node_address.naf];}
                                                                                                                         
 const char *       __modbus_get_ServerNode_config_name(int nodeid)  {return server_nodes[nodeid].config_name;                    }
-const char *       __modbus_get_ServerNode_host       (int nodeid)  {return server_nodes[nodeid].node_address.addr.tcp.host;     }
-const char *       __modbus_get_ServerNode_port       (int nodeid)  {return server_nodes[nodeid].node_address.addr.tcp.service;  }
-const char *       __modbus_get_ServerNode_device     (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.device;   }
+const char *       __modbus_get_ServerNode_host       (int nodeid)  {return server_nodes[nodeid].str1;                           }
+const char *       __modbus_get_ServerNode_port       (int nodeid)  {return server_nodes[nodeid].str2;                           }
+const char *       __modbus_get_ServerNode_device     (int nodeid)  {return server_nodes[nodeid].str1;                           }
 int                __modbus_get_ServerNode_baud       (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.baud;     }
 int                __modbus_get_ServerNode_parity     (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.parity;   }
 int                __modbus_get_ServerNode_stop_bits  (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.stop_bits;}
+u8                 __modbus_get_ServerNode_slave_id   (int nodeid)  {return server_nodes[nodeid].slave_id;                       }
 const char *       __modbus_get_ServerNode_addr_type  (int nodeid)  {return addr_type_str[server_nodes[nodeid].node_address.naf];}
 
 
@@ -937,4 +948,11 @@ void __modbus_set_ClientNode_stop_bits  (int nodeid, int          value)  {clien
 void __modbus_set_ClientNode_comm_period(int nodeid, u64          value)  {client_nodes[nodeid].comm_period                     = value;}
                                                                                                                         
 
+void __modbus_set_ServerNode_host       (int nodeid, const char * value)  {__safe_strcnpy(server_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ServerNode_port       (int nodeid, const char * value)  {__safe_strcnpy(server_nodes[nodeid].str2, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ServerNode_device     (int nodeid, const char * value)  {__safe_strcnpy(server_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ServerNode_baud       (int nodeid, int          value)  {server_nodes[nodeid].node_address.addr.rtu.baud      = value;}
+void __modbus_set_ServerNode_parity     (int nodeid, int          value)  {server_nodes[nodeid].node_address.addr.rtu.parity    = value;}
+void __modbus_set_ServerNode_stop_bits  (int nodeid, int          value)  {server_nodes[nodeid].node_address.addr.rtu.stop_bits = value;}
+void __modbus_set_ServerNode_slave_id   (int nodeid, u8           value)  {server_nodes[nodeid].slave_id                        = value;}
 
