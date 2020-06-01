@@ -57,10 +57,10 @@ def GetTCPServerNodePrinted(self, child):
     params: child - the correspondent subplugin in Beremiz
     """
     node_init_template = '''/*node %(locnodestr)s*/
-{"%(locnodestr)s", %(slaveid)s, {naf_tcp, {.tcp = {%(host)s, "%(port)s", DEF_CLOSE_ON_SILENCE}}}, -1 /* mb_nd */, 0 /* init_state */}'''
+{"%(locnodestr)s", "%(config_name)s", %(slaveid)s, {naf_tcp, {.tcp = {%(host)s, "%(port)s", DEF_CLOSE_ON_SILENCE}}}, -1 /* mb_nd */, 0 /* init_state */}'''
 
     location = ".".join(map(str, child.GetCurrentLocation()))
-    host, port, slaveid = GetCTVals(child, range(3))
+    config_name, host, port, slaveid = GetCTVals(child, range(4))
     if host == "#ANY#":
         host = 'INADDR_ANY'
     else:
@@ -71,6 +71,7 @@ def GetTCPServerNodePrinted(self, child):
         # return None
 
     node_dict = {"locnodestr": location,
+                 "config_name": config_name,
                  "host": host,
                  "port": port,
                  "slaveid": slaveid}
@@ -120,12 +121,13 @@ def GetRTUSlaveNodePrinted(self, child):
     params: child - the correspondent subplugin in Beremiz
     """
     node_init_template = '''/*node %(locnodestr)s*/
-{"%(locnodestr)s", %(slaveid)s, {naf_rtu, {.rtu = {"%(device)s", %(baud)s /*baud*/, %(parity)s /*parity*/, 8 /*data bits*/, %(stopbits)s, 0 /* ignore echo */}}}, -1 /* mb_nd */, 0 /* init_state */}'''
+{"%(locnodestr)s", "%(config_name)s", %(slaveid)s, {naf_rtu, {.rtu = {"%(device)s", %(baud)s /*baud*/, %(parity)s /*parity*/, 8 /*data bits*/, %(stopbits)s, 0 /* ignore echo */}}}, -1 /* mb_nd */, 0 /* init_state */}'''
 
     location = ".".join(map(str, child.GetCurrentLocation()))
-    device, baud, parity, stopbits, slaveid = GetCTVals(child, range(5))
+    config_name, device, baud, parity, stopbits, slaveid = GetCTVals(child, range(6))
 
     node_dict = {"locnodestr": location,
+                 "config_name": config_name,
                  "device": device,
                  "baud": baud,
                  "parity": modbus_serial_parity_dict[parity],
@@ -140,12 +142,13 @@ def GetRTUClientNodePrinted(self, child):
     params: child - the correspondent subplugin in Beremiz
     """
     node_init_template = '''/*node %(locnodestr)s*/
-{"%(locnodestr)s", {naf_rtu, {.rtu = {"%(device)s", %(baud)s /*baud*/, %(parity)s /*parity*/, 8 /*data bits*/, %(stopbits)s, 0 /* ignore echo */}}}, -1 /* mb_nd */, 0 /* init_state */, %(coms_period)s /* communication period */}'''
+{"%(locnodestr)s", "%(config_name)s", "%(device)s", "", {naf_rtu, {.rtu = {NULL, %(baud)s /*baud*/, %(parity)s /*parity*/, 8 /*data bits*/, %(stopbits)s, 0 /* ignore echo */}}}, -1 /* mb_nd */, 0 /* init_state */, %(coms_period)s /* communication period */}'''
 
     location = ".".join(map(str, child.GetCurrentLocation()))
-    device, baud, parity, stopbits, coms_period = GetCTVals(child, range(5))
+    config_name, device, baud, parity, stopbits, coms_period = GetCTVals(child, range(6))
 
     node_dict = {"locnodestr": location,
+                 "config_name": config_name,
                  "device": device,
                  "baud": baud,
                  "parity": modbus_serial_parity_dict[parity],
@@ -160,12 +163,13 @@ def GetTCPClientNodePrinted(self, child):
     params: child - the correspondent subplugin in Beremiz
     """
     node_init_template = '''/*node %(locnodestr)s*/
-{"%(locnodestr)s", {naf_tcp, {.tcp = {"%(host)s", "%(port)s", DEF_CLOSE_ON_SILENCE}}}, -1 /* mb_nd */, 0 /* init_state */, %(coms_period)s /* communication period */, 0 /* prev_error */}'''
+{"%(locnodestr)s", "%(config_name)s", "%(host)s", "%(port)s", {naf_tcp, {.tcp = {NULL, NULL, DEF_CLOSE_ON_SILENCE}}}, -1 /* mb_nd */, 0 /* init_state */, %(coms_period)s /* communication period */, 0 /* prev_error */}'''
 
     location = ".".join(map(str, child.GetCurrentLocation()))
-    host, port, coms_period = GetCTVals(child, range(3))
+    config_name, host, port, coms_period = GetCTVals(child, range(4))
 
     node_dict = {"locnodestr": location,
+                 "config_name": config_name,
                  "host": host,
                  "port": port,
                  "coms_period": coms_period}
@@ -184,7 +188,7 @@ def GetClientRequestPrinted(self, child, nodeid):
 
     req_init_template = '''/*request %(locreqstr)s*/
 {"%(locreqstr)s", %(nodeid)s, %(slaveid)s, %(iotype)s, %(func_nr)s, %(address)s , %(count)s,
-DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */,
+DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */, 
 {%(buffer)s}, {%(buffer)s}}'''
 
     timeout = int(GetCTVal(child, 4))

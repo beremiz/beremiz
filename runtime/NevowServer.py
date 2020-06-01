@@ -165,7 +165,8 @@ class ConfigurableBindings(configurable.Configurable):
         setattr(self, 'bind_' + name, _bind)
         self.bindingsNames.append(name)
 
-    def addSettings(self, name, desc, fields, btnlabel, callback):
+    def addSettings(self, name, desc, fields, btnlabel, callback, 
+                    addAfterName = None):
         def _bind(ctx):
             return annotate.MethodBinding(
                 'action_' + name,
@@ -179,8 +180,23 @@ class ConfigurableBindings(configurable.Configurable):
 
         setattr(self, 'action_' + name, callback)
 
-        if name not in self.bindingsNames:
-            self.bindingsNames.append(name)
+        if addAfterName not in self.bindingsNames:
+            # Just append new setting if not yet present
+            if name not in self.bindingsNames:
+                self.bindingsNames.append(name)
+        else:
+            # We need to insert new setting 
+            # imediately _after_ addAfterName
+            
+            # First remove new setting if already present
+            # to make sure it goes into correct place
+            if name in self.bindingsNames:
+                self.bindingsNames.remove(name)
+            # Now add new setting in correct place
+            self.bindingsNames.insert(
+                self.bindingsNames.index(addAfterName)+1,
+                name)
+            
 
 
     def delSettings(self, name):

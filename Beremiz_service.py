@@ -476,6 +476,7 @@ def installThreadExcepthook():
 installThreadExcepthook()
 havewamp = False
 haveBNconf = False
+haveMBconf = False
 
 
 if havetwisted:
@@ -495,7 +496,16 @@ if havetwisted:
             haveBNconf = True
         except Exception:
             LogMessageAndException(_("BACnet configuration web interface - import failed :"))
-        
+
+    # Try to add support for Modbus configuration via web server interface
+    # NOTE:Modbus web config only makes sense if web server is available
+    if webport is not None:
+        try:
+            import runtime.Modbus_config as MBconf
+            haveMBconf = True
+        except Exception:
+            LogMessageAndException(_("Modbus configuration web interface - import failed :"))
+                
     try:
         import runtime.WampClient as WC  # pylint: disable=ungrouped-imports
         WC.WorkingDir = WorkingDir
@@ -539,6 +549,12 @@ if havetwisted:
             BNconf.init(plcobj, NS, WorkingDir)
         except Exception:
             LogMessageAndException(_("BACnet web configuration failed startup. "))
+
+    if haveMBconf:
+        try:
+            MBconf.init(plcobj, NS, WorkingDir)
+        except Exception:
+            LogMessageAndException(_("Modbus web configuration failed startup. "))
 
     if havewamp:
         try:
