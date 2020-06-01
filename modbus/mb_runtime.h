@@ -30,6 +30,10 @@
 
 #define DEF_REQ_SEND_RETRIES 0
 
+
+#define MODBUS_PARAM_STRING_SIZE 64
+
+
   // Used by the Modbus server node
 #define MEM_AREA_SIZE 65536
 typedef struct{
@@ -39,8 +43,46 @@ typedef struct{
 	    u16		rw_words[MEM_AREA_SIZE];
 	} server_mem_t;
 
+
+/*
+ * Beremiz has a program to run on the PLC (Beremiz_service.py)
+ * to handle downloading of compiled programs, start/stop of PLC, etc.
+ * (see runtime/PLCObject.py for start/stop, loading, ...)
+ * 
+ * This service also includes a web server to access PLC state (start/stop)
+ * and to change some basic confiuration parameters.
+ * (see runtime/NevowServer.py for the web server)
+ * 
+ * The web server allows for extensions, where additional configuration
+ * parameters may be changed on the running/downloaded PLC.
+ * Modbus plugin also comes with an extension to the web server, through
+ * which the basic Modbus plugin configuration parameters may be changed
+ *
+ * This means that most values in the server_node_t and client_node_t
+ * may be changed after the co,piled code (.so file) is loaded into 
+ * memory, and before the code starts executing.
+ * Since the we will also want to change the host and port (TCP) and the
+ * serial device (RTU) at this time, it is best if we allocate memory for
+ * these strings that may be overwritten by the web server (i.e., do not use
+ * const strings) in the server_node_t and client_node_t structures.
+ *
+ * The following structure members
+ *    - node_addr_t.addr.tcp.host
+ *    - node_addr_t.addr.tcp.service  (i.e. the port)
+ *    - node_addr_t.addr.rtu.device
+ * are all char *, and do not allocate memory for the strings.
+ * 
+ * We therefore include two generic char arrays, str1 and str2,
+ * that will store the above strings, and the C code will initiliaze
+ * the node_addre_t.addr string pointers to these strings.
+ * i.e., either addr.rtu.device will point to str1,
+ *          or
+ *        addr.tcp.host and addr.tcp.service 
+ *        will point to str1 and str2 respectively
+ */
 typedef struct{
 	    const char *location;
+        const char *config_name;
 	    u8		slave_id;
 	    node_addr_t	node_address;
 	    int		mb_nd;      // modbus library node used for this server 
@@ -53,6 +95,9 @@ typedef struct{
   // Used by the Modbus client node
 typedef struct{
 	    const char *location;
+        const char *config_name;
+              char  str1[MODBUS_PARAM_STRING_SIZE];
+              char  str2[MODBUS_PARAM_STRING_SIZE]; 
 	    node_addr_t	node_address;
 	    int		mb_nd;      // modbus library node used for this client
 	    int		init_state; // store how far along the client's initialization has progressed

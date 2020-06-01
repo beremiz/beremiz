@@ -288,6 +288,7 @@ class _ModbusTCPclientPlug(object):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusTCPclient">
         <xsd:complexType>
+          <xsd:attribute name="Configuration_Name" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Remote_IP_Address" type="xsd:string" use="optional" default="localhost"/>
           <xsd:attribute name="Remote_Port_Number" type="xsd:string" use="optional" default="502"/>
           <xsd:attribute name="Invocation_Rate_in_ms" use="optional" default="100">
@@ -308,6 +309,24 @@ class _ModbusTCPclientPlug(object):
     # TODO: Replace with CTNType !!!
     PlugType = "ModbusTCPclient"
 
+
+    def __init__(self):
+        # NOTE:
+        # The ModbusTCPclient attribute is added dynamically by ConfigTreeNode._AddParamsMembers()
+        # It will be an XML parser object created by
+        # GenerateParserFromXSDstring(self.XSD).CreateRoot()
+        
+        # Set the default value for the "Configuration_Name" parameter
+        # The default value will need to be different for each instance of the 
+        # _ModbusTCPclientPlug class, so we cannot hardcode the default value in the XSD above
+        # This value will be used by the web interface 
+        #   (i.e. the extension to the web server used to configure the Modbus parameters).
+        #   (The web server is run/activated/started by Beremiz_service.py)
+        #   (The web server code is found in runtime/NevowServer.py)
+        #   (The Modbus extension to the web server is found in runtime/Modbus_config.py)
+        loc_str = ".".join(map(str, self.GetCurrentLocation()))
+        self.ModbusTCPclient.setConfiguration_Name("Modbus TCP Client " + loc_str)
+        
     # Return the number of (modbus library) nodes this specific TCP client will need
     #   return type: (tcp nodes, rtu nodes, ascii nodes)
     def GetNodeCount(self):
@@ -345,6 +364,7 @@ class _ModbusTCPserverPlug(object):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusServerNode">
         <xsd:complexType>
+          <xsd:attribute name="Configuration_Name" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Local_IP_Address" type="xsd:string" use="optional"  default="#ANY#"/>
           <xsd:attribute name="Local_Port_Number" type="xsd:string" use="optional" default="502"/>
           <xsd:attribute name="SlaveID" use="optional" default="0">
@@ -363,6 +383,23 @@ class _ModbusTCPserverPlug(object):
     # TODO: Replace with CTNType !!!
     PlugType = "ModbusTCPserver"
 
+    def __init__(self):
+        # NOTE:
+        # The ModbusServerNode attribute is added dynamically by ConfigTreeNode._AddParamsMembers()
+        # It will be an XML parser object created by
+        # GenerateParserFromXSDstring(self.XSD).CreateRoot()
+        
+        # Set the default value for the "Configuration_Name" parameter
+        # The default value will need to be different for each instance of the 
+        # _ModbusTCPclientPlug class, so we cannot hardcode the default value in the XSD above
+        # This value will be used by the web interface 
+        #   (i.e. the extension to the web server used to configure the Modbus parameters).
+        #   (The web server is run/activated/started by Beremiz_service.py)
+        #   (The web server code is found in runtime/NevowServer.py)
+        #   (The Modbus extension to the web server is found in runtime/Modbus_config.py)
+        loc_str = ".".join(map(str, self.GetCurrentLocation()))
+        self.ModbusServerNode.setConfiguration_Name("Modbus TCP Server " + loc_str)
+        
     # Return the number of (modbus library) nodes this specific TCP server will need
     #   return type: (tcp nodes, rtu nodes, ascii nodes)
     def GetNodeCount(self):
@@ -404,6 +441,7 @@ class _ModbusRTUclientPlug(object):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusRTUclient">
         <xsd:complexType>
+          <xsd:attribute name="Configuration_Name" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Serial_Port" type="xsd:string"  use="optional" default="/dev/ttyS0"/>
           <xsd:attribute name="Baud_Rate"   type="xsd:string"  use="optional" default="9600"/>
           <xsd:attribute name="Parity"      type="xsd:string"  use="optional" default="even"/>
@@ -426,6 +464,23 @@ class _ModbusRTUclientPlug(object):
     # TODO: Replace with CTNType !!!
     PlugType = "ModbusRTUclient"
 
+    def __init__(self):
+        # NOTE:
+        # The ModbusRTUclient attribute is added dynamically by ConfigTreeNode._AddParamsMembers()
+        # It will be an XML parser object created by
+        # GenerateParserFromXSDstring(self.XSD).CreateRoot()
+        
+        # Set the default value for the "Configuration_Name" parameter
+        # The default value will need to be different for each instance of the 
+        # _ModbusTCPclientPlug class, so we cannot hardcode the default value in the XSD above
+        # This value will be used by the web interface 
+        #   (i.e. the extension to the web server used to configure the Modbus parameters).
+        #   (The web server is run/activated/started by Beremiz_service.py)
+        #   (The web server code is found in runtime/NevowServer.py)
+        #   (The Modbus extension to the web server is found in runtime/Modbus_config.py)
+        loc_str = ".".join(map(str, self.GetCurrentLocation()))
+        self.ModbusRTUclient.setConfiguration_Name("Modbus RTU Client " + loc_str)
+        
     def GetParamsAttributes(self, path=None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path=path)
         for element in infos:
@@ -474,6 +529,7 @@ class _ModbusRTUslavePlug(object):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="ModbusRTUslave">
         <xsd:complexType>
+          <xsd:attribute name="Configuration_Name" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Serial_Port" type="xsd:string"  use="optional" default="/dev/ttyS0"/>
           <xsd:attribute name="Baud_Rate"   type="xsd:string"  use="optional" default="9600"/>
           <xsd:attribute name="Parity"      type="xsd:string"  use="optional" default="even"/>
@@ -494,6 +550,23 @@ class _ModbusRTUslavePlug(object):
     # TODO: Replace with CTNType !!!
     PlugType = "ModbusRTUslave"
 
+    def __init__(self):
+        # NOTE:
+        # The ModbusRTUslave attribute is added dynamically by ConfigTreeNode._AddParamsMembers()
+        # It will be an XML parser object created by
+        # GenerateParserFromXSDstring(self.XSD).CreateRoot()
+        
+        # Set the default value for the "Configuration_Name" parameter
+        # The default value will need to be different for each instance of the 
+        # _ModbusTCPclientPlug class, so we cannot hardcode the default value in the XSD above
+        # This value will be used by the web interface 
+        #   (i.e. the extension to the web server used to configure the Modbus parameters).
+        #   (The web server is run/activated/started by Beremiz_service.py)
+        #   (The web server code is found in runtime/NevowServer.py)
+        #   (The Modbus extension to the web server is found in runtime/Modbus_config.py)
+        loc_str = ".".join(map(str, self.GetCurrentLocation()))
+        self.ModbusRTUslave.setConfiguration_Name("Modbus RTU Slave " + loc_str)
+        
     def GetParamsAttributes(self, path=None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path=path)
         for element in infos:

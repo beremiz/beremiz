@@ -493,14 +493,27 @@ int __cleanup_%(locstr)s ();
 int __init_%(locstr)s (int argc, char **argv){
 	int index;
 
-	for (index=0; index < NUMBER_OF_CLIENT_NODES;index++)
+	for (index=0; index < NUMBER_OF_CLIENT_NODES;index++) {
 		client_nodes[index].mb_nd = -1;
-	for (index=0; index < NUMBER_OF_SERVER_NODES;index++)
+        /* see comment in mb_runtime.h to understad why we need to initialize these entries */
+        switch (client_nodes[index].node_address.naf) {
+            case naf_tcp:
+                client_nodes[index].node_address.addr.tcp.host    = client_nodes[index].str1;
+                client_nodes[index].node_address.addr.tcp.service = client_nodes[index].str2;
+                break;
+            case naf_rtu:
+                client_nodes[index].node_address.addr.rtu.device  = client_nodes[index].str1;
+                break;
+        }
+    }
+
+	for (index=0; index < NUMBER_OF_SERVER_NODES;index++) {
 		// mb_nd with negative numbers indicate how far it has been initialised (or not)
 		//   -2  --> no modbus node created;  no thread  created
 		//   -1  -->    modbus node created!; no thread  created
 		//  >=0  -->    modbus node created!;    thread  created!
 		server_nodes[index].mb_nd = -2; 
+	}
 
 	/* modbus library init */
 	/* Note that TOTAL_xxxNODE_COUNT are the nodes required by _ALL_ the instances of the modbus
@@ -814,4 +827,114 @@ int __cleanup_%(locstr)s (){
 
 	return res;
 }
+
+
+
+
+
+/**********************************************/
+/** Functions for Beremiz web interface.     **/
+/**********************************************/
+
+/*
+ * Beremiz has a program to run on the PLC (Beremiz_service.py)
+ * to handle downloading of compiled programs, start/stop of PLC, etc.
+ * (see runtime/PLCObject.py for start/stop, loading, ...)
+ * 
+ * This service also includes a web server to access PLC state (start/stop)
+ * and to change some basic confiuration parameters.
+ * (see runtime/NevowServer.py for the web server)
+ * 
+ * The web server allows for extensions, where additional configuration
+ * parameters may be changed on the running/downloaded PLC.
+ * Modbus plugin also comes with an extension to the web server, through
+ * which the basic Modbus plugin configuration parameters may be changed
+ * 
+ * These parameters are changed _after_ the code (.so file) is loaded into 
+ * memmory. These changes may be applied before (or after) the code starts
+ * running (i.e. before or after __init_() ets called)! 
+ * 
+ * The following functions are never called from other C code. They are 
+ * called instead from the python code in runtime/Modbus_config.py, that
+ * implements the web server extension for configuring Modbus parameters.
+ */
+
+
+/* The number of Cient nodes (i.e. the number of entries in the client_nodes array)
+ * The number of Server nodes (i.e. the numb. of entries in the server_nodes array)
+ * 
+ * These variables are also used by the Modbus web config code to determine 
+ * whether the current loaded PLC includes the Modbus plugin
+ * (so it should make the Modbus parameter web interface visible to the user).
+ */
+const int __modbus_plugin_client_node_count = NUMBER_OF_CLIENT_NODES;
+const int __modbus_plugin_server_node_count = NUMBER_OF_SERVER_NODES;
+const int __modbus_plugin_param_string_size = MODBUS_PARAM_STRING_SIZE;
+
+
+
+/* NOTE: We could have the python code in runtime/Modbus_config.py
+ *       directly access the server_node_t and client_node_t structures,
+ *       however this would create a tight coupling between these two
+ *       disjoint pieces of code.
+ *       Any change to the server_node_t or client_node_t structures would
+ *       require the python code to be changed accordingly. I have therefore 
+ *       opted to create get/set functions, one for each parameter.
+ * 
+ *       We also convert the enumerated constants naf_ascii, etc...
+ *       (from node_addr_family_t in modbus/mb_addr.h)
+ *       into strings so as to decouple the python code that will be calling
+ *       these functions from the Modbus library code definitions.
+ */
+const char *addr_type_str[] = {
+        [naf_ascii] = "ascii",
+        [naf_rtu  ] = "rtu",
+        [naf_tcp  ] = "tcp"    
+};
+
+
+#define __safe_strcnpy(str_dest, str_orig, max_size) {  \
+    strncpy(str_dest, str_orig, max_size);              \
+    str_dest[max_size - 1] = '\0';                      \
+}
+
+
+/* NOTE: The host, port and device parameters are strings that may be changed 
+ *       (by calling the following functions) after loading the compiled code 
+ *       (.so file) into memory, but before the code starts running
+ *       (i.e. before __init_() gets called).
+ *       This means that the host, port and device parameters may be changed
+ *       _before_ they get mapped onto the str1 and str2 variables by __init_(),
+ *       which is why the following functions must access the str1 and str2 
+ *       parameters directly.
+ */
+const char *       __modbus_get_ClientNode_config_name(int nodeid)  {return client_nodes[nodeid].config_name;                    }
+const char *       __modbus_get_ClientNode_host       (int nodeid)  {return client_nodes[nodeid].str1;                           }
+const char *       __modbus_get_ClientNode_port       (int nodeid)  {return client_nodes[nodeid].str2;                           }
+const char *       __modbus_get_ClientNode_device     (int nodeid)  {return client_nodes[nodeid].str1;                           }
+int                __modbus_get_ClientNode_baud       (int nodeid)  {return client_nodes[nodeid].node_address.addr.rtu.baud;     }
+int                __modbus_get_ClientNode_parity     (int nodeid)  {return client_nodes[nodeid].node_address.addr.rtu.parity;   }
+int                __modbus_get_ClientNode_stop_bits  (int nodeid)  {return client_nodes[nodeid].node_address.addr.rtu.stop_bits;}
+u64                __modbus_get_ClientNode_comm_period(int nodeid)  {return client_nodes[nodeid].comm_period;                    }
+const char *       __modbus_get_ClientNode_addr_type  (int nodeid)  {return addr_type_str[client_nodes[nodeid].node_address.naf];}
+                                                                                                                        
+const char *       __modbus_get_ServerNode_config_name(int nodeid)  {return server_nodes[nodeid].config_name;                    }
+const char *       __modbus_get_ServerNode_host       (int nodeid)  {return server_nodes[nodeid].node_address.addr.tcp.host;     }
+const char *       __modbus_get_ServerNode_port       (int nodeid)  {return server_nodes[nodeid].node_address.addr.tcp.service;  }
+const char *       __modbus_get_ServerNode_device     (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.device;   }
+int                __modbus_get_ServerNode_baud       (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.baud;     }
+int                __modbus_get_ServerNode_parity     (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.parity;   }
+int                __modbus_get_ServerNode_stop_bits  (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.stop_bits;}
+const char *       __modbus_get_ServerNode_addr_type  (int nodeid)  {return addr_type_str[server_nodes[nodeid].node_address.naf];}
+
+
+void __modbus_set_ClientNode_host       (int nodeid, const char * value)  {__safe_strcnpy(client_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ClientNode_port       (int nodeid, const char * value)  {__safe_strcnpy(client_nodes[nodeid].str2, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ClientNode_device     (int nodeid, const char * value)  {__safe_strcnpy(client_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ClientNode_baud       (int nodeid, int          value)  {client_nodes[nodeid].node_address.addr.rtu.baud      = value;}
+void __modbus_set_ClientNode_parity     (int nodeid, int          value)  {client_nodes[nodeid].node_address.addr.rtu.parity    = value;}
+void __modbus_set_ClientNode_stop_bits  (int nodeid, int          value)  {client_nodes[nodeid].node_address.addr.rtu.stop_bits = value;}
+void __modbus_set_ClientNode_comm_period(int nodeid, u64          value)  {client_nodes[nodeid].comm_period                     = value;}
+                                                                                                                        
+
 
