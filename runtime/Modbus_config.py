@@ -61,21 +61,21 @@ _WorkingDir = None
 # Should be a directory that does not get wiped on reboot!
 _ModbusConfFiledir = "/tmp"
 
-# Will contain references to the C functions 
-# (implemented in beremiz/modbus/mb_runtime.c)
-# used to get/set the Modbus specific configuration paramters
-GetParamFuncs = {}
-SetParamFuncs = {}
+# List of all Web Extension Setting nodes we are handling.
+# One WebNode each for:
+#   - Modbus TCP client 
+#   - Modbus TCP server
+#   - Modbus RTU client
+#   - Modbus RTU slave
+# configured in the loaded PLC (i.e. the .so file loaded into memory)
+# Each entry will be a dictionary. See _AddWebNode() for the details
+# of the data structure in each entry.
+_WebNodeList = []
 
 
-# List of all TCP clients configured in the loaded PLC (i.e. the .so file loaded into memory)
-# Each entry will be a dictionary. See _Add_TCP_Client() for the data structure details...
-_TCPclient_list = []
 
 
-
-
-# Paramters we will need to get from the C code, but that will not be shown
+# Parameters we will need to get from the C code, but that will not be shown
 # on the web interface. Common to all modbus entry types (client/server, tcp/rtu/ascii)
 General_parameters = [
     #    param. name       label                        ctype type         annotate type
@@ -108,15 +108,43 @@ RTUclient_parameters = [
     ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer)
     ]
 
+TCPserver_parameters = [                                                   
+    #    param. name       label                        ctype type         annotate type
+    # (C code var name)   (used on web interface)      (C data type)       (web data type)
+    #                                                                      (annotate.String,
+    #                                                                       annotate.Integer, ...)
+    ("host"             , _("Local IP Address")      , ctypes.c_char_p,    annotate.String),
+    ("port"             , _("Local Port Number")     , ctypes.c_char_p,    annotate.String),
+    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer)
+    ]
 
+RTUslave_parameters = [                                                   
+    #    param. name       label                        ctype type         annotate type
+    # (C code var name)   (used on web interface)      (C data type)       (web data type)
+    #                                                                      (annotate.String,
+    #                                                                       annotate.Integer, ...)
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String),
+    ("baud"             , _("Baud Rate")             , ctypes.c_int,       annotate.Integer),
+    ("parity"           , _("Parity")                , ctypes.c_int,       annotate.Integer),
+    ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       annotate.Integer),
+    ("slave_id"         , _("Slave ID")              , ctypes.c_ulonglong, annotate.Integer)
+    ]
+
+
+# Dictionary containing List of Web viewable parameters
 # Note: the dictionary key must be the same as the string returned by the 
 # __modbus_get_ClientNode_addr_type()
 # __modbus_get_ServerNode_addr_type()
 # functions implemented in C (see modbus/mb_runtime.c)
-_client_parameters = {}
-_client_parameters["tcp"  ] = TCPclient_parameters
-_client_parameters["rtu"  ] = RTUclient_parameters
-_client_parameters["ascii"] = []  # (Note: ascii not yet implemented in Beremiz modbus plugin)
+_client_WebParamListDict = {}
+_client_WebParamListDict["tcp"  ] = TCPclient_parameters
+_client_WebParamListDict["rtu"  ] = RTUclient_parameters
+_client_WebParamListDict["ascii"] = []  # (Note: ascii not yet implemented in Beremiz modbus plugin)
+
+_server_WebParamListDict = {}
+_server_WebParamListDict["tcp"  ] = TCPserver_parameters
+_server_WebParamListDict["rtu"  ] = RTUslave_parameters
+_server_WebParamListDict["ascii"] = []  # (Note: ascii not yet implemented in Beremiz modbus plugin)
 
 
 #def _CheckPortnumber(port_number):
@@ -164,22 +192,22 @@ _client_parameters["ascii"] = []  # (Note: ascii not yet implemented in Beremiz 
 
 
 
-def _SetSavedConfiguration(node_id, newConfig):
+def _SetSavedConfiguration(WebNode_id, newConfig):
     """ Stores a dictionary in a persistant file containing the Modbus parameter configuration """
     
-    filename = _TCPclient_list[node_id]["filename"]
+    filename = _WebNodeList[WebNode_id]["filename"]
 
     with open(os.path.realpath(filename), 'w') as f:
         json.dump(newConfig, f, sort_keys=True, indent=4)
         
-    _TCPclient_list[node_id]["SavedConfiguration"] = newConfig
+    _WebNodeList[WebNode_id]["SavedConfiguration"] = newConfig
 
 
 
 
-def _DelSavedConfiguration(node_id):
+def _DelSavedConfiguration(WebNode_id):
     """ Deletes the file cotaining the persistent Modbus configuration """
-    filename = _TCPclient_list[node_id]["filename"]
+    filename = _WebNodeList[WebNode_id]["filename"]
     
     if os.path.exists(filename):
         os.remove(filename)
@@ -187,12 +215,12 @@ def _DelSavedConfiguration(node_id):
 
 
 
-def _GetSavedConfiguration(node_id):
+def _GetSavedConfiguration(WebNode_id):
     """
     Returns a dictionary containing the Modbus parameter configuration
     that was last saved to file. If no file exists, then return None
     """
-    filename = _TCPclient_list[node_id]["filename"]
+    filename = _WebNodeList[WebNode_id]["filename"]
     try:
         #if os.path.isfile(filename):
         saved_config = json.load(open(filename))
@@ -208,16 +236,18 @@ def _GetSavedConfiguration(node_id):
 
 
 
-def _GetPLCConfiguration(node_id):
+def _GetPLCConfiguration(WebNode_id):
     """
     Returns a dictionary containing the current Modbus parameter configuration
     stored in the C variables in the loaded PLC (.so file)
     """
     current_config = {}
-    addr_type = _TCPclient_list[node_id]["addr_type"]
+    C_node_id      = _WebNodeList[WebNode_id]["C_node_id"]
+    WebParamList   = _WebNodeList[WebNode_id]["WebParamList"]
+    GetParamFuncs  = _WebNodeList[WebNode_id]["GetParamFuncs"]
 
-    for par_name, x1, x2, x3 in _client_parameters[addr_type]:
-        value = GetParamFuncs[par_name](node_id)
+    for par_name, x1, x2, x3 in WebParamList:
+        value = GetParamFuncs[par_name](C_node_id)
         if value is not None:
             current_config[par_name] = value
     
@@ -225,53 +255,54 @@ def _GetPLCConfiguration(node_id):
 
 
 
-def _SetPLCConfiguration(node_id, newconfig):
+def _SetPLCConfiguration(WebNode_id, newconfig):
     """
     Stores the Modbus parameter configuration into the
     the C variables in the loaded PLC (.so file)
     """
-    addr_type = _TCPclient_list[node_id]["addr_type"]
-    
+    C_node_id      = _WebNodeList[WebNode_id]["C_node_id"]
+    SetParamFuncs  = _WebNodeList[WebNode_id]["SetParamFuncs"]
+
     for par_name in newconfig:
         value = newconfig[par_name]
         if value is not None:
-            SetParamFuncs[par_name](node_id, value)
+            SetParamFuncs[par_name](C_node_id, value)
             
 
 
 
-def _GetWebviewConfigurationValue(ctx, node_id, argument):
+def _GetWebviewConfigurationValue(ctx, WebNode_id, argument):
     """
     Callback function, called by the web interface (NevowServer.py)
     to fill in the default value of each parameter of the web form
     
     Note that the real callback function is a dynamically created function that
-    will simply call this function to do the work. It will also pass the node_id 
+    will simply call this function to do the work. It will also pass the WebNode_id 
     as a parameter.
-    """
+    """    
     try:
-        return _TCPclient_list[node_id]["WebviewConfiguration"][argument.name]
+        return _WebNodeList[WebNode_id]["WebviewConfiguration"][argument.name]
     except Exception:
         return ""
 
 
 
 
-def _updateWebInterface(node_id):
+def _updateWebInterface(WebNode_id):
     """
     Add/Remove buttons to/from the web interface depending on the current state
        - If there is a saved state => add a delete saved state button
     """
 
-    config_hash = _TCPclient_list[node_id]["config_hash"]
-    config_name = _TCPclient_list[node_id]["config_name"]
+    config_hash = _WebNodeList[WebNode_id]["config_hash"]
+    config_name = _WebNodeList[WebNode_id]["config_name"]
     
     # Add a "Delete Saved Configuration" button if there is a saved configuration!
-    if _TCPclient_list[node_id]["SavedConfiguration"] is None:
+    if _WebNodeList[WebNode_id]["SavedConfiguration"] is None:
         _NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)
     else:
         def __OnButtonDel(**kwargs):
-            return OnButtonDel(node_id = node_id, **kwargs)
+            return OnButtonDel(WebNode_id = WebNode_id, **kwargs)
                 
         _NS.ConfigurableSettings.addSettings(
             "ModbusConfigDelSaved"      + config_hash,  # name (internal, may not contain spaces, ...)
@@ -291,21 +322,21 @@ def OnButtonSave(**kwargs):
     
     Note that this function does not get called directly. The real callback
     function is the dynamic __OnButtonSave() function, which will add the 
-    "node_id" argument, and call this function to do the work.
+    "WebNode_id" argument, and call this function to do the work.
     """
 
     #_plcobj.LogMessage("Modbus web server extension::OnButtonSave()  Called")
     
-    newConfig = {}
-    node_id   = kwargs.get("node_id", None)
-    addr_type = _TCPclient_list[node_id]["addr_type"]
+    newConfig    = {}
+    WebNode_id   =  kwargs.get("WebNode_id", None)
+    WebParamList = _WebNodeList[WebNode_id]["WebParamList"]
     
-    for par_name, x1, x2, x3 in _client_parameters[addr_type]:
+    for par_name, x1, x2, x3 in WebParamList:
         value = kwargs.get(par_name, None)
         if value is not None:
             newConfig[par_name] = value
 
-    _TCPclient_list[node_id]["WebviewConfiguration"] = newConfig
+    _WebNodeList[WebNode_id]["WebviewConfiguration"] = newConfig
     
     # First check if configuration is OK.
     ## TODO...
@@ -315,13 +346,13 @@ def OnButtonSave(**kwargs):
     # store to file the new configuration so that 
     # we can recoup the configuration the next time the PLC
     # has a cold start (i.e. when Beremiz_service.py is retarted)
-    _SetSavedConfiguration(node_id, newConfig)
+    _SetSavedConfiguration(WebNode_id, newConfig)
 
     # Configure PLC with the current Modbus parameters
-    _SetPLCConfiguration(node_id, newConfig)
+    _SetPLCConfiguration(WebNode_id, newConfig)
 
     # File has just been created => Delete button must be shown on web interface!
-    _updateWebInterface(node_id)
+    _updateWebInterface(WebNode_id)
 
 
 
@@ -333,23 +364,23 @@ def OnButtonDel(**kwargs):
     Modbus configution
     """
 
-    node_id = kwargs.get("node_id", None)
+    WebNode_id = kwargs.get("WebNode_id", None)
     
     # Delete the file
-    _DelSavedConfiguration(node_id)
+    _DelSavedConfiguration(WebNode_id)
 
     # Set the current configuration to the default (hardcoded in C)
-    new_config = _TCPclient_list[node_id]["DefaultConfiguration"]
-    _SetPLCConfiguration(node_id, new_config)
+    new_config = _WebNodeList[WebNode_id]["DefaultConfiguration"]
+    _SetPLCConfiguration(WebNode_id, new_config)
     
     #Update the webviewconfiguration
-    _TCPclient_list[node_id]["WebviewConfiguration"] = new_config
+    _WebNodeList[WebNode_id]["WebviewConfiguration"] = new_config
     
     # Reset SavedConfiguration
-    _TCPclient_list[node_id]["SavedConfiguration"] = None
+    _WebNodeList[WebNode_id]["SavedConfiguration"] = None
     
     # File has just been deleted => Delete button on web interface no longer needed!
-    _updateWebInterface(node_id)
+    _updateWebInterface(WebNode_id)
 
 
 
@@ -361,40 +392,53 @@ def OnButtonShowCur(**kwargs):
 
     Note that this function does not get called directly. The real callback
     function is the dynamic __OnButtonShowCur() function, which will add the 
-    "node_id" argument, and call this function to do the work.
+    "WebNode_id" argument, and call this function to do the work.
     """
-    node_id = kwargs.get("node_id", None)
+    WebNode_id = kwargs.get("WebNode_id", None)
     
-    _TCPclient_list[node_id]["WebviewConfiguration"] = _GetPLCConfiguration(node_id)
+    _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetPLCConfiguration(WebNode_id)
     
 
 
 
-def _Load_TCP_Client(node_id):
-    TCPclient_entry = {}
+def _AddWebNode(C_node_id, WebParamListDict, GetParamFuncs, SetParamFuncs):
+    """
+    Load from the compiled code (.so file, aloready loaded into memmory)
+    the configuration parameters of a specific Modbus plugin node.
+    This function works with both client and server nodes, depending on the
+    Get/SetParamFunc dictionaries passed to it (either the client or the server
+    node versions of the Get/Set functions)
+    """
+    WebNode_entry = {}
 
-    config_name = GetParamFuncs["config_name"](node_id)
+    config_name = GetParamFuncs["config_name"](C_node_id)
     # addr_type will be one of "tcp", "rtu" or "ascii"
-    addr_type   = GetParamFuncs["addr_type"  ](node_id)   
+    addr_type   = GetParamFuncs["addr_type"  ](C_node_id)   
     # For some operations we cannot use the config name (e.g. filename to store config)
     # because the user may be using characters that are invalid for that purpose ('/' for
     # example), so we create a hash of the config_name, and use that instead.
     config_hash = hashlib.md5(config_name).hexdigest()
     
-    _plcobj.LogMessage("Modbus web server extension::_Load_TCP_Client("+str(node_id)+") config_name="+config_name)
+    #_plcobj.LogMessage("Modbus web server extension::_AddWebNode("+str(C_node_id)+") config_name="+config_name)
 
     # Add the new entry to the global list
-    # Note: it is OK, and actually necessary, to do this _before_ seting all the parameters in TCPclient_entry
-    #       TCPclient_entry will be stored as a reference, so we can insert parameters at will.
-    global _TCPclient_list
-    _TCPclient_list.append(TCPclient_entry)
+    # Note: it is OK, and actually necessary, to do this _before_ seting all the parameters in WebNode_entry
+    #       WebNode_entry will be stored as a reference, so we can later insert parameters at will.
+    global _WebNodeList
+    _WebNodeList.append(WebNode_entry)
+    WebNode_id = len(_WebNodeList) - 1
 
-    # store all node_id relevant data for future reference
-    TCPclient_entry["node_id"     ] = node_id
-    TCPclient_entry["config_name" ] = config_name 
-    TCPclient_entry["addr_type"   ] = addr_type
-    TCPclient_entry["config_hash" ] = config_hash
-    TCPclient_entry["filename"    ] = os.path.join(_ModbusConfFiledir, "Modbus_config_" + config_hash + ".json")
+    # store all WebNode relevant data for future reference
+    #
+    # Note that "WebParamList" will reference one of:
+    #  - TCPclient_parameters, TCPserver_parameters, RTUclient_parameters, RTUslave_parameters
+    WebNode_entry["C_node_id"    ] = C_node_id
+    WebNode_entry["config_name"  ] = config_name 
+    WebNode_entry["config_hash"  ] = config_hash
+    WebNode_entry["filename"     ] = os.path.join(_ModbusConfFiledir, "Modbus_config_" + config_hash + ".json")
+    WebNode_entry["GetParamFuncs"] = GetParamFuncs
+    WebNode_entry["SetParamFuncs"] = SetParamFuncs
+    WebNode_entry["WebParamList" ] = WebParamListDict[addr_type] 
     
     # Dictionary that contains the Modbus configuration currently being shown
     # on the web interface
@@ -404,35 +448,35 @@ def _Load_TCP_Client(node_id):
     # The configuration viewed on the web will only be different to the current 
     # configuration when the user edits the configuration, and when
     # the user asks to save an edited configuration that contains an error.
-    TCPclient_entry["WebviewConfiguration"] = None
+    WebNode_entry["WebviewConfiguration"] = None
 
     # Upon PLC load, this Dictionary is initialised with the Modbus configuration
     # hardcoded in the C file
     # (i.e. the configuration inserted in Beremiz IDE when project was compiled)
-    TCPclient_entry["DefaultConfiguration"] = _GetPLCConfiguration(node_id)
-    TCPclient_entry["WebviewConfiguration"] = TCPclient_entry["DefaultConfiguration"]
+    WebNode_entry["DefaultConfiguration"] = _GetPLCConfiguration(WebNode_id)
+    WebNode_entry["WebviewConfiguration"] = WebNode_entry["DefaultConfiguration"]
     
     # Dictionary that stores the Modbus configuration currently stored in a file
     # Currently only used to decide whether or not to show the "Delete" button on the
-    # web interface (only shown if _SavedConfiguration is not None)
-    SavedConfig = _GetSavedConfiguration(node_id)
-    TCPclient_entry["SavedConfiguration"] = SavedConfig
+    # web interface (only shown if "SavedConfiguration" is not None)
+    SavedConfig = _GetSavedConfiguration(WebNode_id)
+    WebNode_entry["SavedConfiguration"] = SavedConfig
     
     if SavedConfig is not None:
-        _SetPLCConfiguration(node_id, SavedConfig)
-        TCPclient_entry["WebviewConfiguration"] = SavedConfig
+        _SetPLCConfiguration(WebNode_id, SavedConfig)
+        WebNode_entry["WebviewConfiguration"] = SavedConfig
         
     # Define the format for the web form used to show/change the current parameters
     # We first declare a dynamic function to work as callback to obtain the default values for each parameter
     def __GetWebviewConfigurationValue(ctx, argument):
-        return _GetWebviewConfigurationValue(ctx, node_id, argument)
+        return _GetWebviewConfigurationValue(ctx, WebNode_id, argument)
     
     webFormInterface = [(name, web_dtype (label=web_label, default=__GetWebviewConfigurationValue)) 
-                    for name, web_label, c_dtype, web_dtype in _client_parameters[addr_type]]
+                    for name, web_label, c_dtype, web_dtype in WebParamListDict[addr_type]]
 
     # Configure the web interface to include the Modbus config parameters
     def __OnButtonSave(**kwargs):
-        OnButtonSave(node_id=node_id, **kwargs)
+        OnButtonSave(WebNode_id=WebNode_id, **kwargs)
 
     _NS.ConfigurableSettings.addSettings(
         "ModbusConfigParm"          + config_hash,     # name (internal, may not contain spaces, ...)
@@ -443,7 +487,7 @@ def _Load_TCP_Client(node_id):
     
     # Add a "View Current Configuration" button 
     def __OnButtonShowCur(**kwargs):
-        OnButtonShowCur(node_id=node_id, **kwargs)
+        OnButtonShowCur(WebNode_id=WebNode_id, **kwargs)
 
     _NS.ConfigurableSettings.addSettings(
         "ModbusConfigViewCur"       + config_hash, # name (internal, may not contain spaces, ...)
@@ -453,7 +497,8 @@ def _Load_TCP_Client(node_id):
         __OnButtonShowCur)                         # callback    
 
     # Add the Delete button to the web interface, if required
-    _updateWebInterface(node_id)
+    _updateWebInterface(WebNode_id)
+
 
 
 
@@ -495,21 +540,41 @@ def OnLoadPLC():
         return
     
     # Map the get/set functions (written in C code) we will be using to get/set the configuration parameters
+    # Will contain references to the C functions (implemented in beremiz/modbus/mb_runtime.c)
+    GetClientParamFuncs = {}
+    SetClientParamFuncs = {}
+    GetServerParamFuncs = {}
+    SetServerParamFuncs = {}
+
     for name, web_label, c_dtype, web_dtype in TCPclient_parameters + RTUclient_parameters + General_parameters:
-        GetParamFuncName             = "__modbus_get_ClientNode_" + name        
-        GetParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, GetParamFuncName)
-        GetParamFuncs[name].restype  = c_dtype
-        GetParamFuncs[name].argtypes = [ctypes.c_int]
+        ParamFuncName                      = "__modbus_get_ClientNode_" + name        
+        GetClientParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        GetClientParamFuncs[name].restype  = c_dtype
+        GetClientParamFuncs[name].argtypes = [ctypes.c_int]
         
     for name, web_label, c_dtype, web_dtype in TCPclient_parameters + RTUclient_parameters:
-        SetParamFuncName             = "__modbus_set_ClientNode_" + name
-        SetParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, SetParamFuncName)
-        SetParamFuncs[name].restype  = None
-        SetParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
+        ParamFuncName                      = "__modbus_set_ClientNode_" + name
+        SetClientParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        SetClientParamFuncs[name].restype  = None
+        SetClientParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
+
+    for name, web_label, c_dtype, web_dtype in TCPserver_parameters + RTUslave_parameters + General_parameters:
+        ParamFuncName                      = "__modbus_get_ServerNode_" + name        
+        GetServerParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        GetServerParamFuncs[name].restype  = c_dtype
+        GetServerParamFuncs[name].argtypes = [ctypes.c_int]
+        
+    for name, web_label, c_dtype, web_dtype in TCPserver_parameters + RTUslave_parameters:
+        ParamFuncName                      = "__modbus_set_ServerNode_" + name
+        SetServerParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        SetServerParamFuncs[name].restype  = None
+        SetServerParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
 
     for node_id in range(client_count):
-        _Load_TCP_Client(node_id)
+        _AddWebNode(node_id, _client_WebParamListDict ,GetClientParamFuncs, SetClientParamFuncs)
 
+    for node_id in range(server_count):
+        _AddWebNode(node_id, _server_WebParamListDict, GetServerParamFuncs, SetServerParamFuncs)
 
 
 
@@ -517,22 +582,22 @@ def OnLoadPLC():
 
 def OnUnLoadPLC():
     """
-    # Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
+    Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
     """
 
     #_plcobj.LogMessage("Modbus web server extension::OnUnLoadPLC() Called...")
     
     # Delete the Modbus specific web interface extensions
     # (Safe to ask to delete, even if it has not been added!)
-    global _TCPclient_list    
-    for TCPclient_entry in _TCPclient_list:
-        config_hash = TCPclient_entry["config_hash"]
+    global _WebNodeList    
+    for WebNode_entry in _WebNodeList:
+        config_hash = WebNode_entry["config_hash"]
         _NS.ConfigurableSettings.delSettings("ModbusConfigParm"     + config_hash)
         _NS.ConfigurableSettings.delSettings("ModbusConfigViewCur"  + config_hash)  
         _NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)  
         
     # Dele all entries...
-    _TCPclient_list = []
+    _WebNodeList = []
 
 
 

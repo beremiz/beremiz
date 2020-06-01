@@ -83,6 +83,8 @@ typedef struct{
 typedef struct{
 	    const char *location;
         const char *config_name;
+              char  str1[MODBUS_PARAM_STRING_SIZE];
+              char  str2[MODBUS_PARAM_STRING_SIZE]; 
 	    u8		slave_id;
 	    node_addr_t	node_address;
 	    int		mb_nd;      // modbus library node used for this server 
