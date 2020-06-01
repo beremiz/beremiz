@@ -520,7 +520,7 @@ class PLCObject(object):
     @RunInMain
     def SeedBlob(self, seed):
         blob = (mkstemp(dir=self.tmpdir) + (hashlib.new('md5'),))
-        _fobj, _path, md5sum = blob
+        _fd, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
         self.blobs[newBlobID] = blob
@@ -533,17 +533,17 @@ class PLCObject(object):
         if blob is None:
             return None
 
-        fobj, _path, md5sum = blob
+        fd, _path, md5sum = blob
         md5sum.update(data)
         newBlobID = md5sum.digest()
-        os.write(fobj, data)
+        os.write(fd, data)
         self.blobs[newBlobID] = blob
         return newBlobID
 
     @RunInMain
     def PurgeBlobs(self):
-        for fobj, _path, _md5sum in self.blobs.values():
-            os.close(fobj)
+        for fd, _path, _md5sum in self.blobs.values():
+            os.close(fd)
         self._init_blobs()
 
     def _BlobAsFile(self, blobID, newpath):
@@ -552,8 +552,11 @@ class PLCObject(object):
         if blob is None:
             raise Exception(_("Missing data to create file: {}").format(newpath))
 
-        fobj, path, _md5sum = blob
-        os.close(fobj)
+        fd, path, _md5sum = blob
+        fobj = os.fdopen(fd)
+        fobj.flush()
+        os.fsync(fd)
+        fobj.close()
         shutil.move(path, newpath)
 
     def _extra_files_log_path(self):
