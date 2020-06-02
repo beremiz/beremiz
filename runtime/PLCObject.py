@@ -612,15 +612,18 @@ class PLCObject(object):
                 # Create new PLC file
                 self._BlobAsFile(plc_object, new_PLC_filename)
 
-                # Store new PLC filename based on md5 key
-                open(self._GetMD5FileName(), "w").write(md5sum)
-
                 # Then write the files
                 log = open(extra_files_log, "w")
                 for fname, blobID in extrafiles:
                     fpath = os.path.join(self.workingdir, fname)
                     self._BlobAsFile(blobID, fpath)
                     log.write(fname+'\n')
+
+                # Store new PLC filename based on md5 key
+                with open(self._GetMD5FileName(), "w") as f:
+                    f.write(md5sum)
+                    f.flush()
+                    os.fsync(f.fileno())
 
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName
