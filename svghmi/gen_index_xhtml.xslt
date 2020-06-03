@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -1152,40 +1152,72 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Button']">
-    <xsl:text>class ButtonWidget extends Widget{
+  <xsl:template mode="widget_defs" match="widget[@type='Button']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>frequency: 5,
 </xsl:text>
-    <xsl:text>    frequency = 5;
+    <xsl:text>on_mouse_down: function(evt) {
 </xsl:text>
-    <xsl:text>    init() {
+    <xsl:text>    if (this.active_style &amp;&amp; this.inactive_style) {
 </xsl:text>
-    <xsl:text>        // TODO : use attributes to allow interaction through svg:use
+    <xsl:text>        this.active_elt.setAttribute("style", this.active_style);
 </xsl:text>
-    <xsl:text>        // TODO : deal with dragging
-</xsl:text>
-    <xsl:text>        this.element.addEventListener(
-</xsl:text>
-    <xsl:text>          "mousedown",
-</xsl:text>
-    <xsl:text>          evt =&gt; {
-</xsl:text>
-    <xsl:text>              change_hmi_value(this.indexes[0], "=1");
-</xsl:text>
-    <xsl:text>          });
-</xsl:text>
-    <xsl:text>        this.element.addEventListener(
-</xsl:text>
-    <xsl:text>          "mouseup",
-</xsl:text>
-    <xsl:text>          evt =&gt; {
-</xsl:text>
-    <xsl:text>              change_hmi_value(this.indexes[0], "=0");
-</xsl:text>
-    <xsl:text>          });
+    <xsl:text>        this.inactive_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>}
+    <xsl:text>    change_hmi_value(this.indexes[0], "=1");
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>on_mouse_up: function(evt) {
+</xsl:text>
+    <xsl:text>    if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>        this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    change_hmi_value(this.indexes[0], "=0");
+</xsl:text>
+    <xsl:text>},
+</xsl:text>
+    <xsl:text>active_style: undefined,
+</xsl:text>
+    <xsl:text>inactive_style: undefined,
+</xsl:text>
+    <xsl:text>init: function() {
+</xsl:text>
+    <xsl:text>  this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>  this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>  if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>      this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>      this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>  }
+</xsl:text>
+    <xsl:text>  this.element.setAttribute("onmousedown", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_mouse_down(evt)");
+</xsl:text>
+    <xsl:text>  this.element.setAttribute("onmouseup", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_mouse_up(evt)");
+</xsl:text>
+    <xsl:text>},
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
@@ -2697,6 +2729,65 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:text>    frequency: 5,
+</xsl:text>
+    <xsl:text>    state: 0,
+</xsl:text>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        this.state = value;
+</xsl:text>
+    <xsl:text>        if (this.state) {
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.state = 0;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.state = 1;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    on_click: function(evt) {
+</xsl:text>
+    <xsl:text>        change_hmi_value(this.indexes[0], "="+this.state);
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    active_style: undefined,
+</xsl:text>
+    <xsl:text>    inactive_style: undefined,
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.active_style = this.active_elt.style.cssText;
+</xsl:text>
+    <xsl:text>        this.inactive_style = this.inactive_elt.style.cssText;
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
+    <xsl:value-of select="$hmi_element/@id"/>
+    <xsl:text>'].on_click(evt)");
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -2704,7 +2795,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
@@ -3270,8 +3361,6 @@
           <xsl:text>        given_val = Number(opstr.slice(1));
 </xsl:text>
           <xsl:text>    }
-</xsl:text>
-          <xsl:text>    console.log(opstr, given_val);
 </xsl:text>
           <xsl:text>    let old_val = cache[index];
 </xsl:text>
