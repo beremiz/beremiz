@@ -86,9 +86,7 @@ template "widget[@type='Jump']", mode="widget_defs" {
     |         this.disabled_elt_style = this.disabled_elt.getAttribute("style");
         }
         otherwise {
-    |         this.sub = function(){};
-    |         this.unsub = function(){};
-    |         this.apply_cache = function(){};
+    |         this.unsubscribable = true;
         }
     }
     |     },

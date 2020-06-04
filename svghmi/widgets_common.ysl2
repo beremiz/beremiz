@@ -67,6 +67,7 @@ emit "preamble:widget-base-class" {
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
+        unsubscribable = false;
         constructor(elt_id,args,indexes,members){
             this.element_id = elt_id;
             this.element = id(elt_id);
@@ -77,7 +78,7 @@ emit "preamble:widget-base-class" {
 
         unsub(){
             /* remove subsribers */
-            for(let index of this.indexes){
+            if(!this.unsubscribable) for(let index of this.indexes){
                 let idx = index + this.offset;
                 subscribers[idx].delete(this);
             }
@@ -88,14 +89,14 @@ emit "preamble:widget-base-class" {
             /* set the offset because relative */
             this.offset = new_offset;
             /* add this's subsribers */
-            for(let index of this.indexes){
+            if(!this.unsubscribable) for(let index of this.indexes){
                 subscribers[index + new_offset].add(this);
             }
             need_cache_apply.push(this); 
         }
 
         apply_cache() {
-            for(let index of this.indexes){
+            if(!this.unsubscribable) for(let index of this.indexes){
                 /* dispatch current cache in newly opened page widgets */
                 let realindex = index+this.offset;
                 let cached_val = cache[realindex];

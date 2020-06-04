@@ -912,6 +912,8 @@
 </xsl:text>
     <xsl:text>    frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
 </xsl:text>
+    <xsl:text>    unsubscribable = false;
+</xsl:text>
     <xsl:text>    constructor(elt_id,args,indexes,members){
 </xsl:text>
     <xsl:text>        this.element_id = elt_id;
@@ -932,7 +934,7 @@
 </xsl:text>
     <xsl:text>        /* remove subsribers */
 </xsl:text>
-    <xsl:text>        for(let index of this.indexes){
+    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
 </xsl:text>
     <xsl:text>            let idx = index + this.offset;
 </xsl:text>
@@ -954,7 +956,7 @@
 </xsl:text>
     <xsl:text>        /* add this's subsribers */
 </xsl:text>
-    <xsl:text>        for(let index of this.indexes){
+    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
 </xsl:text>
     <xsl:text>            subscribers[index + new_offset].add(this);
 </xsl:text>
@@ -968,7 +970,7 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        for(let index of this.indexes){
+    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
@@ -2292,11 +2294,7 @@
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>        this.sub = function(){};
-</xsl:text>
-        <xsl:text>        this.unsub = function(){};
-</xsl:text>
-        <xsl:text>        this.apply_cache = function(){};
+        <xsl:text>        this.unsubscribable = true;
 </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
