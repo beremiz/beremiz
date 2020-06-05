@@ -146,6 +146,10 @@ _server_WebParamListDict["tcp"  ] = TCPserver_parameters
 _server_WebParamListDict["rtu"  ] = RTUslave_parameters
 _server_WebParamListDict["ascii"] = []  # (Note: ascii not yet implemented in Beremiz modbus plugin)
 
+WebParamListDictDict = {}
+WebParamListDictDict['client'] = _client_WebParamListDict
+WebParamListDictDict['server'] = _server_WebParamListDict
+
 
 #def _CheckPortnumber(port_number):
 #    """ check validity of the port number """
@@ -195,10 +199,18 @@ _server_WebParamListDict["ascii"] = []  # (Note: ascii not yet implemented in Be
 def _SetSavedConfiguration(WebNode_id, newConfig):
     """ Stores a dictionary in a persistant file containing the Modbus parameter configuration """
     
+    # Add the addr_type and node_type to the data that will be saved to file
+    # This allows us to confirm the saved data contains the correct addr_type
+    # when loading from file
+    save_info = {}
+    save_info["addr_type"] = _WebNodeList[WebNode_id]["addr_type"]
+    save_info["node_type"] = _WebNodeList[WebNode_id]["node_type"]
+    save_info["config"   ] = newConfig
+    
     filename = _WebNodeList[WebNode_id]["filename"]
 
     with open(os.path.realpath(filename), 'w') as f:
-        json.dump(newConfig, f, sort_keys=True, indent=4)
+        json.dump(save_info, f, sort_keys=True, indent=4)
         
     _WebNodeList[WebNode_id]["SavedConfiguration"] = newConfig
 
@@ -218,15 +230,26 @@ def _DelSavedConfiguration(WebNode_id):
 def _GetSavedConfiguration(WebNode_id):
     """
     Returns a dictionary containing the Modbus parameter configuration
-    that was last saved to file. If no file exists, then return None
+    that was last saved to file. If no file exists, or file contains 
+    wrong addr_type (i.e. 'tcp', 'rtu' or 'ascii' -> does not match the
+    addr_type of the WebNode_id), then return None
     """
     filename = _WebNodeList[WebNode_id]["filename"]
     try:
         #if os.path.isfile(filename):
-        saved_config = json.load(open(filename))
+        save_info = json.load(open(filename))
     except Exception:    
         return None
 
+    if save_info["addr_type"] != _WebNodeList[WebNode_id]["addr_type"]:
+        return None
+    if save_info["node_type"] != _WebNodeList[WebNode_id]["node_type"]:
+        return None
+    if "config" not in save_info:
+        return None
+    
+    saved_config = save_info["config"]
+    
     #if _CheckConfiguration(saved_config):
     #    return saved_config
     #else:
@@ -401,7 +424,7 @@ def OnButtonShowCur(**kwargs):
 
 
 
-def _AddWebNode(C_node_id, WebParamListDict, GetParamFuncs, SetParamFuncs):
+def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     """
     Load from the compiled code (.so file, aloready loaded into memmory)
     the configuration parameters of a specific Modbus plugin node.
@@ -411,7 +434,9 @@ def _AddWebNode(C_node_id, WebParamListDict, GetParamFuncs, SetParamFuncs):
     """
     WebNode_entry = {}
 
+    # Get the config_name from the C code...
     config_name = GetParamFuncs["config_name"](C_node_id)
+    # Get the addr_type from the C code...
     # addr_type will be one of "tcp", "rtu" or "ascii"
     addr_type   = GetParamFuncs["addr_type"  ](C_node_id)   
     # For some operations we cannot use the config name (e.g. filename to store config)
@@ -438,7 +463,10 @@ def _AddWebNode(C_node_id, WebParamListDict, GetParamFuncs, SetParamFuncs):
     WebNode_entry["filename"     ] = os.path.join(_ModbusConfFiledir, "Modbus_config_" + config_hash + ".json")
     WebNode_entry["GetParamFuncs"] = GetParamFuncs
     WebNode_entry["SetParamFuncs"] = SetParamFuncs
-    WebNode_entry["WebParamList" ] = WebParamListDict[addr_type] 
+    WebNode_entry["WebParamList" ] = WebParamListDictDict[node_type][addr_type] 
+    WebNode_entry["addr_type"    ] = addr_type  # 'tcp', 'rtu', or 'ascii' (as returned by C function)
+    WebNode_entry["node_type"    ] = node_type  # 'client', 'server'
+        
     
     # Dictionary that contains the Modbus configuration currently being shown
     # on the web interface
@@ -472,7 +500,7 @@ def _AddWebNode(C_node_id, WebParamListDict, GetParamFuncs, SetParamFuncs):
         return _GetWebviewConfigurationValue(ctx, WebNode_id, argument)
     
     webFormInterface = [(name, web_dtype (label=web_label, default=__GetWebviewConfigurationValue)) 
-                    for name, web_label, c_dtype, web_dtype in WebParamListDict[addr_type]]
+                    for name, web_label, c_dtype, web_dtype in WebNode_entry["WebParamList"]]
 
     # Configure the web interface to include the Modbus config parameters
     def __OnButtonSave(**kwargs):
@@ -571,10 +599,10 @@ def OnLoadPLC():
         SetServerParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
 
     for node_id in range(client_count):
-        _AddWebNode(node_id, _client_WebParamListDict ,GetClientParamFuncs, SetClientParamFuncs)
+        _AddWebNode(node_id, "client" ,GetClientParamFuncs, SetClientParamFuncs)
 
     for node_id in range(server_count):
-        _AddWebNode(node_id, _server_WebParamListDict, GetServerParamFuncs, SetServerParamFuncs)
+        _AddWebNode(node_id, "server", GetServerParamFuncs, SetServerParamFuncs)
 
 
 
