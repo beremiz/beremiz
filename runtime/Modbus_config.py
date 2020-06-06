@@ -130,6 +130,10 @@ class MB_Parity(annotate.Choice):
 
 # Parameters we will need to get from the C code, but that will not be shown
 # on the web interface. Common to all modbus entry types (client/server, tcp/rtu/ascii)
+#
+# The annotate type entry is basically useless and is completely ignored.
+# We kee that entry so that this list can later be correctly merged with the
+# following lists...
 General_parameters = [
     #    param. name       label                        ctype type         annotate type
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
@@ -204,51 +208,6 @@ _server_WebParamListDict["ascii"] = []  # (Note: ascii not yet implemented in Be
 WebParamListDictDict = {}
 WebParamListDictDict['client'] = _client_WebParamListDict
 WebParamListDictDict['server'] = _server_WebParamListDict
-
-
-
-
-
-
-#def _CheckPortnumber(port_number):
-#    """ check validity of the port number """
-#    try:
-#        portnum = int(port_number)
-#        if (portnum < 0) or (portnum > 65535):
-#           raise Exception
-#    except Exception:    
-#        return False
-#        
-#    return True
-
-
-
-
-#def _CheckConfiguration(BACnetConfig):
-#    res = True    
-#    res = res and _CheckPortnumber(BACnetConfig["port_number"])
-#    res = res and _CheckDeviceID  (BACnetConfig["device_id"])
-#    return res
-
-
-
-#def _CheckWebConfiguration(BACnetConfig):
-#    res = True
-#    
-#    # check the port number
-#    if not _CheckPortnumber(BACnetConfig["port_number"]):
-#        raise annotate.ValidateError(
-#            {"port_number": "Invalid port number: " + str(BACnetConfig["port_number"])},
-#            _("Modbus configuration error:"))
-#        res = False
-#    
-#    if not _CheckDeviceID(BACnetConfig["device_id"]):
-#        raise annotate.ValidateError(
-#            {"device_id": "Invalid device ID: " + str(BACnetConfig["device_id"])},
-#            _("Modbus configuration error:"))
-#        res = False
-#        
-#    return res
 
 
 
@@ -421,10 +380,11 @@ def OnButtonSave(**kwargs):
     _WebNodeList[WebNode_id]["WebviewConfiguration"] = newConfig
     
     # First check if configuration is OK.
-    ## TODO...
+    # Note that this is not currently required, as we use drop down choice menus
+    # for baud, parity and sop bits, so the values should always be correct!
     #if not _CheckWebConfiguration(newConfig):
     #    return
-
+    
     # store to file the new configuration so that 
     # we can recoup the configuration the next time the PLC
     # has a cold start (i.e. when Beremiz_service.py is retarted)
