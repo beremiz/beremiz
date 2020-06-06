@@ -93,6 +93,10 @@ class MB_Baud(annotate.Choice):
 
 
 class MB_Parity(annotate.Choice):
+    # For more info on what this class really does, have a look at the code in
+    # file twisted/nevow/annotate.py
+    # grab this code from $git clone https://github.com/twisted/nevow/
+    # 
     # Warning: do _not_ name this variable choice[] without underscore, as that name is
     # already used for another similar variable by the underlying class annotate.Choice
     _choices = [  0,      1,      2  ]
