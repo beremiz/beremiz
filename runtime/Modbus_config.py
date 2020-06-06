@@ -147,6 +147,8 @@ General_parameters = [
     ("addr_type"        , _("")                      , ctypes.c_char_p,    annotate.String)
     ]                                                                      
                                                                            
+# Parameters we will need to get from the C code, and that _will_ be shown
+# on the web interface.
 TCPclient_parameters = [                                                   
     #    param. name       label                        ctype type         annotate type
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
