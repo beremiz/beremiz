@@ -74,6 +74,59 @@ _WebNodeList = []
 
 
 
+class MB_StopBits(annotate.Choice):
+    _choices = [0, 1, 2]
+
+    def coerce(self, val, configurable):
+        return int(val)
+    def __init__(self, *args, **kwargs):
+        annotate.Choice.__init__(self, choices = self._choices, *args, **kwargs)
+
+
+class MB_Baud(annotate.Choice):
+    _choices = [110, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
+
+    def coerce(self, val, configurable):
+        return int(val)
+    def __init__(self, *args, **kwargs):
+        annotate.Choice.__init__(self, choices = self._choices, *args, **kwargs)
+
+
+class MB_Parity(annotate.Choice):
+    # Warning: do _not_ name this variable choice[] without underscore, as that name is
+    # already used for another similar variable by the underlying class annotate.Choice
+    _choices = [  0,      1,      2  ]
+    _label   = ["none", "odd", "even"]
+    
+    def choice_to_label(self, key):
+        #_plcobj.LogMessage("Modbus web server extension::choice_to_label()  " + str(key))
+        return self._label[key]
+    
+    def coerce(self, val, configurable):
+        """Coerce a value with the help of an object, which is the object
+        we are configuring.
+        """
+        # Basically, make sure the value the user introduced is valid, and transform
+        # into something that is valid if necessary or mark it as an error 
+        # (by raising an exception ??).
+        #
+        # We are simply using this functions to transform the input value (a string)
+        # into an integer. Note that although the available options are all
+        # integers (0, 1 or 2), even though what is shown on the user interface
+        # are actually strings, i.e. the labels), these parameters are for some 
+        # reason being parsed as strings, so we need to map them back to an
+        # integer.
+        #
+        #_plcobj.LogMessage("Modbus web server extension::coerce  " + val )
+        return int(val)
+
+    def __init__(self, *args, **kwargs):
+        annotate.Choice.__init__(self, 
+                                 choices   = self._choices,
+                                 stringify = self.choice_to_label,
+                                 *args, **kwargs)
+
+
 
 # Parameters we will need to get from the C code, but that will not be shown
 # on the web interface. Common to all modbus entry types (client/server, tcp/rtu/ascii)
@@ -101,10 +154,10 @@ RTUclient_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String),
-    ("baud"             , _("Baud Rate")             , ctypes.c_int,       annotate.Integer),
-    ("parity"           , _("Parity")                , ctypes.c_int,       annotate.Integer),
-    ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       annotate.Integer),
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String ),
+    ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
+    ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
+    ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
     ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer)
     ]
 
@@ -123,12 +176,14 @@ RTUslave_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String),
-    ("baud"             , _("Baud Rate")             , ctypes.c_int,       annotate.Integer),
-    ("parity"           , _("Parity")                , ctypes.c_int,       annotate.Integer),
-    ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       annotate.Integer),
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String ),
+    ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
+    ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
+    ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
     ("slave_id"         , _("Slave ID")              , ctypes.c_ulonglong, annotate.Integer)
     ]
+
+
 
 
 # Dictionary containing List of Web viewable parameters
@@ -149,6 +204,10 @@ _server_WebParamListDict["ascii"] = []  # (Note: ascii not yet implemented in Be
 WebParamListDictDict = {}
 WebParamListDictDict['client'] = _client_WebParamListDict
 WebParamListDictDict['server'] = _server_WebParamListDict
+
+
+
+
 
 
 #def _CheckPortnumber(port_number):
@@ -496,8 +555,17 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
         
     # Define the format for the web form used to show/change the current parameters
     # We first declare a dynamic function to work as callback to obtain the default values for each parameter
+    # Note: We transform every parameter into a string
+    #       This is not strictly required for parameters of type annotate.Integer that will correctly
+    #           accept the default value as an Integer python object
+    #       This is obviously also not required for parameters of type annotate.String, that are
+    #           always handled as strings.
+    #       However, the annotate.Choice parameters (and all parameters that derive from it,
+    #           sucn as Parity, Baud, etc.) require the default value as a string
+    #           even though we store it as an integer, which is the data type expected
+    #           by the set_***() C functions in mb_runtime.c
     def __GetWebviewConfigurationValue(ctx, argument):
-        return _GetWebviewConfigurationValue(ctx, WebNode_id, argument)
+        return str(_GetWebviewConfigurationValue(ctx, WebNode_id, argument))
     
     webFormInterface = [(name, web_dtype (label=web_label, default=__GetWebviewConfigurationValue)) 
                     for name, web_label, c_dtype, web_dtype in WebNode_entry["WebParamList"]]
