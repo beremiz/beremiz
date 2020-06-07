@@ -74,6 +74,12 @@ _WebNodeList = []
 
 
 
+
+class MB_StrippedString(annotate.String):
+    def __init__(self, *args, **kwargs):
+        annotate.String.__init__(self, strip = True, *args, **kwargs)
+
+
 class MB_StopBits(annotate.Choice):
     _choices = [0, 1, 2]
 
@@ -154,9 +160,9 @@ TCPclient_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("host"             , _("Remote IP Address")     , ctypes.c_char_p,    annotate.String),
-    ("port"             , _("Remote Port Number")    , ctypes.c_char_p,    annotate.String),
-    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer)
+    ("host"             , _("Remote IP Address")     , ctypes.c_char_p,    MB_StrippedString),
+    ("port"             , _("Remote Port Number")    , ctypes.c_char_p,    MB_StrippedString),
+    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer )
     ]
 
 RTUclient_parameters = [                                                   
@@ -164,7 +170,7 @@ RTUclient_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String ),
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    MB_StrippedString),
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
@@ -176,9 +182,9 @@ TCPserver_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("host"             , _("Local IP Address")      , ctypes.c_char_p,    annotate.String),
-    ("port"             , _("Local Port Number")     , ctypes.c_char_p,    annotate.String),
-    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer)
+    ("host"             , _("Local IP Address")      , ctypes.c_char_p,    MB_StrippedString),
+    ("port"             , _("Local Port Number")     , ctypes.c_char_p,    MB_StrippedString),
+    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer )
     ]
 
 RTUslave_parameters = [                                                   
@@ -186,7 +192,7 @@ RTUslave_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String ),
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    MB_StrippedString),
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
