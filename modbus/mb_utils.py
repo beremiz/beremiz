@@ -95,7 +95,7 @@ def GetTCPServerMemAreaPrinted(self, child, nodeid):
             "Modbus plugin: Invalid Start Address in server memory area node %(locreqstr)s (Must be in the range [0..65535])\nModbus plugin: Aborting C code generation for this node\n" % request_dict)
         return None
     request_dict["count"] = GetCTVal(child, 1)
-    if int(request_dict["count"]) not in xrange(1, 65536):
+    if int(request_dict["count"]) not in xrange(1, 65537):
         self.GetCTRoot().logger.write_error(
             "Modbus plugin: Invalid number of channels in server memory area node %(locreqstr)s (Must be in the range [1..65536-start_address])\nModbus plugin: Aborting C code generation for this node\n" % request_dict)
         return None

@@ -74,6 +74,12 @@ _WebNodeList = []
 
 
 
+
+class MB_StrippedString(annotate.String):
+    def __init__(self, *args, **kwargs):
+        annotate.String.__init__(self, strip = True, *args, **kwargs)
+
+
 class MB_StopBits(annotate.Choice):
     _choices = [0, 1, 2]
 
@@ -93,6 +99,10 @@ class MB_Baud(annotate.Choice):
 
 
 class MB_Parity(annotate.Choice):
+    # For more info on what this class really does, have a look at the code in
+    # file twisted/nevow/annotate.py
+    # grab this code from $git clone https://github.com/twisted/nevow/
+    # 
     # Warning: do _not_ name this variable choice[] without underscore, as that name is
     # already used for another similar variable by the underlying class annotate.Choice
     _choices = [  0,      1,      2  ]
@@ -143,14 +153,16 @@ General_parameters = [
     ("addr_type"        , _("")                      , ctypes.c_char_p,    annotate.String)
     ]                                                                      
                                                                            
+# Parameters we will need to get from the C code, and that _will_ be shown
+# on the web interface.
 TCPclient_parameters = [                                                   
     #    param. name       label                        ctype type         annotate type
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("host"             , _("Remote IP Address")     , ctypes.c_char_p,    annotate.String),
-    ("port"             , _("Remote Port Number")    , ctypes.c_char_p,    annotate.String),
-    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer)
+    ("host"             , _("Remote IP Address")     , ctypes.c_char_p,    MB_StrippedString),
+    ("port"             , _("Remote Port Number")    , ctypes.c_char_p,    MB_StrippedString),
+    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer )
     ]
 
 RTUclient_parameters = [                                                   
@@ -158,7 +170,7 @@ RTUclient_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String ),
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    MB_StrippedString),
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
@@ -170,9 +182,9 @@ TCPserver_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("host"             , _("Local IP Address")      , ctypes.c_char_p,    annotate.String),
-    ("port"             , _("Local Port Number")     , ctypes.c_char_p,    annotate.String),
-    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer)
+    ("host"             , _("Local IP Address")      , ctypes.c_char_p,    MB_StrippedString),
+    ("port"             , _("Local Port Number")     , ctypes.c_char_p,    MB_StrippedString),
+    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer )
     ]
 
 RTUslave_parameters = [                                                   
@@ -180,7 +192,7 @@ RTUslave_parameters = [
     # (C code var name)   (used on web interface)      (C data type)       (web data type)
     #                                                                      (annotate.String,
     #                                                                       annotate.Integer, ...)
-    ("device"           , _("Serial Port")           , ctypes.c_char_p,    annotate.String ),
+    ("device"           , _("Serial Port")           , ctypes.c_char_p,    MB_StrippedString),
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
@@ -377,8 +389,6 @@ def OnButtonSave(**kwargs):
         if value is not None:
             newConfig[par_name] = value
 
-    _WebNodeList[WebNode_id]["WebviewConfiguration"] = newConfig
-    
     # First check if configuration is OK.
     # Note that this is not currently required, as we use drop down choice menus
     # for baud, parity and sop bits, so the values should always be correct!
@@ -392,6 +402,11 @@ def OnButtonSave(**kwargs):
 
     # Configure PLC with the current Modbus parameters
     _SetPLCConfiguration(WebNode_id, newConfig)
+
+    # Update the viewable configuration
+    # The PLC may have coerced the values on calling _SetPLCConfiguration()
+    # so we do not set it directly to newConfig
+    _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetPLCConfiguration(WebNode_id)
 
     # File has just been created => Delete button must be shown on web interface!
     _updateWebInterface(WebNode_id)
