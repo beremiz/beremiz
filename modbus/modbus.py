@@ -409,12 +409,15 @@ class _ModbusTCPserverPlug(object):
     def GetNodeCount(self):
         return (1, 0, 0)
 
-    # Return a list with a single tuple conatining the (location, port number)
-    #     location: location of this node in the configuration tree
+    # Return a list with a single tuple conatining the (location, IP address, port number)
+    #     location   : location of this node in the configuration tree
     #     port number: IP port used by this Modbus/IP server
+    #     IP address : IP address of the network interface on which the server will be listening
+    #                  ("", "*", or "#ANY#" => listening on all interfaces!)
     def GetIPServerPortNumbers(self):
-        port = self.GetParamsAttributes()[0]["children"][1]["value"]
-        return [(self.GetCurrentLocation(), port)]
+        port = self.ModbusServerNode.getLocal_Port_Number()
+        addr = self.ModbusServerNode.getLocal_IP_Address()
+        return [(self.GetCurrentLocation(), addr, port)]
 
     def GetConfigName(self):
         """ Return the node's Configuration_Name """
@@ -691,15 +694,19 @@ class RootClass(object):
 
         # Determine the number of (modbus library) nodes ALL instances of the modbus plugin will need
         #   total_node_count: (tcp nodes, rtu nodes, ascii nodes)
-        # Also get a list with tuples of (location, IP port numbers) used by all the Modbus/IP server nodes
+        #
+        # Also get a list with tuples of (location, IP address, port number) used by all the Modbus/IP server nodes
         #   This list is later used to search for duplicates in port numbers!
-        #   IPServer_port_numbers = [(location ,IPserver_port_number), ...]
-        #       location: tuple similar to (0, 3, 1) representing the location in the configuration tree "0.3.1.x"
+        #   IPServer_port_numbers = [(location, IP address, port number), ...]
+        #       location            : tuple similar to (0, 3, 1) representing the location in the configuration tree "0.3.1.x"
         #       IPserver_port_number: a number (i.e. port number used by the Modbus/IP server)
+        #       IP address          : IP address of the network interface on which the server will be listening
+        #                             ("", "*", or "#ANY#" => listening on all interfaces!)
+        #
         # Also get a list with tuples of (location, Configuration_Name) used by all the Modbus nodes
         #   This list is later used to search for duplicates in Configuration Names!
         #   Node_Configuration_Names = [(location, Configuration_Name), ...]
-        #       location: tuple similar to (0, 3, 1) representing the location in the configuration tree "0.3.1.x"
+        #       location          : tuple similar to (0, 3, 1) representing the location in the configuration tree "0.3.1.x"
         #       Configuration_Name: the "Configuration_Name" string
         total_node_count = (0, 0, 0)
         IPServer_port_numbers    = []
@@ -728,16 +735,19 @@ class RootClass(object):
                     self.FatalError(error_message)
 
         # Search for use of duplicate port numbers by Modbus/IP servers
-        # print IPServer_port_numbers
-        # ..but first define a lambda function to convert a tuple with the config tree location to a nice looking string
-        #   for e.g., convert the tuple (0, 3, 4) to "0.3.4"
-        for i in range(0, len(IPServer_port_numbers) - 1):
-            for j in range(i + 1, len(IPServer_port_numbers)):
-                if IPServer_port_numbers[i][1] == IPServer_port_numbers[j][1]:
-                    error_message = _("Error: Modbus/IP Servers %{a1}.x and %{a2}.x use the same port number {a3}.\n").format(
-                                        a1=_lt_to_str(IPServer_port_numbers[i][0]),
-                                        a2=_lt_to_str(IPServer_port_numbers[j][0]),
-                                        a3=IPServer_port_numbers[j][1])
+        # Note: We only consider duplicate port numbers if using the same network interface!
+        i = 0
+        for loc1, addr1, port1 in IPServer_port_numbers[:-1]:
+            i = i + 1
+            for loc2, addr2, port2 in IPServer_port_numbers[i:]:
+                if (port1 == port2) and (
+                          (addr1 == addr2)   # on the same network interface
+                       or (addr1 == "") or (addr1 == "*") or (addr1 == "#ANY#") # or one (or both) of the servers
+                       or (addr2 == "") or (addr2 == "*") or (addr2 == "#ANY#") # use all available network interfaces
+                   ):
+                    error_message = _("Error: Modbus plugin nodes %{a1}.x and %{a2}.x use same port number \"{a3}\" " + 
+                                      "on the same (or overlapping) network interfaces \"{a4}\" and \"{a5}\".\n").format(
+                                        a1=_lt_to_str(loc1), a2=_lt_to_str(loc2), a3=port1, a4=addr1, a5=addr2)
                     self.FatalError(error_message)
 
         # Determine the current location in Beremiz's project configuration
