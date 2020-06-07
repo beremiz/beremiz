@@ -929,7 +929,7 @@ u64                __modbus_get_ClientNode_comm_period(int nodeid)  {return clie
 const char *       __modbus_get_ClientNode_addr_type  (int nodeid)  {return addr_type_str[client_nodes[nodeid].node_address.naf];}
                                                                                                                         
 const char *       __modbus_get_ServerNode_config_name(int nodeid)  {return server_nodes[nodeid].config_name;                    }
-const char *       __modbus_get_ServerNode_host       (int nodeid)  {return server_nodes[nodeid].str1;                           }
+const char *       __modbus_get_ServerNode_host       (int nodeid)  {char*x=server_nodes[nodeid].str1; return (x[0]=='\0'?"#ANY#":x); }
 const char *       __modbus_get_ServerNode_port       (int nodeid)  {return server_nodes[nodeid].str2;                           }
 const char *       __modbus_get_ServerNode_device     (int nodeid)  {return server_nodes[nodeid].str1;                           }
 int                __modbus_get_ServerNode_baud       (int nodeid)  {return server_nodes[nodeid].node_address.addr.rtu.baud;     }
@@ -948,7 +948,8 @@ void __modbus_set_ClientNode_stop_bits  (int nodeid, int          value)  {clien
 void __modbus_set_ClientNode_comm_period(int nodeid, u64          value)  {client_nodes[nodeid].comm_period                     = value;}
                                                                                                                         
 
-void __modbus_set_ServerNode_host       (int nodeid, const char * value)  {__safe_strcnpy(server_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
+void __modbus_set_ServerNode_host       (int nodeid, const char * value)  {if (strcmp(value,"#ANY#")==0) value = "";
+                                                                           __safe_strcnpy(server_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
 void __modbus_set_ServerNode_port       (int nodeid, const char * value)  {__safe_strcnpy(server_nodes[nodeid].str2, value, MODBUS_PARAM_STRING_SIZE);}
 void __modbus_set_ServerNode_device     (int nodeid, const char * value)  {__safe_strcnpy(server_nodes[nodeid].str1, value, MODBUS_PARAM_STRING_SIZE);}
 void __modbus_set_ServerNode_baud       (int nodeid, int          value)  {server_nodes[nodeid].node_address.addr.rtu.baud      = value;}

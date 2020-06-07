@@ -383,8 +383,6 @@ def OnButtonSave(**kwargs):
         if value is not None:
             newConfig[par_name] = value
 
-    _WebNodeList[WebNode_id]["WebviewConfiguration"] = newConfig
-    
     # First check if configuration is OK.
     # Note that this is not currently required, as we use drop down choice menus
     # for baud, parity and sop bits, so the values should always be correct!
@@ -398,6 +396,11 @@ def OnButtonSave(**kwargs):
 
     # Configure PLC with the current Modbus parameters
     _SetPLCConfiguration(WebNode_id, newConfig)
+
+    # Update the viewable configuration
+    # The PLC may have coerced the values on calling _SetPLCConfiguration()
+    # so we do not set it directly to newConfig
+    _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetPLCConfiguration(WebNode_id)
 
     # File has just been created => Delete button must be shown on web interface!
     _updateWebInterface(WebNode_id)
