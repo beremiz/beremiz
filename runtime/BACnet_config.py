@@ -87,6 +87,10 @@ _BACnetConfFilename = "/tmp/BeremizBACnetConfig.json"
 
 
 
+class BN_StrippedString(annotate.String):
+    def __init__(self, *args, **kwargs):
+        annotate.String.__init__(self, strip = True, *args, **kwargs)
+
 
 
 BACnet_parameters = [
@@ -94,8 +98,8 @@ BACnet_parameters = [
     # (C code var name)         (used on web interface)                          (C data type)    (web data type)
     #                                                                                             (annotate.String,
     #                                                                                              annotate.Integer, ...)
-    ("network_interface"      , _("Network Interface")                         , ctypes.c_char_p, annotate.String),
-    ("port_number"            , _("UDP Port Number")                           , ctypes.c_char_p, annotate.String),
+    ("network_interface"      , _("Network Interface")                         , ctypes.c_char_p, BN_StrippedString),
+    ("port_number"            , _("UDP Port Number")                           , ctypes.c_char_p, BN_StrippedString),
     ("comm_control_passwd"    , _("BACnet Communication Control Password")     , ctypes.c_char_p, annotate.String),
     ("device_id"              , _("BACnet Device ID")                          , ctypes.c_int,    annotate.Integer),
     ("device_name"            , _("BACnet Device Name")                        , ctypes.c_char_p, annotate.String),
@@ -269,8 +273,8 @@ def _updateWebInterface():
             _("BACnet Configuration"),                # description
             [],                                       # fields  (empty, no parameters required!)
             _("Delete Configuration Stored in Persistent Storage"), # button label
-            OnButtonDel)                              # callback    
-
+            OnButtonDel,                              # callback    
+            "BACnetConfigParm")                       # Add after entry xxxx
 
 
 def OnButtonSave(**kwargs):
