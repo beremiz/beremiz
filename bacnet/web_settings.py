@@ -28,20 +28,7 @@ import ctypes
 
 from formless import annotate, webform
 
-
-
-# reference to the PLCObject in runtime/PLCObject.py
-# PLCObject is a singleton, created in runtime/__init__.py
-_plcobj = None
-
-# reference to the Nevow web server (a.k.a as NS in Beremiz_service.py)
-# (Note that NS will reference the NevowServer.py _module_, and not an object/class)
-_NS = None
-
-
-# WorkingDir: the directory on which Beremiz_service.py is running, and where 
-#             all the files downloaded to the PLC get stored
-_WorkingDir = None
+import runtime.NevowServer as NS
 
 
 # Will contain references to the C functions 
@@ -230,7 +217,7 @@ def _SetPLCConfiguration(BACnetConfig):
     """
     for par_name in BACnetConfig:
         value = BACnetConfig[par_name]
-        #_plcobj.LogMessage("BACnet web server extension::_SetPLCConfiguration()  Setting "
+        #PLCObject.LogMessage("BACnet web server extension::_SetPLCConfiguration()  Setting "
         #                       + par_name + " to " + str(value) )
         if value is not None:
             SetParamFuncs[par_name](value)
@@ -266,9 +253,9 @@ def _updateWebInterface():
 
     # Add a "Delete Saved Configuration" button if there is a saved configuration!
     if _SavedConfiguration is None:
-        _NS.ConfigurableSettings.delSettings("BACnetConfigDelSaved")
+        NS.ConfigurableSettings.delSettings("BACnetConfigDelSaved")
     else:
-        _NS.ConfigurableSettings.addSettings(
+        NS.ConfigurableSettings.addSettings(
             "BACnetConfigDelSaved",                   # name
             _("BACnet Configuration"),                # description
             [],                                       # fields  (empty, no parameters required!)
@@ -284,7 +271,7 @@ def OnButtonSave(**kwargs):
     # specified in the web interface. However, values must be validated first!
     """
 
-    #_plcobj.LogMessage("BACnet web server extension::OnButtonSave()  Called")
+    #PLCObject.LogMessage("BACnet web server extension::OnButtonSave()  Called")
     
     newConfig = {}
     for par_name, x1, x2, x3 in BACnet_parameters:
@@ -346,16 +333,16 @@ def OnButtonShowCur(**kwargs):
 
 
 
-def OnLoadPLC():
+def _runtime_bacnet_websettings_%(location_str)s_init():
     """
     # Callback function, called (by PLCObject.py) when a new PLC program
     # (i.e. XXX.so file) is transfered to the PLC runtime
     # and oaded into memory
     """
 
-    #_plcobj.LogMessage("BACnet web server extension::OnLoadPLC() Called...")
+    #PLCObject.LogMessage("BACnet web server extension::OnLoadPLC() Called...")
 
-    if _plcobj.PLClibraryHandle is None:
+    if PLCObject.PLClibraryHandle is None:
         # PLC was loaded but we don't have access to the library of compiled code (.so lib)?
         # Hmm... This shold never occur!! 
         return  
@@ -366,7 +353,7 @@ def OnLoadPLC():
     # we conclude that the currently loaded PLC does not have the BACnet plugin
     # included (situation (2b) described above init())
     try:
-        location = ctypes.c_char_p.in_dll(_plcobj.PLClibraryHandle, "__bacnet_plugin_location")
+        location = ctypes.c_char_p.in_dll(PLCObject.PLClibraryHandle, "__bacnet_plugin_location")
     except Exception:
         # Loaded PLC does not have the BACnet plugin => nothing to do
         #   (i.e. do _not_ configure and make available the BACnet web interface)
@@ -377,11 +364,11 @@ def OnLoadPLC():
         GetParamFuncName = "__bacnet_" + location.value + "_get_ConfigParam_" + name
         SetParamFuncName = "__bacnet_" + location.value + "_set_ConfigParam_" + name
         
-        GetParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, GetParamFuncName)
+        GetParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, GetParamFuncName)
         GetParamFuncs[name].restype  = c_dtype
         GetParamFuncs[name].argtypes = None
         
-        SetParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, SetParamFuncName)
+        SetParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, SetParamFuncName)
         SetParamFuncs[name].restype  = None
         SetParamFuncs[name].argtypes = [c_dtype]
 
@@ -413,7 +400,7 @@ def OnLoadPLC():
             _SetPLCConfiguration(_SavedConfiguration)
             
     # Configure the web interface to include the BACnet config parameters
-    _NS.ConfigurableSettings.addSettings(
+    NS.ConfigurableSettings.addSettings(
         "BACnetConfigParm",                # name
         _("BACnet Configuration"),         # description
         webFormInterface,                  # fields
@@ -421,7 +408,7 @@ def OnLoadPLC():
         OnButtonSave)                      # callback    
     
     # Add a "View Current Configuration" button 
-    _NS.ConfigurableSettings.addSettings(
+    NS.ConfigurableSettings.addSettings(
         "BACnetConfigViewCur",                    # name
         _("BACnet Configuration"),                # description
         [],                                       # fields  (empty, no parameters required!)
@@ -435,18 +422,18 @@ def OnLoadPLC():
 
 
 
-def OnUnLoadPLC():
+def _runtime_bacnet_websettings_%(location_str)s_cleanup():
     """
     # Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
     """
 
-    #_plcobj.LogMessage("BACnet web server extension::OnUnLoadPLC() Called...")
+    #PLCObject.LogMessage("BACnet web server extension::OnUnLoadPLC() Called...")
     
     # Delete the BACnet specific web interface extensions
     # (Safe to ask to delete, even if it has not been added!)
-    _NS.ConfigurableSettings.delSettings("BACnetConfigParm")
-    _NS.ConfigurableSettings.delSettings("BACnetConfigViewCur")  
-    _NS.ConfigurableSettings.delSettings("BACnetConfigDelSaved")  
+    NS.ConfigurableSettings.delSettings("BACnetConfigParm")
+    NS.ConfigurableSettings.delSettings("BACnetConfigViewCur")  
+    NS.ConfigurableSettings.delSettings("BACnetConfigDelSaved")  
     GetParamFuncs = {}
     SetParamFuncs = {}
     _WebviewConfiguration = None
@@ -455,36 +442,3 @@ def OnUnLoadPLC():
 
 
 
-# The Beremiz_service.py service, along with the integrated web server it launches
-# (i.e. Nevow web server, in runtime/NevowServer.py), will go through several states
-# once started:
-#  (1) Web server is started, but no PLC is loaded
-#  (2) PLC is loaded (i.e. the PLC compiled code is loaded)
-#         (a) The loaded PLC includes the BACnet plugin
-#         (b) The loaded PLC does not have the BACnet plugin
-#
-# During (1) and (2a):
-#     we configure the web server interface to not have the BACnet web configuration extension
-# During (2b) 
-#     we configure the web server interface to include the BACnet web configuration extension
-#
-# plcobj    : reference to the PLCObject defined in PLCObject.py
-# NS        : reference to the web server (i.e. the NevowServer.py module)
-# WorkingDir: the directory on which Beremiz_service.py is running, and where 
-#             all the files downloaded to the PLC get stored, including
-#             the .so file with the compiled C generated code
-def init(plcobj, NS, WorkingDir):
-    #plcobj.LogMessage("BACnet web server extension::init(plcobj, NS, " + WorkingDir + ") Called")
-    global _WorkingDir
-    _WorkingDir = WorkingDir
-    global _plcobj
-    _plcobj = plcobj
-    global _NS
-    _NS = NS
-    global _BACnetConfFilename
-    if _BACnetConfFilename is None:
-        _BACnetConfFilename = os.path.join(WorkingDir, "BACnetConfig.json")
-    
-    _plcobj.RegisterCallbackLoad  ("BACnet_Settins_Extension", OnLoadPLC)
-    _plcobj.RegisterCallbackUnLoad("BACnet_Settins_Extension", OnUnLoadPLC)
-    OnUnLoadPLC() # init is called before the PLC gets loaded...  so we make sure we have the correct state
