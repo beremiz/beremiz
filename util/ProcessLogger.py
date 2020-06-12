@@ -31,6 +31,7 @@ import ctypes
 from threading import Timer, Lock, Thread, Semaphore
 import signal
 
+_debug = os.path.exists("BEREMIZ_DEBUG")
 
 class outputThread(Thread):
     """
@@ -77,6 +78,7 @@ class ProcessLogger(object):
                  timeout=None, outlimit=None, errlimit=None,
                  endlog=None, keyword=None, kill_it=False, cwd=None,
                  encoding=None, output_encoding=None):
+        assert(logger)
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -174,8 +176,9 @@ class ProcessLogger(object):
             self.endlog()
 
     def log_the_end(self, ecode, pid):
-        self.logger.write(self.Command_str + "\n")
-        self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1=str(ecode), a2=str(pid)))
+        if self.logger is not None:
+            self.logger.write(self.Command_str + "\n")
+            self.logger.write_warning(_("exited with status {a1} (pid {a2})\n").format(a1=str(ecode), a2=str(pid)))
 
     def finish(self, pid, ecode):
         # avoid running function before start is finished
@@ -184,7 +187,7 @@ class ProcessLogger(object):
         if self.timeout:
             self.timeout.cancel()
         self.exitcode = ecode
-        if self.exitcode != 0:
+        if _debug or self.exitcode != 0:
             self.log_the_end(ecode, pid)
         if self.finish_callback is not None:
             self.finish_callback(self, ecode, pid)
