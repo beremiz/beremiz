@@ -42,23 +42,11 @@ import hashlib
 
 from formless import annotate, webform
 
-
-
-# reference to the PLCObject in runtime/PLCObject.py
-# PLCObject is a singleton, created in runtime/__init__.py
-_plcobj = None
-
-# reference to the Nevow web server (a.k.a as NS in Beremiz_service.py)
-# (Note that NS will reference the NevowServer.py _module_, and not an object/class)
-_NS = None
-
-
-# WorkingDir: the directory on which Beremiz_service.py is running, and where 
-#             all the files downloaded to the PLC get stored
-_WorkingDir = None
+import runtime.NevowServer as NS
 
 # Directory in which to store the persistent configurations
 # Should be a directory that does not get wiped on reboot!
+# TODO FIXME WTF
 _ModbusConfFiledir = "/tmp"
 
 # List of all Web Extension Setting nodes we are handling.
@@ -109,7 +97,7 @@ class MB_Parity(annotate.Choice):
     _label   = ["none", "odd", "even"]
     
     def choice_to_label(self, key):
-        #_plcobj.LogMessage("Modbus web server extension::choice_to_label()  " + str(key))
+        #PLCObject.LogMessage("Modbus web server extension::choice_to_label()  " + str(key))
         return self._label[key]
     
     def coerce(self, val, configurable):
@@ -127,7 +115,7 @@ class MB_Parity(annotate.Choice):
         # reason being parsed as strings, so we need to map them back to an
         # integer.
         #
-        #_plcobj.LogMessage("Modbus web server extension::coerce  " + val )
+        #PLCObject.LogMessage("Modbus web server extension::coerce  " + val )
         return int(val)
 
     def __init__(self, *args, **kwargs):
@@ -352,12 +340,12 @@ def _updateWebInterface(WebNode_id):
     
     # Add a "Delete Saved Configuration" button if there is a saved configuration!
     if _WebNodeList[WebNode_id]["SavedConfiguration"] is None:
-        _NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)
+        NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)
     else:
         def __OnButtonDel(**kwargs):
             return OnButtonDel(WebNode_id = WebNode_id, **kwargs)
                 
-        _NS.ConfigurableSettings.addSettings(
+        NS.ConfigurableSettings.addSettings(
             "ModbusConfigDelSaved"      + config_hash,  # name (internal, may not contain spaces, ...)
             _("Modbus Configuration: ") + config_name,  # description (user visible label)
             [],                                         # fields  (empty, no parameters required!)
@@ -378,7 +366,7 @@ def OnButtonSave(**kwargs):
     "WebNode_id" argument, and call this function to do the work.
     """
 
-    #_plcobj.LogMessage("Modbus web server extension::OnButtonSave()  Called")
+    #PLCObject.LogMessage("Modbus web server extension::OnButtonSave()  Called")
     
     newConfig    = {}
     WebNode_id   =  kwargs.get("WebNode_id", None)
@@ -478,7 +466,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     # example), so we create a hash of the config_name, and use that instead.
     config_hash = hashlib.md5(config_name).hexdigest()
     
-    #_plcobj.LogMessage("Modbus web server extension::_AddWebNode("+str(C_node_id)+") config_name="+config_name)
+    #PLCObject.LogMessage("Modbus web server extension::_AddWebNode("+str(C_node_id)+") config_name="+config_name)
 
     # Add the new entry to the global list
     # Note: it is OK, and actually necessary, to do this _before_ seting all the parameters in WebNode_entry
@@ -549,7 +537,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     def __OnButtonSave(**kwargs):
         OnButtonSave(WebNode_id=WebNode_id, **kwargs)
 
-    _NS.ConfigurableSettings.addSettings(
+    NS.ConfigurableSettings.addSettings(
         "ModbusConfigParm"          + config_hash,     # name (internal, may not contain spaces, ...)
         _("Modbus Configuration: ") + config_name,     # description (user visible label)
         webFormInterface,                              # fields
@@ -560,7 +548,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     def __OnButtonShowCur(**kwargs):
         OnButtonShowCur(WebNode_id=WebNode_id, **kwargs)
 
-    _NS.ConfigurableSettings.addSettings(
+    NS.ConfigurableSettings.addSettings(
         "ModbusConfigViewCur"       + config_hash, # name (internal, may not contain spaces, ...)
         _("Modbus Configuration: ") + config_name,     # description (user visible label)
         [],                                        # fields  (empty, no parameters required!)
@@ -573,17 +561,17 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
 
 
 
-
-def OnLoadPLC():
+def _runtime_modbus_websettings_%(location_str)s_init():
     """
     Callback function, called (by PLCObject.py) when a new PLC program
     (i.e. XXX.so file) is transfered to the PLC runtime
     and loaded into memory
     """
+    print("_runtime_modbus_websettings_init")
 
-    #_plcobj.LogMessage("Modbus web server extension::OnLoadPLC() Called...")
+    #PLCObject.LogMessage("Modbus web server extension::OnLoadPLC() Called...")
 
-    if _plcobj.PLClibraryHandle is None:
+    if PLCObject.PLClibraryHandle is None:
         # PLC was loaded but we don't have access to the library of compiled code (.so lib)?
         # Hmm... This shold never occur!! 
         return  
@@ -595,8 +583,8 @@ def OnLoadPLC():
     # are not present in the .so file we conclude that the currently loaded 
     # PLC does not have the Modbus plugin included (situation (2b) described above init())
     try:
-        client_count = ctypes.c_int.in_dll(_plcobj.PLClibraryHandle, "__modbus_plugin_client_node_count").value
-        server_count = ctypes.c_int.in_dll(_plcobj.PLClibraryHandle, "__modbus_plugin_server_node_count").value
+        client_count = ctypes.c_int.in_dll(PLCObject.PLClibraryHandle, "__modbus_plugin_client_node_count").value
+        server_count = ctypes.c_int.in_dll(PLCObject.PLClibraryHandle, "__modbus_plugin_server_node_count").value
     except Exception:
         # Loaded PLC does not have the Modbus plugin => nothing to do
         #   (i.e. do _not_ configure and make available the Modbus web interface)
@@ -619,25 +607,25 @@ def OnLoadPLC():
 
     for name, web_label, c_dtype, web_dtype in TCPclient_parameters + RTUclient_parameters + General_parameters:
         ParamFuncName                      = "__modbus_get_ClientNode_" + name        
-        GetClientParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        GetClientParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
         GetClientParamFuncs[name].restype  = c_dtype
         GetClientParamFuncs[name].argtypes = [ctypes.c_int]
         
     for name, web_label, c_dtype, web_dtype in TCPclient_parameters + RTUclient_parameters:
         ParamFuncName                      = "__modbus_set_ClientNode_" + name
-        SetClientParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        SetClientParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
         SetClientParamFuncs[name].restype  = None
         SetClientParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
 
     for name, web_label, c_dtype, web_dtype in TCPserver_parameters + RTUslave_parameters + General_parameters:
         ParamFuncName                      = "__modbus_get_ServerNode_" + name        
-        GetServerParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        GetServerParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
         GetServerParamFuncs[name].restype  = c_dtype
         GetServerParamFuncs[name].argtypes = [ctypes.c_int]
         
     for name, web_label, c_dtype, web_dtype in TCPserver_parameters + RTUslave_parameters:
         ParamFuncName                      = "__modbus_set_ServerNode_" + name
-        SetServerParamFuncs[name]          = getattr(_plcobj.PLClibraryHandle, ParamFuncName)
+        SetServerParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
         SetServerParamFuncs[name].restype  = None
         SetServerParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
 
@@ -651,55 +639,22 @@ def OnLoadPLC():
 
 
 
-def OnUnLoadPLC():
+def _runtime_modbus_websettings_%(location_str)s_cleanup():
     """
     Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
     """
 
-    #_plcobj.LogMessage("Modbus web server extension::OnUnLoadPLC() Called...")
+    #PLCObject.LogMessage("Modbus web server extension::OnUnLoadPLC() Called...")
     
     # Delete the Modbus specific web interface extensions
     # (Safe to ask to delete, even if it has not been added!)
     global _WebNodeList    
     for WebNode_entry in _WebNodeList:
         config_hash = WebNode_entry["config_hash"]
-        _NS.ConfigurableSettings.delSettings("ModbusConfigParm"     + config_hash)
-        _NS.ConfigurableSettings.delSettings("ModbusConfigViewCur"  + config_hash)  
-        _NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)  
+        NS.ConfigurableSettings.delSettings("ModbusConfigParm"     + config_hash)
+        NS.ConfigurableSettings.delSettings("ModbusConfigViewCur"  + config_hash)  
+        NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)  
         
     # Dele all entries...
     _WebNodeList = []
 
-
-
-# The Beremiz_service.py service, along with the integrated web server it launches
-# (i.e. Nevow web server, in runtime/NevowServer.py), will go through several states
-# once started:
-#  (1) Web server is started, but no PLC is loaded
-#  (2) PLC is loaded (i.e. the PLC compiled code is loaded)
-#         (a) The loaded PLC includes the Modbus plugin
-#         (b) The loaded PLC does not have the Modbus plugin
-#
-# During (1) and (2a):
-#     we configure the web server interface to not have the Modbus web configuration extension
-# During (2b) 
-#     we configure the web server interface to include the Modbus web configuration extension
-#
-# PS: reference to the pyroserver  (i.e., the server object of Beremiz_service.py)
-#     (NOTE: PS.plcobj is a reference to PLCObject.py)
-# NS: reference to the web server (i.e. the NevowServer.py module)
-# WorkingDir: the directory on which Beremiz_service.py is running, and where 
-#             all the files downloaded to the PLC get stored, including
-#             the .so file with the compiled C generated code
-def init(plcobj, NS, WorkingDir):
-    #PS.plcobj.LogMessage("Modbus web server extension::init(PS, NS, " + WorkingDir + ") Called")
-    global _WorkingDir
-    _WorkingDir = WorkingDir
-    global _plcobj
-    _plcobj = plcobj
-    global _NS
-    _NS = NS
-
-    _plcobj.RegisterCallbackLoad  ("Modbus_Settins_Extension", OnLoadPLC)
-    _plcobj.RegisterCallbackUnLoad("Modbus_Settins_Extension", OnUnLoadPLC)
-    OnUnLoadPLC() # init is called before the PLC gets loaded...  so we make sure we have the correct state

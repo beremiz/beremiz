@@ -30,6 +30,7 @@ from six.moves import xrange
 from modbus.mb_utils import *
 from ConfigTreeNode import ConfigTreeNode
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
+import util.paths as paths
 
 base_folder = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 base_folder = os.path.join(base_folder, "..")
@@ -985,4 +986,18 @@ class RootClass(object):
         # LDFLAGS.append(" -lws2_32 ")  # on windows we need to load winsock
         # library!
 
-        return [(Gen_MB_c_path, ' -I"' + ModbusPath + '"')], LDFLAGS, True
+        websettingfile = open(paths.AbsNeighbourFile(__file__, "web_settings.py"), 'r')
+        websettingcode = websettingfile.read()
+        websettingfile.close()
+
+        location_str = "_".join(map(str, self.GetCurrentLocation()))
+        websettingcode = websettingcode % locals()
+
+        runtimefile_path = os.path.join(buildpath, "runtime_modbus_websettings.py")
+        runtimefile = open(runtimefile_path, 'w')
+        runtimefile.write(websettingcode)
+        runtimefile.close()
+
+        return ([(Gen_MB_c_path, ' -I"' + ModbusPath + '"')], LDFLAGS, True,
+                ("runtime_modbus_websettings_%s.py" % location_str, open(runtimefile_path, "rb")),
+        )

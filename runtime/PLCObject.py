@@ -99,9 +99,6 @@ class PLCObject(object):
         self.TraceLock = Lock()
         self.Traces = []
         self.DebugToken = 0
-        # Callbacks used by web settings extensions (e.g.: BACnet_config.py, Modbus_config.py)
-        self.LoadCallbacks   = {} # list of functions to call when PLC is   loaded
-        self.UnLoadCallbacks = {} # list of functions to call when PLC is unloaded
 
         self._init_blobs()
 
@@ -169,22 +166,6 @@ class PLCObject(object):
         elif self._loading_error is not None and level == 0:
             return self._loading_error, 0, 0, 0
         return None
-
-    def RegisterCallbackLoad(self, ExtensionName, ExtensionCallback):
-        """
-        Register function to be called when PLC is loaded
-        ExtensionName: a string with the name of the extension asking to register the callback 
-        ExtensionCallback: the function to be called...
-        """
-        self.LoadCallbacks[ExtensionName] = ExtensionCallback
-
-    def RegisterCallbackUnLoad(self, ExtensionName, ExtensionCallback):
-        """
-        Register function to be called when PLC is unloaded
-        ExtensionName: a string with the name of the extension asking to register the callback 
-        ExtensionCallback: the function to be called...
-        """
-        self.UnLoadCallbacks[ExtensionName] = ExtensionCallback
 
     def _GetMD5FileName(self):
         return os.path.join(self.workingdir, "lasttransferedPLC.md5")
@@ -289,8 +270,6 @@ class PLCObject(object):
         res = self._LoadPLC()
         if res:
             self.PythonRuntimeInit()
-            for name, callbackFunc in self.LoadCallbacks.items():
-                callbackFunc()
         else:
             self._FreePLC()
 
@@ -299,8 +278,6 @@ class PLCObject(object):
     @RunInMain
     def UnLoadPLC(self):
         self.PythonRuntimeCleanup()
-        for name, callbackFunc in self.UnLoadCallbacks.items():
-            callbackFunc()        
         self._FreePLC()
 
     def _InitPLCStubCalls(self):
