@@ -328,33 +328,6 @@ def _GetWebviewConfigurationValue(ctx, WebNode_id, argument):
 
 
 
-
-def _updateWebInterface(WebNode_id):
-    """
-    Add/Remove buttons to/from the web interface depending on the current state
-       - If there is a saved state => add a delete saved state button
-    """
-
-    config_hash = _WebNodeList[WebNode_id]["config_hash"]
-    config_name = _WebNodeList[WebNode_id]["config_name"]
-    
-    # Add a "Delete Saved Configuration" button if there is a saved configuration!
-    if _WebNodeList[WebNode_id]["SavedConfiguration"] is None:
-        NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)
-    else:
-        def __OnButtonDel(**kwargs):
-            return OnButtonDel(WebNode_id = WebNode_id, **kwargs)
-                
-        NS.ConfigurableSettings.addSettings(
-            "ModbusConfigDelSaved"      + config_hash,  # name (internal, may not contain spaces, ...)
-            _("Modbus Configuration: ") + config_name,  # description (user visible label)
-            [],                                         # fields  (empty, no parameters required!)
-            _("Delete Configuration Stored in Persistent Storage"), # button label
-            __OnButtonDel,                              # callback    
-            "ModbusConfigParm"          + config_hash)  # Add after entry xxxx
-
-
-
 def OnButtonSave(**kwargs):
     """
     Function called when user clicks 'Save' button in web interface
@@ -396,13 +369,9 @@ def OnButtonSave(**kwargs):
     # so we do not set it directly to newConfig
     _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetPLCConfiguration(WebNode_id)
 
-    # File has just been created => Delete button must be shown on web interface!
-    _updateWebInterface(WebNode_id)
 
 
-
-
-def OnButtonDel(**kwargs):
+def OnButtonReset(**kwargs):
     """
     Function called when user clicks 'Delete' button in web interface
     The function will delete the file containing the persistent
@@ -424,25 +393,7 @@ def OnButtonDel(**kwargs):
     # Reset SavedConfiguration
     _WebNodeList[WebNode_id]["SavedConfiguration"] = None
     
-    # File has just been deleted => Delete button on web interface no longer needed!
-    _updateWebInterface(WebNode_id)
 
-
-
-
-def OnButtonShowCur(**kwargs):
-    """
-    Function called when user clicks 'Show Current PLC Configuration' button in web interface
-    The function will load the current PLC configuration into the web form
-
-    Note that this function does not get called directly. The real callback
-    function is the dynamic __OnButtonShowCur() function, which will add the 
-    "WebNode_id" argument, and call this function to do the work.
-    """
-    WebNode_id = kwargs.get("WebNode_id", None)
-    
-    _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetPLCConfiguration(WebNode_id)
-    
 
 
 
@@ -537,26 +488,33 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     def __OnButtonSave(**kwargs):
         OnButtonSave(WebNode_id=WebNode_id, **kwargs)
 
-    NS.ConfigurableSettings.addSettings(
+    WebSettings = NS.newExtensionSetting("Modbus "+config_hash)
+
+    WebSettings.addSettings(
         "ModbusConfigParm"          + config_hash,     # name (internal, may not contain spaces, ...)
         _("Modbus Configuration: ") + config_name,     # description (user visible label)
         webFormInterface,                              # fields
-        _("Save Configuration to Persistent Storage"), # button label
+        _("Apply"), # button label
         __OnButtonSave)                                # callback   
     
-    # Add a "View Current Configuration" button 
-    def __OnButtonShowCur(**kwargs):
-        OnButtonShowCur(WebNode_id=WebNode_id, **kwargs)
+    def __OnButtonReset(**kwargs):
+        return OnButtonReset(WebNode_id = WebNode_id, **kwargs)
+            
+    def getConfigStatus():
+        if WebNode_entry["WebviewConfiguration"] == WebNode_entry["DefaultConfiguration"]:
+            return "Unchanged"
+        return "Modified"
 
-    NS.ConfigurableSettings.addSettings(
-        "ModbusConfigViewCur"       + config_hash, # name (internal, may not contain spaces, ...)
-        _("Modbus Configuration: ") + config_name,     # description (user visible label)
-        [],                                        # fields  (empty, no parameters required!)
-        _("Show Current PLC Configuration"),       # button label
-        __OnButtonShowCur)                         # callback    
-
-    # Add the Delete button to the web interface, if required
-    _updateWebInterface(WebNode_id)
+    WebSettings.addSettings(
+        "ModbusConfigDelSaved"      + config_hash,  # name (internal, may not contain spaces, ...)
+        _("Modbus Configuration: ") + config_name,  # description (user visible label)
+        [ ("status",
+           annotate.String(label=_("Current state"),
+                           immutable=True,
+                           default=lambda *k:getConfigStatus())),
+        ],                                       # fields  (empty, no parameters required!)
+        _("Reset"), # button label
+        __OnButtonReset)
 
 
 
@@ -567,7 +525,6 @@ def _runtime_modbus_websettings_%(location_str)s_init():
     (i.e. XXX.so file) is transfered to the PLC runtime
     and loaded into memory
     """
-    print("_runtime_modbus_websettings_init")
 
     #PLCObject.LogMessage("Modbus web server extension::OnLoadPLC() Called...")
 
@@ -651,9 +608,7 @@ def _runtime_modbus_websettings_%(location_str)s_cleanup():
     global _WebNodeList    
     for WebNode_entry in _WebNodeList:
         config_hash = WebNode_entry["config_hash"]
-        NS.ConfigurableSettings.delSettings("ModbusConfigParm"     + config_hash)
-        NS.ConfigurableSettings.delSettings("ModbusConfigViewCur"  + config_hash)  
-        NS.ConfigurableSettings.delSettings("ModbusConfigDelSaved" + config_hash)  
+        NS.removeExtensionSetting("Modbus "+config_hash)
         
     # Dele all entries...
     _WebNodeList = []
