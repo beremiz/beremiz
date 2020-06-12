@@ -243,27 +243,6 @@ webFormInterface = [(name, web_dtype (label=web_label, default=_GetWebviewConfig
                     for name, web_label, c_dtype, web_dtype in BACnet_parameters]
 
 
-
-def _updateWebInterface():
-    """
-    # Add/Remove buttons to/from the web interface depending on the current state
-    #
-    #  - If there is a saved state => add a delete saved state button
-    """
-
-    # Add a "Delete Saved Configuration" button if there is a saved configuration!
-    if _SavedConfiguration is None:
-        NS.ConfigurableSettings.delSettings("BACnetConfigDelSaved")
-    else:
-        NS.ConfigurableSettings.addSettings(
-            "BACnetConfigDelSaved",                   # name
-            _("BACnet Configuration"),                # description
-            [],                                       # fields  (empty, no parameters required!)
-            _("Delete Configuration Stored in Persistent Storage"), # button label
-            OnButtonDel,                              # callback    
-            "BACnetConfigParm")                       # Add after entry xxxx
-
-
 def OnButtonSave(**kwargs):
     """
     # Function called when user clicks 'Save' button in web interface
@@ -279,8 +258,6 @@ def OnButtonSave(**kwargs):
         if value is not None:
             newConfig[par_name] = value
 
-    global _WebviewConfiguration
-    _WebviewConfiguration = newConfig
     
     # First check if configuration is OK.
     if not _CheckWebConfiguration(newConfig):
@@ -294,13 +271,9 @@ def OnButtonSave(**kwargs):
     # Configure PLC with the current BACnet parameters
     _SetPLCConfiguration(newConfig)
 
-    # File has just been created => Delete button must be shown on web interface!
-    _updateWebInterface()
 
 
-
-
-def OnButtonDel(**kwargs):
+def OnButtonReset(**kwargs):
     """
     # Function called when user clicks 'Delete' button in web interface
     # The function will delete the file containing the persistent
@@ -314,25 +287,10 @@ def OnButtonDel(**kwargs):
     # Reset global variable
     global _SavedConfiguration
     _SavedConfiguration = None
-    # File has just been deleted => Delete button on web interface no longer needed!
-    _updateWebInterface()
 
 
 
-def OnButtonShowCur(**kwargs):
-    """
-    # Function called when user clicks 'Show Current PLC Configuration' button in web interface
-    # The function will load the current PLC configuration into the web form
-    """
-    
-    global _WebviewConfiguration
-    _WebviewConfiguration = _GetPLCConfiguration()
-    # File has just been deleted => Delete button on web interface no longer needed!
-    _updateWebInterface()
-
-
-
-
+# location_str is replaced by extension's value in CTNGenerateC call
 def _runtime_bacnet_websettings_%(location_str)s_init():
     """
     # Callback function, called (by PLCObject.py) when a new PLC program
@@ -346,23 +304,12 @@ def _runtime_bacnet_websettings_%(location_str)s_init():
         # PLC was loaded but we don't have access to the library of compiled code (.so lib)?
         # Hmm... This shold never occur!! 
         return  
-    
-    # Get the location (in the Config. Node Tree of Beremiz IDE) the BACnet plugin
-    # occupies in the currently loaded PLC project (i.e., the .so file)
-    # If the "__bacnet_plugin_location" C variable is not present in the .so file,
-    # we conclude that the currently loaded PLC does not have the BACnet plugin
-    # included (situation (2b) described above init())
-    try:
-        location = ctypes.c_char_p.in_dll(PLCObject.PLClibraryHandle, "__bacnet_plugin_location")
-    except Exception:
-        # Loaded PLC does not have the BACnet plugin => nothing to do
-        #   (i.e. do _not_ configure and make available the BACnet web interface)
-        return
 
     # Map the get/set functions (written in C code) we will be using to get/set the configuration parameters
     for name, web_label, c_dtype, web_dtype in BACnet_parameters:
-        GetParamFuncName = "__bacnet_" + location.value + "_get_ConfigParam_" + name
-        SetParamFuncName = "__bacnet_" + location.value + "_set_ConfigParam_" + name
+        # location_str is replaced by extension's value in CTNGenerateC call
+        GetParamFuncName = "__bacnet_%(location_str)s_get_ConfigParam_" + name
+        SetParamFuncName = "__bacnet_%(location_str)s_set_ConfigParam_" + name
         
         GetParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, GetParamFuncName)
         GetParamFuncs[name].restype  = c_dtype
@@ -399,29 +346,37 @@ def _runtime_bacnet_websettings_%(location_str)s_init():
         if _CheckConfiguration(_SavedConfiguration):
             _SetPLCConfiguration(_SavedConfiguration)
             
+    WebSettings = NS.newExtensionSetting("BACnet")
+
     # Configure the web interface to include the BACnet config parameters
-    NS.ConfigurableSettings.addSettings(
+    WebSettings.addSettings(
         "BACnetConfigParm",                # name
         _("BACnet Configuration"),         # description
         webFormInterface,                  # fields
-        _("Save Configuration to Persistent Storage"),  # button label
+        _("Apply"),  # button label
         OnButtonSave)                      # callback    
-    
-    # Add a "View Current Configuration" button 
-    NS.ConfigurableSettings.addSettings(
-        "BACnetConfigViewCur",                    # name
+
+    # Add the Delete button to the web interface
+    WebSettings.addSettings(
+        "BACnetConfigDelSaved",                   # name
         _("BACnet Configuration"),                # description
-        [],                                       # fields  (empty, no parameters required!)
-        _("Show Current PLC Configuration"),      # button label
-        OnButtonShowCur)                          # callback    
-
-    # Add the Delete button to the web interface, if required
-    _updateWebInterface()
-
-
-
+        [ ("status",
+           annotate.String(label=_("Current state"),
+                           immutable=True,
+                           default=lambda *k:getConfigStatus())),
+        ],                                       # fields  (empty, no parameters required!)
+        _("Reset"), # button label
+        OnButtonReset) 
 
 
+
+def getConfigStatus():
+    if _WebviewConfiguration == _DefaultConfiguration :
+        return "Unchanged"
+    return "Modified"
+
+
+# location_str is replaced by extension's value in CTNGenerateC call
 def _runtime_bacnet_websettings_%(location_str)s_cleanup():
     """
     # Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
@@ -429,11 +384,8 @@ def _runtime_bacnet_websettings_%(location_str)s_cleanup():
 
     #PLCObject.LogMessage("BACnet web server extension::OnUnLoadPLC() Called...")
     
-    # Delete the BACnet specific web interface extensions
-    # (Safe to ask to delete, even if it has not been added!)
-    NS.ConfigurableSettings.delSettings("BACnetConfigParm")
-    NS.ConfigurableSettings.delSettings("BACnetConfigViewCur")  
-    NS.ConfigurableSettings.delSettings("BACnetConfigDelSaved")  
+    NS.removeExtensionSetting("BACnet")
+    
     GetParamFuncs = {}
     SetParamFuncs = {}
     _WebviewConfiguration = None

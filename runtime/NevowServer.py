@@ -26,6 +26,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
+import collections
 import platform as platform_module
 from zope.interface import implements
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
@@ -165,8 +166,7 @@ class ConfigurableBindings(configurable.Configurable):
         setattr(self, 'bind_' + name, _bind)
         self.bindingsNames.append(name)
 
-    def addSettings(self, name, desc, fields, btnlabel, callback, 
-                    addAfterName = None):
+    def addSettings(self, name, desc, fields, btnlabel, callback):
         def _bind(ctx):
             return annotate.MethodBinding(
                 'action_' + name,
@@ -180,32 +180,20 @@ class ConfigurableBindings(configurable.Configurable):
 
         setattr(self, 'action_' + name, callback)
 
-        if addAfterName not in self.bindingsNames:
-            # Just append new setting if not yet present
-            if name not in self.bindingsNames:
-                self.bindingsNames.append(name)
-        else:
-            # We need to insert new setting 
-            # imediately _after_ addAfterName
+        self.bindingsNames.append(name)
             
-            # First remove new setting if already present
-            # to make sure it goes into correct place
-            if name in self.bindingsNames:
-                self.bindingsNames.remove(name)
-            # Now add new setting in correct place
-            self.bindingsNames.insert(
-                self.bindingsNames.index(addAfterName)+1,
-                name)
-            
-
-
-    def delSettings(self, name):
-        if name in self.bindingsNames:
-            self.bindingsNames.remove(name)
-
 
 ConfigurableSettings = ConfigurableBindings()
 
+def newExtensionSetting(ext_name):
+    global extensions_settings_od
+    settings = ConfigurableBindings()
+    extensions_settings_od[ext_name] = settings
+    return settings
+
+def removeExtensionSetting(ext_name):
+    global extensions_settings_od
+    extensions_settings_od.pop(ext_name)
 
 class ISettings(annotate.TypedInterface):
     platform = annotate.String(label=_("Platform"),
@@ -233,6 +221,7 @@ class ISettings(annotate.TypedInterface):
 customSettingsURLs = {
 }
 
+extensions_settings_od = collections.OrderedDict()
 
 class SettingsPage(rend.Page):
     # We deserve a slash
@@ -243,6 +232,25 @@ class SettingsPage(rend.Page):
     child_webinterface_css = File(paths.AbsNeighbourFile(__file__, 'webinterface.css'), 'text/css')
 
     implements(ISettings)
+   
+    def __getattr__(self, name):
+        global extensions_settings_od
+        if name.startswith('configurable_'):
+            ext_name = name[13:]
+            def configurable_something(ctx):
+                return extensions_settings_od[ext_name]
+            return configurable_something
+        raise AttributeError
+    
+    def extensions_settings(self, context, data):
+        """ Project extensions settings
+        Extensions added to Configuration Tree in IDE have their setting rendered here
+        """
+        global extensions_settings_od
+        res = []
+        for ext_name in extensions_settings_od:
+            res += [tags.h2[ext_name], webform.renderForms(ext_name)] 
+        return res
 
     docFactory = loaders.stan([tags.html[
         tags.head[
@@ -260,12 +268,16 @@ class SettingsPage(rend.Page):
             webform.renderForms('staticSettings'),
             tags.h1["Extensions settings:"],
             webform.renderForms('dynamicSettings'),
+            extensions_settings
         ]]])
 
     def configurable_staticSettings(self, ctx):
         return configurable.TypedInterfaceConfigurable(self)
 
     def configurable_dynamicSettings(self, ctx):
+        """ Runtime Extensions settings
+        Extensions loaded through Beremiz_service -e or optional runtime features render setting forms here
+        """
         return ConfigurableSettings
 
     def sendLogMessage(self, level, message, **kwargs):
