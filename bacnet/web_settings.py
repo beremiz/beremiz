@@ -69,8 +69,7 @@ _SavedConfiguration = None
 # before it gets a chance to start running
 #
 #_BACnetConfFilename = None
-_BACnetConfFilename = "/tmp/BeremizBACnetConfig.json"
-
+_BACnetConfFilename = os.path.join(WorkingDir, "bacnetconf.json")
 
 
 
