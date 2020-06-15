@@ -166,10 +166,15 @@ def _CheckWebConfiguration(BACnetConfig):
 
 def _SetSavedConfiguration(BACnetConfig):
     """ Stores in a file a dictionary containing the BACnet parameter configuration """
-    with open(os.path.realpath(_BACnetConfFilename), 'w') as f:
-        json.dump(BACnetConfig, f, sort_keys=True, indent=4)
     global _SavedConfiguration
-    _SavedConfiguration = BACnetConfig
+
+    if BACnetConfig == _DefaultConfiguration :
+        _DelSavedConfiguration()
+        _SavedConfiguration = None
+    else :
+        with open(os.path.realpath(_BACnetConfFilename), 'w') as f:
+            json.dump(BACnetConfig, f, sort_keys=True, indent=4)
+        _SavedConfiguration = BACnetConfig
 
 
 def _DelSavedConfiguration():
