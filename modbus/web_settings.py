@@ -46,8 +46,7 @@ import runtime.NevowServer as NS
 
 # Directory in which to store the persistent configurations
 # Should be a directory that does not get wiped on reboot!
-# TODO FIXME WTF
-_ModbusConfFiledir = "/tmp"
+_ModbusConfFiledir = WorkingDir
 
 # List of all Web Extension Setting nodes we are handling.
 # One WebNode each for:
