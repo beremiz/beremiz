@@ -488,7 +488,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     def __OnButtonSave(**kwargs):
         OnButtonSave(WebNode_id=WebNode_id, **kwargs)
 
-    WebSettings = NS.newExtensionSetting("Modbus "+config_hash)
+    WebSettings = NS.newExtensionSetting("Modbus #"+ str(WebNode_id), config_hash)
 
     WebSettings.addSettings(
         "ModbusConfigParm"          + config_hash,     # name (internal, may not contain spaces, ...)
@@ -605,10 +605,10 @@ def _runtime_modbus_websettings_%(location_str)s_cleanup():
     
     # Delete the Modbus specific web interface extensions
     # (Safe to ask to delete, even if it has not been added!)
-    global _WebNodeList    
-    for WebNode_entry in _WebNodeList:
+    global _WebNodeList
+    for index, WebNode_entry in enumerate(_WebNodeList):
         config_hash = WebNode_entry["config_hash"]
-        NS.removeExtensionSetting("Modbus "+config_hash)
+        NS.removeExtensionSetting(config_hash)
         
     # Dele all entries...
     _WebNodeList = []

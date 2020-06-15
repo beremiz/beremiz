@@ -185,15 +185,15 @@ class ConfigurableBindings(configurable.Configurable):
 
 ConfigurableSettings = ConfigurableBindings()
 
-def newExtensionSetting(ext_name):
+def newExtensionSetting(display, token):
     global extensions_settings_od
     settings = ConfigurableBindings()
-    extensions_settings_od[ext_name] = settings
+    extensions_settings_od[token] = (settings, display)
     return settings
 
-def removeExtensionSetting(ext_name):
+def removeExtensionSetting(token):
     global extensions_settings_od
-    extensions_settings_od.pop(ext_name)
+    extensions_settings_od.pop(token)
 
 class ISettings(annotate.TypedInterface):
     platform = annotate.String(label=_("Platform"),
@@ -236,9 +236,10 @@ class SettingsPage(rend.Page):
     def __getattr__(self, name):
         global extensions_settings_od
         if name.startswith('configurable_'):
-            ext_name = name[13:]
+            token = name[13:]
             def configurable_something(ctx):
-                return extensions_settings_od[ext_name]
+                settings, _display = extensions_settings_od[token]
+                return settings
             return configurable_something
         raise AttributeError
     
@@ -248,8 +249,9 @@ class SettingsPage(rend.Page):
         """
         global extensions_settings_od
         res = []
-        for ext_name in extensions_settings_od:
-            res += [tags.h2[ext_name], webform.renderForms(ext_name)] 
+        for token in extensions_settings_od:
+            _settings, display = extensions_settings_od[token]
+            res += [tags.h2[display], webform.renderForms(token)] 
         return res
 
     docFactory = loaders.stan([tags.html[
