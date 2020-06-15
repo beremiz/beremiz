@@ -346,7 +346,7 @@ def _runtime_bacnet_websettings_%(location_str)s_init():
         if _CheckConfiguration(_SavedConfiguration):
             _SetPLCConfiguration(_SavedConfiguration)
             
-    WebSettings = NS.newExtensionSetting("BACnet")
+    WebSettings = NS.newExtensionSetting("BACnet extension", "bacnet_token")
 
     # Configure the web interface to include the BACnet config parameters
     WebSettings.addSettings(
@@ -384,7 +384,7 @@ def _runtime_bacnet_websettings_%(location_str)s_cleanup():
 
     #PLCObject.LogMessage("BACnet web server extension::OnUnLoadPLC() Called...")
     
-    NS.removeExtensionSetting("BACnet")
+    NS.removeExtensionSetting("bacnet_token")
     
     GetParamFuncs = {}
     SetParamFuncs = {}
