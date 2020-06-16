@@ -284,6 +284,8 @@ class _MemoryAreaPlug(object):
 #
 #
 
+# XXX TODO "Configuration_Name" should disapear in favor of CTN Name, which is already unique
+
 class _ModbusTCPclientPlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -360,6 +362,8 @@ class _ModbusTCPclientPlug(object):
 #
 #
 #
+
+# XXX TODO "Configuration_Name" should disapear in favor of CTN Name, which is already unique
 
 class _ModbusTCPserverPlug(object):
     # NOTE: the Port number is a 'string' and not an 'integer'!
@@ -447,6 +451,8 @@ class _ModbusTCPserverPlug(object):
 #
 #
 #
+
+# XXX TODO "Configuration_Name" should disapear in favor of CTN Name, which is already unique
 
 class _ModbusRTUclientPlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -539,6 +545,7 @@ class _ModbusRTUclientPlug(object):
 #
 #
 
+# XXX TODO "Configuration_Name" should disapear in favor of CTN Name, which is already unique
 
 class _ModbusRTUslavePlug(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
