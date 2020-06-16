@@ -215,21 +215,29 @@ WebParamListDictDict['server'] = _server_WebParamListDict
 
 def _SetSavedConfiguration(WebNode_id, newConfig):
     """ Stores a dictionary in a persistant file containing the Modbus parameter configuration """
-    
-    # Add the addr_type and node_type to the data that will be saved to file
-    # This allows us to confirm the saved data contains the correct addr_type
-    # when loading from file
-    save_info = {}
-    save_info["addr_type"] = _WebNodeList[WebNode_id]["addr_type"]
-    save_info["node_type"] = _WebNodeList[WebNode_id]["node_type"]
-    save_info["config"   ] = newConfig
-    
-    filename = _WebNodeList[WebNode_id]["filename"]
+    WebNode_entry = _WebNodeList[WebNode_id]
 
-    with open(os.path.realpath(filename), 'w') as f:
-        json.dump(save_info, f, sort_keys=True, indent=4)
+    if WebNode_entry["DefaultConfiguration"] == newConfig:
+
+        _DelSavedConfiguration(WebNode_id)
+        WebNode_entry["SavedConfiguration"] = None
+
+    else:
+
+        # Add the addr_type and node_type to the data that will be saved to file
+        # This allows us to confirm the saved data contains the correct addr_type
+        # when loading from file
+        save_info = {}
+        save_info["addr_type"] = ["addr_type"]
+        save_info["node_type"] = WebNode_entry["node_type"]
+        save_info["config"   ] = newConfig
         
-    _WebNodeList[WebNode_id]["SavedConfiguration"] = newConfig
+        filename = WebNode_entry["filename"]
+
+        with open(os.path.realpath(filename), 'w') as f:
+            json.dump(save_info, f, sort_keys=True, indent=4)
+            
+        WebNode_entry["SavedConfiguration"] = newConfig
 
 
 
