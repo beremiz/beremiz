@@ -451,17 +451,27 @@ class PLCObject(object):
         self.PythonThreadCond.notify()
         self.PythonThreadCondLock.release()
 
+    def _fail(msg):
+        self.LogMessage(0, msg)
+        self.PLCStatus = PlcStatus.Broken
+        self.StatusChange()
+
+    def PreStartPLC(self):
+        """ 
+        Here goes actions to be taken just before PLC starts, 
+        with all libraries and python object already created.
+        For example : restore saved proprietary parameters
+        """
+        pass
+
     @RunInMain
     def StartPLC(self):
 
-        def fail(msg):
-            self.LogMessage(0, msg)
-            self.PLCStatus = PlcStatus.Broken
-            self.StatusChange()
-
         if self.PLClibraryHandle is None:
             if not self.LoadPLC():
-                fail(_("Problem starting PLC : can't load PLC"))
+                self._fail(_("Problem starting PLC : can't load PLC"))
+
+        self.PreStartPLC()
 
         if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
             c_argv = ctypes.c_char_p * len(self.argv)
@@ -472,7 +482,7 @@ class PLCObject(object):
                 self.PythonThreadCommand("Activate")
                 self.LogMessage("PLC started")
             else:
-                fail(_("Problem starting PLC : error %d" % res))
+                self._fail(_("Problem starting PLC : error %d" % res))
 
     @RunInMain
     def StopPLC(self):
@@ -510,7 +520,7 @@ class PLCObject(object):
     @RunInMain
     def SeedBlob(self, seed):
         blob = (mkstemp(dir=self.tmpdir) + (hashlib.new('md5'),))
-        _fobj, _path, md5sum = blob
+        _fd, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
         self.blobs[newBlobID] = blob
@@ -523,17 +533,17 @@ class PLCObject(object):
         if blob is None:
             return None
 
-        fobj, _path, md5sum = blob
+        fd, _path, md5sum = blob
         md5sum.update(data)
         newBlobID = md5sum.digest()
-        os.write(fobj, data)
+        os.write(fd, data)
         self.blobs[newBlobID] = blob
         return newBlobID
 
     @RunInMain
     def PurgeBlobs(self):
-        for fobj, _path, _md5sum in self.blobs.values():
-            os.close(fobj)
+        for fd, _path, _md5sum in self.blobs.values():
+            os.close(fd)
         self._init_blobs()
 
     def _BlobAsFile(self, blobID, newpath):
@@ -542,8 +552,11 @@ class PLCObject(object):
         if blob is None:
             raise Exception(_("Missing data to create file: {}").format(newpath))
 
-        fobj, path, _md5sum = blob
-        os.close(fobj)
+        fd, path, _md5sum = blob
+        fobj = os.fdopen(fd)
+        fobj.flush()
+        os.fsync(fd)
+        fobj.close()
         shutil.move(path, newpath)
 
     def _extra_files_log_path(self):
@@ -599,15 +612,18 @@ class PLCObject(object):
                 # Create new PLC file
                 self._BlobAsFile(plc_object, new_PLC_filename)
 
-                # Store new PLC filename based on md5 key
-                open(self._GetMD5FileName(), "w").write(md5sum)
-
                 # Then write the files
                 log = open(extra_files_log, "w")
                 for fname, blobID in extrafiles:
                     fpath = os.path.join(self.workingdir, fname)
                     self._BlobAsFile(blobID, fpath)
                     log.write(fname+'\n')
+
+                # Store new PLC filename based on md5 key
+                with open(self._GetMD5FileName(), "w") as f:
+                    f.write(md5sum)
+                    f.flush()
+                    os.fsync(f.fileno())
 
                 # Store new PLC filename
                 self.CurrentPLCFilename = NewFileName

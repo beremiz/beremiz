@@ -678,6 +678,3 @@ class ConfigTreeNode(object):
 
         raise UserAddressedException(message)
 
-class UserAddressedException(Exception):
-    pass
-
