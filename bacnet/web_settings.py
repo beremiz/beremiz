@@ -315,6 +315,8 @@ def _runtime_bacnet_websettings_%(location_str)s_init():
         GetParamFuncName = "__bacnet_%(location_str)s_get_ConfigParam_" + name
         SetParamFuncName = "__bacnet_%(location_str)s_set_ConfigParam_" + name
         
+        # XXX TODO : stop reading from PLC .so file. This code is template code
+        #            that can use modbus extension build data
         GetParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, GetParamFuncName)
         GetParamFuncs[name].restype  = c_dtype
         GetParamFuncs[name].argtypes = None

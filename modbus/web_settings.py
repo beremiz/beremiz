@@ -547,6 +547,8 @@ def _runtime_modbus_websettings_%(location_str)s_init():
     # are not present in the .so file we conclude that the currently loaded 
     # PLC does not have the Modbus plugin included (situation (2b) described above init())
     try:
+        # XXX TODO : stop reading from PLC .so file. This code is template code
+        #            that can use modbus extension build data, such as client node count.
         client_count = ctypes.c_int.in_dll(PLCObject.PLClibraryHandle, "__modbus_plugin_client_node_count").value
         server_count = ctypes.c_int.in_dll(PLCObject.PLClibraryHandle, "__modbus_plugin_server_node_count").value
     except Exception:
@@ -569,6 +571,8 @@ def _runtime_modbus_websettings_%(location_str)s_init():
     GetServerParamFuncs = {}
     SetServerParamFuncs = {}
 
+    # XXX TODO : stop reading from PLC .so file. This code is template code
+    #            that can use modbus extension build data
     for name, web_label, c_dtype, web_dtype in TCPclient_parameters + RTUclient_parameters + General_parameters:
         ParamFuncName                      = "__modbus_get_ClientNode_" + name        
         GetClientParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
@@ -581,6 +585,8 @@ def _runtime_modbus_websettings_%(location_str)s_init():
         SetClientParamFuncs[name].restype  = None
         SetClientParamFuncs[name].argtypes = [ctypes.c_int, c_dtype]
 
+    # XXX TODO : stop reading from PLC .so file. This code is template code
+    #            that can use modbus extension build data
     for name, web_label, c_dtype, web_dtype in TCPserver_parameters + RTUslave_parameters + General_parameters:
         ParamFuncName                      = "__modbus_get_ServerNode_" + name        
         GetServerParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
