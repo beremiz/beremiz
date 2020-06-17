@@ -1,13 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
 <PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <variables>
-    <variable name="SomeVarName" type="DINT"/>
-    <variable name="Grumpf" type="STRING"/>
+    <variable name="SomeVarName" type="DINT" onchange="MyFunc"/>
+    <variable name="Grumpf" type="STRING" initial="'mhoo'" onchange="MyFunc"/>
   </variables>
   <globals>
     <xhtml:p><![CDATA[
 print "All python PLC globals variables :", PLCGlobalsDesc
 print "Current extention name :", __ext_name__
+
+def MyFunc(*args):
+    print args
+
 ]]></xhtml:p>
   </globals>
   <init>
