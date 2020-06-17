@@ -242,8 +242,8 @@ PYTHON_POLL* __%(name)s_notifier;
         varpubonchangefmt = """\
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
         IEC_%(IECtype)s tmp = __GET_VAR(%(configname)s__%(uppername)s);
-        if(__%(name)s_rbuffer != tmp){
-            __%(name)s_rbuffer = %(configname)s__%(uppername)s.value;
+        if(NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
+            __%(name)s_rbuffer = tmp;
             PYTHON_POLL_body__(__%(name)s_notifier);
         }
         AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
