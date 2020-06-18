@@ -482,7 +482,7 @@ class SVGHMI(object):
 
         inkpath = get_inkscape_path()
         svgpath = self._getSVGpath()
-        _status, result, _err_result = ProcessLogger(None,
+        _status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
                                                      inkpath + " -S " + svgpath,
                                                      no_stdout=True,
                                                      no_stderr=True).spin()
