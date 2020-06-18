@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# this file is part of beremiz
+#
+# copyright (c) 2011-2014: laurent bessard, edouard tisserant
+#                          rtes lab : crkim, jblee, youcu
+#                          higen motor : donggu kang
+#
+# see copying file for copyrights details.
+
 from __future__ import absolute_import
 import os
 import signal
