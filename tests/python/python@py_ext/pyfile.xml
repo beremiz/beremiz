@@ -20,6 +20,7 @@ def MyPythonFunc(arg):
         print "Failed Python_to_C_Call failed"
         res = None
     print "Python read PLC global :",PLCGlobals.Test_Python_Var
+    print "Python read PLC global Grumpf :",PLCGlobals.Grumpf
     PLCGlobals.Second_Python_Var = 789
     sys.stdout.flush()
     return res
