@@ -451,7 +451,7 @@ class PLCObject(object):
         self.PythonThreadCond.notify()
         self.PythonThreadCondLock.release()
 
-    def _fail(msg):
+    def _fail(self, msg):
         self.LogMessage(0, msg)
         self.PLCStatus = PlcStatus.Broken
         self.StatusChange()
