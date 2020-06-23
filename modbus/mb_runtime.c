@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>  /* required for memcpy() */
+#include <errno.h>
 #include <time.h>
 #include <signal.h>
 #include "mb_slave_and_master.h"
@@ -470,23 +471,62 @@ static int __signal_client_thread(int client_node_id) {
  * The same callback function is called by the timers of all client nodes. The id of the client node
  * in question will be passed as a parameter to the call back function.
  */
-void __client_node_timer_callback_function(union sigval sigev_value) {
+void __client_node_timer_callback_function(int client_node_id) {
     /* signal the client node's condition variable on which the client node's thread should be waiting... */
     /* Since the communication cycle is run with the mutex locked, we use trylock() instead of lock() */
-    //pthread_mutex_lock  (&(client_nodes[sigev_value.sival_int].mutex));
-    if (pthread_mutex_trylock (&(client_nodes[sigev_value.sival_int].mutex)) != 0)
+    if (pthread_mutex_trylock (&(client_nodes[client_node_id].mutex)) != 0)
         /* we never get to signal the thread for activation. But that is OK.
          * If it still in the communication cycle (during which the mutex is kept locked)
          * then that means that the communication cycle is falling behing in the periodic 
          * communication cycle, and we therefore need to skip a period.
          */
         return;
-    client_nodes[sigev_value.sival_int].execute_req  = 1; // tell the thread to execute
-    client_nodes[sigev_value.sival_int].periodic_act = 1; // tell the thread the activation was done by periodic timer   
-    pthread_cond_signal (&(client_nodes[sigev_value.sival_int].condv));
-    pthread_mutex_unlock(&(client_nodes[sigev_value.sival_int].mutex));
+    client_nodes[client_node_id].execute_req  = 1; // tell the thread to execute
+    client_nodes[client_node_id].periodic_act = 1; // tell the thread the activation was done by periodic timer   
+    pthread_cond_signal (&(client_nodes[client_node_id].condv));
+    pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
 }
 
+
+
+static int stop_mb_client_timer_thread;
+static void *__mb_client_timer_thread(void *_index) {
+    sigset_t set;
+    int signum = SIGALRM;
+	int client_node_id = (char *)_index - (char *)NULL; // Use pointer arithmetic (more portable than cast)
+    printf("%%d\n", client_node_id);
+    /* initialize the timer that will be used to periodically activate the client node */
+    {
+        // start off by reseting the flag that will be set whenever the timer expires
+        client_nodes[client_node_id].periodic_act = 0;
+
+        struct sigevent evp = {0};
+        evp.sigev_notify            = SIGEV_THREAD_ID; /* Notification method - call a function in a new thread context */
+        evp.sigev_signo             = SIGALRM;
+        evp.sigev_value.sival_int   = client_node_id;        /* Data passed to function upon notification - used to indentify which client node to activate */
+       
+        if (timer_create(CLOCK_MONOTONIC, &evp, &(client_nodes[client_node_id].timer_id)) < 0) {
+            fprintf(stderr, "Modbus plugin: Error (%%s) creating timer for modbus client node %%s\n", strerror(errno), client_nodes[client_node_id].location);
+            return NULL;
+        }
+    }
+
+    stop_mb_client_timer_thread = 0;
+    while(!stop_mb_client_timer_thread) {
+        if(sigwait (&set, &signum) == -1)
+            perror ("sigwait");
+        if(stop_mb_client_timer_thread)
+            break;
+        __client_node_timer_callback_function(client_node_id);
+    }
+
+    // timer was created, so we try to destroy it!
+    int res = timer_delete(client_nodes[client_node_id].timer_id);
+    if (res < 0)
+        fprintf(stderr, "Modbus plugin: Error destroying timer for modbus client node %%s\n", client_nodes[client_node_id].location);
+
+    return NULL;
+}
 
 
 int __cleanup_%(locstr)s ();
@@ -581,22 +621,17 @@ int __init_%(locstr)s (int argc, char **argv){
         client_nodes[index].execute_req = 0; //variable associated with condition variable
 		client_nodes[index].init_state = 3; // we have created the condition variable
 		
-		/* initialize the timer that will be used to periodically activate the client node */
-        {
-            // start off by reseting the flag that will be set whenever the timer expires
-            client_nodes[index].periodic_act = 0;
-
-            struct sigevent evp;
-            evp.sigev_notify            = SIGEV_THREAD; /* Notification method - call a function in a new thread context */
-            evp.sigev_value.sival_int   = index;        /* Data passed to function upon notification - used to indentify which client node to activate */
-            evp.sigev_notify_function   = __client_node_timer_callback_function; /* function to call upon timer expiration */
-            evp.sigev_notify_attributes = NULL;         /* attributes for new thread in which sigev_notify_function will be called/executed */
-            
-            if (timer_create(CLOCK_MONOTONIC, &evp, &(client_nodes[index].timer_id)) < 0) {
-                fprintf(stderr, "Modbus plugin: Error creating timer for modbus client node %%s\n", client_nodes[index].location);
-                goto error_exit;                
-            }
-        }
+		/* launch a thread to handle this client node timer */
+		{
+			int res = 0;
+			pthread_attr_t attr;
+			res |= pthread_attr_init(&attr);
+			res |= pthread_create(&(client_nodes[index].timer_thread_id), &attr, &__mb_client_timer_thread, (void *)((char *)NULL + index));
+			if (res !=  0) {
+				fprintf(stderr, "Modbus plugin: Error starting timer thread for modbus client node %%s\n", client_nodes[index].location);
+				goto error_exit;
+			}
+		}
         client_nodes[index].init_state = 4; // we have created the timer
 
 		/* launch a thread to handle this client node */
@@ -754,10 +789,14 @@ int __cleanup_%(locstr)s (){
 
 		close = 0;
 		if (client_nodes[index].init_state >= 4) {
-			// timer was created, so we try to destroy it!
-			close  = timer_delete(client_nodes[index].timer_id);
+            stop_mb_client_timer_thread = 1;
+            pthread_kill(client_nodes[index].timer_thread_id, SIGALRM);
+			// thread was launched, so we try to cancel it!
+			close  = pthread_cancel(client_nodes[index].timer_thread_id);
+			close |= pthread_join  (client_nodes[index].timer_thread_id, NULL);
 			if (close < 0)
-				fprintf(stderr, "Modbus plugin: Error destroying timer for modbus client node %%s\n", client_nodes[index].location);
+				fprintf(stderr, "Modbus plugin: Error closing timer thread for modbus client node %%s\n", client_nodes[index].location);
+
 		}
 		res |= close;
 
