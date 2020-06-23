@@ -106,6 +106,7 @@ typedef struct{
 	    u64		comm_period;// period to use when periodically sending requests to remote server
 	    int		prev_error; // error code of the last printed error message (0 when no error) 
 	    pthread_t   thread_id;  // thread handling all communication for this client node
+	    pthread_t	timer_thread_id;  // thread handling periodical timer for this client node
 	    timer_t      timer_id;  // timer used to periodically activate this client node's thread
 	    pthread_mutex_t mutex;  // mutex to be used with the following condition variable
         pthread_cond_t  condv;  // used to signal the client thread when to start new modbus transactions
