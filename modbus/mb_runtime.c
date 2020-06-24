@@ -295,24 +295,10 @@ static void *__mb_server_thread(void *_server_node)  {
 
 static void *__mb_client_thread(void *_index)  {
 	int client_node_id = (char *)_index - (char *)NULL; // Use pointer arithmetic (more portable than cast)
-	struct timespec next_cycle;
-	int period_sec  =  client_nodes[client_node_id].comm_period / 1000;          /* comm_period is in ms */
-	int period_nsec = (client_nodes[client_node_id].comm_period %%1000)*1000000; /* comm_period is in ms */
 
 	// Enable thread cancelation. Enabled is default, but set it anyway to be safe.
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	
-	// configure the timer for periodic activation
-    {
-      struct itimerspec timerspec;
-      timerspec.it_interval.tv_sec  = period_sec;
-      timerspec.it_interval.tv_nsec = period_nsec;
-      timerspec.it_value            = timerspec.it_interval;
-      
-      if (timer_settime(client_nodes[client_node_id].timer_id, 0 /* flags */, &timerspec, NULL) < 0)
-        fprintf(stderr, "Modbus plugin: Error configuring periodic activation timer for Modbus client %%s.\n", client_nodes[client_node_id].location);          
-    }
-
     /* loop the communication with the client
      * 
          * When the client thread has difficulty communicating with remote client and/or server (network issues, for example),
@@ -492,7 +478,10 @@ void __client_node_timer_callback_function(int client_node_id) {
 static int stop_mb_client_timer_thread;
 static void *__mb_client_timer_thread(void *_index) {
     sigset_t set;
-    int signum = SIGALRM;
+    int signum;
+    sigemptyset(&set);
+    sigaddset(&set, SIGALRM);
+
 	int client_node_id = (char *)_index - (char *)NULL; // Use pointer arithmetic (more portable than cast)
     printf("%%d\n", client_node_id);
     /* initialize the timer that will be used to periodically activate the client node */
@@ -500,24 +489,39 @@ static void *__mb_client_timer_thread(void *_index) {
         // start off by reseting the flag that will be set whenever the timer expires
         client_nodes[client_node_id].periodic_act = 0;
 
-        struct sigevent evp = {0};
-        evp.sigev_notify            = SIGEV_THREAD_ID; /* Notification method - call a function in a new thread context */
-        evp.sigev_signo             = SIGALRM;
-        evp.sigev_value.sival_int   = client_node_id;        /* Data passed to function upon notification - used to indentify which client node to activate */
-       
-        if (timer_create(CLOCK_MONOTONIC, &evp, &(client_nodes[client_node_id].timer_id)) < 0) {
+        if (timer_create(CLOCK_REALTIME, NULL, &(client_nodes[client_node_id].timer_id)) < 0) {
             fprintf(stderr, "Modbus plugin: Error (%%s) creating timer for modbus client node %%s\n", strerror(errno), client_nodes[client_node_id].location);
             return NULL;
         }
+    }
+
+	int period_sec  =  client_nodes[client_node_id].comm_period / 1000;          /* comm_period is in ms */
+	int period_nsec = (client_nodes[client_node_id].comm_period %%1000)*1000000; /* comm_period is in ms */
+
+	// configure the timer for periodic activation
+    {
+      struct itimerspec timerspec;
+      timerspec.it_interval.tv_sec  = period_sec;
+      timerspec.it_interval.tv_nsec = period_nsec;
+      timerspec.it_value            = timerspec.it_interval;
+      
+      if (timer_settime(client_nodes[client_node_id].timer_id, 0 /* flags */, &timerspec, NULL) < 0)
+        fprintf(stderr, "Modbus plugin: Error configuring periodic activation timer for Modbus client %%s.\n", client_nodes[client_node_id].location);          
     }
 
     stop_mb_client_timer_thread = 0;
     while(!stop_mb_client_timer_thread) {
         if(sigwait (&set, &signum) == -1)
             perror ("sigwait");
+
         if(stop_mb_client_timer_thread)
             break;
-        __client_node_timer_callback_function(client_node_id);
+
+        if(signum == SIGALRM)
+            __client_node_timer_callback_function(client_node_id);
+        else
+            fprintf(stderr, "Modbus plugin: spurious wakeup of timer thread for Modbus client %%s.\n", client_nodes[client_node_id].location);          
+
     }
 
     // timer was created, so we try to destroy it!
@@ -791,8 +795,6 @@ int __cleanup_%(locstr)s (){
 		if (client_nodes[index].init_state >= 4) {
             stop_mb_client_timer_thread = 1;
             pthread_kill(client_nodes[index].timer_thread_id, SIGALRM);
-			// thread was launched, so we try to cancel it!
-			close  = pthread_cancel(client_nodes[index].timer_thread_id);
 			close |= pthread_join  (client_nodes[index].timer_thread_id, NULL);
 			if (close < 0)
 				fprintf(stderr, "Modbus plugin: Error closing timer thread for modbus client node %%s\n", client_nodes[index].location);
