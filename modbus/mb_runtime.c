@@ -483,7 +483,6 @@ static void *__mb_client_timer_thread(void *_index) {
     sigaddset(&set, SIGALRM);
 
 	int client_node_id = (char *)_index - (char *)NULL; // Use pointer arithmetic (more portable than cast)
-    printf("%%d\n", client_node_id);
     /* initialize the timer that will be used to periodically activate the client node */
     {
         // start off by reseting the flag that will be set whenever the timer expires
@@ -611,6 +610,7 @@ int __init_%(locstr)s (int argc, char **argv){
 		client_nodes[index].init_state = 1; // we have created the node 
 		
 		/* initialize the mutex variable that will be used by the thread handling the client node */
+        bzero(&(client_nodes[index].mutex), sizeof(pthread_mutex_t));
         if (pthread_mutex_init(&(client_nodes[index].mutex), NULL) < 0) {
 			fprintf(stderr, "Modbus plugin: Error creating mutex for modbus client node %%s\n", client_nodes[index].location);
 			goto error_exit;                
@@ -618,6 +618,7 @@ int __init_%(locstr)s (int argc, char **argv){
 		client_nodes[index].init_state = 2; // we have created the mutex
 		
 		/* initialize the condition variable that will be used by the thread handling the client node */
+        bzero(&(client_nodes[index].condv), sizeof(pthread_cond_t));
         if (pthread_cond_init(&(client_nodes[index].condv), NULL) < 0) {
 			fprintf(stderr, "Modbus plugin: Error creating condition variable for modbus client node %%s\n", client_nodes[index].location);
 			goto error_exit;                
