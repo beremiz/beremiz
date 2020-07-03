@@ -213,14 +213,14 @@ WebParamListDictDict['server'] = _server_WebParamListDict
 
 
 
-def _SetSavedConfiguration(WebNode_id, newConfig):
+def _SetModbusSavedConfiguration(WebNode_id, newConfig):
     """ Stores a dictionary in a persistant file containing the Modbus parameter configuration """
     WebNode_entry = _WebNodeList[WebNode_id]
 
     if WebNode_entry["DefaultConfiguration"] == newConfig:
 
-        _DelSavedConfiguration(WebNode_id)
-        WebNode_entry["SavedConfiguration"] = None
+        _DelModbusSavedConfiguration(WebNode_id)
+        WebNode_entry["ModbusSavedConfiguration"] = None
 
     else:
 
@@ -237,12 +237,12 @@ def _SetSavedConfiguration(WebNode_id, newConfig):
         with open(os.path.realpath(filename), 'w') as f:
             json.dump(save_info, f, sort_keys=True, indent=4)
             
-        WebNode_entry["SavedConfiguration"] = newConfig
+        WebNode_entry["ModbusSavedConfiguration"] = newConfig
 
 
 
 
-def _DelSavedConfiguration(WebNode_id):
+def _DelModbusSavedConfiguration(WebNode_id):
     """ Deletes the file cotaining the persistent Modbus configuration """
     filename = _WebNodeList[WebNode_id]["filename"]
     
@@ -252,7 +252,7 @@ def _DelSavedConfiguration(WebNode_id):
 
 
 
-def _GetSavedConfiguration(WebNode_id):
+def _GetModbusSavedConfiguration(WebNode_id):
     """
     Returns a dictionary containing the Modbus parameter configuration
     that was last saved to file. If no file exists, or file contains 
@@ -284,7 +284,7 @@ def _GetSavedConfiguration(WebNode_id):
 
 
 
-def _GetPLCConfiguration(WebNode_id):
+def _GetModbusPLCConfiguration(WebNode_id):
     """
     Returns a dictionary containing the current Modbus parameter configuration
     stored in the C variables in the loaded PLC (.so file)
@@ -303,7 +303,7 @@ def _GetPLCConfiguration(WebNode_id):
 
 
 
-def _SetPLCConfiguration(WebNode_id, newconfig):
+def _SetModbusPLCConfiguration(WebNode_id, newconfig):
     """
     Stores the Modbus parameter configuration into the
     the C variables in the loaded PLC (.so file)
@@ -319,7 +319,7 @@ def _SetPLCConfiguration(WebNode_id, newconfig):
 
 
 
-def _GetWebviewConfigurationValue(ctx, WebNode_id, argument):
+def _GetModbusWebviewConfigurationValue(ctx, WebNode_id, argument):
     """
     Callback function, called by the web interface (NevowServer.py)
     to fill in the default value of each parameter of the web form
@@ -335,7 +335,7 @@ def _GetWebviewConfigurationValue(ctx, WebNode_id, argument):
 
 
 
-def OnButtonSave(**kwargs):
+def OnModbusButtonSave(**kwargs):
     """
     Function called when user clicks 'Save' button in web interface
     The function will configure the Modbus plugin in the PLC with the values
@@ -346,7 +346,7 @@ def OnButtonSave(**kwargs):
     "WebNode_id" argument, and call this function to do the work.
     """
 
-    #PLCObject.LogMessage("Modbus web server extension::OnButtonSave()  Called")
+    #PLCObject.LogMessage("Modbus web server extension::OnModbusButtonSave()  Called")
     
     newConfig    = {}
     WebNode_id   =  kwargs.get("WebNode_id", None)
@@ -366,19 +366,19 @@ def OnButtonSave(**kwargs):
     # store to file the new configuration so that 
     # we can recoup the configuration the next time the PLC
     # has a cold start (i.e. when Beremiz_service.py is retarted)
-    _SetSavedConfiguration(WebNode_id, newConfig)
+    _SetModbusSavedConfiguration(WebNode_id, newConfig)
 
     # Configure PLC with the current Modbus parameters
-    _SetPLCConfiguration(WebNode_id, newConfig)
+    _SetModbusPLCConfiguration(WebNode_id, newConfig)
 
     # Update the viewable configuration
-    # The PLC may have coerced the values on calling _SetPLCConfiguration()
+    # The PLC may have coerced the values on calling _SetModbusPLCConfiguration()
     # so we do not set it directly to newConfig
-    _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetPLCConfiguration(WebNode_id)
+    _WebNodeList[WebNode_id]["WebviewConfiguration"] = _GetModbusPLCConfiguration(WebNode_id)
 
 
 
-def OnButtonReset(**kwargs):
+def OnModbusButtonReset(**kwargs):
     """
     Function called when user clicks 'Delete' button in web interface
     The function will delete the file containing the persistent
@@ -388,17 +388,17 @@ def OnButtonReset(**kwargs):
     WebNode_id = kwargs.get("WebNode_id", None)
     
     # Delete the file
-    _DelSavedConfiguration(WebNode_id)
+    _DelModbusSavedConfiguration(WebNode_id)
 
     # Set the current configuration to the default (hardcoded in C)
     new_config = _WebNodeList[WebNode_id]["DefaultConfiguration"]
-    _SetPLCConfiguration(WebNode_id, new_config)
+    _SetModbusPLCConfiguration(WebNode_id, new_config)
     
     #Update the webviewconfiguration
     _WebNodeList[WebNode_id]["WebviewConfiguration"] = new_config
     
-    # Reset SavedConfiguration
-    _WebNodeList[WebNode_id]["SavedConfiguration"] = None
+    # Reset ModbusSavedConfiguration
+    _WebNodeList[WebNode_id]["ModbusSavedConfiguration"] = None
     
 
 
@@ -461,17 +461,17 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     # Upon PLC load, this Dictionary is initialised with the Modbus configuration
     # hardcoded in the C file
     # (i.e. the configuration inserted in Beremiz IDE when project was compiled)
-    WebNode_entry["DefaultConfiguration"] = _GetPLCConfiguration(WebNode_id)
+    WebNode_entry["DefaultConfiguration"] = _GetModbusPLCConfiguration(WebNode_id)
     WebNode_entry["WebviewConfiguration"] = WebNode_entry["DefaultConfiguration"]
     
     # Dictionary that stores the Modbus configuration currently stored in a file
     # Currently only used to decide whether or not to show the "Delete" button on the
-    # web interface (only shown if "SavedConfiguration" is not None)
-    SavedConfig = _GetSavedConfiguration(WebNode_id)
-    WebNode_entry["SavedConfiguration"] = SavedConfig
+    # web interface (only shown if "ModbusSavedConfiguration" is not None)
+    SavedConfig = _GetModbusSavedConfiguration(WebNode_id)
+    WebNode_entry["ModbusSavedConfiguration"] = SavedConfig
     
     if SavedConfig is not None:
-        _SetPLCConfiguration(WebNode_id, SavedConfig)
+        _SetModbusPLCConfiguration(WebNode_id, SavedConfig)
         WebNode_entry["WebviewConfiguration"] = SavedConfig
         
     # Define the format for the web form used to show/change the current parameters
@@ -486,14 +486,14 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
     #           even though we store it as an integer, which is the data type expected
     #           by the set_***() C functions in mb_runtime.c
     def __GetWebviewConfigurationValue(ctx, argument):
-        return str(_GetWebviewConfigurationValue(ctx, WebNode_id, argument))
+        return str(_GetModbusWebviewConfigurationValue(ctx, WebNode_id, argument))
     
     webFormInterface = [(name, web_dtype (label=web_label, default=__GetWebviewConfigurationValue)) 
                     for name, web_label, c_dtype, web_dtype in WebNode_entry["WebParamList"]]
 
     # Configure the web interface to include the Modbus config parameters
     def __OnButtonSave(**kwargs):
-        OnButtonSave(WebNode_id=WebNode_id, **kwargs)
+        OnModbusButtonSave(WebNode_id=WebNode_id, **kwargs)
 
     WebSettings = NS.newExtensionSetting("Modbus #"+ str(WebNode_id), config_hash)
 
@@ -505,9 +505,9 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
         __OnButtonSave)                                # callback   
     
     def __OnButtonReset(**kwargs):
-        return OnButtonReset(WebNode_id = WebNode_id, **kwargs)
+        return OnModbusButtonReset(WebNode_id = WebNode_id, **kwargs)
             
-    def getConfigStatus():
+    def getModbusConfigStatus():
         if WebNode_entry["WebviewConfiguration"] == WebNode_entry["DefaultConfiguration"]:
             return "Unchanged"
         return "Modified"
@@ -518,7 +518,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
         [ ("status",
            annotate.String(label=_("Current state"),
                            immutable=True,
-                           default=lambda *k:getConfigStatus())),
+                           default=lambda *k:getModbusConfigStatus())),
         ],                                       # fields  (empty, no parameters required!)
         _("Reset"), # button label
         __OnButtonReset)
