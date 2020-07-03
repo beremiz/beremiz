@@ -95,6 +95,17 @@ class PythonFileCTNMixin(CodeFile):
                getattr(self.CodeFile, section).getanyText() + "\n" + \
                self.PostSectionsTexts.get(section, "")
 
+    def CTNGlobalInstances(self):
+        variables = self.CodeFileVariables(self.CodeFile)
+        ret = [(variable.getname(),
+                variable.gettype(),
+                variable.getinitial())
+               for variable in variables]
+        ret.extend([("On"+variable.getname()+"Change", "python_poll", "")
+                    for variable in variables
+                    if variable.getonchange()])
+        return ret
+
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
         location_str = "_".join(map(str, self.GetCurrentLocation()))
