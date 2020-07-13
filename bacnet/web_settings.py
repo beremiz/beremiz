@@ -295,7 +295,7 @@ def OnBacnetButtonReset(**kwargs):
 
 
 # location_str is replaced by extension's value in CTNGenerateC call
-def _runtime_bacnet_websettings_%(location_str)s_init():
+def _runtime_%(location_str)s_bacnet_websettings_init():
     """
     # Callback function, called (by PLCObject.py) when a new PLC program
     # (i.e. XXX.so file) is transfered to the PLC runtime
@@ -383,7 +383,7 @@ def getBacnetConfigStatus():
 
 
 # location_str is replaced by extension's value in CTNGenerateC call
-def _runtime_bacnet_websettings_%(location_str)s_cleanup():
+def _runtime_%(location_str)s_bacnet_websettings_cleanup():
     """
     # Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
     """
