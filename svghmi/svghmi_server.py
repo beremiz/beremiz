@@ -167,7 +167,7 @@ def watchdog_trigger():
     
 
 # Called by PLCObject at start
-def _runtime_svghmi0_start():
+def _runtime_00_svghmi_start():
     global svghmi_listener, svghmi_root, svghmi_send_thread
 
     svghmi_root = Resource()
@@ -181,7 +181,7 @@ def _runtime_svghmi0_start():
 
 
 # Called by PLCObject at stop
-def _runtime_svghmi0_stop():
+def _runtime_00_svghmi_stop():
     global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session
 
     if svghmi_session is not None:
