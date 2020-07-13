@@ -526,7 +526,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
 
 
 
-def _runtime_modbus_websettings_%(location_str)s_init():
+def _runtime_%(location_str)s_modbus_websettings_init():
     """
     Callback function, called (by PLCObject.py) when a new PLC program
     (i.e. XXX.so file) is transfered to the PLC runtime
@@ -609,7 +609,7 @@ def _runtime_modbus_websettings_%(location_str)s_init():
 
 
 
-def _runtime_modbus_websettings_%(location_str)s_cleanup():
+def _runtime_%(location_str)s_modbus_websettings_cleanup():
     """
     Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
     """
