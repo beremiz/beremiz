@@ -334,13 +334,16 @@ class SVGHMILibrary(POULibrary):
         svghmiservercode = svghmiserverfile.read()
         svghmiserverfile.close()
 
-        runtimefile_path = os.path.join(buildpath, "runtime_svghmi.py")
+        runtimefile_path = os.path.join(buildpath, "runtime_00_svghmi.py")
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write(svghmiservercode)
         runtimefile.close()
 
         return ((["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), "",
-                ("runtime_svghmi0.py", open(runtimefile_path, "rb")))
+                ("runtime_00_svghmi.py", open(runtimefile_path, "rb")))
+                #         ^
+                # note the double zero after "runtime_", 
+                # to ensure placement before other CTN generated code in execution order
 
 
 class HMITreeSelector(wx.TreeCtrl):
@@ -566,7 +569,7 @@ class SVGHMI(object):
                 repr(shlex.split(given_command.format(port="8008", name=view_name))) +
                 ")") if given_command else "pass # no command given"
 
-        runtimefile_path = os.path.join(buildpath, "runtime_svghmi1_%s.py" % location_str)
+        runtimefile_path = os.path.join(buildpath, "runtime_%s_svghmi_.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
 # TODO : multiple watchdog (one for each svghmi instance)
@@ -575,7 +578,7 @@ def svghmi_watchdog_trigger():
 
 svghmi_watchdog = None
 
-def _runtime_svghmi1_{location}_start():
+def _runtime_{location}_svghmi_start():
     global svghmi_watchdog
     svghmi_root.putChild(
         '{view_name}',
@@ -589,7 +592,7 @@ def _runtime_svghmi1_{location}_start():
         {watchdog_interval}, 
         svghmi_watchdog_trigger)
 
-def _runtime_svghmi1_{location}_stop():
+def _runtime_{location}_svghmi_stop():
     global svghmi_watchdog
     if svghmi_watchdog is not None:
         svghmi_watchdog.cancel()
@@ -608,7 +611,7 @@ def _runtime_svghmi1_{location}_stop():
 
         runtimefile.close()
 
-        res += (("runtime_svghmi1_%s.py" % location_str, open(runtimefile_path, "rb")),)
+        res += (("runtime_%s_svghmi.py" % location_str, open(runtimefile_path, "rb")),)
 
         return res
 
