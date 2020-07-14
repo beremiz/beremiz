@@ -1,0 +1,28 @@
+// widget_jsontable.ysl2
+
+template "widget[@type='JsonTable']", mode="widget_class"
+    ||
+    class JsonTableWidget extends Widget{
+        on_click(evt) {
+            const query = {
+                 offset: '42',
+                 filter: '*powerloss*',
+                 args: this.args
+            };
+
+            const options = {
+                 method: 'POST',
+                 body: JSON.stringify(query),
+                 headers: {'Content-Type': 'application/json'}
+            }
+
+            fetch(this.args[0], options)
+                .then(res => res.json())
+                .then(res => console.log(res));
+
+        }
+        init() {
+            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+        }
+    }
+    ||
