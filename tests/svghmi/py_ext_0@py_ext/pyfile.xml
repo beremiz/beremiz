@@ -5,6 +5,18 @@
   </variables>
   <globals>
     <xhtml:p><![CDATA[
+from twisted.web.resource import Resource
+
+class AlarmJsonResource(Resource):
+    def render_GET(self, request):
+        return ''
+
+    def render_POST(self, request):
+        print(request.__dict__)
+        newdata = request.content.getvalue()
+        print newdata
+        return ''
+
 
 def MyOnChangeFunc(changed_var_name):
     print changed_var_name + ": " + getattr(PLCGlobals, changed_var_name)
@@ -21,6 +33,10 @@ def MyOnChangeFunc(changed_var_name):
   </cleanup>
   <start>
     <xhtml:p><![CDATA[
+
+svghmi_root.putChild("alarms", AlarmJsonResource())
+
+
 ]]></xhtml:p>
   </start>
   <stop>

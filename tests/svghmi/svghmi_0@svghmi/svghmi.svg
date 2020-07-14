@@ -16,7 +16,7 @@
    version="1.1"
    id="hmi0"
    sodipodi:docname="svghmi.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
   <metadata
      id="metadata4542">
     <rdf:RDF>
@@ -142,10 +142,10 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.35355339"
-     inkscape:cx="477.09179"
-     inkscape:cy="-82.185108"
+     inkscape:cx="460.66016"
+     inkscape:cy="-571.17456"
      inkscape:window-width="1800"
-     inkscape:window-height="836"
+     inkscape:window-height="1861"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="0"
@@ -2850,4 +2850,13 @@
            sodipodi:role="line">mhe</tspan></text>
     </g>
   </g>
+  <rect
+     style="fill:#4d389f;fill-opacity:1;stroke:#ff00ff"
+     id="rect1261"
+     width="91.923882"
+     height="66.46804"
+     x="296.98483"
+     y="482.41211"
+     ry="33.23402"
+     inkscape:label="HMI:JsonTable:/alarms:mhoooo:666" />
 </svg>
