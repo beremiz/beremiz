@@ -3,7 +3,7 @@
 template "widget[@type='JsonTable']", mode="widget_class"
     ||
     class JsonTableWidget extends Widget{
-        on_click(evt) {
+        do_http_request() {
             const query = {
                  offset: '42',
                  filter: '*powerloss*',
@@ -18,11 +18,54 @@ template "widget[@type='JsonTable']", mode="widget_class"
 
             fetch(this.args[0], options)
                 .then(res => res.json())
-                .then(res => console.log(res));
+                .then(this.spread_json_data);
 
+        }
+        dispatch(value) {
+            this.do_http_request();
+        }
+        on_click(evt) {
+            this.do_http_request();
         }
         init() {
             this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
         }
     }
     ||
+
+template "svg:*", mode="json_table_elt_render" {
+    warning > JsonTable Widget can't contain element of type «local-name()».
+}
+
+template "svg:use", mode="json_table_elt_render" {
+    param "value_expr";
+    |     console.log("«@id»", "«$value_expr»", «$value_expr»);
+}
+
+template "svg:text", mode="json_table_elt_render" {
+    param "value_expr";
+    |     console.log("«@id»", "«$value_expr»", «$value_expr»);
+}
+
+template "svg:*", mode="json_table_render" {
+    param "objname";
+    apply ".", mode="json_table_elt_render" with "value_expr" > «$objname»«@inkscape:label»
+}
+
+template "svg:g", mode="json_table_render" {
+    param "objname";
+    | let obj_«@id» = «$objname»«@inkscape:label»;
+    apply "*[@inkscape:label]", mode="json_table_render" 
+        with "objname" > obj_«@id»
+}
+
+template "widget[@type='JsonTable']", mode="widget_defs" {
+    param "hmi_element";
+    labels("data");
+    optional_labels("forward backward cursor");
+    const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";
+    | spread_json_data: function(jdata) {
+    |     console.log(jdata);
+    apply "$data_elt/*", mode="json_table_render" with "objname","'jdata'";
+    | }
+}
