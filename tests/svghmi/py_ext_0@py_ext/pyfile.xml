@@ -2,10 +2,12 @@
 <PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <variables>
     <variable name="SomePLCglobal" type="HMI_STRING" onchange="MyOnChangeFunc"/>
+    <variable name="AlarmCount" type="HMI_INT"/>
   </variables>
   <globals>
     <xhtml:p><![CDATA[
 from twisted.web.resource import Resource
+import json
 
 class AlarmJsonResource(Resource):
     def render_GET(self, request):
@@ -15,7 +17,13 @@ class AlarmJsonResource(Resource):
         print(request.__dict__)
         newdata = request.content.getvalue()
         print newdata
-        return ''
+        selected_alarms = [
+            {"name":"three", "sides":3},
+            {"name":"four", "sides":4},
+            {"name":"five", "sides":5},
+            {"name":"six", "sides":6},
+        ]
+        return json.dumps(selected_alarms)
 
 
 def MyOnChangeFunc(changed_var_name):

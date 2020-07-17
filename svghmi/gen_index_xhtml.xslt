@@ -658,11 +658,17 @@
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages)]/descendant-or-self::svg:use"/>
+  <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
+  <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
+  <xsl:variable name="targets_not_to_unlink" select="$hmi_elements[@id = $hmi_lists/@id]/descendant::svg:*"/>
+  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
+    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
     <xsl:choose>
-      <xsl:when test="@id = $to_unlink/@id">
-        <xsl:call-template name="unlink_clone"/>
+      <xsl:when test="@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)">
+        <xsl:call-template name="unlink_clone">
+          <xsl:with-param name="targetid" select="$targetid"/>
+        </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
         <xsl:copy>
@@ -699,7 +705,7 @@
   </xsl:variable>
   <xsl:variable name="merge_use_attrs" select="exsl:node-set($_merge_use_attrs)"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" name="unlink_clone">
-    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+    <xsl:param name="targetid"/>
     <xsl:variable name="target" select="//svg:*[@id = $targetid]"/>
     <g>
       <xsl:choose>
@@ -812,6 +818,13 @@
     <xsl:text>Unlinked :
 </xsl:text>
     <xsl:for-each select="$to_unlink">
+      <xsl:value-of select="@id"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>Not to unlink :
+</xsl:text>
+    <xsl:for-each select="$targets_not_to_unlink">
       <xsl:value-of select="@id"/>
       <xsl:text>
 </xsl:text>
@@ -2149,7 +2162,7 @@
   <xsl:template mode="widget_class" match="widget[@type='JsonTable']">
     <xsl:text>class JsonTableWidget extends Widget{
 </xsl:text>
-    <xsl:text>    on_click(evt) {
+    <xsl:text>    do_http_request() {
 </xsl:text>
     <xsl:text>        const query = {
 </xsl:text>
@@ -2179,9 +2192,21 @@
 </xsl:text>
     <xsl:text>            .then(res =&gt; res.json())
 </xsl:text>
-    <xsl:text>            .then(res =&gt; console.log(res));
+    <xsl:text>            .then(this.spread_json_data);
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.do_http_request();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    on_click(evt) {
+</xsl:text>
+    <xsl:text>        this.do_http_request();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2191,6 +2216,86 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="json_table_elt_render" match="svg:*">
+    <xsl:message terminate="no">
+      <xsl:text>JsonTable Widget can't contain element of type </xsl:text>
+      <xsl:value-of select="local-name()"/>
+      <xsl:text>.</xsl:text>
+    </xsl:message>
+  </xsl:template>
+  <xsl:template mode="json_table_elt_render" match="svg:use">
+    <xsl:param name="value_expr"/>
+    <xsl:text>    console.log("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>", "</xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>", </xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>);
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="json_table_elt_render" match="svg:text">
+    <xsl:param name="value_expr"/>
+    <xsl:text>    console.log("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>", "</xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>", </xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>);
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="json_table_render" match="svg:*">
+    <xsl:param name="objname"/>
+    <xsl:apply-templates mode="json_table_elt_render" select=".">
+      <xsl:with-param name="value_expr">
+        <xsl:value-of select="$objname"/>
+        <xsl:value-of select="@inkscape:label"/>
+      </xsl:with-param>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template mode="json_table_render" match="svg:g">
+    <xsl:param name="objname"/>
+    <xsl:text>let obj_</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text> = </xsl:text>
+    <xsl:value-of select="$objname"/>
+    <xsl:value-of select="@inkscape:label"/>
+    <xsl:text>;
+</xsl:text>
+    <xsl:apply-templates mode="json_table_render" select="*[@inkscape:label]">
+      <xsl:with-param name="objname">
+        <xsl:text>obj_</xsl:text>
+        <xsl:value-of select="@id"/>
+      </xsl:with-param>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='JsonTable']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>data</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>forward backward cursor</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:variable name="data_elt" select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']"/>
+    <xsl:text>spread_json_data: function(jdata) {
+</xsl:text>
+    <xsl:text>    console.log(jdata);
+</xsl:text>
+    <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
+      <xsl:with-param name="objname" select="'jdata'"/>
+    </xsl:apply-templates>
     <xsl:text>}
 </xsl:text>
   </xsl:template>
