@@ -47,12 +47,17 @@ template "sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']", m
 // For now, clone unlinkink applies to descendants of all widget except HMI:Page
 // TODO: narrow application of clone unlinking to active elements,
 //       while keeping static decoration cloned
-const "to_unlink", "$hmi_elements[not(@id = $hmi_pages)]/descendant-or-self::svg:use";
+const "hmi_lists_descs", "$parsed_widgets/widget[@type = 'List']";
+const "hmi_lists", "$hmi_elements[@id = $hmi_lists_descs/@id]";
+const "targets_not_to_unlink", "$hmi_elements[@id = $hmi_lists/@id]/descendant::svg:*";
+const "to_unlink", "$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use";
 svgtmpl "svg:use", mode="inline_svg"
 {
+    const "targetid","substring-after(@xlink:href,'#')";
     choose {
-        when "@id = $to_unlink/@id"
-            call "unlink_clone";
+        when "@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)" {
+            call "unlink_clone" with "targetid", "$targetid";
+        }
         otherwise
             xsl:copy apply "@* | node()", mode="inline_svg";
     }
@@ -76,7 +81,7 @@ const "_merge_use_attrs" {
 const "merge_use_attrs","exsl:node-set($_merge_use_attrs)";
 
 svgfunc "unlink_clone"{
-    const "targetid","substring-after(@xlink:href,'#')";
+    param "targetid";
     const "target", "//svg:*[@id = $targetid]";
     g{
         choose {
@@ -156,6 +161,10 @@ emit "debug:clone-unlinking" {
     |
     | Unlinked :
     foreach "$to_unlink"{
+        | «@id»
+    }
+    | Not to unlink :
+    foreach "$targets_not_to_unlink"{
         | «@id»
     }
 }
