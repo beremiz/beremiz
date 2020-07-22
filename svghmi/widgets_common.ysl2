@@ -121,7 +121,7 @@ class «@type»Widget extends Widget{
 }
 ||
 
-const "excluded_types", "str:split('Page Lang List')";
+const "excluded_types", "str:split('Page Lang')";
 const "excluded_ids","$parsed_widgets/widget[not(@type = $excluded_types)]/@id";
 
 emit "preamble:hmi-elements" {
