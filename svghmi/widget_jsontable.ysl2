@@ -34,17 +34,26 @@ template "widget[@type='JsonTable']", mode="widget_class"
     ||
 
 template "svg:*", mode="json_table_elt_render" {
-    warning > JsonTable Widget can't contain element of type «local-name()».
+    error > JsonTable Widget can't contain element of type «local-name()».
 }
 
 template "svg:use", mode="json_table_elt_render" {
     param "value_expr";
-    |     console.log("«@id»", "«$value_expr»", «$value_expr»);
+    // cloned element must be part of a HMI:List
+    const "targetid", "substring-after(@xlink:href,'#')";
+    const "from_list", "$hmi_lists[(@id | */@id) = $targetid]";
+
+    if "count($from_list) = 0"
+        error > Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or HMI:List item. Reference "«@xlink:href»" is not valid.
+
+    |         id("«@id»").setAttribute("xlink:href", 
+    // obtain new target id from HMI:List widget
+    |             "#"+hmi_widgets["«$from_list/@id»"].items[«$value_expr»]);
 }
 
 template "svg:text", mode="json_table_elt_render" {
     param "value_expr";
-    |     console.log("«@id»", "«$value_expr»", «$value_expr»);
+    |         id("«@id»").textContent = String(«$value_expr»);
 }
 
 template "svg:*", mode="json_table_render" {
@@ -54,7 +63,7 @@ template "svg:*", mode="json_table_render" {
 
 template "svg:g", mode="json_table_render" {
     param "objname";
-    | let obj_«@id» = «$objname»«@inkscape:label»;
+    |         let obj_«@id» = «$objname»«@inkscape:label»;
     apply "*[@inkscape:label]", mode="json_table_render" 
         with "objname" > obj_«@id»
 }
@@ -64,8 +73,7 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     labels("data");
     optional_labels("forward backward cursor");
     const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";
-    | spread_json_data: function(jdata) {
-    |     console.log(jdata);
+    |     spread_json_data: function(jdata) {
     apply "$data_elt/*", mode="json_table_render" with "objname","'jdata'";
-    | }
+    |     }
 }

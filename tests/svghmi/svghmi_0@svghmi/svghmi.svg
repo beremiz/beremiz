@@ -138,17 +138,17 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g1384"
+     inkscape:current-layer="g1332"
      showgrid="false"
      units="px"
-     inkscape:zoom="2"
-     inkscape:cx="841.23474"
-     inkscape:cy="298.33077"
-     inkscape:window-width="2807"
-     inkscape:window-height="1582"
+     inkscape:zoom="1"
+     inkscape:cx="521.07002"
+     inkscape:cy="767.67088"
+     inkscape:window-width="3840"
+     inkscape:window-height="2096"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
   <rect
@@ -2890,13 +2890,13 @@
         <use
            x="0"
            y="0"
-           xlink:href="#path1316"
-           inkscape:transform-center-x="0.14620371"
-           inkscape:transform-center-y="2.9995242"
+           xlink:href="#use1297"
+           inkscape:transform-center-x="0.11123312"
+           inkscape:transform-center-y="2.2824109"
            id="use1378"
            width="100%"
            height="100%"
-           transform="translate(-198.17662,280.01428)"
+           transform="matrix(0.7609336,0,0,0.7609336,199.15217,164.3798)"
            inkscape:label=".sides" />
         <text
            xml:space="preserve"
@@ -2940,8 +2940,8 @@
     </g>
   </g>
   <g
-     id="g1324"
-     inkscape:label="HMI:List:polygons">
+     id="g1332"
+     inkscape:label="polygons">
     <path
        inkscape:transform-center-y="2.9995242"
        inkscape:transform-center-x="0.14620371"
@@ -3050,6 +3050,78 @@
        inkscape:transform-center-x="0.14620371"
        inkscape:transform-center-y="2.9995242"
        inkscape:label="eight" />
+  </g>
+  <g
+     inkscape:label="HMI:List:polygons"
+     id="g1311">
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path1298"
+       inkscape:transform-center-x="0.14620371"
+       inkscape:transform-center-y="2.9995242"
+       id="use1293"
+       width="100%"
+       height="100%"
+       transform="translate(150.23297,80)"
+       style="display:inline"
+       inkscape:label="3" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path1308"
+       inkscape:transform-center-x="0.14620371"
+       inkscape:transform-center-y="2.9995242"
+       id="use1295"
+       width="100%"
+       height="100%"
+       transform="translate(93.515259,80)"
+       inkscape:label="4" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path1310"
+       inkscape:transform-center-x="0.14620371"
+       inkscape:transform-center-y="2.9995242"
+       id="use1297"
+       width="100%"
+       height="100%"
+       transform="translate(33.666488,80)"
+       inkscape:label="5" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path1312"
+       inkscape:transform-center-x="0.14620371"
+       inkscape:transform-center-y="2.9995242"
+       id="use1299"
+       width="100%"
+       height="100%"
+       transform="translate(-26.484802,80)"
+       inkscape:label="6" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path1314"
+       inkscape:transform-center-x="0.14620371"
+       inkscape:transform-center-y="2.9995242"
+       id="use1301"
+       width="100%"
+       height="100%"
+       transform="translate(-85.692787,80)"
+       inkscape:label="7" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#path1316"
+       inkscape:transform-center-x="0.14620371"
+       inkscape:transform-center-y="2.9995242"
+       id="use1303"
+       width="100%"
+       height="100%"
+       transform="translate(-146.48474,80)"
+       style="display:inline"
+       inkscape:label="8" />
   </g>
   <g
      transform="matrix(3.3549332,0,0,3.14525,-181.87457,3116.0198)"

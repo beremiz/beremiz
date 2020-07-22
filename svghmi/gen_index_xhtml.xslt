@@ -1033,7 +1033,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="excluded_types" select="str:split('Page Lang List')"/>
+  <xsl:variable name="excluded_types" select="str:split('Page Lang')"/>
   <xsl:variable name="excluded_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
   <preamble:hmi-elements/>
   <xsl:template match="preamble:hmi-elements">
@@ -2220,7 +2220,7 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="json_table_elt_render" match="svg:*">
-    <xsl:message terminate="no">
+    <xsl:message terminate="yes">
       <xsl:text>JsonTable Widget can't contain element of type </xsl:text>
       <xsl:value-of select="local-name()"/>
       <xsl:text>.</xsl:text>
@@ -2228,7 +2228,16 @@
   </xsl:template>
   <xsl:template mode="json_table_elt_render" match="svg:use">
     <xsl:param name="value_expr"/>
-    <xsl:text>    console.log("</xsl:text>
+    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+    <xsl:variable name="from_list" select="$hmi_lists[(@id | */@id) = $targetid]"/>
+    <xsl:if test="count($from_list) = 0">
+      <xsl:message terminate="yes">
+        <xsl:text>Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or HMI:List item. Reference "</xsl:text>
+        <xsl:value-of select="@xlink:href"/>
+        <xsl:text>" is not valid.</xsl:text>
+      </xsl:message>
+    </xsl:if>
+    <xsl:text>        console.log("</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>", "</xsl:text>
     <xsl:value-of select="$value_expr"/>
@@ -2236,14 +2245,30 @@
     <xsl:value-of select="$value_expr"/>
     <xsl:text>);
 </xsl:text>
+    <xsl:text>        id("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>").setAttribute("xlink:href", 
+</xsl:text>
+    <xsl:text>            "#"+hmi_widgets["</xsl:text>
+    <xsl:value-of select="$from_list/@id"/>
+    <xsl:text>"].items[</xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>]);
+</xsl:text>
   </xsl:template>
   <xsl:template mode="json_table_elt_render" match="svg:text">
     <xsl:param name="value_expr"/>
-    <xsl:text>    console.log("</xsl:text>
+    <xsl:text>        console.log("</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>", "</xsl:text>
     <xsl:value-of select="$value_expr"/>
     <xsl:text>", </xsl:text>
+    <xsl:value-of select="$value_expr"/>
+    <xsl:text>);
+</xsl:text>
+    <xsl:text>        id("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>").textContent = String(</xsl:text>
     <xsl:value-of select="$value_expr"/>
     <xsl:text>);
 </xsl:text>
@@ -2259,7 +2284,7 @@
   </xsl:template>
   <xsl:template mode="json_table_render" match="svg:g">
     <xsl:param name="objname"/>
-    <xsl:text>let obj_</xsl:text>
+    <xsl:text>        let obj_</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text> = </xsl:text>
     <xsl:value-of select="$objname"/>
@@ -2289,14 +2314,14 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
     <xsl:variable name="data_elt" select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']"/>
-    <xsl:text>spread_json_data: function(jdata) {
+    <xsl:text>    spread_json_data: function(jdata) {
 </xsl:text>
-    <xsl:text>    console.log(jdata);
+    <xsl:text>        console.log(jdata);
 </xsl:text>
     <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
       <xsl:with-param name="objname" select="'jdata'"/>
     </xsl:apply-templates>
-    <xsl:text>}
+    <xsl:text>    }
 </xsl:text>
   </xsl:template>
   <xsl:template name="jump_widget_activity">
@@ -2762,6 +2787,21 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='List']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    items: {
+</xsl:text>
+    <xsl:for-each select="$hmi_element/*[@inkscape:label]">
+      <xsl:text>        </xsl:text>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:text>: "</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>",
+</xsl:text>
+    </xsl:for-each>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
