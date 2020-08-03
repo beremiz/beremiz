@@ -1001,6 +1001,14 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    get_idx(index) {
+</xsl:text>
+    <xsl:text>         let orig = this.indexes[index];
+</xsl:text>
+    <xsl:text>         return this.offset ? orig + this.offset : orig;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1188,7 +1196,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    change_hmi_value(this.indexes[0], "=1");
+    <xsl:text>    apply_hmi_value(this.get_idx(0), 1);
 </xsl:text>
     <xsl:text>},
 </xsl:text>
@@ -1202,7 +1210,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    change_hmi_value(this.indexes[0], "=0");
+    <xsl:text>    apply_hmi_value(this.get_idx(0), 0);
 </xsl:text>
     <xsl:text>},
 </xsl:text>
@@ -1437,11 +1445,7 @@
 </xsl:text>
     <xsl:text>        this.close();
 </xsl:text>
-    <xsl:text>        let orig = this.indexes[0];
-</xsl:text>
-    <xsl:text>        let idx = this.offset ? orig - this.offset : orig;
-</xsl:text>
-    <xsl:text>        apply_hmi_value(idx, selection);
+    <xsl:text>        apply_hmi_value(this.get_idx(0), selection);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -1993,9 +1997,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    foreach_widgets_do(new_offset, todo){
-</xsl:text>
-    <xsl:text>        this.offset = new_offset;
+    <xsl:text>    foreach_widgets_do(todo){
 </xsl:text>
     <xsl:text>        for(let i = 0; i &lt; this.items.length; i++) {
 </xsl:text>
@@ -2009,7 +2011,7 @@
 </xsl:text>
     <xsl:text>            for(let widget of item) {
 </xsl:text>
-    <xsl:text>                todo(widget).call(widget, new_offset + item_index_offset);
+    <xsl:text>                todo(widget).call(widget, this.offset + item_index_offset);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -2021,7 +2023,9 @@
 </xsl:text>
     <xsl:text>    sub(new_offset=0){
 </xsl:text>
-    <xsl:text>        this.foreach_widgets_do(new_offset, w=&gt;w.sub);
+    <xsl:text>        this.offset = new_offset;
+</xsl:text>
+    <xsl:text>        this.foreach_widgets_do(w=&gt;w.sub);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2029,7 +2033,7 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        this.foreach_widgets_do(this.offset, w=&gt;w.apply_cache);
+    <xsl:text>        this.foreach_widgets_do(w=&gt;w.apply_cache);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2134,11 +2138,7 @@
 </xsl:text>
     <xsl:text>    on_op_click: function(opstr) {
 </xsl:text>
-    <xsl:text>        let orig = this.indexes[0];
-</xsl:text>
-    <xsl:text>        let idx = this.offset ? orig - this.offset : orig;
-</xsl:text>
-    <xsl:text>        let new_val = change_hmi_value(idx, opstr);
+    <xsl:text>        let new_val = change_hmi_value(this.get_idx(0), opstr);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -2154,11 +2154,7 @@
 </xsl:text>
     <xsl:text>    edit_callback: function(new_val) {
 </xsl:text>
-    <xsl:text>        let orig = this.indexes[0];
-</xsl:text>
-    <xsl:text>        let idx = this.offset ? orig - this.offset : orig;
-</xsl:text>
-    <xsl:text>        apply_hmi_value(idx, new_val);
+    <xsl:text>        apply_hmi_value(this.get_idx(0), new_val);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -3413,7 +3409,7 @@
 </xsl:text>
           <xsl:text>    dispatch: function(value) {
 </xsl:text>
-          <xsl:text>        change_hmi_value(heartbeat_index, "+1");
+          <xsl:text>        apply_hmi_value(heartbeat_index, value+1);
 </xsl:text>
           <xsl:text>    }
 </xsl:text>

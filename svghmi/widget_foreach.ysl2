@@ -58,25 +58,25 @@ class ForEachWidget extends Widget{
         this.offset = 0;
     }
 
-    foreach_widgets_do(new_offset, todo){
-        this.offset = new_offset;
+    foreach_widgets_do(todo){
         for(let i = 0; i < this.items.length; i++) {
             let item = this.items[i];
             let orig_item_index = this.index_pool[i];
             let item_index = this.index_pool[i+this.item_offset];
             let item_index_offset = item_index - orig_item_index;
             for(let widget of item) {
-                todo(widget).call(widget, new_offset + item_index_offset);
+                todo(widget).call(widget, this.offset + item_index_offset);
             }
         }
     }
 
     sub(new_offset=0){
-        this.foreach_widgets_do(new_offset, w=>w.sub);
+        this.offset = new_offset;
+        this.foreach_widgets_do(w=>w.sub);
     }
 
     apply_cache() {
-        this.foreach_widgets_do(this.offset, w=>w.apply_cache);
+        this.foreach_widgets_do(w=>w.apply_cache);
     }
 
     on_click(opstr, evt) {
