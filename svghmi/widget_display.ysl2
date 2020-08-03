@@ -1,19 +1,18 @@
 // widget_display.ysl2
 
 
-template "widget[@type='Display']", mode="widget_defs" {
-    param "hmi_element";
-    |     frequency: 5,
-    |     dispatch: function(value) {
-    choose {
-        when "$hmi_element[self::svg:text]"{
-        // TODO : care about <tspan> ?
-    |       this.element.textContent = String(value);
-        }
-        otherwise {
-            warning > Display widget as a group not implemented
+template "widget[@type='Display']", mode="widget_class"
+    ||
+    class DisplayWidget extends Widget{
+        frequency = 5;
+        dispatch(value) {
+            this.element.textContent = String(value);
         }
     }
-    |     },
+    ||
 
+template "widget[@type='Display']", mode="widget_defs" {
+    param "hmi_element";
+    if "$hmi_element[not(self::svg:text)]"
+        error > Display Widget id="«$hmi_element/@id»" is not a svg::text element
 }
