@@ -1331,25 +1331,29 @@
     <xsl:text>},
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='Display']">
+    <xsl:text>class DisplayWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.element.textContent = String(value);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 5,
-</xsl:text>
-    <xsl:text>    dispatch: function(value) {
-</xsl:text>
-    <xsl:choose>
-      <xsl:when test="$hmi_element[self::svg:text]">
-        <xsl:text>      this.element.textContent = String(value);
-</xsl:text>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message terminate="no">
-          <xsl:text>Display widget as a group not implemented</xsl:text>
-        </xsl:message>
-      </xsl:otherwise>
-    </xsl:choose>
-    <xsl:text>    },
-</xsl:text>
+    <xsl:if test="$hmi_element[not(self::svg:text)]">
+      <xsl:message terminate="yes">
+        <xsl:text>Display Widget id="</xsl:text>
+        <xsl:value-of select="$hmi_element/@id"/>
+        <xsl:text>" is not a svg::text element</xsl:text>
+      </xsl:message>
+    </xsl:if>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='DropDown']">
     <xsl:param name="hmi_element"/>
