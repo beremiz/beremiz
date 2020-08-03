@@ -38,9 +38,7 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     // Called when a menu entry is clicked
     on_selection_click: function(selection) {
         this.close();
-        let orig = this.indexes[0];
-        let idx = this.offset ? orig - this.offset : orig;
-        apply_hmi_value(idx, selection);
+        apply_hmi_value(this.get_idx(0), selection);
     },
     on_button_click: function() {
         this.open();

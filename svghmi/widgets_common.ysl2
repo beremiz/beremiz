@@ -105,6 +105,10 @@ emit "preamble:widget-base-class" {
             }
         }
 
+        get_idx(index) {
+             let orig = this.indexes[index];
+             return this.offset ? orig + this.offset : orig;
+        }
     }
     ||
 }
