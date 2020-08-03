@@ -191,7 +191,7 @@ subscribers[heartbeat_index].add({
     frequency: 1,
     indexes: [heartbeat_index],
     dispatch: function(value) {
-        change_hmi_value(heartbeat_index, "+1");
+        apply_hmi_value(heartbeat_index, value+1);
     }
 });
 

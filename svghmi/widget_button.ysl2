@@ -9,14 +9,14 @@ template "widget[@type='Button']", mode="widget_defs" {
     |         this.active_elt.setAttribute("style", this.active_style);
     |         this.inactive_elt.setAttribute("style", "display:none");
     |     }
-    |     change_hmi_value(this.indexes[0], "=1");
+    |     apply_hmi_value(this.get_idx(0), 1);
     | },
     | on_mouse_up: function(evt) {
     |     if (this.active_style && this.inactive_style) {
     |         this.active_elt.setAttribute("style", "display:none");
     |         this.inactive_elt.setAttribute("style", this.inactive_style);
     |     }
-    |     change_hmi_value(this.indexes[0], "=0");
+    |     apply_hmi_value(this.get_idx(0), 0);
     | },
     | active_style: undefined,
     | inactive_style: undefined,
