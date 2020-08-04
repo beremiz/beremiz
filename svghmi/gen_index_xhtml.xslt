@@ -1009,6 +1009,20 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    change_hmi_value(index,opstr) {
+</xsl:text>
+    <xsl:text>        return change_hmi_value(this.get_idx(index), opstr);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    apply_hmi_value(index, new_val) {
+</xsl:text>
+    <xsl:text>        return apply_hmi_value(this.get_idx(0), new_val);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1196,7 +1210,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    apply_hmi_value(this.get_idx(0), 1);
+    <xsl:text>    this.apply_hmi_value(0, 1);
 </xsl:text>
     <xsl:text>},
 </xsl:text>
@@ -1210,7 +1224,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    apply_hmi_value(this.get_idx(0), 0);
+    <xsl:text>    this.apply_hmi_value(0, 0);
 </xsl:text>
     <xsl:text>},
 </xsl:text>
@@ -1445,7 +1459,7 @@
 </xsl:text>
     <xsl:text>        this.close();
 </xsl:text>
-    <xsl:text>        apply_hmi_value(this.get_idx(0), selection);
+    <xsl:text>        this.apply_hmi_value(0, selection);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -2138,7 +2152,7 @@
 </xsl:text>
     <xsl:text>    on_op_click: function(opstr) {
 </xsl:text>
-    <xsl:text>        let new_val = change_hmi_value(this.get_idx(0), opstr);
+    <xsl:text>        let new_val = this.change_hmi_value(0, opstr);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -2154,7 +2168,7 @@
 </xsl:text>
     <xsl:text>    edit_callback: function(new_val) {
 </xsl:text>
-    <xsl:text>        apply_hmi_value(this.get_idx(0), new_val);
+    <xsl:text>        this.apply_hmi_value(0, new_val);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -2958,7 +2972,7 @@
 </xsl:text>
     <xsl:text>    on_click: function(evt) {
 </xsl:text>
-    <xsl:text>        change_hmi_value(this.indexes[0], "="+this.state);
+    <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>

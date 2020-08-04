@@ -18,7 +18,7 @@ template "widget[@type='ToggleButton']", mode="widget_defs" {
     |         }
     |     },
     |     on_click: function(evt) {
-    |         change_hmi_value(this.indexes[0], "="+this.state);
+    |         this.apply_hmi_value(0, this.state);
     |     },
     |     active_style: undefined,
     |     inactive_style: undefined,
