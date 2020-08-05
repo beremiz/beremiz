@@ -497,26 +497,22 @@
       <xsl:text>,
 </xsl:text>
     </xsl:if>
-    <xsl:text>    relative_widgets: [
+    <xsl:text>    widgets: [
 </xsl:text>
-    <xsl:for-each select="$page_relative_widgets">
-      <xsl:text>        hmi_widgets["</xsl:text>
+    <xsl:for-each select="$page_managed_widgets">
+      <xsl:variable name="widget_paths_relativeness">
+        <xsl:for-each select="func:widget(@id)/path">
+          <xsl:value-of select="func:is_descendant_path(@value, $desc/path/@value)"/>
+          <xsl:if test="position()!=last()">
+            <xsl:text>,</xsl:text>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:variable>
+      <xsl:text>        [hmi_widgets["</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>"]</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>    ],
-</xsl:text>
-    <xsl:text>    absolute_widgets: [
-</xsl:text>
-    <xsl:for-each select="$page_managed_widgets[not(@id = $page_relative_widgets/@id)]">
-      <xsl:text>        hmi_widgets["</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>"]</xsl:text>
+      <xsl:text>"], [</xsl:text>
+      <xsl:value-of select="$widget_paths_relativeness"/>
+      <xsl:text>]]</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -947,33 +943,49 @@
 </xsl:text>
     <xsl:text>        /* remove subsribers */
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
+    <xsl:text>        if(!this.unsubscribable)
 </xsl:text>
-    <xsl:text>            let idx = index + this.offset;
+    <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
-    <xsl:text>            subscribers[idx].delete(this);
+    <xsl:text>                let index = this.indexes[i];
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>                if(this.relativeness[i])
+</xsl:text>
+    <xsl:text>                    index += this.offset;
+</xsl:text>
+    <xsl:text>                subscribers[index].delete(this);
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        this.offset = 0;
+</xsl:text>
+    <xsl:text>        this.relativeness = undefined;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    sub(new_offset=0){
-</xsl:text>
-    <xsl:text>        /* set the offset because relative */
+    <xsl:text>    sub(new_offset=0, relativeness){
 </xsl:text>
     <xsl:text>        this.offset = new_offset;
 </xsl:text>
+    <xsl:text>        this.relativeness = relativeness;
+</xsl:text>
     <xsl:text>        /* add this's subsribers */
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
+    <xsl:text>        if(!this.unsubscribable)
 </xsl:text>
-    <xsl:text>            subscribers[index + new_offset].add(this);
+    <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>                let index = this.indexes[i];
+</xsl:text>
+    <xsl:text>                if(relativeness[i])
+</xsl:text>
+    <xsl:text>                    index += new_offset;
+</xsl:text>
+    <xsl:text>                subscribers[index].add(this);
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        need_cache_apply.push(this); 
 </xsl:text>
@@ -993,7 +1005,7 @@
 </xsl:text>
     <xsl:text>            if(cached_val != undefined)
 </xsl:text>
-    <xsl:text>                dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+    <xsl:text>                this.new_hmi_value(realindex, cached_val, cached_val);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -1005,7 +1017,7 @@
 </xsl:text>
     <xsl:text>         let orig = this.indexes[index];
 </xsl:text>
-    <xsl:text>         return this.offset ? orig + this.offset : orig;
+    <xsl:text>         return this.relativeness[index] ? orig + this.offset : orig;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1020,6 +1032,62 @@
     <xsl:text>    apply_hmi_value(index, new_val) {
 </xsl:text>
     <xsl:text>        return apply_hmi_value(this.get_idx(0), new_val);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    new_hmi_value(index, value, oldval) {
+</xsl:text>
+    <xsl:text>        try {
+</xsl:text>
+    <xsl:text>            // TODO avoid searching, store index at sub()
+</xsl:text>
+    <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
+</xsl:text>
+    <xsl:text>                let refindex = this.indexes[i];
+</xsl:text>
+    <xsl:text>                if(this.relativeness[i])
+</xsl:text>
+    <xsl:text>                    refindex += this.offset;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                if(index == refindex) {
+</xsl:text>
+    <xsl:text>                    let d = this.dispatch;
+</xsl:text>
+    <xsl:text>                    if(typeof(d) == "function"){
+</xsl:text>
+    <xsl:text>                        d.call(this, value, oldval, i);
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                    else if(typeof(d) == "object"){
+</xsl:text>
+    <xsl:text>                        d[i].call(this, value, oldval);
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                    /* else dispatch_0, ..., dispatch_n ? */
+</xsl:text>
+    <xsl:text>                    /*else {
+</xsl:text>
+    <xsl:text>                        throw new Error("Dunno how to dispatch to widget at index = " + index);
+</xsl:text>
+    <xsl:text>                    }*/
+</xsl:text>
+    <xsl:text>                    break;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        } catch(err) {
+</xsl:text>
+    <xsl:text>            console.log(err);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1892,6 +1960,20 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
     <xsl:param name="hmi_element"/>
+    <xsl:if test="count(path) != 1">
+      <xsl:message terminate="yes">
+        <xsl:text>ForEach widget </xsl:text>
+        <xsl:value-of select="$hmi_element/@id"/>
+        <xsl:text> must have one HMI path given.</xsl:text>
+      </xsl:message>
+    </xsl:if>
+    <xsl:if test="count(arg) != 1">
+      <xsl:message terminate="yes">
+        <xsl:text>ForEach widget </xsl:text>
+        <xsl:value-of select="$hmi_element/@id"/>
+        <xsl:text> must have one argument given : a class name.</xsl:text>
+      </xsl:message>
+    </xsl:if>
     <xsl:variable name="class" select="arg[1]/@value"/>
     <xsl:variable name="base_path" select="path/@value"/>
     <xsl:variable name="hmi_index_base" select="$indexed_hmitree/*[@hmipath = $base_path]"/>
@@ -1993,7 +2075,9 @@
   <xsl:template mode="widget_class" match="widget[@type='ForEach']">
     <xsl:text>class ForEachWidget extends Widget{
 </xsl:text>
-    <xsl:text>    unsub(){
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    unsub_items(){
 </xsl:text>
     <xsl:text>        for(let item of this.items){
 </xsl:text>
@@ -2005,13 +2089,23 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    unsub(){
+</xsl:text>
+    <xsl:text>        this.unsub_items();
+</xsl:text>
     <xsl:text>        this.offset = 0;
+</xsl:text>
+    <xsl:text>        this.relativeness = undefined;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    foreach_widgets_do(todo){
+    <xsl:text>    sub_items(){
 </xsl:text>
     <xsl:text>        for(let i = 0; i &lt; this.items.length; i++) {
 </xsl:text>
@@ -2023,9 +2117,23 @@
 </xsl:text>
     <xsl:text>            let item_index_offset = item_index - orig_item_index;
 </xsl:text>
+    <xsl:text>            if(this.relativeness[0])
+</xsl:text>
+    <xsl:text>                item_index_offset += this.offset;
+</xsl:text>
     <xsl:text>            for(let widget of item) {
 </xsl:text>
-    <xsl:text>                todo(widget).call(widget, this.offset + item_index_offset);
+    <xsl:text>                /* all variables of all widgets in a ForEach are all relative. 
+</xsl:text>
+    <xsl:text>                   Really.
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                   TODO: allow absolute variables in ForEach widgets
+</xsl:text>
+    <xsl:text>                */
+</xsl:text>
+    <xsl:text>                widget.sub(item_index_offset, widget.indexes.map(_=&gt;true));
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -2035,11 +2143,13 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    sub(new_offset=0){
+    <xsl:text>    sub(new_offset=0, relativeness=[]){
 </xsl:text>
     <xsl:text>        this.offset = new_offset;
 </xsl:text>
-    <xsl:text>        this.foreach_widgets_do(w=&gt;w.sub);
+    <xsl:text>        this.relativeness = relativeness;
+</xsl:text>
+    <xsl:text>        this.sub_items();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2047,7 +2157,7 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        this.foreach_widgets_do(w=&gt;w.apply_cache);
+    <xsl:text>        this.items.forEach(item=&gt;item.forEach(widget=&gt;widget.apply_cache()));
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2081,9 +2191,9 @@
 </xsl:text>
     <xsl:text>        this.item_offset = new_item_offset;
 </xsl:text>
-    <xsl:text>        this.unsub();
+    <xsl:text>        this.unsub_items();
 </xsl:text>
-    <xsl:text>        this.sub(this.offset);
+    <xsl:text>        this.sub_items();
 </xsl:text>
     <xsl:text>        update_subscriptions();
 </xsl:text>
@@ -3049,44 +3159,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function dispatch_value_to_widget(widget, index, value, oldval) {
-</xsl:text>
-          <xsl:text>    try {
-</xsl:text>
-          <xsl:text>        let idx = widget.offset ? index - widget.offset : index;
-</xsl:text>
-          <xsl:text>        let idxidx = widget.indexes.indexOf(idx);
-</xsl:text>
-          <xsl:text>        let d = widget.dispatch;
-</xsl:text>
-          <xsl:text>        if(typeof(d) == "function" &amp;&amp; idxidx == 0){
-</xsl:text>
-          <xsl:text>            d.call(widget, value, oldval);
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>        else if(typeof(d) == "object" &amp;&amp; d.length &gt;= idxidx){
-</xsl:text>
-          <xsl:text>            d[idxidx].call(widget, value, oldval);
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>        /* else dispatch_0, ..., dispatch_n ? */
-</xsl:text>
-          <xsl:text>        /*else {
-</xsl:text>
-          <xsl:text>            throw new Error("Dunno how to dispatch to widget at index = " + index);
-</xsl:text>
-          <xsl:text>        }*/
-</xsl:text>
-          <xsl:text>    } catch(err) {
-</xsl:text>
-          <xsl:text>        console.log(err);
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>function dispatch_value(index, value) {
@@ -3105,7 +3177,7 @@
 </xsl:text>
           <xsl:text>        for(let widget of widgets){
 </xsl:text>
-          <xsl:text>            dispatch_value_to_widget(widget, index, value, oldval);
+          <xsl:text>            widget.new_hmi_value(index, value, oldval);
 </xsl:text>
           <xsl:text>        }
 </xsl:text>
@@ -3421,7 +3493,7 @@
 </xsl:text>
           <xsl:text>    indexes: [heartbeat_index],
 </xsl:text>
-          <xsl:text>    dispatch: function(value) {
+          <xsl:text>    new_hmi_value: function(index, value, oldval) {
 </xsl:text>
           <xsl:text>        apply_hmi_value(heartbeat_index, value+1);
 </xsl:text>
@@ -3687,17 +3759,13 @@
 </xsl:text>
           <xsl:text>    if(old_desc){
 </xsl:text>
-          <xsl:text>        old_desc.absolute_widgets.map(w=&gt;w.unsub());
-</xsl:text>
-          <xsl:text>        old_desc.relative_widgets.map(w=&gt;w.unsub());
+          <xsl:text>        old_desc.widgets.map(([widget,relativeness])=&gt;widget.unsub());
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
-          <xsl:text>    new_desc.absolute_widgets.map(w=&gt;w.sub());
-</xsl:text>
           <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
 </xsl:text>
-          <xsl:text>    new_desc.relative_widgets.map(w=&gt;w.sub(new_offset));
+          <xsl:text>    new_desc.widgets.map(([widget,relativeness])=&gt;widget.sub(new_offset,relativeness));
 </xsl:text>
           <xsl:text>
 </xsl:text>

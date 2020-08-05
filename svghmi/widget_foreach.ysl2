@@ -2,6 +2,9 @@
 template "widget[@type='ForEach']", mode="widget_defs" {
     param "hmi_element";
 
+    if "count(path) != 1" error > ForEach widget «$hmi_element/@id» must have one HMI path given.
+    if "count(arg) != 1" error > ForEach widget «$hmi_element/@id» must have one argument given : a class name.
+
     const "class","arg[1]/@value";
 
     const "base_path","path/@value";
@@ -49,34 +52,48 @@ template "widget[@type='ForEach']", mode="widget_defs" {
 template "widget[@type='ForEach']", mode="widget_class"
 ||
 class ForEachWidget extends Widget{
-    unsub(){
+
+    unsub_items(){
         for(let item of this.items){
             for(let widget of item) {
                 widget.unsub();
             }
         }
-        this.offset = 0;
     }
 
-    foreach_widgets_do(todo){
+    unsub(){
+        this.unsub_items();
+        this.offset = 0;
+        this.relativeness = undefined;
+    }
+
+    sub_items(){
         for(let i = 0; i < this.items.length; i++) {
             let item = this.items[i];
             let orig_item_index = this.index_pool[i];
             let item_index = this.index_pool[i+this.item_offset];
             let item_index_offset = item_index - orig_item_index;
+            if(this.relativeness[0])
+                item_index_offset += this.offset;
             for(let widget of item) {
-                todo(widget).call(widget, this.offset + item_index_offset);
+                /* all variables of all widgets in a ForEach are all relative. 
+                   Really.
+
+                   TODO: allow absolute variables in ForEach widgets
+                */
+                widget.sub(item_index_offset, widget.indexes.map(_=>true));
             }
         }
     }
 
-    sub(new_offset=0){
+    sub(new_offset=0, relativeness=[]){
         this.offset = new_offset;
-        this.foreach_widgets_do(w=>w.sub);
+        this.relativeness = relativeness;
+        this.sub_items();
     }
 
     apply_cache() {
-        this.foreach_widgets_do(w=>w.apply_cache);
+        this.items.forEach(item=>item.forEach(widget=>widget.apply_cache()));
     }
 
     on_click(opstr, evt) {
@@ -93,8 +110,8 @@ class ForEachWidget extends Widget{
                 new_item_offset = 0;
         }
         this.item_offset = new_item_offset;
-        this.unsub();
-        this.sub(this.offset);
+        this.unsub_items();
+        this.sub_items();
         update_subscriptions();
         need_cache_apply.push(this);
         jumps_need_update = true;

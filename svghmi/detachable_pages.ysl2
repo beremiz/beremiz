@@ -138,14 +138,14 @@ template "svg:*", mode="page_desc" {
             warning > Page id="«$page/@id»" : No match for path "«$desc/path/@value»" in HMI tree
     |     page_index: «$desc/path/@index»,
     }
-    |     relative_widgets: [
-    foreach "$page_relative_widgets" {
-    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
-    }
-    |     ],
-    |     absolute_widgets: [
-    foreach "$page_managed_widgets[not(@id = $page_relative_widgets/@id)]" {
-    |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
+    |     widgets: [
+    foreach "$page_managed_widgets" {
+        const "widget_paths_relativeness" 
+            foreach "func:widget(@id)/path" {
+                value "func:is_descendant_path(@value, $desc/path/@value)";
+                if "position()!=last()" > ,
+            }
+    |         [hmi_widgets["«@id»"], [«$widget_paths_relativeness»]]`if "position()!=last()" > ,`
     }
     |     ],
     |     jumps: [

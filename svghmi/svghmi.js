@@ -323,12 +323,10 @@ function switch_page(page_name, page_index) {
     }
 
     if(old_desc){
-        old_desc.absolute_widgets.map(w=>w.unsub());
-        old_desc.relative_widgets.map(w=>w.unsub());
+        old_desc.widgets.map(([widget,relativeness])=>widget.unsub());
     }
-    new_desc.absolute_widgets.map(w=>w.sub());
     var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
-    new_desc.relative_widgets.map(w=>w.sub(new_offset));
+    new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness));
 
     update_subscriptions();
 
