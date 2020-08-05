@@ -4,25 +4,6 @@ var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
 var need_cache_apply = []; 
 
-function dispatch_value_to_widget(widget, index, value, oldval) {
-    try {
-        let idx = widget.offset ? index - widget.offset : index;
-        let idxidx = widget.indexes.indexOf(idx);
-        let d = widget.dispatch;
-        if(typeof(d) == "function" && idxidx == 0){
-            d.call(widget, value, oldval);
-        }
-        else if(typeof(d) == "object" && d.length >= idxidx){
-            d[idxidx].call(widget, value, oldval);
-        }
-        /* else dispatch_0, ..., dispatch_n ? */
-        /*else {
-            throw new Error("Dunno how to dispatch to widget at index = " + index);
-        }*/
-    } catch(err) {
-        console.log(err);
-    }
-}
 
 function dispatch_value(index, value) {
     let widgets = subscribers[index];
@@ -32,7 +13,7 @@ function dispatch_value(index, value) {
 
     if(widgets.size > 0) {
         for(let widget of widgets){
-            dispatch_value_to_widget(widget, index, value, oldval);
+            widget.new_hmi_value(index, value, oldval);
         }
     }
 };
@@ -190,7 +171,7 @@ subscribers[heartbeat_index].add({
     /* type: "Watchdog", */
     frequency: 1,
     indexes: [heartbeat_index],
-    dispatch: function(value) {
+    new_hmi_value: function(index, value, oldval) {
         apply_hmi_value(heartbeat_index, value+1);
     }
 });
