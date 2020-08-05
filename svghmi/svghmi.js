@@ -395,26 +395,31 @@ ws.onclose = function (evt) {
 
 var xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
-function edit_value(path, valuetype, callback, initial) {
+function edit_value(path, valuetype, callback, initial, size) {
 
     let [keypadid, xcoord, ycoord] = keypads[valuetype];
     console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
     edit_callback = callback;
     let widget = hmi_widgets[keypadid];
-    widget.start_edit(path, valuetype, callback, initial);
+    widget.start_edit(path, valuetype, callback, initial, size);
 };
 
 var current_modal; /* TODO stack ?*/
 
-function show_modal() {
+function show_modal(size) {
     let [element, parent] = detachable_elements[this.element.id];
 
     tmpgrp = document.createElementNS(xmlns,"g");
     tmpgrpattr = document.createAttribute("transform");
-
     let [xcoord,ycoord] = this.coordinates;
     let [xdest,ydest] = page_desc[current_visible_page].bbox;
-    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+    if (typeof size === 'undefined'){
+        tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+    }
+    else{
+        tmpgrpattr.value = "translate("+String(xdest-xcoord+size.x)+","+String(ydest-ycoord+size.y)+")";
+    }
+
     tmpgrp.setAttributeNode(tmpgrpattr);
 
     tmpgrp.appendChild(element);
