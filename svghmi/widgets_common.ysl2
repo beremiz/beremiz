@@ -109,7 +109,7 @@ emit "preamble:widget-base-class" {
                 let realindex = index+this.offset;
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
-                    dispatch_value_to_widget(this, realindex, cached_val, cached_val);
+                    this.new_hmi_value(realindex, cached_val, cached_val);
             }
         }
 
@@ -123,6 +123,34 @@ emit "preamble:widget-base-class" {
 
         apply_hmi_value(index, new_val) {
             return apply_hmi_value(this.get_idx(0), new_val);
+        }
+
+        new_hmi_value(index, value, oldval) {
+            try {
+                // TODO avoid searching, store index at sub()
+                for(let i = 0; i < this.indexes.length; i++) {
+                    let refindex = this.indexes[i];
+                    if(this.relativeness[i])
+                        refindex += this.offset;
+
+                    if(index == refindex) {
+                        let d = this.dispatch;
+                        if(typeof(d) == "function"){
+                            d.call(this, value, oldval, i);
+                        }
+                        else if(typeof(d) == "object"){
+                            d[i].call(this, value, oldval);
+                        }
+                        /* else dispatch_0, ..., dispatch_n ? */
+                        /*else {
+                            throw new Error("Dunno how to dispatch to widget at index = " + index);
+                        }*/
+                        break;
+                    }
+                }
+            } catch(err) {
+                console.log(err);
+            }
         }
     }
     ||
