@@ -78,20 +78,28 @@ emit "preamble:widget-base-class" {
 
         unsub(){
             /* remove subsribers */
-            if(!this.unsubscribable) for(let index of this.indexes){
-                let idx = index + this.offset;
-                subscribers[idx].delete(this);
-            }
+            if(!this.unsubscribable)
+                for(let i = 0; i < this.indexes.length; i++) {
+                    let index = this.indexes[i];
+                    if(this.relativeness[i])
+                        index += this.offset;
+                    subscribers[index].delete(this);
+                }
             this.offset = 0;
+            this.relativeness = undefined;
         }
 
-        sub(new_offset=0){
-            /* set the offset because relative */
+        sub(new_offset=0, relativeness){
             this.offset = new_offset;
+            this.relativeness = relativeness;
             /* add this's subsribers */
-            if(!this.unsubscribable) for(let index of this.indexes){
-                subscribers[index + new_offset].add(this);
-            }
+            if(!this.unsubscribable)
+                for(let i = 0; i < this.indexes.length; i++) {
+                    let index = this.indexes[i];
+                    if(relativeness[i])
+                        index += new_offset;
+                    subscribers[index].add(this);
+                }
             need_cache_apply.push(this); 
         }
 
@@ -107,7 +115,7 @@ emit "preamble:widget-base-class" {
 
         get_idx(index) {
              let orig = this.indexes[index];
-             return this.offset ? orig + this.offset : orig;
+             return this.relativeness[index] ? orig + this.offset : orig;
         }
         change_hmi_value(index,opstr) {
             return change_hmi_value(this.get_idx(index), opstr);
