@@ -156,7 +156,7 @@ emit "preamble:widget-base-class" {
     ||
 }
 
-emit "preamble:hmi-classes" {
+emit "declarations:hmi-classes" {
     const "used_widget_types", "func:unique_types($parsed_widgets/widget)";
     apply "$used_widget_types", mode="widget_class";
 }
@@ -171,7 +171,7 @@ class «@type»Widget extends Widget{
 const "excluded_types", "str:split('Page Lang')";
 const "excluded_ids","$parsed_widgets/widget[not(@type = $excluded_types)]/@id";
 
-emit "preamble:hmi-elements" {
+emit "declarations:hmi-elements" {
     | var hmi_widgets = {
     apply  "$hmi_elements[@id = $excluded_ids]", mode="hmi_widgets";
     | }

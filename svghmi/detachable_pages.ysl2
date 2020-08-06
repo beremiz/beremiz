@@ -168,7 +168,7 @@ template "svg:*", mode="page_desc" {
     |   }`if "position()!=last()" > ,`
 }
 
-emit "declarations:page-desc" {
+emit "definitions:page-desc" {
     |
     | var page_desc = {
     apply "$hmi_pages", mode="page_desc";
