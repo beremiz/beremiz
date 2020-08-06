@@ -167,16 +167,16 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g6077"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="1970.3359"
-     inkscape:cy="368.15797"
+     inkscape:zoom="0.7071068"
+     inkscape:cx="543.82641"
+     inkscape:cy="218.7845"
      inkscape:window-width="2419"
      inkscape:window-height="1266"
-     inkscape:window-x="1197"
-     inkscape:window-y="563"
+     inkscape:window-x="1405"
+     inkscape:window-y="37"
      inkscape:window-maximized="0"
      showguides="true"
      inkscape:guide-bbox="true" />
@@ -4200,4 +4200,28 @@
            sodipodi:role="line">-1</tspan></text>
     </g>
   </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:59.01374435px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#82ff77;fill-opacity:1;stroke:none;stroke-width:0.3688359px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="729.9715"
+     y="539.24927"
+     id="text995-6"
+     inkscape:label="HMI:Display:Ploc %d (%d) grmbl !@/PUMP0/PRESSURE@/PUMP0/SLOTH"><tspan
+       sodipodi:role="line"
+       id="tspan993-3"
+       x="729.9715"
+       y="539.24927"
+       style="text-align:center;text-anchor:middle;fill:#82ff77;fill-opacity:1;stroke-width:0.3688359px">8888</tspan></text>
+  <text
+     id="text831-1"
+     y="477.76758"
+     x="621.62634"
+     style="font-style:normal;font-weight:normal;font-size:25.4761734px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#008000;fill-opacity:1;stroke:none;stroke-width:0.63690436px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     xml:space="preserve"
+     inkscape:label="actual_label"><tspan
+       y="477.76758"
+       x="621.62634"
+       id="tspan829-7"
+       sodipodi:role="line"
+       style="stroke-width:0.63690436px">Multiple variables</tspan></text>
 </svg>

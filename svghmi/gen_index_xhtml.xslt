@@ -569,8 +569,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <declarations:page-desc/>
-  <xsl:template match="declarations:page-desc">
+  <definitions:page-desc/>
+  <xsl:template match="definitions:page-desc">
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1096,8 +1096,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <preamble:hmi-classes/>
-  <xsl:template match="preamble:hmi-classes">
+  <declarations:hmi-classes/>
+  <xsl:template match="declarations:hmi-classes">
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1125,8 +1125,8 @@
   </xsl:template>
   <xsl:variable name="excluded_types" select="str:split('Page Lang')"/>
   <xsl:variable name="excluded_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
-  <preamble:hmi-elements/>
-  <xsl:template match="preamble:hmi-elements">
+  <declarations:hmi-elements/>
+  <xsl:template match="declarations:hmi-elements">
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1426,9 +1426,13 @@
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
-    <xsl:text>    dispatch(value) {
+    <xsl:text>    dispatch(value, oldval, index) {
 </xsl:text>
-    <xsl:text>        this.element.textContent = String(value);
+    <xsl:text>        this.fields[index] = value;    
+</xsl:text>
+    <xsl:text>        console.log(value, index);
+</xsl:text>
+    <xsl:text>        this.element.textContent = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1444,6 +1448,487 @@
         <xsl:text>" is not a svg::text element</xsl:text>
       </xsl:message>
     </xsl:if>
+    <xsl:text>    fields: [],
+</xsl:text>
+  </xsl:template>
+  <preamble:display/>
+  <xsl:template match="preamble:display">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* https://github.com/alexei/sprintf.js/blob/master/src/sprintf.js */
+</xsl:text>
+    <xsl:text>/* global window, exports, define */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>!function() {
+</xsl:text>
+    <xsl:text>    'use strict'
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    var re = {
+</xsl:text>
+    <xsl:text>        not_string: /[^s]/,
+</xsl:text>
+    <xsl:text>        not_bool: /[^t]/,
+</xsl:text>
+    <xsl:text>        not_type: /[^T]/,
+</xsl:text>
+    <xsl:text>        not_primitive: /[^v]/,
+</xsl:text>
+    <xsl:text>        number: /[diefg]/,
+</xsl:text>
+    <xsl:text>        numeric_arg: /[bcdiefguxX]/,
+</xsl:text>
+    <xsl:text>        json: /[j]/,
+</xsl:text>
+    <xsl:text>        not_json: /[^j]/,
+</xsl:text>
+    <xsl:text>        text: /^[^%]+/,
+</xsl:text>
+    <xsl:text>        modulo: /^%{2}/,
+</xsl:text>
+    <xsl:text>        placeholder: /^%(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
+</xsl:text>
+    <xsl:text>        key: /^([a-z_][a-z_\d]*)/i,
+</xsl:text>
+    <xsl:text>        key_access: /^\.([a-z_][a-z_\d]*)/i,
+</xsl:text>
+    <xsl:text>        index_access: /^\[(\d+)\]/,
+</xsl:text>
+    <xsl:text>        sign: /^[+-]/
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    function sprintf(key) {
+</xsl:text>
+    <xsl:text>        // </xsl:text>
+    <arguments/>
+    <xsl:text> is not an array, but should be fine for this call
+</xsl:text>
+    <xsl:text>        return sprintf_format(sprintf_parse(key), arguments)
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    function vsprintf(fmt, argv) {
+</xsl:text>
+    <xsl:text>        return sprintf.apply(null, [fmt].concat(argv || []))
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    function sprintf_format(parse_tree, argv) {
+</xsl:text>
+    <xsl:text>        var cursor = 1, tree_length = parse_tree.length, arg, output = '', i, k, ph, pad, pad_character, pad_length, is_positive, sign
+</xsl:text>
+    <xsl:text>        for (i = 0; i &lt; tree_length; i++) {
+</xsl:text>
+    <xsl:text>            if (typeof parse_tree[i] === 'string') {
+</xsl:text>
+    <xsl:text>                output += parse_tree[i]
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else if (typeof parse_tree[i] === 'object') {
+</xsl:text>
+    <xsl:text>                ph = parse_tree[i] // convenience purposes only
+</xsl:text>
+    <xsl:text>                if (ph.keys) { // keyword argument
+</xsl:text>
+    <xsl:text>                    arg = argv[cursor]
+</xsl:text>
+    <xsl:text>                    for (k = 0; k &lt; ph.keys.length; k++) {
+</xsl:text>
+    <xsl:text>                        if (arg == undefined) {
+</xsl:text>
+    <xsl:text>                            throw new Error(sprintf('[sprintf] Cannot access property "%s" of undefined value "%s"', ph.keys[k], ph.keys[k-1]))
+</xsl:text>
+    <xsl:text>                        }
+</xsl:text>
+    <xsl:text>                        arg = arg[ph.keys[k]]
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else if (ph.param_no) { // positional argument (explicit)
+</xsl:text>
+    <xsl:text>                    arg = argv[ph.param_no]
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else { // positional argument (implicit)
+</xsl:text>
+    <xsl:text>                    arg = argv[cursor++]
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                if (re.not_type.test(ph.type) &amp;&amp; re.not_primitive.test(ph.type) &amp;&amp; arg instanceof Function) {
+</xsl:text>
+    <xsl:text>                    arg = arg()
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                if (re.numeric_arg.test(ph.type) &amp;&amp; (typeof arg !== 'number' &amp;&amp; isNaN(arg))) {
+</xsl:text>
+    <xsl:text>                    throw new TypeError(sprintf('[sprintf] expecting number but found %T', arg))
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                if (re.number.test(ph.type)) {
+</xsl:text>
+    <xsl:text>                    is_positive = arg &gt;= 0
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                switch (ph.type) {
+</xsl:text>
+    <xsl:text>                    case 'b':
+</xsl:text>
+    <xsl:text>                        arg = parseInt(arg, 10).toString(2)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'c':
+</xsl:text>
+    <xsl:text>                        arg = String.fromCharCode(parseInt(arg, 10))
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'd':
+</xsl:text>
+    <xsl:text>                    case 'i':
+</xsl:text>
+    <xsl:text>                        arg = parseInt(arg, 10)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'j':
+</xsl:text>
+    <xsl:text>                        arg = JSON.stringify(arg, null, ph.width ? parseInt(ph.width) : 0)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'e':
+</xsl:text>
+    <xsl:text>                        arg = ph.precision ? parseFloat(arg).toExponential(ph.precision) : parseFloat(arg).toExponential()
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'f':
+</xsl:text>
+    <xsl:text>                        arg = ph.precision ? parseFloat(arg).toFixed(ph.precision) : parseFloat(arg)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'g':
+</xsl:text>
+    <xsl:text>                        arg = ph.precision ? String(Number(arg.toPrecision(ph.precision))) : parseFloat(arg)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'o':
+</xsl:text>
+    <xsl:text>                        arg = (parseInt(arg, 10) &gt;&gt;&gt; 0).toString(8)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 's':
+</xsl:text>
+    <xsl:text>                        arg = String(arg)
+</xsl:text>
+    <xsl:text>                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 't':
+</xsl:text>
+    <xsl:text>                        arg = String(!!arg)
+</xsl:text>
+    <xsl:text>                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'T':
+</xsl:text>
+    <xsl:text>                        arg = Object.prototype.toString.call(arg).slice(8, -1).toLowerCase()
+</xsl:text>
+    <xsl:text>                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'u':
+</xsl:text>
+    <xsl:text>                        arg = parseInt(arg, 10) &gt;&gt;&gt; 0
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'v':
+</xsl:text>
+    <xsl:text>                        arg = arg.valueOf()
+</xsl:text>
+    <xsl:text>                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'x':
+</xsl:text>
+    <xsl:text>                        arg = (parseInt(arg, 10) &gt;&gt;&gt; 0).toString(16)
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                    case 'X':
+</xsl:text>
+    <xsl:text>                        arg = (parseInt(arg, 10) &gt;&gt;&gt; 0).toString(16).toUpperCase()
+</xsl:text>
+    <xsl:text>                        break
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                if (re.json.test(ph.type)) {
+</xsl:text>
+    <xsl:text>                    output += arg
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else {
+</xsl:text>
+    <xsl:text>                    if (re.number.test(ph.type) &amp;&amp; (!is_positive || ph.sign)) {
+</xsl:text>
+    <xsl:text>                        sign = is_positive ? '+' : '-'
+</xsl:text>
+    <xsl:text>                        arg = arg.toString().replace(re.sign, '')
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                    else {
+</xsl:text>
+    <xsl:text>                        sign = ''
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                    pad_character = ph.pad_char ? ph.pad_char === '0' ? '0' : ph.pad_char.charAt(1) : ' '
+</xsl:text>
+    <xsl:text>                    pad_length = ph.width - (sign + arg).length
+</xsl:text>
+    <xsl:text>                    pad = ph.width ? (pad_length &gt; 0 ? pad_character.repeat(pad_length) : '') : ''
+</xsl:text>
+    <xsl:text>                    output += ph.align ? sign + arg + pad : (pad_character === '0' ? sign + pad + arg : pad + sign + arg)
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return output
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    var sprintf_cache = Object.create(null)
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    function sprintf_parse(fmt) {
+</xsl:text>
+    <xsl:text>        if (sprintf_cache[fmt]) {
+</xsl:text>
+    <xsl:text>            return sprintf_cache[fmt]
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        var _fmt = fmt, match, parse_tree = [], arg_names = 0
+</xsl:text>
+    <xsl:text>        while (_fmt) {
+</xsl:text>
+    <xsl:text>            if ((match = re.text.exec(_fmt)) !== null) {
+</xsl:text>
+    <xsl:text>                parse_tree.push(match[0])
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else if ((match = re.modulo.exec(_fmt)) !== null) {
+</xsl:text>
+    <xsl:text>                parse_tree.push('%')
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else if ((match = re.placeholder.exec(_fmt)) !== null) {
+</xsl:text>
+    <xsl:text>                if (match[2]) {
+</xsl:text>
+    <xsl:text>                    arg_names |= 1
+</xsl:text>
+    <xsl:text>                    var field_list = [], replacement_field = match[2], field_match = []
+</xsl:text>
+    <xsl:text>                    if ((field_match = re.key.exec(replacement_field)) !== null) {
+</xsl:text>
+    <xsl:text>                        field_list.push(field_match[1])
+</xsl:text>
+    <xsl:text>                        while ((replacement_field = replacement_field.substring(field_match[0].length)) !== '') {
+</xsl:text>
+    <xsl:text>                            if ((field_match = re.key_access.exec(replacement_field)) !== null) {
+</xsl:text>
+    <xsl:text>                                field_list.push(field_match[1])
+</xsl:text>
+    <xsl:text>                            }
+</xsl:text>
+    <xsl:text>                            else if ((field_match = re.index_access.exec(replacement_field)) !== null) {
+</xsl:text>
+    <xsl:text>                                field_list.push(field_match[1])
+</xsl:text>
+    <xsl:text>                            }
+</xsl:text>
+    <xsl:text>                            else {
+</xsl:text>
+    <xsl:text>                                throw new SyntaxError('[sprintf] failed to parse named argument key')
+</xsl:text>
+    <xsl:text>                            }
+</xsl:text>
+    <xsl:text>                        }
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                    else {
+</xsl:text>
+    <xsl:text>                        throw new SyntaxError('[sprintf] failed to parse named argument key')
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                    match[2] = field_list
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else {
+</xsl:text>
+    <xsl:text>                    arg_names |= 2
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                if (arg_names === 3) {
+</xsl:text>
+    <xsl:text>                    throw new Error('[sprintf] mixing positional and named placeholders is not (yet) supported')
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                parse_tree.push(
+</xsl:text>
+    <xsl:text>                    {
+</xsl:text>
+    <xsl:text>                        placeholder: match[0],
+</xsl:text>
+    <xsl:text>                        param_no:    match[1],
+</xsl:text>
+    <xsl:text>                        keys:        match[2],
+</xsl:text>
+    <xsl:text>                        sign:        match[3],
+</xsl:text>
+    <xsl:text>                        pad_char:    match[4],
+</xsl:text>
+    <xsl:text>                        align:       match[5],
+</xsl:text>
+    <xsl:text>                        width:       match[6],
+</xsl:text>
+    <xsl:text>                        precision:   match[7],
+</xsl:text>
+    <xsl:text>                        type:        match[8]
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                )
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else {
+</xsl:text>
+    <xsl:text>                throw new SyntaxError('[sprintf] unexpected placeholder')
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            _fmt = _fmt.substring(match[0].length)
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return sprintf_cache[fmt] = parse_tree
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    /**
+</xsl:text>
+    <xsl:text>     * export to either browser or node.js
+</xsl:text>
+    <xsl:text>     */
+</xsl:text>
+    <xsl:text>    /* eslint-disable quote-props */
+</xsl:text>
+    <xsl:text>    if (typeof exports !== 'undefined') {
+</xsl:text>
+    <xsl:text>        exports['sprintf'] = sprintf
+</xsl:text>
+    <xsl:text>        exports['vsprintf'] = vsprintf
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    if (typeof window !== 'undefined') {
+</xsl:text>
+    <xsl:text>        window['sprintf'] = sprintf
+</xsl:text>
+    <xsl:text>        window['vsprintf'] = vsprintf
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if (typeof define === 'function' &amp;&amp; define['amd']) {
+</xsl:text>
+    <xsl:text>            define(function() {
+</xsl:text>
+    <xsl:text>                return {
+</xsl:text>
+    <xsl:text>                    'sprintf': sprintf,
+</xsl:text>
+    <xsl:text>                    'vsprintf': vsprintf
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            })
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    /* eslint-enable quote-props */
+</xsl:text>
+    <xsl:text>}(); // eslint-disable-line    
+</xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='DropDown']">
     <xsl:param name="hmi_element"/>
