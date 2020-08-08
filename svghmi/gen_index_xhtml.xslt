@@ -169,14 +169,30 @@
               </xsl:attribute>
               <xsl:variable name="path" select="."/>
               <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
-              <xsl:if test="count($item) = 1">
-                <xsl:attribute name="index">
-                  <xsl:value-of select="$item/@index"/>
-                </xsl:attribute>
-                <xsl:attribute name="type">
-                  <xsl:value-of select="local-name($item)"/>
-                </xsl:attribute>
-              </xsl:if>
+              <xsl:choose>
+                <xsl:when test="count($item) = 1">
+                  <xsl:attribute name="index">
+                    <xsl:value-of select="$item/@index"/>
+                  </xsl:attribute>
+                  <xsl:attribute name="type">
+                    <xsl:value-of select="local-name($item)"/>
+                  </xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:choose>
+                    <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+')">
+                      <xsl:attribute name="type">
+                        <xsl:text>PAGE_LOCAL</xsl:text>
+                      </xsl:attribute>
+                    </xsl:when>
+                    <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+')">
+                      <xsl:attribute name="type">
+                        <xsl:text>HMI_LOCAL</xsl:text>
+                      </xsl:attribute>
+                    </xsl:when>
+                  </xsl:choose>
+                </xsl:otherwise>
+              </xsl:choose>
             </path>
           </xsl:if>
         </xsl:for-each>
@@ -845,15 +861,35 @@
       <xsl:for-each select="$widget/path">
         <xsl:choose>
           <xsl:when test="not(@index)">
-            <xsl:message terminate="no">
-              <xsl:text>Widget </xsl:text>
-              <xsl:value-of select="$widget/@type"/>
-              <xsl:text> id="</xsl:text>
-              <xsl:value-of select="$eltid"/>
-              <xsl:text>" : No match for path "</xsl:text>
-              <xsl:value-of select="@value"/>
-              <xsl:text>" in HMI tree</xsl:text>
-            </xsl:message>
+            <xsl:choose>
+              <xsl:when test="not(@type)">
+                <xsl:message terminate="yes">
+                  <xsl:text>Widget </xsl:text>
+                  <xsl:value-of select="$widget/@type"/>
+                  <xsl:text> id="</xsl:text>
+                  <xsl:value-of select="$eltid"/>
+                  <xsl:text>" : No match for path "</xsl:text>
+                  <xsl:value-of select="@value"/>
+                  <xsl:text>" in HMI tree</xsl:text>
+                </xsl:message>
+              </xsl:when>
+              <xsl:when test="@type = 'PAGE_LOCAL'">
+                <xsl:text>"</xsl:text>
+                <xsl:value-of select="substring(1,@value)"/>
+                <xsl:text>"</xsl:text>
+                <xsl:if test="position()!=last()">
+                  <xsl:text>,</xsl:text>
+                </xsl:if>
+              </xsl:when>
+              <xsl:when test="@type = 'HMI_LOCAL'">
+                <xsl:text>hmi_local_index("</xsl:text>
+                <xsl:value-of select="@value"/>
+                <xsl:text>")</xsl:text>
+                <xsl:if test="position()!=last()">
+                  <xsl:text>,</xsl:text>
+                </xsl:if>
+              </xsl:when>
+            </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
             <xsl:value-of select="@index"/>
@@ -905,6 +941,67 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <preamble:local-variable-indexes/>
+  <xsl:template match="preamble:local-variable-indexes">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>let hmi_locals = {};
+</xsl:text>
+    <xsl:text>var last_remote_index = hmitree_types.length - 1;
+</xsl:text>
+    <xsl:text>var next_available_index = hmitree_types.length;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function page_local_index(varname, pagename){
+</xsl:text>
+    <xsl:text>    let pagevars = hmi_locals[pagename];
+</xsl:text>
+    <xsl:text>    if(pagevars == undefined){
+</xsl:text>
+    <xsl:text>        let new_index = next_available_index++;
+</xsl:text>
+    <xsl:text>        hmi_locals[pagename] = {varname:new_index}
+</xsl:text>
+    <xsl:text>        return new_index;
+</xsl:text>
+    <xsl:text>    } else {
+</xsl:text>
+    <xsl:text>        let result = pagevars[varname];
+</xsl:text>
+    <xsl:text>        if(result==undefined){
+</xsl:text>
+    <xsl:text>            let new_index = next_available_index++;
+</xsl:text>
+    <xsl:text>            pagevars[varname] = new_index;
+</xsl:text>
+    <xsl:text>            return new_index;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return result;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function hmi_local_index(varname){
+</xsl:text>
+    <xsl:text>    return page_local_index(varname, "HMI_LOCAL");
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
   <preamble:widget-base-class/>
   <xsl:template match="preamble:widget-base-class">
     <xsl:text>
@@ -965,11 +1062,13 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    sub(new_offset=0, relativeness){
+    <xsl:text>    sub(new_offset=0, relativeness, container_id){
 </xsl:text>
     <xsl:text>        this.offset = new_offset;
 </xsl:text>
     <xsl:text>        this.relativeness = relativeness;
+</xsl:text>
+    <xsl:text>        this.container_id = container_id ;
 </xsl:text>
     <xsl:text>        /* add this's subsribers */
 </xsl:text>
@@ -977,11 +1076,9 @@
 </xsl:text>
     <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
-    <xsl:text>                let index = this.indexes[i];
+    <xsl:text>                let index = this.get_variable_index(i);
 </xsl:text>
-    <xsl:text>                if(relativeness[i])
-</xsl:text>
-    <xsl:text>                    index += new_offset;
+    <xsl:text>                if(index &gt; last_remote_index) return;
 </xsl:text>
     <xsl:text>                subscribers[index].add(this);
 </xsl:text>
@@ -995,11 +1092,11 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
+    <xsl:text>        if(!this.unsubscribable) for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
-    <xsl:text>            let realindex = index+this.offset;
+    <xsl:text>            let realindex = this.get_variable_index(i);
 </xsl:text>
     <xsl:text>            let cached_val = cache[realindex];
 </xsl:text>
@@ -1013,17 +1110,33 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    get_idx(index) {
+    <xsl:text>    get_variable_index(varnum) {
 </xsl:text>
-    <xsl:text>         let orig = this.indexes[index];
+    <xsl:text>        let index = this.indexes[varnum];
 </xsl:text>
-    <xsl:text>         return this.relativeness[index] ? orig + this.offset : orig;
+    <xsl:text>        if(typeof(index) == "string"){
+</xsl:text>
+    <xsl:text>            let page = this.relativeness[varnum];
+</xsl:text>
+    <xsl:text>            index = page_local_index(index, this.container_id);
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            if(this.relativeness[varnum]){
+</xsl:text>
+    <xsl:text>                index += this.offset;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return index;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>    change_hmi_value(index,opstr) {
 </xsl:text>
-    <xsl:text>        return change_hmi_value(this.get_idx(index), opstr);
+    <xsl:text>        return change_hmi_value(this.get_variable_index(index), opstr);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1031,7 +1144,7 @@
 </xsl:text>
     <xsl:text>    apply_hmi_value(index, new_val) {
 </xsl:text>
-    <xsl:text>        return apply_hmi_value(this.get_idx(0), new_val);
+    <xsl:text>        return apply_hmi_value(this.get_variable_index(0), new_val);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1045,11 +1158,7 @@
 </xsl:text>
     <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
-    <xsl:text>                let refindex = this.indexes[i];
-</xsl:text>
-    <xsl:text>                if(this.relativeness[i])
-</xsl:text>
-    <xsl:text>                    refindex += this.offset;
+    <xsl:text>                let refindex = this.get_variable_index(i);
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4056,6 +4165,20 @@
 </xsl:text>
           <xsl:text>function send_hmi_value(index, value) {
 </xsl:text>
+          <xsl:text>    if(index &gt; last_remote_index){
+</xsl:text>
+          <xsl:text>        cache[index] = value;
+</xsl:text>
+          <xsl:text>        console.log("updated local variable ",index,value);
+</xsl:text>
+          <xsl:text>        /* TODO : dispatch value ASAP */
+</xsl:text>
+          <xsl:text>        return;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>    let iectype = hmitree_types[index];
 </xsl:text>
           <xsl:text>    let tobinary = typedarray_types[iectype];
@@ -4250,7 +4373,13 @@
 </xsl:text>
           <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
 </xsl:text>
-          <xsl:text>    new_desc.widgets.map(([widget,relativeness])=&gt;widget.sub(new_offset,relativeness));
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    container_id = String([page_name, page_index]);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    new_desc.widgets.map(([widget,relativeness])=&gt;widget.sub(new_offset,relativeness,container_id));
 </xsl:text>
           <xsl:text>
 </xsl:text>
