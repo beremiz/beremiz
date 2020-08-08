@@ -210,6 +210,13 @@ function update_subscriptions() {
 };
 
 function send_hmi_value(index, value) {
+    if(index > last_remote_index){
+        cache[index] = value;
+        console.log("updated local variable ",index,value);
+        /* TODO : dispatch value ASAP */
+        return;
+    }
+
     let iectype = hmitree_types[index];
     let tobinary = typedarray_types[iectype];
     send_blob([
@@ -307,7 +314,10 @@ function switch_page(page_name, page_index) {
         old_desc.widgets.map(([widget,relativeness])=>widget.unsub());
     }
     var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
-    new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness));
+
+    container_id = String([page_name, page_index]);
+
+    new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness,container_id));
 
     update_subscriptions();
 

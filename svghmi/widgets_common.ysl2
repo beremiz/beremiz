@@ -28,7 +28,14 @@ template "svg:*", mode="hmi_widgets" {
     const "indexes" foreach "$widget/path" {
         choose {
             when "not(@index)" {
-                warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
+                choose {
+                    when "not(@type)" 
+                        error > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
+                    when "@type = 'PAGE_LOCAL'" 
+                        > "«substring(1,@value)»"`if "position()!=last()" > ,`
+                    when "@type = 'HMI_LOCAL'" 
+                        > hmi_local_index("«@value»")`if "position()!=last()" > ,`
+                }
             }
             otherwise {
                 > «@index»`if "position()!=last()" > ,`
@@ -62,8 +69,37 @@ def "func:unique_types" {
     }
 }
 
+emit "preamble:local-variable-indexes" {
+    ||
+    let hmi_locals = {};
+    var last_remote_index = hmitree_types.length - 1;
+    var next_available_index = hmitree_types.length;
+
+    function page_local_index(varname, pagename){
+        let pagevars = hmi_locals[pagename];
+        if(pagevars == undefined){
+            let new_index = next_available_index++;
+            hmi_locals[pagename] = {varname:new_index}
+            return new_index;
+        } else {
+            let result = pagevars[varname];
+            if(result==undefined){
+                let new_index = next_available_index++;
+                pagevars[varname] = new_index;
+                return new_index;
+            }
+            return result;
+        }
+    }
+
+    function hmi_local_index(varname){
+        return page_local_index(varname, "HMI_LOCAL");
+    }
+    ||
+}
+
 emit "preamble:widget-base-class" {
-    ||    
+    ||
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
@@ -89,49 +125,55 @@ emit "preamble:widget-base-class" {
             this.relativeness = undefined;
         }
 
-        sub(new_offset=0, relativeness){
+        sub(new_offset=0, relativeness, container_id){
             this.offset = new_offset;
             this.relativeness = relativeness;
+            this.container_id = container_id ;
             /* add this's subsribers */
             if(!this.unsubscribable)
                 for(let i = 0; i < this.indexes.length; i++) {
-                    let index = this.indexes[i];
-                    if(relativeness[i])
-                        index += new_offset;
+                    let index = this.get_variable_index(i);
+                    if(index > last_remote_index) return;
                     subscribers[index].add(this);
                 }
             need_cache_apply.push(this); 
         }
 
         apply_cache() {
-            if(!this.unsubscribable) for(let index of this.indexes){
+            if(!this.unsubscribable) for(let i = 0; i < this.indexes.length; i++) {
                 /* dispatch current cache in newly opened page widgets */
-                let realindex = index+this.offset;
+                let realindex = this.get_variable_index(i);
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
                     this.new_hmi_value(realindex, cached_val, cached_val);
             }
         }
 
-        get_idx(index) {
-             let orig = this.indexes[index];
-             return this.relativeness[index] ? orig + this.offset : orig;
+        get_variable_index(varnum) {
+            let index = this.indexes[varnum];
+            if(typeof(index) == "string"){
+                let page = this.relativeness[varnum];
+                index = page_local_index(index, this.container_id);
+            } else {
+                if(this.relativeness[varnum]){
+                    index += this.offset;
+                }
+            }
+            return index;
         }
         change_hmi_value(index,opstr) {
-            return change_hmi_value(this.get_idx(index), opstr);
+            return change_hmi_value(this.get_variable_index(index), opstr);
         }
 
         apply_hmi_value(index, new_val) {
-            return apply_hmi_value(this.get_idx(0), new_val);
+            return apply_hmi_value(this.get_variable_index(0), new_val);
         }
 
         new_hmi_value(index, value, oldval) {
             try {
                 // TODO avoid searching, store index at sub()
                 for(let i = 0; i < this.indexes.length; i++) {
-                    let refindex = this.indexes[i];
-                    if(this.relativeness[i])
-                        refindex += this.offset;
+                    let refindex = this.get_variable_index(i);
 
                     if(index == refindex) {
                         let d = this.dispatch;

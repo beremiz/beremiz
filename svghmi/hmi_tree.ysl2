@@ -107,9 +107,21 @@ template "*", mode="parselabel" {
                 attrib "value" > «.»
                 const "path", ".";
                 const "item", "$indexed_hmitree/*[@hmipath = $path]";
-                if "count($item) = 1" {
-                    attrib "index" > «$item/@index»
-                    attrib "type" > «local-name($item)»
+                choose {
+                    when "count($item) = 1" {
+                        attrib "index" > «$item/@index»
+                        attrib "type" > «local-name($item)»
+                    }
+                    otherwise {
+                        choose {
+                            when "regexp:test($path,'^\.[a-zA-Z0-9_]+')" {
+                                attrib "type" > PAGE_LOCAL
+                            }
+                            when "regexp:test($path,'^[a-zA-Z0-9_]+')" {
+                                attrib "type" > HMI_LOCAL
+                            }
+                        }
+                    }
                 }
             }
         }
