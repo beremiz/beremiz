@@ -64,10 +64,14 @@ def "func:unique_types" {
 
 emit "preamble:widget-base-class" {
     ||    
+    var pending_widget_animates = [];
+
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
         unsubscribable = false;
+        pending_animate = false;
+
         constructor(elt_id,args,indexes,members){
             this.element_id = elt_id;
             this.element = id(elt_id);
@@ -151,6 +155,20 @@ emit "preamble:widget-base-class" {
             } catch(err) {
                 console.log(err);
             }
+        }
+        
+        _animate(){
+            this.animate();
+            this.pending_animate = false;
+        }
+
+        request_animate(){
+            if(!this.pending_animate){
+                pending_widget_animates.push(this);
+                this.pending_animate = true;
+                requestHMIAnimation();
+            }
+
         }
     }
     ||

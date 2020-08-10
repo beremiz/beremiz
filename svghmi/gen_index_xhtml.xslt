@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:definitions="definitions" xmlns:ns="beremiz" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:exsl="http://exslt.org/common" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:preamble="preamble" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:debug="debug" xmlns:svg="http://www.w3.org/2000/svg" xmlns:declarations="declarations" xmlns:cc="http://creativecommons.org/ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -14,7 +14,7 @@
   </xsl:variable>
   <xsl:variable name="categories" select="exsl:node-set($_categories)"/>
   <xsl:variable name="_indexed_hmitree">
-    <xsl:apply-templates select="$hmitree" mode="index"/>
+    <xsl:apply-templates mode="index" select="$hmitree"/>
   </xsl:variable>
   <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
   <preamble:hmi-tree/>
@@ -62,7 +62,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="*" mode="index">
+  <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
     <xsl:param name="parentpath" select="''"/>
     <xsl:variable name="content">
@@ -95,7 +95,7 @@
               <xsl:copy/>
             </xsl:for-each>
           </xsl:copy>
-          <xsl:apply-templates select="*[1]" mode="index">
+          <xsl:apply-templates mode="index" select="*[1]">
             <xsl:with-param name="index" select="$index + 1"/>
             <xsl:with-param name="parentpath">
               <xsl:value-of select="$path"/>
@@ -103,7 +103,7 @@
           </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="*[1]" mode="index">
+          <xsl:apply-templates mode="index" select="*[1]">
             <xsl:with-param name="index" select="$index"/>
             <xsl:with-param name="parentpath">
               <xsl:value-of select="$path"/>
@@ -113,14 +113,14 @@
       </xsl:choose>
     </xsl:variable>
     <xsl:copy-of select="$content"/>
-    <xsl:apply-templates select="following-sibling::*[1]" mode="index">
+    <xsl:apply-templates mode="index" select="following-sibling::*[1]">
       <xsl:with-param name="index" select="$index + count(exsl:node-set($content)/*)"/>
       <xsl:with-param name="parentpath">
         <xsl:value-of select="$parentpath"/>
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="*" mode="parselabel">
+  <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
     <xsl:variable name="_args" select="substring-before($description,'@')"/>
@@ -184,7 +184,7 @@
     </xsl:if>
   </xsl:template>
   <xsl:variable name="_parsed_widgets">
-    <xsl:apply-templates select="$hmi_elements" mode="parselabel"/>
+    <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
   </xsl:variable>
   <xsl:variable name="parsed_widgets" select="exsl:node-set($_parsed_widgets)"/>
   <func:function name="func:widget">
@@ -203,7 +203,7 @@
     <xsl:variable name="class_b" select="$indexed_hmitree/*[@hmipath = $b]/@class"/>
     <func:result select="$class_a and $class_b and $class_a = $class_b"/>
   </func:function>
-  <xsl:template match="*" mode="testtree">
+  <xsl:template mode="testtree" match="*">
     <xsl:param name="indent" select="''"/>
     <xsl:value-of select="$indent"/>
     <xsl:text> </xsl:text>
@@ -217,7 +217,7 @@
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
-    <xsl:apply-templates select="*" mode="testtree">
+    <xsl:apply-templates mode="testtree" select="*">
       <xsl:with-param name="indent">
         <xsl:value-of select="concat($indent,'&gt;')"/>
       </xsl:with-param>
@@ -235,18 +235,18 @@
 </xsl:text>
     <xsl:text>Raw HMI tree
 </xsl:text>
-    <xsl:apply-templates select="$hmitree" mode="testtree"/>
+    <xsl:apply-templates mode="testtree" select="$hmitree"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>Indexed HMI tree
 </xsl:text>
-    <xsl:apply-templates select="$indexed_hmitree" mode="testtree"/>
+    <xsl:apply-templates mode="testtree" select="$indexed_hmitree"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>Parsed Widgets
 </xsl:text>
     <xsl:copy-of select="_parsed_widgets"/>
-    <xsl:apply-templates select="$parsed_widgets" mode="testtree"/>
+    <xsl:apply-templates mode="testtree" select="$parsed_widgets"/>
     <xsl:text>
 </xsl:text>
   </xsl:template>
@@ -459,7 +459,7 @@
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
   <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
   <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
-  <xsl:template match="svg:*" mode="page_desc">
+  <xsl:template mode="page_desc" match="svg:*">
     <xsl:variable name="desc" select="func:widget(@id)"/>
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
@@ -559,7 +559,7 @@
     </xsl:for-each>
     <xsl:text>    }
 </xsl:text>
-    <xsl:apply-templates select="$parsed_widgets/widget[@id = $all_page_widgets/@id]" mode="per_page_widget_template">
+    <xsl:apply-templates mode="per_page_widget_template" select="$parsed_widgets/widget[@id = $all_page_widgets/@id]">
       <xsl:with-param name="page_desc" select="$desc"/>
     </xsl:apply-templates>
     <xsl:text>  }</xsl:text>
@@ -583,13 +583,13 @@
 </xsl:text>
     <xsl:text>var page_desc = {
 </xsl:text>
-    <xsl:apply-templates select="$hmi_pages" mode="page_desc"/>
+    <xsl:apply-templates mode="page_desc" select="$hmi_pages"/>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="*" mode="per_page_widget_template"/>
+  <xsl:template mode="per_page_widget_template" match="*"/>
   <debug:detachable-pages/>
   <xsl:template match="debug:detachable-pages">
     <xsl:text>
@@ -621,16 +621,16 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="@* | node()" mode="inline_svg">
+  <xsl:template mode="inline_svg" match="@* | node()">
     <xsl:if test="not(@id = $discardable_elements/@id)">
       <xsl:copy>
-        <xsl:apply-templates select="@* | node()" mode="inline_svg"/>
+        <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
       </xsl:copy>
     </xsl:if>
   </xsl:template>
-  <xsl:template match="svg:svg/@width" mode="inline_svg"/>
-  <xsl:template match="svg:svg/@height" mode="inline_svg"/>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" match="svg:svg" mode="inline_svg">
+  <xsl:template mode="inline_svg" match="svg:svg/@width"/>
+  <xsl:template mode="inline_svg" match="svg:svg/@height"/>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:svg">
     <svg>
       <xsl:attribute name="preserveAspectRatio">
         <xsl:text>none</xsl:text>
@@ -641,15 +641,15 @@
       <xsl:attribute name="width">
         <xsl:text>100vw</xsl:text>
       </xsl:attribute>
-      <xsl:apply-templates select="@* | node()" mode="inline_svg"/>
+      <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
     </svg>
   </xsl:template>
-  <xsl:template match="svg:svg[@viewBox!=concat('0 0 ', @width, ' ', @height)]" mode="inline_svg">
+  <xsl:template mode="inline_svg" match="svg:svg[@viewBox!=concat('0 0 ', @width, ' ', @height)]">
     <xsl:message terminate="yes">
       <xsl:text>ViewBox settings other than X=0, Y=0 and Scale=1 are not supported</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:template match="sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']" mode="inline_svg">
+  <xsl:template mode="inline_svg" match="sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']">
     <xsl:message terminate="yes">
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
@@ -658,7 +658,7 @@
   <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
   <xsl:variable name="targets_not_to_unlink" select="$hmi_elements[@id = $hmi_lists/@id]/descendant::svg:*"/>
   <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use"/>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" match="svg:use" mode="inline_svg">
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
     <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
     <xsl:choose>
       <xsl:when test="@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)">
@@ -668,7 +668,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:copy>
-          <xsl:apply-templates select="@* | node()" mode="inline_svg"/>
+          <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
         </xsl:copy>
       </xsl:otherwise>
     </xsl:choose>
@@ -729,7 +729,7 @@
               <xsl:value-of select="$target/@transform"/>
             </xsl:attribute>
           </xsl:if>
-          <xsl:apply-templates select="$target/*" mode="unlink_clone">
+          <xsl:apply-templates mode="unlink_clone" select="$target/*">
             <xsl:with-param name="seed" select="@id"/>
           </xsl:apply-templates>
         </xsl:when>
@@ -739,14 +739,14 @@
               <xsl:value-of select="."/>
             </xsl:attribute>
           </xsl:for-each>
-          <xsl:apply-templates select="$target" mode="unlink_clone">
+          <xsl:apply-templates mode="unlink_clone" select="$target">
             <xsl:with-param name="seed" select="@id"/>
           </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
     </g>
   </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" match="@id" mode="unlink_clone">
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@id">
     <xsl:param name="seed"/>
     <xsl:attribute name="id">
       <xsl:value-of select="$seed"/>
@@ -754,10 +754,10 @@
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" match="@*" mode="unlink_clone">
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@*">
     <xsl:copy/>
   </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" match="svg:*" mode="unlink_clone">
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
     <xsl:param name="seed"/>
     <xsl:choose>
       <xsl:when test="@id = $hmi_elements/@id">
@@ -769,7 +769,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:copy>
-          <xsl:apply-templates select="@* | node()" mode="unlink_clone">
+          <xsl:apply-templates mode="unlink_clone" select="@* | node()">
             <xsl:with-param name="seed" select="$seed"/>
           </xsl:apply-templates>
         </xsl:copy>
@@ -777,7 +777,7 @@
     </xsl:choose>
   </xsl:template>
   <xsl:variable name="result_svg">
-    <xsl:apply-templates select="/" mode="inline_svg"/>
+    <xsl:apply-templates mode="inline_svg" select="/"/>
   </xsl:variable>
   <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
   <preamble:inline-svg/>
@@ -828,7 +828,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="svg:*" mode="hmi_widgets">
+  <xsl:template mode="hmi_widgets" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
     <xsl:variable name="eltid" select="@id"/>
     <xsl:variable name="args">
@@ -876,7 +876,7 @@
     <xsl:value-of select="$indexes"/>
     <xsl:text>],{
 </xsl:text>
-    <xsl:apply-templates select="$widget" mode="widget_defs">
+    <xsl:apply-templates mode="widget_defs" select="$widget">
       <xsl:with-param name="hmi_element" select="."/>
     </xsl:apply-templates>
     <xsl:text>  })</xsl:text>
@@ -915,6 +915,10 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var pending_widget_animates = [];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
     <xsl:text>    offset = 0;
@@ -922,6 +926,10 @@
     <xsl:text>    frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
 </xsl:text>
     <xsl:text>    unsubscribable = false;
+</xsl:text>
+    <xsl:text>    pending_animate = false;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    constructor(elt_id,args,indexes,members){
 </xsl:text>
@@ -1091,6 +1099,34 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    
+</xsl:text>
+    <xsl:text>    _animate(){
+</xsl:text>
+    <xsl:text>        this.animate();
+</xsl:text>
+    <xsl:text>        this.pending_animate = false;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    request_animate(){
+</xsl:text>
+    <xsl:text>        if(!this.pending_animate){
+</xsl:text>
+    <xsl:text>            pending_widget_animates.push(this);
+</xsl:text>
+    <xsl:text>            this.pending_animate = true;
+</xsl:text>
+    <xsl:text>            requestHMIAnimation();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1107,11 +1143,11 @@
     <xsl:text>
 </xsl:text>
     <xsl:variable name="used_widget_types" select="func:unique_types($parsed_widgets/widget)"/>
-    <xsl:apply-templates select="$used_widget_types" mode="widget_class"/>
+    <xsl:apply-templates mode="widget_class" select="$used_widget_types"/>
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget">
     <xsl:text>class </xsl:text>
     <xsl:value-of select="@type"/>
     <xsl:text>Widget extends Widget{
@@ -1137,7 +1173,7 @@
 </xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
-    <xsl:apply-templates select="$hmi_elements[@id = $excluded_ids]" mode="hmi_widgets"/>
+    <xsl:apply-templates mode="hmi_widgets" select="$hmi_elements[@id = $excluded_ids]"/>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1231,7 +1267,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:template match="widget[@type='Back']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='Back']">
     <xsl:text>class BackWidget extends Widget{
 </xsl:text>
     <xsl:text>    on_click(evt) {
@@ -1257,7 +1293,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Button']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='Button']">
     <xsl:text>t{
 </xsl:text>
     <xsl:text>5;
@@ -1331,7 +1367,7 @@
     <xsl:text>||
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Button']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Button']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -1343,7 +1379,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='CircularBar']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
     <xsl:param name="hmi_element"/>
     <xsl:text>frequency: 10,
 </xsl:text>
@@ -1439,7 +1475,7 @@
     <xsl:text>},
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='CircularSlider']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='CircularSlider']">
     <xsl:text>class CircularSliderWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -1614,7 +1650,7 @@
 </xsl:text>
     <xsl:text>                this.value_elt.textContent = String(Math.ceil(svg_dist));
 </xsl:text>
-    <xsl:text>            change_hmi_value(this.indexes[0], "="+Math.ceil(svg_dist));
+    <xsl:text>            this.apply_hmi_value(0, Math.ceil(svg_dist));
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1735,7 +1771,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='CircularSlider']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='CircularSlider']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -1753,7 +1789,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Display']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='Display']">
     <xsl:text>class DisplayWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -1771,7 +1807,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Display']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
     <xsl:if test="$hmi_element[not(self::svg:text)]">
       <xsl:message terminate="yes">
@@ -2262,7 +2298,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='DropDown']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='DropDown']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -2775,7 +2811,7 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='ForEach']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
     <xsl:param name="hmi_element"/>
     <xsl:if test="count(path) != 1">
       <xsl:message terminate="yes">
@@ -2889,7 +2925,7 @@
     <xsl:text>    item_offset: 0,
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='ForEach']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='ForEach']">
     <xsl:text>class ForEachWidget extends Widget{
 </xsl:text>
     <xsl:text>
@@ -3025,7 +3061,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Input']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -3109,7 +3145,7 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='JsonTable']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='JsonTable']">
     <xsl:text>class JsonTableWidget extends Widget{
 </xsl:text>
     <xsl:text>    do_http_request() {
@@ -3169,14 +3205,14 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="svg:*" mode="json_table_elt_render">
+  <xsl:template mode="json_table_elt_render" match="svg:*">
     <xsl:message terminate="yes">
       <xsl:text>JsonTable Widget can't contain element of type </xsl:text>
       <xsl:value-of select="local-name()"/>
       <xsl:text>.</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:template match="svg:use" mode="json_table_elt_render">
+  <xsl:template mode="json_table_elt_render" match="svg:use">
     <xsl:param name="value_expr"/>
     <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
     <xsl:variable name="from_list" select="$hmi_lists[(@id | */@id) = $targetid]"/>
@@ -3198,7 +3234,7 @@
     <xsl:text>]);
 </xsl:text>
   </xsl:template>
-  <xsl:template match="svg:text" mode="json_table_elt_render">
+  <xsl:template mode="json_table_elt_render" match="svg:text">
     <xsl:param name="value_expr"/>
     <xsl:text>        id("</xsl:text>
     <xsl:value-of select="@id"/>
@@ -3207,16 +3243,16 @@
     <xsl:text>);
 </xsl:text>
   </xsl:template>
-  <xsl:template match="svg:*" mode="json_table_render">
+  <xsl:template mode="json_table_render" match="svg:*">
     <xsl:param name="objname"/>
-    <xsl:apply-templates select="." mode="json_table_elt_render">
+    <xsl:apply-templates mode="json_table_elt_render" select=".">
       <xsl:with-param name="value_expr">
         <xsl:value-of select="$objname"/>
         <xsl:value-of select="@inkscape:label"/>
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="svg:g" mode="json_table_render">
+  <xsl:template mode="json_table_render" match="svg:g">
     <xsl:param name="objname"/>
     <xsl:text>        let obj_</xsl:text>
     <xsl:value-of select="@id"/>
@@ -3225,14 +3261,14 @@
     <xsl:value-of select="@inkscape:label"/>
     <xsl:text>;
 </xsl:text>
-    <xsl:apply-templates select="*[@inkscape:label]" mode="json_table_render">
+    <xsl:apply-templates mode="json_table_render" select="*[@inkscape:label]">
       <xsl:with-param name="objname">
         <xsl:text>obj_</xsl:text>
         <xsl:value-of select="@id"/>
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:template match="widget[@type='JsonTable']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='JsonTable']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -3250,7 +3286,7 @@
     <xsl:variable name="data_elt" select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']"/>
     <xsl:text>    spread_json_data: function(jdata) {
 </xsl:text>
-    <xsl:apply-templates select="$data_elt/*" mode="json_table_render">
+    <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
       <xsl:with-param name="objname" select="'jdata'"/>
     </xsl:apply-templates>
     <xsl:text>    }
@@ -3276,7 +3312,7 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
   </xsl:template>
-  <xsl:template match="widget[@type='Jump']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="activity">
       <xsl:call-template name="jump_widget_activity">
@@ -3411,7 +3447,7 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Jump']" mode="per_page_widget_template">
+  <xsl:template mode="per_page_widget_template" match="widget[@type='Jump']">
     <xsl:param name="page_desc"/>
     <xsl:if test="path">
       <xsl:variable name="target_page_name">
@@ -3513,7 +3549,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Keypad']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='Keypad']">
     <xsl:text>class KeypadWidget extends Widget{
 </xsl:text>
     <xsl:text>     moving = undefined;
@@ -3805,7 +3841,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Keypad']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -3884,7 +3920,7 @@
     <xsl:text>],
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='List']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='List']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    items: {
 </xsl:text>
@@ -3899,7 +3935,7 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Meter']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    frequency: 10,
 </xsl:text>
@@ -3957,7 +3993,7 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='MultiState']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='MultiState']">
     <xsl:text>class MultiStateWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -4024,7 +4060,7 @@
 </xsl:text>
     <xsl:text>        //post value to plc
 </xsl:text>
-    <xsl:text>        change_hmi_value(this.indexes[0], "="+this.state);
+    <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4039,7 +4075,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='MultiState']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='MultiState']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
@@ -4070,7 +4106,7 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Slider']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='Slider']">
     <xsl:text>class SliderWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -4083,21 +4119,19 @@
 </xsl:text>
     <xsl:text>    enTimer = false;
 </xsl:text>
+    <xsl:text>    svg_dist = 0
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        if(!this.drag){
+    <xsl:text>        if(this.value_elt)
 </xsl:text>
-    <xsl:text>            if(this.value_elt)
-</xsl:text>
-    <xsl:text>                this.value_elt.textContent = String(value);
+    <xsl:text>            this.value_elt.textContent = String(value);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            this.handle_position(value);
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>        this.handle_position(value);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4131,11 +4165,9 @@
 </xsl:text>
     <xsl:text>    update_position(evt){
 </xsl:text>
-    <xsl:text>        if(this.drag &amp;&amp; this.enTimer){
+    <xsl:text>        if(this.drag){
 </xsl:text>
     <xsl:text>            var html_dist = 0;
-</xsl:text>
-    <xsl:text>            var svg_dist = 0;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4221,23 +4253,39 @@
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
-    <xsl:text>            //redraw handle
+    <xsl:text>
 </xsl:text>
-    <xsl:text>            this.handle_position(svg_dist=(html_dist/range_length)*this.range[1]);
-</xsl:text>
-    <xsl:text>            this.value_elt.textContent = String(Math.ceil(svg_dist));
-</xsl:text>
-    <xsl:text>            change_hmi_value(this.indexes[0], "="+Math.ceil(svg_dist));
-</xsl:text>
-    <xsl:text>            //reset timer
-</xsl:text>
-    <xsl:text>            this.enTimer = false;
-</xsl:text>
-    <xsl:text>            setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>            this.svg_dist=(html_dist/range_length)*this.range[1];
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>            //redraw handle
+</xsl:text>
+    <xsl:text>            //this.handle_position(svg_dist=(html_dist/range_length)*this.range[1]);
+</xsl:text>
+    <xsl:text>            //this.value_elt.textContent = String(Math.ceil(svg_dist));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            if(this.enTimer){
+</xsl:text>
+    <xsl:text>                this.apply_hmi_value(0, Math.ceil(this.svg_dist));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                // TODO : update ghost cursor and call this.request_animate()
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                //reset timer
+</xsl:text>
+    <xsl:text>                this.enTimer = false;
+</xsl:text>
+    <xsl:text>                setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4310,7 +4358,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Slider']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Slider']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -4328,7 +4376,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Switch']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='Switch']">
     <xsl:text>class SwitchWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -4354,7 +4402,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Switch']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
@@ -4385,7 +4433,7 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='ToggleButton']" mode="widget_class">
+  <xsl:template mode="widget_class" match="widget[@type='ToggleButton']">
     <xsl:text>class ToggleButtonWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -4426,7 +4474,7 @@
 </xsl:text>
     <xsl:text>    on_click(evt) {
 </xsl:text>
-    <xsl:text>        change_hmi_value(this.indexes[0], "="+this.state);
+    <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4445,7 +4493,7 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='ToggleButton']" mode="widget_defs">
+  <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -4655,6 +4703,14 @@
           <xsl:text>
 </xsl:text>
           <xsl:text>    apply_updates();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    pending_widget_animates.forEach(widget =&gt; widget._animate());
+</xsl:text>
+          <xsl:text>    pending_widget_animates = [];
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>    requestAnimationFrameID = null;
 </xsl:text>
@@ -5252,7 +5308,7 @@
 </xsl:text>
           <xsl:text>var edit_callback;
 </xsl:text>
-          <xsl:text>function edit_value(path, valuetype, callback, initial,size) {
+          <xsl:text>function edit_value(path, valuetype, callback, initial, size) {
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -5264,7 +5320,7 @@
 </xsl:text>
           <xsl:text>    let widget = hmi_widgets[keypadid];
 </xsl:text>
-          <xsl:text>    widget.start_edit(path, valuetype, callback, initial,size);
+          <xsl:text>    widget.start_edit(path, valuetype, callback, initial, size);
 </xsl:text>
           <xsl:text>};
 </xsl:text>
