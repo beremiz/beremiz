@@ -1,0 +1,131 @@
+// widget_slider.ysl2
+
+template "widget[@type='Slider']", mode="widget_class"
+    ||
+    class SliderWidget extends Widget{
+        frequency = 5;
+        range = undefined;
+        fi = undefined;
+        drag = false;
+        enTimer = false;
+
+        dispatch(value) {
+            if(!this.drag){
+                if(this.value_elt)
+                    this.value_elt.textContent = String(value);
+
+                this.handle_position(value);
+            }
+        }
+
+        handle_position(value){
+            let [min,max,start,totallength] = this.range;
+            let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+            let tip = this.range_elt.getPointAtLength(length);
+            this.handle_elt.setAttribute('transform',"translate("+(tip.x-start.x)+","+(tip.y-start.y)+")");
+        }
+
+        on_release(evt) {
+            if(this.drag){
+                this.drag = false;
+            }
+        }
+
+        update_position(evt){
+            if(this.drag && this.enTimer){
+                var html_dist = 0;
+                var svg_dist = 0;
+
+                //calculate size of widget in html
+                var range_borders = this.range_elt.getBoundingClientRect();
+                var range_length = Math.sqrt( range_borders.height*range_borders.height + range_borders.width*range_borders.width );
+                var [minX,minY,maxX,maxY] = [range_borders.left,range_borders.bottom,range_borders.right,range_borders.top];
+
+                //get range and mouse coordinates
+                var mouseX = undefined;
+                var mouseY = undefined;
+                if (evt.type.startsWith("touch")){
+                    mouseX = Math.ceil(evt.touches[0].clientX);
+                    mouseY = Math.ceil(evt.touches[0].clientY);
+                }
+                else{
+                    mouseX = evt.pageX;
+                    mouseY = evt.pageY;
+                }
+
+                //get handle distance from mouse position
+                if (minX > mouseX && minY < mouseY){
+                    html_dist = 0;
+                }
+                else if (maxX < mouseX && maxY > mouseY){
+                    html_dist = range_length;
+                }
+                else{
+                    // calculate distace
+                    if(this.fi > 0.7){
+                        html_dist = (minY - mouseY)/Math.sin(this.fi);
+                    }
+                    else{
+                        html_dist = (mouseX - minX)/Math.cos(this.fi);
+                    }
+
+                    //check if in range
+                    if (html_dist > range_length){
+                        html_dist = range_length;
+                    }
+                    else if (html_dist < 0){
+                        html_dist = 0;
+                    }
+                }
+                //redraw handle
+                this.handle_position(svg_dist=(html_dist/range_length)*this.range[1]);
+                this.value_elt.textContent = String(Math.ceil(svg_dist));
+                this.apply_hmi_value(0, Math.ceil(svg_dist));
+                //reset timer
+                this.enTimer = false;
+                setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+            }
+
+        }
+
+        on_select(evt){
+            this.drag = true;
+            this.enTimer = true;
+            this.update_position(evt);
+        }
+
+        init() {
+            let min = this.min_elt ?
+                        Number(this.min_elt.textContent) :
+                        this.args.length >= 1 ? this.args[0] : 0;
+            let max = this.max_elt ?
+                        Number(this.max_elt.textContent) :
+                        this.args.length >= 2 ? this.args[1] : 100;
+
+            this.range = [min, max, this.range_elt.getPointAtLength(0),this.range_elt.getTotalLength()];
+            let start = this.range_elt.getPointAtLength(0);
+            let end = this.range_elt.getPointAtLength(this.range_elt.getTotalLength());
+            this.fi = Math.atan2(start.y-end.y, end.x-start.x);
+
+
+            this.handle_elt.addEventListener("touchstart", hmi_widgets[this.element_id].on_select.bind(this));
+            this.handle_elt.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+            this.element.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+
+            window.addEventListener("touchmove", hmi_widgets[this.element_id].update_position.bind(this));
+            window.addEventListener("mousemove", hmi_widgets[this.element_id].update_position.bind(this));
+
+            window.addEventListener("mouseup", hmi_widgets[this.element_id].on_release.bind(this))
+            window.addEventListener("touchend", hmi_widgets[this.element_id].on_release.bind(this));
+            window.addEventListener("touchcancel", hmi_widgets[this.element_id].on_release.bind(this));
+
+        }
+    }
+    ||
+
+template "widget[@type='Slider']", mode="widget_defs" {
+    param "hmi_element";
+    labels("handle range");
+    optional_labels("value min max");
+    |,
+}
