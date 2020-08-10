@@ -76,6 +76,10 @@ function animate() {
     if(jumps_need_update) update_jumps();
 
     apply_updates();
+
+    pending_widget_animates.forEach(widget => widget._animate());
+    pending_widget_animates = [];
+
     requestAnimationFrameID = null;
 }
 
