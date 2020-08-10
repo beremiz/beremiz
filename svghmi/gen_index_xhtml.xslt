@@ -4119,8 +4119,6 @@
 </xsl:text>
     <xsl:text>    enTimer = false;
 </xsl:text>
-    <xsl:text>    svg_dist = 0
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    dispatch(value) {
@@ -4131,13 +4129,19 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.handle_position(value);
+    <xsl:text>        this.update_DOM(value, this.handle_elt);
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    handle_position(value){
+    <xsl:text>    last_drag = false;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    update_DOM(value, elt){
 </xsl:text>
     <xsl:text>        let [min,max,start,totallength] = this.range;
 </xsl:text>
@@ -4145,7 +4149,29 @@
 </xsl:text>
     <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
 </xsl:text>
-    <xsl:text>        this.handle_elt.setAttribute('transform',"translate("+(tip.x-start.x)+","+(tip.y-start.y)+")");
+    <xsl:text>        elt.setAttribute('transform',"translate("+(tip.x-start.x)+","+(tip.y-start.y)+")");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            if(this.last_drag!= this.drag){
+</xsl:text>
+    <xsl:text>                if(this.drag){
+</xsl:text>
+    <xsl:text>                    this.setpoint_elt.setAttribute("style", this.setpoint_style);
+</xsl:text>
+    <xsl:text>                }else{
+</xsl:text>
+    <xsl:text>                    this.setpoint_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                this.last_drag = this.drag;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4153,9 +4179,43 @@
 </xsl:text>
     <xsl:text>    on_release(evt) {
 </xsl:text>
+    <xsl:text>        window.removeEventListener("touchmove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mousemove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
+</xsl:text>
     <xsl:text>        if(this.drag){
 </xsl:text>
     <xsl:text>            this.drag = false;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_drag(evt){
+</xsl:text>
+    <xsl:text>        if(this.enTimer &amp;&amp; this.drag){
+</xsl:text>
+    <xsl:text>            this.update_position(evt);
+</xsl:text>
+    <xsl:text>            //reset timer
+</xsl:text>
+    <xsl:text>            this.enTimer = false;
+</xsl:text>
+    <xsl:text>            setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -4165,127 +4225,119 @@
 </xsl:text>
     <xsl:text>    update_position(evt){
 </xsl:text>
-    <xsl:text>        if(this.drag){
-</xsl:text>
-    <xsl:text>            var html_dist = 0;
+    <xsl:text>        var html_dist = 0;
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            //calculate size of widget in html
+    <xsl:text>        //calculate size of widget in html
 </xsl:text>
-    <xsl:text>            var range_borders = this.range_elt.getBoundingClientRect();
+    <xsl:text>        var range_borders = this.range_elt.getBoundingClientRect();
 </xsl:text>
-    <xsl:text>            var range_length = Math.sqrt( range_borders.height*range_borders.height + range_borders.width*range_borders.width );
+    <xsl:text>        var range_length = Math.sqrt( range_borders.height*range_borders.height + range_borders.width*range_borders.width );
 </xsl:text>
-    <xsl:text>            var [minX,minY,maxX,maxY] = [range_borders.left,range_borders.bottom,range_borders.right,range_borders.top];
+    <xsl:text>        var [minX,minY,maxX,maxY] = [range_borders.left,range_borders.bottom,range_borders.right,range_borders.top];
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            //get range and mouse coordinates
+    <xsl:text>        //get range and mouse coordinates
 </xsl:text>
-    <xsl:text>            var mouseX = undefined;
+    <xsl:text>        var mouseX = undefined;
 </xsl:text>
-    <xsl:text>            var mouseY = undefined;
+    <xsl:text>        var mouseY = undefined;
 </xsl:text>
-    <xsl:text>            if (evt.type.startsWith("touch")){
+    <xsl:text>        if (evt.type.startsWith("touch")){
 </xsl:text>
-    <xsl:text>                mouseX = Math.ceil(evt.touches[0].clientX);
+    <xsl:text>            mouseX = Math.ceil(evt.touches[0].clientX);
 </xsl:text>
-    <xsl:text>                mouseY = Math.ceil(evt.touches[0].clientY);
+    <xsl:text>            mouseY = Math.ceil(evt.touches[0].clientY);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            mouseX = evt.pageX;
+</xsl:text>
+    <xsl:text>            mouseY = evt.pageY;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //get handle distance from mouse position
+</xsl:text>
+    <xsl:text>        if (minX &gt; mouseX &amp;&amp; minY &lt; mouseY){
+</xsl:text>
+    <xsl:text>            html_dist = 0;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else if (maxX &lt; mouseX &amp;&amp; maxY &gt; mouseY){
+</xsl:text>
+    <xsl:text>            html_dist = range_length;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            // calculate distace
+</xsl:text>
+    <xsl:text>            if(this.fi &gt; 0.7){
+</xsl:text>
+    <xsl:text>                html_dist = (minY - mouseY)/Math.sin(this.fi);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>            else{
 </xsl:text>
-    <xsl:text>                mouseX = evt.pageX;
-</xsl:text>
-    <xsl:text>                mouseY = evt.pageY;
+    <xsl:text>                html_dist = (mouseX - minX)/Math.cos(this.fi);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            //get handle distance from mouse position
+    <xsl:text>            //check if in range
 </xsl:text>
-    <xsl:text>            if (minX &gt; mouseX &amp;&amp; minY &lt; mouseY){
-</xsl:text>
-    <xsl:text>                html_dist = 0;
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>            else if (maxX &lt; mouseX &amp;&amp; maxY &gt; mouseY){
+    <xsl:text>            if (html_dist &gt; range_length){
 </xsl:text>
     <xsl:text>                html_dist = range_length;
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
-    <xsl:text>            else{
+    <xsl:text>            else if (html_dist &lt; 0){
 </xsl:text>
-    <xsl:text>                // calculate distace
-</xsl:text>
-    <xsl:text>                if(this.fi &gt; 0.7){
-</xsl:text>
-    <xsl:text>                    html_dist = (minY - mouseY)/Math.sin(this.fi);
-</xsl:text>
-    <xsl:text>                }
-</xsl:text>
-    <xsl:text>                else{
-</xsl:text>
-    <xsl:text>                    html_dist = (mouseX - minX)/Math.cos(this.fi);
-</xsl:text>
-    <xsl:text>                }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>                //check if in range
-</xsl:text>
-    <xsl:text>                if (html_dist &gt; range_length){
-</xsl:text>
-    <xsl:text>                    html_dist = range_length;
-</xsl:text>
-    <xsl:text>                }
-</xsl:text>
-    <xsl:text>                else if (html_dist &lt; 0){
-</xsl:text>
-    <xsl:text>                    html_dist = 0;
-</xsl:text>
-    <xsl:text>                }
+    <xsl:text>                html_dist = 0;
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>
-</xsl:text>
-    <xsl:text>            this.svg_dist=(html_dist/range_length)*this.range[1];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            //redraw handle
-</xsl:text>
-    <xsl:text>            //this.handle_position(svg_dist=(html_dist/range_length)*this.range[1]);
-</xsl:text>
-    <xsl:text>            //this.value_elt.textContent = String(Math.ceil(svg_dist));
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            if(this.enTimer){
-</xsl:text>
-    <xsl:text>                this.apply_hmi_value(0, Math.ceil(this.svg_dist));
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>                // TODO : update ghost cursor and call this.request_animate()
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>                //reset timer
-</xsl:text>
-    <xsl:text>                this.enTimer = false;
-</xsl:text>
-    <xsl:text>                setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
-</xsl:text>
-    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.svg_dist=Math.ceil((html_dist/range_length)*this.range[1]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, this.svg_dist);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // update ghost cursor
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            this.request_animate();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>        this.update_DOM(this.svg_dist, this.setpoint_elt);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4296,6 +4348,18 @@
     <xsl:text>        this.drag = true;
 </xsl:text>
     <xsl:text>        this.enTimer = true;
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchmove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>        window.addEventListener("mousemove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>        this.update_position(evt);
 </xsl:text>
@@ -4329,27 +4393,27 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        this.bound_on_select = this.on_select.bind(this);
 </xsl:text>
-    <xsl:text>        this.handle_elt.addEventListener("touchstart", hmi_widgets[this.element_id].on_select.bind(this));
+    <xsl:text>        this.bound_on_release = this.on_release.bind(this);
 </xsl:text>
-    <xsl:text>        this.handle_elt.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
-</xsl:text>
-    <xsl:text>        this.element.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+    <xsl:text>        this.on_bound_drag = this.on_drag.bind(this);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        window.addEventListener("touchmove", hmi_widgets[this.element_id].update_position.bind(this));
+    <xsl:text>        this.element.addEventListener("mousedown", this.bound_on_select);
 </xsl:text>
-    <xsl:text>        window.addEventListener("mousemove", hmi_widgets[this.element_id].update_position.bind(this));
+    <xsl:text>        this.element.addEventListener("touchstart", this.bound_on_select);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        window.addEventListener("mouseup", hmi_widgets[this.element_id].on_release.bind(this))
+    <xsl:text>        if(this.setpoint_elt != undefined){
 </xsl:text>
-    <xsl:text>        window.addEventListener("touchend", hmi_widgets[this.element_id].on_release.bind(this));
+    <xsl:text>            this.setpoint_style = this.setpoint_elt.getAttribute("style");
 </xsl:text>
-    <xsl:text>        window.addEventListener("touchcancel", hmi_widgets[this.element_id].on_release.bind(this));
+    <xsl:text>            this.setpoint_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4369,7 +4433,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>value min max</xsl:text>
+        <xsl:text>value min max setpoint</xsl:text>
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
