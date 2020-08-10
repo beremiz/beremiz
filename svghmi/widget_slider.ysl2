@@ -8,14 +8,13 @@ template "widget[@type='Slider']", mode="widget_class"
         fi = undefined;
         drag = false;
         enTimer = false;
+        svg_dist = 0
 
         dispatch(value) {
-            if(!this.drag){
-                if(this.value_elt)
-                    this.value_elt.textContent = String(value);
+            if(this.value_elt)
+                this.value_elt.textContent = String(value);
 
-                this.handle_position(value);
-            }
+            this.handle_position(value);
         }
 
         handle_position(value){
@@ -32,9 +31,8 @@ template "widget[@type='Slider']", mode="widget_class"
         }
 
         update_position(evt){
-            if(this.drag && this.enTimer){
+            if(this.drag){
                 var html_dist = 0;
-                var svg_dist = 0;
 
                 //calculate size of widget in html
                 var range_borders = this.range_elt.getBoundingClientRect();
@@ -77,15 +75,23 @@ template "widget[@type='Slider']", mode="widget_class"
                         html_dist = 0;
                     }
                 }
-                //redraw handle
-                this.handle_position(svg_dist=(html_dist/range_length)*this.range[1]);
-                this.value_elt.textContent = String(Math.ceil(svg_dist));
-                this.apply_hmi_value(0, Math.ceil(svg_dist));
-                //reset timer
-                this.enTimer = false;
-                setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
-            }
 
+                this.svg_dist=(html_dist/range_length)*this.range[1];
+
+                //redraw handle
+                //this.handle_position(svg_dist=(html_dist/range_length)*this.range[1]);
+                //this.value_elt.textContent = String(Math.ceil(svg_dist));
+
+                if(this.enTimer){
+                    this.apply_hmi_value(0, Math.ceil(this.svg_dist));
+
+                    // TODO : update ghost cursor and call this.request_animate()
+
+                    //reset timer
+                    this.enTimer = false;
+                    setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+                }
+            }
         }
 
         on_select(evt){
