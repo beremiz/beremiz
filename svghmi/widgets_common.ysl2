@@ -32,7 +32,7 @@ template "svg:*", mode="hmi_widgets" {
                     when "not(@type)" 
                         error > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
                     when "@type = 'PAGE_LOCAL'" 
-                        > "«substring(1,@value)»"`if "position()!=last()" > ,`
+                        > "«substring(@value, 1)»"`if "position()!=last()" > ,`
                     when "@type = 'HMI_LOCAL'" 
                         > hmi_local_index("«@value»")`if "position()!=last()" > ,`
                 }
@@ -75,21 +75,25 @@ emit "preamble:local-variable-indexes" {
     var last_remote_index = hmitree_types.length - 1;
     var next_available_index = hmitree_types.length;
 
+    var cache = hmitree_types.map(_ignored => undefined);
+
     function page_local_index(varname, pagename){
         let pagevars = hmi_locals[pagename];
+        let new_index;
         if(pagevars == undefined){
-            let new_index = next_available_index++;
-            hmi_locals[pagename] = {varname:new_index}
-            return new_index;
+            new_index = next_available_index++;
+            hmi_locals[pagename] = {[varname]:new_index}
         } else {
             let result = pagevars[varname];
-            if(result==undefined){
-                let new_index = next_available_index++;
-                pagevars[varname] = new_index;
-                return new_index;
+            if(result != undefined) {
+                return result;
             }
-            return result;
+
+            new_index = next_available_index++;
+            pagevars[varname] = new_index;
         }
+        cache[new_index] = "";
+        return new_index;
     }
 
     function hmi_local_index(varname){
@@ -119,7 +123,7 @@ emit "preamble:widget-base-class" {
                     let index = this.indexes[i];
                     if(this.relativeness[i])
                         index += this.offset;
-                    subscribers[index].delete(this);
+                    subscribers(index).delete(this);
                 }
             this.offset = 0;
             this.relativeness = undefined;
@@ -133,8 +137,7 @@ emit "preamble:widget-base-class" {
             if(!this.unsubscribable)
                 for(let i = 0; i < this.indexes.length; i++) {
                     let index = this.get_variable_index(i);
-                    if(index > last_remote_index) return;
-                    subscribers[index].add(this);
+                    subscribers(index).add(this);
                 }
             need_cache_apply.push(this); 
         }
@@ -152,7 +155,6 @@ emit "preamble:widget-base-class" {
         get_variable_index(varnum) {
             let index = this.indexes[varnum];
             if(typeof(index) == "string"){
-                let page = this.relativeness[varnum];
                 index = page_local_index(index, this.container_id);
             } else {
                 if(this.relativeness[varnum]){

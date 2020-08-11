@@ -18,7 +18,14 @@ template "widget[@type='Display']", mode="widget_defs" {
     if "$hmi_element[not(self::svg:text)]"
         error > Display Widget id="«$hmi_element/@id»" is not a svg::text element
 
-    |     fields: [],
+    const "field_initializer" foreach "path" {
+        choose{
+            when "@type='HMI_STRING'" > ""
+            otherwise 0
+        }
+        if "position()!=last()" > ,
+    }
+    |     fields: [«$field_initializer»],
 }
 
 emit "preamble:display"
