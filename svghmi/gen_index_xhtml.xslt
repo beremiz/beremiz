@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -875,7 +875,7 @@
               </xsl:when>
               <xsl:when test="@type = 'PAGE_LOCAL'">
                 <xsl:text>"</xsl:text>
-                <xsl:value-of select="substring(1,@value)"/>
+                <xsl:value-of select="substring(@value, 1)"/>
                 <xsl:text>"</xsl:text>
                 <xsl:if test="position()!=last()">
                   <xsl:text>,</xsl:text>
@@ -959,35 +959,53 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>function page_local_index(varname, pagename){
 </xsl:text>
     <xsl:text>    let pagevars = hmi_locals[pagename];
 </xsl:text>
+    <xsl:text>    let new_index;
+</xsl:text>
     <xsl:text>    if(pagevars == undefined){
 </xsl:text>
-    <xsl:text>        let new_index = next_available_index++;
+    <xsl:text>        new_index = next_available_index++;
 </xsl:text>
-    <xsl:text>        hmi_locals[pagename] = {varname:new_index}
+    <xsl:text>        hmi_locals[pagename] = {[varname]:new_index}
 </xsl:text>
-    <xsl:text>        return new_index;
+    <xsl:text>        console.log("pagelocalindex insert",varname, pagename, new_index);
 </xsl:text>
     <xsl:text>    } else {
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        console.log("pagevars",pagevars);
+</xsl:text>
     <xsl:text>        let result = pagevars[varname];
 </xsl:text>
-    <xsl:text>        if(result==undefined){
+    <xsl:text>        if(result != undefined) {
 </xsl:text>
-    <xsl:text>            let new_index = next_available_index++;
+    <xsl:text>            console.log("pagelocalindex reuse",varname, pagename, result);
 </xsl:text>
-    <xsl:text>            pagevars[varname] = new_index;
-</xsl:text>
-    <xsl:text>            return new_index;
+    <xsl:text>            return result;
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        return result;
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        new_index = next_available_index++;
+</xsl:text>
+    <xsl:text>        pagevars[varname] = new_index;
+</xsl:text>
+    <xsl:text>        console.log("pagelocalindex addwidget",varname, pagename, new_index);
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>    cache[new_index] = "";
+</xsl:text>
+    <xsl:text>    return new_index;
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -1050,7 +1068,7 @@
 </xsl:text>
     <xsl:text>                    index += this.offset;
 </xsl:text>
-    <xsl:text>                subscribers[index].delete(this);
+    <xsl:text>                subscribers(index).delete(this);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -1078,9 +1096,7 @@
 </xsl:text>
     <xsl:text>                let index = this.get_variable_index(i);
 </xsl:text>
-    <xsl:text>                if(index &gt; last_remote_index) return;
-</xsl:text>
-    <xsl:text>                subscribers[index].add(this);
+    <xsl:text>                subscribers(index).add(this);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -1116,8 +1132,6 @@
 </xsl:text>
     <xsl:text>        if(typeof(index) == "string"){
 </xsl:text>
-    <xsl:text>            let page = this.relativeness[varnum];
-</xsl:text>
     <xsl:text>            index = page_local_index(index, this.container_id);
 </xsl:text>
     <xsl:text>        } else {
@@ -1152,7 +1166,7 @@
 </xsl:text>
     <xsl:text>    new_hmi_value(index, value, oldval) {
 </xsl:text>
-    <xsl:text>        try {
+    <xsl:text>    /*  try {*/
 </xsl:text>
     <xsl:text>            // TODO avoid searching, store index at sub()
 </xsl:text>
@@ -1192,11 +1206,11 @@
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
-    <xsl:text>        } catch(err) {
+    <xsl:text>    /*    } catch(err) {
 </xsl:text>
     <xsl:text>            console.log(err);
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>        }*/
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1557,7 +1571,22 @@
         <xsl:text>" is not a svg::text element</xsl:text>
       </xsl:message>
     </xsl:if>
-    <xsl:text>    fields: [],
+    <xsl:variable name="field_initializer">
+      <xsl:for-each select="path">
+        <xsl:choose>
+          <xsl:when test="@type='HMI_STRING'">
+            <xsl:text>""</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>0</xsl:otherwise>
+        </xsl:choose>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:text>    fields: [</xsl:text>
+    <xsl:value-of select="$field_initializer"/>
+    <xsl:text>],
 </xsl:text>
   </xsl:template>
   <preamble:display/>
@@ -2955,14 +2984,6 @@
         <xsl:text>" is not valid.</xsl:text>
       </xsl:message>
     </xsl:if>
-    <xsl:text>        console.log("</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>", "</xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>", </xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>);
-</xsl:text>
     <xsl:text>        id("</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>").setAttribute("xlink:href", 
@@ -2976,14 +2997,6 @@
   </xsl:template>
   <xsl:template mode="json_table_elt_render" match="svg:text">
     <xsl:param name="value_expr"/>
-    <xsl:text>        console.log("</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>", "</xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>", </xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>);
-</xsl:text>
     <xsl:text>        id("</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>").textContent = String(</xsl:text>
@@ -3033,8 +3046,6 @@
     </xsl:call-template>
     <xsl:variable name="data_elt" select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']"/>
     <xsl:text>    spread_json_data: function(jdata) {
-</xsl:text>
-    <xsl:text>        console.log(jdata);
 </xsl:text>
     <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
       <xsl:with-param name="objname" select="'jdata'"/>
@@ -3704,7 +3715,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;">
         <xsl:copy-of select="$result_svg"/>
@@ -3745,8 +3756,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
-</xsl:text>
           <xsl:text>var updates = {};
 </xsl:text>
           <xsl:text>var need_cache_apply = []; 
@@ -3757,7 +3766,7 @@
 </xsl:text>
           <xsl:text>function dispatch_value(index, value) {
 </xsl:text>
-          <xsl:text>    let widgets = subscribers[index];
+          <xsl:text>    let widgets = subscribers(index);
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -3856,6 +3865,8 @@
           <xsl:text>        // serving as a key, index becomes a string
 </xsl:text>
           <xsl:text>        // -&gt; pass Number(index) instead
+</xsl:text>
+          <xsl:text>        console.log("apply updated local variable ",index, updates[index]);
 </xsl:text>
           <xsl:text>        dispatch_value(Number(index), updates[index]);
 </xsl:text>
@@ -4057,19 +4068,65 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>// subscription state, as it should be in hmi server
-</xsl:text>
-          <xsl:text>// hmitree indexed array of integers
-</xsl:text>
-          <xsl:text>var subscriptions =  hmitree_types.map(_ignored =&gt; 0);
+          <xsl:text>var subscriptions = [];
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>// subscription state as needed by widget now
+          <xsl:text>function subscribers(index) {
 </xsl:text>
-          <xsl:text>// hmitree indexed array of Sets of widgets objects
+          <xsl:text>    let entry = subscriptions[index];
 </xsl:text>
-          <xsl:text>var subscribers = hmitree_types.map(_ignored =&gt; new Set());
+          <xsl:text>    let res;
+</xsl:text>
+          <xsl:text>    if(entry == undefined){
+</xsl:text>
+          <xsl:text>        res = new Set();
+</xsl:text>
+          <xsl:text>        subscriptions[index] = [res,0];
+</xsl:text>
+          <xsl:text>    }else{
+</xsl:text>
+          <xsl:text>        [res, _ign] = entry;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    return res
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function get_subscription_period(index) {
+</xsl:text>
+          <xsl:text>    let entry = subscriptions[index];
+</xsl:text>
+          <xsl:text>    if(entry == undefined)
+</xsl:text>
+          <xsl:text>        return 0;
+</xsl:text>
+          <xsl:text>    let [_ign, period] = entry;
+</xsl:text>
+          <xsl:text>    return period;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function set_subscription_period(index, period) {
+</xsl:text>
+          <xsl:text>    let entry = subscriptions[index];
+</xsl:text>
+          <xsl:text>    if(entry == undefined){
+</xsl:text>
+          <xsl:text>        subscriptions[index] = [new Set(), period];
+</xsl:text>
+          <xsl:text>    } else {
+</xsl:text>
+          <xsl:text>        entry[1] = period;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -4079,7 +4136,7 @@
 </xsl:text>
           <xsl:text>// PLC will periodically send variable at given frequency
 </xsl:text>
-          <xsl:text>subscribers[heartbeat_index].add({
+          <xsl:text>subscribers(heartbeat_index).add({
 </xsl:text>
           <xsl:text>    /* type: "Watchdog", */
 </xsl:text>
@@ -4097,19 +4154,21 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>function update_subscriptions() {
 </xsl:text>
           <xsl:text>    let delta = [];
 </xsl:text>
-          <xsl:text>    for(let index = 0; index &lt; subscribers.length; index++){
+          <xsl:text>    for(let index in subscriptions){
 </xsl:text>
-          <xsl:text>        let widgets = subscribers[index];
+          <xsl:text>        let widgets = subscribers(index);
 </xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>        // periods are in ms
 </xsl:text>
-          <xsl:text>        let previous_period = subscriptions[index];
+          <xsl:text>        let previous_period = get_subscription_period(index);
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -4143,15 +4202,19 @@
 </xsl:text>
           <xsl:text>        if(previous_period != new_period) {
 </xsl:text>
-          <xsl:text>            subscriptions[index] = new_period;
+          <xsl:text>            set_subscription_period(index, new_period);
 </xsl:text>
-          <xsl:text>            delta.push(
+          <xsl:text>            if(index &lt;= last_remote_index){
 </xsl:text>
-          <xsl:text>                new Uint8Array([2]), /* subscribe = 2 */
+          <xsl:text>                delta.push(
 </xsl:text>
-          <xsl:text>                new Uint32Array([index]),
+          <xsl:text>                    new Uint8Array([2]), /* subscribe = 2 */
 </xsl:text>
-          <xsl:text>                new Uint16Array([new_period]));
+          <xsl:text>                    new Uint32Array([index]),
+</xsl:text>
+          <xsl:text>                    new Uint16Array([new_period]));
+</xsl:text>
+          <xsl:text>            }
 </xsl:text>
           <xsl:text>        }
 </xsl:text>
@@ -4167,11 +4230,11 @@
 </xsl:text>
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
-          <xsl:text>        cache[index] = value;
-</xsl:text>
           <xsl:text>        console.log("updated local variable ",index,value);
 </xsl:text>
-          <xsl:text>        /* TODO : dispatch value ASAP */
+          <xsl:text>        updates[index] = value;
+</xsl:text>
+          <xsl:text>        requestHMIAnimation();
 </xsl:text>
           <xsl:text>        return;
 </xsl:text>
@@ -4375,7 +4438,7 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    container_id = String([page_name, page_index]);
+          <xsl:text>    container_id = page_name + (page_index != undefined ? page_index : "");
 </xsl:text>
           <xsl:text>
 </xsl:text>

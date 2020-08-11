@@ -1,12 +1,11 @@
 // svghmi.js
 
-var cache = hmitree_types.map(_ignored => undefined);
 var updates = {};
 var need_cache_apply = []; 
 
 
 function dispatch_value(index, value) {
-    let widgets = subscribers[index];
+    let widgets = subscribers(index);
 
     let oldval = cache[index];
     cache[index] = value;
@@ -156,18 +155,41 @@ function send_reset() {
     send_blob(new Uint8Array([1])); /* reset = 1 */
 };
 
-// subscription state, as it should be in hmi server
-// hmitree indexed array of integers
-var subscriptions =  hmitree_types.map(_ignored => 0);
+var subscriptions = [];
 
-// subscription state as needed by widget now
-// hmitree indexed array of Sets of widgets objects
-var subscribers = hmitree_types.map(_ignored => new Set());
+function subscribers(index) {
+    let entry = subscriptions[index];
+    let res;
+    if(entry == undefined){
+        res = new Set();
+        subscriptions[index] = [res,0];
+    }else{
+        [res, _ign] = entry;
+    }
+    return res
+}
+
+function get_subscription_period(index) {
+    let entry = subscriptions[index];
+    if(entry == undefined)
+        return 0;
+    let [_ign, period] = entry;
+    return period;
+}
+
+function set_subscription_period(index, period) {
+    let entry = subscriptions[index];
+    if(entry == undefined){
+        subscriptions[index] = [new Set(), period];
+    } else {
+        entry[1] = period;
+    }
+}
 
 // artificially subscribe the watchdog widget to "/heartbeat" hmi variable
 // Since dispatch directly calls change_hmi_value,
 // PLC will periodically send variable at given frequency
-subscribers[heartbeat_index].add({
+subscribers(heartbeat_index).add({
     /* type: "Watchdog", */
     frequency: 1,
     indexes: [heartbeat_index],
@@ -176,13 +198,14 @@ subscribers[heartbeat_index].add({
     }
 });
 
+
 function update_subscriptions() {
     let delta = [];
-    for(let index = 0; index < subscribers.length; index++){
-        let widgets = subscribers[index];
+    for(let index in subscriptions){
+        let widgets = subscribers(index);
 
         // periods are in ms
-        let previous_period = subscriptions[index];
+        let previous_period = get_subscription_period(index);
 
         // subscribing with a zero period is unsubscribing
         let new_period = 0;
@@ -199,11 +222,13 @@ function update_subscriptions() {
         }
 
         if(previous_period != new_period) {
-            subscriptions[index] = new_period;
-            delta.push(
-                new Uint8Array([2]), /* subscribe = 2 */
-                new Uint32Array([index]),
-                new Uint16Array([new_period]));
+            set_subscription_period(index, new_period);
+            if(index <= last_remote_index){
+                delta.push(
+                    new Uint8Array([2]), /* subscribe = 2 */
+                    new Uint32Array([index]),
+                    new Uint16Array([new_period]));
+            }
         }
     }
     send_blob(delta);
@@ -211,9 +236,9 @@ function update_subscriptions() {
 
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
-        cache[index] = value;
         console.log("updated local variable ",index,value);
-        /* TODO : dispatch value ASAP */
+        updates[index] = value;
+        requestHMIAnimation();
         return;
     }
 
@@ -315,7 +340,7 @@ function switch_page(page_name, page_index) {
     }
     var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
 
-    container_id = String([page_name, page_index]);
+    container_id = page_name + (page_index != undefined ? page_index : "");
 
     new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness,container_id));
 
