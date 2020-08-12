@@ -24,7 +24,7 @@ decl activable_labels(*ptr) alias - {
 template "svg:*", mode="hmi_widgets" {
     const "widget", "func:widget(@id)";
     const "eltid","@id";
-    const "args" foreach "$widget/arg" > "«@value»"`if "position()!=last()" > ,`
+    const "args" foreach "$widget/arg" > "«func:escape_quotes(@value)»"`if "position()!=last()" > ,`
     const "indexes" foreach "$widget/path" {
         choose {
             when "not(@index)" {
@@ -92,7 +92,6 @@ emit "preamble:local-variable-indexes" {
             new_index = next_available_index++;
             pagevars[varname] = new_index;
         }
-        cache[new_index] = "";
         return new_index;
     }
 
@@ -104,10 +103,14 @@ emit "preamble:local-variable-indexes" {
 
 emit "preamble:widget-base-class" {
     ||
+    var pending_widget_animates = [];
+
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
         unsubscribable = false;
+        pending_animate = false;
+
         constructor(elt_id,args,indexes,members){
             this.element_id = elt_id;
             this.element = id(elt_id);
@@ -143,9 +146,9 @@ emit "preamble:widget-base-class" {
         }
 
         apply_cache() {
-            if(!this.unsubscribable) for(let i = 0; i < this.indexes.length; i++) {
+            if(!this.unsubscribable) for(let index of this.indexes){
                 /* dispatch current cache in newly opened page widgets */
-                let realindex = this.get_variable_index(i);
+                let realindex = this.get_variable_index(index);
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
                     this.new_hmi_value(realindex, cached_val, cached_val);
@@ -196,6 +199,20 @@ emit "preamble:widget-base-class" {
                 console.log(err);
             }
         }
+        
+        _animate(){
+            this.animate();
+            this.pending_animate = false;
+        }
+
+        request_animate(){
+            if(!this.pending_animate){
+                pending_widget_animates.push(this);
+                this.pending_animate = true;
+                requestHMIAnimation();
+            }
+
+        }
     }
     ||
 }
@@ -212,12 +229,12 @@ class «@type»Widget extends Widget{
 }
 ||
 
-const "excluded_types", "str:split('Page Lang')";
-const "excluded_ids","$parsed_widgets/widget[not(@type = $excluded_types)]/@id";
+const "excluded_types", "str:split('Page Lang VarInit')";
+const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types)]/@id";
 
 emit "declarations:hmi-elements" {
     | var hmi_widgets = {
-    apply  "$hmi_elements[@id = $excluded_ids]", mode="hmi_widgets";
+    apply "$hmi_elements[@id = $included_ids]", mode="hmi_widgets";
     | }
 }
 
@@ -266,11 +283,10 @@ function "defs_by_labels" {
 def "func:escape_quotes" {
     param "txt";
     // have to use a python string to enter escaped quote
-    const "frst", !"substring-before($txt,'\"')"!;
-    const "frstln", "string-length($frst)";
+    // const "frstln", "string-length($frst)";
     choose {
-        when "$frstln > 0 and string-length($txt) > $frstln" {
-            result !"concat($frst,'\\\"',func:escape_quotes(substring-after($txt,'\"')))"!;
+        when !"contains($txt,'\"')"! {
+            result !"concat(substring-before($txt,'\"'),'\\\"',func:escape_quotes(substring-after($txt,'\"')))"!;
         }
         otherwise {
             result "$txt";

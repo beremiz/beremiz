@@ -2,6 +2,7 @@
 
 template "widget[@type='Input']", mode="widget_defs" {
     param "hmi_element";
+    optional_labels("key_pos");
     const "value_elt" {
         optional_labels("value");
     }
@@ -33,7 +34,8 @@ template "widget[@type='Input']", mode="widget_defs" {
     //     }
     |     },
     |     on_edit_click: function(opstr) {
-    |         edit_value("«path/@value»", "«path/@type»", this, this.last_val);
+    |         var size = (typeof this.key_pos_elt !== 'undefined') ?  this.key_pos_elt.getBBox() : undefined
+    |         edit_value("«path/@value»", "«path/@type»", this, this.last_val,size);
     |     },
 
     |     edit_callback: function(new_val) {
