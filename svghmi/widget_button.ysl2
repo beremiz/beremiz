@@ -1,33 +1,48 @@
 // widget_button.ysl2
 
+template "widget[@type='Button']", mode="widget_class"{
+    ||
+    class ButtonWidget extends Widget{
+        frequency = 5;
+        state = 0;
+        active_style = undefined;
+        inactive_style = undefined;
+
+         on_mouse_down(evt) {
+             if (this.active_style && this.inactive_style) {
+                 this.active_elt.setAttribute("style", this.active_style);
+                 this.inactive_elt.setAttribute("style", "display:none");
+             }
+             this.apply_hmi_value(0, 1);
+         }
+
+         on_mouse_up(evt) {
+             if (this.active_style && this.inactive_style) {
+                 this.active_elt.setAttribute("style", "display:none");
+                 this.inactive_elt.setAttribute("style", this.inactive_style);
+             }
+             this.apply_hmi_value(0, 0);
+         }
+
+         init() {
+            this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+            this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+
+            if (this.active_style && this.inactive_style) {
+                this.active_elt.setAttribute("style", "display:none");
+                this.inactive_elt.setAttribute("style", this.inactive_style);
+            }
+
+            this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
+            this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
+         }
+    }
+    ||
+}
+
+
 template "widget[@type='Button']", mode="widget_defs" {
     param "hmi_element";
     optional_labels("active inactive");
-    | frequency: 5,
-    | on_mouse_down: function(evt) {
-    |     if (this.active_style && this.inactive_style) {
-    |         this.active_elt.setAttribute("style", this.active_style);
-    |         this.inactive_elt.setAttribute("style", "display:none");
-    |     }
-    |     this.apply_hmi_value(0, 1);
-    | },
-    | on_mouse_up: function(evt) {
-    |     if (this.active_style && this.inactive_style) {
-    |         this.active_elt.setAttribute("style", "display:none");
-    |         this.inactive_elt.setAttribute("style", this.inactive_style);
-    |     }
-    |     this.apply_hmi_value(0, 0);
-    | },
-    | active_style: undefined,
-    | inactive_style: undefined,
-    | init: function() {
-    |   this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-    |   this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-    |   if (this.active_style && this.inactive_style) {
-    |       this.active_elt.setAttribute("style", "display:none");
-    |       this.inactive_elt.setAttribute("style", this.inactive_style);
-    |   }
-    |   this.element.setAttribute("onmousedown", "hmi_widgets['«$hmi_element/@id»'].on_mouse_down(evt)");
-    |   this.element.setAttribute("onmouseup", "hmi_widgets['«$hmi_element/@id»'].on_mouse_up(evt)");
-    | },
+    |,
 }

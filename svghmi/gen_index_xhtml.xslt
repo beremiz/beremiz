@@ -850,7 +850,7 @@
     <xsl:variable name="args">
       <xsl:for-each select="$widget/arg">
         <xsl:text>"</xsl:text>
-        <xsl:value-of select="@value"/>
+        <xsl:value-of select="func:escape_quotes(@value)"/>
         <xsl:text>"</xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
@@ -959,6 +959,34 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>const local_defaults = {
+</xsl:text>
+    <xsl:for-each select="$parsed_widgets/widget[@type = 'VarInit']">
+      <xsl:if test="count(path) != 1">
+        <xsl:message terminate="yes">
+          <xsl:text>VarInit </xsl:text>
+          <xsl:value-of select="@id"/>
+          <xsl:text> must have only one variable given.</xsl:text>
+        </xsl:message>
+      </xsl:if>
+      <xsl:if test="path/@type != 'PAGE_LOCAL' and path/@type != 'HMI_LOCAL'">
+        <xsl:message terminate="yes">
+          <xsl:text>VarInit </xsl:text>
+          <xsl:value-of select="@id"/>
+          <xsl:text> only applies to HMI variable.</xsl:text>
+        </xsl:message>
+      </xsl:if>
+      <xsl:value-of select="arg[0]"/>
+      <xsl:text>:</xsl:text>
+      <xsl:value-of select="path/@value"/>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>};
+</xsl:text>
     <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
 </xsl:text>
     <xsl:text>
@@ -975,19 +1003,11 @@
 </xsl:text>
     <xsl:text>        hmi_locals[pagename] = {[varname]:new_index}
 </xsl:text>
-    <xsl:text>        console.log("pagelocalindex insert",varname, pagename, new_index);
-</xsl:text>
     <xsl:text>    } else {
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        console.log("pagevars",pagevars);
 </xsl:text>
     <xsl:text>        let result = pagevars[varname];
 </xsl:text>
     <xsl:text>        if(result != undefined) {
-</xsl:text>
-    <xsl:text>            console.log("pagelocalindex reuse",varname, pagename, result);
 </xsl:text>
     <xsl:text>            return result;
 </xsl:text>
@@ -999,11 +1019,7 @@
 </xsl:text>
     <xsl:text>        pagevars[varname] = new_index;
 </xsl:text>
-    <xsl:text>        console.log("pagelocalindex addwidget",varname, pagename, new_index);
-</xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>    cache[new_index] = "";
 </xsl:text>
     <xsl:text>    return new_index;
 </xsl:text>
@@ -1030,6 +1046,10 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var pending_widget_animates = [];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
     <xsl:text>    offset = 0;
@@ -1037,6 +1057,10 @@
     <xsl:text>    frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
 </xsl:text>
     <xsl:text>    unsubscribable = false;
+</xsl:text>
+    <xsl:text>    pending_animate = false;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    constructor(elt_id,args,indexes,members){
 </xsl:text>
@@ -1108,11 +1132,11 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable) for(let i = 0; i &lt; this.indexes.length; i++) {
+    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
-    <xsl:text>            let realindex = this.get_variable_index(i);
+    <xsl:text>            let realindex = this.get_variable_index(index);
 </xsl:text>
     <xsl:text>            let cached_val = cache[realindex];
 </xsl:text>
@@ -1166,7 +1190,7 @@
 </xsl:text>
     <xsl:text>    new_hmi_value(index, value, oldval) {
 </xsl:text>
-    <xsl:text>    /*  try {*/
+    <xsl:text>        try {
 </xsl:text>
     <xsl:text>            // TODO avoid searching, store index at sub()
 </xsl:text>
@@ -1206,11 +1230,39 @@
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
-    <xsl:text>    /*    } catch(err) {
+    <xsl:text>        } catch(err) {
 </xsl:text>
     <xsl:text>            console.log(err);
 </xsl:text>
-    <xsl:text>        }*/
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    
+</xsl:text>
+    <xsl:text>    _animate(){
+</xsl:text>
+    <xsl:text>        this.animate();
+</xsl:text>
+    <xsl:text>        this.pending_animate = false;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    request_animate(){
+</xsl:text>
+    <xsl:text>        if(!this.pending_animate){
+</xsl:text>
+    <xsl:text>            pending_widget_animates.push(this);
+</xsl:text>
+    <xsl:text>            this.pending_animate = true;
+</xsl:text>
+    <xsl:text>            requestHMIAnimation();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1246,8 +1298,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="excluded_types" select="str:split('Page Lang')"/>
-  <xsl:variable name="excluded_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
+  <xsl:variable name="excluded_types" select="str:split('Page Lang VarInit')"/>
+  <xsl:variable name="included_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
   <declarations:hmi-elements/>
   <xsl:template match="declarations:hmi-elements">
     <xsl:text>
@@ -1260,7 +1312,7 @@
 </xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
-    <xsl:apply-templates mode="hmi_widgets" select="$hmi_elements[@id = $excluded_ids]"/>
+    <xsl:apply-templates mode="hmi_widgets" select="$hmi_elements[@id = $included_ids]"/>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -1343,11 +1395,9 @@
   </xsl:template>
   <func:function name="func:escape_quotes">
     <xsl:param name="txt"/>
-    <xsl:variable name="frst" select="substring-before($txt,'&quot;')"/>
-    <xsl:variable name="frstln" select="string-length($frst)"/>
     <xsl:choose>
-      <xsl:when test="$frstln &gt; 0 and string-length($txt) &gt; $frstln">
-        <func:result select="concat($frst,'\&quot;',func:escape_quotes(substring-after($txt,'&quot;')))"/>
+      <xsl:when test="contains($txt,'&quot;')">
+        <func:result select="concat(substring-before($txt,'&quot;'),'\&quot;',func:escape_quotes(substring-after($txt,'&quot;')))"/>
       </xsl:when>
       <xsl:otherwise>
         <func:result select="$txt"/>
@@ -1380,6 +1430,78 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='Button']">
+    <xsl:text>class ButtonWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    state = 0;
+</xsl:text>
+    <xsl:text>    active_style = undefined;
+</xsl:text>
+    <xsl:text>    inactive_style = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_mouse_down(evt) {
+</xsl:text>
+    <xsl:text>         if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>             this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>             this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         this.apply_hmi_value(0, 1);
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_mouse_up(evt) {
+</xsl:text>
+    <xsl:text>         if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>             this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>             this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         this.apply_hmi_value(0, 0);
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     init() {
+</xsl:text>
+    <xsl:text>        this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>        this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Button']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
@@ -1389,63 +1511,7 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
-    <xsl:text>frequency: 5,
-</xsl:text>
-    <xsl:text>on_mouse_down: function(evt) {
-</xsl:text>
-    <xsl:text>    if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>        this.active_elt.setAttribute("style", this.active_style);
-</xsl:text>
-    <xsl:text>        this.inactive_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    this.apply_hmi_value(0, 1);
-</xsl:text>
-    <xsl:text>},
-</xsl:text>
-    <xsl:text>on_mouse_up: function(evt) {
-</xsl:text>
-    <xsl:text>    if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>        this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>        this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    this.apply_hmi_value(0, 0);
-</xsl:text>
-    <xsl:text>},
-</xsl:text>
-    <xsl:text>active_style: undefined,
-</xsl:text>
-    <xsl:text>inactive_style: undefined,
-</xsl:text>
-    <xsl:text>init: function() {
-</xsl:text>
-    <xsl:text>  this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>  this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>  if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>      this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>      this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>  }
-</xsl:text>
-    <xsl:text>  this.element.setAttribute("onmousedown", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_mouse_down(evt)");
-</xsl:text>
-    <xsl:text>  this.element.setAttribute("onmouseup", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_mouse_up(evt)");
-</xsl:text>
-    <xsl:text>},
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
@@ -1542,6 +1608,320 @@
     <xsl:text>    this.proportions = [rx, ry];
 </xsl:text>
     <xsl:text>},
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='CircularSlider']">
+    <xsl:text>class CircularSliderWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    range = undefined;
+</xsl:text>
+    <xsl:text>    circle = undefined;
+</xsl:text>
+    <xsl:text>    handle_pos = undefined;
+</xsl:text>
+    <xsl:text>    drag = false;
+</xsl:text>
+    <xsl:text>    enTimer = false;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        if(!this.drag){
+</xsl:text>
+    <xsl:text>            if(this.value_elt)
+</xsl:text>
+    <xsl:text>                this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.handle_position(value);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    handle_position(value){
+</xsl:text>
+    <xsl:text>        let [min,max,totalDistance] = this.range;
+</xsl:text>
+    <xsl:text>        let length = Math.max(0,Math.min((totalDistance),(Number(value)-min)/(max-min)*(totalDistance)));
+</xsl:text>
+    <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
+</xsl:text>
+    <xsl:text>        this.handle_elt.setAttribute('transform',"translate("+(tip.x-this.handle_pos.x)+","+(tip.y-this.handle_pos.y)+")");
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_release(evt) {
+</xsl:text>
+    <xsl:text>        if(this.drag){
+</xsl:text>
+    <xsl:text>            this.drag = false;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    update_position(evt){
+</xsl:text>
+    <xsl:text>        if(this.drag &amp;&amp; this.enTimer){
+</xsl:text>
+    <xsl:text>            var svg_dist = 0;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //calculate center of widget in html
+</xsl:text>
+    <xsl:text>            // --TODO maybe it would be better to bind this part to window change size event ???
+</xsl:text>
+    <xsl:text>            let [xdest,ydest,svgWidth,svgHeight] = page_desc[current_visible_page].bbox;
+</xsl:text>
+    <xsl:text>            let [cX, cY,fiStart,fiEnd,minMax,x1,y1,width,height] = this.circle;
+</xsl:text>
+    <xsl:text>            let htmlCirc = this.range_elt.getBoundingClientRect();
+</xsl:text>
+    <xsl:text>            let cxHtml = ((htmlCirc.right-htmlCirc.left)/(width)*(cX-x1))+htmlCirc.left;
+</xsl:text>
+    <xsl:text>            let cyHtml = ((htmlCirc.bottom-htmlCirc.top)/(height)*(cY-y1))+htmlCirc.top;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //get mouse coordinates
+</xsl:text>
+    <xsl:text>            let mouseX = undefined;
+</xsl:text>
+    <xsl:text>            let mouseY = undefined;
+</xsl:text>
+    <xsl:text>            if (evt.type.startsWith("touch")){
+</xsl:text>
+    <xsl:text>                mouseX = Math.ceil(evt.touches[0].clientX);
+</xsl:text>
+    <xsl:text>                mouseY = Math.ceil(evt.touches[0].clientY);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                mouseX = evt.pageX;
+</xsl:text>
+    <xsl:text>                mouseY = evt.pageY;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //calculate angle
+</xsl:text>
+    <xsl:text>            let fi = Math.atan2(cyHtml-mouseY, mouseX-cxHtml);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // transform from 0 to 2PI
+</xsl:text>
+    <xsl:text>            if (fi &gt; 0){
+</xsl:text>
+    <xsl:text>                fi = 2*Math.PI-fi;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                fi = -fi;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //offset it to 0
+</xsl:text>
+    <xsl:text>            fi = fi - fiStart;
+</xsl:text>
+    <xsl:text>            if (fi &lt; 0){
+</xsl:text>
+    <xsl:text>                fi = fi + 2*Math.PI;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //get handle distance from mouse position
+</xsl:text>
+    <xsl:text>            if(fi&lt;fiEnd){
+</xsl:text>
+    <xsl:text>                svg_dist=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else if(fiEnd&lt;fi &amp;&amp; fi&lt;fiEnd+minMax){
+</xsl:text>
+    <xsl:text>                svg_dist = this.range[1];
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                svg_dist = this.range[0];
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //redraw handle --TODO is it fast enough if I just call change_hmi_value???
+</xsl:text>
+    <xsl:text>            this.handle_position(svg_dist);
+</xsl:text>
+    <xsl:text>            if(this.value_elt)
+</xsl:text>
+    <xsl:text>                this.value_elt.textContent = String(Math.ceil(svg_dist));
+</xsl:text>
+    <xsl:text>            this.apply_hmi_value(0, Math.ceil(svg_dist));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //reset timer
+</xsl:text>
+    <xsl:text>            this.enTimer = false;
+</xsl:text>
+    <xsl:text>            setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_select(evt){
+</xsl:text>
+    <xsl:text>        this.drag = true;
+</xsl:text>
+    <xsl:text>        this.enTimer = true;
+</xsl:text>
+    <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        //get min max
+</xsl:text>
+    <xsl:text>        let min = this.min_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>        let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //fiStart ==&gt; offset
+</xsl:text>
+    <xsl:text>        let fiStart = Number(this.range_elt.getAttribute('sodipodi:start'));
+</xsl:text>
+    <xsl:text>        let fiEnd = Number(this.range_elt.getAttribute('sodipodi:end'));
+</xsl:text>
+    <xsl:text>        fiEnd = fiEnd - fiStart;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //fiEnd ==&gt; size of angle
+</xsl:text>
+    <xsl:text>        if (fiEnd &lt; 0){
+</xsl:text>
+    <xsl:text>            fiEnd = 2*Math.PI + fiEnd;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //min max barrier angle
+</xsl:text>
+    <xsl:text>        let minMax = (2*Math.PI - fiEnd)/2;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //get parameters from svg
+</xsl:text>
+    <xsl:text>        let cX = Number(this.range_elt.getAttribute('sodipodi:cx'));
+</xsl:text>
+    <xsl:text>        let cY = Number(this.range_elt.getAttribute('sodipodi:cy'));
+</xsl:text>
+    <xsl:text>        this.range_elt.style.strokeMiterlimit="0"; //eliminates some weird border around html object
+</xsl:text>
+    <xsl:text>        this.range = [min, max,this.range_elt.getTotalLength()];
+</xsl:text>
+    <xsl:text>        let cPos = this.range_elt.getBBox();
+</xsl:text>
+    <xsl:text>        this.handle_pos = this.range_elt.getPointAtLength(0);
+</xsl:text>
+    <xsl:text>        this.circle = [cX, cY,fiStart,fiEnd,minMax,cPos.x,cPos.y,cPos.width,cPos.height];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //init events
+</xsl:text>
+    <xsl:text>        this.handle_elt.addEventListener("touchstart", hmi_widgets[this.element_id].on_select.bind(this));
+</xsl:text>
+    <xsl:text>        this.handle_elt.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchmove", hmi_widgets[this.element_id].update_position.bind(this));
+</xsl:text>
+    <xsl:text>        window.addEventListener("mousemove", hmi_widgets[this.element_id].update_position.bind(this));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.addEventListener("mouseup", hmi_widgets[this.element_id].on_release.bind(this))
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchend", hmi_widgets[this.element_id].on_release.bind(this));
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchcancel", hmi_widgets[this.element_id].on_release.bind(this));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='CircularSlider']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>handle range</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='Display']">
@@ -2833,6 +3213,13 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>key_pos</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
     <xsl:variable name="value_elt">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -2891,11 +3278,13 @@
 </xsl:text>
     <xsl:text>    on_edit_click: function(opstr) {
 </xsl:text>
+    <xsl:text>        var size = (typeof this.key_pos_elt !== 'undefined') ?  this.key_pos_elt.getBBox() : undefined
+</xsl:text>
     <xsl:text>        edit_value("</xsl:text>
     <xsl:value-of select="path/@value"/>
     <xsl:text>", "</xsl:text>
     <xsl:value-of select="path/@type"/>
-    <xsl:text>", this, this.last_val);
+    <xsl:text>", this, this.last_val,size);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -3310,6 +3699,298 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='Keypad']">
+    <xsl:text>class KeypadWidget extends Widget{
+</xsl:text>
+    <xsl:text>     moving = undefined;
+</xsl:text>
+    <xsl:text>     enTimer = undefined;
+</xsl:text>
+    <xsl:text>     offset = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_position_click(evt) {
+</xsl:text>
+    <xsl:text>         this.moving = true;
+</xsl:text>
+    <xsl:text>         this.enTimer = true;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         // get click position offset from widget x,y and save it to variable
+</xsl:text>
+    <xsl:text>         var keypad_borders = this.position_elt.getBoundingClientRect();
+</xsl:text>
+    <xsl:text>         var clickX = undefined;
+</xsl:text>
+    <xsl:text>         var clickY = undefined;
+</xsl:text>
+    <xsl:text>         if (evt.type == "touchstart"){
+</xsl:text>
+    <xsl:text>             clickX = Math.ceil(evt.touches[0].clientX);
+</xsl:text>
+    <xsl:text>             clickY = Math.ceil(evt.touches[0].clientY);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         else{
+</xsl:text>
+    <xsl:text>             clickX = evt.pageX;
+</xsl:text>
+    <xsl:text>             clickY = evt.pageY;
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         this.offset=[clickX-keypad_borders.left,clickY-keypad_borders.top]
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     off_position_click(evt) {
+</xsl:text>
+    <xsl:text>        if(this.moving)
+</xsl:text>
+    <xsl:text>            this.moving = false;
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_move(evt) {
+</xsl:text>
+    <xsl:text>         if(this.moving &amp;&amp; this.enTimer){
+</xsl:text>
+    <xsl:text>             //get keyboard pos in html
+</xsl:text>
+    <xsl:text>             let [eltid, tmpgrp] = current_modal;
+</xsl:text>
+    <xsl:text>             let [xcoord,ycoord] = this.coordinates;
+</xsl:text>
+    <xsl:text>             let [xdest,ydest,svgWidth,svgHeight] = page_desc[current_visible_page].bbox;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>             //get mouse coordinates
+</xsl:text>
+    <xsl:text>             var clickX = undefined;
+</xsl:text>
+    <xsl:text>             var clickY = undefined;
+</xsl:text>
+    <xsl:text>             if (evt.type == "touchmove"){
+</xsl:text>
+    <xsl:text>                 clickX = Math.ceil(evt.touches[0].clientX);
+</xsl:text>
+    <xsl:text>                 clickY = Math.ceil(evt.touches[0].clientY);
+</xsl:text>
+    <xsl:text>             }
+</xsl:text>
+    <xsl:text>             else{
+</xsl:text>
+    <xsl:text>                 clickX = evt.pageX;
+</xsl:text>
+    <xsl:text>                 clickY = evt.pageY;
+</xsl:text>
+    <xsl:text>             }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>             //translate keyboard position
+</xsl:text>
+    <xsl:text>             let mouseX = ((clickX-this.offset[0])/window.innerWidth)*svgWidth;
+</xsl:text>
+    <xsl:text>             let mouseY = ((clickY-this.offset[1])/window.innerHeight)*svgHeight;
+</xsl:text>
+    <xsl:text>             tmpgrp.setAttribute("transform","translate("+String(xdest-xcoord+mouseX)+","+String(ydest-ycoord+mouseY)+")");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>             //reset timer
+</xsl:text>
+    <xsl:text>             this.enTimer = false;
+</xsl:text>
+    <xsl:text>             setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_key_click(symbols) {
+</xsl:text>
+    <xsl:text>         var syms = symbols.split(" ");
+</xsl:text>
+    <xsl:text>         this.shift |= this.caps;
+</xsl:text>
+    <xsl:text>         this.editstr += syms[this.shift?syms.length-1:0];
+</xsl:text>
+    <xsl:text>         this.shift = false;
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_Esc_click() {
+</xsl:text>
+    <xsl:text>         end_modal.call(this);
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_Enter_click() {
+</xsl:text>
+    <xsl:text>         end_modal.call(this);
+</xsl:text>
+    <xsl:text>         let callback_obj = this.result_callback_obj;
+</xsl:text>
+    <xsl:text>         callback_obj.edit_callback(this.editstr);
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_BackSpace_click() {
+</xsl:text>
+    <xsl:text>         this.editstr = this.editstr.slice(0,this.editstr.length-1);
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_Sign_click() {
+</xsl:text>
+    <xsl:text>         if(this.editstr[0] == "-")
+</xsl:text>
+    <xsl:text>             this.editstr = this.editstr.slice(1,this.editstr.length);
+</xsl:text>
+    <xsl:text>         else
+</xsl:text>
+    <xsl:text>             this.editstr = "-" + this.editstr;
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_NumDot_click() {
+</xsl:text>
+    <xsl:text>         if(this.editstr.indexOf(".") == "-1"){
+</xsl:text>
+    <xsl:text>             this.editstr += ".";
+</xsl:text>
+    <xsl:text>             this.update();
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_Space_click() {
+</xsl:text>
+    <xsl:text>         this.editstr += " ";
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     caps = false;
+</xsl:text>
+    <xsl:text>     _caps = undefined;
+</xsl:text>
+    <xsl:text>     on_CapsLock_click() {
+</xsl:text>
+    <xsl:text>         this.caps = !this.caps;
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     shift = false;
+</xsl:text>
+    <xsl:text>     _shift = undefined;
+</xsl:text>
+    <xsl:text>     on_Shift_click() {
+</xsl:text>
+    <xsl:text>         this.shift = !this.shift;
+</xsl:text>
+    <xsl:text>         this.caps = false;
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>     editstr = "";
+</xsl:text>
+    <xsl:text>     _editstr = undefined;
+</xsl:text>
+    <xsl:text>     result_callback_obj = undefined;
+</xsl:text>
+    <xsl:text>     start_edit(info, valuetype, callback_obj, initial,size) {
+</xsl:text>
+    <xsl:text>         show_modal.call(this,size);
+</xsl:text>
+    <xsl:text>         this.editstr = initial;
+</xsl:text>
+    <xsl:text>         this.result_callback_obj = callback_obj;
+</xsl:text>
+    <xsl:text>         this.Info_elt.textContent = info;
+</xsl:text>
+    <xsl:text>         this.shift = false;
+</xsl:text>
+    <xsl:text>         this.caps = false;
+</xsl:text>
+    <xsl:text>         this.update();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     update() {
+</xsl:text>
+    <xsl:text>         if(this.editstr != this._editstr){
+</xsl:text>
+    <xsl:text>             this._editstr = this.editstr;
+</xsl:text>
+    <xsl:text>             this.Value_elt.textContent = this.editstr;
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         if(this.shift != this._shift){
+</xsl:text>
+    <xsl:text>             this._shift = this.shift;
+</xsl:text>
+    <xsl:text>             (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         if(this.caps != this._caps){
+</xsl:text>
+    <xsl:text>             this._caps = this.caps;
+</xsl:text>
+    <xsl:text>             (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
@@ -3321,7 +4002,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>Sign Space NumDot</xsl:text>
+        <xsl:text>Sign Space NumDot position</xsl:text>
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
@@ -3359,105 +4040,27 @@
       <xsl:text>_click()");
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>    },
+    <xsl:text>        if(this.position_elt){
 </xsl:text>
-    <xsl:text>    on_key_click: function(symbols) {
+    <xsl:text>           this.position_elt.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
 </xsl:text>
-    <xsl:text>        var syms = symbols.split(" ");
+    <xsl:text>           this.position_elt.setAttribute("ontouchstart", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
 </xsl:text>
-    <xsl:text>        this.shift |= this.caps;
+    <xsl:text>           window.addEventListener("mouseup", hmi_widgets[this.element_id].off_position_click.bind(this));
 </xsl:text>
-    <xsl:text>        this.editstr += syms[this.shift?syms.length-1:0];
+    <xsl:text>           window.addEventListener("touchend", hmi_widgets[this.element_id].off_position_click.bind(this));
 </xsl:text>
-    <xsl:text>        this.shift = false;
+    <xsl:text>           window.addEventListener("touchcancel", hmi_widgets[this.element_id].off_position_click.bind(this));
 </xsl:text>
-    <xsl:text>        this.update();
+    <xsl:text>           window.addEventListener("mousemove", hmi_widgets[this.element_id].on_move.bind(this));
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>           window.addEventListener("touchmove", hmi_widgets[this.element_id].on_move.bind(this));
 </xsl:text>
-    <xsl:text>    on_Esc_click: function() {
-</xsl:text>
-    <xsl:text>        end_modal.call(this);
+    <xsl:text>       }
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    on_Enter_click: function() {
-</xsl:text>
-    <xsl:text>        end_modal.call(this);
-</xsl:text>
-    <xsl:text>        callback_obj = this.result_callback_obj;
-</xsl:text>
-    <xsl:text>        callback_obj.edit_callback(this.editstr);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    on_BackSpace_click: function() {
-</xsl:text>
-    <xsl:text>        this.editstr = this.editstr.slice(0,this.editstr.length-1);
-</xsl:text>
-    <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    on_Sign_click: function() {
-</xsl:text>
-    <xsl:text>        if(this.editstr[0] == "-")
-</xsl:text>
-    <xsl:text>            this.editstr = this.editstr.slice(1,this.editstr.length);
-</xsl:text>
-    <xsl:text>        else
-</xsl:text>
-    <xsl:text>            this.editstr = "-" + this.editstr;
-</xsl:text>
-    <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    on_NumDot_click: function() {
-</xsl:text>
-    <xsl:text>        if(this.editstr.indexOf(".") == "-1"){
-</xsl:text>
-    <xsl:text>            this.editstr += ".";
-</xsl:text>
-    <xsl:text>            this.update();
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    on_Space_click: function() {
-</xsl:text>
-    <xsl:text>        this.editstr += " ";
-</xsl:text>
-    <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    caps: false,
-</xsl:text>
-    <xsl:text>    _caps: undefined,
-</xsl:text>
-    <xsl:text>    on_CapsLock_click: function() {
-</xsl:text>
-    <xsl:text>        this.caps = !this.caps;
-</xsl:text>
-    <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    shift: false,
-</xsl:text>
-    <xsl:text>    _shift: undefined,
-</xsl:text>
-    <xsl:text>    on_Shift_click: function() {
-</xsl:text>
-    <xsl:text>        this.shift = !this.shift;
-</xsl:text>
-    <xsl:text>        this.caps = false;
-</xsl:text>
-    <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>    },
+    <xsl:text>
 </xsl:text>
     <xsl:variable name="g" select="$geometry[@Id = $hmi_element/@id]"/>
     <xsl:text>    coordinates: [</xsl:text>
@@ -3465,58 +4068,6 @@
     <xsl:text>, </xsl:text>
     <xsl:value-of select="$g/@y"/>
     <xsl:text>],
-</xsl:text>
-    <xsl:text>    editstr: "",
-</xsl:text>
-    <xsl:text>    _editstr: undefined,
-</xsl:text>
-    <xsl:text>    result_callback_obj: undefined,
-</xsl:text>
-    <xsl:text>    start_edit: function(info, valuetype, callback_obj, initial) {
-</xsl:text>
-    <xsl:text>        show_modal.call(this);
-</xsl:text>
-    <xsl:text>        this.editstr = initial;
-</xsl:text>
-    <xsl:text>        this.result_callback_obj = callback_obj;
-</xsl:text>
-    <xsl:text>        this.Info_elt.textContent = info;
-</xsl:text>
-    <xsl:text>        this.shift = false;
-</xsl:text>
-    <xsl:text>        this.caps = false;
-</xsl:text>
-    <xsl:text>        this.update();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    update: function() {
-</xsl:text>
-    <xsl:text>        if(this.editstr != this._editstr){
-</xsl:text>
-    <xsl:text>            this._editstr = this.editstr;
-</xsl:text>
-    <xsl:text>            this.Value_elt.textContent = this.editstr;
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        if(this.shift != this._shift){
-</xsl:text>
-    <xsl:text>            this._shift = this.shift;
-</xsl:text>
-    <xsl:text>            (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>        if(this.caps != this._caps){
-</xsl:text>
-    <xsl:text>            this._caps = this.caps;
-</xsl:text>
-    <xsl:text>            (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    },
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='List']">
@@ -3592,6 +4143,453 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='MultiState']">
+    <xsl:text>class MultiStateWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    state = 0;
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.state = value;
+</xsl:text>
+    <xsl:text>        for(let choice of this.choices){
+</xsl:text>
+    <xsl:text>            if(this.state != choice.value){
+</xsl:text>
+    <xsl:text>                choice.elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>                choice.elt.setAttribute("style", choice.style);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_click(evt) {
+</xsl:text>
+    <xsl:text>        //get current selected value
+</xsl:text>
+    <xsl:text>        let next_ind;
+</xsl:text>
+    <xsl:text>        for(next_ind=0; next_ind&lt;this.choices.length; next_ind++){
+</xsl:text>
+    <xsl:text>            if(this.state == this.choices[next_ind].value){
+</xsl:text>
+    <xsl:text>               next_ind = next_ind + 1;
+</xsl:text>
+    <xsl:text>               break;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //get next selected value
+</xsl:text>
+    <xsl:text>        if(this.choices.length &gt; next_ind){
+</xsl:text>
+    <xsl:text>            this.state = this.choices[next_ind].value;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            this.state = this.choices[0].value;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //post value to plc
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, this.state);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='MultiState']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    choices: [
+</xsl:text>
+    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
+    <xsl:for-each select="$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]">
+      <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
+      <xsl:text>        {
+</xsl:text>
+      <xsl:text>            elt:id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"),
+</xsl:text>
+      <xsl:text>            style:"</xsl:text>
+      <xsl:value-of select="@style"/>
+      <xsl:text>",
+</xsl:text>
+      <xsl:text>            value:</xsl:text>
+      <xsl:value-of select="$literal"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>        }</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    ],
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='Slider']">
+    <xsl:text>class SliderWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    range = undefined;
+</xsl:text>
+    <xsl:text>    fi = undefined;
+</xsl:text>
+    <xsl:text>    drag = false;
+</xsl:text>
+    <xsl:text>    enTimer = false;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        if(this.value_elt)
+</xsl:text>
+    <xsl:text>            this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.update_DOM(value, this.handle_elt);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    last_drag = false;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    update_DOM(value, elt){
+</xsl:text>
+    <xsl:text>        let [min,max,start,totallength] = this.range;
+</xsl:text>
+    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+</xsl:text>
+    <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
+</xsl:text>
+    <xsl:text>        elt.setAttribute('transform',"translate("+(tip.x-start.x)+","+(tip.y-start.y)+")");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            if(this.last_drag!= this.drag){
+</xsl:text>
+    <xsl:text>                if(this.drag){
+</xsl:text>
+    <xsl:text>                    this.setpoint_elt.setAttribute("style", this.setpoint_style);
+</xsl:text>
+    <xsl:text>                }else{
+</xsl:text>
+    <xsl:text>                    this.setpoint_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                this.last_drag = this.drag;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_release(evt) {
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchmove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mousemove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        if(this.drag){
+</xsl:text>
+    <xsl:text>            this.drag = false;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_drag(evt){
+</xsl:text>
+    <xsl:text>        if(this.enTimer &amp;&amp; this.drag){
+</xsl:text>
+    <xsl:text>            this.update_position(evt);
+</xsl:text>
+    <xsl:text>            //reset timer
+</xsl:text>
+    <xsl:text>            this.enTimer = false;
+</xsl:text>
+    <xsl:text>            setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    update_position(evt){
+</xsl:text>
+    <xsl:text>        var html_dist = 0;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //calculate size of widget in html
+</xsl:text>
+    <xsl:text>        var range_borders = this.range_elt.getBoundingClientRect();
+</xsl:text>
+    <xsl:text>        var range_length = Math.sqrt( range_borders.height*range_borders.height + range_borders.width*range_borders.width );
+</xsl:text>
+    <xsl:text>        var [minX,minY,maxX,maxY] = [range_borders.left,range_borders.bottom,range_borders.right,range_borders.top];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //get range and mouse coordinates
+</xsl:text>
+    <xsl:text>        var mouseX = undefined;
+</xsl:text>
+    <xsl:text>        var mouseY = undefined;
+</xsl:text>
+    <xsl:text>        if (evt.type.startsWith("touch")){
+</xsl:text>
+    <xsl:text>            mouseX = Math.ceil(evt.touches[0].clientX);
+</xsl:text>
+    <xsl:text>            mouseY = Math.ceil(evt.touches[0].clientY);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            mouseX = evt.pageX;
+</xsl:text>
+    <xsl:text>            mouseY = evt.pageY;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //get handle distance from mouse position
+</xsl:text>
+    <xsl:text>        if (minX &gt; mouseX &amp;&amp; minY &lt; mouseY){
+</xsl:text>
+    <xsl:text>            html_dist = 0;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else if (maxX &lt; mouseX &amp;&amp; maxY &gt; mouseY){
+</xsl:text>
+    <xsl:text>            html_dist = range_length;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            // calculate distace
+</xsl:text>
+    <xsl:text>            if(this.fi &gt; 0.7){
+</xsl:text>
+    <xsl:text>                html_dist = (minY - mouseY)/Math.sin(this.fi);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                html_dist = (mouseX - minX)/Math.cos(this.fi);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //check if in range
+</xsl:text>
+    <xsl:text>            if (html_dist &gt; range_length){
+</xsl:text>
+    <xsl:text>                html_dist = range_length;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else if (html_dist &lt; 0){
+</xsl:text>
+    <xsl:text>                html_dist = 0;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.svg_dist=Math.ceil((html_dist/range_length)*this.range[1]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, this.svg_dist);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // update ghost cursor
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            this.request_animate();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>        this.update_DOM(this.svg_dist, this.setpoint_elt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_select(evt){
+</xsl:text>
+    <xsl:text>        this.drag = true;
+</xsl:text>
+    <xsl:text>        this.enTimer = true;
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchmove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>        window.addEventListener("mousemove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchcancel", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        let min = this.min_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>        let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>                    Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.range = [min, max, this.range_elt.getPointAtLength(0),this.range_elt.getTotalLength()];
+</xsl:text>
+    <xsl:text>        let start = this.range_elt.getPointAtLength(0);
+</xsl:text>
+    <xsl:text>        let end = this.range_elt.getPointAtLength(this.range_elt.getTotalLength());
+</xsl:text>
+    <xsl:text>        this.fi = Math.atan2(start.y-end.y, end.x-start.x);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.bound_on_select = this.on_select.bind(this);
+</xsl:text>
+    <xsl:text>        this.bound_on_release = this.on_release.bind(this);
+</xsl:text>
+    <xsl:text>        this.on_bound_drag = this.on_drag.bind(this);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("mousedown", this.bound_on_select);
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("touchstart", this.bound_on_select);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            this.setpoint_style = this.setpoint_elt.getAttribute("style");
+</xsl:text>
+    <xsl:text>            this.setpoint_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Slider']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>handle range</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max setpoint</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='Switch']">
     <xsl:text>class SwitchWidget extends Widget{
 </xsl:text>
@@ -3649,19 +4647,20 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
-    <xsl:param name="hmi_element"/>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>active inactive</xsl:text>
-      </xsl:with-param>
-    </xsl:call-template>
-    <xsl:text>    frequency: 5,
+  <xsl:template mode="widget_class" match="widget[@type='ToggleButton']">
+    <xsl:text>class ToggleButtonWidget extends Widget{
 </xsl:text>
-    <xsl:text>    state: 0,
+    <xsl:text>    frequency = 5;
 </xsl:text>
-    <xsl:text>    dispatch: function(value) {
+    <xsl:text>    state = 0;
+</xsl:text>
+    <xsl:text>    active_style = undefined;
+</xsl:text>
+    <xsl:text>    inactive_style = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
 </xsl:text>
     <xsl:text>        this.state = value;
 </xsl:text>
@@ -3683,29 +4682,40 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>    on_click: function(evt) {
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_click(evt) {
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>    active_style: undefined,
+    <xsl:text>
 </xsl:text>
-    <xsl:text>    inactive_style: undefined,
-</xsl:text>
-    <xsl:text>    init: function() {
+    <xsl:text>    init() {
 </xsl:text>
     <xsl:text>        this.active_style = this.active_elt.style.cssText;
 </xsl:text>
     <xsl:text>        this.inactive_style = this.inactive_elt.style.cssText;
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click(evt)");
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template match="/">
@@ -3866,8 +4876,6 @@
 </xsl:text>
           <xsl:text>        // -&gt; pass Number(index) instead
 </xsl:text>
-          <xsl:text>        console.log("apply updated local variable ",index, updates[index]);
-</xsl:text>
           <xsl:text>        dispatch_value(Number(index), updates[index]);
 </xsl:text>
           <xsl:text>        delete updates[index];
@@ -3907,6 +4915,14 @@
           <xsl:text>
 </xsl:text>
           <xsl:text>    apply_updates();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    pending_widget_animates.forEach(widget =&gt; widget._animate());
+</xsl:text>
+          <xsl:text>    pending_widget_animates = [];
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>    requestAnimationFrameID = null;
 </xsl:text>
@@ -4576,7 +5592,7 @@
 </xsl:text>
           <xsl:text>var edit_callback;
 </xsl:text>
-          <xsl:text>function edit_value(path, valuetype, callback, initial) {
+          <xsl:text>function edit_value(path, valuetype, callback, initial, size) {
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -4588,7 +5604,7 @@
 </xsl:text>
           <xsl:text>    let widget = hmi_widgets[keypadid];
 </xsl:text>
-          <xsl:text>    widget.start_edit(path, valuetype, callback, initial);
+          <xsl:text>    widget.start_edit(path, valuetype, callback, initial, size);
 </xsl:text>
           <xsl:text>};
 </xsl:text>
@@ -4598,7 +5614,7 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function show_modal() {
+          <xsl:text>function show_modal(size) {
 </xsl:text>
           <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
 </xsl:text>
@@ -4608,13 +5624,23 @@
 </xsl:text>
           <xsl:text>    tmpgrpattr = document.createAttribute("transform");
 </xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>    let [xcoord,ycoord] = this.coordinates;
 </xsl:text>
           <xsl:text>    let [xdest,ydest] = page_desc[current_visible_page].bbox;
 </xsl:text>
-          <xsl:text>    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+          <xsl:text>    if (typeof size === 'undefined'){
+</xsl:text>
+          <xsl:text>        tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    else{
+</xsl:text>
+          <xsl:text>        tmpgrpattr.value = "translate("+String(xdest-xcoord+size.x)+","+String(ydest-ycoord+size.y)+")";
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>    tmpgrp.setAttributeNode(tmpgrpattr);
 </xsl:text>
