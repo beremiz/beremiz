@@ -182,12 +182,12 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g5231"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="0.35355339"
-     inkscape:cx="228.48319"
-     inkscape:cy="161.32426"
+     inkscape:zoom="0.25"
+     inkscape:cx="840.93557"
+     inkscape:cy="117.51363"
      inkscape:window-width="1800"
      inkscape:window-height="836"
      inkscape:window-x="0"
@@ -5722,8 +5722,11 @@
        id="tspan1611-1">PAGE_LOCAL variables</tspan></text>
   <g
      id="g2387"
-     inkscape:label="HMI:VariableInit:42@level" />
+     inkscape:label="HMI:VarInit:42@level" />
   <g
-     inkscape:label="HMI:VariableInit:&quot;a string&quot;@paff"
+     inkscape:label="HMI:VarInit:&quot;a string&quot;@paff"
      id="g2389" />
+  <g
+     id="g825"
+     inkscape:label="HMI:VarInit:&quot;a page string&quot;@.piff" />
 </svg>

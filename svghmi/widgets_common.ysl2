@@ -32,7 +32,7 @@ template "svg:*", mode="hmi_widgets" {
                     when "not(@type)" 
                         error > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
                     when "@type = 'PAGE_LOCAL'" 
-                        > "«substring(@value, 1)»"`if "position()!=last()" > ,`
+                        > "«@value»"`if "position()!=last()" > ,`
                     when "@type = 'HMI_LOCAL'" 
                         > hmi_local_index("«@value»")`if "position()!=last()" > ,`
                 }
@@ -75,6 +75,15 @@ emit "preamble:local-variable-indexes" {
     var last_remote_index = hmitree_types.length - 1;
     var next_available_index = hmitree_types.length;
 
+    const local_defaults = {
+    ||
+    foreach "$parsed_widgets/widget[@type = 'VarInit']"{
+        if "count(path) != 1" error > VarInit «@id» must have only one variable given.
+        if "path/@type != 'PAGE_LOCAL' and path/@type != 'HMI_LOCAL'" error > VarInit «@id» only applies to HMI variable.
+        | "«path/@value»":«arg[1]/@value»`if "position()!=last()" > ,`
+    }
+    ||
+    };
     var cache = hmitree_types.map(_ignored => undefined);
 
     function page_local_index(varname, pagename){
@@ -92,6 +101,9 @@ emit "preamble:local-variable-indexes" {
             new_index = next_available_index++;
             pagevars[varname] = new_index;
         }
+        let defaultval = local_defaults[varname];
+        if(defaultval != undefined) 
+            cache[new_index] = defaultval; 
         return new_index;
     }
 
@@ -146,12 +158,18 @@ emit "preamble:widget-base-class" {
         }
 
         apply_cache() {
-            if(!this.unsubscribable) for(let index of this.indexes){
+            let dispatch = this.dispatch;
+            if(dispatch == undefined) return;
+            if(!this.unsubscribable) for(let index in this.indexes){
                 /* dispatch current cache in newly opened page widgets */
                 let realindex = this.get_variable_index(index);
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
-                    this.new_hmi_value(realindex, cached_val, cached_val);
+                    try {
+                        dispatch.call(this, cached_val, cached_val, index);
+                    } catch(err) {
+                        console.log(err);
+                    }
             }
         }
 
@@ -175,28 +193,20 @@ emit "preamble:widget-base-class" {
         }
 
         new_hmi_value(index, value, oldval) {
-            try {
-                // TODO avoid searching, store index at sub()
-                for(let i = 0; i < this.indexes.length; i++) {
-                    let refindex = this.get_variable_index(i);
+            // TODO avoid searching, store index at sub()
+            let dispatch = this.dispatch;
+            if(dispatch == undefined) return;
+            for(let i = 0; i < this.indexes.length; i++) {
+                let refindex = this.get_variable_index(i);
 
-                    if(index == refindex) {
-                        let d = this.dispatch;
-                        if(typeof(d) == "function"){
-                            d.call(this, value, oldval, i);
-                        }
-                        else if(typeof(d) == "object"){
-                            d[i].call(this, value, oldval);
-                        }
-                        /* else dispatch_0, ..., dispatch_n ? */
-                        /*else {
-                            throw new Error("Dunno how to dispatch to widget at index = " + index);
-                        }*/
-                        break;
+                if(index == refindex) {
+                    try {
+                        dispatch.call(this, value, oldval, i);
+                    } catch(err) {
+                        console.log(err);
                     }
+                    break;
                 }
-            } catch(err) {
-                console.log(err);
             }
         }
         

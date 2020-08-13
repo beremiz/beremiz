@@ -875,7 +875,7 @@
               </xsl:when>
               <xsl:when test="@type = 'PAGE_LOCAL'">
                 <xsl:text>"</xsl:text>
-                <xsl:value-of select="substring(@value, 1)"/>
+                <xsl:value-of select="@value"/>
                 <xsl:text>"</xsl:text>
                 <xsl:if test="position()!=last()">
                   <xsl:text>,</xsl:text>
@@ -976,9 +976,10 @@
           <xsl:text> only applies to HMI variable.</xsl:text>
         </xsl:message>
       </xsl:if>
-      <xsl:value-of select="arg[0]"/>
-      <xsl:text>:</xsl:text>
+      <xsl:text>"</xsl:text>
       <xsl:value-of select="path/@value"/>
+      <xsl:text>":</xsl:text>
+      <xsl:value-of select="arg[1]/@value"/>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -1020,6 +1021,14 @@
     <xsl:text>        pagevars[varname] = new_index;
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>    let defaultval = local_defaults[varname];
+</xsl:text>
+    <xsl:text>    console.log("page_local_index creat local", varname, pagename, new_index, defaultval);
+</xsl:text>
+    <xsl:text>    if(defaultval != undefined) 
+</xsl:text>
+    <xsl:text>        cache[new_index] = defaultval; 
 </xsl:text>
     <xsl:text>    return new_index;
 </xsl:text>
@@ -1132,7 +1141,11 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable) for(let index of this.indexes){
+    <xsl:text>        let dispatch = this.dispatch;
+</xsl:text>
+    <xsl:text>        if(dispatch == undefined) return;
+</xsl:text>
+    <xsl:text>        if(!this.unsubscribable) for(let index in this.indexes){
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
@@ -1142,7 +1155,15 @@
 </xsl:text>
     <xsl:text>            if(cached_val != undefined)
 </xsl:text>
-    <xsl:text>                this.new_hmi_value(realindex, cached_val, cached_val);
+    <xsl:text>                try {
+</xsl:text>
+    <xsl:text>                    dispatch.call(this, cached_val, cached_val, index);
+</xsl:text>
+    <xsl:text>                } catch(err) {
+</xsl:text>
+    <xsl:text>                    console.log(err);
+</xsl:text>
+    <xsl:text>                }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -1190,49 +1211,33 @@
 </xsl:text>
     <xsl:text>    new_hmi_value(index, value, oldval) {
 </xsl:text>
-    <xsl:text>        try {
+    <xsl:text>        // TODO avoid searching, store index at sub()
 </xsl:text>
-    <xsl:text>            // TODO avoid searching, store index at sub()
+    <xsl:text>        let dispatch = this.dispatch;
 </xsl:text>
-    <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
+    <xsl:text>        if(dispatch == undefined) return;
 </xsl:text>
-    <xsl:text>                let refindex = this.get_variable_index(i);
+    <xsl:text>        for(let i = 0; i &lt; this.indexes.length; i++) {
+</xsl:text>
+    <xsl:text>            let refindex = this.get_variable_index(i);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>                if(index == refindex) {
+    <xsl:text>            if(index == refindex) {
 </xsl:text>
-    <xsl:text>                    let d = this.dispatch;
+    <xsl:text>                try {
 </xsl:text>
-    <xsl:text>                    if(typeof(d) == "function"){
+    <xsl:text>                    dispatch.call(this, value, oldval, i);
 </xsl:text>
-    <xsl:text>                        d.call(this, value, oldval, i);
+    <xsl:text>                } catch(err) {
 </xsl:text>
-    <xsl:text>                    }
-</xsl:text>
-    <xsl:text>                    else if(typeof(d) == "object"){
-</xsl:text>
-    <xsl:text>                        d[i].call(this, value, oldval);
-</xsl:text>
-    <xsl:text>                    }
-</xsl:text>
-    <xsl:text>                    /* else dispatch_0, ..., dispatch_n ? */
-</xsl:text>
-    <xsl:text>                    /*else {
-</xsl:text>
-    <xsl:text>                        throw new Error("Dunno how to dispatch to widget at index = " + index);
-</xsl:text>
-    <xsl:text>                    }*/
-</xsl:text>
-    <xsl:text>                    break;
+    <xsl:text>                    console.log(err);
 </xsl:text>
     <xsl:text>                }
 </xsl:text>
+    <xsl:text>                break;
+</xsl:text>
     <xsl:text>            }
-</xsl:text>
-    <xsl:text>        } catch(err) {
-</xsl:text>
-    <xsl:text>            console.log(err);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
