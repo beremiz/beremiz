@@ -436,46 +436,6 @@ static void *__mb_client_thread(void *_index)  {
 
 
 
-/* Function to activate a client node's thread */
-/* returns -1 if it could not send the signal */
-static int __signal_client_thread(int client_node_id) {
-    /* We TRY to signal the client thread.
-     * We do this because this function can be called at the end of the PLC scan cycle
-     * and we don't want it to block at that time.
-     */
-    if (pthread_mutex_trylock(&(client_nodes[client_node_id].mutex)) != 0)
-        return -1;
-    client_nodes[client_node_id].execute_req = 1; // tell the thread to execute
-    pthread_cond_signal (&(client_nodes[client_node_id].condv));
-    pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
-    return 0;
-}
-
-
-
-/* Function that will be called whenever a client node's periodic timer expires. */
-/* The client node's thread will be waiting on a condition variable, so this function simply signals that 
- * condition variable.
- * 
- * The same callback function is called by the timers of all client nodes. The id of the client node
- * in question will be passed as a parameter to the call back function.
- */
-void __client_node_timer_callback_function(int client_node_id) {
-    /* signal the client node's condition variable on which the client node's thread should be waiting... */
-    /* Since the communication cycle is run with the mutex locked, we use trylock() instead of lock() */
-    if (pthread_mutex_trylock (&(client_nodes[client_node_id].mutex)) != 0)
-        /* we never get to signal the thread for activation. But that is OK.
-         * If it still in the communication cycle (during which the mutex is kept locked)
-         * then that means that the communication cycle is falling behing in the periodic 
-         * communication cycle, and we therefore need to skip a period.
-         */
-        return;
-    client_nodes[client_node_id].execute_req  = 1; // tell the thread to execute
-    client_nodes[client_node_id].periodic_act = 1; // tell the thread the activation was done by periodic timer   
-    pthread_cond_signal (&(client_nodes[client_node_id].condv));
-    pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
-}
-
 
 
 /* Thread that simply implements a periodic 'timer',
@@ -528,10 +488,24 @@ static void *__mb_client_timer_thread(void *_index) {
         }
         
         while (0 != clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle, NULL));
-        __client_node_timer_callback_function(client_node_id);
+        
+        /* signal the client node's condition variable on which the client node's thread should be waiting... */
+        /* Since the communication cycle is run with the mutex locked, we use trylock() instead of lock() */
+        if (pthread_mutex_trylock (&(client_nodes[client_node_id].mutex)) == 0) {
+            client_nodes[client_node_id].execute_req  = 1; // tell the thread to execute
+            client_nodes[client_node_id].periodic_act = 1; // tell the thread the activation was done by periodic timer   
+            pthread_cond_signal (&(client_nodes[client_node_id].condv));
+            pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
+        } else {
+            /* We never get to signal the thread for activation. But that is OK.
+             * If it still in the communication cycle (during which the mutex is kept locked)
+             * then that means that the communication cycle is falling behing in the periodic 
+             * communication cycle, and we therefore need to skip a period.
+             */
+        }
     }
 
-    return NULL;
+    return NULL; // humour the compiler -> will never be executed!
 }
 
 
@@ -743,13 +717,26 @@ void __publish_%(locstr)s (){
          */
         if ((client_requests[index].flag_exec_req != 0) && (0 == client_requests[index].flag_exec_started)) {
             int client_node_id = client_requests[index].client_node_id;
-            if (__signal_client_thread(client_node_id) >= 0) {
-                /* - upon success, set flag_exec_started
-                 * - both flags (flag_exec_req and flag_exec_started) will be reset
-                 *   once the transaction has completed.
-                 */
-                client_requests[index].flag_exec_started = 1;    
-            }
+            
+             /* We TRY to signal the client thread.
+              * We do this because this function can be called at the end of the PLC scan cycle
+              * and we don't want it to block at that time.
+              */
+             if (pthread_mutex_trylock(&(client_nodes[client_node_id].mutex)) == 0) {
+                 client_nodes[client_node_id].execute_req = 1; // tell the thread to execute
+                 pthread_cond_signal (&(client_nodes[client_node_id].condv));
+                 pthread_mutex_unlock(&(client_nodes[client_node_id].mutex));
+                 /* - upon success, set flag_exec_started
+                  * - both flags (flag_exec_req and flag_exec_started) will be reset
+                  *   once the transaction has completed.
+                  */
+                 client_requests[index].flag_exec_started = 1;    
+             } else {
+                 /* The mutex is locked => the client thread is currently executing MB transactions.
+                  * We will try to activate it in the next PLC cycle...
+                  * For now, do nothing.
+                  */
+             }
         }                    
     }
 }
