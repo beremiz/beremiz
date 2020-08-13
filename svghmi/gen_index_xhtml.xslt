@@ -1141,10 +1141,6 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        let dispatch = this.dispatch;
-</xsl:text>
-    <xsl:text>        if(dispatch == undefined) return;
-</xsl:text>
     <xsl:text>        if(!this.unsubscribable) for(let index in this.indexes){
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
@@ -1155,15 +1151,7 @@
 </xsl:text>
     <xsl:text>            if(cached_val != undefined)
 </xsl:text>
-    <xsl:text>                try {
-</xsl:text>
-    <xsl:text>                    dispatch.call(this, cached_val, cached_val, index);
-</xsl:text>
-    <xsl:text>                } catch(err) {
-</xsl:text>
-    <xsl:text>                    console.log(err);
-</xsl:text>
-    <xsl:text>                }
+    <xsl:text>                this._dispatch(cached_val, cached_val, index);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -1213,10 +1201,6 @@
 </xsl:text>
     <xsl:text>        // TODO avoid searching, store index at sub()
 </xsl:text>
-    <xsl:text>        let dispatch = this.dispatch;
-</xsl:text>
-    <xsl:text>        if(dispatch == undefined) return;
-</xsl:text>
     <xsl:text>        for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
     <xsl:text>            let refindex = this.get_variable_index(i);
@@ -1225,15 +1209,7 @@
 </xsl:text>
     <xsl:text>            if(index == refindex) {
 </xsl:text>
-    <xsl:text>                try {
-</xsl:text>
-    <xsl:text>                    dispatch.call(this, value, oldval, i);
-</xsl:text>
-    <xsl:text>                } catch(err) {
-</xsl:text>
-    <xsl:text>                    console.log(err);
-</xsl:text>
-    <xsl:text>                }
+    <xsl:text>                this._dispatch(value, oldval, i);
 </xsl:text>
     <xsl:text>                break;
 </xsl:text>
@@ -1244,6 +1220,28 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:text>    
+</xsl:text>
+    <xsl:text>    _dispatch(value, oldval, varnum) {
+</xsl:text>
+    <xsl:text>        let dispatch = this.dispatch;
+</xsl:text>
+    <xsl:text>        if(dispatch != undefined){
+</xsl:text>
+    <xsl:text>            try {
+</xsl:text>
+    <xsl:text>                dispatch.call(this, value, oldval, varnum);
+</xsl:text>
+    <xsl:text>            } catch(err) {
+</xsl:text>
+    <xsl:text>                console.log(err);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    _animate(){
 </xsl:text>
