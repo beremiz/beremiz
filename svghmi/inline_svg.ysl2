@@ -49,14 +49,18 @@ template "sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']", m
 //       while keeping static decoration cloned
 const "hmi_lists_descs", "$parsed_widgets/widget[@type = 'List']";
 const "hmi_lists", "$hmi_elements[@id = $hmi_lists_descs/@id]";
-const "targets_not_to_unlink", "$hmi_elements[@id = $hmi_lists/@id]/descendant::svg:*";
+const "targets_not_to_unlink", "$hmi_lists/descendant-or-self::svg:*";
 const "to_unlink", "$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use";
 svgtmpl "svg:use", mode="inline_svg"
 {
+    param "seed";
     const "targetid","substring-after(@xlink:href,'#')";
     choose {
         when "@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)" {
-            call "unlink_clone" with "targetid", "$targetid";
+            call "unlink_clone" {
+                with "targetid", "$targetid";
+                with "seed","$seed";
+            }
         }
         otherwise
             xsl:copy apply "@* | node()", mode="inline_svg";
@@ -71,6 +75,7 @@ const "_excluded_use_attrs" {
     name > height
     name > x
     name > y
+    name > id
 }
 const "excluded_use_attrs","exsl:node-set($_excluded_use_attrs)";
 
@@ -82,8 +87,11 @@ const "merge_use_attrs","exsl:node-set($_merge_use_attrs)";
 
 svgfunc "unlink_clone"{
     param "targetid";
+    param "seed";
     const "target", "//svg:*[@id = $targetid]";
+    const "seeded_id","concat($seed, @id)";
     g{
+        attrib "id" value "$seeded_id";
         choose {
             when "$target[self::svg:g]" {
                 foreach "@*[not(local-name() = $excluded_use_attrs/name | $merge_use_attrs)]"
@@ -104,7 +112,7 @@ svgfunc "unlink_clone"{
                     }
 
                 apply "$target/*", mode="unlink_clone"{
-                    with "seed","@id";
+                    with "seed","concat($seed, @id)";
                 }
             }
             otherwise {
@@ -113,7 +121,7 @@ svgfunc "unlink_clone"{
                     attrib "{name()}" > «.»
 
                 apply "$target", mode="unlink_clone"{
-                    with "seed","@id";
+                    with "seed","concat($seed, @id)";
                 }
             }
         }
@@ -128,6 +136,11 @@ svgtmpl "@id", mode="unlink_clone" {
 }
 
 svgtmpl "@*", mode="unlink_clone" xsl:copy;
+
+svgtmpl "svg:use", mode="unlink_clone" {
+    param "seed";
+    apply "." mode="inline_svg" with "seed","concat($seed, '_')";
+}
 
 // copying widgets would have unwanted effect
 // instead widget is refered through a svg:use.
