@@ -185,9 +185,9 @@
      inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="0.25"
-     inkscape:cx="840.93557"
-     inkscape:cy="117.51363"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="1149.6204"
+     inkscape:cy="676.68024"
      inkscape:window-width="1800"
      inkscape:window-height="836"
      inkscape:window-x="0"
@@ -2850,17 +2850,15 @@
            height="100%"
            transform="matrix(0.7609336,0,0,0.7609336,199.15217,164.3798)"
            inkscape:label=".sides" />
-        <text
-           xml:space="preserve"
-           style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none"
-           x="971.58551"
-           y="56.106419"
-           id="text1382"
-           inkscape:label=".name"><tspan
-             sodipodi:role="line"
-             id="tspan1380"
-             x="971.58551"
-             y="56.106419">value</tspan></text>
+        <use
+           transform="matrix(2,0,0,2,-474.04606,349.02524)"
+           x="0"
+           y="0"
+           xlink:href="#use913"
+           id="use966"
+           width="100%"
+           height="100%"
+           inkscape:label=".textstyle content=.name" />
       </g>
       <use
          inkscape:label="[1]"
@@ -2893,7 +2891,8 @@
   </g>
   <g
      id="g1332"
-     inkscape:label="polygons">
+     inkscape:label="polygons"
+     transform="translate(-126,32)">
     <path
        inkscape:transform-center-y="2.9995242"
        inkscape:transform-center-x="0.14620371"
@@ -3005,7 +3004,8 @@
   </g>
   <g
      inkscape:label="HMI:List:polygons"
-     id="g1311">
+     id="g1311"
+     transform="translate(-126,32)">
     <use
        x="0"
        y="0"
@@ -5729,4 +5729,98 @@
   <g
      id="g825"
      inkscape:label="HMI:VarInit:&quot;a page string&quot;@.piff" />
+  <g
+     id="g893"
+     inkscape:label="textstyles"
+     transform="translate(-136,-6.0000001)">
+    <text
+       inkscape:label="alarm"
+       id="text1382-7"
+       y="-171.54395"
+       x="1298.9102"
+       style="font-style:normal;font-weight:normal;font-size:20px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.5"
+       xml:space="preserve"><tspan
+         y="-171.54395"
+         x="1298.9102"
+         id="tspan1380-5"
+         sodipodi:role="line"
+         style="stroke-width:0.5">value</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:20px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+       x="1298.9102"
+       y="-191.54395"
+       id="text875"
+       inkscape:label="ack"><tspan
+         style="fill:#000000;stroke-width:0.5"
+         sodipodi:role="line"
+         id="tspan873"
+         x="1298.9102"
+         y="-191.54395">value</tspan></text>
+    <text
+       inkscape:label="active"
+       id="text879"
+       y="-211.54395"
+       x="1298.9102"
+       style="font-style:normal;font-weight:normal;font-size:20px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#00ff00;fill-opacity:1;stroke:none;stroke-width:0.5"
+       xml:space="preserve"><tspan
+         y="-211.54395"
+         x="1298.9102"
+         id="tspan877"
+         sodipodi:role="line"
+         style="fill:#00ff00;stroke-width:0.5">value</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:20px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.5"
+       x="1298.9102"
+       y="-231.54395"
+       id="text883"
+       inkscape:label="disabled"><tspan
+         style="fill:#999999;stroke-width:0.5"
+         sodipodi:role="line"
+         id="tspan881"
+         x="1298.9102"
+         y="-231.54395">value</tspan></text>
+  </g>
+  <g
+     id="g907"
+     inkscape:label="HMI:StyleList:textstyles"
+     transform="translate(440,40)">
+    <use
+       x="0"
+       y="0"
+       xlink:href="#text879"
+       id="use913"
+       width="100%"
+       height="100%"
+       transform="translate(-573,60.999998)"
+       inkscape:label="&quot;active&quot;" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#text875"
+       id="use911"
+       width="100%"
+       height="100%"
+       transform="translate(-573,40.999998)"
+       inkscape:label="&quot;ack&quot;" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#text1382-7"
+       id="use909"
+       width="100%"
+       height="100%"
+       transform="translate(-573,20.999998)"
+       inkscape:label="&quot;alarm&quot;" />
+    <use
+       x="0"
+       y="0"
+       xlink:href="#text883"
+       id="use915"
+       width="100%"
+       height="100%"
+       transform="translate(-573,80.999998)"
+       inkscape:label="&quot;disabled&quot;" />
+  </g>
 </svg>

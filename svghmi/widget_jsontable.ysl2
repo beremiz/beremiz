@@ -37,18 +37,31 @@ template "svg:*", mode="json_table_elt_render" {
     error > JsonTable Widget can't contain element of type «local-name()».
 }
 
+
+const "hmi_textstylelists_descs", "$parsed_widgets/widget[@type = 'TextStyleList']";
+const "hmi_textstylelists", "$hmi_elements[@id = $hmi_textstylelists_descs/@id]";
+
 template "svg:use", mode="json_table_elt_render" {
     param "value_expr";
     // cloned element must be part of a HMI:List
     const "targetid", "substring-after(@xlink:href,'#')";
     const "from_list", "$hmi_lists[(@id | */@id) = $targetid]";
+    const "from_textstylelist", "$hmi_textstylelists[(@id | */@id) = $targetid]";
 
-    if "count($from_list) = 0"
-        error > Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or HMI:List item. Reference "«@xlink:href»" is not valid.
-
-    |         id("«@id»").setAttribute("xlink:href", 
-    // obtain new target id from HMI:List widget
-    |             "#"+hmi_widgets["«$from_list/@id»"].items[«$value_expr»]);
+    choose {
+        when "count($from_list) > 0" {
+            |         id("«@id»").setAttribute("xlink:href", 
+            // obtain new target id from HMI:List widget
+            |             "#"+hmi_widgets["«$from_list/@id»"].items[«$value_expr»]);
+        }
+        when "count($from_textstylelist) > 0" {
+            |         console.log("from_textsylelist","«@id»", "«$value_expr»", «$value_expr»,
+            // obtain new style from HMI:TextStyleList widget
+            |             hmi_widgets["«$from_textstylelist/@id»"].items[«$value_expr»]);
+        }
+        otherwise
+            warning > Clones (svg:use) in JsonTable Widget must point to a valid HMI:List or HMI:TextStyleList widget or item. Reference "«@xlink:href»" is not valid and will not be updated.
+    }
 }
 
 template "svg:text", mode="json_table_elt_render" {
@@ -58,12 +71,12 @@ template "svg:text", mode="json_table_elt_render" {
 
 template "svg:*", mode="json_table_render" {
     param "objname";
-    apply ".", mode="json_table_elt_render" with "value_expr" > «$objname»«@inkscape:label»
+    apply ".", mode="json_table_elt_render" with "value_expr" > «$objname»«substring-before(@inkscape:label, ' ')»
 }
 
 template "svg:g", mode="json_table_render" {
     param "objname";
-    |         let obj_«@id» = «$objname»«@inkscape:label»;
+    |         let obj_«@id» = «$objname»«substring-before(@inkscape:label, ' ')»;
     apply "*[@inkscape:label]", mode="json_table_render" 
         with "objname" > obj_«@id»
 }
