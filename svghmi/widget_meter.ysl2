@@ -1,31 +1,41 @@
 // widget_meter.ysl2
 
+template "widget[@type='Meter']", mode="widget_class"{
+    ||
+    class MeterWidget extends Widget{
+        frequency = 10;
+        origin = undefined;
+        range = undefined;
+
+        dispatch(value) {
+            if(this.value_elt)
+                this.value_elt.textContent = String(value);
+            let [min,max,totallength] = this.range;
+            let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+            let tip = this.range_elt.getPointAtLength(length);
+            this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
+        }
+
+        init() {
+            let min = this.min_elt ?
+                        Number(this.min_elt.textContent) :
+                        this.args.length >= 1 ? this.args[0] : 0;
+            let max = this.max_elt ?
+                        Number(this.max_elt.textContent) :
+                        this.args.length >= 2 ? this.args[1] : 100;
+            this.range = [min, max, this.range_elt.getTotalLength()]
+            this.origin = this.needle_elt.getPointAtLength(0);
+        }
+
+    }
+    ||
+}
 
 template "widget[@type='Meter']", mode="widget_defs" {
     param "hmi_element";
-    |     frequency: 10,
     labels("needle range");
     optional_labels("value min max");
-    |     dispatch: function(value) {
-    |         if(this.value_elt)
-    |             this.value_elt.textContent = String(value);
-    |         let [min,max,totallength] = this.range;
-    |         let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
-    |         let tip = this.range_elt.getPointAtLength(length);
-    |         this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
-    |     },
-    |     origin: undefined,
-    |     range: undefined,
-    |     init: function() {
-    |         let min = this.min_elt ?
-    |                     Number(this.min_elt.textContent) :
-    |                     this.args.length >= 1 ? this.args[0] : 0;
-    |         let max = this.max_elt ?
-    |                     Number(this.max_elt.textContent) :
-    |                     this.args.length >= 2 ? this.args[1] : 100;
-    |         this.range = [min, max, this.range_elt.getTotalLength()]
-    |         this.origin = this.needle_elt.getPointAtLength(0);
-    |     },
+    |,
 }
 
 
