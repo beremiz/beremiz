@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
-  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
-  <xsl:variable name="svg" select="/svg:svg"/>
-  <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
-  <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:exsl="http://exslt.org/common" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:preamble="preamble" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:svg="http://www.w3.org/2000/svg" xmlns:debug="debug" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:cc="http://creativecommons.org/ns#" xmlns:declarations="declarations" xmlns:func="http://exslt.org/functions" xmlns:str="http://exslt.org/strings" xmlns:epilogue="epilogue" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+  <xsl:variable select="/svg:svg" name="svg"/>
+  <xsl:variable select="//svg:*[starts-with(@inkscape:label, 'HMI:')]" name="hmi_elements"/>
+  <xsl:variable select="ns:GetHMITree()" name="hmitree"/>
   <xsl:variable name="_categories">
     <noindex>
       <xsl:text>HMI_PLC_STATUS</xsl:text>
@@ -12,11 +12,11 @@
       <xsl:text>HMI_CURRENT_PAGE</xsl:text>
     </noindex>
   </xsl:variable>
-  <xsl:variable name="categories" select="exsl:node-set($_categories)"/>
+  <xsl:variable select="exsl:node-set($_categories)" name="categories"/>
   <xsl:variable name="_indexed_hmitree">
     <xsl:apply-templates mode="index" select="$hmitree"/>
   </xsl:variable>
-  <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
+  <xsl:variable select="exsl:node-set($_indexed_hmitree)" name="indexed_hmitree"/>
   <preamble:hmi-tree/>
   <xsl:template match="preamble:hmi-tree">
     <xsl:text>
@@ -63,8 +63,8 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="index" match="*">
-    <xsl:param name="index" select="0"/>
-    <xsl:param name="parentpath" select="''"/>
+    <xsl:param select="0" name="index"/>
+    <xsl:param select="''" name="parentpath"/>
     <xsl:variable name="content">
       <xsl:variable name="path">
         <xsl:choose>
@@ -96,7 +96,7 @@
             </xsl:for-each>
           </xsl:copy>
           <xsl:apply-templates mode="index" select="*[1]">
-            <xsl:with-param name="index" select="$index + 1"/>
+            <xsl:with-param select="$index + 1" name="index"/>
             <xsl:with-param name="parentpath">
               <xsl:value-of select="$path"/>
             </xsl:with-param>
@@ -104,7 +104,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates mode="index" select="*[1]">
-            <xsl:with-param name="index" select="$index"/>
+            <xsl:with-param select="$index" name="index"/>
             <xsl:with-param name="parentpath">
               <xsl:value-of select="$path"/>
             </xsl:with-param>
@@ -114,16 +114,16 @@
     </xsl:variable>
     <xsl:copy-of select="$content"/>
     <xsl:apply-templates mode="index" select="following-sibling::*[1]">
-      <xsl:with-param name="index" select="$index + count(exsl:node-set($content)/*)"/>
+      <xsl:with-param select="$index + count(exsl:node-set($content)/*)" name="index"/>
       <xsl:with-param name="parentpath">
         <xsl:value-of select="$parentpath"/>
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
   <xsl:template mode="parselabel" match="*">
-    <xsl:variable name="label" select="@inkscape:label"/>
-    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
-    <xsl:variable name="_args" select="substring-before($description,'@')"/>
+    <xsl:variable select="@inkscape:label" name="label"/>
+    <xsl:variable select="substring-after($label,'HMI:')" name="description"/>
+    <xsl:variable select="substring-before($description,'@')" name="_args"/>
     <xsl:variable name="args">
       <xsl:choose>
         <xsl:when test="$_args">
@@ -134,7 +134,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="_type" select="substring-before($args,':')"/>
+    <xsl:variable select="substring-before($args,':')" name="_type"/>
     <xsl:variable name="type">
       <xsl:choose>
         <xsl:when test="$_type">
@@ -160,15 +160,15 @@
             </xsl:attribute>
           </arg>
         </xsl:for-each>
-        <xsl:variable name="paths" select="substring-after($description,'@')"/>
+        <xsl:variable select="substring-after($description,'@')" name="paths"/>
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
               <xsl:attribute name="value">
                 <xsl:value-of select="."/>
               </xsl:attribute>
-              <xsl:variable name="path" select="."/>
-              <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
+              <xsl:variable select="." name="path"/>
+              <xsl:variable select="$indexed_hmitree/*[@hmipath = $path]" name="item"/>
               <xsl:choose>
                 <xsl:when test="count($item) = 1">
                   <xsl:attribute name="index">
@@ -202,7 +202,7 @@
   <xsl:variable name="_parsed_widgets">
     <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
   </xsl:variable>
-  <xsl:variable name="parsed_widgets" select="exsl:node-set($_parsed_widgets)"/>
+  <xsl:variable select="exsl:node-set($_parsed_widgets)" name="parsed_widgets"/>
   <func:function name="func:widget">
     <xsl:param name="id"/>
     <func:result select="$parsed_widgets/widget[@id = $id]"/>
@@ -215,12 +215,12 @@
   <func:function name="func:same_class_paths">
     <xsl:param name="a"/>
     <xsl:param name="b"/>
-    <xsl:variable name="class_a" select="$indexed_hmitree/*[@hmipath = $a]/@class"/>
-    <xsl:variable name="class_b" select="$indexed_hmitree/*[@hmipath = $b]/@class"/>
+    <xsl:variable select="$indexed_hmitree/*[@hmipath = $a]/@class" name="class_a"/>
+    <xsl:variable select="$indexed_hmitree/*[@hmipath = $b]/@class" name="class_b"/>
     <func:result select="$class_a and $class_b and $class_a = $class_b"/>
   </func:function>
   <xsl:template mode="testtree" match="*">
-    <xsl:param name="indent" select="''"/>
+    <xsl:param select="''" name="indent"/>
     <xsl:value-of select="$indent"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="local-name()"/>
@@ -266,7 +266,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
+  <xsl:variable select="ns:GetSVGGeometry()" name="geometry"/>
   <debug:geometry/>
   <xsl:template match="debug:geometry">
     <xsl:text>
@@ -301,8 +301,8 @@
     <xsl:param name="a1"/>
     <xsl:param name="b0"/>
     <xsl:param name="b1"/>
-    <xsl:variable name="d0" select="$a0 &gt;= $b0"/>
-    <xsl:variable name="d1" select="$a1 &gt;= $b1"/>
+    <xsl:variable select="$a0 &gt;= $b0" name="d0"/>
+    <xsl:variable select="$a1 &gt;= $b1" name="d1"/>
     <xsl:choose>
       <xsl:when test="not($d0) and $d1">
         <func:result select="3"/>
@@ -324,10 +324,10 @@
   <func:function name="func:intersect">
     <xsl:param name="a"/>
     <xsl:param name="b"/>
-    <xsl:variable name="x_intersect" select="func:intersect_1d($a/@x, $a/@x+$a/@w, $b/@x, $b/@x+$b/@w)"/>
+    <xsl:variable select="func:intersect_1d($a/@x, $a/@x+$a/@w, $b/@x, $b/@x+$b/@w)" name="x_intersect"/>
     <xsl:choose>
       <xsl:when test="$x_intersect != 0">
-        <xsl:variable name="y_intersect" select="func:intersect_1d($a/@y, $a/@y+$a/@h, $b/@y, $b/@y+$b/@h)"/>
+        <xsl:variable select="func:intersect_1d($a/@y, $a/@y+$a/@h, $b/@y, $b/@y+$b/@h)" name="y_intersect"/>
         <func:result select="$x_intersect * $y_intersect"/>
       </xsl:when>
       <xsl:otherwise>
@@ -337,13 +337,13 @@
   </func:function>
   <func:function name="func:overlapping_geometry">
     <xsl:param name="elt"/>
-    <xsl:variable name="groups" select="/svg:svg | //svg:g"/>
-    <xsl:variable name="g" select="$geometry[@Id = $elt/@id]"/>
-    <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
+    <xsl:variable select="/svg:svg | //svg:g" name="groups"/>
+    <xsl:variable select="$geometry[@Id = $elt/@id]" name="g"/>
+    <xsl:variable select="$geometry[@Id != $elt/@id]" name="candidates"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
-  <xsl:variable name="hmi_pages_descs" select="$parsed_widgets/widget[@type = 'Page']"/>
-  <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_descs/@id]"/>
+  <xsl:variable select="$parsed_widgets/widget[@type = 'Page']" name="hmi_pages_descs"/>
+  <xsl:variable select="$hmi_elements[@id = $hmi_pages_descs/@id]" name="hmi_pages"/>
   <xsl:variable name="default_page">
     <xsl:choose>
       <xsl:when test="count($hmi_pages) &gt; 1">
@@ -383,13 +383,13 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="keypads_descs" select="$parsed_widgets/widget[@type = 'Keypad']"/>
-  <xsl:variable name="keypads" select="$hmi_elements[@id = $keypads_descs/@id]"/>
+  <xsl:variable select="$parsed_widgets/widget[@type = 'Keypad']" name="keypads_descs"/>
+  <xsl:variable select="$hmi_elements[@id = $keypads_descs/@id]" name="keypads"/>
   <func:function name="func:refered_elements">
     <xsl:param name="elems"/>
-    <xsl:variable name="descend" select="$elems/descendant-or-self::svg:*"/>
-    <xsl:variable name="clones" select="$descend[self::svg:use]"/>
-    <xsl:variable name="originals" select="//svg:*[concat('#',@id) = $clones/@xlink:href]"/>
+    <xsl:variable select="$elems/descendant-or-self::svg:*" name="descend"/>
+    <xsl:variable select="$descend[self::svg:use]" name="clones"/>
+    <xsl:variable select="//svg:*[concat('#',@id) = $clones/@xlink:href]" name="originals"/>
     <xsl:choose>
       <xsl:when test="$originals">
         <func:result select="$descend | func:refered_elements($originals)"/>
@@ -401,9 +401,9 @@
   </func:function>
   <func:function name="func:all_related_elements">
     <xsl:param name="page"/>
-    <xsl:variable name="page_overlapping_geometry" select="func:overlapping_geometry($page)"/>
-    <xsl:variable name="page_overlapping_elements" select="//svg:*[@id = $page_overlapping_geometry/@Id]"/>
-    <xsl:variable name="page_sub_elements" select="func:refered_elements($page | $page_overlapping_elements)"/>
+    <xsl:variable select="func:overlapping_geometry($page)" name="page_overlapping_geometry"/>
+    <xsl:variable select="//svg:*[@id = $page_overlapping_geometry/@Id]" name="page_overlapping_elements"/>
+    <xsl:variable select="func:refered_elements($page | $page_overlapping_elements)" name="page_sub_elements"/>
     <func:result select="$page_sub_elements"/>
   </func:function>
   <func:function name="func:required_elements">
@@ -417,13 +417,13 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;       | func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*"/>
-  <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
+  <xsl:variable select="//svg:defs/descendant-or-self::svg:*&#10;       | func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*" name="required_elements"/>
+  <xsl:variable select="//svg:*[not(@id = $required_elements/@id)]" name="discardable_elements"/>
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
-    <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
-    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;        not(descendant::*[&#10;            not(self::svg:g) and&#10;            not(@id = $discardable_elements/@id) and&#10;            not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;        ])]"/>
-    <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
+    <xsl:variable select="$elements[not(ancestor::*/@id = $elements/@id)]" name="short_list"/>
+    <xsl:variable select="$short_list/parent::svg:*[&#10;        not(descendant::*[&#10;            not(self::svg:g) and&#10;            not(@id = $discardable_elements/@id) and&#10;            not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;        ])]" name="filled_groups"/>
+    <xsl:variable select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]" name="groups_to_add"/>
     <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
   </func:function>
   <func:function name="func:detachable_elements">
@@ -437,8 +437,8 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:variable name="_detachable_elements" select="func:detachable_elements($hmi_pages | $keypads)"/>
-  <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
+  <xsl:variable select="func:detachable_elements($hmi_pages | $keypads)" name="_detachable_elements"/>
+  <xsl:variable select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]" name="detachable_elements"/>
   <declarations:detachable-elements/>
   <xsl:template match="declarations:detachable-elements">
     <xsl:text>
@@ -472,18 +472,18 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
-  <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
-  <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
+  <xsl:variable select="$parsed_widgets/widget[@type = 'ForEach']/@id" name="forEach_widgets_ids"/>
+  <xsl:variable select="$hmi_elements[@id = $forEach_widgets_ids]" name="forEach_widgets"/>
+  <xsl:variable select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id" name="in_forEach_widget_ids"/>
   <xsl:template mode="page_desc" match="svg:*">
-    <xsl:variable name="desc" select="func:widget(@id)"/>
-    <xsl:variable name="page" select="."/>
-    <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
-    <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
-    <xsl:variable name="page_managed_widgets" select="$all_page_widgets[not(@id=$in_forEach_widget_ids)]"/>
-    <xsl:variable name="page_relative_widgets" select="$page_managed_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]"/>
-    <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
+    <xsl:variable select="func:widget(@id)" name="desc"/>
+    <xsl:variable select="." name="page"/>
+    <xsl:variable select="$geometry[@Id = $page/@id]" name="p"/>
+    <xsl:variable select="func:all_related_elements($page)" name="page_all_elements"/>
+    <xsl:variable select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]" name="all_page_widgets"/>
+    <xsl:variable select="$all_page_widgets[not(@id=$in_forEach_widget_ids)]" name="page_managed_widgets"/>
+    <xsl:variable select="$page_managed_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]" name="page_relative_widgets"/>
+    <xsl:variable select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]" name="required_detachables"/>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="$desc/arg[1]/@value"/>
     <xsl:text>": {
@@ -540,10 +540,10 @@
     <xsl:text>    jumps: [
 </xsl:text>
     <xsl:for-each select="$parsed_widgets/widget[@id = $all_page_widgets/@id and @type='Jump']">
-      <xsl:variable name="_id" select="@id"/>
+      <xsl:variable select="@id" name="_id"/>
       <xsl:variable name="opts">
         <xsl:call-template name="jump_widget_activity">
-          <xsl:with-param name="hmi_element" select="$hmi_elements[@id=$_id]"/>
+          <xsl:with-param select="$hmi_elements[@id=$_id]" name="hmi_element"/>
         </xsl:call-template>
       </xsl:variable>
       <xsl:if test="string-length($opts)&gt;0">
@@ -576,7 +576,7 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:apply-templates mode="per_page_widget_template" select="$parsed_widgets/widget[@id = $all_page_widgets/@id]">
-      <xsl:with-param name="page_desc" select="$desc"/>
+      <xsl:with-param select="$desc" name="page_desc"/>
     </xsl:apply-templates>
     <xsl:text>  }</xsl:text>
     <xsl:if test="position()!=last()">
@@ -670,16 +670,18 @@
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
-  <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
-  <xsl:variable name="targets_not_to_unlink" select="$hmi_elements[@id = $hmi_lists/@id]/descendant::svg:*"/>
-  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use"/>
+  <xsl:variable select="$parsed_widgets/widget[@type = 'List']" name="hmi_lists_descs"/>
+  <xsl:variable select="$hmi_elements[@id = $hmi_lists_descs/@id]" name="hmi_lists"/>
+  <xsl:variable select="$hmi_lists/descendant-or-self::svg:*" name="targets_not_to_unlink"/>
+  <xsl:variable select="$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use" name="to_unlink"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
-    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+    <xsl:param name="seed"/>
+    <xsl:variable select="substring-after(@xlink:href,'#')" name="targetid"/>
     <xsl:choose>
       <xsl:when test="@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)">
         <xsl:call-template name="unlink_clone">
-          <xsl:with-param name="targetid" select="$targetid"/>
+          <xsl:with-param select="$targetid" name="targetid"/>
+          <xsl:with-param select="$seed" name="seed"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
@@ -705,8 +707,11 @@
     <name>
       <xsl:text>y</xsl:text>
     </name>
+    <name>
+      <xsl:text>id</xsl:text>
+    </name>
   </xsl:variable>
-  <xsl:variable name="excluded_use_attrs" select="exsl:node-set($_excluded_use_attrs)"/>
+  <xsl:variable select="exsl:node-set($_excluded_use_attrs)" name="excluded_use_attrs"/>
   <xsl:variable name="_merge_use_attrs">
     <name>
       <xsl:text>transform</xsl:text>
@@ -715,11 +720,16 @@
       <xsl:text>style</xsl:text>
     </name>
   </xsl:variable>
-  <xsl:variable name="merge_use_attrs" select="exsl:node-set($_merge_use_attrs)"/>
+  <xsl:variable select="exsl:node-set($_merge_use_attrs)" name="merge_use_attrs"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" name="unlink_clone">
     <xsl:param name="targetid"/>
-    <xsl:variable name="target" select="//svg:*[@id = $targetid]"/>
+    <xsl:param name="seed"/>
+    <xsl:variable select="//svg:*[@id = $targetid]" name="target"/>
+    <xsl:variable select="concat($seed, @id)" name="seeded_id"/>
     <g>
+      <xsl:attribute name="id">
+        <xsl:value-of select="$seeded_id"/>
+      </xsl:attribute>
       <xsl:choose>
         <xsl:when test="$target[self::svg:g]">
           <xsl:for-each select="@*[not(local-name() = $excluded_use_attrs/name | $merge_use_attrs)]">
@@ -746,7 +756,7 @@
             </xsl:attribute>
           </xsl:if>
           <xsl:apply-templates mode="unlink_clone" select="$target/*">
-            <xsl:with-param name="seed" select="@id"/>
+            <xsl:with-param select="concat($seed, @id)" name="seed"/>
           </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
@@ -756,7 +766,7 @@
             </xsl:attribute>
           </xsl:for-each>
           <xsl:apply-templates mode="unlink_clone" select="$target">
-            <xsl:with-param name="seed" select="@id"/>
+            <xsl:with-param select="concat($seed, @id)" name="seed"/>
           </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
@@ -773,6 +783,12 @@
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@*">
     <xsl:copy/>
   </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:use">
+    <xsl:param name="seed"/>
+    <xsl:apply-templates mode="inline_svg" select=".">
+      <xsl:with-param select="concat($seed, '_')" name="seed"/>
+    </xsl:apply-templates>
+  </xsl:template>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
     <xsl:param name="seed"/>
     <xsl:choose>
@@ -786,7 +802,7 @@
       <xsl:otherwise>
         <xsl:copy>
           <xsl:apply-templates mode="unlink_clone" select="@* | node()">
-            <xsl:with-param name="seed" select="$seed"/>
+            <xsl:with-param select="$seed" name="seed"/>
           </xsl:apply-templates>
         </xsl:copy>
       </xsl:otherwise>
@@ -795,7 +811,7 @@
   <xsl:variable name="result_svg">
     <xsl:apply-templates mode="inline_svg" select="/"/>
   </xsl:variable>
-  <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
+  <xsl:variable select="exsl:node-set($result_svg)" name="result_svg_ns"/>
   <preamble:inline-svg/>
   <xsl:template match="preamble:inline-svg">
     <xsl:text>
@@ -845,8 +861,8 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="hmi_widgets" match="svg:*">
-    <xsl:variable name="widget" select="func:widget(@id)"/>
-    <xsl:variable name="eltid" select="@id"/>
+    <xsl:variable select="func:widget(@id)" name="widget"/>
+    <xsl:variable select="@id" name="eltid"/>
     <xsl:variable name="args">
       <xsl:for-each select="$widget/arg">
         <xsl:text>"</xsl:text>
@@ -913,7 +929,7 @@
     <xsl:text>],{
 </xsl:text>
     <xsl:apply-templates mode="widget_defs" select="$widget">
-      <xsl:with-param name="hmi_element" select="."/>
+      <xsl:with-param select="." name="hmi_element"/>
     </xsl:apply-templates>
     <xsl:text>  })</xsl:text>
     <xsl:if test="position()!=last()">
@@ -926,7 +942,7 @@
     <xsl:param name="elts_with_type"/>
     <xsl:choose>
       <xsl:when test="count($elts_with_type) &gt; 1">
-        <xsl:variable name="prior_results" select="func:unique_types($elts_with_type[position()!=last()])"/>
+        <xsl:variable select="func:unique_types($elts_with_type[position()!=last()])" name="prior_results"/>
         <xsl:choose>
           <xsl:when test="$elts_with_type[last()][@type = $prior_results/@type]">
             <func:result select="$prior_results"/>
@@ -1023,8 +1039,6 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:text>    let defaultval = local_defaults[varname];
-</xsl:text>
-    <xsl:text>    console.log("page_local_index creat local", varname, pagename, new_index, defaultval);
 </xsl:text>
     <xsl:text>    if(defaultval != undefined) 
 </xsl:text>
@@ -1284,7 +1298,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:variable name="used_widget_types" select="func:unique_types($parsed_widgets/widget)"/>
+    <xsl:variable select="func:unique_types($parsed_widgets/widget)" name="used_widget_types"/>
     <xsl:apply-templates mode="widget_class" select="$used_widget_types"/>
     <xsl:text>
 </xsl:text>
@@ -1301,8 +1315,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="excluded_types" select="str:split('Page Lang VarInit')"/>
-  <xsl:variable name="included_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
+  <xsl:variable select="str:split('Page Lang VarInit')" name="excluded_types"/>
+  <xsl:variable select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id" name="included_ids"/>
   <declarations:hmi-elements/>
   <xsl:template match="declarations:hmi-elements">
     <xsl:text>
@@ -1322,14 +1336,14 @@
 </xsl:text>
   </xsl:template>
   <xsl:template name="defs_by_labels">
-    <xsl:param name="labels" select="''"/>
-    <xsl:param name="mandatory" select="'yes'"/>
-    <xsl:param name="subelements" select="/.."/>
+    <xsl:param select="''" name="labels"/>
+    <xsl:param select="'yes'" name="mandatory"/>
+    <xsl:param select="/.." name="subelements"/>
     <xsl:param name="hmi_element"/>
-    <xsl:variable name="widget_type" select="@type"/>
+    <xsl:variable select="@type" name="widget_type"/>
     <xsl:for-each select="str:split($labels)">
-      <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt" select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]"/>
+      <xsl:variable select="." name="name"/>
+      <xsl:variable select="$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]" name="elt"/>
       <xsl:choose>
         <xsl:when test="not($elt/@id)">
           <xsl:if test="$mandatory='yes'">
@@ -1354,8 +1368,8 @@
             <xsl:text>_sub: {
 </xsl:text>
             <xsl:for-each select="str:split($subelements)">
-              <xsl:variable name="subname" select="."/>
-              <xsl:variable name="subelt" select="$elt/*[@inkscape:label=$subname][1]"/>
+              <xsl:variable select="." name="subname"/>
+              <xsl:variable select="$elt/*[@inkscape:label=$subname][1]" name="subelt"/>
               <xsl:choose>
                 <xsl:when test="not($subelt/@id)">
                   <xsl:if test="$mandatory='yes'">
@@ -1508,109 +1522,121 @@
   <xsl:template mode="widget_defs" match="widget[@type='Button']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>active inactive</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='CircularBar']">
+    <xsl:text>class CircularBarWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 10;
+</xsl:text>
+    <xsl:text>    range = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        if(this.value_elt)
+</xsl:text>
+    <xsl:text>            this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>        let [min,max,start,end] = this.range;
+</xsl:text>
+    <xsl:text>        let [cx,cy] = this.center;
+</xsl:text>
+    <xsl:text>        let [rx,ry] = this.proportions;
+</xsl:text>
+    <xsl:text>        let tip = start + (end-start)*Number(value)/(max-min);
+</xsl:text>
+    <xsl:text>        let size = 0;
+</xsl:text>
+    <xsl:text>        if (tip-start &gt; Math.PI) {
+</xsl:text>
+    <xsl:text>            size = 1;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            size = 0;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        let start = Number(this.path_elt.getAttribute('sodipodi:start'));
+</xsl:text>
+    <xsl:text>        let end = Number(this.path_elt.getAttribute('sodipodi:end'));
+</xsl:text>
+    <xsl:text>        let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
+</xsl:text>
+    <xsl:text>        let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
+</xsl:text>
+    <xsl:text>        let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
+</xsl:text>
+    <xsl:text>        let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
+</xsl:text>
+    <xsl:text>        if (ry == 0) {
+</xsl:text>
+    <xsl:text>            ry = rx;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        if (start &gt; end) {
+</xsl:text>
+    <xsl:text>            end = end + 2*Math.PI;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        let min = this.min_elt ?
+</xsl:text>
+    <xsl:text>                  Number(this.min_elt.textContent) :
+</xsl:text>
+    <xsl:text>                  this.args.length &gt;= 1 ? this.args[0] : 0;
+</xsl:text>
+    <xsl:text>        let max = this.max_elt ?
+</xsl:text>
+    <xsl:text>                  Number(this.max_elt.textContent) :
+</xsl:text>
+    <xsl:text>                  this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>        this.range = [min, max, start, end];
+</xsl:text>
+    <xsl:text>        this.center = [cx, cy];
+</xsl:text>
+    <xsl:text>        this.proportions = [rx, ry];
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
     <xsl:param name="hmi_element"/>
-    <xsl:text>frequency: 10,
-</xsl:text>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>path</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>value min max</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
-    <xsl:text>dispatch: function(value) {
-</xsl:text>
-    <xsl:text>    if(this.value_elt)
-</xsl:text>
-    <xsl:text>        this.value_elt.textContent = String(value);
-</xsl:text>
-    <xsl:text>    let [min,max,start,end] = this.range;
-</xsl:text>
-    <xsl:text>    let [cx,cy] = this.center;
-</xsl:text>
-    <xsl:text>    let [rx,ry] = this.proportions;
-</xsl:text>
-    <xsl:text>    let tip = start + (end-start)*Number(value)/(max-min);
-</xsl:text>
-    <xsl:text>    let size = 0;
-</xsl:text>
-    <xsl:text>    if (tip-start &gt; Math.PI) {
-</xsl:text>
-    <xsl:text>        size = 1;
-</xsl:text>
-    <xsl:text>    } else {
-</xsl:text>
-    <xsl:text>        size = 0;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
-</xsl:text>
-    <xsl:text>},
-</xsl:text>
-    <xsl:text>range: undefined,
-</xsl:text>
-    <xsl:text>init: function() {
-</xsl:text>
-    <xsl:text>    let start = Number(this.path_elt.getAttribute('sodipodi:start'));
-</xsl:text>
-    <xsl:text>    let end = Number(this.path_elt.getAttribute('sodipodi:end'));
-</xsl:text>
-    <xsl:text>    let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
-</xsl:text>
-    <xsl:text>    let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
-</xsl:text>
-    <xsl:text>    let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
-</xsl:text>
-    <xsl:text>    let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
-</xsl:text>
-    <xsl:text>    if (ry == 0) {
-</xsl:text>
-    <xsl:text>        ry = rx;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    if (start &gt; end) {
-</xsl:text>
-    <xsl:text>        end = end + 2*Math.PI;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    let min = this.min_elt ?
-</xsl:text>
-    <xsl:text>              Number(this.min_elt.textContent) :
-</xsl:text>
-    <xsl:text>              this.args.length &gt;= 1 ? this.args[0] : 0;
-</xsl:text>
-    <xsl:text>    let max = this.max_elt ?
-</xsl:text>
-    <xsl:text>              Number(this.max_elt.textContent) :
-</xsl:text>
-    <xsl:text>              this.args.length &gt;= 2 ? this.args[1] : 100;
-</xsl:text>
-    <xsl:text>    this.range = [min, max, start, end];
-</xsl:text>
-    <xsl:text>    this.center = [cx, cy];
-</xsl:text>
-    <xsl:text>    this.proportions = [rx, ry];
-</xsl:text>
-    <xsl:text>},
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='CircularSlider']">
@@ -1624,31 +1650,31 @@
 </xsl:text>
     <xsl:text>    handle_pos = undefined;
 </xsl:text>
+    <xsl:text>    svg_dist = undefined;
+</xsl:text>
     <xsl:text>    drag = false;
 </xsl:text>
     <xsl:text>    enTimer = false;
+</xsl:text>
+    <xsl:text>    last_drag = false;
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        if(!this.drag){
+    <xsl:text>        if(this.value_elt)
 </xsl:text>
-    <xsl:text>            if(this.value_elt)
-</xsl:text>
-    <xsl:text>                this.value_elt.textContent = String(value);
+    <xsl:text>            this.value_elt.textContent = String(value);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            this.handle_position(value);
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>        this.update_DOM(value, this.handle_elt);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    handle_position(value){
+    <xsl:text>    update_DOM(value, elt){
 </xsl:text>
     <xsl:text>        let [min,max,totalDistance] = this.range;
 </xsl:text>
@@ -1656,7 +1682,29 @@
 </xsl:text>
     <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
 </xsl:text>
-    <xsl:text>        this.handle_elt.setAttribute('transform',"translate("+(tip.x-this.handle_pos.x)+","+(tip.y-this.handle_pos.y)+")");
+    <xsl:text>        elt.setAttribute('transform',"translate("+(tip.x-this.handle_pos.x)+","+(tip.y-this.handle_pos.y)+")");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            if(this.last_drag!= this.drag){
+</xsl:text>
+    <xsl:text>                if(this.drag){
+</xsl:text>
+    <xsl:text>                    this.setpoint_elt.setAttribute("style", this.setpoint_style);
+</xsl:text>
+    <xsl:text>                }else{
+</xsl:text>
+    <xsl:text>                    this.setpoint_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                this.last_drag = this.drag;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1664,9 +1712,41 @@
 </xsl:text>
     <xsl:text>    on_release(evt) {
 </xsl:text>
+    <xsl:text>        window.removeEventListener("touchmove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mousemove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
+</xsl:text>
     <xsl:text>        if(this.drag){
 </xsl:text>
     <xsl:text>            this.drag = false;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_drag(evt){
+</xsl:text>
+    <xsl:text>        if(this.enTimer &amp;&amp; this.drag){
+</xsl:text>
+    <xsl:text>            this.update_position(evt);
+</xsl:text>
+    <xsl:text>            //reset timer
+</xsl:text>
+    <xsl:text>            this.enTimer = false;
+</xsl:text>
+    <xsl:text>            setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -1762,45 +1842,49 @@
 </xsl:text>
     <xsl:text>            if(fi&lt;fiEnd){
 </xsl:text>
-    <xsl:text>                svg_dist=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
+    <xsl:text>                this.svg_dist=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>            else if(fiEnd&lt;fi &amp;&amp; fi&lt;fiEnd+minMax){
 </xsl:text>
-    <xsl:text>                svg_dist = this.range[1];
+    <xsl:text>                this.svg_dist = this.range[1];
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>            else{
 </xsl:text>
-    <xsl:text>                svg_dist = this.range[0];
+    <xsl:text>                this.svg_dist = this.range[0];
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            //redraw handle --TODO is it fast enough if I just call change_hmi_value???
+    <xsl:text>
 </xsl:text>
-    <xsl:text>            this.handle_position(svg_dist);
-</xsl:text>
-    <xsl:text>            if(this.value_elt)
-</xsl:text>
-    <xsl:text>                this.value_elt.textContent = String(Math.ceil(svg_dist));
-</xsl:text>
-    <xsl:text>            this.apply_hmi_value(0, Math.ceil(svg_dist));
+    <xsl:text>            this.apply_hmi_value(0, Math.ceil(this.svg_dist));
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            //reset timer
+    <xsl:text>            // update ghost cursor
 </xsl:text>
-    <xsl:text>            this.enTimer = false;
+    <xsl:text>            if(this.setpoint_elt != undefined){
 </xsl:text>
-    <xsl:text>            setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+    <xsl:text>                this.request_animate();
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>        this.update_DOM(this.svg_dist, this.setpoint_elt);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1811,6 +1895,18 @@
     <xsl:text>        this.drag = true;
 </xsl:text>
     <xsl:text>        this.enTimer = true;
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchmove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>        window.addEventListener("mousemove", this.on_bound_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.addEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>        this.update_position(evt);
 </xsl:text>
@@ -1880,13 +1976,33 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>        //bind functions
+</xsl:text>
+    <xsl:text>        this.bound_on_select = this.on_select.bind(this);
+</xsl:text>
+    <xsl:text>        this.bound_on_release = this.on_release.bind(this);
+</xsl:text>
+    <xsl:text>        this.on_bound_drag = this.on_drag.bind(this);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>        //init events
 </xsl:text>
-    <xsl:text>        this.handle_elt.addEventListener("touchstart", hmi_widgets[this.element_id].on_select.bind(this));
+    <xsl:text>        this.element.addEventListener("mousedown", this.bound_on_select);
 </xsl:text>
-    <xsl:text>        this.handle_elt.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+    <xsl:text>        this.element.addEventListener("touchstart", this.bound_on_select);
 </xsl:text>
-    <xsl:text>        this.element.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            this.setpoint_style = this.setpoint_elt.getAttribute("style");
+</xsl:text>
+    <xsl:text>            this.setpoint_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1912,17 +2028,17 @@
   <xsl:template mode="widget_defs" match="widget[@type='CircularSlider']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>handle range</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>value min max</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
     <xsl:text>
 </xsl:text>
@@ -2454,7 +2570,7 @@
   <xsl:template mode="widget_defs" match="widget[@type='DropDown']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>text box button</xsl:text>
       </xsl:with-param>
@@ -2980,13 +3096,13 @@
         <xsl:text> must have one argument given : a class name.</xsl:text>
       </xsl:message>
     </xsl:if>
-    <xsl:variable name="class" select="arg[1]/@value"/>
-    <xsl:variable name="base_path" select="path/@value"/>
-    <xsl:variable name="hmi_index_base" select="$indexed_hmitree/*[@hmipath = $base_path]"/>
-    <xsl:variable name="hmi_tree_base" select="$hmitree/descendant-or-self::*[@path = $hmi_index_base/@path]"/>
-    <xsl:variable name="hmi_tree_items" select="$hmi_tree_base/*[@class = $class]"/>
-    <xsl:variable name="hmi_index_items" select="$indexed_hmitree/*[@path = $hmi_tree_items/@path]"/>
-    <xsl:variable name="items_paths" select="$hmi_index_items/@hmipath"/>
+    <xsl:variable select="arg[1]/@value" name="class"/>
+    <xsl:variable select="path/@value" name="base_path"/>
+    <xsl:variable select="$indexed_hmitree/*[@hmipath = $base_path]" name="hmi_index_base"/>
+    <xsl:variable select="$hmitree/descendant-or-self::*[@path = $hmi_index_base/@path]" name="hmi_tree_base"/>
+    <xsl:variable select="$hmi_tree_base/*[@class = $class]" name="hmi_tree_items"/>
+    <xsl:variable select="$indexed_hmitree/*[@path = $hmi_tree_items/@path]" name="hmi_index_items"/>
+    <xsl:variable select="$hmi_index_items/@hmipath" name="items_paths"/>
     <xsl:text>    index_pool: [
 </xsl:text>
     <xsl:for-each select="$hmi_index_items">
@@ -3002,11 +3118,11 @@
 </xsl:text>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:variable name="prefix" select="concat($class,':')"/>
-    <xsl:variable name="buttons_regex" select="concat('^',$prefix,'[+\-][0-9]+')"/>
-    <xsl:variable name="buttons" select="$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]"/>
+    <xsl:variable select="concat($class,':')" name="prefix"/>
+    <xsl:variable select="concat('^',$prefix,'[+\-][0-9]+')" name="buttons_regex"/>
+    <xsl:variable select="$hmi_element/*[regexp:test(@inkscape:label, $buttons_regex)]" name="buttons"/>
     <xsl:for-each select="$buttons">
-      <xsl:variable name="op" select="substring-after(@inkscape:label, $prefix)"/>
+      <xsl:variable select="substring-after(@inkscape:label, $prefix)" name="op"/>
       <xsl:text>        id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
@@ -3020,13 +3136,13 @@
 </xsl:text>
     <xsl:text>        this.items = [
 </xsl:text>
-    <xsl:variable name="items_regex" select="concat('^',$prefix,'[0-9]+')"/>
-    <xsl:variable name="unordered_items" select="$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]"/>
+    <xsl:variable select="concat('^',$prefix,'[0-9]+')" name="items_regex"/>
+    <xsl:variable select="$hmi_element//*[regexp:test(@inkscape:label, $items_regex)]" name="unordered_items"/>
     <xsl:for-each select="$unordered_items">
-      <xsl:variable name="elt_label" select="concat($prefix, string(position()))"/>
-      <xsl:variable name="elt" select="$unordered_items[@inkscape:label = $elt_label]"/>
-      <xsl:variable name="pos" select="position()"/>
-      <xsl:variable name="item_path" select="$items_paths[$pos]"/>
+      <xsl:variable select="concat($prefix, string(position()))" name="elt_label"/>
+      <xsl:variable select="$unordered_items[@inkscape:label = $elt_label]" name="elt"/>
+      <xsl:variable select="position()" name="pos"/>
+      <xsl:variable select="$items_paths[$pos]" name="item_path"/>
       <xsl:text>          [ /* item="</xsl:text>
       <xsl:value-of select="$elt_label"/>
       <xsl:text>" path="</xsl:text>
@@ -3217,22 +3333,22 @@
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>key_pos</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
     <xsl:variable name="value_elt">
       <xsl:call-template name="defs_by_labels">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param select="$hmi_element" name="hmi_element"/>
         <xsl:with-param name="labels">
           <xsl:text>value</xsl:text>
         </xsl:with-param>
-        <xsl:with-param name="mandatory" select="'no'"/>
+        <xsl:with-param select="'no'" name="mandatory"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="have_value" select="string-length($value_elt)&gt;0"/>
+    <xsl:variable select="string-length($value_elt)&gt;0" name="have_value"/>
     <xsl:value-of select="$value_elt"/>
     <xsl:if test="$have_value">
       <xsl:text>    frequency: 5,
@@ -3250,7 +3366,7 @@
     </xsl:if>
     <xsl:text>    },
 </xsl:text>
-    <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
+    <xsl:variable select="$hmi_element/*[@inkscape:label='edit'][1]/@id" name="edit_elt_id"/>
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:if test="$edit_elt_id">
@@ -3365,27 +3481,50 @@
       <xsl:text>.</xsl:text>
     </xsl:message>
   </xsl:template>
+  <xsl:variable select="$parsed_widgets/widget[@type = 'TextStyleList']" name="hmi_textstylelists_descs"/>
+  <xsl:variable select="$hmi_elements[@id = $hmi_textstylelists_descs/@id]" name="hmi_textstylelists"/>
   <xsl:template mode="json_table_elt_render" match="svg:use">
     <xsl:param name="value_expr"/>
-    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
-    <xsl:variable name="from_list" select="$hmi_lists[(@id | */@id) = $targetid]"/>
-    <xsl:if test="count($from_list) = 0">
-      <xsl:message terminate="yes">
-        <xsl:text>Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or HMI:List item. Reference "</xsl:text>
-        <xsl:value-of select="@xlink:href"/>
-        <xsl:text>" is not valid.</xsl:text>
-      </xsl:message>
-    </xsl:if>
-    <xsl:text>        id("</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>").setAttribute("xlink:href", 
+    <xsl:variable select="substring-after(@xlink:href,'#')" name="targetid"/>
+    <xsl:variable select="$hmi_lists[(@id | */@id) = $targetid]" name="from_list"/>
+    <xsl:variable select="$hmi_textstylelists[(@id | */@id) = $targetid]" name="from_textstylelist"/>
+    <xsl:choose>
+      <xsl:when test="count($from_list) &gt; 0">
+        <xsl:text>        id("</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>").setAttribute("xlink:href", 
 </xsl:text>
-    <xsl:text>            "#"+hmi_widgets["</xsl:text>
-    <xsl:value-of select="$from_list/@id"/>
-    <xsl:text>"].items[</xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>]);
+        <xsl:text>            "#"+hmi_widgets["</xsl:text>
+        <xsl:value-of select="$from_list/@id"/>
+        <xsl:text>"].items[</xsl:text>
+        <xsl:value-of select="$value_expr"/>
+        <xsl:text>]);
 </xsl:text>
+      </xsl:when>
+      <xsl:when test="count($from_textstylelist) &gt; 0">
+        <xsl:text>        console.log("from_textsylelist","</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>", "</xsl:text>
+        <xsl:value-of select="$value_expr"/>
+        <xsl:text>", </xsl:text>
+        <xsl:value-of select="$value_expr"/>
+        <xsl:text>,
+</xsl:text>
+        <xsl:text>            hmi_widgets["</xsl:text>
+        <xsl:value-of select="$from_textstylelist/@id"/>
+        <xsl:text>"].items[</xsl:text>
+        <xsl:value-of select="$value_expr"/>
+        <xsl:text>]);
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message terminate="no">
+          <xsl:text>Clones (svg:use) in JsonTable Widget must point to a valid HMI:List or HMI:TextStyleList widget or item. Reference "</xsl:text>
+          <xsl:value-of select="@xlink:href"/>
+          <xsl:text>" is not valid and will not be updated.</xsl:text>
+        </xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   <xsl:template mode="json_table_elt_render" match="svg:text">
     <xsl:param name="value_expr"/>
@@ -3401,7 +3540,7 @@
     <xsl:apply-templates mode="json_table_elt_render" select=".">
       <xsl:with-param name="value_expr">
         <xsl:value-of select="$objname"/>
-        <xsl:value-of select="@inkscape:label"/>
+        <xsl:value-of select="substring-before(@inkscape:label, ' ')"/>
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
@@ -3411,7 +3550,7 @@
     <xsl:value-of select="@id"/>
     <xsl:text> = </xsl:text>
     <xsl:value-of select="$objname"/>
-    <xsl:value-of select="@inkscape:label"/>
+    <xsl:value-of select="substring-before(@inkscape:label, ' ')"/>
     <xsl:text>;
 </xsl:text>
     <xsl:apply-templates mode="json_table_render" select="*[@inkscape:label]">
@@ -3424,23 +3563,23 @@
   <xsl:template mode="widget_defs" match="widget[@type='JsonTable']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>data</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>forward backward cursor</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
-    <xsl:variable name="data_elt" select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']"/>
+    <xsl:variable select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']" name="data_elt"/>
     <xsl:text>    spread_json_data: function(jdata) {
 </xsl:text>
     <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
-      <xsl:with-param name="objname" select="'jdata'"/>
+      <xsl:with-param select="'jdata'" name="objname"/>
     </xsl:apply-templates>
     <xsl:text>    }
 </xsl:text>
@@ -3448,38 +3587,38 @@
   <xsl:template name="jump_widget_activity">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>active inactive</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
   </xsl:template>
   <xsl:template name="jump_widget_disability">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>disabled</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="activity">
       <xsl:call-template name="jump_widget_activity">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param select="$hmi_element" name="hmi_element"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="have_activity" select="string-length($activity)&gt;0"/>
+    <xsl:variable select="string-length($activity)&gt;0" name="have_activity"/>
     <xsl:value-of select="$activity"/>
     <xsl:variable name="disability">
       <xsl:call-template name="jump_widget_disability">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param select="$hmi_element" name="hmi_element"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="have_disability" select="$have_activity and string-length($disability)&gt;0"/>
+    <xsl:variable select="$have_activity and string-length($disability)&gt;0" name="have_disability"/>
     <xsl:value-of select="$disability"/>
     <xsl:if test="$have_activity">
       <xsl:text>    active: false,
@@ -3682,9 +3821,9 @@
     <xsl:text>var keypads = {
 </xsl:text>
     <xsl:for-each select="$keypads_descs">
-      <xsl:variable name="keypad_id" select="@id"/>
+      <xsl:variable select="@id" name="keypad_id"/>
       <xsl:for-each select="arg">
-        <xsl:variable name="g" select="$geometry[@Id = $keypad_id]"/>
+        <xsl:variable select="$geometry[@Id = $keypad_id]" name="g"/>
         <xsl:text>    "</xsl:text>
         <xsl:value-of select="@value"/>
         <xsl:text>":["</xsl:text>
@@ -3707,7 +3846,7 @@
 </xsl:text>
     <xsl:text>     moving = undefined;
 </xsl:text>
-    <xsl:text>     enTimer = undefined;
+    <xsl:text>     click = undefined;
 </xsl:text>
     <xsl:text>     offset = undefined;
 </xsl:text>
@@ -3717,7 +3856,21 @@
 </xsl:text>
     <xsl:text>         this.moving = true;
 </xsl:text>
-    <xsl:text>         this.enTimer = true;
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         // chatch window events
+</xsl:text>
+    <xsl:text>         window.addEventListener("touchmove", this.bound_on_drag, true);
+</xsl:text>
+    <xsl:text>         window.addEventListener("mousemove", this.bound_on_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         window.addEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>         window.addEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>         window.addEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -3751,7 +3904,23 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     off_position_click(evt) {
+    <xsl:text>     on_release(evt) {
+</xsl:text>
+    <xsl:text>        //relase binds
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchmove", this.bound_on_drag, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mousemove", this.bound_on_drag, true);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true)
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchend", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>        if(this.moving)
 </xsl:text>
@@ -3761,63 +3930,65 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     on_move(evt) {
+    <xsl:text>     on_drag(evt) {
 </xsl:text>
-    <xsl:text>         if(this.moving &amp;&amp; this.enTimer){
+    <xsl:text>         if(this.moving)
 </xsl:text>
-    <xsl:text>             //get keyboard pos in html
+    <xsl:text>            //get mouse coordinates
 </xsl:text>
-    <xsl:text>             let [eltid, tmpgrp] = current_modal;
+    <xsl:text>            var clickX = undefined;
 </xsl:text>
-    <xsl:text>             let [xcoord,ycoord] = this.coordinates;
+    <xsl:text>            var clickY = undefined;
 </xsl:text>
-    <xsl:text>             let [xdest,ydest,svgWidth,svgHeight] = page_desc[current_visible_page].bbox;
+    <xsl:text>            if (evt.type == "touchmove"){
 </xsl:text>
-    <xsl:text>
+    <xsl:text>                clickX = Math.ceil(evt.touches[0].clientX);
 </xsl:text>
-    <xsl:text>             //get mouse coordinates
+    <xsl:text>                clickY = Math.ceil(evt.touches[0].clientY);
 </xsl:text>
-    <xsl:text>             var clickX = undefined;
+    <xsl:text>            }
 </xsl:text>
-    <xsl:text>             var clickY = undefined;
+    <xsl:text>            else{
 </xsl:text>
-    <xsl:text>             if (evt.type == "touchmove"){
+    <xsl:text>                clickX = evt.pageX;
 </xsl:text>
-    <xsl:text>                 clickX = Math.ceil(evt.touches[0].clientX);
+    <xsl:text>                clickY = evt.pageY;
 </xsl:text>
-    <xsl:text>                 clickY = Math.ceil(evt.touches[0].clientY);
+    <xsl:text>            }
 </xsl:text>
-    <xsl:text>             }
-</xsl:text>
-    <xsl:text>             else{
-</xsl:text>
-    <xsl:text>                 clickX = evt.pageX;
-</xsl:text>
-    <xsl:text>                 clickY = evt.pageY;
-</xsl:text>
-    <xsl:text>             }
+    <xsl:text>            this.click = [clickX,clickY]
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>             //translate keyboard position
+    <xsl:text>            //requeset redraw
 </xsl:text>
-    <xsl:text>             let mouseX = ((clickX-this.offset[0])/window.innerWidth)*svgWidth;
+    <xsl:text>            this.request_animate();
 </xsl:text>
-    <xsl:text>             let mouseY = ((clickY-this.offset[1])/window.innerHeight)*svgHeight;
-</xsl:text>
-    <xsl:text>             tmpgrp.setAttribute("transform","translate("+String(xdest-xcoord+mouseX)+","+String(ydest-ycoord+mouseY)+")");
+    <xsl:text>     }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>             //reset timer
+    <xsl:text>     animate(){
 </xsl:text>
-    <xsl:text>             this.enTimer = false;
+    <xsl:text>        //get keyboard pos in html
 </xsl:text>
-    <xsl:text>             setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+    <xsl:text>        let [eltid, tmpgrp] = current_modal;
 </xsl:text>
-    <xsl:text>         }
+    <xsl:text>        let [xcoord,ycoord] = this.coordinates;
+</xsl:text>
+    <xsl:text>        let [clickX,clickY] = this.click;
+</xsl:text>
+    <xsl:text>        let [xdest,ydest,svgWidth,svgHeight] = page_desc[current_visible_page].bbox;
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        //translate keyboard position
+</xsl:text>
+    <xsl:text>        let mouseX = ((clickX-this.offset[0])/window.innerWidth)*svgWidth;
+</xsl:text>
+    <xsl:text>        let mouseY = ((clickY-this.offset[1])/window.innerHeight)*svgHeight;
+</xsl:text>
+    <xsl:text>        tmpgrp.setAttribute("transform","translate("+String(xdest-xcoord+mouseX)+","+String(ydest-ycoord+mouseY)+")");
 </xsl:text>
     <xsl:text>     }
 </xsl:text>
@@ -3997,25 +4168,25 @@
   <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>Esc Enter BackSpace Keys Info Value</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>Sign Space NumDot position</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>CapsLock Shift</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
-      <xsl:with-param name="subelements" select="'active inactive'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
+      <xsl:with-param select="'active inactive'" name="subelements"/>
     </xsl:call-template>
     <xsl:text>    init: function() {
 </xsl:text>
@@ -4045,19 +4216,15 @@
     </xsl:for-each>
     <xsl:text>        if(this.position_elt){
 </xsl:text>
+    <xsl:text>           this.bound_on_release = this.on_release.bind(this);
+</xsl:text>
+    <xsl:text>           this.bound_on_drag = this.on_drag.bind(this);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>           this.position_elt.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
 </xsl:text>
     <xsl:text>           this.position_elt.setAttribute("ontouchstart", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
-</xsl:text>
-    <xsl:text>           window.addEventListener("mouseup", hmi_widgets[this.element_id].off_position_click.bind(this));
-</xsl:text>
-    <xsl:text>           window.addEventListener("touchend", hmi_widgets[this.element_id].off_position_click.bind(this));
-</xsl:text>
-    <xsl:text>           window.addEventListener("touchcancel", hmi_widgets[this.element_id].off_position_click.bind(this));
-</xsl:text>
-    <xsl:text>           window.addEventListener("mousemove", hmi_widgets[this.element_id].on_move.bind(this));
-</xsl:text>
-    <xsl:text>           window.addEventListener("touchmove", hmi_widgets[this.element_id].on_move.bind(this));
 </xsl:text>
     <xsl:text>       }
 </xsl:text>
@@ -4065,7 +4232,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:variable name="g" select="$geometry[@Id = $hmi_element/@id]"/>
+    <xsl:variable select="$geometry[@Id = $hmi_element/@id]" name="g"/>
     <xsl:text>    coordinates: [</xsl:text>
     <xsl:value-of select="$g/@x"/>
     <xsl:text>, </xsl:text>
@@ -4073,7 +4240,7 @@
     <xsl:text>],
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='List']">
+  <xsl:template mode="widget_defs" match="widget[@type='List' or @type='TextStyleList']">
     <xsl:param name="hmi_element"/>
     <xsl:text>    items: {
 </xsl:text>
@@ -4088,24 +4255,18 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    frequency: 10,
+  <xsl:template mode="widget_class" match="widget[@type='Meter']">
+    <xsl:text>class MeterWidget extends Widget{
 </xsl:text>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>needle range</xsl:text>
-      </xsl:with-param>
-    </xsl:call-template>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>value min max</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
-    </xsl:call-template>
-    <xsl:text>    dispatch: function(value) {
+    <xsl:text>    frequency = 10;
+</xsl:text>
+    <xsl:text>    origin = undefined;
+</xsl:text>
+    <xsl:text>    range = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
 </xsl:text>
     <xsl:text>        if(this.value_elt)
 </xsl:text>
@@ -4119,13 +4280,11 @@
 </xsl:text>
     <xsl:text>        this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
 </xsl:text>
-    <xsl:text>    origin: undefined,
+    <xsl:text>
 </xsl:text>
-    <xsl:text>    range: undefined,
-</xsl:text>
-    <xsl:text>    init: function() {
+    <xsl:text>    init() {
 </xsl:text>
     <xsl:text>        let min = this.min_elt ?
 </xsl:text>
@@ -4143,7 +4302,29 @@
 </xsl:text>
     <xsl:text>        this.origin = this.needle_elt.getPointAtLength(0);
 </xsl:text>
-    <xsl:text>    },
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>needle range</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>value min max</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param select="'no'" name="mandatory"/>
+    </xsl:call-template>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='MultiState']">
@@ -4232,9 +4413,9 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
-    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
+    <xsl:variable select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'" name="regex"/>
     <xsl:for-each select="$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]">
-      <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
+      <xsl:variable select="regexp:match(@inkscape:label,$regex)[2]" name="literal"/>
       <xsl:text>        {
 </xsl:text>
       <xsl:text>            elt:id("</xsl:text>
@@ -4267,6 +4448,8 @@
     <xsl:text>    range = undefined;
 </xsl:text>
     <xsl:text>    fi = undefined;
+</xsl:text>
+    <xsl:text>    svg_dist = undefined;
 </xsl:text>
     <xsl:text>    drag = false;
 </xsl:text>
@@ -4578,17 +4761,17 @@
   <xsl:template mode="widget_defs" match="widget[@type='Slider']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>handle range</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>value min max setpoint</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
+      <xsl:with-param select="'no'" name="mandatory"/>
     </xsl:call-template>
     <xsl:text>
 </xsl:text>
@@ -4623,9 +4806,9 @@
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
-    <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
+    <xsl:variable select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'" name="regex"/>
     <xsl:for-each select="$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]">
-      <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
+      <xsl:variable select="regexp:match(@inkscape:label,$regex)[2]" name="literal"/>
       <xsl:text>        {
 </xsl:text>
       <xsl:text>            elt:id("</xsl:text>
@@ -4713,7 +4896,7 @@
   <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param select="$hmi_element" name="hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>active inactive</xsl:text>
       </xsl:with-param>
