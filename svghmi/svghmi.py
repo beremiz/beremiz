@@ -485,10 +485,13 @@ class SVGHMI(object):
 
         inkpath = get_inkscape_path()
         svgpath = self._getSVGpath()
-        _status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
-                                                     inkpath + " -S " + svgpath,
+        status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
+                                                     '"' + inkpath + '" -S "' + svgpath + '"',
                                                      no_stdout=True,
                                                      no_stderr=True).spin()
+        if status != 0:
+            self.FatalError("SVGHMI : inkscape couldn't extract geometry from given SVG")
+
         res = []
         for line in result.split():
             strippedline = line.strip()
