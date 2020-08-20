@@ -10,7 +10,10 @@ in xsl decl svgfunc(name, xmlns="http://www.w3.org/2000/svg") alias template;
 // Identity template :
 //  - copy every attributes 
 //  - copy every sub-elements
-template "@* | node()", mode="inline_svg" {
+
+svgtmpl "@*", mode="inline_svg" xsl:copy;
+
+template "node()", mode="inline_svg" {
   // use real xsl:copy instead copy-of alias from yslt.yml2
   if "not(@id = $discardable_elements/@id)"
       xsl:copy apply "@* | node()", mode="inline_svg";
@@ -51,19 +54,22 @@ const "hmi_lists_descs", "$parsed_widgets/widget[@type = 'List']";
 const "hmi_lists", "$hmi_elements[@id = $hmi_lists_descs/@id]";
 const "targets_not_to_unlink", "$hmi_lists/descendant-or-self::svg:*";
 const "to_unlink", "$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use";
-svgtmpl "svg:use", mode="inline_svg"
-{
-    param "seed";
+
+def "func:is_unlinkable" {
+    param "targetid";
+    param "eltid";
+    result "$eltid = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)";
+}
+
+svgtmpl "svg:use", mode="inline_svg"{
     const "targetid","substring-after(@xlink:href,'#')";
     choose {
-        when "@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)" {
+        when "func:is_unlinkable($targetid, @id)" {
             call "unlink_clone" {
                 with "targetid", "$targetid";
-                with "seed","$seed";
             }
         }
-        otherwise
-            xsl:copy apply "@* | node()", mode="inline_svg";
+        otherwise xsl:copy apply "@*", mode="inline_svg";
     }
 }
 
@@ -87,11 +93,16 @@ const "merge_use_attrs","exsl:node-set($_merge_use_attrs)";
 
 svgfunc "unlink_clone"{
     param "targetid";
-    param "seed";
+    param "seed","''";
     const "target", "//svg:*[@id = $targetid]";
-    const "seeded_id","concat($seed, @id)";
+    const "seeded_id" choose {
+        when "string-length($seed) > 0" > «$seed»_«@id»
+        otherwise value "@id";
+    }
     g{
         attrib "id" value "$seeded_id";
+        attrib "original" value "@id";
+
         choose {
             when "$target[self::svg:g]" {
                 foreach "@*[not(local-name() = $excluded_use_attrs/name | $merge_use_attrs)]"
@@ -112,7 +123,7 @@ svgfunc "unlink_clone"{
                     }
 
                 apply "$target/*", mode="unlink_clone"{
-                    with "seed","concat($seed, @id)";
+                    with "seed","$seeded_id";
                 }
             }
             otherwise {
@@ -121,7 +132,7 @@ svgfunc "unlink_clone"{
                     attrib "{name()}" > «.»
 
                 apply "$target", mode="unlink_clone"{
-                    with "seed","concat($seed, @id)";
+                    with "seed","$seeded_id";
                 }
             }
         }
@@ -133,13 +144,25 @@ svgfunc "unlink_clone"{
 svgtmpl "@id", mode="unlink_clone" {
     param "seed";
     attrib "id" > «$seed»_«.»
+    attrib "original" > «.»
 }
 
 svgtmpl "@*", mode="unlink_clone" xsl:copy;
 
 svgtmpl "svg:use", mode="unlink_clone" {
     param "seed";
-    apply "." mode="inline_svg" with "seed","concat($seed, '_')";
+    const "targetid","substring-after(@xlink:href,'#')";
+    choose {
+        when "func:is_unlinkable($targetid, @id)" {
+            call "unlink_clone" {
+                with "targetid", "$targetid";
+                with "seed","$seed";
+            }
+        }
+        otherwise xsl:copy apply "@*", mode="unlink_clone" {
+            with "seed","$seed";
+        }
+    }
 }
 
 // copying widgets would have unwanted effect
