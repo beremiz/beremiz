@@ -16,7 +16,7 @@
    version="1.1"
    id="hmi0"
    sodipodi:docname="svghmi.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
   <metadata
      id="metadata4542">
     <rdf:RDF>
@@ -182,17 +182,17 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g907"
+     inkscape:current-layer="g1384"
      showgrid="false"
      units="px"
      inkscape:zoom="0.50000001"
-     inkscape:cx="632.83299"
-     inkscape:cy="-317.59408"
-     inkscape:window-width="2443"
-     inkscape:window-height="1567"
-     inkscape:window-x="816"
-     inkscape:window-y="103"
-     inkscape:window-maximized="0"
+     inkscape:cx="503.83301"
+     inkscape:cy="474.4059"
+     inkscape:window-width="1800"
+     inkscape:window-height="836"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
   <rect
@@ -3236,7 +3236,7 @@
        inkscape:connector-curvature="0"
        id="path1320"
        d="M 130.96206,4.0725977 79.111776,-41.363223"
-       style="fill:none;fill-rule:evenodd;stroke:#ff3000;stroke-width:2.96333337;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0, 32.59666667;stroke-dashoffset:29.63333321;stroke-opacity:1;marker-end:url(#marker1656)" />
+       style="fill:none;fill-rule:evenodd;stroke:#ff3000;stroke-width:2.9633333;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:29.63333301;stroke-opacity:1;marker-end:url(#marker1656)" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:125%;font-family:sans-serif;text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"

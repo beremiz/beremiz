@@ -41,44 +41,128 @@ template "svg:*", mode="json_table_elt_render" {
 const "hmi_textstylelists_descs", "$parsed_widgets/widget[@type = 'TextStyleList']";
 const "hmi_textstylelists", "$hmi_elements[@id = $hmi_textstylelists_descs/@id]";
 
+const "textstylelist_related" foreach "$hmi_textstylelists" list {
+    attrib "listid" value "@id";
+    foreach "func:refered_elements(.)" elt {
+        attrib "eltid" value "@id";
+    }
+}
+const "textstylelist_related_ns", "exsl:node-set($textstylelist_related)";
+
+def "func:json_expressions" {
+    param "expressions";
+    param "label";
+
+    // compute javascript expressions to access JSON data
+    // desscribed in given svg element's "label"
+    // knowing that parent element already has given "expressions".
+
+    choose {
+        when "$label" {
+            const "suffixes", "str:split($label)";
+            const "res" foreach "$suffixes" expression {
+                const "suffix",".";
+                const "pos","position()";
+                // take last available expression (i.e can have more suffixes than expressions)
+                const "expr","$expressions[position() <= $pos][last()]/expression";
+                choose {
+                    when "contains($suffix,'=')" {
+                        const "name", "substring-before($suffix,'=')";
+                        if "$expr/@name[. != $name]" 
+                            error > JsonTable : missplaced '=' or inconsistent names in Json data expressions.
+                        attrib "name" value "$name";
+                        attrib "content" > «$expr/@content»«substring-after($suffix,'=')»
+                    }
+                    otherwise {
+                        copy "$expr/@name";
+                        attrib "content" > «$expr/@content»«$suffix»
+                    }
+                }
+            }
+            result "exsl:node-set($res)";
+        }
+        // Empty labels are ignored, expressions are then passed as-is.
+        otherwise result "$expressions";
+    }
+
+}
+
+const "initexpr" expression attrib "content" > jdata
+const "initexpr_ns", "exsl:node-set($initexpr)";
+
 template "svg:use", mode="json_table_elt_render" {
-    param "value_expr";
+    param "expressions";
     // cloned element must be part of a HMI:List
     const "targetid", "substring-after(@xlink:href,'#')";
     const "from_list", "$hmi_lists[(@id | */@id) = $targetid]";
-    const "from_textstylelist", "$hmi_textstylelists[(@id | */@id) = $targetid]";
 
     choose {
         when "count($from_list) > 0" {
             |         id("«@id»").setAttribute("xlink:href", 
             // obtain new target id from HMI:List widget
-            |             "#"+hmi_widgets["«$from_list/@id»"].items[«$value_expr»]);
-        }
-        when "count($from_textstylelist) > 0" {
-            |         console.log("from_textsylelist","«@id»", "«$value_expr»", «$value_expr»,
-            // obtain new style from HMI:TextStyleList widget
-            |             hmi_widgets["«$from_textstylelist/@id»"].items[«$value_expr»]);
+            |             "#"+hmi_widgets["«$from_list/@id»"].items[«$expressions/expression[1]/@content»]);
         }
         otherwise
-            warning > Clones (svg:use) in JsonTable Widget must point to a valid HMI:List or HMI:TextStyleList widget or item. Reference "«@xlink:href»" is not valid and will not be updated.
+            warning > Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or item. Reference "«@xlink:href»" is not valid and will not be updated.
     }
 }
 
 template "svg:text", mode="json_table_elt_render" {
-    param "value_expr";
-    |         id("«@id»").textContent = String(«$value_expr»);
+    param "expressions";
+    const "value_expr", "$expressions/expression[1]/@content";
+    const "original", "@original";
+    const "from_textstylelist", "$textstylelist_related_ns/list[elt/@eltid = $original]";
+    choose {
+
+        when "count($from_textstylelist) > 0" {
+            const "content_expr", "$expressions/expression[2]/@content";
+            if "string-length($content_expr) = 0 or $expressions/expression[2]/@name != 'textContent'"
+                error > Clones (svg:use) in JsonTable Widget pointing to a HMI:TextStyleList widget or item must have a "textContent=.someVal" assignement following value expression in label.
+            |         {
+            |           let elt = id("«@id»");
+            |           elt.textContent = String(«$content_expr»);
+            |           elt.style = hmi_widgets["«$from_textstylelist/@listid»"].styles[«$value_expr»];
+            |         }
+        }
+        otherwise {
+            |         id("«@id»").textContent = String(«$value_expr»);
+        }
+    }
+}
+
+
+// only labels comming from Json widget are counted in
+def "func:filter_non_widget_label" {
+    param "elt";
+    param "widget_elts";
+    const "eltid" choose {
+        when "$elt/@original" value "$elt/@original";
+        otherwise value "$elt/@id";
+    }
+    result "$widget_elts[@id=$eltid]/@inkscape:label";
 }
 
 template "svg:*", mode="json_table_render" {
-    param "objname";
-    apply ".", mode="json_table_elt_render" with "value_expr" > «$objname»«substring-before(@inkscape:label, ' ')»
+    param "expressions";
+    param "widget_elts";
+    const "label", "func:filter_non_widget_label(., $widget_elts)";
+    apply ".", mode="json_table_elt_render" {
+        with "expressions", "func:json_expressions($expressions, $label)";
+    }
 }
 
 template "svg:g", mode="json_table_render" {
-    param "objname";
-    |         let obj_«@id» = «$objname»«substring-before(@inkscape:label, ' ')»;
-    apply "*[@inkscape:label]", mode="json_table_render" 
-        with "objname" > obj_«@id»
+    param "expressions";
+    param "widget_elts";
+    /* TODO : use intermediate variables for optimization
+    foreach "$new_expressions"
+    |         let obj_«@id»_«position()» = «.»;
+    */
+    const "label", "func:filter_non_widget_label(., $widget_elts)";
+    apply "*", mode="json_table_render" {
+        with "expressions", "func:json_expressions($expressions, $label)";
+        with "widget_elts", "$widget_elts";
+    }
 }
 
 template "widget[@type='JsonTable']", mode="widget_defs" {
@@ -87,6 +171,9 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     optional_labels("forward backward cursor");
     const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";
     |     spread_json_data: function(jdata) {
-    apply "$data_elt/*", mode="json_table_render" with "objname","'jdata'";
+    apply "$data_elt/*", mode="json_table_render" {
+        with "expressions","$initexpr_ns";
+        with "widget_elts","$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*";
+    }
     |     }
 }
