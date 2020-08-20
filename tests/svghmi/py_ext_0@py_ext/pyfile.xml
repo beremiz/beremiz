@@ -18,10 +18,10 @@ class AlarmJsonResource(Resource):
         newdata = request.content.getvalue()
         print newdata
         selected_alarms = [
-            {"name":"three", "sides":3},
-            {"name":"four", "sides":4},
-            {"name":"five", "sides":5},
-            {"name":"six", "sides":6},
+            {"name":"three", "sides":3, "textstyle":"alarm"},
+            {"name":"four", "sides":4, "textstyle":"ack"},
+            {"name":"five", "sides":5, "textstyle":"active"},
+            {"name":"six", "sides":6, "textstyle":"disabled"},
         ]
         return json.dumps(selected_alarms)
 

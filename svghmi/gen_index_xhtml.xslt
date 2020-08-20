@@ -637,7 +637,10 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="inline_svg" match="@* | node()">
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@*">
+    <xsl:copy/>
+  </xsl:template>
+  <xsl:template mode="inline_svg" match="node()">
     <xsl:if test="not(@id = $discardable_elements/@id)">
       <xsl:copy>
         <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
@@ -672,19 +675,24 @@
   </xsl:template>
   <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
   <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
-  <xsl:variable name="targets_not_to_unlink" select="$hmi_elements[@id = $hmi_lists/@id]/descendant::svg:*"/>
+  <xsl:variable name="targets_not_to_unlink" select="$hmi_lists/descendant-or-self::svg:*"/>
   <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use"/>
+  <func:function name="func:is_unlinkable">
+    <xsl:param name="targetid"/>
+    <xsl:param name="eltid"/>
+    <func:result select="$eltid = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)"/>
+  </func:function>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:use">
     <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
     <xsl:choose>
-      <xsl:when test="@id = $to_unlink/@id and not($targetid = $targets_not_to_unlink/@id)">
+      <xsl:when test="func:is_unlinkable($targetid, @id)">
         <xsl:call-template name="unlink_clone">
           <xsl:with-param name="targetid" select="$targetid"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
         <xsl:copy>
-          <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
+          <xsl:apply-templates mode="inline_svg" select="@*"/>
         </xsl:copy>
       </xsl:otherwise>
     </xsl:choose>
@@ -705,6 +713,9 @@
     <name>
       <xsl:text>y</xsl:text>
     </name>
+    <name>
+      <xsl:text>id</xsl:text>
+    </name>
   </xsl:variable>
   <xsl:variable name="excluded_use_attrs" select="exsl:node-set($_excluded_use_attrs)"/>
   <xsl:variable name="_merge_use_attrs">
@@ -718,8 +729,27 @@
   <xsl:variable name="merge_use_attrs" select="exsl:node-set($_merge_use_attrs)"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" name="unlink_clone">
     <xsl:param name="targetid"/>
+    <xsl:param name="seed" select="''"/>
     <xsl:variable name="target" select="//svg:*[@id = $targetid]"/>
+    <xsl:variable name="seeded_id">
+      <xsl:choose>
+        <xsl:when test="string-length($seed) &gt; 0">
+          <xsl:value-of select="$seed"/>
+          <xsl:text>_</xsl:text>
+          <xsl:value-of select="@id"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="@id"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <g>
+      <xsl:attribute name="id">
+        <xsl:value-of select="$seeded_id"/>
+      </xsl:attribute>
+      <xsl:attribute name="original">
+        <xsl:value-of select="@id"/>
+      </xsl:attribute>
       <xsl:choose>
         <xsl:when test="$target[self::svg:g]">
           <xsl:for-each select="@*[not(local-name() = $excluded_use_attrs/name | $merge_use_attrs)]">
@@ -746,7 +776,7 @@
             </xsl:attribute>
           </xsl:if>
           <xsl:apply-templates mode="unlink_clone" select="$target/*">
-            <xsl:with-param name="seed" select="@id"/>
+            <xsl:with-param name="seed" select="$seeded_id"/>
           </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
@@ -756,7 +786,7 @@
             </xsl:attribute>
           </xsl:for-each>
           <xsl:apply-templates mode="unlink_clone" select="$target">
-            <xsl:with-param name="seed" select="@id"/>
+            <xsl:with-param name="seed" select="$seeded_id"/>
           </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
@@ -769,9 +799,31 @@
       <xsl:text>_</xsl:text>
       <xsl:value-of select="."/>
     </xsl:attribute>
+    <xsl:attribute name="original">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
   </xsl:template>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="@*">
     <xsl:copy/>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:use">
+    <xsl:param name="seed"/>
+    <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
+    <xsl:choose>
+      <xsl:when test="func:is_unlinkable($targetid, @id)">
+        <xsl:call-template name="unlink_clone">
+          <xsl:with-param name="targetid" select="$targetid"/>
+          <xsl:with-param name="seed" select="$seed"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:copy>
+          <xsl:apply-templates mode="unlink_clone" select="@*">
+            <xsl:with-param name="seed" select="$seed"/>
+          </xsl:apply-templates>
+        </xsl:copy>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
     <xsl:param name="seed"/>
@@ -1023,8 +1075,6 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:text>    let defaultval = local_defaults[varname];
-</xsl:text>
-    <xsl:text>    console.log("page_local_index creat local", varname, pagename, new_index, defaultval);
 </xsl:text>
     <xsl:text>    if(defaultval != undefined) 
 </xsl:text>
@@ -3365,60 +3415,177 @@
       <xsl:text>.</xsl:text>
     </xsl:message>
   </xsl:template>
+  <xsl:variable name="hmi_textstylelists_descs" select="$parsed_widgets/widget[@type = 'TextStyleList']"/>
+  <xsl:variable name="hmi_textstylelists" select="$hmi_elements[@id = $hmi_textstylelists_descs/@id]"/>
+  <xsl:variable name="textstylelist_related">
+    <xsl:for-each select="$hmi_textstylelists">
+      <list>
+        <xsl:attribute name="listid">
+          <xsl:value-of select="@id"/>
+        </xsl:attribute>
+        <xsl:for-each select="func:refered_elements(.)">
+          <elt>
+            <xsl:attribute name="eltid">
+              <xsl:value-of select="@id"/>
+            </xsl:attribute>
+          </elt>
+        </xsl:for-each>
+      </list>
+    </xsl:for-each>
+  </xsl:variable>
+  <xsl:variable name="textstylelist_related_ns" select="exsl:node-set($textstylelist_related)"/>
+  <func:function name="func:json_expressions">
+    <xsl:param name="expressions"/>
+    <xsl:param name="label"/>
+    <xsl:choose>
+      <xsl:when test="$label">
+        <xsl:variable name="suffixes" select="str:split($label)"/>
+        <xsl:variable name="res">
+          <xsl:for-each select="$suffixes">
+            <expression>
+              <xsl:variable name="suffix" select="."/>
+              <xsl:variable name="pos" select="position()"/>
+              <xsl:variable name="expr" select="$expressions[position() &lt;= $pos][last()]/expression"/>
+              <xsl:choose>
+                <xsl:when test="contains($suffix,'=')">
+                  <xsl:variable name="name" select="substring-before($suffix,'=')"/>
+                  <xsl:if test="$expr/@name[. != $name]">
+                    <xsl:message terminate="yes">
+                      <xsl:text>JsonTable : missplaced '=' or inconsistent names in Json data expressions.</xsl:text>
+                    </xsl:message>
+                  </xsl:if>
+                  <xsl:attribute name="name">
+                    <xsl:value-of select="$name"/>
+                  </xsl:attribute>
+                  <xsl:attribute name="content">
+                    <xsl:value-of select="$expr/@content"/>
+                    <xsl:value-of select="substring-after($suffix,'=')"/>
+                  </xsl:attribute>
+                </xsl:when>
+                <xsl:otherwise>
+                  <xsl:copy-of select="$expr/@name"/>
+                  <xsl:attribute name="content">
+                    <xsl:value-of select="$expr/@content"/>
+                    <xsl:value-of select="$suffix"/>
+                  </xsl:attribute>
+                </xsl:otherwise>
+              </xsl:choose>
+            </expression>
+          </xsl:for-each>
+        </xsl:variable>
+        <func:result select="exsl:node-set($res)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$expressions"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <xsl:variable name="initexpr">
+    <expression>
+      <xsl:attribute name="content">
+        <xsl:text>jdata</xsl:text>
+      </xsl:attribute>
+    </expression>
+  </xsl:variable>
+  <xsl:variable name="initexpr_ns" select="exsl:node-set($initexpr)"/>
   <xsl:template mode="json_table_elt_render" match="svg:use">
-    <xsl:param name="value_expr"/>
+    <xsl:param name="expressions"/>
     <xsl:variable name="targetid" select="substring-after(@xlink:href,'#')"/>
     <xsl:variable name="from_list" select="$hmi_lists[(@id | */@id) = $targetid]"/>
-    <xsl:if test="count($from_list) = 0">
-      <xsl:message terminate="yes">
-        <xsl:text>Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or HMI:List item. Reference "</xsl:text>
-        <xsl:value-of select="@xlink:href"/>
-        <xsl:text>" is not valid.</xsl:text>
-      </xsl:message>
-    </xsl:if>
-    <xsl:text>        id("</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>").setAttribute("xlink:href", 
+    <xsl:choose>
+      <xsl:when test="count($from_list) &gt; 0">
+        <xsl:text>        id("</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>").setAttribute("xlink:href", 
 </xsl:text>
-    <xsl:text>            "#"+hmi_widgets["</xsl:text>
-    <xsl:value-of select="$from_list/@id"/>
-    <xsl:text>"].items[</xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>]);
+        <xsl:text>            "#"+hmi_widgets["</xsl:text>
+        <xsl:value-of select="$from_list/@id"/>
+        <xsl:text>"].items[</xsl:text>
+        <xsl:value-of select="$expressions/expression[1]/@content"/>
+        <xsl:text>]);
 </xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message terminate="no">
+          <xsl:text>Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or item. Reference "</xsl:text>
+          <xsl:value-of select="@xlink:href"/>
+          <xsl:text>" is not valid and will not be updated.</xsl:text>
+        </xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   <xsl:template mode="json_table_elt_render" match="svg:text">
-    <xsl:param name="value_expr"/>
-    <xsl:text>        id("</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text>").textContent = String(</xsl:text>
-    <xsl:value-of select="$value_expr"/>
-    <xsl:text>);
+    <xsl:param name="expressions"/>
+    <xsl:variable name="value_expr" select="$expressions/expression[1]/@content"/>
+    <xsl:variable name="original" select="@original"/>
+    <xsl:variable name="from_textstylelist" select="$textstylelist_related_ns/list[elt/@eltid = $original]"/>
+    <xsl:choose>
+      <xsl:when test="count($from_textstylelist) &gt; 0">
+        <xsl:variable name="content_expr" select="$expressions/expression[2]/@content"/>
+        <xsl:if test="string-length($content_expr) = 0 or $expressions/expression[2]/@name != 'textContent'">
+          <xsl:message terminate="yes">
+            <xsl:text>Clones (svg:use) in JsonTable Widget pointing to a HMI:TextStyleList widget or item must have a "textContent=.someVal" assignement following value expression in label.</xsl:text>
+          </xsl:message>
+        </xsl:if>
+        <xsl:text>        {
 </xsl:text>
+        <xsl:text>          let elt = id("</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>");
+</xsl:text>
+        <xsl:text>          elt.textContent = String(</xsl:text>
+        <xsl:value-of select="$content_expr"/>
+        <xsl:text>);
+</xsl:text>
+        <xsl:text>          elt.style = hmi_widgets["</xsl:text>
+        <xsl:value-of select="$from_textstylelist/@listid"/>
+        <xsl:text>"].styles[</xsl:text>
+        <xsl:value-of select="$value_expr"/>
+        <xsl:text>];
+</xsl:text>
+        <xsl:text>        }
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>        id("</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>").textContent = String(</xsl:text>
+        <xsl:value-of select="$value_expr"/>
+        <xsl:text>);
+</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
+  <func:function name="func:filter_non_widget_label">
+    <xsl:param name="elt"/>
+    <xsl:param name="widget_elts"/>
+    <xsl:variable name="eltid">
+      <xsl:choose>
+        <xsl:when test="$elt/@original">
+          <xsl:value-of select="$elt/@original"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$elt/@id"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <func:result select="$widget_elts[@id=$eltid]/@inkscape:label"/>
+  </func:function>
   <xsl:template mode="json_table_render" match="svg:*">
-    <xsl:param name="objname"/>
+    <xsl:param name="expressions"/>
+    <xsl:param name="widget_elts"/>
+    <xsl:variable name="label" select="func:filter_non_widget_label(., $widget_elts)"/>
     <xsl:apply-templates mode="json_table_elt_render" select=".">
-      <xsl:with-param name="value_expr">
-        <xsl:value-of select="$objname"/>
-        <xsl:value-of select="@inkscape:label"/>
-      </xsl:with-param>
+      <xsl:with-param name="expressions" select="func:json_expressions($expressions, $label)"/>
     </xsl:apply-templates>
   </xsl:template>
   <xsl:template mode="json_table_render" match="svg:g">
-    <xsl:param name="objname"/>
-    <xsl:text>        let obj_</xsl:text>
-    <xsl:value-of select="@id"/>
-    <xsl:text> = </xsl:text>
-    <xsl:value-of select="$objname"/>
-    <xsl:value-of select="@inkscape:label"/>
-    <xsl:text>;
-</xsl:text>
-    <xsl:apply-templates mode="json_table_render" select="*[@inkscape:label]">
-      <xsl:with-param name="objname">
-        <xsl:text>obj_</xsl:text>
-        <xsl:value-of select="@id"/>
-      </xsl:with-param>
+    <xsl:param name="expressions"/>
+    <xsl:param name="widget_elts"/>
+    <xsl:variable name="label" select="func:filter_non_widget_label(., $widget_elts)"/>
+    <xsl:apply-templates mode="json_table_render" select="*">
+      <xsl:with-param name="expressions" select="func:json_expressions($expressions, $label)"/>
+      <xsl:with-param name="widget_elts" select="$widget_elts"/>
     </xsl:apply-templates>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='JsonTable']">
@@ -3440,7 +3607,8 @@
     <xsl:text>    spread_json_data: function(jdata) {
 </xsl:text>
     <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
-      <xsl:with-param name="objname" select="'jdata'"/>
+      <xsl:with-param name="expressions" select="$initexpr_ns"/>
+      <xsl:with-param name="widget_elts" select="$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*"/>
     </xsl:apply-templates>
     <xsl:text>    }
 </xsl:text>
@@ -4079,9 +4247,25 @@
 </xsl:text>
     <xsl:for-each select="$hmi_element/*[@inkscape:label]">
       <xsl:text>        </xsl:text>
-      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:value-of select="@inkscape:label"/>
       <xsl:text>: "</xsl:text>
       <xsl:value-of select="@id"/>
+      <xsl:text>",
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='TextStyleList']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    styles: {
+</xsl:text>
+    <xsl:for-each select="$hmi_element/*[@inkscape:label]">
+      <xsl:variable name="style" select="func:refered_elements(.)[self::svg:text]/@style"/>
+      <xsl:text>        </xsl:text>
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text>: "</xsl:text>
+      <xsl:value-of select="$style"/>
       <xsl:text>",
 </xsl:text>
     </xsl:for-each>
