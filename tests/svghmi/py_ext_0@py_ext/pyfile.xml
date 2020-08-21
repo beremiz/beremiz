@@ -2,7 +2,7 @@
 <PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <variables>
     <variable name="SomePLCglobal" type="HMI_STRING" onchange="MyOnChangeFunc"/>
-    <variable name="AlarmCount" type="HMI_INT"/>
+    <variable name="AlarmNotify" type="HMI_INT"/>
   </variables>
   <globals>
     <xhtml:p><![CDATA[
@@ -14,9 +14,9 @@ class AlarmJsonResource(Resource):
         return ''
 
     def render_POST(self, request):
-        print(request.__dict__)
         newdata = request.content.getvalue()
         print newdata
+        print json.loads(newdata)
         selected_alarms = [
             {"name":"three", "sides":3, "textstyle":"alarm"},
             {"name":"four", "sides":4, "textstyle":"ack"},
