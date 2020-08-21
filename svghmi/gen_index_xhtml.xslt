@@ -3337,7 +3337,7 @@
     <xsl:value-of select="path/@value"/>
     <xsl:text>", "</xsl:text>
     <xsl:value-of select="path/@type"/>
-    <xsl:text>", this, this.last_val,size);
+    <xsl:text>", this, this.last_val, size);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -3351,15 +3351,15 @@
   <xsl:template mode="widget_class" match="widget[@type='JsonTable']">
     <xsl:text>class JsonTableWidget extends Widget{
 </xsl:text>
+    <xsl:text>    cache = [];
+</xsl:text>
     <xsl:text>    do_http_request() {
 </xsl:text>
     <xsl:text>        const query = {
 </xsl:text>
-    <xsl:text>             offset: '42',
+    <xsl:text>            args: this.args,
 </xsl:text>
-    <xsl:text>             filter: '*powerloss*',
-</xsl:text>
-    <xsl:text>             args: this.args
+    <xsl:text>            vars: this.cache
 </xsl:text>
     <xsl:text>        };
 </xsl:text>
@@ -3373,7 +3373,7 @@
 </xsl:text>
     <xsl:text>             headers: {'Content-Type': 'application/json'}
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>        };
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -3387,7 +3387,11 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    dispatch(value) {
+    <xsl:text>    dispatch(value, oldval, index) {
+</xsl:text>
+    <xsl:text>        console.log("mhooo", index);
+</xsl:text>
+    <xsl:text>        this.cache[index] = value;
 </xsl:text>
     <xsl:text>        this.do_http_request();
 </xsl:text>
@@ -4017,11 +4021,23 @@
 </xsl:text>
     <xsl:text>     on_Enter_click() {
 </xsl:text>
-    <xsl:text>         end_modal.call(this);
+    <xsl:text>         let coercedval = (typeof this.initial) == "number" ? Number(this.editstr) : this.editstr;
 </xsl:text>
-    <xsl:text>         let callback_obj = this.result_callback_obj;
+    <xsl:text>         if(isNaN(coercedval)){
 </xsl:text>
-    <xsl:text>         callback_obj.edit_callback(this.editstr);
+    <xsl:text>             this.editstr = String(this.initial);
+</xsl:text>
+    <xsl:text>             this.update();
+</xsl:text>
+    <xsl:text>         } else { // revert to initial so it explicitely shows input was ignored
+</xsl:text>
+    <xsl:text>             let callback_obj = this.result_callback_obj;
+</xsl:text>
+    <xsl:text>             end_modal.call(this);
+</xsl:text>
+    <xsl:text>             callback_obj.edit_callback(coercedval);
+</xsl:text>
+    <xsl:text>         }
 </xsl:text>
     <xsl:text>     }
 </xsl:text>
@@ -4115,7 +4131,7 @@
 </xsl:text>
     <xsl:text>         show_modal.call(this,size);
 </xsl:text>
-    <xsl:text>         this.editstr = initial;
+    <xsl:text>         this.editstr = String(initial);
 </xsl:text>
     <xsl:text>         this.result_callback_obj = callback_obj;
 </xsl:text>
@@ -4124,6 +4140,10 @@
     <xsl:text>         this.shift = false;
 </xsl:text>
     <xsl:text>         this.caps = false;
+</xsl:text>
+    <xsl:text>         this.initial = initial;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>         this.update();
 </xsl:text>

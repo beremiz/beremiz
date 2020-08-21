@@ -35,7 +35,7 @@ template "widget[@type='Input']", mode="widget_defs" {
     |     },
     |     on_edit_click: function(opstr) {
     |         var size = (typeof this.key_pos_elt !== 'undefined') ?  this.key_pos_elt.getBBox() : undefined
-    |         edit_value("«path/@value»", "«path/@type»", this, this.last_val,size);
+    |         edit_value("«path/@value»", "«path/@type»", this, this.last_val, size);
     |     },
 
     |     edit_callback: function(new_val) {

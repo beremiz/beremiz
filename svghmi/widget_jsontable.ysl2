@@ -3,25 +3,27 @@
 template "widget[@type='JsonTable']", mode="widget_class"
     ||
     class JsonTableWidget extends Widget{
+        cache = [];
         do_http_request() {
             const query = {
-                 offset: '42',
-                 filter: '*powerloss*',
-                 args: this.args
+                args: this.args,
+                vars: this.cache
             };
 
             const options = {
                  method: 'POST',
                  body: JSON.stringify(query),
                  headers: {'Content-Type': 'application/json'}
-            }
+            };
 
             fetch(this.args[0], options)
                 .then(res => res.json())
                 .then(this.spread_json_data);
 
         }
-        dispatch(value) {
+        dispatch(value, oldval, index) {
+            console.log("mhooo", index);
+            this.cache[index] = value;
             this.do_http_request();
         }
         on_click(evt) {
