@@ -7,7 +7,6 @@ template "widget[@type='Display']", mode="widget_class"
         frequency = 5;
         dispatch(value, oldval, index) {
             this.fields[index] = value;    
-            console.log(value, index);
             this.element.textContent = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
         }
     }

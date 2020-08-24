@@ -240,7 +240,6 @@ function update_subscriptions() {
 
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
-        console.log("updated local variable ",index,value);
         updates[index] = value;
         requestHMIAnimation();
         return;
@@ -416,7 +415,6 @@ var edit_callback;
 function edit_value(path, valuetype, callback, initial, size) {
 
     let [keypadid, xcoord, ycoord] = keypads[valuetype];
-    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
     edit_callback = callback;
     let widget = hmi_widgets[keypadid];
     widget.start_edit(path, valuetype, callback, initial, size);
@@ -461,7 +459,6 @@ function widget_active_activable(eltsub) {
     eltsub.inactive.setAttribute("style", "display:none");
     if(eltsub.active_style !== undefined)
             eltsub.active.setAttribute("style", eltsub.active_style);
-    console.log("active", eltsub);
 };
 function widget_inactive_activable(eltsub) {
     if(eltsub.active_style === undefined)
@@ -469,5 +466,4 @@ function widget_inactive_activable(eltsub) {
     eltsub.active.setAttribute("style", "display:none");
     if(eltsub.inactive_style !== undefined)
             eltsub.inactive.setAttribute("style", eltsub.inactive_style);
-    console.log("inactive", eltsub);
 };

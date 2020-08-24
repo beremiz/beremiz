@@ -22,7 +22,6 @@ template "widget[@type='JsonTable']", mode="widget_class"
 
         }
         dispatch(value, oldval, index) {
-            console.log("mhooo", index);
             this.cache[index] = value;
             this.do_http_request();
         }
