@@ -158,7 +158,6 @@ template "widget[@type='DropDown']", mode="widget_defs" {
                 0, 
                 this.menu_offset - spanslength);
         }
-        console.log(this.menu_offset);
         this.set_partial_text();
     },
     // Setup partial view text content
