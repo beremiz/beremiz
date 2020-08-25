@@ -7,7 +7,8 @@ template "widget[@type='JsonTable']", mode="widget_class"
         do_http_request() {
             const query = {
                 args: this.args,
-                vars: this.cache
+                vars: this.cache,
+                visible: this.visible
             };
 
             const options = {
@@ -155,15 +156,37 @@ template "svg:*", mode="json_table_render" {
 template "svg:g", mode="json_table_render" {
     param "expressions";
     param "widget_elts";
-    /* TODO : use intermediate variables for optimization
-    foreach "$new_expressions"
-    |         let obj_«@id»_«position()» = «.»;
-    */
+    const "gid", "@id";
+
+    // use intermediate variables for optimization
+    const "varprefix" > obj_«$gid»_
+    |         try {
+
+    foreach "$expressions/expression"{
+    |          let «$varprefix»«position()» = «@content»;
+    |          if(«$varprefix»«position()» == undefined) {
+    |               console.log("«$varprefix»«position()» = «@content»");
+    |               throw null;
+    |          }
+    }
+
+    // because we put values in a variables, we can replace corresponding expression with variable name
+    const "new_expressions" foreach "$expressions/expression" xsl:copy {
+        copy "@name";
+        attrib "content" > «$varprefix»«position()»
+    }
+
+    // revert hiding in case it did happen before
+    |           id("«@id»").setAttribute("style", "«@style»");
+
     const "label", "func:filter_non_widget_label(., $widget_elts)";
     apply "*", mode="json_table_render" {
-        with "expressions", "func:json_expressions($expressions, $label)";
+        with "expressions", "func:json_expressions(exsl:node-set($new_expressions), $label)";
         with "widget_elts", "$widget_elts";
     }
+    |         } catch(err) {
+    |           id("«$gid»").setAttribute("style", "display:none");
+    |         }
 }
 
 template "widget[@type='JsonTable']", mode="widget_defs" {
@@ -171,7 +194,10 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     labels("data");
     optional_labels("forward backward cursor");
     const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";
-    |     spread_json_data: function(jdata) {
+    |     visible: «count($data_elt/*[@inkscape:label])»,
+    |     spread_json_data: function(janswer) {
+    |         let [range,position,jdata] = janswer;
+    |         console.log(range,position,jdata);
     apply "$data_elt/*", mode="json_table_render" {
         with "expressions","$initexpr_ns";
         with "widget_elts","$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*";
