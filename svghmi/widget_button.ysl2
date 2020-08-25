@@ -33,8 +33,8 @@ template "widget[@type='Button']", mode="widget_class"{
                 this.inactive_elt.setAttribute("style", this.inactive_style);
             }
 
-            this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
-            this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
+            this.element.setAttribute("onmousedown", "hmi_widgets[\""+this.element_id+"\"].on_mouse_down(evt)");
+            this.element.setAttribute("onmouseup", "hmi_widgets[\""+this.element_id+"\"].on_mouse_up(evt)");
          }
     }
     ||
