@@ -15,9 +15,8 @@ Alarms = []
 
 def TriggerAlarm(changed_var_name):
     global Alarms
-    if(getattr(PLCGlobals, changed_var_name)):
-        Alarms.append((time.time(), PLCGlobals.AlarmText, PLCGlobals.AlarmStatus))
-        PLCGlobals.AlarmNotify = random.randint(0, 4294967296)
+    Alarms.append((time.time(), PLCGlobals.AlarmText, PLCGlobals.AlarmStatus))
+    PLCGlobals.AlarmNotify = random.randint(0, 4294967296)
 
 class AlarmJsonResource(Resource):
     def render_GET(self, request):
