@@ -183,7 +183,7 @@ emit "preamble:widget-base-class" {
         }
 
         apply_hmi_value(index, new_val) {
-            return apply_hmi_value(this.get_variable_index(0), new_val);
+            return apply_hmi_value(this.get_variable_index(index), new_val);
         }
 
         new_hmi_value(index, value, oldval) {
