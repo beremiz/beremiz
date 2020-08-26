@@ -19,7 +19,7 @@ template "widget[@type='JsonTable']", mode="widget_class"
 
             fetch(this.args[0], options)
                 .then(res => res.json())
-                .then(this.spread_json_data);
+                .then(this.spread_json_data.bind(this));
 
         }
         dispatch(value, oldval, index) {
@@ -197,6 +197,8 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     |     visible: «count($data_elt/*[@inkscape:label])»,
     |     spread_json_data: function(janswer) {
     |         let [range,position,jdata] = janswer;
+    |         this.apply_hmi_value(1, range);
+    |         this.apply_hmi_value(2, position);
     |         console.log(range,position,jdata);
     apply "$data_elt/*", mode="json_table_render" {
         with "expressions","$initexpr_ns";

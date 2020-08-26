@@ -1241,7 +1241,7 @@
 </xsl:text>
     <xsl:text>    apply_hmi_value(index, new_val) {
 </xsl:text>
-    <xsl:text>        return apply_hmi_value(this.get_variable_index(0), new_val);
+    <xsl:text>        return apply_hmi_value(this.get_variable_index(index), new_val);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -3403,7 +3403,9 @@
 </xsl:text>
     <xsl:text>            .then(res =&gt; res.json())
 </xsl:text>
-    <xsl:text>            .then(this.spread_json_data);
+    <xsl:text>            .then(function(res){console.log(res);return res;})
+</xsl:text>
+    <xsl:text>            .then(this.spread_json_data.bind(this));
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -3693,6 +3695,10 @@
     <xsl:text>    spread_json_data: function(janswer) {
 </xsl:text>
     <xsl:text>        let [range,position,jdata] = janswer;
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(1, range);
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(2, position);
 </xsl:text>
     <xsl:text>        console.log(range,position,jdata);
 </xsl:text>

@@ -182,11 +182,11 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g1887"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
      inkscape:zoom="2.1826319"
-     inkscape:cx="845.38352"
+     inkscape:cx="771.61936"
      inkscape:cy="510.70061"
      inkscape:window-width="1800"
      inkscape:window-height="836"
@@ -2640,7 +2640,7 @@
   </g>
   <g
      id="g1289"
-     inkscape:label="HMI:JsonTable:/alarms@/ALARMNOTIFY@.position@.range"
+     inkscape:label="HMI:JsonTable:/alarms@/ALARMNOTIFY@.range@.position"
      transform="matrix(0.5,0,0,0.5,515.30409,71.500438)">
     <g
        id="g5231"
