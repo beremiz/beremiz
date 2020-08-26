@@ -1496,47 +1496,43 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     on_mouse_down(evt) {
-</xsl:text>
-    <xsl:text>         if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>             this.active_elt.setAttribute("style", this.active_style);
-</xsl:text>
-    <xsl:text>             this.inactive_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>         }
-</xsl:text>
-    <xsl:text>         this.apply_hmi_value(0, 1);
-</xsl:text>
-    <xsl:text>     }
+    <xsl:text>    // TODO decouple update of DOM from event (i.e use animate())
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     on_mouse_up(evt) {
+    <xsl:text>
 </xsl:text>
-    <xsl:text>         if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>             this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>             this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>         }
-</xsl:text>
-    <xsl:text>         this.apply_hmi_value(0, 0);
-</xsl:text>
-    <xsl:text>     }
+    <xsl:text>    // TODO State of the button should distinguish UI feedbak from current PLC value
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     init() {
-</xsl:text>
-    <xsl:text>        this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>        this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>
+    <xsl:text>    on_mouse_down(evt) {
 </xsl:text>
     <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>            console.log("pressedi...")
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, 1);
+</xsl:text>
+    <xsl:text>        console.log("pressed")
+</xsl:text>
+    <xsl:text>        // TODO inhibit all mouse/touch events except mouse up (in other word grab cursor)
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_mouse_up(evt) {
+</xsl:text>
+    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>            console.log("unpressedi...")
 </xsl:text>
     <xsl:text>            this.active_elt.setAttribute("style", "display:none");
 </xsl:text>
@@ -1544,13 +1540,41 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, 0);
+</xsl:text>
+    <xsl:text>        console.log("unpressed")
+</xsl:text>
+    <xsl:text>        // TODO release inhibited events 
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
+    <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
+    <xsl:text>       // TODO : move to widget_defs so that we can have generated string literals directly
 </xsl:text>
-    <xsl:text>     }
+    <xsl:text>       this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>       this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>       if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>           this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>           this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>       }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>       this.element.setAttribute("onmousedown", "hmi_widgets[\""+this.element_id+"\"].on_mouse_down(evt)");
+</xsl:text>
+    <xsl:text>       this.element.setAttribute("onmouseup", "hmi_widgets[\""+this.element_id+"\"].on_mouse_up(evt)");
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -1985,8 +2009,6 @@
     <xsl:text>    dispatch(value, oldval, index) {
 </xsl:text>
     <xsl:text>        this.fields[index] = value;    
-</xsl:text>
-    <xsl:text>        console.log(value, index);
 </xsl:text>
     <xsl:text>        this.element.textContent = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
 </xsl:text>
@@ -2825,8 +2847,6 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        console.log(this.menu_offset);
-</xsl:text>
     <xsl:text>        this.set_partial_text();
 </xsl:text>
     <xsl:text>    },
@@ -3359,7 +3379,9 @@
 </xsl:text>
     <xsl:text>            args: this.args,
 </xsl:text>
-    <xsl:text>            vars: this.cache
+    <xsl:text>            vars: this.cache,
+</xsl:text>
+    <xsl:text>            visible: this.visible
 </xsl:text>
     <xsl:text>        };
 </xsl:text>
@@ -3388,8 +3410,6 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:text>    dispatch(value, oldval, index) {
-</xsl:text>
-    <xsl:text>        console.log("mhooo", index);
 </xsl:text>
     <xsl:text>        this.cache[index] = value;
 </xsl:text>
@@ -3586,11 +3606,69 @@
   <xsl:template mode="json_table_render" match="svg:g">
     <xsl:param name="expressions"/>
     <xsl:param name="widget_elts"/>
+    <xsl:variable name="gid" select="@id"/>
+    <xsl:variable name="varprefix">
+      <xsl:text>obj_</xsl:text>
+      <xsl:value-of select="$gid"/>
+      <xsl:text>_</xsl:text>
+    </xsl:variable>
+    <xsl:text>        try {
+</xsl:text>
+    <xsl:for-each select="$expressions/expression">
+      <xsl:text>         let </xsl:text>
+      <xsl:value-of select="$varprefix"/>
+      <xsl:value-of select="position()"/>
+      <xsl:text> = </xsl:text>
+      <xsl:value-of select="@content"/>
+      <xsl:text>;
+</xsl:text>
+      <xsl:text>         if(</xsl:text>
+      <xsl:value-of select="$varprefix"/>
+      <xsl:value-of select="position()"/>
+      <xsl:text> == undefined) {
+</xsl:text>
+      <xsl:text>              console.log("</xsl:text>
+      <xsl:value-of select="$varprefix"/>
+      <xsl:value-of select="position()"/>
+      <xsl:text> = </xsl:text>
+      <xsl:value-of select="@content"/>
+      <xsl:text>");
+</xsl:text>
+      <xsl:text>              throw null;
+</xsl:text>
+      <xsl:text>         }
+</xsl:text>
+    </xsl:for-each>
+    <xsl:variable name="new_expressions">
+      <xsl:for-each select="$expressions/expression">
+        <xsl:copy>
+          <xsl:copy-of select="@name"/>
+          <xsl:attribute name="content">
+            <xsl:value-of select="$varprefix"/>
+            <xsl:value-of select="position()"/>
+          </xsl:attribute>
+        </xsl:copy>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:text>          id("</xsl:text>
+    <xsl:value-of select="@id"/>
+    <xsl:text>").setAttribute("style", "</xsl:text>
+    <xsl:value-of select="@style"/>
+    <xsl:text>");
+</xsl:text>
     <xsl:variable name="label" select="func:filter_non_widget_label(., $widget_elts)"/>
     <xsl:apply-templates mode="json_table_render" select="*">
-      <xsl:with-param name="expressions" select="func:json_expressions($expressions, $label)"/>
+      <xsl:with-param name="expressions" select="func:json_expressions(exsl:node-set($new_expressions), $label)"/>
       <xsl:with-param name="widget_elts" select="$widget_elts"/>
     </xsl:apply-templates>
+    <xsl:text>        } catch(err) {
+</xsl:text>
+    <xsl:text>          id("</xsl:text>
+    <xsl:value-of select="$gid"/>
+    <xsl:text>").setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='JsonTable']">
     <xsl:param name="hmi_element"/>
@@ -3608,7 +3686,15 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
     <xsl:variable name="data_elt" select="$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']"/>
-    <xsl:text>    spread_json_data: function(jdata) {
+    <xsl:text>    visible: </xsl:text>
+    <xsl:value-of select="count($data_elt/*[@inkscape:label])"/>
+    <xsl:text>,
+</xsl:text>
+    <xsl:text>    spread_json_data: function(janswer) {
+</xsl:text>
+    <xsl:text>        let [range,position,jdata] = janswer;
+</xsl:text>
+    <xsl:text>        console.log(range,position,jdata);
 </xsl:text>
     <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
       <xsl:with-param name="expressions" select="$initexpr_ns"/>
@@ -5453,8 +5539,6 @@
 </xsl:text>
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
-          <xsl:text>        console.log("updated local variable ",index,value);
-</xsl:text>
           <xsl:text>        updates[index] = value;
 </xsl:text>
           <xsl:text>        requestHMIAnimation();
@@ -5805,8 +5889,6 @@
 </xsl:text>
           <xsl:text>    let [keypadid, xcoord, ycoord] = keypads[valuetype];
 </xsl:text>
-          <xsl:text>    console.log('XXX TODO : Edit value', path, valuetype, callback, initial, keypadid);
-</xsl:text>
           <xsl:text>    edit_callback = callback;
 </xsl:text>
           <xsl:text>    let widget = hmi_widgets[keypadid];
@@ -5895,8 +5977,6 @@
 </xsl:text>
           <xsl:text>            eltsub.active.setAttribute("style", eltsub.active_style);
 </xsl:text>
-          <xsl:text>    console.log("active", eltsub);
-</xsl:text>
           <xsl:text>};
 </xsl:text>
           <xsl:text>function widget_inactive_activable(eltsub) {
@@ -5910,8 +5990,6 @@
           <xsl:text>    if(eltsub.inactive_style !== undefined)
 </xsl:text>
           <xsl:text>            eltsub.inactive.setAttribute("style", eltsub.inactive_style);
-</xsl:text>
-          <xsl:text>    console.log("inactive", eltsub);
 </xsl:text>
           <xsl:text>};
 </xsl:text>
