@@ -8,34 +8,42 @@ template "widget[@type='Button']", mode="widget_class"{
         active_style = undefined;
         inactive_style = undefined;
 
-         on_mouse_down(evt) {
-             if (this.active_style && this.inactive_style) {
-                 this.active_elt.setAttribute("style", this.active_style);
-                 this.inactive_elt.setAttribute("style", "display:none");
-             }
-             this.apply_hmi_value(0, 1);
-         }
+        // TODO decouple update of DOM from event (i.e use animate())
 
-         on_mouse_up(evt) {
-             if (this.active_style && this.inactive_style) {
-                 this.active_elt.setAttribute("style", "display:none");
-                 this.inactive_elt.setAttribute("style", this.inactive_style);
-             }
-             this.apply_hmi_value(0, 0);
-         }
 
-         init() {
-            this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-            this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+        // TODO State of the button should distinguish UI feedbak from current PLC value
 
+        on_mouse_down(evt) {
+            if (this.active_style && this.inactive_style) {
+                this.active_elt.setAttribute("style", this.active_style);
+                this.inactive_elt.setAttribute("style", "display:none");
+            }
+            this.apply_hmi_value(0, 1);
+            // TODO inhibit all mouse/touch events except mouse up (in other word grab cursor)
+        }
+
+        on_mouse_up(evt) {
             if (this.active_style && this.inactive_style) {
                 this.active_elt.setAttribute("style", "display:none");
                 this.inactive_elt.setAttribute("style", this.inactive_style);
             }
+            this.apply_hmi_value(0, 0);
+            // TODO release inhibited events 
+        }
 
-            this.element.setAttribute("onmousedown", "hmi_widgets[\""+this.element_id+"\"].on_mouse_down(evt)");
-            this.element.setAttribute("onmouseup", "hmi_widgets[\""+this.element_id+"\"].on_mouse_up(evt)");
-         }
+        init() {
+           // TODO : move to widget_defs so that we can have generated string literals directly
+           this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+           this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+
+           if (this.active_style && this.inactive_style) {
+               this.active_elt.setAttribute("style", "display:none");
+               this.inactive_elt.setAttribute("style", this.inactive_style);
+           }
+
+           this.element.setAttribute("onmousedown", "hmi_widgets[\""+this.element_id+"\"].on_mouse_down(evt)");
+           this.element.setAttribute("onmouseup", "hmi_widgets[\""+this.element_id+"\"].on_mouse_up(evt)");
+        }
     }
     ||
 }
