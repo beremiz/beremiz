@@ -89,10 +89,11 @@ template "widget[@type='Keypad']", mode="widget_class"
 
          on_Enter_click() {
              let coercedval = (typeof this.initial) == "number" ? Number(this.editstr) : this.editstr;
-             if(isNaN(coercedval)){
+             if(typeof coercedval == 'number' && isNaN(coercedval)){
+                 // revert to initial so it explicitely shows input was ignored
                  this.editstr = String(this.initial);
                  this.update();
-             } else { // revert to initial so it explicitely shows input was ignored
+             } else { 
                  let callback_obj = this.result_callback_obj;
                  end_modal.call(this);
                  callback_obj.edit_callback(coercedval);
