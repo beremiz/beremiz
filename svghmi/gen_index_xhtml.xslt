@@ -1510,8 +1510,6 @@
 </xsl:text>
     <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
 </xsl:text>
-    <xsl:text>            console.log("pressedi...")
-</xsl:text>
     <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
 </xsl:text>
     <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
@@ -1519,8 +1517,6 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, 1);
-</xsl:text>
-    <xsl:text>        console.log("pressed")
 </xsl:text>
     <xsl:text>        // TODO inhibit all mouse/touch events except mouse up (in other word grab cursor)
 </xsl:text>
@@ -1532,8 +1528,6 @@
 </xsl:text>
     <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
 </xsl:text>
-    <xsl:text>            console.log("unpressedi...")
-</xsl:text>
     <xsl:text>            this.active_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
@@ -1541,8 +1535,6 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, 0);
-</xsl:text>
-    <xsl:text>        console.log("unpressed")
 </xsl:text>
     <xsl:text>        // TODO release inhibited events 
 </xsl:text>
@@ -3403,8 +3395,6 @@
 </xsl:text>
     <xsl:text>            .then(res =&gt; res.json())
 </xsl:text>
-    <xsl:text>            .then(function(res){console.log(res);return res;})
-</xsl:text>
     <xsl:text>            .then(this.spread_json_data.bind(this));
 </xsl:text>
     <xsl:text>
@@ -4115,13 +4105,15 @@
 </xsl:text>
     <xsl:text>         let coercedval = (typeof this.initial) == "number" ? Number(this.editstr) : this.editstr;
 </xsl:text>
-    <xsl:text>         if(isNaN(coercedval)){
+    <xsl:text>         if(typeof coercedval == 'number' &amp;&amp; isNaN(coercedval)){
+</xsl:text>
+    <xsl:text>             // revert to initial so it explicitely shows input was ignored
 </xsl:text>
     <xsl:text>             this.editstr = String(this.initial);
 </xsl:text>
     <xsl:text>             this.update();
 </xsl:text>
-    <xsl:text>         } else { // revert to initial so it explicitely shows input was ignored
+    <xsl:text>         } else { 
 </xsl:text>
     <xsl:text>             let callback_obj = this.result_callback_obj;
 </xsl:text>
