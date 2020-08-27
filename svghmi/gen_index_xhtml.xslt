@@ -3587,10 +3587,22 @@
     </xsl:variable>
     <func:result select="$widget_elts[@id=$eltid]/@inkscape:label"/>
   </func:function>
-  <xsl:template mode="json_table_render" match="svg:*">
+  <xsl:template mode="json_table_render_except_comments" match="svg:*">
     <xsl:param name="expressions"/>
     <xsl:param name="widget_elts"/>
     <xsl:variable name="label" select="func:filter_non_widget_label(., $widget_elts)"/>
+    <xsl:if test="not(starts-with($label,'#'))">
+      <xsl:apply-templates mode="json_table_render" select=".">
+        <xsl:with-param name="expressions" select="$expressions"/>
+        <xsl:with-param name="widget_elts" select="$widget_elts"/>
+        <xsl:with-param name="label" select="$label"/>
+      </xsl:apply-templates>
+    </xsl:if>
+  </xsl:template>
+  <xsl:template mode="json_table_render" match="svg:*">
+    <xsl:param name="expressions"/>
+    <xsl:param name="widget_elts"/>
+    <xsl:param name="label"/>
     <xsl:apply-templates mode="json_table_elt_render" select=".">
       <xsl:with-param name="expressions" select="func:json_expressions($expressions, $label)"/>
     </xsl:apply-templates>
@@ -3598,6 +3610,7 @@
   <xsl:template mode="json_table_render" match="svg:g">
     <xsl:param name="expressions"/>
     <xsl:param name="widget_elts"/>
+    <xsl:param name="label"/>
     <xsl:variable name="gid" select="@id"/>
     <xsl:variable name="varprefix">
       <xsl:text>obj_</xsl:text>
@@ -3648,8 +3661,7 @@
     <xsl:value-of select="@style"/>
     <xsl:text>");
 </xsl:text>
-    <xsl:variable name="label" select="func:filter_non_widget_label(., $widget_elts)"/>
-    <xsl:apply-templates mode="json_table_render" select="*">
+    <xsl:apply-templates mode="json_table_render_except_comments" select="*">
       <xsl:with-param name="expressions" select="func:json_expressions(exsl:node-set($new_expressions), $label)"/>
       <xsl:with-param name="widget_elts" select="$widget_elts"/>
     </xsl:apply-templates>
@@ -3692,7 +3704,7 @@
 </xsl:text>
     <xsl:text>        console.log(range,position,jdata);
 </xsl:text>
-    <xsl:apply-templates mode="json_table_render" select="$data_elt/*">
+    <xsl:apply-templates mode="json_table_render_except_comments" select="$data_elt">
       <xsl:with-param name="expressions" select="$initexpr_ns"/>
       <xsl:with-param name="widget_elts" select="$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*"/>
     </xsl:apply-templates>
