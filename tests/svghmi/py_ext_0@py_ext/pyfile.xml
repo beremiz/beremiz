@@ -2,7 +2,7 @@
 <PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <variables>
     <variable name="AlarmNotify" type="HMI_INT"/>
-    <variable name="SendAlarm" type="HMI_BOOL" onchange="TriggerAlarm"/>
+    <variable name="SendAlarm" type="HMI_INT" onchange="TriggerAlarm"/>
     <variable name="AlarmText" type="HMI_STRING" initial="'POS'"/>
     <variable name="AlarmStatus" type="HMI_STRING" initial="'alarm'"/>
   </variables>
