@@ -7,28 +7,55 @@ template "widget[@type='CircularSlider']", mode="widget_class"
         range = undefined;
         circle = undefined;
         handle_pos = undefined;
+        svg_dist = undefined;
         drag = false;
         enTimer = false;
+        last_drag = false;
 
         dispatch(value) {
-            if(!this.drag){
-                if(this.value_elt)
-                    this.value_elt.textContent = String(value);
+            if(this.value_elt)
+                this.value_elt.textContent = String(value);
 
-                this.handle_position(value);
-            }
+            this.update_DOM(value, this.handle_elt);
         }
 
-        handle_position(value){
+        update_DOM(value, elt){
             let [min,max,totalDistance] = this.range;
             let length = Math.max(0,Math.min((totalDistance),(Number(value)-min)/(max-min)*(totalDistance)));
             let tip = this.range_elt.getPointAtLength(length);
-            this.handle_elt.setAttribute('transform',"translate("+(tip.x-this.handle_pos.x)+","+(tip.y-this.handle_pos.y)+")");
+            elt.setAttribute('transform',"translate("+(tip.x-this.handle_pos.x)+","+(tip.y-this.handle_pos.y)+")");
+
+            if(this.setpoint_elt != undefined){
+                if(this.last_drag!= this.drag){
+                    if(this.drag){
+                        this.setpoint_elt.setAttribute("style", this.setpoint_style);
+                    }else{
+                        this.setpoint_elt.setAttribute("style", "display:none");
+                    }
+                    this.last_drag = this.drag;
+                }
+            }
         }
 
         on_release(evt) {
+            window.removeEventListener("touchmove", this.on_bound_drag, true);
+            window.removeEventListener("mousemove", this.on_bound_drag, true);
+
+            window.removeEventListener("mouseup", this.bound_on_release, true)
+            window.removeEventListener("touchend", this.bound_on_release, true);
+            window.removeEventListener("touchcancel", this.bound_on_release, true);
             if(this.drag){
                 this.drag = false;
+            }
+            this.update_position(evt);
+        }
+
+        on_drag(evt){
+            if(this.enTimer && this.drag){
+                this.update_position(evt);
+                //reset timer
+                this.enTimer = false;
+                setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
             }
         }
 
@@ -76,31 +103,39 @@ template "widget[@type='CircularSlider']", mode="widget_class"
 
                 //get handle distance from mouse position
                 if(fi<fiEnd){
-                    svg_dist=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
+                    this.svg_dist=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
                 }
                 else if(fiEnd<fi && fi<fiEnd+minMax){
-                    svg_dist = this.range[1];
+                    this.svg_dist = this.range[1];
                 }
                 else{
-                    svg_dist = this.range[0];
+                    this.svg_dist = this.range[0];
                 }
 
-                //redraw handle --TODO is it fast enough if I just call change_hmi_value???
-                this.handle_position(svg_dist);
-                if(this.value_elt)
-                    this.value_elt.textContent = String(Math.ceil(svg_dist));
-                this.apply_hmi_value(0, Math.ceil(svg_dist));
 
-                //reset timer
-                this.enTimer = false;
-                setTimeout("{hmi_widgets['"+this.element_id+"'].enTimer = true;}", 100);
+                this.apply_hmi_value(0, Math.ceil(this.svg_dist));
+
+                // update ghost cursor
+                if(this.setpoint_elt != undefined){
+                    this.request_animate();
+                }
             }
 
+        }
+
+        animate(){
+            this.update_DOM(this.svg_dist, this.setpoint_elt);
         }
 
         on_select(evt){
             this.drag = true;
             this.enTimer = true;
+            window.addEventListener("touchmove", this.on_bound_drag, true);
+            window.addEventListener("mousemove", this.on_bound_drag, true);
+
+            window.addEventListener("mouseup", this.bound_on_release, true)
+            window.addEventListener("touchend", this.bound_on_release, true);
+            window.addEventListener("touchcancel", this.bound_on_release, true);
             this.update_position(evt);
         }
 
@@ -135,10 +170,20 @@ template "widget[@type='CircularSlider']", mode="widget_class"
             this.handle_pos = this.range_elt.getPointAtLength(0);
             this.circle = [cX, cY,fiStart,fiEnd,minMax,cPos.x,cPos.y,cPos.width,cPos.height];
 
+            //bind functions
+            this.bound_on_select = this.on_select.bind(this);
+            this.bound_on_release = this.on_release.bind(this);
+            this.on_bound_drag = this.on_drag.bind(this);
+
             //init events
-            this.handle_elt.addEventListener("touchstart", hmi_widgets[this.element_id].on_select.bind(this));
-            this.handle_elt.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
-            this.element.addEventListener("mousedown", hmi_widgets[this.element_id].on_select.bind(this));
+            this.element.addEventListener("mousedown", this.bound_on_select);
+            this.element.addEventListener("touchstart", this.bound_on_select);
+
+            if(this.setpoint_elt != undefined){
+                this.setpoint_style = this.setpoint_elt.getAttribute("style");
+                this.setpoint_elt.setAttribute("style", "display:none");
+            }
+
 
             window.addEventListener("touchmove", hmi_widgets[this.element_id].update_position.bind(this));
             window.addEventListener("mousemove", hmi_widgets[this.element_id].update_position.bind(this));

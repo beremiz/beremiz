@@ -6,6 +6,7 @@ template "widget[@type='Slider']", mode="widget_class"
         frequency = 5;
         range = undefined;
         fi = undefined;
+        svg_dist = undefined;
         drag = false;
         enTimer = false;
 
