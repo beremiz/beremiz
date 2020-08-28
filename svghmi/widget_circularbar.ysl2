@@ -1,48 +1,57 @@
 // widget_circularbar.ysl2
 
+template "widget[@type='CircularBar']", mode="widget_class"{
+    ||
+    class CircularBarWidget extends Widget{
+        frequency = 10;
+        range = undefined;
+
+        dispatch(value) {
+            if(this.value_elt)
+                this.value_elt.textContent = String(value);
+            let [min,max,start,end] = this.range;
+            let [cx,cy] = this.center;
+            let [rx,ry] = this.proportions;
+            let tip = start + (end-start)*Number(value)/(max-min);
+            let size = 0;
+            if (tip-start > Math.PI) {
+                size = 1;
+            } else {
+                size = 0;
+            }
+            this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
+        }
+
+        init() {
+            let start = Number(this.path_elt.getAttribute('sodipodi:start'));
+            let end = Number(this.path_elt.getAttribute('sodipodi:end'));
+            let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
+            let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
+            let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
+            let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
+            if (ry == 0) {
+                ry = rx;
+            }
+            if (start > end) {
+                end = end + 2*Math.PI;
+            }
+            let min = this.min_elt ?
+                      Number(this.min_elt.textContent) :
+                      this.args.length >= 1 ? this.args[0] : 0;
+            let max = this.max_elt ?
+                      Number(this.max_elt.textContent) :
+                      this.args.length >= 2 ? this.args[1] : 100;
+            this.range = [min, max, start, end];
+            this.center = [cx, cy];
+            this.proportions = [rx, ry];
+        }
+    }
+    ||
+}
 
 template "widget[@type='CircularBar']", mode="widget_defs" {
     param "hmi_element";
-    | frequency: 10,
     labels("path");
     optional_labels("value min max");
-    | dispatch: function(value) {
-    |     if(this.value_elt)
-    |         this.value_elt.textContent = String(value);
-    |     let [min,max,start,end] = this.range;
-    |     let [cx,cy] = this.center;
-    |     let [rx,ry] = this.proportions;
-    |     let tip = start + (end-start)*Number(value)/(max-min);
-    |     let size = 0;
-    |     if (tip-start > Math.PI) {
-    |         size = 1;
-    |     } else {
-    |         size = 0;
-    |     }
-    |     this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
-    | },
-    | range: undefined,
-    | init: function() {
-    |     let start = Number(this.path_elt.getAttribute('sodipodi:start'));
-    |     let end = Number(this.path_elt.getAttribute('sodipodi:end'));
-    |     let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
-    |     let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
-    |     let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
-    |     let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
-    |     if (ry == 0) {
-    |         ry = rx;
-    |     }
-    |     if (start > end) {
-    |         end = end + 2*Math.PI;
-    |     }
-    |     let min = this.min_elt ?
-    |               Number(this.min_elt.textContent) :
-    |               this.args.length >= 1 ? this.args[0] : 0;
-    |     let max = this.max_elt ?
-    |               Number(this.max_elt.textContent) :
-    |               this.args.length >= 2 ? this.args[1] : 100;
-    |     this.range = [min, max, start, end];
-    |     this.center = [cx, cy];
-    |     this.proportions = [rx, ry];
-    | },
+    |,
 }
