@@ -200,9 +200,9 @@
      inkscape:current-layer="g1384"
      showgrid="false"
      units="px"
-     inkscape:zoom="0.77167689"
-     inkscape:cx="-954.74063"
-     inkscape:cy="270.19826"
+     inkscape:zoom="1.0913159"
+     inkscape:cx="-911.00114"
+     inkscape:cy="181.96708"
      inkscape:window-width="1800"
      inkscape:window-height="836"
      inkscape:window-x="0"
@@ -5259,11 +5259,6 @@
            inkscape:label="# commented group"
            transform="translate(419.716,-441.73566)">
           <path
-             inkscape:connector-curvature="0"
-             id="path898"
-             d="m 2360.9444,507.07858 c 71.4734,-75.13864 128.2855,23.82444 128.2855,23.82444 l 29.3224,-47.6489"
-             style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-          <path
              style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:2px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
              d="m 528.62458,486.07049 23.69122,21.00809"
              id="path903"
@@ -5280,7 +5275,7 @@
            width="100%"
            height="100%"
            transform="matrix(0.7609336,0,0,0.7609336,199.15217,164.3798)"
-           inkscape:label=".status" />
+           inkscape:label=".status onClick[acknowledge]=.alarmid" />
         <use
            transform="matrix(1.3019536,0,0,1.3019536,39.582906,238.73392)"
            x="0"

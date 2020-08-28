@@ -4,11 +4,12 @@ template "widget[@type='JsonTable']", mode="widget_class"
     ||
     class JsonTableWidget extends Widget{
         cache = [];
-        do_http_request() {
+        do_http_request(...opt) {
             const query = {
                 args: this.args,
                 vars: this.cache,
-                visible: this.visible
+                visible: this.visible,
+                options: opt
             };
 
             const options = {
@@ -26,11 +27,8 @@ template "widget[@type='JsonTable']", mode="widget_class"
             this.cache[index] = value;
             this.do_http_request();
         }
-        on_click(evt) {
-            this.do_http_request();
-        }
-        init() {
-            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+        on_click(evt, ...options) {
+            this.do_http_request(...options);
         }
     }
     ||
@@ -158,12 +156,20 @@ template "svg:*", mode="json_table_render_except_comments"{
         }
 }
 
+
 template "svg:*", mode="json_table_render" {
     param "expressions";
     param "widget_elts";
     param "label";
+
+    const "new_expressions", "func:json_expressions($expressions, $label)";
+
+    const "elt",".";
+    foreach "$new_expressions/expression[position() > 1][starts-with(@name,'onClick')]"
+    |         id("«$elt/@id»").setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt, '«@name»', '"+«@content»+"')");
+
     apply ".", mode="json_table_elt_render"
-        with "expressions", "func:json_expressions($expressions, $label)";
+        with "expressions", "$new_expressions";
 }
 
 template "svg:g", mode="json_table_render" {
