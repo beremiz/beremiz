@@ -3467,7 +3467,7 @@
 </xsl:text>
     <xsl:text>    cache = [];
 </xsl:text>
-    <xsl:text>    do_http_request() {
+    <xsl:text>    do_http_request(...opt) {
 </xsl:text>
     <xsl:text>        const query = {
 </xsl:text>
@@ -3475,7 +3475,9 @@
 </xsl:text>
     <xsl:text>            vars: this.cache,
 </xsl:text>
-    <xsl:text>            visible: this.visible
+    <xsl:text>            visible: this.visible,
+</xsl:text>
+    <xsl:text>            options: opt
 </xsl:text>
     <xsl:text>        };
 </xsl:text>
@@ -3511,15 +3513,9 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    on_click(evt) {
+    <xsl:text>    on_click(evt, ...options) {
 </xsl:text>
-    <xsl:text>        this.do_http_request();
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    init() {
-</xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+    <xsl:text>        this.do_http_request(...options);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -3705,8 +3701,20 @@
     <xsl:param name="expressions"/>
     <xsl:param name="widget_elts"/>
     <xsl:param name="label"/>
+    <xsl:variable name="new_expressions" select="func:json_expressions($expressions, $label)"/>
+    <xsl:variable name="elt" select="."/>
+    <xsl:for-each select="$new_expressions/expression[position() &gt; 1][starts-with(@name,'onClick')]">
+      <xsl:text>        id("</xsl:text>
+      <xsl:value-of select="$elt/@id"/>
+      <xsl:text>").setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt, '</xsl:text>
+      <xsl:value-of select="@name"/>
+      <xsl:text>', '"+</xsl:text>
+      <xsl:value-of select="@content"/>
+      <xsl:text>+"')");
+</xsl:text>
+    </xsl:for-each>
     <xsl:apply-templates mode="json_table_elt_render" select=".">
-      <xsl:with-param name="expressions" select="func:json_expressions($expressions, $label)"/>
+      <xsl:with-param name="expressions" select="$new_expressions"/>
     </xsl:apply-templates>
   </xsl:template>
   <xsl:template mode="json_table_render" match="svg:g">
