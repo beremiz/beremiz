@@ -216,7 +216,8 @@ class SVGHMILibrary(POULibrary):
                 hmi_types_instances.pop(i)
                 break
 
-        assert(hmi_tree_root is not None)
+        if hmi_tree_root is None:
+            self.FatalError("SVGHMI : Library is selected but not used. Please either deselect it in project config or add a SVGHMI node to project.")
 
         # deduce HMI tree from PLC HMI_* instances
         for v in hmi_types_instances:
