@@ -485,13 +485,17 @@ class SVGHMI(object):
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
         inkpath = get_inkscape_path()
+
+        if inkpath is None:
+            self.FatalError("SVGHMI: inkscape is not installed.")
+
         svgpath = self._getSVGpath()
         status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
                                                      '"' + inkpath + '" -S "' + svgpath + '"',
                                                      no_stdout=True,
                                                      no_stderr=True).spin()
         if status != 0:
-            self.FatalError("SVGHMI : inkscape couldn't extract geometry from given SVG")
+            self.FatalError("SVGHMI: inkscape couldn't extract geometry from given SVG.")
 
         res = []
         for line in result.split():
