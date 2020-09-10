@@ -440,6 +440,7 @@ class PLCObject(object):
 
             if cmd == "Activate":
                 self.PythonRuntimeCall("start")
+                self.PreStartPLC()
                 self.PythonThreadLoop()
                 self.PythonRuntimeCall("stop", reverse_order=True)
             else:  # "Finish"
@@ -470,8 +471,6 @@ class PLCObject(object):
         if self.PLClibraryHandle is None:
             if not self.LoadPLC():
                 self._fail(_("Problem starting PLC : can't load PLC"))
-
-        self.PreStartPLC()
 
         if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
             c_argv = ctypes.c_char_p * len(self.argv)
