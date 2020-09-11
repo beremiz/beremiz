@@ -228,7 +228,7 @@ def _SetModbusSavedConfiguration(WebNode_id, newConfig):
         # This allows us to confirm the saved data contains the correct addr_type
         # when loading from file
         save_info = {}
-        save_info["addr_type"] = ["addr_type"]
+        save_info["addr_type"] = WebNode_entry["addr_type"]
         save_info["node_type"] = WebNode_entry["node_type"]
         save_info["config"   ] = newConfig
         
@@ -262,7 +262,7 @@ def _GetModbusSavedConfiguration(WebNode_id):
     filename = _WebNodeList[WebNode_id]["filename"]
     try:
         #if os.path.isfile(filename):
-        save_info = json.load(open(filename))
+        save_info = json.load(open(os.path.realpath(filename)))
     except Exception:    
         return None
 
