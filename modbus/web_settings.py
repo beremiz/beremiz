@@ -183,7 +183,7 @@ RTUslave_parameters = [
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
-    ("slave_id"         , _("Slave ID")              , ctypes.c_ulonglong, annotate.Integer)
+    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer)
     ]
 
 
