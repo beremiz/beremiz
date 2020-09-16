@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2020-07-30T12:04:22">
+  <contentHeader name="Unnamed" modificationDateTime="2020-09-15T14:59:06">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -55,6 +55,21 @@
                 <derived name="HMI_INT"/>
               </type>
             </variable>
+            <variable name="Toggle">
+              <type>
+                <derived name="HMI_BOOL"/>
+              </type>
+            </variable>
+            <variable name="Toggle1">
+              <type>
+                <derived name="HMI_BOOL"/>
+              </type>
+            </variable>
+            <variable name="Toggle2">
+              <type>
+                <derived name="HMI_BOOL"/>
+              </type>
+            </variable>
             <variable name="MultistateExt">
               <type>
                 <INT/>
@@ -88,7 +103,7 @@
               <expression>TargetPressure</expression>
             </inVariable>
             <inVariable localId="6" executionOrderId="0" height="25" width="90" negated="false">
-              <position x="155" y="220"/>
+              <position x="130" y="60"/>
               <connectionPointOut>
                 <relPosition x="90" y="10"/>
               </connectionPointOut>
@@ -100,7 +115,9 @@
                 <relPosition x="0" y="10"/>
                 <connection refLocalId="6">
                   <position x="495" y="230"/>
-                  <position x="245" y="230"/>
+                  <position x="367" y="230"/>
+                  <position x="367" y="70"/>
+                  <position x="220" y="70"/>
                 </connection>
               </connectionPointIn>
               <expression>TestLocal</expression>
@@ -190,34 +207,12 @@
               </connectionPointOut>
               <expression>TargetPressure</expression>
             </inVariable>
-            <inOutVariable localId="4" executionOrderId="0" height="30" width="60" negatedOut="false" negatedIn="false">
-              <position x="510" y="80"/>
-              <connectionPointIn>
-                <relPosition x="0" y="15"/>
-                <connection refLocalId="6" formalParameter="OUT">
-                  <position x="510" y="95"/>
-                  <position x="470" y="95"/>
-                </connection>
-              </connectionPointIn>
-              <connectionPointOut>
-                <relPosition x="60" y="15"/>
-              </connectionPointOut>
-              <expression>Sloth</expression>
-            </inOutVariable>
             <block localId="6" typeName="ADD" executionOrderId="0" height="60" width="65">
               <position x="405" y="65"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
-                    <connection refLocalId="4">
-                      <position x="405" y="95"/>
-                      <position x="385" y="95"/>
-                      <position x="385" y="50"/>
-                      <position x="580" y="50"/>
-                      <position x="580" y="95"/>
-                      <position x="570" y="95"/>
-                    </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="IN2">
@@ -558,6 +553,13 @@
                 <relPosition x="20" y="15"/>
               </connectionPointOut>
               <expression>0</expression>
+            </inVariable>
+            <inVariable localId="4" executionOrderId="0" height="30" width="60" negated="false">
+              <position x="510" y="80"/>
+              <connectionPointOut>
+                <relPosition x="60" y="15"/>
+              </connectionPointOut>
+              <expression>Sloth</expression>
             </inVariable>
           </FBD>
         </body>
