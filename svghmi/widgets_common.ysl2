@@ -30,7 +30,7 @@ template "svg:*", mode="hmi_widgets" {
             when "not(@index)" {
                 choose {
                     when "not(@type)" 
-                        error > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
+                        warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
                     when "@type = 'PAGE_LOCAL'" 
                         > "«@value»"`if "position()!=last()" > ,`
                     when "@type = 'HMI_LOCAL'" 
