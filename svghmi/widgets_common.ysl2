@@ -29,8 +29,10 @@ template "svg:*", mode="hmi_widgets" {
         choose {
             when "not(@index)" {
                 choose {
-                    when "not(@type)" 
-                        error > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
+                    when "not(@type)" {
+                        warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
+                        > undefined`if "position()!=last()" > ,`
+                    }
                     when "@type = 'PAGE_LOCAL'" 
                         > "«@value»"`if "position()!=last()" > ,`
                     when "@type = 'HMI_LOCAL'" 
@@ -152,6 +154,7 @@ emit "preamble:widget-base-class" {
             if(!this.unsubscribable)
                 for(let i = 0; i < this.indexes.length; i++) {
                     let index = this.get_variable_index(i);
+                    if(index == undefined) continue;
                     subscribers(index).add(this);
                 }
             need_cache_apply.push(this); 
@@ -161,6 +164,7 @@ emit "preamble:widget-base-class" {
             if(!this.unsubscribable) for(let index in this.indexes){
                 /* dispatch current cache in newly opened page widgets */
                 let realindex = this.get_variable_index(index);
+                if(realindex == undefined) continue;
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
                     this._dispatch(cached_val, cached_val, index);
@@ -178,18 +182,23 @@ emit "preamble:widget-base-class" {
             }
             return index;
         }
-        change_hmi_value(index,opstr) {
-            return change_hmi_value(this.get_variable_index(index), opstr);
+        change_hmi_value(index, opstr) {
+            let realindex = this.get_variable_index(index);
+            if(realindex == undefined) return undefined;
+            return change_hmi_value(realindex, opstr);
         }
 
         apply_hmi_value(index, new_val) {
-            return apply_hmi_value(this.get_variable_index(index), new_val);
+            let realindex = this.get_variable_index(index);
+            if(realindex == undefined) return undefined;
+            return apply_hmi_value(realindex, new_val);
         }
 
         new_hmi_value(index, value, oldval) {
             // TODO avoid searching, store index at sub()
             for(let i = 0; i < this.indexes.length; i++) {
                 let refindex = this.get_variable_index(i);
+                if(refindex == undefined) continue;
 
                 if(index == refindex) {
                     this._dispatch(value, oldval, i);

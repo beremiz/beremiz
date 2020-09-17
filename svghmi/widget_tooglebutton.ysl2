@@ -10,19 +10,28 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
         inactive_style = undefined;
 
         dispatch(value) {
-            this.state = value;
-            if (this.state) {
-                this.active_elt.setAttribute("style", this.active_style);
-                this.inactive_elt.setAttribute("style", "display:none");
-                this.state = 0;
-            } else {
-                this.inactive_elt.setAttribute("style", this.inactive_style);
-                this.active_elt.setAttribute("style", "display:none");
-                this.state = 1;
+            if(this.state != value){
+                this.state = value;
+                if (this.state) {
+                    this.active_elt.setAttribute("style", this.active_style);
+                    this.inactive_elt.setAttribute("style", "display:none");
+                } else {
+                    this.inactive_elt.setAttribute("style", this.inactive_style);
+                    this.active_elt.setAttribute("style", "display:none");
+                }
             }
         }
 
         on_click(evt) {
+            if (this.state) {
+                this.inactive_elt.setAttribute("style", this.inactive_style);
+                this.active_elt.setAttribute("style", "display:none");
+                this.state = 0;
+            } else {
+                this.active_elt.setAttribute("style", this.active_style);
+                this.inactive_elt.setAttribute("style", "display:none");
+                this.state = 1;
+            }
             this.apply_hmi_value(0, this.state);
         }
 
@@ -30,6 +39,8 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
             this.active_style = this.active_elt.style.cssText;
             this.inactive_style = this.inactive_elt.style.cssText;
             this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+            this.inactive_elt.setAttribute("style", this.inactive_style);
+            this.active_elt.setAttribute("style", "display:none");
         }
     }
     ||

@@ -16,7 +16,7 @@
    version="1.1"
    id="hmi0"
    sodipodi:docname="svghmi.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="0.92.5 (0.92.5+68)"
    inkscape:label="Layer">
   <metadata
      id="metadata4542">
@@ -53,17 +53,6 @@
        inkscape:vp_z="1272 : 385 : 1"
        inkscape:persp3d-origin="536 : 237 : 1"
        id="perspective445" />
-    <inkscape:tag
-       id="Set 1"
-       inkscape:label="HMI:AccessList@Admin"
-       inkscape:expanded="true">
-      <inkscape:tagref
-         xlink:href="#text995"
-         id="tagref192" />
-      <inkscape:tagref
-         xlink:href="#g991"
-         id="tagref194" />
-    </inkscape:tag>
     <linearGradient
        inkscape:collect="always"
        id="linearGradient962">
@@ -91,26 +80,6 @@
          id="path924"
          inkscape:connector-curvature="0" />
     </marker>
-    <inkscape:tag
-       id="Set 3"
-       inkscape:expanded="true"
-       inkscape:label="HMI:Translate">
-      <inkscape:tagref
-         xlink:href="#text831"
-         id="tagref1085" />
-      <inkscape:tagref
-         xlink:href="#text827"
-         id="tagref1087" />
-      <inkscape:tagref
-         xlink:href="#text4497"
-         id="tagref1089" />
-      <inkscape:tagref
-         xlink:href="#home_jmp"
-         id="tagref1091" />
-      <inkscape:tagref
-         xlink:href="#setting_jmp"
-         id="tagref1093" />
-    </inkscape:tag>
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient962"
@@ -137,16 +106,16 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g110-0-9"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
      inkscape:zoom="1.4142136"
-     inkscape:cx="437.24009"
-     inkscape:cy="177.36896"
-     inkscape:window-width="1800"
-     inkscape:window-height="836"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:cx="462.89448"
+     inkscape:cy="318.79031"
+     inkscape:window-width="2503"
+     inkscape:window-height="1416"
+     inkscape:window-x="57"
+     inkscape:window-y="24"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
@@ -200,7 +169,7 @@
          y="-64.195457"
          x="113.27539"
          sodipodi:role="line"
-         id="tspan1409">100</tspan></text>
+         id="tspan1409">10</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1221,7 +1190,7 @@
          y="5.501111"
          x="159.67337"
          sodipodi:role="line"
-         id="tspan1409-1">100</tspan></text>
+         id="tspan1409-1">1000</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:7.78479624px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.19461991px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1521,5 +1490,67 @@
          x="1046.8701"
          y="258.16129"
          style="fill:#ff00ca;fill-opacity:1;stroke:none;stroke-width:2.25346255px;stroke-opacity:1">000</tspan></text>
+  </g>
+  <g
+     id="g4791"
+     inkscape:label="HMI:ToggleButton@/TOGGLE2">
+    <rect
+       inkscape:label="inactive"
+       y="46.127251"
+       x="906.51086"
+       height="44.547726"
+       width="45.254833"
+       id="rect4772"
+       style="opacity:1;fill:#ff0015;fill-opacity:1;stroke:none" />
+    <rect
+       inkscape:label="active"
+       y="46.127251"
+       x="906.51086"
+       height="44.547726"
+       width="45.254833"
+       id="rect4772-3"
+       style="opacity:1;fill:#00ff03;fill-opacity:1;stroke:none" />
+  </g>
+  <g
+     transform="translate(-67.175138,-1.0606552)"
+     id="g4791-6"
+     inkscape:label="HMI:ToggleButton@/TOGGLE1">
+    <rect
+       inkscape:label="inactive"
+       y="47.187904"
+       x="906.51086"
+       height="44.547726"
+       width="45.254833"
+       id="rect4772-5"
+       style="opacity:1;fill:#ff0015;fill-opacity:1;stroke:none" />
+    <rect
+       inkscape:label="active"
+       y="47.187904"
+       x="906.51086"
+       height="44.547726"
+       width="45.254833"
+       id="rect4772-3-7"
+       style="opacity:1;fill:#00ff03;fill-opacity:1;stroke:none" />
+  </g>
+  <g
+     transform="translate(63.639613)"
+     id="g4791-3"
+     inkscape:label="HMI:ToggleButton@/TOGGLE">
+    <rect
+       inkscape:label="active"
+       y="46.127251"
+       x="906.51086"
+       height="44.547726"
+       width="45.254833"
+       id="rect4772-3-5"
+       style="opacity:1;fill:#00ff03;fill-opacity:1;stroke:none" />
+    <rect
+       inkscape:label="inactive"
+       y="46.127251"
+       x="906.51086"
+       height="44.547726"
+       width="45.254833"
+       id="rect4772-6"
+       style="opacity:1;fill:#ff0015;fill-opacity:1;stroke:none" />
   </g>
 </svg>
