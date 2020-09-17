@@ -915,7 +915,7 @@
           <xsl:when test="not(@index)">
             <xsl:choose>
               <xsl:when test="not(@type)">
-                <xsl:message terminate="yes">
+                <xsl:message terminate="no">
                   <xsl:text>Widget </xsl:text>
                   <xsl:value-of select="$widget/@type"/>
                   <xsl:text> id="</xsl:text>
@@ -924,6 +924,10 @@
                   <xsl:value-of select="@value"/>
                   <xsl:text>" in HMI tree</xsl:text>
                 </xsl:message>
+                <xsl:text>undefined</xsl:text>
+                <xsl:if test="position()!=last()">
+                  <xsl:text>,</xsl:text>
+                </xsl:if>
               </xsl:when>
               <xsl:when test="@type = 'PAGE_LOCAL'">
                 <xsl:text>"</xsl:text>
@@ -1179,6 +1183,8 @@
 </xsl:text>
     <xsl:text>                let index = this.get_variable_index(i);
 </xsl:text>
+    <xsl:text>                if(index == undefined) continue;
+</xsl:text>
     <xsl:text>                subscribers(index).add(this);
 </xsl:text>
     <xsl:text>            }
@@ -1196,6 +1202,8 @@
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
     <xsl:text>            let realindex = this.get_variable_index(index);
+</xsl:text>
+    <xsl:text>            if(realindex == undefined) continue;
 </xsl:text>
     <xsl:text>            let cached_val = cache[realindex];
 </xsl:text>
@@ -1231,9 +1239,13 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    change_hmi_value(index,opstr) {
+    <xsl:text>    change_hmi_value(index, opstr) {
 </xsl:text>
-    <xsl:text>        return change_hmi_value(this.get_variable_index(index), opstr);
+    <xsl:text>        let realindex = this.get_variable_index(index);
+</xsl:text>
+    <xsl:text>        if(realindex == undefined) return undefined;
+</xsl:text>
+    <xsl:text>        return change_hmi_value(realindex, opstr);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1241,7 +1253,11 @@
 </xsl:text>
     <xsl:text>    apply_hmi_value(index, new_val) {
 </xsl:text>
-    <xsl:text>        return apply_hmi_value(this.get_variable_index(index), new_val);
+    <xsl:text>        let realindex = this.get_variable_index(index);
+</xsl:text>
+    <xsl:text>        if(realindex == undefined) return undefined;
+</xsl:text>
+    <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1254,6 +1270,8 @@
     <xsl:text>        for(let i = 0; i &lt; this.indexes.length; i++) {
 </xsl:text>
     <xsl:text>            let refindex = this.get_variable_index(i);
+</xsl:text>
+    <xsl:text>            if(refindex == undefined) continue;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1490,41 +1508,85 @@
 </xsl:text>
     <xsl:text>    state = 0;
 </xsl:text>
+    <xsl:text>    plc_lock = false;
+</xsl:text>
     <xsl:text>    active_style = undefined;
 </xsl:text>
     <xsl:text>    inactive_style = undefined;
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    // TODO decouple update of DOM from event (i.e use animate())
+    <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        if(value){
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    // TODO State of the button should distinguish UI feedbak from current PLC value
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    on_mouse_down(evt) {
-</xsl:text>
-    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
-</xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
+    <xsl:text>            this.button_release();
 </xsl:text>
     <xsl:text>        }
-</xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, 1);
-</xsl:text>
-    <xsl:text>        // TODO inhibit all mouse/touch events except mouse up (in other word grab cursor)
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    on_mouse_up(evt) {
+    <xsl:text>     on_mouse_down(evt) {
+</xsl:text>
+    <xsl:text>         if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>             this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>             this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         this.apply_hmi_value(0, 1);
+</xsl:text>
+    <xsl:text>         this.plc_lock = false;
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     on_mouse_up(evt) {
+</xsl:text>
+    <xsl:text>         this.button_release();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     button_release(){
+</xsl:text>
+    <xsl:text>        if(!this.plc_lock){
+</xsl:text>
+    <xsl:text>            this.plc_lock = true;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>                 this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>                 this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>             }
+</xsl:text>
+    <xsl:text>             this.apply_hmi_value(0, 0);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     init() {
+</xsl:text>
+    <xsl:text>        this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>        this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
 </xsl:text>
@@ -1534,39 +1596,13 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, 0);
-</xsl:text>
-    <xsl:text>        // TODO release inhibited events 
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    init() {
+    <xsl:text>        this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
 </xsl:text>
-    <xsl:text>       // TODO : move to widget_defs so that we can have generated string literals directly
+    <xsl:text>        this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
 </xsl:text>
-    <xsl:text>       this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>       this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>       if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>           this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>           this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>       }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>       this.element.setAttribute("onmousedown", "hmi_widgets[\""+this.element_id+"\"].on_mouse_down(evt)");
-</xsl:text>
-    <xsl:text>       this.element.setAttribute("onmouseup", "hmi_widgets[\""+this.element_id+"\"].on_mouse_up(evt)");
-</xsl:text>
-    <xsl:text>    }
+    <xsl:text>     }
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -4718,17 +4754,33 @@
 </xsl:text>
     <xsl:text>    range = undefined;
 </xsl:text>
+    <xsl:text>    handle_orig = undefined;
+</xsl:text>
+    <xsl:text>    scroll_size = 10;
+</xsl:text>
+    <xsl:text>    min_size = 0.07;
+</xsl:text>
     <xsl:text>    fi = undefined;
 </xsl:text>
-    <xsl:text>    svg_dist = undefined;
+    <xsl:text>    curr_value = 0;
 </xsl:text>
     <xsl:text>    drag = false;
 </xsl:text>
     <xsl:text>    enTimer = false;
 </xsl:text>
+    <xsl:text>    handle_click = undefined;
+</xsl:text>
+    <xsl:text>    last_drag = false;
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        //save current value inside widget
+</xsl:text>
+    <xsl:text>        this.curr_value = value;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>        if(this.value_elt)
 </xsl:text>
@@ -4736,15 +4788,15 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.update_DOM(value, this.handle_elt);
+    <xsl:text>        //don't update if draging and setpoint ghost doesn't exist
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        if(!this.drag || (this.setpoint_elt != undefined)){
+</xsl:text>
+    <xsl:text>            this.update_DOM(value, this.handle_elt);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    last_drag = false;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4752,13 +4804,113 @@
 </xsl:text>
     <xsl:text>        let [min,max,start,totallength] = this.range;
 </xsl:text>
-    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+    <xsl:text>        // check if handle is resizeable
 </xsl:text>
-    <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
+    <xsl:text>        if (this.scroll_size != undefined){ //size changes
 </xsl:text>
-    <xsl:text>        elt.setAttribute('transform',"translate("+(tip.x-start.x)+","+(tip.y-start.y)+")");
+    <xsl:text>            //get parameters
+</xsl:text>
+    <xsl:text>            let length = Math.max(min,Math.min(max,(Number(value)-min)*max/(max-min)));
+</xsl:text>
+    <xsl:text>            let tip = this.range_elt.getPointAtLength(length);
+</xsl:text>
+    <xsl:text>            let handle_min = totallength*this.min_size;
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>            let step = 1;
+</xsl:text>
+    <xsl:text>            //check if range is bigger than  max displayed and recalculate step
+</xsl:text>
+    <xsl:text>            if ((totallength/handle_min) &lt; (max-min+1)){
+</xsl:text>
+    <xsl:text>                step = (max-min+1)/(totallength/handle_min-1);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            let kx,ky,offseY,offseX = undefined;
+</xsl:text>
+    <xsl:text>            //scale on x or y axes
+</xsl:text>
+    <xsl:text>            if (this.fi &gt; 0.75){
+</xsl:text>
+    <xsl:text>                //get scale factor
+</xsl:text>
+    <xsl:text>                if(step &gt; 1){
+</xsl:text>
+    <xsl:text>                    ky = handle_min/this.handle_orig.height;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else{
+</xsl:text>
+    <xsl:text>                    ky = (totallength-handle_min*(max-min))/this.handle_orig.height;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                kx = 1;
+</xsl:text>
+    <xsl:text>                //get 0 offset to stay inside range
+</xsl:text>
+    <xsl:text>                offseY = start.y - (this.handle_orig.height + this.handle_orig.y) * ky;
+</xsl:text>
+    <xsl:text>                offseX = 0;
+</xsl:text>
+    <xsl:text>                //get distance from value
+</xsl:text>
+    <xsl:text>                tip.y =this.range_elt.getPointAtLength(0).y - length/step *handle_min;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                //get scale factor
+</xsl:text>
+    <xsl:text>                if(step &gt; 1){
+</xsl:text>
+    <xsl:text>                    kx = handle_min/this.handle_orig.width;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else{
+</xsl:text>
+    <xsl:text>                    kx = (totallength-handle_min*(max-min))/this.handle_orig.width;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                ky = 1;
+</xsl:text>
+    <xsl:text>                //get 0 offset to stay inside range
+</xsl:text>
+    <xsl:text>                offseX = start.x - (this.handle_orig.x * kx);
+</xsl:text>
+    <xsl:text>                offseY = 0;
+</xsl:text>
+    <xsl:text>                //get distance from value
+</xsl:text>
+    <xsl:text>                tip.x =this.range_elt.getPointAtLength(0).x + length/step *handle_min;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            elt.setAttribute('transform',"matrix("+(kx)+" 0 0 "+(ky)+" "+(tip.x-start.x+offseX)+" "+(tip.y-start.y+offseY)+")");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{ //size stays the same
+</xsl:text>
+    <xsl:text>            let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+</xsl:text>
+    <xsl:text>            let tip = this.range_elt.getPointAtLength(length);
+</xsl:text>
+    <xsl:text>            elt.setAttribute('transform',"translate("+(tip.x-start.x)+","+(tip.y-start.y)+")");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // show or hide ghost if exists
 </xsl:text>
     <xsl:text>        if(this.setpoint_elt != undefined){
 </xsl:text>
@@ -4786,6 +4938,8 @@
 </xsl:text>
     <xsl:text>    on_release(evt) {
 </xsl:text>
+    <xsl:text>        //unbind events
+</xsl:text>
     <xsl:text>        window.removeEventListener("touchmove", this.on_bound_drag, true);
 </xsl:text>
     <xsl:text>        window.removeEventListener("mousemove", this.on_bound_drag, true);
@@ -4798,25 +4952,37 @@
 </xsl:text>
     <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //reset drag flag
+</xsl:text>
     <xsl:text>        if(this.drag){
 </xsl:text>
     <xsl:text>            this.drag = false;
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // get final position
+</xsl:text>
     <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>    on_drag(evt){
+</xsl:text>
+    <xsl:text>        //ignore drag event for X amount of time and if not selected
 </xsl:text>
     <xsl:text>        if(this.enTimer &amp;&amp; this.drag){
 </xsl:text>
     <xsl:text>            this.update_position(evt);
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>            //reset timer
 </xsl:text>
@@ -4834,15 +5000,17 @@
 </xsl:text>
     <xsl:text>        var html_dist = 0;
 </xsl:text>
+    <xsl:text>        let [min,max,start,totallength] = this.range;
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>        //calculate size of widget in html
 </xsl:text>
     <xsl:text>        var range_borders = this.range_elt.getBoundingClientRect();
 </xsl:text>
-    <xsl:text>        var range_length = Math.sqrt( range_borders.height*range_borders.height + range_borders.width*range_borders.width );
-</xsl:text>
     <xsl:text>        var [minX,minY,maxX,maxY] = [range_borders.left,range_borders.bottom,range_borders.right,range_borders.top];
+</xsl:text>
+    <xsl:text>        var range_length = Math.sqrt( range_borders.height*range_borders.height + range_borders.width*range_borders.width );
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4870,73 +5038,131 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        //get handle distance from mouse position
+    <xsl:text>        // calculate position
 </xsl:text>
-    <xsl:text>        if (minX &gt; mouseX &amp;&amp; minY &lt; mouseY){
+    <xsl:text>        if (this.handle_click){ //if clicked on handle
 </xsl:text>
-    <xsl:text>            html_dist = 0;
+    <xsl:text>            let moveDist = 0, resizeAdd = 0;
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>            let range_percent = 1;
 </xsl:text>
-    <xsl:text>        else if (maxX &lt; mouseX &amp;&amp; maxY &gt; mouseY){
+    <xsl:text>
 </xsl:text>
-    <xsl:text>            html_dist = range_length;
+    <xsl:text>            //set paramters for resizeable handle
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>            if (this.scroll_size != undefined){
 </xsl:text>
-    <xsl:text>        else{
+    <xsl:text>                // add one more object to stay inside range
 </xsl:text>
-    <xsl:text>            // calculate distace
+    <xsl:text>                resizeAdd = 1;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                //chack if range is bigger than display option and
+</xsl:text>
+    <xsl:text>                // calculate percent of range with out handle
+</xsl:text>
+    <xsl:text>                if(((max/(max*this.min_size)) &lt; (max-min+1))){
+</xsl:text>
+    <xsl:text>                    range_percent = 1-this.min_size;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else{
+</xsl:text>
+    <xsl:text>                    range_percent = 1-(max-max*this.min_size*(max-min))/max;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //calculate value difference on x or y axis
 </xsl:text>
     <xsl:text>            if(this.fi &gt; 0.7){
 </xsl:text>
-    <xsl:text>                html_dist = (minY - mouseY)/Math.sin(this.fi);
+    <xsl:text>                moveDist = ((max-min+resizeAdd)/(range_length*range_percent))*((this.handle_click[1]-mouseY)/Math.sin(this.fi));
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>            else{
 </xsl:text>
-    <xsl:text>                html_dist = (mouseX - minX)/Math.cos(this.fi);
+    <xsl:text>                moveDist = ((max-min+resizeAdd)/(range_length*range_percent))*((mouseX-this.handle_click[0])/Math.cos(this.fi));
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            //check if in range
+    <xsl:text>            this.curr_value = Math.ceil(this.handle_click[2] + moveDist);
 </xsl:text>
-    <xsl:text>            if (html_dist &gt; range_length){
+    <xsl:text>        }
 </xsl:text>
-    <xsl:text>                html_dist = range_length;
+    <xsl:text>        else{ //if clicked on widget
 </xsl:text>
-    <xsl:text>            }
+    <xsl:text>            //get handle distance from mouse position
 </xsl:text>
-    <xsl:text>            else if (html_dist &lt; 0){
+    <xsl:text>            if (minX &gt; mouseX &amp;&amp; minY &lt; mouseY){
 </xsl:text>
     <xsl:text>                html_dist = 0;
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
-    <xsl:text>
+    <xsl:text>            else if (maxX &lt; mouseX &amp;&amp; maxY &gt; mouseY){
+</xsl:text>
+    <xsl:text>                html_dist = range_length;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                if(this.fi &gt; 0.7){
+</xsl:text>
+    <xsl:text>                    html_dist = (minY - mouseY)/Math.sin(this.fi);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else{
+</xsl:text>
+    <xsl:text>                    html_dist = (mouseX - minX)/Math.cos(this.fi);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            //calculate distance
+</xsl:text>
+    <xsl:text>            this.curr_value=Math.ceil((html_dist/range_length)*(this.range[1]-this.range[0])+this.range[0]);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.svg_dist=Math.ceil((html_dist/range_length)*this.range[1]);
+    <xsl:text>        //check if in range
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        if (this.curr_value &gt; max){
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, this.svg_dist);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        // update ghost cursor
-</xsl:text>
-    <xsl:text>        if(this.setpoint_elt != undefined){
-</xsl:text>
-    <xsl:text>            this.request_animate();
+    <xsl:text>            this.curr_value = max;
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else if (this.curr_value &lt; min){
+</xsl:text>
+    <xsl:text>            this.curr_value = min;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, this.curr_value);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //redraw handle
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4944,7 +5170,21 @@
 </xsl:text>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>        this.update_DOM(this.svg_dist, this.setpoint_elt);
+    <xsl:text>        // redraw handle on screen refresh
+</xsl:text>
+    <xsl:text>        // check if setpoint(ghost) handle exsist otherwise update main handle
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            this.update_DOM(this.curr_value, this.setpoint_elt);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            this.update_DOM(this.curr_value, this.handle_elt);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4952,9 +5192,15 @@
 </xsl:text>
     <xsl:text>    on_select(evt){
 </xsl:text>
+    <xsl:text>        //enable drag flag and timer
+</xsl:text>
     <xsl:text>        this.drag = true;
 </xsl:text>
     <xsl:text>        this.enTimer = true;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //bind events
 </xsl:text>
     <xsl:text>        window.addEventListener("touchmove", this.on_bound_drag, true);
 </xsl:text>
@@ -4968,13 +5214,63 @@
 </xsl:text>
     <xsl:text>        window.addEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
-    <xsl:text>        this.update_position(evt);
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // check if handle was pressed
+</xsl:text>
+    <xsl:text>        if (evt.currentTarget == this.handle_elt){
+</xsl:text>
+    <xsl:text>            //get mouse position on the handle
+</xsl:text>
+    <xsl:text>            let mouseX = undefined;
+</xsl:text>
+    <xsl:text>            let mouseY = undefined;
+</xsl:text>
+    <xsl:text>            if (evt.type.startsWith("touch")){
+</xsl:text>
+    <xsl:text>                mouseX = Math.ceil(evt.touches[0].clientX);
+</xsl:text>
+    <xsl:text>                mouseY = Math.ceil(evt.touches[0].clientY);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else{
+</xsl:text>
+    <xsl:text>                mouseX = evt.pageX;
+</xsl:text>
+    <xsl:text>                mouseY = evt.pageY;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            //save coordinates and orig value
+</xsl:text>
+    <xsl:text>            this.handle_click = [mouseX,mouseY,this.curr_value];
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            // get new handle position and reset if handle was not pressed
+</xsl:text>
+    <xsl:text>            this.handle_click = undefined;
+</xsl:text>
+    <xsl:text>            this.update_position(evt);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //prevent next events
+</xsl:text>
+    <xsl:text>        evt.stopPropagation();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        //set min max value if not defined
 </xsl:text>
     <xsl:text>        let min = this.min_elt ?
 </xsl:text>
@@ -4990,6 +5286,10 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>        // save initial parameters
+</xsl:text>
+    <xsl:text>        this.range_elt.style.strokeMiterlimit="0";
+</xsl:text>
     <xsl:text>        this.range = [min, max, this.range_elt.getPointAtLength(0),this.range_elt.getTotalLength()];
 </xsl:text>
     <xsl:text>        let start = this.range_elt.getPointAtLength(0);
@@ -4998,7 +5298,11 @@
 </xsl:text>
     <xsl:text>        this.fi = Math.atan2(start.y-end.y, end.x-start.x);
 </xsl:text>
+    <xsl:text>        this.handle_orig = this.handle_elt.getBBox();
+</xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        //bind functions
 </xsl:text>
     <xsl:text>        this.bound_on_select = this.on_select.bind(this);
 </xsl:text>
@@ -5007,6 +5311,8 @@
     <xsl:text>        this.on_bound_drag = this.on_drag.bind(this);
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        this.handle_elt.addEventListener("mousedown", this.bound_on_select);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("mousedown", this.bound_on_select);
 </xsl:text>
@@ -5119,23 +5425,23 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        this.state = value;
+    <xsl:text>        if(this.state != value){
 </xsl:text>
-    <xsl:text>        if (this.state) {
+    <xsl:text>            this.state = value;
 </xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
+    <xsl:text>            if (this.state) {
 </xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
+    <xsl:text>                this.active_elt.setAttribute("style", this.active_style);
 </xsl:text>
-    <xsl:text>            this.state = 0;
+    <xsl:text>                this.inactive_elt.setAttribute("style", "display:none");
 </xsl:text>
-    <xsl:text>        } else {
+    <xsl:text>            } else {
 </xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
+    <xsl:text>                this.inactive_elt.setAttribute("style", this.inactive_style);
 </xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
+    <xsl:text>                this.active_elt.setAttribute("style", "display:none");
 </xsl:text>
-    <xsl:text>            this.state = 1;
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -5144,6 +5450,24 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    on_click(evt) {
+</xsl:text>
+    <xsl:text>        if (this.state) {
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.state = 0;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.state = 1;
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
@@ -5158,6 +5482,10 @@
     <xsl:text>        this.inactive_style = this.inactive_elt.style.cssText;
 </xsl:text>
     <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+</xsl:text>
+    <xsl:text>        this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>        this.active_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
