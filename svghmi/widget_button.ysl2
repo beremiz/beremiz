@@ -4,42 +4,53 @@ template "widget[@type='Button']", mode="widget_class"{
     ||
     class ButtonWidget extends Widget{
         frequency = 5;
-        state = 0;
+        state_plc = 0;
+        state_hmi = 0;
         plc_lock = false;
         active_style = undefined;
         inactive_style = undefined;
 
         dispatch(value) {
-            if(value){
-                this.button_release();
+            this.state_plc = value;
+            if(this.plc_lock){
+                if(this.state_plc == 1){
+                    this.apply_hmi_value(0, 0);
+                    this.plc_lock = false;
+                }
             }
+
+            //redraw button
+            this.state_hmi = this.state_plc;
+            this.request_animate();
         }
 
-         on_mouse_down(evt) {
-             if (this.active_style && this.inactive_style) {
-                 this.active_elt.setAttribute("style", this.active_style);
-                 this.inactive_elt.setAttribute("style", "display:none");
-             }
-             this.apply_hmi_value(0, 1);
-             this.plc_lock = false;
-         }
+        animate(){
+           // redraw button on screen refresh
+           if (this.state_hmi) {
+               this.active_elt.setAttribute("style", this.active_style);
+               this.inactive_elt.setAttribute("style", "display:none");
+           } else {
+               this.inactive_elt.setAttribute("style", this.inactive_style);
+               this.active_elt.setAttribute("style", "display:none");
+           }
+        }
 
-         on_mouse_up(evt) {
-             this.button_release();
-         }
+        on_click(evt) {
+            //set state and apply if plc is 0
+            this.plc_lock = true;
+            if(this.state_plc == 0){
+                this.apply_hmi_value(0, 1);
+            }
+            //redraw button
+            this.request_animate();
+        }
 
-         button_release(){
-            if(!this.plc_lock){
-                this.plc_lock = true;
-            }
-            else{
-                if (this.active_style && this.inactive_style) {
-                     this.active_elt.setAttribute("style", "display:none");
-                     this.inactive_elt.setAttribute("style", this.inactive_style);
-                 }
-                 this.apply_hmi_value(0, 0);
-            }
-         }
+        on_press(evt) {
+            //set graphic
+            this.state_hmi = 1;
+            //redraw button
+            this.request_animate();
+        }
 
          init() {
             this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
@@ -50,8 +61,8 @@ template "widget[@type='Button']", mode="widget_class"{
                 this.inactive_elt.setAttribute("style", this.inactive_style);
             }
 
-            this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
-            this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
+            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+            this.element.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_press(evt)");
          }
     }
     ||
