@@ -101,7 +101,7 @@ template "widget[@type='Slider']", mode="widget_class"
             window.removeEventListener("touchmove", this.on_bound_drag, true);
             window.removeEventListener("mousemove", this.on_bound_drag, true);
 
-            window.removeEventListener("mouseup", this.bound_on_release, true)
+            window.removeEventListener("mouseup", this.bound_on_release, true);
             window.removeEventListener("touchend", this.bound_on_release, true);
             window.removeEventListener("touchcancel", this.bound_on_release, true);
 
@@ -224,42 +224,74 @@ template "widget[@type='Slider']", mode="widget_class"
         }
 
         on_select(evt){
-            //enable drag flag and timer
-            this.drag = true;
-            this.enTimer = true;
+            if (evt.currentTarget != this.up_elt || evt.currentTarget != this.down_elt){
+                //enable drag flag and timer
+                this.drag = true;
+                this.enTimer = true;
 
-            //bind events
-            window.addEventListener("touchmove", this.on_bound_drag, true);
-            window.addEventListener("mousemove", this.on_bound_drag, true);
+                //bind events
+                window.addEventListener("touchmove", this.on_bound_drag, true);
+                window.addEventListener("mousemove", this.on_bound_drag, true);
 
-            window.addEventListener("mouseup", this.bound_on_release, true)
-            window.addEventListener("touchend", this.bound_on_release, true);
-            window.addEventListener("touchcancel", this.bound_on_release, true);
+                window.addEventListener("mouseup", this.bound_on_release, true);
+                window.addEventListener("touchend", this.bound_on_release, true);
+                window.addEventListener("touchcancel", this.bound_on_release, true);
 
-            // check if handle was pressed
-            if (evt.currentTarget == this.handle_elt){
-                //get mouse position on the handle
-                let mouseX = undefined;
-                let mouseY = undefined;
-                if (evt.type.startsWith("touch")){
-                    mouseX = Math.ceil(evt.touches[0].clientX);
-                    mouseY = Math.ceil(evt.touches[0].clientY);
+                // check if handle was pressed
+                if (evt.currentTarget == this.handle_elt){
+                    //get mouse position on the handle
+                    let mouseX = undefined;
+                    let mouseY = undefined;
+                    if (evt.type.startsWith("touch")){
+                        mouseX = Math.ceil(evt.touches[0].clientX);
+                        mouseY = Math.ceil(evt.touches[0].clientY);
+                    }
+                    else{
+                        mouseX = evt.pageX;
+                        mouseY = evt.pageY;
+                    }
+                    //save coordinates and orig value
+                    this.handle_click = [mouseX,mouseY,this.curr_value];
                 }
                 else{
-                    mouseX = evt.pageX;
-                    mouseY = evt.pageY;
+                    // get new handle position and reset if handle was not pressed
+                    this.handle_click = undefined;
+                    this.update_position(evt);
                 }
-                //save coordinates and orig value
-                this.handle_click = [mouseX,mouseY,this.curr_value];
+
+                //prevent next events
+                evt.stopPropagation();
             }
             else{
-                // get new handle position and reset if handle was not pressed
-                this.handle_click = undefined;
-                this.update_position(evt);
+                //prevent next events if up/down were pressed
+                evt.stopPropagation();
+            }
+        }
+
+        on_up_button(evt){
+            // go one position up and check if in bounds
+            this.curr_value = this.curr_value + 1;
+            if (this.curr_value > this.range[1]){
+                this.curr_value = this.range[1];
             }
 
-            //prevent next events
-            evt.stopPropagation();
+            this.apply_hmi_value(0, this.curr_value);
+
+            //redraw handle
+            this.request_animate();
+        }
+
+        on_down_button(evt){
+            // go one position down
+            this.curr_value = this.curr_value - 1;
+            if (this.curr_value < this.range[0]){
+                this.curr_value = this.range[0];
+            }
+
+            this.apply_hmi_value(0, this.curr_value);
+
+            //redraw handle
+            this.request_animate();
         }
 
         init() {
@@ -270,6 +302,14 @@ template "widget[@type='Slider']", mode="widget_class"
             let max = this.max_elt ?
                         Number(this.max_elt.textContent) :
                         this.args.length >= 2 ? this.args[1] : 100;
+
+            //init up down button if exists
+            if(this.up_elt){
+                this.up_elt.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_up_button(evt)");
+            }
+            if(this.down_elt){
+                this.down_elt.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_down_button(evt)");
+            }
 
             // save initial parameters
             this.range_elt.style.strokeMiterlimit="0";
@@ -285,8 +325,8 @@ template "widget[@type='Slider']", mode="widget_class"
             this.on_bound_drag = this.on_drag.bind(this);
 
             this.handle_elt.addEventListener("mousedown", this.bound_on_select);
-            this.element.addEventListener("mousedown", this.bound_on_select);
-            this.element.addEventListener("touchstart", this.bound_on_select);
+            this.range_elt.addEventListener("mousedown", this.bound_on_select);
+            this.range_elt.addEventListener("touchstart", this.bound_on_select);
 
             if(this.setpoint_elt != undefined){
                 this.setpoint_style = this.setpoint_elt.getAttribute("style");
@@ -300,6 +340,6 @@ template "widget[@type='Slider']", mode="widget_class"
 template "widget[@type='Slider']", mode="widget_defs" {
     param "hmi_element";
     labels("handle range");
-    optional_labels("value min max setpoint");
+    optional_labels("value min max setpoint up down");
     |,
 }
