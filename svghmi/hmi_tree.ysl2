@@ -73,8 +73,9 @@ template "*", mode="index" {
 //  widget type="WidgetType" id="blah456" {
 //      arg value="param1";
 //      arg value="param2";
-//      path value="path1" index="345";
-//      path value="path2";
+//      path value=".path1" index=".path1" type="PAGE_LOCAL";
+//      path value="/path1" index="348" type="HMI_INT";
+//      path value="path4" index="path4" type="HMI_LOCAL";
 //  }
 //
 template "*", mode="parselabel" {
