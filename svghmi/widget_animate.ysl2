@@ -1,0 +1,35 @@
+// widget_animate.ysl2
+
+template "widget[@type='Animate']", mode="widget_class"{
+    ||
+    class AnimateWidget extends Widget{
+        frequency = 5;
+        speed = 0;
+
+        dispatch(value) {
+            this.speed = value;
+
+            //reconfigure animation
+            this.request_animate();
+        }
+
+        animate(){
+           // change animation properties
+           this.element.children[0].setAttribute("dur", String(this.speed)+"s")
+        }
+
+        init() {
+             let width = this.element.getAttribute("width");
+             let height = this.element.getAttribute("height");
+             this.element.setAttribute("x",width/-2);
+             this.element.setAttribute("y",height/-2);
+        }
+    }
+    ||
+}
+
+
+template "widget[@type='Animate']", mode="widget_defs" {
+    param "hmi_element";
+    |,
+}
