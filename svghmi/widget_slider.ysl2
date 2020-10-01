@@ -6,7 +6,9 @@ template "widget[@type='Slider']", mode="widget_class"
         frequency = 5;
         range = undefined;
         handle_orig = undefined;
-        scroll_size = 10;
+        scroll_size = undefined;
+        scroll_range = 0;
+        scroll_visible = 7;
         min_size = 0.07;
         fi = undefined;
         curr_value = 0;
@@ -15,16 +17,51 @@ template "widget[@type='Slider']", mode="widget_class"
         handle_click = undefined;
         last_drag = false;
 
-        dispatch(value) {
-            //save current value inside widget
-            this.curr_value = value;
+        dispatch(value,oldval, index) {
+            if (index == 0){
+                let [min,max,start,totallength] = this.range;
+                //save current value inside widget
+                this.curr_value = value;
 
-            if(this.value_elt)
-                this.value_elt.textContent = String(value);
+                //check if in range
+                if (this.curr_value > max){
+                    this.curr_value = max;
+                    this.apply_hmi_value(0, this.curr_value);
+                }
+                else if (this.curr_value < min){
+                    this.curr_value = min;
+                    this.apply_hmi_value(0, this.curr_value);
+                }
+
+                if(this.value_elt)
+                    this.value_elt.textContent = String(value);
+            }
+            else if(index == 1){
+                this.scroll_range = value;
+                this.set_scroll();
+            }
+            else if(index == 2){
+                this.scroll_visible = value;
+                this.set_scroll();
+            }
 
             //don't update if draging and setpoint ghost doesn't exist
             if(!this.drag || (this.setpoint_elt != undefined)){
-                this.update_DOM(value, this.handle_elt);
+                this.update_DOM(this.curr_value, this.handle_elt);
+            }
+        }
+
+        set_scroll(){
+            //check if range is bigger than visible and set scroll size
+            if(this.scroll_range > this.scroll_visible){
+                this.scroll_size = this.scroll_range - this.scroll_visible;
+                this.range[0] = 0;
+                this.range[1] = this.scroll_size;
+            }
+            else{
+                this.scroll_size = 1;
+                this.range[0] = 0;
+                this.range[1] = 1;
             }
         }
 
@@ -197,14 +234,13 @@ template "widget[@type='Slider']", mode="widget_class"
                 this.curr_value=Math.ceil((html_dist/range_length)*(this.range[1]-this.range[0])+this.range[0]);
             }
 
-            //check if in range
+            //check if in range and apply
             if (this.curr_value > max){
                 this.curr_value = max;
             }
             else if (this.curr_value < min){
                 this.curr_value = min;
             }
-
             this.apply_hmi_value(0, this.curr_value);
 
             //redraw handle
@@ -224,75 +260,45 @@ template "widget[@type='Slider']", mode="widget_class"
         }
 
         on_select(evt){
-            if (evt.currentTarget != this.up_elt || evt.currentTarget != this.down_elt){
-                //enable drag flag and timer
-                this.drag = true;
-                this.enTimer = true;
+            //enable drag flag and timer
+            this.drag = true;
+            this.enTimer = true;
 
-                //bind events
-                window.addEventListener("touchmove", this.on_bound_drag, true);
-                window.addEventListener("mousemove", this.on_bound_drag, true);
+            //bind events
+            window.addEventListener("touchmove", this.on_bound_drag, true);
+            window.addEventListener("mousemove", this.on_bound_drag, true);
 
-                window.addEventListener("mouseup", this.bound_on_release, true);
-                window.addEventListener("touchend", this.bound_on_release, true);
-                window.addEventListener("touchcancel", this.bound_on_release, true);
+            window.addEventListener("mouseup", this.bound_on_release, true);
+            window.addEventListener("touchend", this.bound_on_release, true);
+            window.addEventListener("touchcancel", this.bound_on_release, true);
 
-                // check if handle was pressed
-                if (evt.currentTarget == this.handle_elt){
-                    //get mouse position on the handle
-                    let mouseX = undefined;
-                    let mouseY = undefined;
-                    if (evt.type.startsWith("touch")){
-                        mouseX = Math.ceil(evt.touches[0].clientX);
-                        mouseY = Math.ceil(evt.touches[0].clientY);
-                    }
-                    else{
-                        mouseX = evt.pageX;
-                        mouseY = evt.pageY;
-                    }
-                    //save coordinates and orig value
-                    this.handle_click = [mouseX,mouseY,this.curr_value];
+            // check if handle was pressed
+            if (evt.currentTarget == this.handle_elt){
+                //get mouse position on the handle
+                let mouseX = undefined;
+                let mouseY = undefined;
+                if (evt.type.startsWith("touch")){
+                    mouseX = Math.ceil(evt.touches[0].clientX);
+                    mouseY = Math.ceil(evt.touches[0].clientY);
                 }
                 else{
-                    // get new handle position and reset if handle was not pressed
-                    this.handle_click = undefined;
-                    this.update_position(evt);
+                    mouseX = evt.pageX;
+                    mouseY = evt.pageY;
                 }
-
-                //prevent next events
-                evt.stopPropagation();
+                //save coordinates and orig value
+                this.handle_click = [mouseX,mouseY,this.curr_value];
             }
             else{
-                //prevent next events if up/down were pressed
-                evt.stopPropagation();
-            }
-        }
-
-        on_up_button(evt){
-            // go one position up and check if in bounds
-            this.curr_value = this.curr_value + 1;
-            if (this.curr_value > this.range[1]){
-                this.curr_value = this.range[1];
+                // get new handle position and reset if handle was not pressed
+                this.handle_click = undefined;
+                this.update_position(evt);
             }
 
-            this.apply_hmi_value(0, this.curr_value);
+            //prevent next events
+            evt.stopPropagation();
 
-            //redraw handle
-            this.request_animate();
         }
 
-        on_down_button(evt){
-            // go one position down
-            this.curr_value = this.curr_value - 1;
-            if (this.curr_value < this.range[0]){
-                this.curr_value = this.range[0];
-            }
-
-            this.apply_hmi_value(0, this.curr_value);
-
-            //redraw handle
-            this.request_animate();
-        }
 
         init() {
             //set min max value if not defined
@@ -303,13 +309,6 @@ template "widget[@type='Slider']", mode="widget_class"
                         Number(this.max_elt.textContent) :
                         this.args.length >= 2 ? this.args[1] : 100;
 
-            //init up down button if exists
-            if(this.up_elt){
-                this.up_elt.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_up_button(evt)");
-            }
-            if(this.down_elt){
-                this.down_elt.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_down_button(evt)");
-            }
 
             // save initial parameters
             this.range_elt.style.strokeMiterlimit="0";
@@ -325,9 +324,12 @@ template "widget[@type='Slider']", mode="widget_class"
             this.on_bound_drag = this.on_drag.bind(this);
 
             this.handle_elt.addEventListener("mousedown", this.bound_on_select);
-            this.range_elt.addEventListener("mousedown", this.bound_on_select);
-            this.range_elt.addEventListener("touchstart", this.bound_on_select);
+            this.element.addEventListener("mousedown", this.bound_on_select);
+            this.element.addEventListener("touchstart", this.bound_on_select);
+            //touch recognised as page drag without next command
+            document.body.addEventListener("touchstart", function(e){}, false);
 
+            //save ghost style
             if(this.setpoint_elt != undefined){
                 this.setpoint_style = this.setpoint_elt.getAttribute("style");
                 this.setpoint_elt.setAttribute("style", "display:none");
@@ -340,6 +342,6 @@ template "widget[@type='Slider']", mode="widget_class"
 template "widget[@type='Slider']", mode="widget_defs" {
     param "hmi_element";
     labels("handle range");
-    optional_labels("value min max setpoint up down");
+    optional_labels("value min max setpoint");
     |,
 }

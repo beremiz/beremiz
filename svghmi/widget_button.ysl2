@@ -25,13 +25,15 @@ template "widget[@type='Button']", mode="widget_class"{
         }
 
         animate(){
-           // redraw button on screen refresh
-           if (this.state_hmi) {
-               this.active_elt.setAttribute("style", this.active_style);
-               this.inactive_elt.setAttribute("style", "display:none");
-           } else {
-               this.inactive_elt.setAttribute("style", this.inactive_style);
-               this.active_elt.setAttribute("style", "display:none");
+            if (this.active_style && this.inactive_style) {
+               // redraw button on screen refresh
+               if (this.state_hmi) {
+                   this.active_elt.setAttribute("style", this.active_style);
+                   this.inactive_elt.setAttribute("style", "display:none");
+               } else {
+                   this.inactive_elt.setAttribute("style", this.inactive_style);
+                   this.active_elt.setAttribute("style", "display:none");
+               }
            }
         }
 
