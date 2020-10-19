@@ -1,11 +1,10 @@
-// widget_animate.ysl2
+// widget_animaterotation.ysl2
 
-template "widget[@type='Animate']", mode="widget_class"{
+template "widget[@type='AnimateRotation']", mode="widget_class"{
     ||
-    class AnimateWidget extends Widget{
+    class AnimateRotationWidget extends Widget{
         frequency = 5;
         speed = 0;
-        start = false;
         widget_center = undefined;
 
         dispatch(value) {
@@ -18,21 +17,20 @@ template "widget[@type='Animate']", mode="widget_class"{
         animate(){
            // change animation properties
            for(let child of this.element.children){
-                if(child.nodeName.startsWith("animate")){
-                    if(this.speed != 0 && !this.start){
-                        this.start = true;
-                        this.element.beginElement();
-                    }
-
+                if(child.nodeName == "animateTransform"){
                     if(this.speed > 0){
                         child.setAttribute("dur", this.speed+"s");
+                        child.setAttribute("from", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
+                        child.setAttribute("to", "360 "+this.widget_center[0]+" "+this.widget_center[1]);
                     }
                     else if(this.speed < 0){
                         child.setAttribute("dur", (-1)*this.speed+"s");
+                        child.setAttribute("from", "360 "+this.widget_center[0]+" "+this.widget_center[1]);
+                        child.setAttribute("to", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
                     }
                     else{
-                        this.start = false;
-                        this.element.endElement();
+                        child.setAttribute("from", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
+                        child.setAttribute("to", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
                     }
                 }
            }
@@ -47,7 +45,7 @@ template "widget[@type='Animate']", mode="widget_class"{
 }
 
 
-template "widget[@type='Animate']", mode="widget_defs" {
+template "widget[@type='AnimateRotation']", mode="widget_defs" {
     param "hmi_element";
     |,
 }
