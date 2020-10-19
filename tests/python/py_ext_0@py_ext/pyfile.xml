@@ -2,7 +2,7 @@
 <PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <variables>
     <variable name="SomeVarName" type="DINT" onchange="MyFunc"/>
-    <variable name="Grumpf" type="STRING" initial="'mhoo'" onchange="MyFunc"/>
+    <variable name="Grumpf" type="STRING" initial="'mhoo'" onchange="MyFunc, MyOtherFunc"/>
   </variables>
   <globals>
     <xhtml:p><![CDATA[
@@ -11,6 +11,10 @@ print "Current extention name :", __ext_name__
 
 def MyFunc(*args):
     print args
+
+def MyOtherFunc(*args):
+    print "other", args
+
 
 ]]></xhtml:p>
   </globals>
