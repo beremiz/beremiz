@@ -95,15 +95,24 @@ class PythonFileCTNMixin(CodeFile):
                getattr(self.CodeFile, section).getanyText() + "\n" + \
                self.PostSectionsTexts.get(section, "")
 
+    def CTNGlobalInstances(self):
+        variables = self.CodeFileVariables(self.CodeFile)
+        ret = [(variable.getname(),
+                variable.gettype(),
+                variable.getinitial())
+               for variable in variables]
+        location_str = "_".join(map(str, self.GetCurrentLocation()))
+        ret.append(("On_"+location_str+"_Change", "python_poll", ""))
+        return ret
+
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
         location_str = "_".join(map(str, self.GetCurrentLocation()))
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
         def _onchangecode(var):
-            return '"' + var.getonchange() + \
-                "('" + var.getname() + "')\"" \
-                if var.getonchange() else '""'
+            return [onchangecall.strip() + "('" + var.getname() + "')"
+                    for onchangecall in var.getonchange().split(',')]
 
         def _onchange(var):
             return repr(var.getonchange()) \
@@ -124,6 +133,9 @@ class PythonFileCTNMixin(CodeFile):
                 "pyextname": pyextname
             },
             self.CodeFile.variables.variable)
+
+        onchange_var_count = len([None for varinfo in varinfos if varinfo["onchange"]])
+
         # python side PLC global variables access stub
         globalstubs = "\n".join([
             """\
@@ -144,6 +156,16 @@ _%(pyextname)sGlobalsDesc.append((
     %(opts)s))
 """ % varinfo for varinfo in varinfos])
 
+        on_change_func_body = "\n".join(["""
+    if changes.next():
+        # %(name)s
+        try:
+""" % varinfo + """ 
+            """ + """
+            """.join(varinfo['onchangecode'])+"""
+        except Exception as e:
+            errors.append("%(name)s: "+str(e))
+""" % varinfo for varinfo in varinfos if varinfo["onchange"]])
         # Runtime calls (start, stop, init, and cleanup)
         rtcalls = ""
         for section in self.SECTIONS_NAMES:
@@ -163,6 +185,9 @@ _%(pyextname)sGlobalsDesc.append((
             "globalstubs": globalstubs,
             "globalsection": globalsection,
             "rtcalls": rtcalls,
+            "location_str": location_str,
+            "on_change_func_body":on_change_func_body,
+            "onchange_var_count": onchange_var_count
         }
 
         PyFileContent = """\
@@ -174,6 +199,11 @@ _%(pyextname)sGlobalsDesc.append((
 ## Code for PLC global variable access
 from runtime.typemapping import TypeTranslator
 import ctypes
+
+_PySafeGetChanges_%(pyextname)s = PLCBinary.PySafeGetChanges_%(location_str)s
+_PySafeGetChanges_%(pyextname)s.restype = ctypes.POINTER(ctypes.c_int * %(onchange_var_count)d)
+_PySafeGetChanges_%(pyextname)s.argtypes = None
+
 _%(pyextname)sGlobalsDesc = []
 __ext_name__ = "%(pyextname)s"
 PLCGlobalsDesc.append(( "%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
@@ -184,6 +214,16 @@ PLCGlobalsDesc.append(( "%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
 
 ## Beremiz python runtime calls
 %(rtcalls)s
+
+def On_%(pyextname)s_Change():
+    changesP = _PySafeGetChanges_%(pyextname)s()
+    if not changesP:
+        raise Exception("PySafeGetChanges returned NULL!")
+    changes = iter(changesP.contents)
+    errors = []
+%(on_change_func_body)s
+    if len(errors)>0 :
+        raise Exception("Exception in %(pyextname)s OnChange call:\\\\n" + "\\\\n".join(errors))
 
 del __ext_name__
 
@@ -220,7 +260,7 @@ void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
 """
 
         vardeconchangefmt = """\
-PYTHON_POLL* __%(name)s_notifier;
+int __%(name)s_rbuffer_written = 0;
 """
 
         varretfmt = """\
@@ -244,15 +284,21 @@ PYTHON_POLL* __%(name)s_notifier;
         IEC_%(IECtype)s tmp = __GET_VAR(%(configname)s__%(uppername)s);
         if(NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
             __%(name)s_rbuffer = tmp;
-            PYTHON_POLL_body__(__%(name)s_notifier);
+            /* mark variable as changed */
+            __%(name)s_rbuffer_written = 1;
+            some_change = 1;
         }
         AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
     }
 """
-        varinitonchangefmt = """\
-    __%(name)s_notifier = __GET_GLOBAL_ON%(uppername)sCHANGE();
-    __SET_VAR(__%(name)s_notifier->,TRIG,,__BOOL_LITERAL(TRUE));
-    __SET_VAR(__%(name)s_notifier->,CODE,,__STRING_LITERAL(%(onchangelen)d,%(onchangecode)s));
+
+        varcollectchangefmt = """\
+    while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
+    pysafe_changes[change_index++] = __%(name)s_rbuffer_written;
+    /* mark variable as unchanged */
+    __%(name)s_rbuffer_written = 0;
+    AtomicCompareExchange((long*)&__%(name)s_wlock, 1, 0);
+
 """
         vardec = "\n".join([(vardecfmt + vardeconchangefmt
                              if varinfo["onchange"] else vardecfmt) % varinfo
@@ -261,16 +307,20 @@ PYTHON_POLL* __%(name)s_notifier;
         varpub = "\n".join([(varpubonchangefmt if varinfo["onchange"] else
                              varpubfmt) % varinfo
                             for varinfo in varinfos])
-        varinit = "\n".join([varinitonchangefmt %
-                             dict(onchangelen=len(varinfo["onchangecode"]), **varinfo)
+        varcollectchange = "\n".join([varcollectchangefmt % varinfo
                              for varinfo in varinfos if varinfo["onchange"]])
+
+        pysafe_pypoll_code = "On_"+pyextname+"_Change()"
 
         loc_dict = {
             "vardec": vardec,
-            "varinit": varinit,
             "varret": varret,
             "varpub": varpub,
             "location_str": location_str,
+            "pysafe_pypoll_code": '"'+pysafe_pypoll_code+'"',
+            "pysafe_pypoll_code_len": len(pysafe_pypoll_code),
+            "varcollectchange": varcollectchange,
+            "onchange_var_count": onchange_var_count
         }
 
         # TODO : use config name obtained from model instead of default
@@ -286,12 +336,17 @@ PYTHON_POLL* __%(name)s_notifier;
 #include "config.h"
 #include "beremiz.h"
 
+PYTHON_POLL* __%(location_str)s_notifier;
+
 /* User variables reference */
 %(vardec)s
 
 /* Beremiz confnode functions */
 int __init_%(location_str)s(int argc,char **argv){
-%(varinit)s
+    __%(location_str)s_notifier = __GET_GLOBAL_ON_%(location_str)s_CHANGE();
+    __SET_VAR(__%(location_str)s_notifier->,TRIG,,__BOOL_LITERAL(TRUE));
+    __SET_VAR(__%(location_str)s_notifier->,CODE,,__STRING_LITERAL(%(pysafe_pypoll_code_len)d,%(pysafe_pypoll_code)s));
+
     return 0;
 }
 
@@ -303,8 +358,21 @@ void __retrieve_%(location_str)s(void){
 }
 
 void __publish_%(location_str)s(void){
+    int some_change = 0;
 %(varpub)s
+    // call python part if there was at least a change
+    if(some_change){
+        PYTHON_POLL_body__(__%(location_str)s_notifier);
+    }
 }
+
+static int pysafe_changes[%(onchange_var_count)d];
+void* PySafeGetChanges_%(location_str)s(void){
+    int change_index=0;
+%(varcollectchange)s
+    return (void*)&pysafe_changes[0];
+}
+
 """ % loc_dict
 
         Gen_PyCfile_path = os.path.join(buildpath, "PyCFile_%s.c" % location_str)
