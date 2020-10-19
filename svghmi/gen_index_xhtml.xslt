@@ -1475,6 +1475,180 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
+  <xsl:template mode="widget_class" match="widget[@type='Animate']">
+    <xsl:text>class AnimateWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    speed = 0;
+</xsl:text>
+    <xsl:text>    start = false;
+</xsl:text>
+    <xsl:text>    widget_center = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.speed = value / 5;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //reconfigure animation
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>       // change animation properties
+</xsl:text>
+    <xsl:text>       for(let child of this.element.children){
+</xsl:text>
+    <xsl:text>            if(child.nodeName.startsWith("animate")){
+</xsl:text>
+    <xsl:text>                if(this.speed != 0 &amp;&amp; !this.start){
+</xsl:text>
+    <xsl:text>                    this.start = true;
+</xsl:text>
+    <xsl:text>                    this.element.beginElement();
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                if(this.speed &gt; 0){
+</xsl:text>
+    <xsl:text>                    child.setAttribute("dur", this.speed+"s");
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else if(this.speed &lt; 0){
+</xsl:text>
+    <xsl:text>                    child.setAttribute("dur", (-1)*this.speed+"s");
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else{
+</xsl:text>
+    <xsl:text>                    this.start = false;
+</xsl:text>
+    <xsl:text>                    this.element.endElement();
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>       }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        let widget_pos = this.element.getBBox();
+</xsl:text>
+    <xsl:text>        this.widget_center = [(widget_pos.x+widget_pos.width/2), (widget_pos.y+widget_pos.height/2)];
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='Animate']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='AnimateRotation']">
+    <xsl:text>class AnimateRotationWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    speed = 0;
+</xsl:text>
+    <xsl:text>    widget_center = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.speed = value / 5;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //reconfigure animation
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>       // change animation properties
+</xsl:text>
+    <xsl:text>       for(let child of this.element.children){
+</xsl:text>
+    <xsl:text>            if(child.nodeName == "animateTransform"){
+</xsl:text>
+    <xsl:text>                if(this.speed &gt; 0){
+</xsl:text>
+    <xsl:text>                    child.setAttribute("dur", this.speed+"s");
+</xsl:text>
+    <xsl:text>                    child.setAttribute("from", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
+</xsl:text>
+    <xsl:text>                    child.setAttribute("to", "360 "+this.widget_center[0]+" "+this.widget_center[1]);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else if(this.speed &lt; 0){
+</xsl:text>
+    <xsl:text>                    child.setAttribute("dur", (-1)*this.speed+"s");
+</xsl:text>
+    <xsl:text>                    child.setAttribute("from", "360 "+this.widget_center[0]+" "+this.widget_center[1]);
+</xsl:text>
+    <xsl:text>                    child.setAttribute("to", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else{
+</xsl:text>
+    <xsl:text>                    child.setAttribute("from", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
+</xsl:text>
+    <xsl:text>                    child.setAttribute("to", "0 "+this.widget_center[0]+" "+this.widget_center[1]);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>       }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        let widget_pos = this.element.getBBox();
+</xsl:text>
+    <xsl:text>        this.widget_center = [(widget_pos.x+widget_pos.width/2), (widget_pos.y+widget_pos.height/2)];
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='AnimateRotation']">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='Back']">
     <xsl:text>class BackWidget extends Widget{
 </xsl:text>
@@ -1506,7 +1680,9 @@
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
-    <xsl:text>    state = 0;
+    <xsl:text>    state_plc = 0;
+</xsl:text>
+    <xsl:text>    state_hmi = 0;
 </xsl:text>
     <xsl:text>    plc_lock = false;
 </xsl:text>
@@ -1518,65 +1694,89 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        if(value){
+    <xsl:text>        this.state_plc = value;
 </xsl:text>
-    <xsl:text>            this.button_release();
+    <xsl:text>        if(this.plc_lock){
+</xsl:text>
+    <xsl:text>            if(this.state_plc == 1){
+</xsl:text>
+    <xsl:text>                this.apply_hmi_value(0, 0);
+</xsl:text>
+    <xsl:text>                this.plc_lock = false;
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //redraw button
+</xsl:text>
+    <xsl:text>        this.state_hmi = this.state_plc;
+</xsl:text>
+    <xsl:text>        this.request_animate();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     on_mouse_down(evt) {
+    <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>         if (this.active_style &amp;&amp; this.inactive_style) {
+    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
 </xsl:text>
-    <xsl:text>             this.active_elt.setAttribute("style", this.active_style);
+    <xsl:text>           // redraw button on screen refresh
 </xsl:text>
-    <xsl:text>             this.inactive_elt.setAttribute("style", "display:none");
+    <xsl:text>           if (this.state_hmi) {
 </xsl:text>
-    <xsl:text>         }
+    <xsl:text>               this.active_elt.setAttribute("style", this.active_style);
 </xsl:text>
-    <xsl:text>         this.apply_hmi_value(0, 1);
+    <xsl:text>               this.inactive_elt.setAttribute("style", "display:none");
 </xsl:text>
-    <xsl:text>         this.plc_lock = false;
+    <xsl:text>           } else {
 </xsl:text>
-    <xsl:text>     }
+    <xsl:text>               this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>               this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>           }
+</xsl:text>
+    <xsl:text>       }
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     on_mouse_up(evt) {
+    <xsl:text>    on_click(evt) {
 </xsl:text>
-    <xsl:text>         this.button_release();
+    <xsl:text>        //set state and apply if plc is 0
 </xsl:text>
-    <xsl:text>     }
+    <xsl:text>        this.plc_lock = true;
+</xsl:text>
+    <xsl:text>        if(this.state_plc == 0){
+</xsl:text>
+    <xsl:text>            this.apply_hmi_value(0, 1);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        //redraw button
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>     button_release(){
+    <xsl:text>    on_press(evt) {
 </xsl:text>
-    <xsl:text>        if(!this.plc_lock){
+    <xsl:text>        //set graphic
 </xsl:text>
-    <xsl:text>            this.plc_lock = true;
+    <xsl:text>        this.state_hmi = 1;
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>        //redraw button
 </xsl:text>
-    <xsl:text>        else{
+    <xsl:text>        this.request_animate();
 </xsl:text>
-    <xsl:text>            if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>                 this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>                 this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>             }
-</xsl:text>
-    <xsl:text>             this.apply_hmi_value(0, 0);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>     }
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1598,9 +1798,9 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onmousedown", "hmi_widgets["+this.element_id+"].on_mouse_down(evt)");
+    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onmouseup", "hmi_widgets["+this.element_id+"].on_mouse_up(evt)");
+    <xsl:text>        this.element.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_press(evt)");
 </xsl:text>
     <xsl:text>     }
 </xsl:text>
@@ -1738,7 +1938,7 @@
 </xsl:text>
     <xsl:text>    handle_pos = undefined;
 </xsl:text>
-    <xsl:text>    svg_dist = undefined;
+    <xsl:text>    curr_value = 0;
 </xsl:text>
     <xsl:text>    drag = false;
 </xsl:text>
@@ -1750,13 +1950,47 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
+    <xsl:text>        let [min,max,start,totallength] = this.range;
+</xsl:text>
+    <xsl:text>        //save current value inside widget
+</xsl:text>
+    <xsl:text>        this.curr_value = value;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //check if in range
+</xsl:text>
+    <xsl:text>        if (this.curr_value &gt; max){
+</xsl:text>
+    <xsl:text>            this.curr_value = max;
+</xsl:text>
+    <xsl:text>            this.apply_hmi_value(0, this.curr_value);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else if (this.curr_value &lt; min){
+</xsl:text>
+    <xsl:text>            this.curr_value = min;
+</xsl:text>
+    <xsl:text>            this.apply_hmi_value(0, this.curr_value);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>        if(this.value_elt)
 </xsl:text>
     <xsl:text>            this.value_elt.textContent = String(value);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.update_DOM(value, this.handle_elt);
+    <xsl:text>        //don't update if draging and setpoint ghost doesn't exist
+</xsl:text>
+    <xsl:text>        if(!this.drag || (this.setpoint_elt != undefined)){
+</xsl:text>
+    <xsl:text>            this.update_DOM(value, this.handle_elt);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1773,6 +2007,8 @@
     <xsl:text>        elt.setAttribute('transform',"translate("+(tip.x-this.handle_pos.x)+","+(tip.y-this.handle_pos.y)+")");
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        // show or hide ghost if exists
 </xsl:text>
     <xsl:text>        if(this.setpoint_elt != undefined){
 </xsl:text>
@@ -1800,6 +2036,8 @@
 </xsl:text>
     <xsl:text>    on_release(evt) {
 </xsl:text>
+    <xsl:text>        //unbind events
+</xsl:text>
     <xsl:text>        window.removeEventListener("touchmove", this.on_bound_drag, true);
 </xsl:text>
     <xsl:text>        window.removeEventListener("mousemove", this.on_bound_drag, true);
@@ -1812,11 +2050,19 @@
 </xsl:text>
     <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //reset drag flag
+</xsl:text>
     <xsl:text>        if(this.drag){
 </xsl:text>
     <xsl:text>            this.drag = false;
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // get final position
 </xsl:text>
     <xsl:text>        this.update_position(evt);
 </xsl:text>
@@ -1826,9 +2072,13 @@
 </xsl:text>
     <xsl:text>    on_drag(evt){
 </xsl:text>
+    <xsl:text>        //ignore drag event for X amount of time and if not selected
+</xsl:text>
     <xsl:text>        if(this.enTimer &amp;&amp; this.drag){
 </xsl:text>
     <xsl:text>            this.update_position(evt);
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>            //reset timer
 </xsl:text>
@@ -1930,37 +2180,35 @@
 </xsl:text>
     <xsl:text>            if(fi&lt;fiEnd){
 </xsl:text>
-    <xsl:text>                this.svg_dist=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
+    <xsl:text>               this.curr_value=(fi)/(fiEnd)*(this.range[1]-this.range[0]);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>            else if(fiEnd&lt;fi &amp;&amp; fi&lt;fiEnd+minMax){
 </xsl:text>
-    <xsl:text>                this.svg_dist = this.range[1];
+    <xsl:text>                this.curr_value = this.range[1];
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>            else{
 </xsl:text>
-    <xsl:text>                this.svg_dist = this.range[0];
+    <xsl:text>                this.curr_value = this.range[0];
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>            //apply value to hmi
+</xsl:text>
+    <xsl:text>            this.apply_hmi_value(0, Math.ceil(this.curr_value));
+</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>            this.apply_hmi_value(0, Math.ceil(this.svg_dist));
+    <xsl:text>            //redraw handle
+</xsl:text>
+    <xsl:text>            this.request_animate();
 </xsl:text>
     <xsl:text>
-</xsl:text>
-    <xsl:text>            // update ghost cursor
-</xsl:text>
-    <xsl:text>            if(this.setpoint_elt != undefined){
-</xsl:text>
-    <xsl:text>                this.request_animate();
-</xsl:text>
-    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -1972,7 +2220,21 @@
 </xsl:text>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>        this.update_DOM(this.svg_dist, this.setpoint_elt);
+    <xsl:text>        // redraw handle on screen refresh
+</xsl:text>
+    <xsl:text>        // check if setpoint(ghost) handle exsist otherwise update main handle
+</xsl:text>
+    <xsl:text>        if(this.setpoint_elt != undefined){
+</xsl:text>
+    <xsl:text>            this.update_DOM(this.curr_value, this.setpoint_elt);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            this.update_DOM(this.curr_value, this.handle_elt);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1980,9 +2242,15 @@
 </xsl:text>
     <xsl:text>    on_select(evt){
 </xsl:text>
+    <xsl:text>        //enable drag flag and timer
+</xsl:text>
     <xsl:text>        this.drag = true;
 </xsl:text>
     <xsl:text>        this.enTimer = true;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //bind events
 </xsl:text>
     <xsl:text>        window.addEventListener("touchmove", this.on_bound_drag, true);
 </xsl:text>
@@ -1990,13 +2258,23 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true)
+    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>        window.addEventListener("touchend", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>        window.addEventListener("touchcancel", this.bound_on_release, true);
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //update postion on mouse press
+</xsl:text>
     <xsl:text>        this.update_position(evt);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //prevent next events
+</xsl:text>
+    <xsl:text>        evt.stopPropagation();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2074,13 +2352,21 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        //init events
+    <xsl:text>        this.handle_elt.addEventListener("mousedown", this.bound_on_select);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("mousedown", this.bound_on_select);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("touchstart", this.bound_on_select);
 </xsl:text>
+    <xsl:text>        //touch recognised as page drag without next command
+</xsl:text>
+    <xsl:text>        document.body.addEventListener("touchstart", function(e){}, false);
+</xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        //save ghost style
+</xsl:text>
+    <xsl:text>        //save ghost style
 </xsl:text>
     <xsl:text>        if(this.setpoint_elt != undefined){
 </xsl:text>
@@ -2089,22 +2375,6 @@
     <xsl:text>            this.setpoint_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        window.addEventListener("touchmove", hmi_widgets[this.element_id].update_position.bind(this));
-</xsl:text>
-    <xsl:text>        window.addEventListener("mousemove", hmi_widgets[this.element_id].update_position.bind(this));
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        window.addEventListener("mouseup", hmi_widgets[this.element_id].on_release.bind(this))
-</xsl:text>
-    <xsl:text>        window.addEventListener("touchend", hmi_widgets[this.element_id].on_release.bind(this));
-</xsl:text>
-    <xsl:text>        window.addEventListener("touchcancel", hmi_widgets[this.element_id].on_release.bind(this));
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -2124,9 +2394,62 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>value min max</xsl:text>
+        <xsl:text>value min max setpoint</xsl:text>
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='CustomHtml']">
+    <xsl:text>class CustomHtmlWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    widget_size = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        this.widget_size = this.container_elt.getBBox();
+</xsl:text>
+    <xsl:text>        this.element.innerHTML ='&lt;foreignObject x="'+
+</xsl:text>
+    <xsl:text>            this.widget_size.x+'" y="'+this.widget_size.y+
+</xsl:text>
+    <xsl:text>            '" width="'+this.widget_size.width+'" height="'+this.widget_size.height+'"&gt; '+
+</xsl:text>
+    <xsl:text>            this.code_elt.textContent+
+</xsl:text>
+    <xsl:text>            ' &lt;/foreignObject&gt;';
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='CustomHtml']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>container code</xsl:text>
+      </xsl:with-param>
     </xsl:call-template>
     <xsl:text>
 </xsl:text>
@@ -2162,7 +2485,9 @@
           <xsl:when test="@type='HMI_STRING'">
             <xsl:text>""</xsl:text>
           </xsl:when>
-          <xsl:otherwise>0</xsl:otherwise>
+          <xsl:otherwise>
+            <xsl:text>0</xsl:text>
+          </xsl:otherwise>
         </xsl:choose>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
@@ -3501,7 +3826,7 @@
   <xsl:template mode="widget_class" match="widget[@type='JsonTable']">
     <xsl:text>class JsonTableWidget extends Widget{
 </xsl:text>
-    <xsl:text>    cache = [];
+    <xsl:text>    cache = [100,50];
 </xsl:text>
     <xsl:text>    do_http_request(...opt) {
 </xsl:text>
@@ -3509,7 +3834,9 @@
 </xsl:text>
     <xsl:text>            args: this.args,
 </xsl:text>
-    <xsl:text>            vars: this.cache,
+    <xsl:text>            range: this.cache[1],
+</xsl:text>
+    <xsl:text>            position: this.cache[2],
 </xsl:text>
     <xsl:text>            visible: this.visible,
 </xsl:text>
@@ -3847,6 +4174,8 @@
     <xsl:text>        this.apply_hmi_value(1, range);
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(2, position);
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(3, this.visible);
 </xsl:text>
     <xsl:text>        console.log(range,position,jdata);
 </xsl:text>
@@ -4756,7 +5085,11 @@
 </xsl:text>
     <xsl:text>    handle_orig = undefined;
 </xsl:text>
-    <xsl:text>    scroll_size = 10;
+    <xsl:text>    scroll_size = undefined;
+</xsl:text>
+    <xsl:text>    scroll_range = 0;
+</xsl:text>
+    <xsl:text>    scroll_visible = 7;
 </xsl:text>
     <xsl:text>    min_size = 0.07;
 </xsl:text>
@@ -4774,17 +5107,59 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    dispatch(value) {
+    <xsl:text>    dispatch(value,oldval, index) {
 </xsl:text>
-    <xsl:text>        //save current value inside widget
+    <xsl:text>        if (index == 0){
 </xsl:text>
-    <xsl:text>        this.curr_value = value;
+    <xsl:text>            let [min,max,start,totallength] = this.range;
+</xsl:text>
+    <xsl:text>            //save current value inside widget
+</xsl:text>
+    <xsl:text>            this.curr_value = value;
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        if(this.value_elt)
+    <xsl:text>            //check if in range
 </xsl:text>
-    <xsl:text>            this.value_elt.textContent = String(value);
+    <xsl:text>            if (this.curr_value &gt; max){
+</xsl:text>
+    <xsl:text>                this.curr_value = max;
+</xsl:text>
+    <xsl:text>                this.apply_hmi_value(0, this.curr_value);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else if (this.curr_value &lt; min){
+</xsl:text>
+    <xsl:text>                this.curr_value = min;
+</xsl:text>
+    <xsl:text>                this.apply_hmi_value(0, this.curr_value);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            if(this.value_elt)
+</xsl:text>
+    <xsl:text>                this.value_elt.textContent = String(value);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else if(index == 1){
+</xsl:text>
+    <xsl:text>            this.scroll_range = value;
+</xsl:text>
+    <xsl:text>            this.set_scroll();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else if(index == 2){
+</xsl:text>
+    <xsl:text>            this.scroll_visible = value;
+</xsl:text>
+    <xsl:text>            this.set_scroll();
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4792,7 +5167,35 @@
 </xsl:text>
     <xsl:text>        if(!this.drag || (this.setpoint_elt != undefined)){
 </xsl:text>
-    <xsl:text>            this.update_DOM(value, this.handle_elt);
+    <xsl:text>            this.update_DOM(this.curr_value, this.handle_elt);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    set_scroll(){
+</xsl:text>
+    <xsl:text>        //check if range is bigger than visible and set scroll size
+</xsl:text>
+    <xsl:text>        if(this.scroll_range &gt; this.scroll_visible){
+</xsl:text>
+    <xsl:text>            this.scroll_size = this.scroll_range - this.scroll_visible;
+</xsl:text>
+    <xsl:text>            this.range[0] = 0;
+</xsl:text>
+    <xsl:text>            this.range[1] = this.scroll_size;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else{
+</xsl:text>
+    <xsl:text>            this.scroll_size = 1;
+</xsl:text>
+    <xsl:text>            this.range[0] = 0;
+</xsl:text>
+    <xsl:text>            this.range[1] = 1;
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -4946,7 +5349,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true)
+    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>        window.removeEventListener("touchend", this.bound_on_release, true);
 </xsl:text>
@@ -5138,7 +5541,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        //check if in range
+    <xsl:text>        //check if in range and apply
 </xsl:text>
     <xsl:text>        if (this.curr_value &gt; max){
 </xsl:text>
@@ -5151,8 +5554,6 @@
     <xsl:text>            this.curr_value = min;
 </xsl:text>
     <xsl:text>        }
-</xsl:text>
-    <xsl:text>
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, this.curr_value);
 </xsl:text>
@@ -5208,7 +5609,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true)
+    <xsl:text>        window.addEventListener("mouseup", this.bound_on_release, true);
 </xsl:text>
     <xsl:text>        window.addEventListener("touchend", this.bound_on_release, true);
 </xsl:text>
@@ -5264,7 +5665,11 @@
 </xsl:text>
     <xsl:text>        evt.stopPropagation();
 </xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -5283,6 +5688,8 @@
     <xsl:text>                    Number(this.max_elt.textContent) :
 </xsl:text>
     <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -5318,7 +5725,13 @@
 </xsl:text>
     <xsl:text>        this.element.addEventListener("touchstart", this.bound_on_select);
 </xsl:text>
+    <xsl:text>        //touch recognised as page drag without next command
+</xsl:text>
+    <xsl:text>        document.body.addEventListener("touchstart", function(e){}, false);
+</xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        //save ghost style
 </xsl:text>
     <xsl:text>        if(this.setpoint_elt != undefined){
 </xsl:text>
@@ -5425,25 +5838,11 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        if(this.state != value){
+    <xsl:text>        this.state = value;
 </xsl:text>
-    <xsl:text>            this.state = value;
+    <xsl:text>        //redraw toggle button
 </xsl:text>
-    <xsl:text>            if (this.state) {
-</xsl:text>
-    <xsl:text>                this.active_elt.setAttribute("style", this.active_style);
-</xsl:text>
-    <xsl:text>                this.inactive_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>            } else {
-</xsl:text>
-    <xsl:text>                this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>                this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>        this.request_animate();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -5451,19 +5850,13 @@
 </xsl:text>
     <xsl:text>    on_click(evt) {
 </xsl:text>
+    <xsl:text>        //toggle state and apply
+</xsl:text>
     <xsl:text>        if (this.state) {
-</xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>            this.state = 0;
 </xsl:text>
     <xsl:text>        } else {
-</xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", this.active_style);
-</xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>            this.state = 1;
 </xsl:text>
@@ -5471,21 +5864,57 @@
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //redraw toggle button
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>       // redraw toggle button on screen refresh
+</xsl:text>
+    <xsl:text>       if (this.state) {
+</xsl:text>
+    <xsl:text>           this.active_elt.setAttribute("style", this.active_style);
+</xsl:text>
+    <xsl:text>           this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>       } else {
+</xsl:text>
+    <xsl:text>           this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>           this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>       }
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.active_style = this.active_elt.style.cssText;
+    <xsl:text>        this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
 </xsl:text>
-    <xsl:text>        this.inactive_style = this.inactive_elt.style.cssText;
+    <xsl:text>        this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
+</xsl:text>
+    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
-</xsl:text>
-    <xsl:text>        this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>        this.active_elt.setAttribute("style", "display:none");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -5499,6 +5928,7 @@
       <xsl:with-param name="labels">
         <xsl:text>active inactive</xsl:text>
       </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
     <xsl:text>
 </xsl:text>

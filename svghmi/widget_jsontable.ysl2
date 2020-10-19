@@ -3,11 +3,12 @@
 template "widget[@type='JsonTable']", mode="widget_class"
     ||
     class JsonTableWidget extends Widget{
-        cache = [];
+        cache = [100,50];
         do_http_request(...opt) {
             const query = {
                 args: this.args,
-                vars: this.cache,
+                range: this.cache[1],
+                position: this.cache[2],
                 visible: this.visible,
                 options: opt
             };

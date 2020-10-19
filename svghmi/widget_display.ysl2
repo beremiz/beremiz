@@ -20,7 +20,7 @@ template "widget[@type='Display']", mode="widget_defs" {
     const "field_initializer" foreach "path" {
         choose{
             when "@type='HMI_STRING'" > ""
-            otherwise 0
+            otherwise > 0
         }
         if "position()!=last()" > ,
     }
