@@ -10,37 +10,45 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
         inactive_style = undefined;
 
         dispatch(value) {
-            if(this.state != value){
-                this.state = value;
-                if (this.state) {
-                    this.active_elt.setAttribute("style", this.active_style);
-                    this.inactive_elt.setAttribute("style", "display:none");
-                } else {
-                    this.inactive_elt.setAttribute("style", this.inactive_style);
-                    this.active_elt.setAttribute("style", "display:none");
-                }
-            }
+            this.state = value;
+            //redraw toggle button
+            this.request_animate();
         }
 
         on_click(evt) {
+            //toggle state and apply
             if (this.state) {
-                this.inactive_elt.setAttribute("style", this.inactive_style);
-                this.active_elt.setAttribute("style", "display:none");
                 this.state = 0;
             } else {
-                this.active_elt.setAttribute("style", this.active_style);
-                this.inactive_elt.setAttribute("style", "display:none");
                 this.state = 1;
             }
             this.apply_hmi_value(0, this.state);
+
+            //redraw toggle button
+            this.request_animate();
+        }
+
+        animate(){
+           // redraw toggle button on screen refresh
+           if (this.state) {
+               this.active_elt.setAttribute("style", this.active_style);
+               this.inactive_elt.setAttribute("style", "display:none");
+           } else {
+               this.inactive_elt.setAttribute("style", this.inactive_style);
+               this.active_elt.setAttribute("style", "display:none");
+           }
         }
 
         init() {
-            this.active_style = this.active_elt.style.cssText;
-            this.inactive_style = this.inactive_elt.style.cssText;
+            this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+            this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
+
+            if (this.active_style && this.inactive_style) {
+                this.active_elt.setAttribute("style", "display:none");
+                this.inactive_elt.setAttribute("style", this.inactive_style);
+            }
+
             this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
-            this.inactive_elt.setAttribute("style", this.inactive_style);
-            this.active_elt.setAttribute("style", "display:none");
         }
     }
     ||
@@ -48,6 +56,6 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
 
 template "widget[@type='ToggleButton']", mode="widget_defs" {
     param "hmi_element";
-    labels("active inactive");
+    optional_labels("active inactive");
     |,
 }

@@ -30,8 +30,9 @@ class AlarmJsonResource(Resource):
     def render_POST(self, request):
         newstr = request.content.getvalue()
         newdata = json.loads(newstr)
-        vars = newdata[u'vars']
         args = newdata[u'args']
+        range_feedback = newdata[u'range']
+        slider_position = newdata[u'position']
         visible = newdata[u'visible']
         options = newdata[u'options']
 
@@ -40,14 +41,11 @@ class AlarmJsonResource(Resource):
             if action == "onClick[acknowledge]":
                 AlarmIndex[int(alarmid)][2] = "ack"
 
-        svars = (vars + [0,0])[:3]
-        range_feedback = svars[1]
-        slider_position = svars[2]
-        answer = self.renderTable(range_feedback, slider_position, visible, *(args+svars[3:]))
+        answer = self.renderTable(range_feedback, slider_position, visible)
         janswer = json.dumps(answer)
         return janswer
 
-    def renderTable(self, old_range, old_position, visible, *options):
+    def renderTable(self, old_range, old_position, visible):
         new_range = len(Alarms)
         delta = new_range - visible
         new_position = 0 if delta <= 0 else delta if old_position > delta else old_position
