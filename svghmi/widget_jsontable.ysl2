@@ -219,6 +219,7 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     |         let [range,position,jdata] = janswer;
     |         this.apply_hmi_value(1, range);
     |         this.apply_hmi_value(2, position);
+    |         this.apply_hmi_value(3, this.visible);
     |         console.log(range,position,jdata);
     apply "$data_elt", mode="json_table_render_except_comments" {
         with "expressions","$initexpr_ns";
