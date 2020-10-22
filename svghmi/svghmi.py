@@ -35,7 +35,8 @@ HMI_TYPES_DESC = {
     "HMI_NODE":{},
     "HMI_STRING":{},
     "HMI_INT":{},
-    "HMI_BOOL":{}
+    "HMI_BOOL":{},
+    "HMI_REAL":{}
 }
 
 HMI_TYPES = HMI_TYPES_DESC.keys()
