@@ -39,6 +39,7 @@ const dvgetters = {
     INT: (dv,offset) => [dv.getInt16(offset, true), 2],
     BOOL: (dv,offset) => [dv.getInt8(offset, true), 1],
     NODE: (dv,offset) => [dv.getInt8(offset, true), 1],
+    REAL: (dv,offset) => [dv.getFloat32(offset, true), 4],
     STRING: (dv, offset) => {
         size = dv.getInt8(offset);
         return [
