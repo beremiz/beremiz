@@ -3,13 +3,15 @@
 template "widget[@type='JsonTable']", mode="widget_class"
     ||
     class JsonTableWidget extends Widget{
-        cache = [100,50];
+        // arbitrary defaults to avoid missing entries in query
+        cache = [0,100,50];
         do_http_request(...opt) {
             const query = {
                 args: this.args,
                 range: this.cache[1],
                 position: this.cache[2],
                 visible: this.visible,
+                extra: this.cache.slice(4),
                 options: opt
             };
 
@@ -220,7 +222,6 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     |         this.apply_hmi_value(1, range);
     |         this.apply_hmi_value(2, position);
     |         this.apply_hmi_value(3, this.visible);
-    |         console.log(range,position,jdata);
     apply "$data_elt", mode="json_table_render_except_comments" {
         with "expressions","$initexpr_ns";
         with "widget_elts","$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*";
