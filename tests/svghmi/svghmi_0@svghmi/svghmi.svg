@@ -200,12 +200,12 @@
      inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="0.38583842"
-     inkscape:cx="-56.535477"
-     inkscape:cy="77.476632"
-     inkscape:window-width="1920"
-     inkscape:window-height="1043"
-     inkscape:window-x="0"
+     inkscape:zoom="1.5433537"
+     inkscape:cx="-705.74041"
+     inkscape:cy="175.04058"
+     inkscape:window-width="3840"
+     inkscape:window-height="2123"
+     inkscape:window-x="1600"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      showguides="true"
@@ -5248,7 +5248,7 @@
        style="fill:#ffffff;stroke-width:1px">Alarm Page</tspan></text>
   <g
      id="g1289"
-     inkscape:label="HMI:JsonTable:/alarms@/ALARMNOTIFY@.range@.position"
+     inkscape:label="HMI:JsonTable:/alarms@/ALARMNOTIFY@.range@.position@.visibleAlarms@.filter"
      transform="matrix(0.5,0,0,0.5,-1757.3465,454.4367)">
     <g
        id="g5231"
@@ -5490,7 +5490,7 @@
        inkscape:label="disabled" />
   </g>
   <g
-     transform="matrix(0.33436432,0,0,0.33436432,-664.21063,278.8185)"
+     transform="matrix(0.33436432,0,0,0.33436432,-584.21063,278.8185)"
      inkscape:label="HMI:Input@/ALARMNOTIFY"
      id="g5222"
      style="stroke-width:0.75594342">
@@ -5695,7 +5695,7 @@
        inkscape:label="disabled" />
   </g>
   <g
-     transform="matrix(0.33436432,0,0,0.33436432,-1128.7703,278.8185)"
+     transform="matrix(0.33436432,0,0,0.33436432,-1048.7703,278.8185)"
      inkscape:label="HMI:Input@.range"
      id="g5222-3"
      style="stroke-width:0.75594342">
@@ -5757,7 +5757,7 @@
        sodipodi:type="star" />
   </g>
   <g
-     transform="matrix(0.33436432,0,0,0.33436432,-896.49047,278.8185)"
+     transform="matrix(0.33436432,0,0,0.33436432,-816.49047,278.8185)"
      inkscape:label="HMI:Input@.position"
      id="g5222-6"
      style="stroke-width:0.75594342">
@@ -5821,34 +5821,34 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.45700645px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-1015.5838"
+     x="-935.5838"
      y="291.8042"
      id="text887"><tspan
        sodipodi:role="line"
        id="tspan885"
-       x="-1015.5838"
+       x="-935.5838"
        y="291.8042"
        style="fill:#ffffff;stroke-width:1px">range</tspan></text>
   <text
      id="text891"
      y="291.8042"
-     x="-782.87115"
+     x="-702.87115"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.45700645px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
        style="fill:#ffffff;stroke-width:1px"
        y="291.8042"
-       x="-782.87115"
+       x="-702.87115"
        id="tspan889"
        sodipodi:role="line">position</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.45700645px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-551.33417"
+     x="-471.33417"
      y="291.8042"
      id="text895"><tspan
        sodipodi:role="line"
        id="tspan893"
-       x="-551.33417"
+       x="-471.33417"
        y="291.8042"
        style="fill:#ffffff;stroke-width:1px">notify</tspan></text>
   <g
@@ -6100,4 +6100,45 @@
        x="668.18188"
        y="242.50345"
        style="fill:#ffffff;fill-opacity:1;stroke-width:0.28590268px">8888</tspan></text>
+  <g
+     style="stroke-width:0.75594342"
+     id="g900"
+     inkscape:label="HMI:Input@.filter"
+     transform="matrix(0.33436432,0,0,0.33436432,-1288.7703,278.8185)">
+    <text
+       inkscape:label="value"
+       id="text892"
+       y="218.24219"
+       x="136.32812"
+       style="font-style:normal;font-weight:normal;font-size:160px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.75594342px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="stroke-width:0.75594342px"
+         y="218.24219"
+         x="136.32812"
+         id="tspan890"
+         sodipodi:role="line">8888</tspan></text>
+    <rect
+       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:0;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ff00ff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.77971721;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       id="rect896"
+       width="615.05096"
+       height="128"
+       x="139.85185"
+       y="95.40741"
+       onclick=""
+       inkscape:label="edit" />
+  </g>
+  <text
+     id="text904"
+     y="291.8042"
+     x="-1175.5837"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.45700645px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     xml:space="preserve"><tspan
+       style="fill:#ffffff;stroke-width:1px"
+       y="291.8042"
+       x="-1175.5837"
+       id="tspan902"
+       sodipodi:role="line">filter</tspan></text>
+  <g
+     id="g909"
+     inkscape:label="HMI:VarInit:&quot;&quot;@.filter" />
 </svg>

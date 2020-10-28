@@ -34,6 +34,7 @@ class AlarmJsonResource(Resource):
         range_feedback = newdata[u'range']
         slider_position = newdata[u'position']
         visible = newdata[u'visible']
+        extra = newdata[u'extra']
         options = newdata[u'options']
 
         if len(options) == 2 :
@@ -41,18 +42,22 @@ class AlarmJsonResource(Resource):
             if action == "onClick[acknowledge]":
                 AlarmIndex[int(alarmid)][2] = "ack"
 
-        answer = self.renderTable(range_feedback, slider_position, visible)
+        answer = self.renderTable(range_feedback, slider_position, visible, extra)
         janswer = json.dumps(answer)
         return janswer
 
-    def renderTable(self, old_range, old_position, visible):
-        new_range = len(Alarms)
+    def renderTable(self, old_range, old_position, visible, extra):
+        if len(extra) > 0 and extra[0] != "":
+            fAlarms = [alrm for alrm in Alarms if alrm[1].find(extra[0])!=-1]
+        else:
+            fAlarms = Alarms
+        new_range = len(fAlarms)
         delta = new_range - visible
         new_position = 0 if delta <= 0 else delta if old_position > delta else old_position
         new_visible = new_range if delta <= 0 else visible
         
         visible_alarms = []
-        for ts, text, status, alarmid in Alarms[new_position:new_position + new_visible]:
+        for ts, text, status, alarmid in fAlarms[new_position:new_position + new_visible]:
             visible_alarms.append({
                 "time": time.ctime(ts),
                 "text": text, # TODO translate text

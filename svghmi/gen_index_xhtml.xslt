@@ -3826,7 +3826,9 @@
   <xsl:template mode="widget_class" match="widget[@type='JsonTable']">
     <xsl:text>class JsonTableWidget extends Widget{
 </xsl:text>
-    <xsl:text>    cache = [100,50];
+    <xsl:text>    // arbitrary defaults to avoid missing entries in query
+</xsl:text>
+    <xsl:text>    cache = [0,100,50];
 </xsl:text>
     <xsl:text>    do_http_request(...opt) {
 </xsl:text>
@@ -3839,6 +3841,8 @@
     <xsl:text>            position: this.cache[2],
 </xsl:text>
     <xsl:text>            visible: this.visible,
+</xsl:text>
+    <xsl:text>            extra: this.cache.slice(4),
 </xsl:text>
     <xsl:text>            options: opt
 </xsl:text>
@@ -4176,8 +4180,6 @@
     <xsl:text>        this.apply_hmi_value(2, position);
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(3, this.visible);
-</xsl:text>
-    <xsl:text>        console.log(range,position,jdata);
 </xsl:text>
     <xsl:apply-templates mode="json_table_render_except_comments" select="$data_elt">
       <xsl:with-param name="expressions" select="$initexpr_ns"/>
