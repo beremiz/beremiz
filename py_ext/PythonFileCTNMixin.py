@@ -36,6 +36,8 @@ from CodeFileTreeNode import CodeFile
 from py_ext.PythonEditor import PythonEditor
 
 
+
+
 class PythonFileCTNMixin(CodeFile):
 
     CODEFILE_NAME = "PyFile"
@@ -105,6 +107,14 @@ class PythonFileCTNMixin(CodeFile):
         ret.append(("On_"+location_str+"_Change", "python_poll", ""))
         return ret
 
+    @staticmethod
+    def GetVarOnChangeContent(var):
+        """
+        returns given variable onchange field
+        function is meant to allow customization 
+        """
+        return var.getonchange()
+
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
         location_str = "_".join(map(str, self.GetCurrentLocation()))
@@ -112,11 +122,11 @@ class PythonFileCTNMixin(CodeFile):
 
         def _onchangecode(var):
             return [onchangecall.strip() + "('" + var.getname() + "')"
-                    for onchangecall in var.getonchange().split(',')]
+                    for onchangecall in self.GetVarOnChangeContent(var).split(',')]
 
         def _onchange(var):
-            return repr(var.getonchange()) \
-                if var.getonchange() else None
+            content = self.GetVarOnChangeContent(var)
+            return repr(content) if content else None
 
         pyextname = self.CTNName()
         varinfos = map(
