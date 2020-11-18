@@ -483,7 +483,7 @@ class ConfigTreeNode(object):
             if name is None:
                 name = self.CTNFullName()
             app_frame = self.GetCTRoot().AppFrame
-            app_frame.EditProjectElement(view, name)
+            app_frame.EditProjectElement(view, name, onlyopened)
 
         return view
 
