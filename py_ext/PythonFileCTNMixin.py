@@ -121,8 +121,13 @@ class PythonFileCTNMixin(CodeFile):
         configname = self.GetCTRoot().GetProjectConfigNames()[0]
 
         def _onchangecode(var):
-            return [onchangecall.strip() + "('" + var.getname() + "')"
-                    for onchangecall in self.GetVarOnChangeContent(var).split(',')]
+            result = []
+            for onchangecall in self.GetVarOnChangeContent(var).split(','):
+                onchangecall = onchangecall.strip()
+                if onchangecall:
+                    result.append(onchangecall + "('" + var.getname() + "')")
+            return result
+
 
         def _onchange(var):
             content = self.GetVarOnChangeContent(var)
@@ -169,8 +174,7 @@ _%(pyextname)sGlobalsDesc.append((
         on_change_func_body = "\n".join(["""
     if changes.next():
         # %(name)s
-        try:
-""" % varinfo + """ 
+        try:""" % varinfo + """
             """ + """
             """.join(varinfo['onchangecode'])+"""
         except Exception as e:
