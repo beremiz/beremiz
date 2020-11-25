@@ -66,7 +66,7 @@ istylesheet
              xmlns:svg="http://www.w3.org/2000/svg"
              xmlns:xlink="http://www.w3.org/1999/xlink" {
             head;
-            body style="margin:0;overflow:hidden;" {
+            body style="margin:0;overflow:hidden;user-select:none;" {
                 // Inline SVG
                 copy "$result_svg";
                 script{
