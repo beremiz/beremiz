@@ -264,7 +264,7 @@ function apply_hmi_value(index, new_val) {
     return new_val;
 }
 
-quotes = {"'":null, '"':null};
+const quotes = {"'":null, '"':null};
 
 function change_hmi_value(index, opstr) {
     let op = opstr[0];
