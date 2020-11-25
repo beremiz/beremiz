@@ -413,8 +413,11 @@ ws.onclose = function (evt) {
 
 var xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
+const localtypes = {"PAGE_LOCAL":null, "HMI_LOCAL":null}
 function edit_value(path, valuetype, callback, initial, size) {
-
+    if(valuetype in localtypes){
+        valuetype = (typeof initial) == "number" ? "HMI_REAL" : "HMI_STRING";
+    }
     let [keypadid, xcoord, ycoord] = keypads[valuetype];
     edit_callback = callback;
     let widget = hmi_widgets[keypadid];
