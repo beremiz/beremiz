@@ -1,7 +1,7 @@
 // svghmi.js
 
 var updates = {};
-var need_cache_apply = []; 
+var need_cache_apply = [];
 
 
 function dispatch_value(index, value) {
@@ -41,7 +41,7 @@ const dvgetters = {
     NODE: (dv,offset) => [dv.getInt8(offset, true), 1],
     REAL: (dv,offset) => [dv.getFloat32(offset, true), 4],
     STRING: (dv, offset) => {
-        size = dv.getInt8(offset);
+        const size = dv.getInt8(offset);
         return [
             String.fromCharCode.apply(null, new Uint8Array(
                 dv.buffer, /* original buffer */
@@ -132,10 +132,11 @@ ws.onmessage = function (evt) {
     }
 };
 
+hmi_hash_u8 = new Uint8Array(hmi_hash);
 
 function send_blob(data) {
     if(data.length > 0) {
-        ws.send(new Blob([new Uint8Array(hmi_hash)].concat(data)));
+        ws.send(new Blob([hmi_hash_u8].concat(data)));
     };
 };
 
@@ -148,7 +149,7 @@ const typedarray_types = {
         str = str.slice(0,128);
         binary = new Uint8Array(str.length + 1);
         binary[0] = str.length;
-        for(var i = 0; i < str.length; i++){
+        for(let i = 0; i < str.length; i++){
             binary[i+1] = str.charCodeAt(i);
         }
         return binary;
@@ -342,9 +343,9 @@ function switch_page(page_name, page_index) {
     if(old_desc){
         old_desc.widgets.map(([widget,relativeness])=>widget.unsub());
     }
-    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+    const new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
 
-    container_id = page_name + (page_index != undefined ? page_index : "");
+    const container_id = page_name + (page_index != undefined ? page_index : "");
 
     new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness,container_id));
 
@@ -411,7 +412,7 @@ ws.onclose = function (evt) {
 
 };
 
-var xmlns = "http://www.w3.org/2000/svg";
+const xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
 const localtypes = {"PAGE_LOCAL":null, "HMI_LOCAL":null}
 function edit_value(path, valuetype, callback, initial, size) {

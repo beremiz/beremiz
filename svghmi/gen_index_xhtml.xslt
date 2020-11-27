@@ -3830,6 +3830,28 @@
 </xsl:text>
     <xsl:text>    cache = [0,100,50];
 </xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        this.spread_json_data_bound = this.spread_json_data.bind(this);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    handle_http_response(response) {
+</xsl:text>
+    <xsl:text>        if (!response.ok) {
+</xsl:text>
+    <xsl:text>          console.log("HTTP error, status = " + response.status);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return response.json();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    do_http_request(...opt) {
 </xsl:text>
     <xsl:text>        const query = {
@@ -3864,9 +3886,9 @@
 </xsl:text>
     <xsl:text>        fetch(this.args[0], options)
 </xsl:text>
-    <xsl:text>            .then(res =&gt; res.json())
+    <xsl:text>            .then(this.handle_http_response)
 </xsl:text>
-    <xsl:text>            .then(this.spread_json_data.bind(this));
+    <xsl:text>            .then(this.spread_json_data_bound);
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -3880,11 +3902,21 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    on_click(evt, ...options) {
+    <xsl:text>    make_on_click(...options){
 </xsl:text>
-    <xsl:text>        this.do_http_request(...options);
+    <xsl:text>        return function(evt){
+</xsl:text>
+    <xsl:text>            this.do_http_request(...options);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>    // on_click(evt, ...options) {
+</xsl:text>
+    <xsl:text>    //     this.do_http_request(...options);
+</xsl:text>
+    <xsl:text>    // }
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -4073,11 +4105,11 @@
     <xsl:for-each select="$new_expressions/expression[position() &gt; 1][starts-with(@name,'onClick')]">
       <xsl:text>        id("</xsl:text>
       <xsl:value-of select="$elt/@id"/>
-      <xsl:text>").setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt, '</xsl:text>
+      <xsl:text>").onclick = this.make_on_click('</xsl:text>
       <xsl:value-of select="@name"/>
       <xsl:text>', '"+</xsl:text>
       <xsl:value-of select="@content"/>
-      <xsl:text>+"')");
+      <xsl:text>+"');
 </xsl:text>
     </xsl:for-each>
     <xsl:apply-templates mode="json_table_elt_render" select=".">
@@ -4134,9 +4166,9 @@
     </xsl:variable>
     <xsl:text>          id("</xsl:text>
     <xsl:value-of select="@id"/>
-    <xsl:text>").setAttribute("style", "</xsl:text>
+    <xsl:text>").style = "</xsl:text>
     <xsl:value-of select="@style"/>
-    <xsl:text>");
+    <xsl:text>";
 </xsl:text>
     <xsl:apply-templates mode="json_table_render_except_comments" select="*">
       <xsl:with-param name="expressions" select="func:json_expressions(exsl:node-set($new_expressions), $label)"/>
@@ -4146,7 +4178,7 @@
 </xsl:text>
     <xsl:text>          id("</xsl:text>
     <xsl:value-of select="$gid"/>
-    <xsl:text>").setAttribute("style", "display:none");
+    <xsl:text>").style = "display:none";
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -5985,7 +6017,7 @@
 </xsl:text>
           <xsl:text>var updates = {};
 </xsl:text>
-          <xsl:text>var need_cache_apply = []; 
+          <xsl:text>var need_cache_apply = [];
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -6065,7 +6097,7 @@
 </xsl:text>
           <xsl:text>    STRING: (dv, offset) =&gt; {
 </xsl:text>
-          <xsl:text>        size = dv.getInt8(offset);
+          <xsl:text>        const size = dv.getInt8(offset);
 </xsl:text>
           <xsl:text>        return [
 </xsl:text>
@@ -6247,13 +6279,15 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>hmi_hash_u8 = new Uint8Array(hmi_hash);
+</xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>function send_blob(data) {
 </xsl:text>
           <xsl:text>    if(data.length &gt; 0) {
 </xsl:text>
-          <xsl:text>        ws.send(new Blob([new Uint8Array(hmi_hash)].concat(data)));
+          <xsl:text>        ws.send(new Blob([hmi_hash_u8].concat(data)));
 </xsl:text>
           <xsl:text>    };
 </xsl:text>
@@ -6279,7 +6313,7 @@
 </xsl:text>
           <xsl:text>        binary[0] = str.length;
 </xsl:text>
-          <xsl:text>        for(var i = 0; i &lt; str.length; i++){
+          <xsl:text>        for(let i = 0; i &lt; str.length; i++){
 </xsl:text>
           <xsl:text>            binary[i+1] = str.charCodeAt(i);
 </xsl:text>
@@ -6667,11 +6701,11 @@
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
-          <xsl:text>    var new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
+          <xsl:text>    const new_offset = page_index == undefined ? 0 : page_index - new_desc.page_index;
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    container_id = page_name + (page_index != undefined ? page_index : "");
+          <xsl:text>    const container_id = page_name + (page_index != undefined ? page_index : "");
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -6805,7 +6839,7 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var xmlns = "http://www.w3.org/2000/svg";
+          <xsl:text>const xmlns = "http://www.w3.org/2000/svg";
 </xsl:text>
           <xsl:text>var edit_callback;
 </xsl:text>
@@ -6828,10 +6862,6 @@
           <xsl:text>    widget.start_edit(path, valuetype, callback, initial, size);
 </xsl:text>
           <xsl:text>};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>
 </xsl:text>
           <xsl:text>
 </xsl:text>

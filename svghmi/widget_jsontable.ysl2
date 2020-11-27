@@ -5,6 +5,17 @@ template "widget[@type='JsonTable']", mode="widget_class"
     class JsonTableWidget extends Widget{
         // arbitrary defaults to avoid missing entries in query
         cache = [0,100,50];
+        init() {
+            this.spread_json_data_bound = this.spread_json_data.bind(this);
+        }
+
+        handle_http_response(response) {
+            if (!response.ok) {
+              console.log("HTTP error, status = " + response.status);
+            }
+            return response.json();
+        }
+
         do_http_request(...opt) {
             const query = {
                 args: this.args,
@@ -22,17 +33,22 @@ template "widget[@type='JsonTable']", mode="widget_class"
             };
 
             fetch(this.args[0], options)
-                .then(res => res.json())
-                .then(this.spread_json_data.bind(this));
+                .then(this.handle_http_response)
+                .then(this.spread_json_data_bound);
 
         }
         dispatch(value, oldval, index) {
             this.cache[index] = value;
             this.do_http_request();
         }
-        on_click(evt, ...options) {
-            this.do_http_request(...options);
+        make_on_click(...options){
+            return function(evt){
+                this.do_http_request(...options);
+            }
         }
+        // on_click(evt, ...options) {
+        //     this.do_http_request(...options);
+        // }
     }
     ||
 
@@ -169,7 +185,8 @@ template "svg:*", mode="json_table_render" {
 
     const "elt",".";
     foreach "$new_expressions/expression[position() > 1][starts-with(@name,'onClick')]"
-    |         id("«$elt/@id»").setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt, '«@name»', '"+«@content»+"')");
+    //|         id("«$elt/@id»").setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt, '«@name»', '"+«@content»+"')");
+    |         id("«$elt/@id»").onclick = this.make_on_click('«@name»', '"+«@content»+"');
 
     apply ".", mode="json_table_elt_render"
         with "expressions", "$new_expressions";
@@ -200,14 +217,16 @@ template "svg:g", mode="json_table_render" {
     }
 
     // revert hiding in case it did happen before
-    |           id("«@id»").setAttribute("style", "«@style»");
+    // |           id("«@id»").setAttribute("style", "«@style»");
+    |           id("«@id»").style = "«@style»";
 
     apply "*", mode="json_table_render_except_comments" {
         with "expressions", "func:json_expressions(exsl:node-set($new_expressions), $label)";
         with "widget_elts", "$widget_elts";
     }
     |         } catch(err) {
-    |           id("«$gid»").setAttribute("style", "display:none");
+    // |           id("«$gid»").setAttribute("style", "display:none");
+    |           id("«$gid»").style = "display:none";
     |         }
 }
 
