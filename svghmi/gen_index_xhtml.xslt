@@ -3854,6 +3854,8 @@
 </xsl:text>
     <xsl:text>    do_http_request(...opt) {
 </xsl:text>
+    <xsl:text>        console.log(opt);
+</xsl:text>
     <xsl:text>        const query = {
 </xsl:text>
     <xsl:text>            args: this.args,
@@ -3904,9 +3906,11 @@
 </xsl:text>
     <xsl:text>    make_on_click(...options){
 </xsl:text>
+    <xsl:text>        let that = this;
+</xsl:text>
     <xsl:text>        return function(evt){
 </xsl:text>
-    <xsl:text>            this.do_http_request(...options);
+    <xsl:text>            that.do_http_request(...options);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -4009,7 +4013,7 @@
       <xsl:when test="count($from_list) &gt; 0">
         <xsl:text>        id("</xsl:text>
         <xsl:value-of select="@id"/>
-        <xsl:text>").setAttribute("xlink:href", 
+        <xsl:text>").setAttribute("xlink:href",
 </xsl:text>
         <xsl:text>            "#"+hmi_widgets["</xsl:text>
         <xsl:value-of select="$from_list/@id"/>
@@ -4107,9 +4111,9 @@
       <xsl:value-of select="$elt/@id"/>
       <xsl:text>").onclick = this.make_on_click('</xsl:text>
       <xsl:value-of select="@name"/>
-      <xsl:text>', '"+</xsl:text>
+      <xsl:text>', </xsl:text>
       <xsl:value-of select="@content"/>
-      <xsl:text>+"');
+      <xsl:text>);
 </xsl:text>
     </xsl:for-each>
     <xsl:apply-templates mode="json_table_elt_render" select=".">
@@ -4326,16 +4330,6 @@
       <xsl:text>    },
 </xsl:text>
     </xsl:if>
-    <xsl:text>    on_click: function(evt) {
-</xsl:text>
-    <xsl:text>        const index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
-</xsl:text>
-    <xsl:text>        const name = this.args[0];
-</xsl:text>
-    <xsl:text>        switch_page(name, index);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
     <xsl:if test="$have_activity">
       <xsl:text>    notify_page_change: function(page_name, index){
 </xsl:text>
@@ -4350,11 +4344,25 @@
       <xsl:text>    },
 </xsl:text>
     </xsl:if>
+    <xsl:text>    make_on_click(){
+</xsl:text>
+    <xsl:text>        let that = this;
+</xsl:text>
+    <xsl:text>        const name = this.args[0];
+</xsl:text>
+    <xsl:text>        return function(evt){
+</xsl:text>
+    <xsl:text>            const index = that.indexes.length &gt; 0 ? that.indexes[0] + that.offset : undefined;
+</xsl:text>
+    <xsl:text>            switch_page(name, index);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['</xsl:text>
-    <xsl:value-of select="$hmi_element/@id"/>
-    <xsl:text>'].on_click(evt)");
+    <xsl:text>        this.element.onclick = this.make_on_click();
 </xsl:text>
     <xsl:if test="$have_activity">
       <xsl:text>        this.active_elt_style = this.active_elt.getAttribute("style");
@@ -5976,7 +5984,7 @@
     </xsl:comment>
     <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
-      <body style="margin:0;overflow:hidden;user-select:none;">
+      <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
         <script>
           <xsl:text>
@@ -6636,6 +6644,12 @@
           <xsl:text>
 </xsl:text>
           <xsl:text>function prepare_svg() {
+</xsl:text>
+          <xsl:text>    document.body.addEventListener('contextmenu', e =&gt; {
+</xsl:text>
+          <xsl:text>        e.preventDefault();
+</xsl:text>
+          <xsl:text>    });
 </xsl:text>
           <xsl:text>    for(let eltid in detachable_elements){
 </xsl:text>
