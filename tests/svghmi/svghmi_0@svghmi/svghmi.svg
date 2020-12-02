@@ -200,9 +200,9 @@
      inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="1.0913159"
-     inkscape:cx="363.63068"
-     inkscape:cy="571.8219"
+     inkscape:zoom="0.27282898"
+     inkscape:cx="646.17826"
+     inkscape:cy="652.93449"
      inkscape:window-width="1848"
      inkscape:window-height="1016"
      inkscape:window-x="72"
@@ -210,6 +210,15 @@
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true" />
+  <use
+     x="0"
+     y="0"
+     xlink:href="#g7994"
+     id="use7996"
+     transform="translate(1480,800)"
+     width="100%"
+     height="100%"
+     inkscape:label="HMI:Page:RelativePageTest@/PUMP0" />
   <rect
      sodipodi:insensitive="true"
      inkscape:label="HMI:Page:Conf"
@@ -257,8 +266,7 @@
      height="720"
      x="0"
      y="0"
-     inkscape:label="HMI:Page:Home"
-     sodipodi:insensitive="true" />
+     inkscape:label="HMI:Page:Home" />
   <g
      id="g1077"
      inkscape:label="HMI:Jump:Conf"
@@ -420,7 +428,7 @@
        sodipodi:role="line">8888</tspan></text>
   <g
      id="g4523"
-     transform="matrix(2.1611542,0,0,2.1611542,182.76714,468.92423)"
+     transform="matrix(2.1611542,0,0,2.1611542,142.76714,468.92423)"
      inkscape:label="HMI:Meter@/PUMP0/SLOTH">
     <path
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#3ee800;stroke-width:26.45833397;stroke-miterlimit:4;stroke-dasharray:2.64583333, 2.64583333;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
@@ -518,13 +526,13 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:22.87221527px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.57180536px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="246.73413"
+     x="206.73413"
      y="336.90073"
      id="text4497"
      inkscape:label="pressure_label"><tspan
        sodipodi:role="line"
        id="tspan4495"
-       x="246.73413"
+       x="206.73413"
        y="336.90073"
        style="fill:#ff6600;stroke-width:0.57180536px">Pressure</tspan></text>
   <g
@@ -2386,32 +2394,33 @@
   <g
      id="g14237"
      inkscape:label="HMI:DropDown:1:2:3:4:5:6:7:8:9:10@/SELECTION"
-     transform="matrix(0.28590269,0,0,0.28590269,248.76957,33.129558)">
+     transform="matrix(0.81491208,0,0,0.81491208,243.6641,-510.30491)"
+     style="stroke-width:0.35083869">
     <rect
-       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#53676c;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#53676c;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.75419343;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect14212"
        width="391.99988"
        height="130.9433"
        x="864.00842"
        y="923.98993"
-       rx="7"
-       ry="7"
+       rx="2.4558709"
+       ry="2.4558709"
        inkscape:label="box" />
     <text
        id="text14183"
        y="1011.9975"
        x="881.44226"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#d42aff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#d42aff;fill-opacity:1;stroke:none;stroke-width:0.35083869px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"
        inkscape:label="text"><tspan
-         style="text-align:start;text-anchor:start;fill:#d42aff;stroke-width:1px"
+         style="text-align:start;text-anchor:start;fill:#d42aff;stroke-width:0.35083869px"
          y="1011.9975"
          x="881.44226"
          sodipodi:role="line"
          id="tspan421">sel_0</tspan></text>
     <path
        sodipodi:type="star"
-       style="opacity:1;vector-effect:none;fill:#a7a5a6;fill-opacity:1;stroke:none;stroke-width:0.35277769;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;vector-effect:none;fill:#a7a5a6;fill-opacity:1;stroke:none;stroke-width:0.12376806;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path424"
        sodipodi:sides="3"
        sodipodi:cx="1200.5"
@@ -2433,7 +2442,7 @@
   <g
      inkscape:label="HMI:Input@/SELECTION"
      id="g446"
-     transform="matrix(0.28590269,0,0,0.28590269,527.38811,348.87609)">
+     transform="matrix(0.28590269,0,0,0.28590269,487.38811,348.87609)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:160px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -2510,7 +2519,7 @@
        inkscape:transform-center-x="1.0089177e-06" />
   </g>
   <g
-     transform="matrix(0.28590269,0,0,0.28590269,210.16209,215.31977)"
+     transform="matrix(0.28590269,0,0,0.28590269,170.16209,215.31977)"
      id="g443"
      inkscape:label="HMI:Button@/SELECTION"
      style="stroke-width:2">
@@ -2722,14 +2731,6 @@
          id="tspan1480"
          sodipodi:role="line">information</tspan></text>
   </g>
-  <rect
-     inkscape:label="HMI:Page:RelativePageTest@/PUMP0"
-     y="0"
-     x="1480"
-     height="720"
-     width="1280"
-     id="rect1316"
-     style="color:#000000;fill:#4d4d4d" />
   <g
      inkscape:label="HMI:Meter@/PUMP0/SLOTH"
      transform="matrix(3.7795276,0,0,3.7795276,1628.51,630.30393)"
@@ -3425,37 +3426,6 @@
        id="tspan1527"
        sodipodi:role="line">8888</tspan></text>
   <g
-     id="g1082-5"
-     inkscape:label="HMI:Jump:Home"
-     transform="translate(1469.3474,-1334.1633)">
-    <g
-       id="g1152-6"
-       inkscape:label="button">
-      <path
-         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
-         d="m 1217.4113,1410.4016 -22,24.5657 c -10.7925,12.0511 6.1317,35.5791 -13.5791,35.5791 h -174.2877 c -19.71078,0 -2.7866,-23.528 -13.57905,-35.5791 l -22,-24.5657 127.74845,-48.4334 z"
-         id="rect1022-1"
-         inkscape:connector-curvature="0"
-         sodipodi:nodetypes="cssssccc" />
-    </g>
-    <g
-       id="g1149-1"
-       inkscape:label="text">
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         x="1090.7626"
-         y="1436.9814"
-         id="home_jmp-5"
-         inkscape:label="home_jmp"><tspan
-           sodipodi:role="line"
-           id="tspan1028-9"
-           x="1090.7626"
-           y="1436.9814"
-           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px">Home</tspan></text>
-    </g>
-  </g>
-  <g
      id="g6077"
      inkscape:label="HMI:ForEach:PUMP@/">
     <g
@@ -3717,24 +3687,24 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:59.01374435px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#82ff77;fill-opacity:1;stroke:none;stroke-width:0.3688359px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="729.9715"
+     x="689.9715"
      y="539.24927"
      id="text995-6"
      inkscape:label="HMI:Display:Ploc %d (%d) grmbl !@/PUMP0/PRESSURE@/PUMP0/SLOTH"><tspan
        sodipodi:role="line"
        id="tspan993-3"
-       x="729.9715"
+       x="689.9715"
        y="539.24927"
        style="text-align:center;text-anchor:middle;fill:#82ff77;fill-opacity:1;stroke-width:0.3688359px">8888</tspan></text>
   <text
      id="text831-1"
      y="477.76758"
-     x="621.62634"
+     x="581.62634"
      style="font-style:normal;font-weight:normal;font-size:25.4761734px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#008000;fill-opacity:1;stroke:none;stroke-width:0.63690436px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"
      inkscape:label="actual_label"><tspan
        y="477.76758"
-       x="621.62634"
+       x="581.62634"
        id="tspan829-7"
        sodipodi:role="line"
        style="stroke-width:0.63690436px">Multiple variables</tspan></text>
@@ -4168,7 +4138,7 @@
        id="tspan1611">PAGE_LOCAL variables</tspan></text>
   <g
      inkscape:label="HMI:Meter@level"
-     transform="matrix(2.1611542,0,0,2.1611542,902.76714,468.92423)"
+     transform="matrix(2.1611542,0,0,2.1611542,602.76714,428.92423)"
      id="g709">
     <path
        inkscape:label="range"
@@ -4242,7 +4212,7 @@
   <g
      id="g84-3"
      inkscape:label="HMI:Input@level"
-     transform="matrix(0.35865594,0,0,0.35865594,758.57767,293.49106)">
+     transform="matrix(0.35865594,0,0,0.35865594,458.57767,253.49106)">
     <text
        inkscape:label="value"
        id="text5151-6"
@@ -5226,15 +5196,15 @@
   <g
      inkscape:label="HMI:VarInit:7@.visibleAlarms"
      id="g906-3" />
-  <rect
-     style="color:#000000;fill:#4d4d4d"
-     id="rect2015"
-     width="1280"
-     height="720"
-     x="-1380"
+  <use
+     x="0"
      y="0"
-     inkscape:label="HMI:Page:AlarmPage"
-     sodipodi:insensitive="true" />
+     xlink:href="#g7994"
+     id="use8000"
+     transform="translate(-1380,800)"
+     width="100%"
+     height="100%"
+     inkscape:label="HMI:Page:AlarmPage" />
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:80px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -6091,13 +6061,13 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:45.74443054px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.28590268px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="668.18188"
+     x="628.18188"
      y="242.50345"
      id="text889"
      inkscape:label="HMI:Display@/PUMP0/FLOATING"><tspan
        sodipodi:role="line"
        id="tspan887"
-       x="668.18188"
+       x="628.18188"
        y="242.50345"
        style="fill:#ffffff;fill-opacity:1;stroke-width:0.28590268px">8888</tspan></text>
   <g
@@ -6519,6 +6489,47 @@
            x="842.71497"
            y="111.05016"
            style="stroke-width:2px">mhe</tspan></text>
+    </g>
+  </g>
+  <g
+     id="g7994">
+    <rect
+       y="-800"
+       x="0"
+       height="720"
+       width="1280"
+       id="rect4270"
+       style="color:#000000;fill:#4d4d4d" />
+    <g
+       id="g4282"
+       inkscape:label="HMI:Jump:Home"
+       transform="translate(-10.6526,-2134.1633)">
+      <g
+         id="g4274"
+         inkscape:label="button">
+        <path
+           style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+           d="m 1217.4113,1410.4016 -22,24.5657 c -10.7925,12.0511 6.1317,35.5791 -13.5791,35.5791 h -174.2877 c -19.71078,0 -2.7866,-23.528 -13.57905,-35.5791 l -22,-24.5657 127.74845,-48.4334 z"
+           id="path4272"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cssssccc" />
+      </g>
+      <g
+         id="g4280"
+         inkscape:label="text">
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           x="1090.7626"
+           y="1436.9814"
+           id="text4278"
+           inkscape:label="home_jmp"><tspan
+             sodipodi:role="line"
+             id="tspan4276"
+             x="1090.7626"
+             y="1436.9814"
+             style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px">Home</tspan></text>
+      </g>
     </g>
   </g>
 </svg>
