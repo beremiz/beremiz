@@ -42,8 +42,9 @@ template "widget[@type='JsonTable']", mode="widget_class"
             this.do_http_request();
         }
         make_on_click(...options){
+            let that = this;
             return function(evt){
-                this.do_http_request(...options);
+                that.do_http_request(...options);
             }
         }
         // on_click(evt, ...options) {
@@ -117,7 +118,7 @@ template "svg:use", mode="json_table_elt_render" {
 
     choose {
         when "count($from_list) > 0" {
-            |         id("«@id»").setAttribute("xlink:href", 
+            |         id("«@id»").setAttribute("xlink:href",
             // obtain new target id from HMI:List widget
             |             "#"+hmi_widgets["«$from_list/@id»"].items[«$expressions/expression[1]/@content»]);
         }
@@ -185,8 +186,7 @@ template "svg:*", mode="json_table_render" {
 
     const "elt",".";
     foreach "$new_expressions/expression[position() > 1][starts-with(@name,'onClick')]"
-    //|         id("«$elt/@id»").setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt, '«@name»', '"+«@content»+"')");
-    |         id("«$elt/@id»").onclick = this.make_on_click('«@name»', '"+«@content»+"');
+    |         id("«$elt/@id»").onclick = this.make_on_click('«@name»', «@content»);
 
     apply ".", mode="json_table_elt_render"
         with "expressions", "$new_expressions";
@@ -217,7 +217,6 @@ template "svg:g", mode="json_table_render" {
     }
 
     // revert hiding in case it did happen before
-    // |           id("«@id»").setAttribute("style", "«@style»");
     |           id("«@id»").style = "«@style»";
 
     apply "*", mode="json_table_render_except_comments" {
@@ -225,7 +224,6 @@ template "svg:g", mode="json_table_render" {
         with "widget_elts", "$widget_elts";
     }
     |         } catch(err) {
-    // |           id("«$gid»").setAttribute("style", "display:none");
     |           id("«$gid»").style = "display:none";
     |         }
 }
