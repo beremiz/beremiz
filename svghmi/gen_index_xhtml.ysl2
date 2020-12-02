@@ -66,7 +66,9 @@ istylesheet
              xmlns:svg="http://www.w3.org/2000/svg"
              xmlns:xlink="http://www.w3.org/1999/xlink" {
             head;
-            body style="margin:0;overflow:hidden;user-select:none;" {
+            // prevents user selection by mouse click / touch and drag
+            // prevents pinch zoom and other accidental panning panning with touch devices
+            body style="margin:0;overflow:hidden;user-select:none;touch-action:none;" {
                 // Inline SVG
                 copy "$result_svg";
                 script{
