@@ -57,11 +57,6 @@ template "widget[@type='Jump']", mode="widget_defs" {
     }
     |     },
     }
-    |     on_click: function(evt) {
-    |         const index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
-    |         const name = this.args[0];
-    |         switch_page(name, index);
-    |     },
     if "$have_activity" {
     |     notify_page_change: function(page_name, index){
     |         const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
@@ -70,13 +65,21 @@ template "widget[@type='Jump']", mode="widget_defs" {
     |         this.update();
     |     },
     }
+    |     make_on_click(){
+    |         let that = this;
+    |         const name = this.args[0];
+    |         return function(evt){
+    |             const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
+    |             switch_page(name, index);
+    |         }
+    |     },
     |     init: function() {
     /* registering event this way does not "click" through svg:use 
     |     this.element.onclick = evt => switch_page(this.args[0]);
     event must be registered by adding attribute to element instead
     TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
     */
-    |         this.element.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_click(evt)");
+    |         this.element.onclick = this.make_on_click();
     if "$have_activity" {
     |         this.active_elt_style = this.active_elt.getAttribute("style");
     |         this.inactive_elt_style = this.inactive_elt.getAttribute("style");
