@@ -311,6 +311,11 @@ var current_subscribed_page;
 var current_page_index;
 
 function prepare_svg() {
+    // prevents context menu from appearing on right click and long touch
+    document.body.addEventListener('contextmenu', e => {
+        e.preventDefault();
+    });
+
     for(let eltid in detachable_elements){
         let [element,parent] = detachable_elements[eltid];
         parent.removeChild(element);
