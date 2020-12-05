@@ -1,73 +1,152 @@
 // widget_button.ysl2
 
-template "widget[@type='Button']", mode="widget_class"{
-    ||
-    class ButtonWidget extends Widget{
-        frequency = 5;
-        state_plc = 0;
-        state_hmi = 0;
-        plc_lock = false;
-        active_style = undefined;
-        inactive_style = undefined;
+// Finite state machine
+decl fsm(name);
+decl state(name);
+decl on_mouse(position);
+decl on_dispatch(value);
+decl jump(state);
+decl show(eltname);
+decl hmi_value(value);
 
-        dispatch(value) {
-            this.state_plc = value;
-            if(this.plc_lock){
-                if(this.state_plc == 1){
-                    this.apply_hmi_value(0, 0);
-                    this.plc_lock = false;
-                }
-            }
-
-            //redraw button
-            this.state_hmi = this.state_plc;
-            this.request_animate();
-        }
-
-        animate(){
-            if (this.active_style && this.inactive_style) {
-               // redraw button on screen refresh
-               if (this.state_hmi) {
-                   this.active_elt.setAttribute("style", this.active_style);
-                   this.inactive_elt.setAttribute("style", "display:none");
-               } else {
-                   this.inactive_elt.setAttribute("style", this.inactive_style);
-                   this.active_elt.setAttribute("style", "display:none");
-               }
-           }
-        }
-
-        on_click(evt) {
-            //set state and apply if plc is 0
-            this.plc_lock = true;
-            if(this.state_plc == 0){
-                this.apply_hmi_value(0, 1);
-            }
-            //redraw button
-            this.request_animate();
-        }
-
-        on_press(evt) {
-            //set graphic
-            this.state_hmi = 1;
-            //redraw button
-            this.request_animate();
-        }
-
-         init() {
-            this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-            this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-
-            if (this.active_style && this.inactive_style) {
-                this.active_elt.setAttribute("style", "display:none");
-                this.inactive_elt.setAttribute("style", this.inactive_style);
-            }
-
-            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
-            this.element.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_press(evt)");
-         }
+// State machine to drive HMI_BOOL on a potentially laggy connection
+// TODO: make more robust in case other widget or PLC change value on their own
+const "_button_fsm" fsm {
+    state "init" {
+        on_dispatch "false" jump "released";
+        on_dispatch "true" jump "pressed";
     }
-    ||
+
+    state "pressing" {
+        // show "waitactive";
+        hmi_value "true";
+        on_dispatch "true" jump "pressed";
+        on_mouse "up" jump "shortpress";
+    }
+    state "pressed" {
+        show "active";
+        on_mouse "up" jump "releasing";
+        on_dispatch "false" jump "released";
+    }
+    state "shortpress" {
+        on_dispatch "true" jump "releasing";
+        on_mouse "down" jump "pressing";
+    }
+
+    state "releasing" {
+        // show "waitinactive";
+        hmi_value "false";
+        on_dispatch "false" jump "released";
+        on_mouse "down" jump "shortrelease";
+    }
+    state "released" {
+        show "inactive";
+        on_mouse "down" jump "pressing";
+        on_dispatch "true" jump "pressed";
+    }
+    state "shortrelease" {
+        on_dispatch "false" jump "pressing";
+        on_mouse "up" jump "releasing";
+    }
+}
+
+template "fsm", mode="dispatch_transition" {
+    |         switch (this.state) {
+    apply "state", mode="dispatch_transition";
+    |         }
+}
+template "state", mode="dispatch_transition" {
+    |           case "«@name»":
+   	apply "on-dispatch";
+    |             break;
+}
+template "on-dispatch" {
+	|             if(value ==  «@value») {
+	apply "jump", mode="transition";
+	|             }
+}
+
+template "fsm", mode="mouse_transition" {
+    param "position";
+    |         switch (this.state) {
+    apply "state", mode="mouse_transition" with "position", "$position";
+    |         }
+}
+template "state", mode="mouse_transition" {
+    param "position";
+    |           case "«@name»":
+    apply "on-mouse[@position = $position]";
+    |             break;
+}
+template "on-mouse" {
+	// up or down state is already assumed because apply statement filters it
+	apply "jump", mode="transition";
+}
+
+template "jump", mode="transition" {
+    |             this.state = "«@state»";
+    |             this.«@state»_action();
+}
+
+template "fsm", mode="actions" {
+    apply "state", mode="actions";
+}
+template "state", mode="actions" {
+	|     «@name»_action(){
+    //| console.log("Entering state «@name»");
+    apply "*", mode="actions";
+	|     }
+}
+template "show", mode="actions" {
+    |         this.display = "«@eltname»";
+    |         this.request_animate();
+}
+template "hmi-value", mode="actions" {
+	|         this.apply_hmi_value(0, «@value»);
+}
+
+template "widget[@type='Button']", mode="widget_class"{
+    const "fsm","exsl:node-set($_button_fsm)";
+    | class ButtonWidget extends Widget{
+    |     frequency = 5;
+
+    |     display = "inactive";
+    |     state = "init";
+
+    |     dispatch(value) {
+    // |         console.log("dispatch"+value);
+    apply "$fsm", mode="dispatch_transition";
+    |     }
+
+    |     onmouseup(evt) {
+    |         svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
+    // |         console.log("onmouseup");
+    apply "$fsm", mode="mouse_transition" with "position", "'up'";
+    |     }
+    |     onmousedown(evt) {
+    |         svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+    // |         console.log("onmousedown");
+    apply "$fsm", mode="mouse_transition" with "position", "'down'";
+    |     }
+
+    apply "$fsm", mode="actions";
+
+    |     animate(){
+    |         if (this.active_elt && this.inactive_elt) {
+    foreach "str:split('active inactive')" {
+    |             if(this.display == "«.»")
+    |                 this.«.»_elt.style.display = "";
+    |             else
+    |                 this.«.»_elt.style.display = "none";
+    }
+    |         }
+    |     }
+
+    |     init() {
+    |         this.bound_onmouseup = this.onmouseup.bind(this);
+    |         this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+    |     }
+    | }
 }
 
 

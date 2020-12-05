@@ -1675,134 +1675,219 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <xsl:variable name="_button_fsm">
+    <fsm>
+      <state name="init">
+        <on-dispatch value="false">
+          <jump state="released"/>
+        </on-dispatch>
+        <on-dispatch value="true">
+          <jump state="pressed"/>
+        </on-dispatch>
+      </state>
+      <state name="pressing">
+        <hmi-value value="true"/>
+        <on-dispatch value="true">
+          <jump state="pressed"/>
+        </on-dispatch>
+        <on-mouse position="up">
+          <jump state="shortpress"/>
+        </on-mouse>
+      </state>
+      <state name="pressed">
+        <show eltname="active"/>
+        <on-mouse position="up">
+          <jump state="releasing"/>
+        </on-mouse>
+        <on-dispatch value="false">
+          <jump state="released"/>
+        </on-dispatch>
+      </state>
+      <state name="shortpress">
+        <on-dispatch value="true">
+          <jump state="releasing"/>
+        </on-dispatch>
+        <on-mouse position="down">
+          <jump state="pressing"/>
+        </on-mouse>
+      </state>
+      <state name="releasing">
+        <hmi-value value="false"/>
+        <on-dispatch value="false">
+          <jump state="released"/>
+        </on-dispatch>
+        <on-mouse position="down">
+          <jump state="shortrelease"/>
+        </on-mouse>
+      </state>
+      <state name="released">
+        <show eltname="inactive"/>
+        <on-mouse position="down">
+          <jump state="pressing"/>
+        </on-mouse>
+        <on-dispatch value="true">
+          <jump state="pressed"/>
+        </on-dispatch>
+      </state>
+      <state name="shortrelease">
+        <on-dispatch value="false">
+          <jump state="pressing"/>
+        </on-dispatch>
+        <on-mouse position="up">
+          <jump state="releasing"/>
+        </on-mouse>
+      </state>
+    </fsm>
+  </xsl:variable>
+  <xsl:template mode="dispatch_transition" match="fsm">
+    <xsl:text>        switch (this.state) {
+</xsl:text>
+    <xsl:apply-templates mode="dispatch_transition" select="state"/>
+    <xsl:text>        }
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="dispatch_transition" match="state">
+    <xsl:text>          case "</xsl:text>
+    <xsl:value-of select="@name"/>
+    <xsl:text>":
+</xsl:text>
+    <xsl:apply-templates select="on-dispatch"/>
+    <xsl:text>            break;
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="on-dispatch">
+    <xsl:text>            if(value ==  </xsl:text>
+    <xsl:value-of select="@value"/>
+    <xsl:text>) {
+</xsl:text>
+    <xsl:apply-templates mode="transition" select="jump"/>
+    <xsl:text>            }
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="mouse_transition" match="fsm">
+    <xsl:param name="position"/>
+    <xsl:text>        switch (this.state) {
+</xsl:text>
+    <xsl:apply-templates mode="mouse_transition" select="state">
+      <xsl:with-param name="position" select="$position"/>
+    </xsl:apply-templates>
+    <xsl:text>        }
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="mouse_transition" match="state">
+    <xsl:param name="position"/>
+    <xsl:text>          case "</xsl:text>
+    <xsl:value-of select="@name"/>
+    <xsl:text>":
+</xsl:text>
+    <xsl:apply-templates select="on-mouse[@position = $position]"/>
+    <xsl:text>            break;
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="on-mouse">
+    <xsl:apply-templates mode="transition" select="jump"/>
+  </xsl:template>
+  <xsl:template mode="transition" match="jump">
+    <xsl:text>            this.state = "</xsl:text>
+    <xsl:value-of select="@state"/>
+    <xsl:text>";
+</xsl:text>
+    <xsl:text>            this.</xsl:text>
+    <xsl:value-of select="@state"/>
+    <xsl:text>_action();
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="actions" match="fsm">
+    <xsl:apply-templates mode="actions" select="state"/>
+  </xsl:template>
+  <xsl:template mode="actions" match="state">
+    <xsl:text>    </xsl:text>
+    <xsl:value-of select="@name"/>
+    <xsl:text>_action(){
+</xsl:text>
+    <xsl:apply-templates mode="actions" select="*"/>
+    <xsl:text>    }
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="actions" match="show">
+    <xsl:text>        this.display = "</xsl:text>
+    <xsl:value-of select="@eltname"/>
+    <xsl:text>";
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="actions" match="hmi-value">
+    <xsl:text>        this.apply_hmi_value(0, </xsl:text>
+    <xsl:value-of select="@value"/>
+    <xsl:text>);
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='Button']">
+    <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
     <xsl:text>class ButtonWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
-    <xsl:text>    state_plc = 0;
+    <xsl:text>    display = "inactive";
 </xsl:text>
-    <xsl:text>    state_hmi = 0;
-</xsl:text>
-    <xsl:text>    plc_lock = false;
-</xsl:text>
-    <xsl:text>    active_style = undefined;
-</xsl:text>
-    <xsl:text>    inactive_style = undefined;
-</xsl:text>
-    <xsl:text>
+    <xsl:text>    state = "init";
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        this.state_plc = value;
-</xsl:text>
-    <xsl:text>        if(this.plc_lock){
-</xsl:text>
-    <xsl:text>            if(this.state_plc == 1){
-</xsl:text>
-    <xsl:text>                this.apply_hmi_value(0, 0);
-</xsl:text>
-    <xsl:text>                this.plc_lock = false;
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        //redraw button
-</xsl:text>
-    <xsl:text>        this.state_hmi = this.state_plc;
-</xsl:text>
-    <xsl:text>        this.request_animate();
-</xsl:text>
+    <xsl:apply-templates mode="dispatch_transition" select="$fsm"/>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>
+    <xsl:text>    onmouseup(evt) {
 </xsl:text>
+    <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:apply-templates mode="mouse_transition" select="$fsm">
+      <xsl:with-param name="position" select="'up'"/>
+    </xsl:apply-templates>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    onmousedown(evt) {
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:apply-templates mode="mouse_transition" select="$fsm">
+      <xsl:with-param name="position" select="'down'"/>
+    </xsl:apply-templates>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:apply-templates mode="actions" select="$fsm"/>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
+    <xsl:text>        if (this.active_elt &amp;&amp; this.inactive_elt) {
 </xsl:text>
-    <xsl:text>           // redraw button on screen refresh
+    <xsl:for-each select="str:split('active inactive')">
+      <xsl:text>            if(this.display == "</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>")
 </xsl:text>
-    <xsl:text>           if (this.state_hmi) {
+      <xsl:text>                this.</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_elt.style.display = "";
 </xsl:text>
-    <xsl:text>               this.active_elt.setAttribute("style", this.active_style);
+      <xsl:text>            else
 </xsl:text>
-    <xsl:text>               this.inactive_elt.setAttribute("style", "display:none");
+      <xsl:text>                this.</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_elt.style.display = "none";
 </xsl:text>
-    <xsl:text>           } else {
-</xsl:text>
-    <xsl:text>               this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>               this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>           }
-</xsl:text>
-    <xsl:text>       }
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    on_click(evt) {
-</xsl:text>
-    <xsl:text>        //set state and apply if plc is 0
-</xsl:text>
-    <xsl:text>        this.plc_lock = true;
-</xsl:text>
-    <xsl:text>        if(this.state_plc == 0){
-</xsl:text>
-    <xsl:text>            this.apply_hmi_value(0, 1);
-</xsl:text>
+    </xsl:for-each>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>        //redraw button
-</xsl:text>
-    <xsl:text>        this.request_animate();
-</xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>
+    <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>    on_press(evt) {
+    <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
 </xsl:text>
-    <xsl:text>        //set graphic
-</xsl:text>
-    <xsl:text>        this.state_hmi = 1;
-</xsl:text>
-    <xsl:text>        //redraw button
-</xsl:text>
-    <xsl:text>        this.request_animate();
+    <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>     init() {
-</xsl:text>
-    <xsl:text>        this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>        this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
-</xsl:text>
-    <xsl:text>        this.element.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_press(evt)");
-</xsl:text>
-    <xsl:text>     }
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -6645,11 +6730,15 @@
 </xsl:text>
           <xsl:text>function prepare_svg() {
 </xsl:text>
+          <xsl:text>    // prevents context menu from appearing on right click and long touch
+</xsl:text>
           <xsl:text>    document.body.addEventListener('contextmenu', e =&gt; {
 </xsl:text>
           <xsl:text>        e.preventDefault();
 </xsl:text>
           <xsl:text>    });
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>    for(let eltid in detachable_elements){
 </xsl:text>
