@@ -10,7 +10,6 @@ decl show(eltname);
 decl hmi_value(value);
 
 // State machine to drive HMI_BOOL on a potentially laggy connection
-// TODO: make more robust in case other widget or PLC change value on their own
 const "_button_fsm" fsm {
     state "init" {
         on_dispatch "false" jump "released";
@@ -57,13 +56,13 @@ template "fsm", mode="dispatch_transition" {
 }
 template "state", mode="dispatch_transition" {
     |           case "«@name»":
-   	apply "on-dispatch";
+       apply "on-dispatch";
     |             break;
 }
 template "on-dispatch" {
-	|             if(value ==  «@value») {
-	apply "jump", mode="transition";
-	|             }
+    |             if(value ==  «@value») {
+    apply "jump", mode="transition";
+    |             }
 }
 
 template "fsm", mode="mouse_transition" {
@@ -79,8 +78,8 @@ template "state", mode="mouse_transition" {
     |             break;
 }
 template "on-mouse" {
-	// up or down state is already assumed because apply statement filters it
-	apply "jump", mode="transition";
+    // up or down state is already assumed because apply statement filters it
+    apply "jump", mode="transition";
 }
 
 template "jump", mode="transition" {
@@ -92,17 +91,17 @@ template "fsm", mode="actions" {
     apply "state", mode="actions";
 }
 template "state", mode="actions" {
-	|     «@name»_action(){
+    |     «@name»_action(){
     //| console.log("Entering state «@name»");
     apply "*", mode="actions";
-	|     }
+    |     }
 }
 template "show", mode="actions" {
     |         this.display = "«@eltname»";
     |         this.request_animate();
 }
 template "hmi-value", mode="actions" {
-	|         this.apply_hmi_value(0, «@value»);
+    |         this.apply_hmi_value(0, «@value»);
 }
 
 template "widget[@type='Button']", mode="widget_class"{
@@ -153,5 +152,4 @@ template "widget[@type='Button']", mode="widget_class"{
 template "widget[@type='Button']", mode="widget_defs" {
     param "hmi_element";
     optional_labels("active inactive");
-    |,
 }
