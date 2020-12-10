@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <variables>
-    <variable name="SomeVarName" type="DINT" onchange="MyFunc"/>
+    <variable name="SomeVarName" type="DINT" onchange="MyFunc, SomeChange"/>
     <variable name="Grumpf" type="STRING" initial="'mhoo'" onchange="MyFunc, MyOtherFunc"/>
   </variables>
   <globals>
@@ -14,6 +14,11 @@ def MyFunc(*args):
 
 def MyOtherFunc(*args):
     print "other", args
+
+def SomeChange(*args):
+    print "count",OnChange.SomeVarName.count
+    print "first",OnChange.SomeVarName.first
+    print "last",OnChange.SomeVarName.last
 
 
 ]]></xhtml:p>
