@@ -362,12 +362,11 @@ class PLCObject(object):
 
         class OnChangeStateClass(object):
             def __getattr__(self, name):
-                res = object()
                 u = parent.python_runtime_vars["_"+name+"_unpack"]
-                res.count = parent.python_runtime_vars["_PyOnChangeCount_"+name].value
-                res.first = u(parent.python_runtime_vars["_PyOnChangeFirst_"+name])
-                res.last = u(parent.python_runtime_vars["_PyOnChangeLast_"+name])
-                return res
+                return type("changedesc",(),dict(
+                    count = parent.python_runtime_vars["_PyOnChangeCount_"+name].value,
+                    first = u(parent.python_runtime_vars["_PyOnChangeFirst_"+name]),
+                    last = u(parent.python_runtime_vars["_PyOnChangeLast_"+name])))
 
 
         self.python_runtime_vars.update({
