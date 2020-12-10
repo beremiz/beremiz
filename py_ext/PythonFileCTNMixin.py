@@ -169,10 +169,14 @@ _%(pyextname)sGlobalsDesc.append((
     %(desc)s,
     %(onchange)s,
     %(opts)s))
-""" % varinfo for varinfo in varinfos])
+""" % varinfo + ("""
+_PyOnChangeCount_%(name)s = ctypes.c_uint.in_dll(PLCBinary,"__%(name)s_onchange_count")
+_PyOnChangeFirst_%(name)s = _%(name)s_ctype.in_dll(PLCBinary,"__%(name)s_onchange_firstval")
+_PyOnChangeLast_%(name)s = _%(name)s_ctype.in_dll(PLCBinary,"__%(name)s_onchange_lastval")
+""" % varinfo if varinfo["onchange"] else "") for varinfo in varinfos])
 
         on_change_func_body = "\n".join(["""
-    if changes.next():
+    if _PyOnChangeCount_%(name)s.value > 0:
         # %(name)s
         try:""" % varinfo + """
             """ + """
@@ -215,7 +219,7 @@ from runtime.typemapping import TypeTranslator
 import ctypes
 
 _PySafeGetChanges_%(pyextname)s = PLCBinary.PySafeGetChanges_%(location_str)s
-_PySafeGetChanges_%(pyextname)s.restype = ctypes.POINTER(ctypes.c_int * %(onchange_var_count)d)
+_PySafeGetChanges_%(pyextname)s.restype = None
 _PySafeGetChanges_%(pyextname)s.argtypes = None
 
 _%(pyextname)sGlobalsDesc = []
@@ -230,10 +234,7 @@ PLCGlobalsDesc.append(( "%(pyextname)s" , _%(pyextname)sGlobalsDesc ))
 %(rtcalls)s
 
 def On_%(pyextname)s_Change():
-    changesP = _PySafeGetChanges_%(pyextname)s()
-    if not changesP:
-        raise Exception("PySafeGetChanges returned NULL!")
-    changes = iter(changesP.contents)
+    _PySafeGetChanges_%(pyextname)s()
     errors = []
 %(on_change_func_body)s
     if len(errors)>0 :
@@ -274,7 +275,12 @@ void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
 """
 
         vardeconchangefmt = """\
-int __%(name)s_rbuffer_written = 0;
+unsigned int __%(name)s_rbuffer_written = 0;
+IEC_%(IECtype)s __%(name)s_rbuffer_firstval;
+IEC_%(IECtype)s __%(name)s_rbuffer_lastval;
+unsigned int __%(name)s_onchange_count = 0;
+IEC_%(IECtype)s __%(name)s_onchange_firstval;
+IEC_%(IECtype)s __%(name)s_onchange_lastval;
 """
 
         varretfmt = """\
@@ -297,21 +303,26 @@ int __%(name)s_rbuffer_written = 0;
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
         IEC_%(IECtype)s tmp = __GET_VAR(%(configname)s__%(uppername)s);
         if(NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
+            if(__%(name)s_rbuffer_written == 0);
+                __%(name)s_rbuffer_firstval = __%(name)s_rbuffer;
+            __%(name)s_rbuffer_lastval = tmp;
             __%(name)s_rbuffer = tmp;
-            /* mark variable as changed */
-            __%(name)s_rbuffer_written = 1;
-            some_change = 1;
+            /* count one more change */
+            __%(name)s_rbuffer_written += 1;
+            some_change_found = 1;
         }
         AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
     }
 """
 
         varcollectchangefmt = """\
-    while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
-    pysafe_changes[change_index++] = __%(name)s_rbuffer_written;
+    while(AtomicCompareExchange(&__%(name)s_rlock, 0, 1));
+    __%(name)s_onchange_count = __%(name)s_rbuffer_written;
+    __%(name)s_onchange_firstval = __%(name)s_rbuffer_firstval;
+    __%(name)s_onchange_lastval = __%(name)s_rbuffer_lastval;
     /* mark variable as unchanged */
     __%(name)s_rbuffer_written = 0;
-    AtomicCompareExchange((long*)&__%(name)s_wlock, 1, 0);
+    AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
 
 """
         vardec = "\n".join([(vardecfmt + vardeconchangefmt
@@ -371,20 +382,20 @@ void __retrieve_%(location_str)s(void){
 %(varret)s
 }
 
+static int passing_changes_to_python = 0;
 void __publish_%(location_str)s(void){
-    int some_change = 0;
+    int some_change_found = 0;
 %(varpub)s
+    passing_changes_to_python |= some_change_found;
     // call python part if there was at least a change
-    if(some_change){
+    if(passing_changes_to_python){
         PYTHON_POLL_body__(__%(location_str)s_notifier);
+        passing_changes_to_python &= !(__GET_VAR(__%(location_str)s_notifier->ACK,));
     }
 }
 
-static int pysafe_changes[%(onchange_var_count)d];
 void* PySafeGetChanges_%(location_str)s(void){
-    int change_index=0;
 %(varcollectchange)s
-    return (void*)&pysafe_changes[0];
 }
 
 """ % loc_dict

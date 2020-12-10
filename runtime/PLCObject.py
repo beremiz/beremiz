@@ -360,8 +360,19 @@ class PLCObject(object):
                 v = parent.python_runtime_vars["_"+name+"_pack"](t, value)
                 parent.python_runtime_vars["_PySafeSetPLCGlob_"+name](ctypes.byref(v))
 
+        class OnChangeStateClass(object):
+            def __getattr__(self, name):
+                res = object()
+                u = parent.python_runtime_vars["_"+name+"_unpack"]
+                res.count = parent.python_runtime_vars["_PyOnChangeCount_"+name].value
+                res.first = u(parent.python_runtime_vars["_PyOnChangeFirst_"+name])
+                res.last = u(parent.python_runtime_vars["_PyOnChangeLast_"+name])
+                return res
+
+
         self.python_runtime_vars.update({
             "PLCGlobals":     PLCSafeGlobals(),
+            "OnChange":       OnChangeStateClass(),
             "WorkingDir":     self.workingdir,
             "PLCObject":      self,
             "PLCBinary":      self.PLClibraryHandle,
