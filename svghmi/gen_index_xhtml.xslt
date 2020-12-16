@@ -3062,6 +3062,12 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='DropDown']">
+    <xsl:text>    function numb_event(e) {
+</xsl:text>
+    <xsl:text>        e.stopPropagation();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>    class DropDownWidget extends Widget{
 </xsl:text>
     <xsl:text>        dispatch(value) {
@@ -3082,11 +3088,11 @@
 </xsl:text>
     <xsl:text>            // Compute margins
 </xsl:text>
-    <xsl:text>            let text_bbox = this.text_elt.getBBox();
+    <xsl:text>            this.text_bbox = this.text_elt.getBBox();
 </xsl:text>
-    <xsl:text>            let lmargin = text_bbox.x - this.box_bbox.x;
+    <xsl:text>            let lmargin = this.text_bbox.x - this.box_bbox.x;
 </xsl:text>
-    <xsl:text>            let tmargin = text_bbox.y - this.box_bbox.y;
+    <xsl:text>            let tmargin = this.text_bbox.y - this.box_bbox.y;
 </xsl:text>
     <xsl:text>            this.margins = [lmargin, tmargin].map(x =&gt; Math.max(x,0));
 </xsl:text>
@@ -3117,6 +3123,8 @@
     <xsl:text>            this.bound_on_forward_click = this.on_forward_click.bind(this);
 </xsl:text>
     <xsl:text>            this.opened = false;
+</xsl:text>
+    <xsl:text>            this.clickables = [];
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -3180,13 +3188,13 @@
 </xsl:text>
     <xsl:text>            let count = 1;
 </xsl:text>
-    <xsl:text>            let txt = this.text_elt; 
+    <xsl:text>            let txt = this.text_elt;
 </xsl:text>
     <xsl:text>            let first = txt.firstElementChild;
 </xsl:text>
     <xsl:text>            // Real world (pixels) boundaries of current page
 </xsl:text>
-    <xsl:text>            let bounds = svg_root.getBoundingClientRect(); 
+    <xsl:text>            let bounds = svg_root.getBoundingClientRect();
 </xsl:text>
     <xsl:text>            this.lift = 0;
 </xsl:text>
@@ -3266,7 +3274,7 @@
 </xsl:text>
     <xsl:text>            // inhibit events not targetting spans (menu items)
 </xsl:text>
-    <xsl:text>            if(e.target.parentNode !== this.text_elt){
+    <xsl:text>            if([this.text_elt, this.element].indexOf(e.target.parentNode) == -1){
 </xsl:text>
     <xsl:text>                e.stopPropagation();
 </xsl:text>
@@ -3284,11 +3292,17 @@
 </xsl:text>
     <xsl:text>            // Stop hogging all click events
 </xsl:text>
+    <xsl:text>            svg_root.removeEventListener("pointerdown", numb_event, true);
+</xsl:text>
+    <xsl:text>            svg_root.removeEventListener("pointerup", numb_event, true);
+</xsl:text>
     <xsl:text>            svg_root.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
     <xsl:text>            // Restore position and sixe of widget elements
 </xsl:text>
     <xsl:text>            this.reset_text();
+</xsl:text>
+    <xsl:text>            this.reset_clickables();
 </xsl:text>
     <xsl:text>            this.reset_box();
 </xsl:text>
@@ -3306,11 +3320,55 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>        // Make item (text span) clickable by overlaying a rectangle on top of it
+</xsl:text>
+    <xsl:text>        make_clickable(span, func) {
+</xsl:text>
+    <xsl:text>            let txt = this.text_elt;
+</xsl:text>
+    <xsl:text>            let first = txt.firstElementChild;
+</xsl:text>
+    <xsl:text>            let original_text_y = this.text_bbox.y;
+</xsl:text>
+    <xsl:text>            let highlight = this.highlight_elt;
+</xsl:text>
+    <xsl:text>            let original_h_y = highlight.getBBox().y;
+</xsl:text>
+    <xsl:text>            let clickable = highlight.cloneNode();
+</xsl:text>
+    <xsl:text>            let yoffset = span.getBBox().y - original_text_y;
+</xsl:text>
+    <xsl:text>            clickable.setAttribute("y", original_h_y + yoffset); 
+</xsl:text>
+    <xsl:text>            clickable.style.pointerEvents = "bounding-box";
+</xsl:text>
+    <xsl:text>            clickable.style.visibility = "hidden";
+</xsl:text>
+    <xsl:text>            //clickable.onclick = () =&gt; alert("love JS");
+</xsl:text>
+    <xsl:text>            clickable.onclick = func;
+</xsl:text>
+    <xsl:text>            this.element.appendChild(clickable);
+</xsl:text>
+    <xsl:text>            this.clickables.push(clickable)
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        reset_clickables() {
+</xsl:text>
+    <xsl:text>            while(this.clickables.length){
+</xsl:text>
+    <xsl:text>                this.element.removeChild(this.clickables.pop());
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
     <xsl:text>        // Set text content when content is smaller than menu (no scrolling)
 </xsl:text>
     <xsl:text>        set_complete_text(){
 </xsl:text>
-    <xsl:text>            let spans = this.text_elt.children; 
+    <xsl:text>            let spans = this.text_elt.children;
 </xsl:text>
     <xsl:text>            let c = 0;
 </xsl:text>
@@ -3320,7 +3378,9 @@
 </xsl:text>
     <xsl:text>                span.textContent = item;
 </xsl:text>
-    <xsl:text>                span.onclick = (evt) =&gt; this.bound_on_selection_click(c);
+    <xsl:text>                let sel = c;
+</xsl:text>
+    <xsl:text>                this.make_clickable(span, (evt) =&gt; this.bound_on_selection_click(sel));
 </xsl:text>
     <xsl:text>                c++;
 </xsl:text>
@@ -3338,7 +3398,7 @@
 </xsl:text>
     <xsl:text>            let contentlength = this.content.length;
 </xsl:text>
-    <xsl:text>            let spans = this.text_elt.children; 
+    <xsl:text>            let spans = this.text_elt.children;
 </xsl:text>
     <xsl:text>            let spanslength = spans.length;
 </xsl:text>
@@ -3352,7 +3412,7 @@
 </xsl:text>
     <xsl:text>                this.menu_offset = Math.min(
 </xsl:text>
-    <xsl:text>                    contentlength - spans.length + 1, 
+    <xsl:text>                    contentlength - spans.length + 1,
 </xsl:text>
     <xsl:text>                    this.menu_offset + spanslength);
 </xsl:text>
@@ -3360,11 +3420,13 @@
 </xsl:text>
     <xsl:text>                this.menu_offset = Math.max(
 </xsl:text>
-    <xsl:text>                    0, 
+    <xsl:text>                    0,
 </xsl:text>
     <xsl:text>                    this.menu_offset - spanslength);
 </xsl:text>
     <xsl:text>            }
+</xsl:text>
+    <xsl:text>            this.reset_clickables();
 </xsl:text>
     <xsl:text>            this.set_partial_text();
 </xsl:text>
@@ -3376,7 +3438,7 @@
 </xsl:text>
     <xsl:text>        set_partial_text(){
 </xsl:text>
-    <xsl:text>            let spans = this.text_elt.children; 
+    <xsl:text>            let spans = this.text_elt.children;
 </xsl:text>
     <xsl:text>            let contentlength = this.content.length;
 </xsl:text>
@@ -3384,25 +3446,37 @@
 </xsl:text>
     <xsl:text>            let i = this.menu_offset, c = 0;
 </xsl:text>
+    <xsl:text>            let m = this.box_bbox;
+</xsl:text>
     <xsl:text>            while(c &lt; spanslength){
 </xsl:text>
     <xsl:text>                let span=spans[c];
+</xsl:text>
+    <xsl:text>                let onclickfunc;
 </xsl:text>
     <xsl:text>                // backward jump only present if not exactly at start
 </xsl:text>
     <xsl:text>                if(c == 0 &amp;&amp; i != 0){
 </xsl:text>
-    <xsl:text>                    span.textContent = "&#x2191;  &#x2191;  &#x2191;";
+    <xsl:text>                    span.textContent = "&#x25B2;";
 </xsl:text>
-    <xsl:text>                    span.onclick = this.bound_on_backward_click;
+    <xsl:text>                    onclickfunc = this.bound_on_backward_click;
+</xsl:text>
+    <xsl:text>                    let o = span.getBBox();
+</xsl:text>
+    <xsl:text>                    span.setAttribute("dx", (m.width - o.width)/2);
 </xsl:text>
     <xsl:text>                // presence of forward jump when not right at the end
 </xsl:text>
     <xsl:text>                }else if(c == spanslength-1 &amp;&amp; i &lt; contentlength - 1){
 </xsl:text>
-    <xsl:text>                    span.textContent = "&#x2193;  &#x2193;  &#x2193;";
+    <xsl:text>                    span.textContent = "&#x25BC;";
 </xsl:text>
-    <xsl:text>                    span.onclick = this.bound_on_forward_click;
+    <xsl:text>                    onclickfunc = this.bound_on_forward_click;
+</xsl:text>
+    <xsl:text>                    let o = span.getBBox();
+</xsl:text>
+    <xsl:text>                    span.setAttribute("dx", (m.width - o.width)/2);
 </xsl:text>
     <xsl:text>                // otherwise normal content
 </xsl:text>
@@ -3412,11 +3486,15 @@
 </xsl:text>
     <xsl:text>                    let sel = i;
 </xsl:text>
-    <xsl:text>                    span.onclick = (evt) =&gt; this.bound_on_selection_click(sel);
+    <xsl:text>                    onclickfunc = (evt) =&gt; this.bound_on_selection_click(sel);
+</xsl:text>
+    <xsl:text>                    span.removeAttribute("dx");
 </xsl:text>
     <xsl:text>                    i++;
 </xsl:text>
     <xsl:text>                }
+</xsl:text>
+    <xsl:text>                this.make_clickable(span, onclickfunc);
 </xsl:text>
     <xsl:text>                c++;
 </xsl:text>
@@ -3478,6 +3556,10 @@
 </xsl:text>
     <xsl:text>            // disable interaction with background
 </xsl:text>
+    <xsl:text>            svg_root.addEventListener("pointerdown", numb_event, true);
+</xsl:text>
+    <xsl:text>            svg_root.addEventListener("pointerup", numb_event, true);
+</xsl:text>
     <xsl:text>            svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
     <xsl:text>            // mark as open
@@ -3490,15 +3572,17 @@
 </xsl:text>
     <xsl:text>        reset_text(){
 </xsl:text>
-    <xsl:text>            let txt = this.text_elt; 
+    <xsl:text>            let txt = this.text_elt;
 </xsl:text>
     <xsl:text>            let first = txt.firstElementChild;
 </xsl:text>
     <xsl:text>            // remove attribute eventually added to first text line while opening
 </xsl:text>
-    <xsl:text>            first.removeAttribute("onclick");
+    <xsl:text>            first.onclick = null;
 </xsl:text>
     <xsl:text>            first.removeAttribute("dy");
+</xsl:text>
+    <xsl:text>            first.removeAttribute("dx");
 </xsl:text>
     <xsl:text>            // keep only the first line of text
 </xsl:text>
@@ -3538,11 +3622,11 @@
 </xsl:text>
     <xsl:text>            let b = this.box_elt;
 </xsl:text>
-    <xsl:text>            b.x.baseVal.value = m.x - lmargin;
+    <xsl:text>            // b.x.baseVal.value = m.x - lmargin;
 </xsl:text>
     <xsl:text>            b.y.baseVal.value = m.y - tmargin;
 </xsl:text>
-    <xsl:text>            b.width.baseVal.value = 2 * lmargin + m.width;
+    <xsl:text>            // b.width.baseVal.value = 2 * lmargin + m.width;
 </xsl:text>
     <xsl:text>            b.height.baseVal.value = 2 * tmargin + m.height;
 </xsl:text>
@@ -3556,7 +3640,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>text box button</xsl:text>
+        <xsl:text>text box button highlight</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:text>    // It is assumed that list content conforms to Array interface.
