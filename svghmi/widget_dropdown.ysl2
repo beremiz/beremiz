@@ -2,6 +2,9 @@
 
 template "widget[@type='DropDown']", mode="widget_class"{
 ||
+    function numb_event(e) {
+        e.stopPropagation();
+    }
     class DropDownWidget extends Widget{
         dispatch(value) {
             if(!this.opened) this.set_selection(value);
@@ -12,9 +15,9 @@ template "widget[@type='DropDown']", mode="widget_class"{
             this.box_bbox = this.box_elt.getBBox()
 
             // Compute margins
-            let text_bbox = this.text_elt.getBBox();
-            let lmargin = text_bbox.x - this.box_bbox.x;
-            let tmargin = text_bbox.y - this.box_bbox.y;
+            this.text_bbox = this.text_elt.getBBox();
+            let lmargin = this.text_bbox.x - this.box_bbox.x;
+            let tmargin = this.text_bbox.y - this.box_bbox.y;
             this.margins = [lmargin, tmargin].map(x => Math.max(x,0));
 
             // Index of first visible element in the menu, when opened
@@ -30,6 +33,7 @@ template "widget[@type='DropDown']", mode="widget_class"{
             this.bound_on_backward_click = this.on_backward_click.bind(this);
             this.bound_on_forward_click = this.on_forward_click.bind(this);
             this.opened = false;
+            this.clickables = [];
         }
         on_button_click() {
             this.open();
@@ -61,10 +65,10 @@ template "widget[@type='DropDown']", mode="widget_class"{
         }
         grow_text(up_to) {
             let count = 1;
-            let txt = this.text_elt; 
+            let txt = this.text_elt;
             let first = txt.firstElementChild;
             // Real world (pixels) boundaries of current page
-            let bounds = svg_root.getBoundingClientRect(); 
+            let bounds = svg_root.getBoundingClientRect();
             this.lift = 0;
             while(count < up_to) {
                 let next = first.cloneNode();
@@ -104,7 +108,7 @@ template "widget[@type='DropDown']", mode="widget_class"{
         }
         close_on_click_elsewhere(e) {
             // inhibit events not targetting spans (menu items)
-            if(e.target.parentNode !== this.text_elt){
+            if([this.text_elt, this.element].indexOf(e.target.parentNode) == -1){
                 e.stopPropagation();
                 // close menu in case click is outside box
                 if(e.target !== this.box_elt)
@@ -113,9 +117,12 @@ template "widget[@type='DropDown']", mode="widget_class"{
         }
         close(){
             // Stop hogging all click events
+            svg_root.removeEventListener("pointerdown", numb_event, true);
+            svg_root.removeEventListener("pointerup", numb_event, true);
             svg_root.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
             // Restore position and sixe of widget elements
             this.reset_text();
+            this.reset_clickables();
             this.reset_box();
             // Put the button back in place
             this.element.appendChild(this.button_elt);
@@ -124,15 +131,37 @@ template "widget[@type='DropDown']", mode="widget_class"{
             // Dispatch last cached value
             this.apply_cache();
         }
+        // Make item (text span) clickable by overlaying a rectangle on top of it
+        make_clickable(span, func) {
+            let txt = this.text_elt;
+            let first = txt.firstElementChild;
+            let original_text_y = this.text_bbox.y;
+            let highlight = this.highlight_elt;
+            let original_h_y = highlight.getBBox().y;
+            let clickable = highlight.cloneNode();
+            let yoffset = span.getBBox().y - original_text_y;
+            clickable.setAttribute("y", original_h_y + yoffset); 
+            clickable.style.pointerEvents = "bounding-box";
+            clickable.style.visibility = "hidden";
+            //clickable.onclick = () => alert("love JS");
+            clickable.onclick = func;
+            this.element.appendChild(clickable);
+            this.clickables.push(clickable)
+        }
+        reset_clickables() {
+            while(this.clickables.length){
+                this.element.removeChild(this.clickables.pop());
+            }
+        }
         // Set text content when content is smaller than menu (no scrolling)
         set_complete_text(){
-            let spans = this.text_elt.children; 
+            let spans = this.text_elt.children;
             let c = 0;
             for(let item of this.content){
                 let span=spans[c];
                 span.textContent = item;
                 let sel = c;
-                span.onclick = (evt) => this.bound_on_selection_click(sel);
+                this.make_clickable(span, (evt) => this.bound_on_selection_click(sel));
                 c++;
             }
         }
@@ -141,46 +170,55 @@ template "widget[@type='DropDown']", mode="widget_class"{
         // true  : downward, higher value
         scroll(forward){
             let contentlength = this.content.length;
-            let spans = this.text_elt.children; 
+            let spans = this.text_elt.children;
             let spanslength = spans.length;
             // reduce accounted menu size according to jumps
             if(this.menu_offset != 0) spanslength--;
             if(this.menu_offset < contentlength - 1) spanslength--;
             if(forward){
                 this.menu_offset = Math.min(
-                    contentlength - spans.length + 1, 
+                    contentlength - spans.length + 1,
                     this.menu_offset + spanslength);
             }else{
                 this.menu_offset = Math.max(
-                    0, 
+                    0,
                     this.menu_offset - spanslength);
             }
+            this.reset_clickables();
             this.set_partial_text();
         }
         // Setup partial view text content
         // with jumps at first and last entry when appropriate
         set_partial_text(){
-            let spans = this.text_elt.children; 
+            let spans = this.text_elt.children;
             let contentlength = this.content.length;
             let spanslength = spans.length;
             let i = this.menu_offset, c = 0;
+            let m = this.box_bbox;
             while(c < spanslength){
                 let span=spans[c];
+                let onclickfunc;
                 // backward jump only present if not exactly at start
                 if(c == 0 && i != 0){
-                    span.textContent = "↑  ↑  ↑";
-                    span.onclick = this.bound_on_backward_click;
+                    span.textContent = "▲";
+                    onclickfunc = this.bound_on_backward_click;
+                    let o = span.getBBox();
+                    span.setAttribute("dx", (m.width - o.width)/2);
                 // presence of forward jump when not right at the end
                 }else if(c == spanslength-1 && i < contentlength - 1){
-                    span.textContent = "↓  ↓  ↓";
-                    span.onclick = this.bound_on_forward_click;
+                    span.textContent = "▼";
+                    onclickfunc = this.bound_on_forward_click;
+                    let o = span.getBBox();
+                    span.setAttribute("dx", (m.width - o.width)/2);
                 // otherwise normal content
                 }else{
                     span.textContent = this.content[i];
                     let sel = i;
-                    span.onclick = (evt) => this.bound_on_selection_click(sel);
+                    onclickfunc = (evt) => this.bound_on_selection_click(sel);
+                    span.removeAttribute("dx");
                     i++;
                 }
+                this.make_clickable(span, onclickfunc);
                 c++;
             }
         }
@@ -211,17 +249,20 @@ template "widget[@type='DropDown']", mode="widget_class"{
             // Rise widget to top by moving it to last position among siblings
             this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
             // disable interaction with background
+            svg_root.addEventListener("pointerdown", numb_event, true);
+            svg_root.addEventListener("pointerup", numb_event, true);
             svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
             // mark as open
             this.opened = true;
         }
         // Put text element in normalized state
         reset_text(){
-            let txt = this.text_elt; 
+            let txt = this.text_elt;
             let first = txt.firstElementChild;
             // remove attribute eventually added to first text line while opening
-            first.removeAttribute("onclick");
+            first.onclick = null;
             first.removeAttribute("dy");
+            first.removeAttribute("dx");
             // keep only the first line of text
             for(let span of Array.from(txt.children).slice(1)){
                 txt.removeChild(span)
@@ -241,17 +282,18 @@ template "widget[@type='DropDown']", mode="widget_class"{
             let [lmargin, tmargin] = this.margins;
             let m = this.text_elt.getBBox();
             let b = this.box_elt;
-            b.x.baseVal.value = m.x - lmargin;
+            // b.x.baseVal.value = m.x - lmargin;
             b.y.baseVal.value = m.y - tmargin;
-            b.width.baseVal.value = 2 * lmargin + m.width;
+            // b.width.baseVal.value = 2 * lmargin + m.width;
             b.height.baseVal.value = 2 * tmargin + m.height;
         }
     }
 ||
 }
+
 template "widget[@type='DropDown']", mode="widget_defs" {
     param "hmi_element";
-    labels("text box button");
+    labels("text box button highlight");
 ||
     // It is assumed that list content conforms to Array interface.
     content: [
