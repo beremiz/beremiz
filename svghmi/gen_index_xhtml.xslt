@@ -3084,6 +3084,10 @@
 </xsl:text>
     <xsl:text>            this.box_bbox = this.box_elt.getBBox()
 </xsl:text>
+    <xsl:text>            this.highlight_bbox = this.highlight_elt.getBBox()
+</xsl:text>
+    <xsl:text>            this.highlight_elt.style.visibility = "hidden";
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>            // Compute margins
@@ -3228,7 +3232,7 @@
 </xsl:text>
     <xsl:text>                    let backup = first.getAttribute("dy");
 </xsl:text>
-    <xsl:text>                    // apply lift asr a dy added too first span (y attrib stays)
+    <xsl:text>                    // apply lift as a dy added too first span (y attrib stays)
 </xsl:text>
     <xsl:text>                    first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
 </xsl:text>
@@ -3306,6 +3310,8 @@
 </xsl:text>
     <xsl:text>            this.reset_box();
 </xsl:text>
+    <xsl:text>            this.reset_highlight();
+</xsl:text>
     <xsl:text>            // Put the button back in place
 </xsl:text>
     <xsl:text>            this.element.appendChild(this.button_elt);
@@ -3326,23 +3332,21 @@
 </xsl:text>
     <xsl:text>            let txt = this.text_elt;
 </xsl:text>
-    <xsl:text>            let first = txt.firstElementChild;
-</xsl:text>
     <xsl:text>            let original_text_y = this.text_bbox.y;
 </xsl:text>
     <xsl:text>            let highlight = this.highlight_elt;
 </xsl:text>
-    <xsl:text>            let original_h_y = highlight.getBBox().y;
+    <xsl:text>            let original_h_y = this.highlight_bbox.y;
 </xsl:text>
     <xsl:text>            let clickable = highlight.cloneNode();
 </xsl:text>
     <xsl:text>            let yoffset = span.getBBox().y - original_text_y;
 </xsl:text>
-    <xsl:text>            clickable.setAttribute("y", original_h_y + yoffset); 
+    <xsl:text>            clickable.y.baseVal.value = original_h_y + yoffset;
 </xsl:text>
     <xsl:text>            clickable.style.pointerEvents = "bounding-box";
 </xsl:text>
-    <xsl:text>            clickable.style.visibility = "hidden";
+    <xsl:text>            //clickable.style.visibility = "hidden";
 </xsl:text>
     <xsl:text>            //clickable.onclick = () =&gt; alert("love JS");
 </xsl:text>
@@ -3402,13 +3406,17 @@
 </xsl:text>
     <xsl:text>            let spanslength = spans.length;
 </xsl:text>
-    <xsl:text>            // reduce accounted menu size according to jumps
+    <xsl:text>            // reduce accounted menu size according to prsence of scroll buttons
 </xsl:text>
-    <xsl:text>            if(this.menu_offset != 0) spanslength--;
+    <xsl:text>            // since we scroll there is necessarly one button
 </xsl:text>
-    <xsl:text>            if(this.menu_offset &lt; contentlength - 1) spanslength--;
+    <xsl:text>            spanslength--;
 </xsl:text>
     <xsl:text>            if(forward){
+</xsl:text>
+    <xsl:text>                // reduce accounted menu size because of back button
+</xsl:text>
+    <xsl:text>                if(this.menu_offset != 0) spanslength--;
 </xsl:text>
     <xsl:text>                this.menu_offset = Math.min(
 </xsl:text>
@@ -3418,6 +3426,8 @@
 </xsl:text>
     <xsl:text>            }else{
 </xsl:text>
+    <xsl:text>                if(this.menu_offset - spanslength &gt; 0) spanslength--;
+</xsl:text>
     <xsl:text>                this.menu_offset = Math.max(
 </xsl:text>
     <xsl:text>                    0,
@@ -3426,9 +3436,23 @@
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
+    <xsl:text>            if(this.menu_offset == 1)
+</xsl:text>
+    <xsl:text>                this.menu_offset = 0;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.reset_highlight();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>            this.reset_clickables();
 </xsl:text>
     <xsl:text>            this.set_partial_text();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.highlight_selection();
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -3562,6 +3586,10 @@
 </xsl:text>
     <xsl:text>            svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
+    <xsl:text>            this.highlight_selection();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>            // mark as open
 </xsl:text>
     <xsl:text>            this.opened = true;
@@ -3609,6 +3637,54 @@
     <xsl:text>            b.width.baseVal.value = m.width;
 </xsl:text>
     <xsl:text>            b.height.baseVal.value = m.height;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        highlight_selection(){
+</xsl:text>
+    <xsl:text>            let highlighted_row = this.last_selection - this.menu_offset;
+</xsl:text>
+    <xsl:text>            if(highlighted_row &lt; 0) return;
+</xsl:text>
+    <xsl:text>            let spans = this.text_elt.children;
+</xsl:text>
+    <xsl:text>            let spanslength = spans.length;
+</xsl:text>
+    <xsl:text>            let contentlength = this.content.length;
+</xsl:text>
+    <xsl:text>            if(this.menu_offset != 0) {
+</xsl:text>
+    <xsl:text>                spanslength--;
+</xsl:text>
+    <xsl:text>                highlighted_row++;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            if(this.menu_offset + spanslength &lt; contentlength - 1) spanslength--;
+</xsl:text>
+    <xsl:text>            if(highlighted_row &gt; spanslength) return;
+</xsl:text>
+    <xsl:text>            let original_text_y = this.text_bbox.y;
+</xsl:text>
+    <xsl:text>            let highlight = this.highlight_elt;
+</xsl:text>
+    <xsl:text>            let span = spans[highlighted_row];
+</xsl:text>
+    <xsl:text>            let yoffset = span.getBBox().y - original_text_y;
+</xsl:text>
+    <xsl:text>            highlight.y.baseVal.value = this.highlight_bbox.y + yoffset;
+</xsl:text>
+    <xsl:text>            highlight.style.visibility = "visible";
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        reset_highlight(){
+</xsl:text>
+    <xsl:text>            let highlight = this.highlight_elt;
+</xsl:text>
+    <xsl:text>            highlight.y.baseVal.value = this.highlight_bbox.y;
+</xsl:text>
+    <xsl:text>            highlight.style.visibility = "hidden";
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
