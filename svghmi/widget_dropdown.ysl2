@@ -13,6 +13,8 @@ template "widget[@type='DropDown']", mode="widget_class"{
             this.button_elt.onclick = this.on_button_click.bind(this);
             // Save original size of rectangle
             this.box_bbox = this.box_elt.getBBox()
+            this.highlight_bbox = this.highlight_elt.getBBox()
+            this.highlight_elt.style.visibility = "hidden";
 
             // Compute margins
             this.text_bbox = this.text_elt.getBBox();
@@ -85,7 +87,7 @@ template "widget[@type='DropDown']", mode="widget_class"{
                 if(rect.bottom > bounds.bottom){
                     // in case of overflow at the bottom, lift up one row
                     let backup = first.getAttribute("dy");
-                    // apply lift asr a dy added too first span (y attrib stays)
+                    // apply lift as a dy added too first span (y attrib stays)
                     first.setAttribute("dy", "-"+String((this.lift+1)*1.1)+"em");
                     rect = txt.getBoundingClientRect();
                     if(rect.top > bounds.top){
@@ -124,6 +126,7 @@ template "widget[@type='DropDown']", mode="widget_class"{
             this.reset_text();
             this.reset_clickables();
             this.reset_box();
+            this.reset_highlight();
             // Put the button back in place
             this.element.appendChild(this.button_elt);
             // Mark as closed (to allow dispatch)
@@ -134,15 +137,14 @@ template "widget[@type='DropDown']", mode="widget_class"{
         // Make item (text span) clickable by overlaying a rectangle on top of it
         make_clickable(span, func) {
             let txt = this.text_elt;
-            let first = txt.firstElementChild;
             let original_text_y = this.text_bbox.y;
             let highlight = this.highlight_elt;
-            let original_h_y = highlight.getBBox().y;
+            let original_h_y = this.highlight_bbox.y;
             let clickable = highlight.cloneNode();
             let yoffset = span.getBBox().y - original_text_y;
-            clickable.setAttribute("y", original_h_y + yoffset); 
+            clickable.y.baseVal.value = original_h_y + yoffset;
             clickable.style.pointerEvents = "bounding-box";
-            clickable.style.visibility = "hidden";
+            //clickable.style.visibility = "hidden";
             //clickable.onclick = () => alert("love JS");
             clickable.onclick = func;
             this.element.appendChild(clickable);
@@ -172,20 +174,33 @@ template "widget[@type='DropDown']", mode="widget_class"{
             let contentlength = this.content.length;
             let spans = this.text_elt.children;
             let spanslength = spans.length;
-            // reduce accounted menu size according to jumps
-            if(this.menu_offset != 0) spanslength--;
-            if(this.menu_offset < contentlength - 1) spanslength--;
+            // reduce accounted menu size according to prsence of scroll buttons
+            // since we scroll there is necessarly one button
+            spanslength--;
             if(forward){
+                // reduce accounted menu size because of back button
+                // in current view
+                if(this.menu_offset > 0) spanslength--;
                 this.menu_offset = Math.min(
                     contentlength - spans.length + 1,
                     this.menu_offset + spanslength);
             }else{
+                // reduce accounted menu size because of back button
+                // in view once scrolled
+                if(this.menu_offset - spanslength > 0) spanslength--;
                 this.menu_offset = Math.max(
                     0,
                     this.menu_offset - spanslength);
             }
+            if(this.menu_offset == 1)
+                this.menu_offset = 0;
+
+            this.reset_highlight();
+
             this.reset_clickables();
             this.set_partial_text();
+
+            this.highlight_selection();
         }
         // Setup partial view text content
         // with jumps at first and last entry when appropriate
@@ -252,6 +267,8 @@ template "widget[@type='DropDown']", mode="widget_class"{
             svg_root.addEventListener("pointerdown", numb_event, true);
             svg_root.addEventListener("pointerup", numb_event, true);
             svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
+            this.highlight_selection();
+
             // mark as open
             this.opened = true;
         }
@@ -276,6 +293,30 @@ template "widget[@type='DropDown']", mode="widget_class"{
             b.y.baseVal.value = m.y;
             b.width.baseVal.value = m.width;
             b.height.baseVal.value = m.height;
+        }
+        highlight_selection(){
+            let highlighted_row = this.last_selection - this.menu_offset;
+            if(highlighted_row < 0) return;
+            let spans = this.text_elt.children;
+            let spanslength = spans.length;
+            let contentlength = this.content.length;
+            if(this.menu_offset != 0) {
+                spanslength--;
+                highlighted_row++;
+            }
+            if(this.menu_offset + spanslength < contentlength - 1) spanslength--;
+            if(highlighted_row > spanslength) return;
+            let original_text_y = this.text_bbox.y;
+            let highlight = this.highlight_elt;
+            let span = spans[highlighted_row];
+            let yoffset = span.getBBox().y - original_text_y;
+            highlight.y.baseVal.value = this.highlight_bbox.y + yoffset;
+            highlight.style.visibility = "visible";
+        }
+        reset_highlight(){
+            let highlight = this.highlight_elt;
+            highlight.y.baseVal.value = this.highlight_bbox.y;
+            highlight.style.visibility = "hidden";
         }
         // Use margin and text size to compute box size
         adjust_box_to_text(){
