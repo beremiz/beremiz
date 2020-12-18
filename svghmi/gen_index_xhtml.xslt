@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
-  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -3416,7 +3416,9 @@
 </xsl:text>
     <xsl:text>                // reduce accounted menu size because of back button
 </xsl:text>
-    <xsl:text>                if(this.menu_offset != 0) spanslength--;
+    <xsl:text>                // in current view
+</xsl:text>
+    <xsl:text>                if(this.menu_offset &gt; 0) spanslength--;
 </xsl:text>
     <xsl:text>                this.menu_offset = Math.min(
 </xsl:text>
@@ -3425,6 +3427,10 @@
     <xsl:text>                    this.menu_offset + spanslength);
 </xsl:text>
     <xsl:text>            }else{
+</xsl:text>
+    <xsl:text>                // reduce accounted menu size because of back button
+</xsl:text>
+    <xsl:text>                // in view once scrolled
 </xsl:text>
     <xsl:text>                if(this.menu_offset - spanslength &gt; 0) spanslength--;
 </xsl:text>
@@ -3984,15 +3990,36 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='Input']">
+    <xsl:text>    class InputWidget extends Widget{
+</xsl:text>
+    <xsl:text>         on_op_click(opstr) {
+</xsl:text>
+    <xsl:text>             let new_val = this.change_hmi_value(0, opstr);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>         edit_callback(new_val) {
+</xsl:text>
+    <xsl:text>             this.apply_hmi_value(0, new_val);
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>key_pos</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
-    </xsl:call-template>
+    <xsl:variable name="key_pos_elt">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>key_pos</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$key_pos_elt"/>
     <xsl:variable name="value_elt">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -4004,67 +4031,67 @@
     </xsl:variable>
     <xsl:variable name="have_value" select="string-length($value_elt)&gt;0"/>
     <xsl:value-of select="$value_elt"/>
+    <xsl:variable name="edit_elt">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>edit</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_edit" select="string-length($edit_elt)&gt;0"/>
+    <xsl:value-of select="$edit_elt"/>
     <xsl:if test="$have_value">
       <xsl:text>    frequency: 5,
 </xsl:text>
     </xsl:if>
-    <xsl:text>    last_val: undefined,
-</xsl:text>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:text>        this.last_val = value;
+    <xsl:if test="$have_edit">
+      <xsl:text>        this.last_val = value;
 </xsl:text>
+    </xsl:if>
     <xsl:if test="$have_value">
       <xsl:text>        this.value_elt.textContent = String(value);
 </xsl:text>
     </xsl:if>
     <xsl:text>    },
 </xsl:text>
-    <xsl:variable name="edit_elt_id" select="$hmi_element/*[@inkscape:label='edit'][1]/@id"/>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:if test="$edit_elt_id">
-      <xsl:text>        id("</xsl:text>
-      <xsl:value-of select="$edit_elt_id"/>
-      <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
-      <xsl:value-of select="$hmi_element/@id"/>
-      <xsl:text>'].on_edit_click()");
+    <xsl:if test="$have_edit">
+      <xsl:text>        this.edit_elt.onclick = () =&gt; edit_value(
+</xsl:text>
+      <xsl:text>            "</xsl:text>
+      <xsl:value-of select="path/@value"/>
+      <xsl:text>", "</xsl:text>
+      <xsl:value-of select="path/@type"/>
+      <xsl:text>",
+</xsl:text>
+      <xsl:text>            this, this.last_val, 
+</xsl:text>
+      <xsl:choose>
+        <xsl:when test="string-length($key_pos_elt)&gt;0">
+          <xsl:text>            this.key_pos_elt.getBBox()
+</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>            undefined
+</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>        );
 </xsl:text>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
       <xsl:text>        id("</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>").setAttribute("onclick", "hmi_widgets['</xsl:text>
-      <xsl:value-of select="$hmi_element/@id"/>
-      <xsl:text>'].on_op_click('</xsl:text>
+      <xsl:text>").onclick = () =&gt; this.on_op_click("</xsl:text>
       <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
-      <xsl:text>')");
+      <xsl:text>");
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    on_op_click: function(opstr) {
-</xsl:text>
-    <xsl:text>        let new_val = this.change_hmi_value(0, opstr);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    on_edit_click: function(opstr) {
-</xsl:text>
-    <xsl:text>        var size = (typeof this.key_pos_elt !== 'undefined') ?  this.key_pos_elt.getBBox() : undefined
-</xsl:text>
-    <xsl:text>        edit_value("</xsl:text>
-    <xsl:value-of select="path/@value"/>
-    <xsl:text>", "</xsl:text>
-    <xsl:value-of select="path/@type"/>
-    <xsl:text>", this, this.last_val, size);
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
-    <xsl:text>    edit_callback: function(new_val) {
-</xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, new_val);
-</xsl:text>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
@@ -4098,8 +4125,6 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    do_http_request(...opt) {
-</xsl:text>
-    <xsl:text>        console.log(opt);
 </xsl:text>
     <xsl:text>        const query = {
 </xsl:text>
@@ -6227,7 +6252,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <head/>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
