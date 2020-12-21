@@ -158,19 +158,19 @@ typedef struct{
 	    u16		coms_buffer[REQ_BUF_SIZE]; 
 	    pthread_mutex_t coms_buf_mutex; // mutex to access coms_buffer[]
           /* boolean flag that will be mapped onto a (BOOL) located variable 
-           * (u16 because IEC 61131-3 BOOL are mapped onto u16 in C code! )
+           * (u8 because IEC 61131-3 BOOL are mapped onto u8 in C code! )
            *    -> allow PLC program to request when to start the MB transaction
            *    -> will be reset once the MB transaction has completed
            */
-        u16     flag_exec_req;  
+        u8     flag_exec_req;  
           /* flag that works in conjunction with flag_exec_req
-           * (does not really need to be u16 as it is not mapped onto a located variable. )
+           * (does not really need to be u8 as it is not mapped onto a located variable. )
            *    -> used by internal logic to indicate that the client thread 
            *       that will be executing the MB transaction
            *       requested by flag exec_req has already been activated.
            *    -> will be reset once the MB transaction has completed
            */
-        u16     flag_exec_started;  
+        u8     flag_exec_started;  
           /* flag that will be mapped onto a (BYTE) located variable 
            * (u8 because the flag is a BYTE! )
            *    -> will store the result of the last executed MB transaction
