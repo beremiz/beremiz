@@ -410,11 +410,12 @@ static void *__mb_client_thread(void *_index)  {
 			  }
 			}
 
-			/* Set the flag_exec_status that is mapped onto a located WORD variable, so the user program
+			/* Set the flag_tn_error_code and flag_mb_error_code that are mapped onto
+             * located BYTE variables, so the user program
              * knows how the communication is going.
-             * This flag is an ammalgamation of the data in mb_error_code and tn_error_code
              */
-            client_requests[req].flag_exec_status = client_requests[req].tn_error_code * 256 + client_requests[req].mb_error_code;
+            client_requests[req].flag_mb_error_code = client_requests[req].mb_error_code;
+            client_requests[req].flag_tn_error_code = client_requests[req].tn_error_code;
             
             /* We have just finished excuting a client transcation request.
              * If the current cycle was activated by user request we reset the flag used to ask to run it
