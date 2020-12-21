@@ -219,16 +219,16 @@ class ISettings(annotate.TypedInterface):
                                            action=_("Send"))
 
     # pylint: disable=no-self-argument
-    def restartOrResetPLC(
+    def restartOrRepairPLC(
             ctx=annotate.Context(),
-            action=annotate.Choice(["Restart", "Reset"],
+            action=annotate.Choice(["Restart", "Repair"],
                                   required=True,
                                   label=_("Action"))):
         pass
 
-    restartOrResetPLC = annotate.autocallable(restartOrResetPLC,
+    restartOrRepairPLC = annotate.autocallable(restartOrRepairPLC,
                                            label=_(
-                                               "Restart or Reset"),
+                                               "Restart or Repair"),
                                            action=_("Do"))
 
 customSettingsURLs = {
@@ -300,8 +300,8 @@ class SettingsPage(rend.Page):
         GetPLCObjectSingleton().LogMessage(
             level, "Web form log message: " + message)
 
-    def restartOrResetPLC(self, action, **kwargs):
-        if(action == "Reset"):
+    def restartOrRepairPLC(self, action, **kwargs):
+        if(action == "Repair"):
             GetPLCObjectSingleton().RepairPLC()
         else:
             MainWorker.quit()
