@@ -904,7 +904,7 @@ class RootClass(object):
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 # Add if it is a Execution Request Flag (mapped onto %QXa.b.c.0.0), so last number is a '0'
                                 if iecvar["LOC"][4] == 0:
-                                    loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
                                     loc_vars_list.append(str(iecvar["NAME"]))
                                 # Add if it is a "Modbus Request Status flag" (mapped onto %QWa.b.c.0.1), so last number is a '1'
                                 if iecvar["LOC"][4] == 1:
@@ -958,7 +958,7 @@ class RootClass(object):
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 # Add if it is a Execution Request Flag (mapped onto %QXa.b.c.0.0), so last number is a '0'
                                 if iecvar["LOC"][4] == 0:
-                                    loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
                                     loc_vars_list.append(str(iecvar["NAME"]))
                                 # Add if it is a "Modbus Request Status flag" (mapped onto %QWa.b.c.0.1), so last number is a '1'
                                 if iecvar["LOC"][4] == 1:
