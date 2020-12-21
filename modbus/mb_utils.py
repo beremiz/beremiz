@@ -186,7 +186,7 @@ def GetClientRequestPrinted(self, child, nodeid):
 
     req_init_template = '''/*request %(locreqstr)s*/
 {"%(locreqstr)s", %(nodeid)s, %(slaveid)s, %(iotype)s, %(func_nr)s, %(address)s , %(count)s,
-DEF_REQ_SEND_RETRIES, 0 /* error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */, 
+DEF_REQ_SEND_RETRIES, 0 /* mb_error_code */, 0 /* tn_error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */, 
 {%(buffer)s}, {%(buffer)s}}'''
 
     timeout = int(GetCTVal(child, 4))

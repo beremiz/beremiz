@@ -147,7 +147,8 @@ typedef struct{
 	    u16		address;
 	    u16		count;
 	    int		retries;
-	    u8		error_code; // modbus error code (if any) of current request
+	    u8		mb_error_code; // modbus      error code (if any) of last executed request
+	    u8		tn_error_code; // transaction error code (if any) of last executed request
 	    int		prev_error; // error code of the last printed error message (0 when no error) 
 	    struct timespec resp_timeout;
 	    u8		write_on_change; // boolean flag. If true => execute MB request when data to send changes
@@ -176,9 +177,12 @@ typedef struct{
            *         1 -> error accessing IP network, or serial interface
            *         2 -> reply received from server was an invalid frame
            *         3 -> server did not reply before timeout expired
-           *         4 -> server returned a valid error frame
+           *         4 -> server returned a valid Modbus error frame
            *    -> if the MSByte is 4, the LSByte will store the MB error code returned by the server
            *    -> will be reset (set to 0) once this MB transaction has completed sucesfully
+           * 
+           * In other words, this variable will be set from the current status of the
+           * mb_error_code and tn_error_code flags after each request.
            */
         u16     flag_exec_status;  
 	} client_request_t;
