@@ -171,20 +171,30 @@ typedef struct{
            *    -> will be reset once the MB transaction has completed
            */
         u16     flag_exec_started;  
-          /* flag that will be mapped onto a (WORD) located variable 
-           * (u16 because the flag is a word! )
-           *    -> MSByte will store the result of the last executed MB transaction
+          /* flag that will be mapped onto a (BYTE) located variable 
+           * (u8 because the flag is a BYTE! )
+           *    -> will store the result of the last executed MB transaction
            *         1 -> error accessing IP network, or serial interface
            *         2 -> reply received from server was an invalid frame
            *         3 -> server did not reply before timeout expired
            *         4 -> server returned a valid Modbus error frame
-           *    -> if the MSByte is 4, the LSByte will store the MB error code returned by the server
            *    -> will be reset (set to 0) once this MB transaction has completed sucesfully
            * 
-           * In other words, this variable will be set from the current status of the
-           * mb_error_code and tn_error_code flags after each request.
+           * In other words, this variable is a copy of tn_error_code, reset after each request attempt completes.
+           * We map this copy (instead of tn_error_code) onto a located variable in case the user program decides
+           * to overwrite its value and mess up the plugin logic.
            */
-        u16     flag_exec_status;  
+        u8      flag_tn_error_code;  
+          /* flag that will be mapped onto a (BYTE) located variable 
+           * (u8 because the flag is a BYTE! )
+           *    -> if flag_tn_error_code is 4, this flag will store the MB error code returned by the MB server in a MB error frame
+           *    -> will be reset (set to 0) once this MB transaction has completed succesfully
+           * 
+           * In other words, this variable is a copy of mb_error_code, reset after each request attempt completes.
+           * We map this copy (instead of mb_error_code) onto a located variable in case the user program decides
+           * to overwrite its value and mess up the plugin logic.
+           */
+        u8      flag_mb_error_code;  
 	} client_request_t;
 
 
