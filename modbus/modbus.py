@@ -132,13 +132,31 @@ class _RequestPlug(object):
         #          %QX1.2.3.n
         entries = []
         entries.append({
-            "name": "Exec. request flag",
+            "name": "Execute request flag",
             "type": LOCATION_VAR_MEMORY,
             "size": 1,           # BOOL flag
             "IEC_type": "BOOL",  # BOOL flag
             "var_name": "var_name",
             "location": "X" + ".".join([str(i) for i in current_location]) + ".0.0",
-            "description": "MB request execution control flag",
+            "description": "Modbus request execution control flag",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Request Status flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,           # BYTE flag
+            "IEC_type": "BYTE",  # BYTE flag
+            "var_name": "var_name",
+            "location": "B" + ".".join([str(i) for i in current_location]) + ".0.1",
+            "description": "Modbus request status flag",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Error Code",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,           # BYTE flag
+            "IEC_type": "BYTE",  # BYTE flag
+            "var_name": "var_name",
+            "location": "B" + ".".join([str(i) for i in current_location]) + ".0.2",
+            "description": "Modbus Error Code received in Modbus error frame",
             "children": []})        
         for offset in range(address, address + count):
             entries.append({
@@ -887,15 +905,23 @@ class RootClass(object):
                         if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
                             and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append(
-                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
+                                loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
                                 loc_vars_list.append(str(iecvar["NAME"]))
                         # Now add the located variable in case it is a flag (condition (b) above
                         if  len(iecvar["LOC"]) >= 5:       # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append(
-                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
-                                loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a Execution Request Flag (mapped onto %QXa.b.c.0.0), so last number is a '0'
+                                if iecvar["LOC"][4] == 0:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Request Status flag" (mapped onto %QWa.b.c.0.1), so last number is a '1'
+                                if iecvar["LOC"][4] == 1:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_tn_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Error code" (mapped onto %QWa.b.c.0.2), so last number is a '2'
+                                if iecvar["LOC"][4] == 2:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_mb_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
                     client_requestid += 1
                 tcpclient_node_count += 1
                 client_nodeid += 1
@@ -928,7 +954,7 @@ class RootClass(object):
                         #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
                         #        two numbers are always '0.0', and the first two identify the request.
                         #        In the following if, we check for this condition by checking
-                        #        if their are at least 4 or more number in the location's address.
+                        #        if there are at least 4 or more number in the location's address.
                         if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
                             and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
@@ -938,9 +964,18 @@ class RootClass(object):
                         # Now add the located variable in case it is a flag (condition (b) above
                         if  len(iecvar["LOC"]) >= 5:       # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append(
-                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
-                                loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a Execution Request Flag (mapped onto %QXa.b.c.0.0), so last number is a '0'
+                                if iecvar["LOC"][4] == 0:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Request Status flag" (mapped onto %QWa.b.c.0.1), so last number is a '1'
+                                if iecvar["LOC"][4] == 1:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_tn_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Error code" (mapped onto %QWa.b.c.0.2), so last number is a '2'
+                                if iecvar["LOC"][4] == 2:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_mb_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
                     client_requestid += 1
                 rtuclient_node_count += 1
                 client_nodeid += 1

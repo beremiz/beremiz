@@ -147,7 +147,8 @@ typedef struct{
 	    u16		address;
 	    u16		count;
 	    int		retries;
-	    u8		error_code; // modbus error code (if any) of current request
+	    u8		mb_error_code; // modbus      error code (if any) of last executed request
+	    u8		tn_error_code; // transaction error code (if any) of last executed request
 	    int		prev_error; // error code of the last printed error message (0 when no error) 
 	    struct timespec resp_timeout;
 	    u8		write_on_change; // boolean flag. If true => execute MB request when data to send changes
@@ -157,30 +158,43 @@ typedef struct{
 	    u16		coms_buffer[REQ_BUF_SIZE]; 
 	    pthread_mutex_t coms_buf_mutex; // mutex to access coms_buffer[]
           /* boolean flag that will be mapped onto a (BOOL) located variable 
-           * (u16 because IEC 61131-3 BOOL are mapped onto u16 in C code! )
+           * (u8 because IEC 61131-3 BOOL are mapped onto u8 in C code! )
            *    -> allow PLC program to request when to start the MB transaction
            *    -> will be reset once the MB transaction has completed
            */
-        u16     flag_exec_req;  
+        u8     flag_exec_req;  
           /* flag that works in conjunction with flag_exec_req
-           * (does not really need to be u16 as it is not mapped onto a located variable. )
+           * (does not really need to be u8 as it is not mapped onto a located variable. )
            *    -> used by internal logic to indicate that the client thread 
            *       that will be executing the MB transaction
            *       requested by flag exec_req has already been activated.
            *    -> will be reset once the MB transaction has completed
            */
-        u16     flag_exec_started;  
-          /* flag that will be mapped onto a (WORD) located variable 
-           * (u16 because the flag is a word! )
-           *    -> MSByte will store the result of the last executed MB transaction
+        u8     flag_exec_started;  
+          /* flag that will be mapped onto a (BYTE) located variable 
+           * (u8 because the flag is a BYTE! )
+           *    -> will store the result of the last executed MB transaction
            *         1 -> error accessing IP network, or serial interface
            *         2 -> reply received from server was an invalid frame
            *         3 -> server did not reply before timeout expired
-           *         4 -> server returned a valid error frame
-           *    -> if the MSByte is 4, the LSByte will store the MB error code returned by the server
+           *         4 -> server returned a valid Modbus error frame
            *    -> will be reset (set to 0) once this MB transaction has completed sucesfully
+           * 
+           * In other words, this variable is a copy of tn_error_code, reset after each request attempt completes.
+           * We map this copy (instead of tn_error_code) onto a located variable in case the user program decides
+           * to overwrite its value and mess up the plugin logic.
            */
-        u16     flag_exec_status;  
+        u8      flag_tn_error_code;  
+          /* flag that will be mapped onto a (BYTE) located variable 
+           * (u8 because the flag is a BYTE! )
+           *    -> if flag_tn_error_code is 4, this flag will store the MB error code returned by the MB server in a MB error frame
+           *    -> will be reset (set to 0) once this MB transaction has completed succesfully
+           * 
+           * In other words, this variable is a copy of mb_error_code, reset after each request attempt completes.
+           * We map this copy (instead of mb_error_code) onto a located variable in case the user program decides
+           * to overwrite its value and mess up the plugin logic.
+           */
+        u8      flag_mb_error_code;  
 	} client_request_t;
 
 
