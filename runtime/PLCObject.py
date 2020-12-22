@@ -555,12 +555,15 @@ class PLCObject(object):
             os.close(fd)
         self._init_blobs()
 
-    def _BlobAsFile(self, blobID, newpath):
+    def BlobAsFile(self, blobID, newpath):
         blob = self.blobs.pop(blobID, None)
 
         if blob is None:
             raise Exception(_("Missing data to create file: {}").format(newpath))
 
+        self._BlobAsFile(blob, newpath)
+
+    def _BlobAsFile(self, blob, newpath):
         fd, path, _md5sum = blob
         fobj = os.fdopen(fd)
         fobj.flush()
@@ -619,13 +622,13 @@ class PLCObject(object):
 
             try:
                 # Create new PLC file
-                self._BlobAsFile(plc_object, new_PLC_filename)
+                self.BlobAsFile(plc_object, new_PLC_filename)
 
                 # Then write the files
                 log = open(extra_files_log, "w")
                 for fname, blobID in extrafiles:
                     fpath = os.path.join(self.workingdir, fname)
-                    self._BlobAsFile(blobID, fpath)
+                    self.BlobAsFile(blobID, fpath)
                     log.write(fname+'\n')
 
                 # Store new PLC filename based on md5 key
