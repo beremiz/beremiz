@@ -55,7 +55,27 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>]
+    <xsl:text>];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var hmitree_paths = [
+</xsl:text>
+    <xsl:for-each select="$indexed_hmitree/*">
+      <xsl:text>    /* </xsl:text>
+      <xsl:value-of select="@index"/>
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="substring(local-name(), 5)"/>
+      <xsl:text> */ "</xsl:text>
+      <xsl:value-of select="@hmipath"/>
+      <xsl:text>"</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>];
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -122,6 +142,7 @@
   </xsl:template>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
+    <xsl:variable name="id" select="@id"/>
     <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
     <xsl:variable name="_args" select="substring-before($description,'@')"/>
     <xsl:variable name="args">
@@ -148,7 +169,7 @@
     <xsl:if test="$type">
       <widget>
         <xsl:attribute name="id">
-          <xsl:value-of select="@id"/>
+          <xsl:value-of select="$id"/>
         </xsl:attribute>
         <xsl:attribute name="type">
           <xsl:value-of select="$type"/>
@@ -164,33 +185,65 @@
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
+              <xsl:variable name="pathminmax" select="str:split(.,',')"/>
+              <xsl:variable name="path" select="$pathminmax[1]"/>
+              <xsl:variable name="pathminmaxcount" select="count($pathminmax)"/>
               <xsl:attribute name="value">
-                <xsl:value-of select="."/>
+                <xsl:value-of select="$path"/>
               </xsl:attribute>
-              <xsl:variable name="path" select="."/>
-              <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
               <xsl:choose>
-                <xsl:when test="count($item) = 1">
-                  <xsl:attribute name="index">
-                    <xsl:value-of select="$item/@index"/>
+                <xsl:when test="$pathminmaxcount = 3">
+                  <xsl:attribute name="min">
+                    <xsl:value-of select="$pathminmax[2]"/>
                   </xsl:attribute>
+                  <xsl:attribute name="max">
+                    <xsl:value-of select="$pathminmax[3]"/>
+                  </xsl:attribute>
+                </xsl:when>
+                <xsl:when test="$pathminmaxcount = 2">
+                  <xsl:message terminate="yes">
+                    <xsl:text>Widget id:</xsl:text>
+                    <xsl:value-of select="$id"/>
+                    <xsl:text> label:</xsl:text>
+                    <xsl:value-of select="$label"/>
+                    <xsl:text> has wrong syntax of path section </xsl:text>
+                    <xsl:value-of select="$pathminmax"/>
+                  </xsl:message>
+                </xsl:when>
+              </xsl:choose>
+              <xsl:choose>
+                <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+')">
                   <xsl:attribute name="type">
-                    <xsl:value-of select="local-name($item)"/>
+                    <xsl:text>PAGE_LOCAL</xsl:text>
+                  </xsl:attribute>
+                </xsl:when>
+                <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+')">
+                  <xsl:attribute name="type">
+                    <xsl:text>HMI_LOCAL</xsl:text>
                   </xsl:attribute>
                 </xsl:when>
                 <xsl:otherwise>
-                  <xsl:choose>
-                    <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+')">
-                      <xsl:attribute name="type">
-                        <xsl:text>PAGE_LOCAL</xsl:text>
-                      </xsl:attribute>
-                    </xsl:when>
-                    <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+')">
-                      <xsl:attribute name="type">
-                        <xsl:text>HMI_LOCAL</xsl:text>
-                      </xsl:attribute>
-                    </xsl:when>
-                  </xsl:choose>
+                  <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
+                  <xsl:variable name="pathtype" select="local-name($item)"/>
+                  <xsl:if test="$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')">
+                    <xsl:message terminate="yes">
+                      <xsl:text>Widget id:</xsl:text>
+                      <xsl:value-of select="$id"/>
+                      <xsl:text> label:</xsl:text>
+                      <xsl:value-of select="$label"/>
+                      <xsl:text> path section </xsl:text>
+                      <xsl:value-of select="$pathminmax"/>
+                      <xsl:text> use min and max on non mumeric value</xsl:text>
+                    </xsl:message>
+                  </xsl:if>
+                  <xsl:if test="count($item) = 1">
+                    <xsl:attribute name="index">
+                      <xsl:value-of select="$item/@index"/>
+                    </xsl:attribute>
+                    <xsl:attribute name="type">
+                      <xsl:value-of select="$pathtype"/>
+                    </xsl:attribute>
+                  </xsl:if>
                 </xsl:otherwise>
               </xsl:choose>
             </path>
@@ -1223,6 +1276,8 @@
 </xsl:text>
     <xsl:text>        if(typeof(index) == "string"){
 </xsl:text>
+    <xsl:text>            /* XXX return index as path */
+</xsl:text>
     <xsl:text>            index = page_local_index(index, this.container_id);
 </xsl:text>
     <xsl:text>        } else {
@@ -1233,11 +1288,15 @@
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
+    <xsl:text>            /* XXX check for hmi_paths and return path */
+</xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>        return index;
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    change_hmi_value(index, opstr) {
 </xsl:text>
@@ -1245,7 +1304,11 @@
 </xsl:text>
     <xsl:text>        if(realindex == undefined) return undefined;
 </xsl:text>
-    <xsl:text>        return change_hmi_value(realindex, opstr);
+    <xsl:text>        let old_val = cache[realindex];
+</xsl:text>
+    <xsl:text>        let new_val = eval_operation_string(old_val, opstr);
+</xsl:text>
+    <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -3995,7 +4058,7 @@
 </xsl:text>
     <xsl:text>         on_op_click(opstr) {
 </xsl:text>
-    <xsl:text>             let new_val = this.change_hmi_value(0, opstr);
+    <xsl:text>             this.change_hmi_value(0, opstr);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -6827,7 +6890,7 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function change_hmi_value(index, opstr) {
+          <xsl:text>function eval_operation_string(old_val, opstr) {
 </xsl:text>
           <xsl:text>    let op = opstr[0];
 </xsl:text>
@@ -6835,13 +6898,13 @@
 </xsl:text>
           <xsl:text>    if(opstr.length &lt; 2) 
 </xsl:text>
-          <xsl:text>        return undefined; // TODO raise
+          <xsl:text>        return undefined;
 </xsl:text>
           <xsl:text>    if(opstr[1] in quotes){
 </xsl:text>
           <xsl:text>        if(opstr.length &lt; 3) 
 </xsl:text>
-          <xsl:text>            return undefined; // TODO raise
+          <xsl:text>            return undefined;
 </xsl:text>
           <xsl:text>        if(opstr[opstr.length-1] == opstr[1]){
 </xsl:text>
@@ -6854,8 +6917,6 @@
           <xsl:text>        given_val = Number(opstr.slice(1));
 </xsl:text>
           <xsl:text>    }
-</xsl:text>
-          <xsl:text>    let old_val = cache[index];
 </xsl:text>
           <xsl:text>    let new_val;
 </xsl:text>
@@ -6893,6 +6954,20 @@
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
+          <xsl:text>    return new_val;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>/*
+</xsl:text>
+          <xsl:text>function change_hmi_value(index, opstr) {
+</xsl:text>
+          <xsl:text>    let old_val = cache[index];
+</xsl:text>
+          <xsl:text>    let new_val = eval_operation_string(old_val, opstr);
+</xsl:text>
           <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
 </xsl:text>
           <xsl:text>        send_hmi_value(index, new_val);
@@ -6902,6 +6977,8 @@
           <xsl:text>    return new_val;
 </xsl:text>
           <xsl:text>}
+</xsl:text>
+          <xsl:text>*/
 </xsl:text>
           <xsl:text>
 </xsl:text>
