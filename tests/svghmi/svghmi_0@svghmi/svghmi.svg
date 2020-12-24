@@ -304,7 +304,7 @@
   </g>
   <g
      id="g84"
-     inkscape:label="HMI:Input@/TARGETPRESSURE"
+     inkscape:label="HMI:Input@/TARGETPRESSURE,0,100"
      transform="matrix(0.35865594,0,0,0.35865594,22.072155,63.074421)">
     <text
        inkscape:label="value"
