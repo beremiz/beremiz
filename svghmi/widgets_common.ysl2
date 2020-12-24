@@ -182,10 +182,13 @@ emit "preamble:widget-base-class" {
             }
             return index;
         }
+
         change_hmi_value(index, opstr) {
             let realindex = this.get_variable_index(index);
             if(realindex == undefined) return undefined;
-            return change_hmi_value(realindex, opstr);
+            let old_val = cache[realindex];
+            let new_val = eval_operation_string(old_val, opstr);
+            return apply_hmi_value(realindex, new_val);
         }
 
         apply_hmi_value(index, new_val) {
