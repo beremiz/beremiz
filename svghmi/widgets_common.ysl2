@@ -45,7 +45,17 @@ template "svg:*", mode="hmi_widgets" {
         }
     }
 
-    |   "«@id»": new «$widget/@type»Widget ("«@id»",[«$args»],[«$indexes»],{
+    const "minmaxes" foreach "$widget/path" {
+        choose {
+            when "@min and @max"
+                > [«@min»,«@max»]
+            otherwise
+                > undefined
+        }
+        if "position()!=last()" > ,
+    }
+
+    |   "«@id»": new «$widget/@type»Widget ("«@id»",[«$args»],[«$indexes»],[«$minmaxes»],{
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
 }
@@ -125,11 +135,12 @@ emit "preamble:widget-base-class" {
         unsubscribable = false;
         pending_animate = false;
 
-        constructor(elt_id,args,indexes,members){
+        constructor(elt_id,args,indexes,minmaxes,members){
             this.element_id = elt_id;
             this.element = id(elt_id);
             this.args = args;
             this.indexes = indexes;
+            this.minmaxes = minmaxes;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
         }
 
@@ -183,17 +194,41 @@ emit "preamble:widget-base-class" {
             return index;
         }
 
+        overshot(new_val, max) {
+        }
+
+        undershot(new_val, min) {
+        }
+
+        clip_min_max(index, new_val) {
+            let minmax = this.minmaxes[index];
+            if(minmax !== undefined && typeof new_val == "number") {
+                let [min,max] = minmax;
+                if(new_val < min){
+                    this.undershot(new_val, min);
+                    return min;
+                }
+                if(new_val > max){
+                    this.overshot(new_val, max);
+                    return max;
+                }
+            }
+            return new_val;
+        }
+
         change_hmi_value(index, opstr) {
             let realindex = this.get_variable_index(index);
             if(realindex == undefined) return undefined;
             let old_val = cache[realindex];
             let new_val = eval_operation_string(old_val, opstr);
+            new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
         }
 
         apply_hmi_value(index, new_val) {
             let realindex = this.get_variable_index(index);
             if(realindex == undefined) return undefined;
+            new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
         }
 
