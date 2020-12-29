@@ -8,21 +8,24 @@ template "widget[@type='Meter']", mode="widget_class"{
         range = undefined;
 
         dispatch(value) {
+            this.display_val = value;
+            this.request_animate();
+        }
+
+        animate(){
             if(this.value_elt)
-                this.value_elt.textContent = String(value);
+                this.value_elt.textContent = String(this.display_val);
             let [min,max,totallength] = this.range;
-            let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+            let length = Math.max(0,Math.min(totallength,(Number(this.display_val)-min)*totallength/(max-min)));
             let tip = this.range_elt.getPointAtLength(length);
             this.needle_elt.setAttribute('d', "M "+this.origin.x+","+this.origin.y+" "+tip.x+","+tip.y);
         }
 
         init() {
-            let min = this.min_elt ?
-                        Number(this.min_elt.textContent) :
-                        this.args.length >= 1 ? this.args[0] : 0;
-            let max = this.max_elt ?
-                        Number(this.max_elt.textContent) :
-                        this.args.length >= 2 ? this.args[1] : 100;
+            let [min,max] = [[this.min_elt,0],[this.max_elt,100]].map(([elt,def],i)=>elt?
+                Number(elt.textContent) :
+                this.args.length >= i+1 ? this.args[i] : def);
+
             this.range = [min, max, this.range_elt.getTotalLength()]
             this.origin = this.needle_elt.getPointAtLength(0);
         }
@@ -35,7 +38,6 @@ template "widget[@type='Meter']", mode="widget_defs" {
     param "hmi_element";
     labels("needle range");
     optional_labels("value min max");
-    |,
 }
 
 
