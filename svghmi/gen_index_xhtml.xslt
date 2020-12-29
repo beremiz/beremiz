@@ -59,26 +59,6 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>var hmitree_paths = [
-</xsl:text>
-    <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:text>    /* </xsl:text>
-      <xsl:value-of select="@index"/>
-      <xsl:text> </xsl:text>
-      <xsl:value-of select="substring(local-name(), 5)"/>
-      <xsl:text> */ "</xsl:text>
-      <xsl:value-of select="@hmipath"/>
-      <xsl:text>"</xsl:text>
-      <xsl:if test="position()!=last()">
-        <xsl:text>,</xsl:text>
-      </xsl:if>
-      <xsl:text>
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>];
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>
 </xsl:text>
   </xsl:template>
@@ -978,35 +958,50 @@
                   <xsl:text>" in HMI tree</xsl:text>
                 </xsl:message>
                 <xsl:text>undefined</xsl:text>
-                <xsl:if test="position()!=last()">
-                  <xsl:text>,</xsl:text>
-                </xsl:if>
               </xsl:when>
               <xsl:when test="@type = 'PAGE_LOCAL'">
                 <xsl:text>"</xsl:text>
                 <xsl:value-of select="@value"/>
                 <xsl:text>"</xsl:text>
-                <xsl:if test="position()!=last()">
-                  <xsl:text>,</xsl:text>
-                </xsl:if>
               </xsl:when>
               <xsl:when test="@type = 'HMI_LOCAL'">
                 <xsl:text>hmi_local_index("</xsl:text>
                 <xsl:value-of select="@value"/>
                 <xsl:text>")</xsl:text>
-                <xsl:if test="position()!=last()">
-                  <xsl:text>,</xsl:text>
-                </xsl:if>
               </xsl:when>
+              <xsl:otherwise>
+                <xsl:message terminate="yes">
+                  <xsl:text>Internal error while processing widget's non indexed HMI tree path : unknown type</xsl:text>
+                </xsl:message>
+              </xsl:otherwise>
             </xsl:choose>
           </xsl:when>
           <xsl:otherwise>
             <xsl:value-of select="@index"/>
-            <xsl:if test="position()!=last()">
-              <xsl:text>,</xsl:text>
-            </xsl:if>
           </xsl:otherwise>
         </xsl:choose>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:variable name="minmaxes">
+      <xsl:for-each select="$widget/path">
+        <xsl:choose>
+          <xsl:when test="@min and @max">
+            <xsl:text>[</xsl:text>
+            <xsl:value-of select="@min"/>
+            <xsl:text>,</xsl:text>
+            <xsl:value-of select="@max"/>
+            <xsl:text>]</xsl:text>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:text>undefined</xsl:text>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
       </xsl:for-each>
     </xsl:variable>
     <xsl:text>  "</xsl:text>
@@ -1019,6 +1014,8 @@
     <xsl:value-of select="$args"/>
     <xsl:text>],[</xsl:text>
     <xsl:value-of select="$indexes"/>
+    <xsl:text>],[</xsl:text>
+    <xsl:value-of select="$minmaxes"/>
     <xsl:text>],{
 </xsl:text>
     <xsl:apply-templates mode="widget_defs" select="$widget">
@@ -1178,7 +1175,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    constructor(elt_id,args,indexes,members){
+    <xsl:text>    constructor(elt_id,args,indexes,minmaxes,members){
 </xsl:text>
     <xsl:text>        this.element_id = elt_id;
 </xsl:text>
@@ -1187,6 +1184,8 @@
     <xsl:text>        this.args = args;
 </xsl:text>
     <xsl:text>        this.indexes = indexes;
+</xsl:text>
+    <xsl:text>        this.minmaxes = minmaxes;
 </xsl:text>
     <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
 </xsl:text>
@@ -1276,8 +1275,6 @@
 </xsl:text>
     <xsl:text>        if(typeof(index) == "string"){
 </xsl:text>
-    <xsl:text>            /* XXX return index as path */
-</xsl:text>
     <xsl:text>            index = page_local_index(index, this.container_id);
 </xsl:text>
     <xsl:text>        } else {
@@ -1288,11 +1285,57 @@
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
-    <xsl:text>            /* XXX check for hmi_paths and return path */
-</xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>        return index;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    overshot(new_val, max) {
+</xsl:text>
+    <xsl:text>        // TODO: use a Toast
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    undershot(new_val, min) {
+</xsl:text>
+    <xsl:text>        // TODO: use a Toast
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    clip_min_max(index, new_val) {
+</xsl:text>
+    <xsl:text>        let minmax = this.minmaxes[index];
+</xsl:text>
+    <xsl:text>        if(minmax !== undefined &amp;&amp; typeof new_val == "number") {
+</xsl:text>
+    <xsl:text>            let [min,max] = minmax;
+</xsl:text>
+    <xsl:text>            if(new_val &lt; min){
+</xsl:text>
+    <xsl:text>                this.undershot(new_val, min);
+</xsl:text>
+    <xsl:text>                return min;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            if(new_val &gt; max){
+</xsl:text>
+    <xsl:text>                this.overshot(new_val, max);
+</xsl:text>
+    <xsl:text>                return max;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        return new_val;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1308,6 +1351,8 @@
 </xsl:text>
     <xsl:text>        let new_val = eval_operation_string(old_val, opstr);
 </xsl:text>
+    <xsl:text>        new_val = this.clip_min_max(index, new_val);
+</xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
     <xsl:text>    }
@@ -1319,6 +1364,8 @@
     <xsl:text>        let realindex = this.get_variable_index(index);
 </xsl:text>
     <xsl:text>        if(realindex == undefined) return undefined;
+</xsl:text>
+    <xsl:text>        new_val = this.clip_min_max(index, new_val);
 </xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
@@ -4068,6 +4115,30 @@
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         overshot(new_val, max) {
+</xsl:text>
+    <xsl:text>             this.last_display = "max: "+max;
+</xsl:text>
+    <xsl:text>             this.request_animate();
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         undershot(new_val, min) {
+</xsl:text>
+    <xsl:text>             this.last_display = "min: "+min;
+</xsl:text>
+    <xsl:text>             this.request_animate();
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
   </xsl:template>
@@ -4116,11 +4187,21 @@
 </xsl:text>
     </xsl:if>
     <xsl:if test="$have_value">
-      <xsl:text>        this.value_elt.textContent = String(value);
+      <xsl:text>        this.last_display = value;
+</xsl:text>
+      <xsl:text>        this.request_animate();
 </xsl:text>
     </xsl:if>
     <xsl:text>    },
 </xsl:text>
+    <xsl:if test="$have_value">
+      <xsl:text>    animate: function(){
+</xsl:text>
+      <xsl:text>        this.value_elt.textContent = String(this.last_display);
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
+    </xsl:if>
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:if test="$have_edit">
@@ -5139,7 +5220,7 @@
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
-    <xsl:text>         if(this.shift != this._shift){
+    <xsl:text>         if(this.Shift_sub &amp;&amp; this.shift != this._shift){
 </xsl:text>
     <xsl:text>             this._shift = this.shift;
 </xsl:text>
@@ -5147,7 +5228,7 @@
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
-    <xsl:text>         if(this.caps != this._caps){
+    <xsl:text>         if(this.CapsLock_sub &amp;&amp; this.caps != this._caps){
 </xsl:text>
     <xsl:text>             this._caps = this.caps;
 </xsl:text>
