@@ -175,11 +175,11 @@ template "widget[@type='Keypad']", mode="widget_class"
                  this._editstr = this.editstr;
                  this.Value_elt.textContent = this.editstr;
              }
-             if(this.shift != this._shift){
+             if(this.Shift_sub && this.shift != this._shift){
                  this._shift = this.shift;
                  (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
              }
-             if(this.caps != this._caps){
+             if(this.CapsLock_sub && this.caps != this._caps){
                  this._caps = this.caps;
                  (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
              }
