@@ -31,18 +31,21 @@ template "svg:*", mode="hmi_widgets" {
                 choose {
                     when "not(@type)" {
                         warning > Widget «$widget/@type» id="«$eltid»" : No match for path "«@value»" in HMI tree
-                        > undefined`if "position()!=last()" > ,`
+                        > undefined
                     }
                     when "@type = 'PAGE_LOCAL'" 
-                        > "«@value»"`if "position()!=last()" > ,`
+                        > "«@value»"
                     when "@type = 'HMI_LOCAL'" 
-                        > hmi_local_index("«@value»")`if "position()!=last()" > ,`
+                        > hmi_local_index("«@value»")
+                    otherwise 
+                        error > Internal error while processing widget's non indexed HMI tree path : unknown type
                 }
             }
             otherwise {
-                > «@index»`if "position()!=last()" > ,`
+                > «@index»
             }
         }
+        if "position()!=last()" > ,
     }
 
     const "minmaxes" foreach "$widget/path" {

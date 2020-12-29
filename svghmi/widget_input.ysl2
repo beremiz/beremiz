@@ -4,7 +4,7 @@ template "widget[@type='Input']", mode="widget_class"{
 ||
     class InputWidget extends Widget{
          on_op_click(opstr) {
-             let new_val = this.change_hmi_value(0, opstr);
+             this.change_hmi_value(0, opstr);
          }
          edit_callback(new_val) {
              this.apply_hmi_value(0, new_val);
