@@ -7,40 +7,44 @@ template "widget[@type='CircularBar']", mode="widget_class"{
         range = undefined;
 
         dispatch(value) {
+            this.display_val = value;
+            this.request_animate();
+        }
+
+        animate(){
             if(this.value_elt)
-                this.value_elt.textContent = String(value);
+                this.value_elt.textContent = String(this.display_val);
             let [min,max,start,end] = this.range;
             let [cx,cy] = this.center;
             let [rx,ry] = this.proportions;
-            let tip = start + (end-start)*Number(value)/(max-min);
+            let tip = start + (end-start)*Number(this.display_val)/(max-min);
             let size = 0;
-            if (tip-start > Math.PI) {
+
+            if (tip-start > Math.PI)
                 size = 1;
-            } else {
+            else
                 size = 0;
-            }
-            this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
+
+            this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+
+                                            " A "+rx+","+ry+
+                                            " 0 "+size+
+                                            " 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
         }
 
         init() {
-            let start = Number(this.path_elt.getAttribute('sodipodi:start'));
-            let end = Number(this.path_elt.getAttribute('sodipodi:end'));
-            let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
-            let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
-            let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
-            let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
-            if (ry == 0) {
+            let [start, end, cx, cy, rx, ry] = ["start", "end", "cx", "cy", "rx", "ry"].
+                map(tag=>Number(this.path_elt.getAttribute('sodipodi:'+tag)))
+
+            if (ry == 0) 
                 ry = rx;
-            }
-            if (start > end) {
+
+            if (start > end)
                 end = end + 2*Math.PI;
-            }
-            let min = this.min_elt ?
-                      Number(this.min_elt.textContent) :
-                      this.args.length >= 1 ? this.args[0] : 0;
-            let max = this.max_elt ?
-                      Number(this.max_elt.textContent) :
-                      this.args.length >= 2 ? this.args[1] : 100;
+
+            let [min,max] = [[this.min_elt,0],[this.max_elt,100]].map(([elt,def],i)=>elt?
+                Number(elt.textContent) :
+                this.args.length >= i+1 ? this.args[i] : def);
+
             this.range = [min, max, start, end];
             this.center = [cx, cy];
             this.proportions = [rx, ry];
@@ -53,5 +57,4 @@ template "widget[@type='CircularBar']", mode="widget_defs" {
     param "hmi_element";
     labels("path");
     optional_labels("value min max");
-    |,
 }
