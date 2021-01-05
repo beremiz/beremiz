@@ -150,9 +150,6 @@ template "svg:*", mode="page_desc" {
     |     ],
     |     jumps: [
     foreach "$parsed_widgets/widget[@id = $all_page_widgets/@id and @type='Jump']" {
-        const "_id","@id";
-        const "opts" call "jump_widget_activity" with "hmi_element", "$hmi_elements[@id=$_id]";
-        if "string-length($opts)>0"
     |         hmi_widgets["«@id»"]`if "position()!=last()" > ,`
     }
     |     ],
