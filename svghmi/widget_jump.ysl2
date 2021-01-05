@@ -1,88 +1,83 @@
 // widget_jump.ysl2
 
-function "jump_widget_activity" {
-    param "hmi_element";
-        optional_labels("active inactive");
-}
+template "widget[@type='Jump']", mode="widget_class"{
+||
+    class JumpWidget extends Widget{
 
-function "jump_widget_disability" {
-    param "hmi_element";
-        optional_labels("disabled");
+        activable = false;
+        active = false;
+        disabled = false;
+        frequency = 2;
+
+        update_activity() {
+            if(this.active) {
+                 /* show active */ 
+                 this.active_elt.setAttribute("style", this.active_elt_style);
+                 /* hide inactive */ 
+                 this.inactive_elt.setAttribute("style", "display:none");
+            } else {
+                 /* show inactive */ 
+                 this.inactive_elt.setAttribute("style", this.inactive_elt_style);
+                 /* hide active */ 
+                 this.active_elt.setAttribute("style", "display:none");
+            }
+        }
+
+        make_on_click() {
+            let that = this;
+            const name = this.args[0];
+            return function(evt){
+                /* TODO: suport path pointing to local variable whom value 
+                   would be an HMI_TREE index to jump to a relative page */
+                const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
+                switch_page(name, index);
+            }
+        }
+
+        notify_page_change(page_name, index) {
+            if(this.activable) {
+                const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
+                const ref_name = this.args[0];
+                this.active = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
+                this.update_activity();
+            }
+        }
+
+        dispatch(value) {
+            this.disabled = !Number(value);
+            if(this.disabled) {
+              /* show disabled */ 
+              this.disabled_elt.setAttribute("style", this.disabled_elt_style);
+              /* hide inactive */ 
+              this.inactive_elt.setAttribute("style", "display:none");
+              /* hide active */ 
+              this.active_elt.setAttribute("style", "display:none");
+            } else {
+              /* hide disabled */ 
+              this.disabled_elt.setAttribute("style", "display:none");
+              this.update_activity();
+            }
+        }
+    }
+||
 }
 
 template "widget[@type='Jump']", mode="widget_defs" {
     param "hmi_element";
-    const "activity" call "jump_widget_activity" with "hmi_element", "$hmi_element";
+    const "activity" optional_labels("active inactive");
     const "have_activity","string-length($activity)>0";
     value "$activity";
-    const "disability" call "jump_widget_disability" with "hmi_element", "$hmi_element";
+
+    const "disability" optional_labels("disabled");
     const "have_disability","$have_activity and string-length($disability)>0";
     value "$disability";
-    if "$have_activity" {
-    |     active: false,
-    if "$have_disability" {
-    |     disabled: false,
-    |     frequency: 2,
-    |     dispatch: function(value) {
-    |         this.disabled = !Number(value);
-    |         this.update();
-    |     },
-    }
-    |     update: function(){
-    if "$have_disability" {
-    |       if(this.disabled) {
-    |         /* show disabled */ 
-    |         this.disabled_elt.setAttribute("style", this.active_elt_style);
-    |         /* hide inactive */ 
-    |         this.inactive_elt.setAttribute("style", "display:none");
-    |         /* hide active */ 
-    |         this.active_elt.setAttribute("style", "display:none");
-    |       } else {
-    |         /* hide disabled */ 
-    |         this.disabled_elt.setAttribute("style", "display:none");
-    }
-    |         if(this.active) {
-    |              /* show active */ 
-    |              this.active_elt.setAttribute("style", this.active_elt_style);
-    |              /* hide inactive */ 
-    |              this.inactive_elt.setAttribute("style", "display:none");
-    |         } else {
-    |              /* show inactive */ 
-    |              this.inactive_elt.setAttribute("style", this.inactive_elt_style);
-    |              /* hide active */ 
-    |              this.active_elt.setAttribute("style", "display:none");
-    |         }
-    if "$have_disability" {
-    |       }
-    }
-    |     },
-    }
-    if "$have_activity" {
-    |     notify_page_change: function(page_name, index){
-    |         const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
-    |         const ref_name = this.args[0];
-    |         this.active =((ref_name == undefined || ref_name == page_name) && index == ref_index);
-    |         this.update();
-    |     },
-    }
-    |     make_on_click(){
-    |         let that = this;
-    |         const name = this.args[0];
-    |         return function(evt){
-    |             const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
-    |             switch_page(name, index);
-    |         }
-    |     },
+
     |     init: function() {
-    /* registering event this way does not "click" through svg:use 
-    |     this.element.onclick = evt => switch_page(this.args[0]);
-    event must be registered by adding attribute to element instead
-    TODO : generalize mouse event handling by global event capture + getElementsAtPoint()
-    */
     |         this.element.onclick = this.make_on_click();
     if "$have_activity" {
     |         this.active_elt_style = this.active_elt.getAttribute("style");
     |         this.inactive_elt_style = this.inactive_elt.getAttribute("style");
+    |         this.activable = true;
     }
     choose {
         when "$have_disability" {
@@ -99,6 +94,7 @@ template "widget[@type='Jump']", mode="per_page_widget_template"{
     param "page_desc";
     /* check that given path is compatible with page's reference path */
     if "path" {
+        /* TODO: suport local variable containing an HMI_TREE index to jump to a relative page */
         /* when no page name provided, check for same page */
         const "target_page_name" choose {
             when "arg" value "arg[1]/@value";

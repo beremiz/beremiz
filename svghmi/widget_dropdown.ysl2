@@ -335,9 +335,10 @@ template "widget[@type='DropDown']", mode="widget_class"{
 template "widget[@type='DropDown']", mode="widget_defs" {
     param "hmi_element";
     labels("text box button highlight");
-||
     // It is assumed that list content conforms to Array interface.
+||
     content: [
+    /* TODO : Support HMI:List */
     ``foreach "arg" | "«@value»",
     ],
 
