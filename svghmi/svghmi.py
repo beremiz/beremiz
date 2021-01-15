@@ -30,6 +30,7 @@ from runtime.typemapping import DebugTypesSize
 import targets
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from XSLTransform import XSLTransform
+from svghmi.i18n import POTWriter, POReader
 
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
@@ -460,9 +461,9 @@ class SVGHMI(object):
             "method":   "_StartInkscape"
         },
 
-        # TODO : Launch POEdit button
-        #        PO -> SVG layers button
-        #        SVG layers -> PO
+        # TODO : Launch POEdit button for new languqge (opens POT)
+
+        # TODO : Launch POEdit button for existing languqge (opens one of existing PO)
 
         # TODO : HMITree button
         #        - can drag'n'drop variabes to Inkscape
@@ -474,6 +475,10 @@ class SVGHMI(object):
             project_path = self.CTNPath()
         return os.path.join(project_path, "svghmi.svg")
 
+    def _getPOTpath(self, project_path=None):
+        if project_path is None:
+            project_path = self.CTNPath()
+        return os.path.join(project_path, "messages.pot")
 
     def OnCTNSave(self, from_project_path=None):
         if from_project_path is not None:
@@ -513,6 +518,19 @@ class SVGHMI(object):
         res = [hmi_tree_root.etree(add_hash=True)]
         return res
 
+    def GetTranslations(self, _context, msgs):
+
+        w = POTWriter()
+        w.ImportMessages(msgs)
+        # XXX get POT path
+        # XXX save POT file
+
+        # XXX scan existing PO files 
+        # XXX read PO files
+
+        r = POReader()
+        return None # XXX return all langs from all POs
+
     def CTNGenerate_C(self, buildpath, locations):
 
         location_str = "_".join(map(str, self.GetCurrentLocation()))
@@ -532,7 +550,8 @@ class SVGHMI(object):
             # TODO : move to __init__
             transform = XSLTransform(os.path.join(ScriptDirectory, "gen_index_xhtml.xslt"),
                           [("GetSVGGeometry", lambda *_ignored:self.GetSVGGeometry()),
-                           ("GetHMITree", lambda *_ignored:self.GetHMITree())])
+                           ("GetHMITree", lambda *_ignored:self.GetHMITree()),
+                           ("GetTranslations", self.GetTranslations)])
 
 
             # load svg as a DOM with Etree
@@ -648,6 +667,28 @@ def _runtime_{location}_svghmi_stop():
             if not os.path.isfile(svgfile):
                 svgfile = None
             open_svg(svgfile)
+
+    def _StartPOEdit(self, POFile):
+        open_poedit = True
+        if not self.GetCTRoot().CheckProjectPathPerm():
+            dialog = wx.MessageDialog(self.GetCTRoot().AppFrame,
+                                      _("You don't have write permissions.\nOpen POEdit anyway ?"),
+                                      _("Open POEdit"),
+                                      wx.YES_NO | wx.ICON_QUESTION)
+            open_poedit = dialog.ShowModal() == wx.ID_YES
+            dialog.Destroy()
+        if open_poedit:
+            # XXX TODO
+            pass
+
+    def _EditTranslation(self):
+        """ Select a specific translation and edit it with POEdit """
+        pass
+
+    def _EditNewTranslation(self):
+        """ Start POEdit with untouched empty catalog """
+        POFile = self._getPOTpath()
+        self._StartPOEdit(POFile)
 
     def CTNGlobalInstances(self):
         # view_name = self.BaseParams.getName()
