@@ -159,6 +159,7 @@ class Iec2CSettings(object):
                                                          no_stdout=True,
                                                          no_stderr=True).spin()
         except Exception:
+            self.logger.write_error(_("Couldn't launch IEC compiler to determine compatible options.\n"))
             return buildopt
 
         for opt in options:
