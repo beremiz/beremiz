@@ -37,6 +37,11 @@ template "sodipodi:namedview[@units!='px' or @inkscape:document-units!='px']", m
     error > All units must be set to "px" in Inkscape's document properties
 }
 
+// remove i18n markers, so that defs_by_labels can find text elements
+svgtmpl "svg:text/@inkscape:label[starts-with(., '_')]", mode="inline_svg" {
+    attrib "{name()}" > «substring(., 2)»
+}
+
 ////// Clone unlinking
 //
 // svg:use (inkscape's clones) inside a widgets are

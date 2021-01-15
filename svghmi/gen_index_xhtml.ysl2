@@ -51,6 +51,8 @@ istylesheet
 
     include inline_svg.ysl2
 
+    include i18n.ysl2
+
     include widgets_common.ysl2
 
     include widget_*.ysl2
