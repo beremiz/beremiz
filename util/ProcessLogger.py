@@ -78,7 +78,6 @@ class ProcessLogger(object):
                  timeout=None, outlimit=None, errlimit=None,
                  endlog=None, keyword=None, kill_it=False, cwd=None,
                  encoding=None, output_encoding=None):
-        assert(logger)
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -160,7 +159,7 @@ class ProcessLogger(object):
             v = v.decode(self.output_encoding)
         self.outdata.append(v)
         self.outlen += 1
-        if not self.no_stdout:
+        if self.logger and not self.no_stdout:
             self.logger.write(v)
         if (self.keyword and v.find(self.keyword) != -1) or (self.outlimit and self.outlen > self.outlimit):
             self.endlog()
@@ -170,7 +169,7 @@ class ProcessLogger(object):
             v = v.decode(self.output_encoding)
         self.errdata.append(v)
         self.errlen += 1
-        if not self.no_stderr:
+        if self.logger and not self.no_stderr:
             self.logger.write_warning(v)
         if self.errlimit and self.errlen > self.errlimit:
             self.endlog()

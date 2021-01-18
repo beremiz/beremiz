@@ -790,6 +790,6 @@ class RootClass(object):
         runtimefile.close()
 
         return ([(Generated_BACnet_c_mainfile_name, CFLAGS)], LDFLAGS, True,
-                ("runtime_bacnet_websettings_%s.py" % location_str, open(runtimefile_path, "rb")),
+                ("runtime_%s_bacnet_websettings.py" % location_str, open(runtimefile_path, "rb")),
         )
         #return [(Generated_BACnet_c_mainfile_name, CFLAGS)], LDFLAGS, True, ('extrafile1.txt', extra_file_handle)

@@ -103,7 +103,7 @@ if wx.Platform == '__WXMSW__':
     }
 else:
     faces = {
-        'mono': 'Courier',
+        'mono': 'FreeMono',
         'size': 10,
     }
 
