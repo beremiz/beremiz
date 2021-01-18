@@ -1058,5 +1058,5 @@ class RootClass(object):
         runtimefile.close()
 
         return ([(Gen_MB_c_path, ' -I"' + ModbusPath + '"')], LDFLAGS, True,
-                ("runtime_modbus_websettings_%s.py" % location_str, open(runtimefile_path, "rb")),
+                ("runtime_%s_modbus_websettings.py" % location_str, open(runtimefile_path, "rb")),
         )

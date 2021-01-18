@@ -22,4 +22,7 @@ class XSLTransform(object):
         # print(self.xslt.error_log)
         return res
 
+    def get_error_log(self):
+        return self.xslt.error_log
+
 

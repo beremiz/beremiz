@@ -46,6 +46,7 @@ from lxml import etree
 from xmlclass import GenerateParserFromXSDstring
 from PLCControler import LOCATION_CONFNODE
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+from POULibrary import UserAddressedException
 
 _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
         <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -469,21 +470,21 @@ class ConfigTreeNode(object):
     def GetContextualMenuItems(self):
         return None
 
-    def GetView(self):
-        if self._View is None and self.EditorType is not None:
+    def GetView(self, onlyopened=False):
+        if self._View is None and not onlyopened and self.EditorType is not None:
             app_frame = self.GetCTRoot().AppFrame
             self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
 
         return self._View
 
     def _OpenView(self, name=None, onlyopened=False):
-        view = self.GetView()
+        view = self.GetView(onlyopened)
 
         if view is not None:
             if name is None:
                 name = self.CTNFullName()
             app_frame = self.GetCTRoot().AppFrame
-            app_frame.EditProjectElement(view, name)
+            app_frame.EditProjectElement(view, name, onlyopened)
 
         return view
 

@@ -39,6 +39,7 @@ from twisted.internet import reactor
 
 import util.paths as paths
 from runtime.loglevels import LogLevels, LogLevelsDict
+from runtime import MainWorker, GetPLCObjectSingleton
 
 PAGE_TITLE = 'Beremiz Runtime Web Interface'
 
@@ -217,6 +218,18 @@ class ISettings(annotate.TypedInterface):
                                                "Send a message to the log"),
                                            action=_("Send"))
 
+    # pylint: disable=no-self-argument
+    def restartOrRepairPLC(
+            ctx=annotate.Context(),
+            action=annotate.Choice(["Restart", "Repair"],
+                                  required=True,
+                                  label=_("Action"))):
+        pass
+
+    restartOrRepairPLC = annotate.autocallable(restartOrRepairPLC,
+                                           label=_(
+                                               "Restart or Repair"),
+                                           action=_("Do"))
 
 customSettingsURLs = {
 }
@@ -284,9 +297,16 @@ class SettingsPage(rend.Page):
 
     def sendLogMessage(self, level, message, **kwargs):
         level = LogLevelsDict[level]
-        if _PySrv.plcobj is not None:
-            _PySrv.plcobj.LogMessage(
-                level, "Web form log message: " + message)
+        GetPLCObjectSingleton().LogMessage(
+            level, "Web form log message: " + message)
+
+    def restartOrRepairPLC(self, action, **kwargs):
+        if(action == "Repair"):
+            GetPLCObjectSingleton().RepairPLC()
+        else:
+            MainWorker.quit()
+            
+        
 
     def locateChild(self, ctx, segments):
         if segments[0] in customSettingsURLs:

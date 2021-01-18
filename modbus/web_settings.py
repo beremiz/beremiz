@@ -183,7 +183,7 @@ RTUslave_parameters = [
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
-    ("slave_id"         , _("Slave ID")              , ctypes.c_ulonglong, annotate.Integer)
+    ("slave_id"         , _("Slave ID")              , ctypes.c_ubyte,     annotate.Integer)
     ]
 
 
@@ -228,7 +228,7 @@ def _SetModbusSavedConfiguration(WebNode_id, newConfig):
         # This allows us to confirm the saved data contains the correct addr_type
         # when loading from file
         save_info = {}
-        save_info["addr_type"] = ["addr_type"]
+        save_info["addr_type"] = WebNode_entry["addr_type"]
         save_info["node_type"] = WebNode_entry["node_type"]
         save_info["config"   ] = newConfig
         
@@ -262,7 +262,7 @@ def _GetModbusSavedConfiguration(WebNode_id):
     filename = _WebNodeList[WebNode_id]["filename"]
     try:
         #if os.path.isfile(filename):
-        save_info = json.load(open(filename))
+        save_info = json.load(open(os.path.realpath(filename)))
     except Exception:    
         return None
 
@@ -526,7 +526,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs):
 
 
 
-def _runtime_modbus_websettings_%(location_str)s_init():
+def _runtime_%(location_str)s_modbus_websettings_init():
     """
     Callback function, called (by PLCObject.py) when a new PLC program
     (i.e. XXX.so file) is transfered to the PLC runtime
@@ -609,7 +609,7 @@ def _runtime_modbus_websettings_%(location_str)s_init():
 
 
 
-def _runtime_modbus_websettings_%(location_str)s_cleanup():
+def _runtime_%(location_str)s_modbus_websettings_cleanup():
     """
     Callback function, called (by PLCObject.py) when a PLC program is unloaded from memory
     """
