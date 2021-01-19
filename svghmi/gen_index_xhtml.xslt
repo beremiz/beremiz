@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -573,22 +573,14 @@
     <xsl:text>    jumps: [
 </xsl:text>
     <xsl:for-each select="$parsed_widgets/widget[@id = $all_page_widgets/@id and @type='Jump']">
-      <xsl:variable name="_id" select="@id"/>
-      <xsl:variable name="opts">
-        <xsl:call-template name="jump_widget_activity">
-          <xsl:with-param name="hmi_element" select="$hmi_elements[@id=$_id]"/>
-        </xsl:call-template>
-      </xsl:variable>
-      <xsl:if test="string-length($opts)&gt;0">
-        <xsl:text>        hmi_widgets["</xsl:text>
-        <xsl:value-of select="@id"/>
-        <xsl:text>"]</xsl:text>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-        <xsl:text>
-</xsl:text>
+      <xsl:text>        hmi_widgets["</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"]</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
       </xsl:if>
+      <xsl:text>
+</xsl:text>
     </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
@@ -705,6 +697,11 @@
     <xsl:message terminate="yes">
       <xsl:text>All units must be set to "px" in Inkscape's document properties</xsl:text>
     </xsl:message>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:text/@inkscape:label[starts-with(., '_')]">
+    <xsl:attribute name="{name()}">
+      <xsl:value-of select="substring(., 2)"/>
+    </xsl:attribute>
   </xsl:template>
   <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
   <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
@@ -926,6 +923,60 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="extract_i18n" match="svg:tspan">
+    <xsl:if test="string-length(.) &gt; 0">
+      <line>
+        <xsl:value-of select="."/>
+      </line>
+    </xsl:if>
+  </xsl:template>
+  <xsl:template mode="extract_i18n" match="svg:text">
+    <msg>
+      <xsl:attribute name="id">
+        <xsl:value-of select="@id"/>
+      </xsl:attribute>
+      <xsl:attribute name="label">
+        <xsl:value-of select="substring(@inkscape:label,2)"/>
+      </xsl:attribute>
+      <xsl:apply-templates mode="extract_i18n" select="svg:*"/>
+    </msg>
+  </xsl:template>
+  <xsl:variable name="translatable_texts" select="//svg:text[starts-with(@inkscape:label, '_')]"/>
+  <xsl:variable name="translatable_strings">
+    <xsl:apply-templates mode="extract_i18n" select="$translatable_texts"/>
+  </xsl:variable>
+  <preamble:i18n/>
+  <xsl:template match="preamble:i18n">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:variable name="translations" select="ns:GetTranslations($translatable_strings)"/>
+    <xsl:text>var translations = {
+</xsl:text>
+    <xsl:for-each select="$translations/*">
+      <xsl:text>    "</xsl:text>
+      <xsl:value-of select="local-name()"/>
+      <xsl:text>":{
+</xsl:text>
+      <xsl:text>    }</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>
 </xsl:text>
   </xsl:template>
@@ -1295,15 +1346,11 @@
 </xsl:text>
     <xsl:text>    overshot(new_val, max) {
 </xsl:text>
-    <xsl:text>        // TODO: use a Toast
-</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    undershot(new_val, min) {
-</xsl:text>
-    <xsl:text>        // TODO: use a Toast
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2023,9 +2070,19 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
+    <xsl:text>        this.display_val = value;
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
     <xsl:text>        if(this.value_elt)
 </xsl:text>
-    <xsl:text>            this.value_elt.textContent = String(value);
+    <xsl:text>            this.value_elt.textContent = String(this.display_val);
 </xsl:text>
     <xsl:text>        let [min,max,start,end] = this.range;
 </xsl:text>
@@ -2033,21 +2090,29 @@
 </xsl:text>
     <xsl:text>        let [rx,ry] = this.proportions;
 </xsl:text>
-    <xsl:text>        let tip = start + (end-start)*Number(value)/(max-min);
+    <xsl:text>        let tip = start + (end-start)*Number(this.display_val)/(max-min);
 </xsl:text>
     <xsl:text>        let size = 0;
 </xsl:text>
-    <xsl:text>        if (tip-start &gt; Math.PI) {
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if (tip-start &gt; Math.PI)
 </xsl:text>
     <xsl:text>            size = 1;
 </xsl:text>
-    <xsl:text>        } else {
+    <xsl:text>        else
 </xsl:text>
     <xsl:text>            size = 0;
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+" A "+rx+","+ry+" 0 "+size+" 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
+    <xsl:text>        this.path_elt.setAttribute('d', "M "+(cx+rx*Math.cos(start))+","+(cy+ry*Math.sin(start))+
+</xsl:text>
+    <xsl:text>                                        " A "+rx+","+ry+
+</xsl:text>
+    <xsl:text>                                        " 0 "+size+
+</xsl:text>
+    <xsl:text>                                        " 1 "+(cx+rx*Math.cos(tip))+","+(cy+ry*Math.sin(tip)));
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2055,41 +2120,31 @@
 </xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        let start = Number(this.path_elt.getAttribute('sodipodi:start'));
+    <xsl:text>        let [start, end, cx, cy, rx, ry] = ["start", "end", "cx", "cy", "rx", "ry"].
 </xsl:text>
-    <xsl:text>        let end = Number(this.path_elt.getAttribute('sodipodi:end'));
+    <xsl:text>            map(tag=&gt;Number(this.path_elt.getAttribute('sodipodi:'+tag)))
 </xsl:text>
-    <xsl:text>        let cx = Number(this.path_elt.getAttribute('sodipodi:cx'));
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        let cy = Number(this.path_elt.getAttribute('sodipodi:cy'));
-</xsl:text>
-    <xsl:text>        let rx = Number(this.path_elt.getAttribute('sodipodi:rx'));
-</xsl:text>
-    <xsl:text>        let ry = Number(this.path_elt.getAttribute('sodipodi:ry'));
-</xsl:text>
-    <xsl:text>        if (ry == 0) {
+    <xsl:text>        if (ry == 0) 
 </xsl:text>
     <xsl:text>            ry = rx;
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        if (start &gt; end) {
+    <xsl:text>        if (start &gt; end)
 </xsl:text>
     <xsl:text>            end = end + 2*Math.PI;
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        let min = this.min_elt ?
+    <xsl:text>        let [min,max] = [[this.min_elt,0],[this.max_elt,100]].map(([elt,def],i)=&gt;elt?
 </xsl:text>
-    <xsl:text>                  Number(this.min_elt.textContent) :
+    <xsl:text>            Number(elt.textContent) :
 </xsl:text>
-    <xsl:text>                  this.args.length &gt;= 1 ? this.args[0] : 0;
+    <xsl:text>            this.args.length &gt;= i+1 ? this.args[i] : def);
 </xsl:text>
-    <xsl:text>        let max = this.max_elt ?
-</xsl:text>
-    <xsl:text>                  Number(this.max_elt.textContent) :
-</xsl:text>
-    <xsl:text>                  this.args.length &gt;= 2 ? this.args[1] : 100;
+    <xsl:text>
 </xsl:text>
     <xsl:text>        this.range = [min, max, start, end];
 </xsl:text>
@@ -2117,8 +2172,6 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
-    <xsl:text>
-</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='CircularSlider']">
     <xsl:text>class CircularSliderWidget extends Widget{
@@ -3835,9 +3888,9 @@
         <xsl:text>text box button highlight</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
-    <xsl:text>    // It is assumed that list content conforms to Array interface.
-</xsl:text>
     <xsl:text>    content: [
+</xsl:text>
+    <xsl:text>    /* TODO : Support HMI:List */
 </xsl:text>
     <xsl:for-each select="arg">
       <xsl:text>"</xsl:text>
@@ -4638,142 +4691,146 @@
     <xsl:text>    }
 </xsl:text>
   </xsl:template>
-  <xsl:template name="jump_widget_activity">
-    <xsl:param name="hmi_element"/>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>active inactive</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
-    </xsl:call-template>
-  </xsl:template>
-  <xsl:template name="jump_widget_disability">
-    <xsl:param name="hmi_element"/>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>disabled</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
-    </xsl:call-template>
+  <xsl:template mode="widget_class" match="widget[@type='Jump']">
+    <xsl:text>    class JumpWidget extends Widget{
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        activable = false;
+</xsl:text>
+    <xsl:text>        active = false;
+</xsl:text>
+    <xsl:text>        disabled = false;
+</xsl:text>
+    <xsl:text>        frequency = 2;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        update_activity() {
+</xsl:text>
+    <xsl:text>            if(this.active) {
+</xsl:text>
+    <xsl:text>                 /* show active */ 
+</xsl:text>
+    <xsl:text>                 this.active_elt.setAttribute("style", this.active_elt_style);
+</xsl:text>
+    <xsl:text>                 /* hide inactive */ 
+</xsl:text>
+    <xsl:text>                 this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>                 /* show inactive */ 
+</xsl:text>
+    <xsl:text>                 this.inactive_elt.setAttribute("style", this.inactive_elt_style);
+</xsl:text>
+    <xsl:text>                 /* hide active */ 
+</xsl:text>
+    <xsl:text>                 this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        make_on_click() {
+</xsl:text>
+    <xsl:text>            let that = this;
+</xsl:text>
+    <xsl:text>            const name = this.args[0];
+</xsl:text>
+    <xsl:text>            return function(evt){
+</xsl:text>
+    <xsl:text>                /* TODO: suport path pointing to local variable whom value 
+</xsl:text>
+    <xsl:text>                   would be an HMI_TREE index to jump to a relative page */
+</xsl:text>
+    <xsl:text>                const index = that.indexes.length &gt; 0 ? that.indexes[0] + that.offset : undefined;
+</xsl:text>
+    <xsl:text>                switch_page(name, index);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        notify_page_change(page_name, index) {
+</xsl:text>
+    <xsl:text>            if(this.activable) {
+</xsl:text>
+    <xsl:text>                const ref_index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
+</xsl:text>
+    <xsl:text>                const ref_name = this.args[0];
+</xsl:text>
+    <xsl:text>                this.active = ((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
+</xsl:text>
+    <xsl:text>                this.update_activity();
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        dispatch(value) {
+</xsl:text>
+    <xsl:text>            this.disabled = !Number(value);
+</xsl:text>
+    <xsl:text>            if(this.disabled) {
+</xsl:text>
+    <xsl:text>              /* show disabled */ 
+</xsl:text>
+    <xsl:text>              this.disabled_elt.setAttribute("style", this.disabled_elt_style);
+</xsl:text>
+    <xsl:text>              /* hide inactive */ 
+</xsl:text>
+    <xsl:text>              this.inactive_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>              /* hide active */ 
+</xsl:text>
+    <xsl:text>              this.active_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>              /* hide disabled */ 
+</xsl:text>
+    <xsl:text>              this.disabled_elt.setAttribute("style", "display:none");
+</xsl:text>
+    <xsl:text>              this.update_activity();
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Jump']">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="activity">
-      <xsl:call-template name="jump_widget_activity">
+      <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>active inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
       </xsl:call-template>
     </xsl:variable>
     <xsl:variable name="have_activity" select="string-length($activity)&gt;0"/>
     <xsl:value-of select="$activity"/>
     <xsl:variable name="disability">
-      <xsl:call-template name="jump_widget_disability">
+      <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
       </xsl:call-template>
     </xsl:variable>
     <xsl:variable name="have_disability" select="$have_activity and string-length($disability)&gt;0"/>
     <xsl:value-of select="$disability"/>
-    <xsl:if test="$have_activity">
-      <xsl:text>    active: false,
-</xsl:text>
-      <xsl:if test="$have_disability">
-        <xsl:text>    disabled: false,
-</xsl:text>
-        <xsl:text>    frequency: 2,
-</xsl:text>
-        <xsl:text>    dispatch: function(value) {
-</xsl:text>
-        <xsl:text>        this.disabled = !Number(value);
-</xsl:text>
-        <xsl:text>        this.update();
-</xsl:text>
-        <xsl:text>    },
-</xsl:text>
-      </xsl:if>
-      <xsl:text>    update: function(){
-</xsl:text>
-      <xsl:if test="$have_disability">
-        <xsl:text>      if(this.disabled) {
-</xsl:text>
-        <xsl:text>        /* show disabled */ 
-</xsl:text>
-        <xsl:text>        this.disabled_elt.setAttribute("style", this.active_elt_style);
-</xsl:text>
-        <xsl:text>        /* hide inactive */ 
-</xsl:text>
-        <xsl:text>        this.inactive_elt.setAttribute("style", "display:none");
-</xsl:text>
-        <xsl:text>        /* hide active */ 
-</xsl:text>
-        <xsl:text>        this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-        <xsl:text>      } else {
-</xsl:text>
-        <xsl:text>        /* hide disabled */ 
-</xsl:text>
-        <xsl:text>        this.disabled_elt.setAttribute("style", "display:none");
-</xsl:text>
-      </xsl:if>
-      <xsl:text>        if(this.active) {
-</xsl:text>
-      <xsl:text>             /* show active */ 
-</xsl:text>
-      <xsl:text>             this.active_elt.setAttribute("style", this.active_elt_style);
-</xsl:text>
-      <xsl:text>             /* hide inactive */ 
-</xsl:text>
-      <xsl:text>             this.inactive_elt.setAttribute("style", "display:none");
-</xsl:text>
-      <xsl:text>        } else {
-</xsl:text>
-      <xsl:text>             /* show inactive */ 
-</xsl:text>
-      <xsl:text>             this.inactive_elt.setAttribute("style", this.inactive_elt_style);
-</xsl:text>
-      <xsl:text>             /* hide active */ 
-</xsl:text>
-      <xsl:text>             this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-      <xsl:text>        }
-</xsl:text>
-      <xsl:if test="$have_disability">
-        <xsl:text>      }
-</xsl:text>
-      </xsl:if>
-      <xsl:text>    },
-</xsl:text>
-    </xsl:if>
-    <xsl:if test="$have_activity">
-      <xsl:text>    notify_page_change: function(page_name, index){
-</xsl:text>
-      <xsl:text>        const ref_index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
-</xsl:text>
-      <xsl:text>        const ref_name = this.args[0];
-</xsl:text>
-      <xsl:text>        this.active =((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
-</xsl:text>
-      <xsl:text>        this.update();
-</xsl:text>
-      <xsl:text>    },
-</xsl:text>
-    </xsl:if>
-    <xsl:text>    make_on_click(){
-</xsl:text>
-    <xsl:text>        let that = this;
-</xsl:text>
-    <xsl:text>        const name = this.args[0];
-</xsl:text>
-    <xsl:text>        return function(evt){
-</xsl:text>
-    <xsl:text>            const index = that.indexes.length &gt; 0 ? that.indexes[0] + that.offset : undefined;
-</xsl:text>
-    <xsl:text>            switch_page(name, index);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:text>        this.element.onclick = this.make_on_click();
@@ -4782,6 +4839,8 @@
       <xsl:text>        this.active_elt_style = this.active_elt.getAttribute("style");
 </xsl:text>
       <xsl:text>        this.inactive_elt_style = this.inactive_elt.getAttribute("style");
+</xsl:text>
+      <xsl:text>        this.activable = true;
 </xsl:text>
     </xsl:if>
     <xsl:choose>
@@ -5360,13 +5419,23 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
+    <xsl:text>        this.display_val = value;
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
     <xsl:text>        if(this.value_elt)
 </xsl:text>
-    <xsl:text>            this.value_elt.textContent = String(value);
+    <xsl:text>            this.value_elt.textContent = String(this.display_val);
 </xsl:text>
     <xsl:text>        let [min,max,totallength] = this.range;
 </xsl:text>
-    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(value)-min)*totallength/(max-min)));
+    <xsl:text>        let length = Math.max(0,Math.min(totallength,(Number(this.display_val)-min)*totallength/(max-min)));
 </xsl:text>
     <xsl:text>        let tip = this.range_elt.getPointAtLength(length);
 </xsl:text>
@@ -5378,17 +5447,13 @@
 </xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        let min = this.min_elt ?
+    <xsl:text>        let [min,max] = [[this.min_elt,0],[this.max_elt,100]].map(([elt,def],i)=&gt;elt?
 </xsl:text>
-    <xsl:text>                    Number(this.min_elt.textContent) :
+    <xsl:text>            Number(elt.textContent) :
 </xsl:text>
-    <xsl:text>                    this.args.length &gt;= 1 ? this.args[0] : 0;
+    <xsl:text>            this.args.length &gt;= i+1 ? this.args[i] : def);
 </xsl:text>
-    <xsl:text>        let max = this.max_elt ?
-</xsl:text>
-    <xsl:text>                    Number(this.max_elt.textContent) :
-</xsl:text>
-    <xsl:text>                    this.args.length &gt;= 2 ? this.args[1] : 100;
+    <xsl:text>
 </xsl:text>
     <xsl:text>        this.range = [min, max, this.range_elt.getTotalLength()]
 </xsl:text>
@@ -5416,8 +5481,6 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
-    <xsl:text>
-</xsl:text>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='MultiState']">
     <xsl:text>class MultiStateWidget extends Widget{
@@ -6396,7 +6459,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
