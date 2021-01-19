@@ -30,7 +30,7 @@ from runtime.typemapping import DebugTypesSize
 import targets
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from XSLTransform import XSLTransform
-from svghmi.i18n import POTWriter, POReader
+from svghmi.i18n import POTWriter, POReader, open_pofile
 
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
@@ -455,19 +455,27 @@ class SVGHMI(object):
             "method":   "_ImportSVG"
         },
         {
-            "bitmap":    "ImportSVG",  # should be something different
+            "bitmap":    "EditSVG",  # should be something different
             "name":    _("Inkscape"),
             "tooltip": _("Edit HMI"),
             "method":   "_StartInkscape"
         },
+        {
+            "bitmap":    "OpenPOT",  # should be something different
+            "name":    _("New lang"),
+            "tooltip": _("Open non translated message catalog (POT) to start new language"),
+            "method":   "_OpenPOT"
+        },
 
-        # TODO : Launch POEdit button for new languqge (opens POT)
-
-        # TODO : Launch POEdit button for existing languqge (opens one of existing PO)
+        {
+            "bitmap":    "EditPO",  # should be something different
+            "name":    _("Edit lang"),
+            "tooltip": _("Edit existing message catalog (PO) for specific language"),
+            "method":   "_EditPO"
+        },
 
         # TODO : HMITree button
         #        - can drag'n'drop variabes to Inkscape
-
     ]
 
     def _getSVGpath(self, project_path=None):
@@ -484,6 +492,9 @@ class SVGHMI(object):
         if from_project_path is not None:
             shutil.copyfile(self._getSVGpath(from_project_path),
                             self._getSVGpath())
+            shutil.copyfile(self._getPOTpath(from_project_path),
+                            self._getPOTpath())
+            # XXX TODO copy .PO files
         return True
 
     def GetSVGGeometry(self):
@@ -522,8 +533,9 @@ class SVGHMI(object):
 
         w = POTWriter()
         w.ImportMessages(msgs)
-        # XXX get POT path
-        # XXX save POT file
+
+        with open(self._getPOTpath(), 'w') as POT_file:
+            w.write(POT_file)
 
         # XXX scan existing PO files 
         # XXX read PO files
@@ -678,14 +690,24 @@ def _runtime_{location}_svghmi_stop():
             open_poedit = dialog.ShowModal() == wx.ID_YES
             dialog.Destroy()
         if open_poedit:
-            # XXX TODO
-            pass
+            open_pofile(POFile)
 
-    def _EditTranslation(self):
+    def _EditPO(self):
         """ Select a specific translation and edit it with POEdit """
-        pass
+        project_path = self.CTNPath()
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a PO file"), project_path, "",  _("PO files (*.po)|*.po"), wx.OPEN)
+        if dialog.ShowModal() == wx.ID_OK:
+            POFile = dialog.GetPath()
+            if os.path.isfile(POFile):
+                if os.path.dirname(POFile) == project_path:
+                    self._StartPOEdit(POFile)
+                else:
+                    self.GetCTRoot().logger.write_error(_("PO file misplaced: %s is not in %s\n") % (POFile,project_path))
+            else:
+                self.GetCTRoot().logger.write_error(_("PO file do not exist: %s\n") % POFile)
+        dialog.Destroy()
 
-    def _EditNewTranslation(self):
+    def _OpenPOT(self):
         """ Start POEdit with untouched empty catalog """
         POFile = self._getPOTpath()
         self._StartPOEdit(POFile)

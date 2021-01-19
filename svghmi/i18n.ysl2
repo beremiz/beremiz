@@ -10,7 +10,7 @@ template "svg:tspan", mode="extract_i18n" {
 template "svg:text", mode="extract_i18n" {
     msg {
         attrib "id" value "@id";
-        attrib "label" value "@inkscape:label";
+        attrib "label" value "substring(@inkscape:label,2)";
         apply "svg:*", mode="extract_i18n";
     }
 }

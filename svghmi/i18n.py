@@ -1,4 +1,40 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This file is part of Beremiz
+# Copyright (C) 2021: Edouard TISSERANT
+#
+# See COPYING file for copyrights details.
+
+from __future__ import absolute_import
+import sys
+import subprocess
 import time
+import wx
+
+def open_pofile(pofile):
+    """ Opens PO file with POEdit """
+    
+    if sys.platform.startswith('win'):
+        from six.moves import winreg
+        poedit_cmd = None
+        try:
+            poedit_cmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                           'SOFTWARE\\Classes\\poedit\\shell\\open\\command')
+            poedit_path = poedit_cmd.replace('"%1"', '').strip().replace('"', '')
+        except OSError:
+            poedit_path = None
+
+    else:
+        try:
+            poedit_path = subprocess.check_output("command -v poedit", shell=True).strip()
+        except subprocess.CalledProcessError:
+            poedit_path = None
+
+    if poedit_path is None:
+        wx.MessageBox("POEdit is not found or installed !")
+    else:
+        subprocess.Popen([poedit_path,pofile])
 
 locpfx = '#:svghmi.svg:'
 
@@ -15,22 +51,71 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
 "Language-Team: LANGUAGE <LL@li.org>\\n"
 "MIME-Version: 1.0\\n"
-"Content-Type: text/plain; charset=CHARSET\\n"
-"Content-Transfer-Encoding: ENCODING\\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: SVGHMI 1.0\\n"
 
 '''
+escapes = []
+
+def make_escapes(pass_iso8859):
+    global escapes
+    escapes = [chr(i) for i in range(256)]
+    if pass_iso8859:
+        # Allow iso-8859 characters to pass through so that e.g. 'msgid
+        # "Höhe"' would result not result in 'msgid "H\366he"'.  Otherwise we
+        # escape any character outside the 32..126 range.
+        mod = 128
+    else:
+        mod = 256
+    for i in range(mod):
+        if not(32 <= i <= 126):
+            escapes[i] = "\\%03o" % i
+    escapes[ord('\\')] = '\\\\'
+    escapes[ord('\t')] = '\\t'
+    escapes[ord('\r')] = '\\r'
+    escapes[ord('\n')] = '\\n'
+    escapes[ord('\"')] = '\\"'
+
+make_escapes(pass_iso8859 = True)
+
+EMPTYSTRING = ''
+
+def escape(s):
+    global escapes
+    s = list(s)
+    for i in range(len(s)):
+        s[i] = escapes[ord(s[i])]
+    return EMPTYSTRING.join(s)
+
+def normalize(s):
+    # This converts the various Python string types into a format that is
+    # appropriate for .po files, namely much closer to C style.
+    lines = s.split('\n')
+    if len(lines) == 1:
+        s = '"' + escape(s) + '"'
+    else:
+        if not lines[-1]:
+            del lines[-1]
+            lines[-1] = lines[-1] + '\n'
+        for i in range(len(lines)):
+            lines[i] = escape(lines[i])
+        lineterm = '\\n"\n"'
+        s = '""\n"' + lineterm.join(lines) + '"'
+    return s
+
 
 class POTWriter:
     def __init__(self):
         self.__messages = {}
 
-    def ImportMessages(self, msgs):    
+    def ImportMessages(self, msgs):
         for msg in msgs:
-            self.addentry("\n".join([line.text for line in msg]), msg.get("label"), msg.get("id"))
+            self.addentry("\n".join([line.text.encode("utf-8") for line in msg]), msg.get("label"), msg.get("id"))
 
     def addentry(self, msg, label, svgid):
         entry = (label, svgid)
+        print(entry)
         self.__messages.setdefault(msg, set()).add(entry)
 
     def write(self, fp):
@@ -47,12 +132,12 @@ class POTWriter:
             rentries = reverse[rkey]
             rentries.sort()
             for k, v in rentries:
-                v = v.keys()
+                v = list(v)
                 v.sort()
                 locline = locpfx
                 for label, svgid in v:
                     d = {'label': label, 'svgid': svgid}
-                    s = _(' %(label)s:%(svgid)d') % d
+                    s = _(' %(label)s:%(svgid)s') % d
                     if len(locline) + len(s) <= 78:
                         locline = locline + s
                     else:
