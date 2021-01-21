@@ -30,7 +30,7 @@ from runtime.typemapping import DebugTypesSize
 import targets
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from XSLTransform import XSLTransform
-from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations, MatchTranslations, TranslationToEtree
+from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations, MatchTranslations, TranslationToEtree, open_pofile
 
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
