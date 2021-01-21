@@ -56,7 +56,7 @@ def SaveCatalog(fname, messages):
 
     with open(fname, 'w') as POT_file:
         w.write(POT_file)
-    
+
 def ReadTranslations(dirpath):
     """ Read all PO files from a directory and return a list of (lang, translation_dict) tuples """
 
@@ -71,32 +71,40 @@ def ReadTranslations(dirpath):
     return translations
 
 def MatchTranslations(translations, messages, errcallback):
-    """ 
-    Matches translations against original message catalog, 
-    warn about inconsistancies, 
-    returns list of langs, and a list of (msgid, [translations]) tuples 
+    """
+    Matches translations against original message catalog,
+    warn about inconsistancies,
+    returns list of langs, and a list of (msgid, [translations]) tuples
     """
     translated_messages = []
+    broken_lang = set()
     for msgid,label,svgid in messages:
         translated_message = []
         for lang,translation in translations:
             msg = translation.pop(msgid, None)
             if msg is None:
-                errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})').format(lang,msgid,label,svgid))
+                broken_lang.add(lang)
+                errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})\n').format(lang,msgid,label,svgid))
             translated_message.append(msg)
         translated_messages.append((msgid,translated_message))
     langs = []
     for lang,translation in translations:
         langs.append(lang)
+        broken = False
         for msgid, msg in translation.iteritems():
-            errcallback(_('{}: Unused translation "{}":"{}"').format(lang,msgid,msg))
+            if len(msgid):
+                broken = True
+                errcallback(_('{}: Unused translation "{}":"{}"\n').format(lang,msgid,msg))
+        if broken or lang in broken_lang:
+            errcallback(_('Translation for {} is outdated, please edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(lang,lang))
+
 
     return langs,translated_messages
 
-        
+
 def TranslationToEtree(langs,translated_messages):
     pass
-    
+
 
 locpfx = '#:svghmi.svg:'
 
