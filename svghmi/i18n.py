@@ -7,9 +7,11 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+import os
 import sys
 import subprocess
 import time
+import ast
 import wx
 
 def open_pofile(pofile):
@@ -36,6 +38,66 @@ def open_pofile(pofile):
     else:
         subprocess.Popen([poedit_path,pofile])
 
+def EtreeToMessages(msgs):
+    """ Converts XML tree from 'extract_i18n' templates into a list of tuples """
+    messages = []
+
+    for msg in msgs:
+        messages.append((
+            "\n".join([line.text.encode("utf-8") for line in msg]),
+            msg.get("label"), msg.get("id")))
+
+    return messages
+
+def SaveCatalog(fname, messages):
+    """ Save messages given as list of tupple (msg,label,id) in POT file """
+    w = POTWriter()
+    w.ImportMessages(messages)
+
+    with open(fname, 'w') as POT_file:
+        w.write(POT_file)
+    
+def ReadTranslations(dirpath):
+    """ Read all PO files from a directory and return a list of (lang, translation_dict) tuples """
+
+    po_files = [fname for fname in os.listdir(dirpath) if fname.endswith(".po")]
+
+    translations = []
+    for po_fname in po_files:
+        r = POReader()
+        with open(os.path.join(dirpath, po_fname), 'r') as PO_file:
+            r.read(PO_file)
+            translations.append((po_fname[:-3], r.get_messages()))
+    return translations
+
+def MatchTranslations(translations, messages, errcallback):
+    """ 
+    Matches translations against original message catalog, 
+    warn about inconsistancies, 
+    returns list of langs, and a list of (msgid, [translations]) tuples 
+    """
+    translated_messages = []
+    for msgid,label,svgid in messages:
+        translated_message = []
+        for lang,translation in translations:
+            msg = translation.pop(msgid, None)
+            if msg is None:
+                errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})').format(lang,msgid,label,svgid))
+            translated_message.append(msg)
+        translated_messages.append((msgid,translated_message))
+    langs = []
+    for lang,translation in translations:
+        langs.append(lang)
+        for msgid, msg in translation.iteritems():
+            errcallback(_('{}: Unused translation "{}":"{}"').format(lang,msgid,msg))
+
+    return langs,translated_messages
+
+        
+def TranslationToEtree(langs,translated_messages):
+    pass
+    
+
 locpfx = '#:svghmi.svg:'
 
 pot_header = '''\
@@ -51,8 +113,8 @@ msgstr ""
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\\n"
 "Language-Team: LANGUAGE <LL@li.org>\\n"
 "MIME-Version: 1.0\\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Type: text/plain; charset=UTF-8\\n"
+"Content-Transfer-Encoding: 8bit\\n"
 "Generated-By: SVGHMI 1.0\\n"
 
 '''
@@ -111,11 +173,10 @@ class POTWriter:
 
     def ImportMessages(self, msgs):
         for msg in msgs:
-            self.addentry("\n".join([line.text.encode("utf-8") for line in msg]), msg.get("label"), msg.get("id"))
+            self.addentry(*msg)
 
     def addentry(self, msg, label, svgid):
         entry = (label, svgid)
-        print(entry)
         self.__messages.setdefault(msg, set()).add(entry)
 
     def write(self, fp):
@@ -153,7 +214,10 @@ class POReader:
     def __init__(self):
         self.__messages = {}
 
-    def add(msgid, msgstr, fuzzy):
+    def get_messages(self):
+        return self.__messages
+
+    def add(self, msgid, msgstr, fuzzy):
         "Add a non-fuzzy translation to the dictionary."
         if not fuzzy and msgstr:
             self.__messages[msgid] = msgstr

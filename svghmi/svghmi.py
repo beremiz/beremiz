@@ -30,7 +30,7 @@ from runtime.typemapping import DebugTypesSize
 import targets
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from XSLTransform import XSLTransform
-from svghmi.i18n import POTWriter, POReader, open_pofile
+from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations, MatchTranslations, TranslationToEtree
 
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
@@ -530,18 +530,18 @@ class SVGHMI(object):
         return res
 
     def GetTranslations(self, _context, msgs):
+        messages = EtreeToMessages(msgs)
 
-        w = POTWriter()
-        w.ImportMessages(msgs)
+        SaveCatalog(self._getPOTpath(), messages)
 
-        with open(self._getPOTpath(), 'w') as POT_file:
-            w.write(POT_file)
+        translations = ReadTranslations(self.CTNPath())
+            
+        langs,translated_messages = MatchTranslations(translations, messages, 
+            errcallback=self.GetCTRoot().logger.write_warning)
 
-        # XXX scan existing PO files 
-        # XXX read PO files
+        print(langs,translated_messages)
 
-        r = POReader()
-        return None # XXX return all langs from all POs
+        return TranslationToEtree(langs,translated_messages)
 
     def CTNGenerate_C(self, buildpath, locations):
 
@@ -699,7 +699,7 @@ def _runtime_{location}_svghmi_stop():
         if dialog.ShowModal() == wx.ID_OK:
             POFile = dialog.GetPath()
             if os.path.isfile(POFile):
-                if os.path.dirname(POFile) == project_path:
+                if os.path.relpath(POFile, project_path) == os.path.basename(POFile):
                     self._StartPOEdit(POFile)
                 else:
                     self.GetCTRoot().logger.write_error(_("PO file misplaced: %s is not in %s\n") % (POFile,project_path))
