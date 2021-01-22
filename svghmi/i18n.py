@@ -7,6 +7,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from lxml import etree
 import os
 import sys
 import subprocess
@@ -44,7 +45,7 @@ def EtreeToMessages(msgs):
 
     for msg in msgs:
         messages.append((
-            "\n".join([line.text.encode("utf-8") for line in msg]),
+            "\n".join([line.text for line in msg]),
             msg.get("label"), msg.get("id")))
 
     return messages
@@ -85,16 +86,17 @@ def MatchTranslations(translations, messages, errcallback):
             if msg is None:
                 broken_lang.add(lang)
                 errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})\n').format(lang,msgid,label,svgid))
-            translated_message.append(msg)
+                translated_message.append(msgid)
+            else:
+                translated_message.append(msg)
         translated_messages.append((msgid,translated_message))
     langs = []
     for lang,translation in translations:
         langs.append(lang)
         broken = False
         for msgid, msg in translation.iteritems():
-            if len(msgid):
-                broken = True
-                errcallback(_('{}: Unused translation "{}":"{}"\n').format(lang,msgid,msg))
+            broken = True
+            errcallback(_('{}: Unused translation "{}":"{}"\n').format(lang,msgid,msg))
         if broken or lang in broken_lang:
             errcallback(_('Translation for {} is outdated, please edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(lang,lang))
 
@@ -103,7 +105,22 @@ def MatchTranslations(translations, messages, errcallback):
 
 
 def TranslationToEtree(langs,translated_messages):
-    pass
+
+    langsroot = etree.Element("langs")
+    for lang in langs:
+        langel = etree.SubElement(langsroot, "lang")
+        langel.text = lang
+
+    msgsroot = etree.Element("translations")
+    for msgid, msgs in translated_messages:
+        msgidel = etree.SubElement(msgsroot, "msgid")
+        msgidel.text = msgid 
+        for msg in msgs:
+            msgel = etree.SubElement(msgidel, "msg")
+            msgel.text = msg 
+   
+    return [langsroot,msgsroot]
+
 
 
 locpfx = '#:svghmi.svg:'
@@ -180,8 +197,8 @@ class POTWriter:
         self.__messages = {}
 
     def ImportMessages(self, msgs):
-        for msg in msgs:
-            self.addentry(*msg)
+        for  msg, label, svgid in msgs:
+            self.addentry(msg.encode("utf-8"), label, svgid)
 
     def addentry(self, msg, label, svgid):
         entry = (label, svgid)
@@ -227,8 +244,8 @@ class POReader:
 
     def add(self, msgid, msgstr, fuzzy):
         "Add a non-fuzzy translation to the dictionary."
-        if not fuzzy and msgstr:
-            self.__messages[msgid] = msgstr
+        if not fuzzy and msgstr and msgid:
+            self.__messages[msgid.decode('utf-8')] = msgstr.decode('utf-8')
 
     def read(self, fp):
         ID = 1
