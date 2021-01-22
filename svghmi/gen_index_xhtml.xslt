@@ -264,7 +264,9 @@
       <xsl:value-of select="."/>
       <xsl:text>" </xsl:text>
     </xsl:for-each>
-    <xsl:text>
+    <xsl:text> [</xsl:text>
+    <xsl:value-of select="text()"/>
+    <xsl:text>]
 </xsl:text>
     <xsl:apply-templates mode="testtree" select="*">
       <xsl:with-param name="indent">
@@ -959,23 +961,43 @@
     <xsl:text>
 </xsl:text>
     <xsl:variable name="translations" select="ns:GetTranslations($translatable_strings)"/>
-    <xsl:text>var translations = {
+    <xsl:text>var langs = [</xsl:text>
+    <xsl:for-each select="$translations/langs/lang">
+      <xsl:value-of select="."/>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:text>];
 </xsl:text>
-    <xsl:for-each select="$translations/*">
-      <xsl:text>    "</xsl:text>
-      <xsl:value-of select="local-name()"/>
-      <xsl:text>":{
+    <xsl:text>var translations = [
 </xsl:text>
-      <xsl:text>    }</xsl:text>
+    <xsl:for-each select="$translatable_texts">
+      <xsl:variable name="n" select="position()"/>
+      <xsl:text>  ["</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>",[</xsl:text>
+      <xsl:for-each select="$translations/messages/msgid[$n]/msg">
+        <xsl:text>"</xsl:text>
+        <xsl:for-each select="line">
+          <xsl:value-of select="."/>
+          <xsl:if test="position()!=last()">
+            <xsl:text>\n</xsl:text>
+          </xsl:if>
+        </xsl:for-each>
+        <xsl:text>"</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+      <xsl:text>]]</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>};
-</xsl:text>
-    <xsl:text>
+    <xsl:text>]
 </xsl:text>
     <xsl:text>
 </xsl:text>

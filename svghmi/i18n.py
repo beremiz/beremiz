@@ -106,20 +106,23 @@ def MatchTranslations(translations, messages, errcallback):
 
 def TranslationToEtree(langs,translated_messages):
 
-    langsroot = etree.Element("langs")
+    result = etree.Element("translations")
+
+    langsroot = etree.SubElement(result, "langs")
     for lang in langs:
         langel = etree.SubElement(langsroot, "lang")
         langel.text = lang
 
-    msgsroot = etree.Element("translations")
+    msgsroot = etree.SubElement(result, "messages")
     for msgid, msgs in translated_messages:
         msgidel = etree.SubElement(msgsroot, "msgid")
-        msgidel.text = msgid 
         for msg in msgs:
             msgel = etree.SubElement(msgidel, "msg")
-            msgel.text = msg 
-   
-    return [langsroot,msgsroot]
+            for line in msg.split("\n"):
+                lineel = etree.SubElement(msgel, "line")
+                lineel.text = escape(line.encode("utf-8")).decode("utf-8")
+
+    return result
 
 
 

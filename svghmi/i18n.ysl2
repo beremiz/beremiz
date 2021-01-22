@@ -20,13 +20,28 @@ const "translatable_strings" apply "$translatable_texts", mode="extract_i18n";
 
 emit "preamble:i18n" {
     const "translations", "ns:GetTranslations($translatable_strings)";
-    | var translations = {
-    foreach "$translations/*" {
-    |     "«local-name()»":{
-        /* TODO */
-    |     }`if "position()!=last()" > ,`
+    > var langs = [
+    foreach "$translations/langs/lang" {
+        value  ".";
+        if "position()!=last()" > ,
     }
-    | };
-    |
-
+    | ];
+    | var translations = [
+    foreach "$translatable_texts" {
+        const "n","position()";
+    >   ["«@id»",[
+        foreach "$translations/messages/msgid[$n]/msg" {
+            > "
+            foreach "line" {
+                value ".";
+                if "position()!=last()" > \\\\n
+            }
+            > "
+            if "position()!=last()" > ,
+        }
+        > ]]
+        if "position()!=last()" > ,
+        > \n
+    }
+    | ]
 }
