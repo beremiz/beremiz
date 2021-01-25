@@ -12,12 +12,12 @@ const "default_page" choose {
         choose {
             when "$hmi_pages_descs/arg[1]/@value = 'Home'" > Home
             otherwise {
-                error "No Home page defined!";
+                error > No Home page defined!
             }
         }
     }
     when "count($hmi_pages) = 0" {
-        error "No page defined!";
+        error > No page defined!
     }
     otherwise > «func:widget($hmi_pages/@id)/arg[1]/@value»
 }
@@ -113,6 +113,8 @@ const "forEach_widgets", "$hmi_elements[@id = $forEach_widgets_ids]";
 const "in_forEach_widget_ids", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id";
 
 template "svg:*", mode="page_desc" {
+    if "ancestor::*[@id = $hmi_pages/@id]" error > HMI:Page «@id» is nested in another HMI:Page
+
     const "desc", "func:widget(@id)";
     const "page", ".";
     const "p", "$geometry[@Id = $page/@id]";
