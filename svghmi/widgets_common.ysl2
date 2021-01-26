@@ -289,7 +289,7 @@ class «@type»Widget extends Widget{
 ||
 
 const "excluded_types", "str:split('Page Lang VarInit')";
-const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types)]/@id";
+const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id";
 
 emit "declarations:hmi-elements" {
     | var hmi_widgets = {
