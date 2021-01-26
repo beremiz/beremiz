@@ -264,9 +264,7 @@
       <xsl:value-of select="."/>
       <xsl:text>" </xsl:text>
     </xsl:for-each>
-    <xsl:text> [</xsl:text>
-    <xsl:value-of select="text()"/>
-    <xsl:text>]
+    <xsl:text>
 </xsl:text>
     <xsl:apply-templates mode="testtree" select="*">
       <xsl:with-param name="indent">
@@ -387,12 +385,16 @@
             <xsl:text>Home</xsl:text>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:message terminate="yes">No Home page defined!</xsl:message>
+            <xsl:message terminate="yes">
+              <xsl:text>No Home page defined!</xsl:text>
+            </xsl:message>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:when>
       <xsl:when test="count($hmi_pages) = 0">
-        <xsl:message terminate="yes">No page defined!</xsl:message>
+        <xsl:message terminate="yes">
+          <xsl:text>No page defined!</xsl:text>
+        </xsl:message>
       </xsl:when>
       <xsl:otherwise>
         <xsl:value-of select="func:widget($hmi_pages/@id)/arg[1]/@value"/>
@@ -511,6 +513,13 @@
   <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
   <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
   <xsl:template mode="page_desc" match="svg:*">
+    <xsl:if test="ancestor::*[@id = $hmi_pages/@id]">
+      <xsl:message terminate="yes">
+        <xsl:text>HMI:Page </xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text> is nested in another HMI:Page</xsl:text>
+      </xsl:message>
+    </xsl:if>
     <xsl:variable name="desc" select="func:widget(@id)"/>
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
@@ -1549,7 +1558,7 @@
 </xsl:text>
   </xsl:template>
   <xsl:variable name="excluded_types" select="str:split('Page Lang VarInit')"/>
-  <xsl:variable name="included_ids" select="$parsed_widgets/widget[not(@type = $excluded_types)]/@id"/>
+  <xsl:variable name="included_ids" select="$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id"/>
   <declarations:hmi-elements/>
   <xsl:template match="declarations:hmi-elements">
     <xsl:text>
@@ -4219,16 +4228,6 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Input']">
     <xsl:param name="hmi_element"/>
-    <xsl:variable name="key_pos_elt">
-      <xsl:call-template name="defs_by_labels">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
-        <xsl:with-param name="labels">
-          <xsl:text>key_pos</xsl:text>
-        </xsl:with-param>
-        <xsl:with-param name="mandatory" select="'no'"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:value-of select="$key_pos_elt"/>
     <xsl:variable name="value_elt">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -4280,27 +4279,11 @@
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:if test="$have_edit">
-      <xsl:text>        this.edit_elt.onclick = () =&gt; edit_value(
-</xsl:text>
-      <xsl:text>            "</xsl:text>
+      <xsl:text>        this.edit_elt.onclick = () =&gt; edit_value("</xsl:text>
       <xsl:value-of select="path/@value"/>
       <xsl:text>", "</xsl:text>
       <xsl:value-of select="path/@type"/>
-      <xsl:text>",
-</xsl:text>
-      <xsl:text>            this, this.last_val, 
-</xsl:text>
-      <xsl:choose>
-        <xsl:when test="string-length($key_pos_elt)&gt;0">
-          <xsl:text>            this.key_pos_elt.getBBox()
-</xsl:text>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:text>            undefined
-</xsl:text>
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:text>        );
+      <xsl:text>", this, this.last_val);
 </xsl:text>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
@@ -4983,154 +4966,6 @@
   <xsl:template mode="widget_class" match="widget[@type='Keypad']">
     <xsl:text>class KeypadWidget extends Widget{
 </xsl:text>
-    <xsl:text>     moving = undefined;
-</xsl:text>
-    <xsl:text>     click = undefined;
-</xsl:text>
-    <xsl:text>     offset = undefined;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>     on_position_click(evt) {
-</xsl:text>
-    <xsl:text>         this.moving = true;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>         // chatch window events
-</xsl:text>
-    <xsl:text>         window.addEventListener("touchmove", this.bound_on_drag, true);
-</xsl:text>
-    <xsl:text>         window.addEventListener("mousemove", this.bound_on_drag, true);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>         window.addEventListener("mouseup", this.bound_on_release, true)
-</xsl:text>
-    <xsl:text>         window.addEventListener("touchend", this.bound_on_release, true);
-</xsl:text>
-    <xsl:text>         window.addEventListener("touchcancel", this.bound_on_release, true);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>         // get click position offset from widget x,y and save it to variable
-</xsl:text>
-    <xsl:text>         var keypad_borders = this.position_elt.getBoundingClientRect();
-</xsl:text>
-    <xsl:text>         var clickX = undefined;
-</xsl:text>
-    <xsl:text>         var clickY = undefined;
-</xsl:text>
-    <xsl:text>         if (evt.type == "touchstart"){
-</xsl:text>
-    <xsl:text>             clickX = Math.ceil(evt.touches[0].clientX);
-</xsl:text>
-    <xsl:text>             clickY = Math.ceil(evt.touches[0].clientY);
-</xsl:text>
-    <xsl:text>         }
-</xsl:text>
-    <xsl:text>         else{
-</xsl:text>
-    <xsl:text>             clickX = evt.pageX;
-</xsl:text>
-    <xsl:text>             clickY = evt.pageY;
-</xsl:text>
-    <xsl:text>         }
-</xsl:text>
-    <xsl:text>         this.offset=[clickX-keypad_borders.left,clickY-keypad_borders.top]
-</xsl:text>
-    <xsl:text>     }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>     on_release(evt) {
-</xsl:text>
-    <xsl:text>        //relase binds
-</xsl:text>
-    <xsl:text>        window.removeEventListener("touchmove", this.bound_on_drag, true);
-</xsl:text>
-    <xsl:text>        window.removeEventListener("mousemove", this.bound_on_drag, true);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        window.removeEventListener("mouseup", this.bound_on_release, true)
-</xsl:text>
-    <xsl:text>        window.removeEventListener("touchend", this.bound_on_release, true);
-</xsl:text>
-    <xsl:text>        window.removeEventListener("touchcancel", this.bound_on_release, true);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        if(this.moving)
-</xsl:text>
-    <xsl:text>            this.moving = false;
-</xsl:text>
-    <xsl:text>     }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>     on_drag(evt) {
-</xsl:text>
-    <xsl:text>         if(this.moving)
-</xsl:text>
-    <xsl:text>            //get mouse coordinates
-</xsl:text>
-    <xsl:text>            var clickX = undefined;
-</xsl:text>
-    <xsl:text>            var clickY = undefined;
-</xsl:text>
-    <xsl:text>            if (evt.type == "touchmove"){
-</xsl:text>
-    <xsl:text>                clickX = Math.ceil(evt.touches[0].clientX);
-</xsl:text>
-    <xsl:text>                clickY = Math.ceil(evt.touches[0].clientY);
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>            else{
-</xsl:text>
-    <xsl:text>                clickX = evt.pageX;
-</xsl:text>
-    <xsl:text>                clickY = evt.pageY;
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>            this.click = [clickX,clickY]
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            //requeset redraw
-</xsl:text>
-    <xsl:text>            this.request_animate();
-</xsl:text>
-    <xsl:text>     }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>     animate(){
-</xsl:text>
-    <xsl:text>        //get keyboard pos in html
-</xsl:text>
-    <xsl:text>        let [eltid, tmpgrp] = current_modal;
-</xsl:text>
-    <xsl:text>        let [xcoord,ycoord] = this.coordinates;
-</xsl:text>
-    <xsl:text>        let [clickX,clickY] = this.click;
-</xsl:text>
-    <xsl:text>        let [xdest,ydest,svgWidth,svgHeight] = page_desc[current_visible_page].bbox;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        //translate keyboard position
-</xsl:text>
-    <xsl:text>        let mouseX = ((clickX-this.offset[0])/window.innerWidth)*svgWidth;
-</xsl:text>
-    <xsl:text>        let mouseY = ((clickY-this.offset[1])/window.innerHeight)*svgHeight;
-</xsl:text>
-    <xsl:text>        tmpgrp.setAttribute("transform","translate("+String(xdest-xcoord+mouseX)+","+String(ydest-ycoord+mouseY)+")");
-</xsl:text>
-    <xsl:text>     }
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>     on_key_click(symbols) {
@@ -5333,7 +5168,7 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>Sign Space NumDot position</xsl:text>
+        <xsl:text>Sign Space NumDot</xsl:text>
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
@@ -5371,20 +5206,6 @@
       <xsl:text>_click()");
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>        if(this.position_elt){
-</xsl:text>
-    <xsl:text>           this.bound_on_release = this.on_release.bind(this);
-</xsl:text>
-    <xsl:text>           this.bound_on_drag = this.on_drag.bind(this);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>           this.position_elt.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
-</xsl:text>
-    <xsl:text>           this.position_elt.setAttribute("ontouchstart", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
-</xsl:text>
-    <xsl:text>       }
-</xsl:text>
     <xsl:text>    },
 </xsl:text>
     <xsl:text>
@@ -7376,7 +7197,7 @@
 </xsl:text>
           <xsl:text>const localtypes = {"PAGE_LOCAL":null, "HMI_LOCAL":null}
 </xsl:text>
-          <xsl:text>function edit_value(path, valuetype, callback, initial, size) {
+          <xsl:text>function edit_value(path, valuetype, callback, initial) {
 </xsl:text>
           <xsl:text>    if(valuetype in localtypes){
 </xsl:text>
@@ -7390,7 +7211,7 @@
 </xsl:text>
           <xsl:text>    let widget = hmi_widgets[keypadid];
 </xsl:text>
-          <xsl:text>    widget.start_edit(path, valuetype, callback, initial, size);
+          <xsl:text>    widget.start_edit(path, valuetype, callback, initial);
 </xsl:text>
           <xsl:text>};
 </xsl:text>
@@ -7400,7 +7221,7 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function show_modal(size) {
+          <xsl:text>function show_modal() {
 </xsl:text>
           <xsl:text>    let [element, parent] = detachable_elements[this.element.id];
 </xsl:text>
@@ -7414,17 +7235,7 @@
 </xsl:text>
           <xsl:text>    let [xdest,ydest] = page_desc[current_visible_page].bbox;
 </xsl:text>
-          <xsl:text>    if (typeof size === 'undefined'){
-</xsl:text>
-          <xsl:text>        tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>    else{
-</xsl:text>
-          <xsl:text>        tmpgrpattr.value = "translate("+String(xdest-xcoord+size.x)+","+String(ydest-ycoord+size.y)+")";
-</xsl:text>
-          <xsl:text>    }
+          <xsl:text>    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
 </xsl:text>
           <xsl:text>
 </xsl:text>

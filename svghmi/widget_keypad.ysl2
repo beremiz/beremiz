@@ -16,80 +16,6 @@ emit "declarations:keypad" {
 template "widget[@type='Keypad']", mode="widget_class"
     ||
     class KeypadWidget extends Widget{
-         moving = undefined;
-         click = undefined;
-         offset = undefined;
-
-         on_position_click(evt) {
-             this.moving = true;
-
-             // chatch window events
-             window.addEventListener("touchmove", this.bound_on_drag, true);
-             window.addEventListener("mousemove", this.bound_on_drag, true);
-
-             window.addEventListener("mouseup", this.bound_on_release, true)
-             window.addEventListener("touchend", this.bound_on_release, true);
-             window.addEventListener("touchcancel", this.bound_on_release, true);
-
-             // get click position offset from widget x,y and save it to variable
-             var keypad_borders = this.position_elt.getBoundingClientRect();
-             var clickX = undefined;
-             var clickY = undefined;
-             if (evt.type == "touchstart"){
-                 clickX = Math.ceil(evt.touches[0].clientX);
-                 clickY = Math.ceil(evt.touches[0].clientY);
-             }
-             else{
-                 clickX = evt.pageX;
-                 clickY = evt.pageY;
-             }
-             this.offset=[clickX-keypad_borders.left,clickY-keypad_borders.top]
-         }
-
-         on_release(evt) {
-            //relase binds
-            window.removeEventListener("touchmove", this.bound_on_drag, true);
-            window.removeEventListener("mousemove", this.bound_on_drag, true);
-
-            window.removeEventListener("mouseup", this.bound_on_release, true)
-            window.removeEventListener("touchend", this.bound_on_release, true);
-            window.removeEventListener("touchcancel", this.bound_on_release, true);
-
-            if(this.moving)
-                this.moving = false;
-         }
-
-         on_drag(evt) {
-             if(this.moving)
-                //get mouse coordinates
-                var clickX = undefined;
-                var clickY = undefined;
-                if (evt.type == "touchmove"){
-                    clickX = Math.ceil(evt.touches[0].clientX);
-                    clickY = Math.ceil(evt.touches[0].clientY);
-                }
-                else{
-                    clickX = evt.pageX;
-                    clickY = evt.pageY;
-                }
-                this.click = [clickX,clickY]
-
-                //requeset redraw
-                this.request_animate();
-         }
-
-         animate(){
-            //get keyboard pos in html
-            let [eltid, tmpgrp] = current_modal;
-            let [xcoord,ycoord] = this.coordinates;
-            let [clickX,clickY] = this.click;
-            let [xdest,ydest,svgWidth,svgHeight] = page_desc[current_visible_page].bbox;
-
-            //translate keyboard position
-            let mouseX = ((clickX-this.offset[0])/window.innerWidth)*svgWidth;
-            let mouseY = ((clickY-this.offset[1])/window.innerHeight)*svgHeight;
-            tmpgrp.setAttribute("transform","translate("+String(xdest-xcoord+mouseX)+","+String(ydest-ycoord+mouseY)+")");
-         }
 
          on_key_click(symbols) {
              var syms = symbols.split(" ");
@@ -190,7 +116,7 @@ template "widget[@type='Keypad']", mode="widget_class"
 template "widget[@type='Keypad']", mode="widget_defs" {
     param "hmi_element";
     labels("Esc Enter BackSpace Keys Info Value");
-    optional_labels("Sign Space NumDot position");
+    optional_labels("Sign Space NumDot");
     activable_labels("CapsLock Shift");
     |     init: function() {
     foreach "$hmi_element/*[@inkscape:label = 'Keys']/*" {
@@ -200,13 +126,6 @@ template "widget[@type='Keypad']", mode="widget_defs" {
     |         if(this.«.»_elt)
     |             this.«.»_elt.setAttribute("onclick", "hmi_widgets['«$hmi_element/@id»'].on_«.»_click()");
     }
-    |         if(this.position_elt){
-    |            this.bound_on_release = this.on_release.bind(this);
-    |            this.bound_on_drag = this.on_drag.bind(this);
-    |
-    |            this.position_elt.setAttribute("onmousedown", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
-    |            this.position_elt.setAttribute("ontouchstart", "hmi_widgets['"+this.element_id+"'].on_position_click(evt)");
-    |        }
     |     },
     |
     const "g", "$geometry[@Id = $hmi_element/@id]"; 
