@@ -28,9 +28,6 @@ template "widget[@type='Input']", mode="widget_class"{
 template "widget[@type='Input']", mode="widget_defs" {
     param "hmi_element";
 
-    const "key_pos_elt" optional_labels("key_pos");
-    value "$key_pos_elt";
-
     const "value_elt" optional_labels("value");
     const "have_value","string-length($value_elt)>0";
     value "$value_elt";
@@ -62,16 +59,7 @@ template "widget[@type='Input']", mode="widget_defs" {
     |     init: function() {
 
     if "$have_edit" {
-    |         this.edit_elt.onclick = () => edit_value(
-    |             "«path/@value»", "«path/@type»",
-    |             this, this.last_val, 
-        choose {
-            when "string-length($key_pos_elt)>0"
-    |             this.key_pos_elt.getBBox()
-            otherwise
-    |             undefined
-        }
-    |         );
+    |         this.edit_elt.onclick = () => edit_value("«path/@value»", "«path/@type»", this, this.last_val);
     }
 
     foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {

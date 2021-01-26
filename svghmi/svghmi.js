@@ -427,31 +427,26 @@ ws.onclose = function (evt) {
 const xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
 const localtypes = {"PAGE_LOCAL":null, "HMI_LOCAL":null}
-function edit_value(path, valuetype, callback, initial, size) {
+function edit_value(path, valuetype, callback, initial) {
     if(valuetype in localtypes){
         valuetype = (typeof initial) == "number" ? "HMI_REAL" : "HMI_STRING";
     }
     let [keypadid, xcoord, ycoord] = keypads[valuetype];
     edit_callback = callback;
     let widget = hmi_widgets[keypadid];
-    widget.start_edit(path, valuetype, callback, initial, size);
+    widget.start_edit(path, valuetype, callback, initial);
 };
 
 var current_modal; /* TODO stack ?*/
 
-function show_modal(size) {
+function show_modal() {
     let [element, parent] = detachable_elements[this.element.id];
 
     tmpgrp = document.createElementNS(xmlns,"g");
     tmpgrpattr = document.createAttribute("transform");
     let [xcoord,ycoord] = this.coordinates;
     let [xdest,ydest] = page_desc[current_visible_page].bbox;
-    if (typeof size === 'undefined'){
-        tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
-    }
-    else{
-        tmpgrpattr.value = "translate("+String(xdest-xcoord+size.x)+","+String(ydest-ycoord+size.y)+")";
-    }
+    tmpgrpattr.value = "translate("+String(xdest-xcoord)+","+String(ydest-ycoord)+")";
 
     tmpgrp.setAttributeNode(tmpgrpattr);
 
