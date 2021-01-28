@@ -41,6 +41,15 @@ typedef struct{
 	    u16		rw_bits [MEM_AREA_SIZE];
 	    u16		ro_words[MEM_AREA_SIZE];
 	    u16		rw_words[MEM_AREA_SIZE];
+            /* Two flags to count the number of Modbus requests (read and write) we have 
+             * successfully received from any remote Modbus master
+             * These two flags will be mapped onto located variables
+             * so the user's IEC 61131-3 code can check whether we are being
+             * polled by a Modbus master.
+             * The counters will roll over to 0 upon reaching maximum value.
+             */
+            u32         flag_write_req_counter;
+            u32         flag_read_req_counter;
 	} server_mem_t;
 
 
@@ -89,6 +98,8 @@ typedef struct{
 	    node_addr_t	node_address;
 	    int		mb_nd;      // modbus library node used for this server 
 	    int		init_state; // store how far along the server's initialization has progressed
+            /* entries from this point forward are not statically initialized when the variable is declared */
+            /* they will be initialized by the  code itself in the init() function */
 	    pthread_t	thread_id;  // thread handling this server
 	    server_mem_t	mem_area;
 	} server_node_t;
