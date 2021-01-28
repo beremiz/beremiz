@@ -442,6 +442,62 @@ class _ModbusTCPserverPlug(object):
         """ Return the node's Configuration_Name """
         return self.ModbusServerNode.getConfiguration_Name()
 
+    def GetVariableLocationTree(self):
+        current_location = self.GetCurrentLocation()
+        name             = self.BaseParams.getName()
+        # start off with flags that count the number of Modbus requests/transactions
+        # handled by this Modbus server/slave.
+        # These flags are mapped onto located variables and therefore available to the user programs
+        # May be used to detect communication errors.
+        # execute the Modbus request.
+        # NOTE: If the Modbus slave has a 'current_location' of
+        #          %QX1.2
+        #       then the "Modbus Read Request Counter" will be
+        #          %MD1.2.0
+        #       then the "Modbus Write Request Counter" will be
+        #          %MD1.2.1
+        #
+        # Note that any MemoryArea contained under this server/slave
+        # will ocupy the locations of type
+        #          %MX or %MW
+        # which will never clash with the %MD used here.
+        # Additionaly, any MemoryArea contained under this server/slave
+        # will ocupy locations with
+        #           %M1.2.a.b (with a and b being numbers in range 0, 1, ...)
+        # and therefore never ocupy the locations
+        #           %M1.2.0
+        #           %M1.2.1
+        # used by the following flags/counters.
+        entries = []
+        entries.append({
+            "name": "Modbus Read Request Counter",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 32,           # UDINT flag
+            "IEC_type": "UDINT",  # UDINT flag
+            "var_name": "var_name",
+            "location": "D" + ".".join([str(i) for i in current_location]) + ".0",
+            "description": "Modbus read request counter",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Write Request Counter",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 32,           # UDINT flag
+            "IEC_type": "UDINT",  # UDINT flag
+            "var_name": "var_name",
+            "location": "D" + ".".join([str(i) for i in current_location]) + ".1",
+            "description": "Modbus write request counter",
+            "children": []})        
+        # recursively call all the Memory Areas under this Modbus server/save
+        # i.e., all the children objects which will be of class _MemoryAreaPlug
+        for child in self.IECSortedChildren():
+            entries.append(child.GetVariableLocationTree())
+
+        return {"name": name,
+                "type": LOCATION_CONFNODE,
+                "location": ".".join([str(i) for i in current_location]) + ".x",
+                "children": entries}
+
+
     def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
@@ -622,6 +678,62 @@ class _ModbusRTUslavePlug(object):
     def GetConfigName(self):
         """ Return the node's Configuration_Name """
         return self.ModbusRTUslave.getConfiguration_Name()
+
+    def GetVariableLocationTree(self):
+        current_location = self.GetCurrentLocation()
+        name             = self.BaseParams.getName()
+        # start off with flags that count the number of Modbus requests/transactions
+        # handled by this Modbus server/slave.
+        # These flags are mapped onto located variables and therefore available to the user programs
+        # May be used to detect communication errors.
+        # execute the Modbus request.
+        # NOTE: If the Modbus slave has a 'current_location' of
+        #          %QX1.2
+        #       then the "Modbus Read Request Counter" will be
+        #          %MD1.2.0
+        #       then the "Modbus Write Request Counter" will be
+        #          %MD1.2.1
+        #
+        # Note that any MemoryArea contained under this server/slave
+        # will ocupy the locations of type
+        #          %MX or %MW
+        # which will never clash with the %MD used here.
+        # Additionaly, any MemoryArea contained under this server/slave
+        # will ocupy locations with
+        #           %M1.2.a.b (with a and b being numbers in range 0, 1, ...)
+        # and therefore never ocupy the locations
+        #           %M1.2.0
+        #           %M1.2.1
+        # used by the following flags/counters.
+        entries = []
+        entries.append({
+            "name": "Modbus Read Request Counter",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 32,           # UDINT flag
+            "IEC_type": "UDINT",  # UDINT flag
+            "var_name": "var_name",
+            "location": "D" + ".".join([str(i) for i in current_location]) + ".0",
+            "description": "Modbus read request counter",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Write Request Counter",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 32,           # UDINT flag
+            "IEC_type": "UDINT",  # UDINT flag
+            "var_name": "var_name",
+            "location": "D" + ".".join([str(i) for i in current_location]) + ".1",
+            "description": "Modbus write request counter",
+            "children": []})        
+        # recursively call all the Memory Areas under this Modbus server/save
+        # i.e., all the children objects which will be of class _MemoryAreaPlug
+        for child in self.IECSortedChildren():
+            entries.append(child.GetVariableLocationTree())
+
+        return {"name": name,
+                "type": LOCATION_CONFNODE,
+                "location": ".".join([str(i) for i in current_location]) + ".x",
+                "children": entries}
+
 
     def CTNGenerate_C(self, buildpath, locations):
         """
@@ -811,29 +923,50 @@ class RootClass(object):
                 new_node = GetTCPServerNodePrinted(self, child)
                 if new_node is None:
                     return [], "", False
-                server_node_list.append(new_node)
+                server_node_list.append(new_node)                
+                #        We currently add 2 flags/counters to each Modbus server/slave
                 #
+                # TODO: fix comment
+                #        We add the "Execution Control Flag" to each client request (one flag per request)
+                #        to allow the user program to control when to execute the request (if not executed periodically)
+                #        While all Modbus registers/coils are mapped onto a location
+                #        with 4 numbers (e.g. %QX0.1.2.55), this control flag is mapped
+                #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
+                #        two numbers are always '0.0', and the first two identify the request.
+                #        In the following if, we check for this condition by checking
+                #        if there are at least 4 or more number in the location's address.
+                for iecvar in child.GetLocations():
+                    #print "child" + repr(iecvar)
+                    if (len(iecvar["LOC"]) == 3) and (str(iecvar["NAME"]) not in loc_vars_list):
+                        # Add if it is a "Modbus Read Request Counter" (mapped onto %MDa.b.0), so last number is a '0'
+                        if iecvar["LOC"][2] == 0:
+                            loc_vars.append("u32 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_read_req_counter;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                        # Add if it is a "Modbus Write Request Counter" (mapped onto %MDa.b.1), so last number is a '1'
+                        if iecvar["LOC"][2] == 1:
+                            loc_vars.append("u32 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_write_req_counter;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                
                 for subchild in child.IECSortedChildren():
-                    new_memarea = GetTCPServerMemAreaPrinted(
-                        self, subchild, nodeid)
+                    new_memarea = GetTCPServerMemAreaPrinted(self, subchild, nodeid)
                     if new_memarea is None:
                         return [], "", False
                     server_memarea_list.append(new_memarea)
-                    function = subchild.GetParamsAttributes()[
-                        0]["children"][0]["value"]
+                    function = subchild.GetParamsAttributes()[0]["children"][0]["value"]
                     # 'ro_bits', 'rw_bits', 'ro_words' or 'rw_words'
                     memarea = modbus_memtype_dict[function][1]
                     for iecvar in subchild.GetLocations():
-                        # print repr(iecvar)
-                        absloute_address = iecvar["LOC"][3]
-                        start_address = int(GetCTVal(subchild, 2))
-                        relative_addr = absloute_address - start_address
-                        # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(subchild, 1))):
-                            if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
-                                    server_id, memarea, absloute_address))
-                                loc_vars_list.append(str(iecvar["NAME"]))
+                        if len(iecvar["LOC"]) == 4:
+                            #print "subchild" + repr(iecvar)
+                            absloute_address = iecvar["LOC"][3]
+                            start_address = int(GetCTVal(subchild, 2))
+                            relative_addr = absloute_address - start_address
+                            # test if relative address in request specified range
+                            if relative_addr in xrange(int(GetCTVal(subchild, 1))):
+                                if str(iecvar["NAME"]) not in loc_vars_list:
+                                    loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
+                                        server_id, memarea, absloute_address))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
                 server_id += 1
             #
             if child.PlugType == "ModbusRTUslave":
@@ -849,21 +982,21 @@ class RootClass(object):
                     if new_memarea is None:
                         return [], "", False
                     server_memarea_list.append(new_memarea)
-                    function = subchild.GetParamsAttributes()[
-                        0]["children"][0]["value"]
+                    function = subchild.GetParamsAttributes()[0]["children"][0]["value"]
                     # 'ro_bits', 'rw_bits', 'ro_words' or 'rw_words'
                     memarea = modbus_memtype_dict[function][1]
                     for iecvar in subchild.GetLocations():
-                        # print repr(iecvar)
-                        absloute_address = iecvar["LOC"][3]
-                        start_address = int(GetCTVal(subchild, 2))
-                        relative_addr = absloute_address - start_address
-                        # test if relative address in request specified range
-                        if relative_addr in xrange(int(GetCTVal(subchild, 1))):
-                            if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
-                                    server_id, memarea, absloute_address))
-                                loc_vars_list.append(str(iecvar["NAME"]))
+                        if len(iecvar["LOC"]) == 4:
+                            # print repr(iecvar)
+                            absloute_address = iecvar["LOC"][3]
+                            start_address = int(GetCTVal(subchild, 2))
+                            relative_addr = absloute_address - start_address
+                            # test if relative address in request specified range
+                            if relative_addr in xrange(int(GetCTVal(subchild, 1))):
+                                if str(iecvar["NAME"]) not in loc_vars_list:
+                                    loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
+                                        server_id, memarea, absloute_address))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
                 server_id += 1
             #
             if child.PlugType == "ModbusTCPclient":
