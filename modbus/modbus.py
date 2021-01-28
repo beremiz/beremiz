@@ -452,10 +452,10 @@ class _ModbusTCPserverPlug(object):
         # execute the Modbus request.
         # NOTE: If the Modbus slave has a 'current_location' of
         #          %QX1.2
-        #       then the "Modbus Read Request Counter" will be
-        #          %MD1.2.0
-        #       then the "Modbus Write Request Counter" will be
-        #          %MD1.2.1
+        #       then the "Modbus Read Request Counter"  will be %MD1.2.0
+        #       then the "Modbus Write Request Counter" will be %MD1.2.1
+        #       then the "Modbus Read Request Flag"     will be %MD1.2.2
+        #       then the "Modbus Write Request Flag"    will be %MD1.2.3
         #
         # Note that any MemoryArea contained under this server/slave
         # will ocupy the locations of type
@@ -467,6 +467,8 @@ class _ModbusTCPserverPlug(object):
         # and therefore never ocupy the locations
         #           %M1.2.0
         #           %M1.2.1
+        #           %M1.2.2
+        #           %M1.2.3
         # used by the following flags/counters.
         entries = []
         entries.append({
@@ -486,6 +488,24 @@ class _ModbusTCPserverPlug(object):
             "var_name": "var_name",
             "location": "D" + ".".join([str(i) for i in current_location]) + ".1",
             "description": "Modbus write request counter",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Read Request Flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 1,            # BOOL flag
+            "IEC_type": "BOOL",   # BOOL flag
+            "var_name": "var_name",
+            "location": "X" + ".".join([str(i) for i in current_location]) + ".2",
+            "description": "Modbus read request flag",
+            "children": []})        
+        entries.append({
+            "name": "Modbus write Request Flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 1,            # BOOL flag
+            "IEC_type": "BOOL",   # BOOL flag
+            "var_name": "var_name",
+            "location": "X" + ".".join([str(i) for i in current_location]) + ".3",
+            "description": "Modbus write request flag",
             "children": []})        
         # recursively call all the Memory Areas under this Modbus server/save
         # i.e., all the children objects which will be of class _MemoryAreaPlug
@@ -689,10 +709,10 @@ class _ModbusRTUslavePlug(object):
         # execute the Modbus request.
         # NOTE: If the Modbus slave has a 'current_location' of
         #          %QX1.2
-        #       then the "Modbus Read Request Counter" will be
-        #          %MD1.2.0
-        #       then the "Modbus Write Request Counter" will be
-        #          %MD1.2.1
+        #       then the "Modbus Read Request Counter"  will be %MD1.2.0
+        #       then the "Modbus Write Request Counter" will be %MD1.2.1
+        #       then the "Modbus Read Request Flag"     will be %MD1.2.2
+        #       then the "Modbus Write Request Flag"    will be %MD1.2.3
         #
         # Note that any MemoryArea contained under this server/slave
         # will ocupy the locations of type
@@ -704,6 +724,8 @@ class _ModbusRTUslavePlug(object):
         # and therefore never ocupy the locations
         #           %M1.2.0
         #           %M1.2.1
+        #           %M1.2.2
+        #           %M1.2.3
         # used by the following flags/counters.
         entries = []
         entries.append({
@@ -723,6 +745,24 @@ class _ModbusRTUslavePlug(object):
             "var_name": "var_name",
             "location": "D" + ".".join([str(i) for i in current_location]) + ".1",
             "description": "Modbus write request counter",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Read Request Flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 1,            # BOOL flag
+            "IEC_type": "BOOL",   # BOOL flag
+            "var_name": "var_name",
+            "location": "X" + ".".join([str(i) for i in current_location]) + ".2",
+            "description": "Modbus read request flag",
+            "children": []})        
+        entries.append({
+            "name": "Modbus write Request Flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 1,            # BOOL flag
+            "IEC_type": "BOOL",   # BOOL flag
+            "var_name": "var_name",
+            "location": "X" + ".".join([str(i) for i in current_location]) + ".3",
+            "description": "Modbus write request flag",
             "children": []})        
         # recursively call all the Memory Areas under this Modbus server/save
         # i.e., all the children objects which will be of class _MemoryAreaPlug
@@ -924,17 +964,11 @@ class RootClass(object):
                 if new_node is None:
                     return [], "", False
                 server_node_list.append(new_node)                
-                #        We currently add 2 flags/counters to each Modbus server/slave
+                #        We currently add 4 flags/counters to each Modbus server/slave
                 #
-                # TODO: fix comment
-                #        We add the "Execution Control Flag" to each client request (one flag per request)
-                #        to allow the user program to control when to execute the request (if not executed periodically)
-                #        While all Modbus registers/coils are mapped onto a location
-                #        with 4 numbers (e.g. %QX0.1.2.55), this control flag is mapped
-                #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
-                #        two numbers are always '0.0', and the first two identify the request.
-                #        In the following if, we check for this condition by checking
-                #        if there are at least 4 or more number in the location's address.
+                #        We add the Modbus read/write counter/flag to each Modbus slave/server
+                #        to allow the user program to determine if the slave is being actively
+                #        read from or written by by a remote Modbus client.
                 for iecvar in child.GetLocations():
                     #print "child" + repr(iecvar)
                     if (len(iecvar["LOC"]) == 3) and (str(iecvar["NAME"]) not in loc_vars_list):
@@ -945,6 +979,14 @@ class RootClass(object):
                         # Add if it is a "Modbus Write Request Counter" (mapped onto %MDa.b.1), so last number is a '1'
                         if iecvar["LOC"][2] == 1:
                             loc_vars.append("u32 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_write_req_counter;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                        # Add if it is a "Modbus Read Request Flag" (mapped onto %MDa.b.2), so last number is a '2'
+                        if iecvar["LOC"][2] == 2:
+                            loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_read_req_flag;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                        # Add if it is a "Modbus Write Request Counter" (mapped onto %MDa.b.3), so last number is a '3'
+                        if iecvar["LOC"][2] == 3:
+                            loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_write_req_flag;" % (server_id))
                             loc_vars_list.append(str(iecvar["NAME"]))
                 
                 for subchild in child.IECSortedChildren():
@@ -975,7 +1017,31 @@ class RootClass(object):
                 if new_node is None:
                     return [], "", False
                 server_node_list.append(new_node)
+                #        We currently add 4 flags/counters to each Modbus server/slave
                 #
+                #        We add the Modbus read/write counter/flag to each Modbus slave/server
+                #        to allow the user program to determine if the slave is being actively
+                #        read from or written by by a remote Modbus client.
+                for iecvar in child.GetLocations():
+                    #print "child" + repr(iecvar)
+                    if (len(iecvar["LOC"]) == 3) and (str(iecvar["NAME"]) not in loc_vars_list):
+                        # Add if it is a "Modbus Read Request Counter" (mapped onto %MDa.b.0), so last number is a '0'
+                        if iecvar["LOC"][2] == 0:
+                            loc_vars.append("u32 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_read_req_counter;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                        # Add if it is a "Modbus Write Request Counter" (mapped onto %MDa.b.1), so last number is a '1'
+                        if iecvar["LOC"][2] == 1:
+                            loc_vars.append("u32 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_write_req_counter;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                        # Add if it is a "Modbus Read Request Flag" (mapped onto %MDa.b.2), so last number is a '2'
+                        if iecvar["LOC"][2] == 2:
+                            loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_read_req_flag;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+                        # Add if it is a "Modbus Write Request Counter" (mapped onto %MDa.b.3), so last number is a '3'
+                        if iecvar["LOC"][2] == 3:
+                            loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.flag_write_req_flag;" % (server_id))
+                            loc_vars_list.append(str(iecvar["NAME"]))
+
                 for subchild in child.IECSortedChildren():
                     new_memarea = GetTCPServerMemAreaPrinted(
                         self, subchild, nodeid)

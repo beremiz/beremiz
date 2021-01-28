@@ -201,9 +201,11 @@ static inline int __unpack_bits(u16 *unpacked_data, u16 start_addr, u16 bit_coun
 static int __read_inbits   (void *mem_map, u16 start_addr, u16 bit_count, u8  *data_bytes) {
   int res = __pack_bits(((server_mem_t *)mem_map)->ro_bits, start_addr, bit_count, data_bytes);
   
-  if (res >= 0)
-    /* update the counter of Modbus requests we have processed. */
+  if (res >= 0) {
+    /* update the flag and counter of Modbus requests we have processed. */
     ((server_mem_t *)mem_map)->flag_read_req_counter++;
+    ((server_mem_t *)mem_map)->flag_read_req_flag = 1;
+  }
 
   return res;
 }
@@ -211,9 +213,11 @@ static int __read_inbits   (void *mem_map, u16 start_addr, u16 bit_count, u8  *d
 static int __read_outbits  (void *mem_map, u16 start_addr, u16 bit_count, u8  *data_bytes) {
   int res = __pack_bits(((server_mem_t *)mem_map)->rw_bits, start_addr, bit_count, data_bytes);
   
-  if (res >= 0)
-    /* update the counter of Modbus requests we have processed. */
+  if (res >= 0) {
+    /* update the flag and counter of Modbus requests we have processed. */
     ((server_mem_t *)mem_map)->flag_read_req_counter++;
+    ((server_mem_t *)mem_map)->flag_read_req_flag = 1;
+  }
 
   return res;
 }
@@ -221,9 +225,11 @@ static int __read_outbits  (void *mem_map, u16 start_addr, u16 bit_count, u8  *d
 static int __write_outbits (void *mem_map, u16 start_addr, u16 bit_count, u8  *data_bytes) {
   int res = __unpack_bits(((server_mem_t *)mem_map)->rw_bits, start_addr, bit_count, data_bytes);
   
-  if (res >= 0)
-    /* update the counter of Modbus requests we have processed. */
+  if (res >= 0) {
+    /* update the flag and counter of Modbus requests we have processed. */
     ((server_mem_t *)mem_map)->flag_write_req_counter++;
+    ((server_mem_t *)mem_map)->flag_write_req_flag = 1;
+  }
 
   return res;
 }
@@ -236,8 +242,9 @@ static int __read_inwords  (void *mem_map, u16 start_addr, u16 word_count, u16 *
   if ((start_addr + word_count) > MEM_AREA_SIZE)
     return -ERR_ILLEGAL_DATA_ADDRESS; /* ERR_ILLEGAL_DATA_ADDRESS defined in mb_util.h */
 
-  /* update the counter of Modbus requests we have processed. */
+  /* update the flag and counter of Modbus requests we have processed. */
   ((server_mem_t *)mem_map)->flag_read_req_counter++;
+  ((server_mem_t *)mem_map)->flag_read_req_flag = 1;
 
   /* use memcpy() because loop with pointers (u16 *) caused alignment problems */
   memcpy(/* dest */ (void *)data_words,
@@ -253,8 +260,9 @@ static int __read_outwords (void *mem_map, u16 start_addr, u16 word_count, u16 *
   if ((start_addr + word_count) > MEM_AREA_SIZE)
     return -ERR_ILLEGAL_DATA_ADDRESS; /* ERR_ILLEGAL_DATA_ADDRESS defined in mb_util.h */
 
-  /* update the counter of Modbus requests we have processed. */
+  /* update the flag and counter of Modbus requests we have processed. */
   ((server_mem_t *)mem_map)->flag_read_req_counter++;
+  ((server_mem_t *)mem_map)->flag_read_req_flag = 1;
 
   /* use memcpy() because loop with pointers (u16 *) caused alignment problems */
   memcpy(/* dest */ (void *)data_words,
@@ -271,8 +279,9 @@ static int __write_outwords(void *mem_map, u16 start_addr, u16 word_count, u16 *
   if ((start_addr + word_count) > MEM_AREA_SIZE)
     return -ERR_ILLEGAL_DATA_ADDRESS; /* ERR_ILLEGAL_DATA_ADDRESS defined in mb_util.h */
 
-  /* update the counter of Modbus requests we have processed. */
+  /* update the flag and counter of Modbus requests we have processed. */
   ((server_mem_t *)mem_map)->flag_write_req_counter++;
+  ((server_mem_t *)mem_map)->flag_write_req_flag = 1;
 
   /* WARNING: The data returned in the data_words[] array is not guaranteed to be 16 bit aligned.
    *           It is not therefore safe to cast it to an u16 data type.
@@ -558,8 +567,10 @@ int __init_%(locstr)s (int argc, char **argv){
 		//   -1  -->    modbus node created!; no thread  created
 		//  >=0  -->    modbus node created!;    thread  created!
 		server_nodes[index].mb_nd = -2; 
+		server_nodes[index].mem_area.flag_write_req_flag    = 0; 
 		server_nodes[index].mem_area.flag_write_req_counter = 0; 
 		server_nodes[index].mem_area.flag_read_req_counter  = 0; 
+		server_nodes[index].mem_area.flag_read_req_flag     = 0; 
         /* see comment in mb_runtime.h to understad why we need to initialize these entries */
         switch (server_nodes[index].node_address.naf) {
             case naf_tcp:

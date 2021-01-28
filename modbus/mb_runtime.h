@@ -42,14 +42,24 @@ typedef struct{
 	    u16		ro_words[MEM_AREA_SIZE];
 	    u16		rw_words[MEM_AREA_SIZE];
             /* Two flags to count the number of Modbus requests (read and write) we have 
-             * successfully received from any remote Modbus master
-             * These two flags will be mapped onto located variables
+             * successfully received from any remote Modbus master.
+             * Two boolean flags that are set whenever we successfully process a
+             * Modbus request sent from a remote client.
+             * These flags will be mapped onto located variables
              * so the user's IEC 61131-3 code can check whether we are being
              * polled by a Modbus master.
              * The counters will roll over to 0 upon reaching maximum value.
+             * The user will probably periodically reset the boolean flags to false,
+             * and use this as a communication timeout 
+             * (when it remains false in two consecutive periods)
+             * 
+             * u8  for BOOL  variable/flag
+             * u32 for UDINT variable/counter
              */
-            u32         flag_write_req_counter;
-            u32         flag_read_req_counter;
+        u8   flag_write_req_flag;
+        u8   flag_read_req_flag;
+        u32  flag_write_req_counter;
+        u32  flag_read_req_counter;
 	} server_mem_t;
 
 
