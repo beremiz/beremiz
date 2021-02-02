@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
-  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -510,7 +510,7 @@
 </xsl:text>
   </xsl:template>
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
-  <xsl:variable name="forEach_widgets" select="$hmi_elements[@id = $forEach_widgets_ids]"/>
+  <xsl:variable name="forEach_widgets" select="$hmi_widgets[@id = $forEach_widgets_ids]"/>
   <xsl:variable name="in_forEach_widget_ids" select="func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id"/>
   <xsl:template mode="page_desc" match="svg:*">
     <xsl:if test="ancestor::*[@id = $hmi_pages/@id]">
@@ -524,7 +524,7 @@
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
     <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
-    <xsl:variable name="all_page_widgets" select="$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]"/>
+    <xsl:variable name="all_page_widgets" select="$hmi_widgets[@id = $page_all_elements/@id and @id != $page/@id]"/>
     <xsl:variable name="page_managed_widgets" select="$all_page_widgets[not(@id=$in_forEach_widget_ids)]"/>
     <xsl:variable name="page_relative_widgets" select="$page_managed_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]"/>
     <xsl:variable name="required_detachables" select="func:sumarized_elements($page_all_elements)/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
@@ -1110,25 +1110,6 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <func:function name="func:unique_types">
-    <xsl:param name="elts_with_type"/>
-    <xsl:choose>
-      <xsl:when test="count($elts_with_type) &gt; 1">
-        <xsl:variable name="prior_results" select="func:unique_types($elts_with_type[position()!=last()])"/>
-        <xsl:choose>
-          <xsl:when test="$elts_with_type[last()][@type = $prior_results/@type]">
-            <func:result select="$prior_results"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <func:result select="$prior_results | $elts_with_type[last()]"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:otherwise>
-        <func:result select="$elts_with_type"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </func:function>
   <preamble:local-variable-indexes/>
   <xsl:template match="preamble:local-variable-indexes">
     <xsl:text>
@@ -1530,6 +1511,8 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
+  <xsl:variable name="excluded_types" select="str:split('Page VarInit')"/>
+  <xsl:key name="TypesKey" match="widget" use="@type"/>
   <declarations:hmi-classes/>
   <xsl:template match="declarations:hmi-classes">
     <xsl:text>
@@ -1540,7 +1523,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:variable name="used_widget_types" select="func:unique_types($parsed_widgets/widget)"/>
+    <xsl:variable name="used_widget_types" select="$parsed_widgets/widget[&#10;                                    generate-id() = generate-id(key('TypesKey', @type)) and &#10;                                    not(@type = $excluded_types)]"/>
     <xsl:apply-templates mode="widget_class" select="$used_widget_types"/>
     <xsl:text>
 </xsl:text>
@@ -1557,8 +1540,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="excluded_types" select="str:split('Page Lang VarInit')"/>
   <xsl:variable name="included_ids" select="$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id"/>
+  <xsl:variable name="hmi_widgets" select="$hmi_elements[@id = $included_ids]"/>
   <declarations:hmi-elements/>
   <xsl:template match="declarations:hmi-elements">
     <xsl:text>
@@ -1571,7 +1554,7 @@
 </xsl:text>
     <xsl:text>var hmi_widgets = {
 </xsl:text>
-    <xsl:apply-templates mode="hmi_widgets" select="$hmi_elements[@id = $included_ids]"/>
+    <xsl:apply-templates mode="hmi_widgets" select="$hmi_widgets"/>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
@@ -6302,7 +6285,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <head/>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
