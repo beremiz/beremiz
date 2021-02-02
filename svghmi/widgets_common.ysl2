@@ -63,27 +63,6 @@ template "svg:*", mode="hmi_widgets" {
     |   })`if "position()!=last()" > ,`
 }
 
-def "func:unique_types" {
-    param "elts_with_type";
-    choose {
-        when "count($elts_with_type) > 1" {
-            const "prior_results","func:unique_types($elts_with_type[position()!=last()])";
-            choose {
-                when "$elts_with_type[last()][@type = $prior_results/@type]"{
-                    // type already in
-                    result "$prior_results";
-                }
-                otherwise {
-                    result "$prior_results | $elts_with_type[last()]";
-                }
-            }
-        }
-        otherwise {
-            result "$elts_with_type";
-        }
-    }
-}
-
 emit "preamble:local-variable-indexes" {
     ||
     let hmi_locals = {};
@@ -276,8 +255,15 @@ emit "preamble:widget-base-class" {
     ||
 }
 
+const "excluded_types", "str:split('Page VarInit')";
+
+// Key to filter unique types
+key "TypesKey", "widget", "@type";
+
 emit "declarations:hmi-classes" {
-    const "used_widget_types", "func:unique_types($parsed_widgets/widget)";
+    const "used_widget_types", """$parsed_widgets/widget[
+                                    generate-id() = generate-id(key('TypesKey', @type)) and 
+                                    not(@type = $excluded_types)]""";
     apply "$used_widget_types", mode="widget_class";
 }
 
@@ -288,7 +274,6 @@ class «@type»Widget extends Widget{
 }
 ||
 
-const "excluded_types", "str:split('Page VarInit')";
 const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id";
 const "hmi_widgets","$hmi_elements[@id = $included_ids]";
 
