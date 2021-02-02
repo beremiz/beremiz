@@ -288,12 +288,13 @@ class «@type»Widget extends Widget{
 }
 ||
 
-const "excluded_types", "str:split('Page Lang VarInit')";
+const "excluded_types", "str:split('Page VarInit')";
 const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id";
+const "hmi_widgets","$hmi_elements[@id = $included_ids]";
 
 emit "declarations:hmi-elements" {
     | var hmi_widgets = {
-    apply "$hmi_elements[@id = $included_ids]", mode="hmi_widgets";
+    apply "$hmi_widgets", mode="hmi_widgets";
     | }
 }
 

@@ -109,7 +109,7 @@ emit "declarations:detachable-elements" {
 }
 
 const "forEach_widgets_ids", "$parsed_widgets/widget[@type = 'ForEach']/@id";
-const "forEach_widgets", "$hmi_elements[@id = $forEach_widgets_ids]";
+const "forEach_widgets", "$hmi_widgets[@id = $forEach_widgets_ids]";
 const "in_forEach_widget_ids", "func:refered_elements($forEach_widgets)[not(@id = $forEach_widgets_ids)]/@id";
 
 template "svg:*", mode="page_desc" {
@@ -121,7 +121,7 @@ template "svg:*", mode="page_desc" {
 
     const "page_all_elements", "func:all_related_elements($page)";
 
-    const "all_page_widgets","$hmi_elements[@id = $page_all_elements/@id and @id != $page/@id]";
+    const "all_page_widgets","$hmi_widgets[@id = $page_all_elements/@id and @id != $page/@id]";
     const "page_managed_widgets","$all_page_widgets[not(@id=$in_forEach_widget_ids)]";
     const "page_relative_widgets",
         "$page_managed_widgets[func:is_descendant_path(func:widget(@id)/path/@value, $desc/path/@value)]";
