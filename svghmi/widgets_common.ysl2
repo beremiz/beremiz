@@ -251,6 +251,16 @@ emit "preamble:widget-base-class" {
             }
 
         }
+
+        activate_activable(eltsub) {
+            eltsub.inactive.style.display = "none";
+            eltsub.active.style.display = "";
+        }
+
+        inactivate_activable(eltsub) {
+            eltsub.active.style.display = "none";
+            eltsub.inactive.style.display = "";
+        }
     }
     ||
 }
