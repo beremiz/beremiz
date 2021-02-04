@@ -465,3 +465,18 @@ function end_modal() {
     current_modal = undefined;
 };
 
+function switch_lang(lang) {
+    langnum = langs.indexOf(lang);
+    if(langnum == -1) {
+        console.log("Unknown language: "+lang+", return to original");
+        location.reload(true);
+    }
+
+    for (let translation of translations) {
+        let [objs, msgs] = translation;
+        let msg = msgs[langnum];
+        for (let obj of objs) {
+            msg.split('\\\\n').map((line,i) => {obj.children[i].textContent = line;});
+        }
+    }
+}

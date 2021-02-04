@@ -22,14 +22,21 @@ emit "preamble:i18n" {
     const "translations", "ns:GetTranslations($translatable_strings)";
     > var langs = [
     foreach "$translations/langs/lang" {
-        value  ".";
+        > "«.»"
         if "position()!=last()" > ,
     }
     | ];
     | var translations = [
     foreach "$translatable_texts" {
         const "n","position()";
-    >   ["«@id»",[
+        const "current_id","@id";
+        const "text_unlinked_uses","$result_svg_ns//svg:text[@original = $current_id]/@id";
+    >   [[
+        foreach "@id | $text_unlinked_uses" {
+            > id("«.»")
+            if "position()!=last()" > ,
+        }
+    > ],[
         foreach "$translations/messages/msgid[$n]/msg" {
             > "
             foreach "line" {
