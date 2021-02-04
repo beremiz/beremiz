@@ -103,11 +103,11 @@ template "widget[@type='Keypad']", mode="widget_class"
              }
              if(this.Shift_sub && this.shift != this._shift){
                  this._shift = this.shift;
-                 (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
+                 (this.shift?this.activate_activable:this.inactivate_activable)(this.Shift_sub);
              }
              if(this.CapsLock_sub && this.caps != this._caps){
                  this._caps = this.caps;
-                 (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
+                 (this.caps?this.activate_activable:this.inactivate_activable)(this.CapsLock_sub);
              }
          }
     }
