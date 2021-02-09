@@ -120,10 +120,10 @@ template "*", mode="parselabel" {
                     }
                 }
                 choose {
-                    when "regexp:test($path,'^\.[a-zA-Z0-9_]+')" {
+                    when "regexp:test($path,'^\.[a-zA-Z0-9_]+$')" {
                         attrib "type" > PAGE_LOCAL
                     }
-                    when "regexp:test($path,'^[a-zA-Z0-9_]+')" {
+                    when "regexp:test($path,'^[a-zA-Z0-9_]+$')" {
                         attrib "type" > HMI_LOCAL
                     }
                     otherwise {
