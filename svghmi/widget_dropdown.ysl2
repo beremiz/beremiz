@@ -295,6 +295,7 @@ template "widget[@type='DropDown']", mode="widget_class"{
             b.height.baseVal.value = m.height;
         }
         highlight_selection(){
+            if(this.last_selection == undefined) return;
             let highlighted_row = this.last_selection - this.menu_offset;
             if(highlighted_row < 0) return;
             let spans = this.text_elt.children;
