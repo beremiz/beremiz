@@ -342,17 +342,6 @@ function eval_operation_string(old_val, opstr) {
     return new_val;
 }
 
-/*
-function change_hmi_value(index, opstr) {
-    let old_val = cache[index];
-    let new_val = eval_operation_string(old_val, opstr);
-    if(new_val != undefined && old_val != new_val)
-        send_hmi_value(index, new_val);
-    // TODO else raise
-    return new_val;
-}
-*/
-
 var current_visible_page;
 var current_subscribed_page;
 var current_page_index;
