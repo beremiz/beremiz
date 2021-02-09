@@ -974,7 +974,7 @@
     <xsl:text>
 </xsl:text>
     <xsl:variable name="translations" select="ns:GetTranslations($translatable_strings)"/>
-    <xsl:text>var langs = [</xsl:text>
+    <xsl:text>var langs = [ "default",</xsl:text>
     <xsl:for-each select="$translations/langs/lang">
       <xsl:text>"</xsl:text>
       <xsl:value-of select="."/>
@@ -3977,19 +3977,24 @@
         <xsl:text>text box button highlight</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
-    <xsl:text>    content: [
+    <xsl:text>  content:</xsl:text>
+    <xsl:choose>
+      <xsl:when test="count(arg) = 1 and arg[1]/@value = '#langs'">
+        <xsl:text>langs</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>[
 </xsl:text>
-    <xsl:text>    /* TODO : Support HMI:List */
+        <xsl:for-each select="arg">
+          <xsl:text>"</xsl:text>
+          <xsl:value-of select="@value"/>
+          <xsl:text>",
 </xsl:text>
-    <xsl:for-each select="arg">
-      <xsl:text>"</xsl:text>
-      <xsl:value-of select="@value"/>
-      <xsl:text>",
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>    ],
-</xsl:text>
-    <xsl:text>
+        </xsl:for-each>
+        <xsl:text>  ]</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>,
 </xsl:text>
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
@@ -6966,8 +6971,6 @@
           <xsl:text>        }
 </xsl:text>
           <xsl:text>
-</xsl:text>
-          <xsl:text>        
 </xsl:text>
           <xsl:text>        requestHMIAnimation();
 </xsl:text>
