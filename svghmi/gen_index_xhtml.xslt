@@ -192,12 +192,12 @@
                 </xsl:when>
               </xsl:choose>
               <xsl:choose>
-                <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+')">
+                <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+$')">
                   <xsl:attribute name="type">
                     <xsl:text>PAGE_LOCAL</xsl:text>
                   </xsl:attribute>
                 </xsl:when>
-                <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+')">
+                <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+$')">
                   <xsl:attribute name="type">
                     <xsl:text>HMI_LOCAL</xsl:text>
                   </xsl:attribute>
@@ -233,6 +233,10 @@
     </xsl:if>
   </xsl:template>
   <xsl:variable name="_parsed_widgets">
+    <widget type="VarInitPersistent">
+      <arg value="0"/>
+      <path value="lang"/>
+    </widget>
     <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
   </xsl:variable>
   <xsl:variable name="parsed_widgets" select="exsl:node-set($_parsed_widgets)"/>
@@ -972,7 +976,9 @@
     <xsl:variable name="translations" select="ns:GetTranslations($translatable_strings)"/>
     <xsl:text>var langs = [</xsl:text>
     <xsl:for-each select="$translations/langs/lang">
+      <xsl:text>"</xsl:text>
       <xsl:value-of select="."/>
+      <xsl:text>"</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -983,9 +989,18 @@
 </xsl:text>
     <xsl:for-each select="$translatable_texts">
       <xsl:variable name="n" select="position()"/>
-      <xsl:text>  ["</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>",[</xsl:text>
+      <xsl:variable name="current_id" select="@id"/>
+      <xsl:variable name="text_unlinked_uses" select="$result_svg_ns//svg:text[@original = $current_id]/@id"/>
+      <xsl:text>  [[</xsl:text>
+      <xsl:for-each select="@id | $text_unlinked_uses">
+        <xsl:text>id("</xsl:text>
+        <xsl:value-of select="."/>
+        <xsl:text>")</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+      <xsl:text>],[</xsl:text>
       <xsl:for-each select="$translations/messages/msgid[$n]/msg">
         <xsl:text>"</xsl:text>
         <xsl:for-each select="line">
@@ -1126,11 +1141,13 @@
 </xsl:text>
     <xsl:text>var next_available_index = hmitree_types.length;
 </xsl:text>
+    <xsl:text>let cookies = new Map(document.cookie.split("; ").map(s=&gt;s.split("=")));
+</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>const local_defaults = {
 </xsl:text>
-    <xsl:for-each select="$parsed_widgets/widget[@type = 'VarInit']">
+    <xsl:for-each select="$parsed_widgets/widget[starts-with(@type,'VarInit')]">
       <xsl:if test="count(path) != 1">
         <xsl:message terminate="yes">
           <xsl:text>VarInit </xsl:text>
@@ -1145,17 +1162,47 @@
           <xsl:text> only applies to HMI variable.</xsl:text>
         </xsl:message>
       </xsl:if>
-      <xsl:text>"</xsl:text>
+      <xsl:text>    "</xsl:text>
       <xsl:value-of select="path/@value"/>
       <xsl:text>":</xsl:text>
-      <xsl:value-of select="arg[1]/@value"/>
+      <xsl:choose>
+        <xsl:when test="@type = 'VarInitPersistent'">
+          <xsl:text>cookies.has("</xsl:text>
+          <xsl:value-of select="path/@value"/>
+          <xsl:text>")?cookies.get("</xsl:text>
+          <xsl:value-of select="path/@value"/>
+          <xsl:text>"):</xsl:text>
+          <xsl:value-of select="arg[1]/@value"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="arg[1]/@value"/>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>
+</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>const persistent_locals = new Set([
+</xsl:text>
+    <xsl:for-each select="$parsed_widgets/widget[@type='VarInitPersistent']">
+      <xsl:text>   "</xsl:text>
+      <xsl:value-of select="path/@value"/>
+      <xsl:text>"</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
-    <xsl:text>};
+    <xsl:text>]);
+</xsl:text>
+    <xsl:text>var persistent_indexes = new Map();
 </xsl:text>
     <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
 </xsl:text>
@@ -1193,9 +1240,15 @@
 </xsl:text>
     <xsl:text>    let defaultval = local_defaults[varname];
 </xsl:text>
-    <xsl:text>    if(defaultval != undefined) 
+    <xsl:text>    if(defaultval != undefined) {
 </xsl:text>
     <xsl:text>        cache[new_index] = defaultval; 
+</xsl:text>
+    <xsl:text>        if(persistent_locals.has(varname))
+</xsl:text>
+    <xsl:text>            persistent_indexes.set(new_index, varname);
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>    return new_index;
 </xsl:text>
@@ -1506,12 +1559,32 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    activate_activable(eltsub) {
+</xsl:text>
+    <xsl:text>        eltsub.inactive.style.display = "none";
+</xsl:text>
+    <xsl:text>        eltsub.active.style.display = "";
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    inactivate_activable(eltsub) {
+</xsl:text>
+    <xsl:text>        eltsub.active.style.display = "none";
+</xsl:text>
+    <xsl:text>        eltsub.inactive.style.display = "";
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
     <xsl:text>}
 </xsl:text>
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="excluded_types" select="str:split('Page VarInit')"/>
+  <xsl:variable name="excluded_types" select="str:split('Page VarInit VarInitPersistent')"/>
   <xsl:key name="TypesKey" match="widget" use="@type"/>
   <declarations:hmi-classes/>
   <xsl:template match="declarations:hmi-classes">
@@ -3825,6 +3898,8 @@
 </xsl:text>
     <xsl:text>        highlight_selection(){
 </xsl:text>
+    <xsl:text>            if(this.last_selection == undefined) return;
+</xsl:text>
     <xsl:text>            let highlighted_row = this.last_selection - this.menu_offset;
 </xsl:text>
     <xsl:text>            if(highlighted_row &lt; 0) return;
@@ -5123,7 +5198,7 @@
 </xsl:text>
     <xsl:text>             this._shift = this.shift;
 </xsl:text>
-    <xsl:text>             (this.shift?widget_active_activable:widget_inactive_activable)(this.Shift_sub);
+    <xsl:text>             (this.shift?this.activate_activable:this.inactivate_activable)(this.Shift_sub);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -5131,7 +5206,7 @@
 </xsl:text>
     <xsl:text>             this._caps = this.caps;
 </xsl:text>
-    <xsl:text>             (this.caps?widget_active_activable:widget_inactive_activable)(this.CapsLock_sub);
+    <xsl:text>             (this.caps?this.activate_activable:this.inactivate_activable)(this.CapsLock_sub);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -6734,6 +6809,72 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>var translated = false;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function switch_langnum(langnum) {
+</xsl:text>
+          <xsl:text>    if(langnum == current_lang) {
+</xsl:text>
+          <xsl:text>        return;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if (!translated) {
+</xsl:text>
+          <xsl:text>        translated = true;
+</xsl:text>
+          <xsl:text>        for (let translation of translations) {
+</xsl:text>
+          <xsl:text>            let [objs] = translation;
+</xsl:text>
+          <xsl:text>            translation.push(Array.prototype.map.call(objs[0].children, x=&gt;x.textContent).join("\n")); 
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    for (let translation of translations) {
+</xsl:text>
+          <xsl:text>        let [objs, msgs, orig] = translation;
+</xsl:text>
+          <xsl:text>        let msg = langnum == 0 ? orig : msgs[langnum - 1];
+</xsl:text>
+          <xsl:text>        for (let obj of objs) {
+</xsl:text>
+          <xsl:text>            msg.split('\n').map((line,i) =&gt; {obj.children[i].textContent = line;});
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    current_lang = langnum;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>var lang_local_index = hmi_local_index("lang");
+</xsl:text>
+          <xsl:text>subscribers(lang_local_index).add({
+</xsl:text>
+          <xsl:text>    indexes: [lang_local_index],
+</xsl:text>
+          <xsl:text>    new_hmi_value: function(index, value, oldval) {
+</xsl:text>
+          <xsl:text>        switch_langnum(value);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>});
+</xsl:text>
+          <xsl:text>var current_lang = 0;
+</xsl:text>
+          <xsl:text>switch_langnum(cache[lang_local_index]);
+</xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>function update_subscriptions() {
@@ -6811,6 +6952,22 @@
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
           <xsl:text>        updates[index] = value;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        if(persistent_indexes.has(index)){
+</xsl:text>
+          <xsl:text>            let varname = persistent_indexes.get(index);
+</xsl:text>
+          <xsl:text>            console.log(varname+"="+value+"; max-age=3153600000");
+</xsl:text>
+          <xsl:text>            document.cookie = varname+"="+value+"; max-age=3153600000";
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        
 </xsl:text>
           <xsl:text>        requestHMIAnimation();
 </xsl:text>
@@ -6927,28 +7084,6 @@
           <xsl:text>    return new_val;
 </xsl:text>
           <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>/*
-</xsl:text>
-          <xsl:text>function change_hmi_value(index, opstr) {
-</xsl:text>
-          <xsl:text>    let old_val = cache[index];
-</xsl:text>
-          <xsl:text>    let new_val = eval_operation_string(old_val, opstr);
-</xsl:text>
-          <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
-</xsl:text>
-          <xsl:text>        send_hmi_value(index, new_val);
-</xsl:text>
-          <xsl:text>    // TODO else raise
-</xsl:text>
-          <xsl:text>    return new_val;
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>*/
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -7255,34 +7390,6 @@
           <xsl:text>};
 </xsl:text>
           <xsl:text>
-</xsl:text>
-          <xsl:text>function widget_active_activable(eltsub) {
-</xsl:text>
-          <xsl:text>    if(eltsub.inactive_style === undefined)
-</xsl:text>
-          <xsl:text>        eltsub.inactive_style = eltsub.inactive.getAttribute("style");
-</xsl:text>
-          <xsl:text>    eltsub.inactive.setAttribute("style", "display:none");
-</xsl:text>
-          <xsl:text>    if(eltsub.active_style !== undefined)
-</xsl:text>
-          <xsl:text>            eltsub.active.setAttribute("style", eltsub.active_style);
-</xsl:text>
-          <xsl:text>};
-</xsl:text>
-          <xsl:text>function widget_inactive_activable(eltsub) {
-</xsl:text>
-          <xsl:text>    if(eltsub.active_style === undefined)
-</xsl:text>
-          <xsl:text>        eltsub.active_style = eltsub.active.getAttribute("style");
-</xsl:text>
-          <xsl:text>    eltsub.active.setAttribute("style", "display:none");
-</xsl:text>
-          <xsl:text>    if(eltsub.inactive_style !== undefined)
-</xsl:text>
-          <xsl:text>            eltsub.inactive.setAttribute("style", eltsub.inactive_style);
-</xsl:text>
-          <xsl:text>};
 </xsl:text>
         </script>
       </body>
