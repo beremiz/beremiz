@@ -143,7 +143,14 @@ template "*", mode="parselabel" {
     }
 }
 
-const "_parsed_widgets" apply "$hmi_elements", mode="parselabel";
+const "_parsed_widgets" {
+    widget type="VarInitPersistent" {
+        arg value="0";
+        path value="lang";
+    }
+    apply "$hmi_elements", mode="parselabel";
+}
+
 const "parsed_widgets","exsl:node-set($_parsed_widgets)";
 
 def "func:widget" {

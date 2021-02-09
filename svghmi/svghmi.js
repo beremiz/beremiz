@@ -204,6 +204,39 @@ subscribers(heartbeat_index).add({
     }
 });
 
+var translated = false;
+
+function switch_langnum(langnum) {
+    if(langnum == current_lang) {
+        return;
+    }
+
+    if (!translated) {
+        translated = true;
+        for (let translation of translations) {
+            let [objs] = translation;
+            translation.push(Array.prototype.map.call(objs[0].children, x=>x.textContent).join("\\\\n")); 
+        }
+    }
+
+    for (let translation of translations) {
+        let [objs, msgs, orig] = translation;
+        let msg = langnum == 0 ? orig : msgs[langnum - 1];
+        for (let obj of objs) {
+            msg.split('\\\\n').map((line,i) => {obj.children[i].textContent = line;});
+        }
+    }
+    current_lang = langnum;
+}
+var lang_local_index = hmi_local_index("lang");
+subscribers(lang_local_index).add({
+    indexes: [lang_local_index],
+    new_hmi_value: function(index, value, oldval) {
+        switch_langnum(value);
+    }
+});
+var current_lang = 0;
+switch_langnum(cache[lang_local_index]);
 
 function update_subscriptions() {
     let delta = [];
@@ -472,18 +505,3 @@ function end_modal() {
     current_modal = undefined;
 };
 
-function switch_lang(lang) {
-    langnum = langs.indexOf(lang);
-    if(langnum == -1) {
-        console.log("Unknown language: "+lang+", return to original");
-        location.reload(true);
-    }
-
-    for (let translation of translations) {
-        let [objs, msgs] = translation;
-        let msg = msgs[langnum];
-        for (let obj of objs) {
-            msg.split('\\\\n').map((line,i) => {obj.children[i].textContent = line;});
-        }
-    }
-}
