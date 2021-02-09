@@ -337,11 +337,17 @@ template "widget[@type='DropDown']", mode="widget_defs" {
     param "hmi_element";
     labels("text box button highlight");
     // It is assumed that list content conforms to Array interface.
-||
-    content: [
-    /* TODO : Support HMI:List */
-    ``foreach "arg" | "«@value»",
-    ],
-
-||
+    >   content:
+    choose{
+        // special case when used for language selection
+        when "count(arg) = 1 and arg[1]/@value = '#langs'" {
+            > langs
+        }
+        otherwise {
+            > [\n
+            foreach "arg" | "«@value»",
+            >   ]
+        }
+    }
+    > ,\n
 }

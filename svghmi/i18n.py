@@ -15,6 +15,11 @@ import time
 import ast
 import wx
 
+# to have it for python 2, had to install 
+# https://pypi.org/project/pycountry/18.12.8/
+# python2 -m pip install pycountry==18.12.8 --user
+import pycountry
+
 def open_pofile(pofile):
     """ Opens PO file with POEdit """
     
@@ -92,7 +97,18 @@ def MatchTranslations(translations, messages, errcallback):
         translated_messages.append((msgid,translated_message))
     langs = []
     for lang,translation in translations:
-        langs.append(lang)
+        try:
+            l,c = lang.split("_")
+            language_name = pycountry.languages.get(alpha_2 = l).name
+            country_name = pycountry.countries.get(alpha_2 = c).name
+            langs.append("{} ({})".format(language_name, country_name))
+        except:
+            try:
+                language_name = pycountry.languages.get(alpha_2 = lang).name
+                langs.append(language_name)
+            except:
+                langs.append(lang)
+
         broken = False
         for msgid, msg in translation.iteritems():
             broken = True
