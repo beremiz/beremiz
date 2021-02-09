@@ -243,6 +243,13 @@ function update_subscriptions() {
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
         updates[index] = value;
+
+        if(persistent_indexes.has(index)){
+            let varname = persistent_indexes.get(index);
+            console.log(varname+"="+value+"; max-age=3153600000");
+            document.cookie = varname+"="+value+"; max-age=3153600000";
+        }
+
         requestHMIAnimation();
         return;
     }

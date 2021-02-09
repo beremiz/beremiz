@@ -68,16 +68,32 @@ emit "preamble:local-variable-indexes" {
     let hmi_locals = {};
     var last_remote_index = hmitree_types.length - 1;
     var next_available_index = hmitree_types.length;
+    let cookies = new Map(document.cookie.split("; ").map(s=>s.split("=")));
 
     const local_defaults = {
     ||
-    foreach "$parsed_widgets/widget[@type = 'VarInit']"{
+    foreach "$parsed_widgets/widget[starts-with(@type,'VarInit')]"{
         if "count(path) != 1" error > VarInit «@id» must have only one variable given.
         if "path/@type != 'PAGE_LOCAL' and path/@type != 'HMI_LOCAL'" error > VarInit «@id» only applies to HMI variable.
-        | "«path/@value»":«arg[1]/@value»`if "position()!=last()" > ,`
+        >     "«path/@value»":
+        choose {
+            when "@type = 'VarInitPersistent'" > cookies.has("«path/@value»")?cookies.get("«path/@value»"):«arg[1]/@value»
+            otherwise > «arg[1]/@value»
+        }
+        > \n
+        if "position()!=last()" > ,
     }
     ||
     };
+
+    const persistent_locals = new Set([
+    ||
+    foreach "$parsed_widgets/widget[@type='VarInitPersistent']"{
+    |    "«path/@value»"`if "position()!=last()" > ,`
+    }
+    ||
+    ]);
+    var persistent_indexes = new Map();
     var cache = hmitree_types.map(_ignored => undefined);
 
     function page_local_index(varname, pagename){
@@ -96,8 +112,11 @@ emit "preamble:local-variable-indexes" {
             pagevars[varname] = new_index;
         }
         let defaultval = local_defaults[varname];
-        if(defaultval != undefined) 
+        if(defaultval != undefined) {
             cache[new_index] = defaultval; 
+            if(persistent_locals.has(varname))
+                persistent_indexes.set(new_index, varname);
+        }
         return new_index;
     }
 
@@ -265,7 +284,7 @@ emit "preamble:widget-base-class" {
     ||
 }
 
-const "excluded_types", "str:split('Page VarInit')";
+const "excluded_types", "str:split('Page VarInit VarInitPersistent')";
 
 // Key to filter unique types
 key "TypesKey", "widget", "@type";
