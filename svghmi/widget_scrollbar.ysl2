@@ -1,0 +1,106 @@
+// widget_scrollbar.ysl2
+
+template "widget[@type='ScrollBar']", mode="widget_class"{
+    ||
+    class ScrollBarWidget extends Widget{
+        frequency = 5;
+        position = undefined;
+        range = undefined;
+        size = undefined;
+        mincursize = 0.1;
+
+        dispatch(value,oldval, index) {
+            switch(index) {
+                case 0:
+                    if (Math.round(this.position) != value)
+                        this.position = value;
+                    break;
+                case 1:
+                    this.range = value;
+                    break;
+                case 2:
+                    this.size = value;
+                    break;
+            }
+
+            this.request_animate();
+        }
+
+        get_ratios() {
+            let range = this.range;
+            let size = Math.max(this.range * this.mincursize, Math.min(this.size, range));
+            let maxh = this.range_elt.height.baseVal.value;
+            let pixels = (range - size) * maxh;
+            let units = range*range;
+            return [size, maxh, range, pixels, units];
+        }
+
+        animate(){
+            if(this.position == undefined || this.range == undefined || this.size == undefined)
+                return;
+            let [size, maxh, range, pixels, units] = this.get_ratios();
+
+            let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range) * pixels / units);
+            let new_height = Math.round(maxh * size/range);
+            console.log(new_y, new_height);
+
+            this.cursor_elt.y.baseVal.value = new_y;
+            this.cursor_elt.height.baseVal.value = new_height;
+        }
+
+        init_mandatory() {
+            this.cursor_elt.onpointerdown = () => this.on_cursor_down();
+
+            this.bound_drag = this.drag.bind(this);
+            this.bound_drop = this.drop.bind(this);
+        }
+
+        apply_position(position){
+            this.position = Math.max(Math.min(position, this.range), 0);
+            this.apply_hmi_value(0, Math.round(this.position));
+        }
+
+        on_page_click(is_up){
+            this.apply_position(is_up ? this.position-this.size
+                                      : this.position+this.size);
+        }
+
+        on_cursor_down(e){
+            svg_root.addEventListener("pointerup", this.bound_drop, true);
+            svg_root.addEventListener("pointermove", this.bound_drag, true);
+        }
+
+        drop(e) {
+            svg_root.removeEventListener("pointerup", this.bound_drop, true);
+            svg_root.removeEventListener("pointermove", this.bound_drag, true);
+        }
+
+        drag(e) {
+            let [size, maxh, range, pixels, units] = this.get_ratios();
+            if(pixels == 0) return;
+            let matrix = this.range_elt.getCTM().inverse();
+            let point = new DOMPoint(e.movementX, e.movementY);
+            let movement = point.matrixTransform(matrix).y;
+            this.apply_position(this.position + movement * units / pixels);
+        }
+    }
+    ||
+}
+
+template "widget[@type='ScrollBar']", mode="widget_defs" {
+    param "hmi_element";
+    labels("cursor range");
+
+    const "pagebuttons" optional_labels("pageup pagedown");
+    const "have_pagebuttons","string-length($pagebuttons)>0";
+    value "$pagebuttons";
+
+    |     init: function() {
+    |         this.init_mandatory();
+
+    if "$have_pagebuttons" {
+    |         this.pageup_elt.onclick = () => this.on_page_click(true);
+    |         this.pagedown_elt.onclick = () => this.on_page_click(false);
+    }
+    |     },
+}

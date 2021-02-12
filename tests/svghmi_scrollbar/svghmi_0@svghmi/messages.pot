@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-02-09 16:59+CET\n"
+"POT-Creation-Date: 2021-02-12 21:55+CET\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,19 +14,4 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: SVGHMI 1.0\n"
 
-
-#:svghmi.svg: formatfortext:text5271
-msgid "This is an integer value : %d"
-msgstr ""
-
-#:svghmi.svg: someothertext:text5267
-msgid "Some \"other\" ČĆĐš english text"
-msgstr ""
-
-#:svghmi.svg: sometext:text5283
-msgid ""
-"Some english text\n"
-"another line\n"
-"a third one"
-msgstr ""
 
