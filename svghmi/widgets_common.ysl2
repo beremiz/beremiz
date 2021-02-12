@@ -114,6 +114,7 @@ emit "preamble:local-variable-indexes" {
         let defaultval = local_defaults[varname];
         if(defaultval != undefined) {
             cache[new_index] = defaultval; 
+            updates[new_index] = defaultval;
             if(persistent_locals.has(varname))
                 persistent_indexes.set(new_index, varname);
         }
