@@ -144,12 +144,23 @@ emit "preamble:widget-base-class" {
             this.indexes = indexes;
             this.minmaxes = minmaxes;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
+            this.lastapply = indexes.map(() => undefined);
+            this.inhibit = indexes.map(() => undefined);
+            this.pending = indexes.map(() => undefined);
+            this.bound_unhinibit = this.unhinibit.bind(this);
         }
 
         unsub(){
             /* remove subsribers */
             if(!this.unsubscribable)
                 for(let i = 0; i < this.indexes.length; i++) {
+                    /* flush updates pending because of inhibition */
+                    let inhibition = this.inhibit[index];
+                    if(inhibition != undefined){
+                        clearTimeout(inhibition);
+                        this.lastapply[index] = undefined;
+                        this.unhinibit(index);
+                    }
                     let index = this.indexes[i];
                     if(this.relativeness[i])
                         index += this.offset;
@@ -227,11 +238,39 @@ emit "preamble:widget-base-class" {
             return apply_hmi_value(realindex, new_val);
         }
 
-        apply_hmi_value(index, new_val) {
+        _apply_hmi_value(index, new_val) {
             let realindex = this.get_variable_index(index);
             if(realindex == undefined) return undefined;
             new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
+        }
+
+        unhinibit(index){
+            this.inhibit[index] = undefined;
+            let new_val = this.pending[index];
+            this.pending[index] = undefined;
+            return this.apply_hmi_value(index, new_val);
+        }
+
+        apply_hmi_value(index, new_val) {
+            if(this.inhibit[index] == undefined){
+                let now = Date.now();
+                let min_interval = 1000/this.frequency;
+                let lastapply = this.lastapply[index];
+                if(lastapply == undefined || now > lastapply + min_interval){
+                    this.lastapply[index] = now;
+                    return this._apply_hmi_value(index, new_val);
+                }
+                else {
+                    let elapsed = now - lastapply;
+                    this.pending[index] = new_val;
+                    this.inhibit[index] = setTimeout(this.bound_unhinibit, min_interval - elapsed, index);
+                }
+            }
+            else {
+                this.pending[index] = new_val;
+                return new_val;
+            }
         }
 
         new_hmi_value(index, value, oldval) {

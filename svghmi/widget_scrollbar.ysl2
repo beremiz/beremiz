@@ -3,7 +3,7 @@
 template "widget[@type='ScrollBar']", mode="widget_class"{
     ||
     class ScrollBarWidget extends Widget{
-        frequency = 5;
+        frequency = 10;
         position = undefined;
         range = undefined;
         size = undefined;
