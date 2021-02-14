@@ -539,8 +539,6 @@ class SVGHMI(object):
         langs,translated_messages = MatchTranslations(translations, messages, 
             errcallback=self.GetCTRoot().logger.write_warning)
 
-        print(langs,translated_messages)
-
         return TranslationToEtree(langs,translated_messages)
 
     def CTNGenerate_C(self, buildpath, locations):

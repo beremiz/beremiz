@@ -42,7 +42,6 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
 
             let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range) * pixels / units);
             let new_height = Math.round(maxh * size/range);
-            console.log(new_y, new_height);
 
             this.cursor_elt.y.baseVal.value = new_y;
             this.cursor_elt.height.baseVal.value = new_height;
