@@ -1244,6 +1244,8 @@
 </xsl:text>
     <xsl:text>        cache[new_index] = defaultval; 
 </xsl:text>
+    <xsl:text>        updates[new_index] = defaultval;
+</xsl:text>
     <xsl:text>        if(persistent_locals.has(varname))
 </xsl:text>
     <xsl:text>            persistent_indexes.set(new_index, varname);
@@ -1305,6 +1307,14 @@
 </xsl:text>
     <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
 </xsl:text>
+    <xsl:text>        this.lastapply = indexes.map(() =&gt; undefined);
+</xsl:text>
+    <xsl:text>        this.inhibit = indexes.map(() =&gt; undefined);
+</xsl:text>
+    <xsl:text>        this.pending = indexes.map(() =&gt; undefined);
+</xsl:text>
+    <xsl:text>        this.bound_unhinibit = this.unhinibit.bind(this);
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
@@ -1316,6 +1326,20 @@
     <xsl:text>        if(!this.unsubscribable)
 </xsl:text>
     <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
+</xsl:text>
+    <xsl:text>                /* flush updates pending because of inhibition */
+</xsl:text>
+    <xsl:text>                let inhibition = this.inhibit[index];
+</xsl:text>
+    <xsl:text>                if(inhibition != undefined){
+</xsl:text>
+    <xsl:text>                    clearTimeout(inhibition);
+</xsl:text>
+    <xsl:text>                    this.lastapply[index] = undefined;
+</xsl:text>
+    <xsl:text>                    this.unhinibit(index);
+</xsl:text>
+    <xsl:text>                }
 </xsl:text>
     <xsl:text>                let index = this.indexes[i];
 </xsl:text>
@@ -1471,7 +1495,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    apply_hmi_value(index, new_val) {
+    <xsl:text>    _apply_hmi_value(index, new_val) {
 </xsl:text>
     <xsl:text>        let realindex = this.get_variable_index(index);
 </xsl:text>
@@ -1480,6 +1504,62 @@
     <xsl:text>        new_val = this.clip_min_max(index, new_val);
 </xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    unhinibit(index){
+</xsl:text>
+    <xsl:text>        this.inhibit[index] = undefined;
+</xsl:text>
+    <xsl:text>        let new_val = this.pending[index];
+</xsl:text>
+    <xsl:text>        this.pending[index] = undefined;
+</xsl:text>
+    <xsl:text>        return this.apply_hmi_value(index, new_val);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    apply_hmi_value(index, new_val) {
+</xsl:text>
+    <xsl:text>        if(this.inhibit[index] == undefined){
+</xsl:text>
+    <xsl:text>            let now = Date.now();
+</xsl:text>
+    <xsl:text>            let min_interval = 1000/this.frequency;
+</xsl:text>
+    <xsl:text>            let lastapply = this.lastapply[index];
+</xsl:text>
+    <xsl:text>            if(lastapply == undefined || now &gt; lastapply + min_interval){
+</xsl:text>
+    <xsl:text>                this.lastapply[index] = now;
+</xsl:text>
+    <xsl:text>                return this._apply_hmi_value(index, new_val);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else {
+</xsl:text>
+    <xsl:text>                let elapsed = now - lastapply;
+</xsl:text>
+    <xsl:text>                this.pending[index] = new_val;
+</xsl:text>
+    <xsl:text>                this.inhibit[index] = setTimeout(this.bound_unhinibit, min_interval - elapsed, index);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        else {
+</xsl:text>
+    <xsl:text>            this.pending[index] = new_val;
+</xsl:text>
+    <xsl:text>            return new_val;
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -5501,6 +5581,214 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
+  <xsl:template mode="widget_class" match="widget[@type='ScrollBar']">
+    <xsl:text>class ScrollBarWidget extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 10;
+</xsl:text>
+    <xsl:text>    position = undefined;
+</xsl:text>
+    <xsl:text>    range = undefined;
+</xsl:text>
+    <xsl:text>    size = undefined;
+</xsl:text>
+    <xsl:text>    mincursize = 0.1;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value,oldval, index) {
+</xsl:text>
+    <xsl:text>        switch(index) {
+</xsl:text>
+    <xsl:text>            case 0:
+</xsl:text>
+    <xsl:text>                if (Math.round(this.position) != value)
+</xsl:text>
+    <xsl:text>                    this.position = value;
+</xsl:text>
+    <xsl:text>                break;
+</xsl:text>
+    <xsl:text>            case 1:
+</xsl:text>
+    <xsl:text>                this.range = value;
+</xsl:text>
+    <xsl:text>                break;
+</xsl:text>
+    <xsl:text>            case 2:
+</xsl:text>
+    <xsl:text>                this.size = value;
+</xsl:text>
+    <xsl:text>                break;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    get_ratios() {
+</xsl:text>
+    <xsl:text>        let range = this.range;
+</xsl:text>
+    <xsl:text>        let size = Math.max(this.range * this.mincursize, Math.min(this.size, range));
+</xsl:text>
+    <xsl:text>        let maxh = this.range_elt.height.baseVal.value;
+</xsl:text>
+    <xsl:text>        let pixels = (range - size) * maxh;
+</xsl:text>
+    <xsl:text>        let units = range*range;
+</xsl:text>
+    <xsl:text>        return [size, maxh, range, pixels, units];
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>        if(this.position == undefined || this.range == undefined || this.size == undefined)
+</xsl:text>
+    <xsl:text>            return;
+</xsl:text>
+    <xsl:text>        let [size, maxh, range, pixels, units] = this.get_ratios();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range) * pixels / units);
+</xsl:text>
+    <xsl:text>        let new_height = Math.round(maxh * size/range);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.cursor_elt.y.baseVal.value = new_y;
+</xsl:text>
+    <xsl:text>        this.cursor_elt.height.baseVal.value = new_height;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init_mandatory() {
+</xsl:text>
+    <xsl:text>        this.cursor_elt.onpointerdown = () =&gt; this.on_cursor_down();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.bound_drag = this.drag.bind(this);
+</xsl:text>
+    <xsl:text>        this.bound_drop = this.drop.bind(this);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    apply_position(position){
+</xsl:text>
+    <xsl:text>        this.position = Math.max(Math.min(position, this.range), 0);
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, Math.round(this.position));
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_page_click(is_up){
+</xsl:text>
+    <xsl:text>        this.apply_position(is_up ? this.position-this.size
+</xsl:text>
+    <xsl:text>                                  : this.position+this.size);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_cursor_down(e){
+</xsl:text>
+    <xsl:text>        // get scrollbar -&gt; root transform
+</xsl:text>
+    <xsl:text>        let ctm = this.range_elt.getCTM();
+</xsl:text>
+    <xsl:text>        // relative motion -&gt; discard translation
+</xsl:text>
+    <xsl:text>        ctm.e = 0;
+</xsl:text>
+    <xsl:text>        ctm.f = 0;
+</xsl:text>
+    <xsl:text>        // root -&gt; scrollbar transform
+</xsl:text>
+    <xsl:text>        this.invctm = ctm.inverse();
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointerup", this.bound_drop, true);
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointermove", this.bound_drag, true);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    drop(e) {
+</xsl:text>
+    <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_drop, true);
+</xsl:text>
+    <xsl:text>        svg_root.removeEventListener("pointermove", this.bound_drag, true);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    drag(e) {
+</xsl:text>
+    <xsl:text>        let [size, maxh, range, pixels, units] = this.get_ratios();
+</xsl:text>
+    <xsl:text>        if(pixels == 0) return;
+</xsl:text>
+    <xsl:text>        let point = new DOMPoint(e.movementX, e.movementY);
+</xsl:text>
+    <xsl:text>        let movement = point.matrixTransform(this.invctm).y;
+</xsl:text>
+    <xsl:text>        this.apply_position(this.position + movement * units / pixels);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template mode="widget_defs" match="widget[@type='ScrollBar']">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>cursor range</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:variable name="pagebuttons">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>pageup pagedown</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="have_pagebuttons" select="string-length($pagebuttons)&gt;0"/>
+    <xsl:value-of select="$pagebuttons"/>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.init_mandatory();
+</xsl:text>
+    <xsl:if test="$have_pagebuttons">
+      <xsl:text>        this.pageup_elt.onclick = () =&gt; this.on_page_click(true);
+</xsl:text>
+      <xsl:text>        this.pagedown_elt.onclick = () =&gt; this.on_page_click(false);
+</xsl:text>
+    </xsl:if>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='Slider']">
     <xsl:text>class SliderWidget extends Widget{
 </xsl:text>
@@ -6963,8 +7251,6 @@
           <xsl:text>        if(persistent_indexes.has(index)){
 </xsl:text>
           <xsl:text>            let varname = persistent_indexes.get(index);
-</xsl:text>
-          <xsl:text>            console.log(varname+"="+value+"; max-age=3153600000");
 </xsl:text>
           <xsl:text>            document.cookie = varname+"="+value+"; max-age=3153600000";
 </xsl:text>
