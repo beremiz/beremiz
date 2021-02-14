@@ -65,6 +65,13 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
         }
 
         on_cursor_down(e){
+            // get scrollbar -> root transform
+            let ctm = this.range_elt.getCTM();
+            // relative motion -> discard translation
+            ctm.e = 0;
+            ctm.f = 0;
+            // root -> scrollbar transform
+            this.invctm = ctm.inverse();
             svg_root.addEventListener("pointerup", this.bound_drop, true);
             svg_root.addEventListener("pointermove", this.bound_drag, true);
         }
@@ -77,9 +84,8 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
         drag(e) {
             let [size, maxh, range, pixels, units] = this.get_ratios();
             if(pixels == 0) return;
-            let matrix = this.range_elt.getCTM().inverse();
             let point = new DOMPoint(e.movementX, e.movementY);
-            let movement = point.matrixTransform(matrix).y;
+            let movement = point.matrixTransform(this.invctm).y;
             this.apply_position(this.position + movement * units / pixels);
         }
     }

@@ -56,12 +56,12 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g4507"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
      inkscape:zoom="0.64"
-     inkscape:cx="512.75649"
-     inkscape:cy="208.59799"
+     inkscape:cx="318.22524"
+     inkscape:cy="196.09799"
      inkscape:window-width="1939"
      inkscape:window-height="1243"
      inkscape:window-x="3325"
@@ -380,7 +380,7 @@
   <g
      id="g1913"
      inkscape:label="HMI:Input@.size"
-     transform="translate(80)">
+     transform="translate(80,100)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect4827"
@@ -500,7 +500,7 @@
     </g>
   </g>
   <g
-     transform="translate(80,-160)"
+     transform="translate(80,-60)"
      inkscape:label="HMI:Input@.range"
      id="g4450">
     <rect
@@ -624,7 +624,7 @@
   <g
      id="g4490"
      inkscape:label="HMI:Input@.position"
-     transform="translate(80,-320)">
+     transform="translate(80,-220)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ff0000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect4452"
@@ -745,7 +745,8 @@
   </g>
   <g
      id="g4507"
-     inkscape:label="HMI:ScrollBar@.position@.range@.size">
+     inkscape:label="HMI:ScrollBar@.position@.range@.size"
+     transform="translate(-202)">
     <rect
        y="84"
        x="960"
@@ -790,19 +791,19 @@
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
      x="277.58728"
-     y="176.54129"
+     y="276.54129"
      id="text941"><tspan
        sodipodi:role="line"
        id="tspan939"
        x="277.58728"
-       y="176.54129">Position</tspan></text>
+       y="276.54129">Position</tspan></text>
   <text
      id="text945"
-     y="336.54129"
+     y="436.54129"
      x="277.58728"
      style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
      xml:space="preserve"><tspan
-       y="336.54129"
+       y="436.54129"
        x="277.58728"
        id="tspan943"
        sodipodi:role="line">Range</tspan></text>
@@ -810,10 +811,81 @@
      xml:space="preserve"
      style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
      x="277.58728"
-     y="496.54126"
+     y="596.54126"
      id="text949"><tspan
        sodipodi:role="line"
        id="tspan947"
        x="277.58728"
-       y="496.54126">Size</tspan></text>
+       y="596.54126">Size</tspan></text>
+  <g
+     inkscape:label="HMI:ScrollBar@.position@.range@.size"
+     id="g146"
+     transform="rotate(90,837.8103,-106.02497)">
+    <rect
+       inkscape:label="range"
+       style="opacity:1;vector-effect:none;fill:#ff35ff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       id="rect138"
+       width="100"
+       height="516"
+       x="960"
+       y="84" />
+    <rect
+       inkscape:label="cursor"
+       style="opacity:1;vector-effect:none;fill:#3835ff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       id="rect140"
+       width="81"
+       height="171"
+       x="969"
+       y="236" />
+    <path
+       inkscape:label="pageup"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path142"
+       d="M 1009.5,23 1047,81 H 972 Z"
+       style="opacity:1;vector-effect:none;fill:#3835ff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none" />
+    <path
+       inkscape:label="pagedown"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path144"
+       d="m 972,603 h 75 l -37.5,58 z"
+       style="opacity:1;vector-effect:none;fill:#3835ff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none" />
+  </g>
+  <g
+     transform="matrix(0.35355339,0.35355339,-0.35355339,0.35355339,831.43929,-136.17916)"
+     inkscape:label="HMI:ScrollBar@.position@.range@.size"
+     id="g156"
+     style="stroke-width:2">
+    <rect
+       inkscape:label="range"
+       style="opacity:1;vector-effect:none;fill:#ff35ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       id="rect148"
+       width="100"
+       height="516"
+       x="960"
+       y="84" />
+    <rect
+       inkscape:label="cursor"
+       style="opacity:1;vector-effect:none;fill:#3835ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       id="rect150"
+       width="81"
+       height="171"
+       x="969"
+       y="236" />
+    <path
+       inkscape:label="pageup"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path152"
+       d="M 1009.5,23 1047,81 H 972 Z"
+       style="opacity:1;vector-effect:none;fill:#3835ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none" />
+    <path
+       inkscape:label="pagedown"
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path154"
+       d="m 972,603 h 75 l -37.5,58 z"
+       style="opacity:1;vector-effect:none;fill:#3835ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none" />
+  </g>
 </svg>
