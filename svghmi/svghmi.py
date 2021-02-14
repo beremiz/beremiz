@@ -532,6 +532,9 @@ class SVGHMI(object):
     def GetTranslations(self, _context, msgs):
         messages = EtreeToMessages(msgs)
 
+        if len(messages) == 0:
+            return
+
         SaveCatalog(self._getPOTpath(), messages)
 
         translations = ReadTranslations(self.CTNPath())
