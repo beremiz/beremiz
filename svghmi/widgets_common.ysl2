@@ -65,6 +65,7 @@ template "svg:*", mode="hmi_widgets" {
 
 emit "preamble:local-variable-indexes" {
     ||
+
     let hmi_locals = {};
     var last_remote_index = hmitree_types.length - 1;
     var next_available_index = hmitree_types.length;
@@ -95,6 +96,7 @@ emit "preamble:local-variable-indexes" {
     ]);
     var persistent_indexes = new Map();
     var cache = hmitree_types.map(_ignored => undefined);
+    var updates = {};
 
     function page_local_index(varname, pagename){
         let pagevars = hmi_locals[pagename];
@@ -155,11 +157,11 @@ emit "preamble:widget-base-class" {
             if(!this.unsubscribable)
                 for(let i = 0; i < this.indexes.length; i++) {
                     /* flush updates pending because of inhibition */
-                    let inhibition = this.inhibit[index];
+                    let inhibition = this.inhibit[i];
                     if(inhibition != undefined){
                         clearTimeout(inhibition);
-                        this.lastapply[index] = undefined;
-                        this.unhinibit(index);
+                        this.lastapply[i] = undefined;
+                        this.unhinibit(i);
                     }
                     let index = this.indexes[i];
                     if(this.relativeness[i])

@@ -7,15 +7,20 @@ template "widget[@type='Display']", mode="widget_class"
         frequency = 5;
         dispatch(value, oldval, index) {
             this.fields[index] = value;    
-            this.element.textContent = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
+            this.request_animate();
         }
     }
     ||
 
 template "widget[@type='Display']", mode="widget_defs" {
     param "hmi_element";
-    if "$hmi_element[not(self::svg:text)]"
-        error > Display Widget id="«$hmi_element/@id»" is not a svg::text element
+
+    const "format" optional_labels("format");
+    const "has_format","string-length($format)>0";
+    value "$format";
+
+    if "$hmi_element[not(self::svg:text)] and not($has_format)"
+        error > Display Widget id="«$hmi_element/@id»" must be a svg::text element itself or a group containing a svg:text element labelled "format"
 
     const "field_initializer" foreach "path" {
         choose{
@@ -25,6 +30,28 @@ template "widget[@type='Display']", mode="widget_defs" {
         if "position()!=last()" > ,
     }
     |     fields: [«$field_initializer»],
+    |     animate: function(){
+    choose {
+        when "$has_format" {
+    |       if(this.format_elt.getAttribute("lang")) {
+    |           this.format = svg_text_to_multiline(this.format_elt);
+    |           this.format_elt.removeAttribute("lang");
+    |       }
+    |       let str = vsprintf(this.format,this.fields);
+    |       multiline_to_svg_text(this.format_elt, str);
+        }
+        otherwise {
+    |       let str = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
+    |       multiline_to_svg_text(this.element, str);
+        }
+    }
+    |     },
+    |     
+    if "$has_format" {
+    |     init: function() {
+    |       this.format = svg_text_to_multiline(this.format_elt);
+    |     },
+    }
 }
 
 emit "preamble:display"
