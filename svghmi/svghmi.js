@@ -1,8 +1,6 @@
 // svghmi.js
 
-var updates = {};
 var need_cache_apply = [];
-
 
 function dispatch_value(index, value) {
     let widgets = subscribers(index);
@@ -204,35 +202,42 @@ subscribers(heartbeat_index).add({
     }
 });
 
-var translated = false;
+function svg_text_to_multiline(elt) {
+    return(Array.prototype.map.call(elt.children, x=>x.textContent).join("\\\\n")); 
+}
+
+function multiline_to_svg_text(elt, str) {
+    str.split('\\\\n').map((line,i) => {elt.children[i].textContent = line;});
+}
 
 function switch_langnum(langnum) {
     if(langnum == current_lang) {
         return;
     }
 
-    if (!translated) {
-        translated = true;
-        for (let translation of translations) {
-            let [objs] = translation;
-            translation.push(Array.prototype.map.call(objs[0].children, x=>x.textContent).join("\\\\n")); 
-        }
-    }
-
     for (let translation of translations) {
         let [objs, msgs, orig] = translation;
         let msg = langnum == 0 ? orig : msgs[langnum - 1];
         for (let obj of objs) {
-            msg.split('\\\\n').map((line,i) => {obj.children[i].textContent = line;});
+            multiline_to_svg_text(obj, msg);
+            obj.setAttribute("lang",langnum);
         }
     }
     current_lang = langnum;
 }
+
+// backup original texts
+for (let translation of translations) {
+    let [objs] = translation;
+    translation.push(svg_text_to_multiline(objs[0])); 
+}
+
 var lang_local_index = hmi_local_index("lang");
 subscribers(lang_local_index).add({
     indexes: [lang_local_index],
     new_hmi_value: function(index, value, oldval) {
         switch_langnum(value);
+        switch_page();
     }
 });
 var current_lang = 0;
@@ -397,7 +402,6 @@ function switch_page(page_name, page_index) {
     jumps_need_update = true;
 
     requestHMIAnimation();
-
     jump_history.push([page_name, page_index]);
     if(jump_history.length > 42)
         jump_history.shift();

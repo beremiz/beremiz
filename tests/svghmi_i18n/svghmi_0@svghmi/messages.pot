@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-02-09 16:59+CET\n"
+"POT-Creation-Date: 2021-02-14 19:05+CET\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -14,6 +14,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: SVGHMI 1.0\n"
 
+
+#:svghmi.svg: format:text424
+msgid "height is %d meters"
+msgstr ""
 
 #:svghmi.svg: formatfortext:text5271
 msgid "This is an integer value : %d"
