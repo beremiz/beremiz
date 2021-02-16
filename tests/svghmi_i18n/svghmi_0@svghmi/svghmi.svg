@@ -2415,16 +2415,16 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g436"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
      inkscape:zoom="0.70710678"
-     inkscape:cx="575.80285"
-     inkscape:cy="308.66839"
-     inkscape:window-width="1939"
-     inkscape:window-height="844"
-     inkscape:window-x="3325"
-     inkscape:window-y="554"
+     inkscape:cx="535.49777"
+     inkscape:cy="380.79328"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
      inkscape:window-maximized="0"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -2447,9 +2447,9 @@
      inkscape:label="HMI:Page:Home" />
   <g
      id="g5275"
-     inkscape:label="#HMI:Display@/TARGETPRESSURE">
+     inkscape:label="HMI:Display@/TARGETPRESSURE">
     <text
-       inkscape:label="_formatfortext"
+       inkscape:label="_format"
        id="text5271"
        y="430.74841"
        x="440.99014"
