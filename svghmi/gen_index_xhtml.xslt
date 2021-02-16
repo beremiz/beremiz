@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -1135,6 +1135,8 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>let hmi_locals = {};
 </xsl:text>
     <xsl:text>var last_remote_index = hmitree_types.length - 1;
@@ -1205,6 +1207,8 @@
     <xsl:text>var persistent_indexes = new Map();
 </xsl:text>
     <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
+</xsl:text>
+    <xsl:text>var updates = {};
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1329,15 +1333,15 @@
 </xsl:text>
     <xsl:text>                /* flush updates pending because of inhibition */
 </xsl:text>
-    <xsl:text>                let inhibition = this.inhibit[index];
+    <xsl:text>                let inhibition = this.inhibit[i];
 </xsl:text>
     <xsl:text>                if(inhibition != undefined){
 </xsl:text>
     <xsl:text>                    clearTimeout(inhibition);
 </xsl:text>
-    <xsl:text>                    this.lastapply[index] = undefined;
+    <xsl:text>                    this.lastapply[i] = undefined;
 </xsl:text>
-    <xsl:text>                    this.unhinibit(index);
+    <xsl:text>                    this.unhinibit(i);
 </xsl:text>
     <xsl:text>                }
 </xsl:text>
@@ -1665,7 +1669,7 @@
 </xsl:text>
   </xsl:template>
   <xsl:variable name="excluded_types" select="str:split('Page VarInit VarInitPersistent')"/>
-  <xsl:key name="TypesKey" match="widget" use="@type"/>
+  <xsl:key use="@type" name="TypesKey" match="widget"/>
   <declarations:hmi-classes/>
   <xsl:template match="declarations:hmi-classes">
     <xsl:text>
@@ -2876,7 +2880,7 @@
 </xsl:text>
     <xsl:text>        this.fields[index] = value;    
 </xsl:text>
-    <xsl:text>        this.element.textContent = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
+    <xsl:text>        this.request_animate();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2885,11 +2889,22 @@
   </xsl:template>
   <xsl:template mode="widget_defs" match="widget[@type='Display']">
     <xsl:param name="hmi_element"/>
-    <xsl:if test="$hmi_element[not(self::svg:text)]">
+    <xsl:variable name="format">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>format</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="has_format" select="string-length($format)&gt;0"/>
+    <xsl:value-of select="$format"/>
+    <xsl:if test="$hmi_element[not(self::svg:text)] and not($has_format)">
       <xsl:message terminate="yes">
         <xsl:text>Display Widget id="</xsl:text>
         <xsl:value-of select="$hmi_element/@id"/>
-        <xsl:text>" is not a svg::text element</xsl:text>
+        <xsl:text>" must be a svg::text element itself or a group containing a svg:text element labelled "format"</xsl:text>
       </xsl:message>
     </xsl:if>
     <xsl:variable name="field_initializer">
@@ -2911,6 +2926,42 @@
     <xsl:value-of select="$field_initializer"/>
     <xsl:text>],
 </xsl:text>
+    <xsl:text>    animate: function(){
+</xsl:text>
+    <xsl:choose>
+      <xsl:when test="$has_format">
+        <xsl:text>      if(this.format_elt.getAttribute("lang")) {
+</xsl:text>
+        <xsl:text>          this.format = svg_text_to_multiline(this.format_elt);
+</xsl:text>
+        <xsl:text>          this.format_elt.removeAttribute("lang");
+</xsl:text>
+        <xsl:text>      }
+</xsl:text>
+        <xsl:text>      let str = vsprintf(this.format,this.fields);
+</xsl:text>
+        <xsl:text>      multiline_to_svg_text(this.format_elt, str);
+</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>      let str = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
+</xsl:text>
+        <xsl:text>      multiline_to_svg_text(this.element, str);
+</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    
+</xsl:text>
+    <xsl:if test="$has_format">
+      <xsl:text>    init: function() {
+</xsl:text>
+      <xsl:text>      this.format = svg_text_to_multiline(this.format_elt);
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
+    </xsl:if>
   </xsl:template>
   <preamble:display/>
   <xsl:template match="preamble:display">
@@ -5602,15 +5653,13 @@
 </xsl:text>
     <xsl:text>            case 0:
 </xsl:text>
-    <xsl:text>                if (Math.round(this.position) != value)
-</xsl:text>
-    <xsl:text>                    this.position = value;
+    <xsl:text>                this.position = value;
 </xsl:text>
     <xsl:text>                break;
 </xsl:text>
     <xsl:text>            case 1:
 </xsl:text>
-    <xsl:text>                this.range = value;
+    <xsl:text>                this.range = Math.max(1,value);
 </xsl:text>
     <xsl:text>                break;
 </xsl:text>
@@ -5688,9 +5737,9 @@
 </xsl:text>
     <xsl:text>    apply_position(position){
 </xsl:text>
-    <xsl:text>        this.position = Math.max(Math.min(position, this.range), 0);
+    <xsl:text>        this.position = Math.round(Math.max(Math.min(position, this.range), 0));
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, Math.round(this.position));
+    <xsl:text>        this.apply_hmi_value(0, this.position);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -5726,6 +5775,8 @@
 </xsl:text>
     <xsl:text>        svg_root.addEventListener("pointermove", this.bound_drag, true);
 </xsl:text>
+    <xsl:text>        this.dragpos = this.position;
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
@@ -5750,7 +5801,9 @@
 </xsl:text>
     <xsl:text>        let movement = point.matrixTransform(this.invctm).y;
 </xsl:text>
-    <xsl:text>        this.apply_position(this.position + movement * units / pixels);
+    <xsl:text>        this.dragpos += movement * units / pixels;
+</xsl:text>
+    <xsl:text>        this.apply_position(this.dragpos);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -6653,7 +6706,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
@@ -6694,11 +6747,7 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var updates = {};
-</xsl:text>
           <xsl:text>var need_cache_apply = [];
-</xsl:text>
-          <xsl:text>
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -6982,6 +7031,8 @@
 </xsl:text>
           <xsl:text>    NODE: (truth) =&gt; new Int16Array([truth]),
 </xsl:text>
+          <xsl:text>    REAL: (number) =&gt; new Float32Array([number]),
+</xsl:text>
           <xsl:text>    STRING: (str) =&gt; {
 </xsl:text>
           <xsl:text>        // beremiz default string max size is 128
@@ -7102,7 +7153,19 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var translated = false;
+          <xsl:text>function svg_text_to_multiline(elt) {
+</xsl:text>
+          <xsl:text>    return(Array.prototype.map.call(elt.children, x=&gt;x.textContent).join("\n")); 
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function multiline_to_svg_text(elt, str) {
+</xsl:text>
+          <xsl:text>    str.split('\n').map((line,i) =&gt; {elt.children[i].textContent = line;});
+</xsl:text>
+          <xsl:text>}
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -7116,22 +7179,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    if (!translated) {
-</xsl:text>
-          <xsl:text>        translated = true;
-</xsl:text>
-          <xsl:text>        for (let translation of translations) {
-</xsl:text>
-          <xsl:text>            let [objs] = translation;
-</xsl:text>
-          <xsl:text>            translation.push(Array.prototype.map.call(objs[0].children, x=&gt;x.textContent).join("\n")); 
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>    for (let translation of translations) {
 </xsl:text>
           <xsl:text>        let [objs, msgs, orig] = translation;
@@ -7140,7 +7187,9 @@
 </xsl:text>
           <xsl:text>        for (let obj of objs) {
 </xsl:text>
-          <xsl:text>            msg.split('\n').map((line,i) =&gt; {obj.children[i].textContent = line;});
+          <xsl:text>            multiline_to_svg_text(obj, msg);
+</xsl:text>
+          <xsl:text>            obj.setAttribute("lang",langnum);
 </xsl:text>
           <xsl:text>        }
 </xsl:text>
@@ -7149,6 +7198,20 @@
           <xsl:text>    current_lang = langnum;
 </xsl:text>
           <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// backup original texts
+</xsl:text>
+          <xsl:text>for (let translation of translations) {
+</xsl:text>
+          <xsl:text>    let [objs] = translation;
+</xsl:text>
+          <xsl:text>    translation.push(svg_text_to_multiline(objs[0])); 
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>var lang_local_index = hmi_local_index("lang");
 </xsl:text>
@@ -7159,6 +7222,8 @@
           <xsl:text>    new_hmi_value: function(index, value, oldval) {
 </xsl:text>
           <xsl:text>        switch_langnum(value);
+</xsl:text>
+          <xsl:text>        switch_page();
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
@@ -7487,8 +7552,6 @@
           <xsl:text>
 </xsl:text>
           <xsl:text>    requestHMIAnimation();
-</xsl:text>
-          <xsl:text>
 </xsl:text>
           <xsl:text>    jump_history.push([page_name, page_index]);
 </xsl:text>
