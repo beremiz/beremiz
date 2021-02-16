@@ -142,6 +142,7 @@ const typedarray_types = {
     INT: (number) => new Int16Array([number]),
     BOOL: (truth) => new Int16Array([truth]),
     NODE: (truth) => new Int16Array([truth]),
+    REAL: (number) => new Float32Array([number]),
     STRING: (str) => {
         // beremiz default string max size is 128
         str = str.slice(0,128);
