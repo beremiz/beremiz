@@ -20,9 +20,9 @@ const "translatable_strings" apply "$translatable_texts", mode="extract_i18n";
 
 emit "preamble:i18n" {
     const "translations", "ns:GetTranslations($translatable_strings)";
-    > var langs = [ "default",
+    > var langs = [ ["Default", "C"],
     foreach "$translations/langs/lang" {
-        > "«.»"
+        > ["«.»","«@code»"]
         if "position()!=last()" > ,
     }
     | ];
