@@ -64,9 +64,10 @@ def SaveCatalog(fname, messages):
         w.write(POT_file)
 
 def ReadTranslations(dirpath):
-    """ Read all PO files from a directory and return a list of (lang, translation_dict) tuples """
+    """ Read all PO files from a directory and return a list of (langcode, translation_dict) tuples """
 
     po_files = [fname for fname in os.listdir(dirpath) if fname.endswith(".po")]
+    po_files.sort()
 
     translations = []
     for po_fname in po_files:
@@ -86,34 +87,35 @@ def MatchTranslations(translations, messages, errcallback):
     broken_lang = set()
     for msgid,label,svgid in messages:
         translated_message = []
-        for lang,translation in translations:
+        for langcode,translation in translations:
             msg = translation.pop(msgid, None)
             if msg is None:
-                broken_lang.add(lang)
+                broken_lang.add(langcode)
                 errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})\n').format(lang,msgid,label,svgid))
                 translated_message.append(msgid)
             else:
                 translated_message.append(msg)
         translated_messages.append((msgid,translated_message))
     langs = []
-    for lang,translation in translations:
+    for langcode,translation in translations:
         try:
-            l,c = lang.split("_")
+            l,c = langcode.split("_")
             language_name = pycountry.languages.get(alpha_2 = l).name
             country_name = pycountry.countries.get(alpha_2 = c).name
-            langs.append("{} ({})".format(language_name, country_name))
+            langname = "{} ({})".format(language_name, country_name)
         except:
             try:
-                language_name = pycountry.languages.get(alpha_2 = lang).name
-                langs.append(language_name)
+                langname = pycountry.languages.get(alpha_2 = langcode).name
             except:
-                langs.append(lang)
+                langname = langcode
+
+        langs.append((langname,langcode))
 
         broken = False
         for msgid, msg in translation.iteritems():
             broken = True
-            errcallback(_('{}: Unused translation "{}":"{}"\n').format(lang,msgid,msg))
-        if broken or lang in broken_lang:
+            errcallback(_('{}: Unused translation "{}":"{}"\n').format(langcode,msgid,msg))
+        if broken or langcode in broken_lang:
             errcallback(_('Translation for {} is outdated, please edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(lang,lang))
 
 
@@ -125,9 +127,9 @@ def TranslationToEtree(langs,translated_messages):
     result = etree.Element("translations")
 
     langsroot = etree.SubElement(result, "langs")
-    for lang in langs:
-        langel = etree.SubElement(langsroot, "lang")
-        langel.text = lang
+    for name, code in langs:
+        langel = etree.SubElement(langsroot, "lang", {"code":code})
+        langel.text = name
 
     msgsroot = etree.SubElement(result, "messages")
     for msgid, msgs in translated_messages:
