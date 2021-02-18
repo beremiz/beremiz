@@ -7,6 +7,9 @@ template "widget[@type='JsonTable']", mode="widget_class"
         cache = [0,100,50];
         init() {
             this.spread_json_data_bound = this.spread_json_data.bind(this);
+            this.handle_http_response_bound = this.handle_http_response.bind(this);
+            this.fetch_error_bound = this.fetch_error.bind(this);
+            this.promised = false;
         }
 
         handle_http_response(response) {
@@ -16,7 +19,12 @@ template "widget[@type='JsonTable']", mode="widget_class"
             return response.json();
         }
 
+        fetch_error(e){
+            console.log("HTTP fetch error, message = " + e.message + "Widget:" + this.element_id);
+        }
+
         do_http_request(...opt) {
+            this.abort_controller = new AbortController();
             const query = {
                 args: this.args,
                 range: this.cache[1],
@@ -29,17 +37,36 @@ template "widget[@type='JsonTable']", mode="widget_class"
             const options = {
                  method: 'POST',
                  body: JSON.stringify(query),
-                 headers: {'Content-Type': 'application/json'}
+                 headers: {'Content-Type': 'application/json'},
+                 signal: this.abort_controller.signal
             };
 
-            fetch(this.args[0], options)
-                .then(this.handle_http_response)
-                .then(this.spread_json_data_bound);
+            return fetch(this.args[0], options)
+                    .then(this.handle_http_response_bound)
+                    .then(this.spread_json_data_bound)
+                    .catch(this.fetch_error_bound);
 
         }
+        unsub(){
+            this.abort_controller.abort();
+            super.unsub();
+        }
+
         dispatch(value, oldval, index) {
-            this.cache[index] = value;
-            this.do_http_request();
+
+            if(this.cache[index] != value)
+                this.cache[index] = value;
+            else
+                return;
+
+            if(!this.promised){
+                this.promised = true;
+                Promise.resolve().then(() => {
+                    return this.do_http_request().finally(() => {
+                        this.promised = false;
+                    });
+                })
+            }
         }
         make_on_click(...options){
             let that = this;
@@ -196,16 +223,14 @@ template "svg:g", mode="json_table_render" {
     param "expressions";
     param "widget_elts";
     param "label";
-    const "gid", "@id";
 
     // use intermediate variables for optimization
-    const "varprefix" > obj_«$gid»_
+    const "varprefix" > obj_«@id»_
     |         try {
 
     foreach "$expressions/expression"{
     |          let «$varprefix»«position()» = «@content»;
     |          if(«$varprefix»«position()» == undefined) {
-    |               console.log("«$varprefix»«position()» = «@content»");
     |               throw null;
     |          }
     }
@@ -224,7 +249,7 @@ template "svg:g", mode="json_table_render" {
         with "widget_elts", "$widget_elts";
     }
     |         } catch(err) {
-    |           id("«$gid»").style = "display:none";
+    |           id("«@id»").style = "display:none";
     |         }
 }
 
@@ -236,9 +261,10 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
     |     visible: «count($data_elt/*[@inkscape:label])»,
     |     spread_json_data: function(janswer) {
     |         let [range,position,jdata] = janswer;
-    |         this.apply_hmi_value(1, range);
-    |         this.apply_hmi_value(2, position);
-    |         this.apply_hmi_value(3, this.visible);
+    |         [[1, range], [2, position], [3, this.visible]].map(([i,v]) => {
+    |              this.apply_hmi_value(i,v);
+    |              this.cache[i] = v;
+    |         });
     apply "$data_elt", mode="json_table_render_except_comments" {
         with "expressions","$initexpr_ns";
         with "widget_elts","$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*";
