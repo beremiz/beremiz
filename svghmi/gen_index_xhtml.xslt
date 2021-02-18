@@ -5733,9 +5733,9 @@
 </xsl:text>
     <xsl:text>        let maxh = this.range_elt.height.baseVal.value;
 </xsl:text>
-    <xsl:text>        let pixels = (range - size) * maxh;
+    <xsl:text>        let pixels = maxh;
 </xsl:text>
-    <xsl:text>        let units = range*range;
+    <xsl:text>        let units = range;
 </xsl:text>
     <xsl:text>        return [size, maxh, range, pixels, units];
 </xsl:text>
@@ -5753,7 +5753,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range) * pixels / units);
+    <xsl:text>        let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range-size) * pixels / units);
 </xsl:text>
     <xsl:text>        let new_height = Math.round(maxh * size/range);
 </xsl:text>
@@ -5783,7 +5783,7 @@
 </xsl:text>
     <xsl:text>    apply_position(position){
 </xsl:text>
-    <xsl:text>        this.position = Math.round(Math.max(Math.min(position, this.range), 0));
+    <xsl:text>        this.position = Math.round(Math.max(Math.min(position, this.range - this.size), 0));
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, this.position);
 </xsl:text>

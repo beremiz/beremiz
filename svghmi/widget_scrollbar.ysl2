@@ -29,8 +29,8 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
             let range = this.range;
             let size = Math.max(this.range * this.mincursize, Math.min(this.size, range));
             let maxh = this.range_elt.height.baseVal.value;
-            let pixels = (range - size) * maxh;
-            let units = range*range;
+            let pixels = maxh;
+            let units = range;
             return [size, maxh, range, pixels, units];
         }
 
@@ -39,7 +39,7 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
                 return;
             let [size, maxh, range, pixels, units] = this.get_ratios();
 
-            let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range) * pixels / units);
+            let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range-size) * pixels / units);
             let new_height = Math.round(maxh * size/range);
 
             this.cursor_elt.y.baseVal.value = new_y;
@@ -54,7 +54,7 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
         }
 
         apply_position(position){
-            this.position = Math.round(Math.max(Math.min(position, this.range), 0));
+            this.position = Math.round(Math.max(Math.min(position, this.range - this.size), 0));
             this.apply_hmi_value(0, this.position);
         }
 
