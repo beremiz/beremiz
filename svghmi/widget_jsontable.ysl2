@@ -61,11 +61,9 @@ template "widget[@type='JsonTable']", mode="widget_class"
 
             if(!this.promised){
                 this.promised = true;
-                Promise.resolve().then(() => {
-                    return this.do_http_request().finally(() => {
-                        this.promised = false;
-                    });
-                })
+                this.do_http_request().finally(() => {
+                    this.promised = false;
+                });
             }
         }
         make_on_click(...options){

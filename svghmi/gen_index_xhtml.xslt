@@ -974,11 +974,13 @@
     <xsl:text>
 </xsl:text>
     <xsl:variable name="translations" select="ns:GetTranslations($translatable_strings)"/>
-    <xsl:text>var langs = [ "default",</xsl:text>
+    <xsl:text>var langs = [ ["Default", "C"],</xsl:text>
     <xsl:for-each select="$translations/langs/lang">
-      <xsl:text>"</xsl:text>
+      <xsl:text>["</xsl:text>
       <xsl:value-of select="."/>
-      <xsl:text>"</xsl:text>
+      <xsl:text>","</xsl:text>
+      <xsl:value-of select="@code"/>
+      <xsl:text>"]</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
       </xsl:if>
@@ -4502,6 +4504,12 @@
 </xsl:text>
     <xsl:text>        this.spread_json_data_bound = this.spread_json_data.bind(this);
 </xsl:text>
+    <xsl:text>        this.handle_http_response_bound = this.handle_http_response.bind(this);
+</xsl:text>
+    <xsl:text>        this.fetch_error_bound = this.fetch_error.bind(this);
+</xsl:text>
+    <xsl:text>        this.promised = false;
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
@@ -4520,7 +4528,17 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    fetch_error(e){
+</xsl:text>
+    <xsl:text>        console.log("HTTP fetch error, message = " + e.message + "Widget:" + this.element_id);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    do_http_request(...opt) {
+</xsl:text>
+    <xsl:text>        this.abort_controller = new AbortController();
 </xsl:text>
     <xsl:text>        const query = {
 </xsl:text>
@@ -4546,27 +4564,61 @@
 </xsl:text>
     <xsl:text>             body: JSON.stringify(query),
 </xsl:text>
-    <xsl:text>             headers: {'Content-Type': 'application/json'}
+    <xsl:text>             headers: {'Content-Type': 'application/json'},
+</xsl:text>
+    <xsl:text>             signal: this.abort_controller.signal
 </xsl:text>
     <xsl:text>        };
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        fetch(this.args[0], options)
+    <xsl:text>        return fetch(this.args[0], options)
 </xsl:text>
-    <xsl:text>            .then(this.handle_http_response)
+    <xsl:text>                .then(this.handle_http_response_bound)
 </xsl:text>
-    <xsl:text>            .then(this.spread_json_data_bound);
+    <xsl:text>                .then(this.spread_json_data_bound)
+</xsl:text>
+    <xsl:text>                .catch(this.fetch_error_bound);
 </xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>    unsub(){
+</xsl:text>
+    <xsl:text>        this.abort_controller.abort();
+</xsl:text>
+    <xsl:text>        super.unsub();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    dispatch(value, oldval, index) {
 </xsl:text>
-    <xsl:text>        this.cache[index] = value;
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        this.do_http_request();
+    <xsl:text>        if(this.cache[index] != value)
+</xsl:text>
+    <xsl:text>            this.cache[index] = value;
+</xsl:text>
+    <xsl:text>        else
+</xsl:text>
+    <xsl:text>            return;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(!this.promised){
+</xsl:text>
+    <xsl:text>            this.promised = true;
+</xsl:text>
+    <xsl:text>            this.do_http_request().finally(() =&gt; {
+</xsl:text>
+    <xsl:text>                this.promised = false;
+</xsl:text>
+    <xsl:text>            });
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4790,10 +4842,9 @@
     <xsl:param name="expressions"/>
     <xsl:param name="widget_elts"/>
     <xsl:param name="label"/>
-    <xsl:variable name="gid" select="@id"/>
     <xsl:variable name="varprefix">
       <xsl:text>obj_</xsl:text>
-      <xsl:value-of select="$gid"/>
+      <xsl:value-of select="@id"/>
       <xsl:text>_</xsl:text>
     </xsl:variable>
     <xsl:text>        try {
@@ -4810,13 +4861,6 @@
       <xsl:value-of select="$varprefix"/>
       <xsl:value-of select="position()"/>
       <xsl:text> == undefined) {
-</xsl:text>
-      <xsl:text>              console.log("</xsl:text>
-      <xsl:value-of select="$varprefix"/>
-      <xsl:value-of select="position()"/>
-      <xsl:text> = </xsl:text>
-      <xsl:value-of select="@content"/>
-      <xsl:text>");
 </xsl:text>
       <xsl:text>              throw null;
 </xsl:text>
@@ -4847,7 +4891,7 @@
     <xsl:text>        } catch(err) {
 </xsl:text>
     <xsl:text>          id("</xsl:text>
-    <xsl:value-of select="$gid"/>
+    <xsl:value-of select="@id"/>
     <xsl:text>").style = "display:none";
 </xsl:text>
     <xsl:text>        }
@@ -4877,11 +4921,13 @@
 </xsl:text>
     <xsl:text>        let [range,position,jdata] = janswer;
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(1, range);
+    <xsl:text>        [[1, range], [2, position], [3, this.visible]].map(([i,v]) =&gt; {
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(2, position);
+    <xsl:text>             this.apply_hmi_value(i,v);
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(3, this.visible);
+    <xsl:text>             this.cache[i] = v;
+</xsl:text>
+    <xsl:text>        });
 </xsl:text>
     <xsl:apply-templates mode="json_table_render_except_comments" select="$data_elt">
       <xsl:with-param name="expressions" select="$initexpr_ns"/>
@@ -7171,19 +7217,15 @@
 </xsl:text>
           <xsl:text>function switch_langnum(langnum) {
 </xsl:text>
-          <xsl:text>    if(langnum == current_lang) {
-</xsl:text>
-          <xsl:text>        return;
-</xsl:text>
-          <xsl:text>    }
+          <xsl:text>    langnum = Math.max(0, Math.min(langs.length - 1, langnum));
 </xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>    for (let translation of translations) {
 </xsl:text>
-          <xsl:text>        let [objs, msgs, orig] = translation;
+          <xsl:text>        let [objs, msgs] = translation;
 </xsl:text>
-          <xsl:text>        let msg = langnum == 0 ? orig : msgs[langnum - 1];
+          <xsl:text>        let msg = msgs[langnum];
 </xsl:text>
           <xsl:text>        for (let obj of objs) {
 </xsl:text>
@@ -7195,7 +7237,7 @@
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
-          <xsl:text>    current_lang = langnum;
+          <xsl:text>    return langnum;
 </xsl:text>
           <xsl:text>}
 </xsl:text>
@@ -7205,9 +7247,9 @@
 </xsl:text>
           <xsl:text>for (let translation of translations) {
 </xsl:text>
-          <xsl:text>    let [objs] = translation;
+          <xsl:text>    let [objs, msgs] = translation;
 </xsl:text>
-          <xsl:text>    translation.push(svg_text_to_multiline(objs[0])); 
+          <xsl:text>    msgs.unshift(svg_text_to_multiline(objs[0])); 
 </xsl:text>
           <xsl:text>}
 </xsl:text>
@@ -7215,13 +7257,23 @@
 </xsl:text>
           <xsl:text>var lang_local_index = hmi_local_index("lang");
 </xsl:text>
+          <xsl:text>var langcode_local_index = hmi_local_index("lang_code");
+</xsl:text>
+          <xsl:text>var langname_local_index = hmi_local_index("lang_name");
+</xsl:text>
           <xsl:text>subscribers(lang_local_index).add({
 </xsl:text>
           <xsl:text>    indexes: [lang_local_index],
 </xsl:text>
           <xsl:text>    new_hmi_value: function(index, value, oldval) {
 </xsl:text>
-          <xsl:text>        switch_langnum(value);
+          <xsl:text>        let current_lang =  switch_langnum(value);
+</xsl:text>
+          <xsl:text>        let [langname,langcode] = langs[current_lang];
+</xsl:text>
+          <xsl:text>        apply_hmi_value(langcode_local_index, langcode);
+</xsl:text>
+          <xsl:text>        apply_hmi_value(langname_local_index, langname);
 </xsl:text>
           <xsl:text>        switch_page();
 </xsl:text>
@@ -7229,9 +7281,25 @@
 </xsl:text>
           <xsl:text>});
 </xsl:text>
-          <xsl:text>var current_lang = 0;
+          <xsl:text>
 </xsl:text>
-          <xsl:text>switch_langnum(cache[lang_local_index]);
+          <xsl:text>function setup_lang(){
+</xsl:text>
+          <xsl:text>    let current_lang = cache[lang_local_index];
+</xsl:text>
+          <xsl:text>    let new_lang = switch_langnum(current_lang);
+</xsl:text>
+          <xsl:text>    if(current_lang != new_lang){
+</xsl:text>
+          <xsl:text>        apply_hmi_value(lang_local_index, new_lang);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>setup_lang();
 </xsl:text>
           <xsl:text>
 </xsl:text>
