@@ -50,7 +50,8 @@ class AlarmJsonResource(Resource):
         if len(extra) > 0 and extra[0] != "":
             fAlarms = [alrm for alrm in Alarms if alrm[1].find(extra[0])!=-1]
         else:
-            fAlarms = Alarms
+            fAlarms = Alarms[:]
+        fAlarms.reverse()
         new_range = len(fAlarms)
         delta = new_range - visible
         new_position = 0 if delta <= 0 else delta if old_position > delta else old_position
