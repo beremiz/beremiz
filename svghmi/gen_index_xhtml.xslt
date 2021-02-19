@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
-  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -1210,7 +1210,7 @@
 </xsl:text>
     <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
 </xsl:text>
-    <xsl:text>var updates = {};
+    <xsl:text>var updates = new Map();
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -1250,7 +1250,7 @@
 </xsl:text>
     <xsl:text>        cache[new_index] = defaultval; 
 </xsl:text>
-    <xsl:text>        updates[new_index] = defaultval;
+    <xsl:text>        updates.set(new_index, defaultval);
 </xsl:text>
     <xsl:text>        if(persistent_locals.has(varname))
 </xsl:text>
@@ -1671,7 +1671,7 @@
 </xsl:text>
   </xsl:template>
   <xsl:variable name="excluded_types" select="str:split('Page VarInit VarInitPersistent')"/>
-  <xsl:key use="@type" name="TypesKey" match="widget"/>
+  <xsl:key name="TypesKey" match="widget" use="@type"/>
   <declarations:hmi-classes/>
   <xsl:template match="declarations:hmi-classes">
     <xsl:text>
@@ -4457,8 +4457,18 @@
 </xsl:text>
     </xsl:if>
     <xsl:if test="$have_value">
-      <xsl:text>        this.last_display = value;
+      <xsl:choose>
+        <xsl:when test="count(arg) = 1">
+          <xsl:text>        this.last_display = vsprintf("</xsl:text>
+          <xsl:value-of select="arg[1]/@value"/>
+          <xsl:text>", value);
 </xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>        this.last_display = value;
+</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
       <xsl:text>        this.request_animate();
 </xsl:text>
     </xsl:if>
@@ -4481,6 +4491,10 @@
       <xsl:value-of select="path/@type"/>
       <xsl:text>", this, this.last_val);
 </xsl:text>
+      <xsl:if test="$have_value">
+        <xsl:text>        this.value_elt.style.pointerEvents = "none";
+</xsl:text>
+      </xsl:if>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
       <xsl:text>        id("</xsl:text>
@@ -6752,7 +6766,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <head/>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
@@ -6895,17 +6909,13 @@
 </xsl:text>
           <xsl:text>function apply_updates() {
 </xsl:text>
-          <xsl:text>    for(let index in updates){
+          <xsl:text>    updates.forEach((value, index) =&gt; {
 </xsl:text>
-          <xsl:text>        // serving as a key, index becomes a string
+          <xsl:text>        dispatch_value(index, value);
 </xsl:text>
-          <xsl:text>        // -&gt; pass Number(index) instead
+          <xsl:text>    });
 </xsl:text>
-          <xsl:text>        dispatch_value(Number(index), updates[index]);
-</xsl:text>
-          <xsl:text>        delete updates[index];
-</xsl:text>
-          <xsl:text>    }
+          <xsl:text>    updates.clear();
 </xsl:text>
           <xsl:text>}
 </xsl:text>
@@ -7013,7 +7023,7 @@
 </xsl:text>
           <xsl:text>                let [value, bytesize] = dvgetter(dv,i);
 </xsl:text>
-          <xsl:text>                updates[index] = value;
+          <xsl:text>                updates.set(index, value);
 </xsl:text>
           <xsl:text>                i += bytesize;
 </xsl:text>
@@ -7377,7 +7387,7 @@
 </xsl:text>
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
-          <xsl:text>        updates[index] = value;
+          <xsl:text>        updates.set(index, value);
 </xsl:text>
           <xsl:text>
 </xsl:text>
