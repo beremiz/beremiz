@@ -45,7 +45,14 @@ template "widget[@type='Input']", mode="widget_defs" {
     |         this.last_val = value;
 
     if "$have_value" {
+        choose{
+            when "count(arg) = 1" {
+    |         this.last_display = vsprintf("«arg[1]/@value»", value);
+            }
+            otherwise {
     |         this.last_display = value;
+            }
+        }
     |         this.request_animate();
     }
     |     },
@@ -60,6 +67,9 @@ template "widget[@type='Input']", mode="widget_defs" {
 
     if "$have_edit" {
     |         this.edit_elt.onclick = () => edit_value("«path/@value»", "«path/@type»", this, this.last_val);
+        if "$have_value" {
+    |         this.value_elt.style.pointerEvents = "none";
+        }
     }
 
     foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
