@@ -705,13 +705,16 @@ def _runtime_{location}_svghmi_stop():
                 else:
                     self.GetCTRoot().logger.write_error(_("PO file misplaced: %s is not in %s\n") % (POFile,project_path))
             else:
-                self.GetCTRoot().logger.write_error(_("PO file do not exist: %s\n") % POFile)
+                self.GetCTRoot().logger.write_error(_("PO file does not exist: %s\n") % POFile)
         dialog.Destroy()
 
     def _OpenPOT(self):
         """ Start POEdit with untouched empty catalog """
         POFile = self._getPOTpath()
-        self._StartPOEdit(POFile)
+        if os.path.isfile(POFile):
+            self._StartPOEdit(POFile)
+        else:
+            self.GetCTRoot().logger.write_error(_("POT file does not exist, add translatable text (label starting with '_') in Inkscape first\n"))
 
     def CTNGlobalInstances(self):
         # view_name = self.BaseParams.getName()
