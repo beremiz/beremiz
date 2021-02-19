@@ -51,12 +51,10 @@ const dvgetters = {
 
 // Apply updates recieved through ws.onmessage to subscribed widgets
 function apply_updates() {
-    for(let index in updates){
-        // serving as a key, index becomes a string
-        // -> pass Number(index) instead
-        dispatch_value(Number(index), updates[index]);
-        delete updates[index];
-    }
+    updates.forEach((value, index) => {
+        dispatch_value(index, value);
+    });
+    updates.clear();
 }
 
 // Called on requestAnimationFrame, modifies DOM
@@ -110,7 +108,7 @@ ws.onmessage = function (evt) {
             if(iectype != undefined){
                 let dvgetter = dvgetters[iectype];
                 let [value, bytesize] = dvgetter(dv,i);
-                updates[index] = value;
+                updates.set(index, value);
                 i += bytesize;
             } else {
                 throw new Error("Unknown index "+index);
@@ -292,7 +290,7 @@ function update_subscriptions() {
 
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
-        updates[index] = value;
+        updates.set(index, value);
 
         if(persistent_indexes.has(index)){
             let varname = persistent_indexes.get(index);
