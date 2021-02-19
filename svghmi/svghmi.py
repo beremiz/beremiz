@@ -722,3 +722,5 @@ def _runtime_{location}_svghmi_stop():
         # TODO : move to library level for multiple hmi
         return [(name, iec_type, "") for name, iec_type in SPECIAL_NODES]
 
+    def GetIconName(self):
+        return "SVGHMI"
