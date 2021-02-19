@@ -14,11 +14,14 @@ import subprocess
 import time
 import ast
 import wx
+import re
 
 # to have it for python 2, had to install 
 # https://pypi.org/project/pycountry/18.12.8/
 # python2 -m pip install pycountry==18.12.8 --user
 import pycountry
+
+cmd_parser = re.compile(r'(?:"([^"]+)"\s*|([^\s]+)\s*)?')
 
 def open_pofile(pofile):
     """ Opens PO file with POEdit """
@@ -29,7 +32,9 @@ def open_pofile(pofile):
         try:
             poedit_cmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
                                            'SOFTWARE\\Classes\\poedit\\shell\\open\\command')
-            poedit_path = poedit_cmd.replace('"%1"', '').strip().replace('"', '')
+            cmd = re.findall(cmd_parser, poedit_cmd)
+            dblquote_value,smpl_value = cmd[0]
+            poedit_path = dblquote_value+smpl_value
         except OSError:
             poedit_path = None
 
