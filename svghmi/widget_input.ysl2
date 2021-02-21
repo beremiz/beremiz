@@ -41,18 +41,18 @@ template "widget[@type='Input']", mode="widget_defs" {
 
     |     dispatch: function(value) {
 
-    if "$have_edit"
-    |         this.last_val = value;
 
-    if "$have_value" {
+    if "$have_value or $have_edit" {
         choose{
             when "count(arg) = 1" {
-    |         this.last_display = vsprintf("«arg[1]/@value»", value);
+    |         this.last_display = vsprintf("«arg[1]/@value»", [value]);
             }
             otherwise {
     |         this.last_display = value;
             }
         }
+    }
+    if "$have_value" {
     |         this.request_animate();
     }
     |     },
@@ -66,7 +66,7 @@ template "widget[@type='Input']", mode="widget_defs" {
     |     init: function() {
 
     if "$have_edit" {
-    |         this.edit_elt.onclick = () => edit_value("«path/@value»", "«path/@type»", this, this.last_val);
+    |         this.edit_elt.onclick = () => edit_value("«path/@value»", "«path/@type»", this, this.last_display);
         if "$have_value" {
     |         this.value_elt.style.pointerEvents = "none";
         }

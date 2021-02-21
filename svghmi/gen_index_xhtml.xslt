@@ -4452,16 +4452,12 @@
     </xsl:if>
     <xsl:text>    dispatch: function(value) {
 </xsl:text>
-    <xsl:if test="$have_edit">
-      <xsl:text>        this.last_val = value;
-</xsl:text>
-    </xsl:if>
-    <xsl:if test="$have_value">
+    <xsl:if test="$have_value or $have_edit">
       <xsl:choose>
         <xsl:when test="count(arg) = 1">
           <xsl:text>        this.last_display = vsprintf("</xsl:text>
           <xsl:value-of select="arg[1]/@value"/>
-          <xsl:text>", value);
+          <xsl:text>", [value]);
 </xsl:text>
         </xsl:when>
         <xsl:otherwise>
@@ -4469,6 +4465,8 @@
 </xsl:text>
         </xsl:otherwise>
       </xsl:choose>
+    </xsl:if>
+    <xsl:if test="$have_value">
       <xsl:text>        this.request_animate();
 </xsl:text>
     </xsl:if>
@@ -4489,7 +4487,7 @@
       <xsl:value-of select="path/@value"/>
       <xsl:text>", "</xsl:text>
       <xsl:value-of select="path/@type"/>
-      <xsl:text>", this, this.last_val);
+      <xsl:text>", this, this.last_display);
 </xsl:text>
       <xsl:if test="$have_value">
         <xsl:text>        this.value_elt.style.pointerEvents = "none";
