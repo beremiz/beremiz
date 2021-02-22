@@ -14,6 +14,7 @@ from pprint import pformat
 import hashlib
 import weakref
 import shlex
+import time
 
 import wx
 import wx.dataview as dv
@@ -544,6 +545,18 @@ class SVGHMI(object):
 
         return TranslationToEtree(langs,translated_messages)
 
+    times = {}
+    def ProgressStart(self, _context, message):
+        t = time.time()
+        s = str(message)
+        self.times[s] = t
+
+    def ProgressEnd(self, _context, message):
+        t = time.time()
+        s = str(message)
+        self.GetCTRoot().logger.write("  %s: %.3f\n"%(message, t - self.times[s]))
+        self.times[s] = t
+
     def CTNGenerate_C(self, buildpath, locations):
 
         location_str = "_".join(map(str, self.GetCurrentLocation()))
@@ -558,17 +571,25 @@ class SVGHMI(object):
         target_path = os.path.join(self._getBuildPath(), target_fname)
         target_file = open(target_path, 'wb')
 
+        self.GetCTRoot().logger.write("SVGHMI:\n")
+
         if os.path.exists(svgfile):
 
             # TODO : move to __init__
             transform = XSLTransform(os.path.join(ScriptDirectory, "gen_index_xhtml.xslt"),
                           [("GetSVGGeometry", lambda *_ignored:self.GetSVGGeometry()),
                            ("GetHMITree", lambda *_ignored:self.GetHMITree()),
-                           ("GetTranslations", self.GetTranslations)])
+                           ("GetTranslations", self.GetTranslations),
+                           ("ProgressStart", self.ProgressStart),
+                           ("ProgressEnd", self.ProgressEnd)])
 
+
+            t = time.time()
 
             # load svg as a DOM with Etree
             svgdom = etree.parse(svgfile)
+
+            self.GetCTRoot().logger.write("  Source SVG parsing: %.3f\n"%(time.time()-t))
 
             # call xslt transform on Inkscape's SVG to generate XHTML
             try: 

@@ -19,6 +19,7 @@
   <xsl:variable name="indexed_hmitree" select="exsl:node-set($_indexed_hmitree)"/>
   <preamble:hmi-tree/>
   <xsl:template match="preamble:hmi-tree">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -61,6 +62,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="index" match="*">
     <xsl:param name="index" select="0"/>
@@ -278,6 +280,7 @@
   </xsl:template>
   <debug:hmi-tree/>
   <xsl:template match="debug:hmi-tree">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -302,10 +305,12 @@
     <xsl:apply-templates mode="testtree" select="$parsed_widgets"/>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
   <debug:geometry/>
   <xsl:template match="debug:geometry">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -332,6 +337,7 @@
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <func:function name="func:intersect_1d">
     <xsl:param name="a0"/>
@@ -407,6 +413,7 @@
   </xsl:variable>
   <preamble:default-page/>
   <xsl:template match="preamble:default-page">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -423,6 +430,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:variable name="keypads_descs" select="$parsed_widgets/widget[@type = 'Keypad']"/>
   <xsl:variable name="keypads" select="$hmi_elements[@id = $keypads_descs/@id]"/>
@@ -482,6 +490,7 @@
   <xsl:variable name="detachable_elements" select="$_detachable_elements[not(ancestor::*/@id = $_detachable_elements/@id)]"/>
   <declarations:detachable-elements/>
   <xsl:template match="declarations:detachable-elements">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -512,6 +521,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:variable name="forEach_widgets_ids" select="$parsed_widgets/widget[@type = 'ForEach']/@id"/>
   <xsl:variable name="forEach_widgets" select="$hmi_widgets[@id = $forEach_widgets_ids]"/>
@@ -627,6 +637,7 @@
   </xsl:template>
   <definitions:page-desc/>
   <xsl:template match="definitions:page-desc">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -644,10 +655,12 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="per_page_widget_template" match="*"/>
   <debug:detachable-pages/>
   <xsl:template match="debug:detachable-pages">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -676,6 +689,7 @@
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@*">
     <xsl:copy/>
@@ -895,6 +909,7 @@
   <xsl:variable name="result_svg_ns" select="exsl:node-set($result_svg)"/>
   <preamble:inline-svg/>
   <xsl:template match="preamble:inline-svg">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -911,9 +926,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <debug:clone-unlinking/>
   <xsl:template match="debug:clone-unlinking">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -940,6 +957,7 @@
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="extract_i18n" match="svg:tspan">
     <xsl:if test="string-length(.) &gt; 0">
@@ -965,6 +983,7 @@
   </xsl:variable>
   <preamble:i18n/>
   <xsl:template match="preamble:i18n">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1027,6 +1046,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="hmi_widgets" match="svg:*">
     <xsl:variable name="widget" select="func:widget(@id)"/>
@@ -1129,6 +1149,7 @@
   </xsl:template>
   <preamble:local-variable-indexes/>
   <xsl:template match="preamble:local-variable-indexes">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1272,9 +1293,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <preamble:widget-base-class/>
   <xsl:template match="preamble:widget-base-class">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1669,11 +1692,13 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:variable name="excluded_types" select="str:split('Page VarInit VarInitPersistent')"/>
   <xsl:key name="TypesKey" match="widget" use="@type"/>
   <declarations:hmi-classes/>
   <xsl:template match="declarations:hmi-classes">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1686,6 +1711,7 @@
     <xsl:apply-templates mode="widget_class" select="$used_widget_types"/>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget">
     <xsl:text>class </xsl:text>
@@ -1703,6 +1729,7 @@
   <xsl:variable name="hmi_widgets" select="$hmi_elements[@id = $included_ids]"/>
   <declarations:hmi-elements/>
   <xsl:template match="declarations:hmi-elements">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -1718,6 +1745,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template name="defs_by_labels">
     <xsl:param name="labels" select="''"/>
@@ -2967,6 +2995,7 @@
   </xsl:template>
   <preamble:display/>
   <xsl:template match="preamble:display">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -3443,6 +3472,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='DropDown']">
     <xsl:text>    function numb_event(e) {
@@ -5153,6 +5183,7 @@
   </xsl:template>
   <declarations:jump/>
   <xsl:template match="declarations:jump">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -5179,9 +5210,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <declarations:keypad/>
   <xsl:template match="declarations:keypad">
+    <xsl:variable name="_unused" select="ns:ProgressStart(name())"/>
     <xsl:text>
 </xsl:text>
     <xsl:text>/* </xsl:text>
@@ -5214,6 +5247,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:variable name="__unused" select="ns:ProgressEnd(name())"/>
   </xsl:template>
   <xsl:template mode="widget_class" match="widget[@type='Keypad']">
     <xsl:text>class KeypadWidget extends Widget{

@@ -7,11 +7,13 @@ decl output(method, cdata-section-elements="xhtml:script");
 decl emit(*name) alias - {
     *name;
     template *name {
+        const "_unused", "ns:ProgressStart(name())";
         |
         | /* «local-name()» */
         |
         content;
         |
+        const "__unused", "ns:ProgressEnd(name())";
     }
 };
 
