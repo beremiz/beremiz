@@ -471,9 +471,9 @@
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
     <xsl:variable name="short_list" select="$elements[not(ancestor::*/@id = $elements/@id)]"/>
-    <xsl:variable name="filled_groups" select="$short_list/parent::svg:*[&#10;        not(descendant::*[&#10;            not(self::svg:g) and&#10;            not(@id = $discardable_elements/@id) and&#10;            not(@id = $short_list/descendant-or-self::*[not(self::svg:g)]/@id)&#10;        ])]"/>
+    <xsl:variable name="filled_groups" select="$short_list/parent::*[&#10;        not(child::*[&#10;            not(@id = $discardable_elements/@id) and&#10;            not(@id = $short_list/@id)&#10;        ])]"/>
     <xsl:variable name="groups_to_add" select="$filled_groups[not(ancestor::*/@id = $filled_groups/@id)]"/>
-    <func:result select="$groups_to_add | $short_list[not(ancestor::svg:g/@id = $filled_groups/@id)]"/>
+    <func:result select="$groups_to_add | $short_list[not(ancestor::*/@id = $filled_groups/@id)]"/>
   </func:function>
   <func:function name="func:detachable_elements">
     <xsl:param name="pages"/>
