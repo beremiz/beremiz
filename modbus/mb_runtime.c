@@ -62,7 +62,7 @@ static int __execute_mb_request(int request_id){
 					(int) client_requests[request_id].count,
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 
@@ -74,7 +74,7 @@ static int __execute_mb_request(int request_id){
 					(int) client_requests[request_id].count,
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 
@@ -86,7 +86,7 @@ static int __execute_mb_request(int request_id){
 					(int) client_requests[request_id].count,
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 	
@@ -98,7 +98,7 @@ static int __execute_mb_request(int request_id){
 					(int) client_requests[request_id].count,
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 
@@ -108,7 +108,7 @@ static int __execute_mb_request(int request_id){
 					client_requests[request_id].coms_buffer[0],
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 
@@ -118,7 +118,7 @@ static int __execute_mb_request(int request_id){
 					client_requests[request_id].coms_buffer[0],
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 
@@ -138,7 +138,7 @@ static int __execute_mb_request(int request_id){
 					 client_requests[request_id].coms_buffer,
 					 client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					 client_requests[request_id].retries,
-					 &(client_requests[request_id].error_code),
+					 &(client_requests[request_id].mb_error_code),
 					 &(client_requests[request_id].resp_timeout),
 					 &(client_requests[request_id].coms_buf_mutex));
 
@@ -149,7 +149,7 @@ static int __execute_mb_request(int request_id){
 					client_requests[request_id].coms_buffer,
 					client_nodes[client_requests[request_id].client_node_id].mb_nd,
 					client_requests[request_id].retries,
-					&(client_requests[request_id].error_code),
+					&(client_requests[request_id].mb_error_code),
 					&(client_requests[request_id].resp_timeout),
 					&(client_requests[request_id].coms_buf_mutex));
 	
@@ -352,34 +352,39 @@ static void *__mb_client_thread(void *_index)  {
             */
             
 			int res_tmp = __execute_mb_request(req);
+			client_requests[req].tn_error_code = 0; // assume success
 			switch (res_tmp) {
 			  case PORT_FAILURE: {
 				if (res_tmp != client_nodes[client_node_id].prev_error)
 					fprintf(stderr, "Modbus plugin: Error connecting Modbus client %%s to remote server.\n", client_nodes[client_node_id].location);
 				client_nodes[client_node_id].prev_error = res_tmp;
+				client_requests[req].tn_error_code = 1; // error accessing IP network, or serial interface
 				break;
 			  }
 			  case INVALID_FRAME: {
 				if ((res_tmp != client_requests[req].prev_error) && (0 == client_nodes[client_node_id].prev_error))
 					fprintf(stderr, "Modbus plugin: Modbus client request configured at location %%s was unsuccesful. Server/slave returned an invalid/corrupted frame.\n", client_requests[req].location);
 				client_requests[req].prev_error = res_tmp;
+				client_requests[req].tn_error_code = 2; // reply received from server was an invalid frame
 				break;
 			  }
 			  case TIMEOUT: {
 				if ((res_tmp != client_requests[req].prev_error) && (0 == client_nodes[client_node_id].prev_error))
 					fprintf(stderr, "Modbus plugin: Modbus client request configured at location %%s timed out waiting for reply from server.\n", client_requests[req].location);
 				client_requests[req].prev_error = res_tmp;
+				client_requests[req].tn_error_code = 3; // server did not reply before timeout expired
 				break;
 			  }
 			  case MODBUS_ERROR: {
-				if (client_requests[req].prev_error != client_requests[req].error_code) {
-					fprintf(stderr, "Modbus plugin: Modbus client request configured at location %%s was unsuccesful. Server/slave returned error code 0x%%2x", client_requests[req].location, client_requests[req].error_code);
-					if (client_requests[req].error_code <= MAX_MODBUS_ERROR_CODE ) {
-						fprintf(stderr, "(%%s)", modbus_error_messages[client_requests[req].error_code]);
+				if (client_requests[req].prev_error != client_requests[req].mb_error_code) {
+					fprintf(stderr, "Modbus plugin: Modbus client request configured at location %%s was unsuccesful. Server/slave returned error code 0x%%2x", client_requests[req].location, client_requests[req].mb_error_code);
+					if (client_requests[req].mb_error_code <= MAX_MODBUS_ERROR_CODE ) {
+						fprintf(stderr, "(%%s)", modbus_error_messages[client_requests[req].mb_error_code]);
 						fprintf(stderr, ".\n");
 					}
 				}
-				client_requests[req].prev_error = client_requests[req].error_code;
+				client_requests[req].prev_error = client_requests[req].mb_error_code;
+				client_requests[req].tn_error_code = 4; // server returned a valid Modbus error frame
 				break;
 			  }
 			  default: {
@@ -394,7 +399,14 @@ static void *__mb_client_thread(void *_index)  {
 				break;
 			  }
 			}
-        
+
+			/* Set the flag_tn_error_code and flag_mb_error_code that are mapped onto
+             * located BYTE variables, so the user program
+             * knows how the communication is going.
+             */
+            client_requests[req].flag_mb_error_code = client_requests[req].mb_error_code;
+            client_requests[req].flag_tn_error_code = client_requests[req].tn_error_code;
+            
             /* We have just finished excuting a client transcation request.
              * If the current cycle was activated by user request we reset the flag used to ask to run it
              */
