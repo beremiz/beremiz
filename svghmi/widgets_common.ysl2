@@ -347,6 +347,7 @@ class «@type»Widget extends Widget{
 
 const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id";
 const "hmi_widgets","$hmi_elements[@id = $included_ids]";
+const "result_widgets","$result_svg_ns//*[@id = $hmi_widgets/@id]";
 
 emit "declarations:hmi-elements" {
     | var hmi_widgets = {
@@ -362,7 +363,7 @@ function "defs_by_labels" {
     const "widget_type","@type";
     foreach "str:split($labels)" {
         const "name",".";
-        const "elt","$result_svg_ns//*[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]";
+        const "elt","$result_widgets[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]";
         choose {
             when "not($elt/@id)" {
                 if "$mandatory='yes'" {
