@@ -132,13 +132,31 @@ class _RequestPlug(object):
         #          %QX1.2.3.n
         entries = []
         entries.append({
-            "name": "Exec. request flag",
+            "name": "Execute request flag",
             "type": LOCATION_VAR_MEMORY,
             "size": 1,           # BOOL flag
             "IEC_type": "BOOL",  # BOOL flag
             "var_name": "var_name",
             "location": "X" + ".".join([str(i) for i in current_location]) + ".0.0",
-            "description": "MB request execution control flag",
+            "description": "Modbus request execution control flag",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Request Status flag",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,           # BYTE flag
+            "IEC_type": "BYTE",  # BYTE flag
+            "var_name": "var_name",
+            "location": "B" + ".".join([str(i) for i in current_location]) + ".0.1",
+            "description": "Modbus request status flag (0 -> OK, 1 -> Network error, 2 -> Received invalid frame, 3 -> Timeout, 4 -> Received error frame)",
+            "children": []})        
+        entries.append({
+            "name": "Modbus Error Code",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,           # BYTE flag
+            "IEC_type": "BYTE",  # BYTE flag
+            "var_name": "var_name",
+            "location": "B" + ".".join([str(i) for i in current_location]) + ".0.2",
+            "description": "Modbus Error Code received in Modbus error frame",
             "children": []})        
         for offset in range(address, address + count):
             entries.append({
@@ -169,6 +187,7 @@ class _RequestPlug(object):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
         return [], "", False
+
 
 
 #
@@ -873,29 +892,45 @@ class RootClass(object):
                         # test if the located variable 
                         #    (a) has relative address in request specified range
                         #  AND is NOT
-                        #    (b) is a control flag added by this modbus plugin
-                        #        to control its execution at runtime.
-                        #        Currently, we only add the "Execution Control Flag"
-                        #        to each client request (one flag per request)
-                        #        to control when to execute the request (if not executed periodically)
+                        #    (b) is a flag added by this modbus plugin.
+                        #        We currently add 3 flags: An execution control flag
+                        #        and another two status flags.
+                        #        We add the "Execution Control Flag" to each client request (one flag per request)
+                        #        to allow the user program to control when to execute the request (if not executed periodically)
                         #        While all Modbus registers/coils are mapped onto a location
                         #        with 4 numbers (e.g. %QX0.1.2.55), this control flag is mapped
                         #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
                         #        two numbers are always '0.0', and the first two identify the request.
                         #        In the following if, we check for this condition by checking
-                        #        if their are at least 4 or more number in the location's address.
+                        #        if there are at least 4 or more number in the location's address.
                         if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
                             and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append(
-                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
+                                loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
                                 loc_vars_list.append(str(iecvar["NAME"]))
                         # Now add the located variable in case it is a flag (condition (b) above
                         if  len(iecvar["LOC"]) >= 5:       # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append(
-                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
-                                loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a Execution Request Flag (mapped onto %QXa.b.c.0.0), so last number is a '0'
+                                if iecvar["LOC"][4] == 0:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Request Status flag" (mapped onto %QWa.b.c.0.1), so last number is a '1'
+                                #    -> will store the result of the last executed MB transaction
+                                #         1 -> error accessing IP network, or serial interface
+                                #         2 -> reply received from server was an invalid frame
+                                #         3 -> server did not reply before timeout expired
+                                #         4 -> server returned a valid Modbus error frame
+                                #    -> will be reset (set to 0) once this MB transaction has completed sucesfully 
+                                if iecvar["LOC"][4] == 1:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_tn_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Error code" (mapped onto %QWa.b.c.0.2), so last number is a '2'
+                                #    -> if "Modbus Request Status flag" is 4, this flag will store the MB error code returned by the MB server in a MB error frame
+                                #    -> will be reset (set to 0) once this MB transaction has completed succesfully                                
+                                if iecvar["LOC"][4] == 2:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_mb_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
                     client_requestid += 1
                 tcpclient_node_count += 1
                 client_nodeid += 1
@@ -918,17 +953,17 @@ class RootClass(object):
                         # test if the located variable 
                         #    (a) has relative address in request specified range
                         #  AND is NOT
-                        #    (b) is a control flag added by this modbus plugin
-                        #        to control its execution at runtime.
-                        #        Currently, we only add the "Execution Control Flag"
-                        #        to each client request (one flag per request)
-                        #        to control when to execute the request (if not executed periodically)
+                        #    (b) is a flag added by this modbus plugin.
+                        #        We currently add 3 flags: An execution control flag
+                        #        and another two status flags.
+                        #        We add the "Execution Control Flag" to each client request (one flag per request)
+                        #        to allow the user program to control when to execute the request (if not executed periodically)
                         #        While all Modbus registers/coils are mapped onto a location
                         #        with 4 numbers (e.g. %QX0.1.2.55), this control flag is mapped
                         #        onto a location with 4 numbers (e.g. %QX0.1.2.0.0), where the last
                         #        two numbers are always '0.0', and the first two identify the request.
                         #        In the following if, we check for this condition by checking
-                        #        if their are at least 4 or more number in the location's address.
+                        #        if there are at least 4 or more number in the location's address.
                         if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
                             and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
@@ -938,9 +973,26 @@ class RootClass(object):
                         # Now add the located variable in case it is a flag (condition (b) above
                         if  len(iecvar["LOC"]) >= 5:       # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
-                                loc_vars.append(
-                                    "u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
-                                loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a Execution Request Flag (mapped onto %QXa.b.c.0.0), so last number is a '0'
+                                if iecvar["LOC"][4] == 0:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_exec_req;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Request Status flag" (mapped onto %QWa.b.c.0.1), so last number is a '1'
+                                #    -> will store the result of the last executed MB transaction
+                                #         1 -> error accessing IP network, or serial interface
+                                #         2 -> reply received from server was an invalid frame
+                                #         3 -> server did not reply before timeout expired
+                                #         4 -> server returned a valid Modbus error frame
+                                #    -> will be reset (set to 0) once this MB transaction has completed sucesfully 
+                                if iecvar["LOC"][4] == 1:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_tn_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
+                                # Add if it is a "Modbus Error code" (mapped onto %QWa.b.c.0.2), so last number is a '2'
+                                #    -> if "Modbus Request Status flag" is 4, this flag will store the MB error code returned by the MB server in a MB error frame
+                                #    -> will be reset (set to 0) once this MB transaction has completed succesfully                                
+                                if iecvar["LOC"][4] == 2:
+                                    loc_vars.append("u8 *" + str(iecvar["NAME"]) + " = &client_requests[%d].flag_mb_error_code;" % (client_requestid))
+                                    loc_vars_list.append(str(iecvar["NAME"]))
                     client_requestid += 1
                 rtuclient_node_count += 1
                 client_nodeid += 1
