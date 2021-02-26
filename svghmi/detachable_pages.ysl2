@@ -44,13 +44,39 @@ def "func:refered_elements" {
     }
 }
 
+// variable "overlapping_geometry" was added for optimization.
+// It avoids calling func:overlapping_geometry 3 times for each page
+// (apparently libxml doesn't cache exslt function results)
+// in order to optimize further, func:overlapping_geometry 
+// should be implemented in python or even C,
+// as this is still the main bottleneck here
+const "_overlapping_geometry" {
+    const "k", "'overlapping'";
+    const "m", "'computing belonging of widgets to pages'";
+    value "ns:ProgressStart($k, $m)";
+    foreach "$hmi_pages | $keypads" {
+        const "k2", "concat('overlapping:', @id)";
+        const "m2", "concat('collecting membership of ', @inkscape:label)";
+        value "ns:ProgressStart($k2, $m2)";
+        elt {
+            attrib "id" > «@id»
+            copy "func:overlapping_geometry(.)";
+        }
+        value "ns:ProgressEnd($k2, $m2)";
+    }
+    value "ns:ProgressEnd($k, $m)";
+}
+
+const "overlapping_geometry", "exsl:node-set($_overlapping_geometry)";
+
 def "func:all_related_elements" {
     param "page";
-    const "page_overlapping_geometry", "func:overlapping_geometry($page)";
+    const "page_overlapping_geometry", "$overlapping_geometry/elt[@id = $page/@id]/*";
     const "page_overlapping_elements", "//svg:*[@id = $page_overlapping_geometry/@Id]";
     const "page_sub_elements", "func:refered_elements($page | $page_overlapping_elements)";
     result "$page_sub_elements";
 }
+
 
 def "func:required_elements" {
     param "pages"; 
@@ -114,7 +140,10 @@ const "in_forEach_widget_ids", "func:refered_elements($forEach_widgets)[not(@id 
 template "svg:*", mode="page_desc" {
     if "ancestor::*[@id = $hmi_pages/@id]" error > HMI:Page «@id» is nested in another HMI:Page
 
+
     const "desc", "func:widget(@id)";
+    const "msg", "concat('generating page description ', $desc/arg[1]/@value)";
+    value "ns:ProgressStart($msg)";
     const "page", ".";
     const "p", "$geometry[@Id = $page/@id]";
 
@@ -127,8 +156,11 @@ template "svg:*", mode="page_desc" {
 
     // Take closest ancestor in detachable_elements
     // since nested detachable elements are filtered out
+    const "sumarized_page", 
+        """func:sumarized_elements($page_all_elements)""";
+
     const "required_detachables", 
-        """func:sumarized_elements($page_all_elements)/
+        """$sumarized_page/
            ancestor-or-self::*[@id = $detachable_elements/@id]""";
 
     |   "«$desc/arg[1]/@value»": {
@@ -164,6 +196,7 @@ template "svg:*", mode="page_desc" {
         with "page_desc", "$desc";
     }
     |   }`if "position()!=last()" > ,`
+    value "ns:ProgressEnd($msg)";
 }
 
 emit "definitions:page-desc" {
@@ -186,4 +219,6 @@ emit "debug:detachable-pages" {
     foreach "$in_forEach_widget_ids"{
         |  «.»
     }
+    | Overlapping 
+    apply "$overlapping_geometry", mode="testtree";
 }
