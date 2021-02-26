@@ -574,8 +574,8 @@ class SVGHMI(object):
 
     def ProgressEnd(self, _context, *args):
         k,m,t = _ProgressArgs(args)
-        self.times[k] = t
         self.GetCTRoot().logger.write("    Finished %s in %.3f\n"%(m, t - self.times[k]))
+        self.times[k] = t
 
     def CTNGenerate_C(self, buildpath, locations):
 
