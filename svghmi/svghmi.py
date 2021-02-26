@@ -430,6 +430,13 @@ class SVGHMIEditor(ConfTreeNodeEditor):
         #self.HMITreeView = HMITreeView(self)
         return HMITreeSelector(parent)
 
+def _ProgressArgs(args):
+    if len(args) == 2:
+        key, message = args
+    else:
+        key, = args
+        message = key
+    return str(key), str(message), time.time()
 
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
@@ -499,6 +506,7 @@ class SVGHMI(object):
         return True
 
     def GetSVGGeometry(self):
+        t = time.time()
         # invoke inskscape -S, csv-parse output, produce elements
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
@@ -523,14 +531,20 @@ class SVGHMI(object):
 
             res.append(etree.Element("bbox", **attrs))
 
+        self.GetCTRoot().logger.write("    Start collecting SVG geometry (Inkscape)\n")
+        self.GetCTRoot().logger.write("    Finished collecting SVG geometry (Inkscape) in %.3fs\n"%(time.time()-t))
         return res
 
     def GetHMITree(self):
         global hmi_tree_root
+        t = time.time()
         res = [hmi_tree_root.etree(add_hash=True)]
+        self.GetCTRoot().logger.write("    Start getting HMI tree\n")
+        self.GetCTRoot().logger.write("    Fnished getting HMI tree in %.3fs\n"%(time.time()-t))
         return res
 
     def GetTranslations(self, _context, msgs):
+        t = time.time()
         messages = EtreeToMessages(msgs)
 
         if len(messages) == 0:
@@ -543,19 +557,25 @@ class SVGHMI(object):
         langs,translated_messages = MatchTranslations(translations, messages, 
             errcallback=self.GetCTRoot().logger.write_warning)
 
-        return TranslationToEtree(langs,translated_messages)
+        ret = TranslationToEtree(langs,translated_messages)
+
+        self.GetCTRoot().logger.write("    Start getting Translations\n")
+        self.GetCTRoot().logger.write("    Finished getting Translations in %.3fs\n"%(time.time()-t))
+
+        return ret
 
     times = {}
-    def ProgressStart(self, _context, message):
-        t = time.time()
-        s = str(message)
-        self.times[s] = t
 
-    def ProgressEnd(self, _context, message):
-        t = time.time()
-        s = str(message)
-        self.GetCTRoot().logger.write("  %s: %.3f\n"%(message, t - self.times[s]))
-        self.times[s] = t
+    def ProgressStart(self, _context, *args):
+        k,m,t = _ProgressArgs(args)
+        self.times[k] = t
+        # self.GetCTRoot().logger.write("  Start %s: %.3f\n"%(m, t - self.transform_begin))
+        self.GetCTRoot().logger.write("    Start %s\n"%m)
+
+    def ProgressEnd(self, _context, *args):
+        k,m,t = _ProgressArgs(args)
+        self.times[k] = t
+        self.GetCTRoot().logger.write("    Finished %s in %.3f\n"%(m, t - self.times[k]))
 
     def CTNGenerate_C(self, buildpath, locations):
 
@@ -583,17 +603,18 @@ class SVGHMI(object):
                            ("ProgressStart", self.ProgressStart),
                            ("ProgressEnd", self.ProgressEnd)])
 
-
             t = time.time()
 
             # load svg as a DOM with Etree
             svgdom = etree.parse(svgfile)
 
-            self.GetCTRoot().logger.write("  Source SVG parsing: %.3f\n"%(time.time()-t))
+            self.GetCTRoot().logger.write("    Source SVG parsing: %.3f\n"%(time.time()-t))
 
             # call xslt transform on Inkscape's SVG to generate XHTML
             try: 
-                result = transform.transform(svgdom)
+                self.transform_begin = time.time()
+                result = transform.transform(svgdom)  # , profile_run=True)
+                self.GetCTRoot().logger.write("    XSLT transform: %.3f\n"%(time.time()-self.transform_begin))
             except XSLTApplyError as e:
                 self.FatalError("SVGHMI " + view_name  + ": " + e.message)
             finally:
@@ -604,6 +625,7 @@ class SVGHMI(object):
             result.write(target_file, encoding="utf-8")
             # print(str(result))
             # print(transform.xslt.error_log)
+            # print(etree.tostring(result.xslt_profile,pretty_print=True))
 
             # TODO
             #   - Errors on HMI semantics

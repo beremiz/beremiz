@@ -131,12 +131,13 @@ def "func:intersect" {
     }
 }
 
+const "groups", "/svg:svg | //svg:g";
+
 // return overlapping geometry for a given element
 // all intersercting element are returned
 // except groups, that must be contained to be counted in
 def "func:overlapping_geometry" {
     param "elt";
-    const "groups", "/svg:svg | //svg:g";
     const "g", "$geometry[@Id = $elt/@id]"; 
     const "candidates", "$geometry[@Id != $elt/@id]";
     result """$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or 
