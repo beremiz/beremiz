@@ -135,73 +135,71 @@ class LogPseudoFile(object):
             self.stack.append((s, style))
             self.lock.release()
             current_time = gettime()
-            self.TimerAccessLock.acquire()
-            if self.LastRefreshTimer:
-                self.LastRefreshTimer.cancel()
-                self.LastRefreshTimer = None
-            self.TimerAccessLock.release()
-            if current_time - self.LastRefreshTime > REFRESH_PERIOD and self.RefreshLock.acquire(False):
+            with self.TimerAccessLock:
+                if self.LastRefreshTimer is not None:
+                    self.LastRefreshTimer.cancel()
+                    self.LastRefreshTimer = None
+            elapsed = current_time - self.LastRefreshTime
+            if elapsed > REFRESH_PERIOD:
                 self._should_write()
             else:
-                self.TimerAccessLock.acquire()
-                self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._timer_expired)
-                self.LastRefreshTimer.start()
-                self.TimerAccessLock.release()
+                with self.TimerAccessLock:
+                    if self.LastRefreshTimer is None:
+                        self.LastRefreshTimer = Timer(REFRESH_PERIOD - elapsed, self._timer_expired)
+                        self.LastRefreshTimer.start()
 
     def _timer_expired(self):
-        if self.RefreshLock.acquire(False):
-            self._should_write()
-        else:
-            self.TimerAccessLock.acquire()
-            self.LastRefreshTimer = Timer(REFRESH_PERIOD, self._timer_expired)
-            self.LastRefreshTimer.start()
-            self.TimerAccessLock.release()
+        self._should_write()
+        with self.TimerAccessLock:
+            self.LastRefreshTimer = None
 
     def _should_write(self):
-        app = wx.GetApp()
-        if app is not None:
-            wx.CallAfter(self._write)
-
         if MainThread == currentThread().ident:
+            app = wx.GetApp()
             if app is not None:
+                self._write()
                 if self.YieldLock.acquire(0):
                     app.Yield()
                     self.YieldLock.release()
+        else:
+            with self.RefreshLock:
+                if not self.refreshPending:
+                    self.refreshPending = True
+                    wx.CallAfter(self._write)
 
     def _write(self):
         if self.output:
-            self.output.Freeze()
-            self.lock.acquire()
-            for s, style in self.stack:
-                if style is None:
-                    style = self.black_white
-                if style != self.black_white:
-                    self.output.StartStyling(self.output.GetLength(), 0xff)
+            with self.RefreshLock:
+                self.output.Freeze()
+                self.lock.acquire()
+                for s, style in self.stack:
+                    if style is None:
+                        style = self.black_white
+                    if style != self.black_white:
+                        self.output.StartStyling(self.output.GetLength(), 0xff)
 
-                # Temporary deactivate read only mode on StyledTextCtrl for
-                # adding text. It seems that text modifications, even
-                # programmatically, are disabled in StyledTextCtrl when read
-                # only is active
-                start_pos = self.output.GetLength()
-                self.output.SetReadOnly(False)
-                self.output.AppendText(s)
-                self.output.SetReadOnly(True)
-                text_len = self.output.GetLength() - start_pos
+                    # Temporary deactivate read only mode on StyledTextCtrl for
+                    # adding text. It seems that text modifications, even
+                    # programmatically, are disabled in StyledTextCtrl when read
+                    # only is active
+                    start_pos = self.output.GetLength()
+                    self.output.SetReadOnly(False)
+                    self.output.AppendText(s)
+                    self.output.SetReadOnly(True)
+                    text_len = self.output.GetLength() - start_pos
 
-                if style != self.black_white:
-                    self.output.SetStyling(text_len, style)
-            self.stack = []
-            self.lock.release()
-            self.output.Thaw()
-            self.LastRefreshTime = gettime()
-            try:
-                self.RefreshLock.release()
-            except Exception:
-                pass
-            newtime = time.time()
-            if newtime - self.rising_timer > 1:
-                self.risecall(self.output)
-            self.rising_timer = newtime
+                    if style != self.black_white:
+                        self.output.SetStyling(text_len, style)
+                self.stack = []
+                self.lock.release()
+                self.output.Thaw()
+                self.LastRefreshTime = gettime()
+                newtime = time.time()
+                if newtime - self.rising_timer > 1:
+                    self.risecall(self.output)
+                self.rising_timer = newtime
+                self.refreshPending = False
+
 
     def write_warning(self, s):
         self.write(s, self.red_white)
