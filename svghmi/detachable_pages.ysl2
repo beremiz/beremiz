@@ -51,20 +51,15 @@ def "func:refered_elements" {
 // should be implemented in python or even C,
 // as this is still the main bottleneck here
 const "_overlapping_geometry" {
-    const "k", "'overlapping'";
-    const "m", "'computing belonging of widgets to pages'";
-    value "ns:ProgressStart($k, $m)";
     foreach "$hmi_pages | $keypads" {
-        const "k2", "concat('overlapping:', @id)";
-        const "m2", "concat('collecting membership of ', @inkscape:label)";
-        value "ns:ProgressStart($k2, $m2)";
+        const "k", "concat('overlapping:', @id)";
+        value "ns:ProgressStart($k, concat('collecting membership of ', @inkscape:label))";
         elt {
             attrib "id" > «@id»
             copy "func:overlapping_geometry(.)";
         }
-        value "ns:ProgressEnd($k2, $m2)";
+        value "ns:ProgressEnd($k)";
     }
-    value "ns:ProgressEnd($k, $m)";
 }
 
 const "overlapping_geometry", "exsl:node-set($_overlapping_geometry)";
@@ -142,8 +137,9 @@ template "svg:*", mode="page_desc" {
 
 
     const "desc", "func:widget(@id)";
-    const "msg", "concat('generating page description ', $desc/arg[1]/@value)";
-    value "ns:ProgressStart($msg)";
+    const "pagename", "$desc/arg[1]/@value";
+    const "msg", "concat('generating page description ', $pagename)";
+    value "ns:ProgressStart($pagename, $msg)";
     const "page", ".";
     const "p", "$geometry[@Id = $page/@id]";
 
@@ -163,7 +159,7 @@ template "svg:*", mode="page_desc" {
         """$sumarized_page/
            ancestor-or-self::*[@id = $detachable_elements/@id]""";
 
-    |   "«$desc/arg[1]/@value»": {
+    |   "«$pagename»": {
     //|     widget: hmi_widgets["«@id»"],
     |     bbox: [«$p/@x», «$p/@y», «$p/@w», «$p/@h»],
     if "$desc/path/@value" {
@@ -196,7 +192,7 @@ template "svg:*", mode="page_desc" {
         with "page_desc", "$desc";
     }
     |   }`if "position()!=last()" > ,`
-    value "ns:ProgressEnd($msg)";
+    value "ns:ProgressEnd($pagename)";
 }
 
 emit "definitions:page-desc" {

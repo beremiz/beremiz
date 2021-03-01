@@ -430,14 +430,6 @@ class SVGHMIEditor(ConfTreeNodeEditor):
         #self.HMITreeView = HMITreeView(self)
         return HMITreeSelector(parent)
 
-def _ProgressArgs(args):
-    if len(args) == 2:
-        key, message = args
-    else:
-        key, = args
-        message = key
-    return str(key), str(message), time.time()
-
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -506,7 +498,7 @@ class SVGHMI(object):
         return True
 
     def GetSVGGeometry(self):
-        t = time.time()
+        self.ProgressStart("inkscape", "collecting SVG geometry (Inkscape)")
         # invoke inskscape -S, csv-parse output, produce elements
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
@@ -531,23 +523,22 @@ class SVGHMI(object):
 
             res.append(etree.Element("bbox", **attrs))
 
-        self.GetCTRoot().logger.write("    Start collecting SVG geometry (Inkscape)\n")
-        self.GetCTRoot().logger.write("    Finished collecting SVG geometry (Inkscape) in %.3fs\n"%(time.time()-t))
+        self.ProgressEnd("inkscape")
         return res
 
     def GetHMITree(self):
         global hmi_tree_root
-        t = time.time()
+        self.ProgressStart("hmitree", "getting HMI tree")
         res = [hmi_tree_root.etree(add_hash=True)]
-        self.GetCTRoot().logger.write("    Start getting HMI tree\n")
-        self.GetCTRoot().logger.write("    Fnished getting HMI tree in %.3fs\n"%(time.time()-t))
+        self.ProgressEnd("hmitree")
         return res
 
     def GetTranslations(self, _context, msgs):
-        t = time.time()
+        self.ProgressStart("i18n", "getting Translations")
         messages = EtreeToMessages(msgs)
 
         if len(messages) == 0:
+            self.ProgressEnd("i18n")
             return
 
         SaveCatalog(self._getPOTpath(), messages)
@@ -559,23 +550,22 @@ class SVGHMI(object):
 
         ret = TranslationToEtree(langs,translated_messages)
 
-        self.GetCTRoot().logger.write("    Start getting Translations\n")
-        self.GetCTRoot().logger.write("    Finished getting Translations in %.3fs\n"%(time.time()-t))
+        self.ProgressEnd("i18n")
 
         return ret
 
-    times = {}
+    times_msgs = {}
+    indent = 1
+    def ProgressStart(self, k, m):
+        self.times_msgs[k] = (time.time(), m)
+        self.GetCTRoot().logger.write("    "*self.indent + "Start %s...\n"%m)
+        self.indent = self.indent + 1
 
-    def ProgressStart(self, _context, *args):
-        k,m,t = _ProgressArgs(args)
-        self.times[k] = t
-        # self.GetCTRoot().logger.write("  Start %s: %.3f\n"%(m, t - self.transform_begin))
-        self.GetCTRoot().logger.write("    Start %s\n"%m)
-
-    def ProgressEnd(self, _context, *args):
-        k,m,t = _ProgressArgs(args)
-        self.GetCTRoot().logger.write("    Finished %s in %.3f\n"%(m, t - self.times[k]))
-        self.times[k] = t
+    def ProgressEnd(self, k):
+        t = time.time()
+        oldt, m = self.times_msgs[k]
+        self.indent = self.indent - 1
+        self.GetCTRoot().logger.write("    "*self.indent + "... finished in %.3fs\n"%(t - oldt))
 
     def CTNGenerate_C(self, buildpath, locations):
 
@@ -600,21 +590,21 @@ class SVGHMI(object):
                           [("GetSVGGeometry", lambda *_ignored:self.GetSVGGeometry()),
                            ("GetHMITree", lambda *_ignored:self.GetHMITree()),
                            ("GetTranslations", self.GetTranslations),
-                           ("ProgressStart", self.ProgressStart),
-                           ("ProgressEnd", self.ProgressEnd)])
+                           ("ProgressStart", lambda _ign,k,m:self.ProgressStart(str(k),str(m))),
+                           ("ProgressEnd", lambda _ign,k:self.ProgressEnd(str(k)))])
 
-            t = time.time()
+            self.ProgressStart("svg", "source SVG parsing")
 
             # load svg as a DOM with Etree
             svgdom = etree.parse(svgfile)
 
-            self.GetCTRoot().logger.write("    Source SVG parsing: %.3f\n"%(time.time()-t))
+            self.ProgressEnd("svg")
 
             # call xslt transform on Inkscape's SVG to generate XHTML
             try: 
-                self.transform_begin = time.time()
+                self.ProgressStart("xslt", "XSLT transform")
                 result = transform.transform(svgdom)  # , profile_run=True)
-                self.GetCTRoot().logger.write("    XSLT transform: %.3f\n"%(time.time()-self.transform_begin))
+                self.ProgressEnd("xslt")
             except XSLTApplyError as e:
                 self.FatalError("SVGHMI " + view_name  + ": " + e.message)
             finally:

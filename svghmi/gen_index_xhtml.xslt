@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
-  <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
+<xsl:stylesheet xmlns:ns="beremiz" xmlns:definitions="definitions" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:func="http://exslt.org/functions" xmlns:epilogue="epilogue" xmlns:preamble="preamble" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:svg="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:str="http://exslt.org/strings" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:exsl="http://exslt.org/common" xmlns:declarations="declarations" xmlns:debug="debug" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0">
+  <xsl:output method="xml" cdata-section-elements="xhtml:script"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
@@ -441,22 +441,17 @@
     </xsl:choose>
   </func:function>
   <xsl:variable name="_overlapping_geometry">
-    <xsl:variable name="k" select="'overlapping'"/>
-    <xsl:variable name="m" select="'computing belonging of widgets to pages'"/>
-    <xsl:value-of select="ns:ProgressStart($k, $m)"/>
     <xsl:for-each select="$hmi_pages | $keypads">
-      <xsl:variable name="k2" select="concat('overlapping:', @id)"/>
-      <xsl:variable name="m2" select="concat('collecting membership of ', @inkscape:label)"/>
-      <xsl:value-of select="ns:ProgressStart($k2, $m2)"/>
+      <xsl:variable name="k" select="concat('overlapping:', @id)"/>
+      <xsl:value-of select="ns:ProgressStart($k, concat('collecting membership of ', @inkscape:label))"/>
       <elt>
         <xsl:attribute name="id">
           <xsl:value-of select="@id"/>
         </xsl:attribute>
         <xsl:copy-of select="func:overlapping_geometry(.)"/>
       </elt>
-      <xsl:value-of select="ns:ProgressEnd($k2, $m2)"/>
+      <xsl:value-of select="ns:ProgressEnd($k)"/>
     </xsl:for-each>
-    <xsl:value-of select="ns:ProgressEnd($k, $m)"/>
   </xsl:variable>
   <xsl:variable name="overlapping_geometry" select="exsl:node-set($_overlapping_geometry)"/>
   <func:function name="func:all_related_elements">
@@ -544,8 +539,9 @@
       </xsl:message>
     </xsl:if>
     <xsl:variable name="desc" select="func:widget(@id)"/>
-    <xsl:variable name="msg" select="concat('generating page description ', $desc/arg[1]/@value)"/>
-    <xsl:value-of select="ns:ProgressStart($msg)"/>
+    <xsl:variable name="pagename" select="$desc/arg[1]/@value"/>
+    <xsl:variable name="msg" select="concat('generating page description ', $pagename)"/>
+    <xsl:value-of select="ns:ProgressStart($pagename, $msg)"/>
     <xsl:variable name="page" select="."/>
     <xsl:variable name="p" select="$geometry[@Id = $page/@id]"/>
     <xsl:variable name="page_all_elements" select="func:all_related_elements($page)"/>
@@ -555,7 +551,7 @@
     <xsl:variable name="sumarized_page" select="func:sumarized_elements($page_all_elements)"/>
     <xsl:variable name="required_detachables" select="$sumarized_page/&#10;           ancestor-or-self::*[@id = $detachable_elements/@id]"/>
     <xsl:text>  "</xsl:text>
-    <xsl:value-of select="$desc/arg[1]/@value"/>
+    <xsl:value-of select="$pagename"/>
     <xsl:text>": {
 </xsl:text>
     <xsl:text>    bbox: [</xsl:text>
@@ -646,7 +642,7 @@
     </xsl:if>
     <xsl:text>
 </xsl:text>
-    <xsl:value-of select="ns:ProgressEnd($msg)"/>
+    <xsl:value-of select="ns:ProgressEnd($pagename)"/>
   </xsl:template>
   <definitions:page-desc/>
   <xsl:template match="definitions:page-desc">
@@ -1697,7 +1693,7 @@
 </xsl:text>
   </xsl:template>
   <xsl:variable name="excluded_types" select="str:split('Page VarInit VarInitPersistent')"/>
-  <xsl:key name="TypesKey" match="widget" use="@type"/>
+  <xsl:key use="@type" name="TypesKey" match="widget"/>
   <declarations:hmi-classes/>
   <xsl:template match="declarations:hmi-classes">
     <xsl:text>
@@ -6791,7 +6787,7 @@
     <xsl:comment>
       <xsl:apply-templates select="document('')/*/debug:*"/>
     </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
       <head/>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
