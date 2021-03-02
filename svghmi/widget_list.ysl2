@@ -13,7 +13,13 @@ template "widget[@type='TextStyleList']", mode="widget_defs" {
     param "hmi_element";
     |     styles: {
     foreach "$hmi_element/*[@inkscape:label]" {
-        const "style", "func:refered_elements(.)[self::svg:text]/@style";
+        const "text", "func:refered_elements(.)[self::svg:text][1]";
+        const "tspan", "$text/svg:tspan[1]";
+        const "style" choose {
+            when "$text/@style and $tspan/@style" > «$text/@style»;«$tspan/@style»
+            otherwise > «$text/@style»«$tspan/@style»
+
+        }
     |         «@inkscape:label»: "«$style»",
     }
     |     },
