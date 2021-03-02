@@ -194,6 +194,7 @@ class LogPseudoFile(object):
                         self.output.SetStyling(text_len, style)
                 self.stack = []
                 self.StackLock.release()
+                self.output.ScrollToEnd()
                 self.output.Thaw()
                 self.LastRefreshTime = gettime()
                 newtime = time.time()
@@ -221,7 +222,7 @@ class LogPseudoFile(object):
         return False
 
     def progress(self, text):
-        l = self.output.GetLineCount()-1
+        l = self.output.GetLineCount()-2
         self.output.AnnotationSetText(l, text)
         self.output.AnnotationSetVisible(wx.stc.STC_ANNOTATION_BOXED)
         self.output.AnnotationSetStyle(l, self.black_white)
