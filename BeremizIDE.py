@@ -129,6 +129,7 @@ class LogPseudoFile(object):
         self.stack = []
         self.LastRefreshTime = gettime()
         self.LastRefreshTimer = None
+        self.refreshPending = False
 
     def write(self, s, style=None):
         self.StackLock.acquire()
@@ -218,6 +219,16 @@ class LogPseudoFile(object):
 
     def isatty(self):
         return False
+
+    def progress(self, text):
+        l = self.output.GetLineCount()-1
+        self.output.AnnotationSetText(l, text)
+        self.output.AnnotationSetVisible(wx.stc.STC_ANNOTATION_BOXED)
+        self.output.AnnotationSetStyle(l, self.black_white)
+        if self.YieldLock.acquire(0):
+            app = wx.GetApp()
+            app.Yield()
+            self.YieldLock.release()
 
 
 ID_FILEMENURECENTPROJECTS = wx.NewId()

@@ -28,7 +28,8 @@ import os
 import sys
 import subprocess
 import ctypes
-from threading import Timer, Lock, Thread, Semaphore
+import time
+from threading import Timer, Lock, Thread, Semaphore, Condition
 import signal
 
 _debug = os.path.exists("BEREMIZ_DEBUG")
@@ -154,6 +155,10 @@ class ProcessLogger(object):
         self.errt.start()
         self.startsem.release()
 
+        self.spinwakeuplock = Lock()
+        self.spinwakeupcond = Condition(self.spinwakeuplock)
+        self.spinwakeuptimer = None
+
     def output(self, v):
         if v and self.output_encoding:
             v = v.decode(self.output_encoding)
@@ -192,6 +197,7 @@ class ProcessLogger(object):
             self.finish_callback(self, ecode, pid)
         self.errt.join()
         self.finishsem.release()
+        self.spinwakeup()
 
     def kill(self, gently=True):
         # avoid running kill before start is finished
@@ -222,7 +228,22 @@ class ProcessLogger(object):
             if not self.outt.finished and self.kill_it:
                 self.kill()
             self.finishsem.release()
+            self.spinwakeup()
+
+    def spinwakeup(self):
+        with self.spinwakeuplock:
+            if self.spinwakeuptimer is not None:
+                self.spinwakeuptimer.cancel()
+            self.spinwakeuptimer = None
+            self.spinwakeupcond.notify()
 
     def spin(self):
-        self.finishsem.acquire()
+        start = time.time()
+        while not self.finishsem.acquire(0):
+            with self.spinwakeuplock:
+                self.spinwakeuptimer = Timer(0.1, self.spinwakeup)
+                self.spinwakeuptimer.start()
+                self.spinwakeupcond.wait()
+            self.logger.progress("%.3fs"%(time.time() - start))
+
         return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]
