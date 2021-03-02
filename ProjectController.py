@@ -99,11 +99,12 @@ def GetAddMenuItems():
 
 class Iec2CSettings(object):
 
-    def __init__(self):
+    def __init__(self, controler):
         self.iec2c = None
         self.iec2c_buildopts = None
         self.ieclib_path = self.findLibPath()
         self.ieclib_c_path = self.findLibCPath()
+        self.controler = controler
 
     def findObject(self, paths, test):
         path = None
@@ -155,11 +156,11 @@ class Iec2CSettings(object):
         try:
             # Invoke compiler.
             # Output files are listed to stdout, errors to stderr
-            _status, result, _err_result = ProcessLogger(None, buildcmd,
+            _status, result, _err_result = ProcessLogger(self.controler.logger, buildcmd,
                                                          no_stdout=True,
                                                          no_stderr=True).spin()
         except Exception:
-            self.logger.write_error(_("Couldn't launch IEC compiler to determine compatible options.\n"))
+            self.controler.logger.write_error(_("Couldn't launch IEC compiler to determine compatible options.\n"))
             return buildopt
 
         for opt in options:
@@ -242,7 +243,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         ConfigTreeNode.__init__(self)
 
         if ProjectController.iec2c_cfg is None:
-            ProjectController.iec2c_cfg = Iec2CSettings()
+            ProjectController.iec2c_cfg = Iec2CSettings(self)
 
         self.MandatoryParams = None
         self._builder = None
