@@ -5513,7 +5513,21 @@
     <xsl:text>    styles: {
 </xsl:text>
     <xsl:for-each select="$hmi_element/*[@inkscape:label]">
-      <xsl:variable name="style" select="func:refered_elements(.)[self::svg:text]/@style"/>
+      <xsl:variable name="text" select="func:refered_elements(.)[self::svg:text][1]"/>
+      <xsl:variable name="tspan" select="$text/svg:tspan[1]"/>
+      <xsl:variable name="style">
+        <xsl:choose>
+          <xsl:when test="$text/@style and $tspan/@style">
+            <xsl:value-of select="$text/@style"/>
+            <xsl:text>;</xsl:text>
+            <xsl:value-of select="$tspan/@style"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$text/@style"/>
+            <xsl:value-of select="$tspan/@style"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
       <xsl:text>        </xsl:text>
       <xsl:value-of select="@inkscape:label"/>
       <xsl:text>: "</xsl:text>
