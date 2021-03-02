@@ -122,7 +122,7 @@ class LogPseudoFile(object):
         self.risecall = risecall
         # to prevent rapid fire on rising log panel
         self.rising_timer = 0
-        self.lock = Lock()
+        self.StackLock = Lock()
         self.YieldLock = Lock()
         self.RefreshLock = Lock()
         self.TimerAccessLock = Lock()
@@ -131,22 +131,22 @@ class LogPseudoFile(object):
         self.LastRefreshTimer = None
 
     def write(self, s, style=None):
-        if self.lock.acquire():
-            self.stack.append((s, style))
-            self.lock.release()
-            current_time = gettime()
+        self.StackLock.acquire()
+        self.stack.append((s, style))
+        self.StackLock.release()
+        current_time = gettime()
+        with self.TimerAccessLock:
+            if self.LastRefreshTimer is not None:
+                self.LastRefreshTimer.cancel()
+                self.LastRefreshTimer = None
+        elapsed = current_time - self.LastRefreshTime
+        if elapsed > REFRESH_PERIOD:
+            self._should_write()
+        else:
             with self.TimerAccessLock:
-                if self.LastRefreshTimer is not None:
-                    self.LastRefreshTimer.cancel()
-                    self.LastRefreshTimer = None
-            elapsed = current_time - self.LastRefreshTime
-            if elapsed > REFRESH_PERIOD:
-                self._should_write()
-            else:
-                with self.TimerAccessLock:
-                    if self.LastRefreshTimer is None:
-                        self.LastRefreshTimer = Timer(REFRESH_PERIOD - elapsed, self._timer_expired)
-                        self.LastRefreshTimer.start()
+                if self.LastRefreshTimer is None:
+                    self.LastRefreshTimer = Timer(REFRESH_PERIOD - elapsed, self._timer_expired)
+                    self.LastRefreshTimer.start()
 
     def _timer_expired(self):
         self._should_write()
@@ -171,7 +171,8 @@ class LogPseudoFile(object):
         if self.output:
             with self.RefreshLock:
                 self.output.Freeze()
-                self.lock.acquire()
+                self.output.AnnotationClearAll()
+                self.StackLock.acquire()
                 for s, style in self.stack:
                     if style is None:
                         style = self.black_white
@@ -191,7 +192,7 @@ class LogPseudoFile(object):
                     if style != self.black_white:
                         self.output.SetStyling(text_len, style)
                 self.stack = []
-                self.lock.release()
+                self.StackLock.release()
                 self.output.Thaw()
                 self.LastRefreshTime = gettime()
                 newtime = time.time()
