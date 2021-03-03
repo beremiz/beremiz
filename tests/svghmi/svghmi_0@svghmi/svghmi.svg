@@ -125,11 +125,11 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:document-units="px"
-     inkscape:current-layer="g971"
+     inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
      inkscape:zoom="0.42177816"
-     inkscape:cx="-596.64145"
+     inkscape:cx="-871.66754"
      inkscape:cy="136.19693"
      inkscape:window-width="1600"
      inkscape:window-height="836"
@@ -5406,7 +5406,7 @@
   </g>
   <g
      id="g1766"
-     inkscape:label="HMI:ScrollBar@.position@.range@.visibleAlarms"
+     inkscape:label="HMI:ScrollBar@.range@.position@.visibleAlarms"
      transform="translate(9.7583007e-6)">
     <path
        sodipodi:nodetypes="cccc"
@@ -7084,7 +7084,7 @@
     </g>
   </g>
   <g
-     inkscape:label="HMI:ScrollBar@.position@.range@.visibleAlarms"
+     inkscape:label="HMI:ScrollBar@.range@.position@.visibleAlarms"
      id="g1165"
      transform="translate(-2.4169924e-7,779.99999)">
     <path
