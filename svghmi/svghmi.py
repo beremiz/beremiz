@@ -17,7 +17,6 @@ import shlex
 import time
 
 import wx
-import wx.dataview as dv
 
 from lxml import etree
 from lxml.etree import XSLTApplyError
@@ -129,6 +128,24 @@ class HMITreeNode(object):
                 res.append(child_etree)
 
         return res
+
+    @classmethod
+    def from_etree(cls, enode):
+        """
+        alternative constructor, restoring HMI Tree from XML backup
+        note: all C-related information is gone, 
+              this restore is only for tree display and widget picking
+        """
+        nodetype = enode.tag
+        attributes = enode.attrib
+        name = attributes["name"]
+        path = attributes["path"].split('.') if "path" in attributes else None 
+        hmiclass = attributes.get("hmiclass", None)
+        # hash is computed on demand
+        node = cls(path, name, nodetype, hmiclass=hmiclass)
+        for child in enode.iterchildren():
+            node.children.append(cls.from_etree(child))
+        return node
 
     def traverse(self):
         yield self
@@ -343,6 +360,12 @@ class SVGHMILibrary(POULibrary):
         runtimefile.write(svghmiservercode)
         runtimefile.close()
 
+        # Backup HMI Tree in XML form so that it can be loaded without building
+        hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
+        hmitree_backup_file = open(hmitree_backup_path, 'w')
+        hmitree_backup_file.write(etree.tostring(hmi_tree_root.etree()))
+        hmitree_backup_file.close()
+
         return ((["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), "",
                 ("runtime_00_svghmi.py", open(runtimefile_path, "rb")))
                 #         ^
@@ -428,6 +451,15 @@ class SVGHMIEditor(ConfTreeNodeEditor):
 
     def CreateHMITreeView(self, parent):
         #self.HMITreeView = HMITreeView(self)
+        global hmi_tree_root
+
+        if hmi_tree_root is None:
+            buildpath = self.Controler.GetCTRoot()._getBuildPath()
+            hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
+            if os.path.exists(hmitree_backup_path):
+                hmitree_backup_file = open(hmitree_backup_path, 'r')
+                hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
+
         return HMITreeSelector(parent)
 
 class SVGHMI(object):
