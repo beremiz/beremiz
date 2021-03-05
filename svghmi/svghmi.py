@@ -140,7 +140,7 @@ class HMITreeNode(object):
         attributes = enode.attrib
         name = attributes["name"]
         path = attributes["path"].split('.') if "path" in attributes else None 
-        hmiclass = attributes.get("hmiclass", None)
+        hmiclass = attributes.get("class", None)
         # hash is computed on demand
         node = cls(path, name, nodetype, hmiclass=hmiclass)
         for child in enode.iterchildren():
@@ -376,14 +376,11 @@ class SVGHMILibrary(POULibrary):
 class HMITreeSelector(wx.TreeCtrl):
     def __init__(self, parent):
         global on_hmitree_update
-        wx.TreeCtrl.__init__(self,parent,style=wx.TR_MULTIPLE)# | wx.TR_HIDE_ROOT)
-
-        isz = (16,16)
-        self.il = il = wx.ImageList(*isz)
-        self.fldridx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER,      wx.ART_OTHER, isz))
-        self.fldropenidx = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_FOLDER_OPEN, wx.ART_OTHER, isz))
-        self.fileidx     = il.AddIcon(wx.ArtProvider.GetIcon(wx.ART_NORMAL_FILE, wx.ART_OTHER, isz))
-        self.SetImageList(il)
+        wx.TreeCtrl.__init__(self, parent, style=(
+            wx.TR_MULTIPLE |
+            wx.TR_HAS_BUTTONS |
+            wx.SUNKEN_BORDER |
+            wx.TR_LINES_AT_ROOT))
 
         on_hmitree_update = self.SVGHMIEditorUpdater()
         self.MakeTree()
@@ -395,16 +392,12 @@ class HMITreeSelector(wx.TreeCtrl):
                                if c.hmiclass is not None else c.name
                 tc_child = self.AppendItem(current_tc_root, display_name)
                 self.SetPyData(tc_child, None)
-                self.SetItemImage(tc_child, self.fldridx, wx.TreeItemIcon_Normal)
-                self.SetItemImage(tc_child, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
                 self._recurseTree(c,tc_child)
             else:
                 display_name = '{} {}'.format(c.nodetype[4:], c.name)
                 tc_child = self.AppendItem(current_tc_root, display_name)
                 self.SetPyData(tc_child, None)
-                self.SetItemImage(tc_child, self.fileidx, wx.TreeItemIcon_Normal)
-                self.SetItemImage(tc_child, self.fileidx, wx.TreeItemIcon_Expanded)
 
     def MakeTree(self):
         global hmi_tree_root
@@ -417,11 +410,10 @@ class HMITreeSelector(wx.TreeCtrl):
         root_display_name = _("Please build to see HMI Tree") if hmi_tree_root is None else "HMI"
         self.root = self.AddRoot(root_display_name)
         self.SetPyData(self.root, None)
-        self.SetItemImage(self.root, self.fldridx, wx.TreeItemIcon_Normal)
-        self.SetItemImage(self.root, self.fldropenidx, wx.TreeItemIcon_Expanded)
 
         if hmi_tree_root is not None:
             self._recurseTree(hmi_tree_root, self.root)
+            self.Expand(self.root)
 
         self.Thaw()
 
