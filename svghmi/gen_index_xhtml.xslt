@@ -5748,13 +5748,13 @@
 </xsl:text>
     <xsl:text>            case 0:
 </xsl:text>
-    <xsl:text>                this.position = value;
+    <xsl:text>                this.range = Math.max(1,value);
 </xsl:text>
     <xsl:text>                break;
 </xsl:text>
     <xsl:text>            case 1:
 </xsl:text>
-    <xsl:text>                this.range = Math.max(1,value);
+    <xsl:text>                this.position = value;
 </xsl:text>
     <xsl:text>                break;
 </xsl:text>
@@ -5834,7 +5834,7 @@
 </xsl:text>
     <xsl:text>        this.position = Math.round(Math.max(Math.min(position, this.range - this.size), 0));
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, this.position);
+    <xsl:text>        this.apply_hmi_value(1, this.position);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>

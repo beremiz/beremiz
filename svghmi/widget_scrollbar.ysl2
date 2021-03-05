@@ -12,10 +12,10 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
         dispatch(value,oldval, index) {
             switch(index) {
                 case 0:
-                    this.position = value;
+                    this.range = Math.max(1,value);
                     break;
                 case 1:
-                    this.range = Math.max(1,value);
+                    this.position = value;
                     break;
                 case 2:
                     this.size = value;
@@ -55,7 +55,7 @@ template "widget[@type='ScrollBar']", mode="widget_class"{
 
         apply_position(position){
             this.position = Math.round(Math.max(Math.min(position, this.range - this.size), 0));
-            this.apply_hmi_value(0, this.position);
+            this.apply_hmi_value(1, this.position);
         }
 
         on_page_click(is_up){
