@@ -5,7 +5,7 @@ template "widget[@type='JsonTable']", mode="widget_class"
     class JsonTableWidget extends Widget{
         // arbitrary defaults to avoid missing entries in query
         cache = [0,100,50];
-        init() {
+        init_common() {
             this.spread_json_data_bound = this.spread_json_data.bind(this);
             this.handle_http_response_bound = this.handle_http_response.bind(this);
             this.fetch_error_bound = this.fetch_error.bind(this);
@@ -254,7 +254,6 @@ template "svg:g", mode="json_table_render" {
 template "widget[@type='JsonTable']", mode="widget_defs" {
     param "hmi_element";
     labels("data");
-    optional_labels("forward backward cursor");
     const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";
     |     visible: «count($data_elt/*[@inkscape:label])»,
     |     spread_json_data: function(janswer) {
@@ -267,5 +266,12 @@ template "widget[@type='JsonTable']", mode="widget_defs" {
         with "expressions","$initexpr_ns";
         with "widget_elts","$hmi_element/*[@inkscape:label = 'data']/descendant::svg:*";
     }
+    |     },
+    |     init() {
+    |        this.init_common();
+    foreach "$hmi_element/*[starts-with(@inkscape:label,'action_')]" {
+    |         id("«@id»").onclick = this.make_on_click("«func:escape_quotes(@inkscape:label)»");
+    }
     |     }
+
 }
