@@ -37,7 +37,12 @@ class AlarmJsonResource(Resource):
         extra = newdata[u'extra']
         options = newdata[u'options']
 
-        if len(options) == 2 :
+        if len(options) == 1 :
+            action, = options
+            if action == "action_reset":
+                del Alarms[:]
+                AlarmIndex.clear()
+        elif len(options) == 2 :
             action, alarmid = options
             if action == "onClick[acknowledge]":
                 AlarmIndex[int(alarmid)][2] = "ack"
