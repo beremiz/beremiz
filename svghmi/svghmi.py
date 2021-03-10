@@ -362,7 +362,7 @@ class SVGHMILibrary(POULibrary):
 
         # Backup HMI Tree in XML form so that it can be loaded without building
         hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
-        hmitree_backup_file = open(hmitree_backup_path, 'w')
+        hmitree_backup_file = open(hmitree_backup_path, 'wb')
         hmitree_backup_file.write(etree.tostring(hmi_tree_root.etree()))
         hmitree_backup_file.close()
 
@@ -449,7 +449,7 @@ class SVGHMIEditor(ConfTreeNodeEditor):
             buildpath = self.Controler.GetCTRoot()._getBuildPath()
             hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
             if os.path.exists(hmitree_backup_path):
-                hmitree_backup_file = open(hmitree_backup_path, 'r')
+                hmitree_backup_file = open(hmitree_backup_path, 'rb')
                 hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
 
         return HMITreeSelector(parent)
@@ -602,51 +602,74 @@ class SVGHMI(object):
 
         target_fname = "svghmi_"+location_str+".xhtml"
 
-        target_path = os.path.join(self._getBuildPath(), target_fname)
-        target_file = open(target_path, 'wb')
+        build_path = self._getBuildPath()
+        target_path = os.path.join(build_path, target_fname)
+        hash_path = os.path.join(build_path, "svghmi.md5")
 
         self.GetCTRoot().logger.write("SVGHMI:\n")
 
         if os.path.exists(svgfile):
 
-            # TODO : move to __init__
-            transform = XSLTransform(os.path.join(ScriptDirectory, "gen_index_xhtml.xslt"),
-                          [("GetSVGGeometry", lambda *_ignored:self.GetSVGGeometry()),
-                           ("GetHMITree", lambda *_ignored:self.GetHMITree()),
-                           ("GetTranslations", self.GetTranslations),
-                           ("ProgressStart", lambda _ign,k,m:self.ProgressStart(str(k),str(m))),
-                           ("ProgressEnd", lambda _ign,k:self.ProgressEnd(str(k)))])
+            hasher = hashlib.md5()
+            hmi_tree_root._hash(hasher)
+            with open(svgfile, 'rb') as afile:
+                while True:
+                    buf = afile.read(65536)
+                    if len(buf) > 0:
+                        hasher.update(buf)
+                    else:
+                        break
+            digest = hasher.hexdigest()
 
-            self.ProgressStart("svg", "source SVG parsing")
+            if os.path.exists(hash_path):
+                with open(hash_path, 'rb') as digest_file:
+                    last_digest = digest_file.read()
+            else:
+                last_digest = None
+            
+            if digest != last_digest:
 
-            # load svg as a DOM with Etree
-            svgdom = etree.parse(svgfile)
+                transform = XSLTransform(os.path.join(ScriptDirectory, "gen_index_xhtml.xslt"),
+                              [("GetSVGGeometry", lambda *_ignored:self.GetSVGGeometry()),
+                               ("GetHMITree", lambda *_ignored:self.GetHMITree()),
+                               ("GetTranslations", self.GetTranslations),
+                               ("ProgressStart", lambda _ign,k,m:self.ProgressStart(str(k),str(m))),
+                               ("ProgressEnd", lambda _ign,k:self.ProgressEnd(str(k)))])
 
-            self.ProgressEnd("svg")
+                self.ProgressStart("svg", "source SVG parsing")
 
-            # call xslt transform on Inkscape's SVG to generate XHTML
-            try: 
-                self.ProgressStart("xslt", "XSLT transform")
-                result = transform.transform(svgdom)  # , profile_run=True)
-                self.ProgressEnd("xslt")
-            except XSLTApplyError as e:
-                self.FatalError("SVGHMI " + view_name  + ": " + e.message)
-            finally:
-                for entry in transform.get_error_log():
-                    message = "SVGHMI: "+ entry.message + "\n" 
-                    self.GetCTRoot().logger.write_warning(message)
+                # load svg as a DOM with Etree
+                svgdom = etree.parse(svgfile)
 
-            result.write(target_file, encoding="utf-8")
-            # print(str(result))
-            # print(transform.xslt.error_log)
-            # print(etree.tostring(result.xslt_profile,pretty_print=True))
+                self.ProgressEnd("svg")
 
-            # TODO
-            #   - Errors on HMI semantics
-            #   - ... maybe something to have a global view of what is declared in SVG.
+                # call xslt transform on Inkscape's SVG to generate XHTML
+                try: 
+                    self.ProgressStart("xslt", "XSLT transform")
+                    result = transform.transform(svgdom)  # , profile_run=True)
+                    self.ProgressEnd("xslt")
+                except XSLTApplyError as e:
+                    self.FatalError("SVGHMI " + view_name  + ": " + e.message)
+                finally:
+                    for entry in transform.get_error_log():
+                        message = "SVGHMI: "+ entry.message + "\n" 
+                        self.GetCTRoot().logger.write_warning(message)
+
+                target_file = open(target_path, 'wb')
+                result.write(target_file, encoding="utf-8")
+                target_file.close()
+
+                # print(str(result))
+                # print(transform.xslt.error_log)
+                # print(etree.tostring(result.xslt_profile,pretty_print=True))
+
+                with open(hash_path, 'wb') as digest_file:
+                    digest_file.write(digest)
+            else:
+                self.GetCTRoot().logger.write("    No changes - XSLT transformation skipped\n")
 
         else:
-            # TODO : use default svg that expose the HMI tree as-is
+            target_file = open(target_path, 'wb')
             target_file.write("""<!DOCTYPE html>
 <html>
 <body>
@@ -654,8 +677,7 @@ class SVGHMI(object):
 </body>
 </html>
 """)
-
-        target_file.close()
+            target_file.close()
 
         res += ((target_fname, open(target_path, "rb")),)
 
