@@ -459,6 +459,7 @@ class PLCObject(object):
                 self.PythonThreadAcknowledge(cmd)
                 self.PythonRuntimeCall("start")
                 self.LogMessage("Python extensions started")
+                self.PostStartPLC()
                 self.PythonThreadLoop()
                 self.PythonRuntimeCall("stop", reverse_order=True)
             elif cmd == "Finish":
@@ -493,6 +494,16 @@ class PLCObject(object):
         Here goes actions to be taken just before PLC starts, 
         with all libraries and python object already created.
         For example : restore saved proprietary parameters
+        """
+        pass
+
+    def PostStartPLC(self):
+        """ 
+        Here goes actions to be taken after PLC is started, 
+        with all libraries and python object already created,
+        and python extensions "Start" methods being called.
+        This is called before python thread processing py_eval blocks starts.
+        For example : attach additional ressource to web services
         """
         pass
 
