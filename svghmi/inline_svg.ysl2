@@ -55,8 +55,6 @@ svgtmpl "svg:text/@inkscape:label[starts-with(., '_')]", mode="inline_svg" {
 // For now, clone unlinkink applies to descendants of all widget except HMI:Page
 // TODO: narrow application of clone unlinking to active elements,
 //       while keeping static decoration cloned
-const "hmi_lists_descs", "$parsed_widgets/widget[@type = 'List']";
-const "hmi_lists", "$hmi_elements[@id = $hmi_lists_descs/@id]";
 const "targets_not_to_unlink", "$hmi_lists/descendant-or-self::svg:*";
 const "to_unlink", "$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use";
 

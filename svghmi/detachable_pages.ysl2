@@ -85,9 +85,18 @@ def "func:required_elements" {
     }
 }
 
+const "required_page_elements",
+    "func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*";
+
+const "hmi_lists_descs", "$parsed_widgets/widget[@type = 'List']";
+const "hmi_lists", "$hmi_elements[@id = $hmi_lists_descs/@id]";
+
+const "required_list_elements", "func:refered_elements($hmi_lists[@id = $required_page_elements/@id])";
+
 const "required_elements",
     """//svg:defs/descendant-or-self::svg:*
-       | func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*""";
+       | $required_list_elements
+       | $required_page_elements""";
 
 const "discardable_elements", "//svg:*[not(@id = $required_elements/@id)]";
 
