@@ -4,7 +4,7 @@ template "widget[@type='JsonTable']", mode="widget_class"
     ||
     class JsonTableWidget extends Widget{
         // arbitrary defaults to avoid missing entries in query
-        cache = [0,100,50];
+        cache = [0,0,0];
         init_common() {
             this.spread_json_data_bound = this.spread_json_data.bind(this);
             this.handle_http_response_bound = this.handle_http_response.bind(this);

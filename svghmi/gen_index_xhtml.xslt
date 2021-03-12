@@ -4535,7 +4535,7 @@
 </xsl:text>
     <xsl:text>    // arbitrary defaults to avoid missing entries in query
 </xsl:text>
-    <xsl:text>    cache = [0,100,50];
+    <xsl:text>    cache = [0,0,0];
 </xsl:text>
     <xsl:text>    init_common() {
 </xsl:text>
