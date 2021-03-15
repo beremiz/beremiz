@@ -4422,9 +4422,15 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>         overshot(new_val, max) {
+    <xsl:text>         is_inhibited = false;
 </xsl:text>
-    <xsl:text>             this.last_display = "max: "+max;
+    <xsl:text>         alert(msg){
+</xsl:text>
+    <xsl:text>             this.is_inhibited = true;
+</xsl:text>
+    <xsl:text>             this.display = msg;
+</xsl:text>
+    <xsl:text>             setTimeout(() =&gt; this.stopalert(), 1000);
 </xsl:text>
     <xsl:text>             this.request_animate();
 </xsl:text>
@@ -4432,11 +4438,29 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>         undershot(new_val, min) {
+    <xsl:text>         stopalert(){
 </xsl:text>
-    <xsl:text>             this.last_display = "min: "+min;
+    <xsl:text>             this.is_inhibited = false;
+</xsl:text>
+    <xsl:text>             this.display = this.last_value;
 </xsl:text>
     <xsl:text>             this.request_animate();
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         overshot(new_val, max) {
+</xsl:text>
+    <xsl:text>             this.alert("max");
+</xsl:text>
+    <xsl:text>         }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>         undershot(new_val, min) {
+</xsl:text>
+    <xsl:text>             this.alert("min");
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -4480,19 +4504,25 @@
     <xsl:if test="$have_value or $have_edit">
       <xsl:choose>
         <xsl:when test="count(arg) = 1">
-          <xsl:text>        this.last_display = vsprintf("</xsl:text>
+          <xsl:text>        this.last_value = vsprintf("</xsl:text>
           <xsl:value-of select="arg[1]/@value"/>
           <xsl:text>", [value]);
 </xsl:text>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:text>        this.last_display = value;
+          <xsl:text>        this.last_value = value;
 </xsl:text>
         </xsl:otherwise>
       </xsl:choose>
-    </xsl:if>
-    <xsl:if test="$have_value">
-      <xsl:text>        this.request_animate();
+      <xsl:text>        if(!this.is_inhibited){
+</xsl:text>
+      <xsl:text>            this.display = this.last_value;
+</xsl:text>
+      <xsl:if test="$have_value">
+        <xsl:text>            this.request_animate();
+</xsl:text>
+      </xsl:if>
+      <xsl:text>        }
 </xsl:text>
     </xsl:if>
     <xsl:text>    },
@@ -4500,7 +4530,7 @@
     <xsl:if test="$have_value">
       <xsl:text>    animate: function(){
 </xsl:text>
-      <xsl:text>        this.value_elt.textContent = String(this.last_display);
+      <xsl:text>        this.value_elt.textContent = String(this.display);
 </xsl:text>
       <xsl:text>    },
 </xsl:text>
@@ -4512,7 +4542,7 @@
       <xsl:value-of select="path/@value"/>
       <xsl:text>", "</xsl:text>
       <xsl:value-of select="path/@type"/>
-      <xsl:text>", this, this.last_display);
+      <xsl:text>", this, this.last_value);
 </xsl:text>
       <xsl:if test="$have_value">
         <xsl:text>        this.value_elt.style.pointerEvents = "none";

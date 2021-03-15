@@ -10,14 +10,26 @@ template "widget[@type='Input']", mode="widget_class"{
              this.apply_hmi_value(0, new_val);
          }
 
-         overshot(new_val, max) {
-             this.last_display = "max: "+max;
+         is_inhibited = false;
+         alert(msg){
+             this.is_inhibited = true;
+             this.display = msg;
+             setTimeout(() => this.stopalert(), 1000);
              this.request_animate();
          }
 
-         undershot(new_val, min) {
-             this.last_display = "min: "+min;
+         stopalert(){
+             this.is_inhibited = false;
+             this.display = this.last_value;
              this.request_animate();
+         }
+
+         overshot(new_val, max) {
+             this.alert("max");
+         }
+
+         undershot(new_val, min) {
+             this.alert("min");
          }
 
 
@@ -45,28 +57,31 @@ template "widget[@type='Input']", mode="widget_defs" {
     if "$have_value or $have_edit" {
         choose{
             when "count(arg) = 1" {
-    |         this.last_display = vsprintf("«arg[1]/@value»", [value]);
+    |         this.last_value = vsprintf("«arg[1]/@value»", [value]);
             }
             otherwise {
-    |         this.last_display = value;
+    |         this.last_value = value;
             }
         }
-    }
+    |         if(!this.is_inhibited){
+    |             this.display = this.last_value;
     if "$have_value" {
-    |         this.request_animate();
+    |             this.request_animate();
+    }
+    |         }
     }
     |     },
 
     if "$have_value" {
     |     animate: function(){
-    |         this.value_elt.textContent = String(this.last_display);
+    |         this.value_elt.textContent = String(this.display);
     |     },
     }
 
     |     init: function() {
 
     if "$have_edit" {
-    |         this.edit_elt.onclick = () => edit_value("«path/@value»", "«path/@type»", this, this.last_display);
+    |         this.edit_elt.onclick = () => edit_value("«path/@value»", "«path/@type»", this, this.last_value);
         if "$have_value" {
     |         this.value_elt.style.pointerEvents = "none";
         }
