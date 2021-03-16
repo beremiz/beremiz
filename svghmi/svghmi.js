@@ -313,7 +313,7 @@ function send_hmi_value(index, value) {
 };
 
 function apply_hmi_value(index, new_val) {
-    let old_val = cache[index]
+    let old_val = cache[index];
     if(new_val != undefined && old_val != new_val)
         send_hmi_value(index, new_val);
     return new_val;
