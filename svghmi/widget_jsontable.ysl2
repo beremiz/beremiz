@@ -52,6 +52,11 @@ template "widget[@type='JsonTable']", mode="widget_class"
             super.unsub();
         }
 
+        sub(...args){
+            this.cache[0] = undefined;
+            super.sub(...args);
+        }
+
         dispatch(value, oldval, index) {
 
             if(this.cache[index] != value)

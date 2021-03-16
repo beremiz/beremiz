@@ -4661,6 +4661,16 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    sub(...args){
+</xsl:text>
+    <xsl:text>        this.cache[0] = undefined;
+</xsl:text>
+    <xsl:text>        super.sub(...args);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    dispatch(value, oldval, index) {
 </xsl:text>
     <xsl:text>
