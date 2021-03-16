@@ -7517,7 +7517,7 @@
 </xsl:text>
           <xsl:text>function apply_hmi_value(index, new_val) {
 </xsl:text>
-          <xsl:text>    let old_val = cache[index]
+          <xsl:text>    let old_val = cache[index];
 </xsl:text>
           <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
 </xsl:text>
