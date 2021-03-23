@@ -4607,49 +4607,55 @@
 </xsl:text>
     <xsl:text>        this.abort_controller = new AbortController();
 </xsl:text>
-    <xsl:text>        const query = {
-</xsl:text>
-    <xsl:text>            args: this.args,
-</xsl:text>
-    <xsl:text>            range: this.cache[1],
-</xsl:text>
-    <xsl:text>            position: this.cache[2],
-</xsl:text>
-    <xsl:text>            visible: this.visible,
-</xsl:text>
-    <xsl:text>            extra: this.cache.slice(4),
-</xsl:text>
-    <xsl:text>            options: opt
-</xsl:text>
-    <xsl:text>        };
+    <xsl:text>        return Promise.resolve().then(() =&gt; {
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        const options = {
+    <xsl:text>            const query = {
 </xsl:text>
-    <xsl:text>             method: 'POST',
+    <xsl:text>                args: this.args,
 </xsl:text>
-    <xsl:text>             body: JSON.stringify(query),
+    <xsl:text>                range: this.cache[1],
 </xsl:text>
-    <xsl:text>             headers: {'Content-Type': 'application/json'},
+    <xsl:text>                position: this.cache[2],
 </xsl:text>
-    <xsl:text>             signal: this.abort_controller.signal
+    <xsl:text>                visible: this.visible,
 </xsl:text>
-    <xsl:text>        };
+    <xsl:text>                extra: this.cache.slice(4),
+</xsl:text>
+    <xsl:text>                options: opt
+</xsl:text>
+    <xsl:text>            };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            const options = {
+</xsl:text>
+    <xsl:text>                 method: 'POST',
+</xsl:text>
+    <xsl:text>                 body: JSON.stringify(query),
+</xsl:text>
+    <xsl:text>                 headers: {'Content-Type': 'application/json'},
+</xsl:text>
+    <xsl:text>                 signal: this.abort_controller.signal
+</xsl:text>
+    <xsl:text>            };
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        return fetch(this.args[0], options)
+    <xsl:text>            return fetch(this.args[0], options)
 </xsl:text>
-    <xsl:text>                .then(this.handle_http_response_bound)
+    <xsl:text>                    .then(this.handle_http_response_bound)
 </xsl:text>
-    <xsl:text>                .then(this.spread_json_data_bound)
+    <xsl:text>                    .then(this.spread_json_data_bound)
 </xsl:text>
-    <xsl:text>                .catch(this.fetch_error_bound);
+    <xsl:text>                    .catch(this.fetch_error_bound);
 </xsl:text>
-    <xsl:text>
+    <xsl:text>        });
 </xsl:text>
     <xsl:text>    }
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>    unsub(){
 </xsl:text>

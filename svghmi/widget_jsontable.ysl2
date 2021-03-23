@@ -25,28 +25,31 @@ template "widget[@type='JsonTable']", mode="widget_class"
 
         do_http_request(...opt) {
             this.abort_controller = new AbortController();
-            const query = {
-                args: this.args,
-                range: this.cache[1],
-                position: this.cache[2],
-                visible: this.visible,
-                extra: this.cache.slice(4),
-                options: opt
-            };
+            return Promise.resolve().then(() => {
 
-            const options = {
-                 method: 'POST',
-                 body: JSON.stringify(query),
-                 headers: {'Content-Type': 'application/json'},
-                 signal: this.abort_controller.signal
-            };
+                const query = {
+                    args: this.args,
+                    range: this.cache[1],
+                    position: this.cache[2],
+                    visible: this.visible,
+                    extra: this.cache.slice(4),
+                    options: opt
+                };
 
-            return fetch(this.args[0], options)
-                    .then(this.handle_http_response_bound)
-                    .then(this.spread_json_data_bound)
-                    .catch(this.fetch_error_bound);
+                const options = {
+                     method: 'POST',
+                     body: JSON.stringify(query),
+                     headers: {'Content-Type': 'application/json'},
+                     signal: this.abort_controller.signal
+                };
 
+                return fetch(this.args[0], options)
+                        .then(this.handle_http_response_bound)
+                        .then(this.spread_json_data_bound)
+                        .catch(this.fetch_error_bound);
+            });
         }
+
         unsub(){
             this.abort_controller.abort();
             super.unsub();
