@@ -239,11 +239,14 @@ class ProcessLogger(object):
 
     def spin(self):
         start = time.time()
-        while not self.finishsem.acquire(0):
-            with self.spinwakeuplock:
-                self.spinwakeuptimer = Timer(0.1, self.spinwakeup)
-                self.spinwakeuptimer.start()
-                self.spinwakeupcond.wait()
-            self.logger.progress("%.3fs"%(time.time() - start))
+        if self.logger:
+            while not self.finishsem.acquire(0):
+                with self.spinwakeuplock:
+                    self.spinwakeuptimer = Timer(0.1, self.spinwakeup)
+                    self.spinwakeuptimer.start()
+                    self.spinwakeupcond.wait()
+                    self.logger.progress("%.3fs"%(time.time() - start))
+        else:
+            self.finishsem.acquire()
 
         return [self.exitcode, "".join(self.outdata), "".join(self.errdata)]
