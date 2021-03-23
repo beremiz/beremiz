@@ -1,5 +1,7 @@
 .project
 
+.svghmithumbs
+
 .directory
 .pytest_cache
 .cache
