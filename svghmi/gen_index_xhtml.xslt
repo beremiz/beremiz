@@ -303,7 +303,9 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:variable name="geometry" select="ns:GetSVGGeometry()"/>
+  <xsl:variable name="all_geometry" select="ns:GetSVGGeometry()"/>
+  <xsl:variable name="defs" select="//svg:defs/descendant-or-self::svg:*"/>
+  <xsl:variable name="geometry" select="$all_geometry[not(@Id = $defs/@id)]"/>
   <debug:geometry/>
   <xsl:template match="debug:geometry">
     <xsl:text>
@@ -476,7 +478,7 @@
   <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
   <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
   <xsl:variable name="required_list_elements" select="func:refered_elements($hmi_lists[@id = $required_page_elements/@id])"/>
-  <xsl:variable name="required_elements" select="//svg:defs/descendant-or-self::svg:*&#10;       | $required_list_elements&#10;       | $required_page_elements"/>
+  <xsl:variable name="required_elements" select="$defs | $required_list_elements | $required_page_elements"/>
   <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <func:function name="func:sumarized_elements">
     <xsl:param name="elements"/>
