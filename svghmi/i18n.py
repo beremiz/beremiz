@@ -96,7 +96,7 @@ def MatchTranslations(translations, messages, errcallback):
             msg = translation.pop(msgid, None)
             if msg is None:
                 broken_lang.add(langcode)
-                errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})\n').format(lang,msgid,label,svgid))
+                errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})\n').format(langcode,msgid,label,svgid))
                 translated_message.append(msgid)
             else:
                 translated_message.append(msg)
@@ -121,7 +121,7 @@ def MatchTranslations(translations, messages, errcallback):
             broken = True
             errcallback(_('{}: Unused translation "{}":"{}"\n').format(langcode,msgid,msg))
         if broken or langcode in broken_lang:
-            errcallback(_('Translation for {} is outdated, please edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(lang,lang))
+            errcallback(_('Translation for {} is outdated, please edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(langcode,langcode))
 
 
     return langs,translated_messages
