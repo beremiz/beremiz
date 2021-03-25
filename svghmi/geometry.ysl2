@@ -5,7 +5,9 @@
 // This retrieves geometry obtained through "inkscape -S"
 // already parsed by python and presented as a list of
 // <bbox x="0" y="0" w="42" h="42">
-const "geometry", "ns:GetSVGGeometry()";
+const "all_geometry", "ns:GetSVGGeometry()";
+const "defs", "//svg:defs/descendant-or-self::svg:*";
+const "geometry", "$all_geometry[not(@Id = $defs/@id)]";
 
 // Debug data
 emit "debug:geometry" {
