@@ -173,7 +173,7 @@ def _runtime_00_svghmi_start():
     svghmi_root = Resource()
     svghmi_root.putChild("ws", WebSocketResource(HMIWebSocketServerFactory()))
 
-    svghmi_listener = reactor.listenTCP(8008, Site(svghmi_root))
+    svghmi_listener = reactor.listenTCP(8008, Site(svghmi_root), interface='localhost')
 
     # start a thread that call the C part of SVGHMI
     svghmi_send_thread = Thread(target=SendThreadProc, name="SVGHMI Send")
