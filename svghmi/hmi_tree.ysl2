@@ -22,7 +22,14 @@ emit "preamble:hmi-tree" {
     | var hmitree_types = [
 
     foreach "$indexed_hmitree/*" 
-    |     /* «@index»  «@hmipath» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
+    |     /* «@index» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
+
+    | ];
+    |
+    | var hmitree_paths = [
+
+    foreach "$indexed_hmitree/*" 
+    |     /* «@index» */ "«@hmipath»"`if "position()!=last()" > ,`
 
     | ];
     |
