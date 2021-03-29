@@ -44,10 +44,26 @@
     <xsl:for-each select="$indexed_hmitree/*">
       <xsl:text>    /* </xsl:text>
       <xsl:value-of select="@index"/>
-      <xsl:text>  </xsl:text>
-      <xsl:value-of select="@hmipath"/>
       <xsl:text> */ "</xsl:text>
       <xsl:value-of select="substring(local-name(), 5)"/>
+      <xsl:text>"</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var hmitree_paths = [
+</xsl:text>
+    <xsl:for-each select="$indexed_hmitree/*">
+      <xsl:text>    /* </xsl:text>
+      <xsl:value-of select="@index"/>
+      <xsl:text> */ "</xsl:text>
+      <xsl:value-of select="@hmipath"/>
       <xsl:text>"</xsl:text>
       <xsl:if test="position()!=last()">
         <xsl:text>,</xsl:text>
@@ -3052,9 +3068,7 @@
 </xsl:text>
     <xsl:text>    function sprintf(key) {
 </xsl:text>
-    <xsl:text>        // </xsl:text>
-    <arguments/>
-    <xsl:text> is not an array, but should be fine for this call
+    <xsl:text>        // arguments is not an array, but should be fine for this call
 </xsl:text>
     <xsl:text>        return sprintf_format(sprintf_parse(key), arguments)
 </xsl:text>
@@ -7603,6 +7617,8 @@
 </xsl:text>
           <xsl:text>var current_page_index;
 </xsl:text>
+          <xsl:text>var page_node_local_index = hmi_local_index("page_node");
+</xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>function prepare_svg() {
@@ -7700,6 +7716,20 @@
           <xsl:text>    current_subscribed_page = page_name;
 </xsl:text>
           <xsl:text>    current_page_index = page_index;
+</xsl:text>
+          <xsl:text>    let page_node;
+</xsl:text>
+          <xsl:text>    if(page_index != undefined){
+</xsl:text>
+          <xsl:text>        page_node = hmitree_paths[page_index];
+</xsl:text>
+          <xsl:text>    }else{
+</xsl:text>
+          <xsl:text>        page_node = "";
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    apply_hmi_value(page_node_local_index, page_node);
 </xsl:text>
           <xsl:text>
 </xsl:text>

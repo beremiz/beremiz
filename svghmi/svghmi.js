@@ -359,6 +359,7 @@ function eval_operation_string(old_val, opstr) {
 var current_visible_page;
 var current_subscribed_page;
 var current_page_index;
+var page_node_local_index = hmi_local_index("page_node");
 
 function prepare_svg() {
     // prevents context menu from appearing on right click and long touch
@@ -408,6 +409,13 @@ function switch_page(page_name, page_index) {
 
     current_subscribed_page = page_name;
     current_page_index = page_index;
+    let page_node;
+    if(page_index != undefined){
+        page_node = hmitree_paths[page_index];
+    }else{
+        page_node = "";
+    }
+    apply_hmi_value(page_node_local_index, page_node);
 
     jumps_need_update = true;
 
