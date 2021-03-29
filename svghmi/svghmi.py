@@ -261,7 +261,11 @@ class SVGHMIEditor(ConfTreeNodeEditor):
                 hmitree_backup_file = open(hmitree_backup_path, 'rb')
                 hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
 
-        return SVGHMI_UI(parent, Register_SVGHMI_UI_for_HMI_tree_updates)
+        ret = SVGHMI_UI(parent, Register_SVGHMI_UI_for_HMI_tree_updates)
+
+        on_hmitree_update(hmi_tree_root)
+
+        return ret
 
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
