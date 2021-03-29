@@ -2,17 +2,14 @@
 # -*- coding: utf-8 -*-
 
 # This file is part of Beremiz
-# Copyright (C) 2019: Edouard TISSERANT
+# Copyright (C) 2021: Edouard TISSERANT
 #
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
 import os
 import shutil
-from itertools import izip, imap
-from pprint import pformat
 import hashlib
-import weakref
 import shlex
 import time
 
@@ -21,7 +18,6 @@ import wx
 from lxml import etree
 from lxml.etree import XSLTApplyError
 
-from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 import util.paths as paths
 from POULibrary import POULibrary
 from docutil import open_svg, get_inkscape_path
@@ -31,143 +27,14 @@ from runtime.typemapping import DebugTypesSize
 import targets
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from XSLTransform import XSLTransform
-from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations, MatchTranslations, TranslationToEtree, open_pofile
-
-HMI_TYPES_DESC = {
-    "HMI_NODE":{},
-    "HMI_STRING":{},
-    "HMI_INT":{},
-    "HMI_BOOL":{},
-    "HMI_REAL":{}
-}
-
-HMI_TYPES = HMI_TYPES_DESC.keys()
+from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations,\
+                        MatchTranslations, TranslationToEtree, open_pofile
+from svghmi.hmi_tree import HMI_TYPES, HMITreeNode, SPECIAL_NODES 
+from svghmi.ui import SVGHMI_UI
 
 
 ScriptDirectory = paths.AbsDir(__file__)
 
-class HMITreeNode(object):
-    def __init__(self, path, name, nodetype, iectype = None, vartype = None, cpath = None, hmiclass = None):
-        self.path = path
-        self.name = name
-        self.nodetype = nodetype
-        self.hmiclass = hmiclass
-
-        if iectype is not None:
-            self.iectype = iectype
-            self.vartype = vartype
-            self.cpath = cpath
-
-        if nodetype in ["HMI_NODE"]:
-            self.children = []
-
-    def pprint(self, indent = 0):
-        res = ">"*indent + pformat(self.__dict__, indent = indent, depth = 1) + "\n"
-        if hasattr(self, "children"):
-            res += "\n".join([child.pprint(indent = indent + 1)
-                              for child in self.children])
-            res += "\n"
-
-        return res
-
-    def place_node(self, node):
-        best_child = None
-        known_best_match = 0
-        potential_siblings = {}
-        for child in self.children:
-            if child.path is not None:
-                in_common = 0
-                for child_path_item, node_path_item in izip(child.path, node.path):
-                    if child_path_item == node_path_item:
-                        in_common +=1
-                    else:
-                        break
-                # Match can only be HMI_NODE, and the whole path of node
-                # must match candidate node (except for name part)
-                # since candidate would become child of that node
-                if in_common > known_best_match and \
-                   child.nodetype == "HMI_NODE" and \
-                   in_common == len(child.path) - 1:
-                    known_best_match = in_common
-                    best_child = child
-                else:
-                    potential_siblings[child.path[
-                        -2 if child.nodetype == "HMI_NODE" else -1]] = child
-        if best_child is not None:
-            if node.nodetype == "HMI_NODE" and best_child.path[:-1] == node.path[:-1]:
-                return "Duplicate_HMI_NODE", best_child
-            return best_child.place_node(node)
-        else:
-            candidate_name = node.path[-2 if node.nodetype == "HMI_NODE" else -1]
-            if candidate_name in potential_siblings:
-                return "Non_Unique", potential_siblings[candidate_name]
-
-            if node.nodetype == "HMI_NODE" and len(self.children) > 0:
-                prev = self.children[-1]
-                if prev.path[:-1] == node.path[:-1]:
-                    return "Late_HMI_NODE",prev
-
-            self.children.append(node)
-            return None
-
-    def etree(self, add_hash=False):
-
-        attribs = dict(name=self.name)
-        if self.path is not None:
-            attribs["path"] = ".".join(self.path)
-
-        if self.hmiclass is not None:
-            attribs["class"] = self.hmiclass
-
-        if add_hash:
-            attribs["hash"] = ",".join(map(str,self.hash()))
-
-        res = etree.Element(self.nodetype, **attribs)
-
-        if hasattr(self, "children"):
-            for child_etree in imap(lambda c:c.etree(), self.children):
-                res.append(child_etree)
-
-        return res
-
-    @classmethod
-    def from_etree(cls, enode):
-        """
-        alternative constructor, restoring HMI Tree from XML backup
-        note: all C-related information is gone, 
-              this restore is only for tree display and widget picking
-        """
-        nodetype = enode.tag
-        attributes = enode.attrib
-        name = attributes["name"]
-        path = attributes["path"].split('.') if "path" in attributes else None 
-        hmiclass = attributes.get("class", None)
-        # hash is computed on demand
-        node = cls(path, name, nodetype, hmiclass=hmiclass)
-        for child in enode.iterchildren():
-            node.children.append(cls.from_etree(child))
-        return node
-
-    def traverse(self):
-        yield self
-        if hasattr(self, "children"):
-            for c in self.children:
-                for yoodl in c.traverse():
-                    yield yoodl
-
-
-    def hash(self):
-        """ Produce a hash, any change in HMI tree structure change that hash """
-        s = hashlib.new('md5')
-        self._hash(s)
-        # limit size to HMI_HASH_SIZE as in svghmi.c
-        return map(ord,s.digest())[:8]
-
-    def _hash(self, s):
-        s.update(str((self.name,self.nodetype)))
-        if hasattr(self, "children"):
-            for c in self.children:
-                c._hash(s)
 
 # module scope for HMITree root
 # so that CTN can use HMITree deduced in Library
@@ -177,10 +44,6 @@ class HMITreeNode(object):
 hmi_tree_root = None
 
 on_hmitree_update = None
-
-SPECIAL_NODES = [("HMI_ROOT", "HMI_NODE"),
-                 ("heartbeat", "HMI_INT")]
-                 # ("current_page", "HMI_STRING")])
 
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
@@ -283,7 +146,7 @@ class SVGHMILibrary(POULibrary):
                 self.FatalError("SVGHMI : " + message)
 
         if on_hmitree_update is not None:
-            on_hmitree_update()
+            on_hmitree_update(hmi_tree_root)
 
         variable_decl_array = []
         extern_variables_declarations = []
@@ -374,295 +237,21 @@ class SVGHMILibrary(POULibrary):
                 # to ensure placement before other CTN generated code in execution order
 
 
-def SVGHMIEditorUpdater(ref):
-    def SVGHMIEditorUpdate():
-        o = ref()
-        if o is not None:
-            wx.CallAfter(o.MakeTree)
-    return SVGHMIEditorUpdate
+def Register_SVGHMI_UI_for_HMI_tree_updates(ref):
+    global on_hmitree_update
+    def HMITreeUpdate(_hmi_tree_root):
+        obj = ref()
+        if obj is not None:
+            obj.HMITreeUpdate(_hmi_tree_root)
 
-class HMITreeSelector(wx.TreeCtrl):
-    def __init__(self, parent):
-        global on_hmitree_update
-        wx.TreeCtrl.__init__(self, parent, style=(
-            wx.TR_MULTIPLE |
-            wx.TR_HAS_BUTTONS |
-            wx.SUNKEN_BORDER |
-            wx.TR_LINES_AT_ROOT))
-
-        on_hmitree_update = SVGHMIEditorUpdater(weakref.ref(self))
-        self.MakeTree()
-
-    def _recurseTree(self, current_hmitree_root, current_tc_root):
-        for c in current_hmitree_root.children:
-            if hasattr(c, "children"):
-                display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
-                               if c.hmiclass is not None else c.name
-                tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, None) # TODO
-
-                self._recurseTree(c,tc_child)
-            else:
-                display_name = '{} {}'.format(c.nodetype[4:], c.name)
-                tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, None) # TODO
-
-    def MakeTree(self):
-        global hmi_tree_root
-
-        self.Freeze()
-
-        self.root = None
-        self.DeleteAllItems()
-
-        root_display_name = _("Please build to see HMI Tree") \
-            if hmi_tree_root is None else "HMI"
-        self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, None)
-
-        if hmi_tree_root is not None:
-            self._recurseTree(hmi_tree_root, self.root)
-            self.Expand(self.root)
-
-        self.Thaw()
-
-class WidgetPicker(wx.TreeCtrl):
-    def __init__(self, parent, initialdir=None):
-        wx.TreeCtrl.__init__(self, parent, style=(
-            wx.TR_MULTIPLE |
-            wx.TR_HAS_BUTTONS |
-            wx.SUNKEN_BORDER |
-            wx.TR_LINES_AT_ROOT))
-
-        self.MakeTree(initialdir)
-
-    def _recurseTree(self, current_dir, current_tc_root, dirlist):
-        """
-        recurse through subdirectories, but creates tree nodes 
-        only when (sub)directory conbtains .svg file
-        """
-        res = []
-        for f in sorted(os.listdir(current_dir)):
-            p = os.path.join(current_dir,f)
-            if os.path.isdir(p):
-
-                r = self._recurseTree(p, current_tc_root, dirlist + [f])
-                if len(r) > 0 :
-                    res = r
-                    dirlist = []
-                    current_tc_root = res.pop()
-
-            elif os.path.splitext(f)[1].upper() == ".SVG":
-                if len(dirlist) > 0 :
-                    res = []
-                    for d in dirlist:
-                        current_tc_root = self.AppendItem(current_tc_root, d)
-                        res.append(current_tc_root)
-                        self.SetPyData(current_tc_root, None)
-                    dirlist = []
-                    res.pop()
-                tc_child = self.AppendItem(current_tc_root, f)
-                self.SetPyData(tc_child, p)
-        return res
-
-    def MakeTree(self, lib_dir = None):
-        global hmi_tree_root
-
-        self.Freeze()
-
-        self.root = None
-        self.DeleteAllItems()
-
-        root_display_name = _("Please select widget library directory") \
-            if lib_dir is None else os.path.basename(lib_dir)
-        self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, None)
-
-        if lib_dir is not None:
-            self._recurseTree(lib_dir, self.root, [])
-            self.Expand(self.root)
-
-        self.Thaw()
-
-_conf_key = "SVGHMIWidgetLib"
-_preview_height = 200
-class WidgetLibBrowser(wx.Panel):
-    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize):
-
-        wx.Panel.__init__(self, parent, id, pos, size)     
-
-        self.bmp = None
-        self.msg = None
-        self.hmitree_node = None
-        self.selected_SVG = None
-
-        self.Config = wx.ConfigBase.Get()
-        self.libdir = self.RecallLibDir()
-
-        sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
-        sizer.AddGrowableCol(0)
-        sizer.AddGrowableRow(1)
-        self.libbutton = wx.Button(self, -1, _("Select SVG widget library"))
-        self.widgetpicker = WidgetPicker(self, self.libdir)
-        self.preview = wx.Panel(self, size=(-1, _preview_height + 10))  #, style=wx.SIMPLE_BORDER)
-        #self.preview.SetBackgroundColour(wx.WHITE)
-        sizer.AddWindow(self.libbutton, flag=wx.GROW)
-        sizer.AddWindow(self.widgetpicker, flag=wx.GROW)
-        sizer.AddWindow(self.preview, flag=wx.GROW)
-        sizer.Layout()
-        self.SetAutoLayout(True)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
-        self.Bind(wx.EVT_BUTTON, self.OnSelectLibDir, self.libbutton)
-        self.preview.Bind(wx.EVT_PAINT, self.OnPaint)
-
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnWidgetSelection, self.widgetpicker)
-
-        self.msg = _("Drag selected Widget from here to Inkscape")
-
-    def RecallLibDir(self):
-        conf = self.Config.Read(_conf_key)
-        if len(conf) == 0:
-            return None
-        else:
-            return DecodeFileSystemPath(conf)
-
-    def RememberLibDir(self, path):
-        self.Config.Write(_conf_key,
-                          EncodeFileSystemPath(path))
-        self.Config.Flush()
-
-    def DrawPreview(self):
-        """
-        Refresh preview panel 
-        """
-        # Init preview panel paint device context
-        dc = wx.PaintDC(self.preview)
-        dc.Clear()
-
-        if self.bmp:
-            # Get Preview panel size
-            sz = self.preview.GetClientSize()
-            w = self.bmp.GetWidth()
-            dc.DrawBitmap(self.bmp, (sz.width - w)/2, 5)
-
-        if self.msg:
-            dc.SetFont(self.GetFont())
-            dc.DrawText(self.msg, 25,25)
-
-
-    def OnSelectLibDir(self, event):
-        defaultpath = self.RecallLibDir()
-        if defaultpath == None:
-            defaultpath = os.path.expanduser("~")
-
-        dialog = wx.DirDialog(self, _("Choose a widget library"), defaultpath,
-                              style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-
-        if dialog.ShowModal() == wx.ID_OK:
-            self.libdir = dialog.GetPath()
-            self.RememberLibDir(self.libdir)
-            self.widgetpicker.MakeTree(self.libdir)
-
-        dialog.Destroy()
-
-    def OnPaint(self, event):
-        """
-        Called when Preview panel needs to be redrawn
-        @param event: wx.PaintEvent
-        """
-        self.DrawPreview()
-        event.Skip()
-
-    def GenThumbnail(self, svgpath, thumbpath):
-        inkpath = get_inkscape_path()
-        if inkpath is None:
-            self.msg = _("Inkscape is not installed.")
-            return False
-        # TODO: spawn a thread, to decouple thumbnail gen
-        status, result, _err_result = ProcessLogger(
-            None,
-            '"' + inkpath + '" "' + svgpath + '" -e "' + thumbpath +
-            '" -D -h ' + str(_preview_height)).spin()
-        if status != 0:
-            self.msg = _("Inkscape couldn't generate thumbnail.")
-            return False
-        return True
-
-    def OnWidgetSelection(self, event):
-        """
-        Called when tree item is selected
-        @param event: wx.TreeEvent
-        """
-        item_pydata = self.widgetpicker.GetPyData(event.GetItem())
-        if item_pydata is not None:
-            svgpath = item_pydata
-            dname = os.path.dirname(svgpath)
-            fname = os.path.basename(svgpath)
-            hasher = hashlib.new('md5')
-            with open(svgpath, 'rb') as afile:
-                while True:
-                    buf = afile.read(65536)
-                    if len(buf) > 0:
-                        hasher.update(buf)
-                    else:
-                        break
-            digest = hasher.hexdigest()
-            thumbfname = os.path.splitext(fname)[0]+"_"+digest+".png"
-            thumbdir = os.path.join(dname, ".svghmithumbs") 
-            thumbpath = os.path.join(thumbdir, thumbfname) 
-
-            self.msg = None
-            have_thumb = os.path.exists(thumbpath)
-
-            if not have_thumb:
-                try:
-                    if not os.path.exists(thumbdir):
-                        os.mkdir(thumbdir)
-                except IOError:
-                    self.msg = _("Widget library must be writable")
-                else:
-                    have_thumb = self.GenThumbnail(svgpath, thumbpath)
-
-            self.bmp = wx.Bitmap(thumbpath) if have_thumb else None
-
-            self.selected_SVG = svgpath if have_thumb else None
-            self.ValidateWidget()
-
-            self.Refresh()
-        event.Skip()
-
-    def OnHMITreeNodeSelection(self, hmitree_node):
-        self.hmitree_node = hmitree_node
-        self.ValidateWidget()
-        self.Refresh()
-
-    def ValidateWidget(self):
-        if self.selected_SVG is not None:
-            if self.hmitree_node is not None:
-                pass
-        # XXX TODO: 
-        #      - check SVG is valid for selected HMI tree item
-        #      - prepare for D'n'D
-
-
-class HMITreeView(wx.SplitterWindow):
-
-    def __init__(self, parent):
-        wx.SplitterWindow.__init__(self, parent,
-                                   style=wx.SUNKEN_BORDER | wx.SP_3D)
-
-        self.SelectionTree = HMITreeSelector(self)
-        self.Staging = WidgetLibBrowser(self)
-        self.SplitVertically(self.SelectionTree, self.Staging, 300)
+    on_hmitree_update = HMITreeUpdate
 
 
 class SVGHMIEditor(ConfTreeNodeEditor):
     CONFNODEEDITOR_TABS = [
-        (_("HMI Tree"), "CreateHMITreeView")]
+        (_("HMI Tree"), "CreateSVGHMI_UI")]
 
-    def CreateHMITreeView(self, parent):
+    def CreateSVGHMI_UI(self, parent):
         global hmi_tree_root
 
         if hmi_tree_root is None:
@@ -672,10 +261,7 @@ class SVGHMIEditor(ConfTreeNodeEditor):
                 hmitree_backup_file = open(hmitree_backup_path, 'rb')
                 hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
 
-
-        #self.HMITreeView = HMITreeView(self)
-        #return HMITreeSelector(parent)
-        return HMITreeView(parent)
+        return SVGHMI_UI(parent, Register_SVGHMI_UI_for_HMI_tree_updates)
 
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
