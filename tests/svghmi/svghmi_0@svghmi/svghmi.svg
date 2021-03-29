@@ -128,12 +128,12 @@
      inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="1.6871126"
-     inkscape:cx="-820.55411"
-     inkscape:cy="162.70697"
-     inkscape:window-width="3840"
-     inkscape:window-height="2096"
-     inkscape:window-x="1600"
+     inkscape:zoom="0.42177815"
+     inkscape:cx="1614.7137"
+     inkscape:cy="168.68416"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
+     inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      showguides="true"
@@ -6021,7 +6021,7 @@
        sodipodi:role="line">filter</tspan></text>
   <g
      id="g909"
-     inkscape:label="HMI:VarInit:&quot;&quot;@.filter" />
+     inkscape:label="HMI:VarInit:&quot;POS&quot;@.filter" />
   <g
      transform="matrix(0.14295135,0,0,0.14295135,449.21833,37.615184)"
      id="g4646"
@@ -7160,4 +7160,16 @@
        id="rect1163"
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ff6600;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.11429262px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
   </g>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.25px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     x="1569.0527"
+     y="594.56055"
+     id="text1042"
+     inkscape:label="HMI:Display@page_node"><tspan
+       sodipodi:role="line"
+       id="tspan1040"
+       x="1569.0527"
+       y="594.56055"
+       style="fill:#ffffff;fill-opacity:1;stroke-width:0.25px">page node</tspan></text>
 </svg>
