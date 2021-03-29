@@ -18,13 +18,6 @@ from docutil import get_inkscape_path
 
 from util.ProcessLogger import ProcessLogger
 
-def SVGHMIEditorUpdater(ref):
-    def SVGHMIEditorUpdate():
-        o = ref()
-        if o is not None:
-            wx.CallAfter(o.MakeTree)
-    return SVGHMIEditorUpdate
-
 class HMITreeSelector(wx.TreeCtrl):
     def __init__(self, parent):
         global on_hmitree_update
@@ -34,7 +27,6 @@ class HMITreeSelector(wx.TreeCtrl):
             wx.SUNKEN_BORDER |
             wx.TR_LINES_AT_ROOT))
 
-        on_hmitree_update = SVGHMIEditorUpdater(weakref.ref(self))
         self.MakeTree()
 
     def _recurseTree(self, current_hmitree_root, current_tc_root):
