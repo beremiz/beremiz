@@ -69,7 +69,11 @@ istylesheet
         html xmlns="http://www.w3.org/1999/xhtml"
              xmlns:svg="http://www.w3.org/2000/svg"
              xmlns:xlink="http://www.w3.org/1999/xlink" {
-            head;
+            head {
+                style type="text/css" media="screen" {
+                    value "ns:GetFonts()";
+                }
+            }
             // prevents user selection by mouse click / touch and drag
             // prevents pinch zoom and other accidental panning panning with touch devices
             body style="margin:0;overflow:hidden;user-select:none;touch-action:none;" {
