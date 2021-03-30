@@ -31,6 +31,7 @@ from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations,\
                         MatchTranslations, TranslationToEtree, open_pofile
 from svghmi.hmi_tree import HMI_TYPES, HMITreeNode, SPECIAL_NODES 
 from svghmi.ui import SVGHMI_UI
+from svghmi.fonts import GetFontTypeAndFamilyName, GetCSSFontFaceFromFontFile
 
 
 ScriptDirectory = paths.AbsDir(__file__)
@@ -292,27 +293,35 @@ class SVGHMI(object):
             "method":   "_ImportSVG"
         },
         {
-            "bitmap":    "EditSVG",  # should be something different
+            "bitmap":    "EditSVG",
             "name":    _("Inkscape"),
             "tooltip": _("Edit HMI"),
             "method":   "_StartInkscape"
         },
         {
-            "bitmap":    "OpenPOT",  # should be something different
+            "bitmap":    "OpenPOT",
             "name":    _("New lang"),
             "tooltip": _("Open non translated message catalog (POT) to start new language"),
             "method":   "_OpenPOT"
         },
-
         {
-            "bitmap":    "EditPO",  # should be something different
+            "bitmap":    "EditPO",
             "name":    _("Edit lang"),
             "tooltip": _("Edit existing message catalog (PO) for specific language"),
             "method":   "_EditPO"
         },
-
-        # TODO : HMITree button
-        #        - can drag'n'drop variabes to Inkscape
+        {
+            "bitmap":    "AddFont",
+            "name":    _("Add Font"),
+            "tooltip": _("Add TTF, OTH or WOFF font to be embedded in HMI"),
+            "method":   "_AddFont"
+        },
+        {
+            "bitmap":    "DelFont",
+            "name":    _("Delete Font"),
+            "tooltip": _("Remove font previously added to HMI"),
+            "method":   "_DelFont"
+        },
     ]
 
     def _getSVGpath(self, project_path=None):
@@ -608,6 +617,12 @@ def _runtime_{location}_svghmi_stop():
         else:
             self.GetCTRoot().logger.write_error(_("POT file does not exist, add translatable text (label starting with '_') in Inkscape first\n"))
 
+    def _AddFont(self):
+        pass
+
+    def _DelFont(self):
+        pass
+        
     def CTNGlobalInstances(self):
         # view_name = self.BaseParams.getName()
         # return [ (view_name + "_" + name, iec_type, "") for name, iec_type in SPECIAL_NODES]
