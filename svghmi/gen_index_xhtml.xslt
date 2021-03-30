@@ -6855,11 +6855,12 @@
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
     </xsl:comment>
-    <xsl:comment>
-      <xsl:apply-templates select="document('')/*/debug:*"/>
-    </xsl:comment>
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <head/>
+    <html xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <style media="screen" type="text/css">
+          <xsl:value-of select="ns:GetFonts()"/>
+        </style>
+      </head>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
         <script>
