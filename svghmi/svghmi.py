@@ -313,7 +313,7 @@ class SVGHMI(object):
         {
             "bitmap":    "AddFont",
             "name":    _("Add Font"),
-            "tooltip": _("Add TTF, OTH or WOFF font to be embedded in HMI"),
+            "tooltip": _("Add TTF, OTF or WOFF font to be embedded in HMI"),
             "method":   "_AddFont"
         },
         {
@@ -400,6 +400,18 @@ class SVGHMI(object):
 
         return ret
 
+    def GetFonts(self, _context):
+        project_path = self.CTNPath()
+        fontdir = os.path.join(project_path, "fonts") 
+        css_parts = []
+
+        for f in sorted(os.listdir(fontdir)):
+            fontfile = os.path.join(fontdir,f)
+            if os.path.isfile(fontfile):
+                css_parts.append(GetCSSFontFaceFromFontFile(fontfile))
+
+        return "".join(css_parts)
+
     times_msgs = {}
     indent = 1
     def ProgressStart(self, k, m):
@@ -455,6 +467,7 @@ class SVGHMI(object):
                               [("GetSVGGeometry", lambda *_ignored:self.GetSVGGeometry()),
                                ("GetHMITree", lambda *_ignored:self.GetHMITree()),
                                ("GetTranslations", self.GetTranslations),
+                               ("GetFonts", self.GetFonts),
                                ("ProgressStart", lambda _ign,k,m:self.ProgressStart(str(k),str(m))),
                                ("ProgressEnd", lambda _ign,k:self.ProgressEnd(str(k)))])
 
@@ -618,10 +631,62 @@ def _runtime_{location}_svghmi_stop():
             self.GetCTRoot().logger.write_error(_("POT file does not exist, add translatable text (label starting with '_') in Inkscape first\n"))
 
     def _AddFont(self):
-        pass
+        dialog = wx.FileDialog(
+            self.GetCTRoot().AppFrame,
+            _("Choose a font"),
+            os.path.expanduser("~"),
+            "",
+            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.OPEN)
+
+        if dialog.ShowModal() == wx.ID_OK:
+            fontfile = dialog.GetPath()
+            if os.path.isfile(fontfile):
+                familyname, uniquename, formatname, mimetype = GetFontTypeAndFamilyName(fontfile)
+            else:
+                self.GetCTRoot().logger.write_error(
+                    _('Selected font %s is not a readable file\n')%fontfile)
+                return
+            if familyname is None or uniquename is None or formatname is None or mimetype is None:
+                self.GetCTRoot().logger.write_error(
+                    _('Selected font file %s is invalid or incompatible\n')%fontfile)
+                return
+
+            project_path = self.CTNPath()
+
+            fontfname = uniquename + "." + mimetype.split('/')[1]
+            fontdir = os.path.join(project_path, "fonts") 
+            newfontfile = os.path.join(fontdir, fontfname) 
+
+            if not os.path.exists(fontdir):
+                os.mkdir(fontdir)
+
+            shutil.copyfile(fontfile, newfontfile)
+
+            self.GetCTRoot().logger.write(
+                _('Added font %s as %s\n')%(fontfile,newfontfile))
 
     def _DelFont(self):
-        pass
+        project_path = self.CTNPath()
+        fontdir = os.path.join(project_path, "fonts") 
+        dialog = wx.FileDialog(
+            self.GetCTRoot().AppFrame,
+            _("Choose a font to remove"),
+            fontdir,
+            "",
+            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.OPEN)
+        if dialog.ShowModal() == wx.ID_OK:
+            fontfile = dialog.GetPath()
+            if os.path.isfile(fontfile):
+                if os.path.relpath(fontfile, fontdir) == os.path.basename(fontfile):
+                    os.remove(fontfile) 
+                    self.GetCTRoot().logger.write(
+                        _('Removed font %s\n')%fontfile)
+                else:
+                    self.GetCTRoot().logger.write_error(
+                        _("Font to remove %s is not in %s\n") % (fontfile,fontdir))
+            else:
+                self.GetCTRoot().logger.write_error(
+                    _("Font file does not exist: %s\n") % fontfile)
         
     def CTNGlobalInstances(self):
         # view_name = self.BaseParams.getName()

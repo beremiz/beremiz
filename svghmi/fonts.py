@@ -17,14 +17,17 @@ def GetFontTypeAndFamilyName(filename):
     """
 
     familyname = None
+    uniquename = None
     formatname = None
     mimetype = None
 
     font = ttLib.TTFont(filename)
     # https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html
     for name in font["name"].names:
-        if name.nameID==1 and name.platformID in [0,3]:
+        if name.nameID in [1,16] and name.platformID==3 and name.langID==1033:
             familyname = name.toUnicode()
+        if name.nameID==4 and name.platformID==3 and name.langID==1033:
+            uniquename = name.toUnicode()
 
     if font.flavor :
         # woff and woff2
@@ -32,13 +35,13 @@ def GetFontTypeAndFamilyName(filename):
         mimetype = "font/" + formatname
     # conditions on sfntVersion was deduced from fontTools.ttLib.sfnt
     elif font.sfntVersion in ("\x00\x01\x00\x00", "true"):
-        formatname = "truetype" 
+        formatname = "truetype"
         mimetype = "font/ttf"
     elif font.sfntVersion == "OTTO":
         formatname = "opentype"
         mimetype = "font/otf"
 
-    return familyname,formatname,mimetype
+    return familyname,uniquename,formatname,mimetype
 
 def DataURIFromFile(filename, mimetype):
     with open(filename, "rb") as fp:
@@ -50,7 +53,7 @@ def DataURIFromFile(filename, mimetype):
         b64encode(data).strip()])
 
 def GetCSSFontFaceFromFontFile(filename):
-    familyname, formatname, mimetype = GetFontTypeAndFamilyName(filename)
+    familyname, uniquename, formatname, mimetype = GetFontTypeAndFamilyName(filename)
     data_uri = DataURIFromFile(filename, mimetype)
     css_font_face = \
     """
