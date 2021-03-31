@@ -68,11 +68,15 @@ def SaveCatalog(fname, messages):
     with open(fname, 'w') as POT_file:
         w.write(POT_file)
 
+def GetPoFiles(dirpath):
+    po_files = [fname for fname in os.listdir(dirpath) if fname.endswith(".po")]
+    po_files.sort()
+    return po_files
+
 def ReadTranslations(dirpath):
     """ Read all PO files from a directory and return a list of (langcode, translation_dict) tuples """
 
-    po_files = [fname for fname in os.listdir(dirpath) if fname.endswith(".po")]
-    po_files.sort()
+    po_files = GetPoFiles(dirpath)
 
     translations = []
     for po_fname in po_files:
