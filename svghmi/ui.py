@@ -150,6 +150,7 @@ class WidgetLibBrowser(wx.Panel):
         sizer.Fit(self)
         self.Bind(wx.EVT_BUTTON, self.OnSelectLibDir, self.libbutton)
         self.preview.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.preview.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnWidgetSelection, self.widgetpicker)
 
@@ -271,6 +272,16 @@ class WidgetLibBrowser(wx.Panel):
         self.hmitree_node = hmitree_node
         self.ValidateWidget()
         self.Refresh()
+
+    def OnLeftDown(self, evt):
+        if self.selected_SVG is not None:
+            # TODO replace with generated widget file
+            filename = self.selected_SVG
+            data = wx.FileDataObject()
+            data.AddFile(filename)
+            dropSource = wx.DropSource(self)
+            dropSource.SetData(data)
+            dropSource.DoDragDrop(wx.Drag_AllowMove)
 
     def ValidateWidget(self):
         if self.selected_SVG is not None:

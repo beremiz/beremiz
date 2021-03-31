@@ -28,7 +28,8 @@ import targets
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from XSLTransform import XSLTransform
 from svghmi.i18n import EtreeToMessages, SaveCatalog, ReadTranslations,\
-                        MatchTranslations, TranslationToEtree, open_pofile
+                        MatchTranslations, TranslationToEtree, open_pofile,\
+                        GetPoFiles
 from svghmi.hmi_tree import HMI_TYPES, HMITreeNode, SPECIAL_NODES 
 from svghmi.ui import SVGHMI_UI
 from svghmi.fonts import GetFontTypeAndFamilyName, GetCSSFontFaceFromFontFile
@@ -400,13 +401,17 @@ class SVGHMI(object):
 
         return ret
 
-    def GetFonts(self, _context):
+    def GetFontsFiles(self):
         project_path = self.CTNPath()
         fontdir = os.path.join(project_path, "fonts") 
+        if os.path.isdir(fontdir):
+            return [os.path.join(fontdir,f) for f in sorted(os.listdir(fontdir))]
+        return []
+
+    def GetFonts(self, _context):
         css_parts = []
 
-        for f in sorted(os.listdir(fontdir)):
-            fontfile = os.path.join(fontdir,f)
+        for fontfile in self.GetFontsFiles():
             if os.path.isfile(fontfile):
                 css_parts.append(GetCSSFontFaceFromFontFile(fontfile))
 
@@ -446,13 +451,18 @@ class SVGHMI(object):
 
             hasher = hashlib.md5()
             hmi_tree_root._hash(hasher)
-            with open(svgfile, 'rb') as afile:
-                while True:
-                    buf = afile.read(65536)
-                    if len(buf) > 0:
-                        hasher.update(buf)
-                    else:
-                        break
+            filestocheck = [svgfile] + \
+                           GetPoFiles(self.CTNPath()) + \
+                           self.GetFontsFiles()
+
+            for filetocheck in filestocheck:
+                with open(filetocheck, 'rb') as afile:
+                    while True:
+                        buf = afile.read(65536)
+                        if len(buf) > 0:
+                            hasher.update(buf)
+                        else:
+                            break
             digest = hasher.hexdigest()
 
             if os.path.exists(hash_path):
