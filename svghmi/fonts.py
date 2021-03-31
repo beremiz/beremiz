@@ -7,9 +7,14 @@
 # See COPYING file for copyrights details.
 
 from __future__ import print_function
+import sys
 from base64 import b64encode
 
 from fontTools import ttLib
+
+# Inkscape seems to refer to font with different family name depending on platform.
+# this are heuristics that would need extensive testing to be sure.
+FamilyNameIDs = [1] if sys.platform.startswith('win') else [1, 16]
 
 def GetFontTypeAndFamilyName(filename):
     """
@@ -24,7 +29,8 @@ def GetFontTypeAndFamilyName(filename):
     font = ttLib.TTFont(filename)
     # https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html
     for name in font["name"].names:
-        if name.nameID in [1,16] and name.platformID==3 and name.langID==1033:
+        #print(name.nameID, name.platformID, name.langID, name.toUnicode())
+        if name.nameID in FamilyNameIDs and name.platformID==3 and name.langID==1033:
             familyname = name.toUnicode()
         if name.nameID==4 and name.platformID==3 and name.langID==1033:
             uniquename = name.toUnicode()
