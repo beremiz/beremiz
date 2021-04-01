@@ -451,8 +451,9 @@ class SVGHMI(object):
 
             hasher = hashlib.md5()
             hmi_tree_root._hash(hasher)
+            pofiles = GetPoFiles(self.CTNPath())
             filestocheck = [svgfile] + \
-                           GetPoFiles(self.CTNPath()) + \
+                           (list(zip(*pofiles)[1]) if pofiles else []) + \
                            self.GetFontsFiles()
 
             for filetocheck in filestocheck:
