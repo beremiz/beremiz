@@ -17,38 +17,29 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
 
         on_click(evt) {
             //toggle state and apply
-            if (this.state) {
-                this.state = 0;
-            } else {
-                this.state = 1;
-            }
+            this.state = this.state ? false : true;
             this.apply_hmi_value(0, this.state);
 
             //redraw toggle button
             this.request_animate();
         }
 
+        activate(val) {
+            let [active, inactive] = val ? ["none",""] : ["", "none"];
+            if (this.active_elt)
+                this.active_elt.style.display = active;
+            if (this.inactive_elt)
+                this.inactive_elt.style.display = inactive;
+        }
+
         animate(){
-           // redraw toggle button on screen refresh
-           if (this.state) {
-               this.active_elt.setAttribute("style", this.active_style);
-               this.inactive_elt.setAttribute("style", "display:none");
-           } else {
-               this.inactive_elt.setAttribute("style", this.inactive_style);
-               this.active_elt.setAttribute("style", "display:none");
-           }
+            // redraw toggle button on screen refresh
+            this.activate(this.state);
         }
 
         init() {
-            this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
-            this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-
-            if (this.active_style && this.inactive_style) {
-                this.active_elt.setAttribute("style", "display:none");
-                this.inactive_elt.setAttribute("style", this.inactive_style);
-            }
-
-            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+            this.activate(false);
+            this.element.onclick = (evt) => this.on_click(evt);
         }
     }
     ||
@@ -57,5 +48,4 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
 template "widget[@type='ToggleButton']", mode="widget_defs" {
     param "hmi_element";
     optional_labels("active inactive");
-    |,
 }
