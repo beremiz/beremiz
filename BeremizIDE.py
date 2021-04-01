@@ -336,6 +336,7 @@ class Beremiz(IDEFrame):
                                  ("Run",      wx.WXK_F5),
                                  ("Transfer", wx.WXK_F6),
                                  ("Connect",  wx.WXK_F7),
+                                 ("Clean",    wx.WXK_F9),
                                  ("Build",    wx.WXK_F11)]:
             def OnMethodGen(obj, meth):
                 def OnMethod(evt):
