@@ -6715,7 +6715,10 @@
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
-    <xsl:for-each select="$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]">
+    <xsl:variable name="subelts" select="$result_widgets[@id = $hmi_element/@id]//*"/>
+    <xsl:variable name="subwidgets" select="$subelts//*[@id = $hmi_widgets/@id]"/>
+    <xsl:variable name="accepted" select="$subelts[not(ancestor-or-self::*/@id = $subwidgets/@id)]"/>
+    <xsl:for-each select="$accepted[regexp:test(@inkscape:label,$regex)]">
       <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
       <xsl:text>        {
 </xsl:text>
@@ -6770,15 +6773,7 @@
 </xsl:text>
     <xsl:text>        //toggle state and apply
 </xsl:text>
-    <xsl:text>        if (this.state) {
-</xsl:text>
-    <xsl:text>            this.state = 0;
-</xsl:text>
-    <xsl:text>        } else {
-</xsl:text>
-    <xsl:text>            this.state = 1;
-</xsl:text>
-    <xsl:text>        }
+    <xsl:text>        this.state = this.state ? false : true;
 </xsl:text>
     <xsl:text>        this.apply_hmi_value(0, this.state);
 </xsl:text>
@@ -6792,23 +6787,27 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    activate(val) {
+</xsl:text>
+    <xsl:text>        let [active, inactive] = val ? ["none",""] : ["", "none"];
+</xsl:text>
+    <xsl:text>        if (this.active_elt)
+</xsl:text>
+    <xsl:text>            this.active_elt.style.display = active;
+</xsl:text>
+    <xsl:text>        if (this.inactive_elt)
+</xsl:text>
+    <xsl:text>            this.inactive_elt.style.display = inactive;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>       // redraw toggle button on screen refresh
+    <xsl:text>        // redraw toggle button on screen refresh
 </xsl:text>
-    <xsl:text>       if (this.state) {
-</xsl:text>
-    <xsl:text>           this.active_elt.setAttribute("style", this.active_style);
-</xsl:text>
-    <xsl:text>           this.inactive_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>       } else {
-</xsl:text>
-    <xsl:text>           this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>           this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>       }
+    <xsl:text>        this.activate(this.state);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -6816,23 +6815,9 @@
 </xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.active_style = this.active_elt ? this.active_elt.style.cssText : undefined;
+    <xsl:text>        this.activate(false);
 </xsl:text>
-    <xsl:text>        this.inactive_style = this.inactive_elt ? this.inactive_elt.style.cssText : undefined;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        if (this.active_style &amp;&amp; this.inactive_style) {
-</xsl:text>
-    <xsl:text>            this.active_elt.setAttribute("style", "display:none");
-</xsl:text>
-    <xsl:text>            this.inactive_elt.setAttribute("style", this.inactive_style);
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+    <xsl:text>        this.element.onclick = (evt) =&gt; this.on_click(evt);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -6848,8 +6833,6 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
-    <xsl:text>
-</xsl:text>
   </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
