@@ -1,0 +1,38 @@
+include yslt_noindent.yml2
+
+in xsl decl svgtmpl(match, xmlns="http://www.w3.org/2000/svg") alias template;
+
+istylesheet
+            /* From Inkscape */
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:cc="http://creativecommons.org/ns#"
+            xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+            xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+            xmlns:xhtml="http://www.w3.org/1999/xhtml"
+
+            /* Namespace to invoke python code */
+            xmlns:ns="beremiz"
+
+            extension-element-prefixes="ns func exsl regexp str dyn"
+            exclude-result-prefixes="ns func exsl regexp str dyn" {
+
+    const "svg", "/svg:svg";
+    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
+
+    include parse_labels.ysl2
+
+    svgtmpl "@*", mode="inline_svg" xsl:copy;
+
+    template "node()", mode="inline_svg" {
+      xsl:copy apply "@* | node()", mode="inline_svg";
+    }
+
+    template "/" {
+        comment > Widget dropped in Inkscape from Beremiz
+
+        apply "/", mode="inline_svg";
+    }
+}
