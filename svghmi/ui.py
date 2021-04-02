@@ -10,13 +10,21 @@ from __future__ import absolute_import
 import os
 import hashlib
 import weakref
+from tempfile import NamedTemporaryFile
 
 import wx
 
+from lxml import etree
+from lxml.etree import XSLTApplyError
+from XSLTransform import XSLTransform
+
+import util.paths as paths
 from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
 from docutil import get_inkscape_path
 
 from util.ProcessLogger import ProcessLogger
+
+ScriptDirectory = paths.AbsDir(__file__)
 
 class HMITreeSelector(wx.TreeCtrl):
     def __init__(self, parent):
@@ -35,13 +43,13 @@ class HMITreeSelector(wx.TreeCtrl):
                 display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
                                if c.hmiclass is not None else c.name
                 tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, None) # TODO
+                self.SetPyData(tc_child, c)
 
                 self._recurseTree(c,tc_child)
             else:
                 display_name = '{} {}'.format(c.nodetype[4:], c.name)
                 tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, None) # TODO
+                self.SetPyData(tc_child, c)
 
     def MakeTree(self, hmi_tree_root=None):
 
@@ -53,7 +61,7 @@ class HMITreeSelector(wx.TreeCtrl):
         root_display_name = _("Please build to see HMI Tree") \
             if hmi_tree_root is None else "HMI"
         self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, None)
+        self.SetPyData(self.root, hmi_tree_root)
 
         if hmi_tree_root is not None:
             self._recurseTree(hmi_tree_root, self.root)
@@ -139,8 +147,7 @@ class WidgetLibBrowser(wx.Panel):
         sizer.AddGrowableRow(1)
         self.libbutton = wx.Button(self, -1, _("Select SVG widget library"))
         self.widgetpicker = WidgetPicker(self, self.libdir)
-        self.preview = wx.Panel(self, size=(-1, _preview_height + 10))  #, style=wx.SIMPLE_BORDER)
-        #self.preview.SetBackgroundColour(wx.WHITE)
+        self.preview = wx.Panel(self, size=(-1, _preview_height + 10))
         sizer.AddWindow(self.libbutton, flag=wx.GROW)
         sizer.AddWindow(self.widgetpicker, flag=wx.GROW)
         sizer.AddWindow(self.preview, flag=wx.GROW)
@@ -155,6 +162,7 @@ class WidgetLibBrowser(wx.Panel):
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnWidgetSelection, self.widgetpicker)
 
         self.msg = _("Drag selected Widget from here to Inkscape")
+        self.tempf = None 
 
     def RecallLibDir(self):
         conf = self.Config.Read(_conf_key)
@@ -248,22 +256,20 @@ class WidgetLibBrowser(wx.Panel):
             thumbdir = os.path.join(dname, ".svghmithumbs") 
             thumbpath = os.path.join(thumbdir, thumbfname) 
 
-            self.msg = None
             have_thumb = os.path.exists(thumbpath)
 
-            if not have_thumb:
-                try:
+            try:
+                if not have_thumb:
                     if not os.path.exists(thumbdir):
                         os.mkdir(thumbdir)
-                except IOError:
-                    self.msg = _("Widget library must be writable")
-                else:
                     have_thumb = self.GenThumbnail(svgpath, thumbpath)
 
-            self.bmp = wx.Bitmap(thumbpath) if have_thumb else None
+                self.bmp = wx.Bitmap(thumbpath) if have_thumb else None
 
-            self.selected_SVG = svgpath if have_thumb else None
-            self.ValidateWidget()
+                self.selected_SVG = svgpath if have_thumb else None
+                self.ValidateWidget()
+            except IOError:
+                self.msg = _("Widget library must be writable")
 
             self.Refresh()
         event.Skip()
@@ -274,23 +280,56 @@ class WidgetLibBrowser(wx.Panel):
         self.Refresh()
 
     def OnLeftDown(self, evt):
-        if self.selected_SVG is not None:
-            # TODO replace with generated widget file
-            filename = self.selected_SVG
+        if self.tempf is not None:
+            filename = self.tempf.name
             data = wx.FileDataObject()
             data.AddFile(filename)
             dropSource = wx.DropSource(self)
             dropSource.SetData(data)
             dropSource.DoDragDrop(wx.Drag_AllowMove)
 
+    def GiveDetails(self, _context, msgs):
+        for msg in msgs:
+            self.msg += msg+"\n"
+        
     def ValidateWidget(self):
-        if self.selected_SVG is not None:
-            if self.hmitree_node is not None:
-                pass
-        # XXX TODO: 
-        #      - check SVG is valid for selected HMI tree item
-        #      - prepare for D'n'D
+        self.msg = ""
 
+        if self.tempf is not None:
+            os.unlink(self.tempf.name)
+            self.tempf = None
+
+        try:
+            if self.selected_SVG is None:
+                raise Exception(_("No widget selected"))
+            if self.hmitree_node is None:
+                raise Exception(_("No HMI tree node selected"))
+
+            transform = XSLTransform(
+                os.path.join(ScriptDirectory, "gen_dnd_widget_svg.xslt"),
+                [("GiveDetails", self.GiveDetails)])
+
+            svgdom = etree.parse(self.selected_SVG)
+
+            result = transform.transform(svgdom) 
+                # hmi_path=self.hmitree_node.path,
+                # hmi_type=self.hmitree_node.nodetype)
+
+            for entry in transform.get_error_log():
+                self.msg += "XSLT: " + entry.message + "\n" 
+
+            self.tempf = NamedTemporaryFile(suffix='.svg', delete=False)
+            result.write(self.tempf, encoding="utf-8")
+            self.tempf.close()
+
+        except Exception as e:
+            self.msg += str(e)
+        except XSLTApplyError as e:
+            self.msg += "Widget transform error: " + e.message
+                
+    def __del__(self):
+        if self.tempf is not None:
+            os.unlink(self.tempf.name)
 
 class SVGHMI_UI(wx.SplitterWindow):
 
@@ -302,6 +341,12 @@ class SVGHMI_UI(wx.SplitterWindow):
         self.Staging = WidgetLibBrowser(self)
         self.SplitVertically(self.SelectionTree, self.Staging, 300)
         register_for_HMI_tree_updates(weakref.ref(self))
+        self.Bind(wx.EVT_TREE_SEL_CHANGED,
+            self.OnHMITreeNodeSelection, self.SelectionTree)
+
+    def OnHMITreeNodeSelection(self, event):
+        item_pydata = self.SelectionTree.GetPyData(event.GetItem())
+        self.Staging.OnHMITreeNodeSelection(item_pydata)
 
     def HMITreeUpdate(self, hmi_tree_root):
             self.SelectionTree.MakeTree(hmi_tree_root)

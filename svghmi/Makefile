@@ -11,7 +11,7 @@
 
 yml2path ?= $(abspath ../../yml2)
 
-ysl2files := gen_index_xhtml.ysl2
+ysl2files := gen_index_xhtml.ysl2 gen_dnd_widget_svg.ysl2
 ysl2includes := $(filter-out $(ysl2files), $(wildcard *.ysl2))
 xsltfiles := $(patsubst %.ysl2, %.xslt, $(ysl2files))
 
