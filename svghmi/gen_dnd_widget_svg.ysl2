@@ -21,8 +21,12 @@ istylesheet
 
     const "svg", "/svg:svg";
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
+    const "subhmitree", "ns:GetSubHMITree()";
 
+    const "indexed_hmitree", "/.."; // compatibility with parse_labels.ysl2
     include parse_labels.ysl2
+    const "_parsed_widgets" apply "$hmi_elements", mode="parselabel";
+    const "parsed_widgets","exsl:node-set($_parsed_widgets)";
 
     svgtmpl "@*", mode="inline_svg" xsl:copy;
 
@@ -30,8 +34,31 @@ istylesheet
       xsl:copy apply "@* | node()", mode="inline_svg";
     }
 
+
+    const "NODES_TYPES","str:split('HMI_ROOT HMI_NODE')";
+    const "HMI_NODES_COMPAT","str:split('Page Jump Foreach')";
     template "/" {
         comment > Widget dropped in Inkscape from Beremiz
+
+        const "selected_node_type","local-name($subhmitree)";
+        const "svg_widget_type", "$parsed_widgets/widget[1]/@type";
+        const "svg_widget_count", "count($parsed_widgets/widget)";
+
+        choose {
+            when "$svg_widget_count < 1"
+                error > No widget detected on selected SVG
+            when "$svg_widget_count > 1"
+                error > Multiple widget DnD not yet supported
+            when """$selected_node_type = $NODES_TYPES and \
+                    not($svg_widget_type = $HMI_NODES_COMPAT)"""
+                error > Widget incopatible with selected HMI tree node
+        }
+        const "testmsg" {
+            msg value "$selected_node_type";
+            msg value "$svg_widget_type";
+        }
+
+        value "ns:GiveDetails($testmsg)";
 
         apply "/", mode="inline_svg";
     }

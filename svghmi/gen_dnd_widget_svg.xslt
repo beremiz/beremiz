@@ -3,6 +3,8 @@
   <xsl:output method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
+  <xsl:variable name="subhmitree" select="ns:GetSubHMITree()"/>
+  <xsl:variable name="indexed_hmitree" select="/.."/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="id" select="@id"/>
@@ -115,6 +117,10 @@
       </widget>
     </xsl:if>
   </xsl:template>
+  <xsl:variable name="_parsed_widgets">
+    <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
+  </xsl:variable>
+  <xsl:variable name="parsed_widgets" select="exsl:node-set($_parsed_widgets)"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@*">
     <xsl:copy/>
   </xsl:template>
@@ -123,10 +129,41 @@
       <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
     </xsl:copy>
   </xsl:template>
+  <xsl:variable name="NODES_TYPES" select="str:split('HMI_ROOT HMI_NODE')"/>
+  <xsl:variable name="HMI_NODES_COMPAT" select="str:split('Page Jump Foreach')"/>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Widget dropped in Inkscape from Beremiz</xsl:text>
     </xsl:comment>
+    <xsl:variable name="selected_node_type" select="local-name($subhmitree)"/>
+    <xsl:variable name="svg_widget_type" select="$parsed_widgets/widget[1]/@type"/>
+    <xsl:variable name="svg_widget_count" select="count($parsed_widgets/widget)"/>
+    <xsl:choose>
+      <xsl:when test="$svg_widget_count &lt; 1">
+        <xsl:message terminate="yes">
+          <xsl:text>No widget detected on selected SVG</xsl:text>
+        </xsl:message>
+      </xsl:when>
+      <xsl:when test="$svg_widget_count &gt; 1">
+        <xsl:message terminate="yes">
+          <xsl:text>Multiple widget DnD not yet supported</xsl:text>
+        </xsl:message>
+      </xsl:when>
+      <xsl:when test="$selected_node_type = $NODES_TYPES and                     not($svg_widget_type = $HMI_NODES_COMPAT)">
+        <xsl:message terminate="yes">
+          <xsl:text>Widget incopatible with selected HMI tree node</xsl:text>
+        </xsl:message>
+      </xsl:when>
+    </xsl:choose>
+    <xsl:variable name="testmsg">
+      <msg>
+        <xsl:value-of select="$selected_node_type"/>
+      </msg>
+      <msg>
+        <xsl:value-of select="$svg_widget_type"/>
+      </msg>
+    </xsl:variable>
+    <xsl:value-of select="ns:GiveDetails($testmsg)"/>
     <xsl:apply-templates mode="inline_svg" select="/"/>
   </xsl:template>
 </xsl:stylesheet>
