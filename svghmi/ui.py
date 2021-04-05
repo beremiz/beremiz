@@ -290,8 +290,11 @@ class WidgetLibBrowser(wx.Panel):
 
     def GiveDetails(self, _context, msgs):
         for msg in msgs:
-            self.msg += msg+"\n"
+            self.msg += msg.text + "\n"
         
+    def GetSubHMITree(self, _context):
+        return [self.hmitree_node.etree()]
+
     def ValidateWidget(self):
         self.msg = ""
 
@@ -307,13 +310,12 @@ class WidgetLibBrowser(wx.Panel):
 
             transform = XSLTransform(
                 os.path.join(ScriptDirectory, "gen_dnd_widget_svg.xslt"),
-                [("GiveDetails", self.GiveDetails)])
+                [("GetSubHMITree", self.GetSubHMITree),
+                 ("GiveDetails", self.GiveDetails)])
 
             svgdom = etree.parse(self.selected_SVG)
 
-            result = transform.transform(svgdom) 
-                # hmi_path=self.hmitree_node.path,
-                # hmi_type=self.hmitree_node.nodetype)
+            result = transform.transform(svgdom)
 
             for entry in transform.get_error_log():
                 self.msg += "XSLT: " + entry.message + "\n" 
