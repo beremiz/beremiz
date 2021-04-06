@@ -125,7 +125,9 @@ class HMITreeNode(object):
         # hash is computed on demand
         node = cls(path, name, nodetype, hmiclass=hmiclass)
         for child in enode.iterchildren():
-            node.children.append(cls.from_etree(child))
+            newnode = cls.from_etree(child)
+            newnode.parent = weakref.ref(node)
+            node.children.append(newnode)
         return node
 
     def traverse(self):
