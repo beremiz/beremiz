@@ -9,6 +9,7 @@
 from __future__ import absolute_import
 from itertools import izip, imap
 from pprint import pformat
+import weakref
 import hashlib
 
 from lxml import etree
@@ -29,6 +30,7 @@ class HMITreeNode(object):
         self.name = name
         self.nodetype = nodetype
         self.hmiclass = hmiclass
+        self.parent = None
 
         if iectype is not None:
             self.iectype = iectype
@@ -84,6 +86,7 @@ class HMITreeNode(object):
                 if prev.path[:-1] == node.path[:-1]:
                     return "Late_HMI_NODE",prev
 
+            node.parent = weakref.ref(self)
             self.children.append(node)
             return None
 
@@ -132,6 +135,13 @@ class HMITreeNode(object):
                 for yoodl in c.traverse():
                     yield yoodl
 
+    def hmi_path(self):
+        if self.parent is None:
+            return "/"
+        p = self.parent()
+        if p.parent is None:
+            return "/" + self.name
+        return p.hmi_path() + "/" + self.name
 
     def hash(self):
         """ Produce a hash, any change in HMI tree structure change that hash """

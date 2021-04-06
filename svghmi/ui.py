@@ -315,7 +315,8 @@ class WidgetLibBrowser(wx.Panel):
 
             svgdom = etree.parse(self.selected_SVG)
 
-            result = transform.transform(svgdom)
+            result = transform.transform(
+                svgdom, hmi_path = self.hmitree_node.hmi_path())
 
             for entry in transform.get_error_log():
                 self.msg += "XSLT: " + entry.message + "\n" 

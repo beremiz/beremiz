@@ -19,6 +19,7 @@ istylesheet
             extension-element-prefixes="ns func exsl regexp str dyn"
             exclude-result-prefixes="ns func exsl regexp str dyn" {
 
+    param "hmi_path";
     const "svg", "/svg:svg";
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
     const "subhmitree", "ns:GetSubHMITree()";
@@ -28,7 +29,17 @@ istylesheet
     const "_parsed_widgets" apply "$hmi_elements", mode="parselabel";
     const "parsed_widgets","exsl:node-set($_parsed_widgets)";
 
+    const "selected_node_type","local-name($subhmitree)";
+    const "svg_widget", "$parsed_widgets/widget[1]";
+    const "svg_widget_type", "$svg_widget/@type";
+    const "svg_widget_path", "$svg_widget/@path";
+    const "svg_widget_count", "count($parsed_widgets/widget)";
+
     svgtmpl "@*", mode="inline_svg" xsl:copy;
+
+    svgtmpl "@inkscape:label[starts-with(., 'HMI:')]", mode="inline_svg" {
+        xsl:copy;
+    }
 
     template "node()", mode="inline_svg" {
       xsl:copy apply "@* | node()", mode="inline_svg";
@@ -40,10 +51,6 @@ istylesheet
     template "/" {
         comment > Widget dropped in Inkscape from Beremiz
 
-        const "selected_node_type","local-name($subhmitree)";
-        const "svg_widget_type", "$parsed_widgets/widget[1]/@type";
-        const "svg_widget_count", "count($parsed_widgets/widget)";
-
         choose {
             when "$svg_widget_count < 1"
                 error > No widget detected on selected SVG
@@ -51,9 +58,11 @@ istylesheet
                 error > Multiple widget DnD not yet supported
             when """$selected_node_type = $NODES_TYPES and \
                     not($svg_widget_type = $HMI_NODES_COMPAT)"""
-                error > Widget incopatible with selected HMI tree node
+                error > Widget incompatible with selected HMI tree node
         }
+
         const "testmsg" {
+            msg value "$hmi_path";
             msg value "$selected_node_type";
             msg value "$svg_widget_type";
         }
