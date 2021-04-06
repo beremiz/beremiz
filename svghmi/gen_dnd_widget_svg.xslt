@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn">
   <xsl:output method="xml"/>
+  <xsl:param name="hmi_path"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="subhmitree" select="ns:GetSubHMITree()"/>
@@ -121,7 +122,15 @@
     <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
   </xsl:variable>
   <xsl:variable name="parsed_widgets" select="exsl:node-set($_parsed_widgets)"/>
+  <xsl:variable name="selected_node_type" select="local-name($subhmitree)"/>
+  <xsl:variable name="svg_widget" select="$parsed_widgets/widget[1]"/>
+  <xsl:variable name="svg_widget_type" select="$svg_widget/@type"/>
+  <xsl:variable name="svg_widget_path" select="$svg_widget/@path"/>
+  <xsl:variable name="svg_widget_count" select="count($parsed_widgets/widget)"/>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@*">
+    <xsl:copy/>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@inkscape:label[starts-with(., 'HMI:')]">
     <xsl:copy/>
   </xsl:template>
   <xsl:template mode="inline_svg" match="node()">
@@ -135,9 +144,6 @@
     <xsl:comment>
       <xsl:text>Widget dropped in Inkscape from Beremiz</xsl:text>
     </xsl:comment>
-    <xsl:variable name="selected_node_type" select="local-name($subhmitree)"/>
-    <xsl:variable name="svg_widget_type" select="$parsed_widgets/widget[1]/@type"/>
-    <xsl:variable name="svg_widget_count" select="count($parsed_widgets/widget)"/>
     <xsl:choose>
       <xsl:when test="$svg_widget_count &lt; 1">
         <xsl:message terminate="yes">
@@ -151,11 +157,14 @@
       </xsl:when>
       <xsl:when test="$selected_node_type = $NODES_TYPES and                     not($svg_widget_type = $HMI_NODES_COMPAT)">
         <xsl:message terminate="yes">
-          <xsl:text>Widget incopatible with selected HMI tree node</xsl:text>
+          <xsl:text>Widget incompatible with selected HMI tree node</xsl:text>
         </xsl:message>
       </xsl:when>
     </xsl:choose>
     <xsl:variable name="testmsg">
+      <msg>
+        <xsl:value-of select="$hmi_path"/>
+      </msg>
       <msg>
         <xsl:value-of select="$selected_node_type"/>
       </msg>
