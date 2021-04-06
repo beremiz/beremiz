@@ -38,7 +38,7 @@ istylesheet
     svgtmpl "@*", mode="inline_svg" xsl:copy;
 
     svgtmpl "@inkscape:label[starts-with(., 'HMI:')]", mode="inline_svg" {
-        xsl:copy;
+        attrib "inkscape:label" > «substring-before(., '@')»@«$hmi_path»
     }
 
     template "node()", mode="inline_svg" {

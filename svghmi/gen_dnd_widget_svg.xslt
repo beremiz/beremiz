@@ -131,7 +131,11 @@
     <xsl:copy/>
   </xsl:template>
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@inkscape:label[starts-with(., 'HMI:')]">
-    <xsl:copy/>
+    <xsl:attribute name="inkscape:label">
+      <xsl:value-of select="substring-before(., '@')"/>
+      <xsl:text>@</xsl:text>
+      <xsl:value-of select="$hmi_path"/>
+    </xsl:attribute>
   </xsl:template>
   <xsl:template mode="inline_svg" match="node()">
     <xsl:copy>
