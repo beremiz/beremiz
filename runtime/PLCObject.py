@@ -398,8 +398,10 @@ class PLCObject(object):
         self.PythonRuntimeCall("init", use_evaluator=False)
 
         self.PythonThreadCondLock = Lock()
-        self.PythonThreadCond = Condition(self.PythonThreadCondLock)
-        self.PythonThreadCmd = "Wait"
+        self.PythonThreadCmdCond = Condition(self.PythonThreadCondLock)
+        self.PythonThreadAckCond = Condition(self.PythonThreadCondLock)
+        self.PythonThreadCmd = None
+        self.PythonThreadAck = None
         self.PythonThread = Thread(target=self.PythonThreadProc, name="PLCPythonThread")
         self.PythonThread.start()
 
@@ -442,24 +444,43 @@ class PLCObject(object):
         while True:
             self.PythonThreadCondLock.acquire()
             cmd = self.PythonThreadCmd
-            while cmd == "Wait":
-                self.PythonThreadCond.wait()
+            while cmd is None:
+                self.PythonThreadCmdCond.wait()
                 cmd = self.PythonThreadCmd
-                self.PythonThreadCmd = "Wait"
+            self.PythonThreadCmd = None
             self.PythonThreadCondLock.release()
 
-            if cmd == "Activate":
-                self.PythonRuntimeCall("start")
+            if cmd == "PreStart":
                 self.PreStartPLC()
+                # Ack once PreStart done, must be finished before StartPLC
+                self.PythonThreadAcknowledge(cmd)
+            elif cmd == "Start":
+                # Ack Immediately, for responsiveness
+                self.PythonThreadAcknowledge(cmd)
+                self.PythonRuntimeCall("start")
+                self.LogMessage("Python extensions started")
                 self.PythonThreadLoop()
                 self.PythonRuntimeCall("stop", reverse_order=True)
-            else:  # "Finish"
+            elif cmd == "Finish":
+                self.PythonThreadAcknowledge(cmd)
                 break
+
+    def PythonThreadAcknowledge(self, ack):
+        self.PythonThreadCondLock.acquire()
+        self.PythonThreadAck = ack
+        self.PythonThreadAckCond.notify()
+        self.PythonThreadCondLock.release()
 
     def PythonThreadCommand(self, cmd):
         self.PythonThreadCondLock.acquire()
         self.PythonThreadCmd = cmd
-        self.PythonThreadCond.notify()
+        self.PythonThreadCmdCond.notify()
+        ack = None
+        while ack != cmd:
+            self.PythonThreadAckCond.wait()
+            ack = self.PythonThreadAck
+            self.PythonThreadAck = None
+
         self.PythonThreadCondLock.release()
 
     def _fail(self, msg):
@@ -483,13 +504,14 @@ class PLCObject(object):
                 self._fail(_("Problem starting PLC : can't load PLC"))
 
         if self.CurrentPLCFilename is not None and self.PLCStatus == PlcStatus.Stopped:
+            self.PythonThreadCommand("PreStart")
             c_argv = ctypes.c_char_p * len(self.argv)
             res = self._startPLC(len(self.argv), c_argv(*self.argv))
             if res == 0:
+                self.LogMessage("PLC started")
                 self.PLCStatus = PlcStatus.Started
                 self.StatusChange()
-                self.PythonThreadCommand("Activate")
-                self.LogMessage("PLC started")
+                self.PythonThreadCommand("Start")
             else:
                 self._fail(_("Problem starting PLC : error %d" % res))
 
