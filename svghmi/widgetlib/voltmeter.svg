@@ -93,16 +93,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="-64.606209"
-     inkscape:cy="537.51037"
+     inkscape:zoom="3.312923"
+     inkscape:cx="554.2857"
+     inkscape:cy="554.2857"
      inkscape:document-units="mm"
      inkscape:current-layer="svg2354"
      showgrid="false"
-     inkscape:window-width="1452"
-     inkscape:window-height="940"
-     inkscape:window-x="1645"
-     inkscape:window-y="72"
+     inkscape:window-width="1605"
+     inkscape:window-height="1099"
+     inkscape:window-x="3543"
+     inkscape:window-y="375"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata2351">
@@ -112,7 +112,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -438,7 +438,7 @@
        id="path4304" />
   </g>
   <g
-     inkscape:label="HMI:Meter@/PUMP0/SLOTH"
+     inkscape:label="HMI:Meter@/PUMP0/SLOTH,0,666"
      transform="matrix(0.57180538,0,0,0.57180538,88.118425,163.79208)"
      id="g19348">
     <path
