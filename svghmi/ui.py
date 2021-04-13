@@ -142,15 +142,18 @@ class WidgetLibBrowser(wx.Panel):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
 
-        sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
+        sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=0)
         sizer.AddGrowableCol(0)
         sizer.AddGrowableRow(1)
         self.libbutton = wx.Button(self, -1, _("Select SVG widget library"))
         self.widgetpicker = WidgetPicker(self, self.libdir)
         self.preview = wx.Panel(self, size=(-1, _preview_height + 10))
+        self.comment = wx.TextCtrl(self, size=wx.Size(-1, 80),
+                                   style=wx.TE_READONLY | wx.TE_MULTILINE)
         sizer.AddWindow(self.libbutton, flag=wx.GROW)
         sizer.AddWindow(self.widgetpicker, flag=wx.GROW)
         sizer.AddWindow(self.preview, flag=wx.GROW)
+        sizer.AddWindow(self.comment, flag=wx.GROW)
         sizer.Layout()
         self.SetAutoLayout(True)
         self.SetSizer(sizer)
@@ -190,9 +193,7 @@ class WidgetLibBrowser(wx.Panel):
             w = self.bmp.GetWidth()
             dc.DrawBitmap(self.bmp, (sz.width - w)/2, 5)
 
-        if self.msg:
-            dc.SetFont(self.GetFont())
-            dc.DrawText(self.msg, 25,25)
+        self.comment.SetValue(self.msg)
 
 
     def OnSelectLibDir(self, event):
