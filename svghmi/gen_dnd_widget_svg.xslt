@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:func="http://exslt.org/functions" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg" xmlns:str="http://exslt.org/strings" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:exsl="http://exslt.org/common" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ns="beremiz" xmlns:cc="http://creativecommons.org/ns#" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:dc="http://purl.org/dc/elements/1.1/" extension-element-prefixes="ns func exsl regexp str dyn" version="1.0" exclude-result-prefixes="ns func exsl regexp str dyn">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn">
   <xsl:output method="xml"/>
   <xsl:param name="hmi_path"/>
   <xsl:variable name="svg" select="/svg:svg"/>
@@ -77,46 +77,68 @@
                   </xsl:message>
                 </xsl:when>
               </xsl:choose>
-              <xsl:choose>
-                <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+$')">
-                  <xsl:attribute name="type">
-                    <xsl:text>PAGE_LOCAL</xsl:text>
-                  </xsl:attribute>
-                </xsl:when>
-                <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+$')">
-                  <xsl:attribute name="type">
-                    <xsl:text>HMI_LOCAL</xsl:text>
-                  </xsl:attribute>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
-                  <xsl:variable name="pathtype" select="local-name($item)"/>
-                  <xsl:if test="$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')">
-                    <xsl:message terminate="yes">
-                      <xsl:text>Widget id:</xsl:text>
-                      <xsl:value-of select="$id"/>
-                      <xsl:text> label:</xsl:text>
-                      <xsl:value-of select="$label"/>
-                      <xsl:text> path section </xsl:text>
-                      <xsl:value-of select="$pathminmax"/>
-                      <xsl:text> use min and max on non mumeric value</xsl:text>
-                    </xsl:message>
-                  </xsl:if>
-                  <xsl:if test="count($item) = 1">
-                    <xsl:attribute name="index">
-                      <xsl:value-of select="$item/@index"/>
-                    </xsl:attribute>
+              <xsl:if test="$indexed_hmitree">
+                <xsl:choose>
+                  <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+$')">
                     <xsl:attribute name="type">
-                      <xsl:value-of select="$pathtype"/>
+                      <xsl:text>PAGE_LOCAL</xsl:text>
                     </xsl:attribute>
-                  </xsl:if>
-                </xsl:otherwise>
-              </xsl:choose>
+                  </xsl:when>
+                  <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+$')">
+                    <xsl:attribute name="type">
+                      <xsl:text>HMI_LOCAL</xsl:text>
+                    </xsl:attribute>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
+                    <xsl:variable name="pathtype" select="local-name($item)"/>
+                    <xsl:if test="$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')">
+                      <xsl:message terminate="yes">
+                        <xsl:text>Widget id:</xsl:text>
+                        <xsl:value-of select="$id"/>
+                        <xsl:text> label:</xsl:text>
+                        <xsl:value-of select="$label"/>
+                        <xsl:text> path section </xsl:text>
+                        <xsl:value-of select="$pathminmax"/>
+                        <xsl:text> use min and max on non mumeric value</xsl:text>
+                      </xsl:message>
+                    </xsl:if>
+                    <xsl:if test="count($item) = 1">
+                      <xsl:attribute name="index">
+                        <xsl:value-of select="$item/@index"/>
+                      </xsl:attribute>
+                      <xsl:attribute name="type">
+                        <xsl:value-of select="$pathtype"/>
+                      </xsl:attribute>
+                    </xsl:if>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:if>
             </path>
           </xsl:if>
         </xsl:for-each>
       </widget>
     </xsl:if>
+  </xsl:template>
+  <xsl:template mode="genlabel" match="arg">
+    <xsl:text>:</xsl:text>
+    <xsl:value-of select="@value"/>
+  </xsl:template>
+  <xsl:template mode="genlabel" match="path">
+    <xsl:text>@</xsl:text>
+    <xsl:value-of select="@value"/>
+    <xsl:if test="string-length(@min)&gt;0 or string-length(@max)&gt;0">
+      <xsl:text>:</xsl:text>
+      <xsl:value-of select="@min"/>
+      <xsl:text>:</xsl:text>
+      <xsl:value-of select="@max"/>
+    </xsl:if>
+  </xsl:template>
+  <xsl:template mode="genlabel" match="widget">
+    <xsl:text>HMI:</xsl:text>
+    <xsl:value-of select="@type"/>
+    <xsl:apply-templates mode="genlabel" select="arg"/>
+    <xsl:apply-templates mode="genlabel" select="path"/>
   </xsl:template>
   <xsl:variable name="_parsed_widgets">
     <xsl:apply-templates mode="parselabel" select="$hmi_elements"/>
@@ -127,18 +149,34 @@
   <xsl:variable name="svg_widget_type" select="$svg_widget/@type"/>
   <xsl:variable name="svg_widget_path" select="$svg_widget/@path"/>
   <xsl:variable name="svg_widget_count" select="count($parsed_widgets/widget)"/>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@*">
-    <xsl:copy/>
+  <xsl:template mode="replace_path" match="@* | node()">
+    <xsl:copy>
+      <xsl:apply-templates mode="replace_path" select="@* | node()"/>
+    </xsl:copy>
   </xsl:template>
-  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@inkscape:label[starts-with(., 'HMI:')]">
-    <xsl:attribute name="inkscape:label">
-      <xsl:value-of select="substring-before(., '@')"/>
-      <xsl:text>@</xsl:text>
+  <xsl:template mode="replace_path" match="path/@value">
+    <xsl:attribute name="value">
       <xsl:value-of select="$hmi_path"/>
     </xsl:attribute>
   </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@*">
+    <xsl:copy/>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="@inkscape:label[starts-with(., 'HMI:')]"/>
   <xsl:template mode="inline_svg" match="node()">
     <xsl:copy>
+      <xsl:if test="@id = $svg_widget/@id">
+        <xsl:variable name="substituted_widget">
+          <xsl:apply-templates mode="replace_path" select="$svg_widget"/>
+        </xsl:variable>
+        <xsl:variable name="substituted_widget_ns" select="exsl:node-set($substituted_widget)"/>
+        <xsl:variable name="new_label">
+          <xsl:apply-templates mode="genlabel" select="$substituted_widget_ns"/>
+        </xsl:variable>
+        <xsl:attribute name="inkscape:label">
+          <xsl:value-of select="$new_label"/>
+        </xsl:attribute>
+      </xsl:if>
       <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
     </xsl:copy>
   </xsl:template>

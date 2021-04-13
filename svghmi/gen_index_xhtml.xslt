@@ -207,46 +207,68 @@
                   </xsl:message>
                 </xsl:when>
               </xsl:choose>
-              <xsl:choose>
-                <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+$')">
-                  <xsl:attribute name="type">
-                    <xsl:text>PAGE_LOCAL</xsl:text>
-                  </xsl:attribute>
-                </xsl:when>
-                <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+$')">
-                  <xsl:attribute name="type">
-                    <xsl:text>HMI_LOCAL</xsl:text>
-                  </xsl:attribute>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
-                  <xsl:variable name="pathtype" select="local-name($item)"/>
-                  <xsl:if test="$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')">
-                    <xsl:message terminate="yes">
-                      <xsl:text>Widget id:</xsl:text>
-                      <xsl:value-of select="$id"/>
-                      <xsl:text> label:</xsl:text>
-                      <xsl:value-of select="$label"/>
-                      <xsl:text> path section </xsl:text>
-                      <xsl:value-of select="$pathminmax"/>
-                      <xsl:text> use min and max on non mumeric value</xsl:text>
-                    </xsl:message>
-                  </xsl:if>
-                  <xsl:if test="count($item) = 1">
-                    <xsl:attribute name="index">
-                      <xsl:value-of select="$item/@index"/>
-                    </xsl:attribute>
+              <xsl:if test="$indexed_hmitree">
+                <xsl:choose>
+                  <xsl:when test="regexp:test($path,'^\.[a-zA-Z0-9_]+$')">
                     <xsl:attribute name="type">
-                      <xsl:value-of select="$pathtype"/>
+                      <xsl:text>PAGE_LOCAL</xsl:text>
                     </xsl:attribute>
-                  </xsl:if>
-                </xsl:otherwise>
-              </xsl:choose>
+                  </xsl:when>
+                  <xsl:when test="regexp:test($path,'^[a-zA-Z0-9_]+$')">
+                    <xsl:attribute name="type">
+                      <xsl:text>HMI_LOCAL</xsl:text>
+                    </xsl:attribute>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:variable name="item" select="$indexed_hmitree/*[@hmipath = $path]"/>
+                    <xsl:variable name="pathtype" select="local-name($item)"/>
+                    <xsl:if test="$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')">
+                      <xsl:message terminate="yes">
+                        <xsl:text>Widget id:</xsl:text>
+                        <xsl:value-of select="$id"/>
+                        <xsl:text> label:</xsl:text>
+                        <xsl:value-of select="$label"/>
+                        <xsl:text> path section </xsl:text>
+                        <xsl:value-of select="$pathminmax"/>
+                        <xsl:text> use min and max on non mumeric value</xsl:text>
+                      </xsl:message>
+                    </xsl:if>
+                    <xsl:if test="count($item) = 1">
+                      <xsl:attribute name="index">
+                        <xsl:value-of select="$item/@index"/>
+                      </xsl:attribute>
+                      <xsl:attribute name="type">
+                        <xsl:value-of select="$pathtype"/>
+                      </xsl:attribute>
+                    </xsl:if>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:if>
             </path>
           </xsl:if>
         </xsl:for-each>
       </widget>
     </xsl:if>
+  </xsl:template>
+  <xsl:template mode="genlabel" match="arg">
+    <xsl:text>:</xsl:text>
+    <xsl:value-of select="@value"/>
+  </xsl:template>
+  <xsl:template mode="genlabel" match="path">
+    <xsl:text>@</xsl:text>
+    <xsl:value-of select="@value"/>
+    <xsl:if test="string-length(@min)&gt;0 or string-length(@max)&gt;0">
+      <xsl:text>:</xsl:text>
+      <xsl:value-of select="@min"/>
+      <xsl:text>:</xsl:text>
+      <xsl:value-of select="@max"/>
+    </xsl:if>
+  </xsl:template>
+  <xsl:template mode="genlabel" match="widget">
+    <xsl:text>HMI:</xsl:text>
+    <xsl:value-of select="@type"/>
+    <xsl:apply-templates mode="genlabel" select="arg"/>
+    <xsl:apply-templates mode="genlabel" select="path"/>
   </xsl:template>
   <xsl:variable name="_parsed_widgets">
     <widget type="VarInitPersistent">

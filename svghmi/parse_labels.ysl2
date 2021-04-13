@@ -54,7 +54,7 @@ template "*", mode="parselabel" {
                         error > Widget id:«$id» label:«$label» has wrong syntax of path section «$pathminmax»
                     }
                 }
-                choose {
+                if "$indexed_hmitree" choose {
                     when "regexp:test($path,'^\.[a-zA-Z0-9_]+$')" {
                         attrib "type" > PAGE_LOCAL
                     }
@@ -76,5 +76,20 @@ template "*", mode="parselabel" {
             }
         }
     }
+}
+
+
+// Templates to generate label back from parsed tree
+template "arg", mode="genlabel" > :«@value»
+
+template "path", mode="genlabel" {
+    > @«@value»
+    if "string-length(@min)>0 or string-length(@max)>0"  > :«@min»:«@max»
+}
+
+template "widget", mode="genlabel" {
+    > HMI:«@type»
+    apply "arg", mode="genlabel";
+    apply "path", mode="genlabel";
 }
 
