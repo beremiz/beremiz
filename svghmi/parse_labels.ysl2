@@ -84,7 +84,7 @@ template "arg", mode="genlabel" > :«@value»
 
 template "path", mode="genlabel" {
     > @«@value»
-    if "string-length(@min)>0 or string-length(@max)>0"  > :«@min»:«@max»
+    if "string-length(@min)>0 or string-length(@max)>0"  > ,«@min»,«@max»
 }
 
 template "widget", mode="genlabel" {
