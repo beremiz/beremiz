@@ -275,8 +275,8 @@ class WidgetLibBrowser(wx.Panel):
             self.Refresh()
         event.Skip()
 
-    def OnHMITreeNodeSelection(self, hmitree_node):
-        self.hmitree_node = hmitree_node
+    def OnHMITreeNodeSelection(self, hmitree_nodes):
+        self.hmitree_node = hmitree_nodes[0] if len(hmitree_nodes) else None
         self.ValidateWidget()
         self.Refresh()
 
@@ -341,6 +341,8 @@ class SVGHMI_UI(wx.SplitterWindow):
         wx.SplitterWindow.__init__(self, parent,
                                    style=wx.SUNKEN_BORDER | wx.SP_3D)
 
+        self.ordered_items = []
+
         self.SelectionTree = HMITreeSelector(self)
         self.Staging = WidgetLibBrowser(self)
         self.SplitVertically(self.SelectionTree, self.Staging, 300)
@@ -349,8 +351,21 @@ class SVGHMI_UI(wx.SplitterWindow):
             self.OnHMITreeNodeSelection, self.SelectionTree)
 
     def OnHMITreeNodeSelection(self, event):
-        item_pydata = self.SelectionTree.GetPyData(event.GetItem())
-        self.Staging.OnHMITreeNodeSelection(item_pydata)
+        items = self.SelectionTree.GetSelections()
+        items_pydata = [self.SelectionTree.GetPyData(item) for item in items]
+
+        # append new items to ordered item list
+        for item_pydata in items_pydata:
+            if item_pydata not in self.ordered_items:
+                self.ordered_items.append(item_pydata)
+
+        # filter out vanished items
+        self.ordered_items = [
+            item_pydata 
+            for item_pydata in self.ordered_items 
+            if item_pydata in items_pydata]
+
+        self.Staging.OnHMITreeNodeSelection(items_pydata)
 
     def HMITreeUpdate(self, hmi_tree_root):
             self.SelectionTree.MakeTree(hmi_tree_root)
