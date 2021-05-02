@@ -21,6 +21,11 @@ decl activable_labels(*ptr) alias - {
     }
 };
 
+in xsl decl widget_desc(%name, match="widget[@type='%name']", mode="widget_desc") alias template {
+    type > «@type»
+    content;
+};
+
 in xsl decl widget_class(%name, *clsname="%nameWidget", match="widget[@type='%name']", mode="widget_class") alias template {
     | class `text **clsname` extends Widget{
     content;

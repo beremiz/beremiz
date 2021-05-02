@@ -1,8 +1,21 @@
 // widget_input.ysl2
 
+widget_desc("Input") {
+    longdesc
+    || 
+    Input widget takes one variable path, and displays current value in
+    optional "value" labeled sub-element. Click on optional "edit" labeled
+    element opens keypad to edit value. Operation on current value is
+    performed when click on sub-elements with label starting with '=', '+' 
+    or '-' sign. Value after sign is used as operand.
+    ||
 
+    shortdesc > Input field with predefined operation buttons
 
+    arg accepts="string" > optional printf-like format 
 
+    path accepts="HMI_INT, HMI_REAL, HMI_STRING" > single variable to edit
+    
 }
 
 widget_class("Input")
