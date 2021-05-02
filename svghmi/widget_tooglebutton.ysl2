@@ -1,9 +1,8 @@
 // widget_tooglebutton.ysl2
 
 
-template "widget[@type='ToggleButton']", mode="widget_class"{
+widget_class("ToggleButton") {
     ||
-    class ToggleButtonWidget extends Widget{
         frequency = 5;
         state = 0;
         active_style = undefined;
@@ -41,11 +40,10 @@ template "widget[@type='ToggleButton']", mode="widget_class"{
             this.activate(false);
             this.element.onclick = (evt) => this.on_click(evt);
         }
-    }
     ||
 }
 
-template "widget[@type='ToggleButton']", mode="widget_defs" {
+widget_defs("ToggleButton") {
     param "hmi_element";
     optional_labels("active inactive");
 }

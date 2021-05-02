@@ -1,8 +1,7 @@
 // widget_switch.ysl2
 
-template "widget[@type='Switch']", mode="widget_class"
+widget_class("Switch")
     ||
-    class SwitchWidget extends Widget{
         frequency = 5;
         dispatch(value) {
             for(let choice of this.choices){
@@ -13,10 +12,9 @@ template "widget[@type='Switch']", mode="widget_class"
                 }
             }
         }
-    }
     ||
 
-template "widget[@type='Switch']", mode="widget_defs" {
+widget_defs("Switch") {
     param "hmi_element";
     |     choices: [
     const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;

@@ -21,6 +21,26 @@ decl activable_labels(*ptr) alias - {
     }
 };
 
+in xsl decl widget_class(%name, *clsname="%nameWidget", match="widget[@type='%name']", mode="widget_class") alias template {
+    | class `text **clsname` extends Widget{
+    content;
+    | }
+};
+
+in xsl decl widget_defs(%name, match="widget[@type='%name']", mode="widget_defs") alias template {
+    param "hmi_element";
+    content;
+};
+
+in xsl decl widget_page(%name, match="widget[@type='%name']", mode="widget_page") alias template {
+    param "page_desc";
+    content;
+};
+
+decl gen_index_xhtml alias - {
+    content;
+};
+
 template "svg:*", mode="hmi_widgets" {
     const "widget", "func:widget(@id)";
     const "eltid","@id";

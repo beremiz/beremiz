@@ -1,8 +1,7 @@
 // widget_jsontable.ysl2
 
-template "widget[@type='JsonTable']", mode="widget_class"
+widget_class("JsonTable")
     ||
-    class JsonTableWidget extends Widget{
         // arbitrary defaults to avoid missing entries in query
         cache = [0,0,0];
         init_common() {
@@ -83,8 +82,9 @@ template "widget[@type='JsonTable']", mode="widget_class"
         // on_click(evt, ...options) {
         //     this.do_http_request(...options);
         // }
-    }
     ||
+
+gen_index_xhtml {
 
 template "svg:*", mode="json_table_elt_render" {
     error > JsonTable Widget can't contain element of type «local-name()».
@@ -259,7 +259,9 @@ template "svg:g", mode="json_table_render" {
     |         }
 }
 
-template "widget[@type='JsonTable']", mode="widget_defs" {
+}
+
+widget_defs("JsonTable") {
     param "hmi_element";
     labels("data");
     const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";

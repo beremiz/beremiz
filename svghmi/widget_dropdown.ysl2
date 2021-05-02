@@ -1,11 +1,7 @@
 // widget_dropdown.ysl2
 
-template "widget[@type='DropDown']", mode="widget_class"{
+widget_class("DropDown") {
 ||
-    function numb_event(e) {
-        e.stopPropagation();
-    }
-    class DropDownWidget extends Widget{
         dispatch(value) {
             if(!this.opened) this.set_selection(value);
         }
@@ -119,8 +115,8 @@ template "widget[@type='DropDown']", mode="widget_class"{
         }
         close(){
             // Stop hogging all click events
-            svg_root.removeEventListener("pointerdown", numb_event, true);
-            svg_root.removeEventListener("pointerup", numb_event, true);
+            svg_root.removeEventListener("pointerdown", this.numb_event, true);
+            svg_root.removeEventListener("pointerup", this.numb_event, true);
             svg_root.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
             // Restore position and sixe of widget elements
             this.reset_text();
@@ -237,6 +233,9 @@ template "widget[@type='DropDown']", mode="widget_class"{
                 c++;
             }
         }
+        numb_event(e) {
+             e.stopPropagation();
+        }
         open(){
             let length = this.content.length;
             // systematically reset text, to strip eventual whitespace spans
@@ -264,8 +263,8 @@ template "widget[@type='DropDown']", mode="widget_class"{
             // Rise widget to top by moving it to last position among siblings
             this.element.parentNode.appendChild(this.element.parentNode.removeChild(this.element));
             // disable interaction with background
-            svg_root.addEventListener("pointerdown", numb_event, true);
-            svg_root.addEventListener("pointerup", numb_event, true);
+            svg_root.addEventListener("pointerdown", this.numb_event, true);
+            svg_root.addEventListener("pointerup", this.numb_event, true);
             svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
             this.highlight_selection();
 
@@ -329,11 +328,10 @@ template "widget[@type='DropDown']", mode="widget_class"{
             // b.width.baseVal.value = 2 * lmargin + m.width;
             b.height.baseVal.value = 2 * tmargin + m.height;
         }
-    }
 ||
 }
 
-template "widget[@type='DropDown']", mode="widget_defs" {
+widget_defs("DropDown") {
     param "hmi_element";
     labels("text box button highlight");
     // It is assumed that list content conforms to Array interface.

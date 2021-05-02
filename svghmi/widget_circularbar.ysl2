@@ -1,8 +1,7 @@
 // widget_circularbar.ysl2
 
-template "widget[@type='CircularBar']", mode="widget_class"{
+widget_class("CircularBar") {
     ||
-    class CircularBarWidget extends Widget{
         frequency = 10;
         range = undefined;
 
@@ -49,11 +48,10 @@ template "widget[@type='CircularBar']", mode="widget_class"{
             this.center = [cx, cy];
             this.proportions = [rx, ry];
         }
-    }
     ||
 }
 
-template "widget[@type='CircularBar']", mode="widget_defs" {
+widget_defs("CircularBar") {
     param "hmi_element";
     labels("path");
     optional_labels("value min max");

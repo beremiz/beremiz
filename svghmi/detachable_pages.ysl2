@@ -193,8 +193,7 @@ template "svg:*", mode="page_desc" {
     |         "«@id»": detachable_elements["«@id»"]`if "position()!=last()" > ,`
     }
     |     }
-    /* TODO generate some code for init() instead */
-    apply "$parsed_widgets/widget[@id = $all_page_widgets/@id]", mode="per_page_widget_template"{
+    apply "$parsed_widgets/widget[@id = $all_page_widgets/@id]", mode="widget_page"{
         with "page_desc", "$desc";
     }
     |   }`if "position()!=last()" > ,`
@@ -208,7 +207,7 @@ emit "definitions:page-desc" {
     | }
 }
 
-template "*", mode="per_page_widget_template";
+template "*", mode="widget_page";
 
 
 emit "debug:detachable-pages" {

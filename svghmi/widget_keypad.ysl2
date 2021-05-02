@@ -13,10 +13,8 @@ emit "declarations:keypad" {
     | }
 }
 
-template "widget[@type='Keypad']", mode="widget_class"
+widget_class("Keypad")
     ||
-    class KeypadWidget extends Widget{
-
          on_key_click(symbols) {
              var syms = symbols.split(" ");
              this.shift |= this.caps;
@@ -110,10 +108,9 @@ template "widget[@type='Keypad']", mode="widget_class"
                  (this.caps?this.activate_activable:this.inactivate_activable)(this.CapsLock_sub);
              }
          }
-    }
     ||
 
-template "widget[@type='Keypad']", mode="widget_defs" {
+widget_defs("Keypad") {
     param "hmi_element";
     labels("Esc Enter BackSpace Keys Info Value");
     optional_labels("Sign Space NumDot");

@@ -9,6 +9,8 @@ decl jump(state);
 decl show(eltname);
 decl hmi_value(value);
 
+gen_index_xhtml {
+
 // State machine to drive HMI_BOOL on a potentially laggy connection
 const "_button_fsm" fsm {
     state "init" {
@@ -104,9 +106,10 @@ template "hmi-value", mode="actions" {
     |         this.apply_hmi_value(0, «@value»);
 }
 
-template "widget[@type='Button']", mode="widget_class"{
+}
+
+widget_class("Button"){
     const "fsm","exsl:node-set($_button_fsm)";
-    | class ButtonWidget extends Widget{
     |     frequency = 5;
 
     |     display = "inactive";
@@ -145,11 +148,9 @@ template "widget[@type='Button']", mode="widget_class"{
     |         this.bound_onmouseup = this.onmouseup.bind(this);
     |         this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
     |     }
-    | }
 }
 
-
-template "widget[@type='Button']", mode="widget_defs" {
+widget_defs("Button") {
     param "hmi_element";
     optional_labels("active inactive");
 }

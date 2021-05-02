@@ -1,8 +1,7 @@
 // widget_back.ysl2
 
-template "widget[@type='Back']", mode="widget_class"
+widget_class("Back")
     ||
-    class BackWidget extends Widget{
         on_click(evt) {
             if(jump_history.length > 1){
                jump_history.pop();
@@ -13,5 +12,4 @@ template "widget[@type='Back']", mode="widget_class"
         init() {
             this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
         }
-    }
     ||

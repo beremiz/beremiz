@@ -1,8 +1,7 @@
 // widget_multistate.ysl2
 
-template "widget[@type='MultiState']", mode="widget_class"
+widget_class("MultiState")
     ||
-    class MultiStateWidget extends Widget{
         frequency = 5;
         state = 0;
         dispatch(value) {
@@ -41,10 +40,9 @@ template "widget[@type='MultiState']", mode="widget_class"
         init() {
             this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
         }
-    }
     ||
 
-template "widget[@type='MultiState']", mode="widget_defs" {
+widget_defs("MultiState") {
     param "hmi_element";
     |     choices: [
     const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
