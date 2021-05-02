@@ -136,6 +136,7 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
+  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="id" select="@id"/>
@@ -181,22 +182,29 @@
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
-              <xsl:variable name="pathminmax" select="str:split(.,',')"/>
-              <xsl:variable name="path" select="$pathminmax[1]"/>
+              <xsl:variable name="path_match" select="regexp:match(.,$pathregex)"/>
+              <xsl:variable name="pathminmax" select="str:split($path_match[4],',')"/>
+              <xsl:variable name="path" select="$path_match[2]"/>
+              <xsl:variable name="path_accepts" select="$path_match[3]"/>
               <xsl:variable name="pathminmaxcount" select="count($pathminmax)"/>
               <xsl:attribute name="value">
                 <xsl:value-of select="$path"/>
               </xsl:attribute>
+              <xsl:if test="string-length($path_accepts)">
+                <xsl:attribute name="accepts">
+                  <xsl:value-of select="$path_accepts"/>
+                </xsl:attribute>
+              </xsl:if>
               <xsl:choose>
-                <xsl:when test="$pathminmaxcount = 3">
+                <xsl:when test="$pathminmaxcount = 2">
                   <xsl:attribute name="min">
-                    <xsl:value-of select="$pathminmax[2]"/>
+                    <xsl:value-of select="$pathminmax[1]"/>
                   </xsl:attribute>
                   <xsl:attribute name="max">
-                    <xsl:value-of select="$pathminmax[3]"/>
+                    <xsl:value-of select="$pathminmax[2]"/>
                   </xsl:attribute>
                 </xsl:when>
-                <xsl:when test="$pathminmaxcount = 2">
+                <xsl:when test="$pathminmaxcount = 1 or $pathminmaxcount &gt; 2">
                   <xsl:message terminate="yes">
                     <xsl:text>Widget id:</xsl:text>
                     <xsl:value-of select="$id"/>
@@ -258,9 +266,9 @@
     <xsl:text>@</xsl:text>
     <xsl:value-of select="@value"/>
     <xsl:if test="string-length(@min)&gt;0 or string-length(@max)&gt;0">
-      <xsl:text>:</xsl:text>
+      <xsl:text>,</xsl:text>
       <xsl:value-of select="@min"/>
-      <xsl:text>:</xsl:text>
+      <xsl:text>,</xsl:text>
       <xsl:value-of select="@max"/>
     </xsl:if>
   </xsl:template>
@@ -677,7 +685,7 @@
     </xsl:for-each>
     <xsl:text>    }
 </xsl:text>
-    <xsl:apply-templates mode="per_page_widget_template" select="$parsed_widgets/widget[@id = $all_page_widgets/@id]">
+    <xsl:apply-templates mode="widget_page" select="$parsed_widgets/widget[@id = $all_page_widgets/@id]">
       <xsl:with-param name="page_desc" select="$desc"/>
     </xsl:apply-templates>
     <xsl:text>  }</xsl:text>
@@ -708,7 +716,7 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="per_page_widget_template" match="*"/>
+  <xsl:template mode="widget_page" match="*"/>
   <debug:detachable-pages/>
   <xsl:template match="debug:detachable-pages">
     <xsl:text>
@@ -1870,8 +1878,10 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <xsl:template mode="widget_class" match="widget[@type='Animate']">
-    <xsl:text>class AnimateWidget extends Widget{
+  <xsl:template match="widget[@type='Animate']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>AnimateWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -1954,13 +1964,10 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Animate']">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>
-</xsl:text>
-  </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='AnimateRotation']">
-    <xsl:text>class AnimateRotationWidget extends Widget{
+  <xsl:template match="widget[@type='AnimateRotation']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>AnimateRotationWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -2039,13 +2046,16 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='AnimateRotation']">
+  <xsl:template match="widget[@type='AnimateRotation']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Back']">
-    <xsl:text>class BackWidget extends Widget{
+  <xsl:template match="widget[@type='Back']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>BackWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    on_click(evt) {
 </xsl:text>
@@ -2218,10 +2228,12 @@
     <xsl:text>);
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Button']">
-    <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
-    <xsl:text>class ButtonWidget extends Widget{
+  <xsl:template match="widget[@type='Button']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ButtonWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
+    <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
     <xsl:text>    frequency = 5;
 </xsl:text>
     <xsl:text>    display = "inactive";
@@ -2287,7 +2299,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Button']">
+  <xsl:template match="widget[@type='Button']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -2297,8 +2310,10 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='CircularBar']">
-    <xsl:text>class CircularBarWidget extends Widget{
+  <xsl:template match="widget[@type='CircularBar']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>CircularBarWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 10;
 </xsl:text>
@@ -2395,7 +2410,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='CircularBar']">
+  <xsl:template match="widget[@type='CircularBar']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -2411,8 +2427,10 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='CircularSlider']">
-    <xsl:text>class CircularSliderWidget extends Widget{
+  <xsl:template match="widget[@type='CircularSlider']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>CircularSliderWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -2867,7 +2885,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='CircularSlider']">
+  <xsl:template match="widget[@type='CircularSlider']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -2885,8 +2904,10 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='CustomHtml']">
-    <xsl:text>class CustomHtmlWidget extends Widget{
+  <xsl:template match="widget[@type='CustomHtml']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>CustomHtmlWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -2927,7 +2948,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='CustomHtml']">
+  <xsl:template match="widget[@type='CustomHtml']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -2935,11 +2957,11 @@
         <xsl:text>container code</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
-    <xsl:text>
-</xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Display']">
-    <xsl:text>class DisplayWidget extends Widget{
+  <xsl:template match="widget[@type='Display']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>DisplayWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -2954,7 +2976,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Display']">
+  <xsl:template match="widget[@type='Display']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:variable name="format">
       <xsl:call-template name="defs_by_labels">
@@ -3507,14 +3530,10 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='DropDown']">
-    <xsl:text>    function numb_event(e) {
-</xsl:text>
-    <xsl:text>        e.stopPropagation();
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>    class DropDownWidget extends Widget{
+  <xsl:template match="widget[@type='DropDown']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>DropDownWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>        dispatch(value) {
 </xsl:text>
@@ -3742,9 +3761,9 @@
 </xsl:text>
     <xsl:text>            // Stop hogging all click events
 </xsl:text>
-    <xsl:text>            svg_root.removeEventListener("pointerdown", numb_event, true);
+    <xsl:text>            svg_root.removeEventListener("pointerdown", this.numb_event, true);
 </xsl:text>
-    <xsl:text>            svg_root.removeEventListener("pointerup", numb_event, true);
+    <xsl:text>            svg_root.removeEventListener("pointerup", this.numb_event, true);
 </xsl:text>
     <xsl:text>            svg_root.removeEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
@@ -3978,6 +3997,12 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>        numb_event(e) {
+</xsl:text>
+    <xsl:text>             e.stopPropagation();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
     <xsl:text>        open(){
 </xsl:text>
     <xsl:text>            let length = this.content.length;
@@ -4032,9 +4057,9 @@
 </xsl:text>
     <xsl:text>            // disable interaction with background
 </xsl:text>
-    <xsl:text>            svg_root.addEventListener("pointerdown", numb_event, true);
+    <xsl:text>            svg_root.addEventListener("pointerdown", this.numb_event, true);
 </xsl:text>
-    <xsl:text>            svg_root.addEventListener("pointerup", numb_event, true);
+    <xsl:text>            svg_root.addEventListener("pointerup", this.numb_event, true);
 </xsl:text>
     <xsl:text>            svg_root.addEventListener("click", this.bound_close_on_click_elsewhere, true);
 </xsl:text>
@@ -4162,10 +4187,11 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    }
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='DropDown']">
+  <xsl:template match="widget[@type='DropDown']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -4193,7 +4219,8 @@
     <xsl:text>,
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='ForEach']">
+  <xsl:template match="widget[@type='ForEach']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:if test="count(path) != 1">
       <xsl:message terminate="yes">
@@ -4307,8 +4334,10 @@
     <xsl:text>    item_offset: 0,
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='ForEach']">
-    <xsl:text>class ForEachWidget extends Widget{
+  <xsl:template match="widget[@type='ForEach']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ForEachWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4443,73 +4472,97 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Input']">
-    <xsl:text>    class InputWidget extends Widget{
+  <xsl:template match="widget[@type='Input']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Input widget takes one variable path, and displays current value in
 </xsl:text>
-    <xsl:text>         on_op_click(opstr) {
+      <xsl:text>optional "value" labeled sub-element. Click on optional "edit" labeled
 </xsl:text>
-    <xsl:text>             this.change_hmi_value(0, opstr);
+      <xsl:text>element opens keypad to edit value. Operation on current value is
 </xsl:text>
-    <xsl:text>         }
+      <xsl:text>performed when click on sub-elements with label starting with '=', '+' 
 </xsl:text>
-    <xsl:text>         edit_callback(new_val) {
+      <xsl:text>or '-' sign. Value after sign is used as operand.
 </xsl:text>
-    <xsl:text>             this.apply_hmi_value(0, new_val);
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Input field with predefined operation buttons</xsl:text>
+    </shortdesc>
+    <arg accepts="string">
+      <xsl:text>optional printf-like format </xsl:text>
+    </arg>
+    <path accepts="HMI_INT, HMI_REAL, HMI_STRING">
+      <xsl:text>single variable to edit</xsl:text>
+    </path>
+  </xsl:template>
+  <xsl:template match="widget[@type='Input']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>InputWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
-    <xsl:text>         }
+    <xsl:text>     on_op_click(opstr) {
 </xsl:text>
-    <xsl:text>
+    <xsl:text>         this.change_hmi_value(0, opstr);
 </xsl:text>
-    <xsl:text>         is_inhibited = false;
+    <xsl:text>     }
 </xsl:text>
-    <xsl:text>         alert(msg){
+    <xsl:text>     edit_callback(new_val) {
 </xsl:text>
-    <xsl:text>             this.is_inhibited = true;
+    <xsl:text>         this.apply_hmi_value(0, new_val);
 </xsl:text>
-    <xsl:text>             this.display = msg;
-</xsl:text>
-    <xsl:text>             setTimeout(() =&gt; this.stopalert(), 1000);
-</xsl:text>
-    <xsl:text>             this.request_animate();
-</xsl:text>
-    <xsl:text>         }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>         stopalert(){
-</xsl:text>
-    <xsl:text>             this.is_inhibited = false;
-</xsl:text>
-    <xsl:text>             this.display = this.last_value;
-</xsl:text>
-    <xsl:text>             this.request_animate();
-</xsl:text>
-    <xsl:text>         }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>         overshot(new_val, max) {
-</xsl:text>
-    <xsl:text>             this.alert("max");
-</xsl:text>
-    <xsl:text>         }
+    <xsl:text>     }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>         undershot(new_val, min) {
+    <xsl:text>     is_inhibited = false;
 </xsl:text>
-    <xsl:text>             this.alert("min");
+    <xsl:text>     alert(msg){
 </xsl:text>
-    <xsl:text>         }
+    <xsl:text>         this.is_inhibited = true;
+</xsl:text>
+    <xsl:text>         this.display = msg;
+</xsl:text>
+    <xsl:text>         setTimeout(() =&gt; this.stopalert(), 1000);
+</xsl:text>
+    <xsl:text>         this.request_animate();
+</xsl:text>
+    <xsl:text>     }
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>     stopalert(){
+</xsl:text>
+    <xsl:text>         this.is_inhibited = false;
+</xsl:text>
+    <xsl:text>         this.display = this.last_value;
+</xsl:text>
+    <xsl:text>         this.request_animate();
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    }
+    <xsl:text>     overshot(new_val, max) {
+</xsl:text>
+    <xsl:text>         this.alert("max");
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     undershot(new_val, min) {
+</xsl:text>
+    <xsl:text>         this.alert("min");
+</xsl:text>
+    <xsl:text>     }
+</xsl:text>
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Input']">
+  <xsl:template match="widget[@type='Input']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
     <xsl:variable name="value_elt">
       <xsl:call-template name="defs_by_labels">
@@ -4598,8 +4651,10 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='JsonTable']">
-    <xsl:text>class JsonTableWidget extends Widget{
+  <xsl:template match="widget[@type='JsonTable']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>JsonTableWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    // arbitrary defaults to avoid missing entries in query
 </xsl:text>
@@ -5018,7 +5073,8 @@
     <xsl:text>        }
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='JsonTable']">
+  <xsl:template match="widget[@type='JsonTable']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -5064,10 +5120,10 @@
     <xsl:text>    }
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Jump']">
-    <xsl:text>    class JumpWidget extends Widget{
-</xsl:text>
-    <xsl:text>
+  <xsl:template match="widget[@type='Jump']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>JumpWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>        activable = false;
 </xsl:text>
@@ -5177,10 +5233,11 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>    }
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Jump']">
+  <xsl:template match="widget[@type='Jump']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:variable name="activity">
       <xsl:call-template name="defs_by_labels">
@@ -5229,7 +5286,8 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="per_page_widget_template" match="widget[@type='Jump']">
+  <xsl:template match="widget[@type='Jump']" mode="widget_page">
+    <xsl:param name="page_desc"/>
     <xsl:param name="page_desc"/>
     <xsl:if test="path">
       <xsl:variable name="target_page_name">
@@ -5331,10 +5389,10 @@
     <xsl:text>
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Keypad']">
-    <xsl:text>class KeypadWidget extends Widget{
-</xsl:text>
-    <xsl:text>
+  <xsl:template match="widget[@type='Keypad']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>KeypadWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>     on_key_click(symbols) {
 </xsl:text>
@@ -5525,7 +5583,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Keypad']">
+  <xsl:template match="widget[@type='Keypad']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -5586,7 +5645,8 @@
     <xsl:text>],
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='List']">
+  <xsl:template match="widget[@type='List']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>    items: {
 </xsl:text>
@@ -5601,7 +5661,8 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='TextStyleList']">
+  <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>    styles: {
 </xsl:text>
@@ -5617,8 +5678,10 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Meter']">
-    <xsl:text>class MeterWidget extends Widget{
+  <xsl:template match="widget[@type='Metter']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>MetterWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 10;
 </xsl:text>
@@ -5672,12 +5735,11 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Meter']">
+  <xsl:template match="widget[@type='Meter']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -5693,8 +5755,10 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='MultiState']">
-    <xsl:text>class MultiStateWidget extends Widget{
+  <xsl:template match="widget[@type='MultiState']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>MultiStateWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -5775,7 +5839,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='MultiState']">
+  <xsl:template match="widget[@type='MultiState']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
@@ -5806,8 +5871,10 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='ScrollBar']">
-    <xsl:text>class ScrollBarWidget extends Widget{
+  <xsl:template match="widget[@type='ScrollBar']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ScrollBarWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 10;
 </xsl:text>
@@ -5984,7 +6051,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='ScrollBar']">
+  <xsl:template match="widget[@type='ScrollBar']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -6016,7 +6084,11 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Slider']">
+  <xsl:template match="widget[@type='Slider']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>SliderWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
     <xsl:text>class SliderWidget extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
@@ -6687,8 +6759,11 @@
 </xsl:text>
     <xsl:text>}
 </xsl:text>
+    <xsl:text>}
+</xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Slider']">
+  <xsl:template match="widget[@type='Slider']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -6703,11 +6778,11 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
-    <xsl:text>
-</xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='Switch']">
-    <xsl:text>class SwitchWidget extends Widget{
+  <xsl:template match="widget[@type='Switch']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>SwitchWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -6732,7 +6807,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='Switch']">
+  <xsl:template match="widget[@type='Switch']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
@@ -6766,8 +6842,10 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_class" match="widget[@type='ToggleButton']">
-    <xsl:text>class ToggleButtonWidget extends Widget{
+  <xsl:template match="widget[@type='ToggleButton']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ToggleButtonWidget</xsl:text>
+    <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
@@ -6846,7 +6924,8 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template mode="widget_defs" match="widget[@type='ToggleButton']">
+  <xsl:template match="widget[@type='ToggleButton']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
