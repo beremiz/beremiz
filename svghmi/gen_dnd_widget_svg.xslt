@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn">
   <xsl:output method="xml"/>
   <xsl:param name="hmi_path"/>
-  <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="subhmitree" select="ns:GetSubHMITree()"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
+  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="id" select="@id"/>
@@ -51,22 +51,29 @@
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
-              <xsl:variable name="pathminmax" select="str:split(.,',')"/>
-              <xsl:variable name="path" select="$pathminmax[1]"/>
+              <xsl:variable name="path_match" select="regexp:match(.,$pathregex)"/>
+              <xsl:variable name="pathminmax" select="str:split($path_match[4],',')"/>
+              <xsl:variable name="path" select="$path_match[2]"/>
+              <xsl:variable name="path_accepts" select="$path_match[3]"/>
               <xsl:variable name="pathminmaxcount" select="count($pathminmax)"/>
               <xsl:attribute name="value">
                 <xsl:value-of select="$path"/>
               </xsl:attribute>
+              <xsl:if test="string-length($path_accepts)">
+                <xsl:attribute name="accepts">
+                  <xsl:value-of select="$path_accepts"/>
+                </xsl:attribute>
+              </xsl:if>
               <xsl:choose>
-                <xsl:when test="$pathminmaxcount = 3">
+                <xsl:when test="$pathminmaxcount = 2">
                   <xsl:attribute name="min">
-                    <xsl:value-of select="$pathminmax[2]"/>
+                    <xsl:value-of select="$pathminmax[1]"/>
                   </xsl:attribute>
                   <xsl:attribute name="max">
-                    <xsl:value-of select="$pathminmax[3]"/>
+                    <xsl:value-of select="$pathminmax[2]"/>
                   </xsl:attribute>
                 </xsl:when>
-                <xsl:when test="$pathminmaxcount = 2">
+                <xsl:when test="$pathminmaxcount = 1 or $pathminmaxcount &gt; 2">
                   <xsl:message terminate="yes">
                     <xsl:text>Widget id:</xsl:text>
                     <xsl:value-of select="$id"/>
@@ -128,9 +135,9 @@
     <xsl:text>@</xsl:text>
     <xsl:value-of select="@value"/>
     <xsl:if test="string-length(@min)&gt;0 or string-length(@max)&gt;0">
-      <xsl:text>:</xsl:text>
+      <xsl:text>,</xsl:text>
       <xsl:value-of select="@min"/>
-      <xsl:text>:</xsl:text>
+      <xsl:text>,</xsl:text>
       <xsl:value-of select="@max"/>
     </xsl:if>
   </xsl:template>
@@ -214,7 +221,7 @@
         <xsl:value-of select="$svg_widget_type"/>
       </msg>
     </xsl:variable>
-    <xsl:value-of select="ns:GiveDetails($testmsg)"/>
+    <xsl:value-of select="ns:PassMessage($testmsg)"/>
     <xsl:apply-templates mode="inline_svg" select="/"/>
   </xsl:template>
 </xsl:stylesheet>
