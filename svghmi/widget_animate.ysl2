@@ -1,8 +1,7 @@
 // widget_animate.ysl2
 
-template "widget[@type='Animate']", mode="widget_class"{
+widget_class("Animate") {
     ||
-    class AnimateWidget extends Widget{
         frequency = 5;
         speed = 0;
         start = false;
@@ -42,12 +41,6 @@ template "widget[@type='Animate']", mode="widget_class"{
             let widget_pos = this.element.getBBox();
             this.widget_center = [(widget_pos.x+widget_pos.width/2), (widget_pos.y+widget_pos.height/2)];
         }
-    }
     ||
 }
 
-
-template "widget[@type='Animate']", mode="widget_defs" {
-    param "hmi_element";
-    |,
-}

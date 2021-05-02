@@ -1,18 +1,16 @@
 // widget_display.ysl2
 
 
-template "widget[@type='Display']", mode="widget_class"
+widget_class("Display")
     ||
-    class DisplayWidget extends Widget{
         frequency = 5;
         dispatch(value, oldval, index) {
             this.fields[index] = value;    
             this.request_animate();
         }
-    }
     ||
 
-template "widget[@type='Display']", mode="widget_defs" {
+widget_defs("Display") {
     param "hmi_element";
 
     const "format" optional_labels("format");

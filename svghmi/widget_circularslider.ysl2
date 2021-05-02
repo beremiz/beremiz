@@ -1,8 +1,7 @@
 // widget_circuralslider.ysl2
 
-template "widget[@type='CircularSlider']", mode="widget_class"
+widget_class("CircularSlider")
     ||
-    class CircularSliderWidget extends Widget{
         frequency = 5;
         range = undefined;
         circle = undefined;
@@ -228,10 +227,9 @@ template "widget[@type='CircularSlider']", mode="widget_class"
             }
 
         }
-    }
     ||
 
-template "widget[@type='CircularSlider']", mode="widget_defs" {
+widget_defs("CircularSlider") {
     param "hmi_element";
     labels("handle range");
     optional_labels("value min max setpoint");

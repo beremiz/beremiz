@@ -1,9 +1,7 @@
 // widget_jump.ysl2
 
-template "widget[@type='Jump']", mode="widget_class"{
+widget_class("Jump") {
 ||
-    class JumpWidget extends Widget{
-
         activable = false;
         active = false;
         disabled = false;
@@ -58,11 +56,10 @@ template "widget[@type='Jump']", mode="widget_class"{
               this.update_activity();
             }
         }
-    }
 ||
 }
 
-template "widget[@type='Jump']", mode="widget_defs" {
+widget_defs("Jump") {
     param "hmi_element";
     const "activity" optional_labels("active inactive");
     const "have_activity","string-length($activity)>0";
@@ -90,7 +87,7 @@ template "widget[@type='Jump']", mode="widget_defs" {
     |     },
 }
 
-template "widget[@type='Jump']", mode="per_page_widget_template"{
+widget_page("Jump"){
     param "page_desc";
     /* check that given path is compatible with page's reference path */
     if "path" {

@@ -1,8 +1,7 @@
 // widget_meter.ysl2
 
-template "widget[@type='Meter']", mode="widget_class"{
+widget_class("Metter"){
     ||
-    class MeterWidget extends Widget{
         frequency = 10;
         origin = undefined;
         range = undefined;
@@ -29,12 +28,10 @@ template "widget[@type='Meter']", mode="widget_class"{
             this.range = [min, max, this.range_elt.getTotalLength()]
             this.origin = this.needle_elt.getPointAtLength(0);
         }
-
-    }
     ||
 }
 
-template "widget[@type='Meter']", mode="widget_defs" {
+widget_defs("Meter") {
     param "hmi_element";
     labels("needle range");
     optional_labels("value min max");

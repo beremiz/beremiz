@@ -1,8 +1,7 @@
 // widget_customhtml.ysl2
 
-template "widget[@type='CustomHtml']", mode="widget_class"{
+widget_class("CustomHtml"){
     ||
-    class CustomHtmlWidget extends Widget{
         frequency = 5;
         widget_size = undefined;
 
@@ -21,13 +20,11 @@ template "widget[@type='CustomHtml']", mode="widget_class"{
                 this.code_elt.textContent+
                 ' </foreignObject>';
         }
-    }
     ||
 }
 
 
-template "widget[@type='CustomHtml']", mode="widget_defs" {
+widget_defs("CustomHtml") {
     param "hmi_element";
     labels("container code");
-    |,
 }

@@ -1,6 +1,6 @@
 // widget_list.ysl2
 
-template "widget[@type='List']", mode="widget_defs" {
+widget_defs("List") {
     param "hmi_element";
     |     items: {
     foreach "$hmi_element/*[@inkscape:label]" {
@@ -9,7 +9,7 @@ template "widget[@type='List']", mode="widget_defs" {
     |     },
 }
 
-template "widget[@type='TextStyleList']", mode="widget_defs" {
+widget_defs("TextStyleList") {
     param "hmi_element";
     |     styles: {
     foreach "$hmi_element/*[@inkscape:label]" {

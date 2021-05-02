@@ -1,5 +1,5 @@
 
-template "widget[@type='ForEach']", mode="widget_defs" {
+widget_defs("ForEach") {
     param "hmi_element";
 
     if "count(path) != 1" error > ForEach widget «$hmi_element/@id» must have one HMI path given.
@@ -49,9 +49,8 @@ template "widget[@type='ForEach']", mode="widget_defs" {
     |     item_offset: 0,
 }
 
-template "widget[@type='ForEach']", mode="widget_class"
+widget_class("ForEach")
 ||
-class ForEachWidget extends Widget{
 
     unsub_items(){
         for(let item of this.items){
@@ -117,6 +116,5 @@ class ForEachWidget extends Widget{
         jumps_need_update = true;
         requestHMIAnimation();
     }
-}
 ||
 
