@@ -13,7 +13,10 @@
 //      path value="path4" index="path4" type="HMI_LOCAL";
 //  }
 //
-template "*", mode="parselabel" {
+const "pathregex",!"'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"!;
+
+template "*", mode="parselabel" 
+{
     const "label","@inkscape:label";
     const "id","@id";
     const "description", "substring-after($label,'HMI:')";
@@ -41,16 +44,24 @@ template "*", mode="parselabel" {
         const "paths", "substring-after($description,'@')";
         foreach "str:split($paths, '@')" {
             if "string-length(.) > 0" path {
-                const "pathminmax", "str:split(.,',')";
-                const "path", "$pathminmax[1]";
+                // 1 : global match
+                // 2 : /path
+                // 3 : [accepts]
+                // 4 : min,max
+                const "path_match", "regexp:match(.,$pathregex)";
+                const "pathminmax", "str:split($path_match[4],',')";
+                const "path", "$path_match[2]";
+                const "path_accepts", "$path_match[3]";
                 const "pathminmaxcount", "count($pathminmax)";
                 attrib "value" > «$path»
+                if "string-length($path_accepts)"
+                    attrib "accepts" > «$path_accepts»
                 choose {
-                    when "$pathminmaxcount = 3" {
-                        attrib "min" > «$pathminmax[2]»
-                        attrib "max" > «$pathminmax[3]»
-                    }
                     when "$pathminmaxcount = 2" {
+                        attrib "min" > «$pathminmax[1]»
+                        attrib "max" > «$pathminmax[2]»
+                    }
+                    when "$pathminmaxcount = 1 or $pathminmaxcount > 2" {
                         error > Widget id:«$id» label:«$label» has wrong syntax of path section «$pathminmax»
                     }
                 }
