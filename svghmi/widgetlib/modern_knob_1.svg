@@ -159,16 +159,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="41.428571"
-     inkscape:cy="555.71429"
+     inkscape:zoom="1.979899"
+     inkscape:cx="208.80035"
+     inkscape:cy="841.9769"
      inkscape:document-units="mm"
-     inkscape:current-layer="svg2637"
+     inkscape:current-layer="g3058"
      showgrid="false"
-     inkscape:window-width="1414"
-     inkscape:window-height="840"
-     inkscape:window-x="1690"
-     inkscape:window-y="117"
+     inkscape:window-width="1623"
+     inkscape:window-height="1446"
+     inkscape:window-x="3346"
+     inkscape:window-y="244"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata2634">
@@ -178,7 +178,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -206,7 +206,7 @@
     <g
        style="fill:none;stroke-width:1.47405899"
        transform="matrix(0.53304115,0,0,0.53229017,1417.5153,1776.3135)"
-       inkscape:label="HMI:CircularBar@/CIRCULARBAR"
+       inkscape:label="HMI:CircularBar@value[HMI_REAL,HMI_INT]0,111@label[HMI_STRING]"
        id="g30664">
       <text
          inkscape:label="value"
