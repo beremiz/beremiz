@@ -1,0 +1,20 @@
+include yslt_noindent.yml2
+
+istylesheet
+            /* From Inkscape */
+            xmlns:svg="http://www.w3.org/2000/svg"
+            xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+
+            extension-element-prefixes="ns func exsl regexp str dyn"
+            exclude-result-prefixes="ns func exsl regexp str dyn svg inkscape" {
+
+    const "indexed_hmitree", "/.."; // compatibility with parse_labels.ysl2
+    include parse_labels.ysl2
+
+    const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
+
+    template "/"  
+        widgets
+            apply "$hmi_elements", mode="parselabel";
+
+}

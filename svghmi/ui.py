@@ -299,9 +299,53 @@ class WidgetLibBrowser(wx.Panel):
 
     def GetSubHMITree(self, _context):
         return [self.hmitree_node.etree()]
+    def AnalyseWidget(self):
+        self.msg = ""
+
+        try:
+            if self.selected_SVG is None:
+                raise Exception(_("No widget selected"))
+
+            transform = XSLTransform(
+                os.path.join(ScriptDirectory, "analyse_widget.xslt"),[])
+
+            svgdom = etree.parse(self.selected_SVG)
+
+            result = transform.transform(svgdom)
+
+            for entry in transform.get_error_log():
+                self.msg += "XSLT: " + entry.message + "\n" 
+
+        except Exception as e:
+            self.msg += str(e)
+        except XSLTApplyError as e:
+            self.msg += "Widget analysis error: " + e.message
+        else:
+            return result
+
+    def UpdateUI(self, signature):
+        if signature is not None:
+            print(etree.tostring(signature, pretty_print=True))
+            widgets = signature.getroot()
+            for widget in widgets:
+                widget_type = widget.get("type")
+                print(widget_type)
+                for path in widget:
+                    path_value = path.get("value")
+                    path_accepts = map(
+                        str.strip, path.get("accepts", '')[1:-1].split(','))
+                    print(path_value, path_accepts)
+
+
 
     def ValidateWidget(self):
         self.msg = ""
+
+        signature = self.AnalyseWidget()
+        
+        self.UpdateUI(signature)
+
+        return
 
         if self.tempf is not None:
             os.unlink(self.tempf.name)
