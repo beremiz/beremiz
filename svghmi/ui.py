@@ -142,18 +142,20 @@ class WidgetLibBrowser(wx.Panel):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
 
-        sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=0)
+        sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=0)
         sizer.AddGrowableCol(0)
         sizer.AddGrowableRow(1)
         self.libbutton = wx.Button(self, -1, _("Select SVG widget library"))
         self.widgetpicker = WidgetPicker(self, self.libdir)
         self.preview = wx.Panel(self, size=(-1, _preview_height + 10))
-        self.comment = wx.TextCtrl(self, size=wx.Size(-1, 80),
+        self.desc = wx.TextCtrl(self, size=wx.Size(-1, 80),
                                    style=wx.TE_READONLY | wx.TE_MULTILINE)
-        sizer.AddWindow(self.libbutton, flag=wx.GROW)
-        sizer.AddWindow(self.widgetpicker, flag=wx.GROW)
-        sizer.AddWindow(self.preview, flag=wx.GROW)
-        sizer.AddWindow(self.comment, flag=wx.GROW)
+        self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.libbutton, flag=wx.GROW)
+        sizer.Add(self.widgetpicker, flag=wx.GROW)
+        sizer.Add(self.preview, flag=wx.GROW)
+        sizer.Add(self.desc, flag=wx.GROW)
+        sizer.Add(self.signature_sizer, flag=wx.GROW)
         sizer.Layout()
         self.SetAutoLayout(True)
         self.SetSizer(sizer)
@@ -193,7 +195,7 @@ class WidgetLibBrowser(wx.Panel):
             w = self.bmp.GetWidth()
             dc.DrawBitmap(self.bmp, (sz.width - w)/2, 5)
 
-        self.comment.SetValue(self.msg)
+        self.desc.SetValue(self.msg)
 
 
     def OnSelectLibDir(self, event):
