@@ -38,9 +38,7 @@ from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 from ConfigTreeNode import ConfigTreeNode
 import util.paths as paths
 
-base_folder = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
-base_folder = os.path.join(base_folder, "..")
-BacnetPath  = os.path.join(base_folder, "BACnet")
+BacnetPath = paths.ThirdPartyPath("BACnet")
 BacnetLibraryPath = os.path.join(BacnetPath, "lib")
 BacnetIncludePath = os.path.join(BacnetPath, "include")
 BacnetIncludePortPath = os.path.join(BacnetPath, "ports")
