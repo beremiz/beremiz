@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2020-12-01T09:52:25">
+  <contentHeader name="Unnamed" modificationDateTime="2021-05-13T10:44:29">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -74,14 +74,21 @@
         </interface>
         <body>
           <FBD>
-            <block localId="4" typeName="PumpControl" instanceName="Pump0" executionOrderId="0" height="40" width="127">
+            <block localId="4" typeName="PumpControl" instanceName="Pump0" executionOrderId="0" height="60" width="127">
               <position x="595" y="50"/>
               <inputVariables>
-                <variable formalParameter="TargetPressure">
+                <variable formalParameter="Pump">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
                     <connection refLocalId="5">
-                      <position x="595" y="80"/>
+                      <position x="595" y="100"/>
+                      <position x="582" y="100"/>
+                      <position x="582" y="80"/>
                       <position x="570" y="80"/>
                     </connection>
                   </connectionPointIn>
@@ -97,12 +104,40 @@
               </connectionPointOut>
               <expression>TargetPressure</expression>
             </inVariable>
-            <block localId="1" typeName="PumpControl" instanceName="Pump1" executionOrderId="0" height="40" width="127">
-              <position x="595" y="180"/>
+            <block localId="1" typeName="PumpControl" instanceName="Pump1" executionOrderId="0" height="60" width="127">
+              <position x="595" y="280"/>
               <inputVariables>
-                <variable formalParameter="TargetPressure">
+                <variable formalParameter="Pump">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="5">
+                      <position x="595" y="330"/>
+                      <position x="582" y="330"/>
+                      <position x="582" y="80"/>
+                      <position x="570" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <block localId="2" typeName="PumpControl" instanceName="Pump2" executionOrderId="0" height="60" width="127">
+              <position x="595" y="160"/>
+              <inputVariables>
+                <variable formalParameter="Pump">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
                     <connection refLocalId="5">
                       <position x="595" y="210"/>
                       <position x="582" y="210"/>
@@ -115,69 +150,20 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <block localId="2" typeName="PumpControl" instanceName="Pump2" executionOrderId="0" height="40" width="127">
-              <position x="595" y="110"/>
-              <inputVariables>
-                <variable formalParameter="TargetPressure">
-                  <connectionPointIn>
-                    <relPosition x="0" y="30"/>
-                    <connection refLocalId="5">
-                      <position x="595" y="140"/>
-                      <position x="582" y="140"/>
-                      <position x="582" y="80"/>
-                      <position x="570" y="80"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <block localId="3" typeName="PumpControl" instanceName="Pump3" executionOrderId="0" height="40" width="127">
-              <position x="595" y="245"/>
-              <inputVariables>
-                <variable formalParameter="TargetPressure">
-                  <connectionPointIn>
-                    <relPosition x="0" y="30"/>
-                    <connection refLocalId="5">
-                      <position x="595" y="275"/>
-                      <position x="582" y="275"/>
-                      <position x="582" y="80"/>
-                      <position x="570" y="80"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <block localId="6" typeName="PumpControl" instanceName="Pump4" executionOrderId="0" height="40" width="127">
-              <position x="595" y="315"/>
-              <inputVariables>
-                <variable formalParameter="TargetPressure">
-                  <connectionPointIn>
-                    <relPosition x="0" y="30"/>
-                    <connection refLocalId="5">
-                      <position x="595" y="345"/>
-                      <position x="582" y="345"/>
-                      <position x="582" y="80"/>
-                      <position x="570" y="80"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <block localId="7" typeName="PumpControl" instanceName="Pump5" executionOrderId="0" height="40" width="127">
+            <block localId="3" typeName="PumpControl" instanceName="Pump3" executionOrderId="0" height="60" width="127">
               <position x="595" y="395"/>
               <inputVariables>
-                <variable formalParameter="TargetPressure">
+                <variable formalParameter="Pump">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
                     <connection refLocalId="5">
-                      <position x="595" y="425"/>
-                      <position x="582" y="425"/>
+                      <position x="595" y="445"/>
+                      <position x="582" y="445"/>
                       <position x="582" y="80"/>
                       <position x="570" y="80"/>
                     </connection>
@@ -187,15 +173,20 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <block localId="8" typeName="PumpControl" instanceName="Pump6" executionOrderId="0" height="40" width="127">
-              <position x="595" y="475"/>
+            <block localId="6" typeName="PumpControl" instanceName="Pump4" executionOrderId="0" height="60" width="127">
+              <position x="595" y="515"/>
               <inputVariables>
-                <variable formalParameter="TargetPressure">
+                <variable formalParameter="Pump">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
                     <connection refLocalId="5">
-                      <position x="595" y="505"/>
-                      <position x="582" y="505"/>
+                      <position x="595" y="565"/>
+                      <position x="582" y="565"/>
                       <position x="582" y="80"/>
                       <position x="570" y="80"/>
                     </connection>
@@ -205,15 +196,24 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <block localId="9" typeName="PumpControl" instanceName="Pump7" executionOrderId="0" height="40" width="127">
-              <position x="595" y="545"/>
+            <block localId="7" typeName="PumpControl" instanceName="Pump5" executionOrderId="0" height="60" width="127">
+              <position x="595" y="645"/>
               <inputVariables>
-                <variable formalParameter="TargetPressure">
+                <variable formalParameter="Pump">
                   <connectionPointIn>
                     <relPosition x="0" y="30"/>
+                    <connection refLocalId="11">
+                      <position x="595" y="675"/>
+                      <position x="570" y="675"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
                     <connection refLocalId="5">
-                      <position x="595" y="575"/>
-                      <position x="582" y="575"/>
+                      <position x="595" y="695"/>
+                      <position x="582" y="695"/>
                       <position x="582" y="80"/>
                       <position x="570" y="80"/>
                     </connection>
@@ -223,17 +223,86 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
+            <block localId="8" typeName="PumpControl" instanceName="Pump6" executionOrderId="0" height="60" width="127">
+              <position x="595" y="775"/>
+              <inputVariables>
+                <variable formalParameter="Pump">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="5">
+                      <position x="595" y="825"/>
+                      <position x="582" y="825"/>
+                      <position x="582" y="80"/>
+                      <position x="570" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <block localId="9" typeName="PumpControl" instanceName="Pump7" executionOrderId="0" height="60" width="127">
+              <position x="595" y="895"/>
+              <inputVariables>
+                <variable formalParameter="Pump">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="10">
+                      <position x="595" y="925"/>
+                      <position x="560" y="925"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TargetPressure">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="5">
+                      <position x="595" y="945"/>
+                      <position x="582" y="945"/>
+                      <position x="582" y="80"/>
+                      <position x="570" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <inVariable localId="10" executionOrderId="0" height="25" width="20" negated="false">
+              <position x="540" y="915"/>
+              <connectionPointOut>
+                <relPosition x="20" y="10"/>
+              </connectionPointOut>
+              <expression>0</expression>
+            </inVariable>
+            <inVariable localId="11" executionOrderId="0" height="25" width="20" negated="false">
+              <position x="550" y="665"/>
+              <connectionPointOut>
+                <relPosition x="20" y="10"/>
+              </connectionPointOut>
+              <expression>0</expression>
+            </inVariable>
           </FBD>
         </body>
       </pou>
       <pou name="PumpControl" pouType="functionBlock">
         <interface>
-          <localVars>
+          <inputVars>
             <variable name="Pump">
               <type>
                 <derived name="HMI_NODE"/>
               </type>
+              <initialValue>
+                <simpleValue value="1"/>
+              </initialValue>
             </variable>
+          </inputVars>
+          <localVars>
             <variable name="Pressure">
               <type>
                 <derived name="HMI_INT"/>
