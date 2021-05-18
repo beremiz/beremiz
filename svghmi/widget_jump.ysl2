@@ -33,14 +33,29 @@ widget_class("Jump") {
         update_activity() {
             if(this.active) {
                  /* show active */ 
-                 this.active_elt.setAttribute("style", this.active_elt_style);
+                 this.active_elt.style.display = "";
                  /* hide inactive */ 
-                 this.inactive_elt.setAttribute("style", "display:none");
+                 this.inactive_elt.style.display = "none";
             } else {
                  /* show inactive */ 
-                 this.inactive_elt.setAttribute("style", this.inactive_elt_style);
+                 this.inactive_elt.style.display = "";
                  /* hide active */ 
-                 this.active_elt.setAttribute("style", "display:none");
+                 this.active_elt.style.display = "none";
+            }
+        }
+
+        update_disability() {
+            if(this.disabled) {
+                /* show disabled */ 
+                this.disabled_elt.style.display = "";
+                /* hide inactive */ 
+                this.inactive_elt.style.display = "none";
+                /* hide active */ 
+                this.active_elt.style.display = "none";
+            } else {
+                /* hide disabled */ 
+                this.disabled_elt.style.display = "none";
+                this.update_activity();
             }
         }
 
@@ -48,10 +63,14 @@ widget_class("Jump") {
             let that = this;
             const name = this.args[0];
             return function(evt){
-                /* TODO: suport path pointing to local variable whom value 
-                   would be an HMI_TREE index to jump to a relative page */
-                const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
-                switch_page(name, index);
+                /* TODO: in order to allow jumps to page selected through for exemple a dropdown,
+                   support path pointing to local variable whom value 
+                   would be an HMI_TREE index and then jump to a relative page not hard-coded in advance */
+
+                if(!that.disabled) {
+                    const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
+                    switch_page(name, index);
+                }
             }
         }
 
@@ -60,24 +79,13 @@ widget_class("Jump") {
                 const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
                 const ref_name = this.args[0];
                 this.active = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
-                this.update_activity();
+                this.update_state();
             }
         }
 
         dispatch(value) {
             this.disabled = !Number(value);
-            if(this.disabled) {
-              /* show disabled */ 
-              this.disabled_elt.setAttribute("style", this.disabled_elt_style);
-              /* hide inactive */ 
-              this.inactive_elt.setAttribute("style", "display:none");
-              /* hide active */ 
-              this.active_elt.setAttribute("style", "display:none");
-            } else {
-              /* hide disabled */ 
-              this.disabled_elt.setAttribute("style", "display:none");
-              this.update_activity();
-            }
+            this.update_state();
         }
 ||
 }
@@ -95,19 +103,24 @@ widget_defs("Jump") {
     |     init: function() {
     |         this.element.onclick = this.make_on_click();
     if "$have_activity" {
-    |         this.active_elt_style = this.active_elt.getAttribute("style");
-    |         this.inactive_elt_style = this.inactive_elt.getAttribute("style");
     |         this.activable = true;
     }
+    if "not($have_disability)" {
+    |         this.unsubscribable = true;
+    }
+    >         this.update_state = 
     choose {
         when "$have_disability" {
-    |         this.disabled_elt_style = this.disabled_elt.getAttribute("style");
+            > this.update_disability
         }
-        otherwise {
-    |         this.unsubscribable = true;
+        when "$have_activity" {
+            > this.update_activity
         }
+        otherwise > null
     }
+    > ;\n
     |     },
+
 }
 
 widget_page("Jump"){
