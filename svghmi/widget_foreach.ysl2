@@ -1,6 +1,34 @@
+// widget_foreach.ysl2
+
+widget_desc("ForEach") {
+
+    longdesc
+    ||
+    ForEach widget is used to span a small set of widget over a larger set of
+    repeated HMI_NODEs. 
+
+    Idea is somewhat similar to relative page, but it all happens inside the
+    ForEach widget, no page involved.
+
+    Together with relative Jump widgets it can be used to build a menu to reach
+    relative pages covering many identical HMI_NODES siblings.
+
+    ForEach widget takes a HMI_CLASS name as argument and a HMI_NODE path as
+    variable.
+
+    Direct sub-elements can be either groups of widget to be spanned, labeled
+    "ClassName:offset", or buttons to control the spanning, labeled
+    "ClassName:+/-number".
+    ||
+
+    shortdesc > span widgets over a set of repeated HMI_NODEs
+
+    arg name="class_name" accepts="string" > HMI_CLASS name
+
+    path name="root" accepts="HMI_NODE" >  where to find HMI_NODEs whose HMI_CLASS is class_name
+}
 
 widget_defs("ForEach") {
-    param "hmi_element";
 
     if "count(path) != 1" error > ForEach widget «$hmi_element/@id» must have one HMI path given.
     if "count(arg) != 1" error > ForEach widget «$hmi_element/@id» must have one argument given : a class name.

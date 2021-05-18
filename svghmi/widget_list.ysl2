@@ -1,7 +1,9 @@
 // widget_list.ysl2
+widget_desc("List") {
+    // TODO
+}
 
 widget_defs("List") {
-    param "hmi_element";
     |     items: {
     foreach "$hmi_element/*[@inkscape:label]" {
     |         «@inkscape:label»: "«@id»",
@@ -10,7 +12,10 @@ widget_defs("List") {
 }
 
 widget_defs("TextStyleList") {
-    param "hmi_element";
+    // TODO
+}
+
+widget_defs("TextStyleList") {
     |     styles: {
     foreach "$hmi_element/*[@inkscape:label]" {
         const "style", "func:refered_elements(.)[self::svg:text]/@style";

@@ -128,6 +128,7 @@ class WidgetPicker(wx.TreeCtrl):
 
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
+_preview_margin = 5
 class WidgetLibBrowser(wx.Panel):
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize):
@@ -142,24 +143,24 @@ class WidgetLibBrowser(wx.Panel):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
 
-        sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=0)
-        sizer.AddGrowableCol(0)
-        sizer.AddGrowableRow(1)
+        self.main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=0)
+        self.main_sizer.AddGrowableCol(0)
+        self.main_sizer.AddGrowableRow(1)
         self.libbutton = wx.Button(self, -1, _("Select SVG widget library"))
         self.widgetpicker = WidgetPicker(self, self.libdir)
-        self.preview = wx.Panel(self, size=(-1, _preview_height + 10))
-        self.desc = wx.TextCtrl(self, size=wx.Size(-1, 80),
+        self.preview = wx.Panel(self, size=(-1, _preview_height + _preview_margin*2))
+        self.desc = wx.TextCtrl(self, size=wx.Size(-1, 160),
                                    style=wx.TE_READONLY | wx.TE_MULTILINE)
         self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.libbutton, flag=wx.GROW)
-        sizer.Add(self.widgetpicker, flag=wx.GROW)
-        sizer.Add(self.preview, flag=wx.GROW)
-        sizer.Add(self.desc, flag=wx.GROW)
-        sizer.Add(self.signature_sizer, flag=wx.GROW)
-        sizer.Layout()
+        self.main_sizer.Add(self.libbutton, flag=wx.GROW)
+        self.main_sizer.Add(self.widgetpicker, flag=wx.GROW)
+        self.main_sizer.Add(self.preview, flag=wx.GROW)
+        self.main_sizer.Add(self.desc, flag=wx.GROW)
+        self.main_sizer.Add(self.signature_sizer, flag=wx.GROW)
+        self.main_sizer.Layout()
         self.SetAutoLayout(True)
-        self.SetSizer(sizer)
-        sizer.Fit(self)
+        self.SetSizer(self.main_sizer)
+        self.main_sizer.Fit(self)
         self.Bind(wx.EVT_BUTTON, self.OnSelectLibDir, self.libbutton)
         self.preview.Bind(wx.EVT_PAINT, self.OnPaint)
         self.preview.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
@@ -168,6 +169,21 @@ class WidgetLibBrowser(wx.Panel):
 
         self.msg = _("Drag selected Widget from here to Inkscape")
         self.tempf = None 
+
+        self.paths_editors = []
+
+    def ResetSignature(self):
+        self.signature_sizer.Clear()
+        for editor in self.paths_editors:
+            editor.Destroy()
+        self.paths_editors = []
+        self.main_sizer.Layout()
+
+    def AddPathToSignature(self, path):
+        new_editor = wx.TextCtrl(self, size=wx.Size(-1, -1))
+        self.paths_editors.append(new_editor)
+        self.signature_sizer.Add(new_editor, flag=wx.GROW)
+        self.main_sizer.Layout()
 
     def RecallLibDir(self):
         conf = self.Config.Read(_conf_key)
@@ -193,7 +209,7 @@ class WidgetLibBrowser(wx.Panel):
             # Get Preview panel size
             sz = self.preview.GetClientSize()
             w = self.bmp.GetWidth()
-            dc.DrawBitmap(self.bmp, (sz.width - w)/2, 5)
+            dc.DrawBitmap(self.bmp, (sz.width - w)/2, _preview_margin)
 
         self.desc.SetValue(self.msg)
 
@@ -270,7 +286,9 @@ class WidgetLibBrowser(wx.Panel):
                 self.bmp = wx.Bitmap(thumbpath) if have_thumb else None
 
                 self.selected_SVG = svgpath if have_thumb else None
-                self.ValidateWidget()
+
+                self.AnalyseWidgetAndUpdateUI()
+
             except IOError:
                 self.msg = _("Widget library must be writable")
 
@@ -301,7 +319,8 @@ class WidgetLibBrowser(wx.Panel):
 
     def GetSubHMITree(self, _context):
         return [self.hmitree_node.etree()]
-    def AnalyseWidget(self):
+
+    def AnalyseWidgetAndUpdateUI(self):
         self.msg = ""
 
         try:
@@ -313,7 +332,7 @@ class WidgetLibBrowser(wx.Panel):
 
             svgdom = etree.parse(self.selected_SVG)
 
-            result = transform.transform(svgdom)
+            signature = transform.transform(svgdom)
 
             for entry in transform.get_error_log():
                 self.msg += "XSLT: " + entry.message + "\n" 
@@ -323,31 +342,38 @@ class WidgetLibBrowser(wx.Panel):
         except XSLTApplyError as e:
             self.msg += "Widget analysis error: " + e.message
         else:
-            return result
+            
+            self.ResetSignature()
 
-    def UpdateUI(self, signature):
-        if signature is not None:
             print(etree.tostring(signature, pretty_print=True))
             widgets = signature.getroot()
+            for defs in widgets.iter("defs"):
+
+                # Keep double newlines (to mark paragraphs)
+                self.msg += defs.find("type").text + ":\n" + "\n\n".join(map(
+                    lambda s:s.replace("\n"," ").replace("  ", " "), 
+                    defs.find("longdesc").text.split("\n\n")))
+                for arg in defs.iter("arg"):
+                    print(arg.get("name"))
+                    print(arg.get("accepts"))
+                for path in defs.iter("path"):
+                    self.AddPathToSignature(path)
+                    print(path.get("name"))
+                    print(path.get("accepts"))
+
             for widget in widgets:
                 widget_type = widget.get("type")
                 print(widget_type)
-                for path in widget:
+                for path in widget.iterchildren("path"):
                     path_value = path.get("value")
                     path_accepts = map(
                         str.strip, path.get("accepts", '')[1:-1].split(','))
-                    print(path_value, path_accepts)
+                    print(path, path_value, path_accepts)
 
 
 
     def ValidateWidget(self):
         self.msg = ""
-
-        signature = self.AnalyseWidget()
-        
-        self.UpdateUI(signature)
-
-        return
 
         if self.tempf is not None:
             os.unlink(self.tempf.name)

@@ -1,5 +1,22 @@
 // widget_jsontable.ysl2
 
+widget_desc("JsonTable") {
+    longdesc
+    || 
+    Send given variables as POST to http URL argument, spread returned JSON in
+    SVG sub-elements of "data" labeled element.
+    
+    Documentation to be written. see svbghmi exemple.
+    ||
+
+    shortdesc > Http POST variables, spread JSON back
+
+    arg name="url" accepts="string" >  
+
+    path name="edit" accepts="HMI_INT, HMI_REAL, HMI_STRING" > single variable to edit
+    
+}
+
 widget_class("JsonTable")
     ||
         // arbitrary defaults to avoid missing entries in query
@@ -262,7 +279,6 @@ template "svg:g", mode="json_table_render" {
 }
 
 widget_defs("JsonTable") {
-    param "hmi_element";
     labels("data");
     const "data_elt", "$result_svg_ns//*[@id = $hmi_element/@id]/*[@inkscape:label = 'data']";
     |     visible: «count($data_elt/*[@inkscape:label])»,

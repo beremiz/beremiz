@@ -1,5 +1,19 @@
 // widget_slider.ysl2
 
+widget_desc("Slider") {
+    longdesc
+    || 
+    Slider - DEPRECATED - use ScrollBar or PathSlider instead
+    ||
+
+    shortdesc > Slider - DEPRECATED - use ScrollBar instead
+
+    path name="value" accepts="HMI_INT" > value
+    path name="range" accepts="HMI_INT" > range
+    path name="visible" accepts="HMI_INT" > visible
+    
+}
+
 widget_class("Slider")
     ||
     class SliderWidget extends Widget{
@@ -340,7 +354,6 @@ widget_class("Slider")
     ||
 
 widget_defs("Slider") {
-    param "hmi_element";
     labels("handle range");
     optional_labels("value min max setpoint");
 }

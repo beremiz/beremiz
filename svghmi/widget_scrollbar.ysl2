@@ -1,4 +1,17 @@
 // widget_scrollbar.ysl2
+widget_desc("ScrollBar") {
+    longdesc
+    || 
+    ScrollBar - documentation to be written
+    ||
+
+    shortdesc > ScrollBar
+
+    path name="value" accepts="HMI_INT" > value
+    path name="range" accepts="HMI_INT" > range
+    path name="visible" accepts="HMI_INT" > visible
+    
+}
 
 widget_class("ScrollBar") {
     ||
@@ -92,7 +105,6 @@ widget_class("ScrollBar") {
 }
 
 widget_defs("ScrollBar") {
-    param "hmi_element";
     labels("cursor range");
 
     const "pagebuttons" optional_labels("pageup pagedown");

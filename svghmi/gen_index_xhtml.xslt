@@ -1964,6 +1964,23 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='AnimateRotation']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>AnimateRotation - DEPRECATED, do not use.
+</xsl:text>
+      <xsl:text>Doesn't follow WYSIWYG principle, and forces user to add animateTransform tag in SVG (using inkscape XML editor for exemple)
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>AnimateRotation - DEPRECATED</xsl:text>
+    </shortdesc>
+    <path name="speed" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>speed</xsl:text>
+    </path>
+  </xsl:template>
   <xsl:template match="widget[@type='AnimateRotation']" mode="widget_class">
     <xsl:text>class </xsl:text>
     <xsl:text>AnimateRotationWidget</xsl:text>
@@ -1994,6 +2011,8 @@
     <xsl:text>    animate(){
 </xsl:text>
     <xsl:text>       // change animation properties
+</xsl:text>
+    <xsl:text>       // TODO : rewrite with proper es6
 </xsl:text>
     <xsl:text>       for(let child of this.element.children){
 </xsl:text>
@@ -2046,11 +2065,17 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='AnimateRotation']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
-    <xsl:text>
+  <xsl:template match="widget[@type='Back']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Back widget brings focus back to previous page in history when clicked.
 </xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Jump to previous page</xsl:text>
+    </shortdesc>
   </xsl:template>
   <xsl:template match="widget[@type='Back']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -2079,6 +2104,31 @@
 </xsl:text>
     <xsl:text>}
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Button']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Button widget takes one boolean variable path, and reflect current true
+</xsl:text>
+      <xsl:text>or false value by showing "active" or "inactive" labeled element
+</xsl:text>
+      <xsl:text>respectively. Pressing and releasing button changes variable to true and
+</xsl:text>
+      <xsl:text>false respectively. Potential inconsistency caused by quick consecutive
+</xsl:text>
+      <xsl:text>presses on the button is mitigated by using a state machine that wait for
+</xsl:text>
+      <xsl:text>previous state change to be reflected on variable before applying next one.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Push button reflecting consistently given boolean variable</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_BOOL">
+      <xsl:text>Boolean variable</xsl:text>
+    </path>
   </xsl:template>
   <xsl:variable name="_button_fsm">
     <fsm>
@@ -2301,7 +2351,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='Button']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -2309,6 +2358,35 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+  </xsl:template>
+  <xsl:template match="widget[@type='CircularBar']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>CircularBar widget changes the end angle of a "path" labeled arc according
+</xsl:text>
+      <xsl:text>to value of the single accepted variable.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "min" a "max" labeled texts are provided, then they are used as
+</xsl:text>
+      <xsl:text>respective minimum and maximum value. Otherwise, value is expected to be
+</xsl:text>
+      <xsl:text>in between 0 and 100.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "value" labeled text is found, then its content is replaced by value.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Change end angle of Inkscape's arc</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>Value to display</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='CircularBar']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -2412,7 +2490,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='CircularBar']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -2426,6 +2503,47 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+  </xsl:template>
+  <xsl:template match="widget[@type='CircularSlider']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>CircularSlider - DEPRECATED, to be replaced by PathSlider
+</xsl:text>
+      <xsl:text>This widget moves "handle" labeled group along "range" labeled
+</xsl:text>
+      <xsl:text>arc, according to value of the single accepted variable.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "min" a "max" labeled texts are provided, or if first and second
+</xsl:text>
+      <xsl:text>argument are given, then they are used as respective minimum and maximum
+</xsl:text>
+      <xsl:text>value. Otherwise, value is expected to be in between 0 and 100.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "value" labeled text is found, then its content is replaced by value.
+</xsl:text>
+      <xsl:text>During drag, "setpoint" labeled group is moved to position defined by user
+</xsl:text>
+      <xsl:text>while "handle" reflects current value from variable.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>CircularSlider - DEPRECATED</xsl:text>
+    </shortdesc>
+    <arg name="min" count="optional" accepts="int,real">
+      <xsl:text>minimum value</xsl:text>
+    </arg>
+    <arg name="min" count="optional" accepts="int,real">
+      <xsl:text>maximum value</xsl:text>
+    </arg>
+    <path name="value" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>Value to display</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='CircularSlider']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -2887,7 +3005,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='CircularSlider']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -2903,6 +3020,24 @@
     </xsl:call-template>
     <xsl:text>
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='CustomHtml']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>CustomHtml widget allows insertion of HTML code in a svg:foreignObject.
+</xsl:text>
+      <xsl:text>Widget content is replaced by foreignObject. HTML code is obtained from
+</xsl:text>
+      <xsl:text>"code" labeled text content. HTML insert position and size is given with
+</xsl:text>
+      <xsl:text>"container" labeled element.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Custom HTML insert</xsl:text>
+    </shortdesc>
   </xsl:template>
   <xsl:template match="widget[@type='CustomHtml']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -2950,13 +3085,48 @@
   </xsl:template>
   <xsl:template match="widget[@type='CustomHtml']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
         <xsl:text>container code</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
+  </xsl:template>
+  <xsl:template match="widget[@type='Display']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>If Display widget is a svg:text element, then text content is replaced by
+</xsl:text>
+      <xsl:text>value of given variables, space separated.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Otherwise, if Display widget is a group containing a svg:text element
+</xsl:text>
+      <xsl:text>labelled "format", then text content is replaced by printf-like formated
+</xsl:text>
+      <xsl:text>string. In other words, if "format" labeled text is "%d %s %f", then 3
+</xsl:text>
+      <xsl:text>variables paths are expected : HMI_IN, HMI_STRING and HMI_REAL.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In case Display widget is a svg::text element, it is also possible to give
+</xsl:text>
+      <xsl:text>format string as first argument.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Printf-like formated text display </xsl:text>
+    </shortdesc>
+    <arg name="format" count="optional" accepts="string">
+      <xsl:text>printf-like format string when not given as svg:text</xsl:text>
+    </arg>
+    <path name="fields" count="many" accepts="HMI_INT,HMI_REAL,HMI_STRING,HMI_BOOL">
+      <xsl:text>variables to be displayed</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Display']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -2977,7 +3147,6 @@
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='Display']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:variable name="format">
       <xsl:call-template name="defs_by_labels">
@@ -3529,6 +3698,48 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='DropDown']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>DropDown widget let user select an entry in a list of texts, given as
+</xsl:text>
+      <xsl:text>arguments. Single variable path is index of selection.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>It needs "text" (svg:text), "box" (svg:rect), "button" (svg:*),
+</xsl:text>
+      <xsl:text>and "highlight" (svg:rect) labeled elements.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>When user clicks on "button", "text" is duplicated to display enties in the
+</xsl:text>
+      <xsl:text>limit of available space in page, and "box" is extended to contain all
+</xsl:text>
+      <xsl:text>texts. "highlight" is moved over pre-selected entry.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>When only one argument is given, and argment contains "#langs" then list of
+</xsl:text>
+      <xsl:text>texts is automatically set to the list of human-readable languages supported
+</xsl:text>
+      <xsl:text>by this HMI. 
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Let user select text entry in a drop-down menu</xsl:text>
+    </shortdesc>
+    <arg name="entries" count="many" accepts="string">
+      <xsl:text>drop-down menu entries</xsl:text>
+    </arg>
+    <path name="selection" accepts="HMI_INT">
+      <xsl:text>selection index</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='DropDown']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -4192,7 +4403,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='DropDown']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -4219,8 +4429,53 @@
     <xsl:text>,
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='ForEach']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>ForEach widget is used to span a small set of widget over a larger set of
+</xsl:text>
+      <xsl:text>repeated HMI_NODEs. 
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Idea is somewhat similar to relative page, but it all happens inside the
+</xsl:text>
+      <xsl:text>ForEach widget, no page involved.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Together with relative Jump widgets it can be used to build a menu to reach
+</xsl:text>
+      <xsl:text>relative pages covering many identical HMI_NODES siblings.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>ForEach widget takes a HMI_CLASS name as argument and a HMI_NODE path as
+</xsl:text>
+      <xsl:text>variable.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Direct sub-elements can be either groups of widget to be spanned, labeled
+</xsl:text>
+      <xsl:text>"ClassName:offset", or buttons to control the spanning, labeled
+</xsl:text>
+      <xsl:text>"ClassName:+/-number".
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>span widgets over a set of repeated HMI_NODEs</xsl:text>
+    </shortdesc>
+    <arg name="class_name" accepts="string">
+      <xsl:text>HMI_CLASS name</xsl:text>
+    </arg>
+    <path name="root" accepts="HMI_NODE">
+      <xsl:text> where to find HMI_NODEs whose HMI_CLASS is class_name</xsl:text>
+    </path>
+  </xsl:template>
   <xsl:template match="widget[@type='ForEach']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:if test="count(path) != 1">
       <xsl:message terminate="yes">
@@ -4479,22 +4734,28 @@
     <longdesc>
       <xsl:text>Input widget takes one variable path, and displays current value in
 </xsl:text>
-      <xsl:text>optional "value" labeled sub-element. Click on optional "edit" labeled
+      <xsl:text>optional "value" labeled sub-element. 
 </xsl:text>
-      <xsl:text>element opens keypad to edit value. Operation on current value is
+      <xsl:text>
 </xsl:text>
-      <xsl:text>performed when click on sub-elements with label starting with '=', '+' 
+      <xsl:text>Click on optional "edit" labeled element opens keypad to edit value.
 </xsl:text>
-      <xsl:text>or '-' sign. Value after sign is used as operand.
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Operation on current value is performed when click on sub-elements with
+</xsl:text>
+      <xsl:text>label starting with '=', '+' or '-' sign. Value after sign is used as
+</xsl:text>
+      <xsl:text>operand.
 </xsl:text>
     </longdesc>
     <shortdesc>
       <xsl:text>Input field with predefined operation buttons</xsl:text>
     </shortdesc>
-    <arg accepts="string">
+    <arg name="format" accepts="string">
       <xsl:text>optional printf-like format </xsl:text>
     </arg>
-    <path accepts="HMI_INT, HMI_REAL, HMI_STRING">
+    <path name="edit" accepts="HMI_INT, HMI_REAL, HMI_STRING">
       <xsl:text>single variable to edit</xsl:text>
     </path>
   </xsl:template>
@@ -4650,6 +4911,30 @@
     </xsl:for-each>
     <xsl:text>    },
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='JsonTable']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Send given variables as POST to http URL argument, spread returned JSON in
+</xsl:text>
+      <xsl:text>SVG sub-elements of "data" labeled element.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Documentation to be written. see svbghmi exemple.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Http POST variables, spread JSON back</xsl:text>
+    </shortdesc>
+    <arg name="url" accepts="string">
+      <xsl:text> </xsl:text>
+    </arg>
+    <path name="edit" accepts="HMI_INT, HMI_REAL, HMI_STRING">
+      <xsl:text>single variable to edit</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='JsonTable']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -5075,7 +5360,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='JsonTable']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -5119,6 +5403,44 @@
     </xsl:for-each>
     <xsl:text>    }
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Jump']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Jump widget brings focus to a different page. Mandatory single argument
+</xsl:text>
+      <xsl:text>gives name of the page.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Optional single path is used as new reference when jumping to a relative
+</xsl:text>
+      <xsl:text>page, it must point to a HMI_NODE.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>"active"+"inactive" labeled elements can be provided and reflect current
+</xsl:text>
+      <xsl:text>page being shown.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>"disabled" labeled element, if provided, is shown instead of "active" or
+</xsl:text>
+      <xsl:text>"inactive" widget when pointed HMI_NODE is null.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Jump to given page</xsl:text>
+    </shortdesc>
+    <arg name="page" accepts="string">
+      <xsl:text>name of page to jump to</xsl:text>
+    </arg>
+    <path name="reference" count="optional" accepts="HMI_NODE">
+      <xsl:text>reference for relative jump</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Jump']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -5238,7 +5560,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='Jump']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:variable name="activity">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -5353,6 +5674,21 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Keypad']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Keypad - to be written
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Keypad </xsl:text>
+    </shortdesc>
+    <arg name="supported_types" accepts="string">
+      <xsl:text>keypad can input those types </xsl:text>
+    </arg>
   </xsl:template>
   <declarations:keypad/>
   <xsl:template match="declarations:keypad">
@@ -5585,7 +5921,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='Keypad']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -5645,8 +5980,12 @@
     <xsl:text>],
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='List']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+  </xsl:template>
   <xsl:template match="widget[@type='List']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>    items: {
 </xsl:text>
@@ -5663,6 +6002,8 @@
   </xsl:template>
   <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
     <xsl:text>    styles: {
 </xsl:text>
@@ -5677,6 +6018,43 @@
     </xsl:for-each>
     <xsl:text>    },
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Meter']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Meter widget moves the end of "needle" labeled path along "range" labeled
+</xsl:text>
+      <xsl:text>path, according to value of the single accepted variable.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Needle is reduced to a single segment. If "min" a "max" labeled texts
+</xsl:text>
+      <xsl:text>are provided, or if first and second argument are given, then they are used
+</xsl:text>
+      <xsl:text>as respective minimum and maximum value. Otherwise, value is expected to be
+</xsl:text>
+      <xsl:text>in between 0 and 100.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "value" labeled text is found, then its content is replaced by value.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Moves "needle" along "range"</xsl:text>
+    </shortdesc>
+    <arg name="min" count="optional" accepts="int,real">
+      <xsl:text>minimum value</xsl:text>
+    </arg>
+    <arg name="max" count="optional" accepts="int,real">
+      <xsl:text>maximum value</xsl:text>
+    </arg>
+    <path name="value" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>Value to display</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Metter']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -5740,7 +6118,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='Meter']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -5754,6 +6131,35 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+  </xsl:template>
+  <xsl:template match="widget[@type='MultiState']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <longdesc>
+      <xsl:text>Mutlistateh widget hides all subelements whose label do not match given
+</xsl:text>
+      <xsl:text>variable value representation. For exemple if given variable type
+</xsl:text>
+      <xsl:text>is HMI_INT and value is 1, then elements with label '1' will be displayed.
+</xsl:text>
+      <xsl:text>Label can have comments, so '1#some comment' would also match. If matching
+</xsl:text>
+      <xsl:text>variable of type HMI_STRING, then double quotes must be used. For exemple,
+</xsl:text>
+      <xsl:text>'"hello"' or '"hello"#another comment' match HMI_STRING 'hello'.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Click on widget changes variable value to next value in given list, or to
+</xsl:text>
+      <xsl:text>first one if not initialized to value already part of the list.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Show elements whose label match value.</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_STRING">
+      <xsl:text>value to compare to labels</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='MultiState']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -5841,7 +6247,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='MultiState']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
@@ -5870,6 +6275,27 @@
     </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='ScrollBar']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>ScrollBar - documentation to be written
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>ScrollBar</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT">
+      <xsl:text>value</xsl:text>
+    </path>
+    <path name="range" accepts="HMI_INT">
+      <xsl:text>range</xsl:text>
+    </path>
+    <path name="visible" accepts="HMI_INT">
+      <xsl:text>visible</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='ScrollBar']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -6053,7 +6479,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='ScrollBar']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -6083,6 +6508,27 @@
     </xsl:if>
     <xsl:text>    },
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Slider']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Slider - DEPRECATED - use ScrollBar or PathSlider instead
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Slider - DEPRECATED - use ScrollBar instead</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT">
+      <xsl:text>value</xsl:text>
+    </path>
+    <path name="range" accepts="HMI_INT">
+      <xsl:text>range</xsl:text>
+    </path>
+    <path name="visible" accepts="HMI_INT">
+      <xsl:text>visible</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Slider']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -6764,7 +7210,6 @@
   </xsl:template>
   <xsl:template match="widget[@type='Slider']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -6778,6 +7223,31 @@
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+  </xsl:template>
+  <xsl:template match="widget[@type='Switch']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Switch widget hides all subelements whose label do not match given
+</xsl:text>
+      <xsl:text>variable current value representation. For exemple if given variable type
+</xsl:text>
+      <xsl:text>is HMI_INT and value is 1, then elements with label '1' will be displayed.
+</xsl:text>
+      <xsl:text>Label can have comments, so '1#some comment' would also match. If matching
+</xsl:text>
+      <xsl:text>variable of type HMI_STRING, then double quotes must be used. For exemple,
+</xsl:text>
+      <xsl:text>'"hello"' or '"hello"#another comment' match HMI_STRING 'hello'.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Show elements whose label match value.</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_STRING">
+      <xsl:text>value to compare to labels</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Switch']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -6808,7 +7278,6 @@
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='Switch']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:text>    choices: [
 </xsl:text>
@@ -6841,6 +7310,25 @@
     </xsl:for-each>
     <xsl:text>    ],
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='ToggleButton']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>Button widget takes one boolean variable path, and reflect current true
+</xsl:text>
+      <xsl:text>or false value by showing "active" or "inactive" labeled element
+</xsl:text>
+      <xsl:text>respectively. Clicking or touching button toggles variable.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Toggle button reflecting given boolean variable</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_BOOL">
+      <xsl:text>Boolean variable</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -6925,7 +7413,6 @@
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>

@@ -1,5 +1,28 @@
 // widget_jump.ysl2
 
+widget_desc("Jump") {
+    longdesc
+    ||
+    Jump widget brings focus to a different page. Mandatory single argument
+    gives name of the page.
+
+    Optional single path is used as new reference when jumping to a relative
+    page, it must point to a HMI_NODE.
+
+    "active"+"inactive" labeled elements can be provided and reflect current
+    page being shown.
+
+    "disabled" labeled element, if provided, is shown instead of "active" or
+    "inactive" widget when pointed HMI_NODE is null.
+    ||
+
+    shortdesc > Jump to given page
+
+    arg name="page" accepts="string" > name of page to jump to
+
+    path name="reference" count="optional" accepts="HMI_NODE" > reference for relative jump
+}
+
 widget_class("Jump") {
 ||
         activable = false;
@@ -60,7 +83,7 @@ widget_class("Jump") {
 }
 
 widget_defs("Jump") {
-    param "hmi_element";
+    // TODO: ensure both active and inactive are provided
     const "activity" optional_labels("active inactive");
     const "have_activity","string-length($activity)>0";
     value "$activity";

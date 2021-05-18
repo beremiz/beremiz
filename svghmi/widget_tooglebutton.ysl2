@@ -1,6 +1,20 @@
 // widget_tooglebutton.ysl2
 
 
+widget_desc("ToggleButton") {
+    longdesc
+    ||
+    Button widget takes one boolean variable path, and reflect current true
+    or false value by showing "active" or "inactive" labeled element
+    respectively. Clicking or touching button toggles variable.
+    ||
+
+    shortdesc > Toggle button reflecting given boolean variable
+
+    path name="value" accepts="HMI_BOOL" > Boolean variable
+    
+}
+
 widget_class("ToggleButton") {
     ||
         frequency = 5;
@@ -44,6 +58,5 @@ widget_class("ToggleButton") {
 }
 
 widget_defs("ToggleButton") {
-    param "hmi_element";
     optional_labels("active inactive");
 }

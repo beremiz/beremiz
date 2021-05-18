@@ -1,5 +1,33 @@
 // widget_dropdown.ysl2
 
+widget_desc("DropDown") {
+
+    longdesc
+    ||
+    DropDown widget let user select an entry in a list of texts, given as
+    arguments. Single variable path is index of selection.
+
+    It needs "text" (svg:text), "box" (svg:rect), "button" (svg:*),
+    and "highlight" (svg:rect) labeled elements.
+
+    When user clicks on "button", "text" is duplicated to display enties in the
+    limit of available space in page, and "box" is extended to contain all
+    texts. "highlight" is moved over pre-selected entry.
+
+    When only one argument is given, and argment contains "#langs" then list of
+    texts is automatically set to the list of human-readable languages supported
+    by this HMI. 
+    ||
+
+    shortdesc > Let user select text entry in a drop-down menu
+
+    arg name="entries" count="many" accepts="string" > drop-down menu entries
+
+    path name="selection" accepts="HMI_INT" > selection index
+}
+
+// TODO: support i18n of menu entries using svg:text elements with labels starting with "_"
+
 widget_class("DropDown") {
 ||
         dispatch(value) {
@@ -332,7 +360,6 @@ widget_class("DropDown") {
 }
 
 widget_defs("DropDown") {
-    param "hmi_element";
     labels("text box button highlight");
     // It is assumed that list content conforms to Array interface.
     >   content:

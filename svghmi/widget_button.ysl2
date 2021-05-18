@@ -1,5 +1,22 @@
 // widget_button.ysl2
 
+widget_desc("Button") {
+    longdesc
+    ||
+    Button widget takes one boolean variable path, and reflect current true
+    or false value by showing "active" or "inactive" labeled element
+    respectively. Pressing and releasing button changes variable to true and
+    false respectively. Potential inconsistency caused by quick consecutive
+    presses on the button is mitigated by using a state machine that wait for
+    previous state change to be reflected on variable before applying next one.
+    ||
+
+    shortdesc > Push button reflecting consistently given boolean variable
+
+    path name="value" accepts="HMI_BOOL" > Boolean variable
+    
+}
+
 // Finite state machine
 decl fsm(name);
 decl state(name);
@@ -151,6 +168,5 @@ widget_class("Button"){
 }
 
 widget_defs("Button") {
-    param "hmi_element";
     optional_labels("active inactive");
 }

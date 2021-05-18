@@ -1,5 +1,17 @@
 include yslt_noindent.yml2
 
+in xsl decl widget_desc(%name, match="widget[@type='%name']", mode="widget_desc") alias template {
+    type > «@type»
+    content;
+};
+
+decl nothing alias - ;
+decl widget_class(%name) alias - {nothing};
+decl widget_defs(%name) alias - {nothing};
+decl widget_page(%name) alias - {nothing};
+decl gen_index_xhtml alias - {nothing};
+decl emit(*name) alias - {nothing};
+
 istylesheet
             /* From Inkscape */
             xmlns:svg="http://www.w3.org/2000/svg"
@@ -13,8 +25,25 @@ istylesheet
 
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
 
-    template "/"  
-        widgets
+    include widget_*.ysl2
+
+    template "@* | node()", mode="document" {
+        xsl:copy apply "@* | node()", mode="document";
+    }
+
+    template "widget", mode="document" {
+        xsl:copy {
+            apply "@* | node()", mode="document";
+            defs apply ".", mode="widget_desc";
+        }
+    }
+
+    template "/" {
+        const "widgets"
             apply "$hmi_elements", mode="parselabel";
+        const "widget_ns", "exsl:node-set($widgets)";
+        widgets 
+            apply "$widget_ns", mode="document";
+    }
 
 }

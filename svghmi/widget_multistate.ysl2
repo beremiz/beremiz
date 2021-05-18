@@ -1,5 +1,28 @@
 // widget_multistate.ysl2
 
+widget_defs("MultiState") {
+
+    longdesc
+    ||
+    Mutlistateh widget hides all subelements whose label do not match given
+    variable value representation. For exemple if given variable type
+    is HMI_INT and value is 1, then elements with label '1' will be displayed.
+    Label can have comments, so '1#some comment' would also match. If matching
+    variable of type HMI_STRING, then double quotes must be used. For exemple,
+    '"hello"' or '"hello"#another comment' match HMI_STRING 'hello'.
+
+    Click on widget changes variable value to next value in given list, or to
+    first one if not initialized to value already part of the list.
+    ||
+
+    shortdesc > Show elements whose label match value.
+
+    // TODO: add optional format/precision argument to support floating points
+
+    path name="value" accepts="HMI_INT,HMI_STRING" > value to compare to labels
+    
+}
+
 widget_class("MultiState")
     ||
         frequency = 5;
@@ -43,7 +66,6 @@ widget_class("MultiState")
     ||
 
 widget_defs("MultiState") {
-    param "hmi_element";
     |     choices: [
     const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
     foreach "$result_svg_ns//*[@id = $hmi_element/@id]//*[regexp:test(@inkscape:label,$regex)]" {

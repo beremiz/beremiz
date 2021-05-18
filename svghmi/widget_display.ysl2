@@ -1,5 +1,28 @@
 // widget_display.ysl2
 
+widget_desc("Display") {
+    longdesc
+    ||
+    If Display widget is a svg:text element, then text content is replaced by
+    value of given variables, space separated.
+
+    Otherwise, if Display widget is a group containing a svg:text element
+    labelled "format", then text content is replaced by printf-like formated
+    string. In other words, if "format" labeled text is "%d %s %f", then 3
+    variables paths are expected : HMI_IN, HMI_STRING and HMI_REAL.
+
+    In case Display widget is a svg::text element, it is also possible to give
+    format string as first argument.
+    ||
+
+    shortdesc > Printf-like formated text display 
+
+    arg name="format" count="optional" accepts="string" > printf-like format string when not given as svg:text
+
+    path name="fields" count="many" accepts="HMI_INT,HMI_REAL,HMI_STRING,HMI_BOOL" > variables to be displayed
+    
+}
+
 
 widget_class("Display")
     ||
@@ -11,8 +34,6 @@ widget_class("Display")
     ||
 
 widget_defs("Display") {
-    param "hmi_element";
-
     const "format" optional_labels("format");
     const "has_format","string-length($format)>0";
     value "$format";

@@ -1,5 +1,26 @@
 // widget_circularbar.ysl2
 
+widget_desc("CircularBar") {
+    longdesc
+    ||
+    CircularBar widget changes the end angle of a "path" labeled arc according
+    to value of the single accepted variable.
+
+    If "min" a "max" labeled texts are provided, then they are used as
+    respective minimum and maximum value. Otherwise, value is expected to be
+    in between 0 and 100.
+
+    If "value" labeled text is found, then its content is replaced by value.
+    ||
+
+    shortdesc > Change end angle of Inkscape's arc
+
+    // TODO: add min/max arguments
+    // TODO: add printf-like format
+
+    path name="value" accepts="HMI_INT,HMI_REAL" > Value to display
+    
+}
 widget_class("CircularBar") {
     ||
         frequency = 10;
@@ -52,7 +73,6 @@ widget_class("CircularBar") {
 }
 
 widget_defs("CircularBar") {
-    param "hmi_element";
     labels("path");
     optional_labels("value min max");
 }

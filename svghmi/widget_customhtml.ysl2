@@ -1,5 +1,19 @@
 // widget_customhtml.ysl2
 
+widget_desc("CustomHtml") {
+    longdesc
+    ||
+    CustomHtml widget allows insertion of HTML code in a svg:foreignObject.
+    Widget content is replaced by foreignObject. HTML code is obtained from
+    "code" labeled text content. HTML insert position and size is given with
+    "container" labeled element.
+    ||
+
+    shortdesc > Custom HTML insert
+
+    // TODO: support reload and POST based on variable content
+}
+
 widget_class("CustomHtml"){
     ||
         frequency = 5;
@@ -25,6 +39,5 @@ widget_class("CustomHtml"){
 
 
 widget_defs("CustomHtml") {
-    param "hmi_element";
     labels("container code");
 }
