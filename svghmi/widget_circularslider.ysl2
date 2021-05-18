@@ -1,5 +1,33 @@
 // widget_circuralslider.ysl2
 
+widget_desc("CircularSlider") {
+    longdesc
+    ||
+    CircularSlider - DEPRECATED, to be replaced by PathSlider
+    This widget moves "handle" labeled group along "range" labeled
+    arc, according to value of the single accepted variable.
+
+    If "min" a "max" labeled texts are provided, or if first and second
+    argument are given, then they are used as respective minimum and maximum
+    value. Otherwise, value is expected to be in between 0 and 100.
+
+    If "value" labeled text is found, then its content is replaced by value.
+    During drag, "setpoint" labeled group is moved to position defined by user
+    while "handle" reflects current value from variable.
+    ||
+
+    shortdesc > CircularSlider - DEPRECATED
+
+    arg name="min" count="optional" accepts="int,real" > minimum value
+
+    arg name="min" count="optional" accepts="int,real" > maximum value
+
+    // TODO: add printf-like format
+
+    path name="value" accepts="HMI_INT,HMI_REAL" > Value to display
+    
+}
+
 widget_class("CircularSlider")
     ||
         frequency = 5;
@@ -230,7 +258,6 @@ widget_class("CircularSlider")
     ||
 
 widget_defs("CircularSlider") {
-    param "hmi_element";
     labels("handle range");
     optional_labels("value min max setpoint");
     |,

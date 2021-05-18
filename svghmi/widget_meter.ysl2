@@ -1,5 +1,31 @@
 // widget_meter.ysl2
 
+widget_desc("Meter") {
+    longdesc
+    ||
+    Meter widget moves the end of "needle" labeled path along "range" labeled
+    path, according to value of the single accepted variable.
+
+    Needle is reduced to a single segment. If "min" a "max" labeled texts
+    are provided, or if first and second argument are given, then they are used
+    as respective minimum and maximum value. Otherwise, value is expected to be
+    in between 0 and 100.
+
+    If "value" labeled text is found, then its content is replaced by value.
+    ||
+
+    shortdesc > Moves "needle" along "range"
+
+    arg name="min" count="optional" accepts="int,real" > minimum value
+
+    arg name="max" count="optional" accepts="int,real" > maximum value
+
+    // TODO: add printf-like format
+
+    path name="value" accepts="HMI_INT,HMI_REAL" > Value to display
+    
+}
+
 widget_class("Metter"){
     ||
         frequency = 10;
@@ -32,7 +58,6 @@ widget_class("Metter"){
 }
 
 widget_defs("Meter") {
-    param "hmi_element";
     labels("needle range");
     optional_labels("value min max");
 }

@@ -1,5 +1,17 @@
 // widget_keypad.ysl2
 
+widget_desc("Keypad") {
+    longdesc
+    ||
+    Keypad - to be written
+    ||
+
+    shortdesc > Keypad 
+
+    arg name="supported_types" accepts="string" > keypad can input those types 
+    
+}
+
 emit "declarations:keypad" {
     |
     | var keypads = {
@@ -111,7 +123,6 @@ widget_class("Keypad")
     ||
 
 widget_defs("Keypad") {
-    param "hmi_element";
     labels("Esc Enter BackSpace Keys Info Value");
     optional_labels("Sign Space NumDot");
     activable_labels("CapsLock Shift");

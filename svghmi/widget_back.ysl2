@@ -1,5 +1,15 @@
 // widget_back.ysl2
 
+widget_desc("Back") {
+    longdesc
+    ||
+    Back widget brings focus back to previous page in history when clicked.
+    ||
+
+    shortdesc > Jump to previous page
+}
+
+// TODO: use es6
 widget_class("Back")
     ||
         on_click(evt) {

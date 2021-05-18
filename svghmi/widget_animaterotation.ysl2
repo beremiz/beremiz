@@ -1,5 +1,18 @@
 // widget_animaterotation.ysl2
 
+widget_desc("AnimateRotation") {
+    longdesc
+    ||
+    AnimateRotation - DEPRECATED, do not use.
+    Doesn't follow WYSIWYG principle, and forces user to add animateTransform tag in SVG (using inkscape XML editor for exemple)
+    ||
+
+    shortdesc > AnimateRotation - DEPRECATED
+
+    path name="speed" accepts="HMI_INT,HMI_REAL" > speed
+    
+}
+
 widget_class("AnimateRotation") {
     ||
         frequency = 5;
@@ -15,6 +28,7 @@ widget_class("AnimateRotation") {
 
         animate(){
            // change animation properties
+           // TODO : rewrite with proper es6
            for(let child of this.element.children){
                 if(child.nodeName == "animateTransform"){
                     if(this.speed > 0){
@@ -42,8 +56,3 @@ widget_class("AnimateRotation") {
     ||
 }
 
-
-widget_defs("AnimateRotation") {
-    param "hmi_element";
-    |,
-}
