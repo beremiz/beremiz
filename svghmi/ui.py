@@ -206,7 +206,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.preview.Bind(wx.EVT_PAINT, self.OnPaint)
         self.preview.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
-        self.SplitVertically(self.picker_panel, self.main_panel, 300)
+        self.SplitVertically(self.main_panel, self.picker_panel, 300)
 
         self.msg = _("Drag selected Widget from here to Inkscape")
         self.tempf = None 
