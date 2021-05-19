@@ -126,14 +126,38 @@ class WidgetPicker(wx.TreeCtrl):
 
         self.Thaw()
 
+class PathEditor(wx.Panel):
+    def __init__(self, parent, path):
+
+        wx.Panel.__init__(self, parent)
+        label = path.get("name") + ": " + path.text + "(" + path.get("accepts") + ")"
+        self.desc = wx.StaticText(self, label=label)
+        self.focus_sbmp = wx.StaticBitmap(self, -1, wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR, (32,32)))
+        self.valid_bmp = wx.ArtProvider.GetBitmap(wx.ART_TICK_MARK, wx.ART_TOOLBAR, (32,32))
+        self.invalid_bmp = wx.ArtProvider.GetBitmap(wx.ART_CROSS_MARK, wx.ART_TOOLBAR, (32,32))
+        self.validity_sbmp = wx.StaticBitmap(self, -1, self.invalid_bmp)
+        self.edit = wx.TextCtrl(self)
+        self.edit_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
+        self.edit_sizer.AddGrowableCol(1)
+        self.edit_sizer.AddGrowableRow(0)
+        self.edit_sizer.Add(self.focus_sbmp, flag=wx.GROW)
+        self.edit_sizer.Add(self.edit, flag=wx.GROW)
+        self.edit_sizer.Add(self.validity_sbmp, flag=wx.GROW)
+        self.main_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.main_sizer.Add(self.desc, flag=wx.GROW)
+        self.main_sizer.Add(self.edit_sizer, flag=wx.GROW)
+        self.SetSizer(self.main_sizer)
+        self.main_sizer.Fit(self)
+
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
 _preview_margin = 5
-class WidgetLibBrowser(wx.Panel):
+class WidgetLibBrowser(wx.SplitterWindow):
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize):
 
-        wx.Panel.__init__(self, parent, id, pos, size)     
+        wx.SplitterWindow.__init__(self, parent,
+                                   style=wx.SUNKEN_BORDER | wx.SP_3D)
 
         self.bmp = None
         self.msg = None
@@ -143,29 +167,46 @@ class WidgetLibBrowser(wx.Panel):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
 
-        self.main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=0)
+        self.picker_panel = wx.Panel(self)
+        self.picker_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
+        self.picker_sizer.AddGrowableCol(0)
+        self.picker_sizer.AddGrowableRow(1)
+
+        self.widgetpicker = WidgetPicker(self.picker_panel, self.libdir)
+        self.libbutton = wx.Button(self.picker_panel, -1, _("Select SVG widget library"))
+
+        self.picker_sizer.Add(self.libbutton, flag=wx.GROW)
+        self.picker_sizer.Add(self.widgetpicker, flag=wx.GROW)
+        self.picker_sizer.Layout()
+        self.picker_panel.SetAutoLayout(True)
+        self.picker_panel.SetSizer(self.picker_sizer)
+
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnWidgetSelection, self.widgetpicker)
+        self.Bind(wx.EVT_BUTTON, self.OnSelectLibDir, self.libbutton)
+
+
+
+        self.main_panel = wx.Panel(self)
+
+        self.main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
         self.main_sizer.AddGrowableCol(0)
-        self.main_sizer.AddGrowableRow(1)
-        self.libbutton = wx.Button(self, -1, _("Select SVG widget library"))
-        self.widgetpicker = WidgetPicker(self, self.libdir)
-        self.preview = wx.Panel(self, size=(-1, _preview_height + _preview_margin*2))
-        self.desc = wx.TextCtrl(self, size=wx.Size(-1, 160),
+        self.main_sizer.AddGrowableRow(2)
+
+        self.preview = wx.Panel(self.main_panel, size=(-1, _preview_height + _preview_margin*2))
+        self.desc = wx.TextCtrl(self.main_panel, size=wx.Size(-1, 160),
                                    style=wx.TE_READONLY | wx.TE_MULTILINE)
         self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.main_sizer.Add(self.libbutton, flag=wx.GROW)
-        self.main_sizer.Add(self.widgetpicker, flag=wx.GROW)
         self.main_sizer.Add(self.preview, flag=wx.GROW)
-        self.main_sizer.Add(self.desc, flag=wx.GROW)
         self.main_sizer.Add(self.signature_sizer, flag=wx.GROW)
+        self.main_sizer.Add(self.desc, flag=wx.GROW)
         self.main_sizer.Layout()
-        self.SetAutoLayout(True)
-        self.SetSizer(self.main_sizer)
-        self.main_sizer.Fit(self)
-        self.Bind(wx.EVT_BUTTON, self.OnSelectLibDir, self.libbutton)
+        self.main_panel.SetAutoLayout(True)
+        self.main_panel.SetSizer(self.main_sizer)
+        self.main_sizer.Fit(self.main_panel)
         self.preview.Bind(wx.EVT_PAINT, self.OnPaint)
         self.preview.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
-        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnWidgetSelection, self.widgetpicker)
+        self.SplitVertically(self.picker_panel, self.main_panel, 300)
 
         self.msg = _("Drag selected Widget from here to Inkscape")
         self.tempf = None 
@@ -180,7 +221,7 @@ class WidgetLibBrowser(wx.Panel):
         self.main_sizer.Layout()
 
     def AddPathToSignature(self, path):
-        new_editor = wx.TextCtrl(self, size=wx.Size(-1, -1))
+        new_editor = PathEditor(self.main_panel, path)
         self.paths_editors.append(new_editor)
         self.signature_sizer.Add(new_editor, flag=wx.GROW)
         self.main_sizer.Layout()
