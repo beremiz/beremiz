@@ -13,6 +13,7 @@ import weakref
 from tempfile import NamedTemporaryFile
 
 import wx
+from wx.lib.scrolledpanel import ScrolledPanel
 
 from lxml import etree
 from lxml.etree import XSLTApplyError
@@ -167,7 +168,9 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
 
-        self.picker_panel = wx.Panel(self)
+        self.picker_desc_splitter = wx.SplitterWindow(self, style=wx.SUNKEN_BORDER | wx.SP_3D)
+
+        self.picker_panel = wx.Panel(self.picker_desc_splitter)
         self.picker_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
         self.picker_sizer.AddGrowableCol(0)
         self.picker_sizer.AddGrowableRow(1)
@@ -186,19 +189,20 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
 
 
-        self.main_panel = wx.Panel(self)
+        self.main_panel = ScrolledPanel(parent=self,
+                                                name='MiscellaneousPanel',
+                                                style=wx.TAB_TRAVERSAL)
 
         self.main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
         self.main_sizer.AddGrowableCol(0)
         self.main_sizer.AddGrowableRow(2)
 
         self.preview = wx.Panel(self.main_panel, size=(-1, _preview_height + _preview_margin*2))
-        self.desc = wx.TextCtrl(self.main_panel, size=wx.Size(-1, 160),
-                                   style=wx.TE_READONLY | wx.TE_MULTILINE)
+        self.staticmsg = wx.StaticText(self)
         self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
         self.main_sizer.Add(self.preview, flag=wx.GROW)
+        self.main_sizer.Add(self.staticmsg, flag=wx.GROW)
         self.main_sizer.Add(self.signature_sizer, flag=wx.GROW)
-        self.main_sizer.Add(self.desc, flag=wx.GROW)
         self.main_sizer.Layout()
         self.main_panel.SetAutoLayout(True)
         self.main_panel.SetSizer(self.main_sizer)
@@ -206,7 +210,11 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.preview.Bind(wx.EVT_PAINT, self.OnPaint)
         self.preview.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
 
-        self.SplitVertically(self.main_panel, self.picker_panel, 300)
+        self.desc = wx.TextCtrl(self.picker_desc_splitter, size=wx.Size(-1, 160),
+                                   style=wx.TE_READONLY | wx.TE_MULTILINE)
+
+        self.picker_desc_splitter.SplitHorizontally(self.picker_panel, self.desc, 400)
+        self.SplitVertically(self.main_panel, self.picker_desc_splitter, 300)
 
         self.msg = _("Drag selected Widget from here to Inkscape")
         self.tempf = None 
@@ -218,13 +226,11 @@ class WidgetLibBrowser(wx.SplitterWindow):
         for editor in self.paths_editors:
             editor.Destroy()
         self.paths_editors = []
-        self.main_sizer.Layout()
 
     def AddPathToSignature(self, path):
         new_editor = PathEditor(self.main_panel, path)
         self.paths_editors.append(new_editor)
         self.signature_sizer.Add(new_editor, flag=wx.GROW)
-        self.main_sizer.Layout()
 
     def RecallLibDir(self):
         conf = self.Config.Read(_conf_key)
@@ -252,7 +258,6 @@ class WidgetLibBrowser(wx.SplitterWindow):
             w = self.bmp.GetWidth()
             dc.DrawBitmap(self.bmp, (sz.width - w)/2, _preview_margin)
 
-        self.desc.SetValue(self.msg)
 
 
     def OnSelectLibDir(self, event):
@@ -277,6 +282,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
         """
         self.DrawPreview()
         event.Skip()
+
+        self.staticmsg.SetLabel(self.msg)
 
     def GenThumbnail(self, svgpath, thumbpath):
         inkpath = get_inkscape_path()
@@ -363,6 +370,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
     def AnalyseWidgetAndUpdateUI(self):
         self.msg = ""
+        self.ResetSignature()
 
         try:
             if self.selected_SVG is None:
@@ -384,16 +392,15 @@ class WidgetLibBrowser(wx.SplitterWindow):
             self.msg += "Widget analysis error: " + e.message
         else:
             
-            self.ResetSignature()
 
             print(etree.tostring(signature, pretty_print=True))
             widgets = signature.getroot()
             for defs in widgets.iter("defs"):
 
                 # Keep double newlines (to mark paragraphs)
-                self.msg += defs.find("type").text + ":\n" + "\n\n".join(map(
-                    lambda s:s.replace("\n"," ").replace("  ", " "), 
-                    defs.find("longdesc").text.split("\n\n")))
+                self.desc.SetValue(defs.find("type").text + ":\n" + "\n\n".join(map(
+                    lambda s:s.replace("\n"," ").replace("  ", " "),
+                    defs.find("longdesc").text.split("\n\n"))))
                 for arg in defs.iter("arg"):
                     print(arg.get("name"))
                     print(arg.get("accepts"))
@@ -410,6 +417,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
                     path_accepts = map(
                         str.strip, path.get("accepts", '')[1:-1].split(','))
                     print(path, path_value, path_accepts)
+
+        self.main_panel.SetupScrolling(scroll_x=False)
 
 
 
