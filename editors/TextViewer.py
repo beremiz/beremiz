@@ -55,10 +55,6 @@ for i in xrange(26):
  STC_PLC_EMPTY] = range(11)
 [SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
 
-[
-    ID_TEXTVIEWER, ID_TEXTVIEWERTEXTCTRL,
-] = [wx.NewId() for _init_ctrls in range(2)]
-
 re_texts = {}
 re_texts["letter"] = "[A-Za-z]"
 re_texts["digit"] = "[0-9]"
@@ -79,11 +75,8 @@ def LineStartswith(line, symbols):
 
 class TextViewer(EditorPanel):
 
-    ID = ID_TEXTVIEWER
-
     def _init_Editor(self, prnt):
-        self.Editor = CustomStyledTextCtrl(id=ID_TEXTVIEWERTEXTCTRL,
-                                           parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
+        self.Editor = CustomStyledTextCtrl(parent=prnt, name="TextViewer", size=wx.Size(0, 0), style=0)
         self.Editor.ParentWindow = self
 
         self.Editor.CmdKeyAssign(ord('+'), wx.stc.STC_SCMOD_CTRL, wx.stc.STC_CMD_ZOOMIN)
@@ -140,14 +133,14 @@ class TextViewer(EditorPanel):
                                     wx.stc.STC_MOD_BEFOREDELETE |
                                     wx.stc.STC_PERFORMED_USER)
 
-        self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.OnStyleNeeded, id=ID_TEXTVIEWERTEXTCTRL)
+        self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.OnStyleNeeded, self.Editor)
         self.Editor.Bind(wx.stc.EVT_STC_MARGINCLICK, self.OnMarginClick)
         self.Editor.Bind(wx.stc.EVT_STC_UPDATEUI, self.OnUpdateUI)
         self.Editor.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         if self.Controler is not None:
             self.Editor.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
-            self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, id=ID_TEXTVIEWERTEXTCTRL)
-            self.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, id=ID_TEXTVIEWERTEXTCTRL)
+            self.Bind(wx.stc.EVT_STC_DO_DROP, self.OnDoDrop, self.Editor)
+            self.Bind(wx.stc.EVT_STC_MODIFIED, self.OnModification, self.Editor)
 
     def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
         if tagname != "" and controler is not None:
