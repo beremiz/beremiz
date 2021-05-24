@@ -81,7 +81,6 @@ from IDEFrame import \
     LIBRARYTREE,\
     PAGETITLES,\
     IDEFrame, \
-    AppendMenu,\
     EncodeFileSystemPath, \
     DecodeFileSystemPath
 
@@ -92,6 +91,8 @@ beremiz_dir = paths.AbsDir(__file__)
 def Bpath(*args):
     return os.path.join(beremiz_dir, *args)
 
+def AppendMenu(parent, help, id, kind, text):
+    return parent.Append(help=help, id=id, kind=kind, text=text)
 
 MAX_RECENT_PROJECTS = 9
 
