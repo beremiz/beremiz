@@ -546,24 +546,35 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
-pyro_thread_started = Lock()
-pyro_thread_started.acquire()
-pyro_thread = Thread(target=pyroserver.PyroLoop,
-                     kwargs=dict(when_ready=pyro_thread_started.release),
-                     name="PyroThread")
-pyro_thread.start()
+def FirstWorkerJob():
+    """
+    RPC through pyro/wamp/UI may lead to delegation to Worker,
+    then this function ensures that Worker is already
+    created when pyro starts
+    """
+    global pyro_thread, pyroserver, ui_thread, reactor, twisted_reactor_thread_id
 
-# Wait for pyro thread to be effective
-pyro_thread_started.acquire()
+    pyro_thread_started = Lock()
+    pyro_thread_started.acquire()
+    pyro_thread = Thread(target=pyroserver.PyroLoop,
+                         kwargs=dict(when_ready=pyro_thread_started.release),
+                         name="PyroThread")
 
-pyroserver.PrintServerInfo()
+    pyro_thread.start()
 
-# Beremiz IDE detects LOCAL:// runtime is ready by looking
-# for self.workdir in the daemon's stdout.
-sys.stdout.write(_("Current working directory :") + WorkingDir + "\n")
-sys.stdout.flush()
+    # Wait for pyro thread to be effective
+    pyro_thread_started.acquire()
 
-if havetwisted or havewx:
+    pyroserver.PrintServerInfo()
+
+    # Beremiz IDE detects LOCAL:// runtime is ready by looking
+    # for self.workdir in the daemon's stdout.
+    sys.stdout.write(_("Current working directory :") + WorkingDir + "\n")
+    sys.stdout.flush()
+
+    if not (havetwisted or havewx):
+        return
+
     ui_thread_started = Lock()
     ui_thread_started.acquire()
     if havetwisted:
@@ -592,9 +603,10 @@ if havetwisted or havewx:
     ui_thread_started.acquire()
     print("UI thread started successfully.")
 
+    runtime.GetPLCObjectSingleton().AutoLoad(autostart)
+
 try:
-    runtime.MainWorker.runloop(
-        runtime.GetPLCObjectSingleton().AutoLoad, autostart)
+    runtime.MainWorker.runloop(FirstWorkerJob)
 except KeyboardInterrupt:
     pass
 
