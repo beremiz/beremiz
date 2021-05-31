@@ -114,8 +114,8 @@ def DecodeFileSystemPath(path, is_base64=True):
     return text(path, sys.getfilesystemencoding())
 
 
-def AppendMenu(parent, help, id, kind, text):
-    parent.Append(help=help, id=id, kind=kind, text=text)
+def AppendMenu(parent, help, kind, text, id=wx.ID_ANY):
+    return parent.Append(help=help, kind=kind, text=text, id=id)
 
 
 [
@@ -444,10 +444,9 @@ class IDEFrame(wx.Frame):
         zoommenu = wx.Menu(title='')
         parent.AppendMenu(wx.ID_ZOOM_FIT, _("Zoom"), zoommenu)
         for idx, value in enumerate(ZOOM_FACTORS):
-            new_id = wx.NewId()
-            AppendMenu(zoommenu, help='', id=new_id,
+            new_item = AppendMenu(zoommenu, help='',
                        kind=wx.ITEM_RADIO, text=str(int(round(value * 100))) + "%")
-            self.Bind(wx.EVT_MENU, self.GenerateZoomFunction(idx), id=new_id)
+            self.Bind(wx.EVT_MENU, self.GenerateZoomFunction(idx), new_item)
 
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
@@ -1906,56 +1905,49 @@ class IDEFrame(wx.Frame):
 
             if name == "Data Types":
                 menu = wx.Menu(title='')
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add DataType"))
-                self.Bind(wx.EVT_MENU, self.OnAddDataTypeMenu, id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add DataType"))
+                self.Bind(wx.EVT_MENU, self.OnAddDataTypeMenu, new_item)
 
             elif name in ["Functions", "Function Blocks", "Programs", "Project"]:
                 menu = wx.Menu(title='')
 
                 if name != "Project":
-                    new_id = wx.NewId()
-                    AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add POU"))
-                    self.Bind(wx.EVT_MENU, self.GenerateAddPouFunction({"Functions": "function", "Function Blocks": "functionBlock", "Programs": "program"}[name]), id=new_id)
+                    new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add POU"))
+                    self.Bind(wx.EVT_MENU, self.GenerateAddPouFunction({"Functions": "function", "Function Blocks": "functionBlock", "Programs": "program"}[name]), new_item)
 
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Paste POU"))
-                self.Bind(wx.EVT_MENU, self.OnPastePou, id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Paste POU"))
+                self.Bind(wx.EVT_MENU, self.OnPastePou, new_item)
                 if self.GetCopyBuffer() is None:
-                    menu.Enable(new_id, False)
+                    menu.Enable(new_item, False)
 
             elif name == "Configurations":
                 menu = wx.Menu(title='')
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Configuration"))
-                self.Bind(wx.EVT_MENU, self.OnAddConfigurationMenu, id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Configuration"))
+                self.Bind(wx.EVT_MENU, self.OnAddConfigurationMenu, new_item)
 
             elif name == "Transitions":
                 menu = wx.Menu(title='')
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Transition"))
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Transition"))
                 parent = self.ProjectTree.GetItemParent(item)
                 parent_type = self.ProjectTree.GetPyData(parent)["type"]
                 while parent_type != ITEM_POU:
                     parent = self.ProjectTree.GetItemParent(parent)
                     parent_type = self.ProjectTree.GetPyData(parent)["type"]
-                self.Bind(wx.EVT_MENU, self.GenerateAddTransitionFunction(self.ProjectTree.GetItemText(parent)), id=new_id)
+                self.Bind(wx.EVT_MENU, self.GenerateAddTransitionFunction(self.ProjectTree.GetItemText(parent)), new_item)
 
             elif name == "Actions":
                 menu = wx.Menu(title='')
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Action"))
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Action"))
                 parent = self.ProjectTree.GetItemParent(item)
                 parent_type = self.ProjectTree.GetPyData(parent)["type"]
                 while parent_type != ITEM_POU:
                     parent = self.ProjectTree.GetItemParent(parent)
                     parent_type = self.ProjectTree.GetPyData(parent)["type"]
-                self.Bind(wx.EVT_MENU, self.GenerateAddActionFunction(self.ProjectTree.GetItemText(parent)), id=new_id)
+                self.Bind(wx.EVT_MENU, self.GenerateAddActionFunction(self.ProjectTree.GetItemText(parent)), new_item)
 
             elif name == "Resources":
                 menu = wx.Menu(title='')
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Resource"))
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Resource"))
                 parent = self.ProjectTree.GetItemParent(item)
                 parent_type = self.ProjectTree.GetPyData(parent)["type"]
                 while parent_type not in [ITEM_CONFIGURATION, ITEM_PROJECT]:
@@ -1969,52 +1961,44 @@ class IDEFrame(wx.Frame):
                 else:
                     parent_name = self.ProjectTree.GetItemText(parent)
                 if parent_name is not None:
-                    self.Bind(wx.EVT_MENU, self.GenerateAddResourceFunction(parent_name), id=new_id)
+                    self.Bind(wx.EVT_MENU, self.GenerateAddResourceFunction(parent_name), new_item)
 
         else:
             if item_infos["type"] == ITEM_POU:
                 menu = wx.Menu(title='')
                 if self.Controler.GetPouBodyType(name) == "SFC":
-                    new_id = wx.NewId()
-                    AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Transition"))
-                    self.Bind(wx.EVT_MENU, self.GenerateAddTransitionFunction(name), id=new_id)
-                    new_id = wx.NewId()
-                    AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Action"))
-                    self.Bind(wx.EVT_MENU, self.GenerateAddActionFunction(name), id=new_id)
+                    new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Transition"))
+                    self.Bind(wx.EVT_MENU, self.GenerateAddTransitionFunction(name), new_item)
+                    new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Action"))
+                    self.Bind(wx.EVT_MENU, self.GenerateAddActionFunction(name), new_item)
                     menu.AppendSeparator()
 
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Copy POU"))
-                self.Bind(wx.EVT_MENU, self.OnCopyPou, id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Copy POU"))
+                self.Bind(wx.EVT_MENU, self.OnCopyPou, new_item)
 
                 pou_type = self.Controler.GetPouType(name)
                 if pou_type in ["function", "functionBlock"]:
                     change_menu = wx.Menu(title='')
                     if pou_type == "function":
-                        new_id = wx.NewId()
-                        AppendMenu(change_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Function Block"))
-                        self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "functionBlock"), id=new_id)
-                    new_id = wx.NewId()
-                    AppendMenu(change_menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Program"))
-                    self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "program"), id=new_id)
+                        new_item = AppendMenu(change_menu, help='', kind=wx.ITEM_NORMAL, text=_("Function Block"))
+                        self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "functionBlock"), new_item)
+                    new_item = AppendMenu(change_menu, help='', kind=wx.ITEM_NORMAL, text=_("Program"))
+                    self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "program"), new_item)
                     menu.AppendMenu(wx.NewId(), _("Duplicate as..."), change_menu)
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Rename"))
-                self.Bind(wx.EVT_MENU, self.OnRenamePouMenu, id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Rename"))
+                self.Bind(wx.EVT_MENU, self.OnRenamePouMenu, new_item)
 
             elif item_infos["type"] == ITEM_CONFIGURATION:
                 menu = wx.Menu(title='')
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Add Resource"))
-                self.Bind(wx.EVT_MENU, self.GenerateAddResourceFunction(name), id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Add Resource"))
+                self.Bind(wx.EVT_MENU, self.GenerateAddResourceFunction(name), new_item)
 
             elif item_infos["type"] in [ITEM_DATATYPE, ITEM_TRANSITION, ITEM_ACTION, ITEM_RESOURCE]:
                 menu = wx.Menu(title='')
 
             if menu is not None:
-                new_id = wx.NewId()
-                AppendMenu(menu, help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Delete"))
-                self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=new_id)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Delete"))
+                self.Bind(wx.EVT_MENU, self.OnDeleteMenu, new_item)
 
         if menu is not None:
             self.FindFocus().PopupMenu(menu)

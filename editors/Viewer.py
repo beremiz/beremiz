@@ -67,10 +67,6 @@ def ResetCursors():
                    wx.StockCursor(wx.CURSOR_SIZENS)]
 
 
-def AppendMenu(parent, help, id, kind, text):
-    parent.Append(help=help, id=id, kind=kind, text=text)
-
-
 if wx.Platform == '__WXMSW__':
     faces = {
         'times': 'Times New Roman',
@@ -236,25 +232,6 @@ def sort_blocks(block_infos1, block_infos2):
 # -------------------------------------------------------------------------------
 #                       Graphic elements Viewer base class
 # -------------------------------------------------------------------------------
-
-
-# ID Constants for alignment menu items
-[
-    ID_VIEWERALIGNMENTMENUITEMS0, ID_VIEWERALIGNMENTMENUITEMS1,
-    ID_VIEWERALIGNMENTMENUITEMS2, ID_VIEWERALIGNMENTMENUITEMS4,
-    ID_VIEWERALIGNMENTMENUITEMS5, ID_VIEWERALIGNMENTMENUITEMS6,
-] = [wx.NewId() for _init_coll_AlignmentMenu_Items in range(6)]
-
-# ID Constants for contextual menu items
-[
-    ID_VIEWERCONTEXTUALMENUITEMS0, ID_VIEWERCONTEXTUALMENUITEMS1,
-    ID_VIEWERCONTEXTUALMENUITEMS2, ID_VIEWERCONTEXTUALMENUITEMS3,
-    ID_VIEWERCONTEXTUALMENUITEMS5, ID_VIEWERCONTEXTUALMENUITEMS6,
-    ID_VIEWERCONTEXTUALMENUITEMS8, ID_VIEWERCONTEXTUALMENUITEMS9,
-    ID_VIEWERCONTEXTUALMENUITEMS11, ID_VIEWERCONTEXTUALMENUITEMS12,
-    ID_VIEWERCONTEXTUALMENUITEMS14, ID_VIEWERCONTEXTUALMENUITEMS16,
-    ID_VIEWERCONTEXTUALMENUITEMS17,
-] = [wx.NewId() for _init_coll_ContextualMenu_Items in range(13)]
 
 
 class ViewerDropTarget(wx.TextDropTarget):
@@ -534,17 +511,6 @@ class Viewer(EditorPanel, DebugViewer):
     Class that implements a Viewer based on a wx.ScrolledWindow for drawing and
     manipulating graphic elements
     """
-
-    # Add list of menu items to the given menu
-    def AddMenuItems(self, menu, items):
-        for item in items:
-            if item is None:
-                menu.AppendSeparator()
-            else:
-                id, kind, text, help, callback = item
-                AppendMenu(menu, help=help, id=id, kind=kind, text=text)
-                # Link menu event to corresponding called functions
-                self.Bind(wx.EVT_MENU, callback, id=id)
 
     def AppendItem(self, menu, text, callback, *args, **kwargs):
         item = menu.Append(wx.ID_ANY, text, *args, **kwargs)

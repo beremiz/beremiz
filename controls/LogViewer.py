@@ -711,9 +711,8 @@ class LogViewer(DebugViewer, wx.Panel):
         if message is not None:
             menu = wx.Menu(title='')
 
-            new_id = wx.NewId()
-            menu.Append(help='', id=new_id, kind=wx.ITEM_NORMAL, text=_("Copy"))
-            self.Bind(wx.EVT_MENU, self.GetCopyMessageToClipboardFunction(message), id=new_id)
+            menu_entry = menu.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=_("Copy"))
+            self.Bind(wx.EVT_MENU, self.GetCopyMessageToClipboardFunction(message), menu_entry)
 
             self.MessagePanel.PopupMenu(menu)
             menu.Destroy()

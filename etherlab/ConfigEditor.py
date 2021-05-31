@@ -33,13 +33,6 @@ from etherlab.EtherCATManagementEditor import EtherCATManagementTreebook, Master
 [ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
 
 
-def AppendMenu(parent, help, id, kind, text):
-    if wx.VERSION >= (2, 6, 0):
-        parent.Append(help=help, id=id, kind=kind, text=text)
-    else:
-        parent.Append(helpString=help, id=id, kind=kind, item=text)
-
-
 def GetVariablesTableColnames(position=False):
     _ = NoTranslate
     colname = ["#"]
