@@ -214,7 +214,7 @@ class PathEditor(ParamEditor):
     def OnHMITreeDnD(self):
         self.ParentObj.GotPathDnDOn(self)
 
-    def SetPathValue(self, value):
+    def SetPath(self, value):
         self.edit.SetValue(value)
 
     def OnPathChanged(self, event):
