@@ -27,16 +27,24 @@ from util.ProcessLogger import ProcessLogger
 
 ScriptDirectory = paths.AbsDir(__file__)
 
+HMITreeDndMagicWord = "text/beremiz-hmitree"
+
 class HMITreeSelector(wx.TreeCtrl):
     def __init__(self, parent):
-        global on_hmitree_update
+
         wx.TreeCtrl.__init__(self, parent, style=(
             wx.TR_MULTIPLE |
             wx.TR_HAS_BUTTONS |
             wx.SUNKEN_BORDER |
             wx.TR_LINES_AT_ROOT))
 
+        self.ordered_items = []
+        self.parent = parent
+
         self.MakeTree()
+
+        self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnTreeNodeSelection)
+        self.Bind(wx.EVT_TREE_BEGIN_DRAG, self.OnTreeBeginDrag)
 
     def _recurseTree(self, current_hmitree_root, current_tc_root):
         for c in current_hmitree_root.children:
@@ -51,6 +59,37 @@ class HMITreeSelector(wx.TreeCtrl):
                 display_name = '{} {}'.format(c.nodetype[4:], c.name)
                 tc_child = self.AppendItem(current_tc_root, display_name)
                 self.SetPyData(tc_child, c)
+
+    def OnTreeNodeSelection(self, event):
+        items = self.GetSelections()
+        items_pydata = [self.GetPyData(item) for item in items]
+
+        # append new items to ordered item list
+        for item_pydata in items_pydata:
+            if item_pydata not in self.ordered_items:
+                self.ordered_items.append(item_pydata)
+
+        # filter out vanished items
+        self.ordered_items = [
+            item_pydata 
+            for item_pydata in self.ordered_items 
+            if item_pydata in items_pydata]
+
+        self.parent.OnHMITreeNodeSelection(self.ordered_items)
+
+    def OnTreeBeginDrag(self, event):
+        """
+        Called when a drag is started in tree
+        @param event: wx.TreeEvent
+        """
+        if self.ordered_items:
+            print("boink")
+            # Just send a recognizable mime-type, drop destination
+            # will get python data from parent
+            data = wx.CustomDataObject(HMITreeDndMagicWord)
+            dragSource = wx.DropSource(self)
+            dragSource.SetData(data)
+            dragSource.DoDragDrop()
 
     def MakeTree(self, hmi_tree_root=None):
 
@@ -127,21 +166,32 @@ class WidgetPicker(wx.TreeCtrl):
 
         self.Thaw()
 
-class PathEditor(wx.Panel):
-    def __init__(self, parent, path):
+class PathDropTarget(wx.DropTarget):
 
-        wx.Panel.__init__(self, parent)
-        label = path.get("name") + ": " + path.text + "(" + path.get("accepts") + ")"
+    def __init__(self, parent):
+        data = wx.CustomDataObject(HMITreeDndMagicWord)
+        wx.DropTarget.__init__(self, data)
+        self.ParentWindow = parent
+
+    def OnDrop(self, x, y):
+        self.ParentWindow.OnHMITreeDnD()
+        return True
+
+class ParamEditor(wx.Panel):
+    def __init__(self, parent, paramdesc):
+
+        wx.Panel.__init__(self, parent.main_panel)
+        label = paramdesc.get("name")+ ": " + paramdesc.get("accepts") 
+        if paramdesc.text:
+            label += "\n\"" + paramdesc.text + "\""
         self.desc = wx.StaticText(self, label=label)
-        self.focus_sbmp = wx.StaticBitmap(self, -1, wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR, (32,32)))
-        self.valid_bmp = wx.ArtProvider.GetBitmap(wx.ART_TICK_MARK, wx.ART_TOOLBAR, (32,32))
-        self.invalid_bmp = wx.ArtProvider.GetBitmap(wx.ART_CROSS_MARK, wx.ART_TOOLBAR, (32,32))
+        self.valid_bmp = wx.ArtProvider.GetBitmap(wx.ART_TICK_MARK, wx.ART_TOOLBAR, (16,16))
+        self.invalid_bmp = wx.ArtProvider.GetBitmap(wx.ART_CROSS_MARK, wx.ART_TOOLBAR, (16,16))
         self.validity_sbmp = wx.StaticBitmap(self, -1, self.invalid_bmp)
         self.edit = wx.TextCtrl(self)
-        self.edit_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
-        self.edit_sizer.AddGrowableCol(1)
+        self.edit_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
+        self.edit_sizer.AddGrowableCol(0)
         self.edit_sizer.AddGrowableRow(0)
-        self.edit_sizer.Add(self.focus_sbmp, flag=wx.GROW)
         self.edit_sizer.Add(self.edit, flag=wx.GROW)
         self.edit_sizer.Add(self.validity_sbmp, flag=wx.GROW)
         self.main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -149,6 +199,28 @@ class PathEditor(wx.Panel):
         self.main_sizer.Add(self.edit_sizer, flag=wx.GROW)
         self.SetSizer(self.main_sizer)
         self.main_sizer.Fit(self)
+
+class ArgEditor(ParamEditor):
+    pass
+
+class PathEditor(ParamEditor):
+    def __init__(self, parent, pathdesc):
+        ParamEditor.__init__(self, parent, pathdesc)
+        self.ParentObj = parent
+        DropTarget = PathDropTarget(self)
+        self.edit.SetDropTarget(DropTarget)
+        self.Bind(wx.EVT_TEXT_ENTER, self.OnPathChanged, self.edit)
+
+    def OnHMITreeDnD(self):
+        self.ParentObj.GotPathDnDOn(self)
+
+    def SetPathValue(self, value):
+        self.edit.SetValue(value)
+
+    def OnPathChanged(self, event):
+        # TODO : update validity
+        event.Skip()
+    
 
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
@@ -162,7 +234,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
         self.bmp = None
         self.msg = None
-        self.hmitree_node = None
+        self.hmitree_nodes = []
         self.selected_SVG = None
 
         self.Config = wx.ConfigBase.Get()
@@ -197,11 +269,22 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.main_sizer.AddGrowableCol(0)
         self.main_sizer.AddGrowableRow(2)
 
+        self.staticmsg = wx.StaticText(self, label = _("Drag selected Widget from here to Inkscape"))
         self.preview = wx.Panel(self.main_panel, size=(-1, _preview_height + _preview_margin*2))
-        self.staticmsg = wx.StaticText(self)
         self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.main_sizer.Add(self.preview, flag=wx.GROW)
+        self.args_box = wx.StaticBox(self.main_panel, -1,
+                                     _("Widget's arguments"),
+                                     style = wx.ALIGN_RIGHT)
+        self.args_sizer = wx.StaticBoxSizer(self.args_box, wx.VERTICAL)
+        self.paths_box = wx.StaticBox(self.main_panel, -1,
+                                      _("Widget's variables"),
+                                      style = wx.ALIGN_RIGHT)
+        self.paths_sizer = wx.StaticBoxSizer(self.paths_box, wx.VERTICAL)
+        self.signature_sizer.Add(self.args_sizer, flag=wx.GROW)
+        self.signature_sizer.AddSpacer(5)
+        self.signature_sizer.Add(self.paths_sizer, flag=wx.GROW)
         self.main_sizer.Add(self.staticmsg, flag=wx.GROW)
+        self.main_sizer.Add(self.preview, flag=wx.GROW)
         self.main_sizer.Add(self.signature_sizer, flag=wx.GROW)
         self.main_sizer.Layout()
         self.main_panel.SetAutoLayout(True)
@@ -216,21 +299,38 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.picker_desc_splitter.SplitHorizontally(self.picker_panel, self.desc, 400)
         self.SplitVertically(self.main_panel, self.picker_desc_splitter, 300)
 
-        self.msg = _("Drag selected Widget from here to Inkscape")
         self.tempf = None 
 
+        self.args_editors = []
         self.paths_editors = []
 
     def ResetSignature(self):
-        self.signature_sizer.Clear()
+        self.args_sizer.Clear()
+        for editor in self.args_editors:
+            editor.Destroy()
+        self.args_editors = []
+
+        self.paths_sizer.Clear()
         for editor in self.paths_editors:
             editor.Destroy()
         self.paths_editors = []
 
+    def AddArgToSignature(self, arg):
+        new_editor = ArgEditor(self, arg)
+        self.args_editors.append(new_editor)
+        self.args_sizer.Add(new_editor, flag=wx.GROW)
+
     def AddPathToSignature(self, path):
-        new_editor = PathEditor(self.main_panel, path)
+        new_editor = PathEditor(self, path)
         self.paths_editors.append(new_editor)
-        self.signature_sizer.Add(new_editor, flag=wx.GROW)
+        self.paths_sizer.Add(new_editor, flag=wx.GROW)
+
+    def GotPathDnDOn(self, target_editor):
+        dndindex = self.paths_editors.index(target_editor)
+
+        for selected,editor in zip(self.hmitree_nodes,
+                                   self.paths_editors[dndindex:]):
+            editor.SetPath(selected.hmi_path())
 
     def RecallLibDir(self):
         conf = self.Config.Read(_conf_key)
@@ -283,8 +383,6 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.DrawPreview()
         event.Skip()
 
-        self.staticmsg.SetLabel(self.msg)
-
     def GenThumbnail(self, svgpath, thumbpath):
         inkpath = get_inkscape_path()
         if inkpath is None:
@@ -335,7 +433,14 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
                 self.selected_SVG = svgpath if have_thumb else None
 
-                self.AnalyseWidgetAndUpdateUI()
+                self.AnalyseWidgetAndUpdateUI(fname)
+
+                if self.msg:
+                    self.staticmsg.Show()
+                    self.staticmsg.SetLabel(self.msg)
+                else:
+                    self.staticmsg.Hide()
+
 
             except IOError:
                 self.msg = _("Widget library must be writable")
@@ -344,9 +449,10 @@ class WidgetLibBrowser(wx.SplitterWindow):
         event.Skip()
 
     def OnHMITreeNodeSelection(self, hmitree_nodes):
-        self.hmitree_node = hmitree_nodes[0] if len(hmitree_nodes) else None
-        self.ValidateWidget()
-        self.Refresh()
+        self.hmitree_nodes = hmitree_nodes
+        # [0] if len(hmitree_nodes) else None
+        # self.ValidateWidget()
+        # self.Refresh()
 
     def OnLeftDown(self, evt):
         if self.tempf is not None:
@@ -368,7 +474,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
     def GetSubHMITree(self, _context):
         return [self.hmitree_node.etree()]
 
-    def AnalyseWidgetAndUpdateUI(self):
+    def AnalyseWidgetAndUpdateUI(self, fname):
         self.msg = ""
         self.ResetSignature()
 
@@ -389,9 +495,10 @@ class WidgetLibBrowser(wx.SplitterWindow):
         except Exception as e:
             self.msg += str(e)
         except XSLTApplyError as e:
-            self.msg += "Widget analysis error: " + e.message
+            self.msg += "Widget " + fname + " analysis error: " + e.message
         else:
             
+            self.msg += "Widget " + fname + ": OK"
 
             print(etree.tostring(signature, pretty_print=True))
             widgets = signature.getroot()
@@ -401,10 +508,15 @@ class WidgetLibBrowser(wx.SplitterWindow):
                 self.desc.SetValue(defs.find("type").text + ":\n" + "\n\n".join(map(
                     lambda s:s.replace("\n"," ").replace("  ", " "),
                     defs.find("longdesc").text.split("\n\n"))))
-                for arg in defs.iter("arg"):
+                args = [arg for arg in defs.iter("arg")]
+                self.args_box.Show(len(args)!=0)
+                for arg in args:
+                    self.AddArgToSignature(arg)
                     print(arg.get("name"))
                     print(arg.get("accepts"))
-                for path in defs.iter("path"):
+                paths = [path for path in defs.iter("path")]
+                self.paths_box.Show(len(paths)!=0)
+                for path in paths:
                     self.AddPathToSignature(path)
                     print(path.get("name"))
                     print(path.get("accepts"))
@@ -467,32 +579,13 @@ class SVGHMI_UI(wx.SplitterWindow):
         wx.SplitterWindow.__init__(self, parent,
                                    style=wx.SUNKEN_BORDER | wx.SP_3D)
 
-        self.ordered_items = []
-
         self.SelectionTree = HMITreeSelector(self)
         self.Staging = WidgetLibBrowser(self)
         self.SplitVertically(self.SelectionTree, self.Staging, 300)
         register_for_HMI_tree_updates(weakref.ref(self))
-        self.Bind(wx.EVT_TREE_SEL_CHANGED,
-            self.OnHMITreeNodeSelection, self.SelectionTree)
-
-    def OnHMITreeNodeSelection(self, event):
-        items = self.SelectionTree.GetSelections()
-        items_pydata = [self.SelectionTree.GetPyData(item) for item in items]
-
-        # append new items to ordered item list
-        for item_pydata in items_pydata:
-            if item_pydata not in self.ordered_items:
-                self.ordered_items.append(item_pydata)
-
-        # filter out vanished items
-        self.ordered_items = [
-            item_pydata 
-            for item_pydata in self.ordered_items 
-            if item_pydata in items_pydata]
-
-        self.Staging.OnHMITreeNodeSelection(items_pydata)
 
     def HMITreeUpdate(self, hmi_tree_root):
-            self.SelectionTree.MakeTree(hmi_tree_root)
+        self.SelectionTree.MakeTree(hmi_tree_root)
 
+    def OnHMITreeNodeSelection(self, hmitree_nodes):
+        self.Staging.OnHMITreeNodeSelection(hmitree_nodes)
