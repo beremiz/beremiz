@@ -200,6 +200,17 @@ class ParamEditor(wx.Panel):
         self.SetSizer(self.main_sizer)
         self.main_sizer.Fit(self)
 
+    def setValidityNOK(self):
+        self.validity_sbmp.SetBitmap(self.invalid_bmp)
+        self.validity_sbmp.Show(True)
+
+    def setValidityOK(self):
+        self.validity_sbmp.SetBitmap(self.valid_bmp)
+        self.validity_sbmp.Show(True)
+
+    def setValidityUnknown(self):
+        self.validity_sbmp.Show(False)
+
 class ArgEditor(ParamEditor):
     pass
 
@@ -207,18 +218,25 @@ class PathEditor(ParamEditor):
     def __init__(self, parent, pathdesc):
         ParamEditor.__init__(self, parent, pathdesc)
         self.ParentObj = parent
+        self.pathdesc = pathdesc
         DropTarget = PathDropTarget(self)
         self.edit.SetDropTarget(DropTarget)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnPathChanged, self.edit)
+        self.Bind(wx.EVT_TEXT, self.OnPathChanged, self.edit)
 
     def OnHMITreeDnD(self):
         self.ParentObj.GotPathDnDOn(self)
 
-    def SetPath(self, value):
-        self.edit.SetValue(value)
+    def SetPath(self, hmitree_node):
+        self.edit.ChangeValue(hmitree_node.hmi_path())
+        if hmitree_node.nodetype in self.pathdesc.get("accepts").split(","):
+            self.setValidityOK()
+        else:
+            self.setValidityNOK()
 
     def OnPathChanged(self, event):
-        # TODO : update validity
+        # TODO : find corresponding hmitre node and type to update validity
+        # Lazy way : hide validity
+        self.setValidityUnknown()
         event.Skip()
     
 
@@ -328,9 +346,9 @@ class WidgetLibBrowser(wx.SplitterWindow):
     def GotPathDnDOn(self, target_editor):
         dndindex = self.paths_editors.index(target_editor)
 
-        for selected,editor in zip(self.hmitree_nodes,
+        for hmitree_node,editor in zip(self.hmitree_nodes,
                                    self.paths_editors[dndindex:]):
-            editor.SetPath(selected.hmi_path())
+            editor.SetPath(hmitree_node)
 
     def RecallLibDir(self):
         conf = self.Config.Read(_conf_key)
