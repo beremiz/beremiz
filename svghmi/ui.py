@@ -160,7 +160,7 @@ class WidgetPicker(wx.TreeCtrl):
         self.root = self.AddRoot(root_display_name)
         self.SetPyData(self.root, None)
 
-        if lib_dir is not None:
+        if lib_dir is not None and os.path.exists(lib_dir):
             self._recurseTree(lib_dir, self.root, [])
             self.Expand(self.root)
 
