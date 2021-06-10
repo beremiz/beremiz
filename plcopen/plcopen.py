@@ -1393,8 +1393,8 @@ def _updatePouPousClass(cls):
         self.interface.setcontent(vars)
     setattr(cls, "setvars", setvars)
 
-    def addpouExternalVar(self, var_type, name):
-        self.addpouVar(var_type, name, "externalVars")
+    def addpouExternalVar(self, var_type, name, **args):
+        self.addpouVar(var_type, name, "externalVars", **args)
     setattr(cls, "addpouExternalVar", addpouExternalVar)
 
     def addpouVar(self, var_type, name, var_class="localVars", location="", description="", initval=""):
