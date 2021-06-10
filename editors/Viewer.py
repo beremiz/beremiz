@@ -389,7 +389,8 @@ class ViewerDropTarget(wx.TextDropTarget):
                 elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!") % var_name
                 elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
-                    self.ParentWindow.Controler.AddEditedElementPouExternalVar(tagname, values[2], var_name)
+                    print(values) 
+                    self.ParentWindow.Controler.AddEditedElementPouExternalVar(tagname, values[2], var_name, description=values[4])
                     self.ParentWindow.RefreshVariablePanel()
                     self.ParentWindow.ParentWindow.RefreshPouInstanceVariablesPanel()
                     self.ParentWindow.AddVariableBlock(x, y, scaling, INPUT, var_name, values[2])

@@ -2049,14 +2049,15 @@ class PLCControler(object):
                         self.GetVarTypeObject(var_type),
                         name, **args)
 
-    def AddEditedElementPouExternalVar(self, tagname, var_type, name):
+    def AddEditedElementPouExternalVar(self, tagname, var_type, name, **args):
         if self.Project is not None:
             words = tagname.split("::")
             if words[0] in ['P', 'T', 'A']:
                 pou = self.Project.getpou(words[1])
                 if pou is not None:
                     pou.addpouExternalVar(
-                        self.GetVarTypeObject(var_type), name)
+                        self.GetVarTypeObject(var_type),
+                        name, **args)
 
     def ChangeEditedElementPouVar(self, tagname, old_type, old_name, new_type, new_name):
         if self.Project is not None:
