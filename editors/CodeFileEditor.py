@@ -857,8 +857,9 @@ class VariablesEditor(wx.Panel):
             row = event.GetRow()
             data_type = self.Table.GetValueByName(row, "Type")
             var_name = self.Table.GetValueByName(row, "Name")
+            desc = self.Table.GetValueByName(row, "Description")
             data = wx.TextDataObject(str((var_name, "Global", data_type,
-                                          self.Controler.GetCurrentLocation())))
+                                          self.Controler.GetCurrentLocation(), desc)))
             dragSource = wx.DropSource(self.VariablesGrid)
             dragSource.SetData(data)
             dragSource.DoDragDrop()
