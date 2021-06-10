@@ -10,6 +10,9 @@ from __future__ import absolute_import
 import os
 import hashlib
 import weakref
+import re
+from functools import reduce
+from operator import or_
 from tempfile import NamedTemporaryFile
 
 import wx
@@ -200,19 +203,37 @@ class ParamEditor(wx.Panel):
         self.SetSizer(self.main_sizer)
         self.main_sizer.Fit(self)
 
-    def setValidityNOK(self):
-        self.validity_sbmp.SetBitmap(self.invalid_bmp)
-        self.validity_sbmp.Show(True)
+    def setValidity(self, validity):
+        if validity is not None:
+            bmp = self.valid_bmp if validity else self.invalid_bmp
+            self.validity_sbmp.SetBitmap(bmp)
+            self.validity_sbmp.Show(True)
+        else :
+            self.validity_sbmp.Show(False)
 
-    def setValidityOK(self):
-        self.validity_sbmp.SetBitmap(self.valid_bmp)
-        self.validity_sbmp.Show(True)
-
-    def setValidityUnknown(self):
-        self.validity_sbmp.Show(False)
+models = { typename: re.compile(regex) for typename, regex in [
+    ("string", r".*"),
+    ("int", r"^-?[1-9][0-9]*$"),
+    ("real", r"^-?[1-9][0-9]*(\.[0-9]+)?$")]}
 
 class ArgEditor(ParamEditor):
-    pass
+    def __init__(self, parent, argdesc):
+        ParamEditor.__init__(self, parent, argdesc)
+        self.ParentObj = parent
+        self.argdesc = argdesc
+        self.Bind(wx.EVT_TEXT, self.OnArgChanged, self.edit)
+
+    def OnArgChanged(self, event):
+        txt = self.edit.GetValue()
+        accepts = self.argdesc.get("accepts").split(',')
+        self.setValidity(
+            reduce(or_,
+                   map(lambda typename: 
+                           models[typename].match(txt) is not None,
+                       accepts), 
+                   False)
+            if accepts and txt else None)
+        event.Skip()
 
 class PathEditor(ParamEditor):
     def __init__(self, parent, pathdesc):
@@ -228,15 +249,13 @@ class PathEditor(ParamEditor):
 
     def SetPath(self, hmitree_node):
         self.edit.ChangeValue(hmitree_node.hmi_path())
-        if hmitree_node.nodetype in self.pathdesc.get("accepts").split(","):
-            self.setValidityOK()
-        else:
-            self.setValidityNOK()
+        self.setValidity(
+            hmitree_node.nodetype in self.pathdesc.get("accepts").split(","))
 
     def OnPathChanged(self, event):
         # TODO : find corresponding hmitre node and type to update validity
         # Lazy way : hide validity
-        self.setValidityUnknown()
+        self.setValidity(None)
         event.Skip()
     
 
