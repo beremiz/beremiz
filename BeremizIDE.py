@@ -223,7 +223,7 @@ class LogPseudoFile(object):
         return False
 
     def progress(self, text):
-        l = self.output.GetLineCount()-2
+        l = max(self.output.GetLineCount()-2, 0)
         self.output.AnnotationSetText(l, text)
         self.output.AnnotationSetVisible(wx.stc.STC_ANNOTATION_BOXED)
         self.output.AnnotationSetStyle(l, self.black_white)
@@ -496,6 +496,7 @@ class Beremiz(IDEFrame):
             self.local_runtime_tmpdir = tempfile.mkdtemp()
             # choose an arbitrary random port for runtime
             self.runtime_port = int(random.random() * 1000) + 61131
+            self.Log.write(_("Starting local runtime...\n"))
             # launch local runtime
             self.local_runtime = ProcessLogger(
                 self.Log,
