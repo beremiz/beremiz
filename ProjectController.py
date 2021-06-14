@@ -40,6 +40,7 @@ from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from functools import reduce
+from itertools import izip
 from distutils.dir_util import copy_tree
 from six.moves import xrange
 
@@ -1512,8 +1513,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     for debug_tick, debug_buff in Traces:
                         debug_vars = UnpackDebugBuffer(
                             debug_buff, self.TracedIECTypes)
-                        if debug_vars is not None and len(debug_vars) == len(self.TracedIECPath):
-                            for IECPath, values_buffer, value in zip(
+                        if debug_vars is not None:
+                            for IECPath, values_buffer, value in izip(
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,
                                     debug_vars):
@@ -1606,8 +1607,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 WeakKeyDictionary(),  # Callables
                 [],                   # Data storage [(tick, data),...]
                 "Registered",         # Variable status
-                None,
-                buffer_list]                # Forced value
+                None,                 # Forced value
+                buffer_list]
             self.IECdebug_datas[IECPath] = IECdebug_data
         else:
             IECdebug_data[4] |= buffer_list
@@ -1681,27 +1682,28 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self._connector.RemoteExec(script, **kwargs)
 
     def DispatchDebugValuesProc(self, event):
-        self.debug_status, debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
+        event.Skip()
         start_time = time.time()
-        if len(self.TracedIECPath) == len(buffers):
-            for IECPath, values in zip(self.TracedIECPath, buffers):
-                if len(values) > 0:
-                    self.CallWeakcallables(
-                        IECPath, "NewValues", debug_ticks, values)
-            if len(debug_ticks) > 0:
-                self.CallWeakcallables(
-                    "__tick__", "NewDataAvailable", debug_ticks)
+        self.debug_status, debug_ticks, buffers = self.SnapshotAndResetDebugValuesBuffers()
 
         if self.debug_status == PlcStatus.Broken:
             self.logger.write_warning(
                 _("Debug: token rejected - other debug took over - reconnect to recover\n"))
-        else:
-            delay = time.time() - start_time
-            next_refresh = max(REFRESH_PERIOD - delay, 0.2 * delay)
-            if self.DispatchDebugValuesTimer is not None:
-                self.DispatchDebugValuesTimer.Start(
-                    int(next_refresh * 1000), oneShot=True)
-        event.Skip()
+            return
+
+        for IECPath, values in zip(self.TracedIECPath, buffers):
+            if len(values) > 0:
+                self.CallWeakcallables(
+                    IECPath, "NewValues", debug_ticks, values)
+        if len(debug_ticks) > 0:
+            self.CallWeakcallables(
+                "__tick__", "NewDataAvailable", debug_ticks)
+
+        delay = time.time() - start_time
+        next_refresh = max(REFRESH_PERIOD - delay, 0.2 * delay)
+        if self.DispatchDebugValuesTimer is not None:
+            res = self.DispatchDebugValuesTimer.Start(
+                int(next_refresh * 1000), oneShot=True)
 
     def KillDebugThread(self):
         if self.DispatchDebugValuesTimer is not None:
