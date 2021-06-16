@@ -384,7 +384,7 @@ class DebugVariableItem(DebugDataConsumer):
         ticks = self.Data.view[:, 0]
 
         # Get nearest data from tick
-        idx = np.searchsorted(ticks, tick)
+        idx = min(np.searchsorted(ticks, tick), self.Data.count - 1)
 
         # Adjust data index according to constraint
         if adjust < 0 and ticks[idx] > tick and idx > 0 or \

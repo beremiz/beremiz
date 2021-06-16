@@ -270,7 +270,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         """
         # Execute callback on button under mouse pointer if it exists
         x, y = event.GetPosition()
-        wx.CallAfter(self.HandleButton, x, y)
+        self.HandleButton(x, y)
         event.Skip()
 
     def OnLeftDClick(self, event):

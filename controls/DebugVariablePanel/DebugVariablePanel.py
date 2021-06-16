@@ -357,9 +357,13 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
             # Force refresh if graph is fixed because range of data received
             # is too small to fill data range selected
-            if self.Fixed and \
-               self.Ticks.view[-1] - self.Ticks.view[0] < self.CurrentRange:
-                self.Force = True
+            if self.Fixed :
+                if self.Ticks.view[-1] - self.Ticks.view[0] < self.CurrentRange:
+                    self.Force = True
+                if self.Ticks.view[0] > self.StartTick:
+                    self.StartTick = self.Ticks.view[0]
+                    self.Force = True
+
 
             self.HasNewData = False
             self.RefreshView()
@@ -388,14 +392,14 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         if self.CursorTick is not None:
             cursor_tick = max(self.Ticks.view[0],
                               min(self.CursorTick + move, self.Ticks.view[-1]))
-            cursor_tick_idx = np.searchsorted(self.Ticks.view, cursor_tick)
+            cursor_tick_idx = min(np.searchsorted(self.Ticks.view, cursor_tick), self.Ticks.count - 1)
             if self.Ticks.view[cursor_tick_idx] == self.CursorTick:
                 cursor_tick_idx = max(0,
                                       min(cursor_tick_idx + abs(move) // move,
                                           self.Ticks.count - 1))
             self.CursorTick = self.Ticks.view[cursor_tick_idx]
             self.StartTick = max(
-                self.Ticks.view[np.searchsorted(self.Ticks.view,  self.CursorTick + self.CurrentRange)],
+                self.Ticks.view[min(np.searchsorted(self.Ticks.view,  self.CursorTick - self.CurrentRange), self.Ticks.count - 1)],
                 min(self.StartTick, self.CursorTick))
             self.RefreshCanvasPosition()
             self.UpdateCursorTick()
@@ -605,7 +609,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
     def SetCanvasPosition(self, tick):
         tick = max(self.Ticks.view[0], min(tick, self.Ticks.view[-1] - self.CurrentRange))
-        self.StartTick = self.Ticks.view[np.searchsorted(self.Ticks.view, tick)]
+        self.StartTick = self.Ticks.view[min(np.searchsorted(self.Ticks.view, tick), self.Ticks.count - 1)]
         self.Fixed = True
         self.RefreshCanvasPosition()
         self.ForceRefresh()
@@ -631,7 +635,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                     tick = self.StartTick + self.CurrentRange / 2.
                 new_start_tick = min(tick - (tick - self.StartTick) * self.CurrentRange / current_range,
                                      self.Ticks.view[-1] - self.CurrentRange)
-                self.StartTick = self.Ticks.view[np.searchsorted(self.Ticks.view, - new_start_tick)]
+                self.StartTick = self.Ticks.view[min(np.searchsorted(self.Ticks.view, new_start_tick), self.Ticks.count - 1)]
                 self.Fixed = new_start_tick < self.Ticks.view[-1] - self.CurrentRange
             self.ForceRefresh()
 
