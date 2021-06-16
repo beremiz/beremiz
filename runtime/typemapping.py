@@ -92,7 +92,7 @@ def UnpackDebugBuffer(buff, indexes):
             buffoffset += sizeof(c_type) if iectype != "STRING" else len(value)+1
             res.append(value)
         else:
-            break
+            return None
     if buffoffset and buffoffset == buffsize:
         return res
     return None
