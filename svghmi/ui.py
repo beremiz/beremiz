@@ -12,6 +12,7 @@ import hashlib
 import weakref
 import re
 from functools import reduce
+from itertools import izip
 from operator import or_
 from tempfile import NamedTemporaryFile
 
@@ -213,15 +214,19 @@ class ParamEditor(wx.Panel):
 
 models = { typename: re.compile(regex) for typename, regex in [
     ("string", r".*"),
-    ("int", r"^-?[1-9][0-9]*$"),
-    ("real", r"^-?[1-9][0-9]*(\.[0-9]+)?$")]}
+    ("int", r"^-?([1-9][0-9]|0)*$"),
+    ("real", r"^-?([1-9][0-9]|0)*(\.[0-9]+)?$")]}
 
 class ArgEditor(ParamEditor):
-    def __init__(self, parent, argdesc):
+    def __init__(self, parent, argdesc, prefillargdesc):
         ParamEditor.__init__(self, parent, argdesc)
         self.ParentObj = parent
         self.argdesc = argdesc
         self.Bind(wx.EVT_TEXT, self.OnArgChanged, self.edit)
+        prefill = "" if prefillargdesc is None else prefillargdesc.get("value")
+        self.edit.SetValue(prefill)
+        # TODO add a button to add more ArgEditror instance 
+        #      when ordinality is multiple
 
     def OnArgChanged(self, event):
         txt = self.edit.GetValue()
@@ -258,6 +263,10 @@ class PathEditor(ParamEditor):
         self.setValidity(None)
         event.Skip()
     
+def KeepDoubleNewLines(txt):
+    return "\n\n".join(map(
+        lambda s:re.sub(r'\s+',' ',s),
+        txt.split("\n\n")))
 
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
@@ -311,11 +320,11 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
         self.args_box = wx.StaticBox(self.main_panel, -1,
                                      _("Widget's arguments"),
-                                     style = wx.ALIGN_RIGHT)
+                                     style = wx.ALIGN_CENTRE_HORIZONTAL)
         self.args_sizer = wx.StaticBoxSizer(self.args_box, wx.VERTICAL)
         self.paths_box = wx.StaticBox(self.main_panel, -1,
                                       _("Widget's variables"),
-                                      style = wx.ALIGN_RIGHT)
+                                      style = wx.ALIGN_CENTRE_HORIZONTAL)
         self.paths_sizer = wx.StaticBoxSizer(self.paths_box, wx.VERTICAL)
         self.signature_sizer.Add(self.args_sizer, flag=wx.GROW)
         self.signature_sizer.AddSpacer(5)
@@ -352,8 +361,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
             editor.Destroy()
         self.paths_editors = []
 
-    def AddArgToSignature(self, arg):
-        new_editor = ArgEditor(self, arg)
+    def AddArgToSignature(self, arg, prefillarg):
+        new_editor = ArgEditor(self, arg, prefillarg)
         self.args_editors.append(new_editor)
         self.args_sizer.Add(new_editor, flag=wx.GROW)
 
@@ -531,41 +540,56 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
         except Exception as e:
             self.msg += str(e)
+            return
         except XSLTApplyError as e:
             self.msg += "Widget " + fname + " analysis error: " + e.message
-        else:
+            return
             
-            self.msg += "Widget " + fname + ": OK"
+        self.msg += "Widget " + fname + ": OK"
 
-            print(etree.tostring(signature, pretty_print=True))
-            widgets = signature.getroot()
-            for defs in widgets.iter("defs"):
+        print(etree.tostring(signature, pretty_print=True))
+        widgets = signature.getroot()
+        widget = widgets.find("widget")
+        defs = widget.find("defs")
+        # Keep double newlines (to mark paragraphs)
+        widget_desc = widget.find("desc")
+        self.desc.SetValue(
+            fname + ":\n" + (
+                _("No description given") if widget_desc is None else 
+                KeepDoubleNewLines(widget_desc.text)
+            ) + "\n\n" +
+            defs.find("type").text + ":\n" +
+            KeepDoubleNewLines(defs.find("longdesc").text))
+        prefillargs = widget.findall("arg")
+        args = defs.findall("arg")
+        # extend args description in prefilled args in longer 
+        # (case of variable list of args)
+        if len(prefillargs) < len(args):
+            prefillargs += [None]*(len(args)-len(prefillargs))
+        if args and len(prefillargs) > len(args):
+            # TODO: check ordinality of last arg
+            # TODO: check that only last arg has multiple ordinality
+            args += [args[-1]]*(len(prefillargs)-len(args))
+        self.args_box.Show(len(args)!=0)
+        for arg, prefillarg in izip(args,prefillargs):
+            self.AddArgToSignature(arg, prefillarg)
+            print(arg.get("name"))
+            print(arg.get("accepts"))
+        paths = defs.findall("path")
+        self.paths_box.Show(len(paths)!=0)
+        for path in paths:
+            self.AddPathToSignature(path)
+            print(path.get("name"))
+            print(path.get("accepts"))
 
-                # Keep double newlines (to mark paragraphs)
-                self.desc.SetValue(defs.find("type").text + ":\n" + "\n\n".join(map(
-                    lambda s:s.replace("\n"," ").replace("  ", " "),
-                    defs.find("longdesc").text.split("\n\n"))))
-                args = [arg for arg in defs.iter("arg")]
-                self.args_box.Show(len(args)!=0)
-                for arg in args:
-                    self.AddArgToSignature(arg)
-                    print(arg.get("name"))
-                    print(arg.get("accepts"))
-                paths = [path for path in defs.iter("path")]
-                self.paths_box.Show(len(paths)!=0)
-                for path in paths:
-                    self.AddPathToSignature(path)
-                    print(path.get("name"))
-                    print(path.get("accepts"))
-
-            for widget in widgets:
-                widget_type = widget.get("type")
-                print(widget_type)
-                for path in widget.iterchildren("path"):
-                    path_value = path.get("value")
-                    path_accepts = map(
-                        str.strip, path.get("accepts", '')[1:-1].split(','))
-                    print(path, path_value, path_accepts)
+        for widget in widgets:
+            widget_type = widget.get("type")
+            print(widget_type)
+            for path in widget.iterchildren("path"):
+                path_value = path.get("value")
+                path_accepts = map(
+                    str.strip, path.get("accepts", '')[1:-1].split(','))
+                print(path, path_value, path_accepts)
 
         self.main_panel.SetupScrolling(scroll_x=False)
 
