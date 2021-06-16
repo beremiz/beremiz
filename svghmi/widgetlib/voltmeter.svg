@@ -93,9 +93,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.312923"
-     inkscape:cx="554.2857"
-     inkscape:cy="554.2857"
+     inkscape:zoom="1.1712952"
+     inkscape:cx="601.92253"
+     inkscape:cy="607.41638"
      inkscape:document-units="mm"
      inkscape:current-layer="svg2354"
      showgrid="false"
@@ -438,9 +438,11 @@
        id="path4304" />
   </g>
   <g
-     inkscape:label="HMI:Meter@/PUMP0/SLOTH,0,666"
+     inkscape:label="HMI:Meter:0:500@/PUMP0/SLOTH,0,666"
      transform="matrix(0.57180538,0,0,0.57180538,88.118425,163.79208)"
      id="g19348">
+    <desc
+       id="desc132">Old Style Russian Voltmeter, from openclipart https://openclipart.org/detail/205486/voltmeter-and-ammeter</desc>
     <path
        inkscape:label="range"
        sodipodi:open="true"

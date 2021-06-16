@@ -19,6 +19,7 @@ template "*", mode="parselabel"
 {
     const "label","@inkscape:label";
     const "id","@id";
+
     const "description", "substring-after($label,'HMI:')";
 
     const "_args", "substring-before($description,'@')";
@@ -86,6 +87,7 @@ template "*", mode="parselabel"
                 }
             }
         }
+        if "svg:desc" desc value "svg:desc/text()";
     }
 }
 
