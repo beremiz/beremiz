@@ -121,6 +121,11 @@
             </path>
           </xsl:if>
         </xsl:for-each>
+        <xsl:if test="svg:desc">
+          <desc>
+            <xsl:value-of select="svg:desc/text()"/>
+          </desc>
+        </xsl:if>
       </widget>
     </xsl:if>
   </xsl:template>
