@@ -18,28 +18,30 @@ istylesheet
             extension-element-prefixes="ns func exsl regexp str dyn"
             exclude-result-prefixes="ns func exsl regexp str dyn" {
 
-    param "hmi_path";
     const "hmi_elements", "//svg:*[starts-with(@inkscape:label, 'HMI:')]";
-    const "subhmitree", "ns:GetSubHMITree()";
+    const "widgetparams", "ns:GetWidgetParams()";
 
     const "indexed_hmitree", "/.."; // compatibility with parse_labels.ysl2
     include parse_labels.ysl2
     const "_parsed_widgets" apply "$hmi_elements", mode="parselabel";
     const "parsed_widgets","exsl:node-set($_parsed_widgets)";
 
-    const "selected_node_type","local-name($subhmitree)";
-    const "svg_widget", "$parsed_widgets/widget[1]"; // TODO take all widgets
+    const "svg_widget", "$parsed_widgets/widget[1]";
     const "svg_widget_type", "$svg_widget/@type";
     const "svg_widget_path", "$svg_widget/@path";
     const "svg_widget_count", "count($parsed_widgets/widget)";
 
     // Templates to change label paths(s)
-    template "@* | node()", mode="replace_path" {
-        xsl:copy apply "@* | node()", mode="replace_path";
+    template "@* | node()", mode="replace_params" {
+        xsl:copy apply "@* | node()", mode="replace_params";
     }
 
-    template "path/@value", mode="replace_path" {
-        attrib "value" > «$hmi_path»
+    template "arg", mode="replace_params";
+    template "path", mode="replace_params";
+    template "widget", mode="replace_params" {
+        xsl:copy {
+            copy "$widgetparams/*"
+        };
     }
 
     // all attribs are usually copied
@@ -52,7 +54,7 @@ istylesheet
 
       // in case this node widget's main element inject label
       if "@id = $svg_widget/@id" {
-          const "substituted_widget" apply "$svg_widget", mode="replace_path";
+          const "substituted_widget" apply "$svg_widget", mode="replace_params";
           const "substituted_widget_ns", "exsl:node-set($substituted_widget)";
           const "new_label" apply "$substituted_widget_ns", mode="genlabel";
           attrib "inkscape:label" > «$new_label»
@@ -61,8 +63,6 @@ istylesheet
       apply "@* | node()", mode="inline_svg";
     }
 
-    const "NODES_TYPES","str:split('HMI_ROOT HMI_NODE')";
-    const "HMI_NODES_COMPAT","str:split('Page Jump Foreach')";
     template "/" {
         comment > Widget dropped in Inkscape from Beremiz
 
@@ -71,14 +71,9 @@ istylesheet
                 error > No widget detected on selected SVG
             when "$svg_widget_count > 1"
                 error > Multiple widget DnD not yet supported
-            when """$selected_node_type = $NODES_TYPES and \
-                    not($svg_widget_type = $HMI_NODES_COMPAT)"""
-                error > Widget incompatible with selected HMI tree node
         }
 
         const "testmsg" {
-            msg value "$hmi_path";
-            msg value "$selected_node_type";
             msg value "$svg_widget_type";
         }
 
