@@ -88,7 +88,6 @@ class HMITreeSelector(wx.TreeCtrl):
         @param event: wx.TreeEvent
         """
         if self.ordered_items:
-            print("boink")
             # Just send a recognizable mime-type, drop destination
             # will get python data from parent
             data = wx.CustomDataObject(HMITreeDndMagicWord)
@@ -218,8 +217,8 @@ class ParamEditor(wx.Panel):
 
 models = { typename: re.compile(regex) for typename, regex in [
     ("string", r".*"),
-    ("int", r"^-?([1-9][0-9]|0)*$"),
-    ("real", r"^-?([1-9][0-9]|0)*(\.[0-9]+)?$")]}
+    ("int", r"^-?([1-9][0-9]*|0)$"),
+    ("real", r"^-?([1-9][0-9]*|0)(\.[0-9]+)?$")]}
 
 class ArgEditor(ParamEditor):
     def __init__(self, parent, argdesc, prefillargdesc):
@@ -364,6 +363,10 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.args_editors = []
         self.paths_editors = []
 
+    def SetMessage(self, msg):
+        self.staticmsg.SetLabel(msg)
+        self.main_sizer.Layout()
+
     def ResetSignature(self):
         self.args_sizer.Clear()
         for editor in self.args_editors:
@@ -497,7 +500,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
                 self.AnalyseWidgetAndUpdateUI(fname)
 
-                self.staticmsg.SetLabel(self.msg)
+                self.SetMessage(self.msg)
 
             except IOError:
                 self.msg = _("Widget library must be writable")
@@ -518,14 +521,18 @@ class WidgetLibBrowser(wx.SplitterWindow):
             dropSource.DoDragDrop(wx.Drag_AllowMove)
 
     def RegenSVGLater(self, when=1):
+        self.SetMessage(_("SVG generation pending"))
         self.RegenSVGTimer.Start(milliseconds=when*1000, oneShot=True)
 
     def RegenSVGNow(self):
         self.RegenSVGLater(when=0)
 
     def RegenSVG(self, event):
+        self.SetMessage(_("Generating SVG..."))
         args = [arged.GetValue() for arged in self.args_editors]
+        while args and not args[-1]: args.pop(-1)
         paths = [pathed.GetValue() for pathed in self.paths_editors]
+        while paths and not paths[-1]: paths.pop(-1)
         if self.RegenSVGLock.acquire(True):
             self.RegenSVGParams = (args, paths)
             if self.RegenSVGThread is None:
@@ -558,7 +565,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         wx.CallAfter(self.DoneRegenSVG)
         
     def DoneRegenSVG(self):
-        self.staticmsg.SetLabel(self.msg)
+        self.SetMessage(self.msg if self.msg else _("SVG ready for drag'n'drop"))
         
     def AnalyseWidgetAndUpdateUI(self, fname):
         self.msg = ""
@@ -587,7 +594,6 @@ class WidgetLibBrowser(wx.SplitterWindow):
             
         self.msg += "Widget " + fname + ": OK"
 
-        print(etree.tostring(signature, pretty_print=True))
         widgets = signature.getroot()
         widget = widgets.find("widget")
         defs = widget.find("defs")
@@ -598,7 +604,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
                 _("No description given") if widget_desc is None else 
                 KeepDoubleNewLines(widget_desc.text)
             ) + "\n\n" +
-            defs.find("type").text + ":\n" +
+            defs.find("type").text + " Widget:\n" +
             KeepDoubleNewLines(defs.find("longdesc").text))
         prefillargs = widget.findall("arg")
         args = defs.findall("arg")
@@ -613,30 +619,19 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.args_box.Show(len(args)!=0)
         for arg, prefillarg in izip(args,prefillargs):
             self.AddArgToSignature(arg, prefillarg)
-            print(arg.get("name"))
-            print(arg.get("accepts"))
         paths = defs.findall("path")
         self.paths_box.Show(len(paths)!=0)
         for path in paths:
             self.AddPathToSignature(path)
-            print(path.get("name"))
-            print(path.get("accepts"))
 
         for widget in widgets:
             widget_type = widget.get("type")
-            print(widget_type)
             for path in widget.iterchildren("path"):
                 path_value = path.get("value")
                 path_accepts = map(
                     str.strip, path.get("accepts", '')[1:-1].split(','))
-                print(path, path_value, path_accepts)
 
         self.main_panel.SetupScrolling(scroll_x=False)
-
-
-    def PassMessage(self, _context, msgs):
-        for msg in msgs:
-            self.msg += msg.text + "\n"
 
     def GetWidgetParams(self, _context):
         args,paths = self.GenDnDSVGParams
@@ -663,8 +658,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
             transform = XSLTransform(
                 os.path.join(ScriptDirectory, "gen_dnd_widget_svg.xslt"),
-                [("GetWidgetParams", self.GetWidgetParams),
-                 ("PassMessage", self.PassMessage)])
+                [("GetWidgetParams", self.GetWidgetParams)])
 
             svgdom = etree.parse(self.selected_SVG)
 
