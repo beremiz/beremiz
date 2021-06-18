@@ -183,7 +183,6 @@ class PathDropTarget(wx.DropTarget):
 
 class ParamEditor(wx.Panel):
     def __init__(self, parent, paramdesc):
-
         wx.Panel.__init__(self, parent.main_panel)
         label = paramdesc.get("name")+ ": " + paramdesc.get("accepts") 
         if paramdesc.text:
@@ -251,6 +250,7 @@ class PathEditor(ParamEditor):
         self.pathdesc = pathdesc
         DropTarget = PathDropTarget(self)
         self.edit.SetDropTarget(DropTarget)
+        self.edit.SetHint(_("Drag'n'drop HMI variable here"))
         self.Bind(wx.EVT_TEXT, self.OnPathChanged, self.edit)
 
     def OnHMITreeDnD(self):
