@@ -11,6 +11,7 @@ import os
 import hashlib
 import weakref
 import re
+from threading import Thread, Lock
 from functools import reduce
 from itertools import izip
 from operator import or_
@@ -204,6 +205,9 @@ class ParamEditor(wx.Panel):
         self.SetSizer(self.main_sizer)
         self.main_sizer.Fit(self)
 
+    def GetValue(self):
+        return self.edit.GetValue()
+
     def setValidity(self, validity):
         if validity is not None:
             bmp = self.valid_bmp if validity else self.invalid_bmp
@@ -238,6 +242,7 @@ class ArgEditor(ParamEditor):
                        accepts), 
                    False)
             if accepts and txt else None)
+        self.ParentObj.RegenSVGLater()
         event.Skip()
 
 class PathEditor(ParamEditor):
@@ -261,6 +266,7 @@ class PathEditor(ParamEditor):
         # TODO : find corresponding hmitre node and type to update validity
         # Lazy way : hide validity
         self.setValidity(None)
+        self.ParentObj.RegenSVGLater()
         event.Skip()
     
 def KeepDoubleNewLines(txt):
@@ -347,6 +353,14 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
         self.tempf = None 
 
+        self.RegenSVGThread = None
+        self.RegenSVGLock = Lock()
+        self.RegenSVGTimer = wx.Timer(self, -1)
+        self.RegenSVGParams = None
+        self.Bind(wx.EVT_TIMER,
+                  self.RegenSVG,
+                  self.RegenSVGTimer)
+
         self.args_editors = []
         self.paths_editors = []
 
@@ -377,6 +391,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
         for hmitree_node,editor in zip(self.hmitree_nodes,
                                    self.paths_editors[dndindex:]):
             editor.SetPath(hmitree_node)
+
+        self.RegenSVGNow()
 
     def RecallLibDir(self):
         conf = self.Config.Read(_conf_key)
@@ -481,12 +497,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
                 self.AnalyseWidgetAndUpdateUI(fname)
 
-                if self.msg:
-                    self.staticmsg.Show()
-                    self.staticmsg.SetLabel(self.msg)
-                else:
-                    self.staticmsg.Hide()
-
+                self.staticmsg.SetLabel(self.msg)
 
             except IOError:
                 self.msg = _("Widget library must be writable")
@@ -496,9 +507,6 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
     def OnHMITreeNodeSelection(self, hmitree_nodes):
         self.hmitree_nodes = hmitree_nodes
-        # [0] if len(hmitree_nodes) else None
-        # self.ValidateWidget()
-        # self.Refresh()
 
     def OnLeftDown(self, evt):
         if self.tempf is not None:
@@ -509,17 +517,49 @@ class WidgetLibBrowser(wx.SplitterWindow):
             dropSource.SetData(data)
             dropSource.DoDragDrop(wx.Drag_AllowMove)
 
-    def GiveDetails(self, _context, msgs):
-        for msg in msgs:
-            self.msg += msg.text + "\n"
+    def RegenSVGLater(self, when=1):
+        self.RegenSVGTimer.Start(milliseconds=when*1000, oneShot=True)
+
+    def RegenSVGNow(self):
+        self.RegenSVGLater(when=0)
+
+    def RegenSVG(self, event):
+        args = [arged.GetValue() for arged in self.args_editors]
+        paths = [pathed.GetValue() for pathed in self.paths_editors]
+        if self.RegenSVGLock.acquire(True):
+            self.RegenSVGParams = (args, paths)
+            if self.RegenSVGThread is None:
+                self.RegenSVGThread = \
+                    Thread(target=self.RegenSVGProc,
+                           name="RegenSVGThread").start()
+            self.RegenSVGLock.release()
+        event.Skip()
+
+    def RegenSVGProc(self):
+        self.RegenSVGLock.acquire(True)
+
+        newparams = self.RegenSVGParams
+        self.RegenSVGParams = None
+
+        while newparams is not None:
+            self.RegenSVGLock.release()
+
+            res = self.GenDnDSVG(newparams)
+
+            self.RegenSVGLock.acquire(True)
+
+            newparams = self.RegenSVGParams
+            self.RegenSVGParams = None
+
+        self.RegenSVGThread = None
+
+        self.RegenSVGLock.release()
+
+        wx.CallAfter(self.DoneRegenSVG)
         
-    def PassMessage(self, _context, msgs):
-        for msg in msgs:
-            self.msg += msg.text + "\n"
-
-    def GetSubHMITree(self, _context):
-        return [self.hmitree_node.etree()]
-
+    def DoneRegenSVG(self):
+        self.staticmsg.SetLabel(self.msg)
+        
     def AnalyseWidgetAndUpdateUI(self, fname):
         self.msg = ""
         self.ResetSignature()
@@ -594,9 +634,24 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.main_panel.SetupScrolling(scroll_x=False)
 
 
+    def PassMessage(self, _context, msgs):
+        for msg in msgs:
+            self.msg += msg.text + "\n"
 
-    def ValidateWidget(self):
+    def GetWidgetParams(self, _context):
+        args,paths = self.GenDnDSVGParams
+        root = etree.Element("params")
+        for arg in args:
+            etree.SubElement(root, "arg", value=arg)
+        for path in paths:
+            etree.SubElement(root, "path", value=path)
+        return root
+
+
+    def GenDnDSVG(self, newparams):
         self.msg = ""
+
+        self.GenDnDSVGParams = newparams
 
         if self.tempf is not None:
             os.unlink(self.tempf.name)
@@ -605,18 +660,15 @@ class WidgetLibBrowser(wx.SplitterWindow):
         try:
             if self.selected_SVG is None:
                 raise Exception(_("No widget selected"))
-            if self.hmitree_node is None:
-                raise Exception(_("No HMI tree node selected"))
 
             transform = XSLTransform(
                 os.path.join(ScriptDirectory, "gen_dnd_widget_svg.xslt"),
-                [("GetSubHMITree", self.GetSubHMITree),
-                 ("PassMessage", self.GiveDetails)])
+                [("GetWidgetParams", self.GetWidgetParams),
+                 ("PassMessage", self.PassMessage)])
 
             svgdom = etree.parse(self.selected_SVG)
 
-            result = transform.transform(
-                svgdom, hmi_path = self.hmitree_node.hmi_path())
+            result = transform.transform(svgdom)
 
             for entry in transform.get_error_log():
                 self.msg += "XSLT: " + entry.message + "\n" 
