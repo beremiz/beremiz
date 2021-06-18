@@ -40,7 +40,8 @@ istylesheet
     template "path", mode="replace_params";
     template "widget", mode="replace_params" {
         xsl:copy {
-            copy "$widgetparams/*"
+            apply "@* | node()", mode="replace_params";
+            copy "$widgetparams/*";
         };
     }
 
@@ -72,12 +73,6 @@ istylesheet
             when "$svg_widget_count > 1"
                 error > Multiple widget DnD not yet supported
         }
-
-        const "testmsg" {
-            msg value "$svg_widget_type";
-        }
-
-        value "ns:PassMessage($testmsg)";
 
         apply "/", mode="inline_svg";
     }
