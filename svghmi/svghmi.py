@@ -238,6 +238,11 @@ class SVGHMILibrary(POULibrary):
                 # note the double zero after "runtime_", 
                 # to ensure placement before other CTN generated code in execution order
 
+    def GlobalInstances(self):
+        """ Adds HMI tree root and hearbeat to PLC Configuration's globals """
+        return [(name, iec_type, "") for name, iec_type in SPECIAL_NODES]
+
+
 
 def Register_SVGHMI_UI_for_HMI_tree_updates(ref):
     global on_hmitree_update
@@ -699,11 +704,10 @@ def _runtime_{location}_svghmi_stop():
                 self.GetCTRoot().logger.write_error(
                     _("Font file does not exist: %s\n") % fontfile)
         
-    def CTNGlobalInstances(self):
-        # view_name = self.BaseParams.getName()
-        # return [ (view_name + "_" + name, iec_type, "") for name, iec_type in SPECIAL_NODES]
-        # TODO : move to library level for multiple hmi
-        return [(name, iec_type, "") for name, iec_type in SPECIAL_NODES]
+    ## In case one day we support more than one heartbeat
+    # def CTNGlobalInstances(self):
+    #     view_name = self.BaseParams.getName()
+    #     return [(view_name + "_HEARTBEAT", "HMI_INT", "")]
 
     def GetIconName(self):
         return "SVGHMI"
