@@ -745,7 +745,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return locations
 
     def GetConfNodeGlobalInstances(self):
-        return self._GlobalInstances()
+        LibGlobals = []
+        for lib in self.Libraries:
+            LibGlobals += lib.GlobalInstances()
+        CTNGlobals = self._GlobalInstances()
+        return LibGlobals + CTNGlobals
 
     def _Generate_SoftPLC(self):
         if self._Generate_PLC_ST():
