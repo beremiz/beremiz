@@ -63,6 +63,12 @@ class POULibrary(object):
         # Pure python or IEC libs doesn't produce C code
         return ((""), [], False), ""
 
+    def GlobalInstances(self):
+        """
+        @return: [(instance_name, instance_type),...]
+        """
+        return []
+
     def FatalError(self, message):
         """ Raise an exception that will trigger error message intended to 
             the user, but without backtrace since it is not a software error """
