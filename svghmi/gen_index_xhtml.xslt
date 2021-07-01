@@ -7556,7 +7556,19 @@
 </xsl:text>
           <xsl:text>// Open WebSocket to relative "/ws" address
 </xsl:text>
-          <xsl:text>var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var ws_url = 
+</xsl:text>
+          <xsl:text>    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
+</xsl:text>
+          <xsl:text>    + '?mode=' + (window.location.hash == "#watchdog" 
+</xsl:text>
+          <xsl:text>                  ? "watchdog"
+</xsl:text>
+          <xsl:text>                  : "multiclient");
+</xsl:text>
+          <xsl:text>var ws = new WebSocket(ws_url);
 </xsl:text>
           <xsl:text>ws.binaryType = 'arraybuffer';
 </xsl:text>
