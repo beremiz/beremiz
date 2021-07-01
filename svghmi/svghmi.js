@@ -30,7 +30,13 @@ function init_widgets() {
 };
 
 // Open WebSocket to relative "/ws" address
-var ws = new WebSocket(window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws'));
+
+var ws_url = 
+    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
+    + '?mode=' + (window.location.hash == "#watchdog" 
+                  ? "watchdog"
+                  : "multiclient");
+var ws = new WebSocket(ws_url);
 ws.binaryType = 'arraybuffer';
 
 const dvgetters = {

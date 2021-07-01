@@ -120,6 +120,10 @@ class HMIProtocol(WebSocketServerProtocol):
         self._hmi_session = None
         WebSocketServerProtocol.__init__(self, *args, **kwargs)
 
+    def onConnect(self, request):
+        self.has_watchdog = request.params.get("mode", [None])[0] == "watchdog"
+        return WebSocketServerProtocol.onConnect(self, request)
+
     def onOpen(self):
         assert(self._hmi_session is None)
         self._hmi_session = HMISession(self)
