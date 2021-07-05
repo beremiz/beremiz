@@ -142,8 +142,7 @@ class HMIProtocol(WebSocketServerProtocol):
 class HMIWebSocketServerFactory(WebSocketServerFactory):
     protocol = HMIProtocol
 
-svghmi_root = None
-svghmi_listener = None
+svghmi_servers = {}
 svghmi_send_thread = None
 
 def SendThreadProc():
@@ -165,19 +164,14 @@ def SendThreadProc():
             # this happens when finishing
             break
 
-
-def watchdog_trigger():
-    print("SVGHMI watchdog trigger")
-    
+def AddPathToSVGHMIServers(path, factory):
+    for k,v in svghmi_servers.iteritems():
+        svghmi_root, svghmi_listener, path_list = v
+        svghmi_root.putChild(path, factory())
 
 # Called by PLCObject at start
 def _runtime_00_svghmi_start():
-    global svghmi_listener, svghmi_root, svghmi_send_thread
-
-    svghmi_root = Resource()
-    svghmi_root.putChild("ws", WebSocketResource(HMIWebSocketServerFactory()))
-
-    svghmi_listener = reactor.listenTCP(8008, Site(svghmi_root), interface='localhost')
+    global svghmi_send_thread
 
     # start a thread that call the C part of SVGHMI
     svghmi_send_thread = Thread(target=SendThreadProc, name="SVGHMI Send")
@@ -186,14 +180,10 @@ def _runtime_00_svghmi_start():
 
 # Called by PLCObject at stop
 def _runtime_00_svghmi_stop():
-    global svghmi_listener, svghmi_root, svghmi_send_thread, svghmi_session
+    global svghmi_send_thread, svghmi_session
 
     if svghmi_session is not None:
         svghmi_session.close()
-    svghmi_root.delEntity("ws")
-    svghmi_root = None
-    svghmi_listener.stopListening()
-    svghmi_listener = None
     # plc cleanup calls svghmi_(locstring)_cleanup and unlocks send thread
     svghmi_send_thread.join()
     svghmi_send_thread = None

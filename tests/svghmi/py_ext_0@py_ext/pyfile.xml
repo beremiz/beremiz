@@ -87,7 +87,7 @@ class AlarmJsonResource(Resource):
   <start>
     <xhtml:p><![CDATA[
 
-svghmi_root.putChild("alarms", AlarmJsonResource())
+AddPathToSVGHMIServers("alarms", AlarmJsonResource)
 
 
 ]]></xhtml:p>
