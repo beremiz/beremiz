@@ -279,11 +279,15 @@ class SVGHMI(object):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="SVGHMI">
         <xsd:complexType>
-          <xsd:attribute name="OnStart" type="xsd:string" use="optional"/>
-          <xsd:attribute name="OnStop" type="xsd:string" use="optional"/>
-          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional"/>
-          <xsd:attribute name="WatchdogInitial" type="xsd:integer" use="optional"/>
-          <xsd:attribute name="WatchdogInterval" type="xsd:integer" use="optional"/>
+          <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="chromium {url}"/>
+          <xsd:attribute name="OnStop" type="xsd:string" use="optional" default="echo 'please close chromium window at {url}'"/>
+          <xsd:attribute name="EnableWatchdog" type="xsd:boolean" use="optional" default="false"/>
+          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default="chromium {url}"/>
+          <xsd:attribute name="WatchdogInitial" type="xsd:integer" use="optional" default="30"/>
+          <xsd:attribute name="WatchdogInterval" type="xsd:integer" use="optional" default="5"/>
+          <xsd:attribute name="Port" type="xsd:integer" use="optional" default="8008"/>
+          <xsd:attribute name="Interface" type="xsd:string" use="optional" default="localhost"/>
+          <xsd:attribute name="Path" type="xsd:string" use="optional" default=""/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -532,50 +536,96 @@ class SVGHMI(object):
 
         res += ((target_fname, open(target_path, "rb")),)
 
+        port = self.GetParamsAttributes("SVGHMI.Port")["value"]
+        interface = self.GetParamsAttributes("SVGHMI.Interface")["value"]
+        path = self.GetParamsAttributes("SVGHMI.Path")["value"].format(name=view_name)
+        enable_watchdog = self.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]
+        url="http://"+interface+("" if port==80 else (":"+str(port))
+            ) + (("/"+path) if path else ""
+            ) + ("#watchdog" if enable_watchdog else "")
+
         svghmi_cmds = {}
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
              svghmi_cmds[thing] = (
                 "Popen(" +
-                repr(shlex.split(given_command.format(port="8008", name=view_name))) +
+                repr(shlex.split(given_command.format(
+                    port=port, 
+                    name=view_name,
+                    url=url))) +
                 ")") if given_command else "pass # no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_%s_svghmi_.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
         runtimefile.write("""
 # TODO : multiple watchdog (one for each svghmi instance)
-def svghmi_watchdog_trigger():
+def svghmi_{location}_watchdog_trigger():
     {svghmi_cmds[Watchdog]}
 
 svghmi_watchdog = None
 
 def _runtime_{location}_svghmi_start():
-    global svghmi_watchdog
+    global svghmi_watchdog, svghmi_servers
+
+    srv = svghmi_servers.get("{interface}:{port}", None)
+    if srv is not None:
+        svghmi_root, svghmi_listener, path_list = srv 
+        if '{path}' in path_list:
+            raise Exception("SVGHMI {view_name}: path {path} already used on {interface}:{port}")
+    else:
+        svghmi_root = Resource()
+        svghmi_root.putChild("ws", WebSocketResource(HMIWebSocketServerFactory()))
+
+        svghmi_listener = reactor.listenTCP({port}, Site(svghmi_root), interface='{interface}')
+        path_list = []
+        svghmi_servers["{interface}:{port}"] = (svghmi_root, svghmi_listener, path_list)
+
     svghmi_root.putChild(
-        '{view_name}',
+        '{path}',
         NoCacheFile('{xhtml}',
-        defaultType='application/xhtml+xml'))
+            defaultType='application/xhtml+xml'))
+
+    path_list.append("{path}")
 
     {svghmi_cmds[Start]}
 
-    svghmi_watchdog = Watchdog(
-        {watchdog_initial}, 
-        {watchdog_interval}, 
-        svghmi_watchdog_trigger)
+    if {enable_watchdog}:
+        if svghmi_watchdog is None:
+            svghmi_watchdog = Watchdog(
+                {watchdog_initial}, 
+                {watchdog_interval}, 
+                svghmi_{location}_watchdog_trigger)
+        else:
+            raise Exception("SVGHMI {view_name}: only one watchdog allowed")
+
 
 def _runtime_{location}_svghmi_stop():
-    global svghmi_watchdog
+    global svghmi_watchdog, svghmi_servers
+
     if svghmi_watchdog is not None:
         svghmi_watchdog.cancel()
         svghmi_watchdog = None
 
-    svghmi_root.delEntity('{view_name}')
+    svghmi_root, svghmi_listener, path_list = svghmi_servers["{interface}:{port}"]
+    svghmi_root.delEntity('{path}')
+
+    path_list.remove('{path}')
+
+    if len(path_list)==0:
+        svghmi_root.delEntity("ws")
+        svghmi_listener.stopListening()
+        svghmi_servers.pop("{interface}:{port}")
+
     {svghmi_cmds[Stop]}
 
         """.format(location=location_str,
                    xhtml=target_fname,
                    view_name=view_name,
                    svghmi_cmds=svghmi_cmds,
+                   port = port,
+                   interface = interface,
+                   path = path,
+                   enable_watchdog = enable_watchdog,
                    watchdog_initial = self.GetParamsAttributes("SVGHMI.WatchdogInitial")["value"],
                    watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
                    ))
