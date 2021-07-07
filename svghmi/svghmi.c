@@ -9,6 +9,8 @@
 #define HMI_BUFFER_SIZE %(buffer_size)d
 #define HMI_ITEM_COUNT %(item_count)d
 #define HMI_HASH_SIZE 8
+#define MAX_CONNECTIONS %(max_connections)d
+
 static uint8_t hmi_hash[HMI_HASH_SIZE] = {%(hmi_hash_ints)s};
 
 /* PLC reads from that buffer */
@@ -45,11 +47,11 @@ typedef struct {
 
     /* publish/write/send */
     long wlock;
-    buf_state_t wstate;
+    buf_state_t wstate[MAX_CONNECTIONS];
 
     /* zero means not subscribed */
-    uint16_t refresh_period_ms;
-    uint16_t age_ms;
+    uint16_t refresh_period_ms[MAX_CONNECTIONS];
+    uint16_t age_ms[MAX_CONNECTIONS];
 
     /* retrieve/read/recv */
     long rlock;
@@ -81,15 +83,16 @@ static int traverse_hmi_tree(hmi_tree_iterator fp)
 
 static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0)
+    uint32_t session_index = 0;
+    if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0) while(session_index < MAX_CONNECTIONS)
     {
-        if(dsc->wstate == buf_set){
+        if(dsc->wstate[session_index] == buf_set){
             /* if being subscribed */
-            if(dsc->refresh_period_ms){
-                if(dsc->age_ms + ticktime_ms < dsc->refresh_period_ms){
-                    dsc->age_ms += ticktime_ms;
+            if(dsc->refresh_period_ms[session_index]){
+                if(dsc->age_ms[session_index] + ticktime_ms < dsc->refresh_period_ms[session_index]){
+                    dsc->age_ms[session_index] += ticktime_ms;
                 }else{
-                    dsc->wstate = buf_tosend;
+                    dsc->wstate[session_index] = buf_tosend;
                     global_write_dirty = 1;
                 }
             }
@@ -105,34 +108,36 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
         if(__Is_a_string(dsc)){
             sz = ((STRING*)visible_value_p)->len + 1;
         }
-        if(dsc->wstate == buf_new /* just subscribed 
+        if(dsc->wstate[session_index] == buf_new /* just subscribed 
            or already subscribed having value change */
-           || (dsc->refresh_period_ms > 0 && memcmp(dest_p, visible_value_p, sz) != 0)){
+           || (dsc->refresh_period_ms[session_index] > 0 && memcmp(dest_p, visible_value_p, sz) != 0)){
             /* copy and flag as set */
             memcpy(dest_p, visible_value_p, sz);
             /* if not already marked/signaled, do it */
-            if(dsc->wstate != buf_set && dsc->wstate != buf_tosend) {
-                if(dsc->wstate == buf_new || ticktime_ms > dsc->refresh_period_ms){
-                    dsc->wstate = buf_tosend;
+            if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
+                if(dsc->wstate[session_index] == buf_new || ticktime_ms > dsc->refresh_period_ms[session_index]){
+                    dsc->wstate[session_index] = buf_tosend;
                     global_write_dirty = 1;
                 } else {
-                    dsc->wstate = buf_set;
+                    dsc->wstate[session_index] = buf_set;
                 }
-                dsc->age_ms = 0;
+                dsc->age_ms[session_index] = 0;
             }
         }
 
         AtomicCompareExchange(&dsc->wlock, 1, 0);
+        session_index++;
     }
     // else ... : PLC can't wait, variable will be updated next turn
     return 0;
 }
 
+static uint32_t send_session_index;
 static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
 
-    if(dsc->wstate == buf_tosend)
+    if(dsc->wstate[send_session_index] == buf_tosend)
     {
         uint32_t sz = __get_type_enum_size(dsc->type);
         if(sbufidx + sizeof(uint32_t) + sz <=  sizeof(sbuf))
@@ -145,7 +150,7 @@ static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
             /* TODO : force into little endian */
             memcpy(dst_p, &index, sizeof(uint32_t));
             memcpy(dst_p + sizeof(uint32_t), src_p, sz);
-            dsc->wstate = buf_free;
+            dsc->wstate[send_session_index] = buf_free;
             sbufidx += sizeof(uint32_t) /* index */ + sz;
         }
         else
@@ -179,24 +184,25 @@ static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
     return 0;
 }
 
-void update_refresh_period(hmi_tree_item_t *dsc, uint16_t refresh_period_ms)
+void update_refresh_period(hmi_tree_item_t *dsc, uint32_t session_index, uint16_t refresh_period_ms)
 {
     while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
     if(refresh_period_ms) {
-        if(!dsc->refresh_period_ms)
+        if(!dsc->refresh_period_ms[session_index])
         {
-            dsc->wstate = buf_new;
+            dsc->wstate[session_index] = buf_new;
         }
     } else {
-        dsc->wstate = buf_free;
+        dsc->wstate[session_index] = buf_free;
     }
-    dsc->refresh_period_ms = refresh_period_ms;
+    dsc->refresh_period_ms[session_index] = refresh_period_ms;
     AtomicCompareExchange(&dsc->wlock, 1, 0);
 }
 
+static uint32_t reset_session_index;
 static int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    update_refresh_period(dsc, 0);
+    update_refresh_period(dsc, reset_session_index, 0);
     return 0;
 }
 
@@ -236,13 +242,14 @@ void __publish_svghmi()
 }
 
 /* PYTHON CALLS */
-int svghmi_send_collect(uint32_t *size, char **ptr){
+int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
 
     SVGHMI_SuspendFromPythonThread();
 
     if(continue_collect) {
         int res;
         sbufidx = HMI_HASH_SIZE;
+        send_session_index = session_index;
         if((res = traverse_hmi_tree(send_iterator)) == 0)
         {
             if(sbufidx > HMI_HASH_SIZE){
@@ -270,7 +277,7 @@ typedef enum {
 
 // Returns :
 //   0 is OK, <0 is error, 1 is heartbeat
-int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
+int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *ptr){
     const uint8_t* cursor = ptr + HMI_HASH_SIZE;
     const uint8_t* end = ptr + size;
 
@@ -336,6 +343,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
             case reset:
             {
                 progress = 0;
+                reset_session_index = session_index;
                 traverse_hmi_tree(reset_iterator);
             }
             break;
@@ -348,7 +356,7 @@ int svghmi_recv_dispatch(uint32_t size, const uint8_t *ptr){
                 if(index < HMI_ITEM_COUNT)
                 {
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
-                    update_refresh_period(dsc, refresh_period_ms);
+                    update_refresh_period(dsc, session_index, refresh_period_ms);
                 }
                 else
                 {
