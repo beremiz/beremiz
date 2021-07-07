@@ -47,12 +47,14 @@ hmi_tree_root = None
 
 on_hmitree_update = None
 
+maxConnectionsTotal = 0
+
 class SVGHMILibrary(POULibrary):
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root, on_hmitree_update
+        global hmi_tree_root, on_hmitree_update, maxConnectionsTotal
 
         """
         PLC Instance Tree:
@@ -196,6 +198,11 @@ class SVGHMILibrary(POULibrary):
         # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
         #                                     p for p in self._ProgramList]),
 
+        for CTNChild in self.GetCTR().IterChildren():
+            if isinstance(CTNChild, SVGHMI):
+                maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
+
+
         # C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
         svghmi_c_file = open(svghmi_c_filepath, 'r')
@@ -208,7 +215,8 @@ class SVGHMILibrary(POULibrary):
             "item_count": item_count,
             "var_access_code": targets.GetCode("var_access.c"),
             "PLC_ticktime": self.GetCTR().GetTicktime(),
-            "hmi_hash_ints": ",".join(map(str,hmi_tree_root.hash()))
+            "hmi_hash_ints": ",".join(map(str,hmi_tree_root.hash())),
+            "max_connections": maxConnectionsTotal
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
@@ -287,7 +295,8 @@ class SVGHMI(object):
           <xsd:attribute name="WatchdogInterval" type="xsd:integer" use="optional" default="5"/>
           <xsd:attribute name="Port" type="xsd:integer" use="optional" default="8008"/>
           <xsd:attribute name="Interface" type="xsd:string" use="optional" default="localhost"/>
-          <xsd:attribute name="Path" type="xsd:string" use="optional" default=""/>
+          <xsd:attribute name="Path" type="xsd:string" use="optional" default="{name}"/>
+          <xsd:attribute name="MaxConnections" type="xsd:integer" use="optional" default="16"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -562,19 +571,22 @@ class SVGHMI(object):
 def svghmi_{location}_watchdog_trigger():
     {svghmi_cmds[Watchdog]}
 
-svghmi_watchdog = None
+max_svghmi_sessions = {maxConnections_total}
 
 def _runtime_{location}_svghmi_start():
     global svghmi_watchdog, svghmi_servers
 
     srv = svghmi_servers.get("{interface}:{port}", None)
     if srv is not None:
-        svghmi_root, svghmi_listener, path_list = srv 
+        svghmi_root, svghmi_listener, path_list = srv
         if '{path}' in path_list:
             raise Exception("SVGHMI {view_name}: path {path} already used on {interface}:{port}")
     else:
         svghmi_root = Resource()
-        svghmi_root.putChild("ws", WebSocketResource(HMIWebSocketServerFactory()))
+        factory = HMIWebSocketServerFactory()
+        factory.setProtocolOptions(maxConnections={maxConnections})
+
+        svghmi_root.putChild("ws", WebSocketResource(factory))
 
         svghmi_listener = reactor.listenTCP({port}, Site(svghmi_root), interface='{interface}')
         path_list = []
@@ -592,8 +604,8 @@ def _runtime_{location}_svghmi_start():
     if {enable_watchdog}:
         if svghmi_watchdog is None:
             svghmi_watchdog = Watchdog(
-                {watchdog_initial}, 
-                {watchdog_interval}, 
+                {watchdog_initial},
+                {watchdog_interval},
                 svghmi_{location}_watchdog_trigger)
         else:
             raise Exception("SVGHMI {view_name}: only one watchdog allowed")
@@ -628,6 +640,8 @@ def _runtime_{location}_svghmi_stop():
                    enable_watchdog = enable_watchdog,
                    watchdog_initial = self.GetParamsAttributes("SVGHMI.WatchdogInitial")["value"],
                    watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
+                   maxConnections = self.GetParamsAttributes("SVGHMI.MaxConnections")["value"],
+                   maxConnections_total = maxConnectionsTotal
                    ))
 
         runtimefile.close()
