@@ -242,9 +242,12 @@ void __publish_svghmi()
 }
 
 /* PYTHON CALLS */
-int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
+int svghmi_wait(void){
 
     SVGHMI_SuspendFromPythonThread();
+}
+
+int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
 
     if(continue_collect) {
         int res;
@@ -274,6 +277,12 @@ typedef enum {
     reset = 1,
     subscribe = 2
 } cmd_from_JS;
+
+int svghmi_reset(uint32_t session_index){
+    reset_session_index = session_index;
+    traverse_hmi_tree(reset_iterator);
+    return 1;
+}
 
 // Returns :
 //   0 is OK, <0 is error, 1 is heartbeat

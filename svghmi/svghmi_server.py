@@ -26,12 +26,22 @@ from autobahn.twisted.resource import  WebSocketResource
 max_svghmi_sessions = None
 svghmi_watchdog = None
 
+
+svghmi_wait = PLCBinary.svghmi_wait
+svghmi_wait.restype = ctypes.c_int # error or 0
+svghmi_wait.argtypes = []
+
 svghmi_send_collect = PLCBinary.svghmi_send_collect
 svghmi_send_collect.restype = ctypes.c_int # error or 0
 svghmi_send_collect.argtypes = [
     ctypes.c_uint32,  # index
     ctypes.POINTER(ctypes.c_uint32),  # size
     ctypes.POINTER(ctypes.c_void_p)]  # data ptr
+
+svghmi_reset = PLCBinary.svghmi_reset
+svghmi_reset.restype = ctypes.c_int # error or 0
+svghmi_reset.argtypes = [
+    ctypes.c_uint32]  # index
 
 svghmi_recv_dispatch = PLCBinary.svghmi_recv_dispatch
 svghmi_recv_dispatch.restype = ctypes.c_int # error or 0
@@ -67,9 +77,7 @@ class HMISessionMgr(object):
             if session.is_watchdog_session:
                 # Creating a new watchdog session closes pre-existing one
                 if self.watchdog_session is not None:
-                    self.watchdog_session.close()
                     self.unregister(self.watchdog_session)
-                    self.free_index(self.watchdog_session.session_index)
                 else:
                     assert(self.session_count < max_svghmi_sessions)
                     self.session_count += 1
@@ -83,13 +91,18 @@ class HMISessionMgr(object):
 
     def unregister(self, session):
         with self.lock:
-            if session.is_watchdog_session:
-                assert(self.watchdog_session == session)
+            if session.is_watchdog_session :
+                if self.watchdog_session != session:
+                    return
                 self.watchdog_session = None
             else:
-                self.multiclient_sessions.remove(self)
-            self.free_index(self.watchdog_session.get_index())
+                try:
+                    self.multiclient_sessions.remove(self)
+                except KeyError:
+                    return
+            self.free_index(session.session_index)
             self.session_count -= 1
+        session.kill()
         
     def close_all(self):
         with self.lock:
@@ -97,7 +110,6 @@ class HMISessionMgr(object):
             if self.watchdog_session:
                 close_list.append(self.watchdog_session)
             for session in close_list:
-                session.close()
                 self.unregister(session)
         
     def iter_sessions(self):
@@ -122,6 +134,7 @@ class HMISession(object):
     def __init__(self, protocol_instance):
         self.protocol_instance = protocol_instance
         self._session_index = None
+        self.closed = False
 
     @property
     def is_watchdog_session(self):
@@ -135,14 +148,27 @@ class HMISession(object):
     def session_index(self, value):
         self._session_index = value
 
+    def reset(self):
+        return svghmi_reset(self.session_index)
+
     def close(self):
+        if self.closed: return
         self.protocol_instance.sendClose(WebSocketProtocol.CLOSE_STATUS_CODE_NORMAL)
+
+    def notify_closed(self):
+        self.closed = True
+
+    def kill(self):
+        self.close()
+        self.reset()
 
     def onMessage(self, msg):
         # pass message to the C side recieve_message()
+        if self.closed: return
         return svghmi_recv_dispatch(self.session_index, len(msg), msg)
 
     def sendMessage(self, msg):
+        if self.closed: return
         self.protocol_instance.sendMessage(msg, True)
         return 0
 
@@ -199,10 +225,11 @@ class HMIProtocol(WebSocketServerProtocol):
         global svghmi_session_manager
         assert(self._hmi_session is None)
         self._hmi_session = HMISession(self)
-        svghmi_session_manager.register(self._hmi_session)
+        registered = svghmi_session_manager.register(self._hmi_session)
 
     def onClose(self, wasClean, code, reason):
         global svghmi_session_manager
+        self._hmi_session.notify_closed()
         svghmi_session_manager.unregister(self._hmi_session)
         self._hmi_session = None
 
@@ -228,7 +255,10 @@ def SendThreadProc():
     res = 0
     finished = False
     while not(finished):
+        svghmi_wait()
         for svghmi_session in svghmi_session_manager.iter_sessions():
+            # TODO make svghmi_send_collect waiting only once per
+            # svghmi_session_manager.iter_sessions cycle
             res = svghmi_send_collect(
                 svghmi_session.session_index,
                 ctypes.byref(size), ctypes.byref(ptr))
@@ -237,9 +267,9 @@ def SendThreadProc():
                     ctypes.string_at(ptr.value,size.value))
             elif res == errno.ENODATA:
                 # this happens when there is no data after wakeup
-                # because of hmi data refresh period longer than 
+                # because of hmi data refresh period longer than
                 # PLC common ticktime
-                pass 
+                pass
             else:
                 # this happens when finishing
                 finished = True
