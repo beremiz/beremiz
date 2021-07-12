@@ -103,11 +103,11 @@ class HMISessionMgr(object):
             self.free_index(session.session_index)
             self.session_count -= 1
         session.kill()
-        
+
     def close_all(self):
         for session in self.iter_sessions():
             self.unregister(session)
-        
+
     def iter_sessions(self):
         with self.lock:
             lst = list(self.multiclient_sessions)
@@ -247,8 +247,6 @@ def SendThreadProc():
     while not(finished):
         svghmi_wait()
         for svghmi_session in svghmi_session_manager.iter_sessions():
-            # TODO make svghmi_send_collect waiting only once per
-            # svghmi_session_manager.iter_sessions cycle
             res = svghmi_send_collect(
                 svghmi_session.session_index,
                 ctypes.byref(size), ctypes.byref(ptr))
