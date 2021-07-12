@@ -105,26 +105,16 @@ class HMISessionMgr(object):
         session.kill()
         
     def close_all(self):
-        with self.lock:
-            close_list = list(self.multiclient_sessions)
-            if self.watchdog_session:
-                close_list.append(self.watchdog_session)
-            for session in close_list:
-                self.unregister(session)
+        for session in self.iter_sessions():
+            self.unregister(session)
         
     def iter_sessions(self):
         with self.lock:
-            nxt_session = self.watchdog_session
-        if nxt_session is not None:
-            yield nxt_session
-        idx = 0
-        while True:
-            with self.lock:
-                if idx >= len(self.multiclient_sessions):
-                    return
-                nxt_session = self.multiclient_sessions[idx]
-            yield nxt_session
-            idx += 1
+            lst = list(self.multiclient_sessions)
+            if self.watchdog_session is not None:
+                lst = [self.watchdog_session]+lst
+            for nxt_session in lst:
+                yield nxt_session
 
 
 svghmi_session_manager = HMISessionMgr()
