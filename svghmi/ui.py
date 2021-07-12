@@ -290,6 +290,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
+        if self.libdir is None:
+            self.libdir = os.path.join(ScriptDirectory, "widgetlib") 
 
         self.picker_desc_splitter = wx.SplitterWindow(self, style=wx.SUNKEN_BORDER | wx.SP_3D)
 

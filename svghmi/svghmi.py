@@ -535,7 +535,10 @@ class SVGHMI(object):
         else:
             target_file = open(target_path, 'wb')
             target_file.write("""<!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>SVGHMI</title>
+</head>
 <body>
 <h1> No SVG file provided </h1>
 </body>
@@ -548,6 +551,8 @@ class SVGHMI(object):
         port = self.GetParamsAttributes("SVGHMI.Port")["value"]
         interface = self.GetParamsAttributes("SVGHMI.Interface")["value"]
         path = self.GetParamsAttributes("SVGHMI.Path")["value"].format(name=view_name)
+        if path and path[0]=='/':
+            path = path[1:]
         enable_watchdog = self.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]
         url="http://"+interface+("" if port==80 else (":"+str(port))
             ) + (("/"+path) if path else ""
@@ -672,7 +677,9 @@ def _runtime_{location}_svghmi_stop():
             dialog.Destroy()
         if open_inkscape:
             if not os.path.isfile(svgfile):
-                svgfile = None
+                # make a copy of default svg from source
+                default = os.path.join(ScriptDirectory, "default.svg")
+                shutil.copyfile(default, svgfile)
             open_svg(svgfile)
 
     def _StartPOEdit(self, POFile):

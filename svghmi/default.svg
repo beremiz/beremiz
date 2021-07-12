@@ -2,6 +2,7 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -9,84 +10,19 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="1280"
-   height="720"
-   viewBox="0 0 1280 720"
-   version="1.1"
-   id="hmi0"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="default.svg"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)">
-  <metadata
-     id="metadata4542">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <defs
-     id="defs2" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:document-units="px"
-     inkscape:current-layer="hmi0"
-     showgrid="false"
-     units="px"
-     inkscape:zoom="0.7"
-     inkscape:cx="576.80864"
-     inkscape:cy="330.28432"
-     inkscape:window-width="1600"
-     inkscape:window-height="886"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1" />
+   id="hmi0"
+   version="1.1"
+   viewBox="0 0 1280 720"
+   height="720"
+   width="1280">
   <rect
-     style="color:#000000"
-     id="page0"
-     width="1280"
-     height="720"
+     inkscape:label="HMI:Page:Home"
+     y="0"
      x="0"
-     y="0">
-    <desc
-       id="desc_page0">This is description for page 0
-
-all lines in the form &quot;name: value&quot; 
-are used as js object definition initializer
-
-role: &quot;page&quot;
-name: &quot;Home&quot;
-
-after triple opening braces is global JavaScript code
-
-{{{
-/* JS style Comment */
-alert(&quot;Hello World&quot;);
-}}}
-
-after triple closing braces is back to description
-</desc>
-  </rect>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:160px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="436.32812"
-     y="418.24219"
-     id="text5151"
-     inkscape:label="count"><desc
-       id="desc5153">path: &quot;count&quot;
-format: &quot;%4.4d&quot;</desc><tspan
-       sodipodi:role="line"
-       id="tspan5149"
-       x="436.32812"
-       y="418.24219"
-       style="stroke-width:1px">8888</tspan></text>
+     height="720"
+     width="1280"
+     id="rect1016"
+     style="color:#000000;opacity:1;fill:#d6d6d6;fill-opacity:1" />
 </svg>
