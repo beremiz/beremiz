@@ -84,49 +84,51 @@ static int traverse_hmi_tree(hmi_tree_iterator fp)
 static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
     uint32_t session_index = 0;
-    if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0) while(session_index < MAX_CONNECTIONS)
-    {
-        if(dsc->wstate[session_index] == buf_set){
-            /* if being subscribed */
-            if(dsc->refresh_period_ms[session_index]){
-                if(dsc->age_ms[session_index] + ticktime_ms < dsc->refresh_period_ms[session_index]){
-                    dsc->age_ms[session_index] += ticktime_ms;
-                }else{
-                    dsc->wstate[session_index] = buf_tosend;
-                    global_write_dirty = 1;
-                }
-            }
-        }
-
+    int value_changed = 0;
+    if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0) {
         void *dest_p = &wbuf[dsc->buf_index];
         void *real_value_p = NULL;
         char flags = 0;
         void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
-
-        /* if new value differs from previous one */
         USINT sz = __get_type_enum_size(dsc->type);
         if(__Is_a_string(dsc)){
             sz = ((STRING*)visible_value_p)->len + 1;
         }
-        if(dsc->wstate[session_index] == buf_new /* just subscribed 
-           or already subscribed having value change */
-           || (dsc->refresh_period_ms[session_index] > 0 && memcmp(dest_p, visible_value_p, sz) != 0)){
-            /* copy and flag as set */
-            memcpy(dest_p, visible_value_p, sz);
-            /* if not already marked/signaled, do it */
-            if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
-                if(dsc->wstate[session_index] == buf_new || ticktime_ms > dsc->refresh_period_ms[session_index]){
-                    dsc->wstate[session_index] = buf_tosend;
-                    global_write_dirty = 1;
-                } else {
-                    dsc->wstate[session_index] = buf_set;
+        while(session_index < MAX_CONNECTIONS) {
+            if(dsc->wstate[session_index] == buf_set){
+                /* if being subscribed */
+                if(dsc->refresh_period_ms[session_index]){
+                    if(dsc->age_ms[session_index] + ticktime_ms < dsc->refresh_period_ms[session_index]){
+                        dsc->age_ms[session_index] += ticktime_ms;
+                    }else{
+                        dsc->wstate[session_index] = buf_tosend;
+                        global_write_dirty = 1;
+                    }
                 }
-                dsc->age_ms[session_index] = 0;
             }
-        }
 
+            if(dsc->wstate[session_index] == buf_new /* just subscribed 
+               or already subscribed having value change */
+               || (dsc->refresh_period_ms[session_index] > 0 
+                   && (value_changed || (value_changed=memcmp(dest_p, visible_value_p, sz))) != 0)){
+                /* if not already marked/signaled, do it */
+                if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
+                    if(dsc->wstate[session_index] == buf_new || ticktime_ms > dsc->refresh_period_ms[session_index]){
+                        dsc->wstate[session_index] = buf_tosend;
+                        global_write_dirty = 1;
+                    } else {
+                        dsc->wstate[session_index] = buf_set;
+                    }
+                    dsc->age_ms[session_index] = 0;
+                }
+            }
+
+            session_index++;
+        }
+        /* copy value if changed (and subscribed) */
+        if(value_changed)
+            memcpy(dest_p, visible_value_p, sz);
         AtomicCompareExchange(&dsc->wlock, 1, 0);
-        session_index++;
     }
     // else ... : PLC can't wait, variable will be updated next turn
     return 0;
