@@ -6081,9 +6081,9 @@
       <xsl:text>Value to display</xsl:text>
     </path>
   </xsl:template>
-  <xsl:template match="widget[@type='Metter']" mode="widget_class">
+  <xsl:template match="widget[@type='Meter']" mode="widget_class">
     <xsl:text>class </xsl:text>
-    <xsl:text>MetterWidget</xsl:text>
+    <xsl:text>MeterWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
     <xsl:text>    frequency = 10;
