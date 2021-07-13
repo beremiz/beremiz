@@ -290,13 +290,33 @@ class SVGHMI(object):
           <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="chromium {url}"/>
           <xsd:attribute name="OnStop" type="xsd:string" use="optional" default="echo 'please close chromium window at {url}'"/>
           <xsd:attribute name="EnableWatchdog" type="xsd:boolean" use="optional" default="false"/>
-          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default="chromium {url}"/>
-          <xsd:attribute name="WatchdogInitial" type="xsd:integer" use="optional" default="30"/>
-          <xsd:attribute name="WatchdogInterval" type="xsd:integer" use="optional" default="5"/>
+          <xsd:attribute name="WatchdogInitial" use="optional" default="30">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="2"/>
+                    <xsd:maxInclusive value="600"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+          <xsd:attribute name="WatchdogInterval" use="optional" default="5">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="2"/>
+                    <xsd:maxInclusive value="60"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
           <xsd:attribute name="Port" type="xsd:integer" use="optional" default="8008"/>
           <xsd:attribute name="Interface" type="xsd:string" use="optional" default="localhost"/>
           <xsd:attribute name="Path" type="xsd:string" use="optional" default="{name}"/>
-          <xsd:attribute name="MaxConnections" type="xsd:integer" use="optional" default="16"/>
+          <xsd:attribute name="MaxConnections" use="optional" default="16">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="1"/>
+                    <xsd:maxInclusive value="1024"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
