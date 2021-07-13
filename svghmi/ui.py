@@ -602,11 +602,11 @@ class WidgetLibBrowser(wx.SplitterWindow):
         # Keep double newlines (to mark paragraphs)
         widget_desc = widget.find("desc")
         self.desc.SetValue(
-            fname + ":\n" + (
+            fname + ":\n\n" + (
                 _("No description given") if widget_desc is None else 
                 KeepDoubleNewLines(widget_desc.text)
             ) + "\n\n" +
-            defs.find("type").text + " Widget:\n" +
+            defs.find("type").text + " Widget: "+defs.find("shortdesc").text+"\n\n" +
             KeepDoubleNewLines(defs.find("longdesc").text))
         prefillargs = widget.findall("arg")
         args = defs.findall("arg")
