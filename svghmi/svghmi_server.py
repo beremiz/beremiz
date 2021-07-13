@@ -97,7 +97,7 @@ class HMISessionMgr(object):
                 self.watchdog_session = None
             else:
                 try:
-                    self.multiclient_sessions.remove(self)
+                    self.multiclient_sessions.remove(session)
                 except KeyError:
                     return
             self.free_index(session.session_index)
@@ -214,19 +214,20 @@ class HMIProtocol(WebSocketServerProtocol):
     def onOpen(self):
         global svghmi_session_manager
         assert(self._hmi_session is None)
-        self._hmi_session = HMISession(self)
-        registered = svghmi_session_manager.register(self._hmi_session)
+        _hmi_session = HMISession(self)
+        registered = svghmi_session_manager.register(_hmi_session)
+        self._hmi_session = _hmi_session
 
     def onClose(self, wasClean, code, reason):
         global svghmi_session_manager
+        if self._hmi_session is None : return
         self._hmi_session.notify_closed()
         svghmi_session_manager.unregister(self._hmi_session)
         self._hmi_session = None
 
     def onMessage(self, msg, isBinary):
         global svghmi_watchdog
-        assert(self._hmi_session is not None)
-
+        if self._hmi_session is None : return
         result = self._hmi_session.onMessage(msg)
         if result == 1 and self.has_watchdog:  # was heartbeat
             if svghmi_watchdog is not None:
