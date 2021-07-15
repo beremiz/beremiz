@@ -211,21 +211,21 @@ static int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
 void SVGHMI_SuspendFromPythonThread(void);
 void SVGHMI_WakeupFromRTThread(void);
 
-static int continue_collect;
+int svghmi_continue_collect;
 
 int __init_svghmi()
 {
     bzero(rbuf,sizeof(rbuf));
     bzero(wbuf,sizeof(wbuf));
 
-    continue_collect = 1;
+    svghmi_continue_collect = 1;
 
     return 0;
 }
 
 void __cleanup_svghmi()
 {
-    continue_collect = 0;
+    svghmi_continue_collect = 0;
     SVGHMI_WakeupFromRTThread();
 }
 
@@ -251,7 +251,7 @@ int svghmi_wait(void){
 
 int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
 
-    if(continue_collect) {
+    if(svghmi_continue_collect) {
         int res;
         sbufidx = HMI_HASH_SIZE;
         send_session_index = session_index;

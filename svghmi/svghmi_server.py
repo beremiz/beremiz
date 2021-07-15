@@ -31,6 +31,8 @@ svghmi_wait = PLCBinary.svghmi_wait
 svghmi_wait.restype = ctypes.c_int # error or 0
 svghmi_wait.argtypes = []
 
+svghmi_continue_collect = ctypes.c_int.in_dll(PLCBinary, "svghmi_continue_collect")
+
 svghmi_send_collect = PLCBinary.svghmi_send_collect
 svghmi_send_collect.restype = ctypes.c_int # error or 0
 svghmi_send_collect.argtypes = [
@@ -244,8 +246,7 @@ def SendThreadProc():
     size = ctypes.c_uint32()
     ptr = ctypes.c_void_p()
     res = 0
-    finished = False
-    while not(finished):
+    while svghmi_continue_collect:
         svghmi_wait()
         for svghmi_session in svghmi_session_manager.iter_sessions():
             res = svghmi_send_collect(
@@ -261,7 +262,6 @@ def SendThreadProc():
                 pass
             else:
                 # this happens when finishing
-                finished = True
                 break
 
 def AddPathToSVGHMIServers(path, factory):
