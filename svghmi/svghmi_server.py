@@ -264,10 +264,10 @@ def SendThreadProc():
                 # this happens when finishing
                 break
 
-def AddPathToSVGHMIServers(path, factory):
+def AddPathToSVGHMIServers(path, factory, *args, **kwargs):
     for k,v in svghmi_servers.iteritems():
         svghmi_root, svghmi_listener, path_list = v
-        svghmi_root.putChild(path, factory())
+        svghmi_root.putChild(path, factory(*args, **kwargs))
 
 # Called by PLCObject at start
 def _runtime_00_svghmi_start():
