@@ -198,9 +198,15 @@ def CheckConfiguration(WampClientConf):
 def GetConfiguration():
     global lastKnownConfig
 
+    WampClientConf = None
+
     if os.path.exists(_WampConf):
-        WampClientConf = json.load(open(_WampConf))
-    else:
+        try: 
+            WampClientConf = json.load(open(_WampConf))
+        except ValueError:
+            pass
+
+    if WampClientConf is None:
         WampClientConf = defaultWampConfig.copy()
 
     for itemName in mandatoryConfigItems:
