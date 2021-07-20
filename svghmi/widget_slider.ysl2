@@ -16,7 +16,6 @@ widget_desc("Slider") {
 
 widget_class("Slider")
     ||
-    class SliderWidget extends Widget{
         frequency = 5;
         range = undefined;
         handle_orig = undefined;
@@ -350,7 +349,6 @@ widget_class("Slider")
             }
 
         }
-    }
     ||
 
 widget_defs("Slider") {

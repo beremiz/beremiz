@@ -6560,8 +6560,6 @@
     <xsl:text>SliderWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
-    <xsl:text>class SliderWidget extends Widget{
-</xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
     <xsl:text>    range = undefined;
@@ -7227,8 +7225,6 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>    }
-</xsl:text>
-    <xsl:text>}
 </xsl:text>
     <xsl:text>}
 </xsl:text>
