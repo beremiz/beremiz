@@ -56,6 +56,19 @@ class SVGHMILibrary(POULibrary):
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
         global hmi_tree_root, on_hmitree_update, maxConnectionsTotal
 
+        already_found_watchdog = False
+        for CTNChild in self.GetCTR().IterChildren():
+            if isinstance(CTNChild, SVGHMI):
+                # collect maximum connection total for all svghmi nodes
+                maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
+
+                # spot watchdog abuse
+                if CTNChild.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]:
+                    if already_found_watchdog:
+                        self.FatalError("SVGHMI: Only one watchdog enabled HMI allowed")
+                    already_found_watchdog = True
+
+
         """
         PLC Instance Tree:
           prog0
@@ -197,11 +210,6 @@ class SVGHMILibrary(POULibrary):
         # TODO check if programs need to be declared separately
         # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
         #                                     p for p in self._ProgramList]),
-
-        for CTNChild in self.GetCTR().IterChildren():
-            if isinstance(CTNChild, SVGHMI):
-                maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
-
 
         # C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
