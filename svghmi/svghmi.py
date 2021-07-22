@@ -468,10 +468,30 @@ class SVGHMI(object):
         self.indent = self.indent - 1
         self.GetCTRoot().logger.write("    "*self.indent + "... finished in %.3fs\n"%(t - oldt))
 
+    def get_SVGHMI_options(self):
+        view_name = self.BaseParams.getName()
+        port = self.GetParamsAttributes("SVGHMI.Port")["value"]
+        interface = self.GetParamsAttributes("SVGHMI.Interface")["value"]
+        path = self.GetParamsAttributes("SVGHMI.Path")["value"].format(name=view_name)
+        if path and path[0]=='/':
+            path = path[1:]
+        enable_watchdog = self.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]
+        url="http://"+interface+("" if port==80 else (":"+str(port))
+            ) + (("/"+path) if path else ""
+            ) + ("#watchdog" if enable_watchdog else "")
+
+        return dict(
+            view_name=view_name,
+            port=port,
+            interface=interface,
+            path=path,
+            enable_watchdog=enable_watchdog,
+            url=url)
+
     def CTNGenerate_C(self, buildpath, locations):
 
         location_str = "_".join(map(str, self.GetCurrentLocation()))
-        view_name = self.BaseParams.getName()
+        svghmi_options = self.get_SVGHMI_options()
 
         svgfile = self._getSVGpath()
 
@@ -533,7 +553,7 @@ class SVGHMI(object):
                     result = transform.transform(svgdom)  # , profile_run=True)
                     self.ProgressEnd("xslt")
                 except XSLTApplyError as e:
-                    self.FatalError("SVGHMI " + view_name  + ": " + e.message)
+                    self.FatalError("SVGHMI " + svghmi_options["view_name"] + ": " + e.message)
                 finally:
                     for entry in transform.get_error_log():
                         message = "SVGHMI: "+ entry.message + "\n" 
@@ -568,25 +588,12 @@ class SVGHMI(object):
 
         res += ((target_fname, open(target_path, "rb")),)
 
-        port = self.GetParamsAttributes("SVGHMI.Port")["value"]
-        interface = self.GetParamsAttributes("SVGHMI.Interface")["value"]
-        path = self.GetParamsAttributes("SVGHMI.Path")["value"].format(name=view_name)
-        if path and path[0]=='/':
-            path = path[1:]
-        enable_watchdog = self.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]
-        url="http://"+interface+("" if port==80 else (":"+str(port))
-            ) + (("/"+path) if path else ""
-            ) + ("#watchdog" if enable_watchdog else "")
-
         svghmi_cmds = {}
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
              svghmi_cmds[thing] = (
                 "Popen(" +
-                repr(shlex.split(given_command.format(
-                    port=port, 
-                    name=view_name,
-                    url=url))) +
+                repr(shlex.split(given_command.format(**svghmi_options))) +
                 ")") if given_command else "pass # no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_%s_svghmi_.py" % location_str)
@@ -657,17 +664,13 @@ def _runtime_{location}_svghmi_stop():
 
         """.format(location=location_str,
                    xhtml=target_fname,
-                   view_name=view_name,
                    svghmi_cmds=svghmi_cmds,
-                   port = port,
-                   interface = interface,
-                   path = path,
-                   enable_watchdog = enable_watchdog,
                    watchdog_initial = self.GetParamsAttributes("SVGHMI.WatchdogInitial")["value"],
                    watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
                    maxConnections = self.GetParamsAttributes("SVGHMI.MaxConnections")["value"],
-                   maxConnections_total = maxConnectionsTotal
-                   ))
+                   maxConnections_total = maxConnectionsTotal,
+                   **svghmi_options
+        ))
 
         runtimefile.close()
 
@@ -685,6 +688,9 @@ def _runtime_{location}_svghmi_stop():
                 self.GetCTRoot().logger.write_error(_("No such SVG file: %s\n") % svgpath)
         dialog.Destroy()
 
+    def getDefaultSVG(self):
+        return os.path.join(ScriptDirectory, "default.svg")
+
     def _StartInkscape(self):
         svgfile = self._getSVGpath()
         open_inkscape = True
@@ -698,7 +704,7 @@ def _runtime_{location}_svghmi_stop():
         if open_inkscape:
             if not os.path.isfile(svgfile):
                 # make a copy of default svg from source
-                default = os.path.join(ScriptDirectory, "default.svg")
+                default = self.getDefaultSVG()
                 shutil.copyfile(default, svgfile)
             open_svg(svgfile)
 
