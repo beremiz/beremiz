@@ -297,6 +297,7 @@ class SVGHMI(object):
         <xsd:complexType>
           <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="chromium {url}"/>
           <xsd:attribute name="OnStop" type="xsd:string" use="optional" default="echo 'please close chromium window at {url}'"/>
+          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default="echo 'Watchdog for {name} !'"/>
           <xsd:attribute name="EnableWatchdog" type="xsd:boolean" use="optional" default="false"/>
           <xsd:attribute name="WatchdogInitial" use="optional" default="30">
             <xsd:simpleType>
