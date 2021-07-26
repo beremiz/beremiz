@@ -473,8 +473,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 else:
                     if element_infos["type"] == "boolean":
                         checkbox = wx.CheckBox(self.ParamsEditor)
-                        boxsizer.AddWindow(checkbox, border=5,
-                                   flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT)
+                        boxsizer.AddWindow(checkbox, flag=wx.ALIGN_CENTER_VERTICAL | wx.RIGHT)
                         if element_infos["value"] is not None:
                             checkbox.SetValue(element_infos["value"])
                         checkbox.Bind(wx.EVT_CHECKBOX,
@@ -536,7 +535,7 @@ class ConfTreeNodeEditor(EditorPanel):
                               self.GetResetFunction(element_path),
                               bt)
 
-                    boxsizer.AddWindow(bt)
+                    boxsizer.AddWindow(bt, border=5, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT)
             first = False
         sizer.Layout()
         self.RefreshScrollbars()
