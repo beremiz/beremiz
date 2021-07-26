@@ -57,8 +57,10 @@ class SVGHMILibrary(POULibrary):
         global hmi_tree_root, on_hmitree_update, maxConnectionsTotal
 
         already_found_watchdog = False
+        found_SVGHMI_instance = False
         for CTNChild in self.GetCTR().IterChildren():
             if isinstance(CTNChild, SVGHMI):
+                found_SVGHMI_instance = True
                 # collect maximum connection total for all svghmi nodes
                 maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
 
@@ -67,6 +69,9 @@ class SVGHMILibrary(POULibrary):
                     if already_found_watchdog:
                         self.FatalError("SVGHMI: Only one watchdog enabled HMI allowed")
                     already_found_watchdog = True
+
+        if not found_SVGHMI_instance:
+            self.FatalError("SVGHMI : Library is selected but not used. Please either deselect it in project config or add a SVGHMI node to project.")
 
 
         """
@@ -116,9 +121,6 @@ class SVGHMILibrary(POULibrary):
                 hmi_tree_root = HMITreeNode(path, "", derived, v["type"], v["vartype"], v["C_path"])
                 hmi_types_instances.pop(i)
                 break
-
-        if hmi_tree_root is None:
-            self.FatalError("SVGHMI : Library is selected but not used. Please either deselect it in project config or add a SVGHMI node to project.")
 
         # deduce HMI tree from PLC HMI_* instances
         for v in hmi_types_instances:
@@ -478,10 +480,10 @@ class SVGHMI(object):
         self.GetCTRoot().logger.write("    "*self.indent + "... finished in %.3fs\n"%(t - oldt))
 
     def get_SVGHMI_options(self):
-        view_name = self.BaseParams.getName()
+        name = self.BaseParams.getName()
         port = self.GetParamsAttributes("SVGHMI.Port")["value"]
         interface = self.GetParamsAttributes("SVGHMI.Interface")["value"]
-        path = self.GetParamsAttributes("SVGHMI.Path")["value"].format(name=view_name)
+        path = self.GetParamsAttributes("SVGHMI.Path")["value"].format(name=name)
         if path and path[0]=='/':
             path = path[1:]
         enable_watchdog = self.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]
@@ -490,7 +492,7 @@ class SVGHMI(object):
             ) + ("#watchdog" if enable_watchdog else "")
 
         return dict(
-            view_name=view_name,
+            name=name,
             port=port,
             interface=interface,
             path=path,
@@ -498,6 +500,10 @@ class SVGHMI(object):
             url=url)
 
     def CTNGenerate_C(self, buildpath, locations):
+        global hmi_tree_root
+
+        if hmi_tree_root is None:
+            self.FatalError("SVGHMI : Library is not selected. Please select it in project config.")
 
         location_str = "_".join(map(str, self.GetCurrentLocation()))
         svghmi_options = self.get_SVGHMI_options()
@@ -562,7 +568,7 @@ class SVGHMI(object):
                     result = transform.transform(svgdom)  # , profile_run=True)
                     self.ProgressEnd("xslt")
                 except XSLTApplyError as e:
-                    self.FatalError("SVGHMI " + svghmi_options["view_name"] + ": " + e.message)
+                    self.FatalError("SVGHMI " + svghmi_options["name"] + ": " + e.message)
                 finally:
                     for entry in transform.get_error_log():
                         message = "SVGHMI: "+ entry.message + "\n" 
@@ -621,7 +627,7 @@ def _runtime_{location}_svghmi_start():
     if srv is not None:
         svghmi_root, svghmi_listener, path_list = srv
         if '{path}' in path_list:
-            raise Exception("SVGHMI {view_name}: path {path} already used on {interface}:{port}")
+            raise Exception("SVGHMI {name}: path {path} already used on {interface}:{port}")
     else:
         svghmi_root = Resource()
         factory = HMIWebSocketServerFactory()
@@ -649,7 +655,7 @@ def _runtime_{location}_svghmi_start():
                 {watchdog_interval},
                 svghmi_{location}_watchdog_trigger)
         else:
-            raise Exception("SVGHMI {view_name}: only one watchdog allowed")
+            raise Exception("SVGHMI {name}: only one watchdog allowed")
 
 
 def _runtime_{location}_svghmi_stop():
