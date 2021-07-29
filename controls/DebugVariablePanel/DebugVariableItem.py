@@ -152,7 +152,7 @@ class DebugVariableItem(DebugDataConsumer):
                      else 0)
         end_idx = (self.GetNearestData(end_tick, 1)
                    if end_tick is not None
-                   else len(self.Data))
+                   else self.Data.count)
 
         # Return data between indexes
         return self.Data.view[start_idx:end_idx]
