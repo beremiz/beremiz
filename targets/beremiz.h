@@ -26,5 +26,9 @@ int     LogMessage(uint8_t level, char* buf, uint32_t size);
 #endif
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
+void *create_RT_to_nRT_signal(char* name);
+void delete_RT_to_nRT_signal(void* handle);
+int wait_RT_to_nRT_signal(void* handle);
+int unblock_RT_to_nRT_signal(void* handle);
 
 #endif

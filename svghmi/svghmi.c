@@ -208,8 +208,17 @@ static int reset_iterator(uint32_t index, hmi_tree_item_t *dsc)
     return 0;
 }
 
-void SVGHMI_SuspendFromPythonThread(void);
-void SVGHMI_WakeupFromRTThread(void);
+static void *svghmi_handle;
+
+void SVGHMI_SuspendFromPythonThread(void)
+{
+    wait_RT_to_nRT_signal(svghmi_handle);
+}
+
+void SVGHMI_WakeupFromRTThread(void)
+{
+    unblock_RT_to_nRT_signal(svghmi_handle);
+}
 
 int svghmi_continue_collect;
 
@@ -220,6 +229,12 @@ int __init_svghmi()
 
     svghmi_continue_collect = 1;
 
+    /* create svghmi_pipe */
+    svghmi_handle = create_RT_to_nRT_signal("SVGHMI_pipe");
+
+    if(!svghmi_handle) 
+        return 1;
+
     return 0;
 }
 
@@ -227,6 +242,7 @@ void __cleanup_svghmi()
 {
     svghmi_continue_collect = 0;
     SVGHMI_WakeupFromRTThread();
+    delete_RT_to_nRT_signal(svghmi_handle);
 }
 
 void __retrieve_svghmi()
