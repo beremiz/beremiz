@@ -236,9 +236,6 @@ void LockPython(void)
     pthread_mutex_lock(&python_mutex);
 }
 
-static pthread_cond_t svghmi_send_WakeCond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t svghmi_send_WakeCondLock = PTHREAD_MUTEX_INITIALIZER;
-
 struct RT_to_nRT_signal_s {
     pthread_cond_t WakeCond;
     pthread_mutex_t WakeCondLock;
@@ -289,3 +286,6 @@ int unblock_RT_to_nRT_signal(void* handle){
     return pthread_cond_signal(&sig->WakeCond);
 }
 
+void nRT_reschedule(void){
+    sched_yield();
+}

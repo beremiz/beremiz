@@ -30,5 +30,6 @@ void *create_RT_to_nRT_signal(char* name);
 void delete_RT_to_nRT_signal(void* handle);
 int wait_RT_to_nRT_signal(void* handle);
 int unblock_RT_to_nRT_signal(void* handle);
+void nRT_reschedule(void);
 
 #endif

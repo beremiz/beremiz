@@ -185,6 +185,10 @@ int unblock_RT_to_nRT_signal(void* handle){
     return (ret == 1) ? 0 : ((ret == 0) ? EINVAL : -ret);
 }
 
+void nRT_reschedule(void){
+    sched_yield();
+}
+
 void PLC_cleanup_all(void)
 {
     if (PLC_state & PLC_STATE_TASK_CREATED) {
