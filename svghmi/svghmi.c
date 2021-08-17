@@ -137,7 +137,8 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 static uint32_t send_session_index;
 static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
+    while(AtomicCompareExchange(&dsc->wlock, 0, 1))
+        nRT_reschedule();
 
     if(dsc->wstate[send_session_index] == buf_tosend)
     {
@@ -188,7 +189,9 @@ static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
 
 void update_refresh_period(hmi_tree_item_t *dsc, uint32_t session_index, uint16_t refresh_period_ms)
 {
-    while(AtomicCompareExchange(&dsc->wlock, 0, 1)) sched_yield();
+    while(AtomicCompareExchange(&dsc->wlock, 0, 1)) 
+        nRT_reschedule();
+
     if(refresh_period_ms) {
         if(!dsc->refresh_period_ms[session_index])
         {
@@ -224,8 +227,8 @@ int svghmi_continue_collect;
 
 int __init_svghmi()
 {
-    bzero(rbuf,sizeof(rbuf));
-    bzero(wbuf,sizeof(wbuf));
+    memset(rbuf,0,sizeof(rbuf));
+    memset(wbuf,0,sizeof(wbuf));
 
     svghmi_continue_collect = 1;
 
@@ -347,7 +350,8 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
                     if((valptr + sz) <= end)
                     {
                         // rescheduling spinlock until free
-                        while(AtomicCompareExchange(&dsc->rlock, 0, 1)) sched_yield();
+                        while(AtomicCompareExchange(&dsc->rlock, 0, 1)) 
+                            nRT_reschedule();
 
                         memcpy(dst_p, valptr, sz);
                         dsc->rstate = buf_set;
