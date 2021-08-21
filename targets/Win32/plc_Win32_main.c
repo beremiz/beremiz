@@ -26,10 +26,10 @@ long long AtomicCompareExchange64(long long* atomicvar, long long compared, long
     return res;
 }
 
-struct _timeb timetmp;
+struct timeb timetmp;
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
-	_ftime(&timetmp);
+	ftime(&timetmp);
 
 	(*CURRENT_TIME).tv_sec = timetmp.time;
 	(*CURRENT_TIME).tv_nsec = timetmp.millitm * 1000000;
