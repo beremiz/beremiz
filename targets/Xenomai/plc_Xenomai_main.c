@@ -18,12 +18,12 @@
 
 unsigned int PLC_state = 0;
 #define PLC_STATE_TASK_CREATED                 1
-#define PLC_STATE_DEBUG_PIPE_CREATED           2 
-#define PLC_STATE_PYTHON_PIPE_CREATED          8   
+#define PLC_STATE_DEBUG_PIPE_CREATED           2
+#define PLC_STATE_PYTHON_PIPE_CREATED          8
 #define PLC_STATE_WAITDEBUG_PIPE_CREATED       16
 #define PLC_STATE_WAITPYTHON_PIPE_CREATED      32
 
-#define PIPE_SIZE                    1 
+#define PIPE_SIZE                    1
 
 // rt-pipes commands
 
@@ -62,7 +62,7 @@ struct RT_to_nRT_signal_s {
     int used;
     RT_PIPE pipe;
     int pipe_fd;
-    char *name; 
+    char *name;
 };
 typedef struct RT_to_nRT_signal_s RT_to_nRT_signal_t;
 
@@ -101,7 +101,7 @@ void PLC_task_proc(void *arg)
         if (PLC_shutdown) break;
         rt_task_wait_period(NULL);
     }
-    /* since xenomai 3 it is not enough to close() 
+    /* since xenomai 3 it is not enough to close()
        file descriptor to unblock read()... */
     {
         /* explicitely finish python thread */
@@ -258,26 +258,25 @@ int startPLC(int argc,char **argv)
     /* no memory swapping for that process */
     mlockall(MCL_CURRENT | MCL_FUTURE);
 
-   
     /* memory initialization */
     PLC_shutdown = 0;
     bzero(RT_to_nRT_signal_pool, sizeof(RT_to_nRT_signal_pool));
 
     /*** RT Pipes ***/
     /* create Debug_pipe */
-    if(Debug_handle = create_RT_to_nRT_signal("Debug_pipe")) goto error;
+    if(!(Debug_handle = create_RT_to_nRT_signal("Debug_pipe"))) goto error;
     PLC_state |= PLC_STATE_DEBUG_PIPE_CREATED;
-    
+
     /* create Python_pipe */
-    if(Python_handle = create_RT_to_nRT_signal("Python_pipe")) goto error;
+    if(!(Python_handle = create_RT_to_nRT_signal("Python_pipe"))) goto error;
     PLC_state |= PLC_STATE_PYTHON_PIPE_CREATED;
 
     /* create WaitDebug_pipe */
-    if(WaitDebug_handle = create_RT_to_nRT_signal("WaitDebug_pipe")) goto error;
+    if(!(WaitDebug_handle = create_RT_to_nRT_signal("WaitDebug_pipe"))) goto error;
     PLC_state |= PLC_STATE_WAITDEBUG_PIPE_CREATED;
 
     /* create WaitPython_pipe */
-    if(WaitPython_handle = create_RT_to_nRT_signal("WaitPython_pipe")) goto error;
+    if(!(WaitPython_handle = create_RT_to_nRT_signal("WaitPython_pipe"))) goto error;
     PLC_state |= PLC_STATE_WAITPYTHON_PIPE_CREATED;
 
     /*** create PLC task ***/
@@ -319,7 +318,7 @@ int TryEnterDebugSection(void)
 
 void LeaveDebugSection(void)
 {
-    if(AtomicCompareExchange( &debug_state, 
+    if(AtomicCompareExchange( &debug_state,
         DEBUG_BUSY, DEBUG_FREE) == DEBUG_BUSY){
         char msg = DEBUG_UNLOCK;
         /* signal to NRT for wakeup */
@@ -335,7 +334,7 @@ int WaitDebugData(unsigned long *tick)
     int res;
     if (PLC_shutdown) return -1;
     /* Wait signal from PLC thread */
-    recv_RT_to_nRT_signal(WaitDebug_handle, &cmd);
+    res = recv_RT_to_nRT_signal(WaitDebug_handle, &cmd);
     if (res == 1 && cmd == DEBUG_PENDING_DATA){
         *tick = __debug_tick;
         return 0;
@@ -383,7 +382,7 @@ void resumeDebug(void)
 static long python_state = PYTHON_FREE;
 
 int WaitPythonCommands(void)
-{ 
+{
     char cmd;
     if (PLC_shutdown) return -1;
     /* Wait signal from PLC thread */
