@@ -367,9 +367,22 @@ var current_subscribed_page;
 var current_page_index;
 var page_node_local_index = hmi_local_index("page_node");
 
+function toggleFullscreen() {
+  let elem = document.documentElement;
+
+  if (!document.fullscreenElement) {
+    elem.requestFullscreen().catch(err => {
+      console.log("Error attempting to enable full-screen mode: "+err.message+" ("+err.name+")");
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
+
 function prepare_svg() {
     // prevents context menu from appearing on right click and long touch
     document.body.addEventListener('contextmenu', e => {
+        toggleFullscreen();
         e.preventDefault();
     });
 
