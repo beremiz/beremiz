@@ -8226,11 +8226,37 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>function toggleFullscreen() {
+</xsl:text>
+          <xsl:text>  let elem = document.documentElement;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>  if (!document.fullscreenElement) {
+</xsl:text>
+          <xsl:text>    elem.requestFullscreen().catch(err =&gt; {
+</xsl:text>
+          <xsl:text>      console.log("Error attempting to enable full-screen mode: "+err.message+" ("+err.name+")");
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>  } else {
+</xsl:text>
+          <xsl:text>    document.exitFullscreen();
+</xsl:text>
+          <xsl:text>  }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>function prepare_svg() {
 </xsl:text>
           <xsl:text>    // prevents context menu from appearing on right click and long touch
 </xsl:text>
           <xsl:text>    document.body.addEventListener('contextmenu', e =&gt; {
+</xsl:text>
+          <xsl:text>        toggleFullscreen();
 </xsl:text>
           <xsl:text>        e.preventDefault();
 </xsl:text>
