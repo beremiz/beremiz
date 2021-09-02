@@ -31,6 +31,7 @@ import sys
 import getopt
 import threading
 import shlex
+import traceback
 from threading import Thread, Semaphore, Lock, currentThread
 from builtins import str as text
 from past.builtins import execfile
@@ -614,8 +615,11 @@ pyroserver.Quit()
 pyro_thread.join()
 
 plcobj = runtime.GetPLCObjectSingleton()
-plcobj.StopPLC()
-plcobj.UnLoadPLC()
+try:
+    plcobj.StopPLC()
+    plcobj.UnLoadPLC()
+except:
+    print(traceback.format_exc())
 
 if havetwisted:
     reactor.stop()

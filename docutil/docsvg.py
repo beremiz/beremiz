@@ -24,61 +24,38 @@
 
 
 from __future__ import absolute_import
-import os
-import subprocess
 import wx
-
+import subprocess
 
 def get_inkscape_path():
-    """ Return the Inkscape path """
+    """ Return the Inkscape binary path """
+
     if wx.Platform == '__WXMSW__':
         from six.moves import winreg
+        inkcmd = None
         try:
-                svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
-                                               'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
+            inkcmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                                           'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
         except OSError:
             try:
-                svgexepath = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
+                inkcmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
                                                'Software\\Classes\\inkscape.svg\\shell\\open\\command')
-            except Exception:
+            except OSError:
                 return None
 
-        svgexepath = svgexepath.replace('"%1"', '').strip()
-        return svgexepath.replace('"', '')
+        return inkcmd.replace('"%1"', '').strip().replace('"', '')
+
     else:
-        # TODO: search for inkscape in $PATH
-        svgexepath = os.path.join("/usr/bin", "inkscape")
-        if os.path.exists(svgexepath):
-            return svgexepath
-        return None
-
-
-def open_win_svg(svgexepath, svgfile):
-    """ Open Inkscape on Windows platform """
-    popenargs = [svgexepath]
-    if svgfile is not None:
-        popenargs.append(svgfile)
-    subprocess.Popen(popenargs)
-
-
-def open_lin_svg(svgexepath, svgfile):
-    """ Open Inkscape on Linux platform """
-    if os.path.isfile("/usr/bin/inkscape"):
-        os.system("%s %s &" % (svgexepath, svgfile))
-
+        try:
+            return subprocess.check_output("command -v inkscape", shell=True).strip()
+        except subprocess.CalledProcessError:
+            return None
 
 def open_svg(svgfile):
     """ Generic function to open SVG file """
-    if wx.Platform == '__WXMSW__':
-        try:
-            open_win_svg(get_inkscape_path(), svgfile)
-        except Exception:
-            wx.MessageBox("Inkscape is not found or installed !")
-            return None
+    
+    inkpath = get_inkscape_path()
+    if inkpath is None:
+        wx.MessageBox("Inkscape is not found or installed !")
     else:
-        svgexepath=get_inkscape_path()
-        if os.path.isfile(svgexepath):
-            open_lin_svg(svgexepath, svgfile)
-        else:
-            wx.MessageBox("Inkscape is not found or installed !")
-            return None
+        subprocess.Popen([inkpath,svgfile])

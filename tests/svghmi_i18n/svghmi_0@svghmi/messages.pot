@@ -1,0 +1,36 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2021-02-15 14:45+CET\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: SVGHMI 1.0\n"
+
+
+#:svghmi.svg: format:text424
+msgid "height is %d meters"
+msgstr ""
+
+#:svghmi.svg: format:text5271
+msgid "This is an integer value : %d"
+msgstr ""
+
+#:svghmi.svg: someothertext:text5267
+msgid "Some \"other\" ČĆĐš english text"
+msgstr ""
+
+#:svghmi.svg: sometext:text5283
+msgid ""
+"Some english text\n"
+"another line\n"
+"a third one"
+msgstr ""
+
