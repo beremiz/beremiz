@@ -36,7 +36,6 @@ from time import localtime
 import shutil
 import re
 import tempfile
-from threading import Timer
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from functools import reduce

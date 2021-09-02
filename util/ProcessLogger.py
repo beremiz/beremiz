@@ -139,6 +139,9 @@ class ProcessLogger(object):
         else:
             self.timeout = None
 
+        if _debug:
+            self.logger.write("(DEBUG) launching:\n" + self.Command_str + "\n")
+
         self.Proc = subprocess.Popen(self.Command, **popenargs)
 
         self.outt = outputThread(
@@ -191,7 +194,7 @@ class ProcessLogger(object):
         if self.timeout:
             self.timeout.cancel()
         self.exitcode = ecode
-        if _debug or self.exitcode != 0:
+        if self.exitcode != 0:
             self.log_the_end(ecode, pid)
         if self.finish_callback is not None:
             self.finish_callback(self, ecode, pid)

@@ -1,0 +1,55 @@
+// widget_switch.ysl2
+
+widget_desc("Switch") {
+    longdesc
+    ||
+    Switch widget hides all subelements whose label do not match given
+    variable current value representation. For exemple if given variable type
+    is HMI_INT and value is 1, then elements with label '1' will be displayed.
+    Label can have comments, so '1#some comment' would also match. If matching
+    variable of type HMI_STRING, then double quotes must be used. For exemple,
+    '"hello"' or '"hello"#another comment' match HMI_STRING 'hello'.
+    ||
+
+    shortdesc > Show elements whose label match value.
+
+    // TODO: add optional format/precision argument to support floating points
+    // TODO: support (in)equations and ranges
+
+    path name="value" accepts="HMI_INT,HMI_STRING" > value to compare to labels
+    
+}
+
+widget_class("Switch")
+    ||
+        frequency = 5;
+        dispatch(value) {
+            for(let choice of this.choices){
+                if(value != choice.value){
+                    choice.elt.setAttribute("style", "display:none");
+                } else {
+                    choice.elt.setAttribute("style", choice.style);
+                }
+            }
+        }
+    ||
+
+widget_defs("Switch") {
+    |     choices: [
+    const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
+
+    const "subelts", "$result_widgets[@id = $hmi_element/@id]//*";
+    const "subwidgets", "$subelts//*[@id = $hmi_widgets/@id]";
+    const "accepted", "$subelts[not(ancestor-or-self::*/@id = $subwidgets/@id)]";
+
+    foreach "$accepted[regexp:test(@inkscape:label,$regex)]" {
+        const "literal", "regexp:match(@inkscape:label,$regex)[2]";
+    |         {
+    |             elt:id("«@id»"),
+                  // TODO : use style.display = "none" to hide element
+    |             style:"«@style»",
+    |             value:«$literal»
+    |         }`if "position()!=last()" > ,`
+    }
+    |     ],
+}

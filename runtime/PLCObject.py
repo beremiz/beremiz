@@ -113,7 +113,9 @@ class PLCObject(object):
             if autostart:
                 if self.LoadPLC():
                     self.StartPLC()
-                    return
+                else:
+                    self._fail(_("Problem autostarting PLC : can't load PLC"))
+                return
         except Exception:
             self.PLCStatus = PlcStatus.Empty
             self.CurrentPLCFilename = None
@@ -269,7 +271,12 @@ class PLCObject(object):
     def LoadPLC(self):
         res = self._LoadPLC()
         if res:
-            self.PythonRuntimeInit()
+            try:
+                self.PythonRuntimeInit()
+            except Exception:
+                self._loading_error = traceback.format_exc()
+                PLCprint(self._loading_error)
+                return False
         else:
             self._FreePLC()
 
@@ -680,9 +687,9 @@ class PLCObject(object):
 
             if self.LoadPLC():
                 self.PLCStatus = PlcStatus.Stopped
+                self.StatusChange()
             else:
-                self.PLCStatus = PlcStatus.Broken
-            self.StatusChange()
+                self._fail(_("Problem installing new PLC : can't load PLC"))
 
             return self.PLCStatus == PlcStatus.Stopped
         return False
