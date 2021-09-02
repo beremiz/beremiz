@@ -15,7 +15,7 @@ from xml.dom import minidom
 
 import wx
 import wx.grid
-import wx.gizmos
+import wx.adv
 import wx.lib.buttons
 
 # --------------------------------------------------------------------
@@ -135,7 +135,7 @@ class SlaveStatePanelClass(wx.Panel):
             self.SizerDic["SlaveInfosDetailsInnerSizer"].AddMany([self.StaticTextDic[statictext_name],
                                                                   self.TextCtrlDic[textctrl_name]])
 
-        self.SizerDic["SlaveInfosDetailsBox"].AddSizer(self.SizerDic["SlaveInfosDetailsInnerSizer"])
+        self.SizerDic["SlaveInfosDetailsBox"].Add(self.SizerDic["SlaveInfosDetailsInnerSizer"])
 
         self.SyncManagersGrid = CustomGrid(self, size=wx.Size(605, 155), style=wx.VSCROLL)
 
@@ -153,7 +153,7 @@ class SlaveStatePanelClass(wx.Panel):
         for button_name, button_id, button_label, button_tooltipstring, event_method, sub_item in buttons:
             self.ButtonDic[button_name] = wx.Button(self, id=button_id, label=_(button_label))
             self.ButtonDic[button_name].Bind(wx.EVT_BUTTON, event_method)
-            self.ButtonDic[button_name].SetToolTipString(button_tooltipstring)
+            self.ButtonDic[button_name].SetToolTip(button_tooltipstring)
             self.SizerDic["SlaveState_up_sizer"].Add(self.ButtonDic[button_name])
             for statictext_name, statictext_label, textctrl_name in sub_item:
                 self.StaticTextDic[statictext_name] = wx.StaticText(self, label=_(statictext_label))
@@ -166,7 +166,7 @@ class SlaveStatePanelClass(wx.Panel):
                 ("StopTimerButton", "Stop State Monitoring", "Slave State Update Stop", self.CurrentStateThreadStop)]:
             self.ButtonDic[button_name] = wx.Button(self, label=_(button_label))
             self.ButtonDic[button_name].Bind(wx.EVT_BUTTON, event_method)
-            self.ButtonDic[button_name].SetToolTipString(button_tooltipstring)
+            self.ButtonDic[button_name].SetToolTip(button_tooltipstring)
             self.SizerDic["SlaveState_down_sizer"].Add(self.ButtonDic[button_name])
 
         self.SizerDic["SlaveState_sizer"].AddMany([self.SizerDic["SlaveState_up_sizer"],
@@ -1729,7 +1729,7 @@ class SmartViewTreeListCtrl(wx.Panel):
 
         wx.Panel.__init__(self, parent, -1, size=(350, 500))
 
-        self.Tree = wx.gizmos.TreeListCtrl(self, -1, size=(350, 500),
+        self.Tree = wx.adv.TreeListCtrl(self, -1, size=(350, 500),
                                            style=(wx.TR_DEFAULT_STYLE |
                                                   wx.TR_FULL_ROW_HIGHLIGHT |
                                                   wx.TR_HIDE_ROOT |
@@ -2692,7 +2692,7 @@ class MasterStatePanelClass(wx.Panel):
             self.TextCtrl[key] = wx.TextCtrl(self, size=wx.Size(130, 24), style=wx.TE_READONLY)
             self.MasterStateSizer['innerMasterState'].AddMany([self.StaticText[key], self.TextCtrl[key]])
 
-        self.MasterStateSizer['masterState'].AddSizer(self.MasterStateSizer['innerMasterState'])
+        self.MasterStateSizer['masterState'].Add(self.MasterStateSizer['innerMasterState'])
 
         # ----------------------- Ethernet Network Card Information ---------------------------------------
         for key, label in [
@@ -2705,7 +2705,7 @@ class MasterStatePanelClass(wx.Panel):
             self.TextCtrl[key] = wx.TextCtrl(self, size=wx.Size(130, 24), style=wx.TE_READONLY)
             self.MasterStateSizer['innerDeviceInfo'].AddMany([self.StaticText[key], self.TextCtrl[key]])
 
-        self.MasterStateSizer['deviceInfo'].AddSizer(self.MasterStateSizer['innerDeviceInfo'])
+        self.MasterStateSizer['deviceInfo'].Add(self.MasterStateSizer['innerDeviceInfo'])
 
         # ----------------------- Network Frame Information -----------------------------------------------
         for key, label in [
@@ -2722,13 +2722,13 @@ class MasterStatePanelClass(wx.Panel):
                 self.TextCtrl[key][index] = wx.TextCtrl(self, size=wx.Size(130, 24), style=wx.TE_READONLY)
                 self.MasterStateSizer['innerFrameInfo'].Add(self.TextCtrl[key][index])
 
-        self.MasterStateSizer['frameInfo'].AddSizer(self.MasterStateSizer['innerFrameInfo'])
+        self.MasterStateSizer['frameInfo'].Add(self.MasterStateSizer['innerFrameInfo'])
 
         # ------------------------------- Slave Information  -----------------------------------------------
         self.SITreeListCtrl = SITreeListCtrl(self, self.Controler) 
         self.MasterStateSizer["innerSlaveInfo"].AddMany([self.SIUpdateButton,
                                                                self.SITreeListCtrl])
-        self.MasterStateSizer["slaveInfo"].AddSizer(
+        self.MasterStateSizer["slaveInfo"].Add(
                 self.MasterStateSizer["innerSlaveInfo"]) 
 
         # --------------------------------- Main Sizer ----------------------------------------------------
@@ -2743,7 +2743,7 @@ class MasterStatePanelClass(wx.Panel):
             ("main", [
                     "innerTop", "innerMiddle", "innerBottom"])]:
             for key2 in sub:
-                self.MasterStateSizer[key].AddSizer(self.MasterStateSizer[key2])
+                self.MasterStateSizer[key].Add(self.MasterStateSizer[key2])
 
         self.SetSizer(self.MasterStateSizer["main"])
     
@@ -2798,7 +2798,7 @@ class SITreeListCtrl(wx.Panel):
 
         self.Controler=controler
         
-        self.Tree = wx.gizmos.TreeListCtrl(self, -1, size=wx.Size(750,350), 
+        self.Tree = wx.adv.TreeListCtrl(self, -1, size=wx.Size(750,350), 
                                                             style=wx.TR_HAS_BUTTONS
                                                             |wx.TR_HIDE_ROOT
                                                             |wx.TR_ROW_LINES

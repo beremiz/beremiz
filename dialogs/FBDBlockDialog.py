@@ -68,7 +68,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         # Create static box around library panel
         type_staticbox = wx.StaticBox(self, label=_('Type:'))
         left_staticboxsizer = wx.StaticBoxSizer(type_staticbox, wx.VERTICAL)
-        self.LeftGridSizer.AddSizer(left_staticboxsizer, border=5, flag=wx.GROW)
+        self.LeftGridSizer.Add(left_staticboxsizer, border=5, flag=wx.GROW)
 
         # Create Library panel and add it to static box
         self.LibraryPanel = LibraryPanel(self)
@@ -77,65 +77,65 @@ class FBDBlockDialog(BlockPreviewDialog):
         # Set function to call when selection in Library panel changed
         setattr(self.LibraryPanel, "_OnTreeItemSelected",
                 self.OnLibraryTreeItemSelected)
-        left_staticboxsizer.AddWindow(self.LibraryPanel, 1, border=5,
+        left_staticboxsizer.Add(self.LibraryPanel, 1, border=5,
                                       flag=wx.GROW | wx.TOP)
 
         # Create sizer for other block parameters
         top_right_gridsizer = wx.FlexGridSizer(cols=2, hgap=0, rows=4, vgap=5)
         top_right_gridsizer.AddGrowableCol(1)
-        self.RightGridSizer.AddSizer(top_right_gridsizer, flag=wx.GROW)
+        self.RightGridSizer.Add(top_right_gridsizer, flag=wx.GROW)
 
         # Create label for block name
         name_label = wx.StaticText(self, label=_('Name:'))
-        top_right_gridsizer.AddWindow(name_label,
+        top_right_gridsizer.Add(name_label,
                                       flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create text control for defining block name
         self.BlockName = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.OnNameChanged, self.BlockName)
-        top_right_gridsizer.AddWindow(self.BlockName, flag=wx.GROW)
+        top_right_gridsizer.Add(self.BlockName, flag=wx.GROW)
 
         # Create label for extended block input number
         inputs_label = wx.StaticText(self, label=_('Inputs:'))
-        top_right_gridsizer.AddWindow(inputs_label,
+        top_right_gridsizer.Add(inputs_label,
                                       flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create spin control for defining extended block input number
         self.Inputs = wx.SpinCtrl(self, min=2, max=20,
                                   style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_SPINCTRL, self.OnInputsChanged, self.Inputs)
-        top_right_gridsizer.AddWindow(self.Inputs, flag=wx.GROW)
+        top_right_gridsizer.Add(self.Inputs, flag=wx.GROW)
 
         # Create label for block execution order
         execution_order_label = wx.StaticText(self,
                                               label=_('Execution Order:'))
-        top_right_gridsizer.AddWindow(execution_order_label,
+        top_right_gridsizer.Add(execution_order_label,
                                       flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create spin control for defining block execution order
         self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged,
                   self.ExecutionOrder)
-        top_right_gridsizer.AddWindow(self.ExecutionOrder, flag=wx.GROW)
+        top_right_gridsizer.Add(self.ExecutionOrder, flag=wx.GROW)
 
         # Create label for block execution control
         execution_control_label = wx.StaticText(self,
                                                 label=_('Execution Control:'))
-        top_right_gridsizer.AddWindow(execution_control_label,
+        top_right_gridsizer.Add(execution_control_label,
                                       flag=wx.ALIGN_CENTER_VERTICAL)
 
         # Create check box to enable block execution control
         self.ExecutionControl = wx.CheckBox(self)
         self.Bind(wx.EVT_CHECKBOX, self.OnExecutionOrderChanged,
                   self.ExecutionControl)
-        top_right_gridsizer.AddWindow(self.ExecutionControl, flag=wx.GROW)
+        top_right_gridsizer.Add(self.ExecutionControl, flag=wx.GROW)
 
         # Add preview panel and associated label to sizers
-        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.Add(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.Add(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
+        self.MainSizer.Add(self.ButtonSizer, border=20,
                                 flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Dictionary containing correspondence between parameter exchanged and

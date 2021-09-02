@@ -68,7 +68,7 @@ class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
 
-        main_sizer.AddWindow(self.NetworkNodes, 0, border=5, flag=wx.GROW | wx.ALL)
+        main_sizer.Add(self.NetworkNodes, 0, border=5, flag=wx.GROW | wx.ALL)
 
         self.NetworkEditor.SetSizer(main_sizer)
 

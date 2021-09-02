@@ -388,11 +388,11 @@ class Graphic_Element(ToolTipProducer):
             rect = self.BoundingBox
         else:
             rect = wx.Rect(self.Pos.x, self.Pos.y, self.Size[0], self.Size[1])
-        return rect.InsideXY(pt.x, pt.y)
+        return rect.Contains(pt.x, pt.y)
 
     # Returns if the point given is in the bounding box
     def IsInSelection(self, rect):
-        return rect.InsideXY(self.BoundingBox.x, self.BoundingBox.y) and rect.InsideXY(self.BoundingBox.x + self.BoundingBox.width, self.BoundingBox.y + self.BoundingBox.height)
+        return rect.Contains(self.BoundingBox.x, self.BoundingBox.y) and rect.Contains(self.BoundingBox.x + self.BoundingBox.width, self.BoundingBox.y + self.BoundingBox.height)
 
     # Override this method for refreshing the bounding box
     def RefreshBoundingBox(self):
@@ -448,7 +448,7 @@ class Graphic_Element(ToolTipProducer):
         intern_rect = wx.Rect(left + HANDLE_SIZE, top + HANDLE_SIZE, right - left - HANDLE_SIZE, bottom - top - HANDLE_SIZE)
 
         # Verify that this element is selected
-        if self.Selected and extern_rect.InsideXY(pt.x, pt.y) and not intern_rect.InsideXY(pt.x, pt.y):
+        if self.Selected and extern_rect.Contains(pt.x, pt.y) and not intern_rect.Contains(pt.x, pt.y):
             # Find if point is on a handle horizontally
             if left <= pt.x < left + HANDLE_SIZE:
                 handle_x = 1
@@ -1399,7 +1399,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
             width = ANCHOR_DISTANCE * 2 + abs(self.Direction[0]) * CONNECTOR_SIZE
             height = ANCHOR_DISTANCE * 2 + abs(self.Direction[1]) * CONNECTOR_SIZE
             rect = wx.Rect(x, y, width, height)
-            inside = rect.InsideXY(pt.x, pt.y)
+            inside = rect.Contains(pt.x, pt.y)
 
         return inside
 
@@ -1931,7 +1931,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             # Calculate a rectangle around the segment
             rect = wx.Rect(min(x1, x2) - ANCHOR_DISTANCE, min(y1, y2) - ANCHOR_DISTANCE,
                            abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
-            test |= rect.InsideXY(pt.x, pt.y)
+            test |= rect.Contains(pt.x, pt.y)
         return test
 
     # Returns the wire start or end point if the point given is on one of them
@@ -1939,13 +1939,13 @@ class Wire(Graphic_Element, DebugDataConsumer):
         # Test the wire start point
         rect = wx.Rect(self.Points[0].x - ANCHOR_DISTANCE, self.Points[0].y - ANCHOR_DISTANCE,
                        2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
-        if rect.InsideXY(pt.x, pt.y):
+        if rect.Contains(pt.x, pt.y):
             return 0
         # Test the wire end point
         if len(self.Points) > 1:
             rect = wx.Rect(self.Points[-1].x - ANCHOR_DISTANCE, self.Points[-1].y - ANCHOR_DISTANCE,
                            2 * ANCHOR_DISTANCE, 2 * ANCHOR_DISTANCE)
-            if rect.InsideXY(pt.x, pt.y):
+            if rect.Contains(pt.x, pt.y):
                 return -1
         return None
 
@@ -1959,7 +1959,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 # Calculate a rectangle around the segment
                 rect = wx.Rect(min(x1, x2) - ANCHOR_DISTANCE, min(y1, y2) - ANCHOR_DISTANCE,
                                abs(x1 - x2) + 2 * ANCHOR_DISTANCE, abs(y1 - y2) + 2 * ANCHOR_DISTANCE)
-                if rect.InsideXY(pt.x, pt.y):
+                if rect.Contains(pt.x, pt.y):
                     return i, self.Segments[i]
         return None
 

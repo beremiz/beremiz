@@ -105,9 +105,9 @@ class CustomStyledTextCtrl(wx.stc.StyledTextCtrl):
                     [self.GetMarginWidth(i) for i in xrange(3)],
                     0)
                 if x <= margin_width:
-                    self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+                    self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
                 else:
-                    self.SetCursor(wx.StockCursor(wx.CURSOR_IBEAM))
+                    self.SetCursor(wx.Cursor(wx.CURSOR_IBEAM))
             else:
                 event.Skip()
         else:

@@ -73,49 +73,49 @@ class FBDVariableDialog(BlockPreviewDialog):
 
         # Create label for variable class
         class_label = wx.StaticText(self, label=_('Class:'))
-        self.LeftGridSizer.AddWindow(class_label, flag=wx.GROW)
+        self.LeftGridSizer.Add(class_label, flag=wx.GROW)
 
         # Create a combo box for defining variable class
         self.Class = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnClassChanged, self.Class)
-        self.LeftGridSizer.AddWindow(self.Class, flag=wx.GROW)
+        self.LeftGridSizer.Add(self.Class, flag=wx.GROW)
 
         # Create label for variable execution order
         execution_order_label = wx.StaticText(self,
                                               label=_('Execution Order:'))
-        self.LeftGridSizer.AddWindow(execution_order_label, flag=wx.GROW)
+        self.LeftGridSizer.Add(execution_order_label, flag=wx.GROW)
 
         # Create spin control for defining variable execution order
         self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged,
                   self.ExecutionOrder)
-        self.LeftGridSizer.AddWindow(self.ExecutionOrder, flag=wx.GROW)
+        self.LeftGridSizer.Add(self.ExecutionOrder, flag=wx.GROW)
 
         # Create label for variable expression
         name_label = wx.StaticText(self, label=_('Expression:'))
-        self.RightGridSizer.AddWindow(name_label, border=5,
+        self.RightGridSizer.Add(name_label, border=5,
                                       flag=wx.GROW | wx.BOTTOM)
 
         # Create text control for defining variable expression
         self.Expression = wx.TextCtrl(self)
         self.Bind(wx.EVT_TEXT, self.OnExpressionChanged, self.Expression)
-        self.RightGridSizer.AddWindow(self.Expression, flag=wx.GROW)
+        self.RightGridSizer.Add(self.Expression, flag=wx.GROW)
 
         # Create a list box to selected variable expression in the list of
         # variables defined in POU
         self.VariableName = wx.ListBox(self, size=wx.Size(-1, 120),
                                        style=wx.LB_SINGLE | wx.LB_SORT)
         self.Bind(wx.EVT_LISTBOX, self.OnNameChanged, self.VariableName)
-        self.RightGridSizer.AddWindow(self.VariableName, border=4, flag=wx.GROW | wx.TOP)
+        self.RightGridSizer.Add(self.VariableName, border=4, flag=wx.GROW | wx.TOP)
 
         # Add preview panel and associated label to sizers
-        self.MainSizer.AddWindow(self.PreviewLabel, border=20,
+        self.MainSizer.Add(self.PreviewLabel, border=20,
                                  flag=wx.GROW | wx.LEFT | wx.RIGHT)
-        self.MainSizer.AddWindow(self.Preview, border=20,
+        self.MainSizer.Add(self.Preview, border=20,
                                  flag=wx.GROW | wx.LEFT | wx.RIGHT)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(
+        self.MainSizer.Add(
             self.ButtonSizer, border=20,
             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 

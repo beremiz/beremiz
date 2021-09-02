@@ -122,10 +122,10 @@ class FBD_Block(Graphic_Element):
     # Returns if the point given is in the bounding box
     def HitTest(self, pt, connectors=True):
         if self.Name != "":
-            test_text = self.GetTextBoundingBox().InsideXY(pt.x, pt.y)
+            test_text = self.GetTextBoundingBox().Contains(pt.x, pt.y)
         else:
             test_text = False
-        test_block = self.GetBlockBoundingBox(connectors).InsideXY(pt.x, pt.y)
+        test_block = self.GetBlockBoundingBox(connectors).Contains(pt.x, pt.y)
         return test_text or test_block
 
     # Returns the bounding box of the name outside the block
@@ -392,7 +392,7 @@ class FBD_Block(Graphic_Element):
 #            pos = event.GetLogicalPosition(dc)
 #            for input in self.Inputs:
 #                rect = input.GetRedrawRect()
-#                if rect.InsideXY(pos.x, pos.y):
+#                if rect.Contains(pos.x, pos.y):
 #                    print "Find input"
 #                    tip = wx.TipWindow(self.Parent, "Test")
 #                    tip.SetBoundingRect(rect)

@@ -115,7 +115,7 @@ def DecodeFileSystemPath(path, is_base64=True):
 
 
 def AppendMenu(parent, help, kind, text, id=wx.ID_ANY):
-    return parent.Append(help=help, kind=kind, text=text, id=id)
+    return parent.Append(wx.MenuItem(helpString=help, kind=kind, text=text, id=id))
 
 
 [
@@ -391,7 +391,7 @@ class IDEFrame(wx.Frame):
         parent.AppendSeparator()
         add_menu = wx.Menu(title='')
         self._init_coll_AddMenu_Items(add_menu)
-        parent.AppendMenu(wx.ID_ADD, _(u"&Add Element"), add_menu)
+        parent.Append(wx.ID_ADD, _(u"&Add Element"), add_menu)
         AppendMenu(parent, help='', id=wx.ID_SELECTALL,
                    kind=wx.ITEM_NORMAL, text=_(u'Select All') + '\tCTRL+A')
         AppendMenu(parent, help='', id=wx.ID_DELETE,
@@ -442,7 +442,7 @@ class IDEFrame(wx.Frame):
                        kind=wx.ITEM_NORMAL, text=_(u'Clear Errors') + '\tCTRL+K')
         parent.AppendSeparator()
         zoommenu = wx.Menu(title='')
-        parent.AppendMenu(wx.ID_ZOOM_FIT, _("Zoom"), zoommenu)
+        parent.Append(wx.ID_ZOOM_FIT, _("Zoom"), zoommenu)
         for idx, value in enumerate(ZOOM_FACTORS):
             new_item = AppendMenu(zoommenu, help='',
                        kind=wx.ITEM_RADIO, text=str(int(round(value * 100))) + "%")
@@ -569,8 +569,8 @@ class IDEFrame(wx.Frame):
 
         self.ProjectPanel = wx.SplitterWindow(
             id=ID_PLCOPENEDITORPROJECTPANEL,
-            name='ProjectPanel', parent=self.LeftNoteBook, point=wx.Point(0, 0),
-            size=wx.Size(0, 0), style=wx.SP_3D)
+            name='ProjectPanel', parent=self.LeftNoteBook,
+            size=wx.Size(0, 0))
 
         self.ProjectTree = CustomTree(id=ID_PLCOPENEDITORPROJECTTREE,
                                       name='ProjectTree',
@@ -631,9 +631,9 @@ class IDEFrame(wx.Frame):
                                    wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
         EditorToolBar.SetToolBitmapSize(wx.Size(25, 25))
         EditorToolBar.AddRadioTool(ID_PLCOPENEDITOREDITORTOOLBARSELECTION,
+                                   _("Select an object"),
                                    GetBitmap("select"),
-                                   wx.NullBitmap,
-                                   _("Select an object"))
+                                   wx.NullBitmap)
         EditorToolBar.Realize()
         self.Panes["EditorToolBar"] = EditorToolBar
         self.AUIManager.AddPane(EditorToolBar, wx.aui.AuiPaneInfo().
@@ -919,12 +919,8 @@ class IDEFrame(wx.Frame):
 
         :param elements: List of elements to refresh.
         """
-        try:
-            for element in elements:
-                self.RefreshFunctions[element]()
-        except wx.PyDeadObjectError:
-            # ignore exceptions caused by refresh while quitting
-            pass
+        for element in elements:
+            self.RefreshFunctions[element]()
 
     def OnPageClose(self, event):
         """Callback function when AUINotebook Page closed with CloseButton
@@ -1803,7 +1799,7 @@ class IDEFrame(wx.Frame):
                     else:
                         block_type = "Action"
                     self.LastToolTipItem = item
-                    wx.CallAfter(self.ProjectTree.SetToolTipString,
+                    wx.CallAfter(self.ProjectTree.SetToolTip,
                                  "%s : %s : %s" % (
                                      block_type, bodytype, item_infos["name"]))
             elif self.LastToolTipItem is not None:
@@ -2113,7 +2109,7 @@ class IDEFrame(wx.Frame):
                 MenuToolBar.AddSeparator()
             else:
                 id, bitmap, help, callback = toolbar_item
-                MenuToolBar.AddSimpleTool(id=id, shortHelpString=help, bitmap=GetBitmap(bitmap))
+                MenuToolBar.AddTool(id, help, GetBitmap(bitmap))
                 if callback is not None:
                     self.Bind(wx.EVT_TOOL, callback, id=id)
         MenuToolBar.Realize()
@@ -2153,9 +2149,9 @@ class IDEFrame(wx.Frame):
                 for radio, modes, id, method, picture, help in self.EditorToolBarItems[menu]:
                     if modes & self.DrawingMode:
                         if radio or self.DrawingMode == FREEDRAWING_MODE:
-                            EditorToolBar.AddRadioTool(id, GetBitmap(picture), wx.NullBitmap, help)
+                            EditorToolBar.AddRadioTool(id, help, GetBitmap(picture), wx.NullBitmap)
                         else:
-                            EditorToolBar.AddSimpleTool(id, GetBitmap(picture), help)
+                            EditorToolBar.AddTool(id, help, GetBitmap(picture))
                         self.Bind(wx.EVT_MENU, getattr(self, method), id=id)
                         self.CurrentEditorToolBar.append(id)
                 EditorToolBar.Realize()

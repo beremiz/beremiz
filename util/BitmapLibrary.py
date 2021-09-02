@@ -71,7 +71,7 @@ def GetBitmap(bmp_name1, bmp_name2=None, size=None):
             height = max(bmp1.GetHeight(), bmp2.GetHeight())
 
             # Create bitmap with both icons
-            bmp = wx.EmptyBitmap(width, height)
+            bmp = wx.Bitmap(width, height)
             dc = wx.MemoryDC()
             dc.SelectObject(bmp)
             dc.Clear()

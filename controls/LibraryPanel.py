@@ -77,12 +77,12 @@ class LibraryPanel(wx.Panel):
             search_textctrl = self.SearchCtrl.GetChildren()[0]
             search_textctrl.Bind(wx.EVT_CHAR, self.OnKeyDown)
 
-        main_sizer.AddWindow(self.SearchCtrl, flag=wx.GROW)
+        main_sizer.Add(self.SearchCtrl, flag=wx.GROW)
 
         # Add Splitter window for tree and block comment to main sizer
         splitter_window = wx.SplitterWindow(self)
         splitter_window.SetSashGravity(1.0)
-        main_sizer.AddWindow(splitter_window, flag=wx.GROW)
+        main_sizer.Add(splitter_window, flag=wx.GROW)
 
         # Add TreeCtrl for functions and function blocks library in splitter
         # window
@@ -216,7 +216,7 @@ class LibraryPanel(wx.Panel):
 
                 # Set data associated to tree item (only save that item is a
                 # category)
-                self.Tree.SetPyData(category_item, {"type": CATEGORY})
+                self.Tree.SetItemData(category_item, {"type": CATEGORY})
 
                 # Iterate over functions and function blocks defined in library
                 # category add a tree item to category tree item for each of
@@ -253,7 +253,7 @@ class LibraryPanel(wx.Panel):
                                        if blocktype["extensible"] else None),
                         "comment":    _(comment) + blocktype.get("usage", "")
                     }
-                    self.Tree.SetPyData(blocktype_item, block_data)
+                    self.Tree.SetItemData(blocktype_item, block_data)
 
                     # Select block tree item in tree if it corresponds to
                     # previously selected one

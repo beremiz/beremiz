@@ -200,8 +200,7 @@ class VariableTable(CustomTable):
                                              retain=self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output", "Global"],
                                              non_retain=self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output"])
                         if len(options) > 1:
-                            editor = wx.grid.GridCellChoiceEditor()
-                            editor.SetParameters(",".join(map(_, options)))
+                            editor = wx.grid.GridCellChoiceEditor(map(_, options))
                         else:
                             grid.SetReadOnly(row, col, True)
                     elif col != 0 and self._GetRowEdit(row):
@@ -212,8 +211,7 @@ class VariableTable(CustomTable):
                         elif colname == "Initial Value":
                             if var_class not in ["External", "InOut"]:
                                 if self.Parent.Controler.IsEnumeratedType(var_type):
-                                    editor = wx.grid.GridCellChoiceEditor()
-                                    editor.SetParameters(",".join([""] + self.Parent.Controler.GetEnumeratedDataValues(var_type)))
+                                    editor = wx.grid.GridCellChoiceEditor([""] + self.Parent.Controler.GetEnumeratedDataValues(var_type))
                                 else:
                                     editor = wx.grid.GridCellTextEditor()
                                 renderer = wx.grid.GridCellStringRenderer()
@@ -229,11 +227,10 @@ class VariableTable(CustomTable):
                             if len(self.Parent.ClassList) == 1:
                                 grid.SetReadOnly(row, col, True)
                             else:
-                                editor = wx.grid.GridCellChoiceEditor()
                                 excluded = []
                                 if self.Parent.IsFunctionBlockType(var_type):
                                     excluded.extend(["Local", "Temp"])
-                                editor.SetParameters(",".join([_(choice) for choice in self.Parent.ClassList if choice not in excluded]))
+                                editor = wx.grid.GridCellChoiceEditor([_(choice) for choice in self.Parent.ClassList if choice not in excluded])
                     elif colname != "Documentation":
                         grid.SetReadOnly(row, col, True)
 
@@ -456,32 +453,32 @@ class VariablePanel(wx.Panel):
         controls_sizer = wx.FlexGridSizer(cols=10, hgap=5, rows=1, vgap=5)
         controls_sizer.AddGrowableCol(5)
         controls_sizer.AddGrowableRow(0)
-        self.MainSizer.AddSizer(controls_sizer, border=5, flag=wx.GROW | wx.ALL)
+        self.MainSizer.Add(controls_sizer, border=5, flag=wx.GROW | wx.ALL)
 
         self.ReturnTypeLabel = wx.StaticText(self, label=_('Return Type:'))
-        controls_sizer.AddWindow(self.ReturnTypeLabel, flag=wx.ALIGN_CENTER_VERTICAL)
+        controls_sizer.Add(self.ReturnTypeLabel, flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.ReturnType = wx.ComboBox(self,
                                       size=wx.Size(145, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnReturnTypeChanged, self.ReturnType)
-        controls_sizer.AddWindow(self.ReturnType)
+        controls_sizer.Add(self.ReturnType)
 
         self.DescriptionLabel = wx.StaticText(self, label=_('Description:'))
-        controls_sizer.AddWindow(self.DescriptionLabel, flag=wx.ALIGN_CENTER_VERTICAL)
+        controls_sizer.Add(self.DescriptionLabel, flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.Description = wx.TextCtrl(self,
                                        size=wx.Size(250, -1), style=wx.TE_PROCESS_ENTER)
         self.Bind(wx.EVT_TEXT_ENTER, self.OnDescriptionChanged, self.Description)
         self.Description.Bind(wx.EVT_KILL_FOCUS, self.OnDescriptionChanged)
-        controls_sizer.AddWindow(self.Description)
+        controls_sizer.Add(self.Description)
 
         class_filter_label = wx.StaticText(self, label=_('Class Filter:'))
-        controls_sizer.AddWindow(class_filter_label, flag=wx.ALIGN_CENTER_VERTICAL)
+        controls_sizer.Add(class_filter_label, flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.ClassFilter = wx.ComboBox(self,
                                        size=wx.Size(145, -1), style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnClassFilter, self.ClassFilter)
-        controls_sizer.AddWindow(self.ClassFilter)
+        controls_sizer.Add(self.ClassFilter)
 
         for name, bitmap, help in [
                 ("AddButton", "add_element", _("Add variable")),
@@ -490,19 +487,19 @@ class VariablePanel(wx.Panel):
                 ("DownButton", "down", _("Move variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
                                                     size=wx.Size(28, 28), style=wx.NO_BORDER)
-            button.SetToolTipString(help)
+            button.SetToolTip(help)
             setattr(self, name, button)
-            controls_sizer.AddWindow(button)
+            controls_sizer.Add(button)
 
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL | wx.HSCROLL)
         self.VariablesGrid.SetDropTarget(VariableDropTarget(self))
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING,
                                 self.OnVariablesGridCellChange)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,
                                 self.OnVariablesGridCellLeftClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
                                 self.OnVariablesGridEditorShown)
-        self.MainSizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
+        self.MainSizer.Add(self.VariablesGrid, flag=wx.GROW)
 
         self.SetSizer(self.MainSizer)
 
@@ -848,7 +845,7 @@ class VariablePanel(wx.Panel):
         # build a submenu containing standard IEC types
         base_menu = wx.Menu(title='')
         for base_type in self.Controler.GetBaseTypes():
-            item = base_menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=base_type)
+            item = base_menu.Append(wx.ID_ANY, helpString='', kind=wx.ITEM_NORMAL, item=base_type)
             self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), item)
 
         type_menu.AppendMenu(wx.ID_ANY, _("Base Types"), base_menu)
@@ -858,7 +855,7 @@ class VariablePanel(wx.Panel):
         datatype_menu = wx.Menu(title='')
         datatypes = self.Controler.GetDataTypes(basetypes=False, confnodetypes=False)
         for datatype in datatypes:
-            item = datatype_menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=datatype)
+            item = datatype_menu.Append(wx.ID_ANY, helpString='', kind=wx.ITEM_NORMAL, item=datatype)
             self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), item)
 
         type_menu.AppendMenu(wx.ID_ANY, _("User Data Types"), datatype_menu)
@@ -869,7 +866,7 @@ class VariablePanel(wx.Panel):
                 # build a submenu containing confnode types
                 confnode_datatype_menu = wx.Menu(title='')
                 for datatype in category["list"]:
-                    item = confnode_datatype_menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=datatype)
+                    item = confnode_datatype_menu.Append(wx.ID_ANY, helpString='', kind=wx.ITEM_NORMAL, item=datatype)
                     self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), item)
 
                 type_menu.AppendMenu(wx.ID_ANY, category["name"], confnode_datatype_menu)
@@ -883,13 +880,13 @@ class VariablePanel(wx.Panel):
             functionblock_menu = wx.Menu(title='')
             fbtypes = self.Controler.GetFunctionBlockTypes(self.TagName)
             for functionblock_type in fbtypes:
-                item = functionblock_menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=functionblock_type)
+                item = functionblock_menu.Append(wx.ID_ANY, helpString='', kind=wx.ITEM_NORMAL, item=functionblock_type)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(functionblock_type), item)
 
             type_menu.AppendMenu(wx.ID_ANY, _("Function Block Types"), functionblock_menu)
 
     def BuildArrayTypesMenu(self, type_menu):
-        item = type_menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=_("Array"))
+        item = type_menu.Append(wx.ID_ANY, helpString='', kind=wx.ITEM_NORMAL, item=_("Array"))
         self.Bind(wx.EVT_MENU, self.VariableArrayTypeFunction, item)
 
     def OnVariablesGridEditorShown(self, event):
@@ -916,7 +913,7 @@ class VariablePanel(wx.Panel):
             corner_y = rect.y + self.VariablesGrid.GetColLabelSize()
 
             # pop up this new menu
-            self.VariablesGrid.PopupMenuXY(type_menu, corner_x, corner_y)
+            self.VariablesGrid.PopupMenu(type_menu, corner_x, corner_y)
             type_menu.Destroy()
             event.Veto()
             value = self.Values[row].Type

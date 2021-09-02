@@ -42,8 +42,7 @@ class SFCStepNameDialog(wx.TextEntryDialog):
         self.Variables = []
         self.StepNames = []
 
-        self.Bind(wx.EVT_BUTTON, self.OnOK,
-                  self.GetSizer().GetItem(2).GetSizer().GetItem(1).GetSizer().GetAffirmativeButton())
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
 
     def OnOK(self, event):
         message = None

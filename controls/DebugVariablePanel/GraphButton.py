@@ -146,7 +146,7 @@ class GraphButton(object):
         # Test if point is inside button
         w, h = self.Bitmap.GetSize()
         rect = wx.Rect(self.Position.x, self.Position.y, w, h)
-        return rect.InsideXY(x, y)
+        return rect.Contains(x, y)
 
     def ProcessCallback(self):
         """

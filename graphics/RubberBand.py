@@ -94,7 +94,7 @@ class RubberBand(object):
 
         # Change viewer mouse cursor to reflect a rubberband bounding box is
         # edited
-        self.DrawingSurface.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+        self.DrawingSurface.SetCursor(wx.Cursor(wx.CURSOR_CROSS))
 
         self.Redraw()
 

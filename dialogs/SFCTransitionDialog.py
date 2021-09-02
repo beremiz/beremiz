@@ -57,7 +57,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
 
         # Create label for transition type
         type_label = wx.StaticText(self, label=_('Type:'))
-        self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
+        self.LeftGridSizer.Add(type_label, flag=wx.GROW)
 
         # Create combo box for selecting reference value
         reference = wx.ComboBox(self, style=wx.CB_READONLY)
@@ -80,28 +80,28 @@ class SFCTransitionDialog(BlockPreviewDialog):
                                           style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
-            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
+            self.LeftGridSizer.Add(radio_button, flag=wx.GROW)
             if control is not None:
                 control.Enable(first)
-                self.LeftGridSizer.AddWindow(control, flag=wx.GROW)
+                self.LeftGridSizer.Add(control, flag=wx.GROW)
             self.TypeRadioButtons[type] = (radio_button, control)
             first = False
 
         # Create label for transition priority
         priority_label = wx.StaticText(self, label=_('Priority:'))
-        self.LeftGridSizer.AddWindow(priority_label, flag=wx.GROW)
+        self.LeftGridSizer.Add(priority_label, flag=wx.GROW)
 
         # Create spin control for defining priority value
         self.Priority = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
         self.Bind(wx.EVT_TEXT, self.OnPriorityChanged, self.Priority)
-        self.LeftGridSizer.AddWindow(self.Priority, flag=wx.GROW)
+        self.LeftGridSizer.Add(self.Priority, flag=wx.GROW)
 
         # Add preview panel and associated label to sizers
-        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.Add(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.Add(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(
+        self.MainSizer.Add(
             self.ButtonSizer, border=20,
             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 

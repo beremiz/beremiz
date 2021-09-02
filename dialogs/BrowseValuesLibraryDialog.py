@@ -51,13 +51,13 @@ class BrowseValuesLibraryDialog(wx.Dialog):
 
         self.ButtonSizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
 
-        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.ButtonSizer.GetAffirmativeButton().GetId())
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
 
         self.flexGridSizer1 = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=10)
 
-        self.flexGridSizer1.AddWindow(self.staticText1,   0, border=20, flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
-        self.flexGridSizer1.AddWindow(self.ValuesLibrary, 0, border=20, flag=wx.GROW | wx.LEFT | wx.RIGHT)
-        self.flexGridSizer1.AddSizer(self.ButtonSizer,    0, border=20, flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+        self.flexGridSizer1.Add(self.staticText1,   0, border=20, flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
+        self.flexGridSizer1.Add(self.ValuesLibrary, 0, border=20, flag=wx.GROW | wx.LEFT | wx.RIGHT)
+        self.flexGridSizer1.Add(self.ButtonSizer,    0, border=20, flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.flexGridSizer1.AddGrowableCol(0)
         self.flexGridSizer1.AddGrowableRow(1)

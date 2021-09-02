@@ -60,11 +60,11 @@ def ResetCursors():
     global CURSORS
     if CURSORS is None:
         CURSORS = [wx.NullCursor,
-                   wx.StockCursor(wx.CURSOR_HAND),
-                   wx.StockCursor(wx.CURSOR_SIZENWSE),
-                   wx.StockCursor(wx.CURSOR_SIZENESW),
-                   wx.StockCursor(wx.CURSOR_SIZEWE),
-                   wx.StockCursor(wx.CURSOR_SIZENS)]
+                   wx.Cursor(wx.CURSOR_HAND),
+                   wx.Cursor(wx.CURSOR_SIZENWSE),
+                   wx.Cursor(wx.CURSOR_SIZENESW),
+                   wx.Cursor(wx.CURSOR_SIZEWE),
+                   wx.Cursor(wx.CURSOR_SIZENS)]
 
 
 if wx.Platform == '__WXMSW__':
@@ -410,7 +410,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     if len(tree[0]) > 0:
                         menu = wx.Menu(title='')
                         self.GenerateTreeMenu(x, y, scaling, menu, "", var_class, [(values[0], values[2], tree)])
-                        self.ParentWindow.PopupMenuXY(menu)
+                        self.ParentWindow.PopupMenu(menu)
                     else:
                         self.ParentWindow.AddVariableBlock(x, y, scaling, var_class, values[0], values[2])
                 else:
@@ -712,7 +712,7 @@ class Viewer(EditorPanel, DebugViewer):
                 break
             faces["size"] -= 1
         self.Editor.SetFont(font)
-        self.MiniTextDC = wx.MemoryDC(wx.EmptyBitmap(1, 1))
+        self.MiniTextDC = wx.MemoryDC(wx.Bitmap(1, 1))
         self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
         self.CurrentScale = None
@@ -827,7 +827,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetLogicalDC(self, buffered=False):
         if buffered:
-            bitmap = wx.EmptyBitmap(*self.Editor.GetClientSize())
+            bitmap = wx.Bitmap(*self.Editor.GetClientSize())
             dc = wx.MemoryDC(bitmap)
         else:
             dc = wx.ClientDC(self.Editor)
@@ -1058,7 +1058,7 @@ class Viewer(EditorPanel, DebugViewer):
             self.SelectedElement.SetSelected(False)
             self.SelectedElement = None
         if self.Mode == MODE_MOTION:
-            wx.CallAfter(self.Editor.SetCursor, wx.StockCursor(wx.CURSOR_HAND))
+            wx.CallAfter(self.Editor.SetCursor, wx.Cursor(wx.CURSOR_HAND))
             self.SavedMode = True
 
     # Return current drawing mode
@@ -1116,13 +1116,13 @@ class Viewer(EditorPanel, DebugViewer):
             if self.DrawGrid:
                 width = max(2, int(scaling[0] * self.ViewScale[0]))
                 height = max(2, int(scaling[1] * self.ViewScale[1]))
-                bitmap = wx.EmptyBitmap(width, height)
+                bitmap = wx.Bitmap(width, height)
                 dc = wx.MemoryDC(bitmap)
                 dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
                 dc.Clear()
                 dc.SetPen(MiterPen(wx.Colour(180, 180, 180)))
                 dc.DrawPoint(0, 0)
-                self.GridBrush = wx.BrushFromBitmap(bitmap)
+                self.GridBrush = wx.Brush(bitmap)
             else:
                 self.GridBrush = wx.TRANSPARENT_BRUSH
         else:
@@ -3379,7 +3379,7 @@ class Viewer(EditorPanel, DebugViewer):
             element = self.ParentWindow.GetCopyBuffer()
             if bbx is None:
                 mouse_pos = self.Editor.ScreenToClient(wx.GetMousePosition())
-                middle = wx.Rect(0, 0, *self.Editor.GetClientSize()).InsideXY(mouse_pos.x, mouse_pos.y)
+                middle = wx.Rect(0, 0, *self.Editor.GetClientSize()).Contains(mouse_pos.x, mouse_pos.y)
                 if middle:
                     x, y = self.CalcUnscrolledPosition(mouse_pos.x, mouse_pos.y)
                 else:
@@ -3633,7 +3633,6 @@ class Viewer(EditorPanel, DebugViewer):
         else:
             dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
             dc.Clear()
-            dc.BeginDrawing()
         if self.Scaling is not None and self.DrawGrid and not printing:
             dc.SetPen(wx.TRANSPARENT_PEN)
             dc.SetBrush(self.GridBrush)
@@ -3680,7 +3679,6 @@ class Viewer(EditorPanel, DebugViewer):
                 self.InstanceName.Draw(dc)
             if self.rubberBand.IsShown():
                 self.rubberBand.Draw(dc)
-            dc.EndDrawing()
 
     def OnPaint(self, event):
         dc = self.GetLogicalDC(True)

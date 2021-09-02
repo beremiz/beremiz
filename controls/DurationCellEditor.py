@@ -46,12 +46,12 @@ class DurationCellControl(wx.PyControl):
         self.Duration = wx.TextCtrl(self, size=wx.Size(0, -1),
                                     style=wx.TE_PROCESS_ENTER)
         self.Duration.Bind(wx.EVT_KEY_DOWN, self.OnDurationChar)
-        main_sizer.AddWindow(self.Duration, flag=wx.GROW)
+        main_sizer.Add(self.Duration, flag=wx.GROW)
 
         # create browse button
         self.EditButton = wx.Button(self, label='...', size=wx.Size(30, -1))
         self.Bind(wx.EVT_BUTTON, self.OnEditButtonClick, self.EditButton)
-        main_sizer.AddWindow(self.EditButton, flag=wx.GROW)
+        main_sizer.Add(self.EditButton, flag=wx.GROW)
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
 

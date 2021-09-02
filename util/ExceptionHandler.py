@@ -49,7 +49,7 @@ def Display_Exception_Dialog(e_type, e_value, e_tb, bug_report_path, exit):
         trcbck_lst.append(trcbck)
 
     # Allow clicking....
-    cap = wx.Window_GetCapture()
+    cap = wx.Window.GetCapture()
     if cap:
         cap.ReleaseMouse()
 

@@ -68,7 +68,7 @@ class DurationEditorDialog(wx.Dialog):
         main_sizer.AddGrowableRow(0)
 
         controls_sizer = wx.FlexGridSizer(cols=len(CONTROLS), hgap=10, rows=2, vgap=10)
-        main_sizer.AddSizer(controls_sizer, border=20,
+        main_sizer.Add(controls_sizer, border=20,
                             flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
         controls = []
@@ -85,14 +85,14 @@ class DurationEditorDialog(wx.Dialog):
             controls.append((st, txtctrl))
 
         for st, txtctrl in controls:
-            controls_sizer.AddWindow(st, flag=wx.GROW)
+            controls_sizer.Add(st, flag=wx.GROW)
 
         for st, txtctrl in controls:
-            controls_sizer.AddWindow(txtctrl, flag=wx.GROW)
+            controls_sizer.Add(txtctrl, flag=wx.GROW)
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20,
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
+        main_sizer.Add(button_sizer, border=20,
                             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         self.SetSizer(main_sizer)
