@@ -719,7 +719,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
                                self.Pos.y + (self.Size[1] - text_height) // 2,
                                text_width,
                                text_height)
-            test_text = text_bbx.InsideXY(pt.x, pt.y)
+            test_text = text_bbx.Contains(pt.x, pt.y)
         else:
             test_text = False
         return test_text or Graphic_Element.HitTest(self, pt, connectors)
@@ -1204,7 +1204,7 @@ class SFC_Divergence(Graphic_Element):
 
     # Returns if the point given is in the bounding box
     def HitTest(self, pt, connectors=True):
-        return self.BoundingBox.InsideXY(pt.x, pt.y) or self.TestConnector(pt, exclude=False) is not None
+        return self.BoundingBox.Contains(pt.x, pt.y) or self.TestConnector(pt, exclude=False) is not None
 
     # Refresh the divergence bounding box
     def RefreshBoundingBox(self):
@@ -1592,7 +1592,7 @@ class SFC_Jump(Graphic_Element):
                            self.Pos.y + (self.Size[1] - text_height) // 2,
                            text_width,
                            text_height)
-        return text_bbx.InsideXY(pt.x, pt.y) or Graphic_Element.HitTest(self, pt, connectors)
+        return text_bbx.Contains(pt.x, pt.y) or Graphic_Element.HitTest(self, pt, connectors)
 
     # Refresh the jump bounding box
     def RefreshBoundingBox(self):

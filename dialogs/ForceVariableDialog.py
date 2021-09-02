@@ -189,7 +189,7 @@ class ForceVariableDialog(wx.Dialog):
         info_sizer = wx.BoxSizer(wx.VERTICAL)
 
         message_label = wx.StaticText(self, label=_("Forcing Variable Value"))
-        info_sizer.AddWindow(message_label, border=10,
+        info_sizer.Add(message_label, border=10,
                              flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         if GetTypeValue[self.IEC_Type] in [getinteger, getfloat]:
@@ -201,8 +201,8 @@ class ForceVariableDialog(wx.Dialog):
         self.GetEnteredValue = self.GetValueDefault
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        info_sizer.AddSizer(button_sizer, border=10, flag=wx.ALIGN_RIGHT | wx.ALL)
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
+        info_sizer.Add(button_sizer, border=10, flag=wx.ALIGN_RIGHT | wx.ALL)
 
         self.SetSizer(info_sizer)
         self.Fit()
@@ -216,7 +216,7 @@ class ForceVariableDialog(wx.Dialog):
         """Add simple text control to change variable of any type"""
         self.ValueCtrl = wx.TextCtrl(self)
         self.ValueCtrl.SetValue(defaultValue)
-        info_sizer.AddWindow(self.ValueCtrl, border=10, proportion=1,
+        info_sizer.Add(self.ValueCtrl, border=10, proportion=1,
                              flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
     def GetValueDefault(self):
@@ -235,11 +235,11 @@ class ForceVariableDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.InitCtrlDefault(sizer, defaultValue)
         self.SpinButtonCtrl = wx.SpinButton(self, style=wx.HORIZONTAL | wx.SP_WRAP)
-        sizer.AddWindow(self.SpinButtonCtrl, border=10,
+        sizer.Add(self.SpinButtonCtrl, border=10,
                         flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.EXPAND)
         self.Bind(wx.EVT_SPIN_UP, self.SpinButtonChanged)
         self.Bind(wx.EVT_SPIN_DOWN, self.SpinButtonChanged)
-        info_sizer.AddWindow(sizer, proportion=1, flag=wx.EXPAND)
+        info_sizer.Add(sizer, proportion=1, flag=wx.EXPAND)
 
     def SpinButtonChanged(self, evt):
         """Increment/decrement variable value"""
@@ -261,7 +261,7 @@ class ForceVariableDialog(wx.Dialog):
         if value is not None:
             self.ValueCtrl.SetValue(value)
 
-        info_sizer.AddWindow(self.ValueCtrl, border=10,
+        info_sizer.Add(self.ValueCtrl, border=10,
                              flag=wx.ALIGN_LEFT | wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
     def OnOK(self, event):

@@ -76,7 +76,7 @@ class BrowseLocationsDialog(wx.Dialog):
         main_sizer.AddGrowableRow(1)
 
         locations_label = wx.StaticText(self, label=_('Locations available:'))
-        main_sizer.AddWindow(locations_label, border=20,
+        main_sizer.Add(locations_label, border=20,
                              flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
 
         self.LocationsTree = wx.TreeCtrl(self,
@@ -88,7 +88,7 @@ class BrowseLocationsDialog(wx.Dialog):
         self.LocationsTree.SetInitialSize(wx.Size(-1, 300))
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnLocationsTreeItemActivated,
                   self.LocationsTree)
-        main_sizer.AddWindow(self.LocationsTree, border=20,
+        main_sizer.Add(self.LocationsTree, border=20,
                              flag=wx.LEFT | wx.RIGHT | wx.GROW)
 
         self.RenameCheckBox = wx.CheckBox(self, label=_("Rename variable to signal name"))
@@ -97,37 +97,37 @@ class BrowseLocationsDialog(wx.Dialog):
         self.RenameCheckBox.SetValue(default_checked)
         self.do_rename = default_checked
 
-        main_sizer.AddWindow(self.RenameCheckBox, border=20,
+        main_sizer.Add(self.RenameCheckBox, border=20,
                              flag=wx.LEFT | wx.RIGHT | wx.GROW)
 
         button_gridsizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
         button_gridsizer.AddGrowableCol(1)
         button_gridsizer.AddGrowableCol(3)
         button_gridsizer.AddGrowableRow(0)
-        main_sizer.AddSizer(button_gridsizer, border=20,
+        main_sizer.Add(button_gridsizer, border=20,
                             flag=wx.BOTTOM | wx.LEFT | wx.RIGHT | wx.GROW)
 
         direction_label = wx.StaticText(self, label=_('Direction:'))
-        button_gridsizer.AddWindow(direction_label,
+        button_gridsizer.Add(direction_label,
                                    flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.DirFilterChoice = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnFilterChoice, self.DirFilterChoice)
-        button_gridsizer.AddWindow(self.DirFilterChoice,
+        button_gridsizer.Add(self.DirFilterChoice,
                                    flag=wx.GROW | wx.ALIGN_CENTER_VERTICAL)
 
         filter_label = wx.StaticText(self, label=_('Type:'))
-        button_gridsizer.AddWindow(filter_label,
+        button_gridsizer.Add(filter_label,
                                    flag=wx.ALIGN_CENTER_VERTICAL)
 
         self.TypeFilterChoice = wx.ComboBox(self, style=wx.CB_READONLY)
         self.Bind(wx.EVT_COMBOBOX, self.OnFilterChoice, self.TypeFilterChoice)
-        button_gridsizer.AddWindow(self.TypeFilterChoice,
+        button_gridsizer.Add(self.TypeFilterChoice,
                                    flag=wx.GROW | wx.ALIGN_CENTER_VERTICAL)
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        button_gridsizer.AddSizer(button_sizer, flag=wx.ALIGN_RIGHT)
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
+        button_gridsizer.Add(button_sizer, flag=wx.ALIGN_RIGHT)
 
         self.SetSizer(main_sizer)
 

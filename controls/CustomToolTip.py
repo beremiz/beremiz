@@ -137,7 +137,7 @@ class CustomToolTip(wx.PopupWindow):
         max_width = max_height = 0
 
         # Create a memory DC for calculating text extent
-        dc = wx.MemoryDC(wx.EmptyBitmap(1, 1))
+        dc = wx.MemoryDC(wx.Bitmap(1, 1))
         dc.SetFont(self.Font)
 
         # Compute max tip text size
@@ -175,7 +175,6 @@ class CustomToolTip(wx.PopupWindow):
         dc.SetFont(self.Font)
 
         # Draw Tool tip
-        dc.BeginDrawing()
         tip_width, tip_height = self.GetToolTipSize()
 
         # Draw background rectangle
@@ -188,6 +187,5 @@ class CustomToolTip(wx.PopupWindow):
             _line_width, line_height = dc.GetTextExtent(line)
             line_offset += line_height
 
-        dc.EndDrawing()
 
         event.Skip()

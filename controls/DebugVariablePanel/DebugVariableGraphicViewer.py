@@ -174,7 +174,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
             # If mouse is dropped in graph canvas bounding box and graph is
             # not 3D canvas, graphs will be merged
             rect = self.ParentControl.GetAxesBoundingBox()
-            if not self.ParentControl.Is3DCanvas() and rect.InsideXY(x, y):
+            if not self.ParentControl.Is3DCanvas() and rect.Contains(x, y):
                 # Default merge type is parallel
                 merge_type = GRAPH_PARALLEL
 
@@ -182,7 +182,7 @@ class DebugVariableGraphicDropTarget(wx.TextDropTarget):
                 # wall be merged orthogonally
                 merge_rect = wx.Rect(rect.x, rect.y,
                                      rect.width / 2., rect.height)
-                if merge_rect.InsideXY(x, y):
+                if merge_rect.Contains(x, y):
                     merge_type = GRAPH_ORTHOGONAL
 
                 # Merge graphs
@@ -625,7 +625,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 (x0, y0), (x1, y1) = t.get_window_extent().get_points()
                 rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
                 # Check if mouse was over label
-                if rect.InsideXY(x, y):
+                if rect.Contains(x, y):
                     item_idx = i
                     break
 
@@ -736,7 +736,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 (x0, y0), (x1, y1) = t.get_window_extent().get_points()
                 rect = wx.Rect(x0, height - y1, x1 - x0, y1 - y0)
                 # Check if mouse was over label
-                if rect.InsideXY(event.x, height - event.y):
+                if rect.Contains(event.x, height - event.y):
                     item_idx = i
                     menu_direction = dir
                     break
@@ -756,7 +756,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # Update resize highlight
             if event.y <= 5:
                 if self.SetHighlight(HIGHLIGHT_RESIZE):
-                    self.SetCursor(wx.StockCursor(wx.CURSOR_SIZENS))
+                    self.SetCursor(wx.Cursor(wx.CURSOR_SIZENS))
                     self.ParentWindow.ForceRefresh()
             else:
                 if self.SetHighlight(HIGHLIGHT_NONE):
@@ -832,7 +832,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Check that double click was done inside figure
         pos = event.GetPosition()
         rect = self.GetAxesBoundingBox()
-        if rect.InsideXY(pos.x, pos.y):
+        if rect.Contains(pos.x, pos.y):
             # Reset Cursor tick to value before starting clicking
             self.ParentWindow.SetCursorTick(self.StartCursorTick)
             # Toggle to text Viewer(s)
@@ -926,10 +926,10 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
         # Mouse is over Viewer figure and graph is not 3D
         bbox = self.GetAxesBoundingBox()
-        if bbox.InsideXY(x, y) and not self.Is3DCanvas():
+        if bbox.Contains(x, y) and not self.Is3DCanvas():
             rect = wx.Rect(bbox.x, bbox.y, bbox.width // 2, bbox.height)
             # Mouse is over Viewer left part of figure
-            if rect.InsideXY(x, y):
+            if rect.Contains(x, y):
                 self.SetHighlight(HIGHLIGHT_LEFT)
 
             # Mouse is over Viewer right part of figure

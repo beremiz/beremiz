@@ -74,12 +74,12 @@ class FolderTree(wx.Panel):
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnTreeItemCollapsed, self.Tree)
         self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnTreeBeginLabelEdit, self.Tree)
         self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnTreeEndLabelEdit, self.Tree)
-        main_sizer.AddWindow(self.Tree, 1, flag=wx.GROW)
+        main_sizer.Add(self.Tree, 1, flag=wx.GROW)
 
         if filter is not None:
             self.Filter = wx.ComboBox(self, style=wx.CB_READONLY)
             self.Bind(wx.EVT_COMBOBOX, self.OnFilterChanged, self.Filter)
-            main_sizer.AddWindow(self.Filter, flag=wx.GROW)
+            main_sizer.Add(self.Filter, flag=wx.GROW)
         else:
             self.Filter = None
 

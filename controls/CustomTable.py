@@ -40,7 +40,7 @@ class CustomTable(wx.grid.PyGridTableBase):
     """
     def __init__(self, parent, data, colnames):
         # The base class must be initialized *first*
-        wx.grid.PyGridTableBase.__init__(self)
+        wx.grid.GridTableBase.__init__(self)
         self.data = data
         self.colnames = colnames
         self.Highlights = {}
@@ -64,7 +64,7 @@ class CustomTable(wx.grid.PyGridTableBase):
             return self.colnames[col]
 
     def GetRowLabelValue(self, row, translate=True):
-        return row
+        return str(row)
 
     def GetValue(self, row, col):
         if row < self.GetNumberRows():

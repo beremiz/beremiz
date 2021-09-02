@@ -52,16 +52,16 @@ def GenerateName(infos):
 class SearchResultPanel(wx.Panel):
 
     def _init_coll_MainSizer_Items(self, parent):
-        parent.AddSizer(self.HeaderSizer, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.SearchResultsTree, 1, border=0, flag=wx.GROW)
+        parent.Add(self.HeaderSizer, 0, border=0, flag=wx.GROW)
+        parent.Add(self.SearchResultsTree, 1, border=0, flag=wx.GROW)
 
     def _init_coll_MainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(1)
 
     def _init_coll_HeaderSizer_Items(self, parent):
-        parent.AddWindow(self.HeaderLabel, 1, border=5, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
-        parent.AddWindow(self.ResetButton, 0, border=0, flag=0)
+        parent.Add(self.HeaderLabel, 1, border=5, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
+        parent.Add(self.ResetButton, 0, border=0, flag=0)
 
     def _init_coll_HeaderSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
@@ -90,7 +90,7 @@ class SearchResultPanel(wx.Panel):
         self.ResetButton = wx.lib.buttons.GenBitmapButton(
             self, bitmap=GetBitmap("reset"),
             size=wx.Size(28, 28), style=wx.NO_BORDER)
-        self.ResetButton.SetToolTipString(_("Reset search result"))
+        self.ResetButton.SetToolTip(_("Reset search result"))
         self.Bind(wx.EVT_BUTTON, self.OnResetButton, self.ResetButton)
 
         self._init_sizers()

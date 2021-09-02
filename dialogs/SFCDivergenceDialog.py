@@ -58,7 +58,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
 
         # Create label for divergence type
         type_label = wx.StaticText(self, label=_('Type:'))
-        self.LeftGridSizer.AddWindow(type_label, flag=wx.GROW)
+        self.LeftGridSizer.Add(type_label, flag=wx.GROW)
 
         # Create radio buttons for selecting divergence type
         divergence_buttons = [
@@ -80,7 +80,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
                                           style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnTypeChanged, radio_button)
-            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
+            self.LeftGridSizer.Add(radio_button, flag=wx.GROW)
             self.TypeRadioButtons[type] = radio_button
             if first:
                 focusbtn = type
@@ -89,19 +89,19 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         # Create label for number of divergence sequences
         sequences_label = wx.StaticText(self,
                                         label=_('Number of sequences:'))
-        self.LeftGridSizer.AddWindow(sequences_label, flag=wx.GROW)
+        self.LeftGridSizer.Add(sequences_label, flag=wx.GROW)
 
         # Create spin control for defining number of divergence sequences
         self.Sequences = wx.SpinCtrl(self, min=2, max=20, initial=2)
         self.Bind(wx.EVT_SPINCTRL, self.OnSequencesChanged, self.Sequences)
-        self.LeftGridSizer.AddWindow(self.Sequences, flag=wx.GROW)
+        self.LeftGridSizer.Add(self.Sequences, flag=wx.GROW)
 
         # Add preview panel and associated label to sizers
-        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.Add(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.Add(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(
+        self.MainSizer.Add(
             self.ButtonSizer, border=20,
             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 

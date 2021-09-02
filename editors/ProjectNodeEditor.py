@@ -60,7 +60,7 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
         ConfTreeNodeEditor.__init__(self, parent, controler, window, tagname)
 
         buttons_sizer = self.GenerateMethodButtonSizer()
-        self.MainSizer.InsertSizer(0, buttons_sizer, 0, border=5, flag=wx.ALL)
+        self.MainSizer.Insert(0, buttons_sizer, 0, border=5, flag=wx.ALL)
         self.MainSizer.Layout()
 
         self.VariableEditor = self.VariableEditorPanel

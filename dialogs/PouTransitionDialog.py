@@ -53,26 +53,26 @@ class PouTransitionDialog(wx.Dialog):
 
         infos_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=3, vgap=10)
         infos_sizer.AddGrowableCol(1)
-        main_sizer.AddSizer(infos_sizer, border=20,
+        main_sizer.Add(infos_sizer, border=20,
                             flag=wx.GROW | wx.TOP | wx.LEFT | wx.RIGHT)
 
         transitionname_label = wx.StaticText(self, label=_('Transition Name:'))
-        infos_sizer.AddWindow(transitionname_label, border=4,
+        infos_sizer.Add(transitionname_label, border=4,
                               flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.TransitionName = wx.TextCtrl(self, size=wx.Size(180, -1))
-        infos_sizer.AddWindow(self.TransitionName, flag=wx.GROW)
+        infos_sizer.Add(self.TransitionName, flag=wx.GROW)
 
         language_label = wx.StaticText(self, label=_('Language:'))
-        infos_sizer.AddWindow(language_label, border=4,
+        infos_sizer.Add(language_label, border=4,
                               flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP)
 
         self.Language = wx.ComboBox(self, style=wx.CB_READONLY)
-        infos_sizer.AddWindow(self.Language, flag=wx.GROW)
+        infos_sizer.Add(self.Language, flag=wx.GROW)
 
         button_sizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.CENTRE)
-        self.Bind(wx.EVT_BUTTON, self.OnOK, button_sizer.GetAffirmativeButton())
-        main_sizer.AddSizer(button_sizer, border=20, flag=wx.ALIGN_RIGHT | wx.BOTTOM)
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=self.GetAffirmativeId())
+        main_sizer.Add(button_sizer, border=20, flag=wx.ALIGN_RIGHT | wx.BOTTOM)
 
         self.SetSizer(main_sizer)
 

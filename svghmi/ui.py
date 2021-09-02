@@ -57,13 +57,13 @@ class HMITreeSelector(wx.TreeCtrl):
                 display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
                                if c.hmiclass is not None else c.name
                 tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, c)
+                self.SetItemData(tc_child, c)
 
                 self._recurseTree(c,tc_child)
             else:
                 display_name = '{} {}'.format(c.nodetype[4:], c.name)
                 tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, c)
+                self.SetItemData(tc_child, c)
 
     def OnTreeNodeSelection(self, event):
         items = self.GetSelections()
@@ -105,7 +105,7 @@ class HMITreeSelector(wx.TreeCtrl):
         root_display_name = _("Please build to see HMI Tree") \
             if hmi_tree_root is None else "HMI"
         self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, hmi_tree_root)
+        self.SetItemData(self.root, hmi_tree_root)
 
         if hmi_tree_root is not None:
             self._recurseTree(hmi_tree_root, self.root)
@@ -145,11 +145,11 @@ class WidgetPicker(wx.TreeCtrl):
                     for d in dirlist:
                         current_tc_root = self.AppendItem(current_tc_root, d)
                         res.append(current_tc_root)
-                        self.SetPyData(current_tc_root, None)
+                        self.SetItemData(current_tc_root, None)
                     dirlist = []
                     res.pop()
                 tc_child = self.AppendItem(current_tc_root, f)
-                self.SetPyData(tc_child, p)
+                self.SetItemData(tc_child, p)
         return res
 
     def MakeTree(self, lib_dir = None):
@@ -162,7 +162,7 @@ class WidgetPicker(wx.TreeCtrl):
         root_display_name = _("Please select widget library directory") \
             if lib_dir is None else os.path.basename(lib_dir)
         self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, None)
+        self.SetItemData(self.root, None)
 
         if lib_dir is not None and os.path.exists(lib_dir):
             self._recurseTree(lib_dir, self.root, [])

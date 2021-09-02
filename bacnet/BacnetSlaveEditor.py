@@ -367,8 +367,7 @@ class AnalogObject(ObjectProperties):
         "Engineering Units": {"GridCellEditor": wx.grid.GridCellChoiceEditor,
                               # use string renderer with choice editor!
                               "GridCellRenderer": wx.grid.GridCellStringRenderer,
-                              # syntax for GridCellChoiceEditor -> comma separated values
-                              "GridCellEditorParam": ','.join([x[0] for x in BACnetEngineeringUnits])}
+                              "GridCellEditorConstructorArgs": [x[0] for x in BACnetEngineeringUnits]}
     }
 
     # obj_properties should be a dictionary, with keys "Object Identifier",
@@ -576,7 +575,10 @@ class ObjectTable(CustomTable):
                 PropertyName = self.BACnetObjectType.PropertyNames[col]
                 PropertyConfig = self.BACnetObjectType.PropertyConfig[PropertyName]
                 grid.SetReadOnly(row, col, False)
-                grid.SetCellEditor(row, col, PropertyConfig["GridCellEditor"]())
+                GridCellEditorConstructorArgs = \
+                    PropertyConfig["GridCellEditorConstructorArgs"]
+                    if "GridCellEditorConstructorArgs" in PropertyConfig else []
+                grid.SetCellEditor(row, col, PropertyConfig["GridCellEditor"](*GridCellEditorConstructorArgs))
                 grid.SetCellRenderer(row, col, PropertyConfig["GridCellRenderer"]())
                 grid.SetCellBackgroundColour(row, col, wx.WHITE)
                 grid.SetCellTextColour(row, col, wx.BLACK)
@@ -816,7 +818,7 @@ class ObjectEditor(wx.Panel):
                 self, bitmap=GetBitmap(bitmap),
                 size=wx.Size(28, 28),
                 style=wx.NO_BORDER)
-            button.SetToolTipString(help)
+            button.SetToolTip(help)
             setattr(self, name, button)
             controls_sizer.Add(button)
 
@@ -826,7 +828,7 @@ class ObjectEditor(wx.Panel):
         # use only to enable drag'n'drop
         # self.VariablesGrid.SetDropTarget(VariableDropTarget(self))
         self.VariablesGrid.Bind(
-            wx.grid.EVT_GRID_CELL_CHANGE,     self.OnVariablesGridCellChange)
+            wx.grid.EVT_GRID_CELL_CHANGING,     self.OnVariablesGridCellChange)
         # self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
         # self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,    self.OnVariablesGridEditorShown)
         self.MainSizer.Add(self.VariablesGrid, flag=wx.GROW)

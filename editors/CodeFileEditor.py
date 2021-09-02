@@ -291,17 +291,16 @@ class CodeEditor(CustomStyledTextCtrl):
         doc_end_pos = self.GetLength()
         for section in self.Controler.SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
-            start_pos = self.FindText(0, doc_end_pos, section_comments["comment"])
-            end_pos = start_pos + len(section_comments["comment"])
-            self.StartStyling(start_pos, 0xff)
+            start_pos, end_pos = self.FindText(0, doc_end_pos, section_comments["comment"])
+            self.StartStyling(start_pos)
             self.SetStyling(end_pos - start_pos, STC_CODE_SECTION)
             self.SetLineState(self.LineFromPosition(start_pos), 1)
 
-        self.StartStyling(end_pos, 0x00)
+        self.StartStyling(end_pos)
         self.SetStyling(doc_end_pos - end_pos, stc.STC_STYLE_DEFAULT)
 
     def DoGetBestSize(self):
-        return self.ParentWindow.GetPanelBestSize()
+        return self.ParentWindow.GetBestSize()
 
     def RefreshModel(self):
         text = self.GetText()
@@ -597,9 +596,9 @@ class CodeEditor(CustomStyledTextCtrl):
                 highlight_end_pos = end[1] + 1
             else:
                 highlight_end_pos = self.GetLineEndPosition(end[0] - 1) + end[1] + 2
-            self.StartStyling(highlight_start_pos, 0xff)
+            self.StartStyling(highlight_start_pos)
             self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
-            self.StartStyling(highlight_end_pos, 0x00)
+            self.StartStyling(highlight_end_pos)
             self.SetStyling(len(self.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
 
 
@@ -614,8 +613,7 @@ class AllGridCellEditor(wx.grid.GridCellTextEditor):
 
 class ClassGridCellEditor(wx.grid.GridCellChoiceEditor):
     def __init__(self, table, row, col):
-        wx.grid.GridCellChoiceEditor.__init__(self)
-        self.SetParameters("input,memory,output")
+        wx.grid.GridCellChoiceEditor.__init__(self,["input","memory","output"])
 
 
 class VariablesTable(CustomTable):
@@ -678,7 +676,7 @@ class VariablesEditor(wx.Panel):
         main_sizer.AddGrowableRow(0)
 
         controls_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(controls_sizer, border=5, flag=wx.ALL)
+        main_sizer.Add(controls_sizer, border=5, flag=wx.ALL)
 
         for name, bitmap, help in [
                 ("AddVariableButton", "add_element", _("Add variable")),
@@ -687,15 +685,15 @@ class VariablesEditor(wx.Panel):
                 ("DownVariableButton", "down", _("Move variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
                                                     size=wx.Size(28, 28), style=wx.NO_BORDER)
-            button.SetToolTipString(help)
+            button.SetToolTip(help)
             setattr(self, name, button)
-            controls_sizer.AddWindow(button, border=5, flag=wx.BOTTOM)
+            controls_sizer.Add(button, border=5, flag=wx.BOTTOM)
 
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING, self.OnVariablesGridCellChange)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
-        main_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
+        main_sizer.Add(self.VariablesGrid, flag=wx.GROW)
 
         self.SetSizer(main_sizer)
 
@@ -785,7 +783,7 @@ class VariablesEditor(wx.Panel):
         self.VariablesGrid.RefreshButtons()
 
     def DoGetBestSize(self):
-        return self.ParentWindow.GetPanelBestSize()
+        return self.ParentWindow.GetBestSize()
 
     def ShowErrorMessage(self, message):
         dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
@@ -836,7 +834,7 @@ class VariablesEditor(wx.Panel):
             type_menu.AppendMenu(wx.ID_ANY, "User Data Types", datatype_menu)
             rect = self.VariablesGrid.BlockToDeviceRect((row, col), (row, col))
 
-            self.VariablesGrid.PopupMenuXY(type_menu, rect.x + rect.width, rect.y + self.VariablesGrid.GetColLabelSize())
+            self.VariablesGrid.PopupMenu(type_menu, rect.x + rect.width, rect.y + self.VariablesGrid.GetColLabelSize())
             type_menu.Destroy()
             event.Veto()
         else:

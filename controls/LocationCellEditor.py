@@ -46,12 +46,12 @@ class LocationCellControl(wx.PyControl):
         self.Location = wx.TextCtrl(self, size=wx.Size(0, -1),
                                     style=wx.TE_PROCESS_ENTER)
         self.Location.Bind(wx.EVT_KEY_DOWN, self.OnLocationChar)
-        main_sizer.AddWindow(self.Location, flag=wx.GROW)
+        main_sizer.Add(self.Location, flag=wx.GROW)
 
         # create browse button
         self.BrowseButton = wx.Button(self, label='...', size=wx.Size(30, -1))
         self.BrowseButton.Bind(wx.EVT_BUTTON, self.OnBrowseButtonClick)
-        main_sizer.AddWindow(self.BrowseButton, flag=wx.GROW)
+        main_sizer.Add(self.BrowseButton, flag=wx.GROW)
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
 

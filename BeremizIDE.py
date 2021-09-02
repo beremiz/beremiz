@@ -92,7 +92,7 @@ def Bpath(*args):
     return os.path.join(beremiz_dir, *args)
 
 def AppendMenu(parent, help, id, kind, text):
-    return parent.Append(help=help, id=id, kind=kind, text=text)
+    return parent.Append(wx.MenuItem(helpString=help, id=id, kind=kind, text=text))
 
 MAX_RECENT_PROJECTS = 9
 
@@ -179,7 +179,7 @@ class LogPseudoFile(object):
                     if style is None:
                         style = self.black_white
                     if style != self.black_white:
-                        self.output.StartStyling(self.output.GetLength(), 0xff)
+                        self.output.StartStyling(self.output.GetLength())
 
                     # Temporary deactivate read only mode on StyledTextCtrl for
                     # adding text. It seems that text modifications, even
@@ -249,7 +249,7 @@ class Beremiz(IDEFrame):
                    kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
                    kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
-        parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
+        parent.Append(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
                    kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
@@ -291,10 +291,10 @@ class Beremiz(IDEFrame):
         for name, text, helpstr, children in items:
             if len(children) > 0:
                 new_menu = wx.Menu(title='')
-                menu.AppendMenu(wx.ID_ANY, text, new_menu)
+                menu.AppendSubMenu(new_menu, text)
                 self._RecursiveAddMenuItems(new_menu, children)
             else:
-                item = menu.Append(wx.ID_ANY, text, helpstr)
+                item = menu.Append(wx.MenuItem(text=text, helpString=helpstr))
                 self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name), item)
 
     def _init_coll_AddMenu_Items(self, parent):
@@ -311,16 +311,16 @@ class Beremiz(IDEFrame):
         item = parent.Append(wx.ID_ANY, _(u'Community support'), '')
         self.Bind(wx.EVT_MENU, handler, item)
 
-        parent.Append(help='', id=wx.ID_ABOUT,
-                      kind=wx.ITEM_NORMAL, text=_(u'About'))
+        parent.Append(wx.MenuItem(helpString='', id=wx.ID_ABOUT,
+                      kind=wx.ITEM_NORMAL, text=_(u'About')))
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
     def _init_coll_ConnectionStatusBar_Fields(self, parent):
         parent.SetFieldsCount(3)
 
-        parent.SetStatusText(number=0, text='')
-        parent.SetStatusText(number=1, text='')
-        parent.SetStatusText(number=2, text='')
+        parent.SetStatusText(i=0, text='')
+        parent.SetStatusText(i=1, text='')
+        parent.SetStatusText(i=2, text='')
 
         parent.SetStatusWidths([-1, 300, 200])
 
@@ -397,7 +397,7 @@ class Beremiz(IDEFrame):
 
         self.AUIManager.Update()
 
-        self.ConnectionStatusBar = esb.EnhancedStatusBar(self, style=wx.ST_SIZEGRIP)
+        self.ConnectionStatusBar = esb.EnhancedStatusBar(self, style=wx.STB_SIZEGRIP)
         self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
         self.ProgressStatusBar = wx.Gauge(self.ConnectionStatusBar, -1, range=100)
         self.ConnectionStatusBar.AddWidget(self.ProgressStatusBar, esb.ESB_EXACT_FIT, esb.ESB_EXACT_FIT, 2)
@@ -699,7 +699,7 @@ class Beremiz(IDEFrame):
 
         while self.RecentProjectsMenu.GetMenuItemCount() > 0:
             item = self.RecentProjectsMenu.FindItemByPosition(0)
-            self.RecentProjectsMenu.RemoveItem(item)
+            self.RecentProjectsMenu.Remove(item)
 
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
@@ -746,9 +746,9 @@ class Beremiz(IDEFrame):
 
             for confnode_method in self.CTR.StatusMethods:
                 if "method" in confnode_method and confnode_method.get("shown", True):
-                    tool = StatusToolBar.AddSimpleTool(
-                        wx.ID_ANY, GetBitmap(confnode_method.get("bitmap", "Unknown")),
-                        confnode_method["tooltip"])
+                    tool = StatusToolBar.AddTool(
+                        wx.ID_ANY, confnode_method["tooltip"],
+                        GetBitmap(confnode_method.get("bitmap", "Unknown")))
                     self.Bind(wx.EVT_MENU, self.GetMenuCallBackFunction(confnode_method["method"]), tool)
 
             StatusToolBar.Realize()
@@ -798,7 +798,7 @@ class Beremiz(IDEFrame):
                     else:
                         self.EditMenu.Delete(item.GetId())
             self.LastPanelSelected = None
-        self.MenuBar.UpdateMenus()
+        self.MenuBar.Refresh()
 
     def RefreshAll(self):
         self.RefreshStatusToolBar()

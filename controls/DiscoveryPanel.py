@@ -44,17 +44,17 @@ class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def _init_coll_MainSizer_Items(self, parent):
-        parent.AddWindow(self.staticText1,    0, border=20, flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
-        parent.AddWindow(self.ServicesList,   0, border=20, flag=wx.LEFT | wx.RIGHT | wx.GROW)
-        parent.AddSizer(self.ButtonGridSizer, 0, border=20, flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
+        parent.Add(self.staticText1,    0, border=20, flag=wx.TOP | wx.LEFT | wx.RIGHT | wx.GROW)
+        parent.Add(self.ServicesList,   0, border=20, flag=wx.LEFT | wx.RIGHT | wx.GROW)
+        parent.Add(self.ButtonGridSizer, 0, border=20, flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.GROW)
 
     def _init_coll_MainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(1)
 
     def _init_coll_ButtonGridSizer_Items(self, parent):
-        parent.AddWindow(self.RefreshButton, 0, border=0, flag=0)
-        # parent.AddWindow(self.ByIPCheck, 0, border=0, flag=0)
+        parent.Add(self.RefreshButton, 0, border=0, flag=0)
+        # parent.Add(self.ByIPCheck, 0, border=0, flag=0)
 
     def _init_coll_ButtonGridSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
