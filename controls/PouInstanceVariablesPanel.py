@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#.!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # This file is part of Beremiz, a Integrated Development Environment for
@@ -93,7 +93,7 @@ class CustomTreeCtrlWithRightImage(CT.CustomTreeCtrl):
             rect = wx.Rect(images_bbx.x + 4, images_bbx.y + 4,
                            r_image_w, r_image_h)
             for r_image in rightimages:
-                if rect.Inside(point):
+                if rect.Contains(point):
                     return r_image
                 rect.x += r_image_w + 4
 
