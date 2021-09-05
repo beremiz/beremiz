@@ -825,15 +825,14 @@ class Viewer(EditorPanel, DebugViewer):
     def GetViewScale(self):
         return self.ViewScale
 
-    def GetLogicalDC(self, buffered=False):
-        if buffered:
-            bitmap = wx.Bitmap(*self.Editor.GetClientSize())
-            dc = wx.MemoryDC(bitmap)
-        else:
-            dc = wx.ClientDC(self.Editor)
+    def PrepareDC(self, dc):
         dc.SetFont(self.GetFont())
         self.Editor.DoPrepareDC(dc)
         dc.SetUserScale(self.ViewScale[0], self.ViewScale[1])
+
+    def GetLogicalDC(self):
+        dc = wx.ClientDC(self.Editor)
+        self.PrepareDC(dc)
         return dc
 
     def RefreshRect(self, rect, eraseBackground=True):
@@ -3681,9 +3680,13 @@ class Viewer(EditorPanel, DebugViewer):
                 self.rubberBand.Draw(dc)
 
     def OnPaint(self, event):
-        dc = self.GetLogicalDC(True)
+        event.Skip()
+        sx,sy = self.Editor.GetClientSize()
+        if sx <= 0 or sy <= 0 :
+            return
+        dc = wx.MemoryDC(wx.Bitmap(sx,sy))
+        self.PrepareDC(dc)
         self.DoDrawing(dc)
         wx.BufferedPaintDC(self.Editor, dc.GetAsBitmap())
         if self.Debug:
             DebugViewer.RefreshNewData(self)
-        event.Skip()
