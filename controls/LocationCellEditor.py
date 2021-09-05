@@ -150,12 +150,12 @@ class LocationCellControl(wx.PyControl):
         self.Location.SetFocus()
 
 
-class LocationCellEditor(wx.grid.PyGridCellEditor):
+class LocationCellEditor(wx.grid.GridCellEditor):
     '''
     Grid cell editor that uses LocationCellControl to display a browse button.
     '''
     def __init__(self, table, controller):
-        wx.grid.PyGridCellEditor.__init__(self)
+        wx.grid.GridCellEditor.__init__(self)
 
         self.Table = table
         self.Controller = controller
