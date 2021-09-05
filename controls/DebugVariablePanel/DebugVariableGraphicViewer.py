@@ -1381,8 +1381,6 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # rendering
         destGC = wx.GCDC(destDC)
 
-        destGC.BeginDrawing()
-
         # Get canvas size and figure bounding box in canvas
         width, height = self.GetSize()
         bbox = self.GetAxesBoundingBox()
@@ -1408,8 +1406,6 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
         # Draw other Viewer common elements
         self.DrawCommonElements(destGC, self.GetButtons())
-
-        destGC.EndDrawing()
 
         self._isDrawn = True
         self.gui_repaint(drawDC=drawDC)
