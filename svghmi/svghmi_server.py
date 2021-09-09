@@ -241,6 +241,9 @@ class HMIWebSocketServerFactory(WebSocketServerFactory):
 svghmi_servers = {}
 svghmi_send_thread = None
 
+# python's errno on windows seems to have no ENODATA
+ENODATA = errno.ENODATA if hasattr(errno,"ENODATA") else None
+
 def SendThreadProc():
     global svghmi_session_manager
     size = ctypes.c_uint32()
@@ -255,7 +258,7 @@ def SendThreadProc():
             if res == 0:
                 svghmi_session.sendMessage(
                     ctypes.string_at(ptr.value,size.value))
-            elif res == errno.ENODATA:
+            elif res == ENODATA:
                 # this happens when there is no data after wakeup
                 # because of hmi data refresh period longer than
                 # PLC common ticktime
