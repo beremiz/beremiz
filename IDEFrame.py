@@ -1409,7 +1409,8 @@ class IDEFrame(wx.Frame):
         self.AuiTabCtrl = auitabctrl
         if self.TabsOpened.GetPageCount() == 0:
             pane = self.AUIManager.GetPane(self.TabsOpened)
-            if pane.IsMaximized():
+            # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
+            if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
                 self.AUIManager.RestorePane(pane)
             self.AUIManager.Update()
 
@@ -1497,7 +1498,8 @@ class IDEFrame(wx.Frame):
 
     def SwitchPerspective(self, evt):
         pane = self.AUIManager.GetPane(self.TabsOpened)
-        if pane.IsMaximized():
+        # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
+        if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
             self.AUIManager.RestorePane(pane)
         else:
             self.AUIManager.MaximizePane(pane)
