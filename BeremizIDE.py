@@ -625,6 +625,7 @@ class Beremiz(IDEFrame):
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
             if self.CTR is not None:
                 self.CTR.KillDebugThread()
+                self.CTR._Disconnect()
             self.KillLocalRuntime()
 
             self.SaveLastState()
