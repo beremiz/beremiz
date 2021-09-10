@@ -68,7 +68,7 @@ class PyroServer(object):
             others = []
             if not sys.platform.startswith('win'):
                 self.piper, self.pipew = os.pipe()
-                others.append = self.piper
+                others.append(self.piper)
 
             self.daemon.requestLoop(others=others, callback=lambda x: None)
             self.piper, self.pipew = None, None
