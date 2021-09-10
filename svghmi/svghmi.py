@@ -294,14 +294,19 @@ class SVGHMIEditor(ConfTreeNodeEditor):
 
         return ret
 
+if wx.Platform == '__WXMSW__':
+    browser_launch_cmd="cmd.exe /c 'start msedge {url}'"
+else:
+    browser_launch_cmd="chromium {url}"
+
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="SVGHMI">
         <xsd:complexType>
-          <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="chromium {url}"/>
-          <xsd:attribute name="OnStop" type="xsd:string" use="optional" default="echo 'please close chromium window at {url}'"/>
-          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default="echo 'Watchdog for {name} !'"/>
+          <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="%s"/>
+          <xsd:attribute name="OnStop" type="xsd:string" use="optional" default=""/>
+          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="EnableWatchdog" type="xsd:boolean" use="optional" default="false"/>
           <xsd:attribute name="WatchdogInitial" use="optional" default="30">
             <xsd:simpleType>
@@ -333,7 +338,7 @@ class SVGHMI(object):
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """
+    """%browser_launch_cmd
 
     EditorType = SVGHMIEditor
 
