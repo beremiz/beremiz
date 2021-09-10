@@ -60,13 +60,13 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.64"
-     inkscape:cx="318.22524"
-     inkscape:cy="196.09799"
-     inkscape:window-width="1939"
-     inkscape:window-height="1243"
-     inkscape:window-x="3325"
-     inkscape:window-y="162"
-     inkscape:window-maximized="0"
+     inkscape:cx="-438.80601"
+     inkscape:cy="183.59799"
+     inkscape:window-width="3200"
+     inkscape:window-height="1672"
+     inkscape:window-x="0"
+     inkscape:window-y="54"
+     inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-global="true"
@@ -745,7 +745,7 @@
   </g>
   <g
      id="g4507"
-     inkscape:label="HMI:ScrollBar@.position@.range@.size"
+     inkscape:label="HMI:ScrollBar@.range@.position@.size"
      transform="translate(-202)">
     <rect
        y="84"
@@ -818,7 +818,7 @@
        x="277.58728"
        y="596.54126">Size</tspan></text>
   <g
-     inkscape:label="HMI:ScrollBar@.position@.range@.size"
+     inkscape:label="HMI:ScrollBar@.range@.position@.size"
      id="g146"
      transform="rotate(90,837.8103,-106.02497)">
     <rect
@@ -854,7 +854,7 @@
   </g>
   <g
      transform="matrix(0.35355339,0.35355339,-0.35355339,0.35355339,831.43929,-136.17916)"
-     inkscape:label="HMI:ScrollBar@.position@.range@.size"
+     inkscape:label="HMI:ScrollBar@.range@.position@.size"
      id="g156"
      style="stroke-width:2">
     <rect
