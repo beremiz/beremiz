@@ -194,7 +194,7 @@ class ConfigTreeNode(object):
         os.mkdir(self.CTNPath())
 
     def CTNRequestSave(self, from_project_path=None):
-        if self.GetCTRoot().CheckProjectPathPerm(False):
+        if self.GetCTRoot().CheckProjectPathPerm():
             # If confnode do not have corresponding directory
             ctnpath = self.CTNPath()
             if not os.path.isdir(ctnpath):
