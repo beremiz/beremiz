@@ -241,6 +241,7 @@ class Beremiz(IDEFrame):
     def _init_utils(self):
         self.ConfNodeMenu = wx.Menu(title='')
         self.RecentProjectsMenu = wx.Menu(title='')
+        self.TutorialsProjectsMenu = wx.Menu(title='')
 
         IDEFrame._init_utils(self)
 
@@ -250,6 +251,28 @@ class Beremiz(IDEFrame):
         AppendMenu(parent, help='', id=wx.ID_OPEN,
                    kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
         parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
+        parent.AppendSeparator()
+        parent.Append(wx.ID_ANY, _("&Tutorials and Examples"), self.TutorialsProjectsMenu)
+
+        exemples_dir = Bpath("exemples")
+        project_list = sorted(os.listdir(exemples_dir))
+
+        for idx, dirname  in enumerate(project_list):
+            text = u'&%d: %s' % (idx + 1, dirname)
+
+            item = self.TutorialsProjectsMenu.Append(wx.ID_ANY, text, '')
+
+            projectpath = os.path.join(exemples_dir, dirname)
+
+            def OpenExemple(event):
+                if self.CTR is not None and not self.CheckSaveBeforeClosing():
+                    return
+
+                self.OpenProject(projectpath)
+                if not self.CTR.CheckProjectPathPerm():
+                    self.ResetView()
+
+            self.Bind(wx.EVT_MENU, OpenExemple, item)
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
                    kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
