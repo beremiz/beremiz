@@ -474,8 +474,6 @@ class Beremiz(IDEFrame):
         if self.EnableDebug:
             self.DebugVariablePanel.SetDataProducer(self.CTR)
 
-        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         self.RefreshAll()
         self.LogConsole.SetFocus()
@@ -640,6 +638,7 @@ class Beremiz(IDEFrame):
     def OnCloseFrame(self, event):
         if self.TryCloseFrame():
             self.LogConsole.Disconnect(-1, -1, wx.wxEVT_KILL_FOCUS)
+            super(Beremiz, self).OnCloseFrame(event)
             event.Skip()
         else:
             # prevent event to continue, i.e. cancel closing
