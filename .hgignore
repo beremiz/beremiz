@@ -9,6 +9,7 @@
 
 syntax: regexp
 ^tests/.*/build$
+^exemples/.*/build$
 ^.idea/.*
 syntax: regexp
 ^.*\.pyc$
