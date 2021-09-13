@@ -8,6 +8,7 @@
 #include <time.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/mman.h>
 #include <sys/fcntl.h>
 
@@ -117,16 +118,16 @@ void PLC_task_proc(void *arg)
 
 static unsigned long __debug_tick;
 
-#define _LogAndReturnNull(text) \
+#define _Log(text, err) \
     {\
-    	char mstr[256] = text " for ";\
-        strncat(mstr, name, 255);\
+        char mstr[256];\
+        snprintf(mstr, 255, text " for %s (%d)", name, err);\
         LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
-        return NULL;\
     }
 
 void *create_RT_to_nRT_signal(char* name){
     int new_index = -1;
+    int ret;
     RT_to_nRT_signal_t *sig;
     char pipe_dev[64];
 
@@ -141,19 +142,22 @@ void *create_RT_to_nRT_signal(char* name){
 
     /* fail if none found */
     if(new_index == -1) {
-    	_LogAndReturnNull("Maximum count of RT-PIPE reached while creating pipe");
+    	_Log("Maximum count of RT-PIPE reached while creating pipe", max_RT_to_nRT_signals);
+        return NULL;
     }
 
     /* create rt pipe */
-    if(rt_pipe_create(&sig->pipe, name, new_index, PIPE_SIZE) < 0){
-    	_LogAndReturnNull("Failed opening real-time end of RT-PIPE");
+    if(ret = rt_pipe_create(&sig->pipe, name, new_index, PIPE_SIZE) < 0){
+    	_Log("Failed opening real-time end of RT-PIPE", ret);
+        return NULL;
     }
 
     /* open pipe's userland */
-    snprintf(pipe_dev, 64, "/dev/rtp%d", new_index);
+    snprintf(pipe_dev, 63, "/dev/rtp%d", new_index);
     if((sig->pipe_fd = open(pipe_dev, O_RDWR)) == -1){
         rt_pipe_delete(&sig->pipe);
-    	_LogAndReturnNull("Failed opening non-real-time end of RT-PIPE");
+    	_Log("Failed opening non-real-time end of RT-PIPE", errno);
+        return NULL;
     }
 
     sig->used = 1;
@@ -163,13 +167,19 @@ void *create_RT_to_nRT_signal(char* name){
 }
 
 void delete_RT_to_nRT_signal(void* handle){
+    int ret;
     RT_to_nRT_signal_t *sig = (RT_to_nRT_signal_t*)handle;
+    char *name = sig->name;
 
     if(!sig->used) return;
 
-    rt_pipe_delete(&sig->pipe);
+    if(ret = rt_pipe_delete(&sig->pipe) != 0){
+    	_Log("Failed closing real-time end of RT-PIPE", ret);
+    }
 
-    close(sig->pipe_fd);
+    if(close(sig->pipe_fd) != 0){
+    	_Log("Failed closing non-real-time end of RT-PIPE", errno);
+    }
 
     sig->used = 0;
 }
