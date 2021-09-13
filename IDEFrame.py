@@ -759,6 +759,8 @@ class IDEFrame(wx.Frame):
         self.SetRefreshFunctions()
         self.SetDeleteFunctions()
 
+        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
+
         wx.CallAfter(self.InitFindDialog)
 
     def __del__(self):
@@ -1153,6 +1155,9 @@ class IDEFrame(wx.Frame):
 
     def OnQuitMenu(self, event):
         self.Close()
+
+    def OnCloseFrame(self, event):
+        self.AUIManager.UnInit()
 
     # -------------------------------------------------------------------------------
     #                            Edit Menu Functions
