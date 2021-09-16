@@ -369,7 +369,8 @@ class TextViewer(EditorPanel):
                     message = _("\"%s\" pou already exists!") % var_name
                 else:
                     if not var_name.upper() in [name.upper() for name in self.Controler.GetEditedElementVariables(self.TagName, self.Debug)]:
-                        self.Controler.AddEditedElementPouExternalVar(self.TagName, values[2], var_name)
+                        kwargs = dict(description=values[4]) if len(values)>4 else {}
+                        self.Controler.AddEditedElementPouExternalVar(self.TagName, values[2], var_name, **kwargs)
                         self.RefreshVariablePanel()
                         self.RefreshVariableTree()
                     event.SetDragText(var_name)
