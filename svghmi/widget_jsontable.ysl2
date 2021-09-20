@@ -108,17 +108,6 @@ template "svg:*", mode="json_table_elt_render" {
 }
 
 
-const "hmi_textstylelists_descs", "$parsed_widgets/widget[@type = 'TextStyleList']";
-const "hmi_textstylelists", "$hmi_elements[@id = $hmi_textstylelists_descs/@id]";
-
-const "textstylelist_related" foreach "$hmi_textstylelists" list {
-    attrib "listid" value "@id";
-    foreach "func:refered_elements(.)" elt {
-        attrib "eltid" value "@id";
-    }
-}
-const "textstylelist_related_ns", "exsl:node-set($textstylelist_related)";
-
 def "func:json_expressions" {
     param "expressions";
     param "label";
