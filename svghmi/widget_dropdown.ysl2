@@ -7,16 +7,21 @@ widget_desc("DropDown") {
     DropDown widget let user select an entry in a list of texts, given as
     arguments. Single variable path is index of selection.
 
-    It needs "text" (svg:text), "box" (svg:rect), "button" (svg:*),
-    and "highlight" (svg:rect) labeled elements.
+    It needs "text" (svg:text or svg:use referring to svg:text),
+    "box" (svg:rect), "button" (svg:*), and "highlight" (svg:rect)
+    labeled elements.
 
     When user clicks on "button", "text" is duplicated to display enties in the
     limit of available space in page, and "box" is extended to contain all
     texts. "highlight" is moved over pre-selected entry.
 
-    When only one argument is given, and argment contains "#langs" then list of
-    texts is automatically set to the list of human-readable languages supported
-    by this HMI. 
+    When only one argument is given and argment contains "#langs" then list of
+    texts is automatically set to the human-readable list of supported
+    languages by this HMI. 
+
+    If "text" labeled element is of type svg:use and refers to a svg:text 
+    element part of a TextList widget, no argument is expected. In that case
+    list of texts is set to TextList content.
     ||
 
     shortdesc > Let user select text entry in a drop-down menu
@@ -34,6 +39,7 @@ widget_class("DropDown") {
             if(!this.opened) this.set_selection(value);
         }
         init() {
+            this.init_specific();
             this.button_elt.onclick = this.on_button_click.bind(this);
             // Save original size of rectangle
             this.box_bbox = this.box_elt.getBBox()
@@ -79,7 +85,7 @@ widget_class("DropDown") {
             let display_str;
             if(value >= 0 && value < this.content.length){
                 // if valid selection resolve content
-                display_str = this.content[value];
+                display_str = gettext(this.content[value]);
                 this.last_selection = value;
             } else {
                 // otherwise show problem
@@ -185,7 +191,7 @@ widget_class("DropDown") {
             let c = 0;
             for(let item of this.content){
                 let span=spans[c];
-                span.textContent = item;
+                span.textContent = gettext(item);
                 let sel = c;
                 this.make_clickable(span, (evt) => this.bound_on_selection_click(sel));
                 c++;
@@ -251,7 +257,7 @@ widget_class("DropDown") {
                     span.setAttribute("dx", (m.width - o.width)/2);
                 // otherwise normal content
                 }else{
-                    span.textContent = this.content[i];
+                    span.textContent = gettext(this.content[i]);
                     let sel = i;
                     onclickfunc = (evt) => this.bound_on_selection_click(sel);
                     span.removeAttribute("dx");
@@ -360,19 +366,43 @@ widget_class("DropDown") {
 }
 
 widget_defs("DropDown") {
-    labels("text box button highlight");
+    labels("box button highlight");
     // It is assumed that list content conforms to Array interface.
-    >   content:
+    const "text_elt","$hmi_element//*[@inkscape:label='text'][1]";
+    | init_specific: function() {
     choose{
         // special case when used for language selection
         when "count(arg) = 1 and arg[1]/@value = '#langs'" {
-            > langs
+            |   this.text_elt = id("«$text_elt/@id»");
+            |   this.content = langs;
+        }
+        when "count(arg) = 0"{ 
+            if "not($text_elt[self::svg:use])"
+                error > No argrument for HMI:DropDown widget id="«$hmi_element/@id»" and "text" labeled element is not a svg:use element
+            const "real_text_elt","$result_widgets[@id = $hmi_element/@id]//*[@original=$text_elt/@id]/svg:text";
+            |   this.text_elt = id("«$real_text_elt/@id»");
+            const "from_list_id", "substring-after($text_elt/@xlink:href,'#')";
+            const "from_list", "$hmi_textlists[(@id | */@id) = $from_list_id]";
+            if "count($from_list) = 0"
+                error > HMI:DropDown widget id="«$hmi_element/@id»" "text" labeled element does not point to a svg:text owned by a HMI:List widget
+            |   this.content = hmi_widgets["«$from_list/@id»"].texts;
         }
         otherwise {
-            > [\n
+            |   this.text_elt = id("«$text_elt/@id»");
+            |   this.content = [
             foreach "arg" | "«@value»",
-            >   ]
+            |   ];
         }
     }
-    > ,\n
+    | }
 }
+
+emit "declarations:DropDown"
+||
+function gettext(o) {
+    if(typeof(o) == "string"){
+        return o;
+    }
+    return svg_text_to_multiline(o);
+};
+||

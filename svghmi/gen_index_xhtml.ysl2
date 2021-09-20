@@ -49,6 +49,8 @@ istylesheet
 
     include geometry.ysl2
 
+    include lists.ysl2
+
     include detachable_pages.ysl2
 
     include inline_svg.ysl2
