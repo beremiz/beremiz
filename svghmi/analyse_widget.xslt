@@ -601,12 +601,39 @@
       <xsl:text>Value to display</xsl:text>
     </path>
   </xsl:template>
+  <xsl:template match="widget[@type='PathSlider']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>PathSlider - 
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Slide an SVG element along a path by dragging it</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>value</xsl:text>
+    </path>
+    <path name="min" count="optional" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>min</xsl:text>
+    </path>
+    <path name="max" count="optional" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>max</xsl:text>
+    </path>
+    <arg name="min" count="optional" accepts="int,real">
+      <xsl:text>minimum value</xsl:text>
+    </arg>
+    <arg name="max" count="optional" accepts="int,real">
+      <xsl:text>maximum value</xsl:text>
+    </arg>
+  </xsl:template>
   <xsl:template match="widget[@type='ScrollBar']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>ScrollBar - documentation to be written
+      <xsl:text>ScrollBar - svg:rect based scrollbar
 </xsl:text>
     </longdesc>
     <shortdesc>
