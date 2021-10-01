@@ -339,9 +339,11 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>It needs "text" (svg:text), "box" (svg:rect), "button" (svg:*),
+      <xsl:text>It needs "text" (svg:text or svg:use referring to svg:text),
 </xsl:text>
-      <xsl:text>and "highlight" (svg:rect) labeled elements.
+      <xsl:text>"box" (svg:rect), "button" (svg:*), and "highlight" (svg:rect)
+</xsl:text>
+      <xsl:text>labeled elements.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -353,11 +355,19 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>When only one argument is given, and argment contains "#langs" then list of
+      <xsl:text>When only one argument is given and argment contains "#langs" then list of
 </xsl:text>
-      <xsl:text>texts is automatically set to the list of human-readable languages supported
+      <xsl:text>texts is automatically set to the human-readable list of supported
 </xsl:text>
-      <xsl:text>by this HMI. 
+      <xsl:text>languages by this HMI. 
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "text" labeled element is of type svg:use and refers to a svg:text 
+</xsl:text>
+      <xsl:text>element part of a TextList widget, no argument is expected. In that case
+</xsl:text>
+      <xsl:text>list of texts is set to TextList content.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -529,6 +539,30 @@
     <type>
       <xsl:value-of select="@type"/>
     </type>
+    <longdesc>
+      <xsl:text>List widget is a svg:group, list items are labeled elements
+</xsl:text>
+      <xsl:text>in that group.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>To use a List, clone (svg:use) one of the items inside the widget that
+</xsl:text>
+      <xsl:text>expects a List.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Positions of items are relative to each other, and they must all be in the
+</xsl:text>
+      <xsl:text>same place. In order to make editing easier it is therefore recommanded to
+</xsl:text>
+      <xsl:text>make stacked clones of svg elements spread nearby the list.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>A named list of named graphical elements</xsl:text>
+    </shortdesc>
+    <arg name="listname"/>
   </xsl:template>
   <xsl:template match="widget[@type='Meter']" mode="widget_desc">
     <type>
@@ -633,6 +667,58 @@
     <path name="value" accepts="HMI_INT,HMI_STRING">
       <xsl:text>value to compare to labels</xsl:text>
     </path>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextList']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>TextList widget is a svg:group, list items are labeled elements
+</xsl:text>
+      <xsl:text>in that group.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>To use a TextList, clone (svg:use) one of the items inside the widget 
+</xsl:text>
+      <xsl:text>that expects a TextList.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In this list, (translated) text content is what matters. Nevertheless
+</xsl:text>
+      <xsl:text>text style of the cloned item will be applied in client widget.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>A named list of ordered texts </xsl:text>
+    </shortdesc>
+    <arg name="listname"/>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextStyleList']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>TextStyleList widget is a svg:group, list items are labeled elements
+</xsl:text>
+      <xsl:text>in that group.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>To use a TextStyleList, clone (svg:use) one of the items inside the widget 
+</xsl:text>
+      <xsl:text>that expects a TextStyleList.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In this list, only style matters. Text content is ignored.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>A named list of named texts</xsl:text>
+    </shortdesc>
+    <arg name="listname"/>
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_desc">
     <type>
