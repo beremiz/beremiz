@@ -2,7 +2,7 @@
 widget_desc("ScrollBar") {
     longdesc
     || 
-    ScrollBar - documentation to be written
+    ScrollBar - svg:rect based scrollbar
     ||
 
     shortdesc > ScrollBar
@@ -39,19 +39,18 @@ widget_class("ScrollBar") {
 
         get_ratios() {
             let range = this.range;
-            let size = Math.max(this.range * this.mincursize, Math.min(this.size, range));
+            let size = Math.max(range * this.mincursize, Math.min(this.size, range));
             let maxh = this.range_elt.height.baseVal.value;
             let pixels = maxh;
-            let units = range;
-            return [size, maxh, range, pixels, units];
+            return [size, maxh, range, pixels];
         }
 
         animate(){
             if(this.position == undefined || this.range == undefined || this.size == undefined)
                 return;
-            let [size, maxh, range, pixels, units] = this.get_ratios();
+            let [size, maxh, range, pixels] = this.get_ratios();
 
-            let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range-size) * pixels / units);
+            let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range-size) * pixels / range);
             let new_height = Math.round(maxh * size/range);
 
             this.cursor_elt.y.baseVal.value = new_y;
@@ -94,11 +93,11 @@ widget_class("ScrollBar") {
         }
 
         drag(e) {
-            let [size, maxh, range, pixels, units] = this.get_ratios();
+            let [size, maxh, range, pixels] = this.get_ratios();
             if(pixels == 0) return;
             let point = new DOMPoint(e.movementX, e.movementY);
             let movement = point.matrixTransform(this.invctm).y;
-            this.dragpos += movement * units / pixels;
+            this.dragpos += movement * range / pixels;
             this.apply_position(this.dragpos);
         }
     ||
