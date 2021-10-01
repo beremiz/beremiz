@@ -1904,17 +1904,6 @@
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
-  <func:function name="func:reverse">
-    <xsl:param name="content"/>
-    <xsl:choose>
-      <xsl:when test="count($content) &gt; 0">
-        <func:result select="func:reverse($content[position() &gt; 1]) | $content[1]"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <func:result select="/.."/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </func:function>
   <xsl:template match="widget[@type='Animate']" mode="widget_class">
     <xsl:text>class </xsl:text>
     <xsl:text>AnimateWidget</xsl:text>
@@ -6395,12 +6384,352 @@
     <xsl:text>    ],
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='PathSlider']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>PathSlider - 
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Slide an SVG element along a path by dragging it</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>value</xsl:text>
+    </path>
+    <path name="min" count="optional" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>min</xsl:text>
+    </path>
+    <path name="max" count="optional" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>max</xsl:text>
+    </path>
+    <arg name="min" count="optional" accepts="int,real">
+      <xsl:text>minimum value</xsl:text>
+    </arg>
+    <arg name="max" count="optional" accepts="int,real">
+      <xsl:text>maximum value</xsl:text>
+    </arg>
+  </xsl:template>
+  <xsl:template match="widget[@type='PathSlider']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>PathSliderWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 10;
+</xsl:text>
+    <xsl:text>    position = undefined;
+</xsl:text>
+    <xsl:text>    min = 0;
+</xsl:text>
+    <xsl:text>    max = 100;
+</xsl:text>
+    <xsl:text>    scannedPoints = [];
+</xsl:text>
+    <xsl:text>    pathLength = undefined;
+</xsl:text>
+    <xsl:text>    precision = undefined;
+</xsl:text>
+    <xsl:text>    origPt = undefined;
+</xsl:text>
+    <xsl:text>    
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    scanPath() {
+</xsl:text>
+    <xsl:text>      this.pathLength = this.path_elt.getTotalLength();
+</xsl:text>
+    <xsl:text>      this.precision = Math.floor(this.pathLength / 10);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>      // save linear scan for coarse approximation
+</xsl:text>
+    <xsl:text>      for (var scanLength = 0; scanLength &lt;= this.pathLength; scanLength += this.precision) {
+</xsl:text>
+    <xsl:text>        this.scannedPoints.push([this.path_elt.getPointAtLength(scanLength), scanLength]);
+</xsl:text>
+    <xsl:text>      }
+</xsl:text>
+    <xsl:text>      [this.origPt,] = this.scannedPoints[0];
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    closestPoint(point) {
+</xsl:text>
+    <xsl:text>      var bestPoint,
+</xsl:text>
+    <xsl:text>          bestLength,
+</xsl:text>
+    <xsl:text>          bestDistance = Infinity,
+</xsl:text>
+    <xsl:text>          scanDistance;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>      // use linear scan for coarse approximation
+</xsl:text>
+    <xsl:text>      for (let [scanPoint, scanLength] of this.scannedPoints){
+</xsl:text>
+    <xsl:text>        if ((scanDistance = distance2(scanPoint)) &lt; bestDistance) {
+</xsl:text>
+    <xsl:text>          bestPoint = scanPoint,
+</xsl:text>
+    <xsl:text>          bestLength = scanLength,
+</xsl:text>
+    <xsl:text>          bestDistance = scanDistance;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>      }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>      // binary search for more precise estimate
+</xsl:text>
+    <xsl:text>      let precision = this.precision / 2;
+</xsl:text>
+    <xsl:text>      while (precision &gt; 0.5) {
+</xsl:text>
+    <xsl:text>        var beforePoint,
+</xsl:text>
+    <xsl:text>            afterPoint,
+</xsl:text>
+    <xsl:text>            beforeLength,
+</xsl:text>
+    <xsl:text>            afterLength,
+</xsl:text>
+    <xsl:text>            beforeDistance,
+</xsl:text>
+    <xsl:text>            afterDistance;
+</xsl:text>
+    <xsl:text>        if ((beforeLength = bestLength - precision) &gt;= 0 &amp;&amp;
+</xsl:text>
+    <xsl:text>            (beforeDistance = distance2(beforePoint = this.path_elt.getPointAtLength(beforeLength))) &lt; bestDistance) {
+</xsl:text>
+    <xsl:text>          bestPoint = beforePoint,
+</xsl:text>
+    <xsl:text>          bestLength = beforeLength,
+</xsl:text>
+    <xsl:text>          bestDistance = beforeDistance;
+</xsl:text>
+    <xsl:text>        } else if ((afterLength = bestLength + precision) &lt;= this.pathLength &amp;&amp; 
+</xsl:text>
+    <xsl:text>                   (afterDistance = distance2(afterPoint = this.path_elt.getPointAtLength(afterLength))) &lt; bestDistance) {
+</xsl:text>
+    <xsl:text>          bestPoint = afterPoint,
+</xsl:text>
+    <xsl:text>          bestLength = afterLength,
+</xsl:text>
+    <xsl:text>          bestDistance = afterDistance;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        precision /= 2;
+</xsl:text>
+    <xsl:text>      }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>      return [bestPoint, bestLength];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>      function distance2(p) {
+</xsl:text>
+    <xsl:text>        var dx = p.x - point.x,
+</xsl:text>
+    <xsl:text>            dy = p.y - point.y;
+</xsl:text>
+    <xsl:text>        return dx * dx + dy * dy;
+</xsl:text>
+    <xsl:text>      }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value,oldval, index) {
+</xsl:text>
+    <xsl:text>        switch(index) {
+</xsl:text>
+    <xsl:text>            case 0:
+</xsl:text>
+    <xsl:text>                this.position = value;
+</xsl:text>
+    <xsl:text>                break;
+</xsl:text>
+    <xsl:text>            case 1:
+</xsl:text>
+    <xsl:text>                this.min = value;
+</xsl:text>
+    <xsl:text>                break;
+</xsl:text>
+    <xsl:text>            case 2:
+</xsl:text>
+    <xsl:text>                this.max = value;
+</xsl:text>
+    <xsl:text>                break;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    get_current_point(){
+</xsl:text>
+    <xsl:text>        let currLength = this.pathLength * (this.position - this.min) / (this.max - this.min)
+</xsl:text>
+    <xsl:text>        return this.path_elt.getPointAtLength(currLength);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>        if(this.position == undefined)
+</xsl:text>
+    <xsl:text>            return;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let currPt = this.get_current_point();
+</xsl:text>
+    <xsl:text>        this.cursor_transform.setTranslate(currPt.x - this.origPt.x, currPt.y - this.origPt.y);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        if(this.args.length == 2)
+</xsl:text>
+    <xsl:text>            [this.min, this.max]=this.args;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.scanPath();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.cursor_transform = svg_root.createSVGTransform();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.cursor_elt.transform.baseVal.appendItem(this.cursor_transform);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.cursor_elt.onpointerdown = (e) =&gt; this.on_cursor_down(e);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.bound_drag = this.drag.bind(this);
+</xsl:text>
+    <xsl:text>        this.bound_drop = this.drop.bind(this);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    start_dragging_from_event(e){
+</xsl:text>
+    <xsl:text>        let clientPoint = new DOMPoint(e.clientX, e.clientY);
+</xsl:text>
+    <xsl:text>        let point = clientPoint.matrixTransform(this.invctm);
+</xsl:text>
+    <xsl:text>        let currPt = this.get_current_point();
+</xsl:text>
+    <xsl:text>        this.draggingOffset = new DOMPoint(point.x - currPt.x , point.y - currPt.y);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    apply_position_from_event(e){
+</xsl:text>
+    <xsl:text>        let clientPoint = new DOMPoint(e.clientX, e.clientY);
+</xsl:text>
+    <xsl:text>        let rawPoint = clientPoint.matrixTransform(this.invctm);
+</xsl:text>
+    <xsl:text>        let point = new DOMPoint(rawPoint.x - this.draggingOffset.x , rawPoint.y - this.draggingOffset.y);
+</xsl:text>
+    <xsl:text>        let [closestPoint, closestLength] = this.closestPoint(point);
+</xsl:text>
+    <xsl:text>        let new_position = this.min + (this.max - this.min) * closestLength / this.pathLength;
+</xsl:text>
+    <xsl:text>        this.position = Math.round(Math.max(Math.min(new_position, this.max), this.min));
+</xsl:text>
+    <xsl:text>        this.apply_hmi_value(0, this.position);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    on_cursor_down(e){
+</xsl:text>
+    <xsl:text>        // get scrollbar -&gt; root transform
+</xsl:text>
+    <xsl:text>        let ctm = this.path_elt.getCTM();
+</xsl:text>
+    <xsl:text>        // root -&gt; path transform
+</xsl:text>
+    <xsl:text>        this.invctm = ctm.inverse();
+</xsl:text>
+    <xsl:text>        this.start_dragging_from_event(e);
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointerup", this.bound_drop, true);
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointermove", this.bound_drag, true);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    drop(e) {
+</xsl:text>
+    <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_drop, true);
+</xsl:text>
+    <xsl:text>        svg_root.removeEventListener("pointermove", this.bound_drag, true);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    drag(e) {
+</xsl:text>
+    <xsl:text>        this.apply_position_from_event(e);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='PathSlider']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>cursor path</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
   <xsl:template match="widget[@type='ScrollBar']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>ScrollBar - documentation to be written
+      <xsl:text>ScrollBar - svg:rect based scrollbar
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -6469,15 +6798,13 @@
 </xsl:text>
     <xsl:text>        let range = this.range;
 </xsl:text>
-    <xsl:text>        let size = Math.max(this.range * this.mincursize, Math.min(this.size, range));
+    <xsl:text>        let size = Math.max(range * this.mincursize, Math.min(this.size, range));
 </xsl:text>
     <xsl:text>        let maxh = this.range_elt.height.baseVal.value;
 </xsl:text>
     <xsl:text>        let pixels = maxh;
 </xsl:text>
-    <xsl:text>        let units = range;
-</xsl:text>
-    <xsl:text>        return [size, maxh, range, pixels, units];
+    <xsl:text>        return [size, maxh, range, pixels];
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -6489,11 +6816,11 @@
 </xsl:text>
     <xsl:text>            return;
 </xsl:text>
-    <xsl:text>        let [size, maxh, range, pixels, units] = this.get_ratios();
+    <xsl:text>        let [size, maxh, range, pixels] = this.get_ratios();
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range-size) * pixels / units);
+    <xsl:text>        let new_y = this.range_elt.y.baseVal.value + Math.round(Math.min(this.position,range-size) * pixels / range);
 </xsl:text>
     <xsl:text>        let new_height = Math.round(maxh * size/range);
 </xsl:text>
@@ -6579,7 +6906,7 @@
 </xsl:text>
     <xsl:text>    drag(e) {
 </xsl:text>
-    <xsl:text>        let [size, maxh, range, pixels, units] = this.get_ratios();
+    <xsl:text>        let [size, maxh, range, pixels] = this.get_ratios();
 </xsl:text>
     <xsl:text>        if(pixels == 0) return;
 </xsl:text>
@@ -6587,7 +6914,7 @@
 </xsl:text>
     <xsl:text>        let movement = point.matrixTransform(this.invctm).y;
 </xsl:text>
-    <xsl:text>        this.dragpos += movement * units / pixels;
+    <xsl:text>        this.dragpos += movement * range / pixels;
 </xsl:text>
     <xsl:text>        this.apply_position(this.dragpos);
 </xsl:text>
