@@ -432,6 +432,29 @@
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
+  <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
+  <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
+  <xsl:variable name="hmi_textlists_descs" select="$parsed_widgets/widget[@type = 'TextList']"/>
+  <xsl:variable name="hmi_textlists" select="$hmi_elements[@id = $hmi_textlists_descs/@id]"/>
+  <xsl:variable name="hmi_textstylelists_descs" select="$parsed_widgets/widget[@type = 'TextStyleList']"/>
+  <xsl:variable name="hmi_textstylelists" select="$hmi_elements[@id = $hmi_textstylelists_descs/@id]"/>
+  <xsl:variable name="textstylelist_related">
+    <xsl:for-each select="$hmi_textstylelists">
+      <list>
+        <xsl:attribute name="listid">
+          <xsl:value-of select="@id"/>
+        </xsl:attribute>
+        <xsl:for-each select="func:refered_elements(.)">
+          <elt>
+            <xsl:attribute name="eltid">
+              <xsl:value-of select="@id"/>
+            </xsl:attribute>
+          </elt>
+        </xsl:for-each>
+      </list>
+    </xsl:for-each>
+  </xsl:variable>
+  <xsl:variable name="textstylelist_related_ns" select="exsl:node-set($textstylelist_related)"/>
   <xsl:variable name="hmi_pages_descs" select="$parsed_widgets/widget[@type = 'Page']"/>
   <xsl:variable name="hmi_pages" select="$hmi_elements[@id = $hmi_pages_descs/@id]"/>
   <xsl:variable name="default_page">
@@ -526,9 +549,7 @@
     </xsl:choose>
   </func:function>
   <xsl:variable name="required_page_elements" select="func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*"/>
-  <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
-  <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
-  <xsl:variable name="required_list_elements" select="func:refered_elements($hmi_lists[@id = $required_page_elements/@id])"/>
+  <xsl:variable name="required_list_elements" select="func:refered_elements(($hmi_lists | $hmi_textlists)[@id = $required_page_elements/@id])"/>
   <xsl:variable name="required_elements" select="$defs | $required_list_elements | $required_page_elements"/>
   <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <func:function name="func:sumarized_elements">
@@ -1880,6 +1901,17 @@
       </xsl:when>
       <xsl:otherwise>
         <func:result select="$txt"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+  <func:function name="func:reverse">
+    <xsl:param name="content"/>
+    <xsl:choose>
+      <xsl:when test="count($content) &gt; 0">
+        <func:result select="func:reverse($content[position() &gt; 1]) | $content[1]"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="/.."/>
       </xsl:otherwise>
     </xsl:choose>
   </func:function>
@@ -3715,9 +3747,11 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>It needs "text" (svg:text), "box" (svg:rect), "button" (svg:*),
+      <xsl:text>It needs "text" (svg:text or svg:use referring to svg:text),
 </xsl:text>
-      <xsl:text>and "highlight" (svg:rect) labeled elements.
+      <xsl:text>"box" (svg:rect), "button" (svg:*), and "highlight" (svg:rect)
+</xsl:text>
+      <xsl:text>labeled elements.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -3729,11 +3763,19 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>When only one argument is given, and argment contains "#langs" then list of
+      <xsl:text>When only one argument is given and argment contains "#langs" then list of
 </xsl:text>
-      <xsl:text>texts is automatically set to the list of human-readable languages supported
+      <xsl:text>texts is automatically set to the human-readable list of supported
 </xsl:text>
-      <xsl:text>by this HMI. 
+      <xsl:text>languages by this HMI. 
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If "text" labeled element is of type svg:use and refers to a svg:text 
+</xsl:text>
+      <xsl:text>element part of a TextList widget, no argument is expected. In that case
+</xsl:text>
+      <xsl:text>list of texts is set to TextList content.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -3758,6 +3800,8 @@
     <xsl:text>        }
 </xsl:text>
     <xsl:text>        init() {
+</xsl:text>
+    <xsl:text>            this.init_specific();
 </xsl:text>
     <xsl:text>            this.button_elt.onclick = this.on_button_click.bind(this);
 </xsl:text>
@@ -3849,7 +3893,7 @@
 </xsl:text>
     <xsl:text>                // if valid selection resolve content
 </xsl:text>
-    <xsl:text>                display_str = this.content[value];
+    <xsl:text>                display_str = gettext(this.content[value]);
 </xsl:text>
     <xsl:text>                this.last_selection = value;
 </xsl:text>
@@ -4061,7 +4105,7 @@
 </xsl:text>
     <xsl:text>                let span=spans[c];
 </xsl:text>
-    <xsl:text>                span.textContent = item;
+    <xsl:text>                span.textContent = gettext(item);
 </xsl:text>
     <xsl:text>                let sel = c;
 </xsl:text>
@@ -4193,7 +4237,7 @@
 </xsl:text>
     <xsl:text>                }else{
 </xsl:text>
-    <xsl:text>                    span.textContent = this.content[i];
+    <xsl:text>                    span.textContent = gettext(this.content[i]);
 </xsl:text>
     <xsl:text>                    let sel = i;
 </xsl:text>
@@ -4411,16 +4455,54 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>text box button highlight</xsl:text>
+        <xsl:text>box button highlight</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
-    <xsl:text>  content:</xsl:text>
+    <xsl:variable name="text_elt" select="$hmi_element//*[@inkscape:label='text'][1]"/>
+    <xsl:text>init_specific: function() {
+</xsl:text>
     <xsl:choose>
       <xsl:when test="count(arg) = 1 and arg[1]/@value = '#langs'">
-        <xsl:text>langs</xsl:text>
+        <xsl:text>  this.text_elt = id("</xsl:text>
+        <xsl:value-of select="$text_elt/@id"/>
+        <xsl:text>");
+</xsl:text>
+        <xsl:text>  this.content = langs;
+</xsl:text>
+      </xsl:when>
+      <xsl:when test="count(arg) = 0">
+        <xsl:if test="not($text_elt[self::svg:use])">
+          <xsl:message terminate="yes">
+            <xsl:text>No argrument for HMI:DropDown widget id="</xsl:text>
+            <xsl:value-of select="$hmi_element/@id"/>
+            <xsl:text>" and "text" labeled element is not a svg:use element</xsl:text>
+          </xsl:message>
+        </xsl:if>
+        <xsl:variable name="real_text_elt" select="$result_widgets[@id = $hmi_element/@id]//*[@original=$text_elt/@id]/svg:text"/>
+        <xsl:text>  this.text_elt = id("</xsl:text>
+        <xsl:value-of select="$real_text_elt/@id"/>
+        <xsl:text>");
+</xsl:text>
+        <xsl:variable name="from_list_id" select="substring-after($text_elt/@xlink:href,'#')"/>
+        <xsl:variable name="from_list" select="$hmi_textlists[(@id | */@id) = $from_list_id]"/>
+        <xsl:if test="count($from_list) = 0">
+          <xsl:message terminate="yes">
+            <xsl:text>HMI:DropDown widget id="</xsl:text>
+            <xsl:value-of select="$hmi_element/@id"/>
+            <xsl:text>" "text" labeled element does not point to a svg:text owned by a HMI:List widget</xsl:text>
+          </xsl:message>
+        </xsl:if>
+        <xsl:text>  this.content = hmi_widgets["</xsl:text>
+        <xsl:value-of select="$from_list/@id"/>
+        <xsl:text>"].texts;
+</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>[
+        <xsl:text>  this.text_elt = id("</xsl:text>
+        <xsl:value-of select="$text_elt/@id"/>
+        <xsl:text>");
+</xsl:text>
+        <xsl:text>  this.content = [
 </xsl:text>
         <xsl:for-each select="arg">
           <xsl:text>"</xsl:text>
@@ -4428,10 +4510,36 @@
           <xsl:text>",
 </xsl:text>
         </xsl:for-each>
-        <xsl:text>  ]</xsl:text>
+        <xsl:text>  ];
+</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
-    <xsl:text>,
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <declarations:DropDown/>
+  <xsl:template match="declarations:DropDown">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function gettext(o) {
+</xsl:text>
+    <xsl:text>    if(typeof(o) == "string"){
+</xsl:text>
+    <xsl:text>        return o;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    return svg_text_to_multiline(o);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='ForEach']" mode="widget_desc">
@@ -5116,25 +5224,6 @@
       <xsl:text>.</xsl:text>
     </xsl:message>
   </xsl:template>
-  <xsl:variable name="hmi_textstylelists_descs" select="$parsed_widgets/widget[@type = 'TextStyleList']"/>
-  <xsl:variable name="hmi_textstylelists" select="$hmi_elements[@id = $hmi_textstylelists_descs/@id]"/>
-  <xsl:variable name="textstylelist_related">
-    <xsl:for-each select="$hmi_textstylelists">
-      <list>
-        <xsl:attribute name="listid">
-          <xsl:value-of select="@id"/>
-        </xsl:attribute>
-        <xsl:for-each select="func:refered_elements(.)">
-          <elt>
-            <xsl:attribute name="eltid">
-              <xsl:value-of select="@id"/>
-            </xsl:attribute>
-          </elt>
-        </xsl:for-each>
-      </list>
-    </xsl:for-each>
-  </xsl:variable>
-  <xsl:variable name="textstylelist_related_ns" select="exsl:node-set($textstylelist_related)"/>
   <func:function name="func:json_expressions">
     <xsl:param name="expressions"/>
     <xsl:param name="label"/>
@@ -6009,6 +6098,30 @@
     <type>
       <xsl:value-of select="@type"/>
     </type>
+    <longdesc>
+      <xsl:text>List widget is a svg:group, list items are labeled elements
+</xsl:text>
+      <xsl:text>in that group.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>To use a List, clone (svg:use) one of the items inside the widget that
+</xsl:text>
+      <xsl:text>expects a List.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Positions of items are relative to each other, and they must all be in the
+</xsl:text>
+      <xsl:text>same place. In order to make editing easier it is therefore recommanded to
+</xsl:text>
+      <xsl:text>make stacked clones of svg elements spread nearby the list.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>A named list of named graphical elements</xsl:text>
+    </shortdesc>
+    <arg name="listname"/>
   </xsl:template>
   <xsl:template match="widget[@type='List']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
@@ -6019,25 +6132,6 @@
       <xsl:value-of select="@inkscape:label"/>
       <xsl:text>: "</xsl:text>
       <xsl:value-of select="@id"/>
-      <xsl:text>",
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>    },
-</xsl:text>
-  </xsl:template>
-  <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
-  </xsl:template>
-  <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
-    <xsl:param name="hmi_element"/>
-    <xsl:text>    styles: {
-</xsl:text>
-    <xsl:for-each select="$hmi_element/*[@inkscape:label]">
-      <xsl:variable name="style" select="func:refered_elements(.)[self::svg:text]/@style"/>
-      <xsl:text>        </xsl:text>
-      <xsl:value-of select="@inkscape:label"/>
-      <xsl:text>: "</xsl:text>
-      <xsl:value-of select="$style"/>
       <xsl:text>",
 </xsl:text>
     </xsl:for-each>
@@ -7330,6 +7424,87 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:text>    ],
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextList']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>TextList widget is a svg:group, list items are labeled elements
+</xsl:text>
+      <xsl:text>in that group.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>To use a TextList, clone (svg:use) one of the items inside the widget 
+</xsl:text>
+      <xsl:text>that expects a TextList.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In this list, (translated) text content is what matters. Nevertheless
+</xsl:text>
+      <xsl:text>text style of the cloned item will be applied in client widget.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>A named list of ordered texts </xsl:text>
+    </shortdesc>
+    <arg name="listname"/>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextList']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    texts: [
+</xsl:text>
+    <xsl:for-each select="func:refered_elements($hmi_element/*[@inkscape:label])[self::svg:text]">
+      <xsl:text>        id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"),
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    ].reverse(),
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextStyleList']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>TextStyleList widget is a svg:group, list items are labeled elements
+</xsl:text>
+      <xsl:text>in that group.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>To use a TextStyleList, clone (svg:use) one of the items inside the widget 
+</xsl:text>
+      <xsl:text>that expects a TextStyleList.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In this list, only style matters. Text content is ignored.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>A named list of named texts</xsl:text>
+    </shortdesc>
+    <arg name="listname"/>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:text>    styles: {
+</xsl:text>
+    <xsl:for-each select="$hmi_element/*[@inkscape:label]">
+      <xsl:variable name="style" select="func:refered_elements(.)[self::svg:text]/@style"/>
+      <xsl:text>        </xsl:text>
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text>: "</xsl:text>
+      <xsl:value-of select="$style"/>
+      <xsl:text>",
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    },
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_desc">
