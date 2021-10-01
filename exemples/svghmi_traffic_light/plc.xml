@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Unnamed" productVersion="1" creationDateTime="2012-09-04T16:16:33"/>
-  <contentHeader name="traffic_lights" modificationDateTime="2018-09-26T17:49:02">
+  <contentHeader name="traffic_lights" modificationDateTime="2021-10-01T22:28:55">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -1221,37 +1221,37 @@ See below examples of all these types.]]></xhtml:p>
             </variable>
             <variable name="SwitchButton">
               <type>
-                <derived name="Button"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
             <variable name="PedestrianButton">
               <type>
-                <derived name="Button"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
             <variable name="RedLight">
               <type>
-                <derived name="Led"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
             <variable name="OrangeLight">
               <type>
-                <derived name="Led"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
             <variable name="GreenLight">
               <type>
-                <derived name="Led"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
             <variable name="PedestrianRedLight">
               <type>
-                <derived name="Led"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
             <variable name="PedestrianGreenLight">
               <type>
-                <derived name="Led"/>
+                <derived name="HMI_BOOL"/>
               </type>
             </variable>
           </localVars>
@@ -1264,20 +1264,18 @@ See below examples of all these types.]]></xhtml:p>
                 <variable formalParameter="SWITCH_BUTTON">
                   <connectionPointIn>
                     <relPosition x="0" y="101"/>
-                    <connection refLocalId="2" formalParameter="state_out">
+                    <connection refLocalId="103">
                       <position x="494" y="563"/>
-                      <position x="349" y="563"/>
+                      <position x="446" y="563"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
                 <variable formalParameter="PEDESTRIAN_BUTTON">
                   <connectionPointIn>
                     <relPosition x="0" y="264"/>
-                    <connection refLocalId="3" formalParameter="state_out">
+                    <connection refLocalId="104">
                       <position x="494" y="726"/>
-                      <position x="402" y="726"/>
-                      <position x="402" y="777"/>
-                      <position x="351" y="777"/>
+                      <position x="438" y="726"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -1311,395 +1309,24 @@ See below examples of all these types.]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="2" width="159" height="183" typeName="Button" instanceName="SwitchButton" executionOrderId="0">
-              <position x="190" y="527"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="36"/>
-                    <connection refLocalId="5">
-                      <position x="190" y="563"/>
-                      <position x="137" y="563"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="68"/>
-                    <connection refLocalId="6">
-                      <position x="190" y="595"/>
-                      <position x="136" y="595"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="toggle">
-                  <connectionPointIn>
-                    <relPosition x="0" y="100"/>
-                    <connection refLocalId="4">
-                      <position x="190" y="627"/>
-                      <position x="136" y="627"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="set_state">
-                  <connectionPointIn>
-                    <relPosition x="0" y="132"/>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="164"/>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables>
-                <variable formalParameter="state_out">
-                  <connectionPointOut>
-                    <relPosition x="159" y="36"/>
-                  </connectionPointOut>
-                </variable>
-              </outputVariables>
-            </block>
-            <block localId="3" width="159" height="198" typeName="Button" instanceName="PedestrianButton" executionOrderId="0">
-              <position x="192" y="740"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="37"/>
-                    <connection refLocalId="7">
-                      <position x="192" y="777"/>
-                      <position x="160" y="777"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="72"/>
-                    <connection refLocalId="8">
-                      <position x="192" y="812"/>
-                      <position x="159" y="812"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="toggle">
-                  <connectionPointIn>
-                    <relPosition x="0" y="107"/>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="set_state">
-                  <connectionPointIn>
-                    <relPosition x="0" y="142"/>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="177"/>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables>
-                <variable formalParameter="state_out">
-                  <connectionPointOut>
-                    <relPosition x="159" y="37"/>
-                  </connectionPointOut>
-                </variable>
-              </outputVariables>
-            </block>
-            <inVariable localId="4" height="30" width="18" executionOrderId="0" negated="false">
-              <position x="118" y="612"/>
-              <connectionPointOut>
-                <relPosition x="18" y="15"/>
-              </connectionPointOut>
-              <expression>1</expression>
-            </inVariable>
-            <inVariable localId="5" height="30" width="106" executionOrderId="0" negated="false">
-              <position x="31" y="548"/>
-              <connectionPointOut>
-                <relPosition x="106" y="15"/>
-              </connectionPointOut>
-              <expression>'SWITCH_OFF'</expression>
-            </inVariable>
-            <inVariable localId="6" height="30" width="105" executionOrderId="0" negated="false">
-              <position x="31" y="580"/>
-              <connectionPointOut>
-                <relPosition x="105" y="15"/>
-              </connectionPointOut>
-              <expression>'SWITCH_ON'</expression>
-            </inVariable>
-            <inVariable localId="7" height="30" width="138" executionOrderId="0" negated="false">
-              <position x="22" y="762"/>
-              <connectionPointOut>
-                <relPosition x="138" y="15"/>
-              </connectionPointOut>
-              <expression>'PEDESTRIAN_OFF'</expression>
-            </inVariable>
-            <inVariable localId="8" height="30" width="137" executionOrderId="0" negated="false">
-              <position x="22" y="797"/>
-              <connectionPointOut>
-                <relPosition x="137" y="15"/>
-              </connectionPointOut>
-              <expression>'PEDESTRIAN_ON'</expression>
-            </inVariable>
-            <block localId="9" width="115" height="133" typeName="Led" instanceName="RedLight" executionOrderId="0">
-              <position x="1057" y="451"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="38"/>
-                    <connection refLocalId="10">
-                      <position x="1057" y="489"/>
-                      <position x="1013" y="489"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="75"/>
-                    <connection refLocalId="11">
-                      <position x="1057" y="526"/>
-                      <position x="1010" y="526"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="112"/>
-                    <connection refLocalId="1" formalParameter="RED_LIGHT">
-                      <position x="1057" y="563"/>
-                      <position x="844" y="563"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <inVariable localId="10" height="30" width="82" executionOrderId="0" negated="false">
-              <position x="931" y="474"/>
-              <connectionPointOut>
-                <relPosition x="82" y="15"/>
-              </connectionPointOut>
-              <expression>'RED_OFF'</expression>
-            </inVariable>
-            <inVariable localId="11" height="30" width="79" executionOrderId="0" negated="false">
-              <position x="931" y="511"/>
-              <connectionPointOut>
-                <relPosition x="79" y="15"/>
-              </connectionPointOut>
-              <expression>'RED_ON'</expression>
-            </inVariable>
-            <block localId="12" width="115" height="133" typeName="Led" instanceName="OrangeLight" executionOrderId="0">
-              <position x="1058" y="614"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="38"/>
-                    <connection refLocalId="13">
-                      <position x="1058" y="652"/>
-                      <position x="1010" y="652"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="75"/>
-                    <connection refLocalId="14">
-                      <position x="1058" y="689"/>
-                      <position x="1010" y="689"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="112"/>
-                    <connection refLocalId="1" formalParameter="ORANGE_LIGHT">
-                      <position x="1058" y="726"/>
-                      <position x="844" y="726"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <inVariable localId="13" height="30" width="111" executionOrderId="0" negated="false">
-              <position x="899" y="637"/>
-              <connectionPointOut>
-                <relPosition x="111" y="15"/>
-              </connectionPointOut>
-              <expression>'ORANGE_OFF'</expression>
-            </inVariable>
-            <inVariable localId="14" height="30" width="106" executionOrderId="0" negated="false">
-              <position x="904" y="674"/>
-              <connectionPointOut>
-                <relPosition x="106" y="15"/>
-              </connectionPointOut>
-              <expression>'ORANGE_ON'</expression>
-            </inVariable>
-            <block localId="15" width="115" height="133" typeName="Led" instanceName="GreenLight" executionOrderId="0">
-              <position x="1058" y="777"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="38"/>
-                    <connection refLocalId="16">
-                      <position x="1058" y="815"/>
-                      <position x="1010" y="815"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="75"/>
-                    <connection refLocalId="17">
-                      <position x="1058" y="852"/>
-                      <position x="1010" y="852"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="112"/>
-                    <connection refLocalId="1" formalParameter="GREEN_LIGHT">
-                      <position x="1058" y="889"/>
-                      <position x="844" y="889"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <inVariable localId="16" height="30" width="111" executionOrderId="0" negated="false">
-              <position x="899" y="800"/>
-              <connectionPointOut>
-                <relPosition x="111" y="15"/>
-              </connectionPointOut>
-              <expression>'GREEN_OFF'</expression>
-            </inVariable>
-            <inVariable localId="17" height="30" width="106" executionOrderId="0" negated="false">
-              <position x="904" y="837"/>
-              <connectionPointOut>
-                <relPosition x="106" y="15"/>
-              </connectionPointOut>
-              <expression>'GREEN_ON'</expression>
-            </inVariable>
-            <block localId="18" width="115" height="133" typeName="Led" instanceName="PedestrianRedLight" executionOrderId="0">
-              <position x="1059" y="940"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="38"/>
-                    <connection refLocalId="19">
-                      <position x="1059" y="978"/>
-                      <position x="1020" y="978"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="75"/>
-                    <connection refLocalId="20">
-                      <position x="1059" y="1015"/>
-                      <position x="1020" y="1015"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="112"/>
-                    <connection refLocalId="1" formalParameter="PEDESTRIAN_RED_LIGHT">
-                      <position x="1059" y="1052"/>
-                      <position x="844" y="1052"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <inVariable localId="19" height="30" width="171" executionOrderId="0" negated="false">
-              <position x="849" y="963"/>
-              <connectionPointOut>
-                <relPosition x="171" y="15"/>
-              </connectionPointOut>
-              <expression>'PEDESTRIAN_RED_OFF'</expression>
-            </inVariable>
-            <inVariable localId="20" height="30" width="166" executionOrderId="0" negated="false">
-              <position x="854" y="1000"/>
-              <connectionPointOut>
-                <relPosition x="166" y="15"/>
-              </connectionPointOut>
-              <expression>'PEDESTRIAN_RED_ON'</expression>
-            </inVariable>
-            <block localId="21" width="115" height="133" typeName="Led" instanceName="PedestrianGreenLight" executionOrderId="0">
-              <position x="1059" y="1103"/>
-              <inputVariables>
-                <variable formalParameter="back_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="38"/>
-                    <connection refLocalId="22">
-                      <position x="1059" y="1141"/>
-                      <position x="1035" y="1141"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="sele_id">
-                  <connectionPointIn>
-                    <relPosition x="0" y="75"/>
-                    <connection refLocalId="23">
-                      <position x="1059" y="1178"/>
-                      <position x="1035" y="1178"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="state_in">
-                  <connectionPointIn>
-                    <relPosition x="0" y="112"/>
-                    <connection refLocalId="1" formalParameter="PEDESTRIAN_GREEN_LIGHT">
-                      <position x="1059" y="1215"/>
-                      <position x="844" y="1215"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables/>
-            </block>
-            <inVariable localId="22" height="30" width="190" executionOrderId="0" negated="false">
-              <position x="845" y="1126"/>
-              <connectionPointOut>
-                <relPosition x="190" y="15"/>
-              </connectionPointOut>
-              <expression>'PEDESTRIAN_GREEN_OFF'</expression>
-            </inVariable>
-            <inVariable localId="23" height="30" width="185" executionOrderId="0" negated="false">
-              <position x="850" y="1163"/>
-              <connectionPointOut>
-                <relPosition x="185" y="15"/>
-              </connectionPointOut>
-              <expression>'PEDESTRIAN_GREEN_ON'</expression>
-            </inVariable>
             <comment localId="24" height="287" width="1008">
               <position x="22" y="13"/>
               <content>
                 <xhtml:p><![CDATA[This example implements control of traffic lights.
 
 Basically it shows following features of Beremiz:
-- web interface (SCADA) using integrated web server in svgui extension;
+- web interface (SCADA) using integrated web server in SVGHMI extension;
 - interaction with web UI;
 - functional blocks in SFC language.
 
 
 
 
-SVGUI is extensions to build web interface to PLC. It has *integrated* web-server. So it's NOT necessary to install Apache, lighttpd or nginx for that!!!
+SVGHMI is extensions to build web interface to PLC. It has *integrated* web-server. So it's NOT necessary to install Apache, lighttpd or nginx for that!!!
 
 As the program is running in PLC, web UI will be available at http://localhost:8009/.
 
-Web interface is build as SVG file in Inkscape. To edit SVG file click 'Inkscape' button in 0x: svgui extension. 
+Web interface is build as SVG file in Inkscape. To edit SVG file click 'Inkscape' button in 0x: SVGHMI extension. 
 Inkscape is a free and open-source vector graphics editor. It's not part of Beremiz and needs to be installed separately.
 ]]></xhtml:p>
               </content>
@@ -1713,6 +1340,75 @@ This is the way how elements in SVG are bound to elements in PLC program.
 You can find out or edit these IDs in Inkscape.]]></xhtml:p>
               </content>
             </comment>
+            <inVariable localId="103" executionOrderId="0" height="24" width="106" negated="false">
+              <position x="340" y="551"/>
+              <connectionPointOut>
+                <relPosition x="106" y="12"/>
+              </connectionPointOut>
+              <expression>SwitchButton</expression>
+            </inVariable>
+            <inVariable localId="104" executionOrderId="0" height="24" width="138" negated="false">
+              <position x="300" y="714"/>
+              <connectionPointOut>
+                <relPosition x="138" y="12"/>
+              </connectionPointOut>
+              <expression>PedestrianButton</expression>
+            </inVariable>
+            <outVariable localId="105" executionOrderId="0" height="24" width="74" negated="false">
+              <position x="891" y="551"/>
+              <connectionPointIn>
+                <relPosition x="0" y="12"/>
+                <connection refLocalId="1" formalParameter="RED_LIGHT">
+                  <position x="891" y="563"/>
+                  <position x="844" y="563"/>
+                </connection>
+              </connectionPointIn>
+              <expression>RedLight</expression>
+            </outVariable>
+            <outVariable localId="106" executionOrderId="0" height="24" width="98" negated="false">
+              <position x="880" y="714"/>
+              <connectionPointIn>
+                <relPosition x="0" y="12"/>
+                <connection refLocalId="1" formalParameter="ORANGE_LIGHT">
+                  <position x="880" y="726"/>
+                  <position x="844" y="726"/>
+                </connection>
+              </connectionPointIn>
+              <expression>OrangeLight</expression>
+            </outVariable>
+            <outVariable localId="107" executionOrderId="0" height="24" width="90" negated="false">
+              <position x="881" y="877"/>
+              <connectionPointIn>
+                <relPosition x="0" y="12"/>
+                <connection refLocalId="1" formalParameter="GREEN_LIGHT">
+                  <position x="881" y="889"/>
+                  <position x="844" y="889"/>
+                </connection>
+              </connectionPointIn>
+              <expression>GreenLight</expression>
+            </outVariable>
+            <outVariable localId="108" executionOrderId="0" height="24" width="154" negated="false">
+              <position x="882" y="1040"/>
+              <connectionPointIn>
+                <relPosition x="0" y="12"/>
+                <connection refLocalId="1" formalParameter="PEDESTRIAN_RED_LIGHT">
+                  <position x="882" y="1052"/>
+                  <position x="844" y="1052"/>
+                </connection>
+              </connectionPointIn>
+              <expression>PedestrianRedLight</expression>
+            </outVariable>
+            <outVariable localId="109" executionOrderId="0" height="24" width="170" negated="false">
+              <position x="873" y="1203"/>
+              <connectionPointIn>
+                <relPosition x="0" y="12"/>
+                <connection refLocalId="1" formalParameter="PEDESTRIAN_GREEN_LIGHT">
+                  <position x="873" y="1215"/>
+                  <position x="844" y="1215"/>
+                </connection>
+              </connectionPointIn>
+              <expression>PedestrianGreenLight</expression>
+            </outVariable>
           </FBD>
         </body>
       </pou>
