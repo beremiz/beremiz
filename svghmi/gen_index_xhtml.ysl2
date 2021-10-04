@@ -94,6 +94,8 @@ istylesheet
                     | \n//\n//\n// Statements that needs to be at the end \n//\n//
                     apply "document('')/*/epilogue:*";
 
+                    include text sprintf.js
+
                     include text svghmi.js
 
                 }
