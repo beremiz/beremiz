@@ -221,14 +221,16 @@
 </xsl:text>
       <xsl:text>in between 0 and 100.
 </xsl:text>
-      <xsl:text>
-</xsl:text>
-      <xsl:text>If "value" labeled text is found, then its content is replaced by value.
-</xsl:text>
     </longdesc>
     <shortdesc>
       <xsl:text>Change end angle of Inkscape's arc</xsl:text>
     </shortdesc>
+    <arg name="min" count="optional" accepts="int,real">
+      <xsl:text>minimum value</xsl:text>
+    </arg>
+    <arg name="max" count="optional" accepts="int,real">
+      <xsl:text>maximum value</xsl:text>
+    </arg>
     <path name="value" accepts="HMI_INT,HMI_REAL">
       <xsl:text>Value to display</xsl:text>
     </path>
@@ -582,10 +584,6 @@
       <xsl:text>as respective minimum and maximum value. Otherwise, value is expected to be
 </xsl:text>
       <xsl:text>in between 0 and 100.
-</xsl:text>
-      <xsl:text>
-</xsl:text>
-      <xsl:text>If "value" labeled text is found, then its content is replaced by value.
 </xsl:text>
     </longdesc>
     <shortdesc>
