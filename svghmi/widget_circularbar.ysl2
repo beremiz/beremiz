@@ -9,14 +9,12 @@ widget_desc("CircularBar") {
     If "min" a "max" labeled texts are provided, then they are used as
     respective minimum and maximum value. Otherwise, value is expected to be
     in between 0 and 100.
-
-    If "value" labeled text is found, then its content is replaced by value.
     ||
 
     shortdesc > Change end angle of Inkscape's arc
 
-    // TODO: add min/max arguments
-    // TODO: add printf-like format
+    arg name="min" count="optional" accepts="int,real" > minimum value
+    arg name="max" count="optional" accepts="int,real" > maximum value
 
     path name="value" accepts="HMI_INT,HMI_REAL" > Value to display
     
@@ -52,6 +50,9 @@ widget_class("CircularBar") {
         }
 
         init() {
+            if(this.args.length >= 2)
+                [this.min, this.max]=this.args;
+
             let [start, end, cx, cy, rx, ry] = ["start", "end", "cx", "cy", "rx", "ry"].
                 map(tag=>Number(this.path_elt.getAttribute('sodipodi:'+tag)))
 
@@ -74,5 +75,5 @@ widget_class("CircularBar") {
 
 widget_defs("CircularBar") {
     labels("path");
-    optional_labels("value min max");
+    optional_labels("min max");
 }
