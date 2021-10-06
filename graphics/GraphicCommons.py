@@ -1063,6 +1063,8 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex=0, movey=0):
+        if self.ParentBlock == None:
+            return None
         parent_pos = self.ParentBlock.GetPosition()
         x = min(parent_pos[0] + self.Pos.x, parent_pos[0] + self.Pos.x + self.Direction[0] * CONNECTOR_SIZE)
         y = min(parent_pos[1] + self.Pos.y, parent_pos[1] + self.Pos.y + self.Direction[1] * CONNECTOR_SIZE)
