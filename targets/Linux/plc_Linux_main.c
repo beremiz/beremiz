@@ -217,7 +217,7 @@ int WaitPythonCommands(void)
 /* Called by PLC thread on each new python command*/
 void UnBlockPythonCommands(void)
 {
-    /* signal debugger thread it can read data */
+    /* signal python thread it can read data */
     pthread_mutex_unlock(&python_wait_mutex);
 }
 
