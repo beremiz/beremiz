@@ -162,6 +162,14 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         WampWebSocketClientFactory.__init__(self, *args, **kwargs)
 
         try:
+            clientFactoryOptions = config.extra.get("clientFactoryOptions")
+            if clientFactoryOptions:
+                self.setClientFactoryOptions(clientFactoryOptions)
+        except Exception as e:
+            print(_("Custom client factory options failed : "), e)
+            _transportFactory = None
+
+        try:
             protocolOptions = config.extra.get('protocolOptions', None)
             if protocolOptions:
                 self.setProtocolOptions(**protocolOptions)
@@ -169,6 +177,10 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         except Exception as e:
             print(_("Custom protocol options failed :"), e)
             _transportFactory = None
+
+    def setClientFactoryOptions(self, options):
+        for key, value in options.items():
+            setattr(self, key, value)
 
     def buildProtocol(self, addr):
         self.resetDelay()
@@ -194,6 +206,9 @@ def CheckConfiguration(WampClientConf):
             {"url": "Invalid URL: {}".format(url)},
             _("WAMP configuration error:"))
 
+def UpdateWithDefault(d1, d2):
+    for k, v in d2.items():
+        d1.setdefault(k, v)
 
 def GetConfiguration():
     global lastKnownConfig
@@ -203,6 +218,7 @@ def GetConfiguration():
     if os.path.exists(_WampConf):
         try: 
             WampClientConf = json.load(open(_WampConf))
+	    UpdateWithDefault(WampClientConf, defaultWampConfig)
         except ValueError:
             pass
 
@@ -320,7 +336,9 @@ def StopReconnectWampClient():
 
 def StartReconnectWampClient():
     if _WampSession:
-        # do reconnect
+        # do reconnect and reset continueTrying and initialDelay parameter
+        if _transportFactory is not None:
+            _transportFactory.resetDelay()
         _WampSession.disconnect()
         return True
     else:
@@ -365,7 +383,15 @@ webExposedConfigItems = ['active', 'url', 'ID']
 
 def wampConfigDefault(ctx, argument):
     if lastKnownConfig is not None:
-        return lastKnownConfig.get(argument.name, None)
+        # Check if name is composed with an intermediate dot symbol and go deep in lastKnownConfig if it is
+        argument_name_path = argument.name.split(".")
+        searchValue = lastKnownConfig
+        while argument_name_path:
+            if searchValue:
+                searchValue = searchValue.get(argument_name_path.pop(0), None)
+            else:
+                break
+        return searchValue
 
 
 def wampConfig(**kwargs):
@@ -378,9 +404,16 @@ def wampConfig(**kwargs):
 
     newConfig = lastKnownConfig.copy()
     for argname in webExposedConfigItems:
+        # Check if name is composed with an intermediate dot symbol and go deep in lastKnownConfig if it is
+        #  and then set a new value.
+        argname_path = argname.split(".")
+        arg_last = argname_path.pop()
         arg = kwargs.get(argname, None)
         if arg is not None:
-            newConfig[argname] = arg
+            tmpConf = newConfig
+            while argname_path:
+                tmpConf = tmpConf.setdefault(argname_path.pop(0), {})
+            tmpConf[arg_last] = arg
 
     SetConfiguration(newConfig)
 
