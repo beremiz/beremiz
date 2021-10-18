@@ -27,9 +27,9 @@ UA_IEC_types = dict(
 )
 
 UA_NODE_ID_types = {
-    "int"   : "UA_NODEID_NUMERIC",
-    "string": "UA_NODEID_STRING",
-    "UUIS"  : "UA_NODEID_UUID",
+    "int"   : ("UA_NODEID_NUMERIC", "{}"  ),
+    "str"   : ("UA_NODEID_STRING" , '"{}"'),
+    "UUIS"  : ("UA_NODEID_UUID"   , '"{}"'),
 }
 
 lstcolnames  = [  "Name", "NSIdx", "IdType", "Id", "Type", "IEC"]
@@ -550,10 +550,11 @@ void __publish_%(locstr)s(void)
         for direction, data in self.iteritems():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
-                name, ua_nsidx, ua_nodeid_type, ua_node_id, ua_type, iec_number = row
+                name, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
                 iec_type, C_type, iec_size_prefix, ua_type_enum, ua_type = UA_IEC_types[ua_type]
                 c_loc_name = iec_direction_prefix + iec_size_prefix + locstr + "_" + str(iec_number)
-                ua_nodeid_type = UA_NODE_ID_types[ua_nodeid_type]
+                ua_nodeid_type, id_formating = UA_NODE_ID_types[ua_nodeid_type]
+                ua_node_id = id_formating.format(_ua_node_id)
 
                 formatdict["decl"] += """
 DECL_VAR({ua_type}, {C_type}, {c_loc_name})""".format(**locals())
