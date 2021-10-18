@@ -317,7 +317,7 @@ class Beremiz(IDEFrame):
                 menu.AppendSubMenu(new_menu, text)
                 self._RecursiveAddMenuItems(new_menu, children)
             else:
-                item = menu.Append(wx.MenuItem(text=text, helpString=helpstr))
+                item = menu.Append(wx.MenuItem(text=text, helpString=helpstr, kind=wx.ITEM_NORMAL, id=wx.ID_ANY))
                 self.Bind(wx.EVT_MENU, self.GetAddConfNodeFunction(name), item)
 
     def _init_coll_AddMenu_Items(self, parent):
