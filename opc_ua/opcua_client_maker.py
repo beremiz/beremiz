@@ -368,7 +368,7 @@ class OPCUAClientPanel(wx.SplitterWindow):
     def AddNodeItem(self, item_creation_func, node):
         nsid = node.nodeid.NamespaceIndex
         nid =  node.nodeid.Identifier
-        dname = node.get_display_name().to_string()
+        dname = node.get_display_name().Text
         cname = node.get_node_class().name
 
         item = item_creation_func(dname)
