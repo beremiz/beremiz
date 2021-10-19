@@ -56,6 +56,8 @@ class SVGHMILibrary(POULibrary):
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
         global hmi_tree_root, on_hmitree_update, maxConnectionsTotal
 
+        maxConnectionsTotal = 0
+
         already_found_watchdog = False
         found_SVGHMI_instance = False
         for CTNChild in self.GetCTR().IterChildren():
