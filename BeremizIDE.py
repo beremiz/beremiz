@@ -252,7 +252,7 @@ class Beremiz(IDEFrame):
                    kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
         parent.AppendMenu(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
         parent.AppendSeparator()
-        parent.Append(wx.ID_ANY, _("&Tutorials and Examples"), self.TutorialsProjectsMenu)
+        parent.AppendMenu(wx.ID_ANY, _("&Tutorials and Examples"), self.TutorialsProjectsMenu)
 
         exemples_dir = Bpath("exemples")
         project_list = sorted(os.listdir(exemples_dir))
