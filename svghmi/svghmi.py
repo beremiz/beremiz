@@ -608,6 +608,9 @@ class SVGHMI(object):
 """)
             target_file.close()
 
+            # In case no SVG is given, watchdog is useless
+            svghmi_options["enable_watchdog"] = False
+
         res += ((target_fname, open(target_path, "rb")),)
 
         svghmi_cmds = {}
