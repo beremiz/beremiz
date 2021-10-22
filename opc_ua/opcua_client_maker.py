@@ -7,7 +7,7 @@ from opcua import Client
 from opcua import ua
 
 import wx
-from wx.lib.agw.hypertreelist import HyperTreeList as TreeListCtrl
+import wx.lib.gizmos as gizmos  # Formerly wx.gizmos in Classic
 import wx.dataview as dv
 
 
@@ -38,9 +38,9 @@ lstcoltypess = [     str,     int,      str,  str,    str,   int]
 
 directions = ["input", "output"]
 
-class OPCUASubListModel(dv.PyDataViewIndexListModel):
+class OPCUASubListModel(dv.DataViewIndexListModel):
     def __init__(self, data, log):
-        dv.PyDataViewIndexListModel.__init__(self, len(data))
+        dv.DataViewIndexListModel.__init__(self, len(data))
         self.data = data
         self.log = log
 
@@ -310,10 +310,10 @@ class OPCUAClientPanel(wx.SplitterWindow):
             self.tree_sizer.AddGrowableCol(0)
             self.tree_sizer.AddGrowableRow(0)
 
-            self.tree = TreeListCtrl(self.tree_panel, -1, style=0, agwStyle=
-                                            wx.TR_DEFAULT_STYLE
-                                            | wx.TR_MULTIPLE
-                                            | wx.TR_FULL_ROW_HIGHLIGHT
+            self.tree = gizmos.TreeListCtrl(self.tree_panel, -1, style=0, agwStyle=
+                                            gizmos.TR_DEFAULT_STYLE
+                                            | gizmos.TR_MULTIPLE
+                                            | gizmos.TR_FULL_ROW_HIGHLIGHT
                                        )
 
             prepare_image_list()
