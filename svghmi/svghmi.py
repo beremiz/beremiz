@@ -523,7 +523,7 @@ class SVGHMI(object):
 
         build_path = self._getBuildPath()
         target_path = os.path.join(build_path, target_fname)
-        hash_path = os.path.join(build_path, "svghmi.md5")
+        hash_path = os.path.join(build_path, "svghmi_"+location_str+".md5")
 
         self.GetCTRoot().logger.write("SVGHMI:\n")
 
@@ -607,6 +607,9 @@ class SVGHMI(object):
 </html>
 """)
             target_file.close()
+
+            # In case no SVG is given, watchdog is useless
+            svghmi_options["enable_watchdog"] = False
 
         res += ((target_fname, open(target_path, "rb")),)
 

@@ -99,36 +99,9 @@ class OPCUASubListModel(dv.DataViewIndexListModel):
 
 
     def AddRow(self, value):
-        v = dict(zip(lstcolnames, value))
-
-        if type(v["IEC"]) != int:
-            if len(self.data) == 0:
-                v["IEC"] = 0
-            else:
-                iecnums = set(zip(*self.data)[lstcolnames.index("IEC")])
-                greatest = max(iecnums)
-                holes = set(range(greatest)) - iecnums
-                v["IEC"] = min(holes) if holes else greatest+1
-
-        if v["IdType"] not in UA_NODE_ID_types:
-            self.log("Unknown IdType\n".format(value))
-            return
-
-        try:
-            for t,n in zip(lstcoltypess, lstcolnames):
-                v[n] = t(v[n]) 
-        except ValueError: 
-            self.log("Variable {} (Id={}) has invalid type\n".format(v["Name"],v["Id"]))
-            return
-
-        if len(self.data)>0 and v["Id"] in zip(*self.data)[lstcolnames.index("Id")]:
-            self.log("Variable {} (Id={}) already in list\n".format(v["Name"],v["Id"]))
-            return
-
-        self.data.append([v[n] for n in lstcolnames])
-
-        # notify views
-        self.RowAppended()
+        if self.data.append(value):
+            # notify views
+            self.RowAppended()
     
     def ResetData(self):
         self.Reset(len(self.data))
@@ -201,7 +174,7 @@ class OPCUASubListPanel(wx.Panel):
         nodes = ClientPanel.GetSelectedNodes()
         for node in nodes:
             cname = node.get_node_class().name
-            dname = node.get_display_name().to_string()
+            dname = node.get_display_name().Text
             if cname != "Variable":
                 self.log("Node {} ignored (not a variable)".format(dname))
                 continue
@@ -445,20 +418,57 @@ class OPCUAClientPanel(wx.SplitterWindow):
             self.selected_models[direction].ResetData() 
         
 
+class OPCUAClientList(list):
+    def __init__(self, log = lambda m:None):
+        super(OPCUAClientList, self).__init__(self)
+        self.log = log
+
+    def append(self, value):
+        v = dict(zip(lstcolnames, value))
+
+        if type(v["IEC"]) != int:
+            if len(self) == 0:
+                v["IEC"] = 0
+            else:
+                iecnums = set(zip(*self)[lstcolnames.index("IEC")])
+                greatest = max(iecnums)
+                holes = set(range(greatest)) - iecnums
+                v["IEC"] = min(holes) if holes else greatest+1
+
+        if v["IdType"] not in UA_NODE_ID_types:
+            self.log("Unknown IdType\n".format(value))
+            return False
+
+        try:
+            for t,n in zip(lstcoltypess, lstcolnames):
+                v[n] = t(v[n]) 
+        except ValueError: 
+            self.log("Variable {} (Id={}) has invalid type\n".format(v["Name"],v["Id"]))
+            return False
+
+        if len(self)>0 and v["Id"] in zip(*self)[lstcolnames.index("Id")]:
+            self.log("Variable {} (Id={}) already in list\n".format(v["Name"],v["Id"]))
+            return False
+
+        list.append(self, [v[n] for n in lstcolnames])
+
+        return True
+
 class OPCUAClientModel(dict):
-    def __init__(self):
+    def __init__(self, log = lambda m:None):
+        super(OPCUAClientModel, self).__init__()
         for direction in directions:
-            self[direction] = list()
+            self[direction] = OPCUAClientList(log)
 
     def LoadCSV(self,path):
         with open(path, 'rb') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
             buf = {direction:[] for direction, _model in self.iteritems()}
+            for direction, model in self.iteritems():
+                self[direction][:] = []
             for row in reader:
                 direction = row[0]
-                buf[direction].append(row[1:])
-            for direction, model in self.iteritems():
-                self[direction][:] = buf[direction]
+                self[direction].append(row[1:])
 
     def SaveCSV(self,path):
         with open(path, 'wb') as csvfile:
@@ -587,7 +597,7 @@ if __name__ == "__main__":
     test_sizer.AddGrowableCol(0)
     test_sizer.AddGrowableRow(0)
 
-    modeldata = OPCUAClientModel()
+    modeldata = OPCUAClientModel(print)
 
     opcuatestpanel = OPCUAClientPanel(test_panel, modeldata, print, lambda:uri)
 
