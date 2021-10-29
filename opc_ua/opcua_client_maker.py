@@ -201,7 +201,7 @@ class OPCUASubListPanel(wx.Panel):
         nodes = ClientPanel.GetSelectedNodes()
         for node in nodes:
             cname = node.get_node_class().name
-            dname = node.get_display_name().to_string()
+            dname = node.get_display_name().Text
             if cname != "Variable":
                 self.log("Node {} ignored (not a variable)".format(dname))
                 continue
