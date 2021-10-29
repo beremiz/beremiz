@@ -39,6 +39,8 @@ typedef enum {
 } buf_state_t;
 
 static int global_write_dirty = 0;
+static long hmitree_rlock = 0;
+static long hmitree_wlock = 0;
 
 typedef struct {
     void *ptr;
@@ -46,7 +48,6 @@ typedef struct {
     uint32_t buf_index;
 
     /* publish/write/send */
-    long wlock;
     buf_state_t wstate[MAX_CONNECTIONS];
 
     /* zero means not subscribed */
@@ -54,7 +55,6 @@ typedef struct {
     uint16_t age_ms[MAX_CONNECTIONS];
 
     /* retrieve/read/recv */
-    long rlock;
     buf_state_t rstate;
 
 } hmi_tree_item_t;
@@ -83,17 +83,13 @@ static int traverse_hmi_tree(hmi_tree_iterator fp)
 
 static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    uint32_t session_index = 0;
-    int value_changed = 0;
-    if(AtomicCompareExchange(&dsc->wlock, 0, 1) == 0) {
-        void *dest_p = &wbuf[dsc->buf_index];
+    {
+        uint32_t session_index = 0;
+        int value_changed = 0;
+        void *dest_p = NULL;
         void *real_value_p = NULL;
-        char flags = 0;
-        void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
-        USINT sz = __get_type_enum_size(dsc->type);
-        if(__Is_a_string(dsc)){
-            sz = ((STRING*)visible_value_p)->len + 1;
-        }
+        void *visible_value_p = NULL;
+        USINT sz = 0;
         while(session_index < MAX_CONNECTIONS) {
             if(dsc->wstate[session_index] == buf_set){
                 /* if being subscribed */
@@ -107,13 +103,39 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
                 }
             }
 
-            if(dsc->wstate[session_index] == buf_new /* just subscribed 
-               or already subscribed having value change */
-               || (dsc->refresh_period_ms[session_index] > 0 
-                   && (value_changed || (value_changed=memcmp(dest_p, visible_value_p, sz))) != 0)){
-                /* if not already marked/signaled, do it */
+            /* variable is sample only if just subscribed
+               or already subscribed and having value change */
+            int do_sample = 0;
+            int just_subscribed = dsc->wstate[session_index] == buf_new;
+            if(!just_subscribed){
+                int already_subscribed = dsc->refresh_period_ms[session_index] > 0;
+                if(already_subscribed){
+                    if(!value_changed){
+                        if(!visible_value_p){
+                            char flags = 0;
+                            visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+                            if(__Is_a_string(dsc)){
+                                sz = ((STRING*)visible_value_p)->len + 1;
+                            } else {
+                                sz = __get_type_enum_size(dsc->type);
+                            }
+                            dest_p = &wbuf[dsc->buf_index];
+                        }
+                        value_changed = memcmp(dest_p, visible_value_p, sz) != 0;
+                        do_sample = value_changed;
+                    }else{
+                        do_sample = 1;
+                    }
+                }
+            } else {
+                do_sample = 1;
+            }
+
+
+            if(do_sample){
                 if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
-                    if(dsc->wstate[session_index] == buf_new || ticktime_ms > dsc->refresh_period_ms[session_index]){
+                    if(dsc->wstate[session_index] == buf_new \
+                       || ticktime_ms > dsc->refresh_period_ms[session_index]){
                         dsc->wstate[session_index] = buf_tosend;
                         global_write_dirty = 1;
                     } else {
@@ -128,7 +150,6 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
         /* copy value if changed (and subscribed) */
         if(value_changed)
             memcpy(dest_p, visible_value_p, sz);
-        AtomicCompareExchange(&dsc->wlock, 1, 0);
     }
     // else ... : PLC can't wait, variable will be updated next turn
     return 0;
@@ -137,9 +158,6 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
 static uint32_t send_session_index;
 static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    while(AtomicCompareExchange(&dsc->wlock, 0, 1))
-        nRT_reschedule();
-
     if(dsc->wstate[send_session_index] == buf_tosend)
     {
         uint32_t sz = __get_type_enum_size(dsc->type);
@@ -159,39 +177,29 @@ static int send_iterator(uint32_t index, hmi_tree_item_t *dsc)
         else
         {
             printf("BUG!!! %%d + %%ld + %%d >  %%ld \n", sbufidx, sizeof(uint32_t), sz,  sizeof(sbuf));
-            AtomicCompareExchange(&dsc->wlock, 1, 0);
             return EOVERFLOW;
         }
     }
 
-    AtomicCompareExchange(&dsc->wlock, 1, 0);
     return 0;
 }
 
 static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
 {
-    if(AtomicCompareExchange(&dsc->rlock, 0, 1) == 0)
+    if(dsc->rstate == buf_set)
     {
-        if(dsc->rstate == buf_set)
-        {
-            void *src_p = &rbuf[dsc->buf_index];
-            void *real_value_p = NULL;
-            char flags = 0;
-            void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
-            memcpy(real_value_p, src_p, __get_type_enum_size(dsc->type));
-            dsc->rstate = buf_free;
-        }
-        AtomicCompareExchange(&dsc->rlock, 1, 0);
+        void *src_p = &rbuf[dsc->buf_index];
+        void *real_value_p = NULL;
+        char flags = 0;
+        void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+        memcpy(real_value_p, src_p, __get_type_enum_size(dsc->type));
+        dsc->rstate = buf_free;
     }
-    // else ... : PLC can't wait, variable will be updated next turn
     return 0;
 }
 
 void update_refresh_period(hmi_tree_item_t *dsc, uint32_t session_index, uint16_t refresh_period_ms)
 {
-    while(AtomicCompareExchange(&dsc->wlock, 0, 1)) 
-        nRT_reschedule();
-
     if(refresh_period_ms) {
         if(!dsc->refresh_period_ms[session_index])
         {
@@ -201,7 +209,6 @@ void update_refresh_period(hmi_tree_item_t *dsc, uint32_t session_index, uint16_
         dsc->wstate[session_index] = buf_free;
     }
     dsc->refresh_period_ms[session_index] = refresh_period_ms;
-    AtomicCompareExchange(&dsc->wlock, 1, 0);
 }
 
 static uint32_t reset_session_index;
@@ -250,13 +257,19 @@ void __cleanup_svghmi()
 
 void __retrieve_svghmi()
 {
-    traverse_hmi_tree(read_iterator);
+    if(AtomicCompareExchange(&hmitree_rlock, 0, 1) == 0) {
+        traverse_hmi_tree(read_iterator);
+        AtomicCompareExchange(&hmitree_rlock, 1, 0);
+    }
 }
 
 void __publish_svghmi()
 {
     global_write_dirty = 0;
-    traverse_hmi_tree(write_iterator);
+    if(AtomicCompareExchange(&hmitree_wlock, 0, 1) == 0) {
+        traverse_hmi_tree(write_iterator);
+        AtomicCompareExchange(&hmitree_wlock, 1, 0);
+    }
     if(global_write_dirty) {
         SVGHMI_WakeupFromRTThread();
     }
@@ -274,17 +287,25 @@ int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
         int res;
         sbufidx = HMI_HASH_SIZE;
         send_session_index = session_index;
+
+        while(AtomicCompareExchange(&hmitree_wlock, 0, 1)){
+            nRT_reschedule();
+        }
+
         if((res = traverse_hmi_tree(send_iterator)) == 0)
         {
             if(sbufidx > HMI_HASH_SIZE){
                 memcpy(&sbuf[0], &hmi_hash[0], HMI_HASH_SIZE);
                 *ptr = &sbuf[0];
                 *size = sbufidx;
+                AtomicCompareExchange(&hmitree_wlock, 1, 0);
                 return 0;
             }
+            AtomicCompareExchange(&hmitree_wlock, 1, 0);
             return ENODATA;
         }
         // printf("collected BAD result %%d\n", res);
+        AtomicCompareExchange(&hmitree_wlock, 1, 0);
         return res;
     }
     else
@@ -294,6 +315,7 @@ int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
 }
 
 typedef enum {
+    unset = -1,
     setval = 0,
     reset = 1,
     subscribe = 2
@@ -320,10 +342,29 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
         return -EINVAL;
     }
 
+    int ret;
+    int got_wlock = 0;
+    int got_rlock = 0;
+    cmd_from_JS cmd_old = unset;
+    cmd_from_JS cmd = unset;
+
     while(cursor < end)
     {
         uint32_t progress;
-        cmd_from_JS cmd = *(cursor++);
+
+        cmd_old = cmd;
+        cmd = *(cursor++);
+
+        if(cmd_old != cmd){
+            if(got_wlock){
+                AtomicCompareExchange(&hmitree_wlock, 1, 0);
+                got_wlock = 0;
+            }
+            if(got_rlock){
+                AtomicCompareExchange(&hmitree_rlock, 1, 0);
+                got_rlock = 0;
+            }
+        }
         switch(cmd)
         {
             case setval:
@@ -350,23 +391,28 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
                     if((valptr + sz) <= end)
                     {
                         // rescheduling spinlock until free
-                        while(AtomicCompareExchange(&dsc->rlock, 0, 1)) 
-                            nRT_reschedule();
+                        if(!got_rlock){
+                            while(AtomicCompareExchange(&hmitree_rlock, 0, 1)){
+                                nRT_reschedule();
+                            }
+                            got_rlock=1;
+                        }
 
                         memcpy(dst_p, valptr, sz);
                         dsc->rstate = buf_set;
 
-                        AtomicCompareExchange(&dsc->rlock, 1, 0);
                         progress = sz + sizeof(uint32_t) /* index */;
                     }
                     else
                     {
-                        return -EINVAL;
+                        ret = -EINVAL;
+                        goto exit_free;
                     }
                 }
                 else
                 {
-                    return -EINVAL;
+                    ret = -EINVAL;
+                    goto exit_free;
                 }
             }
             break;
@@ -375,6 +421,12 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
             {
                 progress = 0;
                 reset_session_index = session_index;
+                if(!got_wlock){
+                    while(AtomicCompareExchange(&hmitree_wlock, 0, 1)){
+                        nRT_reschedule();
+                    }
+                    got_wlock = 1;
+                }
                 traverse_hmi_tree(reset_iterator);
             }
             break;
@@ -386,12 +438,19 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
 
                 if(index < HMI_ITEM_COUNT)
                 {
+                    if(!got_wlock){
+                        while(AtomicCompareExchange(&hmitree_wlock, 0, 1)){
+                            nRT_reschedule();
+                        }
+                        got_wlock = 1;
+                    }
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
                     update_refresh_period(dsc, session_index, refresh_period_ms);
                 }
                 else
                 {
-                    return -EINVAL;
+                    ret = -EINVAL;
+                    goto exit_free;
                 }
 
                 progress = sizeof(uint32_t) /* index */ +
@@ -404,6 +463,17 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
         }
         cursor += progress;
     }
-    return was_hearbeat;
+    ret = was_hearbeat;
+
+exit_free:
+    if(got_wlock){
+        AtomicCompareExchange(&hmitree_wlock, 1, 0);
+        got_wlock = 0;
+    }
+    if(got_rlock){
+        AtomicCompareExchange(&hmitree_rlock, 1, 0);
+        got_rlock = 0;
+    }
+    return ret;
 }
 

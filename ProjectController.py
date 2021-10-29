@@ -36,6 +36,7 @@ from time import localtime
 import shutil
 import re
 import tempfile
+import hashlib
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from functools import reduce
@@ -276,6 +277,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
         self.DebugToken = None
         self.debug_status = PlcStatus.Stopped
+
+        self.IECcodeDigest = None
+        self.LastBuiltIECcodeDigest = None
 
     def __del__(self):
         self.KillDebugThread()
@@ -779,21 +783,27 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Error in ST/IL/SFC code generator :\n%s\n") % errors[0])
             return False
-        plc_file = open(self._getIECcodepath(), "w")
+
         # Add ST Library from confnodes
-        plc_file.write(self.GetLibrariesSTCode())
-        if os.path.isfile(self._getIECrawcodepath()):
-            plc_file.write(open(self._getIECrawcodepath(), "r").read())
-            plc_file.write("\n")
-        plc_file.close()
-        plc_file = open(self._getIECcodepath(), "r")
-        self.ProgramOffset = 0
-        for dummy in plc_file.readlines():
-            self.ProgramOffset += 1
-        plc_file.close()
-        plc_file = open(self._getIECcodepath(), "a")
-        plc_file.write(open(self._getIECgeneratedcodepath(), "r").read())
-        plc_file.close()
+        IECCodeContent = self.GetLibrariesSTCode()
+
+        IECrawcodepath = self._getIECrawcodepath()
+        if os.path.isfile(IECrawcodepath):
+            IECCodeContent += open(IECrawcodepath, "r").read() + "\n"
+
+
+        # Compute offset before ST resulting of transformation from user POUs
+        self.ProgramOffset = IECCodeContent.count("\n")
+
+        IECCodeContent += open(self._getIECgeneratedcodepath(), "r").read()
+
+        with open(self._getIECcodepath(), "w") as plc_file:
+            plc_file.write(IECCodeContent)
+
+        hasher = hashlib.md5()
+        hasher.update(IECCodeContent)
+        self.IECcodeDigest = hasher.hexdigest()
+
         return True
 
     def _Compile_ST_to_SoftPLC(self):
@@ -801,6 +811,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if iec2c_libpath is None:
             self.logger.write_error(_("matiec installation is not found\n"))
             return False
+
+        if self.LastBuiltIECcodeDigest == self.IECcodeDigest:
+            self.logger.write(_("IEC program did no change, not re-compiling into C code.\n"))
+            return True
 
         self.logger.write(_("Compiling IEC Program into C code...\n"))
         buildpath = self._getBuildPath()
@@ -889,6 +903,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.PLCGeneratedCFiles = C_files
         # compute CFLAGS for plc
         self.plcCFLAGS = '"-I%s" -Wno-unused-function' % self.iec2c_cfg.getLibCPath()
+
+        self.LastBuiltIECcodeDigest = self.IECcodeDigest
+
         return True
 
     def GetBuilder(self):
