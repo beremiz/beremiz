@@ -3,6 +3,7 @@
   <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
+  <xsl:param name="instance_name"/>
   <xsl:variable name="hmitree" select="ns:GetHMITree()"/>
   <xsl:variable name="_categories">
     <noindex>
@@ -39,12 +40,16 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>var current_page_var_index = </xsl:text>
+    <xsl:value-of select="$indexed_hmitree/*[@hmipath = concat('/CURRENT_PAGE_', $instance_name)]/@index"/>
+    <xsl:text>;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>var hmitree_types = [
 </xsl:text>
     <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:text>    /* </xsl:text>
-      <xsl:value-of select="@index"/>
-      <xsl:text> */ "</xsl:text>
+      <xsl:text>    "</xsl:text>
       <xsl:value-of select="substring(local-name(), 5)"/>
       <xsl:text>"</xsl:text>
       <xsl:if test="position()!=last()">
@@ -60,9 +65,7 @@
     <xsl:text>var hmitree_paths = [
 </xsl:text>
     <xsl:for-each select="$indexed_hmitree/*">
-      <xsl:text>    /* </xsl:text>
-      <xsl:value-of select="@index"/>
-      <xsl:text> */ "</xsl:text>
+      <xsl:text>    "</xsl:text>
       <xsl:value-of select="@hmipath"/>
       <xsl:text>"</xsl:text>
       <xsl:if test="position()!=last()">
@@ -72,6 +75,26 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:text>];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>var hmitree_nodes = {
+</xsl:text>
+    <xsl:for-each select="$indexed_hmitree/*[local-name() = 'HMI_NODE']">
+      <xsl:text>    "</xsl:text>
+      <xsl:value-of select="@hmipath"/>
+      <xsl:text>" : [</xsl:text>
+      <xsl:value-of select="@index"/>
+      <xsl:text>, "</xsl:text>
+      <xsl:value-of select="@class"/>
+      <xsl:text>"]</xsl:text>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,</xsl:text>
+      </xsl:if>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>};
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -655,6 +678,10 @@
       <xsl:text>    page_index: </xsl:text>
       <xsl:value-of select="$desc/path/@index"/>
       <xsl:text>,
+</xsl:text>
+      <xsl:text>    page_class: "</xsl:text>
+      <xsl:value-of select="$indexed_hmitree/*[@hmipath = $desc/path/@value]/@class"/>
+      <xsl:text>",
 </xsl:text>
     </xsl:if>
     <xsl:text>    widgets: [
@@ -8045,17 +8072,17 @@
 </xsl:text>
           <xsl:text>// Open WebSocket to relative "/ws" address
 </xsl:text>
+          <xsl:text>var has_watchdog = window.location.hash == "#watchdog";
+</xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>var ws_url = 
 </xsl:text>
           <xsl:text>    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
 </xsl:text>
-          <xsl:text>    + '?mode=' + (window.location.hash == "#watchdog" 
+          <xsl:text>    + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
 </xsl:text>
-          <xsl:text>                  ? "watchdog"
-</xsl:text>
-          <xsl:text>                  : "multiclient");
+          <xsl:text>
 </xsl:text>
           <xsl:text>var ws = new WebSocket(ws_url);
 </xsl:text>
@@ -8375,23 +8402,45 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
+          <xsl:text>if(has_watchdog){
 </xsl:text>
-          <xsl:text>// Since dispatch directly calls change_hmi_value,
+          <xsl:text>    // artificially subscribe the watchdog widget to "/heartbeat" hmi variable
 </xsl:text>
-          <xsl:text>// PLC will periodically send variable at given frequency
+          <xsl:text>    // Since dispatch directly calls change_hmi_value,
 </xsl:text>
-          <xsl:text>subscribers(heartbeat_index).add({
+          <xsl:text>    // PLC will periodically send variable at given frequency
 </xsl:text>
-          <xsl:text>    /* type: "Watchdog", */
+          <xsl:text>    subscribers(heartbeat_index).add({
+</xsl:text>
+          <xsl:text>        /* type: "Watchdog", */
+</xsl:text>
+          <xsl:text>        frequency: 1,
+</xsl:text>
+          <xsl:text>        indexes: [heartbeat_index],
+</xsl:text>
+          <xsl:text>        new_hmi_value: function(index, value, oldval) {
+</xsl:text>
+          <xsl:text>            apply_hmi_value(heartbeat_index, value+1);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// subscribe to per instance current page hmi variable
+</xsl:text>
+          <xsl:text>subscribers(current_page_var_index).add({
 </xsl:text>
           <xsl:text>    frequency: 1,
 </xsl:text>
-          <xsl:text>    indexes: [heartbeat_index],
+          <xsl:text>    indexes: [current_page_var_index],
 </xsl:text>
           <xsl:text>    new_hmi_value: function(index, value, oldval) {
 </xsl:text>
-          <xsl:text>        apply_hmi_value(heartbeat_index, value+1);
+          <xsl:text>        switch_page(value);
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
@@ -8787,7 +8836,11 @@
 </xsl:text>
           <xsl:text>        page_name = current_subscribed_page;
 </xsl:text>
-          <xsl:text>
+          <xsl:text>    else if(page_index == undefined){
+</xsl:text>
+          <xsl:text>        [page_name, page_index] = page_name.split('@')
+</xsl:text>
+          <xsl:text>    }
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -8807,9 +8860,31 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    if(page_index == undefined){
+          <xsl:text>    if(page_index == undefined)
 </xsl:text>
           <xsl:text>        page_index = new_desc.page_index;
+</xsl:text>
+          <xsl:text>    else if(typeof(page_index) == "string") {
+</xsl:text>
+          <xsl:text>        let hmitree_node = hmitree_nodes[page_index];
+</xsl:text>
+          <xsl:text>        if(hmitree_node !== undefined){
+</xsl:text>
+          <xsl:text>            let [int_index, hmiclass] = hmitree_node;
+</xsl:text>
+          <xsl:text>            if(hmiclass == new_desc.page_class)
+</xsl:text>
+          <xsl:text>                page_index = int_index;
+</xsl:text>
+          <xsl:text>            else
+</xsl:text>
+          <xsl:text>                page_index = new_desc.page_index;
+</xsl:text>
+          <xsl:text>        } else {
+</xsl:text>
+          <xsl:text>            page_index = new_desc.page_index;
+</xsl:text>
+          <xsl:text>        }
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
@@ -8868,6 +8943,16 @@
           <xsl:text>    if(jump_history.length &gt; 42)
 </xsl:text>
           <xsl:text>        jump_history.shift();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    apply_hmi_value(current_page_var_index,
+</xsl:text>
+          <xsl:text>                    page_index == undefined
+</xsl:text>
+          <xsl:text>                        ? page_name
+</xsl:text>
+          <xsl:text>                        : page_name + "@" + hmitree_paths[page_index]);
 </xsl:text>
           <xsl:text>
 </xsl:text>
