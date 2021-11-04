@@ -1,5 +1,7 @@
 // hmi_tree.ysl2
 
+// Location identifies uniquely SVGHMI instance
+param "instance_name";
 
 // HMI Tree computed from VARIABLES.CSV in svghmi.py
 const "hmitree", "ns:GetHMITree()";
@@ -19,19 +21,27 @@ emit "preamble:hmi-tree" {
     |
     | var heartbeat_index = «$indexed_hmitree/*[@hmipath = '/HEARTBEAT']/@index»;
     |
+    | var current_page_var_index = «$indexed_hmitree/*[@hmipath = concat('/CURRENT_PAGE_', $instance_name)]/@index»;
+    |
     | var hmitree_types = [
 
     foreach "$indexed_hmitree/*" 
-    |     /* «@index» */ "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
+    |     "«substring(local-name(), 5)»"`if "position()!=last()" > ,`
 
     | ];
     |
     | var hmitree_paths = [
 
     foreach "$indexed_hmitree/*" 
-    |     /* «@index» */ "«@hmipath»"`if "position()!=last()" > ,`
+    |     "«@hmipath»"`if "position()!=last()" > ,`
 
     | ];
+    |
+    | var hmitree_nodes = {
+
+    foreach "$indexed_hmitree/*[local-name() = 'HMI_NODE']" 
+    |     "«@hmipath»" : [«@index», "«@class»"]`if "position()!=last()" > ,`
+    | };
     |
 }
 

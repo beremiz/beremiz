@@ -169,6 +169,7 @@ template "svg:*", mode="page_desc" {
         if "count($desc/path/@index)=0"
             warning > Page id="«$page/@id»" : No match for path "«$desc/path/@value»" in HMI tree
     |     page_index: «$desc/path/@index»,
+    |     page_class: "«$indexed_hmitree/*[@hmipath = $desc/path/@value]/@class»",
     }
     |     widgets: [
     foreach "$page_managed_widgets" {
