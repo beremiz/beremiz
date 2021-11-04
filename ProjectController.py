@@ -797,7 +797,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         IECCodeContent += open(self._getIECgeneratedcodepath(), "r").read()
 
-        with open(self._getIECcodepath(), "w") as plc_file:
+        IECcodepath = self._getIECcodepath()
+
+        if not os.path.exists(IECcodepath):
+            self.LastBuiltIECcodeDigest = None
+
+        with open(IECcodepath, "w") as plc_file:
             plc_file.write(IECCodeContent)
 
         hasher = hashlib.md5()

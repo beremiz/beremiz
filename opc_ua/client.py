@@ -49,11 +49,14 @@ class OPCUAClient(object):
     EditorType = OPCUAClientEditor
 
     def __init__(self):
-        self.modeldata = OPCUAClientModel()
+        self.modeldata = OPCUAClientModel(self.Log)
 
         filepath = self.GetFileName()
         if os.path.isfile(filepath):
             self.modeldata.LoadCSV(filepath)
+
+    def Log(self, msg):
+        self.GetCTRoot().logger.write(msg)
 
     def GetModelData(self):
         return self.modeldata
