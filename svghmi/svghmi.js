@@ -210,11 +210,13 @@ if(has_watchdog){
 }
 
 // subscribe to per instance current page hmi variable
+// PLC must prefix page name with "!" for page switch to happen
 subscribers(current_page_var_index).add({
     frequency: 1,
     indexes: [current_page_var_index],
     new_hmi_value: function(index, value, oldval) {
-        switch_page(value);
+        if(value.startsWith("!"))
+            switch_page(value.slice(1));
     }
 });
 
@@ -467,10 +469,9 @@ function switch_page(page_name, page_index) {
     if(jump_history.length > 42)
         jump_history.shift();
 
-    apply_hmi_value(current_page_var_index,
-                    page_index == undefined
-                        ? page_name
-                        : page_name + "@" + hmitree_paths[page_index]);
+    apply_hmi_value(current_page_var_index, page_index == undefined
+        ? page_name
+        : page_name + "@" + hmitree_paths[page_index]);
 
     return true;
 };
