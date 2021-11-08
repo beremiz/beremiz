@@ -56,7 +56,7 @@ svgtmpl "svg:text/@inkscape:label[starts-with(., '_')]", mode="inline_svg" {
 // TODO: narrow application of clone unlinking to active elements,
 //       while keeping static decoration cloned
 const "targets_not_to_unlink", "$hmi_lists/descendant-or-self::svg:*";
-const "to_unlink", "$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use";
+const "to_unlink", "$hmi_widgets/descendant-or-self::svg:use";
 
 def "func:is_unlinkable" {
     param "targetid";
