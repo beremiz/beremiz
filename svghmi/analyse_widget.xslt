@@ -471,7 +471,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Documentation to be written. see svbghmi exemple.
+      <xsl:text>Documentation to be written. see svghmi exemple.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -565,6 +565,37 @@
       <xsl:text>A named list of named graphical elements</xsl:text>
     </shortdesc>
     <arg name="listname"/>
+  </xsl:template>
+  <xsl:template match="widget[@type='ListSwitch']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>ListSwitch widget displays one item of an HMI:List depending on value of
+</xsl:text>
+      <xsl:text>given variable. Main element of the widget must be a clone of the list or
+</xsl:text>
+      <xsl:text>of an item of that list.  
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Given variable's current value is compared to list items
+</xsl:text>
+      <xsl:text>label. For exemple if given variable type
+</xsl:text>
+      <xsl:text>is HMI_INT and value is 1, then item with label '1' will be displayed.
+</xsl:text>
+      <xsl:text>If matching variable of type HMI_STRING, then no quotes are needed. 
+</xsl:text>
+      <xsl:text>For exemple, 'hello' match HMI_STRING 'hello'.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Displays item of an HMI:List whose label matches value.</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_STRING">
+      <xsl:text>value to compare to labels</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Meter']" mode="widget_desc">
     <type>
@@ -687,7 +718,7 @@
 </xsl:text>
     </longdesc>
     <shortdesc>
-      <xsl:text>Show elements whose label match value.</xsl:text>
+      <xsl:text>Show elements whose label matches value.</xsl:text>
     </shortdesc>
     <path name="value" accepts="HMI_INT,HMI_STRING">
       <xsl:text>value to compare to labels</xsl:text>
