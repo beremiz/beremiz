@@ -22,7 +22,7 @@ widget_desc("List") {
 widget_defs("List") {
     |     items: {
     foreach "$hmi_element/*[@inkscape:label]" {
-    |         «@inkscape:label»: "«@id»",
+    |         "«@inkscape:label»": "«@id»",
     }
     |     },
 }
