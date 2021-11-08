@@ -572,7 +572,7 @@
     </xsl:choose>
   </func:function>
   <xsl:variable name="required_page_elements" select="func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*"/>
-  <xsl:variable name="required_list_elements" select="func:refered_elements(($hmi_lists | $hmi_textlists)[@id = $required_page_elements/@id])"/>
+  <xsl:variable name="required_list_elements" select="func:refered_elements(($hmi_lists | $hmi_textlists)[@id = $required_page_elements/@id])/ancestor-or-self::svg:*"/>
   <xsl:variable name="required_elements" select="$defs | $required_list_elements | $required_page_elements"/>
   <xsl:variable name="discardable_elements" select="//svg:*[not(@id = $required_elements/@id)]"/>
   <func:function name="func:sumarized_elements">
@@ -846,7 +846,7 @@
     </xsl:attribute>
   </xsl:template>
   <xsl:variable name="targets_not_to_unlink" select="$hmi_lists/descendant-or-self::svg:*"/>
-  <xsl:variable name="to_unlink" select="$hmi_elements[not(@id = $hmi_pages/@id)]/descendant-or-self::svg:use"/>
+  <xsl:variable name="to_unlink" select="$hmi_widgets/descendant-or-self::svg:use"/>
   <func:function name="func:is_unlinkable">
     <xsl:param name="targetid"/>
     <xsl:param name="eltid"/>
@@ -4583,7 +4583,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Documentation to be written. see svbghmi exemple.
+      <xsl:text>Documentation to be written. see svghmi exemple.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -4833,13 +4833,13 @@
       <xsl:when test="count($from_list) &gt; 0">
         <xsl:text>        id("</xsl:text>
         <xsl:value-of select="@id"/>
-        <xsl:text>").setAttribute("xlink:href",
+        <xsl:text>").href.baseVal =
 </xsl:text>
         <xsl:text>            "#"+hmi_widgets["</xsl:text>
         <xsl:value-of select="$from_list/@id"/>
         <xsl:text>"].items[</xsl:text>
         <xsl:value-of select="$expressions/expression[1]/@content"/>
-        <xsl:text>]);
+        <xsl:text>];
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
@@ -5675,13 +5675,67 @@
     <xsl:text>    items: {
 </xsl:text>
     <xsl:for-each select="$hmi_element/*[@inkscape:label]">
-      <xsl:text>        </xsl:text>
+      <xsl:text>        "</xsl:text>
       <xsl:value-of select="@inkscape:label"/>
-      <xsl:text>: "</xsl:text>
+      <xsl:text>": "</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>",
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='ListSwitch']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>ListSwitch widget displays one item of an HMI:List depending on value of
+</xsl:text>
+      <xsl:text>given variable. Main element of the widget must be a clone of the list or
+</xsl:text>
+      <xsl:text>of an item of that list.  
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Given variable's current value is compared to list items
+</xsl:text>
+      <xsl:text>label. For exemple if given variable type
+</xsl:text>
+      <xsl:text>is HMI_INT and value is 1, then item with label '1' will be displayed.
+</xsl:text>
+      <xsl:text>If matching variable of type HMI_STRING, then no quotes are needed. 
+</xsl:text>
+      <xsl:text>For exemple, 'hello' match HMI_STRING 'hello'.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Displays item of an HMI:List whose label matches value.</xsl:text>
+    </shortdesc>
+    <path name="value" accepts="HMI_INT,HMI_STRING">
+      <xsl:text>value to compare to labels</xsl:text>
+    </path>
+  </xsl:template>
+  <xsl:template match="widget[@type='ListSwitch']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ListSwitchWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='ListSwitch']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="targetid" select="substring-after($hmi_element/@xlink:href,'#')"/>
+    <xsl:variable name="from_list" select="$hmi_lists[(@id | */@id) = $targetid]"/>
+    <xsl:text>    dispatch: function(value) {
+</xsl:text>
+    <xsl:text>        this.element.href.baseVal = "#"+hmi_widgets["</xsl:text>
+    <xsl:value-of select="$from_list/@id"/>
+    <xsl:text>"].items[value];
+</xsl:text>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
@@ -7239,7 +7293,7 @@
 </xsl:text>
     </longdesc>
     <shortdesc>
-      <xsl:text>Show elements whose label match value.</xsl:text>
+      <xsl:text>Show elements whose label matches value.</xsl:text>
     </shortdesc>
     <path name="value" accepts="HMI_INT,HMI_STRING">
       <xsl:text>value to compare to labels</xsl:text>
@@ -8432,6 +8486,8 @@
 </xsl:text>
           <xsl:text>// subscribe to per instance current page hmi variable
 </xsl:text>
+          <xsl:text>// PLC must prefix page name with "!" for page switch to happen
+</xsl:text>
           <xsl:text>subscribers(current_page_var_index).add({
 </xsl:text>
           <xsl:text>    frequency: 1,
@@ -8440,7 +8496,9 @@
 </xsl:text>
           <xsl:text>    new_hmi_value: function(index, value, oldval) {
 </xsl:text>
-          <xsl:text>        switch_page(value);
+          <xsl:text>        if(value.startsWith("!"))
+</xsl:text>
+          <xsl:text>            switch_page(value.slice(1));
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
@@ -8946,13 +9004,11 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    apply_hmi_value(current_page_var_index,
+          <xsl:text>    apply_hmi_value(current_page_var_index, page_index == undefined
 </xsl:text>
-          <xsl:text>                    page_index == undefined
+          <xsl:text>        ? page_name
 </xsl:text>
-          <xsl:text>                        ? page_name
-</xsl:text>
-          <xsl:text>                        : page_name + "@" + hmitree_paths[page_index]);
+          <xsl:text>        : page_name + "@" + hmitree_paths[page_index]);
 </xsl:text>
           <xsl:text>
 </xsl:text>
