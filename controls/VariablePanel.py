@@ -493,7 +493,7 @@ class VariablePanel(wx.Panel):
 
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL | wx.HSCROLL)
         self.VariablesGrid.SetDropTarget(VariableDropTarget(self))
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING,
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                                 self.OnVariablesGridCellChange)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,
                                 self.OnVariablesGridCellLeftClick)
