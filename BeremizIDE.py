@@ -264,7 +264,7 @@ class Beremiz(IDEFrame):
 
             projectpath = os.path.join(exemples_dir, dirname)
 
-            def OpenExemple(event):
+            def OpenExemple(event, projectpath=projectpath):
                 if self.CTR is not None and not self.CheckSaveBeforeClosing():
                     return
 
