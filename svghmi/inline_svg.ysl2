@@ -174,7 +174,7 @@ svgtmpl "svg:*", mode="unlink_clone" {
     param "seed";
     choose {
         // node recursive copy ends when finding a widget
-        when "@id = $hmi_elements/@id" {
+        when "@id = $hmi_widgets/@id" {
             // place a clone instead of copying
             use{
                 attrib "xlink:href" > «concat('#',@id)»
