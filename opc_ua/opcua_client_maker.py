@@ -488,25 +488,24 @@ class OPCUAClientModel(dict):
 UA_Client *client;
 
 #define DECL_VAR(ua_type, C_type, c_loc_name)                                                       \\
-UA_Variant *c_loc_name##_variant;                                                                   \\
+UA_Variant c_loc_name##_variant;                                                                    \\
 C_type c_loc_name##_buf = 0;                                                                        \\
 C_type *c_loc_name = &c_loc_name##_buf;
 
 %(decl)s
 
-#define FREE_VARIANT(ua_type, c_loc_name)                                                           \\
-    UA_Variant_delete(c_loc_name##_variant);
-
 void __cleanup_%(locstr)s(void)
 {
     UA_Client_disconnect(client);
     UA_Client_delete(client);
-%(cleanup)s
 }
 
 
-#define ALLOC_VARIANT(ua_type, c_loc_name)                                                          \\
-    c_loc_name##_variant = UA_Variant_new();
+#define INIT_READ_VARIANT(ua_type, c_loc_name)                                                          \\
+    UA_Variant_init(&c_loc_name##_variant);
+
+#define INIT_WRITE_VARIANT(ua_type, ua_type_enum, c_loc_name)       \\
+    UA_Variant_setScalar(&c_loc_name##_variant, (ua_type*)c_loc_name, &UA_TYPES[ua_type_enum]);
 
 int __init_%(locstr)s(int argc,char **argv)
 {
@@ -523,12 +522,13 @@ int __init_%(locstr)s(int argc,char **argv)
     }
 }
 
-#define READ_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)         \\
-    retval = UA_Client_readValueAttribute(                                                          \\
-        client, ua_nodeid_type(ua_nsidx, ua_node_id), c_loc_name##_variant);                        \\
-    if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(c_loc_name##_variant) &&                 \\
-       c_loc_name##_variant->type == &UA_TYPES[ua_type_enum]) {                                     \\
-            c_loc_name##_buf = *(ua_type*)c_loc_name##_variant->data;                               \\
+#define READ_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)        \\
+    retval = UA_Client_readValueAttribute(                                                         \\
+        client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);                      \\
+    if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(&c_loc_name##_variant) &&               \\
+       c_loc_name##_variant.type == &UA_TYPES[ua_type_enum]) {                                     \\
+            c_loc_name##_buf = *(ua_type*)c_loc_name##_variant.data;                               \\
+            UA_Variant_clear(&c_loc_name##_variant);  /* Unalloc requiered on each read ! */       \\
     }
 
 void __retrieve_%(locstr)s(void)
@@ -537,9 +537,9 @@ void __retrieve_%(locstr)s(void)
 %(retrieve)s
 }
 
-#define WRITE_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)        \\
-    UA_Variant_setScalarCopy(c_loc_name##_variant, (ua_type*)c_loc_name, &UA_TYPES[ua_type_enum]);  \\
-    UA_Client_writeValueAttribute(client, ua_nodeid_type(ua_nsidx, ua_node_id), c_loc_name##_variant);
+#define WRITE_VALUE(ua_type, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)       \\
+    UA_Client_writeValueAttribute(                                                                 \\
+        client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);
 
 void __publish_%(locstr)s(void)
 {
@@ -568,14 +568,18 @@ void __publish_%(locstr)s(void)
 
                 formatdict["decl"] += """
 DECL_VAR({ua_type}, {C_type}, {c_loc_name})""".format(**locals())
-                formatdict["cleanup"] += """
-    FREE_VARIANT({ua_type}, {c_loc_name})""".format(**locals())
-                formatdict["init"] +="""
-    ALLOC_VARIANT({ua_type}, {c_loc_name})""".format(**locals())
-                formatdict["retrieve"] += """
+
+                if direction == "input":
+                    formatdict["init"] +="""
+    INIT_READ_VARIANT({ua_type}, {c_loc_name})""".format(**locals())
+                    formatdict["retrieve"] += """
     READ_VALUE({ua_type}, {ua_type_enum}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
-                formatdict["publish"] += """
-    WRITE_VALUE({ua_type}, {ua_type_enum}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
+
+                if direction == "output":
+                    formatdict["init"] +="""
+    INIT_WRITE_VARIANT({ua_type}, {ua_type_enum}, {c_loc_name})""".format(**locals())
+                    formatdict["publish"] += """
+    WRITE_VALUE({ua_type}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
 
         Ccode = template%formatdict
         
