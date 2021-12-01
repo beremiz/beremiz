@@ -26,18 +26,31 @@ void __publish_debug (void){}
 #include <stdio.h>
 
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
-#define BUFFER_SIZE %(buffer_size)d
+#define TRACE_BUFFER_SIZE 4096
+#define TRACE_LIST_SIZE 1024
 
 /* Atomically accessed variable for buffer state */
 #define BUFFER_FREE 0
 #define BUFFER_BUSY 1
-static long buffer_state = BUFFER_FREE;
+static long trace_buffer_state = BUFFER_FREE;
 
-/* The buffer itself */
-char debug_buffer[BUFFER_SIZE];
+typedef unsigned int dbgvardsc_index_t;
+typedef unsigned short trace_buf_offset_t;
+
+typedef struct trace_item_s {
+    dbgvardsc_index_t dbgvardsc_index;
+} trace_item_t;
+
+trace_item_t trace_list[TRACE_LIST_SIZE];
+char trace_buffer[TRACE_BUFFER_SIZE];
 
 /* Buffer's cursor*/
-static char* buffer_cursor = debug_buffer;
+static trace_item_t *trace_list_collect_cursor = trace_list;
+static trace_item_t *trace_list_addvar_cursor = trace_list;
+static const trace_item_t *trace_list_end = 
+    &trace_list[TRACE_LIST_SIZE-1];
+static char *trace_buffer_cursor = trace_buffer;
+static const char *trace_buffer_end = trace_buffer + TRACE_BUFFER_SIZE;
 #endif
 
 static unsigned int retain_offset = 0;
@@ -101,8 +114,10 @@ void __init_debug(void)
 {
     /* init local static vars */
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
-    buffer_cursor = debug_buffer;
-    buffer_state = BUFFER_FREE;
+    trace_buffer_cursor = trace_buffer;
+    trace_list_addvar_cursor = trace_list;
+    trace_list_collect_cursor = trace_list;
+    trace_buffer_state = BUFFER_FREE;
 #endif
 
     retain_offset = 0;
@@ -125,7 +140,7 @@ extern unsigned long __tick;
 void __cleanup_debug(void)
 {
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
-    buffer_cursor = debug_buffer;
+    trace_buffer_cursor = trace_buffer;
     InitiateDebugTransfer();
 #endif    
 
@@ -147,30 +162,18 @@ static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
 
     visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
 
-    if(flags & ( __IEC_DEBUG_FLAG | __IEC_RETAIN_FLAG)){
+    if(flags & __IEC_RETAIN_FLAG ||
+       ((flags & __IEC_FORCE_FLAG) && (flags & __IEC_OUTPUT_FLAG))){
         USINT size = __get_type_enum_size(dsc->type);
 
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
-        if(flags & __IEC_DEBUG_FLAG){
-            /* copy visible variable to buffer */;
-            if(do_debug){
-                /* compute next cursor positon.
-                   No need to check overflow, as BUFFER_SIZE
-                   is computed large enough */
-                if(__Is_a_string(dsc)){
-                    /* optimization for strings */
-                    size = ((STRING*)visible_value_p)->len + 1;
-                }
-                char* next_cursor = buffer_cursor + size;
-                /* copy data to the buffer */
-                memcpy(buffer_cursor, visible_value_p, size);
-                /* increment cursor according size*/
-                buffer_cursor = next_cursor;
+        if((flags & __IEC_FORCE_FLAG) && (flags & __IEC_OUTPUT_FLAG)){
+            if(__Is_a_string(dsc)){
+                /* optimization for strings */
+                size = ((STRING*)visible_value_p)->len + 1;
             }
             /* re-force real value of outputs (M and Q)*/
-            if((flags & __IEC_FORCE_FLAG) && (flags & __IEC_OUTPUT_FLAG)){
-                memcpy(real_value_p, visible_value_p, size);
-            }
+            memcpy(real_value_p, visible_value_p, size);
         }
 #endif
 
@@ -236,7 +239,7 @@ void __publish_debug(void)
     if(TryEnterDebugSection()){
         /* Lock buffer */
         long latest_state = AtomicCompareExchange(
-            &buffer_state,
+            &trace_buffer_state,
             BUFFER_FREE,
             BUFFER_BUSY);
             
@@ -244,74 +247,105 @@ void __publish_debug(void)
         if(latest_state == BUFFER_FREE)
         {
             /* Reset buffer cursor */
-            buffer_cursor = debug_buffer;
+            trace_buffer_cursor = trace_buffer;
+            /* Reset trace list cursor */
+            trace_list_collect_cursor = trace_list;
             /* Iterate over all variables to fill debug buffer */
             __for_each_variable_do(DebugIterator);
+            while(trace_list_collect_cursor < trace_list_addvar_cursor){
+                void *real_value_p = NULL;
+                void *visible_value_p = NULL;
+                char flags = 0;
+                USINT size;
+                char* next_cursor;
+
+                dbgvardsc_t *dsc = &dbgvardsc[
+                    trace_list_collect_cursor->dbgvardsc_index];
+
+                visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+
+                /* copy visible variable to buffer */;
+                if(__Is_a_string(dsc)){
+                    /* optimization for strings */
+                    /* assume NULL terminated strings */
+                    size = ((STRING*)visible_value_p)->len + 1;
+                }else{
+                    size = __get_type_enum_size(dsc->type);
+                }
+
+                /* compute next cursor positon.*/
+                next_cursor = trace_buffer_cursor + size;
+                /* check for buffer overflow */
+                if(next_cursor < trace_buffer_end)
+                    /* copy data to the buffer */
+                    memcpy(trace_buffer_cursor, visible_value_p, size);
+                else
+                    /* stop looping in case of overflow */
+                    break;
+                /* increment cursor according size*/
+                trace_buffer_cursor = next_cursor;
+                trace_list_collect_cursor++;
+            }
             
             /* Leave debug section,
              * Trigger asynchronous transmission 
              * (returns immediately) */
             InitiateDebugTransfer(); /* size */
-        }else{
-            /* when not debugging, do only retain */
-            __for_each_variable_do(RetainIterator);
         }
         LeaveDebugSection();
-    }else
-#endif
-    {
-        /* when not debugging, do only retain */
-        __for_each_variable_do(RetainIterator);
     }
+#endif
+    /* when not debugging, do only retain */
+    __for_each_variable_do(RetainIterator);
     ValidateRetainBuffer();
 }
 
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
 #define __RegisterDebugVariable_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            ((__IEC_##TYPENAME##_t *)varp)->flags |= flags;\
-            if(force)\
-             ((__IEC_##TYPENAME##_t *)varp)->value = *((TYPENAME *)force);\
+            ((__IEC_##TYPENAME##_t *)varp)->flags |= __IEC_FORCE_FLAG;\
+            ((__IEC_##TYPENAME##_t *)varp)->value = *((TYPENAME *)force);\
             break;
 #define __RegisterDebugVariable_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
-            ((__IEC_##TYPENAME##_p *)varp)->flags |= flags;\
-            if(force)\
-             ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
+            ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_FORCE_FLAG;\
+            ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
             break;\
         case TYPENAME##_O_ENUM :\
-            ((__IEC_##TYPENAME##_p *)varp)->flags |= flags;\
-            if(force){\
-             ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
-             *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
-            }\
+            ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_FORCE_FLAG;\
+            ((__IEC_##TYPENAME##_p *)varp)->fvalue = *((TYPENAME *)force);\
+            *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
             break;
-void RegisterDebugVariable(unsigned int idx, void* force)
+void RegisterDebugVariable(dbgvardsc_index_t idx, void* force)
 {
-    if(idx  < sizeof(dbgvardsc)/sizeof(dbgvardsc_t)){
-        unsigned char flags = force ?
-            __IEC_DEBUG_FLAG | __IEC_FORCE_FLAG :
-            __IEC_DEBUG_FLAG;
-        dbgvardsc_t *dsc = &dbgvardsc[idx];
-        void *varp = dsc->ptr;
-        switch(dsc->type){
-            __ANY(__RegisterDebugVariable_case_t)
-            __ANY(__RegisterDebugVariable_case_p)
-        default:
-            break;
+    if(idx < sizeof(dbgvardsc)/sizeof(dbgvardsc_t)){
+        /* add to trace_list, inc tracelist_addvar_cursor*/
+        if(trace_list_addvar_cursor <= trace_list_end){
+            trace_list_addvar_cursor->dbgvardsc_index = idx;
+            trace_list_addvar_cursor++;
+        }
+        if(force){
+            dbgvardsc_t *dsc = &dbgvardsc[idx];
+            void *varp = dsc->ptr;
+            switch(dsc->type){
+                __ANY(__RegisterDebugVariable_case_t)
+                __ANY(__RegisterDebugVariable_case_p)
+            default:
+                break;
+            }
         }
     }
 }
 
 #define __ResetDebugVariablesIterator_case_t(TYPENAME) \
         case TYPENAME##_ENUM :\
-            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~(__IEC_DEBUG_FLAG|__IEC_FORCE_FLAG);\
+            ((__IEC_##TYPENAME##_t *)varp)->flags &= ~(__IEC_FORCE_FLAG);\
             break;
 
 #define __ResetDebugVariablesIterator_case_p(TYPENAME)\
         case TYPENAME##_P_ENUM :\
         case TYPENAME##_O_ENUM :\
-            ((__IEC_##TYPENAME##_p *)varp)->flags &= ~(__IEC_DEBUG_FLAG|__IEC_FORCE_FLAG);\
+            ((__IEC_##TYPENAME##_p *)varp)->flags &= ~(__IEC_FORCE_FLAG);\
             break;
 
 void ResetDebugVariablesIterator(dbgvardsc_t *dsc)
@@ -328,6 +362,7 @@ void ResetDebugVariablesIterator(dbgvardsc_t *dsc)
 
 void ResetDebugVariables(void)
 {
+    trace_list_addvar_cursor = trace_list;
     __for_each_variable_do(ResetDebugVariablesIterator);
 }
 
@@ -335,7 +370,7 @@ void FreeDebugData(void)
 {
     /* atomically mark buffer as free */
     AtomicCompareExchange(
-        &buffer_state,
+        &trace_buffer_state,
         BUFFER_BUSY,
         BUFFER_FREE);
 }
@@ -344,8 +379,8 @@ int WaitDebugData(unsigned long *tick);
 int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
     int wait_error = WaitDebugData(tick);
     if(!wait_error){
-        *size = buffer_cursor - debug_buffer;
-        *buffer = debug_buffer;
+        *size = trace_buffer_cursor - trace_buffer;
+        *buffer = trace_buffer;
     }
     return wait_error;
 }
