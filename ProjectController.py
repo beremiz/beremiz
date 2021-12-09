@@ -276,6 +276,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # copy StatusMethods so that it can be later customized
         self.StatusMethods = [dic.copy() for dic in self.StatusMethods]
         self.DebugToken = None
+        self.LastComplainDebugToken = None
         self.debug_status = PlcStatus.Stopped
 
         self.IECcodeDigest = None
@@ -1052,9 +1053,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # prepare debug code
         variable_decl_array = []
-        bofs = 0
         for v in self._DbgVariablesList:
-            sz = DebugTypesSize.get(v["type"], 0)
             variable_decl_array += [
                 "{&(%(C_path)s), " % v +
                 {
@@ -1065,9 +1064,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     "VAR": "%(type)s_ENUM"
                 }[v["vartype"]] % v +
                 "}"]
-            bofs += sz
         debug_code = targets.GetCode("plc_debug.c") % {
-            "buffer_size": bofs,
             "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
                                                 p for p in self._ProgramList]),
             "extern_variables_declarations": "\n".join([
@@ -1555,6 +1552,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
                                     else:
                                         values_buffer.append((value, forced))
                             self.DebugTicks.append(debug_tick)
+                        else:
+                            # complain if trace is incomplete, but only once per debug session
+                            if self.LastComplainDebugToken != self.DebugToken :
+                                self.logger.write_warning(
+                                    _("Debug: target couldn't trace all requested variables.\n"))
+                                self.LastComplainDebugToken = self.DebugToken
+
+
 
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
                                             [list() for dummy in xrange(len(self.TracedIECPath))])
@@ -1562,6 +1567,15 @@ class ProjectController(ConfigTreeNode, PLCControler):
         ticks, self.DebugTicks = self.DebugTicks, []
 
         return debug_status, ticks, buffers
+
+    RegisterDebugVariableErrorCodes = { 
+        # TRACE_LIST_OVERFLOW
+        1 : _("Debug: Too many variables traced. Max 1024.\n"),
+        # FORCE_LIST_OVERFLOW
+        2 : _("Debug: Too many variables forced. Max 256.\n"),
+        # FORCE_BUFFER_OVERFLOW
+        3 : _("Debug: Cumulated forced variables size too large. Max 1KB.\n")
+    }
 
     def RegisterDebugVarToConnector(self):
         Idxs = []
@@ -1596,7 +1610,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 IdxsT = zip(*Idxs)
                 self.TracedIECPath = IdxsT[3]
                 self.TracedIECTypes = IdxsT[1]
-                self.DebugToken = self._connector.SetTraceVariablesList(zip(*IdxsT[0:3]))
+                res = self._connector.SetTraceVariablesList(zip(*IdxsT[0:3]))
+                if res is not None and res > 0:
+                    self.DebugToken = res
+                else:
+                    self.DebugToken = None
+                    self.logger.write_warning(
+                        self.RegisterDebugVariableErrorCodes.get(
+                            -res, _("Debug: Unknown error")))
             else:
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
