@@ -78,7 +78,6 @@ static const char *force_buffer_end = force_buffer + FORCE_BUFFER_SIZE;
 
 #endif
 
-static unsigned int retain_offset = 0;
 /***
  * Declare programs 
  **/
@@ -94,9 +93,15 @@ typedef const struct {
     __IEC_types_enum type;
 } dbgvardsc_t;
 
-static dbgvardsc_t dbgvardsc[] = {
+static const dbgvardsc_t dbgvardsc[] = {
 %(variable_decl_array)s
 };
+
+static const dbgvardsc_index_t retain_list[] = {
+%(retain_vardsc_index_array)s
+};
+static unsigned int retain_list_collect_cursor = 0;
+static const unsigned int retain_list_size = sizeof(retain_list)/sizeof(dbgvardsc_index_t);
 
 typedef void(*__for_each_variable_do_fp)(dbgvardsc_t*);
 void __for_each_variable_do(__for_each_variable_do_fp fp)
@@ -115,23 +120,6 @@ void __for_each_variable_do(__for_each_variable_do_fp fp)
 
 void Remind(unsigned int offset, unsigned int count, void * p);
 
-void RemindIterator(dbgvardsc_t *dsc)
-{
-    void *value_p = NULL;
-    char flags;
-    size_t size;
-    UnpackVar(dsc, &value_p, &flags, &size);
-
-    if(flags & __IEC_RETAIN_FLAG){
-        /* compute next cursor positon*/
-        unsigned int next_retain_offset = retain_offset + size;
-        /* if buffer not full */
-        Remind(retain_offset, size, value_p);
-        /* increment cursor according size*/
-        retain_offset = next_retain_offset;
-    }
-}
-
 extern int CheckRetainBuffer(void);
 extern void InitRetain(void);
 
@@ -149,16 +137,36 @@ void __init_debug(void)
     force_list_apply_cursor = force_list;
 #endif
 
-    retain_offset = 0;
     InitRetain();
     /* Iterate over all variables to fill debug buffer */
     if(CheckRetainBuffer()){
-        __for_each_variable_do(RemindIterator);
+        static unsigned int retain_offset = 0;
+        retain_list_collect_cursor = 0;
+
+        /* iterate over retain list */
+        while(retain_list_collect_cursor < retain_list_size){
+            void *value_p = NULL;
+            size_t size;
+            char* next_cursor;
+
+            dbgvardsc_t *dsc = &dbgvardsc[
+                retain_list[retain_list_collect_cursor]];
+
+            UnpackVar(dsc, &value_p, NULL, &size);
+
+            printf("Reminding %%d %%ld \n", retain_list_collect_cursor, size);
+
+            /* if buffer not full */
+            Remind(retain_offset, size, value_p);
+            /* increment cursor according size*/
+            retain_offset += size;
+
+            retain_list_collect_cursor++;
+        }
     }else{
         char mstr[] = "RETAIN memory invalid - defaults used";
         LogMessage(LOG_WARNING, mstr, sizeof(mstr));
     }
-    retain_offset = 0;
 }
 
 extern void InitiateDebugTransfer(void);
@@ -180,52 +188,31 @@ void __retrieve_debug(void)
 {
 }
 
-
 void Retain(unsigned int offset, unsigned int count, void * p);
-
-static inline void BufferIterator(dbgvardsc_t *dsc, int do_debug)
-{
-    void *value_p = NULL;
-    char flags;
-    size_t size;
-
-    UnpackVar(dsc, &value_p, &flags, &size);
-
-    if(flags & __IEC_RETAIN_FLAG){
-
-            /* compute next cursor positon*/
-            unsigned int next_retain_offset = retain_offset + size;
-            /* if buffer not full */
-            Retain(retain_offset, size, value_p);
-            /* increment cursor according size*/
-            retain_offset = next_retain_offset;
-    }
-}
-
-void RetainIterator(dbgvardsc_t *dsc){
-    BufferIterator(dsc, 0);
-}
-
-
-unsigned int retain_size = 0;
-
-/* GetRetainSizeIterator */
-void GetRetainSizeIterator(dbgvardsc_t *dsc)
-{
-    char flags;
-    size_t size;
-    UnpackVar(dsc, NULL, &flags, &size);
-
-    if(flags & __IEC_RETAIN_FLAG){
-        /* Calc retain buffer size */
-        retain_size += size;
-    }
-}
 
 /* Return size of all retain variables */
 unsigned int GetRetainSize(void)
 {
-    __for_each_variable_do(GetRetainSizeIterator);
+    unsigned int retain_size = 0;
+    retain_list_collect_cursor = 0;
+
+    /* iterate over retain list */
+    while(retain_list_collect_cursor < retain_list_size){
+        void *value_p = NULL;
+        size_t size;
+        char* next_cursor;
+
+        dbgvardsc_t *dsc = &dbgvardsc[
+            retain_list[retain_list_collect_cursor]];
+
+        UnpackVar(dsc, &value_p, NULL, &size);
+
+        retain_size += size;
+        retain_list_collect_cursor++;
+    }
+
+    printf("Retain size %%d \n", retain_size);
+            
     return retain_size;
 }
 
@@ -258,7 +245,6 @@ extern void InValidateRetainBuffer(void);
             break;
 void __publish_debug(void)
 {
-    retain_offset = 0;
     InValidateRetainBuffer();
     
 #ifndef TARGET_ONLINE_DEBUG_DISABLE 
@@ -336,8 +322,30 @@ void __publish_debug(void)
         LeaveDebugSection();
     }
 #endif
+    static unsigned int retain_offset = 0;
     /* when not debugging, do only retain */
-    __for_each_variable_do(RetainIterator);
+    retain_list_collect_cursor = 0;
+
+    /* iterate over retain list */
+    while(retain_list_collect_cursor < retain_list_size){
+        void *value_p = NULL;
+        size_t size;
+        char* next_cursor;
+
+        dbgvardsc_t *dsc = &dbgvardsc[
+            retain_list[retain_list_collect_cursor]];
+
+        UnpackVar(dsc, &value_p, NULL, &size);
+
+        printf("Retaining %%d %%ld \n", retain_list_collect_cursor, size);
+
+        /* if buffer not full */
+        Retain(retain_offset, size, value_p);
+        /* increment cursor according size*/
+        retain_offset += size;
+
+        retain_list_collect_cursor++;
+    }
     ValidateRetainBuffer();
 }
 

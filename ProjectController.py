@@ -972,7 +972,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # describes CSV columns
                 ProgramsListAttributeName = ["num", "C_path", "type"]
                 VariablesListAttributeName = [
-                    "num", "vartype", "IEC_path", "C_path", "type", "derived"]
+                    "num", "vartype", "IEC_path", "C_path", "type", "derived", "retain"]
                 self._ProgramList = []
                 self._VariablesList = []
                 self._DbgVariablesList = []
@@ -1053,8 +1053,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # prepare debug code
         variable_decl_array = []
-        for v in self._DbgVariablesList:
-            variable_decl_array += [
+        retain_indexes = []
+        for i, v in enumerate(self._DbgVariablesList):
+            variable_decl_array.append(
                 "{&(%(C_path)s), " % v +
                 {
                     "EXT": "%(type)s_P_ENUM",
@@ -1063,7 +1064,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     "OUT": "%(type)s_O_ENUM",
                     "VAR": "%(type)s_ENUM"
                 }[v["vartype"]] % v +
-                "}"]
+                "}")
+
+            if v["retain"] == "1":
+                retain_indexes.append("/* "+v["C_path"]+" */ "+str(i))
+
         debug_code = targets.GetCode("plc_debug.c") % {
             "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
                                                 p for p in self._ProgramList]),
@@ -1078,6 +1083,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 }[v["vartype"]] % v
                 for v in self._VariablesList if v["C_path"].find('.') < 0]),
             "variable_decl_array": ",\n".join(variable_decl_array),
+            "retain_vardsc_index_array": ",\n".join(retain_indexes),
             "var_access_code": targets.GetCode("var_access.c")
         }
 
