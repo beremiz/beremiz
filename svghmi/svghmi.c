@@ -87,9 +87,8 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
         uint32_t session_index = 0;
         int value_changed = 0;
         void *dest_p = NULL;
-        void *real_value_p = NULL;
-        void *visible_value_p = NULL;
-        USINT sz = 0;
+        void *value_p = NULL;
+        size_t sz = 0;
         while(session_index < MAX_CONNECTIONS) {
             if(dsc->wstate[session_index] == buf_set){
                 /* if being subscribed */
@@ -111,17 +110,14 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
                 int already_subscribed = dsc->refresh_period_ms[session_index] > 0;
                 if(already_subscribed){
                     if(!value_changed){
-                        if(!visible_value_p){
-                            char flags = 0;
-                            visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+                        if(!value_p){
+                            UnpackVar(dsc, &value_p, NULL, &sz);
                             if(__Is_a_string(dsc)){
-                                sz = ((STRING*)visible_value_p)->len + 1;
-                            } else {
-                                sz = __get_type_enum_size(dsc->type);
-                            }
+                                sz = ((STRING*)value_p)->len + 1;
+                            } 
                             dest_p = &wbuf[dsc->buf_index];
                         }
-                        value_changed = memcmp(dest_p, visible_value_p, sz) != 0;
+                        value_changed = memcmp(dest_p, value_p, sz) != 0;
                         do_sample = value_changed;
                     }else{
                         do_sample = 1;
@@ -149,7 +145,7 @@ static int write_iterator(uint32_t index, hmi_tree_item_t *dsc)
         }
         /* copy value if changed (and subscribed) */
         if(value_changed)
-            memcpy(dest_p, visible_value_p, sz);
+            memcpy(dest_p, value_p, sz);
     }
     // else ... : PLC can't wait, variable will be updated next turn
     return 0;
@@ -189,10 +185,10 @@ static int read_iterator(uint32_t index, hmi_tree_item_t *dsc)
     if(dsc->rstate == buf_set)
     {
         void *src_p = &rbuf[dsc->buf_index];
-        void *real_value_p = NULL;
-        char flags = 0;
-        void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
-        memcpy(real_value_p, src_p, __get_type_enum_size(dsc->type));
+        void *value_p = NULL;
+        size_t sz = 0;
+        UnpackVar(dsc, &value_p, NULL, &sz);
+        memcpy(value_p, src_p, sz);
         dsc->rstate = buf_free;
     }
     return 0;
@@ -378,11 +374,10 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
                 if(index < HMI_ITEM_COUNT)
                 {
                     hmi_tree_item_t *dsc = &hmi_tree_item[index];
-                    void *real_value_p = NULL;
-                    char flags = 0;
-                    void *visible_value_p = UnpackVar(dsc, &real_value_p, &flags);
+                    void *value_p = NULL;
+                    size_t sz = 0;
+                    UnpackVar(dsc, &value_p, NULL, &sz);
                     void *dst_p = &rbuf[dsc->buf_index];
-                    uint32_t sz = __get_type_enum_size(dsc->type);
 
                     if(__Is_a_string(dsc)){
                         sz = ((STRING*)valptr)->len + 1;
