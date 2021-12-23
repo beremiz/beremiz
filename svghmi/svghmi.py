@@ -191,14 +191,14 @@ class SVGHMILibrary(POULibrary):
             if hasattr(node, "iectype"):
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
-                    "{&(" + node.cpath + "), " + node.iectype + {
+                    "HMITREE_ITEM_INITIALIZER(" + node.cpath + ", " + node.iectype + {
                         "EXT": "_P_ENUM",
                         "IN":  "_P_ENUM",
                         "MEM": "_O_ENUM",
                         "OUT": "_O_ENUM",
                         "VAR": "_ENUM"
                     }[node.vartype] + ", " +
-                    str(buf_index) + ", 0, }"]
+                    str(buf_index) + ")"]
                 buf_index += sz
                 item_count += 1
                 if len(node.path) == 1:
