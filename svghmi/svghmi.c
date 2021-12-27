@@ -98,71 +98,68 @@ static hmi_tree_item_t hmi_tree_items[] = {
 
 static int write_iterator(hmi_tree_item_t *dsc)
 {
-    {
-        uint32_t session_index = 0;
-        int value_changed = 0;
-        void *dest_p = NULL;
-        void *value_p = NULL;
-        size_t sz = 0;
-        while(session_index < MAX_CONNECTIONS) {
-            if(dsc->wstate[session_index] == buf_set){
-                /* if being subscribed */
-                if(dsc->refresh_period_ms[session_index]){
-                    if(dsc->age_ms[session_index] + ticktime_ms < dsc->refresh_period_ms[session_index]){
-                        dsc->age_ms[session_index] += ticktime_ms;
-                    }else{
-                        dsc->wstate[session_index] = buf_tosend;
-                        global_write_dirty = 1;
-                    }
+    uint32_t session_index = 0;
+    int value_changed = 0;
+    void *dest_p = NULL;
+    void *value_p = NULL;
+    size_t sz = 0;
+    while(session_index < MAX_CONNECTIONS) {
+        if(dsc->wstate[session_index] == buf_set){
+            /* if being subscribed */
+            if(dsc->refresh_period_ms[session_index]){
+                if(dsc->age_ms[session_index] + ticktime_ms < dsc->refresh_period_ms[session_index]){
+                    dsc->age_ms[session_index] += ticktime_ms;
+                }else{
+                    dsc->wstate[session_index] = buf_tosend;
+                    global_write_dirty = 1;
                 }
             }
-
-            /* variable is sample only if just subscribed
-               or already subscribed and having value change */
-            int do_sample = 0;
-            int just_subscribed = dsc->wstate[session_index] == buf_new;
-            if(!just_subscribed){
-                int already_subscribed = dsc->refresh_period_ms[session_index] > 0;
-                if(already_subscribed){
-                    if(!value_changed){
-                        if(!value_p){
-                            UnpackVar(dsc, &value_p, NULL, &sz);
-                            if(__Is_a_string(dsc)){
-                                sz = ((STRING*)value_p)->len + 1;
-                            }
-                            dest_p = &wbuf[dsc->buf_index];
-                        }
-                        value_changed = memcmp(dest_p, value_p, sz) != 0;
-                        do_sample = value_changed;
-                    }else{
-                        do_sample = 1;
-                    }
-                }
-            } else {
-                do_sample = 1;
-            }
-
-
-            if(do_sample){
-                if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
-                    if(dsc->wstate[session_index] == buf_new \
-                       || ticktime_ms > dsc->refresh_period_ms[session_index]){
-                        dsc->wstate[session_index] = buf_tosend;
-                        global_write_dirty = 1;
-                    } else {
-                        dsc->wstate[session_index] = buf_set;
-                    }
-                    dsc->age_ms[session_index] = 0;
-                }
-            }
-
-            session_index++;
         }
-        /* copy value if changed (and subscribed) */
-        if(value_changed)
-            memcpy(dest_p, value_p, sz);
+
+        /* variable is sample only if just subscribed
+           or already subscribed and having value change */
+        int do_sample = 0;
+        int just_subscribed = dsc->wstate[session_index] == buf_new;
+        if(!just_subscribed){
+            int already_subscribed = dsc->refresh_period_ms[session_index] > 0;
+            if(already_subscribed){
+                if(!value_changed){
+                    if(!value_p){
+                        UnpackVar(dsc, &value_p, NULL, &sz);
+                        if(__Is_a_string(dsc)){
+                            sz = ((STRING*)value_p)->len + 1;
+                        }
+                        dest_p = &wbuf[dsc->buf_index];
+                    }
+                    value_changed = memcmp(dest_p, value_p, sz) != 0;
+                    do_sample = value_changed;
+                }else{
+                    do_sample = 1;
+                }
+            }
+        } else {
+            do_sample = 1;
+        }
+
+
+        if(do_sample){
+            if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
+                if(dsc->wstate[session_index] == buf_new \
+                   || ticktime_ms > dsc->refresh_period_ms[session_index]){
+                    dsc->wstate[session_index] = buf_tosend;
+                    global_write_dirty = 1;
+                } else {
+                    dsc->wstate[session_index] = buf_set;
+                }
+                dsc->age_ms[session_index] = 0;
+            }
+        }
+
+        session_index++;
     }
-    // else ... : PLC can't wait, variable will be updated next turn
+    /* copy value if changed (and subscribed) */
+    if(value_changed)
+        memcpy(dest_p, value_p, sz);
     return 0;
 }
 
@@ -213,34 +210,31 @@ void update_refresh_period(hmi_tree_item_t *dsc, uint32_t session_index, uint16_
     uint32_t other_session_index = 0;
     int previously_subscribed = 0;
     int session_only_subscriber = 0;
-    int session_subscriber = 0;
+    int session_already_subscriber = 0;
     int needs_subscription_for_session = (refresh_period_ms != 0);
 
     while(other_session_index < session_index) {
         previously_subscribed |= (dsc->refresh_period_ms[other_session_index++] != 0);
     }
-    session_subscriber = (dsc->refresh_period_ms[other_session_index++] != 0);
+    session_already_subscriber = (dsc->refresh_period_ms[other_session_index++] != 0);
     while(other_session_index < MAX_CONNECTIONS) {
         previously_subscribed |= (dsc->refresh_period_ms[other_session_index++] != 0);
     }
-    session_only_subscriber = session_subscriber && !previously_subscribed;
-    previously_subscribed |= session_subscriber;
-
-    printf("update_refresh_period %%x,%%x index:%%d session_index:%%d refresh_period_ms:%%d\n",
-           dsc,
-           hmi_tree_items,
-           dsc - hmi_tree_items,
-           session_index,
-           refresh_period_ms);
+    session_only_subscriber = session_already_subscriber && !previously_subscribed;
+    previously_subscribed |= session_already_subscriber;
 
     if(needs_subscription_for_session) {
-        if(!session_subscriber)
+        if(!session_already_subscriber)
         {
             dsc->wstate[session_index] = buf_new;
         }
-        /* if not already subscribed */
+        /* item is appended to list only when no session was previously subscribed */
         if(!previously_subscribed){
             /* append subsciption to list */
+            if(subscriptions_tail != NULL){ 
+                /* if list wasn't empty, link with previous tail*/
+                subscriptions_tail->subscriptions_next = dsc;
+            }
             dsc->subscriptions_prev = subscriptions_tail;
             subscriptions_tail = dsc;
             dsc->subscriptions_next = NULL;
@@ -252,8 +246,13 @@ void update_refresh_period(hmi_tree_item_t *dsc, uint32_t session_index, uint16_
             if(dsc->subscriptions_next == NULL){ /* remove tail  */
                 /* re-link tail to previous */
                 subscriptions_tail = dsc->subscriptions_prev;
+                if(subscriptions_tail != NULL){
+                    subscriptions_tail->subscriptions_next = NULL;
+                }
+            } else if(dsc->subscriptions_prev == NULL){ /* remove head  */
+                dsc->subscriptions_next->subscriptions_prev = NULL;
             } else { /* remove entry in between other entries */
-                /* re-link previous iand next node */
+                /* re-link previous and next node */
                 dsc->subscriptions_next->subscriptions_prev = dsc->subscriptions_prev;
                 dsc->subscriptions_prev->subscriptions_next = dsc->subscriptions_next;
             }
@@ -309,11 +308,12 @@ void __retrieve_svghmi()
         hmi_tree_item_t *dsc = incoming_tail;
         /* iterate through read list (changes from HMI) */
         while(dsc){
+            hmi_tree_item_t *_dsc = dsc->incoming_prev;
             read_iterator(dsc);
-            dsc = dsc->incoming_prev;
             /* unnecessary
             dsc->incoming_prev = NULL;
             */
+            dsc = _dsc;
         }
         /* flush read list */
         incoming_tail = NULL;
@@ -347,6 +347,7 @@ int svghmi_wait(void){
 
 int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
 
+
     if(svghmi_continue_collect) {
         int res;
         sbufidx = HMI_HASH_SIZE;
@@ -358,7 +359,6 @@ int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
         hmi_tree_item_t *dsc = subscriptions_tail;
         while(dsc){
             uint32_t index = dsc - hmi_tree_items;
-            printf("Send index %%d\n", index);
             res = send_iterator(index, dsc, session_index);
             if(res != 0){
                 break;
@@ -377,7 +377,6 @@ int svghmi_send_collect(uint32_t session_index, uint32_t *size, char **ptr){
             AtomicCompareExchange(&hmitree_wlock, 1, 0);
             return ENODATA;
         }
-        // printf("collected BAD result %%d\n", res);
         AtomicCompareExchange(&hmitree_wlock, 1, 0);
         return res;
     }
@@ -396,10 +395,15 @@ typedef enum {
 
 int svghmi_reset(uint32_t session_index){
     hmi_tree_item_t *dsc = subscriptions_tail;
-    while(dsc){
-        update_refresh_period(dsc, session_index, 0);
-        dsc = dsc->subscriptions_prev;
+    while(AtomicCompareExchange(&hmitree_wlock, 0, 1)){
+        nRT_reschedule();
     }
+    while(dsc){
+        hmi_tree_item_t *_dsc = dsc->subscriptions_prev;
+        update_refresh_period(dsc, session_index, 0);
+        dsc = _dsc;
+    }
+    AtomicCompareExchange(&hmitree_wlock, 1, 0);
     return 1;
 }
 
@@ -431,6 +435,7 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
         cmd_old = cmd;
         cmd = *(cursor++);
 
+
         if(cmd_old != cmd){
             if(got_wlock){
                 AtomicCompareExchange(&hmitree_wlock, 1, 0);
@@ -447,6 +452,7 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
             {
                 uint32_t index = *(uint32_t*)(cursor);
                 uint8_t const *valptr = cursor + sizeof(uint32_t);
+
 
                 if(index == heartbeat_index)
                     was_hearbeat = 1;
@@ -511,8 +517,9 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
                 {
                     hmi_tree_item_t *dsc = subscriptions_tail;
                     while(dsc){
+                        hmi_tree_item_t *_dsc = dsc->subscriptions_prev;
                         update_refresh_period(dsc, session_index, 0);
-                        dsc = dsc->subscriptions_prev;
+                        dsc = _dsc;
                     }
                 }
             }
