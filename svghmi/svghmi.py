@@ -130,6 +130,10 @@ class SVGHMILibrary(POULibrary):
             # ignores variables starting with _TMP_
             if path[-1].startswith("_TMP_"):
                 continue
+            vartype = v["vartype"]
+            # ignores external variables
+            if vartype == "EXT":
+                continue
             derived = v["derived"]
             kwargs={}
             if derived == "HMI_NODE":
@@ -138,7 +142,7 @@ class SVGHMILibrary(POULibrary):
                 kwargs['hmiclass'] = path[-1]
             else:
                 name = path[-1]
-            new_node = HMITreeNode(path, name, derived, v["type"], v["vartype"], v["C_path"], **kwargs)
+            new_node = HMITreeNode(path, name, derived, v["type"], vartype, v["C_path"], **kwargs)
             placement_result = hmi_tree_root.place_node(new_node)
             if placement_result is not None:
                 cause, problematic_node = placement_result
@@ -148,10 +152,10 @@ class SVGHMILibrary(POULibrary):
                         ".".join(new_node.path))
 
                     last_FB = None 
-                    for v in varlist:
-                        if v["vartype"] == "FB":
-                            last_FB = v 
-                        if v["C_path"] == problematic_node:
+                    for _v in varlist:
+                        if _v["vartype"] == "FB":
+                            last_FB = _v 
+                        if _v["C_path"] == problematic_node:
                             break
                     if last_FB is not None:
                         failing_parent = last_FB["type"]
@@ -187,14 +191,14 @@ class SVGHMILibrary(POULibrary):
             if hasattr(node, "iectype"):
                 sz = DebugTypesSize.get(node.iectype, 0)
                 variable_decl_array += [
-                    "{&(" + node.cpath + "), " + node.iectype + {
+                    "HMITREE_ITEM_INITIALIZER(" + node.cpath + ", " + node.iectype + {
                         "EXT": "_P_ENUM",
                         "IN":  "_P_ENUM",
                         "MEM": "_O_ENUM",
                         "OUT": "_O_ENUM",
                         "VAR": "_ENUM"
                     }[node.vartype] + ", " +
-                    str(buf_index) + ", 0, }"]
+                    str(buf_index) + ")"]
                 buf_index += sz
                 item_count += 1
                 if len(node.path) == 1:
@@ -572,7 +576,8 @@ class SVGHMI(object):
                 # call xslt transform on Inkscape's SVG to generate XHTML
                 try: 
                     self.ProgressStart("xslt", "XSLT transform")
-                    result = transform.transform(svgdom)  # , profile_run=True)
+                    result = transform.transform(
+                        svgdom, instance_name=location_str)  # , profile_run=True)
                     self.ProgressEnd("xslt")
                 except XSLTApplyError as e:
                     self.FatalError("SVGHMI " + svghmi_options["name"] + ": " + e.message)
@@ -826,8 +831,11 @@ def _runtime_{location}_svghmi_stop():
                 self.GetCTRoot().logger.write_error(
                     _("Font file does not exist: %s\n") % fontfile)
         
+    def CTNGlobalInstances(self):
+        location_str = "_".join(map(str, self.GetCurrentLocation()))
+        return [("CURRENT_PAGE_"+location_str, "HMI_STRING", "")]
+
     ## In case one day we support more than one heartbeat
-    # def CTNGlobalInstances(self):
     #     view_name = self.BaseParams.getName()
     #     return [(view_name + "_HEARTBEAT", "HMI_INT", "")]
 

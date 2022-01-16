@@ -30,12 +30,12 @@ function init_widgets() {
 };
 
 // Open WebSocket to relative "/ws" address
+var has_watchdog = window.location.hash == "#watchdog";
 
 var ws_url = 
     window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
-    + '?mode=' + (window.location.hash == "#watchdog" 
-                  ? "watchdog"
-                  : "multiclient");
+    + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
+
 var ws = new WebSocket(ws_url);
 ws.binaryType = 'arraybuffer';
 
@@ -195,15 +195,28 @@ function set_subscription_period(index, period) {
     }
 }
 
-// artificially subscribe the watchdog widget to "/heartbeat" hmi variable
-// Since dispatch directly calls change_hmi_value,
-// PLC will periodically send variable at given frequency
-subscribers(heartbeat_index).add({
-    /* type: "Watchdog", */
+if(has_watchdog){
+    // artificially subscribe the watchdog widget to "/heartbeat" hmi variable
+    // Since dispatch directly calls change_hmi_value,
+    // PLC will periodically send variable at given frequency
+    subscribers(heartbeat_index).add({
+        /* type: "Watchdog", */
+        frequency: 1,
+        indexes: [heartbeat_index],
+        new_hmi_value: function(index, value, oldval) {
+            apply_hmi_value(heartbeat_index, value+1);
+        }
+    });
+}
+
+// subscribe to per instance current page hmi variable
+// PLC must prefix page name with "!" for page switch to happen
+subscribers(current_page_var_index).add({
     frequency: 1,
-    indexes: [heartbeat_index],
+    indexes: [current_page_var_index],
     new_hmi_value: function(index, value, oldval) {
-        apply_hmi_value(heartbeat_index, value+1);
+        if(value.startsWith("!"))
+            switch_page(value.slice(1));
     }
 });
 
@@ -401,7 +414,9 @@ function switch_page(page_name, page_index) {
 
     if(page_name == undefined)
         page_name = current_subscribed_page;
-
+    else if(page_index == undefined){
+        [page_name, page_index] = page_name.split('@')
+    }
 
     let old_desc = page_desc[current_subscribed_page];
     let new_desc = page_desc[page_name];
@@ -411,8 +426,19 @@ function switch_page(page_name, page_index) {
         return false;
     }
 
-    if(page_index == undefined){
+    if(page_index == undefined)
         page_index = new_desc.page_index;
+    else if(typeof(page_index) == "string") {
+        let hmitree_node = hmitree_nodes[page_index];
+        if(hmitree_node !== undefined){
+            let [int_index, hmiclass] = hmitree_node;
+            if(hmiclass == new_desc.page_class)
+                page_index = int_index;
+            else
+                page_index = new_desc.page_index;
+        } else {
+            page_index = new_desc.page_index;
+        }
     }
 
     if(old_desc){
@@ -442,6 +468,10 @@ function switch_page(page_name, page_index) {
     jump_history.push([page_name, page_index]);
     if(jump_history.length > 42)
         jump_history.shift();
+
+    apply_hmi_value(current_page_var_index, page_index == undefined
+        ? page_name
+        : page_name + "@" + hmitree_paths[page_index]);
 
     return true;
 };

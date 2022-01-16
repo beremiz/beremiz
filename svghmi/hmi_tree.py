@@ -160,5 +160,4 @@ class HMITreeNode(object):
 
 SPECIAL_NODES = [("HMI_ROOT", "HMI_NODE"),
                  ("heartbeat", "HMI_INT")]
-                 # ("current_page", "HMI_STRING")])
 
