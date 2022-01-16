@@ -11,7 +11,7 @@ widget_desc("Switch") {
     '"hello"' or '"hello"#another comment' match HMI_STRING 'hello'.
     ||
 
-    shortdesc > Show elements whose label match value.
+    shortdesc > Show elements whose label matches value.
 
     // TODO: add optional format/precision argument to support floating points
     // TODO: support (in)equations and ranges

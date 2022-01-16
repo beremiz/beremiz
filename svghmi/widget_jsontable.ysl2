@@ -6,7 +6,7 @@ widget_desc("JsonTable") {
     Send given variables as POST to http URL argument, spread returned JSON in
     SVG sub-elements of "data" labeled element.
     
-    Documentation to be written. see svbghmi exemple.
+    Documentation to be written. see svghmi exemple.
     ||
 
     shortdesc > Http POST variables, spread JSON back
@@ -151,15 +151,15 @@ const "initexpr_ns", "exsl:node-set($initexpr)";
 
 template "svg:use", mode="json_table_elt_render" {
     param "expressions";
-    // cloned element must be part of a HMI:List
+    // cloned element must be part of a HMI:List or a HMI:List
     const "targetid", "substring-after(@xlink:href,'#')";
     const "from_list", "$hmi_lists[(@id | */@id) = $targetid]";
 
     choose {
         when "count($from_list) > 0" {
-            |         id("«@id»").setAttribute("xlink:href",
+            |         id("«@id»").href.baseVal =
             // obtain new target id from HMI:List widget
-            |             "#"+hmi_widgets["«$from_list/@id»"].items[«$expressions/expression[1]/@content»]);
+            |             "#"+hmi_widgets["«$from_list/@id»"].items[«$expressions/expression[1]/@content»];
         }
         otherwise
             warning > Clones (svg:use) in JsonTable Widget must point to a valid HMI:List widget or item. Reference "«@xlink:href»" is not valid and will not be updated.

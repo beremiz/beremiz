@@ -88,7 +88,7 @@ def "func:required_elements" {
 const "required_page_elements",
     "func:required_elements($hmi_pages | $keypads)/ancestor-or-self::svg:*";
 
-const "required_list_elements", "func:refered_elements(($hmi_lists | $hmi_textlists)[@id = $required_page_elements/@id])";
+const "required_list_elements", "func:refered_elements(($hmi_lists | $hmi_textlists)[@id = $required_page_elements/@id])/ancestor-or-self::svg:*";
 
 const "required_elements", "$defs | $required_list_elements | $required_page_elements";
 
@@ -169,6 +169,7 @@ template "svg:*", mode="page_desc" {
         if "count($desc/path/@index)=0"
             warning > Page id="«$page/@id»" : No match for path "«$desc/path/@value»" in HMI tree
     |     page_index: «$desc/path/@index»,
+    |     page_class: "«$indexed_hmitree/*[@hmipath = $desc/path/@value]/@class»",
     }
     |     widgets: [
     foreach "$page_managed_widgets" {
