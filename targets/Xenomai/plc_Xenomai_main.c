@@ -384,6 +384,7 @@ int suspendDebug(int disable)
 
 void resumeDebug(void)
 {
+    __DEBUG = 1;
     AtomicCompareExchange( &debug_state, DEBUG_BUSY, DEBUG_FREE);
 }
 
