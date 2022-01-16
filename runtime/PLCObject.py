@@ -223,7 +223,7 @@ class PLCObject(object):
             self._ResetDebugVariables.restype = None
 
             self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
-            self._RegisterDebugVariable.restype = None
+            self._RegisterDebugVariable.restype = ctypes.c_int
             self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p]
 
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
@@ -294,7 +294,7 @@ class PLCObject(object):
         self._startPLC = lambda x, y: None
         self._stopPLC = lambda: None
         self._ResetDebugVariables = lambda: None
-        self._RegisterDebugVariable = lambda x, y: None
+        self._RegisterDebugVariable = lambda x, y: 0
         self._IterDebugData = lambda x, y: None
         self._FreeDebugData = lambda: None
         self._GetDebugData = lambda: -1
@@ -720,7 +720,11 @@ class PLCObject(object):
                             TypeTranslator.get(iectype,
                                                (None, None, None))
                         force = ctypes.byref(pack_func(c_type, force))
-                    self._RegisterDebugVariable(idx, force)
+                    res = self._RegisterDebugVariable(idx, force)
+                    if res != 0:
+                        self._resumeDebug()
+                        self._suspendDebug(True)
+                        return -res
                 self._TracesSwap()
                 self._resumeDebug()
                 return self.DebugToken
