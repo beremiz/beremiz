@@ -29,7 +29,7 @@ UA_IEC_types = dict(
 UA_NODE_ID_types = {
     "int"   : ("UA_NODEID_NUMERIC", "{}"  ),
     "str"   : ("UA_NODEID_STRING" , '"{}"'),
-    "UUIS"  : ("UA_NODEID_UUID"   , '"{}"'),
+    "UUID"  : ("UA_NODEID_UUID"   , '"{}"'),
 }
 
 lstcolnames  = [  "Name", "NSIdx", "IdType", "Id", "Type", "IEC"]
@@ -501,7 +501,7 @@ void __cleanup_%(locstr)s(void)
 }
 
 
-#define INIT_READ_VARIANT(ua_type, c_loc_name)                                                          \\
+#define INIT_READ_VARIANT(ua_type, c_loc_name)                                                     \\
     UA_Variant_init(&c_loc_name##_variant);
 
 #define INIT_WRITE_VARIANT(ua_type, ua_type_enum, c_loc_name)       \\
