@@ -485,11 +485,11 @@ class OPCUAClientModel(dict):
 #include <open62541/client_highlevel.h>
 #include <open62541/plugin/log_stdout.h>
 
-UA_Client *client;
+static UA_Client *client;
 
 #define DECL_VAR(ua_type, C_type, c_loc_name)                                                       \\
-UA_Variant c_loc_name##_variant;                                                                    \\
-C_type c_loc_name##_buf = 0;                                                                        \\
+static UA_Variant c_loc_name##_variant;                                                             \\
+static C_type c_loc_name##_buf = 0;                                                                 \\
 C_type *c_loc_name = &c_loc_name##_buf;
 
 %(decl)s
