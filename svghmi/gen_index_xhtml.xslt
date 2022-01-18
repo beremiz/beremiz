@@ -175,14 +175,26 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="_type" select="substring-before($args,':')"/>
+    <xsl:variable name="_typefreq" select="substring-before($args,':')"/>
+    <xsl:variable name="typefreq">
+      <xsl:choose>
+        <xsl:when test="$_typefreq">
+          <xsl:value-of select="$_typefreq"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$args"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="freq" select="substring-after($typefreq,':')"/>
+    <xsl:variable name="_type" select="substring-before($typefreq,'|')"/>
     <xsl:variable name="type">
       <xsl:choose>
         <xsl:when test="$_type">
           <xsl:value-of select="$_type"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="$args"/>
+          <xsl:value-of select="$typefreq"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -194,6 +206,11 @@
         <xsl:attribute name="type">
           <xsl:value-of select="$type"/>
         </xsl:attribute>
+        <xsl:if test="freq">
+          <xsl:attribute name="frequency">
+            <xsl:value-of select="$freq"/>
+          </xsl:attribute>
+        </xsl:if>
         <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
           <arg>
             <xsl:attribute name="value">
@@ -998,7 +1015,7 @@
   <xsl:template xmlns="http://www.w3.org/2000/svg" mode="unlink_clone" match="svg:*">
     <xsl:param name="seed"/>
     <xsl:choose>
-      <xsl:when test="@id = $hmi_elements/@id">
+      <xsl:when test="@id = $hmi_widgets/@id">
         <use>
           <xsl:attribute name="xlink:href">
             <xsl:value-of select="concat('#',@id)"/>
@@ -1228,13 +1245,25 @@
         </xsl:if>
       </xsl:for-each>
     </xsl:variable>
+    <xsl:variable name="freq">
+      <xsl:choose>
+        <xsl:when test="$widget/freq">
+          <xsl:value-of select="$widget/freq"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>undefined</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>": new </xsl:text>
     <xsl:value-of select="$widget/@type"/>
     <xsl:text>Widget ("</xsl:text>
     <xsl:value-of select="@id"/>
-    <xsl:text>",[</xsl:text>
+    <xsl:text>",</xsl:text>
+    <xsl:value-of select="$freq"/>
+    <xsl:text>,[</xsl:text>
     <xsl:value-of select="$args"/>
     <xsl:text>],[</xsl:text>
     <xsl:value-of select="$indexes"/>
@@ -1424,11 +1453,13 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    constructor(elt_id,args,indexes,minmaxes,members){
+    <xsl:text>    constructor(elt_id, freq, args, indexes, minmaxes, members){
 </xsl:text>
     <xsl:text>        this.element_id = elt_id;
 </xsl:text>
     <xsl:text>        this.element = id(elt_id);
+</xsl:text>
+    <xsl:text>        if(freq !== undefined) this.frequency = freq;
 </xsl:text>
     <xsl:text>        this.args = args;
 </xsl:text>
