@@ -2,7 +2,7 @@
 
 
 //  Parses:
-//  "HMI:WidgetType:param1:param2@path1,path1min,path1max@path2"
+//  "HMI:WidgetType|freq:param1:param2@path1,path1min,path1max@path2"
 //
 //  Into:
 //  widget type="WidgetType" id="blah456" {
@@ -28,15 +28,23 @@ template "*", mode="parselabel"
         otherwise value "$description";
     }
 
-    const "_type", "substring-before($args,':')";
-    const "type" choose {
-        when "$_type" value "$_type";
+    const "_typefreq", "substring-before($args,':')";
+    const "typefreq" choose {
+        when "$_typefreq" value "$_typefreq";
         otherwise value "$args";
     }
 
+    const "freq", "substring-after($typefreq,':')";
+
+    const "_type", "substring-before($typefreq,'|')";
+    const "type" choose {
+        when "$_type" value "$_type";
+        otherwise value "$typefreq";
+    }
     if "$type" widget {
         attrib "id" > «$id»
         attrib "type" > «$type»
+        if "freq" attrib "frequency" > «$freq»
         foreach "str:split(substring-after($args, ':'), ':')" {
             arg {
                 attrib "value" > «.»
