@@ -29,7 +29,7 @@ UA_IEC_types = dict(
 UA_NODE_ID_types = {
     "int"   : ("UA_NODEID_NUMERIC", "{}"  ),
     "str"   : ("UA_NODEID_STRING" , '"{}"'),
-    "UUIS"  : ("UA_NODEID_UUID"   , '"{}"'),
+    "UUID"  : ("UA_NODEID_UUID"   , '"{}"'),
 }
 
 lstcolnames  = [  "Name", "NSIdx", "IdType", "Id", "Type", "IEC"]
@@ -485,11 +485,11 @@ class OPCUAClientModel(dict):
 #include <open62541/client_highlevel.h>
 #include <open62541/plugin/log_stdout.h>
 
-UA_Client *client;
+static UA_Client *client;
 
 #define DECL_VAR(ua_type, C_type, c_loc_name)                                                       \\
-UA_Variant c_loc_name##_variant;                                                                    \\
-C_type c_loc_name##_buf = 0;                                                                        \\
+static UA_Variant c_loc_name##_variant;                                                             \\
+static C_type c_loc_name##_buf = 0;                                                                 \\
 C_type *c_loc_name = &c_loc_name##_buf;
 
 %(decl)s
@@ -501,7 +501,7 @@ void __cleanup_%(locstr)s(void)
 }
 
 
-#define INIT_READ_VARIANT(ua_type, c_loc_name)                                                          \\
+#define INIT_READ_VARIANT(ua_type, c_loc_name)                                                     \\
     UA_Variant_init(&c_loc_name##_variant);
 
 #define INIT_WRITE_VARIANT(ua_type, ua_type_enum, c_loc_name)       \\
