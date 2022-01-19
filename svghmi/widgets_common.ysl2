@@ -84,8 +84,8 @@ template "svg:*", mode="hmi_widgets" {
     }
 
     const "freq" choose {
-        when "$widget/freq"
-            > «$widget/freq»
+        when "$widget/@freq"
+            > «$widget/@freq»
         otherwise
             > undefined
     }
