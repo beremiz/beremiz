@@ -34,7 +34,7 @@ template "*", mode="parselabel"
         otherwise value "$args";
     }
 
-    const "freq", "substring-after($typefreq,':')";
+    const "freq", "substring-after($typefreq,'|')";
 
     const "_type", "substring-before($typefreq,'|')";
     const "type" choose {
@@ -44,7 +44,7 @@ template "*", mode="parselabel"
     if "$type" widget {
         attrib "id" > «$id»
         attrib "type" > «$type»
-        if "freq" attrib "frequency" > «$freq»
+        if "$freq" attrib "freq" > «$freq»
         foreach "str:split(substring-after($args, ':'), ':')" {
             arg {
                 attrib "value" > «.»
