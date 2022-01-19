@@ -28,6 +28,41 @@ decl hmi_value(value);
 
 gen_index_xhtml {
 
+const "_push_button_fsm" fsm {
+    state "init" {
+        on_dispatch "false" jump "reflect_off";
+        on_dispatch "true" jump "reflect_on";
+    }
+
+    state "reflect_on" {
+        show "active";
+        on_mouse "down" jump "on";
+        on_mouse "up" jump "off";
+        on_dispatch "false" jump "reflect_off";
+    }
+
+    state "on" {
+        hmi_value "true";
+        show "active";
+        on_mouse "up" jump "off";
+        on_dispatch "false" jump "reflect_off";
+    }
+
+    state "reflect_off" {
+        show "inactive";
+        on_mouse "down" jump "on";
+        on_mouse "up" jump "off";
+        on_dispatch "true" jump "reflect_on";
+    }
+
+    state "off" {
+        hmi_value "false";
+        show "inactive";
+        on_mouse "down" jump "on";
+        on_dispatch "true" jump "reflect_on";
+    }
+}
+
 // State machine to drive HMI_BOOL on a potentially laggy connection
 const "_button_fsm" fsm {
     state "init" {
@@ -111,7 +146,7 @@ template "fsm", mode="actions" {
 }
 template "state", mode="actions" {
     |     «@name»_action(){
-    //| console.log("Entering state «@name»");
+    | console.log("Entering state «@name»");
     apply "*", mode="actions";
     |     }
 }
@@ -125,26 +160,24 @@ template "hmi-value", mode="actions" {
 
 }
 
-widget_class("Button"){
-    const "fsm","exsl:node-set($_button_fsm)";
+
+function "generated_button_class" {
+    param "fsm";
     |     frequency = 5;
 
     |     display = "inactive";
     |     state = "init";
 
     |     dispatch(value) {
-    // |         console.log("dispatch"+value);
     apply "$fsm", mode="dispatch_transition";
     |     }
 
     |     onmouseup(evt) {
     |         svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
-    // |         console.log("onmouseup");
     apply "$fsm", mode="mouse_transition" with "position", "'up'";
     |     }
     |     onmousedown(evt) {
     |         svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
-    // |         console.log("onmousedown");
     apply "$fsm", mode="mouse_transition" with "position", "'down'";
     |     }
 
@@ -167,6 +200,22 @@ widget_class("Button"){
     |     }
 }
 
+
+widget_class("Button"){
+    const "fsm","exsl:node-set($_button_fsm)";
+    call "generated_button_class" with "fsm", "$fsm";
+}
+
 widget_defs("Button") {
     optional_labels("active inactive");
 }
+
+widget_class("PushButton"){
+    const "fsm","exsl:node-set($_push_button_fsm)";
+    call "generated_button_class" with "fsm", "$fsm";
+}
+
+widget_defs("PushButton") {
+    optional_labels("active inactive");
+}
+
