@@ -163,7 +163,6 @@ template "hmi-value", mode="actions" {
 
 function "generated_button_class" {
     param "fsm";
-    |     frequency = 5;
 
     |     display = "inactive";
     |     state = "init";
@@ -202,6 +201,7 @@ function "generated_button_class" {
 
 
 widget_class("Button"){
+    |     frequency = 5;
     const "fsm","exsl:node-set($_button_fsm)";
     call "generated_button_class" with "fsm", "$fsm";
 }
@@ -211,6 +211,7 @@ widget_defs("Button") {
 }
 
 widget_class("PushButton"){
+    |     frequency = 20;
     const "fsm","exsl:node-set($_push_button_fsm)";
     call "generated_button_class" with "fsm", "$fsm";
 }

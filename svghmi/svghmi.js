@@ -26,6 +26,8 @@ function init_widgets() {
                 console.log(err);
             }
         }
+        if(widget.forced_frequency !== undefined)
+            widget.frequency = widget.forced_frequency;
     });
 };
 

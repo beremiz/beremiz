@@ -174,7 +174,6 @@ emit "preamble:widget-base-class" {
         constructor(elt_id, freq, args, indexes, minmaxes, members){
             this.element_id = elt_id;
             this.element = id(elt_id);
-            if(freq !== undefined) this.frequency = freq;
             this.args = args;
             this.indexes = indexes;
             this.minmaxes = minmaxes;
@@ -183,6 +182,7 @@ emit "preamble:widget-base-class" {
             this.inhibit = indexes.map(() => undefined);
             this.pending = indexes.map(() => undefined);
             this.bound_unhinibit = this.unhinibit.bind(this);
+            this.forced_frequency = freq;
         }
 
         unsub(){
