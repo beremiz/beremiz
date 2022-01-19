@@ -31,7 +31,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="freq" select="substring-after($typefreq,':')"/>
+    <xsl:variable name="freq" select="substring-after($typefreq,'|')"/>
     <xsl:variable name="_type" select="substring-before($typefreq,'|')"/>
     <xsl:variable name="type">
       <xsl:choose>
@@ -51,8 +51,8 @@
         <xsl:attribute name="type">
           <xsl:value-of select="$type"/>
         </xsl:attribute>
-        <xsl:if test="freq">
-          <xsl:attribute name="frequency">
+        <xsl:if test="$freq">
+          <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
         </xsl:if>
