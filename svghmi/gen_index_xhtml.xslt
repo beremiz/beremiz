@@ -186,7 +186,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="freq" select="substring-after($typefreq,':')"/>
+    <xsl:variable name="freq" select="substring-after($typefreq,'|')"/>
     <xsl:variable name="_type" select="substring-before($typefreq,'|')"/>
     <xsl:variable name="type">
       <xsl:choose>
@@ -206,8 +206,8 @@
         <xsl:attribute name="type">
           <xsl:value-of select="$type"/>
         </xsl:attribute>
-        <xsl:if test="freq">
-          <xsl:attribute name="frequency">
+        <xsl:if test="$freq">
+          <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
         </xsl:if>
@@ -1247,8 +1247,8 @@
     </xsl:variable>
     <xsl:variable name="freq">
       <xsl:choose>
-        <xsl:when test="$widget/freq">
-          <xsl:value-of select="$widget/freq"/>
+        <xsl:when test="$widget/@freq">
+          <xsl:value-of select="$widget/@freq"/>
         </xsl:when>
         <xsl:otherwise>
           <xsl:text>undefined</xsl:text>
@@ -2214,6 +2214,62 @@
       <xsl:text>Boolean variable</xsl:text>
     </path>
   </xsl:template>
+  <xsl:variable name="_push_button_fsm">
+    <fsm>
+      <state name="init">
+        <on-dispatch value="false">
+          <jump state="reflect_off"/>
+        </on-dispatch>
+        <on-dispatch value="true">
+          <jump state="reflect_on"/>
+        </on-dispatch>
+      </state>
+      <state name="reflect_on">
+        <show eltname="active"/>
+        <on-mouse position="down">
+          <jump state="on"/>
+        </on-mouse>
+        <on-mouse position="up">
+          <jump state="off"/>
+        </on-mouse>
+        <on-dispatch value="false">
+          <jump state="reflect_off"/>
+        </on-dispatch>
+      </state>
+      <state name="on">
+        <hmi-value value="true"/>
+        <show eltname="active"/>
+        <on-mouse position="up">
+          <jump state="off"/>
+        </on-mouse>
+        <on-dispatch value="false">
+          <jump state="reflect_off"/>
+        </on-dispatch>
+      </state>
+      <state name="reflect_off">
+        <show eltname="inactive"/>
+        <on-mouse position="down">
+          <jump state="on"/>
+        </on-mouse>
+        <on-mouse position="up">
+          <jump state="off"/>
+        </on-mouse>
+        <on-dispatch value="true">
+          <jump state="reflect_on"/>
+        </on-dispatch>
+      </state>
+      <state name="off">
+        <hmi-value value="false"/>
+        <show eltname="inactive"/>
+        <on-mouse position="down">
+          <jump state="on"/>
+        </on-mouse>
+        <on-dispatch value="true">
+          <jump state="reflect_on"/>
+        </on-dispatch>
+      </state>
+    </fsm>
+  </xsl:variable>
   <xsl:variable name="_button_fsm">
     <fsm>
       <state name="init">
@@ -2344,6 +2400,10 @@
     <xsl:value-of select="@name"/>
     <xsl:text>_action(){
 </xsl:text>
+    <xsl:text>console.log("Entering state </xsl:text>
+    <xsl:value-of select="@name"/>
+    <xsl:text>");
+</xsl:text>
     <xsl:apply-templates mode="actions" select="*"/>
     <xsl:text>    }
 </xsl:text>
@@ -2362,12 +2422,8 @@
     <xsl:text>);
 </xsl:text>
   </xsl:template>
-  <xsl:template match="widget[@type='Button']" mode="widget_class">
-    <xsl:text>class </xsl:text>
-    <xsl:text>ButtonWidget</xsl:text>
-    <xsl:text> extends Widget{
-</xsl:text>
-    <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
+  <xsl:template name="generated_button_class">
+    <xsl:param name="fsm"/>
     <xsl:text>    frequency = 5;
 </xsl:text>
     <xsl:text>    display = "inactive";
@@ -2430,10 +2486,42 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Button']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ButtonWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
+    <xsl:call-template name="generated_button_class">
+      <xsl:with-param name="fsm" select="$fsm"/>
+    </xsl:call-template>
     <xsl:text>}
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='Button']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>active inactive</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'no'"/>
+    </xsl:call-template>
+  </xsl:template>
+  <xsl:template match="widget[@type='PushButton']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>PushButtonWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:variable name="fsm" select="exsl:node-set($_push_button_fsm)"/>
+    <xsl:call-template name="generated_button_class">
+      <xsl:with-param name="fsm" select="$fsm"/>
+    </xsl:call-template>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='PushButton']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -8713,6 +8801,8 @@
 </xsl:text>
           <xsl:text>function send_hmi_value(index, value) {
 </xsl:text>
+          <xsl:text>    console.log("send_hmi_value("+index+", "+value+")")
+</xsl:text>
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
           <xsl:text>        updates.set(index, value);
@@ -8761,9 +8851,11 @@
 </xsl:text>
           <xsl:text>function apply_hmi_value(index, new_val) {
 </xsl:text>
-          <xsl:text>    let old_val = cache[index];
+          <xsl:text>    console.log("apply_hmi_value("+index+", "+new_val+")")
 </xsl:text>
-          <xsl:text>    if(new_val != undefined &amp;&amp; old_val != new_val)
+          <xsl:text>    /*let old_val = cache[index];*/
+</xsl:text>
+          <xsl:text>    if(new_val != undefined /*&amp;&amp; old_val != new_val*/)
 </xsl:text>
           <xsl:text>        send_hmi_value(index, new_val);
 </xsl:text>

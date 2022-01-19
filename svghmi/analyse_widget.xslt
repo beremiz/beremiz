@@ -29,7 +29,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="freq" select="substring-after($typefreq,':')"/>
+    <xsl:variable name="freq" select="substring-after($typefreq,'|')"/>
     <xsl:variable name="_type" select="substring-before($typefreq,'|')"/>
     <xsl:variable name="type">
       <xsl:choose>
@@ -49,8 +49,8 @@
         <xsl:attribute name="type">
           <xsl:value-of select="$type"/>
         </xsl:attribute>
-        <xsl:if test="freq">
-          <xsl:attribute name="frequency">
+        <xsl:if test="$freq">
+          <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
         </xsl:if>
@@ -220,6 +220,71 @@
     <path name="value" accepts="HMI_BOOL">
       <xsl:text>Boolean variable</xsl:text>
     </path>
+  </xsl:template>
+  <xsl:template name="generated_button_class">
+    <xsl:param name="fsm"/>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:text>    display = "inactive";
+</xsl:text>
+    <xsl:text>    state = "init";
+</xsl:text>
+    <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:apply-templates mode="dispatch_transition" select="$fsm"/>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    onmouseup(evt) {
+</xsl:text>
+    <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:apply-templates mode="mouse_transition" select="$fsm">
+      <xsl:with-param name="position" select="'up'"/>
+    </xsl:apply-templates>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    onmousedown(evt) {
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:apply-templates mode="mouse_transition" select="$fsm">
+      <xsl:with-param name="position" select="'down'"/>
+    </xsl:apply-templates>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:apply-templates mode="actions" select="$fsm"/>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>        if (this.active_elt &amp;&amp; this.inactive_elt) {
+</xsl:text>
+    <xsl:for-each select="str:split('active inactive')">
+      <xsl:text>            if(this.display == "</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>")
+</xsl:text>
+      <xsl:text>                this.</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_elt.style.display = "";
+</xsl:text>
+      <xsl:text>            else
+</xsl:text>
+      <xsl:text>                this.</xsl:text>
+      <xsl:value-of select="."/>
+      <xsl:text>_elt.style.display = "none";
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='CircularBar']" mode="widget_desc">
     <type>
