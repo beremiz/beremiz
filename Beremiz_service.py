@@ -32,6 +32,7 @@ import getopt
 import threading
 import shlex
 import traceback
+import threading
 from threading import Thread, Semaphore, Lock, currentThread
 from builtins import str as text
 from past.builtins import execfile
@@ -45,6 +46,14 @@ from runtime import PlcStatus
 from runtime import default_evaluator
 from runtime.Stunnel import ensurePSK
 import util.paths as paths
+
+# In case system time is ajusted, it is better to use
+# monotonic timers for timers and other timeout based operations.
+# hot-patch threading module to force using monitonic time for all 
+# Thread/Timer/Event/Condition
+
+from runtime.monotonic_time import monotonic
+threading._time = monotonic
 
 try:
     from runtime.spawn_subprocess import Popen
