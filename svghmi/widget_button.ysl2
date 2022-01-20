@@ -146,7 +146,7 @@ template "fsm", mode="actions" {
 }
 template "state", mode="actions" {
     |     «@name»_action(){
-    | console.log("Entering state «@name»");
+    // | console.log("Entering state «@name»", this.frequency);
     apply "*", mode="actions";
     |     }
 }
