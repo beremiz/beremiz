@@ -796,7 +796,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Compute offset before ST resulting of transformation from user POUs
         self.ProgramOffset = IECCodeContent.count("\n")
 
-        IECCodeContent += open(self._getIECgeneratedcodepath(), "r").read()
+        POUsIECCodeContent = open(self._getIECgeneratedcodepath(), "r").read()
 
         IECcodepath = self._getIECcodepath()
 
@@ -805,9 +805,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         with open(IECcodepath, "w") as plc_file:
             plc_file.write(IECCodeContent)
+            plc_file.write(POUsIECCodeContent)
 
         hasher = hashlib.md5()
         hasher.update(IECCodeContent)
+        hasher.update(POUsIECCodeContent)
         self.IECcodeDigest = hasher.hexdigest()
 
         return True
