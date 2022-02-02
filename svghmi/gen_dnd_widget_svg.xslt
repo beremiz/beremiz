@@ -20,14 +20,26 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="_type" select="substring-before($args,':')"/>
+    <xsl:variable name="_typefreq" select="substring-before($args,':')"/>
+    <xsl:variable name="typefreq">
+      <xsl:choose>
+        <xsl:when test="$_typefreq">
+          <xsl:value-of select="$_typefreq"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$args"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="freq" select="substring-after($typefreq,'|')"/>
+    <xsl:variable name="_type" select="substring-before($typefreq,'|')"/>
     <xsl:variable name="type">
       <xsl:choose>
         <xsl:when test="$_type">
           <xsl:value-of select="$_type"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="$args"/>
+          <xsl:value-of select="$typefreq"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -39,6 +51,11 @@
         <xsl:attribute name="type">
           <xsl:value-of select="$type"/>
         </xsl:attribute>
+        <xsl:if test="$freq">
+          <xsl:attribute name="freq">
+            <xsl:value-of select="$freq"/>
+          </xsl:attribute>
+        </xsl:if>
         <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
           <arg>
             <xsl:attribute name="value">

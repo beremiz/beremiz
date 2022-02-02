@@ -83,7 +83,14 @@ template "svg:*", mode="hmi_widgets" {
         if "position()!=last()" > ,
     }
 
-    |   "«@id»": new «$widget/@type»Widget ("«@id»",[«$args»],[«$indexes»],[«$minmaxes»],{
+    const "freq" choose {
+        when "$widget/@freq"
+            > «$widget/@freq»
+        otherwise
+            > undefined
+    }
+
+    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$indexes»],[«$minmaxes»],{
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
 }
@@ -164,9 +171,10 @@ emit "preamble:widget-base-class" {
         unsubscribable = false;
         pending_animate = false;
 
-        constructor(elt_id,args,indexes,minmaxes,members){
+        constructor(elt_id, freq, args, indexes, minmaxes, members){
             this.element_id = elt_id;
             this.element = id(elt_id);
+            if(freq !== undefined) this.frequency = freq;
             this.args = args;
             this.indexes = indexes;
             this.minmaxes = minmaxes;
