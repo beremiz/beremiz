@@ -398,6 +398,7 @@ class Beremiz(IDEFrame):
         self.LogConsole.MarkerDefine(0, wx.stc.STC_MARK_CIRCLE, "BLACK", "RED")
 
         self.LogConsole.SetModEventMask(wx.stc.STC_MOD_INSERTTEXT)
+        self.LogConsole.SetCaretPeriod(0)
 
         self.LogConsole.Bind(wx.stc.EVT_STC_MARGINCLICK, self.OnLogConsoleMarginClick)
         self.LogConsole.Bind(wx.stc.EVT_STC_MODIFIED, self.OnLogConsoleModified)

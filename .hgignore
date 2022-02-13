@@ -24,3 +24,5 @@ revision
 
 doc/_build
 doc/locale
+
+^.*\$py.class$
