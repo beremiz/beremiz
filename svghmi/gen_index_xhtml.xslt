@@ -1459,8 +1459,6 @@
 </xsl:text>
     <xsl:text>        this.element = id(elt_id);
 </xsl:text>
-    <xsl:text>        if(freq !== undefined) this.frequency = freq;
-</xsl:text>
     <xsl:text>        this.args = args;
 </xsl:text>
     <xsl:text>        this.indexes = indexes;
@@ -1476,6 +1474,8 @@
     <xsl:text>        this.pending = indexes.map(() =&gt; undefined);
 </xsl:text>
     <xsl:text>        this.bound_unhinibit = this.unhinibit.bind(this);
+</xsl:text>
+    <xsl:text>        this.forced_frequency = freq;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2402,7 +2402,7 @@
 </xsl:text>
     <xsl:text>console.log("Entering state </xsl:text>
     <xsl:value-of select="@name"/>
-    <xsl:text>");
+    <xsl:text>", this.frequency);
 </xsl:text>
     <xsl:apply-templates mode="actions" select="*"/>
     <xsl:text>    }
@@ -8237,6 +8237,10 @@
 </xsl:text>
           <xsl:text>        }
 </xsl:text>
+          <xsl:text>        if(widget.forced_frequency !== undefined)
+</xsl:text>
+          <xsl:text>            widget.frequency = widget.forced_frequency;
+</xsl:text>
           <xsl:text>    });
 </xsl:text>
           <xsl:text>};
@@ -8801,8 +8805,6 @@
 </xsl:text>
           <xsl:text>function send_hmi_value(index, value) {
 </xsl:text>
-          <xsl:text>    console.log("send_hmi_value("+index+", "+value+")")
-</xsl:text>
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
           <xsl:text>        updates.set(index, value);
@@ -8851,7 +8853,9 @@
 </xsl:text>
           <xsl:text>function apply_hmi_value(index, new_val) {
 </xsl:text>
-          <xsl:text>    console.log("apply_hmi_value("+index+", "+new_val+")")
+          <xsl:text>    // Similarly to previous comment, taking decision to update based 
+</xsl:text>
+          <xsl:text>    // on cache content is bad and can lead to inconsistency
 </xsl:text>
           <xsl:text>    /*let old_val = cache[index];*/
 </xsl:text>
