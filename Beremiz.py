@@ -50,6 +50,7 @@ class BeremizIDELauncher(object):
         self.modules = ["BeremizIDE"]
         self.debug = os.path.exists("BEREMIZ_DEBUG")
         self.handle_exception = None
+        self.logf = None
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
@@ -62,12 +63,13 @@ class BeremizIDELauncher(object):
         print("-h --help                    Print this help")
         print("-u --updatecheck URL         Retrieve update information by checking URL")
         print("-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions")
+        print("-l --log path                write content of console tab to given file")
         print("")
         print("")
 
     def SetCmdOptions(self):
-        self.shortCmdOpts = "hu:e:"
-        self.longCmdOpts = ["help", "updatecheck=", "extend="]
+        self.shortCmdOpts = "hu:e:l:"
+        self.longCmdOpts = ["help", "updatecheck=", "extend=", "log="]
 
     def ProcessOption(self, o, a):
         if o in ("-h", "--help"):
@@ -77,6 +79,8 @@ class BeremizIDELauncher(object):
             self.updateinfo_url = a
         if o in ("-e", "--extend"):
             self.extensions.append(a)
+        if o in ("-l", "--log"):
+            self.logf = open(a, 'a')
 
     def ProcessCommandLineArgs(self):
         self.SetCmdOptions()
@@ -185,7 +189,7 @@ class BeremizIDELauncher(object):
         self.handle_exception = util.ExceptionHandler.AddExceptHook(version.app_version)
 
     def CreateUI(self):
-        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
+        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath, logf=self.logf)
 
     def CloseSplash(self):
         if self.splash:

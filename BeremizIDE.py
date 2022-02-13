@@ -115,7 +115,7 @@ REFRESH_PERIOD = 0.1
 
 class LogPseudoFile(object):
     """ Base class for file like objects to facilitate StdOut for the Shell."""
-    def __init__(self, output, risecall):
+    def __init__(self, output, risecall, logf):
         self.red_white = 1
         self.red_yellow = 2
         self.black_white = wx.stc.STC_STYLE_DEFAULT
@@ -131,8 +131,11 @@ class LogPseudoFile(object):
         self.LastRefreshTime = gettime()
         self.LastRefreshTimer = None
         self.refreshPending = False
+        self.logf = logf
 
     def write(self, s, style=None):
+        if self.logf is not None:
+            self.logf.write(s)
         self.StackLock.acquire()
         self.stack.append((s, style))
         self.StackLock.release()
@@ -436,13 +439,13 @@ class Beremiz(IDEFrame):
             # found here.
             os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
 
-    def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True):
+    def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True, logf=None):
         # Add beremiz's icon in top left corner of the frame
         self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
         self.__init_execute_path()
 
         IDEFrame.__init__(self, parent, debug)
-        self.Log = LogPseudoFile(self.LogConsole, self.SelectTab)
+        self.Log = LogPseudoFile(self.LogConsole, self.SelectTab, logf)
 
         self.local_runtime = None
         self.runtime_port = None
