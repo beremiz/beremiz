@@ -41,6 +41,9 @@
 #   $(test_dir) defaults to $(HOME)/test and can be overloaded:
 #       $ make test_dir=${HOME}/other_test_dir
 #
+#   Makefile attemps to use xvfb-run to run each test individually with its own
+#   X server instance. This behavior can be overloaded
+#       $ DISPLAY=:42 make xserver_command='echo "Using $DISPLAY X Server !";'
 #
 #   Matiec and Beremiz code are expected to be clean as if after hg clean --all.
 #   Any change in Matiec directory triggers rebuild of matiec.
@@ -105,19 +108,20 @@ define xnest_run
 	Xnest :42 -geometry 1920x1080+0+0 & export xnestpid=$$!; sleep 1; DISPLAY=:42 $(1); export res=$$?; kill $${xnestpid} 2>/dev/null; exit $${res}
 endef
 
-# Manually invoked rule {testname}.sikuli
+xserver_command ?= xvfb-run -s '-screen 0 1920x1080x24'
+
 define make_idetest_rule
 $(test_dir)/$(1)_idetest/.passed: own_apps
 	rm -rf $(test_dir)/$(1)_idetest
 	mkdir $(test_dir)/$(1)_idetest
-	cd $(test_dir)/$(1)_idetest; xvfb-run -s '-screen 0 1920x1080x24' bash -c '$$(call idetest_command, $(1))'
+	cd $(test_dir)/$(1)_idetest; $(xserver_command) bash -c '$(call idetest_command, $(1))'
 	touch $$@
 
+# Manually invoked rule {testname}.sikuli
 $(1): $(test_dir)/$(1)_idetest/.passed
 
 # Manually invoked rule xnest_{testname}.sikuli
 # runs test in xnest so that one can see what happens
-# depends on docker arguments "-v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e DISPLAY=$DISPLAY"
 xnest_$(1): own_apps
 	rm -rf $(test_dir)/$(1)_idetest
 	mkdir $(test_dir)/$(1)_idetest
