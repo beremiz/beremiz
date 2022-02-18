@@ -8,6 +8,7 @@ from sikuli import *
 
 home = os.environ["HOME"]
 beremiz_path = os.environ["BEREMIZPATH"]
+python_bin = os.environ.get("BEREMIZPYTHONPATH", "/usr/bin/python")
 
 opj = os.path.join
 
@@ -24,7 +25,7 @@ def StartBeremizApp(projectpath=None, exemple=None):
             Sikuli App class instance
     """
 
-    command = ["%s/beremizenv/bin/python"%home, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
+    command = [python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
 
     if exemple is not None:
         command.append(opj(beremiz_path,"exemples",exemple))
