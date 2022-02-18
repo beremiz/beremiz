@@ -53,7 +53,7 @@ def StartBeremizApp(projectpath=None, exemple=None):
 
         # window with no title only has 4 fields do describe it
         # beremiz splashcreen has no title
-        # we wity until main window is visible
+        # wait until main window is visible
         if len(wlist) == 1 and len(wlist[0]) == 5:
             windowID,_zero,wpid,_XID,wtitle = wlist[0] 
             break

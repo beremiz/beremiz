@@ -23,7 +23,7 @@
 #           $ make xnest_xterm
 #
 #       run Xnest window with sikuli IDE and xterm
-#           $ make xnest_xterm
+#           $ make xnest_sikuli
 #
 #       build minimal beremiz and matiec to run tests
 #           $ make own_apps
@@ -34,9 +34,6 @@
 #           $ make
 #
 #   
-#   Variable $(src) is directory such that executed 
-#   $(src)/beremiz/tests/Makefile is this file.
-#   
 #   Test results, and other test byproducts are in $(test_dir), 
 #   $(test_dir) defaults to $(HOME)/test and can be overloaded:
 #       $ make test_dir=${HOME}/other_test_dir
@@ -45,7 +42,7 @@
 #   X server instance. This behavior can be overloaded
 #       $ DISPLAY=:42 make xserver_command='echo "Using $DISPLAY X Server !";'
 #
-#   Matiec and Beremiz code are expected to be clean as if after hg clean --all.
+#   Matiec and Beremiz code are expected to be clean, ready to build
 #   Any change in Matiec directory triggers rebuild of matiec.
 #   Any change in Matiec and Beremiz directory triggers copy of source code
 #   to $(test_dir)/build.
@@ -59,7 +56,11 @@
 
 all: source_check cli_tests ide_tests runtime_tests 
 
+# Variable $(src) is directory such that executed 
+# $(src)/Makefile is this file.
 src := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
+# $(workspace) is directory containing this project
 workspace ?= $(abspath $(src)/../..)
 
 test_dir ?= $(HOME)/test
