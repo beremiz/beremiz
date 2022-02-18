@@ -68,10 +68,12 @@ build_dir = $(test_dir)/build
 
 OWN_PROJECTS=beremiz matiec
 
+tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclude=.*.swp
+
 # sha1 checksum of source is used to force copy/compile on each change
 
 define make_checksum_assign
-$(1)_checksum = $(shell tar --exclude=.hg --exclude=.git --exclude=.*.swp -c $(workspace)/$(1) | sha1sum | cut -d ' ' -f 1)
+$(1)_checksum = $(shell tar $(tar_opts) -c $(workspace)/$(1) | sha1sum | cut -d ' ' -f 1)
 endef
 $(foreach project,$(OWN_PROJECTS),$(eval $(call make_checksum_assign,$(project))))
 
@@ -81,7 +83,8 @@ $(build_dir):
 define make_src_rule
 $(build_dir)/$(1)/$($(1)_checksum).sha1: $(build_dir) $(workspace)/$(1)
 	rm -rf $(build_dir)/$(1)
-	cp -a $(workspace)/$(1) $(build_dir)/$(1)
+	tar -C $(workspace) $(tar_opts) -c $(1) | tar -C $(build_dir) -x
+	#cp -a $(workspace)/$(1) $(build_dir)/$(1)
 	touch $$@
 endef
 $(foreach project,$(OWN_PROJECTS),$(eval $(call make_src_rule,$(project))))
@@ -99,7 +102,7 @@ own_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha
 ide_tests = $(subst $(src)/ide_tests/,,$(wildcard $(src)/ide_tests/*.sikuli))
 
 define idetest_command
-	(fluxbox &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${pipestatus[0]}
+	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${pipestatus[0]}
 endef
 
 # Xnest based interactive sessions for tests edit and debug. 
@@ -109,13 +112,17 @@ define xnest_run
 	Xnest :42 -geometry 1920x1080+0+0 & export xnestpid=$$!; sleep 1; DISPLAY=:42 $(1); export res=$$?; kill $${xnestpid} 2>/dev/null; exit $${res}
 endef
 
+define prep_test
+	rm -rf $(test_dir)/$(1)_idetest
+	mkdir $(test_dir)/$(1)_idetest
+	cd $(test_dir)/$(1)_idetest
+endef
+
 xserver_command ?= xvfb-run -s '-screen 0 1920x1080x24'
 
 define make_idetest_rule
 $(test_dir)/$(1)_idetest/.passed: own_apps
-	rm -rf $(test_dir)/$(1)_idetest
-	mkdir $(test_dir)/$(1)_idetest
-	cd $(test_dir)/$(1)_idetest; $(xserver_command) bash -c '$(call idetest_command, $(1))'
+	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call idetest_command,$(1))'
 	touch $$@
 
 # Manually invoked rule {testname}.sikuli
@@ -124,9 +131,7 @@ $(1): $(test_dir)/$(1)_idetest/.passed
 # Manually invoked rule xnest_{testname}.sikuli
 # runs test in xnest so that one can see what happens
 xnest_$(1): own_apps
-	rm -rf $(test_dir)/$(1)_idetest
-	mkdir $(test_dir)/$(1)_idetest
-	cd $(test_dir)/$(1)_idetest; $$(call xnest_run, bash -c '$(call idetest_command, $(1))')
+	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call idetest_command,$(1))')
 
 ide_tests_targets += $(test_dir)/$(1)_idetest/.passed
 endef
@@ -139,7 +144,7 @@ xnest_xterm: own_apps
 	$(call xnest_run, bash -c '(fluxbox &);xterm')
 
 xnest_sikuli: own_apps
-	$(call xnest_run, bash -c '(fluxbox &);(xterm -e sikulix &);xterm')
+	$(call xnest_run, bash -c '(fluxbox &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm')
 
 
 # in case VNC would be used 
