@@ -58,6 +58,9 @@ RUN ~/beremizenv/bin/pip install \
         twisted nevow autobahn \
         wxPython==4.1.1
 
+# Point to python binary test scripts will use
+ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
+
 # easy to remember 'do_tests' alias to invoke main makefile
 ARG OWNDIRBASENAME=beremiz
 ENV OWNDIRBASENAME ${OWNDIRBASENAME}
