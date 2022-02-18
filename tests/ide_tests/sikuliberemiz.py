@@ -4,14 +4,15 @@ import os
 import sys
 import subprocess
 from threading import Thread, Event
+
+typeof=type
+
 from sikuli import *
 
-home = os.environ["HOME"]
 beremiz_path = os.environ["BEREMIZPATH"]
 python_bin = os.environ.get("BEREMIZPYTHONPATH", "/usr/bin/python")
 
 opj = os.path.join
-
 
 def StartBeremizApp(projectpath=None, exemple=None):
     """
@@ -90,18 +91,23 @@ class KBDShortcut:
              "Transfer": Key.F6,
              "Connect":  Key.F7,
              "Clean":    Key.F9,
-             "Build":    Key.F11}
+             "Build":    Key.F11,
+             "Save":     ("s",Key.CTRL),
+             "New":      ("n",Key.CTRL),
+             "Address":  ("l",Key.CTRL)}  # to reach address bar in GTK's file selector
 
     def __init__(self, app):
         self.app = app
     
     def __getattr__(self, name):
         fkey = self.fkeys[name]
+        if typeof(fkey) != tuple:
+            fkey = (fkey,)
         app = self.app
 
         def PressShortCut():
             app.focus()
-            type(fkey)
+            type(*fkey)
 
         return PressShortCut
 
@@ -127,7 +133,6 @@ class IDEIdleObserver:
         self.r.stopObserver()
 
     def _OnIDEWindowChange(self, event):
-        print event
         self.idechanged = True
 
     def Wait(self, period, timeout):
@@ -162,7 +167,7 @@ class stdoutIdleObserver:
 
         self.thread = Thread(target = self._waitStdoutProc).start()
 
-    def _waitStdoutProc():
+    def _waitStdoutProc(self):
         while True:
             a = self.proc.stdout.read(1)
             if len(a) == 0 or a is None: 
