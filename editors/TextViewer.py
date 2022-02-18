@@ -208,7 +208,7 @@ class TextViewer(EditorPanel):
     def SetStyling(self, length, style):
         self.Editor.SetStyling(length, style)
 
-    def SetIndicatorCurrentFillRange(start, length, indic):
+    def SetIndicatorCurrentFillRange(self, start, length, indic):
         self.Editor.SetIndicatorCurrent(indic)
         self.Editor.IndicatorFillRange(start, length)
 
