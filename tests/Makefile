@@ -102,7 +102,7 @@ own_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha
 ide_tests = $(subst $(src)/ide_tests/,,$(wildcard $(src)/ide_tests/*.sikuli))
 
 define idetest_command
-	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${pipestatus[0]}
+	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${PIPESTATUS[0]}
 endef
 
 # Xnest based interactive sessions for tests edit and debug. 
