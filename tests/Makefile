@@ -138,7 +138,7 @@ endef
 $(foreach idetest,$(ide_tests),$(eval $(call make_idetest_rule,$(idetest))))
 
 ide_tests : $(ide_tests_targets)
-	echo "$(ide_tests_targets)" : Passed
+	echo "$(ide_tests_targets) : Passed"
 
 xnest_xterm: own_apps
 	$(call xnest_run, bash -c '(fluxbox &);xterm')
@@ -146,10 +146,13 @@ xnest_xterm: own_apps
 xnest_sikuli: own_apps
 	$(call xnest_run, bash -c '(fluxbox &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm')
 
-
-# in case VNC would be used 
-	#xvfb-run -s '-screen 0 1920x1080x24' bash -c '(fluxbox &);(x11vnc &);xterm;'
-
+xvfb_sikuli: own_apps
+	echo "******************************************"
+	echo "On host, run 'xvncviewer 127.0.0.1:5900' to see sikuli X session"
+	echo "Docker container must be created with TESTDEBUG=YES. For example :"
+	echo "./clean_docker_container.sh && ./build_docker_image.sh && TESTDEBUG=YES ./create_docker_container.sh && ./build_in_docker.sh xvfb_sikuli"
+	echo "******************************************"
+	$(xserver_command) bash -c '(fluxbox &);(x11vnc &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm'
 
 clean:
 	rm -rf $(ide_tests_targets) $(build_dir)
