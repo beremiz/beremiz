@@ -1496,7 +1496,7 @@ class IDEFrame(wx.Frame):
     def GetTabsOpenedDClickFunction(self, tabctrl):
         def OnTabsOpenedDClick(event):
             pos = event.GetPosition()
-            if tabctrl.TabHitTest(pos.x, pos.y, None):
+            if tabctrl.TabHitTest(pos.x, pos.y):
                 self.SwitchPerspective(event)
             event.Skip()
         return OnTabsOpenedDClick
@@ -1504,10 +1504,15 @@ class IDEFrame(wx.Frame):
     def SwitchPerspective(self, evt):
         pane = self.AUIManager.GetPane(self.TabsOpened)
         # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
-        if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
+        IsMaximized = pane.IsMaximized() if hasattr(pane, "IsMaximized") \
+            else (self.TabBookIsMaximized if hasattr(self, "TabBookIsMaximized") \
+                else False)
+        if IsMaximized:
             self.AUIManager.RestorePane(pane)
+            self.TabBookIsMaximized = False
         else:
             self.AUIManager.MaximizePane(pane)
+            self.TabBookIsMaximized = True
         self.AUIManager.Update()
 
     def SwitchFullScrMode(self, evt):
