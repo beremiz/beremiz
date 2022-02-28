@@ -14,11 +14,10 @@ echo "TEST direcory : $TESTDIR"
 UNAME=testing
 UHOME=/home/$UNAME
 
-# define TESTDEBUG in env to enable dev-mode debug pasthrough Xnest
-DEBUGARGS="-v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e DISPLAY=$DISPLAY"
-
-# In case VNC with x11vnc is prefered, then a port should be passed like this
-# DEBUGARGS="-p 5900:5900"
+# define TESTDEBUG in env to enable dev-mode. This enables :
+#   - debug pasthrough for Xnest
+#   - VNC port passthrough
+DEBUGARGS="-v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e DISPLAY=$DISPLAY -p 5900:5900"
 
 echo "Creating docker container"
 docker create \
