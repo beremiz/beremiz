@@ -1,4 +1,4 @@
-""" This test opens, builds and runs exemple project named "python".
+""" This test opens, builds and runs a new project.
 Test succeeds if runtime's stdout behaves as expected
 """
 
