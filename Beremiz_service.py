@@ -543,14 +543,12 @@ if havetwisted:
         try:
             website = NS.RegisterWebsite(interface, webport)
             pyruntimevars["website"] = website
-            NS.SetServer(pyroserver)
             statuschange.append(NS.website_statuslistener_factory(website))
         except Exception:
             LogMessageAndException(_("Nevow Web service failed. "))
 
     if havewamp:
         try:
-            WC.SetServer(pyroserver)
             WC.RegisterWampClient(wampconf, PSKpath)
             WC.RegisterWebSettings(NS)
         except Exception:
