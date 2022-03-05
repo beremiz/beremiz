@@ -4,6 +4,7 @@ import os
 import sys
 import subprocess
 from threading import Thread, Event
+from time import time as timesec
 
 typeof=type
 
@@ -142,7 +143,7 @@ class IDEIdleObserver:
             period (int): how many seconds with no change to consider idle
             timeout (int): how long to wait for idle, in seconds
         """
-        c = timeout/period
+        c = max(timeout/period,1)
         while c > 0:
             self.idechanged = False
             wait(period)
@@ -165,15 +166,37 @@ class stdoutIdleObserver:
         self.proc = proc
         self.stdoutchanged = False
 
+        self.changes = 0
+        self.last_change_count = 0
+
+        self.event = Event()
+
         self.thread = Thread(target = self._waitStdoutProc).start()
 
     def _waitStdoutProc(self):
         while True:
-            a = self.proc.stdout.read(1)
+            a = self.proc.stdout.readline()
             if len(a) == 0 or a is None: 
                 break
-            sys.stdout.write(a)
-            self.idechanged = True
+            # sys.stdout.write(a)
+            self.changes = self.changes + 1
+            self.event.set()
+
+    def WaitForChangeAndIdle(self, period, timeout):
+        """
+        Wait for IDE'stdout to start changing
+        Parameters: 
+            timeout (int): how long to wait for change, in seconds
+        """
+        start_time = timesec()
+        if self.changes == self.last_change_count:
+            if self.event.wait(timeout):
+                self.event.clear()
+                self.last_change_count = self.changes
+            else:
+                raise Exception("Stdout didn't become active before timeout")
+
+        self.Wait(period, timeout - (timesec() - start_time))
 
     def Wait(self, period, timeout):
         """
@@ -182,11 +205,12 @@ class stdoutIdleObserver:
             period (int): how many seconds with no change to consider idle
             timeout (int): how long to wait for idle, in seconds
         """
-        c = timeout/period
+        c = max(timeout/period, 1)
         while c > 0:
-            self.idechanged = False
+            changes = self.changes
             wait(period)
-            if not self.idechanged:
+            if self.changes == changes:
+                self.last_change_count = self.changes
                 break
             c = c - 1
 
@@ -204,8 +228,9 @@ def waitPatternInStdout(proc, pattern, timeout, count=1):
             a = proc.stdout.readline()
             if len(a) == 0 or a is None: 
                 raise Exception("App finished before producing expected stdout pattern")
-            sys.stdout.write(a)
+            # sys.stdout.write(a)
             if a.find(pattern) >= 0:
+                sys.stdout.write("found pattern in '" + a +"'")
                 found = found + 1
                 if found >= count:
                     success_event.set()

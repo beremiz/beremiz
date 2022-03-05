@@ -136,6 +136,7 @@ class LogPseudoFile(object):
     def write(self, s, style=None):
         if self.logf is not None:
             self.logf.write(s)
+            self.logf.flush()
         self.StackLock.acquire()
         self.stack.append((s, style))
         self.StackLock.release()
