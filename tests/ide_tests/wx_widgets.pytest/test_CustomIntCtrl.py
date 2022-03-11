@@ -40,7 +40,7 @@ class TestCustomIntCtrl(unittest.TestCase):
 
     def tearDown(self):
         self.frame.Destroy()
-        wx.CallAfter(self.app.Exit)
+        wx.CallAfter(wx.Exit)
         self.app.MainLoop()
 
     def testMaxLimit(self):
