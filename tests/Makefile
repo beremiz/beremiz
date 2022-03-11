@@ -47,6 +47,7 @@
 #   Any change in Matiec and Beremiz directory triggers copy of source code
 #   to $(test_dir)/build.
 #
+#   BEREMIZPYTHONPATH is expected to be absolute path to python interpreter
 #
 #   Please note:
 #       In order to run asside a freshly build Matiec, tested beremiz instance
@@ -99,10 +100,20 @@ $(build_dir)/matiec/iec2c: | $(build_dir)/matiec/$(matiec_checksum).sha1
 own_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1
 	touch $@
 
-ide_tests = $(subst $(src)/ide_tests/,,$(wildcard $(src)/ide_tests/*.sikuli))
+ide_test_dir = $(src)/ide_tests
+sikuli_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.sikuli))
+pytest_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.pytest))
 
-define idetest_command
+define sikuli_idetest_command
 	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${PIPESTATUS[0]}
+endef
+
+
+DELAY=400
+KILL_DELAY=430
+PYTEST=$(dir $(BEREMIZPYTHONPATH))/pytest
+define pytest_idetest_command
+	(fluxbox >/dev/null 2>&1 &); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${PIPESTATUS[0]}
 endef
 
 # Xnest based interactive sessions for tests edit and debug. 
@@ -122,7 +133,7 @@ xserver_command ?= xvfb-run -s '-screen 0 1920x1080x24'
 
 define make_idetest_rule
 $(test_dir)/$(1)_idetest/.passed: own_apps
-	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call idetest_command,$(1))'
+	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call $(2),$(1))'
 	touch $$@
 
 # Manually invoked rule {testname}.sikuli
@@ -131,11 +142,12 @@ $(1): $(test_dir)/$(1)_idetest/.passed
 # Manually invoked rule xnest_{testname}.sikuli
 # runs test in xnest so that one can see what happens
 xnest_$(1): own_apps
-	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call idetest_command,$(1))')
+	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call $(2),$(1))')
 
 ide_tests_targets += $(test_dir)/$(1)_idetest/.passed
 endef
-$(foreach idetest,$(ide_tests),$(eval $(call make_idetest_rule,$(idetest))))
+$(foreach idetest,$(sikuli_ide_tests),$(eval $(call make_idetest_rule,$(idetest),sikuli_idetest_command)))
+$(foreach idetest,$(pytest_ide_tests),$(eval $(call make_idetest_rule,$(idetest),pytest_idetest_command)))
 
 ide_tests : $(ide_tests_targets)
 	echo "$(ide_tests_targets) : Passed"

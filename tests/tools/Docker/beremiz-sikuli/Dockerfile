@@ -54,6 +54,7 @@ RUN mkdir /home/$UNAME/build /home/$UNAME/src /home/$UNAME/test
 RUN virtualenv --python=$(which python2) ~/beremizenv
 
 RUN ~/beremizenv/bin/pip install \
+        pytest pytest-timeout ddt \
         lxml future matplotlib zeroconf2 enum34 pyro sslpsk posix_spawn \
         twisted nevow autobahn \
         wxPython==4.1.1
