@@ -337,8 +337,6 @@ void __publish_debug(void)
 
         UnpackVar(dsc, &value_p, NULL, &size);
 
-        printf("Retaining %%d %%ld \n", retain_list_collect_cursor, size);
-
         /* if buffer not full */
         Retain(retain_offset, size, value_p);
         /* increment cursor according size*/
