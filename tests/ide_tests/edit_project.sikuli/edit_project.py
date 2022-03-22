@@ -21,7 +21,7 @@ doubleClick("1646062660770.png")
 
 idle.Wait(1,15)
 
-click("1646066794902.png")
+click("example")
 
 idle.Wait(1,15)
 
