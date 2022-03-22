@@ -49,7 +49,6 @@ xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
 '''
 
 WorkingDir = None
-_PySrv = None
 
 
 class PLCHMI(athena.LiveElement):
@@ -417,6 +416,3 @@ def website_statuslistener_factory(site):
     return statuslistener(site).listen
 
 
-def SetServer(pysrv):
-    global _PySrv
-    _PySrv = pysrv

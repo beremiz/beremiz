@@ -45,7 +45,6 @@ mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
 _transportFactory = None
 _WampSession = None
-_PySrv = None
 WorkingDir = None
 
 # Find pre-existing project WAMP config file
@@ -367,11 +366,6 @@ def getWampStatus():
             return "Established"
         return "Connecting"
     return "Disconnected"
-
-
-def SetServer(pysrv):
-    global _PySrv
-    _PySrv = pysrv
 
 
 def PublishEvent(eventID, value):
