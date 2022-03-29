@@ -12,41 +12,28 @@ addImportPath(os.path.dirname(getBundlePath()))
 from sikuliberemiz import *
 
 # Start the app
-proc,app = StartBeremizApp(exemple="python")
+app = BeremizApp(exemple="python")
 
-# To detect when actions did finish because IDE content isn't changing
-# idle = IDEIdleObserver(app)
-# screencap based idle detection was making many false positive. Test is more stable with stdout based idle detection
+app.k.Clean()
 
-stdoutIdle = stdoutIdleObserver(proc)
+app.waitForChangeAndIdleStdout()
 
-# To send keyboard shortuts
-k = KBDShortcut(app)
+app.k.Build()
 
-k.Clean()
+app.waitForChangeAndIdleStdout()
 
-stdoutIdle.Wait(2,15)
+app.k.Connect()
 
-k.Build()
+app.waitForChangeAndIdleStdout()
 
-stdoutIdle.Wait(2,15)
+app.k.Transfer()
 
-k.Connect()
+app.waitForChangeAndIdleStdout()
 
-stdoutIdle.Wait(2,15)
-
-k.Transfer()
-
-stdoutIdle.Wait(2,15)
-
-#del idle
-
-del stdoutIdle
-
-k.Run()
+app.k.Run()
 
 # wait 10 seconds for 10 Grumpfs
-found = waitPatternInStdout(proc, "Grumpf", 10, 10)
+found = app.waitPatternInStdout("Grumpf", 10, 10)
 
 app.close()
 
