@@ -93,7 +93,7 @@ def format_namespace(d, indent='    '):
 ignored_exceptions = []  # a problem with a line in a module is only reported once per session
 
 
-def AddExceptHook(app_version='[No version]'):
+def AddExceptHook(app_version='[No version]', logf = None):
 
     def save_bug_report(e_type, e_value, e_traceback, bug_report_path, date):
         info = {
@@ -125,7 +125,10 @@ def AddExceptHook(app_version='[No version]'):
         lst = info.keys()
         lst.sort()
         for a in lst:
-            output.write(a + ":\n" + str(info[a]) + "\n\n")
+            line = a + ":\n" + str(info[a]) + "\n\n"
+            output.write(line)
+            if logf is not None:
+                logf.write(line)
         output.close()
 
     def handle_exception(e_type, e_value, e_traceback, exit=False):
