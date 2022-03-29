@@ -12,65 +12,54 @@ addImportPath(os.path.dirname(getBundlePath()))
 from sikuliberemiz import *
 
 # Start the app
-proc,app = StartBeremizApp(exemple="python")
+app = BeremizApp(exemple="python")
 
-# To detect when actions did finish because IDE content isn't changing
-idle = IDEIdleObserver(app)
+app.doubleClick("1646062660770.png")
 
-doubleClick("1646062660770.png")
+app.WaitIdleUI()
 
-idle.Wait(1,15)
+app.click("example")
 
-click("example")
+app.WaitIdleUI()
 
-idle.Wait(1,15)
+app.type(Key.DOWN * 10, Key.CTRL)
 
-type(Key.DOWN * 10, Key.CTRL)
+app.WaitIdleUI()
 
-idle.Wait(1,15)
+app.doubleClick("1646066996620.png")
 
-doubleClick("1646066996620.png")
+app.WaitIdleUI()
 
-idle.Wait(1,15)
+app.type(Key.TAB*3)  # select text content
 
-type(Key.TAB*3)  # select text content
+app.type("'sys.stdout.write(\"EDIT TEST OK\\n\")'")
 
-type("'sys.stdout.write(\"EDIT TEST OK\\n\")'")
+app.type(Key.ENTER)
 
-type(Key.ENTER)
+app.WaitIdleUI()
 
-idle.Wait(1,15)
+app.k.Save()
 
-k = KBDShortcut(app)
+app.k.Clean()
 
-k.Save()
+app.waitForChangeAndIdleStdout()
 
-del idle
+app.k.Build()
 
-stdoutIdle = stdoutIdleObserver(proc)
+app.waitForChangeAndIdleStdout()
 
-k.Clean()
+app.k.Connect()
 
-stdoutIdle.WaitForChangeAndIdle(2,15)
+app.waitForChangeAndIdleStdout()
 
-k.Build()
+app.k.Transfer()
 
-stdoutIdle.WaitForChangeAndIdle(2,15)
+app.waitForChangeAndIdleStdout()
 
-k.Connect()
+app.k.Run()
 
-stdoutIdle.WaitForChangeAndIdle(2,15)
-
-k.Transfer()
-
-stdoutIdle.WaitForChangeAndIdle(2,15)
-
-del stdoutIdle
-
-k.Run()
-
-# wait 10 seconds for 10 Grumpfs
-found = waitPatternInStdout(proc, "EDIT TEST OK", 10)
+# wait 10 seconds for 10 patterns
+found = app.waitPatternInStdout("EDIT TEST OK", 10)
 
 app.close()
 

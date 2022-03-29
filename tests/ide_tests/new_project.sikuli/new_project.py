@@ -12,133 +12,122 @@ addImportPath(os.path.dirname(getBundlePath()))
 from sikuliberemiz import *
 
 # Start the app without any project given
-proc,app = StartBeremizApp()
+app = BeremizApp()
 
 new_project_path = os.path.join(os.path.abspath(os.path.curdir), "new_test_project")
 
 # New project path must exist (usually created in directory selection dialog)
 os.mkdir(new_project_path)
 
-# To detect when actions did finish because IDE content isn't changing
-idle = IDEIdleObserver(app)
-
-# To send keyboard shortuts
-k = KBDShortcut(app)
-
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Create new project (opens new project directory selection dialog)
-k.New()
+app.k.New()
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Move to "Home" section of file selecor, otherwise address is 
 # "file ignored" at first run
-type("f", Key.CTRL)
-type(Key.ESC)
-type(Key.TAB)
+app.type("f", Key.CTRL)
+app.type(Key.ESC)
+app.type(Key.TAB)
 
 # Enter directory by name
-k.Address()
+app.k.Address()
 
 # Fill address bar
-type(new_project_path + Key.ENTER)
+app.type(new_project_path + Key.ENTER)
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # When prompted for creating first program select type ST
-type(Key.TAB*4)  # go to lang dropdown
-type(Key.DOWN*2) # change selected language
-type(Key.ENTER)  # validate
+app.type(Key.TAB*4)  # go to lang dropdown
+app.type(Key.DOWN*2) # change selected language
+app.type(Key.ENTER)  # validate
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Name created program
-type("Test program")
+app.type("Test program")
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Focus on Variable grid
-type(Key.TAB*4)
+app.type(Key.TAB*4)
 
 # Add 2 variables
-type(Key.ADD*2)
+app.type(Key.ADD*2)
 
 # Focus on ST text
-idle.Wait(1,15)
+app.WaitIdleUI()
 
-type(Key.TAB*8)
+app.type(Key.TAB*8)
 
-type("""\
+app.type("""\
 LocalVar0 := LocalVar1;
 {printf("Test OK\\n");fflush(stdout);}
 """)
 
-k.Save()
+app.k.Save()
 
 # Close ST POU
-type("w", Key.CTRL)
+app.type("w", Key.CTRL)
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Focus project tree and select root item
-type(Key.TAB)
+app.type(Key.TAB)
 
-type(Key.LEFT)
+app.type(Key.LEFT)
 
-type(Key.UP)
+app.type(Key.UP)
 
 # Edit root item
-type(Key.ENTER)
+app.type(Key.ENTER)
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Switch to config tab
-type(Key.RIGHT*2)
+app.type(Key.RIGHT*2)
 
 # Focus on URI
-type(Key.TAB)
+app.type(Key.TAB)
 
 # Set URI
-type("LOCAL://")
+app.type("LOCAL://")
 
 # FIXME: Select other field to ensure URI is validated
-type(Key.TAB)
+app.type(Key.TAB)
 
-k.Save()
+app.k.Save()
 
 # Close project config editor
-type("w", Key.CTRL)
+app.type("w", Key.CTRL)
 
-idle.Wait(1,15)
+app.WaitIdleUI()
 
 # Focus seems undefined at that time (FIXME)
 # Force focussing on "something" so that next shortcut is taken
-type(Key.TAB)
+app.type(Key.TAB)
 
-del idle
+app.waitIdleStdout()
 
-stdoutIdle = stdoutIdleObserver(proc)
-stdoutIdle.Wait(2,15)
+app.k.Build()
 
-k.Build()
+app.waitIdleStdout(5,30)
 
-stdoutIdle.Wait(5,15)
+app.k.Connect()
 
-k.Connect()
+app.waitIdleStdout()
 
-stdoutIdle.Wait(2,15)
+app.k.Transfer()
 
-k.Transfer()
+app.waitIdleStdout()
 
-stdoutIdle.Wait(2,15)
-
-del stdoutIdle
-
-k.Run()
+app.k.Run()
 
 # wait 10 seconds
-found = waitPatternInStdout(proc, "Test OK", 10)
+found = app.waitPatternInStdout("Test OK", 10)
 
 app.close()
 

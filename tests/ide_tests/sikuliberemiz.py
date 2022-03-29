@@ -3,112 +3,47 @@
 import os
 import sys
 import subprocess
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from time import time as timesec
 
-typeof=type
-
-from sikuli import *
+import sikuli
 
 beremiz_path = os.environ["BEREMIZPATH"]
 python_bin = os.environ.get("BEREMIZPYTHONPATH", "/usr/bin/python")
 
 opj = os.path.join
 
-def StartBeremizApp(projectpath=None, exemple=None):
-    """
-    Starts Beremiz IDE, waits for main window to appear, maximize it.
-
-        Parameters: 
-            projectpath (str): path to project to open
-            exemple (str): path relative to exemples directory
-
-        Returns:
-            Sikuli App class instance
-    """
-
-    command = [python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
-
-    if exemple is not None:
-        command.append(opj(beremiz_path,"exemples",exemple))
-    elif projectpath is not None:
-        command.append(projectpath)
-
-    # App class is broken in Sikuli 2.0.5: can't start process with arguments.
-    # 
-    # Workaround : - use subprocess module to spawn IDE process,
-    #              - use wmctrl to find IDE window details and maximize it
-    #              - pass exact window title to App class constructor
-
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=0)
-
-    # Window are macthed against process' PID
-    ppid = proc.pid
-
-    # Timeout 5s
-    c = 50
-    while c > 0:
-        # equiv to "wmctrl -l -p | grep $pid"
-        try:
-            wlist = filter(lambda l:(len(l)>2 and l[2]==str(ppid)), map(lambda s:s.split(None,4), subprocess.check_output(["wmctrl", "-l", "-p"]).splitlines()))
-        except subprocess.CalledProcessError:
-            wlist = []
-
-        # window with no title only has 4 fields do describe it
-        # beremiz splashcreen has no title
-        # wait until main window is visible
-        if len(wlist) == 1 and len(wlist[0]) == 5:
-            windowID,_zero,wpid,_XID,wtitle = wlist[0] 
-            break
-
-        wait(0.1)
-        c = c - 1
-
-    if c == 0:
-        raise Exception("Couldn't find Beremiz window")
-
-    # Maximize window x and y
-    subprocess.check_call(["wmctrl", "-i", "-r", windowID, "-b", "add,maximized_vert,maximized_horz"])
-
-    # switchApp creates an App object by finding window by title, is not supposed to spawn a process
-    return proc, switchApp(wtitle)
 
 class KBDShortcut:
-    """Send shortut to app by calling corresponding methods:
-          Stop   
-          Run    
-          Transfer
-          Connect
-          Clean  
-          Build  
+    """Send shortut to app by calling corresponding methods.
 
     example:
-        k = KBDShortcut(app)
+        k = KBDShortcut()
         k.Clean()
     """
 
-    fkeys = {"Stop":     Key.F4,
-             "Run":      Key.F5,
-             "Transfer": Key.F6,
-             "Connect":  Key.F7,
-             "Clean":    Key.F9,
-             "Build":    Key.F11,
-             "Save":     ("s",Key.CTRL),
-             "New":      ("n",Key.CTRL),
-             "Address":  ("l",Key.CTRL)}  # to reach address bar in GTK's file selector
+    fkeys = {"Stop":     sikuli.Key.F4,
+             "Run":      sikuli.Key.F5,
+             "Transfer": sikuli.Key.F6,
+             "Connect":  sikuli.Key.F7,
+             "Clean":    sikuli.Key.F9,
+             "Build":    sikuli.Key.F11,
+             "Save":     ("s",sikuli.Key.CTRL),
+             "New":      ("n",sikuli.Key.CTRL),
+             "Address":  ("l",sikuli.Key.CTRL)}  # to reach address bar in GTK's file selector
 
     def __init__(self, app):
-        self.app = app
+        self.app = app.sikuliapp
     
     def __getattr__(self, name):
         fkey = self.fkeys[name]
-        if typeof(fkey) != tuple:
+        if type(fkey) != tuple:
             fkey = (fkey,)
         app = self.app
 
         def PressShortCut():
             app.focus()
-            type(*fkey)
+            sikuli.type(*fkey)
 
         return PressShortCut
 
@@ -116,12 +51,12 @@ class KBDShortcut:
 class IDEIdleObserver:
     "Detects when IDE is idle. This is particularly handy when staring an operation and witing for the en of it."
 
-    def __init__(self, app):
+    def __init__(self):
         """
         Parameters: 
-            app (class App): Sikuli app given by StartBeremizApp
+            app (class BeremizApp)
         """
-        self.r = Region(app.window())
+        self.r = sikuli.Region(self.sikuliapp.window())
 
         self.idechanged = False
         
@@ -136,7 +71,7 @@ class IDEIdleObserver:
     def _OnIDEWindowChange(self, event):
         self.idechanged = True
 
-    def Wait(self, period, timeout):
+    def WaitIdleUI(self, period=1, timeout=15):
         """
         Wait for IDE to stop changing
         Parameters: 
@@ -146,7 +81,7 @@ class IDEIdleObserver:
         c = max(timeout/period,1)
         while c > 0:
             self.idechanged = False
-            wait(period)
+            sikuli.wait(period)
             if not self.idechanged:
                 break
             c = c - 1
@@ -158,18 +93,17 @@ class IDEIdleObserver:
 class stdoutIdleObserver:
     "Detects when IDE's stdout is idle. Can be more reliable than pixel based version (false changes ?)"
 
-    def __init__(self, proc):
+    def __init__(self):
         """
         Parameters: 
-            proc (subprocess.Popen): Beremiz process, given by StartBeremizApp
+            app (class BeremizApp)
         """
-        self.proc = proc
         self.stdoutchanged = False
 
-        self.changes = 0
-        self.last_change_count = 0
-
         self.event = Event()
+
+        self.pattern = None
+        self.success_event = Event()
 
         self.thread = Thread(target = self._waitStdoutProc).start()
 
@@ -178,72 +112,140 @@ class stdoutIdleObserver:
             a = self.proc.stdout.readline()
             if len(a) == 0 or a is None: 
                 break
-            # sys.stdout.write(a)
-            self.changes = self.changes + 1
+            sys.stdout.write(a)
             self.event.set()
+            if self.pattern is not None and a.find(self.pattern) >= 0:
+                sys.stdout.write("found pattern in '" + a +"'")
+                self.success_event.set()
 
-    def WaitForChangeAndIdle(self, period, timeout):
+    def waitForChangeAndIdleStdout(self, period=2, timeout=15):
         """
         Wait for IDE'stdout to start changing
         Parameters: 
             timeout (int): how long to wait for change, in seconds
         """
         start_time = timesec()
-        if self.changes == self.last_change_count:
-            if self.event.wait(timeout):
-                self.event.clear()
-                self.last_change_count = self.changes
-            else:
-                raise Exception("Stdout didn't become active before timeout")
 
-        self.Wait(period, timeout - (timesec() - start_time))
+        if self.event.wait(timeout):
+            self.event.clear()
+        else:
+            raise Exception("Stdout didn't become active before timeout")
 
-    def Wait(self, period, timeout):
+        self.waitIdleStdout(period, timeout - (timesec() - start_time))
+
+    def waitIdleStdout(self, period=2, timeout=15):
         """
         Wait for IDE'stdout to stop changing
         Parameters: 
             period (int): how many seconds with no change to consider idle
             timeout (int): how long to wait for idle, in seconds
         """
-        c = max(timeout/period, 1)
-        while c > 0:
-            changes = self.changes
-            wait(period)
-            if self.changes == changes:
-                self.last_change_count = self.changes
+        end_time = timesec() + timeout
+        self.event.clear()
+        while timesec() < end_time:
+            if self.event.wait(period):
+                # no timeout -> got event -> not idle -> loop again
+                self.event.clear()
+            else:
+                # timeout -> no event -> idle -> exit
+                return True
+
+        raise Exception("Stdout did not idle before timeout")
+
+    def waitPatternInStdout(self, pattern, timeout, count=1):
+        found = 0
+        self.pattern = pattern
+        end_time = timesec() + timeout
+        self.event.clear()
+        while True:
+            remain = end_time - timesec()
+            if remain <= 0 :
+                res = False
                 break
+
+            res = self.success_event.wait(remain)
+            if res:
+                self.success_event.clear()
+                found = found + 1
+                if found >= count:
+                    break
+        self.pattern = None
+        return res
+
+class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
+    def __init__(self, projectpath=None, exemple=None):
+        """
+        Starts Beremiz IDE, waits for main window to appear, maximize it.
+
+            Parameters: 
+                projectpath (str): path to project to open
+                exemple (str): path relative to exemples directory
+
+            Returns:
+                Sikuli App class instance
+        """
+
+        command = [python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
+
+        if exemple is not None:
+            command.append(opj(beremiz_path,"exemples",exemple))
+        elif projectpath is not None:
+            command.append(projectpath)
+
+        # App class is broken in Sikuli 2.0.5: can't start process with arguments.
+        # 
+        # Workaround : - use subprocess module to spawn IDE process,
+        #              - use wmctrl to find IDE window details and maximize it
+        #              - pass exact window title to App class constructor
+
+        self.proc = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=0)
+
+        # Window are macthed against process' PID
+        ppid = self.proc.pid
+
+        # Timeout 5s
+        c = 50
+        while c > 0:
+            # equiv to "wmctrl -l -p | grep $pid"
+            try:
+                wlist = filter(lambda l:(len(l)>2 and l[2]==str(ppid)), map(lambda s:s.split(None,4), subprocess.check_output(["wmctrl", "-l", "-p"]).splitlines()))
+            except subprocess.CalledProcessError:
+                wlist = []
+
+            # window with no title only has 4 fields do describe it
+            # beremiz splashcreen has no title
+            # wait until main window is visible
+            if len(wlist) == 1 and len(wlist[0]) == 5:
+                windowID,_zero,wpid,_XID,wtitle = wlist[0] 
+                break
+
+            sikuli.wait(0.1)
             c = c - 1
 
         if c == 0:
-            raise Exception("Stdout did not idle before timeout")
+            raise Exception("Couldn't find Beremiz window")
 
+        # Maximize window x and y
+        subprocess.check_call(["wmctrl", "-i", "-r", windowID, "-b", "add,maximized_vert,maximized_horz"])
 
-def waitPatternInStdout(proc, pattern, timeout, count=1):
-    
-    success_event = Event()
+        # switchApp creates an App object by finding window by title, is not supposed to spawn a process
+        self.sikuliapp = sikuli.switchApp(wtitle)
+        self.k = KBDShortcut(self)
 
-    def waitPatternInStdoutProc():
-        found = 0
-        while True:
-            a = proc.stdout.readline()
-            if len(a) == 0 or a is None: 
-                raise Exception("App finished before producing expected stdout pattern")
-            # sys.stdout.write(a)
-            if a.find(pattern) >= 0:
-                sys.stdout.write("found pattern in '" + a +"'")
-                found = found + 1
-                if found >= count:
-                    success_event.set()
-                    break
+        IDEIdleObserver.__init__(self)
+        stdoutIdleObserver.__init__(self)
 
+        # stubs for common sikuli calls to allow adding hooks later
+        for n in ["click","doubleClick","type"]:
+            setattr(self, n, getattr(sikuli, n))
 
-    Thread(target = waitPatternInStdoutProc).start()
+    def close(self):
+        self.sikuliapp.close()
+        self.sikuliapp = None
 
-    if not success_event.wait(timeout):
-        # test timed out
-        return False
-    else:
-        return True
-
-
+    def __del__(self):
+        if self.sikuliapp is not None:
+            self.sikuliapp.close()
+        IDEIdleObserver.__del__(self)
+        stdoutIdleObserver.__del__(self)
 
