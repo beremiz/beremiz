@@ -360,6 +360,8 @@ class Beremiz(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=inspectorID)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL | wx.ACCEL_ALT, ord('I'), inspectorID)]
 
+        self.methodLock = Lock()
+
         for method, shortcut in [("Stop",     wx.WXK_F4),
                                  ("Run",      wx.WXK_F5),
                                  ("Transfer", wx.WXK_F6),
@@ -369,8 +371,15 @@ class Beremiz(IDEFrame):
             def OnMethodGen(obj, meth):
                 def OnMethod(evt):
                     if obj.CTR is not None:
-                        obj.CTR.CallMethod('_'+meth)
-                    wx.CallAfter(self.RefreshStatusToolBar)
+                        if obj.methodLock.acquire(False):
+                            obj.CTR.CallMethod('_'+meth)
+                            obj.methodLock.release()
+                            wx.CallAfter(obj.RefreshStatusToolBar)
+                        else:
+                            # Postpone call if one of method already running
+                            # can happen because of long method using log, 
+                            # itself calling wx.Yield
+                            wx.CallLater(50, OnMethod, evt)
                 return OnMethod
             newid = wx.NewId()
             self.Bind(wx.EVT_MENU, OnMethodGen(self, method), id=newid)
