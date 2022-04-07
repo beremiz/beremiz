@@ -3,6 +3,7 @@
 import os
 import sys
 import subprocess
+import traceback
 from threading import Thread, Event, Lock
 from time import time as timesec
 
@@ -33,17 +34,17 @@ class KBDShortcut:
              "Address":  ("l",sikuli.Key.CTRL)}  # to reach address bar in GTK's file selector
 
     def __init__(self, app):
-        self.app = app.sikuliapp
+        self.app = app
     
     def __getattr__(self, name):
         fkey = self.fkeys[name]
         if type(fkey) != tuple:
             fkey = (fkey,)
-        app = self.app
 
         def PressShortCut():
-            app.focus()
+            self.app.sikuliapp.focus()
             sikuli.type(*fkey)
+            self.app.ReportText("Sending " + name + " shortcut")
 
         return PressShortCut
 
@@ -86,6 +87,8 @@ class IDEIdleObserver:
                 break
             c = c - 1
 
+        self.ReportScreenShot("UI is idle" if c != 0 else "UI is not idle")
+
         if c == 0:
             raise Exception("Window did not idle before timeout")
 
@@ -113,6 +116,7 @@ class stdoutIdleObserver:
             if len(a) == 0 or a is None: 
                 break
             sys.stdout.write(a)
+            self.ReportOutput(a)
             self.event.set()
             if self.pattern is not None and a.find(self.pattern) >= 0:
                 sys.stdout.write("found pattern in '" + a +"'")
@@ -126,7 +130,11 @@ class stdoutIdleObserver:
         """
         start_time = timesec()
 
-        if self.event.wait(timeout):
+        wait_result = self.event.wait(timeout)
+
+        self.ReportScreenShot("stdout changed" if wait_result else "stdout didn't change")
+
+        if wait_result:
             self.event.clear()
         else:
             raise Exception("Stdout didn't become active before timeout")
@@ -148,7 +156,10 @@ class stdoutIdleObserver:
                 self.event.clear()
             else:
                 # timeout -> no event -> idle -> exit
+                self.ReportScreenShot("stdout is idle")
                 return True
+
+        self.ReportScreenShot("stdout did not idle")
 
         raise Exception("Stdout did not idle before timeout")
 
@@ -170,6 +181,7 @@ class stdoutIdleObserver:
                 if found >= count:
                     break
         self.pattern = None
+        self.ReportScreenShot("found pattern" if res else "pattern not found")
         return res
 
 class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
@@ -185,6 +197,21 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
                 Sikuli App class instance
         """
 
+        self.screenshotnum = 0
+        self.starttime = timesec()
+        self.screen = sikuli.Screen()
+
+        self.report = open("report.html", "w")
+        self.report.write("""<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="color-scheme" content="light dark">
+    <title>Test report</title>
+  </head>
+  <body>
+""")
+
         command = [python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
 
         if exemple is not None:
@@ -197,6 +224,8 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         # Workaround : - use subprocess module to spawn IDE process,
         #              - use wmctrl to find IDE window details and maximize it
         #              - pass exact window title to App class constructor
+
+        self.ReportText("Launching " + repr(command))
 
         self.proc = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=0)
 
@@ -236,16 +265,66 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         stdoutIdleObserver.__init__(self)
 
         # stubs for common sikuli calls to allow adding hooks later
-        for n in ["click","doubleClick","type"]:
-            setattr(self, n, getattr(sikuli, n))
+        for name in ["click","doubleClick","type"]:
+            def makeMyMeth(n):
+                def myMeth(*args, **kwargs):
+                    getattr(sikuli, n)(*args, **kwargs)
+                    self.ReportScreenShot(n + "(" + repr(args) + "," + repr(kwargs) + ")")
+                return myMeth
+            setattr(self, name, makeMyMeth(name))
 
     def close(self):
         self.sikuliapp.close()
         self.sikuliapp = None
+        self.report.write("""
+  </body>
+</html>""")
+        self.report.close()
 
     def __del__(self):
         if self.sikuliapp is not None:
             self.sikuliapp.close()
         IDEIdleObserver.__del__(self)
         stdoutIdleObserver.__del__(self)
+
+    def ReportScreenShot(self, msg):
+        elapsed = "%.3fs: "%(timesec() - self.starttime)
+        fname = "capture"+str(self.screenshotnum)+".png"
+        cap = self.screen.capture(self.r)
+        cap.save(".", fname)
+        # self.report.write("ReportScreenShot " + msg + " " + fname + "\n")
+        self.screenshotnum = self.screenshotnum + 1
+        self.report.write( "<p>" + elapsed + msg + "<img src=\""+ fname + "\">" + "</p>")
+
+    def ReportText(self, text):
+        elapsed = "%.3fs: "%(timesec() - self.starttime)
+        self.report.write("<p>" + elapsed + text + "</p>")
+
+    def ReportOutput(self, text):
+        elapsed = "%.3fs: "%(timesec() - self.starttime)
+        self.report.write("<pre>" + elapsed + text + "</pre>")
+
+
+def run_test(func, *args, **kwargs):
+    app = BeremizApp(*args, **kwargs)
+    try:
+        success = func(app)
+    except:
+        # sadly, sys.excepthook is broken in sikuli/jython 
+        # purpose of this run_test function is to work around it.
+        # and catch exception cleanly anyhow
+        e_type, e_value, e_traceback = sys.exc_info()
+        err_msg = "\n".join(traceback.format_exception(e_type, e_value, e_traceback))
+        sys.stdout.write(err_msg)
+        app.ReportOutput(err_msg)
+        success = False
+
+    app.close()
+
+    if success:
+        sikuli.exit(0)
+    else:
+        sikuli.exit(1)
+
+
 
