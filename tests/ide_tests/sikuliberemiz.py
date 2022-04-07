@@ -292,9 +292,8 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         fname = "capture"+str(self.screenshotnum)+".png"
         cap = self.screen.capture(self.r)
         cap.save(".", fname)
-        # self.report.write("ReportScreenShot " + msg + " " + fname + "\n")
         self.screenshotnum = self.screenshotnum + 1
-        self.report.write( "<p>" + elapsed + msg + "<img src=\""+ fname + "\">" + "</p>")
+        self.report.write( "<p>" + elapsed + msg + "<br/><img src=\""+ fname + "\">" + "</p>")
 
     def ReportText(self, text):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
