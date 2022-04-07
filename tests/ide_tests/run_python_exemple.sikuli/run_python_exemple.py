@@ -11,34 +11,29 @@ addImportPath(os.path.dirname(getBundlePath()))
 # common test definitions module
 from sikuliberemiz import *
 
-# Start the app
-app = BeremizApp(exemple="python")
-
-app.k.Clean()
-
-app.waitForChangeAndIdleStdout()
-
-app.k.Build()
-
-app.waitForChangeAndIdleStdout()
-
-app.k.Connect()
-
-app.waitForChangeAndIdleStdout()
-
-app.k.Transfer()
-
-app.waitForChangeAndIdleStdout()
-
-app.k.Run()
-
-# wait 10 seconds for 10 Grumpfs
-found = app.waitPatternInStdout("Grumpf", 10, 10)
-
-app.close()
-
-if found:
-    exit(0)
-else:
-    exit(1)
+def test(app):
+    # Start the app
+    
+    app.k.Clean()
+    
+    app.waitForChangeAndIdleStdout()
+    
+    app.k.Build()
+    
+    app.waitForChangeAndIdleStdout()
+    
+    app.k.Connect()
+    
+    app.waitForChangeAndIdleStdout()
+    
+    app.k.Transfer()
+    
+    app.waitForChangeAndIdleStdout()
+    
+    app.k.Run()
+      
+    # wait 10 seconds for 10 Grumpfs
+    return app.waitPatternInStdout("Grumpf", 10, 10)
+    
+run_test(test, exemple="python")
 

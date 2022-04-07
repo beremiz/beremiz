@@ -9,62 +9,55 @@ import time
 addImportPath(os.path.dirname(getBundlePath()))
 
 # common test definitions module
-from sikuliberemiz import *
+from sikuliberemiz import run_test
 
-# Start the app
-app = BeremizApp(exemple="python")
+def test(app):
 
-app.doubleClick("1646062660770.png")
+    app.doubleClick("1646062660770.png")
 
-app.WaitIdleUI()
+    app.WaitIdleUI()
 
-app.click("example")
+    app.click("example")
 
-app.WaitIdleUI()
+    app.WaitIdleUI()
 
-app.type(Key.DOWN * 10, Key.CTRL)
+    app.type(Key.DOWN * 10, Key.CTRL)
 
-app.WaitIdleUI()
+    app.WaitIdleUI()
 
-app.doubleClick("1646066996620.png")
+    app.doubleClick("1646066996620.png")
 
-app.WaitIdleUI()
+    app.WaitIdleUI()
 
-app.type(Key.TAB*3)  # select text content
+    app.type(Key.TAB*3)  # select text content
 
-app.type("'sys.stdout.write(\"EDIT TEST OK\\n\")'")
+    app.type("'sys.stdout.write(\"EDIT TEST OK\\n\")'")
 
-app.type(Key.ENTER)
+    app.type(Key.ENTER)
 
-app.WaitIdleUI()
+    app.WaitIdleUI()
 
-app.k.Save()
+    app.k.Save()
 
-app.k.Clean()
+    app.k.Clean()
 
-app.waitForChangeAndIdleStdout()
+    app.waitForChangeAndIdleStdout()
 
-app.k.Build()
+    app.k.Build()
 
-app.waitForChangeAndIdleStdout()
+    app.waitForChangeAndIdleStdout()
 
-app.k.Connect()
+    app.k.Connect()
 
-app.waitForChangeAndIdleStdout()
+    app.waitForChangeAndIdleStdout()
 
-app.k.Transfer()
+    app.k.Transfer()
 
-app.waitForChangeAndIdleStdout()
+    app.waitForChangeAndIdleStdout()
 
-app.k.Run()
+    app.k.Run()
 
-# wait 10 seconds for 10 patterns
-found = app.waitPatternInStdout("EDIT TEST OK", 10)
+    # wait 10 seconds for 10 patterns
+    return app.waitPatternInStdout("EDIT TEST OK", 10)
 
-app.close()
-
-if found:
-    exit(0)
-else:
-    exit(1)
-
+run_test(test, exemple="python")
