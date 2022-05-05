@@ -1,8 +1,8 @@
 // widget_pathslider.ysl2
 widget_desc("PathSlider") {
     longdesc
-    || 
-    PathSlider - 
+    ||
+    PathSlider -
     ||
 
     shortdesc > Slide an SVG element along a path by dragging it
@@ -10,7 +10,7 @@ widget_desc("PathSlider") {
     path name="value" accepts="HMI_INT,HMI_REAL" > value
     path name="min" count="optional" accepts="HMI_INT,HMI_REAL" > min
     path name="max" count="optional" accepts="HMI_INT,HMI_REAL" > max
-    
+
     arg name="min" count="optional" accepts="int,real" > minimum value
     arg name="max" count="optional" accepts="int,real" > maximum value
 }
@@ -25,7 +25,7 @@ widget_class("PathSlider") {
         pathLength = undefined;
         precision = undefined;
         origPt = undefined;
-        
+
 
         scanPath() {
           this.pathLength = this.path_elt.getTotalLength();
@@ -67,7 +67,7 @@ widget_class("PathSlider") {
               bestPoint = beforePoint,
               bestLength = beforeLength,
               bestDistance = beforeDistance;
-            } else if ((afterLength = bestLength + precision) <= this.pathLength && 
+            } else if ((afterLength = bestLength + precision) <= this.pathLength &&
                        (afterDistance = distance2(afterPoint = this.path_elt.getPointAtLength(afterLength))) < bestDistance) {
               bestPoint = afterPoint,
               bestLength = afterLength,
