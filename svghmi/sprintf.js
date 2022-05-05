@@ -15,7 +15,7 @@
         not_json: /[^j]/,
         text: /^[^\x25]+/,
         modulo: /^\x25{2}/,
-        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
+        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxXD])/,
         key: /^([a-z_][a-z_\d]*)/i,
         key_access: /^\.([a-z_][a-z_\d]*)/i,
         index_access: /^\[(\d+)\]/,
@@ -77,6 +77,51 @@
                     case 'd':
                     case 'i':
                         arg = parseInt(arg, 10)
+                        break
+                    case 'D':
+                        /*  
+
+                            select date format with width
+                            select time format with precision
+                            %D  => 13:31 AM (default)
+                            %1D  => 13:31 AM
+                            %.1D  => 07/07/20
+                            %1.1D  => 07/07/20, 13:31 AM
+                            %1.2D  => 07/07/20, 13:31:55 AM
+                            %2.2D  => May 5, 2022, 9:29:16 AM
+                            %3.3D  => May 5, 2022 at 9:28:16 AM GMT+2
+                            %4.4D  => Thursday, May 5, 2022 at 9:26:59 AM Central European Summer Time
+
+                            see meaning of DateTimeFormat's options "datestyle" and "timestyle" in MDN 
+                        */
+
+                        let [datestyle, timestyle] = [ph.width, ph.precision].map(val => {
+                            1: "short",
+                            2: "medium",
+                            3: "long",
+                            4: "full"
+                        }[val]);
+
+                        if(timestyle === undefined && datestyle === undefined){
+                            timestyle = "short";
+                        }
+
+                        let options = {
+                            dateStyle: datestyle,
+                            timeStyle: timestyle,
+                            hour12: false
+                        }
+
+                        /* get lang from globals */
+                        let lang = get_current_lang_code();
+                        arg = Date(arg).toLocaleString('en-US', options);
+                        
+                        /*    
+                            TODO: select with padding char
+                                  a: absolute time and date (default)
+                                  r: relative time
+                        */
+
                         break
                     case 'j':
                         arg = JSON.stringify(arg, null, ph.width ? parseInt(ph.width) : 0)

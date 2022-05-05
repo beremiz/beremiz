@@ -264,6 +264,11 @@ subscribers(lang_local_index).add({
     }
 });
 
+// returns en_US, fr_FR or en_UK depending on selected language
+function get_current_lang_code(){
+    return cache[langcode_local_index];
+}
+
 function setup_lang(){
     let current_lang = cache[lang_local_index];
     let new_lang = switch_langnum(current_lang);
