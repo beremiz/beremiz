@@ -18,16 +18,7 @@ function dispatch_value(index, value) {
 function init_widgets() {
     Object.keys(hmi_widgets).forEach(function(id) {
         let widget = hmi_widgets[id];
-        let init = widget.init;
-        if(typeof(init) == "function"){
-            try {
-                init.call(widget);
-            } catch(err) {
-                console.log(err);
-            }
-        }
-        if(widget.forced_frequency !== undefined)
-            widget.frequency = widget.forced_frequency;
+        widget.do_init();
     });
 };
 
