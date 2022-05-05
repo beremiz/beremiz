@@ -183,6 +183,7 @@ emit "preamble:widget-base-class" {
             this.pending = indexes.map(() => undefined);
             this.bound_unhinibit = this.unhinibit.bind(this);
             this.forced_frequency = freq;
+            this.clip = true;
         }
 
         unsub(){
@@ -269,14 +270,16 @@ emit "preamble:widget-base-class" {
             if(realindex == undefined) return undefined;
             let old_val = cache[realindex];
             let new_val = eval_operation_string(old_val, opstr);
-            new_val = this.clip_min_max(index, new_val);
+            if(this.clip)
+                new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
         }
 
         _apply_hmi_value(index, new_val) {
             let realindex = this.get_variable_index(index);
             if(realindex == undefined) return undefined;
-            new_val = this.clip_min_max(index, new_val);
+            if(this.clip)
+                new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
         }
 
