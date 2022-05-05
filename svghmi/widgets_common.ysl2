@@ -395,8 +395,10 @@ function "defs_by_labels" {
     param "hmi_element";
     const "widget_type","@type";
     foreach "str:split($labels)" {
-        const "name",".";
-        const "elt","$result_widgets[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]";
+        const "absolute", "starts-with(., '/')";
+        const "name","substring(.,number($absolute)+1)";
+        const "widget","$result_widgets[@id = $hmi_element/@id]";
+        const "elt","($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]";
         choose {
             when "not($elt/@id)" {
                 if "$mandatory='yes'" {
