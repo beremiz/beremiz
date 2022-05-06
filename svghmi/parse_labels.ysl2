@@ -15,7 +15,7 @@
 //
 const "pathregex",!"'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"!;
 
-template "*", mode="parselabel" 
+template "*", mode="parselabel"
 {
     const "label","@inkscape:label";
     const "id","@id";
@@ -45,7 +45,7 @@ template "*", mode="parselabel"
         attrib "id" > «$id»
         attrib "type" > «$type»
         if "$freq" {
-            if "not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]'))" {
+            if "not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))" {
                 error > Widget id:«$id» label:«$label» has wrong syntax of frequency forcing «$freq»
             }
             attrib "freq" > «$freq»
