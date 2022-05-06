@@ -247,7 +247,7 @@ class ResourceEditor(EditorPanel):
             tasks_buttons_sizer.Add(button)
 
         self.TasksGrid = CustomGrid(self.Editor, style=wx.VSCROLL)
-        self.TasksGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING, self.OnTasksGridCellChange)
+        self.TasksGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnTasksGridCellChange)
         tasks_sizer.Add(self.TasksGrid, flag=wx.GROW)
 
         instances_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=5)
@@ -277,7 +277,7 @@ class ResourceEditor(EditorPanel):
             instances_buttons_sizer.Add(button)
 
         self.InstancesGrid = CustomGrid(self.Editor, style=wx.VSCROLL)
-        self.InstancesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING, self.OnInstancesGridCellChange)
+        self.InstancesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnInstancesGridCellChange)
         instances_sizer.Add(self.InstancesGrid, flag=wx.GROW)
 
         self.Editor.SetSizer(main_sizer)

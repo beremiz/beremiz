@@ -47,7 +47,7 @@ DIMENSION_MODEL = re.compile(r"([0-9]+)\.\.([0-9]+)$")
 
 
 def AppendMenu(parent, help, kind, text):
-    return parent.Append(help=help, id=wx.ID_ANY, kind=kind, text=text)
+    return parent.Append(wx.MenuItem(helpString=help, id=wx.ID_ANY, kind=kind, text=text))
 
 
 def GetElementsTableColnames():
@@ -375,7 +375,7 @@ class DataTypeEditor(EditorPanel):
 
         self.StructureElementsGrid = CustomGrid(self.StructurePanel,
                                                 size=wx.Size(0, 150), style=wx.VSCROLL)
-        self.StructureElementsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING,
+        self.StructureElementsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                                         self.OnStructureElementsGridCellChange)
         self.StructureElementsGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
                                         self.OnStructureElementsGridEditorShown)
