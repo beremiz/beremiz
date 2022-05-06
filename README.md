@@ -10,8 +10,8 @@ With Beremiz, you conform to standards, avoid vendor lock, and contribute to the
 
 Beremiz consists of two components:
 
-* Integrated Development Environment (IDE), [Beremiz.py](https://bitbucket.org/automforge/beremiz/src/tip/Beremiz.py?at=default). It's running on user's computer and is used to write/compile/debug PLC programs and control PLC runtime.
-* Reference runtime implementation in python, [Beremiz_service.py](https://bitbucket.org/automforge/beremiz/src/tip/Beremiz_service.py?at=default). It's running on target platform, communicates with I/O and executes PLC program.
+* Integrated Development Environment (IDE), Beremiz.py. It is running on user's computer and is used to write/compile/debug PLC programs and control PLC runtime.
+* Reference runtime implementation in python, Beremiz_service.py. It's running on target platform, communicates with I/O and executes PLC program.
 
 See official [Beremiz website](http://www.beremiz.org/) for more information.
 
@@ -77,6 +77,52 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 		cd ~/Beremiz/beremiz
 		python Beremiz.py
 
+## Build documentation
+
+Source code for Beremiz user manual is stored in
+[doc](tree/default/doc)
+directory in project's source tree.
+It's written in reStructuredText (ReST) and uses Sphinx to build documentation in different formats.
+
+
+To build documentation you need following packages on Ubuntu/Debian:
+
+```
+sudo apt-get install build-essential python-sphynx
+```
+
+### Documentation in HTML
+
+Build documentation
+
+```
+cd ~/Beremiz/doc
+make all
+
+```
+
+Result documentation is stored in directories 'doc/\_build/dirhtml\*'.
+
+### Documentation in PDF
+
+To build pdf documentation you have to install additional packages on Ubuntu/Debian:
+
+```
+sudo apt-get install textlive-latex-base texlive-latex-recommended \
+     texlive-fonts-recommended texlive-latex-extra
+
+```
+
+Build documentation
+
+```
+cd ~/Beremiz/doc
+make latexpdf
+
+```
+
+Result documentation is stored in 'doc/\_build/latex/Beremiz.pdf'.
+
 ## Run standalone Beremiz runtime ##
 
 Runtime implementation can be different on different platforms.
@@ -89,14 +135,11 @@ If you want to run Beremiz_service.py as standalone service, then follow these i
 
 * Start standalone Beremiz service
 
-		cd ~/Beremiz
-		mkdir beremiz_workdir
-		cd ~/beremiz
-		python Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/Beremiz/beremiz_workdir
+		mkdir ~/beremiz_workdir
+		python Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/beremiz_workdir
 
 * Launch Beremiz IDE
 
-		cd ~/Beremiz/beremiz
 		python Beremiz.py
 
 * Open/Create PLC project in Beremiz IDE.  
@@ -105,7 +148,8 @@ If you want to run Beremiz_service.py as standalone service, then follow these i
 
 ## Examples ##
 
-Almost for all functionality exists example in ['tests'](https://bitbucket.org/automforge/beremiz/src/tip/tests/?at=default) directory.
+Almost for all functionality exists example in ['tests'](tree/default/tests/projects) and ['exemples'](tree/default/tests/projects) directories.
+
 Most of examples are shown on [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA).
 
 ## Documentation ##
