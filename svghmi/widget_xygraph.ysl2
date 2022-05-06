@@ -179,15 +179,8 @@ widget_class("XYGraph") {
 }
 
 widget_defs("XYGraph") {
-    labels("""
-        /x_interval_minor_mark
-        /x_axis_line
-        /x_interval_major_mark
-        /x_axis_label
-        /y_interval_minor_mark
-        /y_axis_line
-        /y_interval_major_mark
-        /y_axis_label""")
+    labels("/x_interval_minor_mark /x_axis_line /x_interval_major_mark /x_axis_label")
+    labels("/y_interval_minor_mark /y_axis_line /y_interval_major_mark /y_axis_label")
 
     |     init_specific() {
 
@@ -271,7 +264,7 @@ function getLinesIntesection(l1, l2) {
     */
 
     let [l1start, l1vect] = l1;
-    let [l1start, l2vect] = l2;
+    let [l2start, l2vect] = l2;
 
     let b = (l1start.y + (l1vect.y * l2start.x) / (l1start.x + l1vect.x) - l2start.y) / ((l2vect.y - (l1vect.y * l2vect.x ) / (l1start.x + l1vect.x)));
 
