@@ -187,23 +187,23 @@ emit "preamble:widget-base-class" {
         }
 
         do_init(){
-            if(widget.forced_frequency !== undefined){
-                let s = widget.forced_frequency;
+            let forced = this.forced_frequency;
+            if(forced !== undefined){
                 /*
                 once every 10 seconds : 10s
                 once per minute : 1m
                 once per hour : 1h
                 once per day : 1d
                 */
-                let unit = s.slice(-1);
+                let unit = forced.slice(-1);
                 let factor = {
                     "s":1,
                     "m":60,
                     "h":3600,
                     "d":86400}[unit];
 
-                widget.frequency = factor ? 1/(factor * Number(s.slice(0,-1)))
-                                          : Number(s);
+                this.frequency = factor ? 1/(factor * Number(forced.slice(0,-1)))
+                                          : Number(forced);
             }
 
             let init = this.init;
