@@ -95,12 +95,12 @@
                             see meaning of DateTimeFormat's options "datestyle" and "timestyle" in MDN 
                         */
 
-                        let [datestyle, timestyle] = [ph.width, ph.precision].map(val => {
+                        let [datestyle, timestyle] = [ph.width, ph.precision].map(val => ({
                             1: "short",
                             2: "medium",
                             3: "long",
                             4: "full"
-                        }[val]);
+                        }[val]));
 
                         if(timestyle === undefined && datestyle === undefined){
                             timestyle = "short";
