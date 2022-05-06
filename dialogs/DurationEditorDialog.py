@@ -153,6 +153,7 @@ class DurationEditorDialog(wx.Dialog):
         return duration
 
     def OnOK(self, event):
+        event.Skip()
         self.OnCloseDialog()
 
     def OnCloseDialog(self):
