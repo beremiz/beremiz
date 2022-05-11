@@ -40,7 +40,7 @@ widget_class("XYGraph") {
             // not to clip data.
             this.clip = false;
 
-            let y_min = -Infinity, y_max = Infinity;
+            let y_min = Infinity, y_max = -Infinity;
 
             // Compute visible Y range by merging fixed curves Y ranges
             for(let minmax of this.minmaxes){
@@ -48,12 +48,12 @@ widget_class("XYGraph") {
                    let [min,max] = minmax;
                    if(min < y_min)
                        y_min = min;
-                   if(max > y_max) 
+                   if(max > y_max)
                        y_max = max;
                }
             }
 
-            if(y_min !== -Infinity && y_max !== Infinity){
+            if(y_min !== Infinity && y_max !== -Infinity){
                this.fixed_y_range = true;
             } else {
                this.fixed_y_range = false;
@@ -66,16 +66,16 @@ widget_class("XYGraph") {
             this.init_specific();
 
             this.reference = new ReferenceFrame(
-                [[this.x_interval_minor_mark, this.x_interval_major_mark],
-                 [this.y_interval_minor_mark, this.y_interval_major_mark]],
-                [this.y_axis_label, this.x_axis_label],
-                [this.x_axis_line, this.y_axis_line],
+                [[this.x_interval_minor_mark_elt, this.x_interval_major_mark_elt],
+                 [this.y_interval_minor_mark_elt, this.y_interval_major_mark_elt]],
+                [this.x_axis_label_elt, this.y_axis_label_elt],
+                [this.x_axis_line_elt, this.y_axis_line_elt],
                 [this.x_format, this.y_format]);
 
             // create <clipPath> path and attach it to widget
-            clipPath = document.createElementNS(xmlns,"clipPath");
-            clipPathPath = document.createElementNS(xmlns,"path");
-            clipPathPathDattr = document.createAttribute("d");
+            let clipPath = document.createElementNS(xmlns,"clipPath");
+            let clipPathPath = document.createElementNS(xmlns,"path");
+            let clipPathPathDattr = document.createAttribute("d");
             clipPathPathDattr.value = this.reference.getClipPathPathDattr();
             clipPathPath.setAttributeNode(clipPathPathDattr);
             clipPath.appendChild(clipPathPath);
@@ -86,7 +86,7 @@ widget_class("XYGraph") {
                 curve.setAttribute("clip-path", "url(#" + clipPath.id + ")");
             }
 
-            this.curves_data = [];
+            this.curves_data = this.curves.map(_unused => []);
             this.max_data_length = this.args[0];
         }
 
@@ -119,6 +119,7 @@ widget_class("XYGraph") {
                     this.ymin = value;
                 }
             }
+            let Ylength = this.ymax - this.ymin;
 
             // recompute X range based on curent time ad buffer depth
             // TODO: get PLC time instead of browser time
@@ -134,30 +135,29 @@ widget_class("XYGraph") {
             // FIXME: use SVG getPathData and setPathData when available.
             //        https://svgwg.org/specs/paths/#InterfaceSVGPathData
             //        https://github.com/jarek-foksa/path-data-polyfill
-           
+
             let [base_point, xvect, yvect] = this.reference.getBaseRef();
-            this.curves_d_attr = 
-                zip(this.curves_data, this.curves).map(function([data,curve]){
-                let new_d = data.map(function([y, i]){
-                    // compute curve point from data, ranges, and base_ref
-                    let x = Xmin + i * Xlength / data_length;
-                    let xv = vectorscale(xvect, (x - Xmin) / Xlength);
-                    let yv = vectorscale(yvect, (y - Ymin) / Ylength);
-                    let px = base_point.x + xv.x + yv.x;
-                    let py = base_point.y + xv.y + yv.y;
-                    if(!this.fixed_y_range){
-                        if(ymin_damaged && y > this.ymin) this.ymin = y;
-                        if(xmin_damaged && x > this.xmin) this.xmin = x;
-                    }
+            this.curves_d_attr =
+                zip(this.curves_data, this.curves).map(([data,curve]) => {
+                    let new_d = data.map((y, i) => {
+                        // compute curve point from data, ranges, and base_ref
+                        let x = this.xmin + i * Xlength / data_length;
+                        let xv = vectorscale(xvect, (x - this.xmin) / Xlength);
+                        let yv = vectorscale(yvect, (y - this.ymin) / Ylength);
+                        let px = base_point.x + xv.x + yv.x;
+                        let py = base_point.y + xv.y + yv.y;
+                        if(!this.fixed_y_range){
+                            if(ymin_damaged && y < this.ymin) this.ymin = y;
+                            if(ymax_damaged && y > this.ymax) this.ymax = y;
+                        }
 
-                    return " " + px + "," + py;
+                        return " " + px + "," + py;
+                    });
+
+                    new_d.unshift("M ");
+
+                    return new_d.join('');
                 });
-
-                new_d.unshift("M ");
-                new_d.push(" z");
-
-                return new_d.join('');
-            }
 
             // computed curves "d" attr is applied to svg curve during animate();
 
@@ -166,12 +166,17 @@ widget_class("XYGraph") {
 
         animate(){
 
-            // move marks and update labels
-            this.reference.applyRanges([this.XRange, this.YRange]);
+            // move elements only if enough data
+            if(this.curves_data.some(data => data.length > 1)){
 
-            // apply computed curves "d" attributes
-            for(let [curve, d_attr] of zip(this.curves, this.curves_d_attr)){
-                curve.setAttribute("d", d_attr);
+                // move marks and update labels
+                this.reference.applyRanges([[this.xmin, this.xmax],
+                                            [this.ymin, this.ymax]]);
+
+                // apply computed curves "d" attributes
+                for(let [curve, d_attr] of zip(this.curves, this.curves_d_attr)){
+                    curve.setAttribute("d", d_attr);
+                }
             }
         }
 
@@ -179,8 +184,8 @@ widget_class("XYGraph") {
 }
 
 widget_defs("XYGraph") {
-    labels("/x_interval_minor_mark /x_axis_line /x_interval_major_mark /x_axis_label")
-    labels("/y_interval_minor_mark /y_axis_line /y_interval_major_mark /y_axis_label")
+    labels("/x_interval_minor_mark /x_axis_line /x_interval_major_mark /x_axis_label");
+    labels("/y_interval_minor_mark /y_axis_line /y_interval_major_mark /y_axis_label");
 
     |     init_specific() {
 
@@ -219,12 +224,18 @@ function vectorscale(p1, p2) {
 function move_elements_to_group(elements) {
     let newgroup = document.createElementNS(xmlns,"g");
     for(let element of elements){
-        element.parentElement().removeChild(element);
+        let parent = element.parentElement;
+        if(parent !== null)
+            parent.removeChild(element);
         newgroup.appendChild(element);
     }
     return newgroup;
 }
 function getLinesIntesection(l1, l2) {
+    let [l1start, l1vect] = l1;
+    let [l2start, l2vect] = l2;
+
+    let b;
     /*
     Compute intersection of two lines
     =================================
@@ -243,44 +254,34 @@ function getLinesIntesection(l1, l2) {
     intersection = l2start + l2vect * b
     ==> solve : "l1start + l1vect * a = l2start + l2vect * b" to find a and b and then intersection
 
-    (1)   l1start.x + l1vect.x * a = l2start.x + l2vect.x * b
-    (2)   l1start.y + l1vect.y * a = l2start.y + l2vect.y * b
+    (1)   l1start.y + l1vect.y * a = l2start.y + l2vect.y * b
+    (2)   l1start.x + l1vect.x * a = l2start.x + l2vect.x * b
 
     // express a
-    (1)   a = (l2start.x + l2vect.x * b) / (l1start.x + l1vect.x)
+    (1)   a = (l2start.y + l2vect.y * b - l1start.y) / l1vect.y
 
     // substitute a to have only b
-    (1+2) l1start.y + l1vect.y * (l2start.x + l2vect.x * b) / (l1start.x + l1vect.x) = l2start.y + l2vect.y * b
+    (1+2) l1start.x + l1vect.x * (l2start.y + l2vect.y * b - l1start.y) / l1vect.y = l2start.x + l2vect.x * b
 
     // expand to isolate b
-    (2) l1start.y + (l1vect.y * l2start.x) / (l1start.x + l1vect.x) + (l1vect.y * l2vect.x * b) / (l1start.x + l1vect.x) = l2start.y + l2vect.y * b
-    (2) l1start.y + (l1vect.y * l2start.x) / (l1start.x + l1vect.x) - l2start.y = l2vect.y * b - (l1vect.y * l2vect.x * b) / (l1start.x + l1vect.x)
+    l1start.x + l1vect.x * l2start.y / l1vect.y + l2vect.y / l1vect.y * b - l1start.y / l1vect.y = l2start.x + l2vect.x * b
 
     // factorize b
-    (2) l1start.y + (l1vect.y * l2start.x) / (l1start.x + l1vect.x) - l2start.y = b * (l2vect.y - (l1vect.y * l2vect.x ) / (l1start.x + l1vect.x))
+    l1start.x + l1vect.x * l2start.y / l1vect.y - l1start.y / l1vect.y - l2start.x = b * ( l2vect.x - l2vect.y / l1vect.y)
 
     // extract b
-    (2) b = (l1start.y + (l1vect.y * l2start.x) / (l1start.x + l1vect.x) - l2start.y) / ((l2vect.y - (l1vect.y * l2vect.x ) / (l1start.x + l1vect.x)))
+    b = (l1start.x + l1vect.x * l2start.y / l1vect.y  - l1start.y / l1vect.y - l2start.x)  / ( l2vect.x - l2vect.y / l1vect.y)
     */
 
-    let [l1start, l1vect] = l1;
-    let [l2start, l2vect] = l2;
-
-    let b = (l1start.y + (l1vect.y * l2start.x) / (l1start.x + l1vect.x) - l2start.y) / ((l2vect.y - (l1vect.y * l2vect.x ) / (l1start.x + l1vect.x)));
+    /* avoid divison by zero by swapping (1) and (2) */
+    if(l1vect.y == 0 ){
+        b = (l1start.y + l1vect.y * l2start.x / l1vect.x  - l1start.x / l1vect.x - l2start.y)  / ( l2vect.y - l2vect.x / l1vect.x);
+    }else{
+        b = (l1start.x + l1vect.x * l2start.y / l1vect.y  - l1start.y / l1vect.y - l2start.x)  / ( l2vect.x - l2vect.y / l1vect.y);
+    }
 
     return new DOMPoint(l2start.x + l2vect.x * b, l2start.y + l2vect.y * b);
 };
-
-
-// From https://stackoverflow.com/a/48293566
-function *zip (...iterables){
-    let iterators = iterables.map(i => i[Symbol.iterator]() )
-    while (true) {
-        let results = iterators.map(iter => iter.next() )
-        if (results.some(res => res.done) ) return
-        else yield results.map(res => res.value )
-    }
-}
 
 class ReferenceFrame {
     constructor(
@@ -293,7 +294,7 @@ class ReferenceFrame {
         // [Xformat, Yformat] printf-like formating strings
         formats
     ){
-        this.axes = zip(labels,marks,lines,formats).map((...args) => new Axis(...args));
+        this.axes = zip(labels,marks,lines,formats).map(args => new Axis(...args));
 
         let [lx,ly] = this.axes.map(axis => axis.line);
         let [[xstart, xvect], [ystart, yvect]] = [lx,ly];
@@ -324,7 +325,7 @@ class ReferenceFrame {
 
     applyRanges(ranges){
         for(let [range,axis] of zip(ranges,this.axes)){
-            axis.applyRange(range);
+            axis.applyRange(...range);
         }
     }
 
@@ -340,46 +341,19 @@ class ReferenceFrame {
         Given axes lines are not starting at the same point, hereafter is
         calculus of parallelogram base point.
 
-                              ^ given Y axis
+                              ^ given Y axis (yvect)
                    /         /
                   /         /
                  /         /
-         xstart /---------/--------------> given X axis
-               /         /
+         xstart *---------*--------------> given X axis (xvect)
+               /         /origin
               /         /
-             /---------/--------------
+             *---------*--------------
         base_point   ystart
 
-        base_point = xstart + yvect * a
-        base_point = ystart + xvect * b
-        ==> solve : "xstart + yvect * a = ystart + xvect * b" to find a and b and then base_point
-
-        (1)   xstart.x + yvect.x * a = ystart.x + xvect.x * b
-        (2)   xstart.y + yvect.y * a = ystart.y + xvect.y * b
-
-        // express a
-        (1)   a = (ystart.x + xvect.x * b) / (xstart.x + yvect.x)
-
-        // substitute a to have only b
-        (1+2) xstart.y + yvect.y * (ystart.x + xvect.x * b) / (xstart.x + yvect.x) = ystart.y + xvect.y * b
-
-        // expand to isolate b
-        (2) xstart.y + (yvect.y * ystart.x) / (xstart.x + yvect.x) + (yvect.y * xvect.x * b) / (xstart.x + yvect.x) = ystart.y + xvect.y * b
-        (2) xstart.y + (yvect.y * ystart.x) / (xstart.x + yvect.x) - ystart.y = xvect.y * b - (yvect.y * xvect.x * b) / (xstart.x + yvect.x)
-
-        // factorize b
-        (2) xstart.y + (yvect.y * ystart.x) / (xstart.x + yvect.x) - ystart.y = b * (xvect.y - (yvect.y * xvect.x ) / (xstart.x + yvect.x))
-
-        // extract b
-        (2) b = (xstart.y + (yvect.y * ystart.x) / (xstart.x + yvect.x) - ystart.y) / ((xvect.y - (yvect.y * xvect.x ) / (xstart.x + yvect.x)))
         */
 
-        let b = (xstart.y + (yvect.y * ystart.x) / (xstart.x + yvect.x) - ystart.y) / ((xvect.y - (yvect.y * xvect.x ) / (xstart.x + yvect.x)));
-        let base_point = new DOMPoint(ystart.x + xvect.x * b, ystart.y + xvect.y * b);
-
-        // // compute given origin
-        // // from drawing : given_origin = xstart - xvect * b
-        // let given_origin = new DOMPoint(xstart.x - xvect.x * b, xstart.y - xvect.y * b);
+        let base_point = getLinesIntesection([xstart,yvect],[ystart,xvect]);
 
         return base_point;
 
@@ -407,13 +381,13 @@ class Axis {
         };
 
         // group marks an labels together
-        let parent = line.parentElement()
-        marks_group = move_elements_to_group(marks);
-        marks_and_label_group = move_elements_to_group([marks_group_use, label]);
-        group = move_elements_to_group([marks_and_label_group,line]);
+        let parent = line.parentElement;
+        let marks_group = move_elements_to_group(marks);
+        let marks_and_label_group = move_elements_to_group([marks_group, label]);
+        let group = move_elements_to_group([marks_and_label_group,line]);
         parent.appendChild(group);
 
-        // Add transforms to group 
+        // Add transforms to group
         for(let name of ["base","origin"]){
             let transform = svg_root.createSVGTransform();
             group.transform.baseVal.appendItem(transform);
@@ -429,16 +403,16 @@ class Axis {
     }
 
     setBasePoint(base_point){
-        // move Axis to base point 
-        let [start, _vect] = this.lineElement;
+        // move Axis to base point
+        let [start, _vect] = this.line;
         let v = vector(start, base_point);
         this.base_transform.setTranslate(v.x, v.y);
 
-        // Move marks and label to base point. 
-        // _|_______         _|________
-        //  |  '  |     ==>   ' 
-        //  |     0           0
-        //  |                 |
+        // Move marks and label to base point.
+        // _|_______          _|________
+        //  |  '  |     ==>    '
+        //  |     0            0
+        //  |                  |
 
         for(let [markname,mark] of zip(["minor", "major"],this.marks)){
             let transform = this[markname+"_base_transform"];
@@ -454,31 +428,6 @@ class Axis {
                 this.label_base_transform.setTranslate(-pos.x, -pos.x);
             }
         }
-    }
-
-    applyOriginAndUnitVector(offset, unit_vect){
-        // offset is a representing position of an 
-        // axis along the opposit axis line, expressed in major marks units
-        // unit_vect is the translation in between to major marks
-
-        //              ^
-        //              | unit_vect
-        //              |<--->
-        //     _________|__________>
-        //     ^  |  '  |  '  |  '
-        //     |yoffset |     1 
-        //     |        |
-        //     v xoffset|
-        //     X<------>|
-        // base_point
-
-        // move major marks and label to first positive mark position
-        let v = vectorscale(unit_vect, offset+1);
-        this.label_slide_transform.setTranslate(v.x, v.x);
-        this.major_slide_transform.setTranslate(v.x, v.x);
-        // move minor mark to first half positive mark position
-        let h = vectorscale(unit_vect, offset+0.5);
-        this.minor_slide_transform.setTranslate(h.x, h.x);
     }
 
     applyRange(min, max){
@@ -544,7 +493,28 @@ class Axis {
         let mark_count = umax-umin;
 
         // apply unit vector to marks and label
-        this.label_and_marks.applyOriginAndUnitVector(offset, unit_vect);
+        // offset is a representing position of an 
+        // axis along the opposit axis line, expressed in major marks units
+        // unit_vect is the translation in between to major marks
+
+        //              ^
+        //              | unit_vect
+        //              |<--->
+        //     _________|__________>
+        //     ^  |  '  |  '  |  '
+        //     |yoffset |     1 
+        //     |        |
+        //     v xoffset|
+        //     X<------>|
+        // base_point
+
+        // move major marks and label to first positive mark position
+        let v = vectorscale(unit_vect, offset+unit);
+        this.label_slide_transform.setTranslate(v.x, v.y);
+        this.major_slide_transform.setTranslate(v.x, v.y);
+        // move minor mark to first half positive mark position
+        let h = vectorscale(unit_vect, offset+(unit/2));
+        this.minor_slide_transform.setTranslate(h.x, h.y);
 
         // duplicate marks and labels as needed
         let current_mark_count = this.mlg_clones.length;
@@ -552,15 +522,15 @@ class Axis {
             // cloneNode() label and add a svg:use of marks in a new group
             let newgroup = document.createElementNS(xmlns,"g");
             let transform = svg_root.createSVGTransform();
-            let newlabel = cloneNode(this.label);
+            let newlabel = this.label.cloneNode(true);
             let newuse = document.createElementNS(xmlns,"use");
             let newuseAttr = document.createAttribute("xlink:href");
             newuseAttr.value = "#"+this.marks_group.id;
-            newuse.setAttributeNode(newuseAttr.value);
+            newuse.setAttributeNode(newuseAttr);
             newgroup.transform.baseVal.appendItem(transform);
             newgroup.appendChild(newlabel);
             newgroup.appendChild(newuse);
-            this.mlg_clones.push([tranform,newgroup]);
+            this.mlg_clones.push([transform,newgroup]);
         }
 
         // move marks and labels, set labels
@@ -571,15 +541,15 @@ class Axis {
             let text = this.format ? sprintf(this.format, val) : val.toString();
             if(u == uoffset){
                 // apply offset to original marks and label groups
-                this.origin_transform.setTranslate(vec.x, vec.x);
+                this.origin_transform.setTranslate(vec.x, vec.y);
 
                 // update original label text
-                this.label_and_mark.label.textContent = text;
+                this.label.getElementsByTagName("tspan")[0].textContent = text;
             } else {
                 let [transform,element] = this.mlg_clones[i++];
 
                 // apply unit vector*N to marks and label groups
-                transform.setTranslate(vec.x, vec.x);
+                transform.setTranslate(vec.x, vec.y);
 
                 // update label text
                 element.getElementsByTagName("tspan")[0].textContent = text;

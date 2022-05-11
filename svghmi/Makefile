@@ -15,7 +15,7 @@ ysl2files := gen_index_xhtml.ysl2 gen_dnd_widget_svg.ysl2 analyse_widget.ysl2
 ysl2includes := $(filter-out $(ysl2files), $(wildcard *.ysl2))
 xsltfiles := $(patsubst %.ysl2, %.xslt, $(ysl2files))
 
-jsfiles := svghmi.js sprintf.js
+jsfiles := svghmi.js sprintf.js pythonic.js
 
 all:$(xsltfiles)
 
