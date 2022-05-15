@@ -1,0 +1,29 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ wxPython4 ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+        
+    - name: Create docker image
+      run: |
+        cd tests/tools/Docker/beremiz-sikuli
+        ./build_docker_image.sh
+        
+    - name: Create docker container
+      run: |
+        cd tests/tools/Docker/beremiz-sikuli
+        ./create_docker_container.sh
+        
+    - name: Run tests in docker
+      run: |
+        cd tests/tools/Docker/beremiz-sikuli
+        ./build_in_docker.sh
