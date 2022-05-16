@@ -48,7 +48,7 @@ RUN set -xe && \
     ) | install /dev/stdin /usr/local/bin/sikulix
 
 
-RUN echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile' > /usr/local/bin/do_tests
+RUN echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
 RUN chmod +x /usr/local/bin/do_tests
 
 USER $UNAME

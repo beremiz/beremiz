@@ -12,18 +12,56 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-        
-    - name: Create docker image
+      with:
+          path: beremiz
+
+    - uses: actions/checkout@v3
+      with:
+          repository: beremiz/matiec
+          ref: 2a25f4dbf4e2b1e017a3a583db7dede4771fe523
+          path: matiec
+
+    - name: Cache docker image
+      id: cache-docker
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-docker
+      with:
+        path: /tmp/latest.tar
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('beremiz/tests/tools/Docker/beremiz-sikuli') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('beremiz/tests/tools/Docker/beremiz-sikuli') }}
+
+    - if: ${{ steps.cache-docker.outputs.cache-hit == false }}
+      name: Create docker image
       run: |
-        cd tests/tools/Docker/beremiz-sikuli
+        cd beremiz/tests/tools/Docker/beremiz-sikuli
         ./build_docker_image.sh
-        
+        docker export --output="/tmp/latest.tar" beremiz_sikuli
+
+    - if: ${{ steps.cache-docker.outputs.cache-hit == true }}
+      name: Re-use docker image
+      run: |
+        docker load --input="/tmp/latest.tar" 
+
     - name: Create docker container
       run: |
-        cd tests/tools/Docker/beremiz-sikuli
+        cd beremiz/tests/tools/Docker/beremiz-sikuli
         ./create_docker_container.sh
         
     - name: Run tests in docker
       run: |
-        cd tests/tools/Docker/beremiz-sikuli
-        ./build_in_docker.sh
+        mkdir ${{ github.workspace }}/test
+        cd beremiz/tests/tools/Docker/beremiz-sikuli
+        ./build_in_docker.sh test_dir=${{ github.workspace }}/test
+
+    - name: Collect test results
+      run: |
+        tar cvfz /tmp/test_results.tgz ${{ github.workspace }}/test
+
+    - name: Upload test resuts artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: test_results
+        path: /tmp/test_results.tgz
+        retention-days: 5
