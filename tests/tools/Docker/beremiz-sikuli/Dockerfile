@@ -47,6 +47,10 @@ RUN set -xe && \
       echo "exec java -jar /usr/local/bin/sikulixide-*.jar \"\$@\"" \
     ) | install /dev/stdin /usr/local/bin/sikulix
 
+
+RUN echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile' > /usr/local/bin/do_tests
+RUN chmod +x /usr/local/bin/do_tests
+
 USER $UNAME
 
 RUN mkdir /home/$UNAME/build /home/$UNAME/src /home/$UNAME/test
@@ -65,6 +69,5 @@ ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
 # easy to remember 'do_tests' alias to invoke main makefile
 ARG OWNDIRBASENAME=beremiz
 ENV OWNDIRBASENAME ${OWNDIRBASENAME}
-RUN echo "alias do_tests='make -f /home/testing/src/beremiz/tests/Makefile'">/home/$UNAME/.bash_aliases
 
 
