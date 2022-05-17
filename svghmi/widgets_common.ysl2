@@ -85,7 +85,7 @@ template "svg:*", mode="hmi_widgets" {
 
     const "freq" choose {
         when "$widget/@freq"
-            > «$widget/@freq»
+            > "«$widget/@freq»"
         otherwise
             > undefined
     }
@@ -183,6 +183,37 @@ emit "preamble:widget-base-class" {
             this.pending = indexes.map(() => undefined);
             this.bound_unhinibit = this.unhinibit.bind(this);
             this.forced_frequency = freq;
+            this.clip = true;
+        }
+
+        do_init(){
+            if(widget.forced_frequency !== undefined){
+                let s = widget.forced_frequency;
+                /*
+                once every 10 seconds : 10s
+                once per minute : 1m
+                once per hour : 1h
+                once per day : 1d
+                */
+                let unit = s.slice(-1);
+                let factor = {
+                    "s":1,
+                    "m":60,
+                    "h":3600,
+                    "d":86400}[unit];
+
+                widget.frequency = factor ? 1/(factor * Number(s.slice(0,-1)))
+                                          : Number(s);
+            }
+
+            let init = this.init;
+            if(typeof(init) == "function"){
+                try {
+                    init.call(this);
+                } catch(err) {
+                    console.log(err);
+                }
+            }
         }
 
         unsub(){
@@ -269,14 +300,16 @@ emit "preamble:widget-base-class" {
             if(realindex == undefined) return undefined;
             let old_val = cache[realindex];
             let new_val = eval_operation_string(old_val, opstr);
-            new_val = this.clip_min_max(index, new_val);
+            if(this.clip)
+                new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
         }
 
         _apply_hmi_value(index, new_val) {
             let realindex = this.get_variable_index(index);
             if(realindex == undefined) return undefined;
-            new_val = this.clip_min_max(index, new_val);
+            if(this.clip)
+                new_val = this.clip_min_max(index, new_val);
             return apply_hmi_value(realindex, new_val);
         }
 
@@ -395,8 +428,10 @@ function "defs_by_labels" {
     param "hmi_element";
     const "widget_type","@type";
     foreach "str:split($labels)" {
-        const "name",".";
-        const "elt","$result_widgets[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]";
+        const "absolute", "starts-with(., '/')";
+        const "name","substring(.,number($absolute)+1)";
+        const "widget","$result_widgets[@id = $hmi_element/@id]";
+        const "elt","($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]";
         choose {
             when "not($elt/@id)" {
                 if "$mandatory='yes'" {

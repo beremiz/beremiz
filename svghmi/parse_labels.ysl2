@@ -44,7 +44,12 @@ template "*", mode="parselabel"
     if "$type" widget {
         attrib "id" > «$id»
         attrib "type" > «$type»
-        if "$freq" attrib "freq" > «$freq»
+        if "$freq" {
+            if "not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]'))" {
+                error > Widget id:«$id» label:«$label» has wrong syntax of frequency forcing «$freq»
+            }
+            attrib "freq" > «$freq»
+        }
         foreach "str:split(substring-after($args, ':'), ':')" {
             arg {
                 attrib "value" > «.»
