@@ -52,13 +52,9 @@ jobs:
         cd beremiz/tests/tools/Docker/beremiz-sikuli
         ./build_in_docker.sh
 
-    - name: Collect test results
-      run: |
-        tar cvfz /tmp/test_results.tgz ${{ github.workspace }}/test
-
     - name: Upload test resuts artifact
       uses: actions/upload-artifact@v3
       with:
         name: test_results
-        path: /tmp/test_results.tgz
+        path: ${{ github.workspace }}/test
         retention-days: 5
