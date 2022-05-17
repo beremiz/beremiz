@@ -47,13 +47,13 @@ jobs:
     - name: Create docker container
       run: |
         cd beremiz/tests/tools/Docker/beremiz-sikuli
-        ./create_docker_container.sh
+        ./create_docker_container.sh ${{ github.workspace }}/test
         
     - name: Run tests in docker
       run: |
         mkdir ${{ github.workspace }}/test
         cd beremiz/tests/tools/Docker/beremiz-sikuli
-        ./build_in_docker.sh test_dir=${{ github.workspace }}/test
+        ./build_in_docker.sh
 
     - name: Collect test results
       run: |
