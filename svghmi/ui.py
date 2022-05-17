@@ -621,17 +621,20 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.args_box.Show(len(args)!=0)
         for arg, prefillarg in izip(args,prefillargs):
             self.AddArgToSignature(arg, prefillarg)
+
+        # TODO support predefined path count (as for XYGraph)
         paths = defs.findall("path")
         self.paths_box.Show(len(paths)!=0)
         for path in paths:
             self.AddPathToSignature(path)
 
-        for widget in widgets:
-            widget_type = widget.get("type")
-            for path in widget.iterchildren("path"):
-                path_value = path.get("value")
-                path_accepts = map(
-                    str.strip, path.get("accepts", '')[1:-1].split(','))
+        # # TODO DEAD CODE ?
+        # for widget in widgets:
+        #     widget_type = widget.get("type")
+        #     for path in widget.iterchildren("path"):
+        #         path_value = path.get("value")
+        #         path_accepts = map(
+        #             str.strip, path.get("accepts", '')[1:-1].split(','))
 
         self.main_panel.SetupScrolling(scroll_x=False)
 

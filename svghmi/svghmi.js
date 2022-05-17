@@ -18,16 +18,7 @@ function dispatch_value(index, value) {
 function init_widgets() {
     Object.keys(hmi_widgets).forEach(function(id) {
         let widget = hmi_widgets[id];
-        let init = widget.init;
-        if(typeof(init) == "function"){
-            try {
-                init.call(widget);
-            } catch(err) {
-                console.log(err);
-            }
-        }
-        if(widget.forced_frequency !== undefined)
-            widget.frequency = widget.forced_frequency;
+        widget.do_init();
     });
 };
 
@@ -263,6 +254,11 @@ subscribers(lang_local_index).add({
         switch_page();
     }
 });
+
+// returns en_US, fr_FR or en_UK depending on selected language
+function get_current_lang_code(){
+    return cache[langcode_local_index];
+}
 
 function setup_lang(){
     let current_lang = cache[lang_local_index];
