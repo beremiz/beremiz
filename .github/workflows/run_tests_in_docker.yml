@@ -37,12 +37,12 @@ jobs:
       run: |
         cd beremiz/tests/tools/Docker/beremiz-sikuli
         ./build_docker_image.sh
-        docker export --output="/tmp/latest.tar" beremiz_sikuli
+        docker image save --output="/tmp/latest.tar" beremiz_sikuli
 
     - if: ${{ steps.cache-docker.outputs.cache-hit == true }}
       name: Re-use docker image
       run: |
-        docker load --input="/tmp/latest.tar" 
+        docker image load --input="/tmp/latest.tar" 
 
     - name: Create docker container
       run: |
