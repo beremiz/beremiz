@@ -37,7 +37,7 @@ jobs:
         ./build_docker_image.sh
         docker image save --output="/tmp/latest.tar" beremiz_sikuli
 
-    - if: ${{ steps.cache-docker.outputs.cache-hit == true }}
+    - if: ${{ steps.cache-docker.outputs.cache-hit != false }}
       name: Re-use docker image
       run: |
         docker image load --input="/tmp/latest.tar" 
