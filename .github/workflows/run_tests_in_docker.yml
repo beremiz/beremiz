@@ -47,14 +47,14 @@ jobs:
         cd beremiz/tests/tools/Docker/beremiz-sikuli
         ./create_docker_container.sh ${{ github.workspace }}/test
         
-    # - name: Run tests in docker
-    #   run: |
-    #     cd beremiz/tests/tools/Docker/beremiz-sikuli
-    #     ./build_in_docker.sh
+    - name: Run tests in docker
+      run: |
+        cd beremiz/tests/tools/Docker/beremiz-sikuli
+        ./build_in_docker.sh
 
-    # - name: Collect test results
-    #   run: |
-    #     tar cvfz /tmp/test_results.tgz ${{ github.workspace }}/test
+    - name: Collect test results
+      run: |
+        tar cvfz /tmp/test_results.tgz ${{ github.workspace }}/test
 
     - name: Upload test resuts artifact
       uses: actions/upload-artifact@v3
