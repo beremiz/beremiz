@@ -52,6 +52,16 @@
           <xsl:value-of select="$type"/>
         </xsl:attribute>
         <xsl:if test="$freq">
+          <xsl:if test="not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))">
+            <xsl:message terminate="yes">
+              <xsl:text>Widget id:</xsl:text>
+              <xsl:value-of select="$id"/>
+              <xsl:text> label:</xsl:text>
+              <xsl:value-of select="$label"/>
+              <xsl:text> has wrong syntax of frequency forcing </xsl:text>
+              <xsl:value-of select="$freq"/>
+            </xsl:message>
+          </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
