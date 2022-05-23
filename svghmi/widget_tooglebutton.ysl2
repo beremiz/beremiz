@@ -38,7 +38,7 @@ widget_class("ToggleButton") {
         }
 
         activate(val) {
-            let [active, inactive] = val ? ["none",""] : ["", "none"];
+            let [active, inactive] = val ? ["","none"] : ["none", ""];
             if (this.active_elt)
                 this.active_elt.style.display = active;
             if (this.inactive_elt)
