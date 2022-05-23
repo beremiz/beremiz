@@ -207,6 +207,16 @@
           <xsl:value-of select="$type"/>
         </xsl:attribute>
         <xsl:if test="$freq">
+          <xsl:if test="not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))">
+            <xsl:message terminate="yes">
+              <xsl:text>Widget id:</xsl:text>
+              <xsl:value-of select="$id"/>
+              <xsl:text> label:</xsl:text>
+              <xsl:value-of select="$label"/>
+              <xsl:text> has wrong syntax of frequency forcing </xsl:text>
+              <xsl:value-of select="$freq"/>
+            </xsl:message>
+          </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
@@ -1248,7 +1258,9 @@
     <xsl:variable name="freq">
       <xsl:choose>
         <xsl:when test="$widget/@freq">
+          <xsl:text>"</xsl:text>
           <xsl:value-of select="$widget/@freq"/>
+          <xsl:text>"</xsl:text>
         </xsl:when>
         <xsl:otherwise>
           <xsl:text>undefined</xsl:text>
@@ -1477,6 +1489,68 @@
 </xsl:text>
     <xsl:text>        this.forced_frequency = freq;
 </xsl:text>
+    <xsl:text>        this.clip = true;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    do_init(){
+</xsl:text>
+    <xsl:text>        let forced = this.forced_frequency;
+</xsl:text>
+    <xsl:text>        if(forced !== undefined){
+</xsl:text>
+    <xsl:text>            /*
+</xsl:text>
+    <xsl:text>            once every 10 seconds : 10s
+</xsl:text>
+    <xsl:text>            once per minute : 1m
+</xsl:text>
+    <xsl:text>            once per hour : 1h
+</xsl:text>
+    <xsl:text>            once per day : 1d
+</xsl:text>
+    <xsl:text>            */
+</xsl:text>
+    <xsl:text>            let unit = forced.slice(-1);
+</xsl:text>
+    <xsl:text>            let factor = {
+</xsl:text>
+    <xsl:text>                "s":1,
+</xsl:text>
+    <xsl:text>                "m":60,
+</xsl:text>
+    <xsl:text>                "h":3600,
+</xsl:text>
+    <xsl:text>                "d":86400}[unit];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.frequency = factor ? 1/(factor * Number(forced.slice(0,-1)))
+</xsl:text>
+    <xsl:text>                                      : Number(forced);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let init = this.init;
+</xsl:text>
+    <xsl:text>        if(typeof(init) == "function"){
+</xsl:text>
+    <xsl:text>            try {
+</xsl:text>
+    <xsl:text>                init.call(this);
+</xsl:text>
+    <xsl:text>            } catch(err) {
+</xsl:text>
+    <xsl:text>                console.log(err);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
@@ -1649,7 +1723,9 @@
 </xsl:text>
     <xsl:text>        let new_val = eval_operation_string(old_val, opstr);
 </xsl:text>
-    <xsl:text>        new_val = this.clip_min_max(index, new_val);
+    <xsl:text>        if(this.clip)
+</xsl:text>
+    <xsl:text>            new_val = this.clip_min_max(index, new_val);
 </xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
@@ -1663,7 +1739,9 @@
 </xsl:text>
     <xsl:text>        if(realindex == undefined) return undefined;
 </xsl:text>
-    <xsl:text>        new_val = this.clip_min_max(index, new_val);
+    <xsl:text>        if(this.clip)
+</xsl:text>
+    <xsl:text>            new_val = this.clip_min_max(index, new_val);
 </xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
@@ -1883,8 +1961,10 @@
     <xsl:param name="hmi_element"/>
     <xsl:variable name="widget_type" select="@type"/>
     <xsl:for-each select="str:split($labels)">
-      <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt" select="$result_widgets[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]"/>
+      <xsl:variable name="absolute" select="starts-with(., '/')"/>
+      <xsl:variable name="name" select="substring(.,number($absolute)+1)"/>
+      <xsl:variable name="widget" select="$result_widgets[@id = $hmi_element/@id]"/>
+      <xsl:variable name="elt" select="($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]"/>
       <xsl:choose>
         <xsl:when test="not($elt/@id)">
           <xsl:if test="$mandatory='yes'">
@@ -2400,10 +2480,6 @@
     <xsl:value-of select="@name"/>
     <xsl:text>_action(){
 </xsl:text>
-    <xsl:text>console.log("Entering state </xsl:text>
-    <xsl:value-of select="@name"/>
-    <xsl:text>", this.frequency);
-</xsl:text>
     <xsl:apply-templates mode="actions" select="*"/>
     <xsl:text>    }
 </xsl:text>
@@ -2424,8 +2500,6 @@
   </xsl:template>
   <xsl:template name="generated_button_class">
     <xsl:param name="fsm"/>
-    <xsl:text>    frequency = 5;
-</xsl:text>
     <xsl:text>    display = "inactive";
 </xsl:text>
     <xsl:text>    state = "init";
@@ -2492,6 +2566,8 @@
     <xsl:text>ButtonWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
     <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
     <xsl:call-template name="generated_button_class">
       <xsl:with-param name="fsm" select="$fsm"/>
@@ -2513,6 +2589,8 @@
     <xsl:text>class </xsl:text>
     <xsl:text>PushButtonWidget</xsl:text>
     <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 20;
 </xsl:text>
     <xsl:variable name="fsm" select="exsl:node-set($_push_button_fsm)"/>
     <xsl:call-template name="generated_button_class">
@@ -6116,7 +6194,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>PathSlider - 
+      <xsl:text>PathSlider -
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -6159,7 +6237,7 @@
 </xsl:text>
     <xsl:text>    origPt = undefined;
 </xsl:text>
-    <xsl:text>    
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -6243,7 +6321,7 @@
 </xsl:text>
     <xsl:text>          bestDistance = beforeDistance;
 </xsl:text>
-    <xsl:text>        } else if ((afterLength = bestLength + precision) &lt;= this.pathLength &amp;&amp; 
+    <xsl:text>        } else if ((afterLength = bestLength + precision) &lt;= this.pathLength &amp;&amp;
 </xsl:text>
     <xsl:text>                   (afterDistance = distance2(afterPoint = this.path_elt.getPointAtLength(afterLength))) &lt; bestDistance) {
 </xsl:text>
@@ -7627,7 +7705,7 @@
 </xsl:text>
     <xsl:text>    activate(val) {
 </xsl:text>
-    <xsl:text>        let [active, inactive] = val ? ["none",""] : ["", "none"];
+    <xsl:text>        let [active, inactive] = val ? ["","none"] : ["none", ""];
 </xsl:text>
     <xsl:text>        if (this.active_elt)
 </xsl:text>
@@ -7751,7 +7829,7 @@
 </xsl:text>
           <xsl:text>        modulo: /^%{2}/,
 </xsl:text>
-          <xsl:text>        placeholder: /^%(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
+          <xsl:text>        placeholder: /^%(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxXD])/,
 </xsl:text>
           <xsl:text>        key: /^([a-z_][a-z_\d]*)/i,
 </xsl:text>
@@ -7874,6 +7952,96 @@
           <xsl:text>                    case 'i':
 </xsl:text>
           <xsl:text>                        arg = parseInt(arg, 10)
+</xsl:text>
+          <xsl:text>                        break
+</xsl:text>
+          <xsl:text>                    case 'D':
+</xsl:text>
+          <xsl:text>                        /*  
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                            select date format with width
+</xsl:text>
+          <xsl:text>                            select time format with precision
+</xsl:text>
+          <xsl:text>                            %D  =&gt; 13:31 AM (default)
+</xsl:text>
+          <xsl:text>                            %1D  =&gt; 13:31 AM
+</xsl:text>
+          <xsl:text>                            %.1D  =&gt; 07/07/20
+</xsl:text>
+          <xsl:text>                            %1.1D  =&gt; 07/07/20, 13:31 AM
+</xsl:text>
+          <xsl:text>                            %1.2D  =&gt; 07/07/20, 13:31:55 AM
+</xsl:text>
+          <xsl:text>                            %2.2D  =&gt; May 5, 2022, 9:29:16 AM
+</xsl:text>
+          <xsl:text>                            %3.3D  =&gt; May 5, 2022 at 9:28:16 AM GMT+2
+</xsl:text>
+          <xsl:text>                            %4.4D  =&gt; Thursday, May 5, 2022 at 9:26:59 AM Central European Summer Time
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                            see meaning of DateTimeFormat's options "datestyle" and "timestyle" in MDN 
+</xsl:text>
+          <xsl:text>                        */
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        let [datestyle, timestyle] = [ph.width, ph.precision].map(val =&gt; ({
+</xsl:text>
+          <xsl:text>                            1: "short",
+</xsl:text>
+          <xsl:text>                            2: "medium",
+</xsl:text>
+          <xsl:text>                            3: "long",
+</xsl:text>
+          <xsl:text>                            4: "full"
+</xsl:text>
+          <xsl:text>                        }[val]));
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        if(timestyle === undefined &amp;&amp; datestyle === undefined){
+</xsl:text>
+          <xsl:text>                            timestyle = "short";
+</xsl:text>
+          <xsl:text>                        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        let options = {
+</xsl:text>
+          <xsl:text>                            dateStyle: datestyle,
+</xsl:text>
+          <xsl:text>                            timeStyle: timestyle,
+</xsl:text>
+          <xsl:text>                            hour12: false
+</xsl:text>
+          <xsl:text>                        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        /* get lang from globals */
+</xsl:text>
+          <xsl:text>                        let lang = get_current_lang_code();
+</xsl:text>
+          <xsl:text>                        arg = Date(arg).toLocaleString('en-US', options);
+</xsl:text>
+          <xsl:text>                        
+</xsl:text>
+          <xsl:text>                        /*    
+</xsl:text>
+          <xsl:text>                            TODO: select with padding char
+</xsl:text>
+          <xsl:text>                                  a: absolute time and date (default)
+</xsl:text>
+          <xsl:text>                                  r: relative time
+</xsl:text>
+          <xsl:text>                        */
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>                        break
 </xsl:text>
@@ -8221,25 +8389,7 @@
 </xsl:text>
           <xsl:text>        let widget = hmi_widgets[id];
 </xsl:text>
-          <xsl:text>        let init = widget.init;
-</xsl:text>
-          <xsl:text>        if(typeof(init) == "function"){
-</xsl:text>
-          <xsl:text>            try {
-</xsl:text>
-          <xsl:text>                init.call(widget);
-</xsl:text>
-          <xsl:text>            } catch(err) {
-</xsl:text>
-          <xsl:text>                console.log(err);
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>        if(widget.forced_frequency !== undefined)
-</xsl:text>
-          <xsl:text>            widget.frequency = widget.forced_frequency;
+          <xsl:text>        widget.do_init();
 </xsl:text>
           <xsl:text>    });
 </xsl:text>
@@ -8710,6 +8860,16 @@
           <xsl:text>    }
 </xsl:text>
           <xsl:text>});
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// returns en_US, fr_FR or en_UK depending on selected language
+</xsl:text>
+          <xsl:text>function get_current_lang_code(){
+</xsl:text>
+          <xsl:text>    return cache[langcode_local_index];
+</xsl:text>
+          <xsl:text>}
 </xsl:text>
           <xsl:text>
 </xsl:text>

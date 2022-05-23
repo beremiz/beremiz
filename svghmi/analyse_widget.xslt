@@ -50,6 +50,16 @@
           <xsl:value-of select="$type"/>
         </xsl:attribute>
         <xsl:if test="$freq">
+          <xsl:if test="not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))">
+            <xsl:message terminate="yes">
+              <xsl:text>Widget id:</xsl:text>
+              <xsl:value-of select="$id"/>
+              <xsl:text> label:</xsl:text>
+              <xsl:value-of select="$label"/>
+              <xsl:text> has wrong syntax of frequency forcing </xsl:text>
+              <xsl:value-of select="$freq"/>
+            </xsl:message>
+          </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
@@ -223,8 +233,6 @@
   </xsl:template>
   <xsl:template name="generated_button_class">
     <xsl:param name="fsm"/>
-    <xsl:text>    frequency = 5;
-</xsl:text>
     <xsl:text>    display = "inactive";
 </xsl:text>
     <xsl:text>    state = "init";
@@ -717,7 +725,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>PathSlider - 
+      <xsl:text>PathSlider -
 </xsl:text>
     </longdesc>
     <shortdesc>
