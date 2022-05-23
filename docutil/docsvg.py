@@ -33,15 +33,19 @@ def get_inkscape_path():
     if wx.Platform == '__WXMSW__':
         from six.moves import winreg
         inkcmd = None
-        try:
-            inkcmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
-                                           'Software\\Classes\\svgfile\\shell\\Inkscape\\command')
-        except OSError:
+        tries = [(winreg.HKEY_LOCAL_MACHINE, 'Software\\Classes\\svgfile\\shell\\Inkscape\\command'),
+                 (winreg.HKEY_LOCAL_MACHINE, 'Software\\Classes\\inkscape.svg\\shell\\open\\command'),
+                 (winreg.HKEY_CURRENT_USER, 'Software\\Classes\\inkscape.svg\\shell\\open\\command')]
+
+        for subreg, key in tries:
             try:
-                inkcmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
-                                               'Software\\Classes\\inkscape.svg\\shell\\open\\command')
+                inkcmd = winreg.QueryValue(subreg, key)
+                break;
             except OSError:
-                return None
+                pass
+
+        if inkcmd is None:
+            return None
 
         return inkcmd.replace('"%1"', '').strip().replace('"', '')
 
