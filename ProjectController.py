@@ -1722,10 +1722,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
             for weakcallable, buffer_list in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
-                    if buffer_list:
-                        function(*cargs)
-                    else:
-                        function(*tuple([lst[-1] for lst in cargs]))
+                    # FIXME: apparently, despite of weak ref objects,
+                    # some dead C/C++ wx object are still reachable from here
+                    # leading to RuntimeError exception
+                    try:
+                        if buffer_list:
+                            function(*cargs)
+                        else:
+                            function(*tuple([lst[-1] for lst in cargs]))
+                    except RuntimeError:
+                        pass
 
     def GetTicktime(self):
         return self._Ticktime
