@@ -374,7 +374,7 @@ widget_defs("DropDown") {
         // special case when used for language selection
         when "count(arg) = 1 and arg[1]/@value = '#langs'" {
             |   this.text_elt = id("«$text_elt/@id»");
-            |   this.content = langs;
+            |   this.content = langs.map(([lname,lcode]) => lname);
         }
         when "count(arg) = 0"{ 
             if "not($text_elt[self::svg:use])"
