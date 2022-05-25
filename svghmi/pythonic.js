@@ -37,6 +37,12 @@ class Iterator {
         }
     }
 
+    forEach(callback) {
+        for (const element of this) {
+            callback(element);
+        }
+    }
+
     map(callback) {
         const result = [];
         for (const element of this) {
