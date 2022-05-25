@@ -601,11 +601,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             path = os.getenv("HOME")
         dirdialog = wx.DirDialog(
-            self.AppFrame, _("Choose a directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
+            self.AppFrame, _("Create or choose an empty directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
         answer = dirdialog.ShowModal()
+        newprojectpath = dirdialog.GetPath()
         dirdialog.Destroy()
         if answer == wx.ID_OK:
-            newprojectpath = dirdialog.GetPath()
             if os.path.isdir(newprojectpath):
                 if self.CheckNewProjectPath(self.ProjectPath, newprojectpath):
                     self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
