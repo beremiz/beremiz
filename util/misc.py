@@ -45,9 +45,9 @@ def CheckPathPerm(path):
         dirs[:] = [d for d in dirs if not d[0] == '.']
         if sys.platform.startswith('win'):
             try:
-                testdirpath = os.path.join(root, "testdir_", random.randint(0, 4294967296))
+                testdirpath = os.path.join(root, "testdir_" + str(random.randint(0, 4294967296)))
                 os.mkdir(testdirpath)
-                os.rmmir(testdirpath)
+                os.rmdir(testdirpath)
             except:
                 return False
         else:
