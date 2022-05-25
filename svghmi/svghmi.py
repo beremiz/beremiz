@@ -299,18 +299,22 @@ class SVGHMIEditor(ConfTreeNodeEditor):
         return ret
 
 if wx.Platform == '__WXMSW__':
-    browser_launch_cmd="cmd.exe /c 'start msedge {url}'"
+    default_cmds={
+        "launch":"cmd.exe /c 'start msedge {url}'",
+        "watchdog":"cmd.exe /k 'echo watchdog for {url} !'"}
 else:
-    browser_launch_cmd="chromium {url}"
+    default_cmds={
+        "launch":"chromium {url}",
+        "watchdog":"echo Watchdog for {name} !"}
 
 class SVGHMI(object):
     XSD = """<?xml version="1.0" encoding="utf-8" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="SVGHMI">
         <xsd:complexType>
-          <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="%s"/>
+          <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="%(launch)s"/>
           <xsd:attribute name="OnStop" type="xsd:string" use="optional" default=""/>
-          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default=""/>
+          <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default="%(watchdog)s"/>
           <xsd:attribute name="EnableWatchdog" type="xsd:boolean" use="optional" default="false"/>
           <xsd:attribute name="WatchdogInitial" use="optional" default="30">
             <xsd:simpleType>
@@ -342,7 +346,7 @@ class SVGHMI(object):
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """%browser_launch_cmd
+    """%default_cmds
 
     EditorType = SVGHMIEditor
 
@@ -399,9 +403,13 @@ class SVGHMI(object):
         if from_project_path is not None:
             shutil.copyfile(self._getSVGpath(from_project_path),
                             self._getSVGpath())
-            shutil.copyfile(self._getPOTpath(from_project_path),
-                            self._getPOTpath())
-            # XXX TODO copy .PO files
+
+            potpath = self._getPOTpath(from_project_path)
+            if os.path.isfile(potpath):
+                shutil.copyfile(potpath, self._getPOTpath())
+                # copy .PO files
+                for _name, pofile in GetPoFiles(from_project_path):
+                    shutil.copy(pofile, self.CTNPath())
         return True
 
     def GetSVGGeometry(self):
