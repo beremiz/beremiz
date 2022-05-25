@@ -28,7 +28,8 @@ Misc definitions
 
 
 from __future__ import absolute_import
-import os
+import os,sys
+import random
 from functools import reduce
 
 from util.BitmapLibrary import AddBitmapFolder
@@ -42,9 +43,18 @@ def CheckPathPerm(path):
     for root, dirs, files in os.walk(path):
         files = [f for f in files if not f[0] == '.']
         dirs[:] = [d for d in dirs if not d[0] == '.']
-        if os.access(root, os.W_OK) is not True:
-            return False
-        for name in dirs + files:
+        if sys.platform.startswith('win'):
+            try:
+                testdirpath = os.path.join(root, "testdir_", random.randint(0, 4294967296))
+                os.mkdir(testdirpath)
+                os.rmmir(testdirpath)
+            except:
+                return False
+        else:
+            if os.access(root, os.W_OK) is not True:
+                return False
+
+        for name in files:
             if os.access(os.path.join(root, name), os.W_OK) is not True:
                 return False
     return True
