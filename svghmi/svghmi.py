@@ -282,6 +282,10 @@ class SVGHMIEditor(ConfTreeNodeEditor):
     CONFNODEEDITOR_TABS = [
         (_("HMI Tree"), "CreateSVGHMI_UI")]
 
+    def __init__(self, parent, controler, window):
+        ConfTreeNodeEditor.__init__(self, parent, controler, window)
+        self.Controler = controler
+
     def CreateSVGHMI_UI(self, parent):
         global hmi_tree_root
 
@@ -292,7 +296,7 @@ class SVGHMIEditor(ConfTreeNodeEditor):
                 hmitree_backup_file = open(hmitree_backup_path, 'rb')
                 hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
 
-        ret = SVGHMI_UI(parent, Register_SVGHMI_UI_for_HMI_tree_updates)
+        ret = SVGHMI_UI(parent, self.Controler, Register_SVGHMI_UI_for_HMI_tree_updates)
 
         on_hmitree_update(hmi_tree_root)
 

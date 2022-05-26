@@ -11,6 +11,7 @@ import os
 import hashlib
 import weakref
 import re
+import tempfile
 from threading import Thread, Lock
 from functools import reduce
 from itertools import izip
@@ -26,7 +27,7 @@ from XSLTransform import XSLTransform
 
 import util.paths as paths
 from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
-from docutil import get_inkscape_path
+from docutil import get_inkscape_path, get_inkscape_version
 
 from util.ProcessLogger import ProcessLogger
 
@@ -276,8 +277,10 @@ def KeepDoubleNewLines(txt):
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
 _preview_margin = 5
+thumbnail_temp_path = None
+
 class WidgetLibBrowser(wx.SplitterWindow):
-    def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
+    def __init__(self, parent, controler, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize):
 
         wx.SplitterWindow.__init__(self, parent,
@@ -287,6 +290,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.msg = None
         self.hmitree_nodes = []
         self.selected_SVG = None
+        self.Controler = controler
 
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
@@ -455,10 +459,14 @@ class WidgetLibBrowser(wx.SplitterWindow):
         if inkpath is None:
             self.msg = _("Inkscape is not installed.")
             return False
+
+        export_opt = "-o" if get_inkscape_version()[0] > 0 else "-e"
+
         # TODO: spawn a thread, to decouple thumbnail gen
         status, result, _err_result = ProcessLogger(
-            None,
-            '"' + inkpath + '" "' + svgpath + '" -e "' + thumbpath +
+            self.Controler.GetCTRoot().logger,
+            '"' + inkpath + '" "' + svgpath + '" ' +
+            export_opt + ' "' + thumbpath +
             '" -D -h ' + str(_preview_height)).spin()
         if status != 0:
             self.msg = _("Inkscape couldn't generate thumbnail.")
@@ -470,10 +478,28 @@ class WidgetLibBrowser(wx.SplitterWindow):
         Called when tree item is selected
         @param event: wx.TreeEvent
         """
+        global thumbnail_temp_path
+        event.Skip()
         item_pydata = self.widgetpicker.GetPyData(event.GetItem())
         if item_pydata is not None:
             svgpath = item_pydata
-            dname = os.path.dirname(svgpath)
+
+            if thumbnail_temp_path is None:
+                try:
+                    dname = os.path.dirname(svgpath)
+                    thumbdir = os.path.join(dname, ".svghmithumbs") 
+                    if not os.path.exists(thumbdir):
+                        os.mkdir(thumbdir)
+                except Exception :
+                    # library not writable : use temp dir
+                    thumbnail_temp_path = os.path.join(
+                        tempfile.gettempdir(), "svghmithumbs")
+                    thumbdir = thumbnail_temp_path
+                    if not os.path.exists(thumbdir):
+                        os.mkdir(thumbdir)
+            else:
+                thumbdir = thumbnail_temp_path
+
             fname = os.path.basename(svgpath)
             hasher = hashlib.new('md5')
             with open(svgpath, 'rb') as afile:
@@ -485,30 +511,24 @@ class WidgetLibBrowser(wx.SplitterWindow):
                         break
             digest = hasher.hexdigest()
             thumbfname = os.path.splitext(fname)[0]+"_"+digest+".png"
-            thumbdir = os.path.join(dname, ".svghmithumbs") 
             thumbpath = os.path.join(thumbdir, thumbfname) 
 
             have_thumb = os.path.exists(thumbpath)
 
-            try:
-                if not have_thumb:
-                    if not os.path.exists(thumbdir):
-                        os.mkdir(thumbdir)
-                    have_thumb = self.GenThumbnail(svgpath, thumbpath)
+            if not have_thumb:
+                self.Controler.GetCTRoot().logger.write(
+                    "Rendering preview of " + fname + " widget.\n")
+                have_thumb = self.GenThumbnail(svgpath, thumbpath)
 
-                self.bmp = wx.Bitmap(thumbpath) if have_thumb else None
+            self.bmp = wx.Bitmap(thumbpath) if have_thumb else None
 
-                self.selected_SVG = svgpath if have_thumb else None
+            self.selected_SVG = svgpath if have_thumb else None
 
-                self.AnalyseWidgetAndUpdateUI(fname)
+            self.AnalyseWidgetAndUpdateUI(fname)
 
-                self.SetMessage(self.msg)
-
-            except IOError:
-                self.msg = _("Widget library must be writable")
+            self.SetMessage(self.msg)
 
             self.Refresh()
-        event.Skip()
 
     def OnHMITreeNodeSelection(self, hmitree_nodes):
         self.hmitree_nodes = hmitree_nodes
@@ -687,12 +707,12 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
 class SVGHMI_UI(wx.SplitterWindow):
 
-    def __init__(self, parent, register_for_HMI_tree_updates):
+    def __init__(self, parent, controler, register_for_HMI_tree_updates):
         wx.SplitterWindow.__init__(self, parent,
                                    style=wx.SUNKEN_BORDER | wx.SP_3D)
 
         self.SelectionTree = HMITreeSelector(self)
-        self.Staging = WidgetLibBrowser(self)
+        self.Staging = WidgetLibBrowser(self, controler)
         self.SplitVertically(self.SelectionTree, self.Staging, 300)
         register_for_HMI_tree_updates(weakref.ref(self))
 
