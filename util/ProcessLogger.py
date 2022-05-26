@@ -139,7 +139,7 @@ class ProcessLogger(object):
         else:
             self.timeout = None
 
-        if _debug:
+        if _debug and self.logger:
             self.logger.write("(DEBUG) launching:\n" + self.Command_str + "\n")
 
         self.Proc = subprocess.Popen(self.Command, **popenargs)
