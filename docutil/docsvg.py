@@ -27,7 +27,8 @@ from __future__ import absolute_import
 import wx
 import subprocess
 
-def get_inkscape_path():
+
+def _get_inkscape_path():
     """ Return the Inkscape binary path """
 
     if wx.Platform == '__WXMSW__':
@@ -54,6 +55,36 @@ def get_inkscape_path():
             return subprocess.check_output("command -v inkscape", shell=True).strip()
         except subprocess.CalledProcessError:
             return None
+
+_inkscape_path = None
+def get_inkscape_path():
+    """ Return the Inkscape binary path """
+
+    global _inkscape_path
+
+    if _inkscape_path is not None:
+        return _inkscape_path
+
+    _inkscape_path = _get_inkscape_path()
+    return _inkscape_path
+
+
+def _get_inkscape_version():
+    inkpath = get_inkscape_path()
+    if inkpath is None:
+        return None
+    return map(int, 
+        subprocess.check_output([inkpath,"--version"]).split()[1].split('.'))
+
+_inkscape_version = None
+def get_inkscape_version():
+    global _inkscape_version
+
+    if _inkscape_version is not None:
+        return _inkscape_version
+
+    _inkscape_version = _get_inkscape_version()
+    return _inkscape_version
 
 def open_svg(svgfile):
     """ Generic function to open SVG file """
