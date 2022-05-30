@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2022-05-26 11:39+CEST\n"
+"POT-Creation-Date: 2022-05-30 12:35+CEST\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,22 +15,7 @@ msgstr ""
 "Generated-By: SVGHMI 1.0\n"
 
 
-#:svghmi.svg: format:text424
-msgid "height is %d meters"
-msgstr ""
-
-#:svghmi.svg: format:text5271
-msgid "This is an integer value : %d"
-msgstr ""
-
-#:svghmi.svg: someothertext:text5267
-msgid "Some \"other\" ČĆĐš english text"
-msgstr ""
-
-#:svghmi.svg: sometext:text5283
-msgid ""
-"Some english text\n"
-"another line\n"
-"a third one"
+#:svghmi.svg: blup:text73
+msgid "blup"
 msgstr ""
 

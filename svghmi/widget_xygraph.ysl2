@@ -72,6 +72,15 @@ widget_class("XYGraph") {
                 [this.x_axis_line_elt, this.y_axis_line_elt],
                 [this.x_format, this.y_format]);
 
+            let max_stroke_width = 0;
+            for(let curve of this.curves){
+                if(curve.style.strokeWidth > max_stroke_width){
+                    max_stroke_width = curve.style.strokeWidth;
+                }
+            }
+
+            this.Margins=this.reference.getLengths().map(length => max_stroke_width/length);
+
             // create <clipPath> path and attach it to widget
             let clipPath = document.createElementNS(xmlns,"clipPath");
             let clipPathPath = document.createElementNS(xmlns,"path");
@@ -79,6 +88,7 @@ widget_class("XYGraph") {
             clipPathPathDattr.value = this.reference.getClipPathPathDattr();
             clipPathPath.setAttributeNode(clipPathPathDattr);
             clipPath.appendChild(clipPathPath);
+            clipPath.id = randomId();
             this.element.appendChild(clipPath);
 
             // assign created clipPath to clip-path property of curves
@@ -115,7 +125,7 @@ widget_class("XYGraph") {
             }
 
             this.xmax = time;
-            let Xlength = this.xmax - this.xmin;
+            let Xrange = this.xmax - this.xmin;
 
             if(!this.fixed_y_range){
                 ymin_damaged = overflow <= this.ymin;
@@ -129,7 +139,14 @@ widget_class("XYGraph") {
                     this.ymin = value;
                 }
             }
-            let Ylength = this.ymax - this.ymin;
+            let Yrange = this.ymax - this.ymin;
+
+            let [xMargin,yMargin] = zip(this.Margins, [Xrange, Yrange]).map(([m,l]) => m*l);
+            [[this.dxmin, this.dxmax],[this.dymin,this.dymax]] =
+                [[this.xmin-xMargin, this.xmax+xMargin],
+                 [this.ymin-yMargin, this.ymax+yMargin]];
+            Xrange += 2*xMargin;
+            Yrange += 2*yMargin;
 
             // recompute curves "d" attribute
             // FIXME: use SVG getPathData and setPathData when available.
@@ -141,8 +158,8 @@ widget_class("XYGraph") {
                 zip(this.curves_data, this.curves).map(([data,curve]) => {
                     let new_d = data.map(([x,y], i) => {
                         // compute curve point from data, ranges, and base_ref
-                        let xv = vectorscale(xvect, (x - this.xmin) / Xlength);
-                        let yv = vectorscale(yvect, (y - this.ymin) / Ylength);
+                        let xv = vectorscale(xvect, (x - this.dxmin) / Xrange);
+                        let yv = vectorscale(yvect, (y - this.dymin) / Yrange);
                         let px = base_point.x + xv.x + yv.x;
                         let py = base_point.y + xv.y + yv.y;
                         if(!this.fixed_y_range){
@@ -169,8 +186,8 @@ widget_class("XYGraph") {
             if(this.curves_data.some(data => data.length > 1)){
 
                 // move marks and update labels
-                this.reference.applyRanges([[this.xmin, this.xmax],
-                                            [this.ymin, this.ymax]]);
+                this.reference.applyRanges([[this.dxmin, this.dxmax],
+                                            [this.dymin, this.dymax]]);
 
                 // apply computed curves "d" attributes
                 for(let [curve, d_attr] of zip(this.curves, this.curves_d_attr)){
@@ -220,9 +237,17 @@ function vectorscale(p1, p2) {
     return new DOMPoint(p2 * p1.x , p2 * p1.y);
 };
 
+function vectorLength(p1) {
+    return Math.sqrt(p1.x*p1.x + p1.y*p1.y);
+};
+
+function randomId(){
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
 function move_elements_to_group(elements) {
     let newgroup = document.createElementNS(xmlns,"g");
-    newgroup.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    newgroup.id = randomId();
 
     for(let element of elements){
         let parent = element.parentElement;
@@ -308,9 +333,15 @@ class ReferenceFrame {
 
         this.base_ref = [base_point, xvect, yvect];
 
+        this.lengths = [xvect,yvect].map(v => vectorLength(v));
+
         for(let axis of this.axes){
             axis.setBasePoint(base_point);
         }
+    }
+
+    getLengths(){
+        return this.lengths;
     }
 
 	getBaseRef(){
@@ -372,7 +403,7 @@ class Axis {
         for(let [elementname,element] of zip(["minor", "major", "label"],[...marks,label])){
             for(let name of ["base","slide"]){
                 let transform = svg_root.createSVGTransform();
-                element.transform.baseVal.appendItem(transform);
+                element.transform.baseVal.insertItemBefore(transform,0);
                 this[elementname+"_"+name+"_transform"]=transform;
             };
         };
@@ -395,7 +426,7 @@ class Axis {
         this.marks_and_label_group.transform.baseVal.appendItem(this.marks_and_label_group_transform);
 
         this.duplicates = [];
-        this.last_mark_count = 0;
+        this.last_duplicate_index = 0;
     }
 
     setBasePoint(base_point){
@@ -445,12 +476,9 @@ class Axis {
         // - To transform order of magnitude to an integer, floor() is used.
         //   This results in a count of mark fluctuating in between 10 and 100.
         //
-        // - To spare resources result is better in between 5 and 50,
-        //   and log10(5) is substracted to order of magnitude to obtain this
-        //   log10(5) ~= 0.69897
-
-
-        let unit = Math.pow(10, Math.floor(Math.log10(range)-0.69897));
+        // - To spare resources result is better in between 3 and 30,
+        //   and log10(3) is substracted to order of magnitude to obtain this
+        let unit = Math.pow(10, Math.floor(Math.log10(range)-Math.log10(3)));
 
         // TODO: for time values (ms), units may be :
         //       1       -> ms
@@ -508,11 +536,11 @@ class Axis {
         // base_point
 
         // move major marks and label to first positive mark position
-        let v = vectorscale(unit_vect, unit);
-        this.label_slide_transform.setTranslate(v.x, v.y);
-        this.major_slide_transform.setTranslate(v.x, v.y);
+        // let v = vectorscale(unit_vect, unit);
+        // this.label_slide_transform.setTranslate(v.x, v.y);
+        // this.major_slide_transform.setTranslate(v.x, v.y);
         // move minor mark to first half positive mark position
-        v = vectorscale(unit_vect, unit/2);
+        let v = vectorscale(unit_vect, unit/2);
         this.minor_slide_transform.setTranslate(v.x, v.y);
 
         // duplicate marks and labels as needed
@@ -523,7 +551,7 @@ class Axis {
             let transform = svg_root.createSVGTransform();
             let newlabel = this.label.cloneNode(true);
             let newuse = document.createElementNS(xmlns,"use");
-            let newuseAttr = document.createAttribute("xlink:href");
+            let newuseAttr = document.createAttribute("href");
             newuseAttr.value = "#"+this.marks_group.id;
             newuse.setAttributeNode(newuseAttr);
             newgroup.transform.baseVal.appendItem(transform);
@@ -560,10 +588,10 @@ class Axis {
         //     X<--------->|
         // base_point
 
+        let duplicate_index = 0;
         for(let mark_index = 0; mark_index <= mark_count; mark_index++){
-            let i = 0;
             let val = (mark_min + mark_index) * unit;
-            let vec = vectorscale(unit_vect, offset + val - min);
+            let vec = vectorscale(unit_vect, val - min);
             let text = this.format ? sprintf(this.format, val) : val.toString();
             if(mark_index == mark_offset){
                 // apply offset to original marks and label groups
@@ -572,7 +600,7 @@ class Axis {
                 // update original label text
                 this.label.getElementsByTagName("tspan")[0].textContent = text;
             } else {
-                let [transform,element] = this.duplicates[i++];
+                let [transform,element] = this.duplicates[duplicate_index++];
 
                 // apply unit vector*N to marks and label groups
                 transform.setTranslate(vec.x, vec.y);
@@ -581,19 +609,20 @@ class Axis {
                 element.getElementsByTagName("tspan")[0].textContent = text;
 
                 // Attach to group if not already
-                if(i >= this.last_mark_count){
+                if(element.parentElement == null){
                     this.group.appendChild(element);
                 }
             }
         }
 
+        let save_duplicate_index = duplicate_index;
         // dettach marks and label from group if not anymore visible
-        for(let i = current_mark_count; i < this.last_mark_count; i++){
-            let [transform,element] = this.duplicates[i];
+        for(;duplicate_index < this.last_duplicate_index; duplicate_index++){
+            let [transform,element] = this.duplicates[duplicate_index];
             this.group.removeChild(element);
         }
 
-        this.last_mark_count = current_mark_count;
+        this.last_duplicate_index = save_duplicate_index;
 
 		return vectorscale(unit_vect, offset);
     }
