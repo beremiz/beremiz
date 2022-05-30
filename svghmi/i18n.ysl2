@@ -11,6 +11,9 @@ template "svg:text", mode="extract_i18n" {
     msg {
         attrib "id" value "@id";
         attrib "label" value "substring(@inkscape:label,2)";
+        if "string-length(text()) > 0" line {
+            value "text()";
+        }
         apply "svg:*", mode="extract_i18n";
     }
 }

@@ -114,8 +114,14 @@
 
                         /* get lang from globals */
                         let lang = get_current_lang_code();
-                        arg = Date(arg).toLocaleString('en-US', options);
-                        
+                        let f;
+                        try{
+                            f = new Intl.DateTimeFormat(lang, options);
+                        } catch(e) {
+                            f = new Intl.DateTimeFormat('en-US', options);
+                        }
+                        arg = f.format(arg);
+
                         /*    
                             TODO: select with padding char
                                   a: absolute time and date (default)

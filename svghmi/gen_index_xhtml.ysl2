@@ -96,6 +96,8 @@ istylesheet
 
                     include text sprintf.js
 
+                    include text pythonic.js
+
                     include text svghmi.js
 
                 }
