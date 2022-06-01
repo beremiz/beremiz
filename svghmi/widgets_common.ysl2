@@ -181,7 +181,13 @@ emit "preamble:widget-base-class" {
             this.lastapply = indexes.map(() => undefined);
             this.inhibit = indexes.map(() => undefined);
             this.pending = indexes.map(() => undefined);
-            this.bound_unhinibit = this.unhinibit.bind(this);
+            this.bound_uninhibit = this.uninhibit.bind(this);
+
+            this.lastdispatch = indexes.map(() => undefined);
+            this.deafen = indexes.map(() => undefined);
+            this.incoming = indexes.map(() => undefined);
+            this.bound_undeafen = this.undeafen.bind(this);
+
             this.forced_frequency = freq;
             this.clip = true;
         }
@@ -225,7 +231,13 @@ emit "preamble:widget-base-class" {
                     if(inhibition != undefined){
                         clearTimeout(inhibition);
                         this.lastapply[i] = undefined;
-                        this.unhinibit(i);
+                        this.uninhibit(i);
+                    }
+                    let deafened = this.deafen[i];
+                    if(deafened != undefined){
+                        clearTimeout(deafened);
+                        this.lastdispatch[i] = undefined;
+                        this.undeafen(i);
                     }
                     let index = this.indexes[i];
                     if(this.relativeness[i])
@@ -313,7 +325,7 @@ emit "preamble:widget-base-class" {
             return apply_hmi_value(realindex, new_val);
         }
 
-        unhinibit(index){
+        uninhibit(index){
             this.inhibit[index] = undefined;
             let new_val = this.pending[index];
             this.pending[index] = undefined;
@@ -332,7 +344,7 @@ emit "preamble:widget-base-class" {
                 else {
                     let elapsed = now - lastapply;
                     this.pending[index] = new_val;
-                    this.inhibit[index] = setTimeout(this.bound_unhinibit, min_interval - elapsed, index);
+                    this.inhibit[index] = setTimeout(this.bound_uninhibit, min_interval - elapsed, index);
                 }
             }
             else {
@@ -354,13 +366,36 @@ emit "preamble:widget-base-class" {
             }
         }
         
+        undeafen(index){
+            this.deafen[index] = undefined;
+            let [new_val, old_val] = this.incoming[index];
+            this.incoming[index] = undefined;
+            this.dispatch(new_val, old_val, index);
+        }
+
         _dispatch(value, oldval, varnum) {
             let dispatch = this.dispatch;
             if(dispatch != undefined){
-                try {
-                    dispatch.call(this, value, oldval, varnum);
-                } catch(err) {
-                    console.log(err);
+                if(this.deafen[varnum] == undefined){
+                    let now = Date.now();
+                    let min_interval = 1000/this.frequency;
+                    let lastdispatch = this.lastdispatch[varnum];
+                    if(lastdispatch == undefined || now > lastdispatch + min_interval){
+                        this.lastdispatch[varnum] = now;
+                        try {
+                            dispatch.call(this, value, oldval, varnum);
+                        } catch(err) {
+                            console.log(err);
+                        }
+                    }
+                    else {
+                        let elapsed = now - lastdispatch;
+                        this.incoming[varnum] = [value, oldval];
+                        this.deafen[varnum] = setTimeout(this.bound_undeafen, min_interval - elapsed, varnum);
+                    }
+                }
+                else {
+                    this.incoming[varnum] = [value, oldval];
                 }
             }
         }
