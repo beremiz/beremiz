@@ -159,7 +159,7 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="id" select="@id"/>
@@ -207,6 +207,16 @@
           <xsl:value-of select="$type"/>
         </xsl:attribute>
         <xsl:if test="$freq">
+          <xsl:if test="not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))">
+            <xsl:message terminate="yes">
+              <xsl:text>Widget id:</xsl:text>
+              <xsl:value-of select="$id"/>
+              <xsl:text> label:</xsl:text>
+              <xsl:value-of select="$label"/>
+              <xsl:text> has wrong syntax of frequency forcing </xsl:text>
+              <xsl:value-of select="$freq"/>
+            </xsl:message>
+          </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
@@ -1098,6 +1108,11 @@
       <xsl:attribute name="label">
         <xsl:value-of select="substring(@inkscape:label,2)"/>
       </xsl:attribute>
+      <xsl:if test="string-length(text()) &gt; 0">
+        <line>
+          <xsl:value-of select="text()"/>
+        </line>
+      </xsl:if>
       <xsl:apply-templates mode="extract_i18n" select="svg:*"/>
     </msg>
   </xsl:template>
@@ -1248,7 +1263,9 @@
     <xsl:variable name="freq">
       <xsl:choose>
         <xsl:when test="$widget/@freq">
+          <xsl:text>"</xsl:text>
           <xsl:value-of select="$widget/@freq"/>
+          <xsl:text>"</xsl:text>
         </xsl:when>
         <xsl:otherwise>
           <xsl:text>undefined</xsl:text>
@@ -1473,9 +1490,83 @@
 </xsl:text>
     <xsl:text>        this.pending = indexes.map(() =&gt; undefined);
 </xsl:text>
-    <xsl:text>        this.bound_unhinibit = this.unhinibit.bind(this);
+    <xsl:text>        this.bound_uninhibit = this.uninhibit.bind(this);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.lastdispatch = indexes.map(() =&gt; undefined);
+</xsl:text>
+    <xsl:text>        this.deafen = indexes.map(() =&gt; undefined);
+</xsl:text>
+    <xsl:text>        this.incoming = indexes.map(() =&gt; undefined);
+</xsl:text>
+    <xsl:text>        this.bound_undeafen = this.undeafen.bind(this);
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>        this.forced_frequency = freq;
+</xsl:text>
+    <xsl:text>        this.clip = true;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    do_init(){
+</xsl:text>
+    <xsl:text>        let forced = this.forced_frequency;
+</xsl:text>
+    <xsl:text>        if(forced !== undefined){
+</xsl:text>
+    <xsl:text>            /*
+</xsl:text>
+    <xsl:text>            once every 10 seconds : 10s
+</xsl:text>
+    <xsl:text>            once per minute : 1m
+</xsl:text>
+    <xsl:text>            once per hour : 1h
+</xsl:text>
+    <xsl:text>            once per day : 1d
+</xsl:text>
+    <xsl:text>            */
+</xsl:text>
+    <xsl:text>            let unit = forced.slice(-1);
+</xsl:text>
+    <xsl:text>            let factor = {
+</xsl:text>
+    <xsl:text>                "s":1,
+</xsl:text>
+    <xsl:text>                "m":60,
+</xsl:text>
+    <xsl:text>                "h":3600,
+</xsl:text>
+    <xsl:text>                "d":86400}[unit];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.frequency = factor ? 1/(factor * Number(forced.slice(0,-1)))
+</xsl:text>
+    <xsl:text>                                      : Number(forced);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let init = this.init;
+</xsl:text>
+    <xsl:text>        if(typeof(init) == "function"){
+</xsl:text>
+    <xsl:text>            // try {
+</xsl:text>
+    <xsl:text>                init.call(this);
+</xsl:text>
+    <xsl:text>            // } catch(err) {
+</xsl:text>
+    <xsl:text>            //     console.log(err);
+</xsl:text>
+    <xsl:text>            // }
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1499,7 +1590,19 @@
 </xsl:text>
     <xsl:text>                    this.lastapply[i] = undefined;
 </xsl:text>
-    <xsl:text>                    this.unhinibit(i);
+    <xsl:text>                    this.uninhibit(i);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                let deafened = this.deafen[i];
+</xsl:text>
+    <xsl:text>                if(deafened != undefined){
+</xsl:text>
+    <xsl:text>                    clearTimeout(deafened);
+</xsl:text>
+    <xsl:text>                    this.lastdispatch[i] = undefined;
+</xsl:text>
+    <xsl:text>                    this.undeafen(i);
 </xsl:text>
     <xsl:text>                }
 </xsl:text>
@@ -1649,7 +1752,9 @@
 </xsl:text>
     <xsl:text>        let new_val = eval_operation_string(old_val, opstr);
 </xsl:text>
-    <xsl:text>        new_val = this.clip_min_max(index, new_val);
+    <xsl:text>        if(this.clip)
+</xsl:text>
+    <xsl:text>            new_val = this.clip_min_max(index, new_val);
 </xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
@@ -1663,7 +1768,9 @@
 </xsl:text>
     <xsl:text>        if(realindex == undefined) return undefined;
 </xsl:text>
-    <xsl:text>        new_val = this.clip_min_max(index, new_val);
+    <xsl:text>        if(this.clip)
+</xsl:text>
+    <xsl:text>            new_val = this.clip_min_max(index, new_val);
 </xsl:text>
     <xsl:text>        return apply_hmi_value(realindex, new_val);
 </xsl:text>
@@ -1671,7 +1778,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    unhinibit(index){
+    <xsl:text>    uninhibit(index){
 </xsl:text>
     <xsl:text>        this.inhibit[index] = undefined;
 </xsl:text>
@@ -1709,7 +1816,7 @@
 </xsl:text>
     <xsl:text>                this.pending[index] = new_val;
 </xsl:text>
-    <xsl:text>                this.inhibit[index] = setTimeout(this.bound_unhinibit, min_interval - elapsed, index);
+    <xsl:text>                this.inhibit[index] = setTimeout(this.bound_uninhibit, min_interval - elapsed, index);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -1753,19 +1860,65 @@
 </xsl:text>
     <xsl:text>    
 </xsl:text>
+    <xsl:text>    undeafen(index){
+</xsl:text>
+    <xsl:text>        this.deafen[index] = undefined;
+</xsl:text>
+    <xsl:text>        let [new_val, old_val] = this.incoming[index];
+</xsl:text>
+    <xsl:text>        this.incoming[index] = undefined;
+</xsl:text>
+    <xsl:text>        this.dispatch(new_val, old_val, index);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    _dispatch(value, oldval, varnum) {
 </xsl:text>
     <xsl:text>        let dispatch = this.dispatch;
 </xsl:text>
     <xsl:text>        if(dispatch != undefined){
 </xsl:text>
-    <xsl:text>            try {
+    <xsl:text>            if(this.deafen[varnum] == undefined){
 </xsl:text>
-    <xsl:text>                dispatch.call(this, value, oldval, varnum);
+    <xsl:text>                let now = Date.now();
 </xsl:text>
-    <xsl:text>            } catch(err) {
+    <xsl:text>                let min_interval = 1000/this.frequency;
 </xsl:text>
-    <xsl:text>                console.log(err);
+    <xsl:text>                let lastdispatch = this.lastdispatch[varnum];
+</xsl:text>
+    <xsl:text>                if(lastdispatch == undefined || now &gt; lastdispatch + min_interval){
+</xsl:text>
+    <xsl:text>                    this.lastdispatch[varnum] = now;
+</xsl:text>
+    <xsl:text>                    try {
+</xsl:text>
+    <xsl:text>                        dispatch.call(this, value, oldval, varnum);
+</xsl:text>
+    <xsl:text>                    } catch(err) {
+</xsl:text>
+    <xsl:text>                        console.log(err);
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>                else {
+</xsl:text>
+    <xsl:text>                    let elapsed = now - lastdispatch;
+</xsl:text>
+    <xsl:text>                    this.incoming[varnum] = [value, oldval];
+</xsl:text>
+    <xsl:text>                    this.deafen[varnum] = setTimeout(this.bound_undeafen, min_interval - elapsed, varnum);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            else {
+</xsl:text>
+    <xsl:text>                this.incoming[varnum] = [value, oldval];
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -1883,8 +2036,10 @@
     <xsl:param name="hmi_element"/>
     <xsl:variable name="widget_type" select="@type"/>
     <xsl:for-each select="str:split($labels)">
-      <xsl:variable name="name" select="."/>
-      <xsl:variable name="elt" select="$result_widgets[@id = $hmi_element/@id]//*[@inkscape:label=$name][1]"/>
+      <xsl:variable name="absolute" select="starts-with(., '/')"/>
+      <xsl:variable name="name" select="substring(.,number($absolute)+1)"/>
+      <xsl:variable name="widget" select="$result_widgets[@id = $hmi_element/@id]"/>
+      <xsl:variable name="elt" select="($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]"/>
       <xsl:choose>
         <xsl:when test="not($elt/@id)">
           <xsl:if test="$mandatory='yes'">
@@ -2400,10 +2555,6 @@
     <xsl:value-of select="@name"/>
     <xsl:text>_action(){
 </xsl:text>
-    <xsl:text>console.log("Entering state </xsl:text>
-    <xsl:value-of select="@name"/>
-    <xsl:text>", this.frequency);
-</xsl:text>
     <xsl:apply-templates mode="actions" select="*"/>
     <xsl:text>    }
 </xsl:text>
@@ -2424,8 +2575,6 @@
   </xsl:template>
   <xsl:template name="generated_button_class">
     <xsl:param name="fsm"/>
-    <xsl:text>    frequency = 5;
-</xsl:text>
     <xsl:text>    display = "inactive";
 </xsl:text>
     <xsl:text>    state = "init";
@@ -2492,6 +2641,8 @@
     <xsl:text>ButtonWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
     <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
     <xsl:call-template name="generated_button_class">
       <xsl:with-param name="fsm" select="$fsm"/>
@@ -2513,6 +2664,8 @@
     <xsl:text>class </xsl:text>
     <xsl:text>PushButtonWidget</xsl:text>
     <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 20;
 </xsl:text>
     <xsl:variable name="fsm" select="exsl:node-set($_push_button_fsm)"/>
     <xsl:call-template name="generated_button_class">
@@ -4133,7 +4286,7 @@
         <xsl:value-of select="$text_elt/@id"/>
         <xsl:text>");
 </xsl:text>
-        <xsl:text>  this.content = langs;
+        <xsl:text>  this.content = langs.map(([lname,lcode]) =&gt; lname);
 </xsl:text>
       </xsl:when>
       <xsl:when test="count(arg) = 0">
@@ -6116,7 +6269,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>PathSlider - 
+      <xsl:text>PathSlider -
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -6159,7 +6312,7 @@
 </xsl:text>
     <xsl:text>    origPt = undefined;
 </xsl:text>
-    <xsl:text>    
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -6243,7 +6396,7 @@
 </xsl:text>
     <xsl:text>          bestDistance = beforeDistance;
 </xsl:text>
-    <xsl:text>        } else if ((afterLength = bestLength + precision) &lt;= this.pathLength &amp;&amp; 
+    <xsl:text>        } else if ((afterLength = bestLength + precision) &lt;= this.pathLength &amp;&amp;
 </xsl:text>
     <xsl:text>                   (afterDistance = distance2(afterPoint = this.path_elt.getPointAtLength(afterLength))) &lt; bestDistance) {
 </xsl:text>
@@ -7672,6 +7825,1319 @@
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
   </xsl:template>
+  <xsl:template match="widget[@type='XYGraph']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>XYGraph draws a cartesian trend graph re-using styles given for axis,
+</xsl:text>
+      <xsl:text>grid/marks, legends and curves.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Elements labeled "x_axis" and "y_axis" are svg:groups containg:
+</xsl:text>
+      <xsl:text> - "axis_label" svg:text gives style an alignment for axis labels.
+</xsl:text>
+      <xsl:text> - "interval_major_mark" and "interval_minor_mark" are svg elements to be
+</xsl:text>
+      <xsl:text>   duplicated along axis line to form intervals marks.
+</xsl:text>
+      <xsl:text> - "axis_line"  svg:path is the axis line. Paths must be intersect and their
+</xsl:text>
+      <xsl:text>   bounding box is the chart wall.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Elements labeled "curve_0", "curve_1", ... are paths whose styles are used
+</xsl:text>
+      <xsl:text>to draw curves corresponding to data from variables passed as HMI tree paths.
+</xsl:text>
+      <xsl:text>"curve_0" is mandatory. HMI variables outnumbering given curves are ignored.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Cartesian trend graph showing values of given variables over time</xsl:text>
+    </shortdesc>
+    <path name="value" count="1+" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>value</xsl:text>
+    </path>
+    <arg name="size" accepts="int">
+      <xsl:text>buffer size</xsl:text>
+    </arg>
+    <arg name="xformat" count="optional" accepts="string">
+      <xsl:text>format string for X label</xsl:text>
+    </arg>
+    <arg name="yformat" count="optional" accepts="string">
+      <xsl:text>format string for Y label</xsl:text>
+    </arg>
+    <arg name="xmin" count="optional" accepts="int,real">
+      <xsl:text>minimum value foe X axis</xsl:text>
+    </arg>
+    <arg name="xmax" count="optional" accepts="int,real">
+      <xsl:text>maximum value for X axis</xsl:text>
+    </arg>
+  </xsl:template>
+  <xsl:template match="widget[@type='XYGraph']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>XYGraphWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 1;
+</xsl:text>
+    <xsl:text>    init() {
+</xsl:text>
+    <xsl:text>        let x_duration_s;
+</xsl:text>
+    <xsl:text>        [x_duration_s,
+</xsl:text>
+    <xsl:text>         this.x_format, this.y_format] = this.args;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let timeunit = x_duration_s.slice(-1);
+</xsl:text>
+    <xsl:text>        let factor = {
+</xsl:text>
+    <xsl:text>            "s":1,
+</xsl:text>
+    <xsl:text>            "m":60,
+</xsl:text>
+    <xsl:text>            "h":3600,
+</xsl:text>
+    <xsl:text>            "d":86400}[timeunit];
+</xsl:text>
+    <xsl:text>        if(factor == undefined){
+</xsl:text>
+    <xsl:text>            this.max_data_length = Number(x_duration_s);
+</xsl:text>
+    <xsl:text>            this.x_duration = undefined;
+</xsl:text>
+    <xsl:text>        }else{
+</xsl:text>
+    <xsl:text>            let duration = factor*Number(x_duration_s.slice(0,-1));
+</xsl:text>
+    <xsl:text>            this.max_data_length = undefined;
+</xsl:text>
+    <xsl:text>            this.x_duration = duration*1000;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Min and Max given with paths are meant to describe visible range,
+</xsl:text>
+    <xsl:text>        // not to clip data.
+</xsl:text>
+    <xsl:text>        this.clip = false;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let y_min = Infinity, y_max = -Infinity;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Compute visible Y range by merging fixed curves Y ranges
+</xsl:text>
+    <xsl:text>        for(let minmax of this.minmaxes){
+</xsl:text>
+    <xsl:text>           if(minmax){
+</xsl:text>
+    <xsl:text>               let [min,max] = minmax;
+</xsl:text>
+    <xsl:text>               if(min &lt; y_min)
+</xsl:text>
+    <xsl:text>                   y_min = min;
+</xsl:text>
+    <xsl:text>               if(max &gt; y_max)
+</xsl:text>
+    <xsl:text>                   y_max = max;
+</xsl:text>
+    <xsl:text>           }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(y_min !== Infinity &amp;&amp; y_max !== -Infinity){
+</xsl:text>
+    <xsl:text>           this.fixed_y_range = true;
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>           this.fixed_y_range = false;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.ymin = y_min;
+</xsl:text>
+    <xsl:text>        this.ymax = y_max;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.curves = [];
+</xsl:text>
+    <xsl:text>        this.init_specific();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.reference = new ReferenceFrame(
+</xsl:text>
+    <xsl:text>            [[this.x_interval_minor_mark_elt, this.x_interval_major_mark_elt],
+</xsl:text>
+    <xsl:text>             [this.y_interval_minor_mark_elt, this.y_interval_major_mark_elt]],
+</xsl:text>
+    <xsl:text>            [this.x_axis_label_elt, this.y_axis_label_elt],
+</xsl:text>
+    <xsl:text>            [this.x_axis_line_elt, this.y_axis_line_elt],
+</xsl:text>
+    <xsl:text>            [this.x_format, this.y_format]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let max_stroke_width = 0;
+</xsl:text>
+    <xsl:text>        for(let curve of this.curves){
+</xsl:text>
+    <xsl:text>            if(curve.style.strokeWidth &gt; max_stroke_width){
+</xsl:text>
+    <xsl:text>                max_stroke_width = curve.style.strokeWidth;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.Margins=this.reference.getLengths().map(length =&gt; max_stroke_width/length);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // create &lt;clipPath&gt; path and attach it to widget
+</xsl:text>
+    <xsl:text>        let clipPath = document.createElementNS(xmlns,"clipPath");
+</xsl:text>
+    <xsl:text>        let clipPathPath = document.createElementNS(xmlns,"path");
+</xsl:text>
+    <xsl:text>        let clipPathPathDattr = document.createAttribute("d");
+</xsl:text>
+    <xsl:text>        clipPathPathDattr.value = this.reference.getClipPathPathDattr();
+</xsl:text>
+    <xsl:text>        clipPathPath.setAttributeNode(clipPathPathDattr);
+</xsl:text>
+    <xsl:text>        clipPath.appendChild(clipPathPath);
+</xsl:text>
+    <xsl:text>        clipPath.id = randomId();
+</xsl:text>
+    <xsl:text>        this.element.appendChild(clipPath);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // assign created clipPath to clip-path property of curves
+</xsl:text>
+    <xsl:text>        for(let curve of this.curves){
+</xsl:text>
+    <xsl:text>            curve.setAttribute("clip-path", "url(#" + clipPath.id + ")");
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.curves_data = this.curves.map(_unused =&gt; []);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    dispatch(value,oldval, index) {
+</xsl:text>
+    <xsl:text>        // TODO: get PLC time instead of browser time
+</xsl:text>
+    <xsl:text>        let time = Date.now();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // naive local buffer impl. 
+</xsl:text>
+    <xsl:text>        // data is updated only when graph is visible
+</xsl:text>
+    <xsl:text>        // TODO: replace with separate recording
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.curves_data[index].push([time, value]);
+</xsl:text>
+    <xsl:text>        let data_length = this.curves_data[index].length;
+</xsl:text>
+    <xsl:text>        let ymin_damaged = false;
+</xsl:text>
+    <xsl:text>        let ymax_damaged = false;
+</xsl:text>
+    <xsl:text>        let overflow;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.max_data_length == undefined){
+</xsl:text>
+    <xsl:text>            let peremption = time - this.x_duration;
+</xsl:text>
+    <xsl:text>            let oldest = this.curves_data[index][0][0]
+</xsl:text>
+    <xsl:text>            this.xmin = peremption;
+</xsl:text>
+    <xsl:text>            if(oldest &lt; peremption){
+</xsl:text>
+    <xsl:text>                // remove first item
+</xsl:text>
+    <xsl:text>                overflow = this.curves_data[index].shift()[1];
+</xsl:text>
+    <xsl:text>                data_length = data_length - 1;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        } else {
+</xsl:text>
+    <xsl:text>            if(data_length &gt; this.max_data_length){
+</xsl:text>
+    <xsl:text>                // remove first item
+</xsl:text>
+    <xsl:text>                [this.xmin, overflow] = this.curves_data[index].shift();
+</xsl:text>
+    <xsl:text>                data_length = data_length - 1;
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>                if(this.xmin == undefined){
+</xsl:text>
+    <xsl:text>                    this.xmin = time;
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.xmax = time;
+</xsl:text>
+    <xsl:text>        let Xrange = this.xmax - this.xmin;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(!this.fixed_y_range){
+</xsl:text>
+    <xsl:text>            ymin_damaged = overflow &lt;= this.ymin;
+</xsl:text>
+    <xsl:text>            ymax_damaged = overflow &gt;= this.ymax;
+</xsl:text>
+    <xsl:text>            if(value &gt; this.ymax){
+</xsl:text>
+    <xsl:text>                ymax_damaged = false;
+</xsl:text>
+    <xsl:text>                this.ymax = value;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            if(value &lt; this.ymin){
+</xsl:text>
+    <xsl:text>                ymin_damaged = false;
+</xsl:text>
+    <xsl:text>                this.ymin = value;
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        let Yrange = this.ymax - this.ymin;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // apply margin by moving min and max to enlarge range
+</xsl:text>
+    <xsl:text>        let [xMargin,yMargin] = zip(this.Margins, [Xrange, Yrange]).map(([m,l]) =&gt; m*l);
+</xsl:text>
+    <xsl:text>        [[this.dxmin, this.dxmax],[this.dymin,this.dymax]] =
+</xsl:text>
+    <xsl:text>            [[this.xmin-xMargin, this.xmax+xMargin],
+</xsl:text>
+    <xsl:text>             [this.ymin-yMargin, this.ymax+yMargin]];
+</xsl:text>
+    <xsl:text>        Xrange += 2*xMargin;
+</xsl:text>
+    <xsl:text>        Yrange += 2*yMargin;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // recompute curves "d" attribute
+</xsl:text>
+    <xsl:text>        // FIXME: use SVG getPathData and setPathData when available.
+</xsl:text>
+    <xsl:text>        //        https://svgwg.org/specs/paths/#InterfaceSVGPathData
+</xsl:text>
+    <xsl:text>        //        https://github.com/jarek-foksa/path-data-polyfill
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let [base_point, xvect, yvect] = this.reference.getBaseRef();
+</xsl:text>
+    <xsl:text>        this.curves_d_attr =
+</xsl:text>
+    <xsl:text>            zip(this.curves_data, this.curves).map(([data,curve]) =&gt; {
+</xsl:text>
+    <xsl:text>                let new_d = data.map(([x,y], i) =&gt; {
+</xsl:text>
+    <xsl:text>                    // compute curve point from data, ranges, and base_ref
+</xsl:text>
+    <xsl:text>                    let xv = vectorscale(xvect, (x - this.dxmin) / Xrange);
+</xsl:text>
+    <xsl:text>                    let yv = vectorscale(yvect, (y - this.dymin) / Yrange);
+</xsl:text>
+    <xsl:text>                    let px = base_point.x + xv.x + yv.x;
+</xsl:text>
+    <xsl:text>                    let py = base_point.y + xv.y + yv.y;
+</xsl:text>
+    <xsl:text>                    if(!this.fixed_y_range){
+</xsl:text>
+    <xsl:text>                        // update min and max from curve data if needed
+</xsl:text>
+    <xsl:text>                        if(ymin_damaged &amp;&amp; y &lt; this.ymin) this.ymin = y;
+</xsl:text>
+    <xsl:text>                        if(ymax_damaged &amp;&amp; y &gt; this.ymax) this.ymax = y;
+</xsl:text>
+    <xsl:text>                    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                    return " " + px + "," + py;
+</xsl:text>
+    <xsl:text>                });
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                new_d.unshift("M ");
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                return new_d.join('');
+</xsl:text>
+    <xsl:text>            });
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // computed curves "d" attr is applied to svg curve during animate();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // move elements only if enough data
+</xsl:text>
+    <xsl:text>        if(this.curves_data.some(data =&gt; data.length &gt; 1)){
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // move marks and update labels
+</xsl:text>
+    <xsl:text>            this.reference.applyRanges([[this.dxmin, this.dxmax],
+</xsl:text>
+    <xsl:text>                                        [this.dymin, this.dymax]]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // apply computed curves "d" attributes
+</xsl:text>
+    <xsl:text>            for(let [curve, d_attr] of zip(this.curves, this.curves_d_attr)){
+</xsl:text>
+    <xsl:text>                curve.setAttribute("d", d_attr);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='XYGraph']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>/x_interval_minor_mark /x_axis_line /x_interval_major_mark /x_axis_label</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:call-template name="defs_by_labels">
+      <xsl:with-param name="hmi_element" select="$hmi_element"/>
+      <xsl:with-param name="labels">
+        <xsl:text>/y_interval_minor_mark /y_axis_line /y_interval_major_mark /y_axis_label</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:text>    init_specific() {
+</xsl:text>
+    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]">
+      <xsl:variable name="label" select="@inkscape:label"/>
+      <xsl:variable name="id" select="@id"/>
+      <xsl:if test="$hmi_element/*[not($id = @id) and @inkscape:label=$label]">
+        <xsl:message terminate="yes">
+          <xsl:text>XYGraph id="</xsl:text>
+          <xsl:value-of select="$id"/>
+          <xsl:text>", label="</xsl:text>
+          <xsl:value-of select="$label"/>
+          <xsl:text>" : elements with data_n label must be unique.</xsl:text>
+        </xsl:message>
+      </xsl:if>
+      <xsl:text>        this.curves[</xsl:text>
+      <xsl:value-of select="substring(@inkscape:label, 7)"/>
+      <xsl:text>] = id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"); /* </xsl:text>
+      <xsl:value-of select="@inkscape:label"/>
+      <xsl:text> */
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    }
+</xsl:text>
+  </xsl:template>
+  <declarations:XYGraph/>
+  <xsl:template match="declarations:XYGraph">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function lineFromPath(path_elt) {
+</xsl:text>
+    <xsl:text>    let start = path_elt.getPointAtLength(0);
+</xsl:text>
+    <xsl:text>    let end = path_elt.getPointAtLength(path_elt.getTotalLength());
+</xsl:text>
+    <xsl:text>    return [start, new DOMPoint(end.x - start.x , end.y - start.y)];
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function vector(p1, p2) {
+</xsl:text>
+    <xsl:text>    return new DOMPoint(p2.x - p1.x , p2.y - p1.y);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function vectorscale(p1, p2) {
+</xsl:text>
+    <xsl:text>    return new DOMPoint(p2 * p1.x , p2 * p1.y);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function vectorLength(p1) {
+</xsl:text>
+    <xsl:text>    return Math.sqrt(p1.x*p1.x + p1.y*p1.y);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function randomId(){
+</xsl:text>
+    <xsl:text>    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function move_elements_to_group(elements) {
+</xsl:text>
+    <xsl:text>    let newgroup = document.createElementNS(xmlns,"g");
+</xsl:text>
+    <xsl:text>    newgroup.id = randomId();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    for(let element of elements){
+</xsl:text>
+    <xsl:text>        let parent = element.parentElement;
+</xsl:text>
+    <xsl:text>        if(parent !== null)
+</xsl:text>
+    <xsl:text>            parent.removeChild(element);
+</xsl:text>
+    <xsl:text>        newgroup.appendChild(element);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    return newgroup;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>function getLinesIntesection(l1, l2) {
+</xsl:text>
+    <xsl:text>    let [l1start, l1vect] = l1;
+</xsl:text>
+    <xsl:text>    let [l2start, l2vect] = l2;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    /*
+</xsl:text>
+    <xsl:text>    Compute intersection of two lines
+</xsl:text>
+    <xsl:text>    =================================
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                          ^ l2vect
+</xsl:text>
+    <xsl:text>                         /
+</xsl:text>
+    <xsl:text>                        /
+</xsl:text>
+    <xsl:text>                       /
+</xsl:text>
+    <xsl:text>    l1start ----------X--------------&gt; l1vect
+</xsl:text>
+    <xsl:text>                     / intersection
+</xsl:text>
+    <xsl:text>                    /
+</xsl:text>
+    <xsl:text>                   /
+</xsl:text>
+    <xsl:text>                   l2start
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>	*/
+</xsl:text>
+    <xsl:text>    let [x1, y1, x3, y3] = [l1start.x, l1start.y, l2start.x, l2start.y];
+</xsl:text>
+    <xsl:text>	let [x2, y2, x4, y4] = [x1+l1vect.x, y1+l1vect.y, x3+l2vect.x, y3+l2vect.y];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>	// line intercept math by Paul Bourke http://paulbourke.net/geometry/pointlineplane/
+</xsl:text>
+    <xsl:text>	// Determine the intersection point of two line segments
+</xsl:text>
+    <xsl:text>	// Return FALSE if the lines don't intersect
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // Check if none of the lines are of length 0
+</xsl:text>
+    <xsl:text>    if ((x1 === x2 &amp;&amp; y1 === y2) || (x3 === x4 &amp;&amp; y3 === y4)) {
+</xsl:text>
+    <xsl:text>        return false
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1))
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // Lines are parallel
+</xsl:text>
+    <xsl:text>    if (denominator === 0) {
+</xsl:text>
+    <xsl:text>        return false
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    let ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denominator
+</xsl:text>
+    <xsl:text>    let ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denominator
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    // Return a object with the x and y coordinates of the intersection
+</xsl:text>
+    <xsl:text>    let x = x1 + ua * (x2 - x1)
+</xsl:text>
+    <xsl:text>    let y = y1 + ua * (y2 - y1)
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    return new DOMPoint(x,y);
+</xsl:text>
+    <xsl:text>};
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>class ReferenceFrame {
+</xsl:text>
+    <xsl:text>    constructor(
+</xsl:text>
+    <xsl:text>        // [[Xminor,Xmajor], [Yminor,Ymajor]]
+</xsl:text>
+    <xsl:text>        marks,
+</xsl:text>
+    <xsl:text>        // [Xlabel, Ylabel]
+</xsl:text>
+    <xsl:text>        labels,
+</xsl:text>
+    <xsl:text>        // [Xline, Yline]
+</xsl:text>
+    <xsl:text>        lines,
+</xsl:text>
+    <xsl:text>        // [Xformat, Yformat] printf-like formating strings
+</xsl:text>
+    <xsl:text>        formats
+</xsl:text>
+    <xsl:text>    ){
+</xsl:text>
+    <xsl:text>        this.axes = zip(labels,marks,lines,formats).map(args =&gt; new Axis(...args));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let [lx,ly] = this.axes.map(axis =&gt; axis.line);
+</xsl:text>
+    <xsl:text>        let [[xstart, xvect], [ystart, yvect]] = [lx,ly];
+</xsl:text>
+    <xsl:text>        let base_point = this.getBasePoint();
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // setup clipping for curves
+</xsl:text>
+    <xsl:text>        this.clipPathPathDattr =
+</xsl:text>
+    <xsl:text>            "m " + base_point.x + "," + base_point.y + " "
+</xsl:text>
+    <xsl:text>                 + xvect.x + "," + xvect.y + " "
+</xsl:text>
+    <xsl:text>                 + yvect.x + "," + yvect.y + " "
+</xsl:text>
+    <xsl:text>                 + -xvect.x + "," + -xvect.y + " "
+</xsl:text>
+    <xsl:text>                 + -yvect.x + "," + -yvect.y + " z";
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.base_ref = [base_point, xvect, yvect];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.lengths = [xvect,yvect].map(v =&gt; vectorLength(v));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        for(let axis of this.axes){
+</xsl:text>
+    <xsl:text>            axis.setBasePoint(base_point);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    getLengths(){
+</xsl:text>
+    <xsl:text>        return this.lengths;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>	getBaseRef(){
+</xsl:text>
+    <xsl:text>        return this.base_ref;
+</xsl:text>
+    <xsl:text>	}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    getClipPathPathDattr(){
+</xsl:text>
+    <xsl:text>        return this.clipPathPathDattr;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    applyRanges(ranges){
+</xsl:text>
+    <xsl:text>        let origin_moves = zip(ranges,this.axes).map(([range,axis]) =&gt; axis.applyRange(...range));
+</xsl:text>
+    <xsl:text>		zip(origin_moves.reverse(),this.axes).forEach(([vect,axis]) =&gt; axis.moveOrigin(vect));
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    getBasePoint() {
+</xsl:text>
+    <xsl:text>        let [[xstart, xvect], [ystart, yvect]] = this.axes.map(axis =&gt; axis.line);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        /*
+</xsl:text>
+    <xsl:text>        Compute graph clipping region base point
+</xsl:text>
+    <xsl:text>        ========================================
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        Clipping region is a parallelogram containing axes lines,
+</xsl:text>
+    <xsl:text>        and whose sides are parallel to axes line respectively.
+</xsl:text>
+    <xsl:text>        Given axes lines are not starting at the same point, hereafter is
+</xsl:text>
+    <xsl:text>        calculus of parallelogram base point.
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                              ^ given Y axis (yvect)
+</xsl:text>
+    <xsl:text>                   /         /
+</xsl:text>
+    <xsl:text>                  /         /
+</xsl:text>
+    <xsl:text>                 /         /
+</xsl:text>
+    <xsl:text>         xstart *---------*--------------&gt; given X axis (xvect)
+</xsl:text>
+    <xsl:text>               /         /origin
+</xsl:text>
+    <xsl:text>              /         /
+</xsl:text>
+    <xsl:text>             *---------*--------------
+</xsl:text>
+    <xsl:text>        base_point   ystart
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let base_point = getLinesIntesection([xstart,yvect],[ystart,xvect]);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        return base_point;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>class Axis {
+</xsl:text>
+    <xsl:text>    constructor(label, marks, line, format){
+</xsl:text>
+    <xsl:text>        this.lineElement = line;
+</xsl:text>
+    <xsl:text>        this.line = lineFromPath(line);
+</xsl:text>
+    <xsl:text>        this.format = format;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.label = label;
+</xsl:text>
+    <xsl:text>        this.marks = marks;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // add transforms for elements sliding along the axis line
+</xsl:text>
+    <xsl:text>        for(let [elementname,element] of zip(["minor", "major", "label"],[...marks,label])){
+</xsl:text>
+    <xsl:text>            for(let name of ["base","slide"]){
+</xsl:text>
+    <xsl:text>                let transform = svg_root.createSVGTransform();
+</xsl:text>
+    <xsl:text>                element.transform.baseVal.insertItemBefore(transform,0);
+</xsl:text>
+    <xsl:text>                this[elementname+"_"+name+"_transform"]=transform;
+</xsl:text>
+    <xsl:text>            };
+</xsl:text>
+    <xsl:text>        };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // group marks an labels together
+</xsl:text>
+    <xsl:text>        let parent = line.parentElement;
+</xsl:text>
+    <xsl:text>        this.marks_group = move_elements_to_group(marks);
+</xsl:text>
+    <xsl:text>        this.marks_and_label_group = move_elements_to_group([this.marks_group, label]);
+</xsl:text>
+    <xsl:text>        this.group = move_elements_to_group([this.marks_and_label_group,line]);
+</xsl:text>
+    <xsl:text>        parent.appendChild(this.group);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Add transforms to group
+</xsl:text>
+    <xsl:text>        for(let name of ["base","origin"]){
+</xsl:text>
+    <xsl:text>            let transform = svg_root.createSVGTransform();
+</xsl:text>
+    <xsl:text>            this.group.transform.baseVal.appendItem(transform);
+</xsl:text>
+    <xsl:text>            this[name+"_transform"]=transform;
+</xsl:text>
+    <xsl:text>        };
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.marks_and_label_group_transform = svg_root.createSVGTransform();
+</xsl:text>
+    <xsl:text>        this.marks_and_label_group.transform.baseVal.appendItem(this.marks_and_label_group_transform);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.duplicates = [];
+</xsl:text>
+    <xsl:text>        this.last_duplicate_index = 0;
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    setBasePoint(base_point){
+</xsl:text>
+    <xsl:text>        // move Axis to base point
+</xsl:text>
+    <xsl:text>        let [start, _vect] = this.line;
+</xsl:text>
+    <xsl:text>        let v = vector(start, base_point);
+</xsl:text>
+    <xsl:text>        this.base_transform.setTranslate(v.x, v.y);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Move marks and label to base point.
+</xsl:text>
+    <xsl:text>        // _|_______          _|________
+</xsl:text>
+    <xsl:text>        //  |  '  |     ==&gt;    '
+</xsl:text>
+    <xsl:text>        //  |     0            0
+</xsl:text>
+    <xsl:text>        //  |                  |
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        for(let [markname,mark] of zip(["minor", "major"],this.marks)){
+</xsl:text>
+    <xsl:text>            let pos = vector(
+</xsl:text>
+    <xsl:text>                // Marks are expected to be paths
+</xsl:text>
+    <xsl:text>                // paths are expected to be lines
+</xsl:text>
+    <xsl:text>                // intersection with axis line is taken 
+</xsl:text>
+    <xsl:text>                // as reference for mark position
+</xsl:text>
+    <xsl:text>                getLinesIntesection(
+</xsl:text>
+    <xsl:text>                    this.line, lineFromPath(mark)),base_point);
+</xsl:text>
+    <xsl:text>            this[markname+"_base_transform"].setTranslate(pos.x - v.x, pos.y - v.y);
+</xsl:text>
+    <xsl:text>            if(markname == "major"){ // label follow major mark
+</xsl:text>
+    <xsl:text>                this.label_base_transform.setTranslate(pos.x - v.x, pos.y - v.y);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>	moveOrigin(vect){
+</xsl:text>
+    <xsl:text>		this.origin_transform.setTranslate(vect.x, vect.y);
+</xsl:text>
+    <xsl:text>	}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    applyRange(min, max){
+</xsl:text>
+    <xsl:text>        let range = max - min;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // compute how many units for a mark
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>        // - Units are expected to be an order of magnitude smaller than range,
+</xsl:text>
+    <xsl:text>        //   so that marks are not too dense and also not too sparse.
+</xsl:text>
+    <xsl:text>        //   Order of magnitude of range is log10(range)
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>        // - Units are necessarily power of ten, otherwise it is complicated to
+</xsl:text>
+    <xsl:text>        //   fill the text in labels...
+</xsl:text>
+    <xsl:text>        //   Unit is pow(10, integer_number )
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>        // - To transform order of magnitude to an integer, floor() is used.
+</xsl:text>
+    <xsl:text>        //   This results in a count of mark fluctuating in between 10 and 100.
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>        // - To spare resources result is better in between 3 and 30,
+</xsl:text>
+    <xsl:text>        //   and log10(3) is substracted to order of magnitude to obtain this
+</xsl:text>
+    <xsl:text>        let unit = Math.pow(10, Math.floor(Math.log10(range)-Math.log10(3)));
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // TODO: for time values (ms), units may be :
+</xsl:text>
+    <xsl:text>        //       1       -&gt; ms
+</xsl:text>
+    <xsl:text>        //       10      -&gt; s/100
+</xsl:text>
+    <xsl:text>        //       100     -&gt; s/10
+</xsl:text>
+    <xsl:text>        //       1000    -&gt; s
+</xsl:text>
+    <xsl:text>        //       60000   -&gt; min
+</xsl:text>
+    <xsl:text>        //       3600000 -&gt; hour
+</xsl:text>
+    <xsl:text>        //       ...
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // Compute position of origin along axis [0...range]
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // min &lt; 0, max &gt; 0, offset = -min
+</xsl:text>
+    <xsl:text>        // _____________|________________
+</xsl:text>
+    <xsl:text>        // ... -3 -2 -1 |0  1  2  3  4 ...
+</xsl:text>
+    <xsl:text>        // &lt;--offset---&gt; ^
+</xsl:text>
+    <xsl:text>        //               |_original
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // min &gt; 0, max &gt; 0, offset = 0
+</xsl:text>
+    <xsl:text>        // |________________
+</xsl:text>
+    <xsl:text>        // |6  7  8  9  10...
+</xsl:text>
+    <xsl:text>        //  ^
+</xsl:text>
+    <xsl:text>        //  |_original
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // min &lt; 0, max &lt; 0, offset = max-min (range)
+</xsl:text>
+    <xsl:text>        // _____________|_
+</xsl:text>
+    <xsl:text>        // ... -5 -4 -3 |-2
+</xsl:text>
+    <xsl:text>        // &lt;--offset---&gt; ^
+</xsl:text>
+    <xsl:text>        //               |_original
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let offset = (max&gt;=0 &amp;&amp; min&gt;=0) ? 0 : (
+</xsl:text>
+    <xsl:text>                     (max&lt;0 &amp;&amp; min&lt;0)   ? range : -min);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // compute unit vector
+</xsl:text>
+    <xsl:text>        let [_start, vect] = this.line;
+</xsl:text>
+    <xsl:text>        let unit_vect = vectorscale(vect, 1/range);
+</xsl:text>
+    <xsl:text>        let [mark_min, mark_max, mark_offset] = [min,max,offset].map(val =&gt; Math.round(val/unit));
+</xsl:text>
+    <xsl:text>        let mark_count = mark_max-mark_min;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // apply unit vector to marks and label
+</xsl:text>
+    <xsl:text>        // offset is a representing position of an 
+</xsl:text>
+    <xsl:text>        // axis along the opposit axis line, expressed in major marks units
+</xsl:text>
+    <xsl:text>        // unit_vect is unit vector
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        //              ^
+</xsl:text>
+    <xsl:text>        //              | unit_vect
+</xsl:text>
+    <xsl:text>        //              |&lt;---&gt;
+</xsl:text>
+    <xsl:text>        //     _________|__________&gt;
+</xsl:text>
+    <xsl:text>        //     ^  |  '  |  '  |  '
+</xsl:text>
+    <xsl:text>        //     |yoffset |     1 
+</xsl:text>
+    <xsl:text>        //     |        |
+</xsl:text>
+    <xsl:text>        //     v xoffset|
+</xsl:text>
+    <xsl:text>        //     X&lt;------&gt;|
+</xsl:text>
+    <xsl:text>        // base_point
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // move major marks and label to first positive mark position
+</xsl:text>
+    <xsl:text>        // let v = vectorscale(unit_vect, unit);
+</xsl:text>
+    <xsl:text>        // this.label_slide_transform.setTranslate(v.x, v.y);
+</xsl:text>
+    <xsl:text>        // this.major_slide_transform.setTranslate(v.x, v.y);
+</xsl:text>
+    <xsl:text>        // move minor mark to first half positive mark position
+</xsl:text>
+    <xsl:text>        let v = vectorscale(unit_vect, unit/2);
+</xsl:text>
+    <xsl:text>        this.minor_slide_transform.setTranslate(v.x, v.y);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // duplicate marks and labels as needed
+</xsl:text>
+    <xsl:text>        let current_mark_count = this.duplicates.length;
+</xsl:text>
+    <xsl:text>        for(let i = current_mark_count; i &lt;= mark_count; i++){
+</xsl:text>
+    <xsl:text>            // cloneNode() label and add a svg:use of marks in a new group
+</xsl:text>
+    <xsl:text>            let newgroup = document.createElementNS(xmlns,"g");
+</xsl:text>
+    <xsl:text>            let transform = svg_root.createSVGTransform();
+</xsl:text>
+    <xsl:text>            let newlabel = this.label.cloneNode(true);
+</xsl:text>
+    <xsl:text>            let newuse = document.createElementNS(xmlns,"use");
+</xsl:text>
+    <xsl:text>            let newuseAttr = document.createAttribute("href");
+</xsl:text>
+    <xsl:text>            newuseAttr.value = "#"+this.marks_group.id;
+</xsl:text>
+    <xsl:text>            newuse.setAttributeNode(newuseAttr);
+</xsl:text>
+    <xsl:text>            newgroup.transform.baseVal.appendItem(transform);
+</xsl:text>
+    <xsl:text>            newgroup.appendChild(newlabel);
+</xsl:text>
+    <xsl:text>            newgroup.appendChild(newuse);
+</xsl:text>
+    <xsl:text>            this.duplicates.push([transform,newgroup]);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        // move marks and labels, set labels
+</xsl:text>
+    <xsl:text>        // 
+</xsl:text>
+    <xsl:text>        // min &gt; 0, max &gt; 0, offset = 0
+</xsl:text>
+    <xsl:text>        //         ^
+</xsl:text>
+    <xsl:text>        //         |________&gt;
+</xsl:text>
+    <xsl:text>        //        '| |  '  |
+</xsl:text>
+    <xsl:text>        //         | 6     7
+</xsl:text>
+    <xsl:text>        //         X
+</xsl:text>
+    <xsl:text>        //     base_point
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>        // min &lt; 0, max &gt; 0, offset = -min
+</xsl:text>
+    <xsl:text>        //              ^
+</xsl:text>
+    <xsl:text>        //     _________|__________&gt;
+</xsl:text>
+    <xsl:text>        //     '  |  '  |  '  |  '
+</xsl:text>
+    <xsl:text>        //       -1     |     1 
+</xsl:text>
+    <xsl:text>        //       offset |
+</xsl:text>
+    <xsl:text>        //     X&lt;------&gt;|
+</xsl:text>
+    <xsl:text>        // base_point
+</xsl:text>
+    <xsl:text>        //
+</xsl:text>
+    <xsl:text>        // min &lt; 0, max &lt; 0, offset = range
+</xsl:text>
+    <xsl:text>        //                 ^
+</xsl:text>
+    <xsl:text>        //     ____________|    
+</xsl:text>
+    <xsl:text>        //      '  |  '  | |'
+</xsl:text>
+    <xsl:text>        //        -5    -4 |
+</xsl:text>
+    <xsl:text>        //         offset  |
+</xsl:text>
+    <xsl:text>        //     X&lt;---------&gt;|
+</xsl:text>
+    <xsl:text>        // base_point
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let duplicate_index = 0;
+</xsl:text>
+    <xsl:text>        for(let mark_index = 0; mark_index &lt;= mark_count; mark_index++){
+</xsl:text>
+    <xsl:text>            let val = (mark_min + mark_index) * unit;
+</xsl:text>
+    <xsl:text>            let vec = vectorscale(unit_vect, val - min);
+</xsl:text>
+    <xsl:text>            let text = this.format ? sprintf(this.format, val) : val.toString();
+</xsl:text>
+    <xsl:text>            if(mark_index == mark_offset){
+</xsl:text>
+    <xsl:text>                // apply offset to original marks and label groups
+</xsl:text>
+    <xsl:text>                this.marks_and_label_group_transform.setTranslate(vec.x, vec.y);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                // update original label text
+</xsl:text>
+    <xsl:text>                this.label.getElementsByTagName("tspan")[0].textContent = text;
+</xsl:text>
+    <xsl:text>            } else {
+</xsl:text>
+    <xsl:text>                let [transform,element] = this.duplicates[duplicate_index++];
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                // apply unit vector*N to marks and label groups
+</xsl:text>
+    <xsl:text>                transform.setTranslate(vec.x, vec.y);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                // update label text
+</xsl:text>
+    <xsl:text>                element.getElementsByTagName("tspan")[0].textContent = text;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>                // Attach to group if not already
+</xsl:text>
+    <xsl:text>                if(element.parentElement == null){
+</xsl:text>
+    <xsl:text>                    this.group.appendChild(element);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        let save_duplicate_index = duplicate_index;
+</xsl:text>
+    <xsl:text>        // dettach marks and label from group if not anymore visible
+</xsl:text>
+    <xsl:text>        for(;duplicate_index &lt; this.last_duplicate_index; duplicate_index++){
+</xsl:text>
+    <xsl:text>            let [transform,element] = this.duplicates[duplicate_index];
+</xsl:text>
+    <xsl:text>            this.group.removeChild(element);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.last_duplicate_index = save_duplicate_index;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>		return vectorscale(unit_vect, offset);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+  </xsl:template>
   <xsl:template match="/">
     <xsl:comment>
       <xsl:text>Made with SVGHMI. https://beremiz.org</xsl:text>
@@ -7751,7 +9217,7 @@
 </xsl:text>
           <xsl:text>        modulo: /^%{2}/,
 </xsl:text>
-          <xsl:text>        placeholder: /^%(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
+          <xsl:text>        placeholder: /^%(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxXD])/,
 </xsl:text>
           <xsl:text>        key: /^([a-z_][a-z_\d]*)/i,
 </xsl:text>
@@ -7874,6 +9340,108 @@
           <xsl:text>                    case 'i':
 </xsl:text>
           <xsl:text>                        arg = parseInt(arg, 10)
+</xsl:text>
+          <xsl:text>                        break
+</xsl:text>
+          <xsl:text>                    case 'D':
+</xsl:text>
+          <xsl:text>                        /*  
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                            select date format with width
+</xsl:text>
+          <xsl:text>                            select time format with precision
+</xsl:text>
+          <xsl:text>                            %D  =&gt; 13:31 AM (default)
+</xsl:text>
+          <xsl:text>                            %1D  =&gt; 13:31 AM
+</xsl:text>
+          <xsl:text>                            %.1D  =&gt; 07/07/20
+</xsl:text>
+          <xsl:text>                            %1.1D  =&gt; 07/07/20, 13:31 AM
+</xsl:text>
+          <xsl:text>                            %1.2D  =&gt; 07/07/20, 13:31:55 AM
+</xsl:text>
+          <xsl:text>                            %2.2D  =&gt; May 5, 2022, 9:29:16 AM
+</xsl:text>
+          <xsl:text>                            %3.3D  =&gt; May 5, 2022 at 9:28:16 AM GMT+2
+</xsl:text>
+          <xsl:text>                            %4.4D  =&gt; Thursday, May 5, 2022 at 9:26:59 AM Central European Summer Time
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                            see meaning of DateTimeFormat's options "datestyle" and "timestyle" in MDN 
+</xsl:text>
+          <xsl:text>                        */
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        let [datestyle, timestyle] = [ph.width, ph.precision].map(val =&gt; ({
+</xsl:text>
+          <xsl:text>                            1: "short",
+</xsl:text>
+          <xsl:text>                            2: "medium",
+</xsl:text>
+          <xsl:text>                            3: "long",
+</xsl:text>
+          <xsl:text>                            4: "full"
+</xsl:text>
+          <xsl:text>                        }[val]));
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        if(timestyle === undefined &amp;&amp; datestyle === undefined){
+</xsl:text>
+          <xsl:text>                            timestyle = "short";
+</xsl:text>
+          <xsl:text>                        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        let options = {
+</xsl:text>
+          <xsl:text>                            dateStyle: datestyle,
+</xsl:text>
+          <xsl:text>                            timeStyle: timestyle,
+</xsl:text>
+          <xsl:text>                            hour12: false
+</xsl:text>
+          <xsl:text>                        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        /* get lang from globals */
+</xsl:text>
+          <xsl:text>                        let lang = get_current_lang_code();
+</xsl:text>
+          <xsl:text>                        let f;
+</xsl:text>
+          <xsl:text>                        try{
+</xsl:text>
+          <xsl:text>                            f = new Intl.DateTimeFormat(lang, options);
+</xsl:text>
+          <xsl:text>                        } catch(e) {
+</xsl:text>
+          <xsl:text>                            f = new Intl.DateTimeFormat('en-US', options);
+</xsl:text>
+          <xsl:text>                        }
+</xsl:text>
+          <xsl:text>                        arg = f.format(arg);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>                        /*    
+</xsl:text>
+          <xsl:text>                            TODO: select with padding char
+</xsl:text>
+          <xsl:text>                                  a: absolute time and date (default)
+</xsl:text>
+          <xsl:text>                                  r: relative time
+</xsl:text>
+          <xsl:text>                        */
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>                        break
 </xsl:text>
@@ -8181,6 +9749,430 @@
 </xsl:text>
           <xsl:text>}(); // eslint-disable-line    
 </xsl:text>
+          <xsl:text>/*
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>From https://github.com/keyvan-m-sadeghi/pythonic
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>Slightly modified in order to be usable in browser (i.e. not as a node.js module)
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>The MIT License (MIT)
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>Copyright (c) 2016 Assister.Ai
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>Permission is hereby granted, free of charge, to any person obtaining a copy of
+</xsl:text>
+          <xsl:text>this software and associated documentation files (the "Software"), to deal in
+</xsl:text>
+          <xsl:text>the Software without restriction, including without limitation the rights to
+</xsl:text>
+          <xsl:text>use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+</xsl:text>
+          <xsl:text>the Software, and to permit persons to whom the Software is furnished to do so,
+</xsl:text>
+          <xsl:text>subject to the following conditions:
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>The above copyright notice and this permission notice shall be included in all
+</xsl:text>
+          <xsl:text>copies or substantial portions of the Software.
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+</xsl:text>
+          <xsl:text>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+</xsl:text>
+          <xsl:text>FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+</xsl:text>
+          <xsl:text>COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+</xsl:text>
+          <xsl:text>IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+</xsl:text>
+          <xsl:text>CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</xsl:text>
+          <xsl:text>*/
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>class Iterator {
+</xsl:text>
+          <xsl:text>    constructor(generator) {
+</xsl:text>
+          <xsl:text>        this[Symbol.iterator] = generator;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    async * [Symbol.asyncIterator]() {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            yield await element;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    forEach(callback) {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            callback(element);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    map(callback) {
+</xsl:text>
+          <xsl:text>        const result = [];
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            result.push(callback(element));
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return result;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    filter(callback) {
+</xsl:text>
+          <xsl:text>        const result = [];
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            if (callback(element)) {
+</xsl:text>
+          <xsl:text>                result.push(element);
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return result;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    reduce(callback, initialValue) {
+</xsl:text>
+          <xsl:text>        let empty = typeof initialValue === 'undefined';
+</xsl:text>
+          <xsl:text>        let accumulator = initialValue;
+</xsl:text>
+          <xsl:text>        let index = 0;
+</xsl:text>
+          <xsl:text>        for (const currentValue of this) {
+</xsl:text>
+          <xsl:text>            if (empty) {
+</xsl:text>
+          <xsl:text>                accumulator = currentValue;
+</xsl:text>
+          <xsl:text>                empty = false;
+</xsl:text>
+          <xsl:text>                continue;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>            accumulator = callback(accumulator, currentValue, index, this);
+</xsl:text>
+          <xsl:text>            index++;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        if (empty) {
+</xsl:text>
+          <xsl:text>            throw new TypeError('Reduce of empty Iterator with no initial value');
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return accumulator;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    some(callback) {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            if (callback(element)) {
+</xsl:text>
+          <xsl:text>                return true;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return false;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    every(callback) {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            if (!callback(element)) {
+</xsl:text>
+          <xsl:text>                return false;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return true;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    static fromIterable(iterable) {
+</xsl:text>
+          <xsl:text>        return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>            for (const element of iterable) {
+</xsl:text>
+          <xsl:text>                yield element;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        });
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    toArray() {
+</xsl:text>
+          <xsl:text>        return Array.from(this);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    next() {
+</xsl:text>
+          <xsl:text>        if (!this.currentInvokedGenerator) {
+</xsl:text>
+          <xsl:text>            this.currentInvokedGenerator = this[Symbol.iterator]();
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return this.currentInvokedGenerator.next();
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    reset() {
+</xsl:text>
+          <xsl:text>        delete this.currentInvokedGenerator;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function rangeSimple(stop) {
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        for (let i = 0; i &lt; stop; i++) {
+</xsl:text>
+          <xsl:text>            yield i;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function rangeOverload(start, stop, step = 1) {
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        for (let i = start; i &lt; stop; i += step) {
+</xsl:text>
+          <xsl:text>            yield i;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function range(...args) {
+</xsl:text>
+          <xsl:text>    if (args.length &lt; 2) {
+</xsl:text>
+          <xsl:text>        return rangeSimple(...args);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return rangeOverload(...args);
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function enumerate(iterable) {
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        let index = 0;
+</xsl:text>
+          <xsl:text>        for (const element of iterable) {
+</xsl:text>
+          <xsl:text>            yield [index, element];
+</xsl:text>
+          <xsl:text>            index++;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>const _zip = longest =&gt; (...iterables) =&gt; {
+</xsl:text>
+          <xsl:text>    if (iterables.length &lt; 2) {
+</xsl:text>
+          <xsl:text>        throw new TypeError("zip takes 2 iterables at least, "+iterables.length+" given");
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        const iterators = iterables.map(iterable =&gt; Iterator.fromIterable(iterable));
+</xsl:text>
+          <xsl:text>        while (true) {
+</xsl:text>
+          <xsl:text>            const row = iterators.map(iterator =&gt; iterator.next());
+</xsl:text>
+          <xsl:text>            const check = longest ? row.every.bind(row) : row.some.bind(row);
+</xsl:text>
+          <xsl:text>            if (check(next =&gt; next.done)) {
+</xsl:text>
+          <xsl:text>                return;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>            yield row.map(next =&gt; next.value);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>const zip = _zip(false), zipLongest= _zip(true);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function items(obj) {
+</xsl:text>
+          <xsl:text>    let {keys, get} = obj;
+</xsl:text>
+          <xsl:text>    if (obj instanceof Map) {
+</xsl:text>
+          <xsl:text>        keys = keys.bind(obj);
+</xsl:text>
+          <xsl:text>        get = get.bind(obj);
+</xsl:text>
+          <xsl:text>    } else {
+</xsl:text>
+          <xsl:text>        keys = function () {
+</xsl:text>
+          <xsl:text>            return Object.keys(obj);
+</xsl:text>
+          <xsl:text>        };
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        get = function (key) {
+</xsl:text>
+          <xsl:text>            return obj[key];
+</xsl:text>
+          <xsl:text>        };
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        for (const key of keys()) {
+</xsl:text>
+          <xsl:text>            yield [key, get(key)];
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>/*
+</xsl:text>
+          <xsl:text>module.exports = {Iterator, range, enumerate, zip: _zip(false), zipLongest: _zip(true), items};
+</xsl:text>
+          <xsl:text>*/
+</xsl:text>
           <xsl:text>// svghmi.js
 </xsl:text>
           <xsl:text>
@@ -8221,25 +10213,7 @@
 </xsl:text>
           <xsl:text>        let widget = hmi_widgets[id];
 </xsl:text>
-          <xsl:text>        let init = widget.init;
-</xsl:text>
-          <xsl:text>        if(typeof(init) == "function"){
-</xsl:text>
-          <xsl:text>            try {
-</xsl:text>
-          <xsl:text>                init.call(widget);
-</xsl:text>
-          <xsl:text>            } catch(err) {
-</xsl:text>
-          <xsl:text>                console.log(err);
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>        if(widget.forced_frequency !== undefined)
-</xsl:text>
-          <xsl:text>            widget.frequency = widget.forced_frequency;
+          <xsl:text>        widget.do_init();
 </xsl:text>
           <xsl:text>    });
 </xsl:text>
@@ -8710,6 +10684,16 @@
           <xsl:text>    }
 </xsl:text>
           <xsl:text>});
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// returns en_US, fr_FR or en_UK depending on selected language
+</xsl:text>
+          <xsl:text>function get_current_lang_code(){
+</xsl:text>
+          <xsl:text>    return cache[langcode_local_index];
+</xsl:text>
+          <xsl:text>}
 </xsl:text>
           <xsl:text>
 </xsl:text>
