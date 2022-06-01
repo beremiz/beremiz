@@ -4,7 +4,7 @@
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="widgetparams" select="ns:GetWidgetParams()"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
-  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="id" select="@id"/>
@@ -52,6 +52,16 @@
           <xsl:value-of select="$type"/>
         </xsl:attribute>
         <xsl:if test="$freq">
+          <xsl:if test="not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))">
+            <xsl:message terminate="yes">
+              <xsl:text>Widget id:</xsl:text>
+              <xsl:value-of select="$id"/>
+              <xsl:text> label:</xsl:text>
+              <xsl:value-of select="$label"/>
+              <xsl:text> has wrong syntax of frequency forcing </xsl:text>
+              <xsl:value-of select="$freq"/>
+            </xsl:message>
+          </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
           </xsl:attribute>
