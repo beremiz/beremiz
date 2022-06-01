@@ -22,19 +22,34 @@ widget_desc("XYGraph") {
 
     path name="value" count="1+" accepts="HMI_INT,HMI_REAL" > value
 
-    arg name="size" accepts="int" > buffer size
+    arg name="xrange" accepts="int,time" > X axis range expressed either in samples or duration.
     arg name="xformat" count="optional" accepts="string" > format string for X label
     arg name="yformat" count="optional" accepts="string" > format string for Y label
-    arg name="ymin" count="optional" accepts="int,real" > minimum value foe Y axis
-    arg name="ymax" count="optional" accepts="int,real" > maximum value for Y axis
 }
 
 widget_class("XYGraph") {
     ||
         frequency = 1;
         init() {
-            [this.x_size,
+            let x_duration_s;
+            [x_duration_s,
              this.x_format, this.y_format] = this.args;
+
+            let timeunit = x_duration_s.slice(-1);
+            let factor = {
+                "s":1,
+                "m":60,
+                "h":3600,
+                "d":86400}[timeunit];
+            if(factor == undefined){
+                this.max_data_length = Number(x_duration_s);
+                this.x_duration = undefined;
+            }else{
+                let duration = factor*Number(x_duration_s.slice(0,-1));
+                this.max_data_length = undefined;
+                this.x_duration = duration*1000;
+            }
+
 
             // Min and Max given with paths are meant to describe visible range,
             // not to clip data.
@@ -97,7 +112,6 @@ widget_class("XYGraph") {
             }
 
             this.curves_data = this.curves.map(_unused => []);
-            this.max_data_length = this.args[0];
         }
 
         dispatch(value,oldval, index) {
@@ -114,13 +128,24 @@ widget_class("XYGraph") {
             let ymax_damaged = false;
             let overflow;
 
-            if(data_length > this.max_data_length){
-                // remove first item
-                [this.xmin, overflow] = this.curves_data[index].shift();
-                data_length = data_length - 1;
+            if(this.max_data_length == undefined){
+                let peremption = time - this.x_duration;
+                let oldest = this.curves_data[index][0][0]
+                this.xmin = peremption;
+                if(oldest < peremption){
+                    // remove first item
+                    overflow = this.curves_data[index].shift()[1];
+                    data_length = data_length - 1;
+                }
             } else {
-                if(this.xmin == undefined){
-                    this.xmin = time;
+                if(data_length > this.max_data_length){
+                    // remove first item
+                    [this.xmin, overflow] = this.curves_data[index].shift();
+                    data_length = data_length - 1;
+                } else {
+                    if(this.xmin == undefined){
+                        this.xmin = time;
+                    }
                 }
             }
 
@@ -141,6 +166,7 @@ widget_class("XYGraph") {
             }
             let Yrange = this.ymax - this.ymin;
 
+            // apply margin by moving min and max to enlarge range
             let [xMargin,yMargin] = zip(this.Margins, [Xrange, Yrange]).map(([m,l]) => m*l);
             [[this.dxmin, this.dxmax],[this.dymin,this.dymax]] =
                 [[this.xmin-xMargin, this.xmax+xMargin],
@@ -163,6 +189,7 @@ widget_class("XYGraph") {
                         let px = base_point.x + xv.x + yv.x;
                         let py = base_point.y + xv.y + yv.y;
                         if(!this.fixed_y_range){
+                            // update min and max from curve data if needed
                             if(ymin_damaged && y < this.ymin) this.ymin = y;
                             if(ymax_damaged && y > this.ymax) this.ymax = y;
                         }
