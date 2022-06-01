@@ -925,20 +925,14 @@
     <path name="value" count="1+" accepts="HMI_INT,HMI_REAL">
       <xsl:text>value</xsl:text>
     </path>
-    <arg name="size" accepts="int">
-      <xsl:text>buffer size</xsl:text>
+    <arg name="xrange" accepts="int,time">
+      <xsl:text>X axis range expressed either in samples or duration.</xsl:text>
     </arg>
     <arg name="xformat" count="optional" accepts="string">
       <xsl:text>format string for X label</xsl:text>
     </arg>
     <arg name="yformat" count="optional" accepts="string">
       <xsl:text>format string for Y label</xsl:text>
-    </arg>
-    <arg name="xmin" count="optional" accepts="int,real">
-      <xsl:text>minimum value foe X axis</xsl:text>
-    </arg>
-    <arg name="xmax" count="optional" accepts="int,real">
-      <xsl:text>maximum value for X axis</xsl:text>
     </arg>
   </xsl:template>
   <xsl:template mode="document" match="@* | node()">

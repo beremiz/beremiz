@@ -601,11 +601,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             path = os.getenv("HOME")
         dirdialog = wx.DirDialog(
-            self.AppFrame, _("Choose a directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
+            self.AppFrame, _("Create or choose an empty directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
         answer = dirdialog.ShowModal()
+        newprojectpath = dirdialog.GetPath()
         dirdialog.Destroy()
         if answer == wx.ID_OK:
-            newprojectpath = dirdialog.GetPath()
             if os.path.isdir(newprojectpath):
                 if self.CheckNewProjectPath(self.ProjectPath, newprojectpath):
                     self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
@@ -1722,10 +1722,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
             for weakcallable, buffer_list in WeakCallableDict.iteritems():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
-                    if buffer_list:
-                        function(*cargs)
-                    else:
-                        function(*tuple([lst[-1] for lst in cargs]))
+                    # FIXME: apparently, despite of weak ref objects,
+                    # some dead C/C++ wx object are still reachable from here
+                    # leading to RuntimeError exception
+                    try:
+                        if buffer_list:
+                            function(*cargs)
+                        else:
+                            function(*tuple([lst[-1] for lst in cargs]))
+                    except RuntimeError:
+                        pass
 
     def GetTicktime(self):
         return self._Ticktime

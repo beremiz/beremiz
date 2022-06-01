@@ -1556,15 +1556,15 @@
 </xsl:text>
     <xsl:text>        if(typeof(init) == "function"){
 </xsl:text>
-    <xsl:text>            // try {
+    <xsl:text>            try {
 </xsl:text>
     <xsl:text>                init.call(this);
 </xsl:text>
-    <xsl:text>            // } catch(err) {
+    <xsl:text>            } catch(err) {
 </xsl:text>
-    <xsl:text>            //     console.log(err);
+    <xsl:text>                console.log(err);
 </xsl:text>
-    <xsl:text>            // }
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -7780,7 +7780,7 @@
 </xsl:text>
     <xsl:text>    activate(val) {
 </xsl:text>
-    <xsl:text>        let [active, inactive] = val ? ["none",""] : ["", "none"];
+    <xsl:text>        let [active, inactive] = val ? ["","none"] : ["none", ""];
 </xsl:text>
     <xsl:text>        if (this.active_elt)
 </xsl:text>
@@ -7865,20 +7865,14 @@
     <path name="value" count="1+" accepts="HMI_INT,HMI_REAL">
       <xsl:text>value</xsl:text>
     </path>
-    <arg name="size" accepts="int">
-      <xsl:text>buffer size</xsl:text>
+    <arg name="xrange" accepts="int,time">
+      <xsl:text>X axis range expressed either in samples or duration.</xsl:text>
     </arg>
     <arg name="xformat" count="optional" accepts="string">
       <xsl:text>format string for X label</xsl:text>
     </arg>
     <arg name="yformat" count="optional" accepts="string">
       <xsl:text>format string for Y label</xsl:text>
-    </arg>
-    <arg name="xmin" count="optional" accepts="int,real">
-      <xsl:text>minimum value foe X axis</xsl:text>
-    </arg>
-    <arg name="xmax" count="optional" accepts="int,real">
-      <xsl:text>maximum value for X axis</xsl:text>
     </arg>
   </xsl:template>
   <xsl:template match="widget[@type='XYGraph']" mode="widget_class">
