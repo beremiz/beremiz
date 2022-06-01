@@ -13,7 +13,7 @@
 //      path value="path4" index="path4" type="HMI_LOCAL";
 //  }
 //
-const "pathregex",!"'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"!;
+const "pathregex",!"'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"!;
 
 template "*", mode="parselabel"
 {
