@@ -111,7 +111,7 @@ widget_class("XYGraph") {
                 curve.setAttribute("clip-path", "url(#" + clipPath.id + ")");
             }
 
-            this.curves_data = this.curves.map(_unused => []);
+            this.curves_data = [];
         }
 
         dispatch(value,oldval, index) {
@@ -122,6 +122,9 @@ widget_class("XYGraph") {
             // data is updated only when graph is visible
             // TODO: replace with separate recording
 
+            if(this.curves_data[index] === undefined){
+                this.curves_data[index] = [];
+            }
             this.curves_data[index].push([time, value]);
             let data_length = this.curves_data[index].length;
             let ymin_damaged = false;
@@ -226,6 +229,22 @@ widget_class("XYGraph") {
     ||
 }
 
+def "func:check_curves_label_consistency" {
+    param "curve_elts";
+    param "number_to_check";
+    const "res" choose {
+        when "$curve_elts[@inkscape:label = concat('curve_', string($number_to_check))]"{
+            if "$number_to_check > 0"{
+                value "func:check_curves_label_consistency($curve_elts, $number_to_check - 1)";
+            }
+        }
+        otherwise {
+            value "concat('missing curve_', string($number_to_check))";
+        }
+    }
+    result "$res";
+}
+
 widget_defs("XYGraph") {
     labels("/x_interval_minor_mark /x_axis_line /x_interval_major_mark /x_axis_label");
     labels("/y_interval_minor_mark /y_axis_line /y_interval_major_mark /y_axis_label");
@@ -233,15 +252,15 @@ widget_defs("XYGraph") {
     |     init_specific() {
 
     // collect all curve_n labelled children
-    foreach "$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]" {
+    const "curves","$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]";
+    const "curves_error", "func:check_curves_label_consistency($curves,count($curves)-1)";
+    if "string-length($curves_error)"
+        error > XYGraph id="«@id»", label="«@inkscape:label»" : «$curves_error»
+    foreach "$curves" {
         const "label","@inkscape:label";
-        const "id","@id";
-
-        // detect non-unique names
-        if "$hmi_element/*[not($id = @id) and @inkscape:label=$label]"{
-            error > XYGraph id="«$id»", label="«$label»" : elements with data_n label must be unique.
-        }
-    |         this.curves[«substring(@inkscape:label, 7)»] = id("«@id»"); /* «@inkscape:label» */
+        const "_id","@id";
+        const "curve_num", "substring(@inkscape:label, 7)";
+    |         this.curves[«$curve_num»] = id("«@id»"); /* «@inkscape:label» */
     }
 
     |     }
