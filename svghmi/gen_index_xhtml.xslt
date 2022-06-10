@@ -5669,6 +5669,10 @@
 </xsl:text>
     <xsl:text>         this.shift |= this.caps;
 </xsl:text>
+    <xsl:text>         if(this.virgin)
+</xsl:text>
+    <xsl:text>             this.editstr = ""; 
+</xsl:text>
     <xsl:text>         this.editstr += syms[this.shift?syms.length-1:0];
 </xsl:text>
     <xsl:text>         this.shift = false;
@@ -5805,7 +5809,9 @@
 </xsl:text>
     <xsl:text>         this.result_callback_obj = callback_obj;
 </xsl:text>
-    <xsl:text>         this.Info_elt.textContent = info;
+    <xsl:text>         if(this.Info_elt)
+</xsl:text>
+    <xsl:text>             this.Info_elt.textContent = info;
 </xsl:text>
     <xsl:text>         this.shift = false;
 </xsl:text>
@@ -5817,6 +5823,8 @@
 </xsl:text>
     <xsl:text>         this.update();
 </xsl:text>
+    <xsl:text>         this.virgin = true;
+</xsl:text>
     <xsl:text>     }
 </xsl:text>
     <xsl:text>
@@ -5824,6 +5832,8 @@
     <xsl:text>     update() {
 </xsl:text>
     <xsl:text>         if(this.editstr != this._editstr){
+</xsl:text>
+    <xsl:text>             this.virgin = false;
 </xsl:text>
     <xsl:text>             this._editstr = this.editstr;
 </xsl:text>
@@ -5857,13 +5867,13 @@
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>Esc Enter BackSpace Keys Info Value</xsl:text>
+        <xsl:text>Esc Enter BackSpace Keys Value</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>Sign Space NumDot</xsl:text>
+        <xsl:text>Sign Space NumDot Info</xsl:text>
       </xsl:with-param>
       <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
@@ -5911,6 +5921,8 @@
     <xsl:text>, </xsl:text>
     <xsl:value-of select="$g/@y"/>
     <xsl:text>],
+</xsl:text>
+    <xsl:text>    virgin: false,
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='List']" mode="widget_desc">
@@ -8044,7 +8056,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.curves_data = this.curves.map(_unused =&gt; []);
+    <xsl:text>        this.curves_data = [];
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -8065,6 +8077,12 @@
     <xsl:text>        // TODO: replace with separate recording
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.curves_data[index] === undefined){
+</xsl:text>
+    <xsl:text>            this.curves_data[index] = [];
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.curves_data[index].push([time, value]);
 </xsl:text>
@@ -8271,6 +8289,23 @@
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <func:function name="func:check_curves_label_consistency">
+    <xsl:param name="curve_elts"/>
+    <xsl:param name="number_to_check"/>
+    <xsl:variable name="res">
+      <xsl:choose>
+        <xsl:when test="$curve_elts[@inkscape:label = concat('curve_', string($number_to_check))]">
+          <xsl:if test="$number_to_check &gt; 0">
+            <xsl:value-of select="func:check_curves_label_consistency($curve_elts, $number_to_check - 1)"/>
+          </xsl:if>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat('missing curve_', string($number_to_check))"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <func:result select="$res"/>
+  </func:function>
   <xsl:template match="widget[@type='XYGraph']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
     <xsl:call-template name="defs_by_labels">
@@ -8287,20 +8322,24 @@
     </xsl:call-template>
     <xsl:text>    init_specific() {
 </xsl:text>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]">
+    <xsl:variable name="curves" select="$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]"/>
+    <xsl:variable name="curves_error" select="func:check_curves_label_consistency($curves,count($curves)-1)"/>
+    <xsl:if test="string-length($curves_error)">
+      <xsl:message terminate="yes">
+        <xsl:text>XYGraph id="</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>", label="</xsl:text>
+        <xsl:value-of select="@inkscape:label"/>
+        <xsl:text>" : </xsl:text>
+        <xsl:value-of select="$curves_error"/>
+      </xsl:message>
+    </xsl:if>
+    <xsl:for-each select="$curves">
       <xsl:variable name="label" select="@inkscape:label"/>
-      <xsl:variable name="id" select="@id"/>
-      <xsl:if test="$hmi_element/*[not($id = @id) and @inkscape:label=$label]">
-        <xsl:message terminate="yes">
-          <xsl:text>XYGraph id="</xsl:text>
-          <xsl:value-of select="$id"/>
-          <xsl:text>", label="</xsl:text>
-          <xsl:value-of select="$label"/>
-          <xsl:text>" : elements with data_n label must be unique.</xsl:text>
-        </xsl:message>
-      </xsl:if>
+      <xsl:variable name="_id" select="@id"/>
+      <xsl:variable name="curve_num" select="substring(@inkscape:label, 7)"/>
       <xsl:text>        this.curves[</xsl:text>
-      <xsl:value-of select="substring(@inkscape:label, 7)"/>
+      <xsl:value-of select="$curve_num"/>
       <xsl:text>] = id("</xsl:text>
       <xsl:value-of select="@id"/>
       <xsl:text>"); /* </xsl:text>

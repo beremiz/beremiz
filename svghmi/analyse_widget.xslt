@@ -935,6 +935,23 @@
       <xsl:text>format string for Y label</xsl:text>
     </arg>
   </xsl:template>
+  <func:function name="func:check_curves_label_consistency">
+    <xsl:param name="curve_elts"/>
+    <xsl:param name="number_to_check"/>
+    <xsl:variable name="res">
+      <xsl:choose>
+        <xsl:when test="$curve_elts[@inkscape:label = concat('curve_', string($number_to_check))]">
+          <xsl:if test="$number_to_check &gt; 0">
+            <xsl:value-of select="func:check_curves_label_consistency($curve_elts, $number_to_check - 1)"/>
+          </xsl:if>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat('missing curve_', string($number_to_check))"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <func:result select="$res"/>
+  </func:function>
   <xsl:template mode="document" match="@* | node()">
     <xsl:copy>
       <xsl:apply-templates mode="document" select="@* | node()"/>
