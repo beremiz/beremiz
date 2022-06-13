@@ -202,6 +202,17 @@ if(has_watchdog){
     });
 }
 
+
+function fading_page_switch(...args){
+    svg_root.classList.add("fade-out-page");
+
+    setTimeout(function(){
+        switch_page(...args);
+        svg_root.classList.remove("fade-out-page");
+    },10);
+}
+document.body.style.backgroundColor = "black";
+
 // subscribe to per instance current page hmi variable
 // PLC must prefix page name with "!" for page switch to happen
 subscribers(current_page_var_index).add({
@@ -209,7 +220,7 @@ subscribers(current_page_var_index).add({
     indexes: [current_page_var_index],
     new_hmi_value: function(index, value, oldval) {
         if(value.startsWith("!"))
-            switch_page(value.slice(1));
+            fading_page_switch(value.slice(1));
     }
 });
 
