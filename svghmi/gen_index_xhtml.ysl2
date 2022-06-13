@@ -34,6 +34,7 @@ istylesheet
             xmlns:declarations="declarations"
             xmlns:definitions="definitions"
             xmlns:epilogue="epilogue"
+            xmlns:cssdefs="cssdefs"
 
             /* Namespace to invoke python code */
             xmlns:ns="beremiz"
@@ -74,6 +75,7 @@ istylesheet
             head {
                 style type="text/css" media="screen" {
                     value "ns:GetFonts()";
+                    apply "document('')/*/cssdefs:*";
                 }
             }
             // prevents user selection by mouse click / touch and drag
