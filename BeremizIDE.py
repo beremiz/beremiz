@@ -28,9 +28,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import os
 import sys
-import tempfile
 import shutil
-import random
 import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
@@ -47,9 +45,8 @@ from editors.Viewer import Viewer
 from editors.TextViewer import TextViewer
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
-from util import paths as paths
+from util.paths import Bpath
 from util.MiniTextControler import MiniTextControler
-from util.ProcessLogger import ProcessLogger
 from util.BitmapLibrary import GetBitmap
 from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
@@ -84,12 +81,8 @@ from IDEFrame import \
     EncodeFileSystemPath, \
     DecodeFileSystemPath
 
+from LocalRuntimeMixin import LocalRuntimeMixin
 
-beremiz_dir = paths.AbsDir(__file__)
-
-
-def Bpath(*args):
-    return os.path.join(beremiz_dir, *args)
 
 def AppendMenu(parent, help, id, kind, text):
     return parent.Append(wx.MenuItem(helpString=help, id=id, kind=kind, text=text))
@@ -240,7 +233,7 @@ class LogPseudoFile(object):
 ID_FILEMENURECENTPROJECTS = wx.NewId()
 
 
-class Beremiz(IDEFrame):
+class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def _init_utils(self):
         self.ConfNodeMenu = wx.Menu(title='')
@@ -451,16 +444,14 @@ class Beremiz(IDEFrame):
             os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
 
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True, logf=None):
+        LocalRuntimeMixin.__init__(self)
+
         # Add beremiz's icon in top left corner of the frame
         self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
         self.__init_execute_path()
 
         IDEFrame.__init__(self, parent, debug)
         self.Log = LogPseudoFile(self.LogConsole, self.SelectTab, logf)
-
-        self.local_runtime = None
-        self.runtime_port = None
-        self.local_runtime_tmpdir = None
 
         self.LastPanelSelected = None
 
@@ -524,37 +515,6 @@ class Beremiz(IDEFrame):
             self.SetTitle("%s - %s" % (name, projectname))
         else:
             self.SetTitle(name)
-
-    def StartLocalRuntime(self, taskbaricon=True):
-        if (self.local_runtime is None) or (self.local_runtime.exitcode is not None):
-            # create temporary directory for runtime working directory
-            self.local_runtime_tmpdir = tempfile.mkdtemp()
-            # choose an arbitrary random port for runtime
-            self.runtime_port = int(random.random() * 1000) + 61131
-            self.Log.write(_("Starting local runtime...\n"))
-            # launch local runtime
-            self.local_runtime = ProcessLogger(
-                self.Log,
-                "\"%s\" \"%s\" -p %s -i localhost %s %s" % (
-                    sys.executable,
-                    Bpath("Beremiz_service.py"),
-                    self.runtime_port,
-                    {False: "-x 0", True: "-x 1"}[taskbaricon],
-                    self.local_runtime_tmpdir),
-                no_gui=False,
-                timeout=500, keyword=self.local_runtime_tmpdir,
-                cwd=self.local_runtime_tmpdir)
-            self.local_runtime.spin()
-        return self.runtime_port
-
-    def KillLocalRuntime(self):
-        if self.local_runtime is not None:
-            # shutdown local runtime
-            self.local_runtime.kill(gently=False)
-            # clear temp dir
-            shutil.rmtree(self.local_runtime_tmpdir)
-
-            self.local_runtime = None
 
     def OnOpenWidgetInspector(self, evt):
         # Activate the widget inspection tool

@@ -1526,7 +1526,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # clear previous_plcstate to restore status
         # in UpdateMethodsFromPLCStatus()
         self.previous_plcstate = ""
-        self.AppFrame.ProgressStatusBar.Hide()
+        if self.AppFrame is not None:
+            self.AppFrame.ProgressStatusBar.Hide()
         self.UpdateMethodsFromPLCStatus()
 
     def PullPLCStatusProc(self, event):
@@ -1785,13 +1786,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         Start PLC
         """
+        success = False
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC()
             self.logger.write(_("Starting PLC\n"))
             self._connect_debug()
+            success = True
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        return success
 
     def _Stop(self):
         """
@@ -1804,6 +1808,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # self.KillDebugThread()
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+
+    def StartLocalRuntime(self):
+        if self.AppFrame:
+            return self.AppFrame.StartLocalRuntime()
 
     def _SetConnector(self, connector, update_status=True):
         self._connector = connector
@@ -1821,6 +1829,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     def _Connect(self):
+        success = False
         # don't accept re-connetion if already connected
         if self._connector is not None:
             self.logger.write_error(
@@ -1882,6 +1891,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 else:
                     self.logger.write_warning(
                         _("Debug does not match PLC - stop/transfert/start to re-enable\n"))
+            success = True
+        return success
 
     def CompareLocalAndRemotePLC(self):
         if self._connector is None:
@@ -1905,6 +1916,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._SetConnector(None)
 
     def _Transfer(self):
+        success = False
         if self.IsPLCStarted():
             dialog = wx.MessageDialog(
                 self.AppFrame,
@@ -1967,16 +1979,19 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 if self.GetIECProgramsAndVariables():
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
-                    self.AppFrame.CloseObsoleteDebugTabs()
-                    self.AppFrame.RefreshPouInstanceVariablesPanel()
-                    self.AppFrame.LogViewer.ResetLogCounters()
+                    if self.AppFrame is not None:
+                        self.AppFrame.CloseObsoleteDebugTabs()
+                        self.AppFrame.RefreshPouInstanceVariablesPanel()
+                        self.AppFrame.LogViewer.ResetLogCounters()
                     self.logger.write(_("PLC installed successfully.\n"))
+                    success = True
                 else:
                     self.logger.write_error(_("Missing debug data\n"))
             else:
                 self.logger.write_error(_("PLC couldn't be installed\n"))
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        return success
 
     def _Repair(self):
         dialog = wx.MessageDialog(
