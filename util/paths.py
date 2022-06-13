@@ -55,8 +55,8 @@ def ThirdPartyPath(name):
     """
     return os.path.join(AbsParentDir(__file__, 2), name)
 
-def Bpath(name):
+def Bpath(*names):
     """
     Return path of files in Beremiz project
     """
-    return os.path.join(AbsParentDir(__file__, 1), name)
+    return os.path.join(AbsParentDir(__file__, 1), *names)
