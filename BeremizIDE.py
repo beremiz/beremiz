@@ -444,7 +444,6 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             os.environ["PATH"] = os.getcwd()+';'+os.environ["PATH"]
 
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True, logf=None):
-        LocalRuntimeMixin.__init__(self)
 
         # Add beremiz's icon in top left corner of the frame
         self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
@@ -452,6 +451,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
         IDEFrame.__init__(self, parent, debug)
         self.Log = LogPseudoFile(self.LogConsole, self.SelectTab, logf)
+
+        LocalRuntimeMixin.__init__(self, self.Log)
 
         self.LastPanelSelected = None
 
