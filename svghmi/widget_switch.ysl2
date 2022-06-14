@@ -23,12 +23,29 @@ widget_desc("Switch") {
 widget_class("Switch")
     ||
         frequency = 5;
+        current_value = undefined;
+
+        init(){
+            animate();
+        }
+
         dispatch(value) {
+            this.current_value = value;
+            this.request_animate();
+        }
+
+        animate(){
             for(let choice of this.choices){
-                if(value != choice.value){
-                    choice.elt.setAttribute("style", "display:none");
+                if(this.current_value != choice.value){
+                    if(choice.parent == undefined){
+                        choice.parent = choice.elt.parentElement;
+                        choice.parent.removeChild(choice.elt);
+                    }
                 } else {
-                    choice.elt.setAttribute("style", choice.style);
+                    if(choice.parent != undefined){
+                        choice.parent.appendChild(choice.elt);
+                        choice.parent = undefined;
+                    }
                 }
             }
         }
@@ -38,6 +55,7 @@ widget_defs("Switch") {
     |     choices: [
     const "regex",!"'^(\"[^\"].*\"|\-?[0-9]+|false|true)(#.*)?$'"!;
 
+    // this prevents matching element in sub-widgets
     const "subelts", "$result_widgets[@id = $hmi_element/@id]//*";
     const "subwidgets", "$subelts//*[@id = $hmi_widgets/@id]";
     const "accepted", "$subelts[not(ancestor-or-self::*/@id = $subwidgets/@id)]";
@@ -46,8 +64,7 @@ widget_defs("Switch") {
         const "literal", "regexp:match(@inkscape:label,$regex)[2]";
     |         {
     |             elt:id("«@id»"),
-                  // TODO : use style.display = "none" to hide element
-    |             style:"«@style»",
+    |             parent:undefined,
     |             value:«$literal»
     |         }`if "position()!=last()" > ,`
     }
