@@ -203,13 +203,14 @@ if(has_watchdog){
 }
 
 
+var page_fading_in_progress = false;
 function fading_page_switch(...args){
     svg_root.classList.add("fade-out-page");
+    page_fading_in_progress = true;
 
     setTimeout(function(){
         switch_page(...args);
-        svg_root.classList.remove("fade-out-page");
-    },10);
+    },1);
 }
 document.body.style.backgroundColor = "black";
 
@@ -513,6 +514,9 @@ function switch_visible_page(page_name) {
     }
 
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+    if(page_fading_in_progress)
+        svg_root.classList.remove("fade-out-page");
+        page_fading_in_progress = false;
     current_visible_page = page_name;
 };
 
