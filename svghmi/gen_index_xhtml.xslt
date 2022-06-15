@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:debug="debug" xmlns:preamble="preamble" xmlns:declarations="declarations" xmlns:definitions="definitions" xmlns:epilogue="epilogue" xmlns:cssdefs="cssdefs" xmlns:ns="beremiz" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn debug preamble epilogue declarations definitions">
   <xsl:output cdata-section-elements="xhtml:script" method="xml"/>
   <xsl:variable name="svg" select="/svg:svg"/>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
@@ -5442,13 +5442,11 @@
 </xsl:text>
     <xsl:text>                   would be an HMI_TREE index and then jump to a relative page not hard-coded in advance */
 </xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>                if(!that.disabled) {
 </xsl:text>
     <xsl:text>                    const index = that.indexes.length &gt; 0 ? that.indexes[0] + that.offset : undefined;
 </xsl:text>
-    <xsl:text>                    switch_page(name, index);
+    <xsl:text>                    fading_page_switch(name, index);
 </xsl:text>
     <xsl:text>                }
 </xsl:text>
@@ -5578,6 +5576,37 @@
         </xsl:message>
       </xsl:if>
     </xsl:if>
+  </xsl:template>
+  <cssdefs:jump/>
+  <xsl:template match="cssdefs:jump">
+    <xsl:text>
+</xsl:text>
+    <xsl:text>/* </xsl:text>
+    <xsl:value-of select="local-name()"/>
+    <xsl:text> */
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>.fade-out-page {
+</xsl:text>
+    <xsl:text>    animation: fadeOut 0.6s both;
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>@keyframes fadeOut {
+</xsl:text>
+    <xsl:text>    0% { opacity: 1; }
+</xsl:text>
+    <xsl:text>    100% { opacity: 0; }
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>
+</xsl:text>
   </xsl:template>
   <declarations:jump/>
   <xsl:template match="declarations:jump">
@@ -7590,17 +7619,51 @@
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
+    <xsl:text>    current_value = undefined;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init(){
+</xsl:text>
+    <xsl:text>        this.animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    dispatch(value) {
+</xsl:text>
+    <xsl:text>        this.current_value = value;
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate(){
 </xsl:text>
     <xsl:text>        for(let choice of this.choices){
 </xsl:text>
-    <xsl:text>            if(value != choice.value){
+    <xsl:text>            if(this.current_value != choice.value){
 </xsl:text>
-    <xsl:text>                choice.elt.setAttribute("style", "display:none");
+    <xsl:text>                if(choice.parent == undefined){
+</xsl:text>
+    <xsl:text>                    choice.parent = choice.elt.parentElement;
+</xsl:text>
+    <xsl:text>                    choice.parent.removeChild(choice.elt);
+</xsl:text>
+    <xsl:text>                }
 </xsl:text>
     <xsl:text>            } else {
 </xsl:text>
-    <xsl:text>                choice.elt.setAttribute("style", choice.style);
+    <xsl:text>                if(choice.parent != undefined){
+</xsl:text>
+    <xsl:text>                    choice.parent.appendChild(choice.elt);
+</xsl:text>
+    <xsl:text>                    choice.parent = undefined;
+</xsl:text>
+    <xsl:text>                }
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -7627,9 +7690,7 @@
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
-      <xsl:text>            style:"</xsl:text>
-      <xsl:value-of select="@style"/>
-      <xsl:text>",
+      <xsl:text>            parent:undefined,
 </xsl:text>
       <xsl:text>            value:</xsl:text>
       <xsl:value-of select="$literal"/>
@@ -9179,6 +9240,7 @@
       <head>
         <style type="text/css" media="screen">
           <xsl:value-of select="ns:GetFonts()"/>
+          <xsl:apply-templates select="document('')/*/cssdefs:*"/>
         </style>
       </head>
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
@@ -10614,6 +10676,30 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var page_fading_in_progress = false;
+</xsl:text>
+          <xsl:text>function fading_page_switch(...args){
+</xsl:text>
+          <xsl:text>    svg_root.classList.add("fade-out-page");
+</xsl:text>
+          <xsl:text>    page_fading_in_progress = true;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    setTimeout(function(){
+</xsl:text>
+          <xsl:text>        switch_page(...args);
+</xsl:text>
+          <xsl:text>    },1);
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>document.body.style.backgroundColor = "black";
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>// subscribe to per instance current page hmi variable
 </xsl:text>
           <xsl:text>// PLC must prefix page name with "!" for page switch to happen
@@ -10628,7 +10714,7 @@
 </xsl:text>
           <xsl:text>        if(value.startsWith("!"))
 </xsl:text>
-          <xsl:text>            switch_page(value.slice(1));
+          <xsl:text>            fading_page_switch(value.slice(1));
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
@@ -11213,6 +11299,12 @@
           <xsl:text>
 </xsl:text>
           <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+</xsl:text>
+          <xsl:text>    if(page_fading_in_progress)
+</xsl:text>
+          <xsl:text>        svg_root.classList.remove("fade-out-page");
+</xsl:text>
+          <xsl:text>        page_fading_in_progress = false;
 </xsl:text>
           <xsl:text>    current_visible_page = page_name;
 </xsl:text>
