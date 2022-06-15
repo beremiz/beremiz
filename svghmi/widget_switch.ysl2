@@ -26,7 +26,7 @@ widget_class("Switch")
         current_value = undefined;
 
         init(){
-            animate();
+            this.animate();
         }
 
         dispatch(value) {
