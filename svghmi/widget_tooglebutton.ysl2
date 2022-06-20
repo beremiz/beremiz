@@ -37,22 +37,51 @@ widget_class("ToggleButton") {
             this.request_animate();
         }
 
-        activate(val) {
-            let [active, inactive] = val ? ["","none"] : ["none", ""];
-            if (this.active_elt)
-                this.active_elt.style.display = active;
-            if (this.inactive_elt)
-                this.inactive_elt.style.display = inactive;
+        set_state(active) {
+            if (this.active_elt){
+                if(active==undefined || !active){
+                    if(this.active_elt_parent == undefined){
+                        this.active_elt_parent = this.active_elt.parentElement;
+                        this.active_elt_parent.removeChild(this.active_elt);
+                    }
+                }else{
+                    if(this.active_elt_parent != undefined){
+                        this.active_elt_parent.insertBefore(this.active_elt, this.active_elt_sibling);
+                        this.active_elt_parent = undefined;
+                    }
+                }
+            }
+            if (this.inactive_elt){
+                if(active==undefined || active){
+                    if(this.inactive_elt_parent == undefined){
+                        this.inactive_elt_parent = this.inactive_elt.parentElement;
+                        this.inactive_elt_parent.removeChild(this.inactive_elt);
+                    }
+                }else{
+                    if(this.inactive_elt_parent != undefined){
+                        this.inactive_elt_parent.insertBefore(this.inactive_elt, this.inactive_elt_sibling);
+                        this.inactive_elt_parent = undefined;
+                    }
+                }
+            }
         }
 
         animate(){
             // redraw toggle button on screen refresh
-            this.activate(this.state);
+            this.set_state(this.state);
         }
 
         init() {
-            this.activate(false);
             this.element.onclick = (evt) => this.on_click(evt);
+            this.active_elt_parent = undefined;
+            this.active_elt_sibling = this.active_elt.nextSibling;
+            this.inactive_elt_parent = undefined;
+            this.inactive_elt_sibling = this.inactive_elt.nextSibling;
+            if(this.inactive_elt_sibling == this.active_elt)
+                this.inactive_elt_sibling = this.inactive_elt_sibling.nextSibling;
+            if(this.active_elt_sibling == this.inactive_elt)
+                this.active_elt_sibling = this.active_elt_sibling.nextSibling;
+            this.set_state(undefined);
         }
     ||
 }
@@ -60,3 +89,4 @@ widget_class("ToggleButton") {
 widget_defs("ToggleButton") {
     optional_labels("active inactive");
 }
+
