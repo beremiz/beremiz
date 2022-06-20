@@ -43,7 +43,7 @@ widget_class("Switch")
                     }
                 } else {
                     if(choice.parent != undefined){
-                        choice.parent.appendChild(choice.elt);
+                        choice.parent.insertBefore(choice.elt,choice.sibling);
                         choice.parent = undefined;
                     }
                 }
@@ -60,11 +60,21 @@ widget_defs("Switch") {
     const "subwidgets", "$subelts//*[@id = $hmi_widgets/@id]";
     const "accepted", "$subelts[not(ancestor-or-self::*/@id = $subwidgets/@id)]";
 
-    foreach "$accepted[regexp:test(@inkscape:label,$regex)]" {
+    const "choices", "$accepted[regexp:test(@inkscape:label,$regex)]";
+    foreach "$choices" {
         const "literal", "regexp:match(@inkscape:label,$regex)[2]";
+        const "sibling", "following-sibling::*[not(@id = $choices/@id)][position()=1]";
     |         {
     |             elt:id("«@id»"),
     |             parent:undefined,
+    choose {
+        when "count($sibling)=0" {
+    |             sibling:null,
+        }
+        otherwise {
+    |             sibling:id("«$sibling/@id»"),
+        }
+    }
     |             value:«$literal»
     |         }`if "position()!=last()" > ,`
     }
