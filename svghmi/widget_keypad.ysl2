@@ -118,11 +118,11 @@ widget_class("Keypad")
              }
              if(this.Shift_sub && this.shift != this._shift){
                  this._shift = this.shift;
-                 (this.shift?this.activate_activable:this.inactivate_activable)(this.Shift_sub);
+                 set_activation_state(this.Shift_sub, this.shift);
              }
              if(this.CapsLock_sub && this.caps != this._caps){
                  this._caps = this.caps;
-                 (this.caps?this.activate_activable:this.inactivate_activable)(this.CapsLock_sub);
+                 set_activation_state(this.CapsLock_sub, this.caps);
              }
          }
     ||
