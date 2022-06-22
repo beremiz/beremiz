@@ -1458,6 +1458,60 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>function _hide(elt, placeholder){
+</xsl:text>
+    <xsl:text>    if(elt.parentNode != null)
+</xsl:text>
+    <xsl:text>        placeholder.parentNode.removeChild(elt);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>function _show(elt, placeholder){
+</xsl:text>
+    <xsl:text>    placeholder.parentNode.insertBefore(elt, placeholder);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function set_activation_state(eltsub, state){
+</xsl:text>
+    <xsl:text>    if(eltsub.active_elt_placeholder == undefined){
+</xsl:text>
+    <xsl:text>        eltsub.active_elt_placeholder = document.createComment("");
+</xsl:text>
+    <xsl:text>        eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
+</xsl:text>
+    <xsl:text>        eltsub.inactive_elt_placeholder = document.createComment("");
+</xsl:text>
+    <xsl:text>        eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>    (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
+</xsl:text>
+    <xsl:text>    ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function activate_activable(eltsub) {
+</xsl:text>
+    <xsl:text>    set_activation_state(eltsub, true);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>function inactivate_activable(eltsub) {
+</xsl:text>
+    <xsl:text>    set_activation_state(eltsub, false);
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
     <xsl:text>    offset = 0;
@@ -1950,27 +2004,13 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    activate_activable(eltsub) {
+    <xsl:text>    set_activation_state(state){
 </xsl:text>
-    <xsl:text>        eltsub.inactive.style.display = "none";
-</xsl:text>
-    <xsl:text>        eltsub.active.style.display = "";
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    inactivate_activable(eltsub) {
-</xsl:text>
-    <xsl:text>        eltsub.active.style.display = "none";
-</xsl:text>
-    <xsl:text>        eltsub.inactive.style.display = "";
+    <xsl:text>        set_activation_state(this.activable_sub, state);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2088,7 +2128,7 @@
                 <xsl:otherwise>
                   <xsl:text>        "</xsl:text>
                   <xsl:value-of select="$subname"/>
-                  <xsl:text>": id("</xsl:text>
+                  <xsl:text>_elt": id("</xsl:text>
                   <xsl:value-of select="$subelt/@id"/>
                   <xsl:text>")</xsl:text>
                   <xsl:if test="position()!=last()">
@@ -2605,25 +2645,7 @@
     <xsl:apply-templates mode="actions" select="$fsm"/>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>        if (this.active_elt &amp;&amp; this.inactive_elt) {
-</xsl:text>
-    <xsl:for-each select="str:split('active inactive')">
-      <xsl:text>            if(this.display == "</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>")
-</xsl:text>
-      <xsl:text>                this.</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>_elt.style.display = "";
-</xsl:text>
-      <xsl:text>            else
-</xsl:text>
-      <xsl:text>                this.</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>_elt.style.display = "none";
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>        }
+    <xsl:text>        this.set_activation_state(this.display == "active");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2632,6 +2654,8 @@
     <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+</xsl:text>
+    <xsl:text>        this.set_activation_state(undefined);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2652,13 +2676,16 @@
   </xsl:template>
   <xsl:template match="widget[@type='Button']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:text>    activable_sub:{
+</xsl:text>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>active inactive</xsl:text>
+        <xsl:text>/active /inactive</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+    <xsl:text>    }
+</xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='PushButton']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -2676,13 +2703,16 @@
   </xsl:template>
   <xsl:template match="widget[@type='PushButton']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:text>    activable_sub:{
+</xsl:text>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>active inactive</xsl:text>
+        <xsl:text>/active /inactive</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+    <xsl:text>    }
+</xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='CircularBar']" mode="widget_desc">
     <type>
@@ -5874,7 +5904,7 @@
 </xsl:text>
     <xsl:text>             this._shift = this.shift;
 </xsl:text>
-    <xsl:text>             (this.shift?this.activate_activable:this.inactivate_activable)(this.Shift_sub);
+    <xsl:text>             set_activation_state(this.Shift_sub, this.shift);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -5882,7 +5912,7 @@
 </xsl:text>
     <xsl:text>             this._caps = this.caps;
 </xsl:text>
-    <xsl:text>             (this.caps?this.activate_activable:this.inactivate_activable)(this.CapsLock_sub);
+    <xsl:text>             set_activation_state(this.CapsLock_sub, this.caps);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -7659,7 +7689,7 @@
 </xsl:text>
     <xsl:text>                if(choice.parent != undefined){
 </xsl:text>
-    <xsl:text>                    choice.parent.appendChild(choice.elt);
+    <xsl:text>                    choice.parent.insertBefore(choice.elt,choice.sibling);
 </xsl:text>
     <xsl:text>                    choice.parent = undefined;
 </xsl:text>
@@ -7682,8 +7712,10 @@
     <xsl:variable name="subelts" select="$result_widgets[@id = $hmi_element/@id]//*"/>
     <xsl:variable name="subwidgets" select="$subelts//*[@id = $hmi_widgets/@id]"/>
     <xsl:variable name="accepted" select="$subelts[not(ancestor-or-self::*/@id = $subwidgets/@id)]"/>
-    <xsl:for-each select="$accepted[regexp:test(@inkscape:label,$regex)]">
+    <xsl:variable name="choices" select="$accepted[regexp:test(@inkscape:label,$regex)]"/>
+    <xsl:for-each select="$choices">
       <xsl:variable name="literal" select="regexp:match(@inkscape:label,$regex)[2]"/>
+      <xsl:variable name="sibling" select="following-sibling::*[not(@id = $choices/@id)][position()=1]"/>
       <xsl:text>        {
 </xsl:text>
       <xsl:text>            elt:id("</xsl:text>
@@ -7692,6 +7724,18 @@
 </xsl:text>
       <xsl:text>            parent:undefined,
 </xsl:text>
+      <xsl:choose>
+        <xsl:when test="count($sibling)=0">
+          <xsl:text>            sibling:null,
+</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>            sibling:id("</xsl:text>
+          <xsl:value-of select="$sibling/@id"/>
+          <xsl:text>"),
+</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
       <xsl:text>            value:</xsl:text>
       <xsl:value-of select="$literal"/>
       <xsl:text>
@@ -7851,27 +7895,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    activate(val) {
-</xsl:text>
-    <xsl:text>        let [active, inactive] = val ? ["","none"] : ["none", ""];
-</xsl:text>
-    <xsl:text>        if (this.active_elt)
-</xsl:text>
-    <xsl:text>            this.active_elt.style.display = active;
-</xsl:text>
-    <xsl:text>        if (this.inactive_elt)
-</xsl:text>
-    <xsl:text>            this.inactive_elt.style.display = inactive;
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>    animate(){
 </xsl:text>
     <xsl:text>        // redraw toggle button on screen refresh
 </xsl:text>
-    <xsl:text>        this.activate(this.state);
+    <xsl:text>        this.set_activation_state(this.state);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -7879,9 +7907,9 @@
 </xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.activate(false);
-</xsl:text>
     <xsl:text>        this.element.onclick = (evt) =&gt; this.on_click(evt);
+</xsl:text>
+    <xsl:text>        this.set_activation_state(undefined);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -7890,13 +7918,16 @@
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:text>    activable_sub:{
+</xsl:text>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
-        <xsl:text>active inactive</xsl:text>
+        <xsl:text>/active /inactive</xsl:text>
       </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'no'"/>
     </xsl:call-template>
+    <xsl:text>    }
+</xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='XYGraph']" mode="widget_desc">
     <type>

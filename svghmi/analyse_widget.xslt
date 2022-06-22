@@ -263,25 +263,7 @@
     <xsl:apply-templates mode="actions" select="$fsm"/>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>        if (this.active_elt &amp;&amp; this.inactive_elt) {
-</xsl:text>
-    <xsl:for-each select="str:split('active inactive')">
-      <xsl:text>            if(this.display == "</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>")
-</xsl:text>
-      <xsl:text>                this.</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>_elt.style.display = "";
-</xsl:text>
-      <xsl:text>            else
-</xsl:text>
-      <xsl:text>                this.</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>_elt.style.display = "none";
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>        }
+    <xsl:text>        this.set_activation_state(this.display == "active");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -290,6 +272,8 @@
     <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+</xsl:text>
+    <xsl:text>        this.set_activation_state(undefined);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
