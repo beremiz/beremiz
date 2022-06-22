@@ -14,6 +14,13 @@ decl optional_labels(*ptr) alias - {
     }
 };
 
+decl activable() alias - {
+    |     activable_sub:{
+    labels("/active /inactive") {
+        content;
+    }
+    |     }
+};
 decl activable_labels(*ptr) alias - {
     optional_labels(*ptr) {
         with "subelements","'active inactive'";
@@ -164,6 +171,33 @@ emit "preamble:local-variable-indexes" {
 emit "preamble:widget-base-class" {
     ||
     var pending_widget_animates = [];
+
+    function _hide(elt, placeholder){
+        if(elt.parentNode != null)
+            placeholder.parentNode.removeChild(elt);
+    }
+    function _show(elt, placeholder){
+        placeholder.parentNode.insertBefore(elt, placeholder);
+    }
+
+    function set_activation_state(eltsub, state){
+        if(eltsub.active_elt_placeholder == undefined){
+            eltsub.active_elt_placeholder = document.createComment("");
+            eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
+            eltsub.inactive_elt_placeholder = document.createComment("");
+            eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+        }
+        (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
+        ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+    }
+
+    function activate_activable(eltsub) {
+        set_activation_state(eltsub, true);
+    }
+
+    function inactivate_activable(eltsub) {
+        set_activation_state(eltsub, false);
+    }
 
     class Widget {
         offset = 0;
@@ -411,17 +445,10 @@ emit "preamble:widget-base-class" {
                 this.pending_animate = true;
                 requestHMIAnimation();
             }
-
         }
 
-        activate_activable(eltsub) {
-            eltsub.inactive.style.display = "none";
-            eltsub.active.style.display = "";
-        }
-
-        inactivate_activable(eltsub) {
-            eltsub.active.style.display = "none";
-            eltsub.inactive.style.display = "";
+        set_activation_state(state){
+            set_activation_state(this.activable_sub, state);
         }
     }
     ||
@@ -489,7 +516,7 @@ function "defs_by_labels" {
                 |         /* missing «$name»/«$subname» element */
                             }
                             otherwise {
-                |         "«$subname»": id("«$subelt/@id»")`if "position()!=last()" > ,`
+                |         "«$subname»_elt": id("«$subelt/@id»")`if "position()!=last()" > ,`
                             }
                         }
                     }
