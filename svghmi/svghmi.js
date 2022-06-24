@@ -229,8 +229,8 @@ function svg_text_to_multiline(elt) {
     return(Array.prototype.map.call(elt.children, x=>x.textContent).join("\\\\n")); 
 }
 
-function multiline_to_svg_text(elt, str) {
-    str.split('\\\\n').map((line,i) => {elt.children[i].textContent = line;});
+function multiline_to_svg_text(elt, str, blank) {
+    str.split('\\\\n').map((line,i) => {elt.children[i].textContent = blank?"":line;});
 }
 
 function switch_langnum(langnum) {
