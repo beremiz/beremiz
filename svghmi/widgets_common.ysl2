@@ -14,9 +14,16 @@ decl optional_labels(*ptr) alias - {
     }
 };
 
+decl warning_labels(*ptr) alias - {
+    labels(*ptr){
+        with "mandatory","'warn'";
+        content;
+    }
+};
+
 decl activable() alias - {
     |     activable_sub:{
-    labels("/active /inactive") {
+    warning_labels("/active /inactive") {
         content;
     }
     |     }
@@ -181,14 +188,20 @@ emit "preamble:widget-base-class" {
     }
 
     function set_activation_state(eltsub, state){
-        if(eltsub.active_elt_placeholder == undefined){
-            eltsub.active_elt_placeholder = document.createComment("");
-            eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
-            eltsub.inactive_elt_placeholder = document.createComment("");
-            eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+        if(eltsub.active_elt != undefined){
+            if(eltsub.active_elt_placeholder == undefined){
+                eltsub.active_elt_placeholder = document.createComment("");
+                eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
+            }
+            (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
         }
-        (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
-        ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+        if(eltsub.inactive_elt != undefined){
+            if(eltsub.inactive_elt_placeholder == undefined){
+                eltsub.inactive_elt_placeholder = document.createComment("");
+                eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+            }
+            ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+        }
     }
 
     function activate_activable(eltsub) {
@@ -489,6 +502,7 @@ function "defs_by_labels" {
     param "subelements","/..";
     param "hmi_element";
     const "widget_type","@type";
+    const "widget_id","@id";
     foreach "str:split($labels)" {
         const "absolute", "starts-with(., '/')";
         const "name","substring(.,number($absolute)+1)";
@@ -496,8 +510,16 @@ function "defs_by_labels" {
         const "elt","($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]";
         choose {
             when "not($elt/@id)" {
-                if "$mandatory='yes'" {
-                    error > «$widget_type» widget must have a «$name» element
+                if "$mandatory!='no'" {
+                    const "errmsg" > «$widget_type» widget (id=«$widget_id») must have a «$name» element
+                    choose { 
+                        when "$mandatory='yes'" {
+                            error > «$errmsg»
+                        }
+                        otherwise {
+                            warning > «$errmsg»
+                        }
+                    }
                 }
                 // otherwise produce nothing
             }
@@ -510,8 +532,16 @@ function "defs_by_labels" {
                         const "subelt","$elt/*[@inkscape:label=$subname][1]";
                         choose {
                             when "not($subelt/@id)" {
-                                if "$mandatory='yes'" {
-                                    error > «$widget_type» widget must have a «$name»/«$subname» element
+                                if "$mandatory!='no'" {
+                                    const "errmsg" > «$widget_type» widget (id=«$widget_id») must have a «$name»/«$subname» element
+                                    choose { 
+                                        when "$mandatory='yes'" {
+                                            error > «$errmsg»
+                                        }
+                                        otherwise {
+                                            warning > «$errmsg»
+                                        }
+                                    }
                                 }
                 |         /* missing «$name»/«$subname» element */
                             }
