@@ -51,6 +51,8 @@ widget_class("Input")
      undershot(new_val, min) {
          this.alert("min");
      }
+
+     display = "";
 ||
 
 widget_defs("Input") {
@@ -65,7 +67,6 @@ widget_defs("Input") {
 
     if "$have_value"
     |     frequency: 5,
-
     |     dispatch: function(value) {
 
 
@@ -100,11 +101,15 @@ widget_defs("Input") {
         if "$have_value" {
     |         this.value_elt.style.pointerEvents = "none";
         }
+    |         this.animate();
     }
 
     foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
     |         id("«@id»").onclick = () => this.on_op_click("«func:escape_quotes(@inkscape:label)»");
     }
 
+    if "$have_value" {
+    |         this.value_elt.textContent = "";
+    }
     |     },
 }
