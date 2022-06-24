@@ -395,7 +395,7 @@
 </xsl:text>
     </longdesc>
     <shortdesc>
-      <xsl:text>Printf-like formated text display </xsl:text>
+      <xsl:text>Printf-like formated text display</xsl:text>
     </shortdesc>
     <arg name="format" count="optional" accepts="string">
       <xsl:text>printf-like format string when not given as svg:text</xsl:text>
