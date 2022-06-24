@@ -1476,21 +1476,33 @@
 </xsl:text>
     <xsl:text>function set_activation_state(eltsub, state){
 </xsl:text>
-    <xsl:text>    if(eltsub.active_elt_placeholder == undefined){
+    <xsl:text>    if(eltsub.active_elt != undefined){
 </xsl:text>
-    <xsl:text>        eltsub.active_elt_placeholder = document.createComment("");
+    <xsl:text>        if(eltsub.active_elt_placeholder == undefined){
 </xsl:text>
-    <xsl:text>        eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
+    <xsl:text>            eltsub.active_elt_placeholder = document.createComment("");
 </xsl:text>
-    <xsl:text>        eltsub.inactive_elt_placeholder = document.createComment("");
+    <xsl:text>            eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
 </xsl:text>
-    <xsl:text>        eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
+    <xsl:text>    if(eltsub.inactive_elt != undefined){
 </xsl:text>
-    <xsl:text>    ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+    <xsl:text>        if(eltsub.inactive_elt_placeholder == undefined){
+</xsl:text>
+    <xsl:text>            eltsub.inactive_elt_placeholder = document.createComment("");
+</xsl:text>
+    <xsl:text>            eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+</xsl:text>
+    <xsl:text>    }
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -2075,6 +2087,7 @@
     <xsl:param name="subelements" select="/.."/>
     <xsl:param name="hmi_element"/>
     <xsl:variable name="widget_type" select="@type"/>
+    <xsl:variable name="widget_id" select="@id"/>
     <xsl:for-each select="str:split($labels)">
       <xsl:variable name="absolute" select="starts-with(., '/')"/>
       <xsl:variable name="name" select="substring(.,number($absolute)+1)"/>
@@ -2082,13 +2095,27 @@
       <xsl:variable name="elt" select="($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]"/>
       <xsl:choose>
         <xsl:when test="not($elt/@id)">
-          <xsl:if test="$mandatory='yes'">
-            <xsl:message terminate="yes">
+          <xsl:if test="$mandatory!='no'">
+            <xsl:variable name="errmsg">
               <xsl:value-of select="$widget_type"/>
-              <xsl:text> widget must have a </xsl:text>
+              <xsl:text> widget (id=</xsl:text>
+              <xsl:value-of select="$widget_id"/>
+              <xsl:text>) must have a </xsl:text>
               <xsl:value-of select="$name"/>
               <xsl:text> element</xsl:text>
-            </xsl:message>
+            </xsl:variable>
+            <xsl:choose>
+              <xsl:when test="$mandatory='yes'">
+                <xsl:message terminate="yes">
+                  <xsl:value-of select="$errmsg"/>
+                </xsl:message>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:message terminate="no">
+                  <xsl:value-of select="$errmsg"/>
+                </xsl:message>
+              </xsl:otherwise>
+            </xsl:choose>
           </xsl:if>
         </xsl:when>
         <xsl:otherwise>
@@ -2108,15 +2135,29 @@
               <xsl:variable name="subelt" select="$elt/*[@inkscape:label=$subname][1]"/>
               <xsl:choose>
                 <xsl:when test="not($subelt/@id)">
-                  <xsl:if test="$mandatory='yes'">
-                    <xsl:message terminate="yes">
+                  <xsl:if test="$mandatory!='no'">
+                    <xsl:variable name="errmsg">
                       <xsl:value-of select="$widget_type"/>
-                      <xsl:text> widget must have a </xsl:text>
+                      <xsl:text> widget (id=</xsl:text>
+                      <xsl:value-of select="$widget_id"/>
+                      <xsl:text>) must have a </xsl:text>
                       <xsl:value-of select="$name"/>
                       <xsl:text>/</xsl:text>
                       <xsl:value-of select="$subname"/>
                       <xsl:text> element</xsl:text>
-                    </xsl:message>
+                    </xsl:variable>
+                    <xsl:choose>
+                      <xsl:when test="$mandatory='yes'">
+                        <xsl:message terminate="yes">
+                          <xsl:value-of select="$errmsg"/>
+                        </xsl:message>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:message terminate="no">
+                          <xsl:value-of select="$errmsg"/>
+                        </xsl:message>
+                      </xsl:otherwise>
+                    </xsl:choose>
                   </xsl:if>
                   <xsl:text>        /* missing </xsl:text>
                   <xsl:value-of select="$name"/>
@@ -2683,6 +2724,7 @@
       <xsl:with-param name="labels">
         <xsl:text>/active /inactive</xsl:text>
       </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'warn'"/>
     </xsl:call-template>
     <xsl:text>    }
 </xsl:text>
@@ -2710,6 +2752,7 @@
       <xsl:with-param name="labels">
         <xsl:text>/active /inactive</xsl:text>
       </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'warn'"/>
     </xsl:call-template>
     <xsl:text>    }
 </xsl:text>
@@ -3482,7 +3525,7 @@
 </xsl:text>
     </longdesc>
     <shortdesc>
-      <xsl:text>Printf-like formated text display </xsl:text>
+      <xsl:text>Printf-like formated text display</xsl:text>
     </shortdesc>
     <arg name="format" count="optional" accepts="string">
       <xsl:text>printf-like format string when not given as svg:text</xsl:text>
@@ -3500,7 +3543,15 @@
 </xsl:text>
     <xsl:text>    dispatch(value, oldval, index) {
 </xsl:text>
-    <xsl:text>        this.fields[index] = value;    
+    <xsl:text>        this.fields[index] = value;
+</xsl:text>
+    <xsl:text>        if(!this.ready){
+</xsl:text>
+    <xsl:text>            this.readyfields[index] = true;
+</xsl:text>
+    <xsl:text>            this.ready = this.readyfields.every(x=&gt;x);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.request_animate();
 </xsl:text>
@@ -3548,6 +3599,20 @@
     <xsl:value-of select="$field_initializer"/>
     <xsl:text>],
 </xsl:text>
+    <xsl:variable name="readyfield_initializer">
+      <xsl:for-each select="path">
+        <xsl:text>false</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:text>    readyfields: [</xsl:text>
+    <xsl:value-of select="$readyfield_initializer"/>
+    <xsl:text>],
+</xsl:text>
+    <xsl:text>    ready: false,
+</xsl:text>
     <xsl:text>    animate: function(){
 </xsl:text>
     <xsl:choose>
@@ -3562,28 +3627,30 @@
 </xsl:text>
         <xsl:text>      let str = vsprintf(this.format,this.fields);
 </xsl:text>
-        <xsl:text>      multiline_to_svg_text(this.format_elt, str);
+        <xsl:text>      multiline_to_svg_text(this.format_elt, str, !this.ready);
 </xsl:text>
       </xsl:when>
       <xsl:otherwise>
         <xsl:text>      let str = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
 </xsl:text>
-        <xsl:text>      multiline_to_svg_text(this.element, str);
+        <xsl:text>      multiline_to_svg_text(this.element, str, !this.ready);
 </xsl:text>
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>    
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    init: function() {
 </xsl:text>
     <xsl:if test="$has_format">
-      <xsl:text>    init: function() {
-</xsl:text>
       <xsl:text>      this.format = svg_text_to_multiline(this.format_elt);
 </xsl:text>
-      <xsl:text>    },
-</xsl:text>
     </xsl:if>
+    <xsl:text>      this.animate();
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='DropDown']" mode="widget_desc">
     <type>
@@ -4782,6 +4849,10 @@
 </xsl:text>
     <xsl:text>     }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>     display = "";
+</xsl:text>
     <xsl:text>}
 </xsl:text>
   </xsl:template>
@@ -4862,6 +4933,8 @@
         <xsl:text>        this.value_elt.style.pointerEvents = "none";
 </xsl:text>
       </xsl:if>
+      <xsl:text>        this.animate();
+</xsl:text>
     </xsl:if>
     <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
       <xsl:text>        id("</xsl:text>
@@ -4871,6 +4944,10 @@
       <xsl:text>");
 </xsl:text>
     </xsl:for-each>
+    <xsl:if test="$have_value">
+      <xsl:text>        this.value_elt.textContent = "";
+</xsl:text>
+    </xsl:if>
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
@@ -7925,6 +8002,7 @@
       <xsl:with-param name="labels">
         <xsl:text>/active /inactive</xsl:text>
       </xsl:with-param>
+      <xsl:with-param name="mandatory" select="'warn'"/>
     </xsl:call-template>
     <xsl:text>    }
 </xsl:text>
@@ -10761,9 +10839,9 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function multiline_to_svg_text(elt, str) {
+          <xsl:text>function multiline_to_svg_text(elt, str, blank) {
 </xsl:text>
-          <xsl:text>    str.split('\n').map((line,i) =&gt; {elt.children[i].textContent = line;});
+          <xsl:text>    str.split('\n').map((line,i) =&gt; {elt.children[i].textContent = blank?"":line;});
 </xsl:text>
           <xsl:text>}
 </xsl:text>
