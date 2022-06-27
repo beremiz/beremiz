@@ -14,6 +14,20 @@ decl optional_labels(*ptr) alias - {
     }
 };
 
+decl warning_labels(*ptr) alias - {
+    labels(*ptr){
+        with "mandatory","'warn'";
+        content;
+    }
+};
+
+decl activable() alias - {
+    |     activable_sub:{
+    warning_labels("/active /inactive") {
+        content;
+    }
+    |     }
+};
 decl activable_labels(*ptr) alias - {
     optional_labels(*ptr) {
         with "subelements","'active inactive'";
@@ -165,6 +179,39 @@ emit "preamble:widget-base-class" {
     ||
     var pending_widget_animates = [];
 
+    function _hide(elt, placeholder){
+        if(elt.parentNode != null)
+            placeholder.parentNode.removeChild(elt);
+    }
+    function _show(elt, placeholder){
+        placeholder.parentNode.insertBefore(elt, placeholder);
+    }
+
+    function set_activation_state(eltsub, state){
+        if(eltsub.active_elt != undefined){
+            if(eltsub.active_elt_placeholder == undefined){
+                eltsub.active_elt_placeholder = document.createComment("");
+                eltsub.active_elt.parentNode.insertBefore(eltsub.active_elt_placeholder, eltsub.active_elt);
+            }
+            (state?_show:_hide)(eltsub.active_elt, eltsub.active_elt_placeholder);
+        }
+        if(eltsub.inactive_elt != undefined){
+            if(eltsub.inactive_elt_placeholder == undefined){
+                eltsub.inactive_elt_placeholder = document.createComment("");
+                eltsub.inactive_elt.parentNode.insertBefore(eltsub.inactive_elt_placeholder, eltsub.inactive_elt);
+            }
+            ((state || state==undefined)?_hide:_show)(eltsub.inactive_elt, eltsub.inactive_elt_placeholder);
+        }
+    }
+
+    function activate_activable(eltsub) {
+        set_activation_state(eltsub, true);
+    }
+
+    function inactivate_activable(eltsub) {
+        set_activation_state(eltsub, false);
+    }
+
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
@@ -181,7 +228,13 @@ emit "preamble:widget-base-class" {
             this.lastapply = indexes.map(() => undefined);
             this.inhibit = indexes.map(() => undefined);
             this.pending = indexes.map(() => undefined);
-            this.bound_unhinibit = this.unhinibit.bind(this);
+            this.bound_uninhibit = this.uninhibit.bind(this);
+
+            this.lastdispatch = indexes.map(() => undefined);
+            this.deafen = indexes.map(() => undefined);
+            this.incoming = indexes.map(() => undefined);
+            this.bound_undeafen = this.undeafen.bind(this);
+
             this.forced_frequency = freq;
             this.clip = true;
         }
@@ -225,7 +278,13 @@ emit "preamble:widget-base-class" {
                     if(inhibition != undefined){
                         clearTimeout(inhibition);
                         this.lastapply[i] = undefined;
-                        this.unhinibit(i);
+                        this.uninhibit(i);
+                    }
+                    let deafened = this.deafen[i];
+                    if(deafened != undefined){
+                        clearTimeout(deafened);
+                        this.lastdispatch[i] = undefined;
+                        this.undeafen(i);
                     }
                     let index = this.indexes[i];
                     if(this.relativeness[i])
@@ -313,7 +372,7 @@ emit "preamble:widget-base-class" {
             return apply_hmi_value(realindex, new_val);
         }
 
-        unhinibit(index){
+        uninhibit(index){
             this.inhibit[index] = undefined;
             let new_val = this.pending[index];
             this.pending[index] = undefined;
@@ -332,7 +391,7 @@ emit "preamble:widget-base-class" {
                 else {
                     let elapsed = now - lastapply;
                     this.pending[index] = new_val;
-                    this.inhibit[index] = setTimeout(this.bound_unhinibit, min_interval - elapsed, index);
+                    this.inhibit[index] = setTimeout(this.bound_uninhibit, min_interval - elapsed, index);
                 }
             }
             else {
@@ -354,13 +413,36 @@ emit "preamble:widget-base-class" {
             }
         }
         
+        undeafen(index){
+            this.deafen[index] = undefined;
+            let [new_val, old_val] = this.incoming[index];
+            this.incoming[index] = undefined;
+            this.dispatch(new_val, old_val, index);
+        }
+
         _dispatch(value, oldval, varnum) {
             let dispatch = this.dispatch;
             if(dispatch != undefined){
-                try {
-                    dispatch.call(this, value, oldval, varnum);
-                } catch(err) {
-                    console.log(err);
+                if(this.deafen[varnum] == undefined){
+                    let now = Date.now();
+                    let min_interval = 1000/this.frequency;
+                    let lastdispatch = this.lastdispatch[varnum];
+                    if(lastdispatch == undefined || now > lastdispatch + min_interval){
+                        this.lastdispatch[varnum] = now;
+                        try {
+                            dispatch.call(this, value, oldval, varnum);
+                        } catch(err) {
+                            console.log(err);
+                        }
+                    }
+                    else {
+                        let elapsed = now - lastdispatch;
+                        this.incoming[varnum] = [value, oldval];
+                        this.deafen[varnum] = setTimeout(this.bound_undeafen, min_interval - elapsed, varnum);
+                    }
+                }
+                else {
+                    this.incoming[varnum] = [value, oldval];
                 }
             }
         }
@@ -376,17 +458,10 @@ emit "preamble:widget-base-class" {
                 this.pending_animate = true;
                 requestHMIAnimation();
             }
-
         }
 
-        activate_activable(eltsub) {
-            eltsub.inactive.style.display = "none";
-            eltsub.active.style.display = "";
-        }
-
-        inactivate_activable(eltsub) {
-            eltsub.active.style.display = "none";
-            eltsub.inactive.style.display = "";
+        set_activation_state(state){
+            set_activation_state(this.activable_sub, state);
         }
     }
     ||
@@ -427,6 +502,7 @@ function "defs_by_labels" {
     param "subelements","/..";
     param "hmi_element";
     const "widget_type","@type";
+    const "widget_id","@id";
     foreach "str:split($labels)" {
         const "absolute", "starts-with(., '/')";
         const "name","substring(.,number($absolute)+1)";
@@ -434,8 +510,16 @@ function "defs_by_labels" {
         const "elt","($widget//*[not($absolute) and @inkscape:label=$name] | $widget/*[$absolute and @inkscape:label=$name])[1]";
         choose {
             when "not($elt/@id)" {
-                if "$mandatory='yes'" {
-                    error > «$widget_type» widget must have a «$name» element
+                if "$mandatory!='no'" {
+                    const "errmsg" > «$widget_type» widget (id=«$widget_id») must have a «$name» element
+                    choose { 
+                        when "$mandatory='yes'" {
+                            error > «$errmsg»
+                        }
+                        otherwise {
+                            warning > «$errmsg»
+                        }
+                    }
                 }
                 // otherwise produce nothing
             }
@@ -448,13 +532,21 @@ function "defs_by_labels" {
                         const "subelt","$elt/*[@inkscape:label=$subname][1]";
                         choose {
                             when "not($subelt/@id)" {
-                                if "$mandatory='yes'" {
-                                    error > «$widget_type» widget must have a «$name»/«$subname» element
+                                if "$mandatory!='no'" {
+                                    const "errmsg" > «$widget_type» widget (id=«$widget_id») must have a «$name»/«$subname» element
+                                    choose { 
+                                        when "$mandatory='yes'" {
+                                            error > «$errmsg»
+                                        }
+                                        otherwise {
+                                            warning > «$errmsg»
+                                        }
+                                    }
                                 }
                 |         /* missing «$name»/«$subname» element */
                             }
                             otherwise {
-                |         "«$subname»": id("«$subelt/@id»")`if "position()!=last()" > ,`
+                |         "«$subname»_elt": id("«$subelt/@id»")`if "position()!=last()" > ,`
                             }
                         }
                     }

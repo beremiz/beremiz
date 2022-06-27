@@ -183,19 +183,13 @@ function "generated_button_class" {
     apply "$fsm", mode="actions";
 
     |     animate(){
-    |         if (this.active_elt && this.inactive_elt) {
-    foreach "str:split('active inactive')" {
-    |             if(this.display == "«.»")
-    |                 this.«.»_elt.style.display = "";
-    |             else
-    |                 this.«.»_elt.style.display = "none";
-    }
-    |         }
+    |         this.set_activation_state(this.display == "active");
     |     }
 
     |     init() {
     |         this.bound_onmouseup = this.onmouseup.bind(this);
     |         this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+    |         this.set_activation_state(undefined);
     |     }
 }
 
@@ -207,7 +201,7 @@ widget_class("Button"){
 }
 
 widget_defs("Button") {
-    optional_labels("active inactive");
+    activable();
 }
 
 widget_class("PushButton"){
@@ -217,6 +211,6 @@ widget_class("PushButton"){
 }
 
 widget_defs("PushButton") {
-    optional_labels("active inactive");
+    activable();
 }
 

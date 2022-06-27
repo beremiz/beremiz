@@ -30,6 +30,8 @@ widget_class("Keypad")
          on_key_click(symbols) {
              var syms = symbols.split(" ");
              this.shift |= this.caps;
+             if(this.virgin)
+                 this.editstr = ""; 
              this.editstr += syms[this.shift?syms.length-1:0];
              this.shift = false;
              this.update();
@@ -98,33 +100,36 @@ widget_class("Keypad")
              show_modal.call(this,size);
              this.editstr = String(initial);
              this.result_callback_obj = callback_obj;
-             this.Info_elt.textContent = info;
+             if(this.Info_elt)
+                 this.Info_elt.textContent = info;
              this.shift = false;
              this.caps = false;
              this.initial = initial;
 
              this.update();
+             this.virgin = true;
          }
 
          update() {
              if(this.editstr != this._editstr){
+                 this.virgin = false;
                  this._editstr = this.editstr;
                  this.Value_elt.textContent = this.editstr;
              }
              if(this.Shift_sub && this.shift != this._shift){
                  this._shift = this.shift;
-                 (this.shift?this.activate_activable:this.inactivate_activable)(this.Shift_sub);
+                 set_activation_state(this.Shift_sub, this.shift);
              }
              if(this.CapsLock_sub && this.caps != this._caps){
                  this._caps = this.caps;
-                 (this.caps?this.activate_activable:this.inactivate_activable)(this.CapsLock_sub);
+                 set_activation_state(this.CapsLock_sub, this.caps);
              }
          }
     ||
 
 widget_defs("Keypad") {
-    labels("Esc Enter BackSpace Keys Info Value");
-    optional_labels("Sign Space NumDot");
+    labels("Esc Enter BackSpace Keys Value");
+    optional_labels("Sign Space NumDot Info");
     activable_labels("CapsLock Shift");
     |     init: function() {
     foreach "$hmi_element/*[@inkscape:label = 'Keys']/*" {
@@ -138,4 +143,5 @@ widget_defs("Keypad") {
     |
     const "g", "$geometry[@Id = $hmi_element/@id]"; 
     |     coordinates: [«$g/@x», «$g/@y»],
+    |     virgin: false,
 }

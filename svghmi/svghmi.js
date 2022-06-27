@@ -202,6 +202,18 @@ if(has_watchdog){
     });
 }
 
+
+var page_fading_in_progress = false;
+function fading_page_switch(...args){
+    svg_root.classList.add("fade-out-page");
+    page_fading_in_progress = true;
+
+    setTimeout(function(){
+        switch_page(...args);
+    },1);
+}
+document.body.style.backgroundColor = "black";
+
 // subscribe to per instance current page hmi variable
 // PLC must prefix page name with "!" for page switch to happen
 subscribers(current_page_var_index).add({
@@ -209,7 +221,7 @@ subscribers(current_page_var_index).add({
     indexes: [current_page_var_index],
     new_hmi_value: function(index, value, oldval) {
         if(value.startsWith("!"))
-            switch_page(value.slice(1));
+            fading_page_switch(value.slice(1));
     }
 });
 
@@ -217,8 +229,8 @@ function svg_text_to_multiline(elt) {
     return(Array.prototype.map.call(elt.children, x=>x.textContent).join("\\\\n")); 
 }
 
-function multiline_to_svg_text(elt, str) {
-    str.split('\\\\n').map((line,i) => {elt.children[i].textContent = line;});
+function multiline_to_svg_text(elt, str, blank) {
+    str.split('\\\\n').map((line,i) => {elt.children[i].textContent = blank?"":line;});
 }
 
 function switch_langnum(langnum) {
@@ -502,6 +514,9 @@ function switch_visible_page(page_name) {
     }
 
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
+    if(page_fading_in_progress)
+        svg_root.classList.remove("fade-out-page");
+        page_fading_in_progress = false;
     current_visible_page = page_name;
 };
 
