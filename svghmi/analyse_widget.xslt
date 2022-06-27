@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:svg="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn svg inkscape">
   <xsl:output method="xml"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
-  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="id" select="@id"/>
@@ -263,25 +263,7 @@
     <xsl:apply-templates mode="actions" select="$fsm"/>
     <xsl:text>    animate(){
 </xsl:text>
-    <xsl:text>        if (this.active_elt &amp;&amp; this.inactive_elt) {
-</xsl:text>
-    <xsl:for-each select="str:split('active inactive')">
-      <xsl:text>            if(this.display == "</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>")
-</xsl:text>
-      <xsl:text>                this.</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>_elt.style.display = "";
-</xsl:text>
-      <xsl:text>            else
-</xsl:text>
-      <xsl:text>                this.</xsl:text>
-      <xsl:value-of select="."/>
-      <xsl:text>_elt.style.display = "none";
-</xsl:text>
-    </xsl:for-each>
-    <xsl:text>        }
+    <xsl:text>        this.set_activation_state(this.display == "active");
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -290,6 +272,8 @@
     <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+</xsl:text>
+    <xsl:text>        this.set_activation_state(undefined);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -411,7 +395,7 @@
 </xsl:text>
     </longdesc>
     <shortdesc>
-      <xsl:text>Printf-like formated text display </xsl:text>
+      <xsl:text>Printf-like formated text display</xsl:text>
     </shortdesc>
     <arg name="format" count="optional" accepts="string">
       <xsl:text>printf-like format string when not given as svg:text</xsl:text>
@@ -885,6 +869,73 @@
       <xsl:text>Boolean variable</xsl:text>
     </path>
   </xsl:template>
+  <xsl:template match="widget[@type='XYGraph']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>XYGraph draws a cartesian trend graph re-using styles given for axis,
+</xsl:text>
+      <xsl:text>grid/marks, legends and curves.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Elements labeled "x_axis" and "y_axis" are svg:groups containg:
+</xsl:text>
+      <xsl:text> - "axis_label" svg:text gives style an alignment for axis labels.
+</xsl:text>
+      <xsl:text> - "interval_major_mark" and "interval_minor_mark" are svg elements to be
+</xsl:text>
+      <xsl:text>   duplicated along axis line to form intervals marks.
+</xsl:text>
+      <xsl:text> - "axis_line"  svg:path is the axis line. Paths must be intersect and their
+</xsl:text>
+      <xsl:text>   bounding box is the chart wall.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Elements labeled "curve_0", "curve_1", ... are paths whose styles are used
+</xsl:text>
+      <xsl:text>to draw curves corresponding to data from variables passed as HMI tree paths.
+</xsl:text>
+      <xsl:text>"curve_0" is mandatory. HMI variables outnumbering given curves are ignored.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Cartesian trend graph showing values of given variables over time</xsl:text>
+    </shortdesc>
+    <path name="value" count="1+" accepts="HMI_INT,HMI_REAL">
+      <xsl:text>value</xsl:text>
+    </path>
+    <arg name="xrange" accepts="int,time">
+      <xsl:text>X axis range expressed either in samples or duration.</xsl:text>
+    </arg>
+    <arg name="xformat" count="optional" accepts="string">
+      <xsl:text>format string for X label</xsl:text>
+    </arg>
+    <arg name="yformat" count="optional" accepts="string">
+      <xsl:text>format string for Y label</xsl:text>
+    </arg>
+  </xsl:template>
+  <func:function name="func:check_curves_label_consistency">
+    <xsl:param name="curve_elts"/>
+    <xsl:param name="number_to_check"/>
+    <xsl:variable name="res">
+      <xsl:choose>
+        <xsl:when test="$curve_elts[@inkscape:label = concat('curve_', string($number_to_check))]">
+          <xsl:if test="$number_to_check &gt; 0">
+            <xsl:value-of select="func:check_curves_label_consistency($curve_elts, $number_to_check - 1)"/>
+          </xsl:if>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat('missing curve_', string($number_to_check))"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <func:result select="$res"/>
+  </func:function>
   <xsl:template mode="document" match="@* | node()">
     <xsl:copy>
       <xsl:apply-templates mode="document" select="@* | node()"/>

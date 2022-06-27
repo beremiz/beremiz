@@ -66,10 +66,9 @@ widget_class("Jump") {
                 /* TODO: in order to allow jumps to page selected through for exemple a dropdown,
                    support path pointing to local variable whom value 
                    would be an HMI_TREE index and then jump to a relative page not hard-coded in advance */
-
                 if(!that.disabled) {
                     const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
-                    switch_page(name, index);
+                    fading_page_switch(name, index);
                 }
             }
         }
@@ -142,6 +141,19 @@ widget_page("Jump"){
             error > Jump id="«@id»" to page "«$target_page_name»" with incompatible path "«path[1]/@value» (must be same class as "«$target_page_path»")
     }
 }
+
+emit "cssdefs:jump"
+||
+.fade-out-page {
+    animation: fadeOut 0.6s both;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+||
 
 emit "declarations:jump"
 ||

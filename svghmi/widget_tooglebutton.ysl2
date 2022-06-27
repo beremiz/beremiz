@@ -37,26 +37,19 @@ widget_class("ToggleButton") {
             this.request_animate();
         }
 
-        activate(val) {
-            let [active, inactive] = val ? ["","none"] : ["none", ""];
-            if (this.active_elt)
-                this.active_elt.style.display = active;
-            if (this.inactive_elt)
-                this.inactive_elt.style.display = inactive;
-        }
-
         animate(){
             // redraw toggle button on screen refresh
-            this.activate(this.state);
+            this.set_activation_state(this.state);
         }
 
         init() {
-            this.activate(false);
             this.element.onclick = (evt) => this.on_click(evt);
+            this.set_activation_state(undefined);
         }
     ||
 }
 
 widget_defs("ToggleButton") {
-    optional_labels("active inactive");
+    activable();
 }
+

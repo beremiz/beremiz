@@ -15,12 +15,12 @@ widget_desc("Display") {
     format string as first argument.
     ||
 
-    shortdesc > Printf-like formated text display 
+    shortdesc > Printf-like formated text display
 
     arg name="format" count="optional" accepts="string" > printf-like format string when not given as svg:text
 
     path name="fields" count="many" accepts="HMI_INT,HMI_REAL,HMI_STRING,HMI_BOOL" > variables to be displayed
-    
+
 }
 
 
@@ -28,7 +28,11 @@ widget_class("Display")
     ||
         frequency = 5;
         dispatch(value, oldval, index) {
-            this.fields[index] = value;    
+            this.fields[index] = value;
+            if(!this.ready){
+                this.readyfields[index] = true;
+                this.ready = this.readyfields.every(x=>x);
+            }
             this.request_animate();
         }
     ||
@@ -49,6 +53,12 @@ widget_defs("Display") {
         if "position()!=last()" > ,
     }
     |     fields: [«$field_initializer»],
+    const "readyfield_initializer" foreach "path" {
+        > false
+        if "position()!=last()" > ,
+    }
+    |     readyfields: [«$readyfield_initializer»],
+    |     ready: false,
     |     animate: function(){
     choose {
         when "$has_format" {
@@ -57,18 +67,19 @@ widget_defs("Display") {
     |           this.format_elt.removeAttribute("lang");
     |       }
     |       let str = vsprintf(this.format,this.fields);
-    |       multiline_to_svg_text(this.format_elt, str);
+    |       multiline_to_svg_text(this.format_elt, str, !this.ready);
         }
         otherwise {
     |       let str = this.args.length == 1 ? vsprintf(this.args[0],this.fields) : this.fields.join(' ');
-    |       multiline_to_svg_text(this.element, str);
+    |       multiline_to_svg_text(this.element, str, !this.ready);
         }
     }
     |     },
-    |     
-    if "$has_format" {
+    |
     |     init: function() {
+    if "$has_format" {
     |       this.format = svg_text_to_multiline(this.format_elt);
-    |     },
     }
+    |       this.animate();
+    |     },
 }

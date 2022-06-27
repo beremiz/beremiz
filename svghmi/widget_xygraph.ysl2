@@ -22,19 +22,34 @@ widget_desc("XYGraph") {
 
     path name="value" count="1+" accepts="HMI_INT,HMI_REAL" > value
 
-    arg name="size" accepts="int" > buffer size
+    arg name="xrange" accepts="int,time" > X axis range expressed either in samples or duration.
     arg name="xformat" count="optional" accepts="string" > format string for X label
     arg name="yformat" count="optional" accepts="string" > format string for Y label
-    arg name="ymin" count="optional" accepts="int,real" > minimum value foe Y axis
-    arg name="ymax" count="optional" accepts="int,real" > maximum value for Y axis
 }
 
 widget_class("XYGraph") {
     ||
         frequency = 1;
         init() {
-            [this.x_size,
+            let x_duration_s;
+            [x_duration_s,
              this.x_format, this.y_format] = this.args;
+
+            let timeunit = x_duration_s.slice(-1);
+            let factor = {
+                "s":1,
+                "m":60,
+                "h":3600,
+                "d":86400}[timeunit];
+            if(factor == undefined){
+                this.max_data_length = Number(x_duration_s);
+                this.x_duration = undefined;
+            }else{
+                let duration = factor*Number(x_duration_s.slice(0,-1));
+                this.max_data_length = undefined;
+                this.x_duration = duration*1000;
+            }
+
 
             // Min and Max given with paths are meant to describe visible range,
             // not to clip data.
@@ -96,8 +111,7 @@ widget_class("XYGraph") {
                 curve.setAttribute("clip-path", "url(#" + clipPath.id + ")");
             }
 
-            this.curves_data = this.curves.map(_unused => []);
-            this.max_data_length = this.args[0];
+            this.curves_data = [];
         }
 
         dispatch(value,oldval, index) {
@@ -108,19 +122,33 @@ widget_class("XYGraph") {
             // data is updated only when graph is visible
             // TODO: replace with separate recording
 
+            if(this.curves_data[index] === undefined){
+                this.curves_data[index] = [];
+            }
             this.curves_data[index].push([time, value]);
             let data_length = this.curves_data[index].length;
             let ymin_damaged = false;
             let ymax_damaged = false;
             let overflow;
 
-            if(data_length > this.max_data_length){
-                // remove first item
-                [this.xmin, overflow] = this.curves_data[index].shift();
-                data_length = data_length - 1;
+            if(this.max_data_length == undefined){
+                let peremption = time - this.x_duration;
+                let oldest = this.curves_data[index][0][0]
+                this.xmin = peremption;
+                if(oldest < peremption){
+                    // remove first item
+                    overflow = this.curves_data[index].shift()[1];
+                    data_length = data_length - 1;
+                }
             } else {
-                if(this.xmin == undefined){
-                    this.xmin = time;
+                if(data_length > this.max_data_length){
+                    // remove first item
+                    [this.xmin, overflow] = this.curves_data[index].shift();
+                    data_length = data_length - 1;
+                } else {
+                    if(this.xmin == undefined){
+                        this.xmin = time;
+                    }
                 }
             }
 
@@ -141,6 +169,7 @@ widget_class("XYGraph") {
             }
             let Yrange = this.ymax - this.ymin;
 
+            // apply margin by moving min and max to enlarge range
             let [xMargin,yMargin] = zip(this.Margins, [Xrange, Yrange]).map(([m,l]) => m*l);
             [[this.dxmin, this.dxmax],[this.dymin,this.dymax]] =
                 [[this.xmin-xMargin, this.xmax+xMargin],
@@ -163,6 +192,7 @@ widget_class("XYGraph") {
                         let px = base_point.x + xv.x + yv.x;
                         let py = base_point.y + xv.y + yv.y;
                         if(!this.fixed_y_range){
+                            // update min and max from curve data if needed
                             if(ymin_damaged && y < this.ymin) this.ymin = y;
                             if(ymax_damaged && y > this.ymax) this.ymax = y;
                         }
@@ -199,6 +229,22 @@ widget_class("XYGraph") {
     ||
 }
 
+def "func:check_curves_label_consistency" {
+    param "curve_elts";
+    param "number_to_check";
+    const "res" choose {
+        when "$curve_elts[@inkscape:label = concat('curve_', string($number_to_check))]"{
+            if "$number_to_check > 0"{
+                value "func:check_curves_label_consistency($curve_elts, $number_to_check - 1)";
+            }
+        }
+        otherwise {
+            value "concat('missing curve_', string($number_to_check))";
+        }
+    }
+    result "$res";
+}
+
 widget_defs("XYGraph") {
     labels("/x_interval_minor_mark /x_axis_line /x_interval_major_mark /x_axis_label");
     labels("/y_interval_minor_mark /y_axis_line /y_interval_major_mark /y_axis_label");
@@ -206,15 +252,15 @@ widget_defs("XYGraph") {
     |     init_specific() {
 
     // collect all curve_n labelled children
-    foreach "$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]" {
+    const "curves","$hmi_element/*[regexp:test(@inkscape:label,'^curve_[0-9]+$')]";
+    const "curves_error", "func:check_curves_label_consistency($curves,count($curves)-1)";
+    if "string-length($curves_error)"
+        error > XYGraph id="«@id»", label="«@inkscape:label»" : «$curves_error»
+    foreach "$curves" {
         const "label","@inkscape:label";
-        const "id","@id";
-
-        // detect non-unique names
-        if "$hmi_element/*[not($id = @id) and @inkscape:label=$label]"{
-            error > XYGraph id="«$id»", label="«$label»" : elements with data_n label must be unique.
-        }
-    |         this.curves[«substring(@inkscape:label, 7)»] = id("«@id»"); /* «@inkscape:label» */
+        const "_id","@id";
+        const "curve_num", "substring(@inkscape:label, 7)";
+    |         this.curves[«$curve_num»] = id("«@id»"); /* «@inkscape:label» */
     }
 
     |     }
