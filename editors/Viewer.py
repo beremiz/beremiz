@@ -429,8 +429,10 @@ class ViewerDropTarget(wx.TextDropTarget):
             if len(child_dimensions) > 0:
                 child_path += "[%s]" % ",".join([str(dimension[0]) for dimension in child_dimensions])
                 child_name += "[]"
-            item = menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=child_name)
-            self.ParentWindow.Bind(wx.EVT_MENU, self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type), item)
+
+            item = self.AppendItem(menu,
+                child_name,
+                self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type))
             if len(child_tree) > 0:
                 child_menu = wx.Menu(title='')
                 self.GenerateTreeMenu(x, y, scaling, child_menu, child_path, var_class, child_tree)
@@ -1571,10 +1573,15 @@ class Viewer(EditorPanel, DebugViewer):
         iec_path = self.GetElementIECPath(self.SelectedElement)
         if iec_path is not None:
             menu = wx.Menu(title='')
-            item = menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=_("Force value"))
-            self.Bind(wx.EVT_MENU, self.GetForceVariableMenuFunction(iec_path.upper(), self.SelectedElement), item)
-            ritem = menu.Append(wx.ID_ANY, help='', kind=wx.ITEM_NORMAL, text=_("Release value"))
-            self.Bind(wx.EVT_MENU, self.GetReleaseVariableMenuFunction(iec_path.upper()), ritem)
+            item = self.AppendItem(menu,
+                _("Force value"),
+                self.GetForceVariableMenuFunction(
+                    iec_path.upper(),
+                    self.SelectedElement))
+
+            ritem = self.AppendItem(menu,
+                _("Release value"),
+                self.GetReleaseVariableMenuFunction(iec_path.upper()))
             if self.SelectedElement.IsForced():
                 ritem.Enable(True)
             else:
@@ -1902,9 +1909,9 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnViewerMouseEvent(self, event):
         self.ResetBuffer()
-        if event.Leaving() and self.ToolTipElement is not None:
+        if (event.Leaving() or event.RightDown()) and self.ToolTipElement is not None:
             self.ToolTipElement.DestroyToolTip()
-        elif (not event.Entering() and
+        elif (not event.Entering() and not event.RightDown() and
               gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
             self.LastToolTipCheckTime = gettime()
             element = None
