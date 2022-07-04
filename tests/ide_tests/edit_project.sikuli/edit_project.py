@@ -25,7 +25,7 @@ def test(app):
 
     app.WaitIdleUI()
 
-    app.doubleClick("1646066996620.png")
+    app.doubleClick("Hello world")
 
     app.WaitIdleUI()
 

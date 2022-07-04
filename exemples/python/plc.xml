@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:21:19" contentDescription="This example shows many features in Beremiz:&#10;&#10;   1. How to implement python extensions.&#10;   2. How to implement basic C extension.&#10;   3. How to use C code in IEC POUs.&#10;   4. How to call C functions from python code.&#10;   5. How to avoid race conditions between IEC, C and python code.&#10;   6. How to convert betweet different IEC types.&#10;"/>
-  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2020-10-19T23:53:08">
+  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2022-07-03T16:04:31">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -269,12 +269,12 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="4" height="30" width="160" executionOrderId="0" negated="false">
-              <position x="295" y="450"/>
+            <inVariable localId="4" height="30" width="315" executionOrderId="0" negated="false">
+              <position x="200" y="390"/>
               <connectionPointOut>
-                <relPosition x="160" y="15"/>
+                <relPosition x="315" y="15"/>
               </connectionPointOut>
-              <expression>'666'</expression>
+              <expression>'sys.stdout.write("Hello world\n")'</expression>
             </inVariable>
             <block localId="5" width="125" height="80" typeName="python_eval" instanceName="py1" executionOrderId="0">
               <position x="686" y="400"/>
@@ -293,9 +293,11 @@
                 <variable formalParameter="CODE">
                   <connectionPointIn>
                     <relPosition x="0" y="65"/>
-                    <connection refLocalId="4">
+                    <connection refLocalId="80" formalParameter="OUT">
                       <position x="686" y="465"/>
-                      <position x="455" y="465"/>
+                      <position x="653" y="465"/>
+                      <position x="653" y="485"/>
+                      <position x="630" y="485"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -737,12 +739,6 @@
               <content>
                 <xhtml:p><![CDATA[You will be ready to use beremiz with C and Python when you will understand why "FromInput" is equal  to 75.
 Happy hacking! ]]></xhtml:p>
-              </content>
-            </comment>
-            <comment localId="31" height="90" width="345">
-              <position x="295" y="485"/>
-              <content>
-                <xhtml:p><![CDATA[Sleep here is bad. It blocks other py_eval instances. Whith a wxGlade GUI, GUI freeze for a second.]]></xhtml:p>
               </content>
             </comment>
             <comment localId="6" height="80" width="345">
@@ -1443,10 +1439,10 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
               </connectionPointIn>
               <expression>Test_Python_Var</expression>
             </outVariable>
-            <inVariable localId="79" executionOrderId="0" height="25" width="30" negated="false">
+            <inVariable localId="79" executionOrderId="0" height="27" width="30" negated="false">
               <position x="560" y="1340"/>
               <connectionPointOut>
-                <relPosition x="30" y="10"/>
+                <relPosition x="30" y="15"/>
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
@@ -1464,6 +1460,44 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
               </connectionPointOut>
               <expression>SomeVarName</expression>
             </inOutVariable>
+            <block localId="80" typeName="MOVE" executionOrderId="0" height="40" width="60">
+              <position x="570" y="455"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="82">
+                      <position x="578" y="485"/>
+                      <position x="532" y="485"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="60" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <connector name="Connection0" localId="81" height="30" width="130">
+              <position x="545" y="390"/>
+              <connectionPointIn>
+                <relPosition x="0" y="15"/>
+                <connection refLocalId="4">
+                  <position x="545" y="405"/>
+                  <position x="515" y="405"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <continuation name="Connection0" localId="82" height="30" width="130">
+              <position x="410" y="470"/>
+              <connectionPointOut>
+                <relPosition x="130" y="15"/>
+              </connectionPointOut>
+            </continuation>
           </FBD>
         </body>
       </pou>
