@@ -29,6 +29,7 @@ class KBDShortcut:
              "Connect":  sikuli.Key.F7,
              "Clean":    sikuli.Key.F9,
              "Build":    sikuli.Key.F11,
+             "SelectAll":("a",sikuli.Key.CTRL),
              "Save":     ("s",sikuli.Key.CTRL),
              "New":      ("n",sikuli.Key.CTRL),
              "Address":  ("l",sikuli.Key.CTRL)}  # to reach address bar in GTK's file selector
@@ -109,6 +110,9 @@ class stdoutIdleObserver:
         self.success_event = Event()
 
         self.thread = Thread(target = self._waitStdoutProc).start()
+
+    def __del__(self):
+        pass  # self.thread.join() ?
 
     def _waitStdoutProc(self):
         while True:
@@ -265,11 +269,11 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         stdoutIdleObserver.__init__(self)
 
         # stubs for common sikuli calls to allow adding hooks later
-        for name in ["click","doubleClick","type"]:
+        for name in ["click","doubleClick","type","rightClick","wait"]:
             def makeMyMeth(n):
                 def myMeth(*args, **kwargs):
-                    getattr(sikuli, n)(*args, **kwargs)
                     self.ReportScreenShot(n + "(" + repr(args) + "," + repr(kwargs) + ")")
+                    getattr(sikuli, n)(*args, **kwargs)
                 return myMeth
             setattr(self, name, makeMyMeth(name))
 
