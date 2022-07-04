@@ -162,7 +162,7 @@ xvfb_sikuli: own_apps
 	echo "******************************************"
 	echo "On host, run 'xvncviewer 127.0.0.1:5900' to see sikuli X session"
 	echo "Docker container must be created with TESTDEBUG=YES. For example :"
-	echo "./clean_docker_container.sh && ./build_docker_image.sh && TESTDEBUG=YES ./create_docker_container.sh && ./build_in_docker.sh xvfb_sikuli"
+	echo "./clean_docker_container.sh && ./build_docker_image.sh && TESTDEBUG=YES ./create_docker_container.sh && ./do_test_in_docker.sh xvfb_sikuli"
 	echo "******************************************"
 	$(xserver_command) bash -c '(fluxbox &);(x11vnc &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm'
 
