@@ -50,7 +50,7 @@ jobs:
     - name: Run tests in docker
       run: |
         cd beremiz/tests/tools/Docker/beremiz-sikuli
-        ./build_in_docker.sh
+        ./do_test_in_docker.sh
 
     - name: Upload test resuts artifact
       uses: actions/upload-artifact@v3
