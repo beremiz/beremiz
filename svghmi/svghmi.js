@@ -60,8 +60,17 @@ function apply_updates() {
 var requestAnimationFrameID = null;
 function animate() {
     // Do the page swith if any one pending
-    if(current_subscribed_page != current_visible_page){
-        switch_visible_page(current_subscribed_page);
+    if(page_switch_in_progress){
+        if(current_subscribed_page != current_visible_page){
+            switch_visible_page(current_subscribed_page);
+        }
+
+        page_switch_in_progress = false;
+
+        if(page_fading_in_progress){
+            svg_root.classList.remove("fade-out-page");
+            page_fading_in_progress = false;
+        }
     }
 
     while(widget = need_cache_apply.pop()){
@@ -391,6 +400,7 @@ var current_visible_page;
 var current_subscribed_page;
 var current_page_index;
 var page_node_local_index = hmi_local_index("page_node");
+var page_switch_in_progress = false;
 
 function toggleFullscreen() {
   let elem = document.documentElement;
@@ -418,11 +428,12 @@ function prepare_svg() {
 };
 
 function switch_page(page_name, page_index) {
-    if(current_subscribed_page != current_visible_page){
+    if(page_switch_in_progress){
         /* page switch already going */
         /* TODO LOG ERROR */
         return false;
     }
+    page_switch_in_progress = true;
 
     if(page_name == undefined)
         page_name = current_subscribed_page;
@@ -514,9 +525,6 @@ function switch_visible_page(page_name) {
     }
 
     svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-    if(page_fading_in_progress)
-        svg_root.classList.remove("fade-out-page");
-        page_fading_in_progress = false;
     current_visible_page = page_name;
 };
 
