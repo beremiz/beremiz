@@ -65,6 +65,8 @@ widget_defs("Input") {
     const "have_edit","string-length($edit_elt)>0";
     value "$edit_elt";
 
+    const "action_elements", "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]";
+
     if "$have_value"
     |     frequency: 5,
     |     dispatch: function(value) {
@@ -94,6 +96,9 @@ widget_defs("Input") {
     |     },
     }
 
+    foreach "$action_elements" {
+    |     action_elt_«position()»: id("«@id»"),
+    }
     |     init: function() {
 
     if "$have_edit" {
@@ -104,8 +109,8 @@ widget_defs("Input") {
     |         this.animate();
     }
 
-    foreach "$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]" {
-    |         id("«@id»").onclick = () => this.on_op_click("«func:escape_quotes(@inkscape:label)»");
+    foreach "$action_elements" {
+    |         this.action_elt_«position()».onclick = () => this.on_op_click("«func:escape_quotes(@inkscape:label)»");
     }
 
     if "$have_value" {
