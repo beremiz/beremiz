@@ -771,6 +771,7 @@ class FBD_Variable(Graphic_Element):
         Graphic_Element.Draw(self, dc)
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.WHITE_BRUSH)
+        dc.SetTextForeground(wx.BLACK)
 
         if getattr(dc, "printing", False):
             name_size = dc.GetTextExtent(self.Name)
@@ -1011,6 +1012,7 @@ class FBD_Connector(Graphic_Element):
         Graphic_Element.Draw(self, dc)
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.WHITE_BRUSH)
+        dc.SetTextForeground(wx.BLACK)
 
         if getattr(dc, "printing", False):
             name_size = dc.GetTextExtent(self.Name)

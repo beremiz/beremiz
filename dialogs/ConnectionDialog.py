@@ -93,7 +93,7 @@ class ConnectionDialog(BlockPreviewDialog):
         self.MainSizer.Add(
             self.ButtonSizer, border=20,
             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
-        self.ColumnSizer.RemoveSizer(self.RightGridSizer)
+        self.ColumnSizer.Remove(self.RightGridSizer)
 
         # Add button for applying connection name modification to all connection
         # of POU
