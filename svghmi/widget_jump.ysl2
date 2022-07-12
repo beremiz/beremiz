@@ -145,7 +145,7 @@ widget_page("Jump"){
 emit "cssdefs:jump"
 ||
 .fade-out-page {
-    animation: fadeOut 0.6s both;
+    animation: cubic-bezier(0, 0.8, 0.6, 1) fadeOut 0.6s both;
 }
 
 @keyframes fadeOut {
