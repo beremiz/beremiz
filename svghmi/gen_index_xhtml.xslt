@@ -4880,6 +4880,7 @@
     </xsl:variable>
     <xsl:variable name="have_edit" select="string-length($edit_elt)&gt;0"/>
     <xsl:value-of select="$edit_elt"/>
+    <xsl:variable name="action_elements" select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]"/>
     <xsl:if test="$have_value">
       <xsl:text>    frequency: 5,
 </xsl:text>
@@ -4920,6 +4921,14 @@
       <xsl:text>    },
 </xsl:text>
     </xsl:if>
+    <xsl:for-each select="$action_elements">
+      <xsl:text>    action_elt_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: id("</xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>"),
+</xsl:text>
+    </xsl:for-each>
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:if test="$have_edit">
@@ -4936,10 +4945,10 @@
       <xsl:text>        this.animate();
 </xsl:text>
     </xsl:if>
-    <xsl:for-each select="$hmi_element/*[regexp:test(@inkscape:label,'^[=+\-].+')]">
-      <xsl:text>        id("</xsl:text>
-      <xsl:value-of select="@id"/>
-      <xsl:text>").onclick = () =&gt; this.on_op_click("</xsl:text>
+    <xsl:for-each select="$action_elements">
+      <xsl:text>        this.action_elt_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>.onclick = () =&gt; this.on_op_click("</xsl:text>
       <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
       <xsl:text>");
 </xsl:text>
@@ -5585,6 +5594,12 @@
 </xsl:text>
     <xsl:text>            this.disabled = !Number(value);
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // TODO : use RequestAnimate and animate()
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>            this.update_state();
 </xsl:text>
     <xsl:text>        }
@@ -5696,7 +5711,7 @@
 </xsl:text>
     <xsl:text>.fade-out-page {
 </xsl:text>
-    <xsl:text>    animation: fadeOut 0.6s both;
+    <xsl:text>    animation: cubic-bezier(0, 0.8, 0.6, 1) fadeOut 0.6s both;
 </xsl:text>
     <xsl:text>}
 </xsl:text>
@@ -6323,6 +6338,8 @@
     <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
+</xsl:text>
+    <xsl:text>        // TODO : use RequestAnimate and animate()
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -10499,39 +10516,91 @@
 </xsl:text>
           <xsl:text>function animate() {
 </xsl:text>
-          <xsl:text>    // Do the page swith if any one pending
+          <xsl:text>    let rearm = true;
 </xsl:text>
-          <xsl:text>    if(current_subscribed_page != current_visible_page){
+          <xsl:text>    do{
 </xsl:text>
-          <xsl:text>        switch_visible_page(current_subscribed_page);
+          <xsl:text>        if(page_fading == "pending" || page_fading == "forced"){
 </xsl:text>
-          <xsl:text>    }
+          <xsl:text>            if(page_fading == "pending")
+</xsl:text>
+          <xsl:text>                svg_root.classList.add("fade-out-page");
+</xsl:text>
+          <xsl:text>            page_fading = "in_progress";
+</xsl:text>
+          <xsl:text>            if(page_fading_args.length)
+</xsl:text>
+          <xsl:text>                setTimeout(function(){
+</xsl:text>
+          <xsl:text>                    switch_page(...page_fading_args);
+</xsl:text>
+          <xsl:text>                },1);
+</xsl:text>
+          <xsl:text>            break;
+</xsl:text>
+          <xsl:text>        }
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    while(widget = need_cache_apply.pop()){
+          <xsl:text>        // Do the page swith if pending
 </xsl:text>
-          <xsl:text>        widget.apply_cache();
+          <xsl:text>        if(page_switch_in_progress){
 </xsl:text>
-          <xsl:text>    }
+          <xsl:text>            if(current_subscribed_page != current_visible_page){
 </xsl:text>
-          <xsl:text>
+          <xsl:text>                switch_visible_page(current_subscribed_page);
 </xsl:text>
-          <xsl:text>    if(jumps_need_update) update_jumps();
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    apply_updates();
+          <xsl:text>            }
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    pending_widget_animates.forEach(widget =&gt; widget._animate());
+          <xsl:text>            page_switch_in_progress = false;
 </xsl:text>
-          <xsl:text>    pending_widget_animates = [];
+          <xsl:text>
+</xsl:text>
+          <xsl:text>            if(page_fading == "in_progress"){
+</xsl:text>
+          <xsl:text>                svg_root.classList.remove("fade-out-page");
+</xsl:text>
+          <xsl:text>                page_fading = "off";
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        while(widget = need_cache_apply.pop()){
+</xsl:text>
+          <xsl:text>            widget.apply_cache();
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        if(jumps_need_update) update_jumps();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        apply_updates();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        pending_widget_animates.forEach(widget =&gt; widget._animate());
+</xsl:text>
+          <xsl:text>        pending_widget_animates = [];
+</xsl:text>
+          <xsl:text>        rearm = false;
+</xsl:text>
+          <xsl:text>    } while(0);
 </xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>    requestAnimationFrameID = null;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    if(rearm) requestHMIAnimation();
 </xsl:text>
           <xsl:text>}
 </xsl:text>
@@ -10787,21 +10856,27 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var page_fading_in_progress = false;
+          <xsl:text>var page_fading = "off";
+</xsl:text>
+          <xsl:text>var page_fading_args = "off";
 </xsl:text>
           <xsl:text>function fading_page_switch(...args){
 </xsl:text>
-          <xsl:text>    svg_root.classList.add("fade-out-page");
+          <xsl:text>    if(page_fading == "in_progress")
 </xsl:text>
-          <xsl:text>    page_fading_in_progress = true;
+          <xsl:text>        page_fading = "forced";
+</xsl:text>
+          <xsl:text>    else
+</xsl:text>
+          <xsl:text>        page_fading = "pending";
+</xsl:text>
+          <xsl:text>    page_fading_args = args;
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    setTimeout(function(){
+          <xsl:text>    requestHMIAnimation();
 </xsl:text>
-          <xsl:text>        switch_page(...args);
-</xsl:text>
-          <xsl:text>    },1);
+          <xsl:text>
 </xsl:text>
           <xsl:text>}
 </xsl:text>
@@ -11163,6 +11238,8 @@
 </xsl:text>
           <xsl:text>var page_node_local_index = hmi_local_index("page_node");
 </xsl:text>
+          <xsl:text>var page_switch_in_progress = false;
+</xsl:text>
           <xsl:text>
 </xsl:text>
           <xsl:text>function toggleFullscreen() {
@@ -11217,7 +11294,7 @@
 </xsl:text>
           <xsl:text>function switch_page(page_name, page_index) {
 </xsl:text>
-          <xsl:text>    if(current_subscribed_page != current_visible_page){
+          <xsl:text>    if(page_switch_in_progress){
 </xsl:text>
           <xsl:text>        /* page switch already going */
 </xsl:text>
@@ -11226,6 +11303,8 @@
           <xsl:text>        return false;
 </xsl:text>
           <xsl:text>    }
+</xsl:text>
+          <xsl:text>    page_switch_in_progress = true;
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -11408,12 +11487,6 @@
           <xsl:text>
 </xsl:text>
           <xsl:text>    svg_root.setAttribute('viewBox',new_desc.bbox.join(" "));
-</xsl:text>
-          <xsl:text>    if(page_fading_in_progress)
-</xsl:text>
-          <xsl:text>        svg_root.classList.remove("fade-out-page");
-</xsl:text>
-          <xsl:text>        page_fading_in_progress = false;
 </xsl:text>
           <xsl:text>    current_visible_page = page_name;
 </xsl:text>
