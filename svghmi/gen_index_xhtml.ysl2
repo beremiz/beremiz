@@ -102,6 +102,12 @@ istylesheet
 
                     include text svghmi.js
 
+                    | \n//\n//\n// Declarations from SVG scripts (inkscape document properties) \n//\n//
+                    foreach "/svg:svg/svg:script" {
+                        |
+                        | /* «@id» */
+                        | «text()»
+                    }
                 }
             }
         }
