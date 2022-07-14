@@ -27,3 +27,4 @@ widget_defs("List") {
     |     },
 }
 
+widget_class("List");
