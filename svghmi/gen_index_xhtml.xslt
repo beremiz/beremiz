@@ -2059,6 +2059,10 @@
 </xsl:text>
     <xsl:text>}
 </xsl:text>
+    <xsl:message terminate="no">
+      <xsl:value-of select="@type"/>
+      <xsl:text> widget is used in SVG but widget type is not declared</xsl:text>
+    </xsl:message>
   </xsl:template>
   <xsl:variable name="included_ids" select="$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id"/>
   <xsl:variable name="hmi_widgets" select="$hmi_elements[@id = $included_ids]"/>
@@ -2077,6 +2081,8 @@
 </xsl:text>
     <xsl:apply-templates mode="hmi_widgets" select="$hmi_widgets"/>
     <xsl:text>}
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -6120,6 +6126,14 @@
     <xsl:text>    },
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='List']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>ListWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template match="widget[@type='ListSwitch']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
@@ -7884,6 +7898,14 @@
     <xsl:text>    ].reverse(),
 </xsl:text>
   </xsl:template>
+  <xsl:template match="widget[@type='TextList']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>TextListWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
   <xsl:template match="widget[@type='TextStyleList']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
@@ -7923,6 +7945,14 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:text>    },
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='TextStyleList']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>TextStyleListWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>}
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_desc">
@@ -11612,6 +11642,24 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>
+//
+//
+// Declarations from SVG scripts (inkscape document properties) 
+//
+//
+</xsl:text>
+          <xsl:for-each select="/svg:svg/svg:script">
+            <xsl:text>
+</xsl:text>
+            <xsl:text>/* </xsl:text>
+            <xsl:value-of select="@id"/>
+            <xsl:text> */
+</xsl:text>
+            <xsl:value-of select="text()"/>
+            <xsl:text>
+</xsl:text>
+          </xsl:for-each>
         </script>
       </body>
     </html>
