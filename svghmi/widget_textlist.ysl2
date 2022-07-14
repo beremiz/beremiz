@@ -26,3 +26,5 @@ widget_defs("TextList") {
     // could find a proper way in xpath to reverse()
     |     ].reverse(),
 }
+
+widget_class("TextList");

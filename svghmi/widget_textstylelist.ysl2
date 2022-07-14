@@ -26,3 +26,4 @@ widget_defs("TextStyleList") {
     |     },
 }
 
+widget_class("TextStyleList");
