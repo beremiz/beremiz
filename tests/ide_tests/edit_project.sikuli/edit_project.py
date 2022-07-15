@@ -37,8 +37,6 @@ def test(app):
 
     app.WaitIdleUI()
 
-    app.k.Save()
-
     app.k.Clean()
 
     app.waitForChangeAndIdleStdout()
