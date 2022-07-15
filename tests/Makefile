@@ -67,6 +67,10 @@ workspace ?= $(abspath $(src)/../..)
 test_dir ?= $(HOME)/test
 build_dir = $(test_dir)/build
 
+#
+# SOURCE and BUILD
+#
+
 OWN_PROJECTS=beremiz matiec
 
 tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclude=.*.swp
@@ -85,7 +89,6 @@ define make_src_rule
 $(build_dir)/$(1)/$($(1)_checksum).sha1: $(build_dir) $(workspace)/$(1)
 	rm -rf $(build_dir)/$(1)
 	tar -C $(workspace) $(tar_opts) -c $(1) | tar -C $(build_dir) -x
-	#cp -a $(workspace)/$(1) $(build_dir)/$(1)
 	touch $$@
 endef
 $(foreach project,$(OWN_PROJECTS),$(eval $(call make_src_rule,$(project))))
@@ -96,16 +99,29 @@ $(build_dir)/matiec/iec2c: | $(build_dir)/matiec/$(matiec_checksum).sha1
     ./configure && \
     make
 
-# TODO: use packge (deb/snap ?)
 own_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1
 	touch $@
+
+define log_command
+	$(call $(1),$(2)) | tee test_stdout.txt; exit $$$${PIPESTATUS[0]}
+endef
+
+define prep_test
+	rm -rf $(test_dir)/$(1)_results
+	mkdir $(test_dir)/$(1)_results
+	cd $(test_dir)/$(1)_results
+endef
+
+#
+# IDE TESTS
+#
 
 ide_test_dir = $(src)/ide_tests
 sikuli_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.sikuli))
 pytest_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.pytest))
 
 define sikuli_idetest_command
-	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${PIPESTATUS[0]}
+	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1)
 endef
 
 
@@ -113,7 +129,7 @@ DELAY=400
 KILL_DELAY=430
 PYTEST=$(dir $(BEREMIZPYTHONPATH))/pytest
 define pytest_idetest_command
-	(fluxbox >/dev/null 2>&1 &); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1) | tee test_stdout.txt; exit $$$${PIPESTATUS[0]}
+	(fluxbox >/dev/null 2>&1 &); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1)
 endef
 
 # Xnest based interactive sessions for tests edit and debug. 
@@ -123,28 +139,22 @@ define xnest_run
 	Xnest :42 -geometry 1920x1080+0+0 & export xnestpid=$$!; sleep 1; DISPLAY=:42 $(1); export res=$$?; kill $${xnestpid} 2>/dev/null; exit $${res}
 endef
 
-define prep_test
-	rm -rf $(test_dir)/$(1)_idetest
-	mkdir $(test_dir)/$(1)_idetest
-	cd $(test_dir)/$(1)_idetest
-endef
-
 xserver_command ?= xvfb-run -s '-screen 0 1920x1080x24'
 
 define make_idetest_rule
-$(test_dir)/$(1)_idetest/.passed: own_apps
-	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call $(2),$(1))'
+$(test_dir)/$(1)_results/.passed: own_apps
+	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call log_command,$(2),$(1))'
 	touch $$@
 
 # Manually invoked rule {testname}.sikuli
-$(1): $(test_dir)/$(1)_idetest/.passed
+$(1): $(test_dir)/$(1)_results/.passed
 
 # Manually invoked rule xnest_{testname}.sikuli
 # runs test in xnest so that one can see what happens
 xnest_$(1): own_apps
-	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call $(2),$(1))')
+	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call log_command,$(2),$(1))')
 
-ide_tests_targets += $(test_dir)/$(1)_idetest/.passed
+ide_tests_targets += $(test_dir)/$(1)_results/.passed
 endef
 $(foreach idetest,$(sikuli_ide_tests),$(eval $(call make_idetest_rule,$(idetest),sikuli_idetest_command)))
 $(foreach idetest,$(pytest_ide_tests),$(eval $(call make_idetest_rule,$(idetest),pytest_idetest_command)))
@@ -166,16 +176,42 @@ xvfb_sikuli: own_apps
 	echo "******************************************"
 	$(xserver_command) bash -c '(fluxbox &);(x11vnc &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm'
 
-clean:
-	rm -rf $(ide_tests_targets) $(build_dir)
+#
+# CLI TESTS
+#
+
+cli_test_dir = $(src)/cli_tests
+cli_tests = $(subst $(cli_test_dir)/,,$(wildcard $(cli_test_dir)/*.bash))
+
+define clitest_command
+	BEREMIZPATH=$(build_dir)/beremiz source $(src)/cli_tests/$(1)
+endef
+
+define make_clitest_rule
+$(test_dir)/$(1)_results/.passed: own_apps
+	$(call prep_test,$(1)); bash -c '$(call log_command,$(2),$(1))'
+	touch $$@
+
+# Manually invoked rule
+$(1): $(test_dir)/$(1)_results/.passed
+
+cli_tests_targets += $(test_dir)/$(1)_results/.passed
+endef
+$(foreach clitest,$(cli_tests),$(eval $(call make_clitest_rule,$(clitest),clitest_command)))
+
+cli_tests: $(cli_tests_targets)
+	echo "$(cli_tests_targets) : Passed"
+
+clean_results:
+	rm -rf $(test_dir)/*_results
+
+clean: clean_results
+	rm -rf $(build_dir)
 
 
 # TODOs 
 
 source_check:
-	echo TODO $@
-
-cli_tests :
 	echo TODO $@
 
 runtime_tests:
