@@ -9,13 +9,14 @@ from util.paths import Bpath
 
 class LocalRuntimeMixin():
 
-    def __init__(self, log):
+    def __init__(self, log, use_gui=True):
         self.local_runtime_log = log
         self.local_runtime = None
         self.runtime_port = None
         self.local_runtime_tmpdir = None
+        self.use_gui = use_gui
 
-    def StartLocalRuntime(self, taskbaricon=True):
+    def StartLocalRuntime(self):
         if (self.local_runtime is None) or (self.local_runtime.exitcode is not None):
             # create temporary directory for runtime working directory
             self.local_runtime_tmpdir = tempfile.mkdtemp()
@@ -29,7 +30,7 @@ class LocalRuntimeMixin():
                     sys.executable,
                     Bpath("Beremiz_service.py"),
                     self.runtime_port,
-                    {False: "-x 0", True: "-x 1"}[taskbaricon],
+                    {False: "-x 0", True: "-x 1"}[self.use_gui],
                     self.local_runtime_tmpdir),
                 no_gui=False,
                 timeout=500, keyword=self.local_runtime_tmpdir,

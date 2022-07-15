@@ -71,7 +71,7 @@ class CLIController(LocalRuntimeMixin, ProjectController):
     def __init__(self, session):
         self.session = session
         log = Log()
-        LocalRuntimeMixin.__init__(self, log)
+        LocalRuntimeMixin.__init__(self, log, use_gui=False)
         ProjectController.__init__(self, None, log)
 
     def check_and_load_project(self):
