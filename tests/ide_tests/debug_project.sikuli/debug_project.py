@@ -58,6 +58,8 @@ def test(app):
 
     app.k.SelectAll()
 
+    app.type(Key.DELETE)
+
     app.type("'sys.stdout.write(\"DEBUG TEST OK\\n\")'")
 
     app.type(Key.ENTER)

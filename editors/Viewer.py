@@ -1909,9 +1909,9 @@ class Viewer(EditorPanel, DebugViewer):
 
     def OnViewerMouseEvent(self, event):
         self.ResetBuffer()
-        if (event.Leaving() or event.RightDown()) and self.ToolTipElement is not None:
+        if (event.Leaving() or event.RightUp()) and self.ToolTipElement is not None:
             self.ToolTipElement.DestroyToolTip()
-        elif (not event.Entering() and not event.RightDown() and
+        elif (not event.Entering() and not event.RightUp() and
               gettime() - self.LastToolTipCheckTime > REFRESH_PERIOD):
             self.LastToolTipCheckTime = gettime()
             element = None
