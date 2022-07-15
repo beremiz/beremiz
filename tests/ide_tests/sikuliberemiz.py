@@ -273,8 +273,10 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
             def makeMyMeth(n):
                 def myMeth(*args, **kwargs):
                     self.ReportScreenShot("Begin: " + n + "(" + repr(args) + "," + repr(kwargs) + ")")
-                    getattr(sikuli, n)(*args, **kwargs)
-                    self.ReportScreenShot("end: " + n + "(" + repr(args) + "," + repr(kwargs) + ")")
+                    try:
+                        getattr(sikuli, n)(*args, **kwargs)
+                    finally:
+                        self.ReportScreenShot("end: " + n + "(" + repr(args) + "," + repr(kwargs) + ")")
                 return myMeth
             setattr(self, name, makeMyMeth(name))
 
