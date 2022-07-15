@@ -48,7 +48,7 @@ RUN set -xe && \
     ) | install /dev/stdin /usr/local/bin/sikulix
 
 
-RUN echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
+RUN env echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
 RUN chmod +x /usr/local/bin/do_tests
 
 USER $UNAME
@@ -60,7 +60,7 @@ RUN virtualenv --python=$(which python2) ~/beremizenv
 RUN ~/beremizenv/bin/pip install \
         pytest pytest-timeout ddt \
         lxml future matplotlib zeroconf2 enum34 pyro sslpsk posix_spawn \
-        twisted nevow autobahn \
+        twisted nevow autobahn click\
         wxPython==4.1.1
 
 # Point to python binary test scripts will use
