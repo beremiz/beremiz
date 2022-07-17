@@ -81,8 +81,14 @@ Traceback:
 
 
 def get_last_traceback(tb):
-    while tb.tb_next:
-        tb = tb.tb_next
+    while True:
+        if not hasattr(tb, "tb_next"):
+            break
+        if tb.tb_next:
+            tb = tb.tb_next
+        else:
+            break
+
     return tb
 
 
@@ -111,7 +117,8 @@ def AddExceptHook(app_version='[No version]', logf = None):
         if e_traceback:
             info['traceback'] = ''.join(traceback.format_tb(e_traceback)) + '%s: %s' % (e_type, e_value)
             last_tb = get_last_traceback(e_traceback)
-            exception_locals = last_tb.tb_frame.f_locals  # the locals at the level of the stack trace where the exception actually occurred
+            # save locals at the level of the stack trace where the exception actually occurred
+            exception_locals = last_tb.tb_frame.f_locals if last_tb else {};
             info['locals'] = format_namespace(exception_locals)
             if 'self' in exception_locals:
                 try:
@@ -134,7 +141,8 @@ def AddExceptHook(app_version='[No version]', logf = None):
     def handle_exception(e_type, e_value, e_traceback, exit=False):
         traceback.print_exception(e_type, e_value, e_traceback)  # this is very helpful when there's an exception in the rest of this func
         last_tb = get_last_traceback(e_traceback)
-        ex = (last_tb.tb_frame.f_code.co_filename, last_tb.tb_frame.f_lineno)
+        ex = (last_tb.tb_frame.f_code.co_filename if last_tb else "unknown",
+              last_tb.tb_frame.f_lineno if last_tb else None)
         if ex not in ignored_exceptions:
             ignored_exceptions.append(ex)
             date = time.ctime()
