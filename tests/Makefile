@@ -102,7 +102,7 @@ $(build_dir)/matiec/iec2c: $(build_dir)/matiec/$(matiec_checksum).sha1
 $(build_dir)/open62541/build/bin/libopen62541.a: $(build_dir)/open62541/$(open62541_checksum).sha1
 	cd $(build_dir)/open62541 && \
     rm -rf build && mkdir build && cd build && \
-	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUA_NAMESPACE_ZERO=FULL .. && \
+	cmake .. && \
 	make
 
 built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a
