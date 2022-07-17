@@ -59,32 +59,49 @@ function apply_updates() {
 // Called on requestAnimationFrame, modifies DOM
 var requestAnimationFrameID = null;
 function animate() {
-    // Do the page swith if any one pending
-    if(page_switch_in_progress){
-        if(current_subscribed_page != current_visible_page){
-            switch_visible_page(current_subscribed_page);
+    let rearm = true;
+    do{
+        if(page_fading == "pending" || page_fading == "forced"){
+            if(page_fading == "pending")
+                svg_root.classList.add("fade-out-page");
+            page_fading = "in_progress";
+            if(page_fading_args.length)
+                setTimeout(function(){
+                    switch_page(...page_fading_args);
+                },1);
+            break;
         }
 
-        page_switch_in_progress = false;
+        // Do the page swith if pending
+        if(page_switch_in_progress){
+            if(current_subscribed_page != current_visible_page){
+                switch_visible_page(current_subscribed_page);
+            }
 
-        if(page_fading_in_progress){
-            svg_root.classList.remove("fade-out-page");
-            page_fading_in_progress = false;
+            page_switch_in_progress = false;
+
+            if(page_fading == "in_progress"){
+                svg_root.classList.remove("fade-out-page");
+                page_fading = "off";
+            }
         }
-    }
 
-    while(widget = need_cache_apply.pop()){
-        widget.apply_cache();
-    }
+        while(widget = need_cache_apply.pop()){
+            widget.apply_cache();
+        }
 
-    if(jumps_need_update) update_jumps();
+        if(jumps_need_update) update_jumps();
 
-    apply_updates();
+        apply_updates();
 
-    pending_widget_animates.forEach(widget => widget._animate());
-    pending_widget_animates = [];
+        pending_widget_animates.forEach(widget => widget._animate());
+        pending_widget_animates = [];
+        rearm = false;
+    } while(0);
 
     requestAnimationFrameID = null;
+
+    if(rearm) requestHMIAnimation();
 }
 
 function requestHMIAnimation() {
@@ -212,14 +229,17 @@ if(has_watchdog){
 }
 
 
-var page_fading_in_progress = false;
+var page_fading = "off";
+var page_fading_args = "off";
 function fading_page_switch(...args){
-    svg_root.classList.add("fade-out-page");
-    page_fading_in_progress = true;
+    if(page_fading == "in_progress")
+        page_fading = "forced";
+    else
+        page_fading = "pending";
+    page_fading_args = args;
 
-    setTimeout(function(){
-        switch_page(...args);
-    },1);
+    requestHMIAnimation();
+
 }
 document.body.style.backgroundColor = "black";
 

@@ -1251,14 +1251,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.979899"
-     inkscape:cx="205.65994"
-     inkscape:cy="103.00174"
+     inkscape:cx="52.116754"
+     inkscape:cy="96.940825"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1600"
-     inkscape:window-height="836"
+     inkscape:window-width="3840"
+     inkscape:window-height="2096"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -1274,7 +1274,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1283,6 +1283,14 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(37.474617,-760.93329)">
+    <rect
+       style="opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       id="rect250"
+       width="320"
+       height="240"
+       x="-37.474617"
+       y="760.93329"
+       inkscape:label="HMI:Page:Home" />
     <path
        style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#282828;fill-opacity:1;stroke:none;stroke-width:2.04116011;marker:none;enable-background:accumulate"
        d="m 114.28125,14.28125 v 130 h 18.9375 v 93.5625 h 5.71875 V 176.4375 h 8.90625 v 15.71875 h 36.4375 v -32.5 h -36.4375 v 12.125 h -8.90625 v -27.5 h 21.78125 v -130 z"
@@ -1529,13 +1537,5 @@
          x="62.818459"
          y="812.17749"
          style="font-size:6.17188501px;line-height:1.25;font-family:sans-serif">ON</tspan></text>
-    <rect
-       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
-       id="rect250"
-       width="320"
-       height="240"
-       x="-37.474617"
-       y="760.93329"
-       inkscape:label="HMI:Page:Home" />
   </g>
 </svg>
