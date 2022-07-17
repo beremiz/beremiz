@@ -52,11 +52,9 @@ def test(app):
 
     app.rightClick("1646066996790.png")
 
-    app.wait("Force",10)
-    
-    app.click("Force")
+    app.click("Force value")
 
-    app.k.SelectAll()
+    app.type("a", Key.CTRL)
 
     app.type(Key.DELETE)
 
