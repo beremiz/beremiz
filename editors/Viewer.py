@@ -317,7 +317,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                             selected = None
                         dialog.Destroy()
                         if selected is None:
-                            return
+                            return False
                         if selected == 0:
                             location = "%I" + location
                         elif selected == 1:
@@ -333,7 +333,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                     dlg.Destroy()
                     if var_name is None:
-                        return
+                        return False
                     elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
                         message = _("\"%s\" pou already exists!") % var_name
                     elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
@@ -363,7 +363,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                     var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                     dlg.Destroy()
                     if var_name is None:
-                        return
+                        return False
                     elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
                         message = _("\"%s\" pou already exists!") % var_name
                     elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
@@ -385,7 +385,7 @@ class ViewerDropTarget(wx.TextDropTarget):
                 var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                 dlg.Destroy()
                 if var_name is None:
-                    return
+                    return False
                 elif var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
                     message = _("\"%s\" pou already exists!") % var_name
                 elif not var_name.upper() in [name.upper() for name in self.ParentWindow.Controler.GetEditedElementVariables(tagname, self.ParentWindow.Debug)]:
@@ -419,6 +419,8 @@ class ViewerDropTarget(wx.TextDropTarget):
                 message = _("Variable don't belong to this POU!")
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+            return False
+        return True
 
     def GenerateTreeMenu(self, x, y, scaling, menu, base_path, var_class, tree):
         for child_name, child_type, (child_tree, child_dimensions) in tree:

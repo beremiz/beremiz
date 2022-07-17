@@ -178,7 +178,7 @@ class LocationCellEditor(wx.grid.GridCellEditor):
             self.CellControl.SetVarType(self.Table.GetValueByName(row, 'Type'))
         self.CellControl.SetFocus()
 
-    def EndEditInternal(self, row, col, grid, old_loc):
+    def EndEdit(self, row, col, grid, old_loc):
         loc = self.CellControl.GetValue()
         changed = loc != old_loc
         if changed:
@@ -201,13 +201,8 @@ class LocationCellEditor(wx.grid.GridCellEditor):
         self.CellControl.Disable()
         return changed
 
-    if wx.VERSION >= (3, 0, 0):
-        def EndEdit(self, row, col, grid, oldval):
-            return self.EndEditInternal(row, col, grid, oldval)
-    else:
-        def EndEdit(self, row, col, grid):
-            old_loc = self.Table.GetValueByName(row, 'Location')
-            return self.EndEditInternal(row, col, grid, old_loc)
+    def ApplyEdit(self, row, col, grid):
+        pass
 
     def SetSize(self, rect):
         self.CellControl.SetDimensions(rect.x + 1, rect.y,
