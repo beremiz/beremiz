@@ -4,6 +4,7 @@
 import os
 import posixpath
 import sys
+import time
 from functools import wraps
 
 import click
@@ -104,6 +105,11 @@ def process_pipeline(session, processors, **kwargs):
             break
 
     session.controller.finish()
+
+    if session.keep:
+        click.echo("Press Ctrl+C to quit")
+        while True:
+            time.sleep(1)
 
     return ret
 

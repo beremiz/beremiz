@@ -22,6 +22,7 @@ class Log:
             if self.crlfpending:
                 sys.stdout.write("\n")
             sys.stdout.write(s)
+            sys.stdout.flush()
             self.crlfpending = 0
 
     def write_error(self, s):
