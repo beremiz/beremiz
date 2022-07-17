@@ -21,6 +21,13 @@ jobs:
           ref: 2a25f4dbf4e2b1e017a3a583db7dede4771fe523
           path: matiec
 
+    - uses: actions/checkout@v3
+      with:
+          repository: open62541/open62541
+          ref: v3.0.2
+          path: open62541
+          submodules: recursive
+
     - name: Cache docker image
       id: cache-docker
       uses: actions/cache@v3

@@ -26,7 +26,7 @@
 #           $ make xnest_sikuli
 #
 #       build minimal beremiz and matiec to run tests
-#           $ make own_apps
+#           $ make built_apps
 #
 #   For CI/CD scripts to catch and report all failures. Use cases :
 #
@@ -71,7 +71,7 @@ build_dir = $(test_dir)/build
 # SOURCE and BUILD
 #
 
-OWN_PROJECTS=beremiz matiec
+BUILT_PROJECTS=beremiz matiec open62541
 
 tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclude=.*.swp
 
@@ -80,7 +80,7 @@ tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclud
 define make_checksum_assign
 $(1)_checksum = $(shell tar $(tar_opts) -c $(workspace)/$(1) | sha1sum | cut -d ' ' -f 1)
 endef
-$(foreach project,$(OWN_PROJECTS),$(eval $(call make_checksum_assign,$(project))))
+$(foreach project,$(BUILT_PROJECTS),$(eval $(call make_checksum_assign,$(project))))
 
 $(build_dir):
 	mkdir -p $(build_dir)
@@ -91,7 +91,7 @@ $(build_dir)/$(1)/$($(1)_checksum).sha1: $(build_dir) $(workspace)/$(1)
 	tar -C $(workspace) $(tar_opts) -c $(1) | tar -C $(build_dir) -x
 	touch $$@
 endef
-$(foreach project,$(OWN_PROJECTS),$(eval $(call make_src_rule,$(project))))
+$(foreach project,$(BUILT_PROJECTS),$(eval $(call make_src_rule,$(project))))
 
 $(build_dir)/matiec/iec2c: | $(build_dir)/matiec/$(matiec_checksum).sha1
 	cd $(build_dir)/matiec && \
@@ -99,7 +99,13 @@ $(build_dir)/matiec/iec2c: | $(build_dir)/matiec/$(matiec_checksum).sha1
     ./configure && \
     make
 
-own_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1
+$(build_dir)/open62541/build/bin/libopen62541.a: | $(build_dir)/open62541/$(open62541_checksum).sha1
+	cd $(build_dir)/open62541 && \
+    rm -rf build && mkdir build && cd build && \
+	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUA_NAMESPACE_ZERO=FULL .. && \
+	make
+
+built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a
 	touch $@
 
 define log_command
@@ -142,7 +148,7 @@ endef
 xserver_command ?= xvfb-run -s '-screen 0 1920x1080x24'
 
 define make_idetest_rule
-$(test_dir)/$(1)_results/.passed: own_apps
+$(test_dir)/$(1)_results/.passed: built_apps
 	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call log_command,$(2),$(1))'
 	touch $$@
 
@@ -151,7 +157,7 @@ $(1): $(test_dir)/$(1)_results/.passed
 
 # Manually invoked rule xnest_{testname}.sikuli
 # runs test in xnest so that one can see what happens
-xnest_$(1): own_apps
+xnest_$(1): built_apps
 	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call log_command,$(2),$(1))')
 
 ide_tests_targets += $(test_dir)/$(1)_results/.passed
@@ -162,13 +168,13 @@ $(foreach idetest,$(pytest_ide_tests),$(eval $(call make_idetest_rule,$(idetest)
 ide_tests : $(ide_tests_targets)
 	echo "$(ide_tests_targets) : Passed"
 
-xnest_xterm: own_apps
+xnest_xterm: built_apps
 	$(call xnest_run, bash -c '(fluxbox &);xterm')
 
-xnest_sikuli: own_apps
+xnest_sikuli: built_apps
 	$(call xnest_run, bash -c '(fluxbox &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm')
 
-xvfb_sikuli: own_apps
+xvfb_sikuli: built_apps
 	echo "******************************************"
 	echo "On host, run 'xvncviewer 127.0.0.1:5900' to see sikuli X session"
 	echo "Docker container must be created with TESTDEBUG=YES. For example :"
@@ -188,7 +194,7 @@ define clitest_command
 endef
 
 define make_clitest_rule
-$(test_dir)/$(1)_results/.passed: own_apps
+$(test_dir)/$(1)_results/.passed: built_apps
 	$(call prep_test,$(1)); bash -c '$(call log_command,$(2),$(1))'
 	touch $$@
 

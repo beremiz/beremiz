@@ -68,15 +68,17 @@ for name, classes in [
     ('wx',[
         'Panel', 'PyCommandEvent', 'Dialog', 'PopupWindow', 'TextEntryDialog',
         'Notebook', 'ListCtrl', 'TextDropTarget', 'PyControl', 'TextCtrl', 
-        'SplitterWindow', 'Frame', 'Printout', 'StaticBitmap',
+        'SplitterWindow', 'Frame', 'Printout', 'StaticBitmap', 'DropTarget',
         ('GetTranslation', get_translation)]),
     ('wx.lib.agw.advancedsplash',[]),
+    ('wx.dataview',['DataViewIndexListModel', 'PyDataViewIndexListModel']),
     ('wx.lib.buttons',['GenBitmapTextButton']),
     ('wx.adv',['EditableListBox']),
     ('wx.grid',[
         'Grid', 'PyGridTableBase', 'GridCellEditor', 'GridCellTextEditor',
         'GridCellChoiceEditor']),
     ('wx.lib.agw.customtreectrl',['CustomTreeCtrl']),
+    ('wx.lib.gizmos',[]),
     ('wx.lib.intctrl',['IntCtrl']),
     ('matplotlib.pyplot',[]),
     ('matplotlib.backends.backend_wxagg',['FigureCanvasWxAgg']),

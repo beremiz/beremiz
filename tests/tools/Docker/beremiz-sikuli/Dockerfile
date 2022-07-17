@@ -36,7 +36,7 @@ RUN set -xe \
                build-essential automake flex bison mercurial \
                libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
                libpython2.7-dev libssl-dev \
-               python2 virtualenv
+               python2 virtualenv cmake
 
 # link obtained from https://raiman.github.io/SikuliX1/downloads.html
 RUN set -xe && \
@@ -60,7 +60,7 @@ RUN virtualenv --python=$(which python2) ~/beremizenv
 RUN ~/beremizenv/bin/pip install \
         pytest pytest-timeout ddt \
         lxml future matplotlib zeroconf2 enum34 pyro sslpsk posix_spawn \
-        twisted nevow autobahn click\
+        twisted nevow autobahn click opcua \
         wxPython==4.1.1
 
 # Point to python binary test scripts will use
