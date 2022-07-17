@@ -477,14 +477,17 @@ emit "declarations:hmi-classes" {
                                     generate-id() = generate-id(key('TypesKey', @type)) and 
                                     not(@type = $excluded_types)]""";
     apply "$used_widget_types", mode="widget_class";
+
 }
 
-template "widget", mode="widget_class"
-||
-class «@type»Widget extends Widget{
-    /* empty class, as «@type» widget didn't provide any */
+template "widget", mode="widget_class" {
+    ||
+    class «@type»Widget extends Widget{
+        /* empty class, as «@type» widget didn't provide any */
+    }
+    ||
+    warning > «@type» widget is used in SVG but widget type is not declared
 }
-||
 
 const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id";
 const "hmi_widgets","$hmi_elements[@id = $included_ids]";
@@ -494,6 +497,7 @@ emit "declarations:hmi-elements" {
     | var hmi_widgets = {
     apply "$hmi_widgets", mode="hmi_widgets";
     | }
+    |
 }
 
 function "defs_by_labels" {
