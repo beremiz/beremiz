@@ -26,7 +26,12 @@ jobs:
           repository: open62541/open62541
           ref: v3.0.2
           path: open62541
-          submodules: recursive
+
+    - name: Recurse open62541 submodules
+      run: |
+        cd open62541
+        git submodule update --init --recursive
+
 
     - name: Cache docker image
       id: cache-docker
