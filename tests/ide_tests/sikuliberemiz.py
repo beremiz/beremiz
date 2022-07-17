@@ -29,7 +29,6 @@ class KBDShortcut:
              "Connect":  sikuli.Key.F7,
              "Clean":    sikuli.Key.F9,
              "Build":    sikuli.Key.F11,
-             "SelectAll":("a",sikuli.Key.CTRL),
              "Save":     ("s",sikuli.Key.CTRL),
              "New":      ("n",sikuli.Key.CTRL),
              "Address":  ("l",sikuli.Key.CTRL)}  # to reach address bar in GTK's file selector
