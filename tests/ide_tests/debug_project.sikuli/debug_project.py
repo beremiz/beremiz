@@ -54,9 +54,9 @@ def test(app):
 
     app.click("Force value")
 
-    app.type("a", Key.CTRL)
+    #app.type("a", Key.CTRL)
 
-    app.type(Key.DELETE)
+    app.type(Key.BACKSPACE)
 
     app.type("'sys.stdout.write(\"DEBUG TEST OK\\n\")'")
 
