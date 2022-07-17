@@ -86,20 +86,20 @@ $(build_dir):
 	mkdir -p $(build_dir)
 
 define make_src_rule
-$(build_dir)/$(1)/$($(1)_checksum).sha1: $(build_dir) $(workspace)/$(1)
+$(build_dir)/$(1)/$($(1)_checksum).sha1: | $(build_dir) $(workspace)/$(1)
 	rm -rf $(build_dir)/$(1)
 	tar -C $(workspace) $(tar_opts) -c $(1) | tar -C $(build_dir) -x
 	touch $$@
 endef
 $(foreach project,$(BUILT_PROJECTS),$(eval $(call make_src_rule,$(project))))
 
-$(build_dir)/matiec/iec2c: | $(build_dir)/matiec/$(matiec_checksum).sha1
+$(build_dir)/matiec/iec2c: $(build_dir)/matiec/$(matiec_checksum).sha1
 	cd $(build_dir)/matiec && \
     autoreconf -i && \
     ./configure && \
     make
 
-$(build_dir)/open62541/build/bin/libopen62541.a: | $(build_dir)/open62541/$(open62541_checksum).sha1
+$(build_dir)/open62541/build/bin/libopen62541.a: $(build_dir)/open62541/$(open62541_checksum).sha1
 	cd $(build_dir)/open62541 && \
     rm -rf build && mkdir build && cd build && \
 	cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUA_NAMESPACE_ZERO=FULL .. && \
