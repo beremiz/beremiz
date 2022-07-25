@@ -53,10 +53,16 @@ def test(app):
     app.rightClick("1646066996790.png")
 
     app.click("Force value")
+    # app.click("1646062660790.png")
 
-    #app.type("a", Key.CTRL)
+    # app.type("a", Key.CTRL)
 
-    app.type(Key.BACKSPACE)
+    # app.type(Key.BACKSPACE)
+    app.type(Key.HOME)
+
+    app.type("a", Key.CTRL)
+
+    app.type(Key.DELETE)
 
     app.type("'sys.stdout.write(\"DEBUG TEST OK\\n\")'")
 
