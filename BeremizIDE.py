@@ -535,7 +535,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         event.Skip()
 
     def OnLogConsoleUpdateUI(self, event):
-        self.SetCopyBuffer(self.LogConsole.GetSelectedText(), True)
+        if event.GetUpdated()==wx.stc.STC_UPDATE_SELECTION:
+            self.SetCopyBuffer(self.LogConsole.GetSelectedText(), True)
         event.Skip()
 
     def OnLogConsoleMarginClick(self, event):
