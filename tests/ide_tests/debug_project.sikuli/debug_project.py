@@ -52,7 +52,12 @@ def test(app):
 
     app.rightClick("1646066996790.png")
 
-    app.click("Force value")
+    # app.click("Force value")
+
+    app.type(Key.DOWN)
+
+    app.type(Key.ENTER)
+
     # app.click("1646062660790.png")
 
     # app.type("a", Key.CTRL)
