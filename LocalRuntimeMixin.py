@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+import os
 import sys
 import tempfile
 import random
 import shutil
 from util.ProcessLogger import ProcessLogger
 from util.paths import Bpath
+
+LocalRuntimeInterpreterPath = \
+    os.environ["BEREMIZPYTHONPATH"] \
+    if os.environ.has_key("BEREMIZPYTHONPATH") \
+    else sys.executable
 
 class LocalRuntimeMixin():
 
@@ -27,7 +34,7 @@ class LocalRuntimeMixin():
             self.local_runtime = ProcessLogger(
                 self.local_runtime_log,
                 "\"%s\" \"%s\" -p %s -i localhost %s %s" % (
-                    sys.executable,
+                    LocalRuntimeInterpreterPath,
                     Bpath("Beremiz_service.py"),
                     self.runtime_port,
                     {False: "-x 0", True: "-x 1"}[self.use_gui],
