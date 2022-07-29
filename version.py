@@ -71,28 +71,23 @@ def GetAppRevision():
     return rev
 
 
-def GetAboutDialogInfo():
-    import wx
-    info = wx.AboutDialogInfo()
+def GetAboutDialogInfo(info):
 
-    info.Name = "Beremiz"
     info.Version = app_version
 
     info.Copyright = ""
+    info.Copyright += "(C) 2006-2022 Edouard Tisserant\n"
+    info.Copyright += "(C) 2003-2021 Mario de Sousa\n"
     info.Copyright += "(C) 2016-2018 Andrey Skvortsov\n"
-    info.Copyright += "(C) 2008-2018 Eduard Tisserant\n"
-    info.Copyright += "(C) 2008-2015 Laurent Bessard"
+    info.Copyright += "(C) 2006-2013 Laurent Bessard\n"
 
     info.WebSite = ("http://beremiz.org", "beremiz.org")
 
-    info.Description = _("Open Source framework for automation, "
-                         "implemented IEC 61131 IDE with constantly growing set of extensions "
-                         "and flexible PLC runtime.")
-
     info.Developers = (
+        "Edouard Tisserant <contact@beremiz.fr>",
+        "Mario de Sousa <msousa@fe.up.pt>",
         "Andrey Skvortsov <andrej.skvortzov@gmail.com>",
         "Sergey Surkov <surkov.sv@summatechnology.ru>",
-        "Edouard Tisserant <edouard.tisserant@gmail.com>",
         "Laurent Bessard <laurent.bessard@gmail.com>")
 
     info.License = (
@@ -117,8 +112,6 @@ def GetAboutDialogInfo():
     if os.path.exists(license_path):
         with open(license_path) as f:
             info.License += f.read()
-
-    info.Icon = wx.Icon(os.path.join(path, "images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
 
     info.Translators = (
         "Basque",

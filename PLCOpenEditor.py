@@ -31,6 +31,7 @@ import sys
 import getopt
 
 import wx
+import wx.adv
 
 import version
 import util.paths as paths
@@ -355,6 +356,7 @@ class PLCOpenEditor(IDEFrame):
         open_pdf(os.path.join(beremiz_dir, "plcopen", "TC6_XML_V101.pdf"))
 
     def OnAboutMenu(self, event):
+        info = wx.adv.AboutDialogInfo()
         info = version.GetAboutDialogInfo()
         info.Name = "PLCOpenEditor"
         info.Description = _("PLCOpenEditor is part of Beremiz project.\n\n"
