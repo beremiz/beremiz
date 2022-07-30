@@ -17,7 +17,7 @@ done
 
 cp ico024.png brz.png
 convert -compress none ico*.png brz.ico
-rm -f ico*.png
+rm -f ico???.png
 
 
 convert -compress none poeico*.png poe.ico
