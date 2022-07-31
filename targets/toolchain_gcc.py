@@ -51,14 +51,24 @@ class toolchain_gcc(object):
         """
         Returns list of builder specific CFLAGS
         """
-        return [self.CTRInstance.GetTarget().getcontent().getCFLAGS()]
+        cflags = [self.CTRInstance.GetTarget().getcontent().getCFLAGS()]
+        if os.environ.has_key("CFLAGS"):
+            cflags.append(os.environ["CFLAGS"])
+        if os.environ.has_key("SYSROOT"):
+            cflags.append("--sysroot="+os.environ["SYSROOT"])
+        return cflags
 
     def getBuilderLDFLAGS(self):
         """
         Returns list of builder specific LDFLAGS
         """
-        return self.CTRInstance.LDFLAGS + \
+        ldflags = self.CTRInstance.LDFLAGS + \
             [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
+        if os.environ.has_key("LDLAGS"):
+            ldflags.append(os.environ["LDLAGS"])
+        if os.environ.has_key("SYSROOT"):
+            ldflags.append("--sysroot="+os.environ["SYSROOT"])
+        return ldflags
 
     def getCompiler(self):
         """
