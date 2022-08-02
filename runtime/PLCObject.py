@@ -466,7 +466,7 @@ class PLCObject(object):
                 self.PythonThreadAcknowledge(cmd)
                 self.PythonRuntimeCall("start")
                 self.LogMessage("Python extensions started")
-                self.PostStartPLC()
+                self._PostStartPLC()
                 self.PythonThreadLoop()
                 self.PythonRuntimeCall("stop", reverse_order=True)
             elif cmd == "Finish":
@@ -503,6 +503,13 @@ class PLCObject(object):
         For example : restore saved proprietary parameters
         """
         pass
+
+    def _PostStartPLC(self):
+        try:
+            self.PostStartPLC()
+        except Exception:
+            self.LogMessage(0, 'Post Start Exception'+'\n'.join(
+                traceback.format_exception(*sys.exc_info())))
 
     def PostStartPLC(self):
         """ 
