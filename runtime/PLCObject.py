@@ -730,7 +730,7 @@ class PLCObject(object):
                 return self.DebugToken
         else:
             self._suspendDebug(True)
-        return None
+        return 4 # DEBUG_SUSPENDED
 
     def _TracesSwap(self):
         self.LastSwapTrace = time()
