@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2022-01-18T11:38:21">
+  <contentHeader name="Unnamed" modificationDateTime="2022-07-21T11:39:43">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -25,11 +25,20 @@
                 <derived name="HMI_INT"/>
               </type>
             </variable>
+          </localVars>
+          <localVars retain="true">
             <variable name="selection">
               <type>
                 <derived name="HMI_INT"/>
               </type>
             </variable>
+            <variable name="selection0">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
             <variable name="Pump0">
               <type>
                 <derived name="PumpControl"/>
