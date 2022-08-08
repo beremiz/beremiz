@@ -1497,7 +1497,7 @@ class SlaveSiiSmartView(wx.Panel):
         if check_connect_flag:
             status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
             if status is not PlcStatus.Started:
-                dialog = wx.FileDialog(self, _("Choose a binary file"), os.getcwd(), "",  _("bin files (*.bin)|*.bin"), wx.OPEN)
+                dialog = wx.FileDialog(self, _("Choose a binary file"), os.getcwd(), "",  _("bin files (*.bin)|*.bin"), wx.FD_OPEN)
 
                 if dialog.ShowModal() == wx.ID_OK:
                     filepath = dialog.GetPath()
@@ -1896,7 +1896,7 @@ class HexView(wx.Panel):
         @param event : wx.EVT_BUTTON object
         """
         dialog = wx.FileDialog(self, _("Choose a binary file"), os.getcwd(), "",
-                               _("bin files (*.bin)|*.bin"), wx.OPEN)
+                               _("bin files (*.bin)|*.bin"), wx.FD_OPEN)
 
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()

@@ -721,7 +721,7 @@ def _runtime_{location}_svghmi_stop():
         return res
 
     def _ImportSVG(self):
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a SVG file"), os.getcwd(), "",  _("SVG files (*.svg)|*.svg|All files|*.*"), wx.OPEN)
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a SVG file"), os.getcwd(), "",  _("SVG files (*.svg)|*.svg|All files|*.*"), wx.FD_OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             svgpath = dialog.GetPath()
             if os.path.isfile(svgpath):
@@ -765,7 +765,7 @@ def _runtime_{location}_svghmi_stop():
     def _EditPO(self):
         """ Select a specific translation and edit it with POEdit """
         project_path = self.CTNPath()
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a PO file"), project_path, "",  _("PO files (*.po)|*.po"), wx.OPEN)
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a PO file"), project_path, "",  _("PO files (*.po)|*.po"), wx.FD_OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             POFile = dialog.GetPath()
             if os.path.isfile(POFile):
@@ -791,7 +791,7 @@ def _runtime_{location}_svghmi_stop():
             _("Choose a font"),
             os.path.expanduser("~"),
             "",
-            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.OPEN)
+            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.FD_OPEN)
 
         if dialog.ShowModal() == wx.ID_OK:
             fontfile = dialog.GetPath()
@@ -828,7 +828,7 @@ def _runtime_{location}_svghmi_stop():
             _("Choose a font to remove"),
             fontdir,
             "",
-            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.OPEN)
+            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.FD_OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             fontfile = dialog.GetPath()
             if os.path.isfile(fontfile):
