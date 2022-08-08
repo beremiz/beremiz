@@ -1240,7 +1240,7 @@ class LibraryEditorSizer(wx.FlexGridSizer):
                                _("Choose an XML file"),
                                os.getcwd(), "",
                                _("XML files (*.xml)|*.xml|All files|*.*"),
-                               wx.OPEN)
+                               wx.FD_OPEN)
 
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
