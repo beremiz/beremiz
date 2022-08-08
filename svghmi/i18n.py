@@ -20,6 +20,7 @@ import re
 # https://pypi.org/project/pycountry/18.12.8/
 # python2 -m pip install pycountry==18.12.8 --user
 import pycountry
+from dialogs import MessageBoxOnce
 
 cmd_parser = re.compile(r'(?:"([^"]+)"\s*|([^\s]+)\s*)?')
 
@@ -39,10 +40,21 @@ def open_pofile(pofile):
             poedit_path = None
 
     else:
-        try:
-            poedit_path = subprocess.check_output("command -v poedit", shell=True).strip()
-        except subprocess.CalledProcessError:
-            poedit_path = None
+        if os.environ.has_key("SNAP"):
+            MessageBoxOnce("Launching POEdit with xdg-open",
+                    "Confined app can't launch POEdit directly.\n"+
+                        "Instead, PO/POT file is passed to xdg-open.\n"+
+                        "Please select POEdit when proposed.\n\n"+
+                    "Notes: \n"+
+                    " - POEdit must be installed on you system.\n"+
+                    " - If no choice is proposed, use file manager to change POT/PO file properties.\n",
+                    "SVGHMII18SnapWarning")
+            poedit_path = "xdg-open"
+        else:
+            try:
+                poedit_path = subprocess.check_output("command -v poedit", shell=True).strip()
+            except subprocess.CalledProcessError:
+                poedit_path = None
 
     if poedit_path is None:
         wx.MessageBox("POEdit is not found or installed !")

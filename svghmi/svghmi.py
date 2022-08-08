@@ -8,6 +8,7 @@
 
 from __future__ import absolute_import
 import os
+import sys
 import shutil
 import hashlib
 import shlex
@@ -302,10 +303,14 @@ class SVGHMIEditor(ConfTreeNodeEditor):
 
         return ret
 
-if wx.Platform == '__WXMSW__':
+if sys.platform.startswith('win'):
     default_cmds={
         "launch":"cmd.exe /c 'start msedge {url}'",
         "watchdog":"cmd.exe /k 'echo watchdog for {url} !'"}
+elif os.environ.has_key("SNAP"):
+    default_cmds={
+        "launch":"xdg-open {url}",
+        "watchdog":"echo Watchdog for {name} !"}
 else:
     default_cmds={
         "launch":"chromium {url}",

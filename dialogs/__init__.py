@@ -51,3 +51,4 @@ from dialogs.FindInPouDialog import FindInPouDialog
 from dialogs.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 from dialogs.UriEditor import UriEditor
 from dialogs.IDManager import IDManager
+from dialogs.MessageBoxOnce import MessageBoxOnce

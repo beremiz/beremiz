@@ -24,8 +24,10 @@
 
 
 from __future__ import absolute_import
+import os
 import wx
 import subprocess
+from dialogs import MessageBoxOnce
 
 
 def _get_inkscape_path():
@@ -86,11 +88,23 @@ def get_inkscape_version():
     _inkscape_version = _get_inkscape_version()
     return _inkscape_version
 
-def open_svg(svgfile):
-    """ Generic function to open SVG file """
-    
-    inkpath = get_inkscape_path()
-    if inkpath is None:
-        wx.MessageBox("Inkscape is not found or installed !")
-    else:
-        subprocess.Popen([inkpath,svgfile])
+if os.environ.has_key("SNAP"):
+    def open_svg(svgfile):
+        MessageBoxOnce("Launching Inkscape with xdg-open",
+                "Confined app can't launch Inkscape directly.\n"+
+                    "Instead, SVG file is passed to xdg-open.\n"+
+                    "Please select Inskape when proposed.\n\n"+
+                    "Notes: \n"+
+                    " - Inkscape must be installed on you system.\n"+
+                    " - If no choice is proposed, use file manager to change SVG file properties.\n",
+                "DocSVGSnapWarning")
+
+        subprocess.Popen(["xdg-open",svgfile])
+else:
+    def open_svg(svgfile):
+        """ Generic function to open SVG file """
+        inkpath = get_inkscape_path()
+        if inkpath is None:
+            wx.MessageBox("Inkscape is not found or installed !")
+        else:
+            subprocess.Popen([inkpath,svgfile])

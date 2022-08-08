@@ -31,6 +31,19 @@ from docutil import get_inkscape_path, get_inkscape_version
 
 from util.ProcessLogger import ProcessLogger
 
+# When running as a confined Snap, /tmp isn't accessible from the outside
+# and Widget DnD to Inkscape can't work, since it can't find generated svg 
+# This forces tmp directory in $SNAP_USER_DATA, accessible from other apps
+if os.environ.has_key("SNAP"):
+     NamedTemporaryFile_orig = NamedTemporaryFile
+     tmpdir = os.path.join(os.environ["SNAP_USER_DATA"], ".tmp")
+     if not os.path.exists(tmpdir):
+         os.mkdir(tmpdir)
+     def NamedTemporaryFile(*args,**kwargs):
+        kwargs["dir"] = tmpdir
+        return NamedTemporaryFile_orig(*args, **kwargs)
+
+
 ScriptDirectory = paths.AbsDir(__file__)
 
 HMITreeDndMagicWord = "text/beremiz-hmitree"
@@ -464,7 +477,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
 
         # TODO: spawn a thread, to decouple thumbnail gen
         status, result, _err_result = ProcessLogger(
-            self.Controler.GetCTRoot().logger,
+            #self.Controler.GetCTRoot().logger,
+            None,
             '"' + inkpath + '" "' + svgpath + '" ' +
             export_opt + ' "' + thumbpath +
             '" -D -h ' + str(_preview_height)).spin()
