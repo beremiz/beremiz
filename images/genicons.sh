@@ -16,7 +16,7 @@ for fname in `ls *.svg`; do
 done
 
 cp ico024.png brz.png
-convert -compress none ico*.png brz.ico
+convert -compress none ico???.png brz.ico
 rm -f ico???.png
 
 
