@@ -26,7 +26,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -43,12 +43,12 @@
      pagecolor="#ffffff"
      id="base"
      showgrid="true"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="688.97445"
-     inkscape:cy="818.22309"
+     inkscape:zoom="4"
+     inkscape:cx="384.40645"
+     inkscape:cy="510.71306"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:current-layer="svg2"
+     inkscape:current-layer="g19354"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:window-maximized="0"
@@ -90277,8 +90277,9 @@
          height="178.66196"
          x="-1492.3632"
          y="2013.0917"
-         id="ico64"
-         style="display:inline;overflow:visible;visibility:visible;fill:none;stroke:none;stroke-width:0;marker:none;enable-background:accumulate" />
+         id="ico064"
+         style="display:inline;overflow:visible;visibility:visible;fill:none;stroke:none;stroke-width:0;marker:none;enable-background:accumulate"
+         inkscape:label="#ico064" />
       <use
          transform="translate(223.29672,0.68429344)"
          id="use15274"
@@ -90294,7 +90295,7 @@
        transform="translate(-1840,2339.9999)" />
     <rect
        style="display:inline;overflow:visible;visibility:visible;fill:none;fill-opacity:1;stroke:none;stroke-width:0;marker:none;enable-background:accumulate"
-       id="ico48"
+       id="ico048"
        y="2012.4073"
        x="-1715.66"
        height="178.66196"
@@ -90304,7 +90305,7 @@
        transform="matrix(0.5,0,0,0.5,-593.54387,1095.1925)">
       <rect
          style="display:inline;overflow:visible;visibility:visible;fill:none;stroke:none;stroke-width:0;marker:none;enable-background:accumulate"
-         id="ico24"
+         id="ico024"
          y="2013.0917"
          x="-1492.3632"
          height="178.66196"
@@ -90323,7 +90324,7 @@
        transform="matrix(0.6666666,0,0,0.6666666,-493.70173,729.90034)">
       <rect
          style="display:inline;overflow:visible;visibility:visible;fill:none;stroke:none;stroke-width:0;marker:none;enable-background:accumulate"
-         id="ico32"
+         id="ico032"
          y="2013.0917"
          x="-1492.3632"
          height="178.66196"
@@ -90345,7 +90346,7 @@
          height="178.66196"
          x="-1492.3632"
          y="2013.0917"
-         id="ico16"
+         id="ico016"
          style="display:inline;overflow:visible;visibility:visible;fill:none;stroke:none;stroke-width:0;marker:none;enable-background:accumulate" />
       <use
          transform="translate(223.29672,0.68429344)"
@@ -90361,7 +90362,8 @@
        transform="matrix(0.3669311,0,0,0.3669311,-1086.1197,1386.8468)">
       <g
          id="g837"
-         transform="matrix(0.48690873,0,0,0.48690873,-1715.6909,1704.8447)">
+         transform="matrix(0.48690873,0,0,0.48690873,-1715.6909,1704.8447)"
+         inkscape:label="g837">
         <rect
            id="rect2"
            ry="200"
