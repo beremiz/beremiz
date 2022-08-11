@@ -84,6 +84,9 @@ widget_class("Jump") {
 
         dispatch(value) {
             this.disabled = !Number(value);
+
+            // TODO : use RequestAnimate and animate()
+
             this.update_state();
         }
 ||
@@ -142,6 +145,7 @@ widget_page("Jump"){
     }
 }
 
+/* TODO: move to detachable pages ysl2 */
 emit "cssdefs:jump"
 ||
 .fade-out-page {

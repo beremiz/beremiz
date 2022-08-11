@@ -140,7 +140,7 @@ void __init_debug(void)
     InitRetain();
     /* Iterate over all variables to fill debug buffer */
     if(CheckRetainBuffer()){
-        static unsigned int retain_offset = 0;
+        unsigned int retain_offset = 0;
         retain_list_collect_cursor = 0;
 
         /* iterate over retain list */
@@ -322,7 +322,7 @@ void __publish_debug(void)
         LeaveDebugSection();
     }
 #endif
-    static unsigned int retain_offset = 0;
+    unsigned int retain_offset = 0;
     /* when not debugging, do only retain */
     retain_list_collect_cursor = 0;
 

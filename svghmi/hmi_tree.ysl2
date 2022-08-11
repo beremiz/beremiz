@@ -121,6 +121,7 @@ template "*", mode="testtree"{
     > «$indent» «local-name()» 
     foreach "@*" > «local-name()»="«.»" 
     > \n
+    if "text()" > «text()»\n
     apply "*", mode="testtree" {
         with "indent" value "concat($indent,'>')"
     };

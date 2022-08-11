@@ -15,9 +15,29 @@
 //
 const "pathregex",!"'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"!;
 
+const "newline" |
+const "twonewlines", "concat($newline,$newline)";
+
 template "*", mode="parselabel"
 {
-    const "label","@inkscape:label";
+    const "part","@inkscape:label";
+    const "desc", "svg:desc";
+
+    // add svg:desc field if continuation "\" marker is found at the end of label
+    const "len","string-length($part)";
+    const "has_continuation", "substring($part,$len,1)='\\'";
+    const "label" choose{
+        when "$has_continuation" {
+           const "_continuation", "substring-before($desc, $twonewlines)";
+           const "continuation" choose {
+               when "$_continuation" value "$_continuation";
+               otherwise value "$desc";
+           }
+           value "concat(substring($part,1,$len - 1),translate($continuation,$newline,''))";
+        }
+        otherwise value "$part";
+    }
+
     const "id","@id";
 
     const "description", "substring-after($label,'HMI:')";
@@ -100,7 +120,15 @@ template "*", mode="parselabel"
                 }
             }
         }
-        if "svg:desc" desc value "svg:desc/text()";
+        choose{
+            when "$has_continuation" {
+               const "_continuation", "substring-after($desc, $twonewlines)";
+               if "$_continuation"
+                       desc value "$_continuation";
+            }
+            otherwise
+                if "$desc" desc value "$desc/text()";
+        }
     }
 }
 
