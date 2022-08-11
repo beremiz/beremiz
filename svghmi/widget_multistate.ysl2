@@ -36,6 +36,7 @@ widget_class("MultiState")
                     choice.elt.setAttribute("style", choice.style);
                 }
             }
+            // TODO : use RequestAnimate and animate()
         }
 
         on_click(evt) {

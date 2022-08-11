@@ -60,12 +60,12 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.64"
-     inkscape:cx="-438.80601"
-     inkscape:cy="183.59799"
-     inkscape:window-width="3200"
-     inkscape:window-height="1672"
+     inkscape:cx="476.03774"
+     inkscape:cy="444.53549"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
-     inkscape:window-y="54"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -745,8 +745,14 @@
   </g>
   <g
      id="g4507"
-     inkscape:label="HMI:ScrollBar@.range@.position@.size"
+     inkscape:label="HMI:ScrollBar\"
      transform="translate(-202)">
+    <desc
+       id="desc150">@.range
+@.position
+@.size
+
+my tailor is rich</desc>
     <rect
        y="84"
        x="960"
@@ -857,6 +863,9 @@
      inkscape:label="HMI:ScrollBar@.range@.position@.size"
      id="g156"
      style="stroke-width:2">
+    <desc
+       id="desc149">deedewesfsdf
+cedwee</desc>
     <rect
        inkscape:label="range"
        style="opacity:1;vector-effect:none;fill:#ff35ff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"

@@ -1578,12 +1578,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return debug_status, ticks, buffers
 
     RegisterDebugVariableErrorCodes = { 
+        # Connector only can return None
+        None : _("Debug: connection problem.\n"),
         # TRACE_LIST_OVERFLOW
         1 : _("Debug: Too many variables traced. Max 1024.\n"),
         # FORCE_LIST_OVERFLOW
         2 : _("Debug: Too many variables forced. Max 256.\n"),
         # FORCE_BUFFER_OVERFLOW
-        3 : _("Debug: Cumulated forced variables size too large. Max 1KB.\n")
+        3 : _("Debug: Cumulated forced variables size too large. Max 1KB.\n"),
+        # DEBUG_SUSPENDED
+        4 : _("Debug: suspended.\n")
     }
 
     def RegisterDebugVarToConnector(self):
@@ -1626,7 +1630,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     self.DebugToken = None
                     self.logger.write_warning(
                         self.RegisterDebugVariableErrorCodes.get(
-                            -res, _("Debug: Unknown error")))
+                            -res if res is not None else None,
+                            _("Debug: Unknown error")))
             else:
                 self.TracedIECPath = []
                 self._connector.SetTraceVariablesList([])
