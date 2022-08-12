@@ -20,32 +20,32 @@ const "twonewlines", "concat($newline,$newline)";
 
 template "*", mode="parselabel"
 {
-    const "part","@inkscape:label";
+    const "label","@inkscape:label";
     const "desc", "svg:desc";
 
     // add svg:desc field if continuation "\" marker is found at the end of label
-    const "len","string-length($part)";
-    const "has_continuation", "substring($part,$len,1)='\\'";
-    const "label" choose{
+    const "len","string-length($label)";
+    const "has_continuation", "substring($label,$len,1)='\\'";
+    const "full_decl" choose{
         when "$has_continuation" {
            const "_continuation", "substring-before($desc, $twonewlines)";
            const "continuation" choose {
                when "$_continuation" value "$_continuation";
                otherwise value "$desc";
            }
-           value "concat(substring($part,1,$len - 1),translate($continuation,$newline,''))";
+           value "concat(substring($label,1,$len - 1),translate($continuation,$newline,''))";
         }
-        otherwise value "$part";
+        otherwise value "$label";
     }
 
     const "id","@id";
 
-    const "description", "substring-after($label,'HMI:')";
+    const "declaration", "substring-after($full_decl,'HMI:')";
 
-    const "_args", "substring-before($description,'@')";
+    const "_args", "substring-before($declaration,'@')";
     const "args" choose {
         when "$_args" value "$_args";
-        otherwise value "$description";
+        otherwise value "$declaration";
     }
 
     const "_typefreq", "substring-before($args,':')";
@@ -66,7 +66,7 @@ template "*", mode="parselabel"
         attrib "type" > «$type»
         if "$freq" {
             if "not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))" {
-                error > Widget id:«$id» label:«$label» has wrong syntax of frequency forcing «$freq»
+                error > Widget id:«$id» label:«full_decl» has wrong syntax of frequency forcing «$freq»
             }
             attrib "freq" > «$freq»
         }
@@ -75,7 +75,7 @@ template "*", mode="parselabel"
                 attrib "value" > «.»
             }
         }
-        const "paths", "substring-after($description,'@')";
+        const "paths", "substring-after($declaration,'@')";
         foreach "str:split($paths, '@')" {
             if "string-length(.) > 0" path {
                 // 1 : global match
@@ -96,7 +96,7 @@ template "*", mode="parselabel"
                         attrib "max" > «$pathminmax[2]»
                     }
                     when "$pathminmaxcount = 1 or $pathminmaxcount > 2" {
-                        error > Widget id:«$id» label:«$label» has wrong syntax of path section «$pathminmax»
+                        error > Widget id:«$id» label:«full_decl» has wrong syntax of path section «$pathminmax»
                     }
                 }
                 if "$indexed_hmitree" choose {
@@ -110,7 +110,7 @@ template "*", mode="parselabel"
                         const "item", "$indexed_hmitree/*[@hmipath = $path]";
                         const "pathtype", "local-name($item)";
                         if "$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')" {
-                            error > Widget id:«$id» label:«$label» path section «$pathminmax» use min and max on non mumeric value
+                            error > Widget id:«$id» label:«full_decl» path section «$pathminmax» use min and max on non mumeric value
                         }
                         if "count($item) = 1" {
                             attrib "index" > «$item/@index»
