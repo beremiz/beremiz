@@ -37,7 +37,7 @@ import ddt
 
 import conftest
 import Beremiz
-import PLCOpenEditor
+# import PLCOpenEditor
 
 
 class UserApplicationTest(unittest.TestCase):
