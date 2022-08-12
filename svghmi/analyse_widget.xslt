@@ -3,8 +3,37 @@
   <xsl:output method="xml"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
   <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
+  <xsl:variable name="newline">
+    <xsl:text>
+</xsl:text>
+  </xsl:variable>
+  <xsl:variable name="twonewlines" select="concat($newline,$newline)"/>
   <xsl:template mode="parselabel" match="*">
-    <xsl:variable name="label" select="@inkscape:label"/>
+    <xsl:variable name="part" select="@inkscape:label"/>
+    <xsl:variable name="desc" select="svg:desc"/>
+    <xsl:variable name="len" select="string-length($part)"/>
+    <xsl:variable name="has_continuation" select="substring($part,$len,1)='\'"/>
+    <xsl:variable name="label">
+      <xsl:choose>
+        <xsl:when test="$has_continuation">
+          <xsl:variable name="_continuation" select="substring-before($desc, $twonewlines)"/>
+          <xsl:variable name="continuation">
+            <xsl:choose>
+              <xsl:when test="$_continuation">
+                <xsl:value-of select="$_continuation"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$desc"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:value-of select="concat(substring($part,1,$len - 1),translate($continuation,$newline,''))"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$part"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="id" select="@id"/>
     <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
     <xsl:variable name="_args" select="substring-before($description,'@')"/>
@@ -148,11 +177,23 @@
             </path>
           </xsl:if>
         </xsl:for-each>
-        <xsl:if test="svg:desc">
-          <desc>
-            <xsl:value-of select="svg:desc/text()"/>
-          </desc>
-        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$has_continuation">
+            <xsl:variable name="_continuation" select="substring-after($desc, $twonewlines)"/>
+            <xsl:if test="$_continuation">
+              <desc>
+                <xsl:value-of select="$_continuation"/>
+              </desc>
+            </xsl:if>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:if test="$desc">
+              <desc>
+                <xsl:value-of select="$desc/text()"/>
+              </desc>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
       </widget>
     </xsl:if>
   </xsl:template>
