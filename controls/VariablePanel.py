@@ -572,7 +572,6 @@ class VariablePanel(wx.Panel):
 
         self.PanelWidthMin = sum(self.ColSettings["size"])
 
-        self.ElementType = element_type
         self.BodyType = None
 
         for choice in self.FilterChoices:
