@@ -37,6 +37,7 @@ from threading import Thread, Semaphore, Lock, currentThread
 from builtins import str as text
 from past.builtins import execfile
 from six.moves import builtins
+from functools import partial
 
 import runtime
 from runtime.PyroServer import PyroServer
@@ -547,30 +548,6 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
-if havetwisted or havewx:
-    if havetwisted:
-        # reactor._installSignalHandlersAgain()
-        waker_func = reactor._runInMainThread
-        def ui_blocking_call():
-            # FIXME: had to disable SignaHandlers install because
-            # signal not working in non-main thread
-            reactor.run(installSignalHandlers=False)
-    else:
-        waker_func = wx.CallAfter
-        ui_blocking_call = app.MainLoop
-
-    def ui_launched_report():
-        # IDE expects to see that string to stop waiting for runtime
-        # to be ready and connnect to it.
-        print("UI thread started successfully.")
-
-    # This orders ui loop to signal when ready on Stdout
-    if havetwisted:
-        reactor.callLater(0, ui_launched_report)
-    else:
-        wx.CallAfter(ui_launched_report)
-
-
 pyro_thread = None
 
 def FirstWorkerJob():
@@ -601,19 +578,33 @@ def FirstWorkerJob():
 
     runtime.GetPLCObjectSingleton().AutoLoad(autostart)
 
-try:
-    if havetwisted or havewx:
-        # worker that copes with wx and (wx)reactor
-        runtime.MainWorker.interleave(waker_func, FirstWorkerJob)
-        ui_blocking_call()
-        runtime.MainWorker.stop()
+if havetwisted or havewx:
 
-    else:
+    waker_func = wx.CallAfter if havewx else partial(reactor.callLater,0)
+
+    # This orders ui loop to signal when ready on Stdout
+    waker_func(print,"UI thread started successfully.")
+
+    # worker that copes with wx and (wx)reactor
+    runtime.MainWorker.interleave(waker_func, FirstWorkerJob)
+
+    try:
+        if havetwisted:
+            reactor.run(installSignalHandlers=False)
+        else:
+            app.MainLoop
+    except KeyboardInterrupt:
+        pass
+
+    runtime.MainWorker.stop()
+
+else:
+    try:
         # blocking worker loop
         runtime.MainWorker.runloop(FirstWorkerJob)
+    except KeyboardInterrupt:
+        pass
 
-except KeyboardInterrupt:
-    pass
 
 pyroserver.Quit()
 pyro_thread.join()

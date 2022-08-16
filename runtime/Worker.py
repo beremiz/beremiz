@@ -123,9 +123,10 @@ class worker(object):
                 self.feed.wait()
 
             self.mutex.release()
-        self.own_thread = Thread(target = wakerfeedingloop).start()
+        self.own_thread = Thread(target = wakerfeedingloop)
+        self.own_thread.start()
 
-    def stop():
+    def stop(self):
         """
         !interleave
         """
