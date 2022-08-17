@@ -53,7 +53,8 @@ class AboutDialog(wx.Dialog):
 
         image = None
         if self.info.Icon:
-            bitmap = wx.BitmapFromIcon(self.info.Icon)
+            bitmap = wx.Bitmap()
+            bitmap.CopyFromIcon(self.info.Icon)
             image = wx.StaticBitmap(self, bitmap=bitmap)
 
         name = wx.StaticText(self, label="%s %s" % (info.Name, info.Version))
