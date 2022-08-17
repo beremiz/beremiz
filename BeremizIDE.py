@@ -969,7 +969,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         info = version.GetAboutDialogInfo(info)
         info.Name = "Beremiz"
         info.Description = _("Open Source framework for automation, "
-            "implemented IEC 61131 IDE with constantly growing set of extensions "
+            "implementing IEC 61131 IDE with constantly growing set of extensions "
             "and flexible PLC runtime.")
 
         info.Icon = wx.Icon(Bpath("images", "about_brz_logo.png"), wx.BITMAP_TYPE_PNG)
