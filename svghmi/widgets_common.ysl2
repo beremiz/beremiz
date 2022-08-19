@@ -104,7 +104,14 @@ template "svg:*", mode="hmi_widgets" {
             > undefined
     }
 
-    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$indexes»],[«$minmaxes»],{
+    const "has_enable" choose {
+        when "$widget/@has_enable = 'yes'"
+            > true
+        otherwise
+            > false
+    }
+
+    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$indexes»],[«$minmaxes»],«$has_enable»,{
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
 }
@@ -218,12 +225,14 @@ emit "preamble:widget-base-class" {
         unsubscribable = false;
         pending_animate = false;
 
-        constructor(elt_id, freq, args, indexes, minmaxes, members){
+        constructor(elt_id, freq, args, indexes, minmaxes, has_enable, members){
             this.element_id = elt_id;
             this.element = id(elt_id);
             this.args = args;
             this.indexes = indexes;
+            this.indexes_length = indexes.length;
             this.minmaxes = minmaxes;
+            this.has_enable = has_enable;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
             this.lastapply = indexes.map(() => undefined);
             this.inhibit = indexes.map(() => undefined);
@@ -267,12 +276,27 @@ emit "preamble:widget-base-class" {
                     console.log(err);
                 }
             }
+
+            if(this.has_enable){
+                this.disabled_elt = null;
+                this.enabled_elts = [];
+                this.enable_state = false;
+                this.enable_displayed_state = false;
+                for(let child of Array.from(this.element.children)){
+                    if(child.getAttribute("inkscape:label")=="disabled"){
+                        this.disabled_elt = child;
+                    }else{
+                        this.enabled_elts.push(child);
+                        this.element.removeChild(child);
+                    }
+                }
+            }
         }
 
         unsub(){
             /* remove subsribers */
             if(!this.unsubscribable)
-                for(let i = 0; i < this.indexes.length; i++) {
+                for(let i = 0; i < this.indexes_length; i++) {
                     /* flush updates pending because of inhibition */
                     let inhibition = this.inhibit[i];
                     if(inhibition != undefined){
@@ -301,7 +325,7 @@ emit "preamble:widget-base-class" {
             this.container_id = container_id ;
             /* add this's subsribers */
             if(!this.unsubscribable)
-                for(let i = 0; i < this.indexes.length; i++) {
+                for(let i = 0; i < this.indexes_length; i++) {
                     let index = this.get_variable_index(i);
                     if(index == undefined) continue;
                     subscribers(index).add(this);
@@ -402,7 +426,7 @@ emit "preamble:widget-base-class" {
 
         new_hmi_value(index, value, oldval) {
             // TODO avoid searching, store index at sub()
-            for(let i = 0; i < this.indexes.length; i++) {
+            for(let i = 0; i < this.indexes_length; i++) {
                 let refindex = this.get_variable_index(i);
                 if(refindex == undefined) continue;
 
@@ -420,17 +444,60 @@ emit "preamble:widget-base-class" {
             this.dispatch(new_val, old_val, index);
         }
 
+        enable(enabled){
+            if(this.enable_state != enabled){
+                this.enable_state = enabled;
+                this.request_animate();
+            }
+        }
+
+        animate_enable(){
+            if(this.enable_state && !this.enable_displayed_state){
+                //show widget
+                for(let child of this.enabled_elts){
+                    this.element.appendChild(child);
+                }
+
+                //hide disabled content
+                if(this.disabled_elt && this.disabled_elt.parentNode != null)
+                    this.element.removeChild(this.disabled_elt);
+
+                this.enable_displayed_state = true;
+
+            }else if(!this.enable_state && this.enable_displayed_state){
+
+                //hide widget
+                for(let child of this.enabled_elts){
+                    if(child.parentNode != null)
+                        this.element.removeChild(child);
+                }
+
+                //show disabled content
+                if(this.disabled_elt)
+                    this.element.appendChild(this.disabled_elt);
+
+                this.enable_displayed_state = false;
+            }
+        }
+
         _dispatch(value, oldval, varnum) {
             let dispatch = this.dispatch;
-            if(dispatch != undefined){
+            let has_dispatch = dispatch != undefined;
+            let is_enable_var = this.has_enable && (varnum == (this.indexes_length - 1));
+            if(has_dispatch || is_enable_var){
                 if(this.deafen[varnum] == undefined){
                     let now = Date.now();
                     let min_interval = 1000/this.frequency;
                     let lastdispatch = this.lastdispatch[varnum];
                     if(lastdispatch == undefined || now > lastdispatch + min_interval){
                         this.lastdispatch[varnum] = now;
-                        try {
+                        if(has_dispatch) try {
                             dispatch.call(this, value, oldval, varnum);
+                        } catch(err) {
+                            console.log(err);
+                        }
+                        if(is_enable_var) try {
+                            this.enable(Boolean(value));
                         } catch(err) {
                             console.log(err);
                         }
@@ -448,7 +515,10 @@ emit "preamble:widget-base-class" {
         }
 
         _animate(){
-            this.animate();
+            if(this.has_enable)
+                this.animate_enable();
+            if(this.animate != undefined && (!this.has_enable || this.enable_state))
+                this.animate();
             this.pending_animate = false;
         }
 

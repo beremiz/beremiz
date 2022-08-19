@@ -2,7 +2,7 @@
 
 
 //  Parses:
-//  "HMI:WidgetType|freq:param1:param2@path1,path1min,path1max@path2"
+//  "HMI:WidgetType|freq:param1:param2@path1,path1min,path1max@path2#"
 //
 //  Into:
 //  widget type="WidgetType" id="blah456" {
@@ -75,7 +75,18 @@ template "*", mode="parselabel"
                 attrib "value" > «.»
             }
         }
-        const "paths", "substring-after($declaration,'@')";
+        const "tail", "substring-after($declaration,'@')";
+        const "taillen","string-length($tail)";
+        const "has_enable", "substring($tail,$taillen,1)='#'";
+        const "paths" choose{
+            when "$has_enable" {
+               value "substring($tail,1,$taillen - 1)";
+            }
+            otherwise value "$tail";
+        }
+        if "$has_enable" {
+            attrib "has_enable" > yes
+        }
         foreach "str:split($paths, '@')" {
             if "string-length(.) > 0" path {
                 // 1 : global match
