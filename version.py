@@ -25,12 +25,9 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 
-import subprocess
 import os
-
-import util.paths as paths
-
 
 def GetCommunityHelpMsg():
     return _(
@@ -43,32 +40,6 @@ def GetCommunityHelpMsg():
         "You can subscribe to the list here:\n"
         "https://lists.sourceforge.net/lists/listinfo/beremiz-devel"
     )
-
-
-def GetAppRevision():
-    rev = None
-    app_dir = paths.AbsDir(__file__)
-    try:
-        pipe = subprocess.Popen(
-            ["hg", "id", "-i"],
-            stdout=subprocess.PIPE,
-            cwd=app_dir
-        )
-        rev = pipe.communicate()[0]
-        if pipe.returncode != 0:
-            rev = None
-    except Exception:
-        pass
-
-    # if this is not mercurial repository
-    # try to read revision from file
-    if rev is None:
-        try:
-            f = open(os.path.join(app_dir, "revision"))
-            rev = f.readline()
-        except Exception:
-            pass
-    return rev
 
 
 def GetAboutDialogInfo(info):
@@ -107,8 +78,8 @@ def GetAboutDialogInfo(info):
     )
 
     # read license file
-    path = paths.AbsDir(__file__)
-    license_path = os.path.join(path, "COPYING")
+    license_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "COPYING")
     if os.path.exists(license_path):
         with open(license_path) as f:
             info.License += f.read()
@@ -211,7 +182,7 @@ def GetAboutDialogInfo(info):
     return info
 
 
-app_version = "1.2"
-rev = GetAppRevision()
-if rev is not None:
-    app_version = app_version + "-" + rev.rstrip()
+app_version = "1.3-beta2"
+
+if __name__ == "__main__":
+    print(app_version)
