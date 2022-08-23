@@ -84,6 +84,8 @@ istylesheet
                 // Inline SVG
                 copy "$result_svg";
                 script{
+                    include text pythonic.js
+
                     | \n//\n//\n// Early independent declarations \n//\n//
                     apply "document('')/*/preamble:*";
 
@@ -97,8 +99,6 @@ istylesheet
                     apply "document('')/*/epilogue:*";
 
                     include text sprintf.js
-
-                    include text pythonic.js
 
                     include text svghmi.js
 
