@@ -617,7 +617,7 @@ class IDEFrame(wx.Frame):
 
         MenuToolBar = wx.ToolBar(self, ID_PLCOPENEDITOREDITORMENUTOOLBAR,
                                  wx.DefaultPosition, wx.DefaultSize,
-                                 wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
+                                 wx.TB_FLAT | wx.TB_HORIZONTAL | wx.NO_BORDER)
         MenuToolBar.SetToolBitmapSize(wx.Size(25, 25))
         MenuToolBar.Realize()
         self.Panes["MenuToolBar"] = MenuToolBar
@@ -628,12 +628,13 @@ class IDEFrame(wx.Frame):
 
         EditorToolBar = wx.ToolBar(self, ID_PLCOPENEDITOREDITORTOOLBAR,
                                    wx.DefaultPosition, wx.DefaultSize,
-                                   wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
+                                   wx.TB_FLAT | wx.TB_HORIZONTAL | wx.NO_BORDER)
         EditorToolBar.SetToolBitmapSize(wx.Size(25, 25))
         EditorToolBar.AddRadioTool(ID_PLCOPENEDITOREDITORTOOLBARSELECTION,
-                                   _("Select an object"),
+                                   _("Select"),
                                    GetBitmap("select"),
-                                   wx.NullBitmap)
+                                   wx.NullBitmap,
+                                   _("Select an object"))
         EditorToolBar.Realize()
         self.Panes["EditorToolBar"] = EditorToolBar
         self.AUIManager.AddPane(EditorToolBar, wx.aui.AuiPaneInfo().
@@ -2121,7 +2122,7 @@ class IDEFrame(wx.Frame):
                 MenuToolBar.AddSeparator()
             else:
                 id, bitmap, help, callback = toolbar_item
-                MenuToolBar.AddTool(id, help, GetBitmap(bitmap))
+                MenuToolBar.AddTool(id, help, GetBitmap(bitmap), help)
                 if callback is not None:
                     self.Bind(wx.EVT_TOOL, callback, id=id)
         MenuToolBar.Realize()
@@ -2158,13 +2159,13 @@ class IDEFrame(wx.Frame):
             self.CurrentEditorToolBar = []
             EditorToolBar = self.Panes["EditorToolBar"]
             if EditorToolBar:
-                for radio, modes, id, method, picture, help in self.EditorToolBarItems[menu]:
+                for radio, modes, id, method_name, picture, help in self.EditorToolBarItems[menu]:
                     if modes & self.DrawingMode:
                         if radio or self.DrawingMode == FREEDRAWING_MODE:
-                            EditorToolBar.AddRadioTool(id, help, GetBitmap(picture), wx.NullBitmap)
+                            EditorToolBar.AddRadioTool(id, method_name, GetBitmap(picture), wx.NullBitmap, help)
                         else:
-                            EditorToolBar.AddTool(id, help, GetBitmap(picture))
-                        self.Bind(wx.EVT_MENU, getattr(self, method), id=id)
+                            EditorToolBar.AddTool(id, method_name, GetBitmap(picture), help)
+                        self.Bind(wx.EVT_MENU, getattr(self, method_name), id=id)
                         self.CurrentEditorToolBar.append(id)
                 EditorToolBar.Realize()
                 self.AUIManager.GetPane("EditorToolBar").Show()

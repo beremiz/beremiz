@@ -417,7 +417,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         # self.BottomNoteBook.Split(self.BottomNoteBook.GetPageIndex(self.LogViewer), wx.RIGHT)
 
         StatusToolBar = wx.ToolBar(self, -1, wx.DefaultPosition, wx.DefaultSize,
-                                   wx.TB_FLAT | wx.TB_NODIVIDER | wx.NO_BORDER)
+                                   wx.TB_FLAT | wx.TB_HORIZONTAL | wx.NO_BORDER)
         StatusToolBar.SetToolBitmapSize(wx.Size(25, 25))
         StatusToolBar.Realize()
         self.Panes["StatusToolBar"] = StatusToolBar
@@ -747,8 +747,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             for confnode_method in self.CTR.StatusMethods:
                 if "method" in confnode_method and confnode_method.get("shown", True):
                     tool = StatusToolBar.AddTool(
-                        wx.ID_ANY, confnode_method["tooltip"],
-                        GetBitmap(confnode_method.get("bitmap", "Unknown")))
+                        wx.ID_ANY, confnode_method["name"],
+                        GetBitmap(confnode_method.get("bitmap", "Unknown")),
+                        confnode_method["tooltip"])
                     self.Bind(wx.EVT_MENU, self.GetMenuCallBackFunction(confnode_method["method"]), tool)
 
             StatusToolBar.Realize()
