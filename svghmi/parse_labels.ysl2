@@ -2,7 +2,7 @@
 
 
 //  Parses:
-//  "HMI:WidgetType|freq:param1:param2@path1,path1min,path1max@path2#"
+//  "HMI:WidgetType|freq:param1:param2@a=path1,path1min,path1max@b=path2#a+b>3"
 //
 //  Into:
 //  widget type="WidgetType" id="blah456" {
@@ -13,7 +13,7 @@
 //      path value="path4" index="path4" type="HMI_LOCAL";
 //  }
 //
-const "pathregex",!"'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"!;
+const "pathregex",!"'^(\w+=)?([^,=]+)([-.\d,]*)$'"!;
 
 const "newline" |
 const "twonewlines", "concat($newline,$newline)";
@@ -66,7 +66,7 @@ template "*", mode="parselabel"
         attrib "type" > «$type»
         if "$freq" {
             if "not(regexp:test($freq,'^[0-9]*(\.[0-9]+)?[smh]?'))" {
-                error > Widget id:«$id» label:«full_decl» has wrong syntax of frequency forcing «$freq»
+                error > Widget id:«$id» label:«$full_decl» has wrong syntax of frequency forcing «$freq»
             }
             attrib "freq" > «$freq»
         }
@@ -75,39 +75,48 @@ template "*", mode="parselabel"
                 attrib "value" > «.»
             }
         }
+        // find "#" + JS expr at the end
         const "tail", "substring-after($declaration,'@')";
         const "taillen","string-length($tail)";
-        const "has_enable", "substring($tail,$taillen,1)='#'";
+        const "has_enable", "contains($tail, '#')";
         const "paths" choose{
             when "$has_enable" {
-               value "substring($tail,1,$taillen - 1)";
+               value "substring-before($tail,'#')";
             }
             otherwise value "$tail";
         }
         if "$has_enable" {
-            attrib "has_enable" > yes
+            const "enable_expr", "substring-after($tail,'#')";
+            attrib "enable_expr" value "$enable_expr";
         }
+
+        // for stricter syntax checking, this should make error
+        // if $paths contains "@@" or ends with "@" (empty paths)
+
         foreach "str:split($paths, '@')" {
             if "string-length(.) > 0" path {
                 // 1 : global match
+                // 2 : assign=
                 // 2 : /path
-                // 3 : [accepts]
-                // 4 : min,max
+                // 3 : min,max
                 const "path_match", "regexp:match(.,$pathregex)";
+                const "pathassign", "substring-before($path_match[2],'=')";
                 const "pathminmax", "str:split($path_match[4],',')";
-                const "path", "$path_match[2]";
-                const "path_accepts", "$path_match[3]";
+                const "path", "$path_match[3]";
                 const "pathminmaxcount", "count($pathminmax)";
-                attrib "value" > «$path»
-                if "string-length($path_accepts)"
-                    attrib "accepts" > «$path_accepts»
+                if "not($path)"
+                    error > Widget id:«$id» label:«$full_decl» has wrong syntax
+
+                attrib "value" value "$path";
+                if "$pathassign"
+                    attrib "assign" value "$pathassign";
                 choose {
                     when "$pathminmaxcount = 2" {
                         attrib "min" > «$pathminmax[1]»
                         attrib "max" > «$pathminmax[2]»
                     }
                     when "$pathminmaxcount = 1 or $pathminmaxcount > 2" {
-                        error > Widget id:«$id» label:«full_decl» has wrong syntax of path section «$pathminmax»
+                        error > Widget id:«$id» label:«$full_decl» has wrong syntax of path section «$pathminmax»
                     }
                 }
                 if "$indexed_hmitree" choose {
@@ -121,7 +130,7 @@ template "*", mode="parselabel"
                         const "item", "$indexed_hmitree/*[@hmipath = $path]";
                         const "pathtype", "local-name($item)";
                         if "$pathminmaxcount = 3 and not($pathtype = 'HMI_INT' or $pathtype = 'HMI_REAL')" {
-                            error > Widget id:«$id» label:«full_decl» path section «$pathminmax» use min and max on non mumeric value
+                            error > Widget id:«$id» label:«$full_decl» path section «$pathminmax» use min and max on non mumeric value
                         }
                         if "count($item) = 1" {
                             attrib "index" > «$item/@index»

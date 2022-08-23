@@ -59,9 +59,9 @@
      inkscape:current-layer="hmi0"
      showgrid="false"
      units="px"
-     inkscape:zoom="0.90509668"
-     inkscape:cx="474.80696"
-     inkscape:cy="335.41469"
+     inkscape:zoom="0.64"
+     inkscape:cx="864.62819"
+     inkscape:cy="344.83986"
      inkscape:window-width="1600"
      inkscape:window-height="836"
      inkscape:window-x="0"
@@ -748,10 +748,10 @@
      inkscape:label="HMI:ScrollBar\"
      transform="translate(-202)">
     <desc
-       id="desc150">@.range
-@.position
+       id="desc150">@range=.range
+@pos=.position
 @.size
-#
+#pos&gt;10&amp;&amp;range&gt;50
 
 my tailor is rich</desc>
     <path

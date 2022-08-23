@@ -65,6 +65,11 @@ template "svg:*", mode="hmi_widgets" {
     const "eltid","@id";
     const "args" foreach "$widget/arg" > "«func:escape_quotes(@value)»"`if "position()!=last()" > ,`
     const "indexes" foreach "$widget/path" {
+        if "position()!=last()" > ,
+    }
+
+    const "variables" foreach "$widget/path" {
+        > [
         choose {
             when "not(@index)" {
                 choose {
@@ -84,16 +89,15 @@ template "svg:*", mode="hmi_widgets" {
                 > «@index»
             }
         }
-        if "position()!=last()" > ,
-    }
-
-    const "minmaxes" foreach "$widget/path" {
-        choose {
-            when "@min and @max"
-                > [«@min»,«@max»]
-            otherwise
-                > undefined
+        > , {
+        if "@min and @max"{
+                > minmax:[«@min», «@max»]
+                if "@assign"
+                    > ,
         }
+        if "@assign"
+                > assign:"«@assign»"
+        > }]
         if "position()!=last()" > ,
     }
 
@@ -104,14 +108,34 @@ template "svg:*", mode="hmi_widgets" {
             > undefined
     }
 
-    const "has_enable" choose {
-        when "$widget/@has_enable = 'yes'"
+    const "enable_expr" choose{
+        when "$widget/@enable_expr"
             > true
         otherwise
             > false
     }
 
-    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$indexes»],[«$minmaxes»],«$has_enable»,{
+    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$variables»],«$enable_expr»,{
+    if "$widget/@enable_expr" {
+
+    |       assignments: [],
+    |       compute_enable: function(value, oldval, varnum) {
+    |         let result = false;
+    |         do {
+        foreach "$widget/path" {
+            const "varid","generate-id()";
+            const "varnum","position()-1";
+            if "@assign" foreach "$widget/path[@assign]" if "$varid = generate-id()" {
+    |           if(varnum == «$varnum») this.assignments[«position()-1»] = value;
+    |           let «@assign» = this.assignments[«position()-1»];
+    |           if(«@assign» == undefined) break;
+            }
+        }
+    |           result = «$widget/@enable_expr»;
+    |         } while(0);
+    |         this.enable(result);
+    |       },
+    }
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
 }
@@ -225,23 +249,22 @@ emit "preamble:widget-base-class" {
         unsubscribable = false;
         pending_animate = false;
 
-        constructor(elt_id, freq, args, indexes, minmaxes, has_enable, members){
+        constructor(elt_id, freq, args, variables, enable_expr, members){
             this.element_id = elt_id;
             this.element = id(elt_id);
             this.args = args;
-            this.indexes = indexes;
-            this.indexes_length = indexes.length;
-            this.minmaxes = minmaxes;
-            this.has_enable = has_enable;
+            [this.indexes, this.variables_options] = (variables.length>0) ? zip(...variables) : [[],[]];
+            this.indexes_length = this.indexes.length;
+            this.enable_expr = enable_expr;
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
-            this.lastapply = indexes.map(() => undefined);
-            this.inhibit = indexes.map(() => undefined);
-            this.pending = indexes.map(() => undefined);
+            this.lastapply = this.indexes.map(() => undefined);
+            this.inhibit = this.indexes.map(() => undefined);
+            this.pending = this.indexes.map(() => undefined);
             this.bound_uninhibit = this.uninhibit.bind(this);
 
-            this.lastdispatch = indexes.map(() => undefined);
-            this.deafen = indexes.map(() => undefined);
-            this.incoming = indexes.map(() => undefined);
+            this.lastdispatch = this.indexes.map(() => undefined);
+            this.deafen = this.indexes.map(() => undefined);
+            this.incoming = this.indexes.map(() => undefined);
             this.bound_undeafen = this.undeafen.bind(this);
 
             this.forced_frequency = freq;
@@ -277,7 +300,7 @@ emit "preamble:widget-base-class" {
                 }
             }
 
-            if(this.has_enable){
+            if(this.enable_expr){
                 this.disabled_elt = null;
                 this.enabled_elts = [];
                 this.enable_state = false;
@@ -363,7 +386,7 @@ emit "preamble:widget-base-class" {
         }
 
         clip_min_max(index, new_val) {
-            let minmax = this.minmaxes[index];
+            let minmax = this.variables_options[index].minmax;
             if(minmax !== undefined && typeof new_val == "number") {
                 let [min,max] = minmax;
                 if(new_val < min){
@@ -483,8 +506,7 @@ emit "preamble:widget-base-class" {
         _dispatch(value, oldval, varnum) {
             let dispatch = this.dispatch;
             let has_dispatch = dispatch != undefined;
-            let is_enable_var = this.has_enable && (varnum == (this.indexes_length - 1));
-            if(has_dispatch || is_enable_var){
+            if(has_dispatch || this.enable_expr){
                 if(this.deafen[varnum] == undefined){
                     let now = Date.now();
                     let min_interval = 1000/this.frequency;
@@ -496,8 +518,8 @@ emit "preamble:widget-base-class" {
                         } catch(err) {
                             console.log(err);
                         }
-                        if(is_enable_var) try {
-                            this.enable(Boolean(value));
+                        if(this.enable_expr) try {
+                            this.compute_enable(value, oldval, varnum);
                         } catch(err) {
                             console.log(err);
                         }
@@ -515,9 +537,9 @@ emit "preamble:widget-base-class" {
         }
 
         _animate(){
-            if(this.has_enable)
+            if(this.enable_expr)
                 this.animate_enable();
-            if(this.animate != undefined && (!this.has_enable || this.enable_state))
+            if(this.animate != undefined && (!this.enable_expr || this.enable_state))
                 this.animate();
             this.pending_animate = false;
         }
