@@ -19,14 +19,12 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 
 * Prerequisites
 
-		# Ubuntu/Debian :
-		sudo apt-get install build-essential bison flex autoconf
-		sudo apt-get install python-wxgtk3.0 pyro mercurial
-		sudo apt-get install python-nevow python-matplotlib python-lxml python-zeroconf python-cycler
-		sudo apt-get install python-autobahn python-u-msgpack
-
-		sudo apt-get install libpython2.7-dev
-		pip2 install --user sslpsk posix_spawn
+  	# Ubuntu/Debian :
+  	sudo apt-get install build-essential bison flex autoconf
+  	sudo apt-get install libpython2.7-dev libgtk-3-dev libssl-dev
+  	
+  	python2 -m pip install wxPython==4.1.1
+  	python2 -m pip install pyro mercurial==5.9.3 nevow matplotlib lxml zeroconf==0.19.1 cycler autobahn msgpack sslpsk posix_spawn future
 
 * Prepare
 
@@ -155,7 +153,7 @@ Most of examples are shown on [Beremiz youtube channel](https://www.youtube.com/
 ## Documentation ##
 
  * See [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA) to get quick information how to use Beremiz IDE.
- 
+
  * [Official user manual](http://beremiz.readthedocs.io/) is built from sources in doc directory.
    Documentation does not cover all aspects of Beremiz use yet.
    Contribution are very welcome!
