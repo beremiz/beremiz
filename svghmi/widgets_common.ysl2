@@ -21,13 +21,24 @@ decl warning_labels(*ptr) alias - {
     }
 };
 
-decl activable() alias - {
+decl _activable(*level) alias - {
     |     activable_sub:{
-    warning_labels("/active /inactive") {
+    const "activity" labels("/active /inactive") {
+        with "mandatory"{text *level};
         content;
     }
-    |     }
+    value "$activity";
+    const "has_activity","string-length($activity)>0";
+    |     },
 };
+
+decl activable() alias - {
+    _activable("warn")
+};
+decl optional_activable() alias - {
+    _activable("no")
+};
+
 decl activable_labels(*ptr) alias - {
     optional_labels(*ptr) {
         with "subelements","'active inactive'";
@@ -48,6 +59,10 @@ in xsl decl widget_class(%name, *clsname="%nameWidget", match="widget[@type='%na
 
 in xsl decl widget_defs(%name, match="widget[@type='%name']", mode="widget_defs") alias template {
     param "hmi_element";
+    // all widget potentially has a "disabled" labeled element
+    const "disability" optional_labels("disabled");
+    value "$disability";
+    const "has_disability","string-length($disability)>0";
     content;
 };
 
@@ -256,6 +271,10 @@ emit "preamble:widget-base-class" {
             [this.indexes, this.variables_options] = (variables.length>0) ? zip(...variables) : [[],[]];
             this.indexes_length = this.indexes.length;
             this.enable_expr = enable_expr;
+            this.enable_state = true;
+            this.enable_displayed_state = true;
+            this.enabled_elts = [];
+
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
             this.lastapply = this.indexes.map(() => undefined);
             this.inhibit = this.indexes.map(() => undefined);
@@ -301,14 +320,11 @@ emit "preamble:widget-base-class" {
             }
 
             if(this.enable_expr){
-                this.disabled_elt = null;
-                this.enabled_elts = [];
                 this.enable_state = false;
                 this.enable_displayed_state = false;
                 for(let child of Array.from(this.element.children)){
-                    if(child.getAttribute("inkscape:label")=="disabled"){
-                        this.disabled_elt = child;
-                    }else{
+                    let label = child.getAttribute("inkscape:label");
+                    if(label!="disabled"){
                         this.enabled_elts.push(child);
                         this.element.removeChild(child);
                     }
@@ -318,26 +334,25 @@ emit "preamble:widget-base-class" {
 
         unsub(){
             /* remove subsribers */
-            if(!this.unsubscribable)
-                for(let i = 0; i < this.indexes_length; i++) {
-                    /* flush updates pending because of inhibition */
-                    let inhibition = this.inhibit[i];
-                    if(inhibition != undefined){
-                        clearTimeout(inhibition);
-                        this.lastapply[i] = undefined;
-                        this.uninhibit(i);
-                    }
-                    let deafened = this.deafen[i];
-                    if(deafened != undefined){
-                        clearTimeout(deafened);
-                        this.lastdispatch[i] = undefined;
-                        this.undeafen(i);
-                    }
-                    let index = this.indexes[i];
-                    if(this.relativeness[i])
-                        index += this.offset;
-                    subscribers(index).delete(this);
+            for(let i = 0; i < this.indexes_length; i++) {
+                /* flush updates pending because of inhibition */
+                let inhibition = this.inhibit[i];
+                if(inhibition != undefined){
+                    clearTimeout(inhibition);
+                    this.lastapply[i] = undefined;
+                    this.uninhibit(i);
                 }
+                let deafened = this.deafen[i];
+                if(deafened != undefined){
+                    clearTimeout(deafened);
+                    this.lastdispatch[i] = undefined;
+                    this.undeafen(i);
+                }
+                let index = this.indexes[i];
+                if(this.relativeness[i])
+                    index += this.offset;
+                subscribers(index).delete(this);
+            }
             this.offset = 0;
             this.relativeness = undefined;
         }
@@ -347,17 +362,16 @@ emit "preamble:widget-base-class" {
             this.relativeness = relativeness;
             this.container_id = container_id ;
             /* add this's subsribers */
-            if(!this.unsubscribable)
-                for(let i = 0; i < this.indexes_length; i++) {
-                    let index = this.get_variable_index(i);
-                    if(index == undefined) continue;
-                    subscribers(index).add(this);
-                }
+            for(let i = 0; i < this.indexes_length; i++) {
+                let index = this.get_variable_index(i);
+                if(index == undefined) continue;
+                subscribers(index).add(this);
+            }
             need_cache_apply.push(this); 
         }
 
         apply_cache() {
-            if(!this.unsubscribable) for(let index in this.indexes){
+            for(let index in this.indexes){
                 /* dispatch current cache in newly opened page widgets */
                 let realindex = this.get_variable_index(index);
                 if(realindex == undefined) continue;

@@ -70,11 +70,7 @@ template "*", mode="parselabel"
             }
             attrib "freq" > «$freq»
         }
-        foreach "str:split(substring-after($args, ':'), ':')" {
-            arg {
-                attrib "value" > «.»
-            }
-        }
+
         // find "#" + JS expr at the end
         const "tail", "substring-after($declaration,'@')";
         const "taillen","string-length($tail)";
@@ -88,6 +84,12 @@ template "*", mode="parselabel"
         if "$has_enable" {
             const "enable_expr", "substring-after($tail,'#')";
             attrib "enable_expr" value "$enable_expr";
+        }
+
+        foreach "str:split(substring-after($args, ':'), ':')" {
+            arg {
+                attrib "value" > «.»
+            }
         }
 
         // for stricter syntax checking, this should make error
