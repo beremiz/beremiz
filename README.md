@@ -21,10 +21,10 @@ See official [Beremiz website](http://www.beremiz.org/) for more information.
 
   	# Ubuntu/Debian :
   	sudo apt-get install build-essential bison flex autoconf
-  	sudo apt-get install libpython2.7-dev libgtk-3-dev libssl-dev
+  	sudo apt-get install python2-dev libpython2.7-dev libgtk-3-dev libssl-dev libgl1-mesa-dev libglu1-mesa-dev python-setuptools python-lxml 
   	
   	python2 -m pip install wxPython==4.1.1
-  	python2 -m pip install pyro mercurial==5.9.3 nevow matplotlib lxml zeroconf==0.19.1 cycler autobahn msgpack sslpsk posix_spawn future
+  	python2 -m pip install pyro mercurial==5.9.3 nevow matplotlib lxml zeroconf2 cycler autobahn msgpack u-msgpack-python sslpsk posix_spawn future enum34 twisted click opcua pycountry fonttools Brotli python-config
 
 * Prepare
 
