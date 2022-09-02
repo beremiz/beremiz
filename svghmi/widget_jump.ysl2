@@ -13,7 +13,7 @@ widget_desc("Jump") {
 
     - Absolute: force page jump to be not relative even if first path is of type HMI_NODE
 
-    - name=value: Notify jump by setting variable with path having same name assigned
+    - name=value: Notify PLC about jump by setting variable with path having same name assigned
 
     "active"+"inactive" labeled elements can be provided and reflect current
     page being shown.
@@ -34,6 +34,10 @@ widget_desc("Jump") {
 
     HMI:Jump:AbsolutePage:Absolute@/PUMP9
     HMI:Jump:AbsolutePage:Absolute:notify=1@notify=/PUMP9
+
+    Jump with feedback
+
+    HMI:Jump:AbsolutePage:notify=1@notify=.did_jump
 
     ||
 
@@ -63,6 +67,7 @@ widget_class("Jump") {
                         (that.is_relative && that.indexes.length > 0) ?
                         that.indexes[0] + that.offset : undefined;
                     fading_page_switch(name, index);
+                    that.notify();
                 }
             }
         }
@@ -106,6 +111,16 @@ widget_defs("Jump") {
     > ;\n
     |     },
 
+    |     notify: function() {
+    const "paths","path";
+    foreach "arg[position()>1 and contains(@value,'=')]"{
+        const "name","substring-before(@value,'=')";
+        const "value","substring-after(@value,'=')";
+        const "index" foreach "$paths" if "@assign = $name" value "position()-1";
+    |         // «@value»
+    |         this.apply_hmi_value(«$index», «$value»);
+    }
+    |     },
 }
 
 widget_page("Jump"){
