@@ -151,7 +151,7 @@ template "state", mode="actions" {
     |     }
 }
 template "show", mode="actions" {
-    |         this.display = "«@eltname»";
+    |         this.activity_state = «@eltname = 'active'»;
     |         this.request_animate();
 }
 template "hmi-value", mode="actions" {
@@ -164,7 +164,6 @@ template "hmi-value", mode="actions" {
 function "generated_button_class" {
     param "fsm";
 
-    |     display = "inactive";
     |     state = "init";
 
     |     dispatch(value) {
@@ -182,14 +181,10 @@ function "generated_button_class" {
 
     apply "$fsm", mode="actions";
 
-    |     animate(){
-    |         this.set_activation_state(this.display == "active");
-    |     }
-
     |     init() {
     |         this.bound_onmouseup = this.onmouseup.bind(this);
     |         this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
-    |         this.set_activation_state(undefined);
+    |         this.activity_state = undefined;
     |     }
 }
 
