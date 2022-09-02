@@ -30,6 +30,7 @@ decl _activable(*level) alias - {
     value "$activity";
     const "has_activity","string-length($activity)>0";
     |     },
+    |     has_activity: «$has_activity»,
 };
 
 decl activable() alias - {
@@ -233,7 +234,7 @@ emit "preamble:widget-base-class" {
         placeholder.parentNode.insertBefore(elt, placeholder);
     }
 
-    function set_activation_state(eltsub, state){
+    function set_activity_state(eltsub, state){
         if(eltsub.active_elt != undefined){
             if(eltsub.active_elt_placeholder == undefined){
                 eltsub.active_elt_placeholder = document.createComment("");
@@ -250,14 +251,6 @@ emit "preamble:widget-base-class" {
         }
     }
 
-    function activate_activable(eltsub) {
-        set_activation_state(eltsub, true);
-    }
-
-    function inactivate_activable(eltsub) {
-        set_activation_state(eltsub, false);
-    }
-
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
@@ -268,8 +261,10 @@ emit "preamble:widget-base-class" {
             this.element_id = elt_id;
             this.element = id(elt_id);
             this.args = args;
+            
             [this.indexes, this.variables_options] = (variables.length>0) ? zip(...variables) : [[],[]];
             this.indexes_length = this.indexes.length;
+
             this.enable_expr = enable_expr;
             this.enable_state = true;
             this.enable_displayed_state = true;
@@ -478,7 +473,8 @@ emit "preamble:widget-base-class" {
             this.deafen[index] = undefined;
             let [new_val, old_val] = this.incoming[index];
             this.incoming[index] = undefined;
-            this.dispatch(new_val, old_val, index);
+            if(this.dispatch)
+                this.dispatch(new_val, old_val, index);
         }
 
         enable(enabled){
@@ -514,6 +510,9 @@ emit "preamble:widget-base-class" {
                     this.element.appendChild(this.disabled_elt);
 
                 this.enable_displayed_state = false;
+
+                // once disabled activity display is lost
+                this.activity_displayed_state = undefined;
             }
         }
 
@@ -553,8 +552,13 @@ emit "preamble:widget-base-class" {
         _animate(){
             if(this.enable_expr)
                 this.animate_enable();
-            if(this.animate != undefined && (!this.enable_expr || this.enable_state))
-                this.animate();
+            // inhibit widget animation when disabled
+            if(!this.enable_expr || this.enable_state){
+                if(this.has_activity)
+                    this.animate_activity();
+                if(this.animate != undefined)
+                    this.animate();
+            }
             this.pending_animate = false;
         }
 
@@ -566,8 +570,11 @@ emit "preamble:widget-base-class" {
             }
         }
 
-        set_activation_state(state){
-            set_activation_state(this.activable_sub, state);
+        animate_activity(){
+            if(this.activity_displayed_state != this.activity_state){
+                set_activity_state(this.activable_sub, this.activity_state);
+                this.activity_displayed_state = this.activity_state;
+            }
         }
     }
     ||

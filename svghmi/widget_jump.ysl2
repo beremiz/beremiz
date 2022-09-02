@@ -6,7 +6,7 @@ widget_desc("Jump") {
     Jump widget brings focus to a different page. Mandatory first argument
     gives name of the page.
 
-    If first path is pointint to HMI_NODE variable is used as new reference 
+    If first path is pointint to HMI_NODE variable is used as new reference
     when jumping to a relative page.
 
     Additional arguments are unordered options:
@@ -14,12 +14,12 @@ widget_desc("Jump") {
     - Absolute: force page jump to be not relative even if first path is of type HMI_NODE
 
     - name=value: Notify jump by setting variable with path having same name assigned
-        
+
     "active"+"inactive" labeled elements can be provided and reflect current
     page being shown.
 
     Exemples:
-    
+
     Relative jump:
 
     HMI:Jump:RelativePage@/PUMP9
@@ -47,45 +47,37 @@ widget_desc("Jump") {
 widget_class("Jump") {
 ||
         activable = false;
-        active = false;
         frequency = 2;
-
-        update_activity() {
-            this.set_activation_state(this.active);
-        }
-
-        update_disability() {
-            this.animate_enable();
-            if(this.enable_state) {
-                this.update_activity();
-            }
-        }
 
         make_on_click() {
             let that = this;
             const name = this.args[0];
             return function(evt){
-                /* TODO: in order to allow jumps to page selected through for exemple a dropdown,
-                   support path pointing to local variable whom value 
-                   would be an HMI_TREE index and then jump to a relative page not hard-coded in advance */
+                /* TODO: in order to allow jumps to page selected through
+                   for exemple a dropdown, support path pointing to local
+                   variable whom value would be an HMI_TREE index and then
+                   jump to a relative page not hard-coded in advance
+                */
                 if(that.enable_state) {
-                    const index = (that.is_relative && that.indexes.length > 0) ? that.indexes[0] + that.offset : undefined;
+                    const index =
+                        (that.is_relative && that.indexes.length > 0) ?
+                        that.indexes[0] + that.offset : undefined;
                     fading_page_switch(name, index);
                 }
             }
         }
 
         notify_page_change(page_name, index) {
+            // called from animate()
             if(this.activable) {
                 const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
                 const ref_name = this.args[0];
-                this.active = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
-                this.update_state();
+                this.activity_state = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
+                // Since called from animate, update activity directly
+                if(this.enable_displayed_state && this.has_activity) {
+                    this.animate_activity();
+                }
             }
-        }
-
-        animate() {
-            this.update_state();
         }
 ||
 }
@@ -105,17 +97,6 @@ widget_defs("Jump") {
     if "$has_activity" {
     |         this.activable = true;
     }
-    >         this.update_state = 
-    choose {
-        when "$jump_disability" {
-            > this.update_disability
-        }
-        when "$has_activity" {
-            > this.update_activity
-        }
-        otherwise > function(){}
-    }
-    > ;\n
 
     >         this.is_relative = 
     choose{
@@ -172,6 +153,7 @@ var jumps_need_update = false;
 var jump_history = [[default_page, undefined]];
 
 function update_jumps() {
+    // called from animate()
     page_desc[current_visible_page].jumps.map(w=>w.notify_page_change(current_visible_page,current_page_index));
     jumps_need_update = false;
 };
