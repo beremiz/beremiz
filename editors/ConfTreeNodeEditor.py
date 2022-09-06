@@ -435,13 +435,16 @@ class ConfTreeNodeEditor(EditorPanel):
                             name = element_infos["name"]
                             value = element_infos["value"]
 
-                            staticbox = wx.StaticBox(self.ParamsEditor,
-                                                     label="%s - %s" % (_(name), _(value)),
-                                                     size=wx.Size(10, 0))
-                            staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
-                            sizer.Add(staticboxsizer, border=5, flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
-                            self.GenerateSizerElements(staticboxsizer, element_infos["children"], element_path)
-                            callback = self.GetChoiceContentCallBackFunction(combobox, staticboxsizer, element_path)
+                            staticboxsizer = None
+                            if element_infos["children"]:
+                                staticbox = wx.StaticBox(self.ParamsEditor,
+                                                         label="%s - %s" % (_(name), _(value)),
+                                                         size=wx.Size(10, 0))
+                                staticboxsizer = wx.StaticBoxSizer(staticbox, wx.VERTICAL)
+                                sizer.Add(staticboxsizer, border=5, flag=wx.GROW | wx.BOTTOM | wx.LEFT | wx.RIGHT)
+                                self.GenerateSizerElements(staticboxsizer, element_infos["children"], element_path)
+
+                            callback = self.GetChoiceContentCallBackFunction(combobox, element_path)
                         else:
                             for choice in element_infos["type"]:
                                 combobox.Append(choice)
@@ -527,7 +530,7 @@ class ConfTreeNodeEditor(EditorPanel):
                         textctrl.Bind(wx.EVT_TEXT, callback)
                         textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
 
-                if not isinstance(element_infos["type"], list) and element_infos["use"] == "optional":
+                if not isinstance(element_infos["type"], list) and element_infos.get("use", None) == "optional":
                     bt = wx.BitmapButton(self.ParamsEditor, 
                         bitmap=wx.ArtProvider.GetBitmap(wx.ART_UNDO, wx.ART_TOOLBAR, (16,16)),
                         style=wx.BORDER_NONE)
@@ -579,7 +582,7 @@ class ConfTreeNodeEditor(EditorPanel):
             event.Skip()
         return OnChoiceChanged
 
-    def GetChoiceContentCallBackFunction(self, choicectrl, staticboxsizer, path):
+    def GetChoiceContentCallBackFunction(self, choicectrl, path):
         def OnChoiceContentChanged(event):
             self.SetConfNodeParamsAttribute(path, choicectrl.GetStringSelection())
             wx.CallAfter(self.RefreshConfNodeParamsSizer)

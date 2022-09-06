@@ -598,11 +598,15 @@ def GenerateTagInfos(infos):
         else:
             return ""
 
+    def Initial():
+        p = etree.Element(infos["name"])
+        return p
+
     return {
         "type": TAG,
         "extract": ExtractTag,
         "generate": GenerateTag,
-        "initial": lambda: None,
+        "initial": Initial,
         "check": lambda x: x is None or infos["minOccurs"] == 0 and x
     }
 
@@ -1450,14 +1454,14 @@ def generateGetElementInfos(factory, classinfos):
             parts = path.split(".", 1)
             if parts[0] in attributes:
                 if len(parts) != 1:
-                    raise ValueError("Wrong path!")
+                    raise ValueError("Wrong path: "+path)
                 attr_type = gettypeinfos(attributes[parts[0]]["attr_type"]["basename"],
                                          attributes[parts[0]]["attr_type"]["facets"])
                 value = getattr(self, parts[0], "")
             elif parts[0] in elements:
                 if elements[parts[0]]["elmt_type"]["type"] == SIMPLETYPE:
                     if len(parts) != 1:
-                        raise ValueError("Wrong path!")
+                        raise ValueError("Wrong path: "+path)
                     attr_type = gettypeinfos(elements[parts[0]]["elmt_type"]["basename"],
                                              elements[parts[0]]["elmt_type"]["facets"])
                     value = getattr(self, parts[0], "")
@@ -1466,7 +1470,7 @@ def generateGetElementInfos(factory, classinfos):
                 else:
                     attr = getattr(self, parts[0], None)
                     if attr is None:
-                        raise ValueError("Wrong path!")
+                        raise ValueError("Wrong path: "+path)
                     if len(parts) == 1:
                         return attr.getElementInfos(parts[0])
                     else:
@@ -1477,7 +1481,7 @@ def generateGetElementInfos(factory, classinfos):
             elif "base" in classinfos:
                 classinfos["base"].getElementInfos(name, path)
             else:
-                raise ValueError("Wrong path!")
+                raise ValueError("Wrong path: "+path)
         else:
             if not derived:
                 children.extend(self.getElementAttributes())
@@ -1519,7 +1523,7 @@ def generateSetElementValue(factory, classinfos):
             parts = path.split(".", 1)
             if parts[0] in attributes:
                 if len(parts) != 1:
-                    raise ValueError("Wrong path!")
+                    raise ValueError("Wrong path: "+path)
                 if attributes[parts[0]]["attr_type"]["basename"] == "boolean":
                     setattr(self, parts[0], value)
                 elif attributes[parts[0]]["use"] == "optional" and value == None:
@@ -1534,7 +1538,7 @@ def generateSetElementValue(factory, classinfos):
             elif parts[0] in elements:
                 if elements[parts[0]]["elmt_type"]["type"] == SIMPLETYPE:
                     if len(parts) != 1:
-                        raise ValueError("Wrong path!")
+                        raise ValueError("Wrong path: "+path)
                     if elements[parts[0]]["elmt_type"]["basename"] == "boolean":
                         setattr(self, parts[0], value)
                     elif attributes[parts[0]]["minOccurs"] == 0 and value == "":
@@ -1738,6 +1742,8 @@ class DefaultElementClass(etree.ElementBase):
     def tostring(self):
         return NAMESPACE_PATTERN.sub("", etree.tostring(self, pretty_print=True, encoding='utf-8')).decode('utf-8')
 
+    def getElementInfos(self, name, path=None, derived=False):
+        return {"name": name, "type": TAG, "value": None, "use": None, "children": []}
 
 class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
