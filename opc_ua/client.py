@@ -6,7 +6,7 @@ import os
 
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
-from .opcua_client_maker import OPCUAClientPanel, OPCUAClientModel, UA_IEC_types
+from .opcua_client_maker import OPCUAClientPanel, OPCUAClientModel, UA_IEC_types, authParams
 
 import util.paths as paths
 
@@ -29,17 +29,56 @@ class OPCUAClientEditor(ConfTreeNodeEditor):
     def Log(self, msg):
         self.Controler.GetCTRoot().logger.write(msg)
 
-    def UriGetter(self):
-        return self.Controler.GetServerURI() 
-
     def CreateOPCUAClient_UI(self, parent):
-        return OPCUAClientPanel(parent, self.Controler.GetModelData(), self.Log, self.UriGetter)
+        return OPCUAClientPanel(parent, self.Controler.GetModelData(), self.Log, self.Controler.GetConfig)
 
 class OPCUAClient(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="OPCUAClient">
         <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="AuthType" minOccurs="0">
+              <xsd:complexType>
+                <xsd:choice minOccurs="0">
+                  <xsd:element name="x509">
+                    <xsd:complexType>
+                      <xsd:sequence>
+                        <xsd:element name="Policy">
+                          <xsd:annotation>
+                            <xsd:documentation>Default to Basic256Sha256 if not specified</xsd:documentation>
+                          </xsd:annotation>
+                          <xsd:complexType>
+                            <xsd:choice minOccurs="0">
+                              <xsd:element name="Basic256Sha256"/>
+                              <xsd:element name="Basic128Rsa15"/>
+                              <xsd:element name="Basic256"/>
+                            </xsd:choice>
+                          </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="Mode">
+                          <xsd:complexType>
+                            <xsd:choice minOccurs="0">
+                              <xsd:element name="SignAndEncrypt"/>
+                              <xsd:element name="Sign"/>
+                            </xsd:choice>
+                          </xsd:complexType>
+                        </xsd:element>
+                      </xsd:sequence>
+                      <xsd:attribute name="Certificate" type="xsd:string" use="optional" default="certificate.pem"/>
+                      <xsd:attribute name="PrivateKey" type="xsd:string" use="optional" default="private_key.pem"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="UserPassword">
+                    <xsd:complexType>
+                      <xsd:attribute name="User" type="xsd:string" use="optional"/>
+                      <xsd:attribute name="Password" type="xsd:string" use="optional"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                </xsd:choice>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
           <xsd:attribute name="Server_URI" type="xsd:string" use="optional" default="opc.tcp://localhost:4840"/>
         </xsd:complexType>
       </xsd:element>
@@ -61,8 +100,18 @@ class OPCUAClient(object):
     def GetModelData(self):
         return self.modeldata
     
-    def GetServerURI(self):
-        return self.GetParamsAttributes("OPCUAClient.Server_URI")["value"]
+    def GetConfig(self):
+        cfg = lambda path: self.GetParamsAttributes("OPCUAClient."+path)["value"]
+        AuthType = cfg("AuthType")
+        res = dict(URI=cfg("Server_URI"), AuthType=AuthType)
+
+        paramList = authParams.get(AuthType, None)
+        if paramList:
+            for name,default in paramList:
+                res[name] = cfg("AuthType."+name)
+
+        print(res)
+        return res
 
     def GetFileName(self):
         return os.path.join(self.CTNPath(), 'selected.csv')
@@ -76,8 +125,7 @@ class OPCUAClient(object):
         locstr = "_".join(map(str, current_location))
         c_path = os.path.join(buildpath, "opcua_client__%s.c" % locstr)
 
-        c_code = self.modeldata.GenerateC(c_path, locstr, 
-            self.GetParamsAttributes("OPCUAClient.Server_URI")["value"])
+        c_code = self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
 
         with open(c_path, 'wb') as c_file:
             c_file.write(c_code)
