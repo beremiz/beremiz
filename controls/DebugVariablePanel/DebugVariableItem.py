@@ -144,7 +144,7 @@ class DebugVariableItem(DebugDataConsumer):
         """
         # Return immediately if data empty or none
         if self.Data is None or self.Data.count == 0:
-            return []
+            return None
 
         # Find nearest data outside given range indexes
         start_idx = (self.GetNearestData(start_tick, -1)
@@ -186,6 +186,9 @@ class DebugVariableItem(DebugDataConsumer):
         """
         # Get data in given tick range
         data = self.GetData(start_tick, end_tick)
+
+        if data is None:
+            return None, None, None
 
         # Value range is calculated on whole data
         if full_range:
