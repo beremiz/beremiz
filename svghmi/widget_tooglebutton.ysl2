@@ -22,7 +22,7 @@ widget_class("ToggleButton") {
         inactive_style = undefined;
 
         dispatch(value) {
-            this.actvity_state = Boolean(value);
+            this.activity_state = Boolean(value);
             //redraw toggle button
             this.request_animate();
         }
