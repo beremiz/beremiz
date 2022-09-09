@@ -61,7 +61,7 @@ in xsl decl widget_class(%name, *clsname="%nameWidget", match="widget[@type='%na
 in xsl decl widget_defs(%name, match="widget[@type='%name']", mode="widget_defs") alias template {
     param "hmi_element";
     // all widget potentially has a "disabled" labeled element
-    const "disability" optional_labels("disabled");
+    const "disability" optional_labels("/disabled");
     value "$disability";
     const "has_disability","string-length($disability)>0";
     content;
@@ -372,7 +372,7 @@ emit "preamble:widget-base-class" {
                 if(realindex == undefined) continue;
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
-                    this._dispatch(cached_val, cached_val, index);
+                    this.feed_data_for_dispatch(cached_val, cached_val, index);
             }
         }
 
@@ -463,7 +463,7 @@ emit "preamble:widget-base-class" {
                 if(refindex == undefined) continue;
 
                 if(index == refindex) {
-                    this._dispatch(value, oldval, i);
+                    this.feed_data_for_dispatch(value, oldval, i);
                     break;
                 }
             }
@@ -473,8 +473,7 @@ emit "preamble:widget-base-class" {
             this.deafen[index] = undefined;
             let [new_val, old_val] = this.incoming[index];
             this.incoming[index] = undefined;
-            if(this.dispatch)
-                this.dispatch(new_val, old_val, index);
+            this.do_dispatch(new_val, old_val, index);
         }
 
         enable(enabled){
@@ -516,26 +515,15 @@ emit "preamble:widget-base-class" {
             }
         }
 
-        _dispatch(value, oldval, varnum) {
-            let dispatch = this.dispatch;
-            let has_dispatch = dispatch != undefined;
-            if(has_dispatch || this.enable_expr){
+        feed_data_for_dispatch(value, oldval, varnum) {
+            if(this.dispatch || this.enable_expr){
                 if(this.deafen[varnum] == undefined){
                     let now = Date.now();
                     let min_interval = 1000/this.frequency;
                     let lastdispatch = this.lastdispatch[varnum];
                     if(lastdispatch == undefined || now > lastdispatch + min_interval){
                         this.lastdispatch[varnum] = now;
-                        if(has_dispatch) try {
-                            dispatch.call(this, value, oldval, varnum);
-                        } catch(err) {
-                            console.log(err);
-                        }
-                        if(this.enable_expr) try {
-                            this.compute_enable(value, oldval, varnum);
-                        } catch(err) {
-                            console.log(err);
-                        }
+                        this.do_dispatch(value, oldval, varnum)
                     }
                     else {
                         let elapsed = now - lastdispatch;
@@ -546,6 +534,19 @@ emit "preamble:widget-base-class" {
                 else {
                     this.incoming[varnum] = [value, oldval];
                 }
+            }
+        }
+
+        do_dispatch(value, oldval, varnum) {
+            if(this.dispatch) try {
+                this.dispatch(value, oldval, varnum);
+            } catch(err) {
+                console.log(err);
+            }
+            if(this.enable_expr) try {
+                this.compute_enable(value, oldval, varnum);
+            } catch(err) {
+                console.log(err);
             }
         }
 
