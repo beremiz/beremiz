@@ -824,12 +824,12 @@ class VariablesEditor(wx.Panel):
             type_menu = wx.Menu(title='')
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():
-                new_entry = base_menu.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=base_type)
+                new_entry = base_menu.Append(wx.ID_ANY, base_type)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), new_entry)
             type_menu.AppendMenu(wx.ID_ANY, "Base Types", base_menu)
             datatype_menu = wx.Menu(title='')
             for datatype in self.Controler.GetDataTypes():
-                new_entry = datatype_menu.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=datatype)
+                new_entry = datatype_menu.Append(wx.ID_ANY, item=datatype)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), new_entry)
             type_menu.AppendMenu(wx.ID_ANY, "User Data Types", datatype_menu)
             rect = self.VariablesGrid.BlockToDeviceRect((row, col), (row, col))
