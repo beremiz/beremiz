@@ -14,9 +14,9 @@
    sodipodi:docname="svghmi.svg"
    id="hmi0"
    version="1.1"
-   viewBox="0 0 86.838715 71.615021"
-   height="71.615021"
-   width="86.838715">
+   viewBox="0 0 1280 720"
+   height="720"
+   width="1280">
   <metadata
      id="metadata8">
     <rdf:RDF>
@@ -25,6 +25,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -43,15 +44,20 @@
      inkscape:window-height="836"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="0.32777778"
-     inkscape:cx="158.60164"
-     inkscape:cy="1248.3293"
+     inkscape:zoom="0.23177389"
+     inkscape:cx="1999.5317"
+     inkscape:cy="-682.74047"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
      inkscape:current-layer="hmi0"
      showguides="true"
-     inkscape:guide-bbox="true" />
+     inkscape:guide-bbox="true"
+     borderlayer="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <use
      sodipodi:insensitive="true"
      x="0"
@@ -68,7 +74,7 @@
      y="0"
      xlink:href="#g2496"
      id="use147"
-     transform="translate(2640,760)"
+     transform="translate(2640,759.99998)"
      width="100%"
      height="100%"
      inkscape:label="HMI:Page:Relative" />
@@ -96,7 +102,7 @@
      inkscape:label="HMI:Page:AbsolutePage"
      height="100%"
      width="100%"
-     transform="translate(1320,760)"
+     transform="translate(1320,759.99998)"
      id="use2500"
      xlink:href="#g2496"
      y="0"
@@ -114,18 +120,18 @@
      sodipodi:insensitive="true" />
   <text
      id="text837"
-     y="-448.43695"
-     x="-492.9855"
+     y="1114.9857"
+     x="639.54431"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-448.43695"
-       x="-492.9855"
+       y="1114.9857"
+       x="639.54431"
        id="tspan835"
        sodipodi:role="line">HMI:Back</tspan></text>
   <g
      inkscape:label="HMI:Back"
      id="g845"
-     transform="translate(-1132.5298,-903.42268)">
+     transform="translate(0,660.00004)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ffa32a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.77952766;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect839"
@@ -149,27 +155,27 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-492.78372"
-     y="-709.86334"
+     x="639.74609"
+     y="853.55939"
      id="text863"><tspan
        sodipodi:role="line"
        id="tspan861"
-       x="-492.78372"
-       y="-709.86334">Absolute Page</tspan></text>
+       x="639.74609"
+       y="853.55939">Absolute Page</tspan></text>
   <text
      id="text867"
-     y="-1489.8634"
-     x="-492.78372"
+     y="73.559319"
+     x="639.74609"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-1489.8634"
-       x="-492.78372"
+       y="73.559319"
+       x="639.74609"
        id="tspan865"
        sodipodi:role="line">Home Page</tspan></text>
   <g
      inkscape:label="HMI:PushButton@/ENTERING_PAGE"
      id="g857-3"
-     transform="translate(-1134.7759,-1433.9936)">
+     transform="translate(-2.2461,129.42912)">
     <rect
        rx="21.355932"
        ry="21.355932"
@@ -208,25 +214,25 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-492.9855"
-     y="-168.43697"
+     x="639.54431"
+     y="1394.9857"
      id="text70"><tspan
        sodipodi:role="line"
-       x="-492.9855"
-       y="-168.43697"
+       x="639.54431"
+       y="1394.9857"
        id="tspan72">HMI:PushButton@/ENTERING_PAGE</tspan></text>
   <text
      id="text80"
-     y="-1199.4227"
-     x="827.01447"
+     y="364"
+     x="1959.5443"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-1199.4227"
-       x="827.01447"
+       y="364"
+       x="1959.5443"
        id="tspan78"
        sodipodi:role="line">HMI:Jump:AbsolutePage</tspan></text>
   <g
-     transform="translate(187.47017,-1643.4227)"
+     transform="translate(1320,-79.999979)"
      inkscape:label="HMI:Jump:AbsolutePage"
      id="g88">
     <rect
@@ -252,15 +258,15 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="827.01447"
-     y="-873.42267"
+     x="1959.5443"
+     y="690.00006"
      id="text92"><tspan
        sodipodi:role="line"
        id="tspan90"
-       x="827.01447"
-       y="-873.42267">HMI:Jump:AbsolutePage:notify=true@notify=/ENTERING_PAGE</tspan></text>
+       x="1959.5443"
+       y="690.00006">HMI:Jump:AbsolutePage:notify=true@notify=/ENTERING_PAGE</tspan></text>
   <g
-     transform="translate(187.47017,-1363.4227)"
+     transform="translate(1320,200.00002)"
      id="g102"
      inkscape:label="HMI:Jump:AbsolutePage:notify=true@notify=/ENTERING_PAGE">
     <rect
@@ -290,27 +296,27 @@
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="827.21625"
-     y="-1489.8634"
+     x="1959.7461"
+     y="73.559319"
      id="text106"><tspan
        sodipodi:role="line"
        id="tspan104"
-       x="827.21625"
-       y="-1489.8634">Unconditional Jumps</tspan></text>
+       x="1959.7461"
+       y="73.559319">Unconditional Jumps</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="2127.0146"
-     y="-879.42267"
+     x="3259.5444"
+     y="684.00006"
      id="text112"><tspan
        sodipodi:role="line"
-       x="2127.0146"
-       y="-879.42267"
+       x="3259.5444"
+       y="684.00006"
        id="tspan2796">HMI:Jump:AbsolutePage@enable=/ENABLE_JUMP@level=user_level#enable &amp;&amp; level&gt;2</tspan></text>
   <g
      id="g120"
      inkscape:label="HMI:Jump:AbsolutePage@enable=/ENABLE_JUMP@level=user_level#enable &amp;&amp; level&gt;2"
-     transform="translate(1487.4702,-1323.4227)">
+     transform="translate(2620,240.00002)">
     <g
        id="g2786"
        inkscape:label="disabled"
@@ -360,40 +366,40 @@
   </g>
   <text
      id="text138"
-     y="-1489.8634"
-     x="2127.2163"
+     y="73.559319"
+     x="3259.7461"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-1489.8634"
-       x="2127.2163"
+       y="73.559319"
+       x="3259.7461"
        id="tspan136"
        sodipodi:role="line">Conditional Jumps</tspan></text>
   <text
      id="text142"
-     y="-1369.8634"
-     x="-492.647"
+     y="193.55931"
+     x="639.88281"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;text-decoration: underline;text-decoration-line: underline;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"
      inkscape:label="HMI:Jump:Unconditional"><tspan
-       y="-1369.8634"
-       x="-492.647"
+       y="193.55931"
+       x="639.88281"
        id="tspan140"
        sodipodi:role="line">Unconditional Jumps &gt;</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;text-decoration: underline;text-decoration-line: underline;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-492.647"
-     y="-1269.8634"
+     x="639.88281"
+     y="293.55933"
      id="text146"
      inkscape:label="HMI:Jump:Conditional"><tspan
        sodipodi:role="line"
        id="tspan144"
-       x="-492.647"
-       y="-1269.8634">Conditional Jumps &gt;</tspan></text>
+       x="639.88281"
+       y="293.55933">Conditional Jumps &gt;</tspan></text>
   <g
      id="g2496"
      inkscape:label="page_template"
-     transform="translate(-1132.5298,-1563.4227)">
+     transform="translate(0,2.1367187e-5)">
     <rect
        y="0"
        x="-1320"
@@ -409,7 +415,7 @@
          y="0"
          xlink:href="#rect2313"
          id="use2435"
-         transform="translate(1532.5298,1563.4227)"
+         transform="translate(400,-2.1367187e-5)"
          width="100%"
          height="100%"
          inkscape:label="active" />
@@ -418,7 +424,7 @@
          y="0"
          xlink:href="#rect2311"
          id="use2437"
-         transform="translate(1532.5298,1563.4227)"
+         transform="translate(400,-2.1367187e-5)"
          width="100%"
          height="100%"
          inkscape:label="inactive" />
@@ -440,7 +446,7 @@
       <use
          height="100%"
          width="100%"
-         transform="translate(1532.5298,1663.4227)"
+         transform="translate(400,99.999979)"
          id="use2439"
          xlink:href="#rect2313"
          y="0"
@@ -449,7 +455,7 @@
       <use
          height="100%"
          width="100%"
-         transform="translate(1532.5298,1663.4227)"
+         transform="translate(400,99.999979)"
          id="use2441"
          xlink:href="#rect2311"
          y="0"
@@ -475,7 +481,7 @@
          y="0"
          xlink:href="#rect2313"
          id="use2443"
-         transform="translate(1532.5298,1763.4227)"
+         transform="translate(400,199.99998)"
          width="100%"
          height="100%"
          inkscape:label="active" />
@@ -484,7 +490,7 @@
          y="0"
          xlink:href="#rect2311"
          id="use2445"
-         transform="translate(1532.5298,1763.4227)"
+         transform="translate(400,199.99998)"
          width="100%"
          height="100%"
          inkscape:label="inactive" />
@@ -506,7 +512,7 @@
       <use
          height="100%"
          width="100%"
-         transform="translate(1532.5298,1863.4227)"
+         transform="translate(400,299.99998)"
          id="use2447"
          xlink:href="#rect2313"
          y="0"
@@ -515,7 +521,7 @@
       <use
          height="100%"
          width="100%"
-         transform="translate(1532.5298,1863.4227)"
+         transform="translate(400,299.99998)"
          id="use2449"
          xlink:href="#rect2311"
          y="0"
@@ -582,7 +588,7 @@
          y="0"
          xlink:href="#rect2313"
          id="use1839"
-         transform="translate(1532.5298,1863.4227)"
+         transform="translate(400,299.99998)"
          width="100%"
          height="100%" />
       <use
@@ -591,7 +597,7 @@
          y="0"
          xlink:href="#rect2311"
          id="use1841"
-         transform="translate(1532.5298,1863.4227)"
+         transform="translate(400,299.99998)"
          width="100%"
          height="100%" />
       <text
@@ -619,7 +625,7 @@
   <g
      id="g2585"
      inkscape:label="HMI:Input@user_level"
-     transform="translate(-1152.5298,-1437.4227)">
+     transform="translate(-20,126.00002)">
     <g
        id="g2763"
        inkscape:label="=1">
@@ -737,7 +743,7 @@
   <g
      id="g2590"
      inkscape:label="HMI:VarInit:1@user_level"
-     transform="translate(-1132.5298,-1563.4227)">
+     transform="translate(0,2.1367187e-5)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -756,7 +762,7 @@
   <g
      inkscape:label="HMI:ToggleButton@/ENABLE_JUMP"
      id="g2775"
-     transform="translate(1366.0465,-1663.4227)">
+     transform="translate(2498.5763,-99.999979)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ffa32a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.77952766;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect2767"
@@ -794,29 +800,29 @@
   </g>
   <text
      id="text2569-5"
-     y="-1381.6823"
-     x="2043.4233"
+     y="181.74046"
+     x="3175.9531"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:85.33333588px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"
      inkscape:label="HMI:Display@/ENABLE_JUMP"><tspan
-       y="-1381.6823"
-       x="2043.4233"
+       y="181.74046"
+       x="3175.9531"
        id="tspan2567-9"
        sodipodi:role="line">0</tspan></text>
   <text
      id="text151"
-     y="-709.86334"
-     x="847.21625"
+     y="853.55939"
+     x="1979.7461"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-709.86334"
-       x="847.21625"
+       y="853.55939"
+       x="1979.7461"
        id="tspan149"
        sodipodi:role="line">Relative Jumps</tspan></text>
   <g
      id="g120-3"
      inkscape:label="HMI:Jump:RelativePage@/FB_ZERO"
-     transform="translate(39.726374,-928.23117)">
+     transform="translate(1172.2562,635.19155)">
     <rect
        rx="21.355932"
        ry="21.355932"
@@ -839,7 +845,8 @@
   </g>
   <g
      id="g2865"
-     inkscape:label="HMI:Display@page_node">
+     inkscape:label="HMI:Display@page_node"
+     transform="translate(1132.5298,1563.4227)">
     <text
        inkscape:label="format"
        xml:space="preserve"
@@ -855,7 +862,7 @@
   <g
      id="g2585-1"
      inkscape:label="HMI:Input@/FB_ZERO/SOME_INT"
-     transform="matrix(0.699363,0,0,0.699363,-2854.6686,94.819021)"
+     transform="matrix(0.699363,0,0,0.699363,-1722.1388,1658.2417)"
      style="stroke-width:1.42987263">
     <g
        id="g2763-2"
@@ -983,52 +990,52 @@
   </g>
   <text
      id="text307"
-     y="194.00511"
-     x="-607.12189"
+     y="1757.4279"
+     x="525.4079"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:59.67897797px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"
      inkscape:label="HMI:Display@/FB_ZERO/SOME_BOOL"><tspan
        style="stroke-width:1px"
-       y="194.00511"
-       x="-607.12189"
+       y="1757.4279"
+       x="525.4079"
        id="tspan305"
        sodipodi:role="line">0</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:27.97451973px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-598.72955"
-     y="245.90318"
+     x="533.80023"
+     y="1809.3259"
      id="text311"><tspan
        style="stroke-width:1px"
        sodipodi:role="line"
        id="tspan309"
-       x="-598.72955"
-       y="245.90318">SOME_BOOL</tspan></text>
+       x="533.80023"
+       y="1809.3259">SOME_BOOL</tspan></text>
   <text
      inkscape:label="HMI:Display@/FB_ZERO/SOME_STRING"
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:59.67897797px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-607.12189"
-     y="403.814"
+     x="525.4079"
+     y="1967.2367"
      id="text375"><tspan
        style="stroke-width:1px"
        sodipodi:role="line"
        id="tspan373"
-       x="-607.12189"
-       y="403.814">?</tspan></text>
+       x="525.4079"
+       y="1967.2367">?</tspan></text>
   <text
      id="text379"
-     y="455.71216"
-     x="-598.72955"
+     y="2019.1349"
+     x="533.80023"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:27.97451973px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
        style="stroke-width:1px"
-       y="455.71216"
-       x="-598.72955"
+       y="2019.1349"
+       x="533.80023"
        id="tspan377"
        sodipodi:role="line">SOME_STRING</tspan></text>
   <g
-     transform="matrix(0.699363,0,0,0.699363,-2854.6686,304.62792)"
+     transform="matrix(0.699363,0,0,0.699363,-1722.1388,1868.0506)"
      inkscape:label="HMI:Input@/FB_ZERO/SOME_REAL"
      id="g355"
      style="stroke-width:1.42987263">
@@ -1189,7 +1196,7 @@
   <g
      id="g1708"
      inkscape:label="HMI:ForEach:MYNODE@/"
-     transform="translate(-1128.5298,-1525.4227)">
+     transform="translate(4,38.000021)">
     <g
        id="g1711"
        inkscape:label="MYNODE:+1"
@@ -1232,7 +1239,7 @@
              y="0"
              xlink:href="#rect1807"
              id="use1825"
-             transform="translate(1532.5298,1563.4227)"
+             transform="translate(400,-2.1367187e-5)"
              width="100%"
              height="100%" />
           <text
@@ -1252,7 +1259,7 @@
            y="0"
            xlink:href="#rect2313"
            id="use1827"
-           transform="translate(1532.5298,1563.4227)"
+           transform="translate(400,-2.1367187e-5)"
            width="100%"
            height="100%"
            inkscape:label="active" />
@@ -1261,7 +1268,7 @@
            y="0"
            xlink:href="#rect2311"
            id="use1829"
-           transform="translate(1532.5298,1563.4227)"
+           transform="translate(400,-2.1367187e-5)"
            width="100%"
            height="100%"
            inkscape:label="inactive" />
@@ -1292,7 +1299,7 @@
           <use
              height="100%"
              width="100%"
-             transform="translate(1532.5298,1563.4227)"
+             transform="translate(400,-2.1367187e-5)"
              id="use1811"
              xlink:href="#rect1807"
              y="0"
@@ -1313,7 +1320,7 @@
            inkscape:label="active"
            height="100%"
            width="100%"
-           transform="translate(1532.5298,1563.4227)"
+           transform="translate(400,-2.1367187e-5)"
            id="use1813"
            xlink:href="#rect2313"
            y="0"
@@ -1322,7 +1329,7 @@
            inkscape:label="inactive"
            height="100%"
            width="100%"
-           transform="translate(1532.5298,1563.4227)"
+           transform="translate(400,-2.1367187e-5)"
            id="use1815"
            xlink:href="#rect2311"
            y="0"
@@ -1356,7 +1363,7 @@
              y="0"
              xlink:href="#rect1807"
              id="use1809"
-             transform="translate(1532.5298,1563.4227)"
+             transform="translate(400,-2.1367187e-5)"
              width="100%"
              height="100%" />
           <text
@@ -1376,7 +1383,7 @@
            y="0"
            xlink:href="#rect2313"
            id="use2435-7"
-           transform="translate(1532.5298,1563.4227)"
+           transform="translate(400,-2.1367187e-5)"
            width="100%"
            height="100%"
            inkscape:label="active" />
@@ -1385,7 +1392,7 @@
            y="0"
            xlink:href="#rect2311"
            id="use2437-3"
-           transform="translate(1532.5298,1563.4227)"
+           transform="translate(400,-2.1367187e-5)"
            width="100%"
            height="100%"
            inkscape:label="inactive" />
@@ -1434,8 +1441,8 @@
      id="rect1807"
      width="280"
      height="81.859505"
-     x="-2838.4492"
-     y="-1545.5862"
+     x="-1705.9194"
+     y="17.83654"
      ry="21.355932"
      rx="21.355932"
      inkscape:label="disabled_template" />
@@ -1444,8 +1451,8 @@
      id="rect2311"
      width="280"
      height="81.859505"
-     x="-2838.4492"
-     y="-1545.5862"
+     x="-1705.9194"
+     y="17.83654"
      ry="21.355932"
      rx="21.355932"
      inkscape:label="inactive_template" />
@@ -1453,8 +1460,8 @@
      inkscape:label="active_template"
      rx="21.355932"
      ry="21.355932"
-     y="-1545.5862"
-     x="-2838.4492"
+     y="17.83654"
+     x="-1705.9194"
      height="81.859505"
      width="280"
      id="rect2313"
@@ -1462,16 +1469,16 @@
   <text
      inkscape:label="HMI:Jump:Relative"
      id="text1859"
-     y="-1169.8634"
-     x="-492.647"
+     y="393.55933"
+     x="639.88281"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;text-decoration: underline;text-decoration-line: underline;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-1169.8634"
-       x="-492.647"
+       y="393.55933"
+       x="639.88281"
        id="tspan1857"
        sodipodi:role="line">Relative Jumps &gt;</tspan></text>
   <g
-     transform="translate(39.726374,-788.23117)"
+     transform="translate(1172.2562,775.19155)"
      inkscape:label="HMI:Jump:RelativePage@/FB_TWO"
      id="g1886">
     <rect
@@ -1497,7 +1504,7 @@
   <g
      id="g1894"
      inkscape:label="HMI:Jump:RelativePage@/FB_FOUR"
-     transform="translate(39.726374,-648.23117)">
+     transform="translate(1172.2562,915.19155)">
     <rect
        rx="21.355932"
        ry="21.355932"
@@ -1521,7 +1528,7 @@
   <g
      inkscape:label="HMI:ToggleButton@/ENABLE0"
      id="g857-3-2"
-     transform="translate(-599.0611,-1080.0323)">
+     transform="translate(533.4687,483.39042)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ffa32a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.77952766;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect851-6-3"
@@ -1554,7 +1561,7 @@
          id="tspan66-7">0</tspan></text>
   </g>
   <g
-     transform="translate(-599.0611,-1000.0323)"
+     transform="translate(533.4687,563.39042)"
      id="g2746"
      inkscape:label="HMI:ToggleButton@/ENABLE1">
     <rect
@@ -1591,7 +1598,7 @@
   <g
      inkscape:label="HMI:ToggleButton@/ENABLE2"
      id="g2756"
-     transform="translate(-599.0611,-920.0323)">
+     transform="translate(533.4687,643.39042)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ffa32a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.77952766;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect2748"
@@ -1624,7 +1631,7 @@
          id="tspan2752">2</tspan></text>
   </g>
   <g
-     transform="translate(-599.0611,-840.0323)"
+     transform="translate(533.4687,723.39042)"
      id="g2766"
      inkscape:label="HMI:ToggleButton@/ENABLE3">
     <rect
@@ -1661,7 +1668,7 @@
   <g
      inkscape:label="HMI:ToggleButton@/ENABLE4"
      id="g2776"
-     transform="translate(-599.0611,-760.0323)">
+     transform="translate(533.4687,803.39042)">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#ffa32a;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:3.77952766;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect2768"
@@ -1694,7 +1701,7 @@
          id="tspan2772">4</tspan></text>
   </g>
   <g
-     transform="translate(-599.0611,-680.0323)"
+     transform="translate(533.4687,883.39042)"
      id="g2787"
      inkscape:label="HMI:ToggleButton@/ENABLE5">
     <rect
@@ -1730,82 +1737,82 @@
   </g>
   <text
      id="text2869"
-     y="-196.43697"
-     x="847.01453"
+     y="1366.9857"
+     x="1979.5443"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-196.43697"
-       x="847.01453"
+       y="1366.9857"
+       x="1979.5443"
        sodipodi:role="line"
        id="tspan2871">HMI:Jump:RelativePage@/FB_FOUR</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="847.01453"
-     y="-336.43695"
+     x="1979.5443"
+     y="1226.9857"
      id="text2877"><tspan
        id="tspan2875"
        sodipodi:role="line"
-       x="847.01453"
-       y="-336.43695">HMI:Jump:RelativePage@/FB_TWO</tspan></text>
+       x="1979.5443"
+       y="1226.9857">HMI:Jump:RelativePage@/FB_TWO</tspan></text>
   <text
      id="text2881"
-     y="-476.43695"
-     x="847.01453"
+     y="1086.9857"
+     x="1979.5443"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      xml:space="preserve"><tspan
-       y="-476.43695"
-       x="847.01453"
+       y="1086.9857"
+       x="1979.5443"
        sodipodi:role="line"
        id="tspan2879">HMI:Jump:RelativePage@/FB_ZERO</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-491.85867"
-     y="557.00189"
+     x="640.67114"
+     y="2120.4246"
      id="text2944"><tspan
        sodipodi:role="line"
        id="tspan2942"
-       x="-491.85867"
-       y="557.00189">HMI:ForEach:MYNODE@/</tspan></text>
+       x="640.67114"
+       y="2120.4246">HMI:ForEach:MYNODE@/</tspan></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-429.2977"
-     y="-974.66333"
+     x="703.23212"
+     y="588.7594"
      id="text2948"><tspan
        sodipodi:role="line"
        id="tspan2946"
-       x="-429.2977"
-       y="-939.27271" /></text>
+       x="703.23212"
+       y="624.15002" /></text>
   <text
      xml:space="preserve"
      style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-1088.2462"
-     y="-1852.6086"
+     x="44.283585"
+     y="-289.18591"
      id="text2952"><tspan
        sodipodi:role="line"
        id="tspan2950"
-       x="-1088.2462"
-       y="-1852.6086">Notes: </tspan><tspan
+       x="44.283585"
+       y="-289.18591">Notes: </tspan><tspan
        sodipodi:role="line"
-       x="-1088.2462"
-       y="-1802.6086"
+       x="44.283585"
+       y="-239.18593"
        id="tspan2954">- Widget roles are described in objects labels.</tspan><tspan
        sodipodi:role="line"
-       x="-1088.2462"
-       y="-1752.6086"
+       x="44.283585"
+       y="-189.18593"
        id="tspan2956">- Press Ctrl+O to open object properties panel</tspan><tspan
        sodipodi:role="line"
-       x="-1088.2462"
-       y="-1702.6086"
+       x="44.283585"
+       y="-139.18593"
        id="tspan2962">- To see objects in a tree, select Object-&gt;Objects in menu</tspan><tspan
        sodipodi:role="line"
-       x="-1088.2462"
-       y="-1652.6086"
+       x="44.283585"
+       y="-89.185921"
        id="tspan2960">- Inkscape's &quot;objects&quot; are SVG elements</tspan><tspan
        sodipodi:role="line"
-       x="-1088.2462"
-       y="-1602.6086"
+       x="44.283585"
+       y="-39.185921"
        id="tspan2966">- Press Ctrl+X to edit SVG elements directly with XML editor</tspan></text>
 </svg>
