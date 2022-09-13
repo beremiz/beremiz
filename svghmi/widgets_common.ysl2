@@ -343,9 +343,7 @@ emit "preamble:widget-base-class" {
                     this.lastdispatch[i] = undefined;
                     this.undeafen(i);
                 }
-                let index = this.indexes[i];
-                if(this.relativeness[i])
-                    index += this.offset;
+                let index = this.get_variable_index(i);
                 subscribers(index).delete(this);
             }
             this.offset = 0;
@@ -362,17 +360,17 @@ emit "preamble:widget-base-class" {
                 if(index == undefined) continue;
                 subscribers(index).add(this);
             }
-            need_cache_apply.push(this); 
+            this.apply_cache(); 
         }
 
         apply_cache() {
-            for(let index in this.indexes){
+            for(let i = 0; i < this.indexes_length; i++) {
                 /* dispatch current cache in newly opened page widgets */
-                let realindex = this.get_variable_index(index);
+                let realindex = this.get_variable_index(i);
                 if(realindex == undefined) continue;
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
-                    this.feed_data_for_dispatch(cached_val, cached_val, index);
+                    this.feed_data_for_dispatch(cached_val, cached_val, i);
             }
         }
 
