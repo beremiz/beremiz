@@ -108,9 +108,14 @@ class OPCUAClient(object):
         paramList = authParams.get(AuthType, None)
         if paramList:
             for name,default in paramList:
-                res[name] = cfg("AuthType."+name)
+                value = cfg("AuthType."+name)
+                if value == "" or value is None:
+                    value = default
+                # cryptomaterial is expected to be in project's user provide file directory
+                if name in ["Certificate","PrivateKey"]:
+                    value = os.path.join(self.GetCTRoot()._getProjectFilesPath(), value)
+                res[name] = value
 
-        print(res)
         return res
 
     def GetFileName(self):
@@ -133,6 +138,8 @@ class OPCUAClient(object):
         LDFLAGS = [' "' + os.path.join(Open62541LibraryPath, "libopen62541.a") + '"']
 
         CFLAGS = ' '.join(['-I"' + path + '"' for path in Open62541IncludePaths])
+
+        # Note: all user provided files are systematicaly copied, including cryptomaterial
 
         return [(c_path, CFLAGS)], LDFLAGS, True
 

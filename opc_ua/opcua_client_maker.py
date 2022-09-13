@@ -311,8 +311,13 @@ class OPCUAClientPanel(wx.SplitterWindow):
             config = self.config_getter()
             self.client = Client(config["URI"])
             
-            # TODO: crypto stuff
-            # client.set_security_string("Basic256Sha256,SignAndEncrypt,certificate-example.der,private-key-example.pem")
+            AuthType = config["AuthType"]
+            if AuthType=="UserPasword":
+                self.client.set_user(config["User"])
+                self.client.set_password(config["Password"])
+            elif AuthType=="x509":
+                self.client.set_security_string(
+                    "{Policy},{Mode},{Certificate},{PrivateKey}".format(**config))
 
             self.client.connect()
             self.client.load_type_definitions()  # load definition of server specific structures/extension objects
@@ -499,8 +504,39 @@ class OPCUAClientModel(dict):
 #include <open62541/client_config_default.h>
 #include <open62541/client_highlevel.h>
 #include <open62541/plugin/log_stdout.h>
+#include <open62541/plugin/securitypolicy.h>
+
+#include <open62541/types.h>
+#include <open62541/types_generated_handling.h>
+
+static UA_INLINE UA_ByteString
+loadFile(const char *const path) {{
+    UA_ByteString fileContents = UA_STRING_NULL;
+
+    FILE *fp = fopen(path, "rb");
+    if(!fp) {{
+        errno = 0;
+        return fileContents;
+    }}
+
+    fseek(fp, 0, SEEK_END);
+    fileContents.length = (size_t)ftell(fp);
+    fileContents.data = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
+    if(fileContents.data) {{
+        fseek(fp, 0, SEEK_SET);
+        size_t read = fread(fileContents.data, sizeof(UA_Byte), fileContents.length, fp);
+        if(read != fileContents.length)
+            UA_ByteString_clear(&fileContents);
+    }} else {{
+        fileContents.length = 0;
+    }}
+    fclose(fp);
+
+    return fileContents;
+}}
 
 static UA_Client *client;
+static UA_ClientConfig *cc;
 
 #define DECL_VAR(ua_type, C_type, c_loc_name)                                                       \\
 static UA_Variant c_loc_name##_variant;                                                             \\
@@ -516,6 +552,29 @@ void __cleanup_{locstr}(void)
 }}
 
 
+#define INIT_NoAuth()                                                                              \\
+    UA_ClientConfig_setDefault(cc);                                                                \\
+    retval = UA_Client_connect(client, uri);
+
+/* Note : Policy is ignored here since open62541 client supports all policies by default */
+#define INIT_x509(Policy, UpperCaseMode, PrivateKey, Certificate)                                  \\
+    /* TODO try paths given in runtime CLI */                                                      \\
+    UA_ByteString certificate = loadFile(Certificate);                                             \\
+    UA_ByteString privateKey  = loadFile(PrivateKey);                                              \\
+                                                                                                   \\
+    printf("INIT_x509 %s,%s,%s,%s\\n", #Policy, #UpperCaseMode, PrivateKey, Certificate);          \\
+    cc->securityMode = UA_MESSAGESECURITYMODE_##UpperCaseMode;                                     \\
+    UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0);           \\
+                                                                                                   \\
+    retval = UA_Client_connect(client, uri);                                                       \\
+                                                                                                   \\
+    UA_ByteString_clear(&certificate);                                                             \\
+    UA_ByteString_clear(&privateKey);
+
+#define INIT_UserPassword(User, Password)                                                          \\
+    printf("TODO INIT_UserPassword %s,%s\\n", User, Password);                                     \\
+    retval = UA_Client_connectUsername(client, uri, User, Password);
+
 #define INIT_READ_VARIANT(ua_type, c_loc_name)                                                     \\
     UA_Variant_init(&c_loc_name##_variant);
 
@@ -526,11 +585,10 @@ int __init_{locstr}(int argc,char **argv)
 {{
     UA_StatusCode retval;
     client = UA_Client_new();
-    UA_ClientConfig_setDefault(UA_Client_getConfig(client));
+    cc = UA_Client_getConfig(client);
+    char *uri = "{uri}";
 {init}
 
-    /* Connect to server */
-    retval = UA_Client_connect(client, "{uri}");
     if(retval != UA_STATUSCODE_GOOD) {{
         UA_Client_delete(client);
         return EXIT_FAILURE;
@@ -566,13 +624,25 @@ void __publish_{locstr}(void)
         formatdict = dict(
             locstr   = locstr,
             uri      = config["URI"],
-            # TODO: pass authentication code.
             decl     = "",
             cleanup  = "",
             init     = "",
             retrieve = "",
             publish  = "" 
         )
+
+        AuthType = config["AuthType"]
+        if AuthType == "x509":
+            config["UpperCaseMode"] = config["Mode"].upper()
+            formatdict["init"] += """
+    INIT_x509({Policy}, {UpperCaseMode}, "{PrivateKey}", "{Certificate}")""".format(**config)
+        elif AuthType == "UserPassword":
+            formatdict["init"] += """
+    INIT_UserPassword("{User}", "{Password}")""".format(**config)
+        else:
+            formatdict["init"] += """
+    INIT_NoAuth()"""
+
         for direction, data in self.iteritems():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
@@ -586,13 +656,13 @@ void __publish_{locstr}(void)
 DECL_VAR({ua_type}, {C_type}, {c_loc_name})""".format(**locals())
 
                 if direction == "input":
-                    formatdict["init"] +="""
+                    formatdict["init"] += """
     INIT_READ_VARIANT({ua_type}, {c_loc_name})""".format(**locals())
                     formatdict["retrieve"] += """
     READ_VALUE({ua_type}, {ua_type_enum}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
 
                 if direction == "output":
-                    formatdict["init"] +="""
+                    formatdict["init"] += """
     INIT_WRITE_VARIANT({ua_type}, {ua_type_enum}, {c_loc_name})""".format(**locals())
                     formatdict["publish"] += """
     WRITE_VALUE({ua_type}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
