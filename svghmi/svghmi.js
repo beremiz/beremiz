@@ -1,7 +1,5 @@
 // svghmi.js
 
-var need_cache_apply = [];
-
 function dispatch_value(index, value) {
     let widgets = subscribers(index);
 
@@ -84,10 +82,6 @@ function animate() {
                 svg_root.classList.remove("fade-out-page");
                 page_fading = "off";
             }
-        }
-
-        while(widget = need_cache_apply.pop()){
-            widget.apply_cache();
         }
 
         if(jumps_need_update) update_jumps();
