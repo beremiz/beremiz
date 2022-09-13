@@ -3,17 +3,42 @@
 widget_desc("Jump") {
     longdesc
     ||
-    Jump widget brings focus to a different page. Mandatory single argument
+    Jump widget brings focus to a different page. Mandatory first argument
     gives name of the page.
 
-    Optional single path is used as new reference when jumping to a relative
-    page, it must point to a HMI_NODE.
+    If first path is pointint to HMI_NODE variable is used as new reference
+    when jumping to a relative page.
+
+    Additional arguments are unordered options:
+
+    - Absolute: force page jump to be not relative even if first path is of type HMI_NODE
+
+    - name=value: Notify PLC about jump by setting variable with path having same name assigned
 
     "active"+"inactive" labeled elements can be provided and reflect current
     page being shown.
 
-    "disabled" labeled element, if provided, is shown instead of "active" or
-    "inactive" widget when pointed HMI_NODE is null.
+    Exemples:
+
+    Relative jump:
+
+    HMI:Jump:RelativePage@/PUMP9
+    HMI:Jump:RelativePage@/PUMP9@role=.userrole#role=="admin"
+
+    Absolute jump:
+
+    HMI:Jump:AbsolutePage
+    HMI:Jump:AbsolutePage@role=.userrole#role=="admin"
+
+    Forced absolute jump:
+
+    HMI:Jump:AbsolutePage:Absolute@/PUMP9
+    HMI:Jump:AbsolutePage:Absolute:notify=1@notify=/PUMP9
+
+    Jump with feedback
+
+    HMI:Jump:AbsolutePage:notify=1@notify=.did_jump
+
     ||
 
     shortdesc > Jump to given page
@@ -26,110 +51,85 @@ widget_desc("Jump") {
 widget_class("Jump") {
 ||
         activable = false;
-        active = false;
-        disabled = false;
         frequency = 2;
-
-        update_activity() {
-            if(this.active) {
-                 /* show active */ 
-                 this.active_elt.style.display = "";
-                 /* hide inactive */ 
-                 this.inactive_elt.style.display = "none";
-            } else {
-                 /* show inactive */ 
-                 this.inactive_elt.style.display = "";
-                 /* hide active */ 
-                 this.active_elt.style.display = "none";
-            }
-        }
-
-        update_disability() {
-            if(this.disabled) {
-                /* show disabled */ 
-                this.disabled_elt.style.display = "";
-                /* hide inactive */ 
-                this.inactive_elt.style.display = "none";
-                /* hide active */ 
-                this.active_elt.style.display = "none";
-            } else {
-                /* hide disabled */ 
-                this.disabled_elt.style.display = "none";
-                this.update_activity();
-            }
-        }
 
         make_on_click() {
             let that = this;
             const name = this.args[0];
             return function(evt){
-                /* TODO: in order to allow jumps to page selected through for exemple a dropdown,
-                   support path pointing to local variable whom value 
-                   would be an HMI_TREE index and then jump to a relative page not hard-coded in advance */
-                if(!that.disabled) {
-                    const index = that.indexes.length > 0 ? that.indexes[0] + that.offset : undefined;
+                /* TODO: in order to allow jumps to page selected through
+                   for exemple a dropdown, support path pointing to local
+                   variable whom value would be an HMI_TREE index and then
+                   jump to a relative page not hard-coded in advance
+                */
+                if(that.enable_state) {
+                    const index =
+                        (that.is_relative && that.indexes.length > 0) ?
+                        that.indexes[0] + that.offset : undefined;
                     fading_page_switch(name, index);
+                    that.notify();
                 }
             }
         }
 
         notify_page_change(page_name, index) {
+            // called from animate()
             if(this.activable) {
                 const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
                 const ref_name = this.args[0];
-                this.active = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
-                this.update_state();
+                this.activity_state = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
+                // Since called from animate, update activity directly
+                if(this.enable_displayed_state && this.has_activity) {
+                    this.animate_activity();
+                }
             }
-        }
-
-        dispatch(value) {
-            this.disabled = !Number(value);
-
-            // TODO : use RequestAnimate and animate()
-
-            this.update_state();
         }
 ||
 }
 
-widget_defs("Jump") {
-    // TODO: ensure both active and inactive are provided
-    const "activity" optional_labels("active inactive");
-    const "have_activity","string-length($activity)>0";
-    value "$activity";
+def "func:is_relative_jump" {
+    param "widget";
+    result "$widget/path and $widget/path[1]/@type='HMI_NODE' and not($widget/arg[position()>1 and @value = 'Absolute'])";
+}
 
-    const "disability" optional_labels("disabled");
-    const "have_disability","$have_activity and string-length($disability)>0";
-    value "$disability";
+widget_defs("Jump") {
+    optional_activable();
+
+    const "jump_disability","$has_activity and $has_disability";
 
     |     init: function() {
     |         this.element.onclick = this.make_on_click();
-    if "$have_activity" {
+    if "$has_activity" {
     |         this.activable = true;
     }
-    if "not($have_disability)" {
-    |         this.unsubscribable = true;
-    }
-    >         this.update_state = 
-    choose {
-        when "$have_disability" {
-            > this.update_disability
-        }
-        when "$have_activity" {
-            > this.update_activity
-        }
-        otherwise > null
+
+    >         this.is_relative = 
+    choose{
+        when "func:is_relative_jump(.)" > true
+        otherwise > false
     }
     > ;\n
     |     },
 
+    |     notify: function() {
+    const "paths","path";
+    foreach "arg[position()>1 and contains(@value,'=')]"{
+        const "name","substring-before(@value,'=')";
+        const "value","substring-after(@value,'=')";
+        const "index" foreach "$paths" if "@assign = $name" value "position()-1";
+    |         // «@value»
+    |         this.apply_hmi_value(«$index», «$value»);
+    }
+    |     },
 }
 
 widget_page("Jump"){
     param "page_desc";
-    /* check that given path is compatible with page's reference path */
-    if "path" {
-        /* TODO: suport local variable containing an HMI_TREE index to jump to a relative page */
+    /* jump is considered relative jump if first path points to HMI_NODE
+       but a jump can be forced Absolute by adding a "Absolute" argument */
+    if "func:is_relative_jump(.)" {
+        /* if relative check that given path is compatible with page's reference path */
+
         /* when no page name provided, check for same page */
         const "target_page_name" choose {
             when "arg" value "arg[1]/@value";
@@ -142,8 +142,11 @@ widget_page("Jump"){
 
         if "not(func:same_class_paths($target_page_path, path[1]/@value))"
             error > Jump id="«@id»" to page "«$target_page_name»" with incompatible path "«path[1]/@value» (must be same class as "«$target_page_path»")
+
     }
 }
+
+
 
 /* TODO: move to detachable pages ysl2 */
 emit "cssdefs:jump"
@@ -165,6 +168,7 @@ var jumps_need_update = false;
 var jump_history = [[default_page, undefined]];
 
 function update_jumps() {
+    // called from animate()
     page_desc[current_visible_page].jumps.map(w=>w.notify_page_change(current_visible_page,current_page_index));
     jumps_need_update = false;
 };

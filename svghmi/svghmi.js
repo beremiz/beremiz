@@ -1,7 +1,5 @@
 // svghmi.js
 
-var need_cache_apply = [];
-
 function dispatch_value(index, value) {
     let widgets = subscribers(index);
 
@@ -86,13 +84,8 @@ function animate() {
             }
         }
 
-        while(widget = need_cache_apply.pop()){
-            widget.apply_cache();
-        }
-
         if(jumps_need_update) update_jumps();
 
-        apply_updates();
 
         pending_widget_animates.forEach(widget => widget._animate());
         pending_widget_animates = [];
@@ -139,8 +132,9 @@ ws.onmessage = function (evt) {
                 throw new Error("Unknown index "+index);
             }
         };
+
+        apply_updates();
         // register for rendering on next frame, since there are updates
-        requestHMIAnimation();
     } catch(err) {
         // 1003 is for "Unsupported Data"
         // ws.close(1003, err.message);
@@ -348,14 +342,13 @@ function update_subscriptions() {
 
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
-        updates.set(index, value);
+        dispatch_value(index, value);
 
         if(persistent_indexes.has(index)){
             let varname = persistent_indexes.get(index);
             document.cookie = varname+"="+value+"; max-age=3153600000";
         }
 
-        requestHMIAnimation();
         return;
     }
 
