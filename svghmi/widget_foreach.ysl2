@@ -140,7 +140,7 @@ widget_class("ForEach")
         this.unsub_items();
         this.sub_items();
         update_subscriptions();
-        need_cache_apply.push(this);
+        this.apply_cache(); 
         jumps_need_update = true;
         requestHMIAnimation();
     }

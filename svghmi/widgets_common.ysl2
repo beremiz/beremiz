@@ -21,13 +21,25 @@ decl warning_labels(*ptr) alias - {
     }
 };
 
-decl activable() alias - {
+decl _activable(*level) alias - {
     |     activable_sub:{
-    warning_labels("/active /inactive") {
+    const "activity" labels("/active /inactive") {
+        with "mandatory"{text *level};
         content;
     }
-    |     }
+    value "$activity";
+    const "has_activity","string-length($activity)>0";
+    |     },
+    |     has_activity: «$has_activity»,
 };
+
+decl activable() alias - {
+    _activable("warn")
+};
+decl optional_activable() alias - {
+    _activable("no")
+};
+
 decl activable_labels(*ptr) alias - {
     optional_labels(*ptr) {
         with "subelements","'active inactive'";
@@ -48,6 +60,10 @@ in xsl decl widget_class(%name, *clsname="%nameWidget", match="widget[@type='%na
 
 in xsl decl widget_defs(%name, match="widget[@type='%name']", mode="widget_defs") alias template {
     param "hmi_element";
+    // all widget potentially has a "disabled" labeled element
+    const "disability" optional_labels("/disabled");
+    value "$disability";
+    const "has_disability","string-length($disability)>0";
     content;
 };
 
@@ -65,6 +81,11 @@ template "svg:*", mode="hmi_widgets" {
     const "eltid","@id";
     const "args" foreach "$widget/arg" > "«func:escape_quotes(@value)»"`if "position()!=last()" > ,`
     const "indexes" foreach "$widget/path" {
+        if "position()!=last()" > ,
+    }
+
+    const "variables" foreach "$widget/path" {
+        > [
         choose {
             when "not(@index)" {
                 choose {
@@ -84,16 +105,15 @@ template "svg:*", mode="hmi_widgets" {
                 > «@index»
             }
         }
-        if "position()!=last()" > ,
-    }
-
-    const "minmaxes" foreach "$widget/path" {
-        choose {
-            when "@min and @max"
-                > [«@min»,«@max»]
-            otherwise
-                > undefined
+        > , {
+        if "@min and @max"{
+                > minmax:[«@min», «@max»]
+                if "@assign"
+                    > ,
         }
+        if "@assign"
+                > assign:"«@assign»"
+        > }]
         if "position()!=last()" > ,
     }
 
@@ -104,7 +124,34 @@ template "svg:*", mode="hmi_widgets" {
             > undefined
     }
 
-    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$indexes»],[«$minmaxes»],{
+    const "enable_expr" choose{
+        when "$widget/@enable_expr"
+            > true
+        otherwise
+            > false
+    }
+
+    |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$variables»],«$enable_expr»,{
+    if "$widget/@enable_expr" {
+
+    |       assignments: [],
+    |       compute_enable: function(value, oldval, varnum) {
+    |         let result = false;
+    |         do {
+        foreach "$widget/path" {
+            const "varid","generate-id()";
+            const "varnum","position()-1";
+            if "@assign" foreach "$widget/path[@assign]" if "$varid = generate-id()" {
+    |           if(varnum == «$varnum») this.assignments[«position()-1»] = value;
+    |           let «@assign» = this.assignments[«position()-1»];
+    |           if(«@assign» == undefined) break;
+            }
+        }
+    |           result = «$widget/@enable_expr»;
+    |         } while(0);
+    |         this.enable(result);
+    |       },
+    }
     apply "$widget", mode="widget_defs" with "hmi_element",".";
     |   })`if "position()!=last()" > ,`
 }
@@ -187,7 +234,7 @@ emit "preamble:widget-base-class" {
         placeholder.parentNode.insertBefore(elt, placeholder);
     }
 
-    function set_activation_state(eltsub, state){
+    function set_activity_state(eltsub, state){
         if(eltsub.active_elt != undefined){
             if(eltsub.active_elt_placeholder == undefined){
                 eltsub.active_elt_placeholder = document.createComment("");
@@ -204,35 +251,34 @@ emit "preamble:widget-base-class" {
         }
     }
 
-    function activate_activable(eltsub) {
-        set_activation_state(eltsub, true);
-    }
-
-    function inactivate_activable(eltsub) {
-        set_activation_state(eltsub, false);
-    }
-
     class Widget {
         offset = 0;
         frequency = 10; /* FIXME arbitrary default max freq. Obtain from config ? */
         unsubscribable = false;
         pending_animate = false;
 
-        constructor(elt_id, freq, args, indexes, minmaxes, members){
+        constructor(elt_id, freq, args, variables, enable_expr, members){
             this.element_id = elt_id;
             this.element = id(elt_id);
             this.args = args;
-            this.indexes = indexes;
-            this.minmaxes = minmaxes;
+            
+            [this.indexes, this.variables_options] = (variables.length>0) ? zip(...variables) : [[],[]];
+            this.indexes_length = this.indexes.length;
+
+            this.enable_expr = enable_expr;
+            this.enable_state = true;
+            this.enable_displayed_state = true;
+            this.enabled_elts = [];
+
             Object.keys(members).forEach(prop => this[prop]=members[prop]);
-            this.lastapply = indexes.map(() => undefined);
-            this.inhibit = indexes.map(() => undefined);
-            this.pending = indexes.map(() => undefined);
+            this.lastapply = this.indexes.map(() => undefined);
+            this.inhibit = this.indexes.map(() => undefined);
+            this.pending = this.indexes.map(() => undefined);
             this.bound_uninhibit = this.uninhibit.bind(this);
 
-            this.lastdispatch = indexes.map(() => undefined);
-            this.deafen = indexes.map(() => undefined);
-            this.incoming = indexes.map(() => undefined);
+            this.lastdispatch = this.indexes.map(() => undefined);
+            this.deafen = this.indexes.map(() => undefined);
+            this.incoming = this.indexes.map(() => undefined);
             this.bound_undeafen = this.undeafen.bind(this);
 
             this.forced_frequency = freq;
@@ -267,30 +313,39 @@ emit "preamble:widget-base-class" {
                     console.log(err);
                 }
             }
+
+            if(this.enable_expr){
+                this.enable_state = false;
+                this.enable_displayed_state = false;
+                for(let child of Array.from(this.element.children)){
+                    let label = child.getAttribute("inkscape:label");
+                    if(label!="disabled"){
+                        this.enabled_elts.push(child);
+                        this.element.removeChild(child);
+                    }
+                }
+            }
         }
 
         unsub(){
             /* remove subsribers */
-            if(!this.unsubscribable)
-                for(let i = 0; i < this.indexes.length; i++) {
-                    /* flush updates pending because of inhibition */
-                    let inhibition = this.inhibit[i];
-                    if(inhibition != undefined){
-                        clearTimeout(inhibition);
-                        this.lastapply[i] = undefined;
-                        this.uninhibit(i);
-                    }
-                    let deafened = this.deafen[i];
-                    if(deafened != undefined){
-                        clearTimeout(deafened);
-                        this.lastdispatch[i] = undefined;
-                        this.undeafen(i);
-                    }
-                    let index = this.indexes[i];
-                    if(this.relativeness[i])
-                        index += this.offset;
-                    subscribers(index).delete(this);
+            for(let i = 0; i < this.indexes_length; i++) {
+                /* flush updates pending because of inhibition */
+                let inhibition = this.inhibit[i];
+                if(inhibition != undefined){
+                    clearTimeout(inhibition);
+                    this.lastapply[i] = undefined;
+                    this.uninhibit(i);
                 }
+                let deafened = this.deafen[i];
+                if(deafened != undefined){
+                    clearTimeout(deafened);
+                    this.lastdispatch[i] = undefined;
+                    this.undeafen(i);
+                }
+                let index = this.get_variable_index(i);
+                subscribers(index).delete(this);
+            }
             this.offset = 0;
             this.relativeness = undefined;
         }
@@ -300,23 +355,22 @@ emit "preamble:widget-base-class" {
             this.relativeness = relativeness;
             this.container_id = container_id ;
             /* add this's subsribers */
-            if(!this.unsubscribable)
-                for(let i = 0; i < this.indexes.length; i++) {
-                    let index = this.get_variable_index(i);
-                    if(index == undefined) continue;
-                    subscribers(index).add(this);
-                }
-            need_cache_apply.push(this); 
+            for(let i = 0; i < this.indexes_length; i++) {
+                let index = this.get_variable_index(i);
+                if(index == undefined) continue;
+                subscribers(index).add(this);
+            }
+            this.apply_cache(); 
         }
 
         apply_cache() {
-            if(!this.unsubscribable) for(let index in this.indexes){
+            for(let i = 0; i < this.indexes_length; i++) {
                 /* dispatch current cache in newly opened page widgets */
-                let realindex = this.get_variable_index(index);
+                let realindex = this.get_variable_index(i);
                 if(realindex == undefined) continue;
                 let cached_val = cache[realindex];
                 if(cached_val != undefined)
-                    this._dispatch(cached_val, cached_val, index);
+                    this.feed_data_for_dispatch(cached_val, cached_val, i);
             }
         }
 
@@ -339,7 +393,7 @@ emit "preamble:widget-base-class" {
         }
 
         clip_min_max(index, new_val) {
-            let minmax = this.minmaxes[index];
+            let minmax = this.variables_options[index].minmax;
             if(minmax !== undefined && typeof new_val == "number") {
                 let [min,max] = minmax;
                 if(new_val < min){
@@ -402,12 +456,12 @@ emit "preamble:widget-base-class" {
 
         new_hmi_value(index, value, oldval) {
             // TODO avoid searching, store index at sub()
-            for(let i = 0; i < this.indexes.length; i++) {
+            for(let i = 0; i < this.indexes_length; i++) {
                 let refindex = this.get_variable_index(i);
                 if(refindex == undefined) continue;
 
                 if(index == refindex) {
-                    this._dispatch(value, oldval, i);
+                    this.feed_data_for_dispatch(value, oldval, i);
                     break;
                 }
             }
@@ -417,23 +471,57 @@ emit "preamble:widget-base-class" {
             this.deafen[index] = undefined;
             let [new_val, old_val] = this.incoming[index];
             this.incoming[index] = undefined;
-            this.dispatch(new_val, old_val, index);
+            this.do_dispatch(new_val, old_val, index);
         }
 
-        _dispatch(value, oldval, varnum) {
-            let dispatch = this.dispatch;
-            if(dispatch != undefined){
+        enable(enabled){
+            if(this.enable_state != enabled){
+                this.enable_state = enabled;
+                this.request_animate();
+            }
+        }
+
+        animate_enable(){
+            if(this.enable_state && !this.enable_displayed_state){
+                //show widget
+                for(let child of this.enabled_elts){
+                    this.element.appendChild(child);
+                }
+
+                //hide disabled content
+                if(this.disabled_elt && this.disabled_elt.parentNode != null)
+                    this.element.removeChild(this.disabled_elt);
+
+                this.enable_displayed_state = true;
+
+            }else if(!this.enable_state && this.enable_displayed_state){
+
+                //hide widget
+                for(let child of this.enabled_elts){
+                    if(child.parentNode != null)
+                        this.element.removeChild(child);
+                }
+
+                //show disabled content
+                if(this.disabled_elt)
+                    this.element.appendChild(this.disabled_elt);
+
+                this.enable_displayed_state = false;
+
+                // once disabled activity display is lost
+                this.activity_displayed_state = undefined;
+            }
+        }
+
+        feed_data_for_dispatch(value, oldval, varnum) {
+            if(this.dispatch || this.enable_expr){
                 if(this.deafen[varnum] == undefined){
                     let now = Date.now();
                     let min_interval = 1000/this.frequency;
                     let lastdispatch = this.lastdispatch[varnum];
                     if(lastdispatch == undefined || now > lastdispatch + min_interval){
                         this.lastdispatch[varnum] = now;
-                        try {
-                            dispatch.call(this, value, oldval, varnum);
-                        } catch(err) {
-                            console.log(err);
-                        }
+                        this.do_dispatch(value, oldval, varnum)
                     }
                     else {
                         let elapsed = now - lastdispatch;
@@ -447,8 +535,29 @@ emit "preamble:widget-base-class" {
             }
         }
 
+        do_dispatch(value, oldval, varnum) {
+            if(this.dispatch) try {
+                this.dispatch(value, oldval, varnum);
+            } catch(err) {
+                console.log(err);
+            }
+            if(this.enable_expr) try {
+                this.compute_enable(value, oldval, varnum);
+            } catch(err) {
+                console.log(err);
+            }
+        }
+
         _animate(){
-            this.animate();
+            if(this.enable_expr)
+                this.animate_enable();
+            // inhibit widget animation when disabled
+            if(!this.enable_expr || this.enable_state){
+                if(this.has_activity)
+                    this.animate_activity();
+                if(this.animate != undefined)
+                    this.animate();
+            }
             this.pending_animate = false;
         }
 
@@ -460,8 +569,11 @@ emit "preamble:widget-base-class" {
             }
         }
 
-        set_activation_state(state){
-            set_activation_state(this.activable_sub, state);
+        animate_activity(){
+            if(this.activity_displayed_state != this.activity_state){
+                set_activity_state(this.activable_sub, this.activity_state);
+                this.activity_displayed_state = this.activity_state;
+            }
         }
     }
     ||

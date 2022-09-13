@@ -165,8 +165,11 @@ function enumerate(iterable) {
 }
 
 const _zip = longest => (...iterables) => {
-    if (iterables.length < 2) {
-        throw new TypeError("zip takes 2 iterables at least, "+iterables.length+" given");
+    if (iterables.length == 0) {
+        // works starting with 1 iterable
+        // [a,b,c] -> [[a],[b],[c]]
+        // [a,b,c],[d,e,f] -> [[a,d],[b,e],[c,f]]
+        throw new TypeError("zip takes 1 iterables at least, "+iterables.length+" given");
     }
 
     return new Iterator(function * () {

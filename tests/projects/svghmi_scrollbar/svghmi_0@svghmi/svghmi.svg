@@ -60,8 +60,8 @@
      showgrid="false"
      units="px"
      inkscape:zoom="0.64"
-     inkscape:cx="476.03774"
-     inkscape:cy="444.53549"
+     inkscape:cx="864.62819"
+     inkscape:cy="344.83986"
      inkscape:window-width="1600"
      inkscape:window-height="836"
      inkscape:window-x="0"
@@ -748,11 +748,18 @@
      inkscape:label="HMI:ScrollBar\"
      transform="translate(-202)">
     <desc
-       id="desc150">@.range
-@.position
+       id="desc150">@range=.range
+@pos=.position
 @.size
+#pos&gt;10&amp;&amp;range&gt;50
 
 my tailor is rich</desc>
+    <path
+       inkscape:connector-curvature="0"
+       d="m 972,603 h 75 l -37.5,58 z m 37.5,-579.999998 37.5,58 H 972 Z M 969,236 h 81 V 407 H 969 Z M 960,84.000002 h 100 V 600 H 960 Z"
+       style="opacity:1;vector-effect:none;fill:none;fill-opacity:1;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:8, 8;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       id="path159"
+       inkscape:label="disabled" />
     <rect
        y="84"
        x="960"
