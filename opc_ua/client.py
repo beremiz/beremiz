@@ -135,7 +135,7 @@ class OPCUAClient(object):
         with open(c_path, 'wb') as c_file:
             c_file.write(c_code)
 
-        LDFLAGS = [' "' + os.path.join(Open62541LibraryPath, "libopen62541.a") + '"']
+        LDFLAGS = ['"' + os.path.join(Open62541LibraryPath, "libopen62541.a") + '"', '-lcrypto']
 
         CFLAGS = ' '.join(['-I"' + path + '"' for path in Open62541IncludePaths])
 
