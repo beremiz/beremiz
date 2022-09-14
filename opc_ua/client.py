@@ -130,7 +130,8 @@ class OPCUAClient(object):
         locstr = "_".join(map(str, current_location))
         c_path = os.path.join(buildpath, "opcua_client__%s.c" % locstr)
 
-        c_code = self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
+        c_code = '#include "beremiz.h"\n'
+        c_code += self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
 
         with open(c_path, 'wb') as c_file:
             c_file.write(c_code)

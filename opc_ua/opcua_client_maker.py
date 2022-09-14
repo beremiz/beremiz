@@ -552,7 +552,19 @@ void __cleanup_{locstr}(void)
 }}
 
 
+#define _Log(level, ...)                                                                           \\
+    {{                                                                                             \\
+        char mstr[256];                                                                            \\
+        snprintf(mstr, 255, __VA_ARGS__);                                                          \\
+        LogMessage(level, mstr, strlen(mstr));                                                     \\
+    }}
+
+#define LogInfo(...) _Log(LOG_INFO, __VA_ARGS__);
+#define LogError(...) _Log(LOG_CRITICAL, __VA_ARGS__);
+#define LogWarning(...) _Log(LOG_WARNING, __VA_ARGS__);
+
 #define INIT_NoAuth()                                                                              \\
+    LogInfo("OPC-UA Init no auth\\n");                                                             \\
     UA_ClientConfig_setDefault(cc);                                                                \\
     retval = UA_Client_connect(client, uri);
 
@@ -562,7 +574,7 @@ void __cleanup_{locstr}(void)
     UA_ByteString certificate = loadFile(Certificate);                                             \\
     UA_ByteString privateKey  = loadFile(PrivateKey);                                              \\
                                                                                                    \\
-    printf("INIT_x509 %s,%s,%s,%s\\n", #Policy, #UpperCaseMode, PrivateKey, Certificate);          \\
+    LogInfo("OPC-UA Init x509 %s,%s,%s,%s\\n", #Policy, #UpperCaseMode, PrivateKey, Certificate);  \\
     cc->securityMode = UA_MESSAGESECURITYMODE_##UpperCaseMode;                                     \\
     UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0);           \\
                                                                                                    \\
@@ -572,7 +584,8 @@ void __cleanup_{locstr}(void)
     UA_ByteString_clear(&privateKey);
 
 #define INIT_UserPassword(User, Password)                                                          \\
-    printf("TODO INIT_UserPassword %s,%s\\n", User, Password);                                     \\
+    LogInfo("OPC-UA Init UserPassword %s,%s\\n", User, Password);                                  \\
+    UA_ClientConfig_setDefault(cc);                                                                \\
     retval = UA_Client_connectUsername(client, uri, User, Password);
 
 #define INIT_READ_VARIANT(ua_type, c_loc_name)                                                     \\
@@ -590,9 +603,11 @@ int __init_{locstr}(int argc,char **argv)
 {init}
 
     if(retval != UA_STATUSCODE_GOOD) {{
+        LogError("OPC-UA Init Failed %d\\n", retval);                                              \\
         UA_Client_delete(client);
         return EXIT_FAILURE;
     }}
+    return 0;
 }}
 
 #define READ_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)        \\
@@ -724,6 +739,10 @@ gcc %s -o %s \\
 */
 
 """%(path, path[:-2]) + modeldata.GenerateC(path, "test", config) + """
+
+int LogMessage(uint8_t level, char* buf, uint32_t size){
+    printf("log level:%d message:'%.*s'", level, size, buf);
+};
 
 int main(int argc, char *argv[]) {
 
