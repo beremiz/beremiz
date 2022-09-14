@@ -1,9 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OPCUAClient xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <AuthType>
-    <x509>
-      <Policy/>
-      <Mode/>
-    </x509>
-  </AuthType>
+  <AuthType/>
 </OPCUAClient>
