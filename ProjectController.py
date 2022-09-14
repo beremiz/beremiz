@@ -1226,6 +1226,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(traceback.format_exc())
             return False
 
+        # Extensions also need plcCFLAGS in case they include beremiz.h
+        CTNLocationCFilesAndCFLAGS = [
+            (loc, [
+                (code, self.plcCFLAGS+" "+cflags)
+                for code,cflags in code_and_cflags], do_calls)
+            for loc, code_and_cflags, do_calls in CTNLocationCFilesAndCFLAGS]
+
         self.LocationCFilesAndCFLAGS = LibCFilesAndCFLAGS + \
             CTNLocationCFilesAndCFLAGS
         self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
