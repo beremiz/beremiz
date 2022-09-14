@@ -2,18 +2,18 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:svg="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn svg inkscape">
   <xsl:output method="xml"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
-  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\d,]*)$'"/>
   <xsl:variable name="newline">
     <xsl:text>
 </xsl:text>
   </xsl:variable>
   <xsl:variable name="twonewlines" select="concat($newline,$newline)"/>
   <xsl:template mode="parselabel" match="*">
-    <xsl:variable name="part" select="@inkscape:label"/>
+    <xsl:variable name="label" select="@inkscape:label"/>
     <xsl:variable name="desc" select="svg:desc"/>
-    <xsl:variable name="len" select="string-length($part)"/>
-    <xsl:variable name="has_continuation" select="substring($part,$len,1)='\'"/>
-    <xsl:variable name="label">
+    <xsl:variable name="len" select="string-length($label)"/>
+    <xsl:variable name="has_continuation" select="substring($label,$len,1)='\'"/>
+    <xsl:variable name="full_decl">
       <xsl:choose>
         <xsl:when test="$has_continuation">
           <xsl:variable name="_continuation" select="substring-before($desc, $twonewlines)"/>
@@ -27,23 +27,23 @@
               </xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
-          <xsl:value-of select="concat(substring($part,1,$len - 1),translate($continuation,$newline,''))"/>
+          <xsl:value-of select="concat(substring($label,1,$len - 1),translate($continuation,$newline,''))"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="$part"/>
+          <xsl:value-of select="$label"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
     <xsl:variable name="id" select="@id"/>
-    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
-    <xsl:variable name="_args" select="substring-before($description,'@')"/>
+    <xsl:variable name="declaration" select="substring-after($full_decl,'HMI:')"/>
+    <xsl:variable name="_args" select="substring-before($declaration,'@')"/>
     <xsl:variable name="args">
       <xsl:choose>
         <xsl:when test="$_args">
           <xsl:value-of select="$_args"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="$description"/>
+          <xsl:value-of select="$declaration"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -84,13 +84,32 @@
               <xsl:text>Widget id:</xsl:text>
               <xsl:value-of select="$id"/>
               <xsl:text> label:</xsl:text>
-              <xsl:value-of select="$label"/>
+              <xsl:value-of select="$full_decl"/>
               <xsl:text> has wrong syntax of frequency forcing </xsl:text>
               <xsl:value-of select="$freq"/>
             </xsl:message>
           </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
+          </xsl:attribute>
+        </xsl:if>
+        <xsl:variable name="tail" select="substring-after($declaration,'@')"/>
+        <xsl:variable name="taillen" select="string-length($tail)"/>
+        <xsl:variable name="has_enable" select="contains($tail, '#')"/>
+        <xsl:variable name="paths">
+          <xsl:choose>
+            <xsl:when test="$has_enable">
+              <xsl:value-of select="substring-before($tail,'#')"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="$tail"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:if test="$has_enable">
+          <xsl:variable name="enable_expr" select="substring-after($tail,'#')"/>
+          <xsl:attribute name="enable_expr">
+            <xsl:value-of select="$enable_expr"/>
           </xsl:attribute>
         </xsl:if>
         <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
@@ -100,21 +119,29 @@
             </xsl:attribute>
           </arg>
         </xsl:for-each>
-        <xsl:variable name="paths" select="substring-after($description,'@')"/>
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
               <xsl:variable name="path_match" select="regexp:match(.,$pathregex)"/>
+              <xsl:variable name="pathassign" select="substring-before($path_match[2],'=')"/>
               <xsl:variable name="pathminmax" select="str:split($path_match[4],',')"/>
-              <xsl:variable name="path" select="$path_match[2]"/>
-              <xsl:variable name="path_accepts" select="$path_match[3]"/>
+              <xsl:variable name="path" select="$path_match[3]"/>
               <xsl:variable name="pathminmaxcount" select="count($pathminmax)"/>
+              <xsl:if test="not($path)">
+                <xsl:message terminate="yes">
+                  <xsl:text>Widget id:</xsl:text>
+                  <xsl:value-of select="$id"/>
+                  <xsl:text> label:</xsl:text>
+                  <xsl:value-of select="$full_decl"/>
+                  <xsl:text> has wrong syntax</xsl:text>
+                </xsl:message>
+              </xsl:if>
               <xsl:attribute name="value">
                 <xsl:value-of select="$path"/>
               </xsl:attribute>
-              <xsl:if test="string-length($path_accepts)">
-                <xsl:attribute name="accepts">
-                  <xsl:value-of select="$path_accepts"/>
+              <xsl:if test="$pathassign">
+                <xsl:attribute name="assign">
+                  <xsl:value-of select="$pathassign"/>
                 </xsl:attribute>
               </xsl:if>
               <xsl:choose>
@@ -131,7 +158,7 @@
                     <xsl:text>Widget id:</xsl:text>
                     <xsl:value-of select="$id"/>
                     <xsl:text> label:</xsl:text>
-                    <xsl:value-of select="$label"/>
+                    <xsl:value-of select="$full_decl"/>
                     <xsl:text> has wrong syntax of path section </xsl:text>
                     <xsl:value-of select="$pathminmax"/>
                   </xsl:message>
@@ -157,7 +184,7 @@
                         <xsl:text>Widget id:</xsl:text>
                         <xsl:value-of select="$id"/>
                         <xsl:text> label:</xsl:text>
-                        <xsl:value-of select="$label"/>
+                        <xsl:value-of select="$full_decl"/>
                         <xsl:text> path section </xsl:text>
                         <xsl:value-of select="$pathminmax"/>
                         <xsl:text> use min and max on non mumeric value</xsl:text>
@@ -274,8 +301,6 @@
   </xsl:template>
   <xsl:template name="generated_button_class">
     <xsl:param name="fsm"/>
-    <xsl:text>    display = "inactive";
-</xsl:text>
     <xsl:text>    state = "init";
 </xsl:text>
     <xsl:text>    dispatch(value) {
@@ -302,19 +327,13 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:apply-templates mode="actions" select="$fsm"/>
-    <xsl:text>    animate(){
-</xsl:text>
-    <xsl:text>        this.set_activation_state(this.display == "active");
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
     <xsl:text>    init() {
 </xsl:text>
     <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
 </xsl:text>
-    <xsl:text>        this.set_activation_state(undefined);
+    <xsl:text>        this.activity_state = undefined;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -604,15 +623,27 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>Jump widget brings focus to a different page. Mandatory single argument
+      <xsl:text>Jump widget brings focus to a different page. Mandatory first argument
 </xsl:text>
       <xsl:text>gives name of the page.
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Optional single path is used as new reference when jumping to a relative
+      <xsl:text>If first path is pointint to HMI_NODE variable is used as new reference
 </xsl:text>
-      <xsl:text>page, it must point to a HMI_NODE.
+      <xsl:text>when jumping to a relative page.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Additional arguments are unordered options:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>- Absolute: force page jump to be not relative even if first path is of type HMI_NODE
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>- name=value: Notify PLC about jump by setting variable with path having same name assigned
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -622,9 +653,47 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>"disabled" labeled element, if provided, is shown instead of "active" or
+      <xsl:text>Exemples:
 </xsl:text>
-      <xsl:text>"inactive" widget when pointed HMI_NODE is null.
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Relative jump:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:RelativePage@/PUMP9
+</xsl:text>
+      <xsl:text>HMI:Jump:RelativePage@/PUMP9@role=.userrole#role=="admin"
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Absolute jump:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage@role=.userrole#role=="admin"
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Forced absolute jump:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage:Absolute@/PUMP9
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage:Absolute:notify=1@notify=/PUMP9
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Jump with feedback
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage:notify=1@notify=.did_jump
+</xsl:text>
+      <xsl:text>
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -637,6 +706,10 @@
       <xsl:text>reference for relative jump</xsl:text>
     </path>
   </xsl:template>
+  <func:function name="func:is_relative_jump">
+    <xsl:param name="widget"/>
+    <func:result select="$widget/path and $widget/path[1]/@type='HMI_NODE' and not($widget/arg[position()&gt;1 and @value = 'Absolute'])"/>
+  </func:function>
   <xsl:template match="widget[@type='Keypad']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
