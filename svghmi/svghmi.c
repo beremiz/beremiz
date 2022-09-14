@@ -103,12 +103,14 @@ static int write_iterator(hmi_tree_item_t *dsc)
     void *dest_p = NULL;
     void *value_p = NULL;
     size_t sz = 0;
+    int do_sample = 0;
     while(session_index < MAX_CONNECTIONS) {
         if(dsc->wstate[session_index] == buf_set){
             /* if being subscribed */
             if(dsc->refresh_period_ms[session_index]){
-                if(dsc->age_ms[session_index] + ticktime_ms < dsc->refresh_period_ms[session_index]){
-                    dsc->age_ms[session_index] += ticktime_ms;
+                uint16_t new_age_ms = dsc->age_ms[session_index] + ticktime_ms;
+                if(new_age_ms < dsc->refresh_period_ms[session_index]){
+                    dsc->age_ms[session_index] = new_age_ms;
                 }else{
                     dsc->wstate[session_index] = buf_tosend;
                     global_write_dirty = 1;
@@ -116,33 +118,30 @@ static int write_iterator(hmi_tree_item_t *dsc)
             }
         }
 
-        /* variable is sample only if just subscribed
+        /* variable is sampled if just subscribed (initial value)
            or already subscribed and having value change */
-        int do_sample = 0;
+        int sample_session = 0;
         int just_subscribed = dsc->wstate[session_index] == buf_new;
-        if(!just_subscribed){
+        if(just_subscribed){
+            sample_session = 1;
+        } else {
             int already_subscribed = dsc->refresh_period_ms[session_index] > 0;
             if(already_subscribed){
-                if(!value_changed){
-                    if(!value_p){
-                        UnpackVar(dsc, &value_p, NULL, &sz);
-                        if(__Is_a_string(dsc)){
-                            sz = ((STRING*)value_p)->len + 1;
-                        }
-                        dest_p = &wbuf[dsc->buf_index];
+                /* compute value_changed once only */
+                if(!value_p){
+                    UnpackVar(dsc, &value_p, NULL, &sz);
+                    if(__Is_a_string(dsc)){
+                        sz = ((STRING*)value_p)->len + 1;
                     }
+                    dest_p = &wbuf[dsc->buf_index];
                     value_changed = memcmp(dest_p, value_p, sz) != 0;
-                    do_sample = value_changed;
-                }else{
-                    do_sample = 1;
                 }
+                sample_session = value_changed;
             }
-        } else {
-            do_sample = 1;
         }
 
 
-        if(do_sample){
+        if(sample_session){
             if(dsc->wstate[session_index] != buf_set && dsc->wstate[session_index] != buf_tosend) {
                 if(dsc->wstate[session_index] == buf_new \
                    || ticktime_ms > dsc->refresh_period_ms[session_index]){
@@ -153,13 +152,23 @@ static int write_iterator(hmi_tree_item_t *dsc)
                 }
                 dsc->age_ms[session_index] = 0;
             }
+            do_sample = 1;
         }
 
         session_index++;
     }
-    /* copy value if changed (and subscribed) */
-    if(value_changed)
+
+    /* copy value if one at least one session did sample */
+    if(do_sample){
+        if(!value_p){
+            UnpackVar(dsc, &value_p, NULL, &sz);
+            if(__Is_a_string(dsc)){
+                sz = ((STRING*)value_p)->len + 1;
+            }
+            dest_p = &wbuf[dsc->buf_index];
+        }
         memcpy(dest_p, value_p, sz);
+    }
     return 0;
 }
 
