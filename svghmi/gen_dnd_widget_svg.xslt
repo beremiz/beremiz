@@ -4,19 +4,48 @@
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="widgetparams" select="ns:GetWidgetParams()"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
-  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\d,]*)$'"/>
+  <xsl:variable name="newline">
+    <xsl:text>
+</xsl:text>
+  </xsl:variable>
+  <xsl:variable name="twonewlines" select="concat($newline,$newline)"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
+    <xsl:variable name="desc" select="svg:desc"/>
+    <xsl:variable name="len" select="string-length($label)"/>
+    <xsl:variable name="has_continuation" select="substring($label,$len,1)='\'"/>
+    <xsl:variable name="full_decl">
+      <xsl:choose>
+        <xsl:when test="$has_continuation">
+          <xsl:variable name="_continuation" select="substring-before($desc, $twonewlines)"/>
+          <xsl:variable name="continuation">
+            <xsl:choose>
+              <xsl:when test="$_continuation">
+                <xsl:value-of select="$_continuation"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$desc"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:value-of select="concat(substring($label,1,$len - 1),translate($continuation,$newline,''))"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$label"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="id" select="@id"/>
-    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
-    <xsl:variable name="_args" select="substring-before($description,'@')"/>
+    <xsl:variable name="declaration" select="substring-after($full_decl,'HMI:')"/>
+    <xsl:variable name="_args" select="substring-before($declaration,'@')"/>
     <xsl:variable name="args">
       <xsl:choose>
         <xsl:when test="$_args">
           <xsl:value-of select="$_args"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="$description"/>
+          <xsl:value-of select="$declaration"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -57,13 +86,32 @@
               <xsl:text>Widget id:</xsl:text>
               <xsl:value-of select="$id"/>
               <xsl:text> label:</xsl:text>
-              <xsl:value-of select="$label"/>
+              <xsl:value-of select="$full_decl"/>
               <xsl:text> has wrong syntax of frequency forcing </xsl:text>
               <xsl:value-of select="$freq"/>
             </xsl:message>
           </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
+          </xsl:attribute>
+        </xsl:if>
+        <xsl:variable name="tail" select="substring-after($declaration,'@')"/>
+        <xsl:variable name="taillen" select="string-length($tail)"/>
+        <xsl:variable name="has_enable" select="contains($tail, '#')"/>
+        <xsl:variable name="paths">
+          <xsl:choose>
+            <xsl:when test="$has_enable">
+              <xsl:value-of select="substring-before($tail,'#')"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="$tail"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:if test="$has_enable">
+          <xsl:variable name="enable_expr" select="substring-after($tail,'#')"/>
+          <xsl:attribute name="enable_expr">
+            <xsl:value-of select="$enable_expr"/>
           </xsl:attribute>
         </xsl:if>
         <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
@@ -73,21 +121,29 @@
             </xsl:attribute>
           </arg>
         </xsl:for-each>
-        <xsl:variable name="paths" select="substring-after($description,'@')"/>
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
               <xsl:variable name="path_match" select="regexp:match(.,$pathregex)"/>
+              <xsl:variable name="pathassign" select="substring-before($path_match[2],'=')"/>
               <xsl:variable name="pathminmax" select="str:split($path_match[4],',')"/>
-              <xsl:variable name="path" select="$path_match[2]"/>
-              <xsl:variable name="path_accepts" select="$path_match[3]"/>
+              <xsl:variable name="path" select="$path_match[3]"/>
               <xsl:variable name="pathminmaxcount" select="count($pathminmax)"/>
+              <xsl:if test="not($path)">
+                <xsl:message terminate="yes">
+                  <xsl:text>Widget id:</xsl:text>
+                  <xsl:value-of select="$id"/>
+                  <xsl:text> label:</xsl:text>
+                  <xsl:value-of select="$full_decl"/>
+                  <xsl:text> has wrong syntax</xsl:text>
+                </xsl:message>
+              </xsl:if>
               <xsl:attribute name="value">
                 <xsl:value-of select="$path"/>
               </xsl:attribute>
-              <xsl:if test="string-length($path_accepts)">
-                <xsl:attribute name="accepts">
-                  <xsl:value-of select="$path_accepts"/>
+              <xsl:if test="$pathassign">
+                <xsl:attribute name="assign">
+                  <xsl:value-of select="$pathassign"/>
                 </xsl:attribute>
               </xsl:if>
               <xsl:choose>
@@ -104,7 +160,7 @@
                     <xsl:text>Widget id:</xsl:text>
                     <xsl:value-of select="$id"/>
                     <xsl:text> label:</xsl:text>
-                    <xsl:value-of select="$label"/>
+                    <xsl:value-of select="$full_decl"/>
                     <xsl:text> has wrong syntax of path section </xsl:text>
                     <xsl:value-of select="$pathminmax"/>
                   </xsl:message>
@@ -130,7 +186,7 @@
                         <xsl:text>Widget id:</xsl:text>
                         <xsl:value-of select="$id"/>
                         <xsl:text> label:</xsl:text>
-                        <xsl:value-of select="$label"/>
+                        <xsl:value-of select="$full_decl"/>
                         <xsl:text> path section </xsl:text>
                         <xsl:value-of select="$pathminmax"/>
                         <xsl:text> use min and max on non mumeric value</xsl:text>
@@ -150,11 +206,23 @@
             </path>
           </xsl:if>
         </xsl:for-each>
-        <xsl:if test="svg:desc">
-          <desc>
-            <xsl:value-of select="svg:desc/text()"/>
-          </desc>
-        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$has_continuation">
+            <xsl:variable name="_continuation" select="substring-after($desc, $twonewlines)"/>
+            <xsl:if test="$_continuation">
+              <desc>
+                <xsl:value-of select="$_continuation"/>
+              </desc>
+            </xsl:if>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:if test="$desc">
+              <desc>
+                <xsl:value-of select="$desc/text()"/>
+              </desc>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
       </widget>
     </xsl:if>
   </xsl:template>

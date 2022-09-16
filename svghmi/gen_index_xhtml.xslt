@@ -159,19 +159,48 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:variable name="pathregex" select="'^([^\[,]+)(\[[^\]]+\])?([-.\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\d,]*)$'"/>
+  <xsl:variable name="newline">
+    <xsl:text>
+</xsl:text>
+  </xsl:variable>
+  <xsl:variable name="twonewlines" select="concat($newline,$newline)"/>
   <xsl:template mode="parselabel" match="*">
     <xsl:variable name="label" select="@inkscape:label"/>
+    <xsl:variable name="desc" select="svg:desc"/>
+    <xsl:variable name="len" select="string-length($label)"/>
+    <xsl:variable name="has_continuation" select="substring($label,$len,1)='\'"/>
+    <xsl:variable name="full_decl">
+      <xsl:choose>
+        <xsl:when test="$has_continuation">
+          <xsl:variable name="_continuation" select="substring-before($desc, $twonewlines)"/>
+          <xsl:variable name="continuation">
+            <xsl:choose>
+              <xsl:when test="$_continuation">
+                <xsl:value-of select="$_continuation"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="$desc"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+          <xsl:value-of select="concat(substring($label,1,$len - 1),translate($continuation,$newline,''))"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$label"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:variable name="id" select="@id"/>
-    <xsl:variable name="description" select="substring-after($label,'HMI:')"/>
-    <xsl:variable name="_args" select="substring-before($description,'@')"/>
+    <xsl:variable name="declaration" select="substring-after($full_decl,'HMI:')"/>
+    <xsl:variable name="_args" select="substring-before($declaration,'@')"/>
     <xsl:variable name="args">
       <xsl:choose>
         <xsl:when test="$_args">
           <xsl:value-of select="$_args"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:value-of select="$description"/>
+          <xsl:value-of select="$declaration"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -212,13 +241,32 @@
               <xsl:text>Widget id:</xsl:text>
               <xsl:value-of select="$id"/>
               <xsl:text> label:</xsl:text>
-              <xsl:value-of select="$label"/>
+              <xsl:value-of select="$full_decl"/>
               <xsl:text> has wrong syntax of frequency forcing </xsl:text>
               <xsl:value-of select="$freq"/>
             </xsl:message>
           </xsl:if>
           <xsl:attribute name="freq">
             <xsl:value-of select="$freq"/>
+          </xsl:attribute>
+        </xsl:if>
+        <xsl:variable name="tail" select="substring-after($declaration,'@')"/>
+        <xsl:variable name="taillen" select="string-length($tail)"/>
+        <xsl:variable name="has_enable" select="contains($tail, '#')"/>
+        <xsl:variable name="paths">
+          <xsl:choose>
+            <xsl:when test="$has_enable">
+              <xsl:value-of select="substring-before($tail,'#')"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:value-of select="$tail"/>
+            </xsl:otherwise>
+          </xsl:choose>
+        </xsl:variable>
+        <xsl:if test="$has_enable">
+          <xsl:variable name="enable_expr" select="substring-after($tail,'#')"/>
+          <xsl:attribute name="enable_expr">
+            <xsl:value-of select="$enable_expr"/>
           </xsl:attribute>
         </xsl:if>
         <xsl:for-each select="str:split(substring-after($args, ':'), ':')">
@@ -228,21 +276,29 @@
             </xsl:attribute>
           </arg>
         </xsl:for-each>
-        <xsl:variable name="paths" select="substring-after($description,'@')"/>
         <xsl:for-each select="str:split($paths, '@')">
           <xsl:if test="string-length(.) &gt; 0">
             <path>
               <xsl:variable name="path_match" select="regexp:match(.,$pathregex)"/>
+              <xsl:variable name="pathassign" select="substring-before($path_match[2],'=')"/>
               <xsl:variable name="pathminmax" select="str:split($path_match[4],',')"/>
-              <xsl:variable name="path" select="$path_match[2]"/>
-              <xsl:variable name="path_accepts" select="$path_match[3]"/>
+              <xsl:variable name="path" select="$path_match[3]"/>
               <xsl:variable name="pathminmaxcount" select="count($pathminmax)"/>
+              <xsl:if test="not($path)">
+                <xsl:message terminate="yes">
+                  <xsl:text>Widget id:</xsl:text>
+                  <xsl:value-of select="$id"/>
+                  <xsl:text> label:</xsl:text>
+                  <xsl:value-of select="$full_decl"/>
+                  <xsl:text> has wrong syntax</xsl:text>
+                </xsl:message>
+              </xsl:if>
               <xsl:attribute name="value">
                 <xsl:value-of select="$path"/>
               </xsl:attribute>
-              <xsl:if test="string-length($path_accepts)">
-                <xsl:attribute name="accepts">
-                  <xsl:value-of select="$path_accepts"/>
+              <xsl:if test="$pathassign">
+                <xsl:attribute name="assign">
+                  <xsl:value-of select="$pathassign"/>
                 </xsl:attribute>
               </xsl:if>
               <xsl:choose>
@@ -259,7 +315,7 @@
                     <xsl:text>Widget id:</xsl:text>
                     <xsl:value-of select="$id"/>
                     <xsl:text> label:</xsl:text>
-                    <xsl:value-of select="$label"/>
+                    <xsl:value-of select="$full_decl"/>
                     <xsl:text> has wrong syntax of path section </xsl:text>
                     <xsl:value-of select="$pathminmax"/>
                   </xsl:message>
@@ -285,7 +341,7 @@
                         <xsl:text>Widget id:</xsl:text>
                         <xsl:value-of select="$id"/>
                         <xsl:text> label:</xsl:text>
-                        <xsl:value-of select="$label"/>
+                        <xsl:value-of select="$full_decl"/>
                         <xsl:text> path section </xsl:text>
                         <xsl:value-of select="$pathminmax"/>
                         <xsl:text> use min and max on non mumeric value</xsl:text>
@@ -305,11 +361,23 @@
             </path>
           </xsl:if>
         </xsl:for-each>
-        <xsl:if test="svg:desc">
-          <desc>
-            <xsl:value-of select="svg:desc/text()"/>
-          </desc>
-        </xsl:if>
+        <xsl:choose>
+          <xsl:when test="$has_continuation">
+            <xsl:variable name="_continuation" select="substring-after($desc, $twonewlines)"/>
+            <xsl:if test="$_continuation">
+              <desc>
+                <xsl:value-of select="$_continuation"/>
+              </desc>
+            </xsl:if>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:if test="$desc">
+              <desc>
+                <xsl:value-of select="$desc/text()"/>
+              </desc>
+            </xsl:if>
+          </xsl:otherwise>
+        </xsl:choose>
       </widget>
     </xsl:if>
   </xsl:template>
@@ -371,6 +439,11 @@
     </xsl:for-each>
     <xsl:text>
 </xsl:text>
+    <xsl:if test="text()">
+      <xsl:value-of select="text()"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:if>
     <xsl:apply-templates mode="testtree" select="*">
       <xsl:with-param name="indent">
         <xsl:value-of select="concat($indent,'&gt;')"/>
@@ -1200,6 +1273,14 @@
     </xsl:variable>
     <xsl:variable name="indexes">
       <xsl:for-each select="$widget/path">
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </xsl:variable>
+    <xsl:variable name="variables">
+      <xsl:for-each select="$widget/path">
+        <xsl:text>[</xsl:text>
         <xsl:choose>
           <xsl:when test="not(@index)">
             <xsl:choose>
@@ -1236,25 +1317,23 @@
             <xsl:value-of select="@index"/>
           </xsl:otherwise>
         </xsl:choose>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-      </xsl:for-each>
-    </xsl:variable>
-    <xsl:variable name="minmaxes">
-      <xsl:for-each select="$widget/path">
-        <xsl:choose>
-          <xsl:when test="@min and @max">
-            <xsl:text>[</xsl:text>
-            <xsl:value-of select="@min"/>
+        <xsl:text>, {</xsl:text>
+        <xsl:if test="@min and @max">
+          <xsl:text>minmax:[</xsl:text>
+          <xsl:value-of select="@min"/>
+          <xsl:text>, </xsl:text>
+          <xsl:value-of select="@max"/>
+          <xsl:text>]</xsl:text>
+          <xsl:if test="@assign">
             <xsl:text>,</xsl:text>
-            <xsl:value-of select="@max"/>
-            <xsl:text>]</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>undefined</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
+          </xsl:if>
+        </xsl:if>
+        <xsl:if test="@assign">
+          <xsl:text>assign:"</xsl:text>
+          <xsl:value-of select="@assign"/>
+          <xsl:text>"</xsl:text>
+        </xsl:if>
+        <xsl:text>}]</xsl:text>
         <xsl:if test="position()!=last()">
           <xsl:text>,</xsl:text>
         </xsl:if>
@@ -1272,6 +1351,16 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
+    <xsl:variable name="enable_expr">
+      <xsl:choose>
+        <xsl:when test="$widget/@enable_expr">
+          <xsl:text>true</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>false</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:text>  "</xsl:text>
     <xsl:value-of select="@id"/>
     <xsl:text>": new </xsl:text>
@@ -1283,11 +1372,57 @@
     <xsl:text>,[</xsl:text>
     <xsl:value-of select="$args"/>
     <xsl:text>],[</xsl:text>
-    <xsl:value-of select="$indexes"/>
-    <xsl:text>],[</xsl:text>
-    <xsl:value-of select="$minmaxes"/>
-    <xsl:text>],{
+    <xsl:value-of select="$variables"/>
+    <xsl:text>],</xsl:text>
+    <xsl:value-of select="$enable_expr"/>
+    <xsl:text>,{
 </xsl:text>
+    <xsl:if test="$widget/@enable_expr">
+      <xsl:text>      assignments: [],
+</xsl:text>
+      <xsl:text>      compute_enable: function(value, oldval, varnum) {
+</xsl:text>
+      <xsl:text>        let result = false;
+</xsl:text>
+      <xsl:text>        do {
+</xsl:text>
+      <xsl:for-each select="$widget/path">
+        <xsl:variable name="varid" select="generate-id()"/>
+        <xsl:variable name="varnum" select="position()-1"/>
+        <xsl:if test="@assign">
+          <xsl:for-each select="$widget/path[@assign]">
+            <xsl:if test="$varid = generate-id()">
+              <xsl:text>          if(varnum == </xsl:text>
+              <xsl:value-of select="$varnum"/>
+              <xsl:text>) this.assignments[</xsl:text>
+              <xsl:value-of select="position()-1"/>
+              <xsl:text>] = value;
+</xsl:text>
+              <xsl:text>          let </xsl:text>
+              <xsl:value-of select="@assign"/>
+              <xsl:text> = this.assignments[</xsl:text>
+              <xsl:value-of select="position()-1"/>
+              <xsl:text>];
+</xsl:text>
+              <xsl:text>          if(</xsl:text>
+              <xsl:value-of select="@assign"/>
+              <xsl:text> == undefined) break;
+</xsl:text>
+            </xsl:if>
+          </xsl:for-each>
+        </xsl:if>
+      </xsl:for-each>
+      <xsl:text>          result = </xsl:text>
+      <xsl:value-of select="$widget/@enable_expr"/>
+      <xsl:text>;
+</xsl:text>
+      <xsl:text>        } while(0);
+</xsl:text>
+      <xsl:text>        this.enable(result);
+</xsl:text>
+      <xsl:text>      },
+</xsl:text>
+    </xsl:if>
     <xsl:apply-templates mode="widget_defs" select="$widget">
       <xsl:with-param name="hmi_element" select="."/>
     </xsl:apply-templates>
@@ -1474,7 +1609,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function set_activation_state(eltsub, state){
+    <xsl:text>function set_activity_state(eltsub, state){
 </xsl:text>
     <xsl:text>    if(eltsub.active_elt != undefined){
 </xsl:text>
@@ -1508,22 +1643,6 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>function activate_activable(eltsub) {
-</xsl:text>
-    <xsl:text>    set_activation_state(eltsub, true);
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>function inactivate_activable(eltsub) {
-</xsl:text>
-    <xsl:text>    set_activation_state(eltsub, false);
-</xsl:text>
-    <xsl:text>}
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>class Widget {
 </xsl:text>
     <xsl:text>    offset = 0;
@@ -1536,7 +1655,7 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    constructor(elt_id, freq, args, indexes, minmaxes, members){
+    <xsl:text>    constructor(elt_id, freq, args, variables, enable_expr, members){
 </xsl:text>
     <xsl:text>        this.element_id = elt_id;
 </xsl:text>
@@ -1544,27 +1663,41 @@
 </xsl:text>
     <xsl:text>        this.args = args;
 </xsl:text>
-    <xsl:text>        this.indexes = indexes;
+    <xsl:text>        
 </xsl:text>
-    <xsl:text>        this.minmaxes = minmaxes;
+    <xsl:text>        [this.indexes, this.variables_options] = (variables.length&gt;0) ? zip(...variables) : [[],[]];
+</xsl:text>
+    <xsl:text>        this.indexes_length = this.indexes.length;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        this.enable_expr = enable_expr;
+</xsl:text>
+    <xsl:text>        this.enable_state = true;
+</xsl:text>
+    <xsl:text>        this.enable_displayed_state = true;
+</xsl:text>
+    <xsl:text>        this.enabled_elts = [];
+</xsl:text>
+    <xsl:text>
 </xsl:text>
     <xsl:text>        Object.keys(members).forEach(prop =&gt; this[prop]=members[prop]);
 </xsl:text>
-    <xsl:text>        this.lastapply = indexes.map(() =&gt; undefined);
+    <xsl:text>        this.lastapply = this.indexes.map(() =&gt; undefined);
 </xsl:text>
-    <xsl:text>        this.inhibit = indexes.map(() =&gt; undefined);
+    <xsl:text>        this.inhibit = this.indexes.map(() =&gt; undefined);
 </xsl:text>
-    <xsl:text>        this.pending = indexes.map(() =&gt; undefined);
+    <xsl:text>        this.pending = this.indexes.map(() =&gt; undefined);
 </xsl:text>
     <xsl:text>        this.bound_uninhibit = this.uninhibit.bind(this);
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        this.lastdispatch = indexes.map(() =&gt; undefined);
+    <xsl:text>        this.lastdispatch = this.indexes.map(() =&gt; undefined);
 </xsl:text>
-    <xsl:text>        this.deafen = indexes.map(() =&gt; undefined);
+    <xsl:text>        this.deafen = this.indexes.map(() =&gt; undefined);
 </xsl:text>
-    <xsl:text>        this.incoming = indexes.map(() =&gt; undefined);
+    <xsl:text>        this.incoming = this.indexes.map(() =&gt; undefined);
 </xsl:text>
     <xsl:text>        this.bound_undeafen = this.undeafen.bind(this);
 </xsl:text>
@@ -1634,6 +1767,30 @@
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        if(this.enable_expr){
+</xsl:text>
+    <xsl:text>            this.enable_state = false;
+</xsl:text>
+    <xsl:text>            this.enable_displayed_state = false;
+</xsl:text>
+    <xsl:text>            for(let child of Array.from(this.element.children)){
+</xsl:text>
+    <xsl:text>                let label = child.getAttribute("inkscape:label");
+</xsl:text>
+    <xsl:text>                if(label!="disabled"){
+</xsl:text>
+    <xsl:text>                    this.enabled_elts.push(child);
+</xsl:text>
+    <xsl:text>                    this.element.removeChild(child);
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
@@ -1642,45 +1799,39 @@
 </xsl:text>
     <xsl:text>        /* remove subsribers */
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable)
+    <xsl:text>        for(let i = 0; i &lt; this.indexes_length; i++) {
 </xsl:text>
-    <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
+    <xsl:text>            /* flush updates pending because of inhibition */
 </xsl:text>
-    <xsl:text>                /* flush updates pending because of inhibition */
+    <xsl:text>            let inhibition = this.inhibit[i];
 </xsl:text>
-    <xsl:text>                let inhibition = this.inhibit[i];
+    <xsl:text>            if(inhibition != undefined){
 </xsl:text>
-    <xsl:text>                if(inhibition != undefined){
+    <xsl:text>                clearTimeout(inhibition);
 </xsl:text>
-    <xsl:text>                    clearTimeout(inhibition);
+    <xsl:text>                this.lastapply[i] = undefined;
 </xsl:text>
-    <xsl:text>                    this.lastapply[i] = undefined;
-</xsl:text>
-    <xsl:text>                    this.uninhibit(i);
-</xsl:text>
-    <xsl:text>                }
-</xsl:text>
-    <xsl:text>                let deafened = this.deafen[i];
-</xsl:text>
-    <xsl:text>                if(deafened != undefined){
-</xsl:text>
-    <xsl:text>                    clearTimeout(deafened);
-</xsl:text>
-    <xsl:text>                    this.lastdispatch[i] = undefined;
-</xsl:text>
-    <xsl:text>                    this.undeafen(i);
-</xsl:text>
-    <xsl:text>                }
-</xsl:text>
-    <xsl:text>                let index = this.indexes[i];
-</xsl:text>
-    <xsl:text>                if(this.relativeness[i])
-</xsl:text>
-    <xsl:text>                    index += this.offset;
-</xsl:text>
-    <xsl:text>                subscribers(index).delete(this);
+    <xsl:text>                this.uninhibit(i);
 </xsl:text>
     <xsl:text>            }
+</xsl:text>
+    <xsl:text>            let deafened = this.deafen[i];
+</xsl:text>
+    <xsl:text>            if(deafened != undefined){
+</xsl:text>
+    <xsl:text>                clearTimeout(deafened);
+</xsl:text>
+    <xsl:text>                this.lastdispatch[i] = undefined;
+</xsl:text>
+    <xsl:text>                this.undeafen(i);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>            let index = this.get_variable_index(i);
+</xsl:text>
+    <xsl:text>            subscribers(index).delete(this);
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.offset = 0;
 </xsl:text>
@@ -1700,19 +1851,17 @@
 </xsl:text>
     <xsl:text>        /* add this's subsribers */
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable)
+    <xsl:text>        for(let i = 0; i &lt; this.indexes_length; i++) {
 </xsl:text>
-    <xsl:text>            for(let i = 0; i &lt; this.indexes.length; i++) {
+    <xsl:text>            let index = this.get_variable_index(i);
 </xsl:text>
-    <xsl:text>                let index = this.get_variable_index(i);
+    <xsl:text>            if(index == undefined) continue;
 </xsl:text>
-    <xsl:text>                if(index == undefined) continue;
+    <xsl:text>            subscribers(index).add(this);
 </xsl:text>
-    <xsl:text>                subscribers(index).add(this);
+    <xsl:text>        }
 </xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        need_cache_apply.push(this); 
+    <xsl:text>        this.apply_cache(); 
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -1720,11 +1869,11 @@
 </xsl:text>
     <xsl:text>    apply_cache() {
 </xsl:text>
-    <xsl:text>        if(!this.unsubscribable) for(let index in this.indexes){
+    <xsl:text>        for(let i = 0; i &lt; this.indexes_length; i++) {
 </xsl:text>
     <xsl:text>            /* dispatch current cache in newly opened page widgets */
 </xsl:text>
-    <xsl:text>            let realindex = this.get_variable_index(index);
+    <xsl:text>            let realindex = this.get_variable_index(i);
 </xsl:text>
     <xsl:text>            if(realindex == undefined) continue;
 </xsl:text>
@@ -1732,7 +1881,7 @@
 </xsl:text>
     <xsl:text>            if(cached_val != undefined)
 </xsl:text>
-    <xsl:text>                this._dispatch(cached_val, cached_val, index);
+    <xsl:text>                this.feed_data_for_dispatch(cached_val, cached_val, i);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -1778,7 +1927,7 @@
 </xsl:text>
     <xsl:text>    clip_min_max(index, new_val) {
 </xsl:text>
-    <xsl:text>        let minmax = this.minmaxes[index];
+    <xsl:text>        let minmax = this.variables_options[index].minmax;
 </xsl:text>
     <xsl:text>        if(minmax !== undefined &amp;&amp; typeof new_val == "number") {
 </xsl:text>
@@ -1904,7 +2053,7 @@
 </xsl:text>
     <xsl:text>        // TODO avoid searching, store index at sub()
 </xsl:text>
-    <xsl:text>        for(let i = 0; i &lt; this.indexes.length; i++) {
+    <xsl:text>        for(let i = 0; i &lt; this.indexes_length; i++) {
 </xsl:text>
     <xsl:text>            let refindex = this.get_variable_index(i);
 </xsl:text>
@@ -1914,7 +2063,7 @@
 </xsl:text>
     <xsl:text>            if(index == refindex) {
 </xsl:text>
-    <xsl:text>                this._dispatch(value, oldval, i);
+    <xsl:text>                this.feed_data_for_dispatch(value, oldval, i);
 </xsl:text>
     <xsl:text>                break;
 </xsl:text>
@@ -1934,17 +2083,93 @@
 </xsl:text>
     <xsl:text>        this.incoming[index] = undefined;
 </xsl:text>
-    <xsl:text>        this.dispatch(new_val, old_val, index);
+    <xsl:text>        this.do_dispatch(new_val, old_val, index);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    _dispatch(value, oldval, varnum) {
+    <xsl:text>    enable(enabled){
 </xsl:text>
-    <xsl:text>        let dispatch = this.dispatch;
+    <xsl:text>        if(this.enable_state != enabled){
 </xsl:text>
-    <xsl:text>        if(dispatch != undefined){
+    <xsl:text>            this.enable_state = enabled;
+</xsl:text>
+    <xsl:text>            this.request_animate();
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    animate_enable(){
+</xsl:text>
+    <xsl:text>        if(this.enable_state &amp;&amp; !this.enable_displayed_state){
+</xsl:text>
+    <xsl:text>            //show widget
+</xsl:text>
+    <xsl:text>            for(let child of this.enabled_elts){
+</xsl:text>
+    <xsl:text>                this.element.appendChild(child);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //hide disabled content
+</xsl:text>
+    <xsl:text>            if(this.disabled_elt &amp;&amp; this.disabled_elt.parentNode != null)
+</xsl:text>
+    <xsl:text>                this.element.removeChild(this.disabled_elt);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.enable_displayed_state = true;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        }else if(!this.enable_state &amp;&amp; this.enable_displayed_state){
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //hide widget
+</xsl:text>
+    <xsl:text>            for(let child of this.enabled_elts){
+</xsl:text>
+    <xsl:text>                if(child.parentNode != null)
+</xsl:text>
+    <xsl:text>                    this.element.removeChild(child);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            //show disabled content
+</xsl:text>
+    <xsl:text>            if(this.disabled_elt)
+</xsl:text>
+    <xsl:text>                this.element.appendChild(this.disabled_elt);
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            this.enable_displayed_state = false;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            // once disabled activity display is lost
+</xsl:text>
+    <xsl:text>            this.activity_displayed_state = undefined;
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    feed_data_for_dispatch(value, oldval, varnum) {
+</xsl:text>
+    <xsl:text>        if(this.dispatch || this.enable_expr){
 </xsl:text>
     <xsl:text>            if(this.deafen[varnum] == undefined){
 </xsl:text>
@@ -1958,15 +2183,7 @@
 </xsl:text>
     <xsl:text>                    this.lastdispatch[varnum] = now;
 </xsl:text>
-    <xsl:text>                    try {
-</xsl:text>
-    <xsl:text>                        dispatch.call(this, value, oldval, varnum);
-</xsl:text>
-    <xsl:text>                    } catch(err) {
-</xsl:text>
-    <xsl:text>                        console.log(err);
-</xsl:text>
-    <xsl:text>                    }
+    <xsl:text>                    this.do_dispatch(value, oldval, varnum)
 </xsl:text>
     <xsl:text>                }
 </xsl:text>
@@ -1994,9 +2211,51 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>    do_dispatch(value, oldval, varnum) {
+</xsl:text>
+    <xsl:text>        if(this.dispatch) try {
+</xsl:text>
+    <xsl:text>            this.dispatch(value, oldval, varnum);
+</xsl:text>
+    <xsl:text>        } catch(err) {
+</xsl:text>
+    <xsl:text>            console.log(err);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>        if(this.enable_expr) try {
+</xsl:text>
+    <xsl:text>            this.compute_enable(value, oldval, varnum);
+</xsl:text>
+    <xsl:text>        } catch(err) {
+</xsl:text>
+    <xsl:text>            console.log(err);
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    _animate(){
 </xsl:text>
-    <xsl:text>        this.animate();
+    <xsl:text>        if(this.enable_expr)
+</xsl:text>
+    <xsl:text>            this.animate_enable();
+</xsl:text>
+    <xsl:text>        // inhibit widget animation when disabled
+</xsl:text>
+    <xsl:text>        if(!this.enable_expr || this.enable_state){
+</xsl:text>
+    <xsl:text>            if(this.has_activity)
+</xsl:text>
+    <xsl:text>                this.animate_activity();
+</xsl:text>
+    <xsl:text>            if(this.animate != undefined)
+</xsl:text>
+    <xsl:text>                this.animate();
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>        this.pending_animate = false;
 </xsl:text>
@@ -2020,9 +2279,15 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    set_activation_state(state){
+    <xsl:text>    animate_activity(){
 </xsl:text>
-    <xsl:text>        set_activation_state(this.activable_sub, state);
+    <xsl:text>        if(this.activity_displayed_state != this.activity_state){
+</xsl:text>
+    <xsl:text>            set_activity_state(this.activable_sub, this.activity_state);
+</xsl:text>
+    <xsl:text>            this.activity_displayed_state = this.activity_state;
+</xsl:text>
+    <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2647,9 +2912,9 @@
 </xsl:text>
   </xsl:template>
   <xsl:template mode="actions" match="show">
-    <xsl:text>        this.display = "</xsl:text>
-    <xsl:value-of select="@eltname"/>
-    <xsl:text>";
+    <xsl:text>        this.activity_state = </xsl:text>
+    <xsl:value-of select="@eltname = 'active'"/>
+    <xsl:text>;
 </xsl:text>
     <xsl:text>        this.request_animate();
 </xsl:text>
@@ -2662,8 +2927,6 @@
   </xsl:template>
   <xsl:template name="generated_button_class">
     <xsl:param name="fsm"/>
-    <xsl:text>    display = "inactive";
-</xsl:text>
     <xsl:text>    state = "init";
 </xsl:text>
     <xsl:text>    dispatch(value) {
@@ -2690,19 +2953,13 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:apply-templates mode="actions" select="$fsm"/>
-    <xsl:text>    animate(){
-</xsl:text>
-    <xsl:text>        this.set_activation_state(this.display == "active");
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
     <xsl:text>    init() {
 </xsl:text>
     <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
 </xsl:text>
     <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
 </xsl:text>
-    <xsl:text>        this.set_activation_state(undefined);
+    <xsl:text>        this.activity_state = undefined;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -2723,16 +2980,37 @@
   </xsl:template>
   <xsl:template match="widget[@type='Button']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    activable_sub:{
 </xsl:text>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>/active /inactive</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'warn'"/>
-    </xsl:call-template>
-    <xsl:text>    }
+    <xsl:variable name="activity">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/active /inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory">
+          <xsl:text>warn</xsl:text>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="has_activity" select="string-length($activity)&gt;0"/>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    has_activity: </xsl:text>
+    <xsl:value-of select="$has_activity"/>
+    <xsl:text>,
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='PushButton']" mode="widget_class">
@@ -2751,16 +3029,37 @@
   </xsl:template>
   <xsl:template match="widget[@type='PushButton']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    activable_sub:{
 </xsl:text>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>/active /inactive</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'warn'"/>
-    </xsl:call-template>
-    <xsl:text>    }
+    <xsl:variable name="activity">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/active /inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory">
+          <xsl:text>warn</xsl:text>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="has_activity" select="string-length($activity)&gt;0"/>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    has_activity: </xsl:text>
+    <xsl:value-of select="$has_activity"/>
+    <xsl:text>,
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='CircularBar']" mode="widget_desc">
@@ -2902,6 +3201,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='CircularBar']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -3417,6 +3727,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='CircularSlider']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -3497,6 +3818,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='CustomHtml']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -3568,6 +3900,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='Display']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:variable name="format">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -4374,6 +4717,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='DropDown']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -4512,6 +4866,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='ForEach']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:if test="count(path) != 1">
       <xsl:message terminate="yes">
         <xsl:text>ForEach widget </xsl:text>
@@ -4751,7 +5116,7 @@
 </xsl:text>
     <xsl:text>        update_subscriptions();
 </xsl:text>
-    <xsl:text>        need_cache_apply.push(this);
+    <xsl:text>        this.apply_cache(); 
 </xsl:text>
     <xsl:text>        jumps_need_update = true;
 </xsl:text>
@@ -4864,6 +5229,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='Input']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:variable name="value_elt">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
@@ -5395,6 +5771,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='JsonTable']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -5444,15 +5831,27 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>Jump widget brings focus to a different page. Mandatory single argument
+      <xsl:text>Jump widget brings focus to a different page. Mandatory first argument
 </xsl:text>
       <xsl:text>gives name of the page.
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Optional single path is used as new reference when jumping to a relative
+      <xsl:text>If first path is pointint to HMI_NODE variable is used as new reference
 </xsl:text>
-      <xsl:text>page, it must point to a HMI_NODE.
+      <xsl:text>when jumping to a relative page.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Additional arguments are unordered options:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>- Absolute: force page jump to be not relative even if first path is of type HMI_NODE
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>- name=value: Notify PLC about jump by setting variable with path having same name assigned
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -5462,9 +5861,47 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>"disabled" labeled element, if provided, is shown instead of "active" or
+      <xsl:text>Exemples:
 </xsl:text>
-      <xsl:text>"inactive" widget when pointed HMI_NODE is null.
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Relative jump:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:RelativePage@/PUMP9
+</xsl:text>
+      <xsl:text>HMI:Jump:RelativePage@/PUMP9@role=.userrole#role=="admin"
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Absolute jump:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage@role=.userrole#role=="admin"
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Forced absolute jump:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage:Absolute@/PUMP9
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage:Absolute:notify=1@notify=/PUMP9
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Jump with feedback
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Jump:AbsolutePage:notify=1@notify=.did_jump
+</xsl:text>
+      <xsl:text>
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -5484,69 +5921,7 @@
 </xsl:text>
     <xsl:text>        activable = false;
 </xsl:text>
-    <xsl:text>        active = false;
-</xsl:text>
-    <xsl:text>        disabled = false;
-</xsl:text>
     <xsl:text>        frequency = 2;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        update_activity() {
-</xsl:text>
-    <xsl:text>            if(this.active) {
-</xsl:text>
-    <xsl:text>                 /* show active */ 
-</xsl:text>
-    <xsl:text>                 this.active_elt.style.display = "";
-</xsl:text>
-    <xsl:text>                 /* hide inactive */ 
-</xsl:text>
-    <xsl:text>                 this.inactive_elt.style.display = "none";
-</xsl:text>
-    <xsl:text>            } else {
-</xsl:text>
-    <xsl:text>                 /* show inactive */ 
-</xsl:text>
-    <xsl:text>                 this.inactive_elt.style.display = "";
-</xsl:text>
-    <xsl:text>                 /* hide active */ 
-</xsl:text>
-    <xsl:text>                 this.active_elt.style.display = "none";
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        update_disability() {
-</xsl:text>
-    <xsl:text>            if(this.disabled) {
-</xsl:text>
-    <xsl:text>                /* show disabled */ 
-</xsl:text>
-    <xsl:text>                this.disabled_elt.style.display = "";
-</xsl:text>
-    <xsl:text>                /* hide inactive */ 
-</xsl:text>
-    <xsl:text>                this.inactive_elt.style.display = "none";
-</xsl:text>
-    <xsl:text>                /* hide active */ 
-</xsl:text>
-    <xsl:text>                this.active_elt.style.display = "none";
-</xsl:text>
-    <xsl:text>            } else {
-</xsl:text>
-    <xsl:text>                /* hide disabled */ 
-</xsl:text>
-    <xsl:text>                this.disabled_elt.style.display = "none";
-</xsl:text>
-    <xsl:text>                this.update_activity();
-</xsl:text>
-    <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -5558,17 +5933,27 @@
 </xsl:text>
     <xsl:text>            return function(evt){
 </xsl:text>
-    <xsl:text>                /* TODO: in order to allow jumps to page selected through for exemple a dropdown,
+    <xsl:text>                /* TODO: in order to allow jumps to page selected through
 </xsl:text>
-    <xsl:text>                   support path pointing to local variable whom value 
+    <xsl:text>                   for exemple a dropdown, support path pointing to local
 </xsl:text>
-    <xsl:text>                   would be an HMI_TREE index and then jump to a relative page not hard-coded in advance */
+    <xsl:text>                   variable whom value would be an HMI_TREE index and then
 </xsl:text>
-    <xsl:text>                if(!that.disabled) {
+    <xsl:text>                   jump to a relative page not hard-coded in advance
 </xsl:text>
-    <xsl:text>                    const index = that.indexes.length &gt; 0 ? that.indexes[0] + that.offset : undefined;
+    <xsl:text>                */
+</xsl:text>
+    <xsl:text>                if(that.enable_state) {
+</xsl:text>
+    <xsl:text>                    const index =
+</xsl:text>
+    <xsl:text>                        (that.is_relative &amp;&amp; that.indexes.length &gt; 0) ?
+</xsl:text>
+    <xsl:text>                        that.indexes[0] + that.offset : undefined;
 </xsl:text>
     <xsl:text>                    fading_page_switch(name, index);
+</xsl:text>
+    <xsl:text>                    that.notify();
 </xsl:text>
     <xsl:text>                }
 </xsl:text>
@@ -5580,96 +5965,122 @@
 </xsl:text>
     <xsl:text>        notify_page_change(page_name, index) {
 </xsl:text>
+    <xsl:text>            // called from animate()
+</xsl:text>
     <xsl:text>            if(this.activable) {
 </xsl:text>
     <xsl:text>                const ref_index = this.indexes.length &gt; 0 ? this.indexes[0] + this.offset : undefined;
 </xsl:text>
     <xsl:text>                const ref_name = this.args[0];
 </xsl:text>
-    <xsl:text>                this.active = ((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
+    <xsl:text>                this.activity_state = ((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
 </xsl:text>
-    <xsl:text>                this.update_state();
+    <xsl:text>                // Since called from animate, update activity directly
+</xsl:text>
+    <xsl:text>                if(this.enable_displayed_state &amp;&amp; this.has_activity) {
+</xsl:text>
+    <xsl:text>                    this.animate_activity();
+</xsl:text>
+    <xsl:text>                }
 </xsl:text>
     <xsl:text>            }
-</xsl:text>
-    <xsl:text>        }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>        dispatch(value) {
-</xsl:text>
-    <xsl:text>            this.disabled = !Number(value);
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            // TODO : use RequestAnimate and animate()
-</xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>            this.update_state();
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>}
 </xsl:text>
   </xsl:template>
+  <func:function name="func:is_relative_jump">
+    <xsl:param name="widget"/>
+    <func:result select="$widget/path and $widget/path[1]/@type='HMI_NODE' and not($widget/arg[position()&gt;1 and @value = 'Absolute'])"/>
+  </func:function>
   <xsl:template match="widget[@type='Jump']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
-    <xsl:variable name="activity">
-      <xsl:call-template name="defs_by_labels">
-        <xsl:with-param name="hmi_element" select="$hmi_element"/>
-        <xsl:with-param name="labels">
-          <xsl:text>active inactive</xsl:text>
-        </xsl:with-param>
-        <xsl:with-param name="mandatory" select="'no'"/>
-      </xsl:call-template>
-    </xsl:variable>
-    <xsl:variable name="have_activity" select="string-length($activity)&gt;0"/>
-    <xsl:value-of select="$activity"/>
     <xsl:variable name="disability">
       <xsl:call-template name="defs_by_labels">
         <xsl:with-param name="hmi_element" select="$hmi_element"/>
         <xsl:with-param name="labels">
-          <xsl:text>disabled</xsl:text>
+          <xsl:text>/disabled</xsl:text>
         </xsl:with-param>
         <xsl:with-param name="mandatory" select="'no'"/>
       </xsl:call-template>
     </xsl:variable>
-    <xsl:variable name="have_disability" select="$have_activity and string-length($disability)&gt;0"/>
     <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
+    <xsl:text>    activable_sub:{
+</xsl:text>
+    <xsl:variable name="activity">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/active /inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory">
+          <xsl:text>no</xsl:text>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="has_activity" select="string-length($activity)&gt;0"/>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    has_activity: </xsl:text>
+    <xsl:value-of select="$has_activity"/>
+    <xsl:text>,
+</xsl:text>
+    <xsl:variable name="jump_disability" select="$has_activity and $has_disability"/>
     <xsl:text>    init: function() {
 </xsl:text>
     <xsl:text>        this.element.onclick = this.make_on_click();
 </xsl:text>
-    <xsl:if test="$have_activity">
+    <xsl:if test="$has_activity">
       <xsl:text>        this.activable = true;
 </xsl:text>
     </xsl:if>
-    <xsl:if test="not($have_disability)">
-      <xsl:text>        this.unsubscribable = true;
-</xsl:text>
-    </xsl:if>
-    <xsl:text>        this.update_state = </xsl:text>
+    <xsl:text>        this.is_relative = </xsl:text>
     <xsl:choose>
-      <xsl:when test="$have_disability">
-        <xsl:text>this.update_disability</xsl:text>
-      </xsl:when>
-      <xsl:when test="$have_activity">
-        <xsl:text>this.update_activity</xsl:text>
+      <xsl:when test="func:is_relative_jump(.)">
+        <xsl:text>true</xsl:text>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>null</xsl:text>
+        <xsl:text>false</xsl:text>
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>;
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
+    <xsl:text>    notify: function() {
+</xsl:text>
+    <xsl:variable name="paths" select="path"/>
+    <xsl:for-each select="arg[position()&gt;1 and contains(@value,'=')]">
+      <xsl:variable name="name" select="substring-before(@value,'=')"/>
+      <xsl:variable name="value" select="substring-after(@value,'=')"/>
+      <xsl:variable name="index">
+        <xsl:for-each select="$paths">
+          <xsl:if test="@assign = $name">
+            <xsl:value-of select="position()-1"/>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:variable>
+      <xsl:text>        // </xsl:text>
+      <xsl:value-of select="@value"/>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>        this.apply_hmi_value(</xsl:text>
+      <xsl:value-of select="$index"/>
+      <xsl:text>, </xsl:text>
+      <xsl:value-of select="$value"/>
+      <xsl:text>);
+</xsl:text>
+    </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='Jump']" mode="widget_page">
     <xsl:param name="page_desc"/>
     <xsl:param name="page_desc"/>
-    <xsl:if test="path">
+    <xsl:if test="func:is_relative_jump(.)">
       <xsl:variable name="target_page_name">
         <xsl:choose>
           <xsl:when test="arg">
@@ -5753,6 +6164,8 @@
     <xsl:text>
 </xsl:text>
     <xsl:text>function update_jumps() {
+</xsl:text>
+    <xsl:text>    // called from animate()
 </xsl:text>
     <xsl:text>    page_desc[current_visible_page].jumps.map(w=&gt;w.notify_page_change(current_visible_page,current_page_index));
 </xsl:text>
@@ -6002,7 +6415,7 @@
 </xsl:text>
     <xsl:text>             this._shift = this.shift;
 </xsl:text>
-    <xsl:text>             set_activation_state(this.Shift_sub, this.shift);
+    <xsl:text>             set_activity_state(this.Shift_sub, this.shift);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -6010,7 +6423,7 @@
 </xsl:text>
     <xsl:text>             this._caps = this.caps;
 </xsl:text>
-    <xsl:text>             set_activation_state(this.CapsLock_sub, this.caps);
+    <xsl:text>             set_activity_state(this.CapsLock_sub, this.caps);
 </xsl:text>
     <xsl:text>         }
 </xsl:text>
@@ -6021,6 +6434,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='Keypad']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -6113,6 +6537,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='List']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    items: {
 </xsl:text>
     <xsl:for-each select="$hmi_element/*[@inkscape:label]">
@@ -6177,6 +6612,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='ListSwitch']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:variable name="targetid" select="substring-after($hmi_element/@xlink:href,'#')"/>
     <xsl:variable name="from_list" select="$hmi_lists[(@id | */@id) = $targetid]"/>
     <xsl:text>    dispatch: function(value) {
@@ -6283,6 +6729,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='Meter']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -6299,6 +6756,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='MultiState']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <longdesc>
       <xsl:text>Mutlistateh widget hides all subelements whose label do not match given
 </xsl:text>
@@ -6414,6 +6882,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='MultiState']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
@@ -6776,6 +7255,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='PathSlider']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -6984,6 +7474,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='ScrollBar']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -7711,6 +8212,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='Slider']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -7814,6 +8326,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='Switch']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    choices: [
 </xsl:text>
     <xsl:variable name="regex" select="'^(&quot;[^&quot;].*&quot;|\-?[0-9]+|false|true)(#.*)?$'"/>
@@ -7887,6 +8410,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='TextList']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    texts: [
 </xsl:text>
     <xsl:for-each select="func:refered_elements($hmi_element/*[@inkscape:label])[self::svg:text]">
@@ -7933,6 +8467,17 @@
   </xsl:template>
   <xsl:template match="widget[@type='TextStyleList']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    styles: {
 </xsl:text>
     <xsl:for-each select="$hmi_element/*[@inkscape:label]">
@@ -7981,8 +8526,6 @@
 </xsl:text>
     <xsl:text>    frequency = 5;
 </xsl:text>
-    <xsl:text>    state = 0;
-</xsl:text>
     <xsl:text>    active_style = undefined;
 </xsl:text>
     <xsl:text>    inactive_style = undefined;
@@ -7991,7 +8534,7 @@
 </xsl:text>
     <xsl:text>    dispatch(value) {
 </xsl:text>
-    <xsl:text>        this.state = value;
+    <xsl:text>        this.activity_state = Boolean(value);
 </xsl:text>
     <xsl:text>        //redraw toggle button
 </xsl:text>
@@ -8005,9 +8548,9 @@
 </xsl:text>
     <xsl:text>        //toggle state and apply
 </xsl:text>
-    <xsl:text>        this.state = this.state ? false : true;
+    <xsl:text>        this.activity_state = this.activity_state ? false : true;
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(0, this.state);
+    <xsl:text>        this.apply_hmi_value(0, this.activity_state);
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -8019,21 +8562,11 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>    animate(){
-</xsl:text>
-    <xsl:text>        // redraw toggle button on screen refresh
-</xsl:text>
-    <xsl:text>        this.set_activation_state(this.state);
-</xsl:text>
-    <xsl:text>    }
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>    init() {
 </xsl:text>
     <xsl:text>        this.element.onclick = (evt) =&gt; this.on_click(evt);
 </xsl:text>
-    <xsl:text>        this.set_activation_state(undefined);
+    <xsl:text>        this.activity_state = undefined;
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -8042,16 +8575,37 @@
   </xsl:template>
   <xsl:template match="widget[@type='ToggleButton']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:text>    activable_sub:{
 </xsl:text>
-    <xsl:call-template name="defs_by_labels">
-      <xsl:with-param name="hmi_element" select="$hmi_element"/>
-      <xsl:with-param name="labels">
-        <xsl:text>/active /inactive</xsl:text>
-      </xsl:with-param>
-      <xsl:with-param name="mandatory" select="'warn'"/>
-    </xsl:call-template>
-    <xsl:text>    }
+    <xsl:variable name="activity">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/active /inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory">
+          <xsl:text>warn</xsl:text>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="has_activity" select="string-length($activity)&gt;0"/>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    has_activity: </xsl:text>
+    <xsl:value-of select="$has_activity"/>
+    <xsl:text>,
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='XYGraph']" mode="widget_desc">
@@ -8525,6 +9079,17 @@
   </func:function>
   <xsl:template match="widget[@type='XYGraph']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
     <xsl:call-template name="defs_by_labels">
       <xsl:with-param name="hmi_element" select="$hmi_element"/>
       <xsl:with-param name="labels">
@@ -9402,6 +9967,436 @@
       <body style="margin:0;overflow:hidden;user-select:none;touch-action:none;">
         <xsl:copy-of select="$result_svg"/>
         <script>
+          <xsl:text>/*
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>From https://github.com/keyvan-m-sadeghi/pythonic
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>Slightly modified in order to be usable in browser (i.e. not as a node.js module)
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>The MIT License (MIT)
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>Copyright (c) 2016 Assister.Ai
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>Permission is hereby granted, free of charge, to any person obtaining a copy of
+</xsl:text>
+          <xsl:text>this software and associated documentation files (the "Software"), to deal in
+</xsl:text>
+          <xsl:text>the Software without restriction, including without limitation the rights to
+</xsl:text>
+          <xsl:text>use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+</xsl:text>
+          <xsl:text>the Software, and to permit persons to whom the Software is furnished to do so,
+</xsl:text>
+          <xsl:text>subject to the following conditions:
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>The above copyright notice and this permission notice shall be included in all
+</xsl:text>
+          <xsl:text>copies or substantial portions of the Software.
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+</xsl:text>
+          <xsl:text>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+</xsl:text>
+          <xsl:text>FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+</xsl:text>
+          <xsl:text>COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+</xsl:text>
+          <xsl:text>IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+</xsl:text>
+          <xsl:text>CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</xsl:text>
+          <xsl:text>*/
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>class Iterator {
+</xsl:text>
+          <xsl:text>    constructor(generator) {
+</xsl:text>
+          <xsl:text>        this[Symbol.iterator] = generator;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    async * [Symbol.asyncIterator]() {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            yield await element;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    forEach(callback) {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            callback(element);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    map(callback) {
+</xsl:text>
+          <xsl:text>        const result = [];
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            result.push(callback(element));
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return result;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    filter(callback) {
+</xsl:text>
+          <xsl:text>        const result = [];
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            if (callback(element)) {
+</xsl:text>
+          <xsl:text>                result.push(element);
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return result;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    reduce(callback, initialValue) {
+</xsl:text>
+          <xsl:text>        let empty = typeof initialValue === 'undefined';
+</xsl:text>
+          <xsl:text>        let accumulator = initialValue;
+</xsl:text>
+          <xsl:text>        let index = 0;
+</xsl:text>
+          <xsl:text>        for (const currentValue of this) {
+</xsl:text>
+          <xsl:text>            if (empty) {
+</xsl:text>
+          <xsl:text>                accumulator = currentValue;
+</xsl:text>
+          <xsl:text>                empty = false;
+</xsl:text>
+          <xsl:text>                continue;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>            accumulator = callback(accumulator, currentValue, index, this);
+</xsl:text>
+          <xsl:text>            index++;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        if (empty) {
+</xsl:text>
+          <xsl:text>            throw new TypeError('Reduce of empty Iterator with no initial value');
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return accumulator;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    some(callback) {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            if (callback(element)) {
+</xsl:text>
+          <xsl:text>                return true;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return false;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    every(callback) {
+</xsl:text>
+          <xsl:text>        for (const element of this) {
+</xsl:text>
+          <xsl:text>            if (!callback(element)) {
+</xsl:text>
+          <xsl:text>                return false;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return true;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    static fromIterable(iterable) {
+</xsl:text>
+          <xsl:text>        return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>            for (const element of iterable) {
+</xsl:text>
+          <xsl:text>                yield element;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>        });
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    toArray() {
+</xsl:text>
+          <xsl:text>        return Array.from(this);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    next() {
+</xsl:text>
+          <xsl:text>        if (!this.currentInvokedGenerator) {
+</xsl:text>
+          <xsl:text>            this.currentInvokedGenerator = this[Symbol.iterator]();
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        return this.currentInvokedGenerator.next();
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    reset() {
+</xsl:text>
+          <xsl:text>        delete this.currentInvokedGenerator;
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function rangeSimple(stop) {
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        for (let i = 0; i &lt; stop; i++) {
+</xsl:text>
+          <xsl:text>            yield i;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function rangeOverload(start, stop, step = 1) {
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        for (let i = start; i &lt; stop; i += step) {
+</xsl:text>
+          <xsl:text>            yield i;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function range(...args) {
+</xsl:text>
+          <xsl:text>    if (args.length &lt; 2) {
+</xsl:text>
+          <xsl:text>        return rangeSimple(...args);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return rangeOverload(...args);
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function enumerate(iterable) {
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        let index = 0;
+</xsl:text>
+          <xsl:text>        for (const element of iterable) {
+</xsl:text>
+          <xsl:text>            yield [index, element];
+</xsl:text>
+          <xsl:text>            index++;
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>const _zip = longest =&gt; (...iterables) =&gt; {
+</xsl:text>
+          <xsl:text>    if (iterables.length == 0) {
+</xsl:text>
+          <xsl:text>        // works starting with 1 iterable
+</xsl:text>
+          <xsl:text>        // [a,b,c] -&gt; [[a],[b],[c]]
+</xsl:text>
+          <xsl:text>        // [a,b,c],[d,e,f] -&gt; [[a,d],[b,e],[c,f]]
+</xsl:text>
+          <xsl:text>        throw new TypeError("zip takes 1 iterables at least, "+iterables.length+" given");
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        const iterators = iterables.map(iterable =&gt; Iterator.fromIterable(iterable));
+</xsl:text>
+          <xsl:text>        while (true) {
+</xsl:text>
+          <xsl:text>            const row = iterators.map(iterator =&gt; iterator.next());
+</xsl:text>
+          <xsl:text>            const check = longest ? row.every.bind(row) : row.some.bind(row);
+</xsl:text>
+          <xsl:text>            if (check(next =&gt; next.done)) {
+</xsl:text>
+          <xsl:text>                return;
+</xsl:text>
+          <xsl:text>            }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>            yield row.map(next =&gt; next.value);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>};
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>const zip = _zip(false), zipLongest= _zip(true);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function items(obj) {
+</xsl:text>
+          <xsl:text>    let {keys, get} = obj;
+</xsl:text>
+          <xsl:text>    if (obj instanceof Map) {
+</xsl:text>
+          <xsl:text>        keys = keys.bind(obj);
+</xsl:text>
+          <xsl:text>        get = get.bind(obj);
+</xsl:text>
+          <xsl:text>    } else {
+</xsl:text>
+          <xsl:text>        keys = function () {
+</xsl:text>
+          <xsl:text>            return Object.keys(obj);
+</xsl:text>
+          <xsl:text>        };
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>        get = function (key) {
+</xsl:text>
+          <xsl:text>            return obj[key];
+</xsl:text>
+          <xsl:text>        };
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    return new Iterator(function * () {
+</xsl:text>
+          <xsl:text>        for (const key of keys()) {
+</xsl:text>
+          <xsl:text>            yield [key, get(key)];
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>/*
+</xsl:text>
+          <xsl:text>module.exports = {Iterator, range, enumerate, zip: _zip(false), zipLongest: _zip(true), items};
+</xsl:text>
+          <xsl:text>*/
+</xsl:text>
           <xsl:text>
 //
 //
@@ -10000,435 +10995,7 @@
 </xsl:text>
           <xsl:text>}(); // eslint-disable-line    
 </xsl:text>
-          <xsl:text>/*
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>From https://github.com/keyvan-m-sadeghi/pythonic
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>Slightly modified in order to be usable in browser (i.e. not as a node.js module)
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>The MIT License (MIT)
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>Copyright (c) 2016 Assister.Ai
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>Permission is hereby granted, free of charge, to any person obtaining a copy of
-</xsl:text>
-          <xsl:text>this software and associated documentation files (the "Software"), to deal in
-</xsl:text>
-          <xsl:text>the Software without restriction, including without limitation the rights to
-</xsl:text>
-          <xsl:text>use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-</xsl:text>
-          <xsl:text>the Software, and to permit persons to whom the Software is furnished to do so,
-</xsl:text>
-          <xsl:text>subject to the following conditions:
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>The above copyright notice and this permission notice shall be included in all
-</xsl:text>
-          <xsl:text>copies or substantial portions of the Software.
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-</xsl:text>
-          <xsl:text>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-</xsl:text>
-          <xsl:text>FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-</xsl:text>
-          <xsl:text>COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-</xsl:text>
-          <xsl:text>IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-</xsl:text>
-          <xsl:text>CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-</xsl:text>
-          <xsl:text>*/
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>class Iterator {
-</xsl:text>
-          <xsl:text>    constructor(generator) {
-</xsl:text>
-          <xsl:text>        this[Symbol.iterator] = generator;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    async * [Symbol.asyncIterator]() {
-</xsl:text>
-          <xsl:text>        for (const element of this) {
-</xsl:text>
-          <xsl:text>            yield await element;
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    forEach(callback) {
-</xsl:text>
-          <xsl:text>        for (const element of this) {
-</xsl:text>
-          <xsl:text>            callback(element);
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    map(callback) {
-</xsl:text>
-          <xsl:text>        const result = [];
-</xsl:text>
-          <xsl:text>        for (const element of this) {
-</xsl:text>
-          <xsl:text>            result.push(callback(element));
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        return result;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    filter(callback) {
-</xsl:text>
-          <xsl:text>        const result = [];
-</xsl:text>
-          <xsl:text>        for (const element of this) {
-</xsl:text>
-          <xsl:text>            if (callback(element)) {
-</xsl:text>
-          <xsl:text>                result.push(element);
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        return result;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    reduce(callback, initialValue) {
-</xsl:text>
-          <xsl:text>        let empty = typeof initialValue === 'undefined';
-</xsl:text>
-          <xsl:text>        let accumulator = initialValue;
-</xsl:text>
-          <xsl:text>        let index = 0;
-</xsl:text>
-          <xsl:text>        for (const currentValue of this) {
-</xsl:text>
-          <xsl:text>            if (empty) {
-</xsl:text>
-          <xsl:text>                accumulator = currentValue;
-</xsl:text>
-          <xsl:text>                empty = false;
-</xsl:text>
-          <xsl:text>                continue;
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>            accumulator = callback(accumulator, currentValue, index, this);
-</xsl:text>
-          <xsl:text>            index++;
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        if (empty) {
-</xsl:text>
-          <xsl:text>            throw new TypeError('Reduce of empty Iterator with no initial value');
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        return accumulator;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    some(callback) {
-</xsl:text>
-          <xsl:text>        for (const element of this) {
-</xsl:text>
-          <xsl:text>            if (callback(element)) {
-</xsl:text>
-          <xsl:text>                return true;
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        return false;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    every(callback) {
-</xsl:text>
-          <xsl:text>        for (const element of this) {
-</xsl:text>
-          <xsl:text>            if (!callback(element)) {
-</xsl:text>
-          <xsl:text>                return false;
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        return true;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    static fromIterable(iterable) {
-</xsl:text>
-          <xsl:text>        return new Iterator(function * () {
-</xsl:text>
-          <xsl:text>            for (const element of iterable) {
-</xsl:text>
-          <xsl:text>                yield element;
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>        });
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    toArray() {
-</xsl:text>
-          <xsl:text>        return Array.from(this);
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    next() {
-</xsl:text>
-          <xsl:text>        if (!this.currentInvokedGenerator) {
-</xsl:text>
-          <xsl:text>            this.currentInvokedGenerator = this[Symbol.iterator]();
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        return this.currentInvokedGenerator.next();
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    reset() {
-</xsl:text>
-          <xsl:text>        delete this.currentInvokedGenerator;
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function rangeSimple(stop) {
-</xsl:text>
-          <xsl:text>    return new Iterator(function * () {
-</xsl:text>
-          <xsl:text>        for (let i = 0; i &lt; stop; i++) {
-</xsl:text>
-          <xsl:text>            yield i;
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    });
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function rangeOverload(start, stop, step = 1) {
-</xsl:text>
-          <xsl:text>    return new Iterator(function * () {
-</xsl:text>
-          <xsl:text>        for (let i = start; i &lt; stop; i += step) {
-</xsl:text>
-          <xsl:text>            yield i;
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    });
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function range(...args) {
-</xsl:text>
-          <xsl:text>    if (args.length &lt; 2) {
-</xsl:text>
-          <xsl:text>        return rangeSimple(...args);
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    return rangeOverload(...args);
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function enumerate(iterable) {
-</xsl:text>
-          <xsl:text>    return new Iterator(function * () {
-</xsl:text>
-          <xsl:text>        let index = 0;
-</xsl:text>
-          <xsl:text>        for (const element of iterable) {
-</xsl:text>
-          <xsl:text>            yield [index, element];
-</xsl:text>
-          <xsl:text>            index++;
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    });
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>const _zip = longest =&gt; (...iterables) =&gt; {
-</xsl:text>
-          <xsl:text>    if (iterables.length &lt; 2) {
-</xsl:text>
-          <xsl:text>        throw new TypeError("zip takes 2 iterables at least, "+iterables.length+" given");
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    return new Iterator(function * () {
-</xsl:text>
-          <xsl:text>        const iterators = iterables.map(iterable =&gt; Iterator.fromIterable(iterable));
-</xsl:text>
-          <xsl:text>        while (true) {
-</xsl:text>
-          <xsl:text>            const row = iterators.map(iterator =&gt; iterator.next());
-</xsl:text>
-          <xsl:text>            const check = longest ? row.every.bind(row) : row.some.bind(row);
-</xsl:text>
-          <xsl:text>            if (check(next =&gt; next.done)) {
-</xsl:text>
-          <xsl:text>                return;
-</xsl:text>
-          <xsl:text>            }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>            yield row.map(next =&gt; next.value);
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    });
-</xsl:text>
-          <xsl:text>};
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>const zip = _zip(false), zipLongest= _zip(true);
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>function items(obj) {
-</xsl:text>
-          <xsl:text>    let {keys, get} = obj;
-</xsl:text>
-          <xsl:text>    if (obj instanceof Map) {
-</xsl:text>
-          <xsl:text>        keys = keys.bind(obj);
-</xsl:text>
-          <xsl:text>        get = get.bind(obj);
-</xsl:text>
-          <xsl:text>    } else {
-</xsl:text>
-          <xsl:text>        keys = function () {
-</xsl:text>
-          <xsl:text>            return Object.keys(obj);
-</xsl:text>
-          <xsl:text>        };
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>        get = function (key) {
-</xsl:text>
-          <xsl:text>            return obj[key];
-</xsl:text>
-          <xsl:text>        };
-</xsl:text>
-          <xsl:text>    }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>    return new Iterator(function * () {
-</xsl:text>
-          <xsl:text>        for (const key of keys()) {
-</xsl:text>
-          <xsl:text>            yield [key, get(key)];
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>    });
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>/*
-</xsl:text>
-          <xsl:text>module.exports = {Iterator, range, enumerate, zip: _zip(false), zipLongest: _zip(true), items};
-</xsl:text>
-          <xsl:text>*/
-</xsl:text>
           <xsl:text>// svghmi.js
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>var need_cache_apply = [];
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -10600,19 +11167,9 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>        while(widget = need_cache_apply.pop()){
-</xsl:text>
-          <xsl:text>            widget.apply_cache();
-</xsl:text>
-          <xsl:text>        }
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>        if(jumps_need_update) update_jumps();
 </xsl:text>
           <xsl:text>
-</xsl:text>
-          <xsl:text>        apply_updates();
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -10706,9 +11263,11 @@
 </xsl:text>
           <xsl:text>        };
 </xsl:text>
-          <xsl:text>        // register for rendering on next frame, since there are updates
+          <xsl:text>
 </xsl:text>
-          <xsl:text>        requestHMIAnimation();
+          <xsl:text>        apply_updates();
+</xsl:text>
+          <xsl:text>        // register for rendering on next frame, since there are updates
 </xsl:text>
           <xsl:text>    } catch(err) {
 </xsl:text>
@@ -11124,7 +11683,7 @@
 </xsl:text>
           <xsl:text>    if(index &gt; last_remote_index){
 </xsl:text>
-          <xsl:text>        updates.set(index, value);
+          <xsl:text>        dispatch_value(index, value);
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -11137,8 +11696,6 @@
           <xsl:text>        }
 </xsl:text>
           <xsl:text>
-</xsl:text>
-          <xsl:text>        requestHMIAnimation();
 </xsl:text>
           <xsl:text>        return;
 </xsl:text>
