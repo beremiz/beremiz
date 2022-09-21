@@ -196,7 +196,7 @@ emit "preamble:local-variable-indexes" {
         let new_index;
         if(pagevars == undefined){
             new_index = next_available_index++;
-            hmi_locals[pagename] = {[varname]:new_index}
+            hmi_locals[pagename] = {[varname]:new_index};
         } else {
             let result = pagevars[varname];
             if(result != undefined) {
