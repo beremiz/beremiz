@@ -189,7 +189,6 @@ emit "preamble:local-variable-indexes" {
     ]);
     var persistent_indexes = new Map();
     var cache = hmitree_types.map(_ignored => undefined);
-    var updates = new Map();
 
     function page_local_index(varname, pagename){
         let pagevars = hmi_locals[pagename];
@@ -209,7 +208,6 @@ emit "preamble:local-variable-indexes" {
         let defaultval = local_defaults[varname];
         if(defaultval != undefined) {
             cache[new_index] = defaultval; 
-            updates.set(new_index, defaultval);
             if(persistent_locals.has(varname))
                 persistent_indexes.set(new_index, varname);
         }

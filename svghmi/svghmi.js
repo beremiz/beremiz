@@ -46,14 +46,6 @@ const dvgetters = {
     }
 };
 
-// Apply updates recieved through ws.onmessage to subscribed widgets
-function apply_updates() {
-    updates.forEach((value, index) => {
-        dispatch_value(index, value);
-    });
-    updates.clear();
-}
-
 // Called on requestAnimationFrame, modifies DOM
 var requestAnimationFrameID = null;
 function animate() {
@@ -126,14 +118,13 @@ ws.onmessage = function (evt) {
             if(iectype != undefined){
                 let dvgetter = dvgetters[iectype];
                 let [value, bytesize] = dvgetter(dv,i);
-                updates.set(index, value);
+                dispatch_value(index, value);
                 i += bytesize;
             } else {
                 throw new Error("Unknown index "+index);
             }
         };
 
-        apply_updates();
         // register for rendering on next frame, since there are updates
     } catch(err) {
         // 1003 is for "Unsupported Data"
