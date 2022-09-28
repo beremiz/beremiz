@@ -532,8 +532,49 @@ function switch_visible_page(page_name) {
     current_visible_page = page_name;
 };
 
+/* From https://jsfiddle.net/ibowankenobi/1mmh7rs6/6/ */
+function getAbsoluteCTM(element){
+	var height = svg_root.height.baseVal.value,
+		width = svg_root.width.baseVal.value,
+		viewBoxRect = svg_root.viewBox.baseVal,
+		vHeight = viewBoxRect.height,
+		vWidth = viewBoxRect.width;
+	if(!vWidth || !vHeight){
+		return element.getCTM();
+	}
+	var sH = height/vHeight,
+		sW = width/vWidth,
+		matrix = svg_root.createSVGMatrix();
+	matrix.a = sW;
+	matrix.d = sH
+	var realCTM = element.getCTM().multiply(matrix.inverse());
+	realCTM.e = realCTM.e/sW + viewBoxRect.x;
+	realCTM.f = realCTM.f/sH + viewBoxRect.y;
+	return realCTM;
+}
+
+function apply_reference_frames(){
+    const matches = svg_root.querySelectorAll("g[svghmi_x_offset]");
+    matches.forEach((group) => {
+        let [x,y] = ["x", "y"].map((axis) => Number(group.getAttribute("svghmi_"+axis+"_offset")));
+        let ctm = getAbsoluteCTM(group);
+        // zero translation part of CTM
+        // to only apply rotation/skewing to offset vector
+        ctm.e = 0;
+        ctm.f = 0;
+        let invctm = ctm.inverse();
+        let vect = new DOMPoint(x, y);
+        let newvect = vect.matrixTransform(invctm);
+        let transform = svg_root.createSVGTransform();
+        transform.setTranslate(newvect.x, newvect.y);
+        group.transform.baseVal.appendItem(transform);
+        ["x", "y"].forEach((axis) => group.removeAttribute("svghmi_"+axis+"_offset"));
+    });
+}
+
 // Once connection established
 ws.onopen = function (evt) {
+    apply_reference_frames();
     init_widgets();
     send_reset();
     // show main page
