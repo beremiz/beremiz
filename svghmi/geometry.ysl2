@@ -145,3 +145,16 @@ def "func:overlapping_geometry" {
     result """$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or 
                           (not(@Id = $groups/@id) and (func:intersect($g, .) > 0 ))]""";
 }
+
+def "func:offset" {
+    param "elt1";
+    param "elt2";
+    const "g1", "$geometry[@Id = $elt1/@id]";
+    const "g2", "$geometry[@Id = $elt2/@id]";
+    const "result" vector {
+        attrib "x" value "$g2/@x - $g1/@x";
+        attrib "y" value "$g2/@y - $g1/@y";
+    }
+    result "exsl:node-set($result)";
+}
+
