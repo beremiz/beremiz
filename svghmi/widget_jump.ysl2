@@ -52,23 +52,28 @@ widget_class("Jump") {
 ||
         activable = false;
         frequency = 2;
+        target_page_is_current_page = false;
+        button_beeing_pressed = false;
 
-        make_on_click() {
-            let that = this;
-            const name = this.args[0];
-            return function(evt){
-                /* TODO: in order to allow jumps to page selected through
-                   for exemple a dropdown, support path pointing to local
-                   variable whom value would be an HMI_TREE index and then
-                   jump to a relative page not hard-coded in advance
-                */
-                if(that.enable_state) {
-                    const index =
-                        (that.is_relative && that.indexes.length > 0) ?
-                        that.indexes[0] + that.offset : undefined;
-                    fading_page_switch(name, index);
-                    that.notify();
-                }
+        onmouseup(evt) {
+            svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
+            if(this.enable_state) {
+                const index =
+                    (this.is_relative && this.indexes.length > 0) ?
+                    this.indexes[0] + this.offset : undefined;
+                this.button_beeing_pressed = false;
+                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
+                fading_page_switch(this.args[0], index);
+                this.notify();
+            }
+        }
+
+        onmousedown(){
+            if(this.enable_state) {
+                svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+                this.button_beeing_pressed = true;
+                this.activity_state = true;
+                this.request_animate();
             }
         }
 
@@ -77,7 +82,8 @@ widget_class("Jump") {
             if(this.activable) {
                 const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
                 const ref_name = this.args[0];
-                this.activity_state = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
+                this.target_page_is_current_page = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
+                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
                 // Since called from animate, update activity directly
                 if(this.enable_displayed_state && this.has_activity) {
                     this.animate_activity();
@@ -98,7 +104,8 @@ widget_defs("Jump") {
     const "jump_disability","$has_activity and $has_disability";
 
     |     init: function() {
-    |         this.element.onclick = this.make_on_click();
+    |         this.bound_onmouseup = this.onmouseup.bind(this);
+    |         this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
     if "$has_activity" {
     |         this.activable = true;
     }
