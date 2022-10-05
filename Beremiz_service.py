@@ -423,7 +423,12 @@ if enabletwisted:
             if havewx:
                 from twisted.internet import wxreactor
                 wxreactor.install()
-            from twisted.internet import reactor
+                from twisted.internet import reactor
+                reactor.registerWxApp(app)
+            else:
+                # from twisted.internet import pollreactor
+                # pollreactor.install()
+                from twisted.internet import reactor
 
             havetwisted = True
         except ImportError:
@@ -431,11 +436,6 @@ if enabletwisted:
             havetwisted = False
 
 pyruntimevars = {}
-
-if havetwisted:
-    if havewx:
-        reactor.registerWxApp(app)
-
 
 if havewx:
     wx_eval_lock = Semaphore(0)
@@ -578,26 +578,50 @@ def FirstWorkerJob():
 
     runtime.GetPLCObjectSingleton().AutoLoad(autostart)
 
-if havetwisted or havewx:
+if havetwisted and havewx:
 
-    waker_func = wx.CallAfter if havewx else partial(reactor.callLater,0)
+    waker_func = wx.CallAfter
 
     # This orders ui loop to signal when ready on Stdout
     waker_func(print,"UI thread started successfully.")
 
-    # worker that copes with wx and (wx)reactor
+    # interleaved worker copes with wxreactor by delegating all asynchronous
+    # calls to wx's mainloop
     runtime.MainWorker.interleave(waker_func, FirstWorkerJob)
 
     try:
-        if havetwisted:
-            reactor.run(installSignalHandlers=False)
-        else:
-            app.MainLoop
+        reactor.run(installSignalHandlers=False)
     except KeyboardInterrupt:
         pass
 
     runtime.MainWorker.stop()
 
+elif havewx:
+
+    try:
+        app.MainLoop
+    except KeyboardInterrupt:
+        pass
+
+elif havetwisted:
+
+    ui_thread_started = Lock()
+    ui_thread_started.acquire()
+
+    reactor.callLater(0, ui_thread_started.release)
+
+    ui_thread = Thread(
+        target=partial(reactor.run, installSignalHandlers=False),
+        name="UIThread")
+    ui_thread.start()
+
+    ui_thread_started.acquire()
+    print("UI thread started successfully.")
+    try:
+        # blocking worker loop
+        runtime.MainWorker.runloop(FirstWorkerJob)
+    except KeyboardInterrupt:
+        pass
 else:
     try:
         # blocking worker loop
@@ -618,6 +642,8 @@ except:
 
 if havetwisted:
     reactor.stop()
+    if not havewx:
+        ui_thread.join()
 elif havewx:
     app.ExitMainLoop()
 
