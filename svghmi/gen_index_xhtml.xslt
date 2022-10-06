@@ -555,6 +555,23 @@
     <xsl:variable name="candidates" select="$geometry[@Id != $elt/@id]"/>
     <func:result select="$candidates[(@Id = $groups/@id and (func:intersect($g, .) = 9)) or &#10;                          (not(@Id = $groups/@id) and (func:intersect($g, .) &gt; 0 ))]"/>
   </func:function>
+  <func:function name="func:offset">
+    <xsl:param name="elt1"/>
+    <xsl:param name="elt2"/>
+    <xsl:variable name="g1" select="$geometry[@Id = $elt1/@id]"/>
+    <xsl:variable name="g2" select="$geometry[@Id = $elt2/@id]"/>
+    <xsl:variable name="result">
+      <vector>
+        <xsl:attribute name="x">
+          <xsl:value-of select="$g2/@x - $g1/@x"/>
+        </xsl:attribute>
+        <xsl:attribute name="y">
+          <xsl:value-of select="$g2/@y - $g1/@y"/>
+        </xsl:attribute>
+      </vector>
+    </xsl:variable>
+    <func:result select="exsl:node-set($result)"/>
+  </func:function>
   <xsl:variable name="hmi_lists_descs" select="$parsed_widgets/widget[@type = 'List']"/>
   <xsl:variable name="hmi_lists" select="$hmi_elements[@id = $hmi_lists_descs/@id]"/>
   <xsl:variable name="hmi_textlists_descs" select="$parsed_widgets/widget[@type = 'TextList']"/>
@@ -657,7 +674,8 @@
     <xsl:param name="page"/>
     <xsl:variable name="page_overlapping_geometry" select="$overlapping_geometry/elt[@id = $page/@id]/*"/>
     <xsl:variable name="page_overlapping_elements" select="//svg:*[@id = $page_overlapping_geometry/@Id]"/>
-    <xsl:variable name="page_sub_elements" select="func:refered_elements($page | $page_overlapping_elements)"/>
+    <xsl:variable name="page_widgets_elements" select="&#10;        $hmi_elements[not(@id=$page/@id)&#10;                      and descendant-or-self::svg:*/@id = $page_overlapping_elements/@id]&#10;        /descendant-or-self::svg:*"/>
+    <xsl:variable name="page_sub_elements" select="func:refered_elements($page | $page_overlapping_elements | $page_widgets_elements)"/>
     <func:result select="$page_sub_elements"/>
   </func:function>
   <func:function name="func:required_elements">
@@ -890,6 +908,14 @@
       <xsl:text>
 </xsl:text>
     </xsl:for-each>
+    <xsl:text>DISCARDABLES:
+</xsl:text>
+    <xsl:for-each select="$discardable_elements">
+      <xsl:text> </xsl:text>
+      <xsl:value-of select="@id"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:for-each>
     <xsl:text>In Foreach:
 </xsl:text>
     <xsl:for-each select="$in_forEach_widget_ids">
@@ -944,6 +970,21 @@
     <xsl:attribute name="{name()}">
       <xsl:value-of select="substring(., 2)"/>
     </xsl:attribute>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:rect[@inkscape:label='reference' or @inkscape:label='frame']"/>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:g[svg:rect/@inkscape:label='frame']">
+    <xsl:variable name="reference_rect" select="(../svg:rect | ../svg:g/svg:rect)[@inkscape:label='reference']"/>
+    <xsl:variable name="frame_rect" select="svg:rect[@inkscape:label='frame']"/>
+    <xsl:variable name="offset" select="func:offset($frame_rect, $reference_rect)"/>
+    <xsl:copy>
+      <xsl:attribute name="svghmi_x_offset">
+        <xsl:value-of select="$offset/vector/@x"/>
+      </xsl:attribute>
+      <xsl:attribute name="svghmi_y_offset">
+        <xsl:value-of select="$offset/vector/@y"/>
+      </xsl:attribute>
+      <xsl:apply-templates mode="inline_svg" select="@* | node()"/>
+    </xsl:copy>
   </xsl:template>
   <xsl:variable name="targets_not_to_unlink" select="$hmi_lists/descendant-or-self::svg:*"/>
   <xsl:variable name="to_unlink" select="$hmi_widgets/descendant-or-self::svg:use"/>
@@ -1516,8 +1557,6 @@
 </xsl:text>
     <xsl:text>var cache = hmitree_types.map(_ignored =&gt; undefined);
 </xsl:text>
-    <xsl:text>var updates = new Map();
-</xsl:text>
     <xsl:text>
 </xsl:text>
     <xsl:text>function page_local_index(varname, pagename){
@@ -1530,7 +1569,7 @@
 </xsl:text>
     <xsl:text>        new_index = next_available_index++;
 </xsl:text>
-    <xsl:text>        hmi_locals[pagename] = {[varname]:new_index}
+    <xsl:text>        hmi_locals[pagename] = {[varname]:new_index};
 </xsl:text>
     <xsl:text>    } else {
 </xsl:text>
@@ -1555,8 +1594,6 @@
     <xsl:text>    if(defaultval != undefined) {
 </xsl:text>
     <xsl:text>        cache[new_index] = defaultval; 
-</xsl:text>
-    <xsl:text>        updates.set(new_index, defaultval);
 </xsl:text>
     <xsl:text>        if(persistent_locals.has(varname))
 </xsl:text>
@@ -2654,6 +2691,199 @@
     <xsl:text>    }
 </xsl:text>
     <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Assign']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Arguments are either:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>- name=value: setting variable with literal value.
+</xsl:text>
+      <xsl:text>- name=other_name: copy variable content into another
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>"active"+"inactive" labeled elements can be provided to show feedback when pressed
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Exemples:
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>HMI:Assign:notify=1@notify=/PLCVAR
+</xsl:text>
+      <xsl:text>HMI:Assign:ack=2:notify=1@ack=.local_var@notify=/PLCVAR
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Assign variables on click</xsl:text>
+    </shortdesc>
+  </xsl:template>
+  <xsl:template match="widget[@type='Assign']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>AssignWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>        frequency = 2;
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        onmouseup(evt) {
+</xsl:text>
+    <xsl:text>            svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:text>            if(this.enable_state) {
+</xsl:text>
+    <xsl:text>                this.activity_state = false
+</xsl:text>
+    <xsl:text>                this.request_animate();
+</xsl:text>
+    <xsl:text>                this.assign();
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>        onmousedown(){
+</xsl:text>
+    <xsl:text>            if(this.enable_state) {
+</xsl:text>
+    <xsl:text>                svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:text>                this.activity_state = true;
+</xsl:text>
+    <xsl:text>                this.request_animate();
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>        }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Assign']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
+    <xsl:text>    activable_sub:{
+</xsl:text>
+    <xsl:variable name="activity">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/active /inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory">
+          <xsl:text>no</xsl:text>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="has_activity" select="string-length($activity)&gt;0"/>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    has_activity: </xsl:text>
+    <xsl:value-of select="$has_activity"/>
+    <xsl:text>,
+</xsl:text>
+    <xsl:text>    init: function() {
+</xsl:text>
+    <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+</xsl:text>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    assignments: {},
+</xsl:text>
+    <xsl:text>    dispatch: function(value, oldval, varnum) {
+</xsl:text>
+    <xsl:variable name="widget" select="."/>
+    <xsl:for-each select="path">
+      <xsl:variable name="varid" select="generate-id()"/>
+      <xsl:variable name="varnum" select="position()-1"/>
+      <xsl:if test="@assign">
+        <xsl:for-each select="$widget/path[@assign]">
+          <xsl:if test="$varid = generate-id()">
+            <xsl:text>        if(varnum == </xsl:text>
+            <xsl:value-of select="$varnum"/>
+            <xsl:text>) this.assignments["</xsl:text>
+            <xsl:value-of select="@assign"/>
+            <xsl:text>"] = value;
+</xsl:text>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    assign: function() {
+</xsl:text>
+    <xsl:variable name="paths" select="path"/>
+    <xsl:for-each select="arg[contains(@value,'=')]">
+      <xsl:variable name="name" select="substring-before(@value,'=')"/>
+      <xsl:variable name="value" select="substring-after(@value,'=')"/>
+      <xsl:variable name="index">
+        <xsl:for-each select="$paths">
+          <xsl:if test="@assign = $name">
+            <xsl:value-of select="position()-1"/>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:variable>
+      <xsl:variable name="isVarName" select="regexp:test($value,'^[a-zA-Z_][a-zA-Z0-9_]+$')"/>
+      <xsl:choose>
+        <xsl:when test="$isVarName">
+          <xsl:text>        const </xsl:text>
+          <xsl:value-of select="$value"/>
+          <xsl:text> = this.assignments["</xsl:text>
+          <xsl:value-of select="$value"/>
+          <xsl:text>"];
+</xsl:text>
+          <xsl:text>        if(</xsl:text>
+          <xsl:value-of select="$value"/>
+          <xsl:text> != undefined)
+</xsl:text>
+          <xsl:text>            this.apply_hmi_value(</xsl:text>
+          <xsl:value-of select="$index"/>
+          <xsl:text>, </xsl:text>
+          <xsl:value-of select="$value"/>
+          <xsl:text>);
+</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>        this.apply_hmi_value(</xsl:text>
+          <xsl:value-of select="$index"/>
+          <xsl:text>, </xsl:text>
+          <xsl:value-of select="$value"/>
+          <xsl:text>);
+</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each>
+    <xsl:text>    },
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='Back']" mode="widget_desc">
@@ -5923,39 +6153,49 @@
 </xsl:text>
     <xsl:text>        frequency = 2;
 </xsl:text>
+    <xsl:text>        target_page_is_current_page = false;
+</xsl:text>
+    <xsl:text>        button_beeing_pressed = false;
+</xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        make_on_click() {
+    <xsl:text>        onmouseup(evt) {
 </xsl:text>
-    <xsl:text>            let that = this;
+    <xsl:text>            svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
 </xsl:text>
-    <xsl:text>            const name = this.args[0];
+    <xsl:text>            if(this.enable_state) {
 </xsl:text>
-    <xsl:text>            return function(evt){
+    <xsl:text>                const index =
 </xsl:text>
-    <xsl:text>                /* TODO: in order to allow jumps to page selected through
+    <xsl:text>                    (this.is_relative &amp;&amp; this.indexes.length &gt; 0) ?
 </xsl:text>
-    <xsl:text>                   for exemple a dropdown, support path pointing to local
+    <xsl:text>                    this.indexes[0] + this.offset : undefined;
 </xsl:text>
-    <xsl:text>                   variable whom value would be an HMI_TREE index and then
+    <xsl:text>                this.button_beeing_pressed = false;
 </xsl:text>
-    <xsl:text>                   jump to a relative page not hard-coded in advance
+    <xsl:text>                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
 </xsl:text>
-    <xsl:text>                */
+    <xsl:text>                fading_page_switch(this.args[0], index);
 </xsl:text>
-    <xsl:text>                if(that.enable_state) {
+    <xsl:text>                this.notify();
 </xsl:text>
-    <xsl:text>                    const index =
+    <xsl:text>            }
 </xsl:text>
-    <xsl:text>                        (that.is_relative &amp;&amp; that.indexes.length &gt; 0) ?
+    <xsl:text>        }
 </xsl:text>
-    <xsl:text>                        that.indexes[0] + that.offset : undefined;
+    <xsl:text>
 </xsl:text>
-    <xsl:text>                    fading_page_switch(name, index);
+    <xsl:text>        onmousedown(){
 </xsl:text>
-    <xsl:text>                    that.notify();
+    <xsl:text>            if(this.enable_state) {
 </xsl:text>
-    <xsl:text>                }
+    <xsl:text>                svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:text>                this.button_beeing_pressed = true;
+</xsl:text>
+    <xsl:text>                this.activity_state = true;
+</xsl:text>
+    <xsl:text>                this.request_animate();
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
@@ -5973,7 +6213,9 @@
 </xsl:text>
     <xsl:text>                const ref_name = this.args[0];
 </xsl:text>
-    <xsl:text>                this.activity_state = ((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
+    <xsl:text>                this.target_page_is_current_page = ((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
+</xsl:text>
+    <xsl:text>                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
 </xsl:text>
     <xsl:text>                // Since called from animate, update activity directly
 </xsl:text>
@@ -6031,7 +6273,9 @@
     <xsl:variable name="jump_disability" select="$has_activity and $has_disability"/>
     <xsl:text>    init: function() {
 </xsl:text>
-    <xsl:text>        this.element.onclick = this.make_on_click();
+    <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
 </xsl:text>
     <xsl:if test="$has_activity">
       <xsl:text>        this.activable = true;
@@ -11091,22 +11335,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>// Apply updates recieved through ws.onmessage to subscribed widgets
-</xsl:text>
-          <xsl:text>function apply_updates() {
-</xsl:text>
-          <xsl:text>    updates.forEach((value, index) =&gt; {
-</xsl:text>
-          <xsl:text>        dispatch_value(index, value);
-</xsl:text>
-          <xsl:text>    });
-</xsl:text>
-          <xsl:text>    updates.clear();
-</xsl:text>
-          <xsl:text>}
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>// Called on requestAnimationFrame, modifies DOM
 </xsl:text>
           <xsl:text>var requestAnimationFrameID = null;
@@ -11251,7 +11479,7 @@
 </xsl:text>
           <xsl:text>                let [value, bytesize] = dvgetter(dv,i);
 </xsl:text>
-          <xsl:text>                updates.set(index, value);
+          <xsl:text>                dispatch_value(index, value);
 </xsl:text>
           <xsl:text>                i += bytesize;
 </xsl:text>
@@ -11264,8 +11492,6 @@
           <xsl:text>        };
 </xsl:text>
           <xsl:text>
-</xsl:text>
-          <xsl:text>        apply_updates();
 </xsl:text>
           <xsl:text>        // register for rendering on next frame, since there are updates
 </xsl:text>
@@ -12081,9 +12307,91 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>/* From https://jsfiddle.net/ibowankenobi/1mmh7rs6/6/ */
+</xsl:text>
+          <xsl:text>function getAbsoluteCTM(element){
+</xsl:text>
+          <xsl:text>	var height = svg_root.height.baseVal.value,
+</xsl:text>
+          <xsl:text>		width = svg_root.width.baseVal.value,
+</xsl:text>
+          <xsl:text>		viewBoxRect = svg_root.viewBox.baseVal,
+</xsl:text>
+          <xsl:text>		vHeight = viewBoxRect.height,
+</xsl:text>
+          <xsl:text>		vWidth = viewBoxRect.width;
+</xsl:text>
+          <xsl:text>	if(!vWidth || !vHeight){
+</xsl:text>
+          <xsl:text>		return element.getCTM();
+</xsl:text>
+          <xsl:text>	}
+</xsl:text>
+          <xsl:text>	var sH = height/vHeight,
+</xsl:text>
+          <xsl:text>		sW = width/vWidth,
+</xsl:text>
+          <xsl:text>		matrix = svg_root.createSVGMatrix();
+</xsl:text>
+          <xsl:text>	matrix.a = sW;
+</xsl:text>
+          <xsl:text>	matrix.d = sH
+</xsl:text>
+          <xsl:text>	var realCTM = element.getCTM().multiply(matrix.inverse());
+</xsl:text>
+          <xsl:text>	realCTM.e = realCTM.e/sW + viewBoxRect.x;
+</xsl:text>
+          <xsl:text>	realCTM.f = realCTM.f/sH + viewBoxRect.y;
+</xsl:text>
+          <xsl:text>	return realCTM;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function apply_reference_frames(){
+</xsl:text>
+          <xsl:text>    const matches = svg_root.querySelectorAll("g[svghmi_x_offset]");
+</xsl:text>
+          <xsl:text>    matches.forEach((group) =&gt; {
+</xsl:text>
+          <xsl:text>        let [x,y] = ["x", "y"].map((axis) =&gt; Number(group.getAttribute("svghmi_"+axis+"_offset")));
+</xsl:text>
+          <xsl:text>        let ctm = getAbsoluteCTM(group);
+</xsl:text>
+          <xsl:text>        // zero translation part of CTM
+</xsl:text>
+          <xsl:text>        // to only apply rotation/skewing to offset vector
+</xsl:text>
+          <xsl:text>        ctm.e = 0;
+</xsl:text>
+          <xsl:text>        ctm.f = 0;
+</xsl:text>
+          <xsl:text>        let invctm = ctm.inverse();
+</xsl:text>
+          <xsl:text>        let vect = new DOMPoint(x, y);
+</xsl:text>
+          <xsl:text>        let newvect = vect.matrixTransform(invctm);
+</xsl:text>
+          <xsl:text>        let transform = svg_root.createSVGTransform();
+</xsl:text>
+          <xsl:text>        transform.setTranslate(newvect.x, newvect.y);
+</xsl:text>
+          <xsl:text>        group.transform.baseVal.appendItem(transform);
+</xsl:text>
+          <xsl:text>        ["x", "y"].forEach((axis) =&gt; group.removeAttribute("svghmi_"+axis+"_offset"));
+</xsl:text>
+          <xsl:text>    });
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>// Once connection established
 </xsl:text>
           <xsl:text>ws.onopen = function (evt) {
+</xsl:text>
+          <xsl:text>    apply_reference_frames();
 </xsl:text>
           <xsl:text>    init_widgets();
 </xsl:text>
