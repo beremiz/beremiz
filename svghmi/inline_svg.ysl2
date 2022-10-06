@@ -42,6 +42,23 @@ svgtmpl "svg:text/@inkscape:label[starts-with(., '_')]", mode="inline_svg" {
     attrib "{name()}" > «substring(., 2)»
 }
 
+// remove "reference" and "frame" rectangles
+svgtmpl "svg:rect[@inkscape:label='reference' or @inkscape:label='frame']", mode="inline_svg" {
+    // nothing
+}
+
+svgtmpl "svg:g[svg:rect/@inkscape:label='frame']", mode="inline_svg" {
+    const "reference_rect","(../svg:rect | ../svg:g/svg:rect)[@inkscape:label='reference']";
+    const "frame_rect","svg:rect[@inkscape:label='frame']";
+    const "offset","func:offset($frame_rect, $reference_rect)";
+
+    xsl:copy {
+        attrib "svghmi_x_offset" value "$offset/vector/@x";
+        attrib "svghmi_y_offset" value "$offset/vector/@y";
+        apply "@* | node()", mode="inline_svg";
+    }
+}
+
 ////// Clone unlinking
 //
 // svg:use (inkscape's clones) inside a widgets are

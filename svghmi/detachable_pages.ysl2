@@ -68,7 +68,11 @@ def "func:all_related_elements" {
     param "page";
     const "page_overlapping_geometry", "$overlapping_geometry/elt[@id = $page/@id]/*";
     const "page_overlapping_elements", "//svg:*[@id = $page_overlapping_geometry/@Id]";
-    const "page_sub_elements", "func:refered_elements($page | $page_overlapping_elements)";
+    const "page_widgets_elements", """
+        $hmi_elements[not(@id=$page/@id)
+                      and descendant-or-self::svg:*/@id = $page_overlapping_elements/@id]
+        /descendant-or-self::svg:*""";
+    const "page_sub_elements", "func:refered_elements($page | $page_overlapping_elements | $page_widgets_elements)";
     result "$page_sub_elements";
 }
 
@@ -212,6 +216,10 @@ emit "debug:detachable-pages" {
     |
     | DETACHABLES:
     foreach "$detachable_elements"{
+        |  «@id»
+    }
+    | DISCARDABLES:
+    foreach "$discardable_elements"{
         |  «@id»
     }
     | In Foreach:
