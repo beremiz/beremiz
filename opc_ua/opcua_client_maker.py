@@ -509,6 +509,17 @@ class OPCUAClientModel(dict):
 #include <open62541/types.h>
 #include <open62541/types_generated_handling.h>
 
+#define _Log(level, ...)                                                                           \\
+    {{                                                                                             \\
+        char mstr[256];                                                                            \\
+        snprintf(mstr, 255, __VA_ARGS__);                                                          \\
+        LogMessage(level, mstr, strlen(mstr));                                                     \\
+    }}
+
+#define LogInfo(...) _Log(LOG_INFO, __VA_ARGS__);
+#define LogError(...) _Log(LOG_CRITICAL, __VA_ARGS__);
+#define LogWarning(...) _Log(LOG_WARNING, __VA_ARGS__);
+
 static UA_INLINE UA_ByteString
 loadFile(const char *const path) {{
     UA_ByteString fileContents = UA_STRING_NULL;
@@ -516,6 +527,7 @@ loadFile(const char *const path) {{
     FILE *fp = fopen(path, "rb");
     if(!fp) {{
         errno = 0;
+        LogError("OPC-UA could not open %s", path);
         return fileContents;
     }}
 
@@ -525,10 +537,13 @@ loadFile(const char *const path) {{
     if(fileContents.data) {{
         fseek(fp, 0, SEEK_SET);
         size_t read = fread(fileContents.data, sizeof(UA_Byte), fileContents.length, fp);
-        if(read != fileContents.length)
+        if(read != fileContents.length){{
             UA_ByteString_clear(&fileContents);
+            LogError("OPC-UA could not read %s", path);
+        }}
     }} else {{
         fileContents.length = 0;
+        LogError("OPC-UA Not enough memoty to load %s", path);
     }}
     fclose(fp);
 
@@ -551,18 +566,6 @@ void __cleanup_{locstr}(void)
     UA_Client_delete(client);
 }}
 
-
-#define _Log(level, ...)                                                                           \\
-    {{                                                                                             \\
-        char mstr[256];                                                                            \\
-        snprintf(mstr, 255, __VA_ARGS__);                                                          \\
-        LogMessage(level, mstr, strlen(mstr));                                                     \\
-    }}
-
-#define LogInfo(...) _Log(LOG_INFO, __VA_ARGS__);
-#define LogError(...) _Log(LOG_CRITICAL, __VA_ARGS__);
-#define LogWarning(...) _Log(LOG_WARNING, __VA_ARGS__);
-
 #define INIT_NoAuth()                                                                              \\
     LogInfo("OPC-UA Init no auth");                                                                \\
     UA_ClientConfig_setDefault(cc);                                                                \\
@@ -570,11 +573,11 @@ void __cleanup_{locstr}(void)
 
 /* Note : Policy is ignored here since open62541 client supports all policies by default */
 #define INIT_x509(Policy, UpperCaseMode, PrivateKey, Certificate)                                  \\
-    /* TODO try paths given in runtime CLI */                                                      \\
+    LogInfo("OPC-UA Init x509 %s,%s,%s,%s", #Policy, #UpperCaseMode, PrivateKey, Certificate);     \\
+                                                                                                   \\
     UA_ByteString certificate = loadFile(Certificate);                                             \\
     UA_ByteString privateKey  = loadFile(PrivateKey);                                              \\
                                                                                                    \\
-    LogInfo("OPC-UA Init x509 %s,%s,%s,%s", #Policy, #UpperCaseMode, PrivateKey, Certificate);     \\
     cc->securityMode = UA_MESSAGESECURITYMODE_##UpperCaseMode;                                     \\
     UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0);           \\
                                                                                                    \\
