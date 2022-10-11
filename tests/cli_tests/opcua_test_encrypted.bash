@@ -55,8 +55,9 @@ finally:
 EOF
 SERVER_PID=$!
 
-cp my_cert.der my_private_key.pem \
-   $BEREMIZPATH/tests/projects/opcua_client_encrypted/project_files
+PROJECT_FILES_DIR=$BEREMIZPATH/tests/projects/opcua_client_encrypted/project_files
+mkdir $PROJECT_FILES_DIR
+cp my_cert.der my_private_key.pem $PROJECT_FILES_DIR
 
 # Start PLC with opcua test
 setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
