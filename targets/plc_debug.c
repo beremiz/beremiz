@@ -154,8 +154,6 @@ void __init_debug(void)
 
             UnpackVar(dsc, &value_p, NULL, &size);
 
-            printf("Reminding %%d %%ld \n", retain_list_collect_cursor, size);
-
             /* if buffer not full */
             Remind(retain_offset, size, value_p);
             /* increment cursor according size*/
@@ -211,8 +209,6 @@ unsigned int GetRetainSize(void)
         retain_list_collect_cursor++;
     }
 
-    printf("Retain size %%d \n", retain_size);
-            
     return retain_size;
 }
 
