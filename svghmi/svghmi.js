@@ -23,7 +23,7 @@ function init_widgets() {
 // Open WebSocket to relative "/ws" address
 var has_watchdog = window.location.hash == "#watchdog";
 
-var ws_url = 
+var ws_url =
     window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
     + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
 
@@ -148,8 +148,8 @@ function send_blob(data) {
 
 const typedarray_types = {
     INT: (number) => new Int16Array([number]),
-    BOOL: (truth) => new Int16Array([truth]),
-    NODE: (truth) => new Int16Array([truth]),
+    BOOL: (truth) => new Int8Array([truth]),
+    NODE: (truth) => new Int8Array([truth]),
     REAL: (number) => new Float32Array([number]),
     STRING: (str) => {
         // beremiz default string max size is 128
