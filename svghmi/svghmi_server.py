@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 import errno
 from threading import RLock, Timer
+import os, time
 
 try:
     from runtime.spawn_subprocess import Popen
@@ -22,6 +23,9 @@ from twisted.web.static import File
 from autobahn.twisted.websocket import WebSocketServerFactory, WebSocketServerProtocol
 from autobahn.websocket.protocol import WebSocketProtocol
 from autobahn.twisted.resource import  WebSocketResource
+
+from runtime.loglevels import LogLevelsDict
+from runtime import GetPLCObjectSingleton
 
 max_svghmi_sessions = None
 svghmi_watchdog = None
@@ -298,4 +302,22 @@ class NoCacheFile(File):
         return File.render_GET(self, request)
     render_HEAD = render_GET
 
+
+def waitpid_timeout(proc, helpstr="", timeout = 3):
+    if proc is None:
+        return
+    def waitpid_timeout_loop(pid=proc.pid, timeout = timeout):
+        try:
+            while os.waitpid(pid,os.WNOHANG) == (0,0):
+                time.sleep(1)
+                timeout = timeout - 1
+                if not timeout:
+                    GetPLCObjectSingleton().LogMessage(
+                        LogLevelsDict["WARNING"], 
+                        "Timeout waiting for {} PID: {}".format(helpstr, str(pid)))
+                    break
+        except OSError:
+            # workaround exception "OSError: [Errno 10] No child processes"
+            pass
+    Thread(target=waitpid_timeout_loop, name="Zombie hunter").start()
 
