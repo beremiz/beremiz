@@ -160,7 +160,7 @@ class FolderTree(wx.Panel):
                 if wx.Platform != '__WXMSW__':
                     item, item_cookie = self.Tree.GetNextChild(root, item_cookie)
             elif self.Tree.GetItemText(item) != filename:
-                item = self.Tree.InsertItemBefore(root, idx, filename, self.TreeImageDict[item_type])
+                item = self.Tree.InsertItem(root, idx, filename, self.TreeImageDict[item_type])
             filepath = os.path.join(folderpath, filename)
             if item_type != FILE:
                 if self.Tree.IsExpanded(item):
