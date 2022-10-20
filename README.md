@@ -179,7 +179,6 @@ Build documentation
 ```
 cd ~/Beremiz/doc
 make all
-
 ```
 
 Result documentation is stored in directories `doc/_build/dirhtml*`.
@@ -191,7 +190,6 @@ To build pdf documentation you have to install additional packages on Ubuntu/Deb
 ```
 sudo apt-get install textlive-latex-base texlive-latex-recommended \
      texlive-fonts-recommended texlive-latex-extra
-
 ```
 
 Build documentation
@@ -199,7 +197,6 @@ Build documentation
 ```
 cd ~/Beremiz/doc
 make latexpdf
-
 ```
 
 Result documentation is stored in `doc/_build/latex/Beremiz.pdf`.
