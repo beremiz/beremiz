@@ -92,6 +92,15 @@ def run(session):
         return session.controller.run_project()
     return processor
 
+@cli.command()
+@pass_session
+@ensure_controller
+def stop(session):
+    """Stop program running in PLC. """
+    def processor():
+        return session.controller.stop_project()
+    return processor
+
 
 @cli.result_callback()
 @pass_session
