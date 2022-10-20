@@ -25,7 +25,7 @@ Windows installer and Snap package for Linux are available in [Github releases](
 
 In IDE, find menu "File>Tutorials and examples" to quickly open examples that should run as-is.
 
-There are more examples in 'tests/projects' and 'exemples' directories.
+There are more examples in `tests/projects` and `exemples` directories.
 
 Some example and test are shown on [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA).
 
@@ -71,7 +71,7 @@ python2 -m pip install  \
 
 ### Prepare build directory
 
-All commands hereafter assume that selected directory to contain all downloaded source code and build results is '~/Beremiz'
+All commands hereafter assume that selected directory to contain all downloaded source code and build results is `~/Beremiz`
 
 ```
 mkdir ~/Beremiz
@@ -105,7 +105,7 @@ make
 
 ### Build CanFestival (optional)
 
-Only needed for CANopen support. Please read CanFestival manual to choose CAN interface other than 'virtual'.
+Only needed for CANopen support. Please read CanFestival manual to choose CAN interface other than `virtual`.
 
 ```
 cd ~/Beremiz
@@ -163,7 +163,7 @@ If project's URL is 'LOCAL://', then IDE launches on demand a local instance of 
 
 ## Build documentation
 
-Source code for documentation is stored in [doc](tree/default/doc) directory in project's source tree.
+Source code for documentation is stored in `doc` directory in project's source tree.
 It's written in reStructuredText (ReST) and uses Sphinx to generate documentation in different formats.
 
 To build documentation you need following packages on Ubuntu/Debian:
@@ -182,7 +182,7 @@ make all
 
 ```
 
-Result documentation is stored in directories 'doc/\_build/dirhtml\*'.
+Result documentation is stored in directories `doc/_build/dirhtml*`.
 
 ### Documentation in PDF
 
@@ -202,7 +202,7 @@ make latexpdf
 
 ```
 
-Result documentation is stored in 'doc/\_build/latex/Beremiz.pdf'.
+Result documentation is stored in `doc/_build/latex/Beremiz.pdf`.
 
 ## Documentation ##
 
