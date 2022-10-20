@@ -7,9 +7,16 @@ from functools import wraps
 from threading import Timer
 from datetime import datetime
 
-import click
+from six.moves import builtins
 
-import fake_wx
+# TODO use gettext instead
+def get_translation(txt):
+   return txt
+
+builtins.__dict__['_'] = get_translation
+
+import skip
+skip.WX = True
 
 from ProjectController import ProjectController
 from LocalRuntimeMixin import LocalRuntimeMixin

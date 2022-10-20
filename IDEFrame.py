@@ -42,6 +42,7 @@ from editors.TextViewer import TextViewer
 from editors.Viewer import Viewer, ZOOM_FACTORS
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
+from graphics.GraphicCommons import *
 from PLCControler import *
 from controls import CustomTree, LibraryPanel, PouInstanceVariablesPanel, SearchResultPanel
 from controls.DebugVariablePanel import DebugVariablePanel

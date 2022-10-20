@@ -44,8 +44,12 @@ from itertools import izip
 from distutils.dir_util import copy_tree
 from six.moves import xrange
 
-import wx
+import skip
 
+if not skip.WX:
+    import wx
+
+import platform
 import features
 import connectors
 import util.paths as paths
@@ -53,11 +57,12 @@ from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from util.BitmapLibrary import GetBitmap
-from editors.FileManagementPanel import FileManagementPanel
-from editors.ProjectNodeEditor import ProjectNodeEditor
-from editors.IECCodeViewer import IECCodeViewer
-from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
-from dialogs import UriEditor, IDManager
+if not skip.WX:
+    from editors.FileManagementPanel import FileManagementPanel
+    from editors.ProjectNodeEditor import ProjectNodeEditor
+    from editors.IECCodeViewer import IECCodeViewer
+    from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
+    from dialogs import UriEditor, IDManager
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
@@ -116,7 +121,7 @@ class Iec2CSettings(object):
         return path
 
     def findCmd(self):
-        cmd = "iec2c" + (".exe" if wx.Platform == '__WXMSW__' else "")
+        cmd = "iec2c" + (".exe" if platform.system() == "Windows" else "")
         paths = [
             os.path.join(base_folder, "matiec")
         ]
@@ -236,7 +241,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
     # packages.
     CTNChildrenTypes = ExtractChildrenTypesFromCatalog(features.catalog)
     XSD = GetProjectControllerXSD()
-    EditorType = ProjectNodeEditor
+    if not skip.WX:
+        EditorType = ProjectNodeEditor
     iec2c_cfg = None
 
     def __init__(self, frame, logger):
@@ -308,7 +314,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.DispatchDebugValuesTimer.Stop()
         self.DispatchDebugValuesTimer = None
 
-        if frame is not None:
+        if frame is not None and not skip.WX:
 
             # Timer to pull PLC status
             self.StatusTimer = wx.Timer(self.AppFrame, -1)
@@ -373,7 +379,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "PROJECT"
 
     def GetDefaultTargetName(self):
-        if wx.Platform == '__WXMSW__':
+        if platform.system() == "Windows":
             return "Win32"
         else:
             return "Linux"
@@ -1452,11 +1458,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _UpdateButtons(self):
         self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
         self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
-        if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
+        if not skip.WX and self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
             self.AppFrame.RefreshStatusToolBar()
 
     def UpdateButtons(self):
-        wx.CallAfter(self._UpdateButtons)
+        if not skip.WX:
+            wx.CallAfter(self._UpdateButtons)
 
     def UpdatePLCLog(self, log_count):
         if log_count:
@@ -1509,7 +1516,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             for method, active in allmethods.items():
                 self.ShowMethod(method, active)
             self.previous_plcstate = status
-            if self.AppFrame is not None:
+            if not skip.WX and self.AppFrame is not None:
                 updated = True
                 self.AppFrame.RefreshStatusToolBar()
                 if status == PlcStatus.Disconnected:
@@ -1533,7 +1540,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # clear previous_plcstate to restore status
         # in UpdateMethodsFromPLCStatus()
         self.previous_plcstate = ""
-        if self.AppFrame is not None:
+        if not skip.WX and self.AppFrame is not None:
             self.AppFrame.ProgressStatusBar.Hide()
         self.UpdateMethodsFromPLCStatus()
 
@@ -1650,9 +1657,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return self.previous_plcstate == PlcStatus.Started
 
     def AppendDebugUpdate(self):
-        if not self.DebugUpdatePending :
-            wx.CallAfter(self.RegisterDebugVarToConnector)
-            self.DebugUpdatePending = True
+        if not skip.WX:
+            if not self.DebugUpdatePending :
+                wx.CallAfter(self.RegisterDebugVarToConnector)
+                self.DebugUpdatePending = True
 
     def GetDebugIECVariableType(self, IECPath):
         _Idx, IEC_Type = self._IECPathToIdx.get(IECPath, (None, None))
@@ -1806,7 +1814,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
             success = True
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
-        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+
+        if not skip.WX:
+            wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        else:
+            self.UpdateMethodsFromPLCStatus
         return success
 
     def _Stop(self):
@@ -1819,7 +1831,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # debugthread should die on his own
         # self.KillDebugThread()
 
-        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        if not skip.WX:
+            wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        else:
+            self.UpdateMethodsFromPLCStatus
 
     def StartLocalRuntime(self):
         if self.AppFrame:
@@ -2002,7 +2017,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 self.logger.write_error(_("PLC couldn't be installed\n"))
 
-        wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        if not skip.WX:
+            wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        else:
+            self.UpdateMethodsFromPLCStatus
         return success
 
     def _Repair(self):

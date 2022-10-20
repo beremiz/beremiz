@@ -45,7 +45,11 @@ from lxml import etree
 
 from xmlclass import GenerateParserFromXSDstring
 from PLCControler import LOCATION_CONFNODE
-from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+import skip
+
+if not skip.WX:
+    from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
+
 from POULibrary import UserAddressedException
 
 _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -73,7 +77,8 @@ class ConfigTreeNode(object):
     CTNMaxCount = None
     ConfNodeMethods = []
     LibraryControler = None
-    EditorType = ConfTreeNodeEditor
+    if not skip.WX:
+        EditorType = ConfTreeNodeEditor
     IconPath = None
 
     def _AddParamsMembers(self):
@@ -471,7 +476,8 @@ class ConfigTreeNode(object):
         return None
 
     def GetView(self, onlyopened=False):
-        if self._View is None and not onlyopened and self.EditorType is not None:
+        if not skip.WX and self._View is None and not onlyopened and self.EditorType is not None:
+
             app_frame = self.GetCTRoot().AppFrame
             self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
 
