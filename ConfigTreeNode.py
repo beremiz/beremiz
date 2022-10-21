@@ -471,7 +471,7 @@ class ConfigTreeNode(object):
         return None
 
     def GetView(self, onlyopened=False):
-        if self._View is None and not onlyopened and self.EditorType is not None:
+        if not self._View and not onlyopened and self.EditorType is not None:
             app_frame = self.GetCTRoot().AppFrame
             self._View = self.EditorType(app_frame.TabsOpened, self, app_frame)
 
