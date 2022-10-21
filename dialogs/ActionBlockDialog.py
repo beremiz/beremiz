@@ -108,7 +108,6 @@ class ActionTable(CustomTable):
                 grid.SetCellRenderer(row, col, renderer)
                 grid.SetReadOnly(row, col, readonly)
 
-                grid.SetCellBackgroundColour(row, col, wx.WHITE)
             self.ResizeRow(grid, row)
 
 # -------------------------------------------------------------------------------
