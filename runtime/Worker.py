@@ -52,6 +52,8 @@ class worker(object):
         self.free = Condition(self.mutex)
         self.job = None
         self.enabled = False
+        self.stopper = None
+        self.own_thread = None
 
     def reraise(self, job):
         """
@@ -87,13 +89,14 @@ class worker(object):
 
         self.mutex.release()
 
-    def interleave(self, waker, *args, **kwargs):
+    def interleave(self, waker, stopper, *args, **kwargs):
         """
         as for twisted reactor's interleave, it passes all jobs to waker func
         additionaly, it creates a new thread to wait for new job.
         """
         self.feed = Condition(self.mutex)
         self._threadID = _thread.get_ident()
+        self.stopper = stopper
 
         def wakerfeedingloop():
             self.mutex.acquire()
@@ -119,6 +122,8 @@ class worker(object):
                         self.feed.notify()
                         self.done.notify()
                     self.mutex.release()
+                if self._finish:
+                    break
                 waker(job_todo)
                 self.feed.wait()
 
@@ -189,3 +194,9 @@ class worker(object):
         self.todo.notify()
         self.done.notify()
         self.mutex.release()
+
+    def finish(self):
+        if self.own_thread is None:
+            self.quit()
+        if self.stopper is not None:
+            self.stopper()

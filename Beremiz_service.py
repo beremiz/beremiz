@@ -587,7 +587,7 @@ if havetwisted and havewx:
 
     # interleaved worker copes with wxreactor by delegating all asynchronous
     # calls to wx's mainloop
-    runtime.MainWorker.interleave(waker_func, FirstWorkerJob)
+    runtime.MainWorker.interleave(waker_func, reactor.stop, FirstWorkerJob)
 
     try:
         reactor.run(installSignalHandlers=False)
