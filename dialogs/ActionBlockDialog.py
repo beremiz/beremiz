@@ -163,7 +163,7 @@ class ActionBlockDialog(wx.Dialog):
 
         self.Table = ActionTable(self, [], GetActionTableColnames())
         typelist = GetTypeList()
-        self.TypeList = ",".join(map(_, typelist))
+        self.TypeList = map(_, typelist)
         self.TranslateType = dict([(_(value), value) for value in typelist])
         self.ColSizes = [60, 90, 130, 200, 50]
         self.ColAlignements = [wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]
@@ -196,15 +196,15 @@ class ActionBlockDialog(wx.Dialog):
         wx.CallAfter(self.Table.ResetView, self.ActionsGrid)
         event.Skip()
 
-    def SetQualifierList(self, list):
-        self.QualifierList = ",".join(list)
-        self.DurationList = list
+    def SetQualifierList(self, odict):
+        self.QualifierList = [qname for qname in odict]
+        self.DurationList = odict
 
-    def SetVariableList(self, list):
-        self.VariableList = "," + ",".join([variable.Name for variable in list])
+    def SetVariableList(self, lst):
+        self.VariableList = [variable.Name for variable in lst]
 
-    def SetActionList(self, list):
-        self.ActionList = "," + ",".join(list)
+    def SetActionList(self, lst):
+        self.ActionList = lst
 
     def SetValues(self, actions):
         for action in actions:
