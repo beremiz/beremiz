@@ -623,7 +623,7 @@ class PLCObject(object):
 
     def RepairPLC(self):
         self.PurgePLC()
-        MainWorker.quit()
+        MainWorker.finish()
 
     @RunInMain
     def PurgePLC(self):
