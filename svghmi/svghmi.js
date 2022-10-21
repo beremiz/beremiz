@@ -23,13 +23,6 @@ function init_widgets() {
 // Open WebSocket to relative "/ws" address
 var has_watchdog = window.location.hash == "#watchdog";
 
-var ws_url =
-    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
-    + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
-
-var ws = new WebSocket(ws_url);
-ws.binaryType = 'arraybuffer';
-
 const dvgetters = {
     INT: (dv,offset) => [dv.getInt16(offset, true), 2],
     BOOL: (dv,offset) => [dv.getInt8(offset, true), 1],
@@ -98,7 +91,7 @@ function requestHMIAnimation() {
 // Message reception handler
 // Hash is verified and HMI values updates resulting from binary parsing
 // are stored until browser can compute next frame, DOM is left untouched
-ws.onmessage = function (evt) {
+function ws_onmessage(evt) {
 
     let data = evt.data;
     let dv = new DataView(data);
@@ -140,8 +133,10 @@ ws.onmessage = function (evt) {
 
 hmi_hash_u8 = new Uint8Array(hmi_hash);
 
+var ws = null;
+
 function send_blob(data) {
-    if(data.length > 0) {
+    if(ws && data.length > 0) {
         ws.send(new Blob([hmi_hash_u8].concat(data)));
     };
 };
@@ -197,6 +192,11 @@ function set_subscription_period(index, period) {
     } else {
         entry[1] = period;
     }
+}
+
+function reset_subscription_periods() {
+    for(let index in subscriptions)
+        subscriptions[index][1] = 0;
 }
 
 if(has_watchdog){
@@ -298,6 +298,10 @@ setup_lang();
 
 function update_subscriptions() {
     let delta = [];
+    if(!ws)
+        // dont' change subscriptions if not connected
+        return;
+
     for(let index in subscriptions){
         let widgets = subscribers(index);
 
@@ -418,12 +422,13 @@ function toggleFullscreen() {
   }
 }
 
-function prepare_svg() {
-    // prevents context menu from appearing on right click and long touch
-    document.body.addEventListener('contextmenu', e => {
-        toggleFullscreen();
-        e.preventDefault();
-    });
+// prevents context menu from appearing on right click and long touch
+document.body.addEventListener('contextmenu', e => {
+    toggleFullscreen();
+    e.preventDefault();
+});
+
+function detach_detachables() {
 
     for(let eltid in detachable_elements){
         let [element,parent] = detachable_elements[eltid];
@@ -572,24 +577,65 @@ function apply_reference_frames(){
     });
 }
 
+// prepare SVG
+apply_reference_frames();
+init_widgets();
+detach_detachables();
+
+// show main page
+switch_page(default_page);
+
+var reconnect_delay = 0;
+// var periodic_reconnect_timer;
+
 // Once connection established
-ws.onopen = function (evt) {
-    apply_reference_frames();
-    init_widgets();
+function ws_onopen(evt) {
+    /* 
+    // to force reconnect every hour
+    if(periodic_reconnect_timer){
+        window.clearTimeout(periodic_reconnect_timer);
+    }
+    periodic_reconnect_timer = window.setTimeout(() => {
+        ws.close();
+        periodic_reconnect_timer = null;
+    }, 3600*1000);
+    */
+
+    // forget subscriptions remotely
     send_reset();
-    // show main page
-    prepare_svg();
-    switch_page(default_page);
+
+    // forget earlier subscriptions locally
+    reset_subscription_periods();
+
+    // update PLC about subscriptions and current page
+    switch_page();
+
+    // at first try reconnect immediately
+    reconnect_delay = 1;
 };
 
-ws.onclose = function (evt) {
+function ws_onclose(evt) {
+    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in "+reconnect_delay+"ms.");
+    ws = null;
+    // reconect
     // TODO : add visible notification while waiting for reload
-    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in 10s.");
-    // TODO : re-enable auto reload when not in debug
-    //window.setTimeout(() => location.reload(true), 10000);
-    alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
-
+    window.setTimeout(create_ws, reconnect_delay);
+    reconnect_delay += 500;
 };
+
+var ws_url =
+    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
+    + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
+
+function create_ws(){
+    ws = new WebSocket(ws_url);
+    ws.binaryType = 'arraybuffer';
+    ws.onmessage = ws_onmessage;
+    ws.onclose = ws_onclose;
+    ws.onopen = ws_onopen;
+}
+
+create_ws()
 
 const xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
