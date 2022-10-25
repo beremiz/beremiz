@@ -67,6 +67,7 @@ class OPCUAClient(object):
                       </xsd:sequence>
                       <xsd:attribute name="Certificate" type="xsd:string" use="optional" default="certificate.pem"/>
                       <xsd:attribute name="PrivateKey" type="xsd:string" use="optional" default="private_key.pem"/>
+                      <xsd:attribute name="ApplicationUri" type="xsd:string" use="optional"/>
                     </xsd:complexType>
                   </xsd:element>
                   <xsd:element name="UserPassword">
@@ -114,6 +115,9 @@ class OPCUAClient(object):
                 # cryptomaterial is expected to be in project's user provide file directory
                 if name in ["Certificate","PrivateKey"]:
                     value = os.path.join(self.GetCTRoot()._getProjectFilesPath(), value)
+                # ApplicationUri defaults to URI if not set
+                if name == "ApplicationUri" and not value:
+                        value = res["URI"]
                 res[name] = value
 
         return res
