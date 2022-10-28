@@ -210,22 +210,22 @@ class ConfigTreeNode(object):
 
             # generate XML for base XML parameters controller of the confnode
             if self.MandatoryParams:
-                BaseXMLFile = open(self.ConfNodeBaseXmlFilePath(), 'w')
+                BaseXMLFile = open(self.ConfNodeBaseXmlFilePath(), 'w', encoding='utf-8')
                 BaseXMLFile.write(etree.tostring(
                     self.MandatoryParams[1],
                     pretty_print=True,
                     xml_declaration=True,
-                    encoding='utf-8'))
+                    encoding='utf-8').decode())
                 BaseXMLFile.close()
 
             # generate XML for XML parameters controller of the confnode
             if self.CTNParams:
-                XMLFile = open(self.ConfNodeXmlFilePath(), 'w')
+                XMLFile = open(self.ConfNodeXmlFilePath(), 'w', encoding='utf-8')
                 XMLFile.write(etree.tostring(
                     self.CTNParams[1],
                     pretty_print=True,
                     xml_declaration=True,
-                    encoding='utf-8'))
+                    encoding='utf-8').decode())
                 XMLFile.close()
 
             # Call the confnode specific OnCTNSave method

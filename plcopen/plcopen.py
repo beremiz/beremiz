@@ -211,7 +211,7 @@ PLCOpen_v1_file.close()
 PLCOpen_v1_xml = PLCOpen_v1_xml.replace(
     "http://www.plcopen.org/xml/tc6.xsd",
     "http://www.plcopen.org/xml/tc6_0201")
-PLCOpen_v1_xsd = etree.XMLSchema(etree.fromstring(PLCOpen_v1_xml))
+PLCOpen_v1_xsd = etree.XMLSchema(etree.fromstring(PLCOpen_v1_xml.encode()))
 
 # XPath for file compatibility process
 ProjectResourcesXPath = PLCOpen_XPath("ppx:instances/ppx:configurations/ppx:configuration/ppx:resource")
@@ -301,7 +301,7 @@ def LoadProjectXML(project_xml):
 
 
 def LoadProject(filepath):
-    project_file = open(filepath)
+    project_file = open(filepath, encoding='utf-8')
     project_xml = project_file.read()
     project_file.close()
     return LoadProjectXML(project_xml)
@@ -332,11 +332,11 @@ def SaveProject(project, filepath):
         project,
         pretty_print=True,
         xml_declaration=True,
-        encoding='utf-8')
+        encoding='utf-8').decode()
 
     assert len(content) != 0
         
-    project_file = open(filepath, 'w')
+    project_file = open(filepath, 'w', encoding='utf-8')
     project_file.write(content)
     project_file.close()
 

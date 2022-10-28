@@ -806,8 +806,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             plc_file.write(POUsIECCodeContent)
 
         hasher = hashlib.md5()
-        hasher.update(IECCodeContent)
-        hasher.update(POUsIECCodeContent)
+        hasher.update(IECCodeContent.encode())
+        hasher.update(POUsIECCodeContent.encode())
         self.IECcodeDigest = hasher.hexdigest()
 
         return True

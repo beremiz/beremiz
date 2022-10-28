@@ -98,16 +98,15 @@ from plcopen.types_enums import *
 
 
 def EncodeFileSystemPath(path, use_base64=True):
-    path = path.encode(sys.getfilesystemencoding())
     if use_base64:
-        return base64.encodestring(path)
+        path = base64.b64encode(path.encode()).decode()
     return path
 
 
 def DecodeFileSystemPath(path, is_base64=True):
     if is_base64:
-        path = base64.decodestring(path)
-    return str(path, sys.getfilesystemencoding())
+        path = base64.b64decode(path.encode()).decode()
+    return path
 
 
 def AppendMenu(parent, help, kind, text, id=wx.ID_ANY):
