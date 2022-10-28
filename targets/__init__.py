@@ -35,15 +35,15 @@ Beremiz Targets
 """
 
 
-
 from os import listdir, path
 import util.paths as paths
+import importlib
 
 _base_path = paths.AbsDir(__file__)
 
 
 def _GetLocalTargetClassFactory(name):
-    return lambda: getattr(__import__(name, globals(), locals()), name+"_target")
+    return lambda: getattr(importlib.import_module(f"targets.{name}"), f"{name}_target")
 
 
 targets = dict([(name, {"xsd":   path.join(_base_path, name, "XSD"),
