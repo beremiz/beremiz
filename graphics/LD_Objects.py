@@ -23,6 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from functools import cmp_to_key
+from operator import eq
 import wx
 
 from graphics.GraphicCommons import *
@@ -157,7 +159,7 @@ class LD_PowerRail(Graphic_Element):
             for connect in self.Connectors:
                 connect_pos = connect.GetRelPosition()
                 connect.SetPosition(wx.Point(connect_pos.x, connect_pos.y - miny))
-        self.Connectors.sort(lambda x, y: cmp(x.Pos.y, y.Pos.y))
+        self.Connectors.sort(key=cmp_to_key(lambda x, y: eq(x.Pos.y, y.Pos.y)))
         maxy = 0
         for connect in self.Connectors:
             connect_pos = connect.GetRelPosition()

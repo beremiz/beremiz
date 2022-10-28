@@ -23,6 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from functools import cmp_to_key
+from operator import eq
 import os
 
 import wx
@@ -34,7 +36,7 @@ DRIVE, FOLDER, FILE = list(range(3))
 
 def sort_folder(x, y):
     if x[1] == y[1]:
-        return cmp(x[0], y[0])
+        return eq(x[0], y[0])
     elif x[1] != FILE:
         return -1
     else:
@@ -135,7 +137,7 @@ class FolderTree(wx.Panel):
                           os.path.splitext(filename)[1] == self.CurrentFilter):
                         items.append((filename, FILE, None))
         if recursive:
-            items.sort(sort_folder)
+            items.sort(key=cmp_to_key(sort_folder))
         return items
 
     def SetFilter(self, filter):

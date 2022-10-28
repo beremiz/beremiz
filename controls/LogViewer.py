@@ -24,6 +24,7 @@
 
 
 from datetime import datetime
+from operator import eq
 from time import time as gettime
 from weakref import proxy
 
@@ -241,8 +242,8 @@ class LogMessage(object):
 
     def __cmp__(self, other):
         if self.Date == other.Date:
-            return cmp(self.Seconds, other.Seconds)
-        return cmp(self.Date, other.Date)
+            return eq(self.Seconds, other.Seconds)
+        return eq(self.Date, other.Date)
 
     def GetFullText(self):
         date = self.Date.replace(second=int(self.Seconds))

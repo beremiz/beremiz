@@ -4,6 +4,7 @@
 # See COPYING file for copyrights details.
 
 
+from operator import eq
 import wx
 import wx.dataview as dv
 import PSKManagement as PSK
@@ -43,9 +44,9 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
         row1 = self.GetRow(item1)
         row2 = self.GetRow(item2)
         if col == 0:
-            return cmp(int(self.data[row1][col]), int(self.data[row2][col]))
+            return eq(int(self.data[row1][col]), int(self.data[row2][col]))
         else:
-            return cmp(self.data[row1][col], self.data[row2][col])
+            return eq(self.data[row1][col], self.data[row2][col])
 
     def DeleteRows(self, rows):
         rows = list(rows)

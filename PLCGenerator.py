@@ -23,6 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from functools import cmp_to_key
+from operator import eq
 import re
 from functools import reduce
 
@@ -77,9 +79,9 @@ def SortInstances(a, b):
     ax, ay = int(a.getx()), int(a.gety())
     bx, by = int(b.getx()), int(b.gety())
     if abs(ay - by) < 10:
-        return cmp(ax, bx)
+        return eq(ax, bx)
     else:
-        return cmp(ay, by)
+        return eq(ay, by)
 
 
 def JoinList(separator, mylist):
@@ -993,9 +995,9 @@ class PouProgramGenerator(object):
                     otherInstances["connectors"].append(instance)
                 elif isinstance(instance, CoilClass):
                     otherInstances["outVariables&coils"].append(instance)
-            orderedInstances.sort()
-            otherInstances["outVariables&coils"].sort(SortInstances)
-            otherInstances["blocks"].sort(SortInstances)
+            orderedInstances.sort(key=lambda n: n[0])
+            otherInstances["outVariables&coils"].sort(key=cmp_to_key(SortInstances))
+            otherInstances["blocks"].sort(key=cmp_to_key(SortInstances))
             instances = [instance for (executionOrderId, instance) in orderedInstances]
             instances.extend(otherInstances["outVariables&coils"] + otherInstances["blocks"] + otherInstances["connectors"])
             for instance in instances:
