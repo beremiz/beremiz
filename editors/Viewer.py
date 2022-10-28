@@ -23,6 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from functools import cmp_to_key
+from operator import eq
 import math
 from time import time as gettime
 from threading import Lock
@@ -221,9 +223,9 @@ def sort_blocks(block_infos1, block_infos2):
     x1, y1 = block_infos1[0].GetPosition()
     x2, y2 = block_infos2[0].GetPosition()
     if y1 == y2:
-        return cmp(x1, x2)
+        return eq(x1, x2)
     else:
-        return cmp(y1, y2)
+        return eq(y1, y2)
 
 # -------------------------------------------------------------------------------
 #                       Graphic elements Viewer base class
@@ -916,11 +918,13 @@ class Viewer(EditorPanel, DebugViewer):
         wires = list(self.Wires.keys())
         comments = list(self.Comments.values())
         if sort_blocks:
-            blocks.sort(lambda x, y: cmp(x.GetId(), y.GetId()))
+            blocks.sort(key=cmp_to_key(lambda x, y: eq(x.GetId(), y.GetId())))
         if sort_wires:
-            wires.sort(lambda x, y: cmp(self.Wires[x], self.Wires[y]))
+            wires.sort(key=cmp_to_key(lambda x, y: eq(self.Wires[x],
+                                                      self.Wires[y])))
         if sort_comments:
-            comments.sort(lambda x, y: cmp(x.GetId(), y.GetId()))
+            comments.sort(key=cmp_to_key(lambda x, y: eq(x.GetId(),
+                                                         y.GetId())))
         return blocks + wires + comments
 
     def GetContinuationByName(self, name):
@@ -3506,7 +3510,7 @@ class Viewer(EditorPanel, DebugViewer):
                         block = self.Blocks.get(infos[2])
                         if block is not None:
                             blocks.append((block, (infos[1:], start, end, SEARCH_RESULT_HIGHLIGHT)))
-            blocks.sort(sort_blocks)
+            blocks.sort(key=cmp_to_key(sort_blocks))
             self.SearchResults.extend([infos for block, infos in blocks])
             self.CurrentFindHighlight = None
 
