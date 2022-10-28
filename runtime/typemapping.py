@@ -4,13 +4,12 @@
 # See COPYING.Runtime file for copyrights details.
 #
 
-
 import ctypes
 from ctypes import *
 from datetime import timedelta as td
 
-ctypes.pythonapi.PyString_AsString.argtypes = (ctypes.c_void_p,)
-ctypes.pythonapi.PyString_AsString.restype = ctypes.POINTER(ctypes.c_char)
+ctypes.pythonapi.PyUnicode_AsUTF8.argtypes = (ctypes.c_void_p,)
+ctypes.pythonapi.PyUnicode_AsUTF8.restype = ctypes.POINTER(ctypes.c_char)
 
 
 class IEC_STRING(Structure):
