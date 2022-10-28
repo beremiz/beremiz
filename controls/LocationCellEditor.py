@@ -62,9 +62,6 @@ class LocationCellControl(wx.PyControl):
         self.Default = False
         self.VariableName = None
 
-    def __del__(self):
-        self.Controller = None
-
     def SetController(self, controller):
         self.Controller = controller
 
@@ -159,10 +156,6 @@ class LocationCellEditor(wx.grid.GridCellEditor):
 
         self.Table = table
         self.Controller = controller
-
-    def __del__(self):
-        self.CellControl = None
-        self.Controller = None
 
     def Create(self, parent, id, evt_handler):
         self.CellControl = LocationCellControl(parent)

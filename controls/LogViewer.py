@@ -191,9 +191,6 @@ class LogButton(object):
         self.Shown = True
         self.Callback = callback
 
-    def __del__(self):
-        self.callback = None
-
     def GetSize(self):
         return self.Size
 
@@ -381,9 +378,6 @@ class LogViewer(DebugViewer, wx.Panel):
         self.MessageToolTip = None
         self.MessageToolTipTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnMessageToolTipTimer, self.MessageToolTipTimer)
-
-    def __del__(self):
-        self.ScrollTimer.Stop()
 
     def ResetLogMessages(self):
         self.ResetLogCounters()

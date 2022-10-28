@@ -58,13 +58,6 @@ class GraphButton(object):
         # Save reference to callback function
         self.Callback = callback
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to callback function
-        self.callback = None
-
     def SetBitmap(self, bitmap):
         """
         Set bitmap to use for button

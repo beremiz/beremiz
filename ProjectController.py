@@ -280,9 +280,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECcodeDigest = None
         self.LastBuiltIECcodeDigest = None
 
-    def __del__(self):
-        self.KillDebugThread()
-
     def LoadLibraries(self):
         self.Libraries = []
         TypeStack = []

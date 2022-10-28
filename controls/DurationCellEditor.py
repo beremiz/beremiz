@@ -108,9 +108,6 @@ class DurationCellEditor(wx.grid.GridCellEditor):
         self.Table = table
         self.Colname = colname
 
-    def __del__(self):
-        self.CellControl = None
-
     def Create(self, parent, id, evt_handler):
         self.CellControl = DurationCellControl(parent)
         self.SetControl(self.CellControl)

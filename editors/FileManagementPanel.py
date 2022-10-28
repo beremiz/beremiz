@@ -114,9 +114,6 @@ class FileManagementPanel(EditorPanel):
 
         self.SetIcon(GetBitmap("FOLDER"))
 
-    def __del__(self):
-        self.Controler.OnCloseEditor(self)
-
     def GetTitle(self):
         return _(self.TagName)
 

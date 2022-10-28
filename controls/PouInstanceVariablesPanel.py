@@ -217,10 +217,6 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.FilterCaseSensitive = False
         self.FilterWholeWord = False
 
-
-    def __del__(self):
-        self.Controller = None
-
     def SetTreeImageList(self, tree_image_list):
         self.VariablesList.SetImageList(tree_image_list)
 

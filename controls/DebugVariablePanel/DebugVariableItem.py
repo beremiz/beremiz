@@ -63,13 +63,6 @@ class DebugVariableItem(DebugDataConsumer):
         # Get Variable data type
         self.RefreshVariableType()
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Reset reference to debug variable panel
-        self.Parent = None
-
     def SetVariable(self, variable):
         """
         Set path of variable

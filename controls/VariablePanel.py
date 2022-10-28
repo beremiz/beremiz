@@ -685,9 +685,6 @@ class VariablePanel(wx.Panel):
             else:
                 self.VariablesGrid.SetColSize(col, self.ColSettings["size"][col])
 
-    def __del__(self):
-        self.RefreshHighlightsTimer.Stop()
-
     def SetTagName(self, tagname):
         self.TagName = tagname
         self.BodyType = self.Controler.GetEditedElementBodyType(self.TagName)

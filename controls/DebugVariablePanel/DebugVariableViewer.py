@@ -74,13 +74,6 @@ class DebugVariableViewer(object):
         self.Buttons = []
         self.InitHighlightPensBrushes()
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to Debug Variable Panel
-        self.ParentWindow = None
-
     def InitHighlightPensBrushes(self):
         """
         Init global pens and brushes

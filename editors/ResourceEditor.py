@@ -391,9 +391,6 @@ class ResourceEditor(EditorPanel):
 
         self.TasksGrid.SetFocus()
 
-    def __del__(self):
-        self.RefreshHighlightsTimer.Stop()
-
     def RefreshTypeList(self):
         self.TypeList = []
         blocktypes = self.Controler.GetBlockResource()

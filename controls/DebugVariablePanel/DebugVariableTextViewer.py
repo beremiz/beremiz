@@ -51,15 +51,6 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         self.ParentControl = parent
         self.ParentWindow = window
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to Debug Variable Text Viewer and Debug Variable
-        # Panel
-        self.ParentControl = None
-        self.ParentWindow = None
-
     def OnDragOver(self, x, y, d):
         """
         Function called when mouse is dragged over Drop Target

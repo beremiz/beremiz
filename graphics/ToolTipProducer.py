@@ -55,12 +55,6 @@ class ToolTipProducer(object):
                          self.OnToolTipTimer,
                          self.ToolTipTimer)
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        self.DestroyToolTip()
-
     def OnToolTipTimer(self, event):
         """
         Callback for Tool Tip firing timer Event

@@ -87,13 +87,6 @@ class BlockPreviewDialog(wx.Dialog):
         # List of variables defined in POU {var_name: (var_class, var_type),...}
         self.VariableList = {}
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to project controller
-        self.Controller = None
-
     def _init_sizers(self,
                      main_rows, main_growable_row,
                      left_rows, left_growable_row,
