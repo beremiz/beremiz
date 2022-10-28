@@ -23,15 +23,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import math
 from time import time as gettime
 from threading import Lock
-from future.builtins import round
 
 import wx
-from six.moves import xrange
 
 from plcopen.structures import *
 from plcopen.types_enums import ComputePouName
@@ -3400,7 +3396,7 @@ class Viewer(EditorPanel, DebugViewer):
                 middle = True
                 new_pos = [bbx.x, bbx.y]
             result = self.Controler.PasteEditedElementInstances(self.TagName, element, new_pos, middle, self.Debug)
-            if not isinstance(result, string_types):
+            if not isinstance(result, str):
                 self.RefreshBuffer()
                 self.RefreshView(selection=result)
                 self.RefreshVariablePanel()

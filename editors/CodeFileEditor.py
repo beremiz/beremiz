@@ -23,16 +23,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import re
-from builtins import str as text
 
 import wx
 import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
-from six.moves import xrange
 
 
 from plcopen.plcopen import TestTextElement
@@ -636,7 +632,7 @@ class VariablesTable(CustomTable):
             if col == 0:
                 return row + 1
             else:
-                return text(self.data[row].get(self.GetColLabelValue(col, False), ""))
+                return str(self.data[row].get(self.GetColLabelValue(col, False), ""))
 
     def _updateColAttrs(self, grid):
         """

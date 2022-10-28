@@ -23,13 +23,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import sys
 import traceback
 from functools import partial
 from threading import Thread, Event
-from six import text_type as text
 
 from twisted.internet import reactor, threads
 from autobahn.twisted import wamp
@@ -85,7 +82,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
-            realm=text(realm),
+            realm=str(realm),
             extra={"ID": ID})
         session_factory = wamp.ApplicationSessionFactory(
             config=component_config)
@@ -111,7 +108,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         reactor.run(installSignalHandlers=False)
 
     def WampSessionProcMapper(funcname):
-        wampfuncname = text('.'.join((ID, funcname)))
+        wampfuncname = str('.'.join((ID, funcname)))
 
         def catcher_func(*args, **kwargs):
             if _WampSession is not None:

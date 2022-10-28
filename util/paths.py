@@ -23,14 +23,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 
-
 import os
 import sys
-from builtins import str as text
 
 def AbsFile(file):
     if isinstance(file, str):
-        file = text(file, sys.getfilesystemencoding())
+        file = str(file, sys.getfilesystemencoding())
     return file
 
 

@@ -24,12 +24,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import re
 from collections import OrderedDict
 
-from six.moves import xrange
 from lxml import etree
 
 from xmlclass import *

@@ -28,7 +28,6 @@ Beremiz Project Controller
 """
 
 
-
 import os
 import traceback
 import time
@@ -42,7 +41,6 @@ from weakref import WeakKeyDictionary
 from functools import reduce
 
 from distutils.dir_util import copy_tree
-from six.moves import xrange
 
 import wx
 

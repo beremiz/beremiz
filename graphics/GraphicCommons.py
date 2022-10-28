@@ -23,12 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 from math import *
-from future.builtins import round
-from six import string_types
-from six.moves import xrange
 
 import wx
 from graphics.ToolTipProducer import ToolTipProducer
@@ -1084,7 +1079,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 y -= 5
                 height += 5
         rect = wx.Rect(x - abs(movex), y - abs(movey), width + 2 * abs(movex), height + 2 * abs(movey))
-        if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
+        if self.ValueSize is None and isinstance(self.ComputedValue, str):
             self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
@@ -1542,7 +1537,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.ParentBlock.Parent.GetMiniFont())
             dc.SetTextForeground(wx.NamedColour("purple"))
-            if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
+            if self.ValueSize is None and isinstance(self.ComputedValue, str):
                 self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize
@@ -1610,7 +1605,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             rect = rect.Union(self.StartConnected.GetRedrawRect(movex, movey))
         if self.EndConnected:
             rect = rect.Union(self.EndConnected.GetRedrawRect(movex, movey))
-        if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
+        if self.ValueSize is None and isinstance(self.ComputedValue, str):
             self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
         if self.ValueSize is not None:
             width, height = self.ValueSize
@@ -2750,7 +2745,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.Parent.GetMiniFont())
             dc.SetTextForeground(wx.NamedColour("purple"))
-            if self.ValueSize is None and isinstance(self.ComputedValue, string_types):
+            if self.ValueSize is None and isinstance(self.ComputedValue, str):
                 self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
                 width, height = self.ValueSize

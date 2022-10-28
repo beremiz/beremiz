@@ -23,15 +23,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 from datetime import datetime
 from time import time as gettime
 from weakref import proxy
 
 import numpy
 import wx
-from six.moves import xrange
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD

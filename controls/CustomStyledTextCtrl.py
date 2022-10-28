@@ -23,11 +23,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 from functools import reduce
 import wx
 import wx.stc
-from six.moves import xrange
 
 if wx.Platform == '__WXMSW__':
     faces = {
