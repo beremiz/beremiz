@@ -878,25 +878,27 @@ class ClassFactory(object):
 
     def ExtractNodeAttrs(self, element_name, node, valid_attrs):
         attrs = {}
-        for qualified_name, attr in list(node._attrs.items()):
-            namespace, name = DecomposeQualifiedName(qualified_name)
-            if name in valid_attrs:
-                infos = self.GetQualifiedNameInfos(name, namespace)
-                if infos["type"] != SYNTAXATTRIBUTE:
-                    raise ValueError("\"%s\" can't be a member attribute!" % name)
-                elif name in attrs:
-                    raise ValueError("\"%s\" attribute has been twice!" % name)
-                elif element_name in infos["extract"]:
-                    attrs[name] = infos["extract"][element_name](attr)
+        if node._attrs:
+            for qualified_name, attr in list(node._attrs.items()):
+                namespace, name = DecomposeQualifiedName(qualified_name)
+                if name in valid_attrs:
+                    infos = self.GetQualifiedNameInfos(name, namespace)
+                    if infos["type"] != SYNTAXATTRIBUTE:
+                        raise ValueError("\"%s\" can't be a member attribute!" % name)
+                    elif name in attrs:
+                        raise ValueError("\"%s\" attribute has been twice!" % name)
+                    elif element_name in infos["extract"]:
+                        attrs[name] = infos["extract"][element_name](attr)
+                    else:
+                        attrs[name] = infos["extract"]["default"](attr)
+                elif namespace == "xmlns":
+                    infos = self.GetQualifiedNameInfos("anyURI", self.SchemaNamespace)
+                    value = infos["extract"](attr)
+                    self.DefinedNamespaces[value] = name
+                    self.NSMAP[name] = value
                 else:
-                    attrs[name] = infos["extract"]["default"](attr)
-            elif namespace == "xmlns":
-                infos = self.GetQualifiedNameInfos("anyURI", self.SchemaNamespace)
-                value = infos["extract"](attr)
-                self.DefinedNamespaces[value] = name
-                self.NSMAP[name] = value
-            else:
-                raise ValueError("Invalid attribute \"%s\" for member \"%s\"!" % (qualified_name, node.nodeName))
+                    raise ValueError("Invalid attribute \"%s\" for member \"%s\"!" %
+                                     (qualified_name, node.nodeName))
         for attr in valid_attrs:
             if attr not in attrs and \
                attr in self.Namespaces[self.SchemaNamespace] and \
