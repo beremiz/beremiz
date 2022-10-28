@@ -94,8 +94,8 @@ VALID_HANDLES = [(1, 1), (1, 2), (1, 3), (2, 3), (3, 3), (3, 2), (3, 1), (2, 1)]
 HIGHLIGHTCOLOR = wx.CYAN
 
 # Define highlight types
-ERROR_HIGHLIGHT = (wx.Colour(255, 255, 0), wx.RED)
-SEARCH_RESULT_HIGHLIGHT = (wx.Colour(255, 165, 0), wx.WHITE)
+ERROR_HIGHLIGHT = (wx.Colour(255, 255, 0).GetIM(), wx.RED.GetIM())
+SEARCH_RESULT_HIGHLIGHT = (wx.Colour(255, 165, 0).GetIM(), wx.WHITE.GetIM())
 
 # Define highlight refresh inhibition period in second
 REFRESH_HIGHLIGHT_PERIOD = 0.1
