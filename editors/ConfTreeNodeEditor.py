@@ -255,9 +255,6 @@ class ConfTreeNodeEditor(EditorPanel):
         else:
             self.SetIcon(GetBitmap("Extension"))
 
-    def __del__(self):
-        self.Controler.OnCloseEditor(self)
-
     def GetTagName(self):
         return self.Controler.CTNFullName()
 
