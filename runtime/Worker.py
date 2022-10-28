@@ -8,11 +8,9 @@
 # See COPYING.Runtime file for copyrights details.
 
 
-import sys
 from threading import Lock, Condition, Thread
 
-import six
-from six.moves import _thread
+import _thread
 
 
 class job(object):
@@ -33,9 +31,9 @@ class job(object):
             call, args, kwargs = self.job
             self.result = call(*args, **kwargs)
             self.success = True
-        except Exception:
+        except Exception as e:
             self.success = False
-            self.exc_info = sys.exc_info()
+            self.exc_info = e
 
 
 class worker(object):
@@ -60,10 +58,7 @@ class worker(object):
         reraise exception happend in a job
         @param job: job where original exception happend
         """
-        exc_type = job.exc_info[0]
-        exc_value = job.exc_info[1]
-        exc_traceback = job.exc_info[2]
-        six.reraise(exc_type, exc_value, exc_traceback)
+        raise job.exc_info
 
     def runloop(self, *args, **kwargs):
         """
