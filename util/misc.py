@@ -27,7 +27,7 @@ Misc definitions
 """
 
 
-from __future__ import absolute_import
+
 import os,sys
 import random
 from functools import reduce

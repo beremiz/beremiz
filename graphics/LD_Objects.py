@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import wx
 from future.builtins import round
 from six.moves import xrange
@@ -73,8 +73,8 @@ class LD_PowerRail(Graphic_Element):
         return powerrail
 
     def GetConnectorTranslation(self, element):
-        return dict(zip([connector for connector in self.Connectors],
-                        [connector for connector in element.Connectors]))
+        return dict(list(zip([connector for connector in self.Connectors],
+                        [connector for connector in element.Connectors])))
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex=0, movey=0):
@@ -238,7 +238,7 @@ class LD_PowerRail(Graphic_Element):
             self.Type = type
             self.Clean()
             self.Connectors = []
-            for dummy in xrange(connectors):
+            for dummy in range(connectors):
                 self.AddConnector()
             self.RefreshSize()
 
@@ -255,7 +255,7 @@ class LD_PowerRail(Graphic_Element):
                 position = connector.GetRelPosition()
                 self.RealConnectors.append(max(0., min((position.y - self.Extensions[0]) / height, 1.)))
         elif len(self.Connectors) > 1:
-            self.RealConnectors = map(lambda x: x * 1 / (len(self.Connectors) - 1), xrange(len(self.Connectors)))
+            self.RealConnectors = [x * 1 / (len(self.Connectors) - 1) for x in range(len(self.Connectors))]
         else:
             self.RealConnectors = [0.5]
         Graphic_Element.OnLeftDown(self, event, dc, scaling)
@@ -626,7 +626,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            highlight_items = self.Highlights.items()
+            highlight_items = list(self.Highlights.items())
             for name, highlights in highlight_items:
                 highlights = ClearHighlights(highlights, highlight_type)
                 if len(highlights) == 0:
@@ -687,7 +687,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         self.Output.Draw(dc)
 
         if not getattr(dc, "printing", False):
-            for name, highlights in self.Highlights.iteritems():
+            for name, highlights in self.Highlights.items():
                 if name == "reference":
                     DrawHighlightedText(dc, self.Name, highlights, name_pos[0], name_pos[1])
                 elif typetext != "":
@@ -948,7 +948,7 @@ class LD_Coil(Graphic_Element):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            highlight_items = self.Highlights.items()
+            highlight_items = list(self.Highlights.items())
             for name, highlights in highlight_items:
                 highlights = ClearHighlights(highlights, highlight_type)
                 if len(highlights) == 0:
@@ -1016,7 +1016,7 @@ class LD_Coil(Graphic_Element):
         self.Output.Draw(dc)
 
         if not getattr(dc, "printing", False):
-            for name, highlights in self.Highlights.iteritems():
+            for name, highlights in self.Highlights.items():
                 if name == "reference":
                     DrawHighlightedText(dc, self.Name, highlights, name_pos[0], name_pos[1])
                 elif typetext != "":

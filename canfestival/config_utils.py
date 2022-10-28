@@ -23,12 +23,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import sys
 import getopt
-from past.builtins import long
+from past.builtins import int
+from functools import reduce
 
 # Translation between IEC types and Can Open types
 IECToCOType = {
@@ -63,7 +64,7 @@ PDOTypeBaseCobId = {RPDO: 0x200, TPDO: 0x180}
 VariableIncrement = 0x100
 VariableStartIndex = {TPDO: 0x2000, RPDO: 0x4000}
 VariableDirText = {TPDO: "__I", RPDO: "__Q"}
-VariableTypeOffset = dict(zip(["", "X", "B", "W", "D", "L"], range(6)))
+VariableTypeOffset = dict(list(zip(["", "X", "B", "W", "D", "L"], list(range(6)))))
 
 TrashVariables = [(1, 0x01), (8, 0x05), (16, 0x06), (32, 0x07), (64, 0x1B)]
 
@@ -85,7 +86,7 @@ def LE_to_BE(value, size):
     """
 
     data = ("%" + str(size * 2) + "." + str(size * 2) + "X") % value
-    list_car = [data[i:i+2] for i in xrange(0, len(data), 2)]
+    list_car = [data[i:i+2] for i in range(0, len(data), 2)]
     list_car.reverse()
     return "".join([chr(int(car, 16)) for car in list_car])
 
@@ -170,7 +171,7 @@ class ConciseDCFGenerator(object):
         # Dictionary of location informations classed by name
         self.MasterMapping = {}
         # List of COB IDs available
-        self.ListCobIDAvailable = range(0x180, 0x580)
+        self.ListCobIDAvailable = list(range(0x180, 0x580))
         # Dictionary of mapping value where unexpected variables are stored
         self.TrashVariables = {}
         # Dictionary of pointed variables
@@ -303,7 +304,7 @@ class ConciseDCFGenerator(object):
             values = self.NodeList.GetSlaveNodeEntry(nodeid, index + 0x200)
             if values is not None and values[0] > 0:
                 # Check that all subindex upper than 0 equal 0 => configurable PDO
-                if reduce(lambda x, y: x and y, map(lambda x: x == 0, values[1:]), True):
+                if reduce(lambda x, y: x and y, [x == 0 for x in values[1:]], True):
                     cobid = self.NodeList.GetSlaveNodeEntry(nodeid, index, 1)
                     # If no COB ID defined in PDO, generate a new one (not used)
                     if cobid == 0:
@@ -374,7 +375,7 @@ class ConciseDCFGenerator(object):
                 nodeid, index, subindex = loc[:3]
 
                 # Check Id is in slave node list
-                if nodeid not in self.NodeList.SlaveNodes.keys():
+                if nodeid not in list(self.NodeList.SlaveNodes.keys()):
                     raise PDOmappingException(
                         _("Non existing node ID : {a1} (variable {a2})").
                         format(a1=nodeid, a2=name))
@@ -430,7 +431,7 @@ class ConciseDCFGenerator(object):
         #                         Search for locations already mapped
         # -------------------------------------------------------------------------------
 
-        for name, locationinfos in self.IECLocations.items():
+        for name, locationinfos in list(self.IECLocations.items()):
             node = self.NodeList.SlaveNodes[locationinfos["nodeid"]]["Node"]
 
             # Search if slave has a PDO mapping this locations
@@ -441,7 +442,7 @@ class ConciseDCFGenerator(object):
                 cobid = self.NodeList.GetSlaveNodeEntry(locationinfos["nodeid"], index - 0x200, 1)
 
                 # Add PDO to MasterMapping
-                if cobid not in self.MasterMapping.keys():
+                if cobid not in list(self.MasterMapping.keys()):
                     # Verify that PDO transmit type is conform to sync_TPDOs
                     transmittype = self.NodeList.GetSlaveNodeEntry(locationinfos["nodeid"], index - 0x200, 2)
                     if sync_TPDOs and transmittype != 0x01 or transmittype != 0xFF:
@@ -474,7 +475,7 @@ class ConciseDCFGenerator(object):
 
             else:
                 # Add location to those that haven't been mapped yet
-                if locationinfos["nodeid"] not in self.LocationsNotMapped.keys():
+                if locationinfos["nodeid"] not in list(self.LocationsNotMapped.keys()):
                     self.LocationsNotMapped[locationinfos["nodeid"]] = {TPDO: [], RPDO: []}
                 self.LocationsNotMapped[locationinfos["nodeid"]][locationinfos["pdotype"]].append((name, locationinfos))
 
@@ -482,7 +483,7 @@ class ConciseDCFGenerator(object):
         #                         Build concise DCF for the others locations
         # -------------------------------------------------------------------------------
 
-        for nodeid, locations in self.LocationsNotMapped.items():
+        for nodeid, locations in list(self.LocationsNotMapped.items()):
             node = self.NodeList.SlaveNodes[nodeid]["Node"]
 
             # Initialize number of params and data to add to node DCF
@@ -531,7 +532,7 @@ class ConciseDCFGenerator(object):
         # -------------------------------------------------------------------------------
 
         # Generate Master's Configuration from informations stored in MasterMapping
-        for cobid, pdo_infos in self.MasterMapping.items():
+        for cobid, pdo_infos in list(self.MasterMapping.items()):
             # Get next PDO index in MasterNode for this PDO type
             current_idx = self.CurrentPDOParamsIdx[pdo_infos["type"]]
 
@@ -572,7 +573,7 @@ class ConciseDCFGenerator(object):
                     continue
                 new_index = False
 
-                if isinstance(variable, (int, long)):
+                if isinstance(variable, int):
                     # If variable is an integer then variable is unexpected
                     self.MasterNode.SetEntry(current_idx + 0x200, subindex, self.TrashVariables[variable])
                 else:
@@ -735,7 +736,7 @@ Options:
 
     # Extract workspace base folder
     base_folder = sys.path[0]
-    for i in xrange(3):
+    for i in range(3):
         base_folder = os.path.split(base_folder)[0]
     # Add CanFestival folder to search pathes
     sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))

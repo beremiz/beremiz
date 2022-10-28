@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import sys
 import time
@@ -93,7 +93,7 @@ def get_last_traceback(tb):
 
 
 def format_namespace(d, indent='    '):
-    return '\n'.join(['%s%s: %s' % (indent, k, repr(v)[:10000]) for k, v in d.iteritems()])
+    return '\n'.join(['%s%s: %s' % (indent, k, repr(v)[:10000]) for k, v in d.items()])
 
 
 ignored_exceptions = []  # a problem with a line in a module is only reported once per session
@@ -129,7 +129,7 @@ def AddExceptHook(app_version='[No version]', logf = None):
         if not os.path.exists(path):
             os.mkdir(path)
         output = open(bug_report_path, 'w')
-        lst = info.keys()
+        lst = list(info.keys())
         lst.sort()
         for a in lst:
             line = a + ":\n" + str(info[a]) + "\n\n"

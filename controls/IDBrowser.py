@@ -3,7 +3,7 @@
 
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import wx
 import wx.dataview as dv
 import PSKManagement as PSK

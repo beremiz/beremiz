@@ -35,7 +35,7 @@ Beremiz Targets
 """
 
 
-from __future__ import absolute_import
+
 from os import listdir, path
 import util.paths as paths
 
@@ -69,12 +69,12 @@ def GetTargetChoices():
     targetchoices = ""
 
     # Get all xsd toolchains
-    for toolchainname, xsdfilename in toolchains.iteritems():
+    for toolchainname, xsdfilename in toolchains.items():
         if path.isfile(xsdfilename):
             DictXSD_toolchain["toolchain_"+toolchainname] = open(xsdfilename).read()
 
     # Get all xsd targets
-    for target_name, nfo in targets.iteritems():
+    for target_name, nfo in targets.items():
         xsd_string = open(nfo["xsd"]).read()
         targetchoices += xsd_string % dict(DictXSD_toolchain,
                                            target_name=target_name)

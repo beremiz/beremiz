@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.GraphicCommons import LEFTRAIL, RIGHTRAIL
@@ -118,7 +118,7 @@ class LDPowerRailDialog(BlockPreviewDialog):
         @param values: Power rail parameters values
         """
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is power rail type
             if name == "type":

@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import re
 import operator
@@ -52,9 +52,9 @@ class toolchain_gcc(object):
         Returns list of builder specific CFLAGS
         """
         cflags = [self.CTRInstance.GetTarget().getcontent().getCFLAGS()]
-        if os.environ.has_key("CFLAGS"):
+        if "CFLAGS" in os.environ:
             cflags.append(os.environ["CFLAGS"])
-        if os.environ.has_key("SYSROOT"):
+        if "SYSROOT" in os.environ:
             cflags.append("--sysroot="+os.environ["SYSROOT"])
         return cflags
 
@@ -64,9 +64,9 @@ class toolchain_gcc(object):
         """
         ldflags = self.CTRInstance.LDFLAGS + \
             [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
-        if os.environ.has_key("LDFLAGS"):
-            ldflags.append(os.environ["LDFLAGS"])
-        if os.environ.has_key("SYSROOT"):
+        if "LDLAGS" in os.environ:
+            ldflags.append(os.environ["LDLAGS"])
+        if "SYSROOT" in os.environ:
             ldflags.append("--sysroot="+os.environ["SYSROOT"])
         return ldflags
 
@@ -128,7 +128,7 @@ class toolchain_gcc(object):
         self.append_cfile_deps(src, deps)
         # recurse through deps
         # TODO detect cicular deps.
-        return reduce(operator.concat, map(self.concat_deps, deps), src)
+        return reduce(operator.concat, list(map(self.concat_deps, deps)), src)
 
     def check_and_update_hash_and_deps(self, bn):
         # Get latest computed hash and deps
@@ -148,7 +148,7 @@ class toolchain_gcc(object):
             self.srcmd5[bn] = (newhash, deps)
         # recurse through deps
         # TODO detect cicular deps.
-        return reduce(operator.and_, map(self.check_and_update_hash_and_deps, deps), match)
+        return reduce(operator.and_, list(map(self.check_and_update_hash_and_deps, deps)), match)
 
     def calc_source_md5(self):
         wholesrcdata = ""

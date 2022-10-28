@@ -117,7 +117,7 @@ class CLIController(LocalRuntimeMixin, ProjectController):
         new_messages = []
         if connector:
             for level, count, prev in zip(
-                xrange(LogLevelsCount), log_count, self.previous_log_count):
+                range(LogLevelsCount), log_count, self.previous_log_count):
                 if count is not None and prev != count:
                     if prev is None:
                         dump_end = max(-1, count - 10)

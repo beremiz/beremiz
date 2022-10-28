@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import re
 from six.moves import xrange
 
@@ -239,7 +239,7 @@ class DataTypeEditor(EditorPanel):
         subrange_panel_sizer.Add(self.SubrangeMinimum, 1, border=5,
                                        flag=wx.GROW | wx.ALL)
 
-        for dummy in xrange(2):
+        for dummy in range(2):
             subrange_panel_sizer.Add(wx.Size(0, 0), 1)
 
         subrange_maximum_label = wx.StaticText(self.SubrangePanel,
@@ -512,7 +512,7 @@ class DataTypeEditor(EditorPanel):
                 self.EnumeratedInitialValue.SetStringSelection(type_infos["initial"])
             elif type_infos["type"] == "Array":
                 self.ArrayBaseType.SetStringSelection(type_infos["base_type"])
-                self.ArrayDimensions.SetStrings(map("..".join, type_infos["dimensions"]))
+                self.ArrayDimensions.SetStrings(list(map("..".join, type_infos["dimensions"])))
                 self.ArrayInitialValue.SetValue(type_infos["initial"])
             elif type_infos["type"] == "Structure":
                 self.StructureElementsTable.SetData(type_infos["elements"])
@@ -778,7 +778,7 @@ class DataTypeEditor(EditorPanel):
             self.Highlights = []
         else:
             self.Highlights = [(infos, start, end, highlight) for (infos, start, end, highlight) in self.Highlights if highlight != highlight_type]
-        for control in self.HighlightControls.itervalues():
+        for control in self.HighlightControls.values():
             if isinstance(control, (wx.ComboBox, wx.SpinCtrl)):
                 control.SetBackgroundColour(wx.NullColour)
                 control.SetForegroundColour(wx.NullColour)
@@ -788,7 +788,7 @@ class DataTypeEditor(EditorPanel):
                 control.SetStyle(0, len(value), wx.TextAttr(wx.NullColour))
             elif isinstance(control, wx.adv.EditableListBox):
                 listctrl = control.GetListCtrl()
-                for i in xrange(listctrl.GetItemCount()):
+                for i in range(listctrl.GetItemCount()):
                     listctrl.SetItemBackgroundColour(i, wx.NullColour)
                     listctrl.SetItemTextColour(i, wx.NullColour)
         self.StructureElementsTable.ClearHighlights(highlight_type)

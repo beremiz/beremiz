@@ -22,7 +22,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import re
 
 import wx
@@ -84,7 +84,7 @@ class ArrayTypeDialog(wx.Dialog):
 
         if isinstance(infos, tuple) and infos[0] == "array":
             self.BaseType.SetStringSelection(infos[1])
-            self.Dimensions.SetStrings(map("..".join, infos[2]))
+            self.Dimensions.SetStrings(list(map("..".join, infos[2])))
         elif infos in datatypes:
             self.BaseType.SetStringSelection(infos)
 

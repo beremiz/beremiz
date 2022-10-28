@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.SFC_Objects import SFC_Transition
@@ -117,7 +117,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         """
         # Go through radio buttons and return type and value associated to the
         # one that is selected
-        for type, (radio, control) in self.TypeRadioButtons.iteritems():
+        for type, (radio, control) in self.TypeRadioButtons.items():
             if radio.GetValue():
                 if isinstance(control, wx.ComboBox):
                     return type, control.GetStringSelection()
@@ -136,7 +136,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         type_value = values.get("value", None)
 
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is SFC transition priority
             if name == "priority":
@@ -144,7 +144,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
 
             # Parameter is SFC transition type
             elif name == "type":
-                for type, (radio, control) in self.TypeRadioButtons.iteritems():
+                for type, (radio, control) in self.TypeRadioButtons.items():
                     radio.SetValue(type == value)
                     if control is not None:
                         # Enable associated control to type and set value
@@ -197,7 +197,7 @@ class SFCTransitionDialog(BlockPreviewDialog):
         @param event: wx.RadioButtonEvent
         """
         # Refresh sensibility of control associated to transition types
-        for _type, (radio, control) in self.TypeRadioButtons.iteritems():
+        for _type, (radio, control) in self.TypeRadioButtons.items():
             if control is not None:
                 control.Enable(radio.GetValue())
 

@@ -25,7 +25,7 @@
 
 # Package initialization
 
-from __future__ import absolute_import
+
 
 from dialogs.CommentEditDialog import CommentEditDialog
 from dialogs.ConnectionDialog import ConnectionDialog

@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import re
 import datetime
@@ -107,7 +107,7 @@ class xml_timezone(datetime.tzinfo):
 [
     SYNTAXELEMENT, SYNTAXATTRIBUTE, SIMPLETYPE, COMPLEXTYPE, COMPILEDCOMPLEXTYPE,
     ATTRIBUTESGROUP, ELEMENTSGROUP, ATTRIBUTE, ELEMENT, CHOICE, ANY, TAG, CONSTRAINT,
-] = range(13)
+] = list(range(13))
 
 
 def NotSupportedYet(type):
@@ -128,7 +128,7 @@ def getIndent(indent, balise):
     """
     first = indent * 2
     second = first + len(balise) + 1
-    return u'\t'.expandtabs(first), u'\t'.expandtabs(second)
+    return '\t'.expandtabs(first), '\t'.expandtabs(second)
 
 
 def GetAttributeValue(attr, extract=True):
@@ -144,9 +144,9 @@ def GetAttributeValue(attr, extract=True):
         return text(unescape(attr.childNodes[0].data))
     else:
         # content is a CDATA
-        txt = u''
+        txt = ''
         for node in attr.childNodes:
-            if not (node.nodeName == "#text" and node.data.strip() == u''):
+            if not (node.nodeName == "#text" and node.data.strip() == ''):
                 txt += text(unescape(node.data))
         return text
 
@@ -634,7 +634,7 @@ def GetElementInitialValue(factory, infos):
                 if infos["type"] != ANY:
                     DefaultElementClass.__setattr__(value, "tag", element_name)
                 return value
-        return [initial_value() for dummy in xrange(infos["minOccurs"])]
+        return [initial_value() for dummy in range(infos["minOccurs"])]
     else:
         return []
 
@@ -691,13 +691,13 @@ def GenerateContentInfos(factory, name, choices):
             choices_dict[choice_name] = infos
     prefix = ("%s:" % factory.TargetNamespace
               if factory.TargetNamespace is not None else "")
-    choices_xpath = "|".join(map(lambda x: prefix + x, choices_dict.keys()))
+    choices_xpath = "|".join([prefix + x for x in list(choices_dict.keys())])
 
     def GetContentInitial():
         content_name, infos = choices[0]
         if content_name == "sequence":
             content_value = []
-            for dummy in xrange(infos["minOccurs"]):
+            for dummy in range(infos["minOccurs"]):
                 for element_infos in infos["elements"]:
                     content_value.extend(GetElementInitialValue(factory, element_infos))
         else:
@@ -801,7 +801,7 @@ class ClassFactory(object):
         if namespace is None:
             if name in self.Namespaces[self.SchemaNamespace]:
                 return self.Namespaces[self.SchemaNamespace][name]
-            for space, elements in self.Namespaces.iteritems():
+            for space, elements in self.Namespaces.items():
                 if space != self.SchemaNamespace and name in elements:
                     return elements[name]
             parts = name.split("_", 1)
@@ -843,7 +843,7 @@ class ClassFactory(object):
         if namespace is None:
             if name in self.Namespaces[self.SchemaNamespace]:
                 return name, None
-            for space, elements in self.Namespaces.items():
+            for space, elements in list(self.Namespaces.items()):
                 if space != self.SchemaNamespace and name in elements:
                     return name, None
             parts = name.split("_", 1)
@@ -883,7 +883,7 @@ class ClassFactory(object):
 
     def ExtractNodeAttrs(self, element_name, node, valid_attrs):
         attrs = {}
-        for qualified_name, attr in node._attrs.items():
+        for qualified_name, attr in list(node._attrs.items()):
             namespace, name = DecomposeQualifiedName(qualified_name)
             if name in valid_attrs:
                 infos = self.GetQualifiedNameInfos(name, namespace)
@@ -1016,14 +1016,14 @@ class ClassFactory(object):
     def GetEquivalentParents(self, parent):
         return reduce(lambda x, y: x + y,
                       [[p] + self.GetEquivalentParents(p)
-                       for p in self.EquivalentClassesParent.get(parent, {}).keys()], [])
+                       for p in list(self.EquivalentClassesParent.get(parent, {}).keys())], [])
 
     def CreateClasses(self):
         """
         Method that generates the classes
         """
         self.ParseSchema()
-        for name, infos in self.Namespaces[self.TargetNamespace].items():
+        for name, infos in list(self.Namespaces[self.TargetNamespace].items()):
             if infos["type"] == ELEMENT:
                 if not isinstance(infos["elmt_type"], string_types) and \
                    infos["elmt_type"]["type"] == COMPLEXTYPE:
@@ -1055,9 +1055,9 @@ class ClassFactory(object):
                                not isinstance(result, string_types):
                                 self.Namespaces[self.TargetNamespace][result["name"]] = result
 
-        for name, parents in self.ComputedClassesLookUp.iteritems():
+        for name, parents in self.ComputedClassesLookUp.items():
             if isinstance(parents, dict):
-                computed_classes = parents.items()
+                computed_classes = list(parents.items())
             elif parents[1] is not None:
                 computed_classes = [(self.etreeNamespaceFormat % parents[1], parents[0])]
             else:
@@ -1101,7 +1101,7 @@ class ClassFactory(object):
                 if self.FileName is not None:
                     classinfos["base"] = self.ComputedClasses[self.FileName].get(result["name"], None)
                     if classinfos["base"] is None:
-                        for filename, classes in self.ComputedClasses.iteritems():
+                        for filename, classes in self.ComputedClasses.items():
                             if filename != self.FileName:
                                 classinfos["base"] = classes.get(result["name"], None)
                                 if classinfos["base"] is not None:
@@ -1197,12 +1197,12 @@ class ClassFactory(object):
         """
         Method that print the classes generated
         """
-        items = self.ComputedClasses.items()
+        items = list(self.ComputedClasses.items())
         items.sort()
         if self.FileName is not None:
             for filename, classes in items:
                 print("File '%s':" % filename)
-                class_items = classes.items()
+                class_items = list(classes.items())
                 class_items.sort()
                 for classname, xmlclass in class_items:
                     print("%s: %s" % (classname, str(xmlclass)))
@@ -1211,7 +1211,7 @@ class ClassFactory(object):
                 print("%s: %s" % (classname, str(xmlclass)))
 
     def PrintClassNames(self):
-        classnames = self.XMLClassDefinitions.keys()
+        classnames = list(self.XMLClassDefinitions.keys())
         classnames.sort()
         for classname in classnames:
             print(classname)
@@ -1319,9 +1319,7 @@ def generateGetattrMethod(factory, class_definition, classinfos):
                 if element_infos["maxOccurs"] == "unbounded" or element_infos["maxOccurs"] > 1:
                     values = self.findall(element_name)
                     if element_infos["elmt_type"]["type"] == SIMPLETYPE:
-                        return map(lambda value:
-                                   element_infos["elmt_type"]["extract"](value.text, extract=False),
-                                   values)
+                        return [element_infos["elmt_type"]["extract"](value.text, extract=False) for value in values]
                     return values
                 else:
                     value = self.find(element_name)
@@ -1375,13 +1373,11 @@ def generateSetattrMethod(factory, class_definition, classinfos):
                     self.remove(element)
 
                 if value is not None:
-                    element_idx = elements.keys().index(name)
+                    element_idx = list(elements.keys()).index(name)
                     if element_idx > 0:
-                        previous_elements_xpath = "|".join(map(
-                            lambda x: prefix + x
+                        previous_elements_xpath = "|".join([prefix + x
                             if x != "content"
-                            else elements["content"]["elmt_type"]["choices_xpath"].path,
-                            elements.keys()[:element_idx]))
+                            else elements["content"]["elmt_type"]["choices_xpath"].path for x in list(elements.keys())[:element_idx]])
 
                         insertion_point = len(self.xpath(previous_elements_xpath, namespaces=factory.NSMAP))
                     else:
@@ -1487,7 +1483,7 @@ def generateGetElementInfos(factory, classinfos):
                 children.extend(self.getElementAttributes())
             if "base" in classinfos:
                 children.extend(classinfos["base"].getElementInfos(self, name, derived=True)["children"])
-            for element_name, element in elements.items():
+            for element_name, element in list(elements.items()):
                 if element["minOccurs"] == 0:
                     use = "optional"
                 if element_name == "content" and element["type"] == CHOICE:
@@ -1587,7 +1583,7 @@ def generateInitMethod(factory, classinfos):
             if element["type"] != CHOICE:
                 initial = GetElementInitialValue(factory, element)
                 if initial is not None:
-                    map(self.append, initial)
+                    list(map(self.append, initial))
     return initMethod
 
 
@@ -1842,7 +1838,7 @@ class XMLClassParser(etree.XMLParser):
         if targetNamespace is not None:
             self.RootNSMAP = {
                 name if targetNamespace != uri else None: uri
-                for name, uri in namespaces.iteritems()}
+                for name, uri in namespaces.items()}
         else:
             self.RootNSMAP = namespaces
         self.BaseClass = base_class
@@ -1945,7 +1941,7 @@ def GenerateParser(factory, xsdstring):
     ComputedClasses = factory.CreateClasses()
     if factory.FileName is not None:
         ComputedClasses = ComputedClasses[factory.FileName]
-    BaseClass = [(name, XSDclass) for name, XSDclass in ComputedClasses.items() if XSDclass.IsBaseClass]
+    BaseClass = [(name, XSDclass) for name, XSDclass in list(ComputedClasses.items()) if XSDclass.IsBaseClass]
 
     parser.initMembers(
         factory.NSMAP,

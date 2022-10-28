@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import re
 from builtins import str as text
@@ -134,8 +134,7 @@ class PythonFileCTNMixin(CodeFile):
             return repr(content) if content else None
 
         pyextname = self.CTNName()
-        varinfos = map(
-            lambda variable: {
+        varinfos = [{
                 "name": variable.getname(),
                 "desc": repr(variable.getdesc()),
                 "onchangecode": _onchangecode(variable),
@@ -146,8 +145,7 @@ class PythonFileCTNMixin(CodeFile):
                 "IECtype": self.GetCTRoot().GetBaseType(variable.gettype()),
                 "initial": repr(variable.getinitial()),
                 "pyextname": pyextname
-            },
-            self.CodeFile.variables.variable)
+            } for variable in self.CodeFile.variables.variable]
 
         onchange_var_count = len([None for varinfo in varinfos if varinfo["onchange"]])
 

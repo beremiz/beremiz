@@ -4,7 +4,7 @@
 # See COPYING.Runtime file for copyrights details.
 #
 
-from __future__ import absolute_import
+
 import ctypes
 from ctypes import *
 from datetime import timedelta as td
@@ -74,7 +74,7 @@ SwapedEndianessTypeTranslator = {
 TypeTranslator = SameEndianessTypeTranslator
 
 # Construct debugger natively supported types
-DebugTypesSize = dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.iteritems() if t is not None])
+DebugTypesSize = dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.items() if t is not None])
 
 
 def UnpackDebugBuffer(buff, indexes):

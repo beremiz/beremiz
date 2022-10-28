@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 import wx.lib.buttons
 import wx.grid
@@ -165,7 +165,7 @@ class ResourceTable(CustomTable):
                     if single != "" and not CheckSingle(single, self.Parent.VariableList):
                         error = True
                 elif colname == "Triggering":
-                    editor = wx.grid.GridCellChoiceEditor(map(_, GetTaskTriggeringOptions()))
+                    editor = wx.grid.GridCellChoiceEditor(list(map(_, GetTaskTriggeringOptions())))
                 elif colname == "Type":
                     editor = wx.grid.GridCellChoiceEditor(self.Parent.TypeList)
                 elif colname == "Priority":
@@ -198,8 +198,8 @@ class ResourceTable(CustomTable):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            for _row, row_highlights in self.Highlights.iteritems():
-                row_items = row_highlights.items()
+            for _row, row_highlights in self.Highlights.items():
+                row_items = list(row_highlights.items())
                 for col, col_highlights in row_items:
                     if highlight_type in col_highlights:
                         col_highlights.remove(highlight_type)
@@ -230,7 +230,7 @@ class ResourceEditor(EditorPanel):
         tasks_buttons_sizer.AddGrowableRow(0)
         tasks_sizer.Add(tasks_buttons_sizer, flag=wx.GROW)
 
-        tasks_label = wx.StaticText(self.Editor, label=_(u'Tasks:'))
+        tasks_label = wx.StaticText(self.Editor, label=_('Tasks:'))
         tasks_buttons_sizer.Add(tasks_label, flag=wx.ALIGN_BOTTOM)
 
         for name, bitmap, help in [
@@ -261,7 +261,7 @@ class ResourceEditor(EditorPanel):
         instances_buttons_sizer.AddGrowableRow(0)
         instances_sizer.Add(instances_buttons_sizer, flag=wx.GROW)
 
-        instances_label = wx.StaticText(self.Editor, label=_(u'Instances:'))
+        instances_label = wx.StaticText(self.Editor, label=_('Instances:'))
         instances_buttons_sizer.Add(instances_label, flag=wx.ALIGN_BOTTOM)
 
         for name, bitmap, help in [
@@ -404,7 +404,7 @@ class ResourceEditor(EditorPanel):
 
     def RefreshTaskList(self):
         self.TaskList = []
-        for row in xrange(self.TasksTable.GetNumberRows()):
+        for row in range(self.TasksTable.GetNumberRows()):
             self.TaskList.append(self.TasksTable.GetValueByName(row, "Name"))
 
     def RefreshVariableList(self):
@@ -474,14 +474,14 @@ class ResourceEditor(EditorPanel):
                 return
 
             tasklist = [name for name in self.TaskList if name != ""]
-            for i in xrange(self.TasksTable.GetNumberRows()):
+            for i in range(self.TasksTable.GetNumberRows()):
                 task = self.TasksTable.GetValueByName(i, "Name")
                 if task in tasklist:
                     tasklist.remove(task)
             if len(tasklist) > 0:
                 old_name = tasklist[0].upper()
                 new_name = self.TasksTable.GetValue(row, col)
-                for i in xrange(self.InstancesTable.GetNumberRows()):
+                for i in range(self.InstancesTable.GetNumberRows()):
                     name = self.InstancesTable.GetValueByName(i, "Task").upper()
                     if old_name == name:
                         self.InstancesTable.SetValueByName(i, "Task", new_name)

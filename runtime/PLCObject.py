@@ -22,7 +22,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-from __future__ import absolute_import
+
 from threading import Thread, Lock, Event, Condition
 import ctypes
 import os
@@ -393,7 +393,7 @@ class PLCObject(object):
             for filename in filenames:
                 name, ext = os.path.splitext(filename)
                 if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
-                    execfile(os.path.join(self.workingdir, filename), self.python_runtime_vars)
+                    exec(compile(open(os.path.join(self.workingdir, filename), "rb").read(), os.path.join(self.workingdir, filename), 'exec'), self.python_runtime_vars)
                     for methodname in MethodNames:
                         method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
                         if method is not None:
@@ -561,7 +561,7 @@ class PLCObject(object):
 
     @RunInMain
     def _GetPLCstatus(self):
-        return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
+        return self.PLCStatus, list(map(self.GetLogCount, range(LogLevelsCount)))
 
     @RunInMain
     def GetPLCID(self):
@@ -598,7 +598,7 @@ class PLCObject(object):
 
     @RunInMain
     def PurgeBlobs(self):
-        for fd, _path, _md5sum in self.blobs.values():
+        for fd, _path, _md5sum in list(self.blobs.values()):
             os.close(fd)
         self._init_blobs()
 

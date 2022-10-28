@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 from math import *
 from future.builtins import round
 from six import string_types
@@ -68,15 +68,15 @@ SFC_WIRE_MIN_SIZE = 25                  # Size of a wire between two elements
 SFC_ACTION_MIN_SIZE = (100, 30)         # Minimum size of an action block line
 
 # Type definition constants for graphic elements
-[INPUT, OUTPUT, INOUT] = range(3)
-[CONNECTOR, CONTINUATION] = range(2)
-[LEFTRAIL, RIGHTRAIL] = range(2)
-[CONTACT_NORMAL, CONTACT_REVERSE, CONTACT_RISING, CONTACT_FALLING] = range(4)
-[COIL_NORMAL, COIL_REVERSE, COIL_SET, COIL_RESET, COIL_RISING, COIL_FALLING] = range(6)
-[SELECTION_DIVERGENCE, SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE] = range(4)
+[INPUT, OUTPUT, INOUT] = list(range(3))
+[CONNECTOR, CONTINUATION] = list(range(2))
+[LEFTRAIL, RIGHTRAIL] = list(range(2))
+[CONTACT_NORMAL, CONTACT_REVERSE, CONTACT_RISING, CONTACT_FALLING] = list(range(4))
+[COIL_NORMAL, COIL_REVERSE, COIL_SET, COIL_RESET, COIL_RISING, COIL_FALLING] = list(range(6))
+[SELECTION_DIVERGENCE, SELECTION_CONVERGENCE, SIMULTANEOUS_DIVERGENCE, SIMULTANEOUS_CONVERGENCE] = list(range(4))
 
 # Constants for defining the type of dragging that has been selected
-[HANDLE_MOVE, HANDLE_RESIZE, HANDLE_POINT, HANDLE_SEGMENT, HANDLE_CONNECTOR] = range(5)
+[HANDLE_MOVE, HANDLE_RESIZE, HANDLE_POINT, HANDLE_SEGMENT, HANDLE_CONNECTOR] = list(range(5))
 
 # List of value for resize handle that are valid
 VALID_HANDLES = [(1, 1), (1, 2), (1, 3), (2, 3), (3, 3), (3, 2), (3, 1), (2, 1)]
@@ -87,10 +87,10 @@ VALID_HANDLES = [(1, 1), (1, 2), (1, 3), (2, 3), (3, 3), (3, 2), (3, 1), (2, 1)]
 # Contants for defining which mode is selected for each view
 [MODE_SELECTION, MODE_BLOCK, MODE_VARIABLE, MODE_CONNECTION, MODE_COMMENT,
  MODE_COIL, MODE_CONTACT, MODE_POWERRAIL, MODE_INITIALSTEP, MODE_STEP,
- MODE_TRANSITION, MODE_DIVERGENCE, MODE_JUMP, MODE_ACTION, MODE_MOTION] = range(15)
+ MODE_TRANSITION, MODE_DIVERGENCE, MODE_JUMP, MODE_ACTION, MODE_MOTION] = list(range(15))
 
 # Contants for defining alignment types for graphic group
-[ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_TOP, ALIGN_MIDDLE, ALIGN_BOTTOM] = range(6)
+[ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT, ALIGN_TOP, ALIGN_MIDDLE, ALIGN_BOTTOM] = list(range(6))
 
 # Contants for defining which drawing mode is selected for app
 [FREEDRAWING_MODE, DRIVENDRAWING_MODE] = [1, 2]
@@ -1918,7 +1918,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
     # Returns if the point given is on one of the wire segments
     def HitTest(self, pt, connectors=True):
         test = False
-        for i in xrange(len(self.Points) - 1):
+        for i in range(len(self.Points) - 1):
             rect = wx.Rect(0, 0, 0, 0)
             if i == 0 and self.StartConnected is not None:
                 x1 = self.Points[i].x - self.Segments[0][0] * CONNECTOR_SIZE
@@ -1953,7 +1953,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
     # Returns the wire segment if the point given is on it
     def TestSegment(self, pt, all=False):
-        for i in xrange(len(self.Segments)):
+        for i in range(len(self.Segments)):
             # If wire is not in a Ladder Diagram, first and last segments are excluded
             if all or 0 < i < len(self.Segments) - 1:
                 x1, y1 = self.Points[i].x, self.Points[i].y
@@ -2233,7 +2233,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         i = 1
         while i < len(points) - 1:
             if points[i] == points[i + 1] and segments[i - 1] == segments[i + 1]:
-                for dummy in xrange(2):
+                for dummy in range(2):
                     points.pop(i)
                     segments.pop(i)
             else:
@@ -2459,7 +2459,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
         handle_type, handle = self.Handle
         if handle_type == HANDLE_SEGMENT:
             segment, _dir = handle
-            for dummy in xrange(2):
+            for dummy in range(2):
                 self.Points.pop(segment)
                 self.Segments.pop(segment)
             self.GeneratePoints()

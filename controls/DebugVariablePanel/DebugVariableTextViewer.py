@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 
 import wx
 
@@ -207,7 +207,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         gc = wx.GCDC(dc)
 
         # Get first item
-        item = self.ItemsDict.values()[0]
+        item = list(self.ItemsDict.values())[0]
 
         # Get item variable path masked according Debug Variable Panel mask
         item_path = item.GetVariable(
@@ -239,7 +239,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         @param event: wx.MouseEvent
         """
         # Get first item
-        item = self.ItemsDict.values()[0]
+        item = list(self.ItemsDict.values())[0]
 
         # Calculate item path bounding box
         _width, height = self.GetSize()
@@ -278,7 +278,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         @param event: wx.MouseEvent
         """
         # Only numeric variables can be toggled to graph canvas
-        if self.ItemsDict.values()[0].IsNumVariable():
+        if list(self.ItemsDict.values())[0].IsNumVariable():
             self.ParentWindow.ToggleViewerType(self)
 
     def OnPaint(self, event):

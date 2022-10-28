@@ -31,7 +31,7 @@ This module contains classes extended from wx.Dialog used by the GUI.
 """
 
 
-from __future__ import absolute_import
+
 import os
 import wx
 import wx.adv
@@ -122,8 +122,8 @@ class CreditsDialog(wx.Dialog):
         developer = wx.TextCtrl(notebook, style=wx.TE_READONLY | wx.TE_MULTILINE)
         translators = wx.TextCtrl(notebook, style=wx.TE_READONLY | wx.TE_MULTILINE)
 
-        developer.SetValue(u'\n'.join(info.Developers))
-        translators.SetValue(u'\n'.join(info.Translators))
+        developer.SetValue('\n'.join(info.Developers))
+        translators.SetValue('\n'.join(info.Translators))
 
         notebook.AddPage(developer, text=_("Written by"))
         notebook.AddPage(translators, text=_("Translated by"))

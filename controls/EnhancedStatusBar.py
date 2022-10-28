@@ -55,8 +55,8 @@ Latest Revision before Latest Revision before Latest Revision: 31 May 2005, 23.1
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import wx
 
 # Horizontal Alignment Constants
@@ -109,7 +109,7 @@ class EnhancedStatusBar(wx.StatusBar):
         Actually, All The Calculations Linked To HorizontalAlignment And
         VerticalAlignment Are Done In This Function."""
 
-        for pos, item in self._items.items():
+        for pos, item in list(self._items.items()):
             widget, horizontalalignment, verticalalignment = item.widget, item.horizontalalignment, item.verticalalignment
 
             rect = self.GetFieldRect(pos)

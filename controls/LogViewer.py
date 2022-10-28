@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 from datetime import datetime
 from time import time as gettime
 from weakref import proxy
@@ -370,7 +370,7 @@ class LogViewer(DebugViewer, wx.Panel):
         self.ParentWindow = window
 
         self.LevelIcons = [GetBitmap("LOG_" + level) for level in LogLevels]
-        self.LevelFilters = [range(i) for i in xrange(4, 0, -1)]
+        self.LevelFilters = [list(range(i)) for i in range(4, 0, -1)]
         self.CurrentFilter = self.LevelFilters[0]
         self.CurrentSearchValue = ""
 
@@ -415,14 +415,14 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def SetLogCounters(self, log_count):
         new_messages = []
-        for level, count, prev in zip(xrange(LogLevelsCount), log_count, self.previous_log_count):
+        for level, count, prev in zip(range(LogLevelsCount), log_count, self.previous_log_count):
             if count is not None and prev != count:
                 if prev is None:
                     dump_end = max(-1, count - 10)
                     oldest_message = (-1, None)
                 else:
                     dump_end = prev - 1
-                for msgidx in xrange(count-1, dump_end, -1):
+                for msgidx in range(count-1, dump_end, -1):
                     new_message = self.GetLogMessageFromSource(msgidx, level)
                     if new_message is None:
                         if prev is None:
@@ -560,7 +560,7 @@ class LogViewer(DebugViewer, wx.Panel):
 
     def IsPLCLogEmpty(self):
         empty = True
-        for _level, prev in zip(xrange(LogLevelsCount), self.previous_log_count):
+        for _level, prev in zip(range(LogLevelsCount), self.previous_log_count):
             if prev is not None:
                 empty = False
                 break

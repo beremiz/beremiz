@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS
@@ -123,7 +123,7 @@ class PouTransitionDialog(wx.Dialog):
         self.PouElementNames = [pou_name.upper() for pou_name in pou_names]
 
     def SetValues(self, values):
-        for item, value in values.items():
+        for item, value in list(values.items()):
             if item == "transitionName":
                 self.TransitionName.SetValue(value)
             elif item == "language":

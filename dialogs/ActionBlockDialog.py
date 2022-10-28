@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 import wx.grid
 import wx.lib.buttons
@@ -162,7 +162,7 @@ class ActionBlockDialog(wx.Dialog):
 
         self.Table = ActionTable(self, [], GetActionTableColnames())
         typelist = GetTypeList()
-        self.TypeList = map(_, typelist)
+        self.TypeList = list(map(_, typelist))
         self.TranslateType = dict([(_(value), value) for value in typelist])
         self.ColSizes = [60, 90, 130, 200, 50]
         self.ColAlignements = [wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT, wx.ALIGN_LEFT]

@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 from future.builtins import round
 
 import wx
@@ -976,7 +976,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            highlight_items = self.Highlights.items()
+            highlight_items = list(self.Highlights.items())
             for name, highlights in highlight_items:
                 highlights = ClearHighlights(highlights, highlight_type)
                 if len(highlights) == 0:
@@ -1037,7 +1037,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
             self.Condition.Draw(dc)
 
         if not getattr(dc, "printing", False):
-            for name, highlights in self.Highlights.iteritems():
+            for name, highlights in self.Highlights.items():
                 if name == "priority":
                     DrawHighlightedText(dc, str(self.Priority), highlights, priority_pos[0], priority_pos[1])
                 else:
@@ -1067,11 +1067,11 @@ class SFC_Divergence(Graphic_Element):
         if self.Type in [SELECTION_DIVERGENCE, SIMULTANEOUS_DIVERGENCE]:
             self.Inputs = [Connector(self, "", None, wx.Point(self.Size[0] // 2, 0), NORTH, onlyone=True)]
             self.Outputs = []
-            for i in xrange(number):
+            for i in range(number):
                 self.Outputs.append(Connector(self, "", None, wx.Point(i * SFC_DEFAULT_SEQUENCE_INTERVAL, self.Size[1]), SOUTH, onlyone=True))
         elif self.Type in [SELECTION_CONVERGENCE, SIMULTANEOUS_CONVERGENCE]:
             self.Inputs = []
-            for i in xrange(number):
+            for i in range(number):
                 self.Inputs.append(Connector(self, "", None, wx.Point(i * SFC_DEFAULT_SEQUENCE_INTERVAL, 0), NORTH, onlyone=True))
             self.Outputs = [Connector(self, "", None, wx.Point(self.Size[0] // 2, self.Size[1]), SOUTH, onlyone=True)]
         self.Value = None
@@ -1124,7 +1124,7 @@ class SFC_Divergence(Graphic_Element):
         return divergence
 
     def GetConnectorTranslation(self, element):
-        return dict(zip(self.Inputs + self.Outputs, element.Inputs + element.Outputs))
+        return dict(list(zip(self.Inputs + self.Outputs, element.Inputs + element.Outputs)))
 
     # Returns the RedrawRect
     def GetRedrawRect(self, movex=0, movey=0):
@@ -2004,9 +2004,9 @@ class SFC_ActionBlock(Graphic_Element):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            highlight_items = self.Highlights.items()
+            highlight_items = list(self.Highlights.items())
             for number, action_highlights in highlight_items:
-                action_highlight_items = action_highlights.items()
+                action_highlight_items = list(action_highlights.items())
                 for name, attribute_highlights in action_highlight_items:
                     attribute_highlights = ClearHighlights(attribute_highlights, highlight_type)
                     if len(attribute_highlights) == 0:
@@ -2058,7 +2058,7 @@ class SFC_ActionBlock(Graphic_Element):
 
             if not getattr(dc, "printing", False):
                 action_highlights = self.Highlights.get(i, {})
-                for name, attribute_highlights in action_highlights.iteritems():
+                for name, attribute_highlights in action_highlights.items():
                     if name == "qualifier":
                         DrawHighlightedText(dc, action.qualifier, attribute_highlights, qualifier_pos[0], qualifier_pos[1])
                     elif name == "duration":

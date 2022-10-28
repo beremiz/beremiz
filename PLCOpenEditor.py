@@ -24,8 +24,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import sys
 import getopt
@@ -74,35 +74,35 @@ class PLCOpenEditor(IDEFrame):
 
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
-                   kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
+                   kind=wx.ITEM_NORMAL, text=_('New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
-                   kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
+                   kind=wx.ITEM_NORMAL, text=_('Open') + '\tCTRL+O')
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
+                   kind=wx.ITEM_NORMAL, text=_('Close Tab') + '\tCTRL+W')
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
-                   kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
+                   kind=wx.ITEM_NORMAL, text=_('Close Project') + '\tCTRL+SHIFT+W')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
+                   kind=wx.ITEM_NORMAL, text=_('Save') + '\tCTRL+S')
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
-                   kind=wx.ITEM_NORMAL, text=_(u'Save As...') + '\tCTRL+SHIFT+S')
+                   kind=wx.ITEM_NORMAL, text=_('Save As...') + '\tCTRL+SHIFT+S')
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORFILEMENUGENERATE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Generate Program') + '\tCTRL+G')
+                   kind=wx.ITEM_NORMAL, text=_('Generate Program') + '\tCTRL+G')
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORFILEMENUGENERATEAS,
-                   kind=wx.ITEM_NORMAL, text=_(u'Generate Program As...') + '\tCTRL+SHIFT+G')
+                   kind=wx.ITEM_NORMAL, text=_('Generate Program As...') + '\tCTRL+SHIFT+G')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
-                   kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
+                   kind=wx.ITEM_NORMAL, text=_('Page Setup') + '\tCTRL+ALT+P')
         AppendMenu(parent, help='', id=wx.ID_PREVIEW,
-                   kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
+                   kind=wx.ITEM_NORMAL, text=_('Preview') + '\tCTRL+SHIFT+P')
         AppendMenu(parent, help='', id=wx.ID_PRINT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
+                   kind=wx.ITEM_NORMAL, text=_('Print') + '\tCTRL+P')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PROPERTIES,
-                   kind=wx.ITEM_NORMAL, text=_(u'&Properties'))
+                   kind=wx.ITEM_NORMAL, text=_('&Properties'))
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
+                   kind=wx.ITEM_NORMAL, text=_('Quit') + '\tCTRL+Q')
 
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
@@ -120,16 +120,16 @@ class PLCOpenEditor(IDEFrame):
         self.Bind(wx.EVT_MENU, self.OnPropertiesMenu, id=wx.ID_PROPERTIES)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
 
-        self.AddToMenuToolBar([(wx.ID_NEW, "new", _(u'New'), None),
-                               (wx.ID_OPEN, "open", _(u'Open'), None),
-                               (wx.ID_SAVE, "save", _(u'Save'), None),
-                               (wx.ID_SAVEAS, "saveas", _(u'Save As...'), None),
-                               (wx.ID_PRINT, "print", _(u'Print'), None),
-                               (ID_PLCOPENEDITORFILEMENUGENERATE, "Build", _(u'Generate Program'), None)])
+        self.AddToMenuToolBar([(wx.ID_NEW, "new", _('New'), None),
+                               (wx.ID_OPEN, "open", _('Open'), None),
+                               (wx.ID_SAVE, "save", _('Save'), None),
+                               (wx.ID_SAVEAS, "saveas", _('Save As...'), None),
+                               (wx.ID_PRINT, "print", _('Print'), None),
+                               (ID_PLCOPENEDITORFILEMENUGENERATE, "Build", _('Generate Program'), None)])
 
     def _init_coll_HelpMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_HELP,
-                   kind=wx.ITEM_NORMAL, text=_(u'PLCOpenEditor') + '\tF1')
+                   kind=wx.ITEM_NORMAL, text=_('PLCOpenEditor') + '\tF1')
         # AppendMenu(parent, help='', id=wx.ID_HELP_CONTENTS,
         #      kind=wx.ITEM_NORMAL, text=u'PLCOpen\tF2')
         # AppendMenu(parent, help='', id=wx.ID_HELP_CONTEXT,
@@ -138,14 +138,14 @@ class PLCOpenEditor(IDEFrame):
         def handler(event):
             return wx.MessageBox(
                 version.GetCommunityHelpMsg(),
-                _(u'Community support'),
+                _('Community support'),
                 wx.OK | wx.ICON_INFORMATION)
 
-        menu_entry = parent.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=_(u'Community support'))
+        menu_entry = parent.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=_('Community support'))
         self.Bind(wx.EVT_MENU, handler, menu_entry)
 
         AppendMenu(parent, help='', id=wx.ID_ABOUT,
-                   kind=wx.ITEM_NORMAL, text=_(u'About'))
+                   kind=wx.ITEM_NORMAL, text=_('About'))
         self.Bind(wx.EVT_MENU, self.OnPLCOpenEditorMenu, id=wx.ID_HELP)
         # self.Bind(wx.EVT_MENU, self.OnPLCOpenMenu, id=wx.ID_HELP_CONTENTS)
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)

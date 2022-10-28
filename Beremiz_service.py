@@ -24,8 +24,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import sys
 import getopt
@@ -521,7 +521,7 @@ if havetwisted:
 # Load extensions
 for extention_file, extension_folder in extensions:
     sys.path.append(extension_folder)
-    execfile(os.path.join(extension_folder, extention_file), locals())
+    exec(compile(open(os.path.join(extension_folder, extention_file), "rb").read(), os.path.join(extension_folder, extention_file), 'exec'), locals())
 
 # Service name is used as an ID for stunnel's PSK
 # Some extension may set 'servicename' to a computed ID or Serial Number

@@ -7,8 +7,8 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import os
 import string
 from xml.dom import minidom
@@ -331,7 +331,7 @@ class SDOPanelClass(wx.Panel):
         wx.Panel.__init__(self, parent, -1)
 
         self.DatatypeDescription, self.CommunicationObject, self.ManufacturerSpecific, \
-            self.ProfileSpecific, self.Reserved, self.AllSDOData = range(6)
+            self.ProfileSpecific, self.Reserved, self.AllSDOData = list(range(6))
 
         self.Controler = controler
 
@@ -418,7 +418,7 @@ class SDOPanelClass(wx.Panel):
         If the off is selected, the monitor thread gets off.
         @param event: wx.EVT_RADIOBOX object 
         """
-        on, off = range(2)
+        on, off = list(range(2))
 
         if event.GetInt() == on:
             CheckThreadFlag = self.SDOMonitoringThreadOn()
@@ -455,7 +455,7 @@ class SDOPanelClass(wx.Panel):
     def SDOMonitorThreadProc(self):
         while self.SDOMonitoringFlag and self.Controler.GetCTRoot()._connector.PLCStatus != "Started":
             self.SDOValuesList = self.Controler.GetCTRoot()._connector.GetSDOData()
-            LocalData = self.SDOValuesList[0].items()
+            LocalData = list(self.SDOValuesList[0].items())
             LocalData.sort()
             if self.SDOValuesList[1] != self.Controler.GetSlavePos():
                 continue
@@ -508,7 +508,7 @@ class SDOPanelClass(wx.Panel):
         Parse SDO data set that obtain "ESI file"
         @param entries: SDO entry list 
         """  
-        entries_list = entries.items()
+        entries_list = list(entries.items())
         entries_list.sort()
         self.ForDefaultValueFlag = False
         self.CompareValue = ""
@@ -518,7 +518,7 @@ class SDOPanelClass(wx.Panel):
             # exclude entry that isn't in the objects
             check_mapping = entry["PDOMapping"]
             if check_mapping is "T" or check_mapping is "R":
-                if "PDO index" not in entry.keys():
+                if "PDO index" not in list(entry.keys()):
                     continue
 
             idx = "0" + entry["Index"].strip("#")
@@ -793,7 +793,7 @@ class SlaveSDOTable(wx.grid.Grid):
             SDOPanel.SDOMonitorGrid.AppendRows(len(SDOPanel.SDOMonitorEntries))
             SDOPanel.SetSDOTraceValues(SDOPanel.SDOMonitorEntries)
             
-            SME_list = SDOPanel.SDOMonitorEntries.items()
+            SME_list = list(SDOPanel.SDOMonitorEntries.items())
             SME_list.sort()
 
             gridRow = 0
@@ -1547,7 +1547,7 @@ class SlaveSiiSmartView(wx.Panel):
         # Config Data: EEPROM Size, PDI Type, Device Emulation
         # Find PDI Type in pdiType dictionary
         cnt_pdi_type = self.Controler.CommonMethod.SmartViewInfosFromXML["pdi_type"]
-        for i in self.PDIType.keys():
+        for i in list(self.PDIType.keys()):
             if cnt_pdi_type == i:
                 cnt_pdi_type = self.PDIType[i][0]
                 break
@@ -1627,7 +1627,7 @@ class SlaveSiiSmartView(wx.Panel):
         eeprom_size = str((int(self.GetWordAddressData(sii_dict.get('Size'), 10))+1)//8*1024)
         # Find PDI Type in pdiType dictionary
         cnt_pdi_type = int(self.GetWordAddressData(sii_dict.get('PDIControl'), 16).split('x')[1][2:4], 16)
-        for i in self.PDIType.keys():
+        for i in list(self.PDIType.keys()):
             if cnt_pdi_type == i:
                 cnt_pdi_type = self.PDIType[i][0]
                 break
@@ -2106,7 +2106,7 @@ class RegisterAccessPanel(wx.Panel):
                                                   ("pdi", "type", self.PDIType),
                                                   ("fmmu", "number", self.FMMUNumber),
                                                   ("sm", "number", self.SMNumber)]:
-                        if property in register.attributes.keys():
+                        if property in list(register.attributes.keys()):
                             if type == "type":
                                 if register.attributes[property].value == value:
                                     self.GetRegisterInfo(reg_info_tree, register)
@@ -2153,7 +2153,7 @@ class RegisterAccessPanel(wx.Panel):
                                                       ("pdi", "type", self.PDIType),
                                                       ("fmmu", "number", self.FMMUNumber),
                                                       ("sm", "number", self.SMNumber)]:
-                            if property in detail.attributes.keys():
+                            if property in list(detail.attributes.keys()):
                                 if type == "type":
                                     if detail.attributes[property].value == value:
                                         self.GetRegisterDetailInfo(reg_info_tree, reg_index, detail)
@@ -2522,7 +2522,7 @@ class RegisterMainTable(wx.grid.Grid):
 
         reg_sub_grid_data = []
 
-        BIT_RANGE, NAME, DESCRIPTIONS = range(3)
+        BIT_RANGE, NAME, DESCRIPTIONS = list(range(3))
 
         # Check if this register's detail description is exist or not,
         # and create data structure for the detail description table ; sub grid
@@ -2817,7 +2817,7 @@ class SITreeListCtrl(wx.Panel):
         """
         Update the data of the slave information.
         """
-        position, not_used, state, not_used, name = range(5)
+        position, not_used, state, not_used, name = list(range(5))
         
         slave_node = []
         slave_info_list = []
@@ -2933,7 +2933,7 @@ class SITreeListCtrl(wx.Panel):
                 ec_idx += 1
             
             # set texts in "error" column. 
-            ec_info_list = error_counter.items()
+            ec_info_list = list(error_counter.items())
             ec_info_list.sort()
             
             err_checker = "none"

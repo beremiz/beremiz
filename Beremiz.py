@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import sys
 import getopt
@@ -158,7 +158,7 @@ class BeremizIDELauncher(object):
             sys.path.append(extension_folder)
             AddCatalog(os.path.join(extension_folder, "locale"))
             AddBitmapFolder(os.path.join(extension_folder, "images"))
-            execfile(extfilename, self.globals())
+            exec(compile(open(extfilename, "rb").read(), extfilename, 'exec'), self.globals())
 
     def CheckUpdates(self):
         if self.updateinfo_url is not None:
@@ -166,8 +166,8 @@ class BeremizIDELauncher(object):
 
             def updateinfoproc():
                 try:
-                    import urllib2
-                    self.updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
+                    import urllib.request, urllib.error, urllib.parse
+                    self.updateinfo = urllib.request.urlopen(self.updateinfo_url, None).read()
                 except Exception:
                     self.updateinfo = _("update info unavailable.")
 

@@ -9,8 +9,8 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import os
 import re
 
@@ -30,7 +30,7 @@ from util.TranslationCatalogs import NoTranslate
 from etherlab.EtherCATManagementEditor import EtherCATManagementTreebook, MasterStatePanelClass
 # -----------------------------------------------------------------------
 
-[ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = range(3)
+[ETHERCAT_VENDOR, ETHERCAT_GROUP, ETHERCAT_DEVICE] = list(range(3))
 
 
 def GetVariablesTableColnames(position=False):
@@ -421,7 +421,7 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
             if values[1] == "location":
                 result = LOCATION_MODEL.match(values[0])
                 if result is not None:
-                    location = map(int, result.group(1).split('.'))
+                    location = list(map(int, result.group(1).split('.')))
                 master_location = self.ParentWindow.GetMasterLocation()
                 if master_location == tuple(location[:len(master_location)]) and \
                    len(location) - len(master_location) == 3:
@@ -485,7 +485,7 @@ class StartupCommandDropTarget(wx.TextDropTarget):
             if values[1] == "location":
                 result = LOCATION_MODEL.match(values[0])
                 if result is not None and len(values) > 5:
-                    location = map(int, result.group(1).split('.'))
+                    location = list(map(int, result.group(1).split('.')))
                     access = values[5]
             elif values[1] == "variable":
                 location = values[0]

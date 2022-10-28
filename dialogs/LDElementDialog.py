@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.GraphicCommons import CONTACT_NORMAL, CONTACT_REVERSE, \
@@ -117,7 +117,7 @@ class LDElementDialog(BlockPreviewDialog):
         self.RefreshVariableList()
 
         # Set values in ElementVariable
-        for name, (var_type, value_type) in self.VariableList.iteritems():
+        for name, (var_type, value_type) in self.VariableList.items():
             # Only select BOOL variable and avoid input for coil
             if (type == "contact" or var_type != "Input") and \
                value_type == "BOOL":
@@ -134,7 +134,7 @@ class LDElementDialog(BlockPreviewDialog):
         """
         # Go through radio buttons and return modifier associated to the one
         # that is selected
-        for modifier, control in self.ModifierRadioButtons.iteritems():
+        for modifier, control in self.ModifierRadioButtons.items():
             if control.GetValue():
                 return modifier
         return None
@@ -145,7 +145,7 @@ class LDElementDialog(BlockPreviewDialog):
         @param values: LD element parameters values
         """
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is LD element variable
             if name == "variable":

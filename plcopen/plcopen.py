@@ -24,8 +24,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import re
 from collections import OrderedDict
 
@@ -440,7 +440,7 @@ def _updateProjectClass(cls):
 
     def setcontentHeader(self, contentheader):
         contentheader_obj = self.contentHeader
-        for attr, value in contentheader.iteritems():
+        for attr, value in contentheader.items():
             func = {"projectName": contentheader_obj.setname,
                     "projectVersion": contentheader_obj.setversion,
                     "authorName": contentheader_obj.setauthor,
@@ -495,7 +495,7 @@ def _updateProjectClass(cls):
             "ppx:types/ppx:pous/ppx:pou%s%s" %
             (("[@name!='%s']" % exclude) if exclude is not None else '',
              ("[%s]" % " or ".join(
-                 map(lambda x: "@pouType='%s'" % x, filter)))
+                 ["@pouType='%s'" % x for x in filter]))
              if len(filter) > 0 else ""),
             namespaces=PLCOpenParser.NSMAP)
     setattr(cls, "getpous", getpous)
@@ -650,7 +650,7 @@ def _updateContentHeaderProjectClass(cls):
     setattr(cls, "getpageSize", getpageSize)
 
     def setscaling(self, scaling):
-        for language, (x, y) in scaling.items():
+        for language, (x, y) in list(scaling.items()):
             self.coordinateInfo.setscaling(language, x, y)
     setattr(cls, "setscaling", setscaling)
 
@@ -749,7 +749,7 @@ def _updateConfigurationResourceElementAddress(self, address_model, new_leading)
 def _removeConfigurationResourceVariableByAddress(self, address):
     for varlist in self.getglobalVars():
         variables = varlist.getvariable()
-        for i in xrange(len(variables)-1, -1, -1):
+        for i in range(len(variables)-1, -1, -1):
             if variables[i].getaddress() == address:
                 variables.remove(variables[i])
 
@@ -757,7 +757,7 @@ def _removeConfigurationResourceVariableByAddress(self, address):
 def _removeConfigurationResourceVariableByFilter(self, address_model):
     for varlist in self.getglobalVars():
         variables = varlist.getvariable()
-        for i in xrange(len(variables)-1, -1, -1):
+        for i in range(len(variables)-1, -1, -1):
             var_address = variables[i].getaddress()
             if var_address is not None:
                 result = address_model.match(var_address)
@@ -971,7 +971,7 @@ def _updateVariableVarListPlain(cls):
             # Array derived directly from an elementary type
             else:
                 basetype_name = base_type_name
-            return "ARRAY [%s] OF %s" % (",".join(map(lambda x: "%s..%s" % (x.getlower(), x.getupper()), vartype_content.getdimension())), basetype_name)
+            return "ARRAY [%s] OF %s" % (",".join(["%s..%s" % (x.getlower(), x.getupper()) for x in vartype_content.getdimension()]), basetype_name)
         # Variable type is an elementary type
         return vartype_content_name
     setattr(cls, "gettypeAsText", gettypeAsText)
@@ -1380,7 +1380,7 @@ def _updatePouPousClass(cls):
         vars = []
         if self.interface is not None:
             reverse_types = {}
-            for name, value in VarTypes.items():
+            for name, value in list(VarTypes.items()):
                 reverse_types[value] = name
             for varlist in self.interface.getcontent():
                 vars.append((reverse_types[varlist.getLocalTag()], varlist))
