@@ -114,13 +114,6 @@ class LibraryPanel(wx.Panel):
         # Variable storing functions and function blocks library to display
         self.BlockList = None
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to project controller
-        self.Controller = None
-
     def SetController(self, controller):
         """
         Set reference to project controller

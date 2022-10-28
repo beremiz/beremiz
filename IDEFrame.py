@@ -762,9 +762,6 @@ class IDEFrame(wx.Frame):
 
         wx.CallAfter(self.InitFindDialog)
 
-    def __del__(self):
-        self.FindDialog.Destroy()
-
     def InitFindDialog(self):
         self.FindDialog = FindInPouDialog(self)
         self.FindDialog.Hide()

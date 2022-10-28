@@ -164,9 +164,6 @@ class TextViewer(EditorPanel):
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
 
-    def __del__(self):
-        self.RefreshHighlightsTimer.Stop()
-
     def GetTitle(self):
         if self.Debug or self.TagName == "":
             if len(self.InstancePath) > 15:

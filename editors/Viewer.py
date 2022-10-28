@@ -743,13 +743,6 @@ class Viewer(EditorPanel, DebugViewer):
         self.Editor.Bind(wx.EVT_SIZE, self.OnMoveWindow)
         self.Editor.Bind(wx.EVT_MOUSE_EVENTS, self.OnViewerMouseEvent)
 
-    # Destructor
-    def __del__(self):
-        DebugViewer.__del__(self)
-        self.Flush()
-        self.ResetView()
-        self.RefreshHighlightsTimer.Stop()
-
     def SetCurrentCursor(self, cursor):
         if self.Mode != MODE_MOTION:
             if self.CurrentCursor != cursor:

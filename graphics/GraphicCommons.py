@@ -712,10 +712,6 @@ class Graphic_Group(Graphic_Element):
         self.RefreshWireExclusion()
         self.RefreshBoundingBox()
 
-    # Destructor
-    def __del__(self):
-        self.Elements = []
-
     def GetDefinition(self):
         blocks = []
         wires = []
