@@ -23,12 +23,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import os
 import sys
 import getopt
-from past.builtins import int
 from functools import reduce
 
 # Translation between IEC types and Can Open types

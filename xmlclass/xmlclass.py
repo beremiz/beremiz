@@ -23,8 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import os
 import re
 import datetime
@@ -32,10 +30,7 @@ from functools import reduce
 from xml.dom import minidom
 from xml.sax.saxutils import unescape
 from collections import OrderedDict
-from builtins import str as text
 
-from six import string_types
-from six.moves import xrange
 from lxml import etree
 
 
@@ -141,14 +136,14 @@ def GetAttributeValue(attr, extract=True):
     if not extract:
         return attr
     if len(attr.childNodes) == 1:
-        return text(unescape(attr.childNodes[0].data))
+        return str(unescape(attr.childNodes[0].data))
     else:
         # content is a CDATA
         txt = ''
         for node in attr.childNodes:
             if not (node.nodeName == "#text" and node.data.strip() == ''):
-                txt += text(unescape(node.data))
-        return text
+                txt += str(unescape(node.data))
+        return txt
 
 
 def GetNormalizedString(attr, extract=True):
@@ -576,7 +571,7 @@ def GenerateAnyInfos(infos):
         "extract": ExtractAny,
         "generate": GenerateAny,
         "initial": InitialAny,
-        "check": lambda x: isinstance(x, (string_types, etree.ElementBase))
+        "check": lambda x: isinstance(x, (str, etree.ElementBase))
     }
 
 
@@ -612,7 +607,7 @@ def GenerateTagInfos(infos):
 
 
 def FindTypeInfos(factory, infos):
-    if isinstance(infos, string_types):
+    if isinstance(infos, str):
         namespace, name = DecomposeQualifiedName(infos)
         return factory.GetQualifiedNameInfos(name, namespace)
     return infos
@@ -968,7 +963,7 @@ class ClassFactory(object):
 
     def AddToLookupClass(self, name, parent, typeinfos):
         lookup_name = self.etreeNamespaceFormat % name
-        if isinstance(typeinfos, string_types):
+        if isinstance(typeinfos, str):
             self.AddEquivalentClass(name, typeinfos)
             typeinfos = self.etreeNamespaceFormat % typeinfos
         lookup_classes = self.ComputedClassesLookUp.get(lookup_name)
@@ -986,7 +981,7 @@ class ClassFactory(object):
             self.ComputedClassesLookUp[lookup_name] = lookup_classes
 
     def ExtractTypeInfos(self, name, parent, typeinfos):
-        if isinstance(typeinfos, string_types):
+        if isinstance(typeinfos, str):
             namespace, type_name = DecomposeQualifiedName(typeinfos)
             infos = self.GetQualifiedNameInfos(type_name, namespace)
             if name != "base":
@@ -997,13 +992,13 @@ class ClassFactory(object):
             if infos["type"] == COMPLEXTYPE:
                 type_name, parent = self.SplitQualifiedName(type_name, namespace)
                 result = self.CreateClass(type_name, parent, infos)
-                if result is not None and not isinstance(result, string_types):
+                if result is not None and not isinstance(result, str):
                     self.Namespaces[self.TargetNamespace][result["name"]] = result
                 return result
             elif infos["type"] == ELEMENT and infos["elmt_type"]["type"] == COMPLEXTYPE:
                 type_name, parent = self.SplitQualifiedName(type_name, namespace)
                 result = self.CreateClass(type_name, parent, infos["elmt_type"])
-                if result is not None and not isinstance(result, string_types):
+                if result is not None and not isinstance(result, str):
                     self.Namespaces[self.TargetNamespace][result["name"]] = result
                 return result
             else:
@@ -1025,19 +1020,19 @@ class ClassFactory(object):
         self.ParseSchema()
         for name, infos in list(self.Namespaces[self.TargetNamespace].items()):
             if infos["type"] == ELEMENT:
-                if not isinstance(infos["elmt_type"], string_types) and \
+                if not isinstance(infos["elmt_type"], str) and \
                    infos["elmt_type"]["type"] == COMPLEXTYPE:
                     self.ComputeAfter.append((name, None, infos["elmt_type"], True))
                     while len(self.ComputeAfter) > 0:
                         result = self.CreateClass(*self.ComputeAfter.pop(0))
-                        if result is not None and not isinstance(result, string_types):
+                        if result is not None and not isinstance(result, str):
                             self.Namespaces[self.TargetNamespace][result["name"]] = result
             elif infos["type"] == COMPLEXTYPE:
                 self.ComputeAfter.append((name, None, infos))
                 while len(self.ComputeAfter) > 0:
                     result = self.CreateClass(*self.ComputeAfter.pop(0))
                     if result is not None and \
-                       not isinstance(result, string_types):
+                       not isinstance(result, str):
                         self.Namespaces[self.TargetNamespace][result["name"]] = result
             elif infos["type"] == ELEMENTSGROUP:
                 elements = []
@@ -1046,13 +1041,13 @@ class ClassFactory(object):
                 elif "choices" in infos:
                     elements = infos["choices"]
                 for element in elements:
-                    if not isinstance(element["elmt_type"], string_types) and \
+                    if not isinstance(element["elmt_type"], str) and \
                        element["elmt_type"]["type"] == COMPLEXTYPE:
                         self.ComputeAfter.append((element["name"], infos["name"], element["elmt_type"]))
                         while len(self.ComputeAfter) > 0:
                             result = self.CreateClass(*self.ComputeAfter.pop(0))
                             if result is not None and \
-                               not isinstance(result, string_types):
+                               not isinstance(result, str):
                                 self.Namespaces[self.TargetNamespace][result["name"]] = result
 
         for name, parents in self.ComputedClassesLookUp.items():
@@ -1752,12 +1747,12 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
     def GetElementClass(self, element_tag, parent_tag=None, default=DefaultElementClass):
         element_class = self.LookUpClasses.get(element_tag, (default, None))
         if not isinstance(element_class, dict):
-            if isinstance(element_class[0], string_types):
+            if isinstance(element_class[0], str):
                 return self.GetElementClass(element_class[0], default=default)
             return element_class[0]
 
         element_with_parent_class = element_class.get(parent_tag, default)
-        if isinstance(element_with_parent_class, string_types):
+        if isinstance(element_with_parent_class, str):
             return self.GetElementClass(element_with_parent_class, default=default)
         return element_with_parent_class
 
@@ -1819,7 +1814,7 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
                 "%s " % etree.QName(child.tag).localname
                 for child in element])
             for possible_class in element_class:
-                if isinstance(possible_class, string_types):
+                if isinstance(possible_class, str):
                     possible_class = self.GetElementClass(possible_class)
                 if possible_class.StructurePattern.match(children) is not None:
                     return possible_class

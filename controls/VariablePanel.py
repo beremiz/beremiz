@@ -23,17 +23,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import re
-from builtins import str as text
 
 import wx
 import wx.grid
 import wx.lib.buttons
-from six import string_types
-from six.moves import xrange
-
 
 from plcopen.structures import LOCATIONDATATYPES, TestIdentifier, IEC_KEYWORDS, DefaultType
 from plcopen.VariableInfoCollector import _VariableInfos
@@ -144,7 +138,7 @@ class VariableTable(CustomTable):
             if colname == "Type" and isinstance(value, tuple):
                 if value[0] == "array":
                     return "ARRAY [%s] OF %s" % (",".join(map("..".join, value[2])), value[1])
-            if not isinstance(value, string_types):
+            if not isinstance(value, str):
                 value = str(value)
             if colname in ["Class", "Option"]:
                 return _(value)
@@ -609,7 +603,7 @@ class VariablePanel(wx.Panel):
                     model = re.compile(r"%[IQM][XBWLD]?(.*\.|)")
                     prefix = model.match(old_location).group(0)
                     addr = int(re.split(model, old_location)[-1]) + 1
-                    row_content.Location = prefix + text(addr)
+                    row_content.Location = prefix + str(addr)
 
             if not row_content.Class:
                 row_content.Class = self.DefaultTypes.get(self.Filter, self.Filter)

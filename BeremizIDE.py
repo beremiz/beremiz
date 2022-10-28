@@ -24,8 +24,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import os
 import sys
 import shutil
@@ -33,7 +31,7 @@ import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
 
-from six.moves import cPickle, xrange
+from six.moves import cPickle
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc

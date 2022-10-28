@@ -23,8 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 
-
-
 from time import time as gettime
 from cycler import cycler
 
@@ -36,7 +34,6 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from mpl_toolkits.mplot3d import Axes3D
-from six.moves import xrange
 
 from editors.DebugViewer import REFRESH_PERIOD
 from controls.DebugVariablePanel.DebugVariableViewer import *

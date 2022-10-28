@@ -105,7 +105,7 @@ for name, classes in [
 
         parentmod = mod
 
-from six.moves import builtins
+import builtins
 
 builtins.__dict__['_'] = get_translation
 
