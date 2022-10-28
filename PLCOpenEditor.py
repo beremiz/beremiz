@@ -64,7 +64,7 @@ from dialogs.AboutDialog import ShowAboutDialog
 [
     ID_PLCOPENEDITORFILEMENUGENERATE,
     ID_PLCOPENEDITORFILEMENUGENERATEAS,
-] = [wx.NewId() for _init_coll_FileMenu_Items in range(2)]
+] = [wx.NewIdRef() for _init_coll_FileMenu_Items in range(2)]
 
 
 beremiz_dir = paths.AbsDir(__file__)
