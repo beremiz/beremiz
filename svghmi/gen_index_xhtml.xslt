@@ -11289,20 +11289,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var ws_url = 
-</xsl:text>
-          <xsl:text>    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
-</xsl:text>
-          <xsl:text>    + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
-</xsl:text>
-          <xsl:text>
-</xsl:text>
-          <xsl:text>var ws = new WebSocket(ws_url);
-</xsl:text>
-          <xsl:text>ws.binaryType = 'arraybuffer';
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>const dvgetters = {
 </xsl:text>
           <xsl:text>    INT: (dv,offset) =&gt; [dv.getInt16(offset, true), 2],
@@ -11439,7 +11425,7 @@
 </xsl:text>
           <xsl:text>// are stored until browser can compute next frame, DOM is left untouched
 </xsl:text>
-          <xsl:text>ws.onmessage = function (evt) {
+          <xsl:text>function ws_onmessage(evt) {
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -11523,9 +11509,13 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>var ws = null;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>function send_blob(data) {
 </xsl:text>
-          <xsl:text>    if(data.length &gt; 0) {
+          <xsl:text>    if(ws &amp;&amp; data.length &gt; 0) {
 </xsl:text>
           <xsl:text>        ws.send(new Blob([hmi_hash_u8].concat(data)));
 </xsl:text>
@@ -11539,9 +11529,9 @@
 </xsl:text>
           <xsl:text>    INT: (number) =&gt; new Int16Array([number]),
 </xsl:text>
-          <xsl:text>    BOOL: (truth) =&gt; new Int16Array([truth]),
+          <xsl:text>    BOOL: (truth) =&gt; new Int8Array([truth]),
 </xsl:text>
-          <xsl:text>    NODE: (truth) =&gt; new Int16Array([truth]),
+          <xsl:text>    NODE: (truth) =&gt; new Int8Array([truth]),
 </xsl:text>
           <xsl:text>    REAL: (number) =&gt; new Float32Array([number]),
 </xsl:text>
@@ -11636,6 +11626,16 @@
           <xsl:text>        entry[1] = period;
 </xsl:text>
           <xsl:text>    }
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function reset_subscription_periods() {
+</xsl:text>
+          <xsl:text>    for(let index in subscriptions)
+</xsl:text>
+          <xsl:text>        subscriptions[index][1] = 0;
 </xsl:text>
           <xsl:text>}
 </xsl:text>
@@ -11838,6 +11838,14 @@
           <xsl:text>function update_subscriptions() {
 </xsl:text>
           <xsl:text>    let delta = [];
+</xsl:text>
+          <xsl:text>    if(!ws)
+</xsl:text>
+          <xsl:text>        // dont' change subscriptions if not connected
+</xsl:text>
+          <xsl:text>        return;
+</xsl:text>
+          <xsl:text>
 </xsl:text>
           <xsl:text>    for(let index in subscriptions){
 </xsl:text>
@@ -12079,17 +12087,19 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>function prepare_svg() {
+          <xsl:text>// prevents context menu from appearing on right click and long touch
 </xsl:text>
-          <xsl:text>    // prevents context menu from appearing on right click and long touch
+          <xsl:text>document.body.addEventListener('contextmenu', e =&gt; {
 </xsl:text>
-          <xsl:text>    document.body.addEventListener('contextmenu', e =&gt; {
+          <xsl:text>    toggleFullscreen();
 </xsl:text>
-          <xsl:text>        toggleFullscreen();
+          <xsl:text>    e.preventDefault();
 </xsl:text>
-          <xsl:text>        e.preventDefault();
+          <xsl:text>});
 </xsl:text>
-          <xsl:text>    });
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function detach_detachables() {
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -12387,41 +12397,125 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>// prepare SVG
+</xsl:text>
+          <xsl:text>apply_reference_frames();
+</xsl:text>
+          <xsl:text>init_widgets();
+</xsl:text>
+          <xsl:text>detach_detachables();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// show main page
+</xsl:text>
+          <xsl:text>switch_page(default_page);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>var reconnect_delay = 0;
+</xsl:text>
+          <xsl:text>var periodic_reconnect_timer;
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>// Once connection established
 </xsl:text>
-          <xsl:text>ws.onopen = function (evt) {
+          <xsl:text>function ws_onopen(evt) {
 </xsl:text>
-          <xsl:text>    apply_reference_frames();
+          <xsl:text>    // Work around memory leak with websocket on QtWebEngine
 </xsl:text>
-          <xsl:text>    init_widgets();
+          <xsl:text>    // reconnect every hour to force deallocate websocket garbage
+</xsl:text>
+          <xsl:text>    if(window.navigator.userAgent.includes("QtWebEngine")){
+</xsl:text>
+          <xsl:text>        if(periodic_reconnect_timer){
+</xsl:text>
+          <xsl:text>            window.clearTimeout(periodic_reconnect_timer);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>        periodic_reconnect_timer = window.setTimeout(() =&gt; {
+</xsl:text>
+          <xsl:text>            ws.close();
+</xsl:text>
+          <xsl:text>            periodic_reconnect_timer = null;
+</xsl:text>
+          <xsl:text>        }, 3600000);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    // forget subscriptions remotely
 </xsl:text>
           <xsl:text>    send_reset();
 </xsl:text>
-          <xsl:text>    // show main page
+          <xsl:text>
 </xsl:text>
-          <xsl:text>    prepare_svg();
+          <xsl:text>    // forget earlier subscriptions locally
 </xsl:text>
-          <xsl:text>    switch_page(default_page);
+          <xsl:text>    reset_subscription_periods();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    // update PLC about subscriptions and current page
+</xsl:text>
+          <xsl:text>    switch_page();
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>    // at first try reconnect immediately
+</xsl:text>
+          <xsl:text>    reconnect_delay = 1;
 </xsl:text>
           <xsl:text>};
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>ws.onclose = function (evt) {
+          <xsl:text>function ws_onclose(evt) {
+</xsl:text>
+          <xsl:text>    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in "+reconnect_delay+"ms.");
+</xsl:text>
+          <xsl:text>    ws = null;
+</xsl:text>
+          <xsl:text>    // reconect
 </xsl:text>
           <xsl:text>    // TODO : add visible notification while waiting for reload
 </xsl:text>
-          <xsl:text>    console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in 10s.");
+          <xsl:text>    window.setTimeout(create_ws, reconnect_delay);
 </xsl:text>
-          <xsl:text>    // TODO : re-enable auto reload when not in debug
+          <xsl:text>    reconnect_delay += 500;
 </xsl:text>
-          <xsl:text>    //window.setTimeout(() =&gt; location.reload(true), 10000);
-</xsl:text>
-          <xsl:text>    alert("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+".");
+          <xsl:text>};
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>};
+          <xsl:text>var ws_url =
+</xsl:text>
+          <xsl:text>    window.location.href.replace(/^http(s?:\/\/[^\/]*)\/.*$/, 'ws$1/ws')
+</xsl:text>
+          <xsl:text>    + '?mode=' + (has_watchdog ? "watchdog" : "multiclient");
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>function create_ws(){
+</xsl:text>
+          <xsl:text>    ws = new WebSocket(ws_url);
+</xsl:text>
+          <xsl:text>    ws.binaryType = 'arraybuffer';
+</xsl:text>
+          <xsl:text>    ws.onmessage = ws_onmessage;
+</xsl:text>
+          <xsl:text>    ws.onclose = ws_onclose;
+</xsl:text>
+          <xsl:text>    ws.onopen = ws_onopen;
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>create_ws()
 </xsl:text>
           <xsl:text>
 </xsl:text>
