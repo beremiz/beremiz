@@ -150,7 +150,7 @@ class DebugVariableViewer(object):
         Function that unsubscribe and remove every item that store values of
         a variable that doesn't exist in PLC anymore
         """
-        for item in list(self.ItemsDict.values())[:]:
+        for item in self.ItemsDict.values():
             iec_path = item.GetVariable()
 
             # Check that variablepath exist in PLC
