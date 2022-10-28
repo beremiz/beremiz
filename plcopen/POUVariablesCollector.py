@@ -4,8 +4,8 @@
 # See COPYING file for copyrights details.
 
 
-from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
-from plcopen.types_enums import CLASS_TYPES, POU_TYPES, VAR_CLASS_INFOS
+from . XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+from . types_enums import CLASS_TYPES, POU_TYPES, VAR_CLASS_INFOS
 
 
 def class_extraction(value):
