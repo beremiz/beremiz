@@ -136,7 +136,7 @@ class toolchain_gcc(object):
         # read source
         src = open(os.path.join(self.buildpath, bn)).read()
         # compute new hash
-        newhash = hashlib.md5(src).hexdigest()
+        newhash = hashlib.md5(src.encode()).hexdigest()
         # compare
         match = (oldhash == newhash)
         if not match:

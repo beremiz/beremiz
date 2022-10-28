@@ -1731,7 +1731,7 @@ class DefaultElementClass(etree.ElementBase):
         return etree.QName(self.tag).localname
 
     def tostring(self):
-        return NAMESPACE_PATTERN.sub("", etree.tostring(self, pretty_print=True, encoding='utf-8')).decode('utf-8')
+        return NAMESPACE_PATTERN.sub("", etree.tostring(self, encoding='unicode'))
 
     def getElementInfos(self, name, path=None, derived=False):
         return {"name": name, "type": TAG, "value": None, "use": None, "children": []}
@@ -1844,7 +1844,7 @@ class XMLClassParser(etree.XMLParser):
         self.ClassLookup = class_lookup
 
     def LoadXMLString(self, xml_string):
-        tree = etree.fromstring(xml_string, self)
+        tree = etree.fromstring(xml_string.encode(), self)
         if not self.XSDSchema.validate(tree):
             error = self.XSDSchema.error_log.last_error
             return tree, (error.line, error.message)
@@ -1942,7 +1942,7 @@ def GenerateParser(factory, xsdstring):
         factory.NSMAP,
         factory.etreeNamespaceFormat,
         BaseClass[0] if len(BaseClass) == 1 else None,
-        etree.XMLSchema(etree.fromstring(xsdstring)))
+        etree.XMLSchema(etree.fromstring(xsdstring.encode())))
 
     class_lookup = XMLElementClassLookUp(factory.ComputedClassesLookUp)
     parser.set_element_class_lookup(class_lookup)
