@@ -22,13 +22,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-
-
 import time
 import json
 import os
 import re
-from six import text_type as text
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
@@ -142,7 +139,7 @@ class WampSession(wamp.ApplicationSession):
             self.register(GetCallee(name), '.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
-            self.subscribe(GetCallee(name), text(name))
+            self.subscribe(GetCallee(name), str(name))
 
         for func in DoOnJoin:
             func(self)
@@ -158,7 +155,7 @@ class WampSession(wamp.ApplicationSession):
 
     def publishWithOwnID(self, eventID, value):
         ID = self.config.extra["ID"]
-        self.publish(text(ID+'.'+eventID), value)
+        self.publish(str(ID+'.'+eventID), value)
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
@@ -370,12 +367,12 @@ def getWampStatus():
 
 def PublishEvent(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publish(text(eventID), value)
+        _WampSession.publish(str(eventID), value)
 
 
 def PublishEventWithOwnID(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publishWithOwnID(text(eventID), value)
+        _WampSession.publishWithOwnID(str(eventID), value)
 
 
 # WEB CONFIGURATION INTERFACE
@@ -446,7 +443,7 @@ registerAdapter(FileUploadDownloadRenderer, FileUploadDownload,
 
 def getDownloadUrl(ctx, argument):
     if lastKnownConfig is not None:
-        return url.URL.fromContext(ctx).\
+        return url.URL.fromConstr(ctx).\
             child(WAMP_SECRET_URL).\
             child(lastKnownConfig["ID"] + ".secret")
 

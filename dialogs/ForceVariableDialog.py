@@ -22,10 +22,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 import re
 import datetime
-from builtins import str as text
 
 import wx
 
@@ -224,7 +222,7 @@ class ForceVariableDialog(wx.Dialog):
         Returns text representation for a variable value
         @return: variable value as a string
         """
-        return text(self.ValueCtrl.GetValue())
+        return str(self.ValueCtrl.GetValue())
 
     # -----------------------------------------------
     # integer and floating point number type methods
@@ -247,7 +245,7 @@ class ForceVariableDialog(wx.Dialog):
         if value is not None:
             up = evt.GetEventType() == wx.EVT_SPIN_UP._getEvtType()
             value = value + 1 if up else value - 1
-            self.ValueCtrl.SetValue(text(value))
+            self.ValueCtrl.SetValue(str(value))
         evt.Skip()
 
     # -----------------------------------------------

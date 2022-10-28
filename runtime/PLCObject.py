@@ -22,7 +22,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-
 from threading import Thread, Lock, Event, Condition
 import ctypes
 import os
@@ -33,8 +32,6 @@ from time import time
 import hashlib
 from tempfile import mkstemp
 from functools import wraps, partial
-from six.moves import xrange
-from past.builtins import execfile
 import _ctypes
 
 from runtime.typemapping import TypeTranslator

@@ -23,17 +23,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 import sys
 import base64
-from future.builtins import \
-    round, \
-    str as text
 
 import wx
 import wx.grid
 import wx.aui
-from six.moves import cPickle, xrange
+from six.moves import cPickle
 
 from editors.EditorPanel import EditorPanel
 from editors.SFCViewer import SFC_Viewer
@@ -111,7 +107,7 @@ def EncodeFileSystemPath(path, use_base64=True):
 def DecodeFileSystemPath(path, is_base64=True):
     if is_base64:
         path = base64.decodestring(path)
-    return text(path, sys.getfilesystemencoding())
+    return str(path, sys.getfilesystemencoding())
 
 
 def AppendMenu(parent, help, kind, text, id=wx.ID_ANY):

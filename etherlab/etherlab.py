@@ -13,7 +13,6 @@ from __future__ import absolute_import
 import os
 import shutil
 import csv
-from builtins import str as text
 
 from lxml import etree
 import wx
@@ -425,7 +424,7 @@ for mapping needed location variables
                     #     self.GetCTRoot().logger.write_warning(
                     #         XSDSchemaErrorMessage % (filepath + error))
                 except Exception as exc:
-                    self.modules_infos, error = None, text(exc)
+                    self.modules_infos, error = None, str(exc)
                 xmlfile.close()
 
                 if self.modules_infos is not None:

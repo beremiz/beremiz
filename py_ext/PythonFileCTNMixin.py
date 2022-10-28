@@ -24,10 +24,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 import os
 import re
-from builtins import str as text
 
 import util.paths as paths
 from xmlclass import GenerateParserFromXSD
@@ -77,7 +75,7 @@ class PythonFileCTNMixin(CodeFile):
                     self.CreateCodeFileBuffer(False)
                     self.OnCTNSave()
             except Exception as exc:
-                error = text(exc)
+                error = str(exc)
 
             if error is not None:
                 self.GetCTRoot().logger.write_error(

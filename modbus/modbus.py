@@ -23,9 +23,7 @@
 # used in safety-critical situations without a full and competent review.
 
 
-
 import os
-from six.moves import xrange
 
 from modbus.mb_utils import *
 from ConfigTreeNode import ConfigTreeNode
