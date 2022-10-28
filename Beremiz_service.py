@@ -273,15 +273,15 @@ if enablewx:
                 self.Tests = tests
 
         class BeremizTaskBarIcon(wx.adv.TaskBarIcon):
-            TBMENU_START = wx.NewId()
-            TBMENU_STOP = wx.NewId()
-            TBMENU_CHANGE_NAME = wx.NewId()
-            TBMENU_CHANGE_PORT = wx.NewId()
-            TBMENU_CHANGE_INTERFACE = wx.NewId()
-            TBMENU_LIVE_SHELL = wx.NewId()
-            TBMENU_WXINSPECTOR = wx.NewId()
-            TBMENU_CHANGE_WD = wx.NewId()
-            TBMENU_QUIT = wx.NewId()
+            TBMENU_START = wx.NewIdRef()
+            TBMENU_STOP = wx.NewIdRef()
+            TBMENU_CHANGE_NAME = wx.NewIdRef()
+            TBMENU_CHANGE_PORT = wx.NewIdRef()
+            TBMENU_CHANGE_INTERFACE = wx.NewIdRef()
+            TBMENU_LIVE_SHELL = wx.NewIdRef()
+            TBMENU_WXINSPECTOR = wx.NewIdRef()
+            TBMENU_CHANGE_WD = wx.NewIdRef()
+            TBMENU_QUIT = wx.NewIdRef()
 
             def __init__(self, pyroserver):
                 wx.adv.TaskBarIcon.__init__(self)

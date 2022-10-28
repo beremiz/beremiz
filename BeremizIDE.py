@@ -229,7 +229,7 @@ class LogPseudoFile(object):
             self.YieldLock.release()
 
 
-ID_FILEMENURECENTPROJECTS = wx.NewId()
+ID_FILEMENURECENTPROJECTS = wx.NewIdRef()
 
 
 class Beremiz(IDEFrame, LocalRuntimeMixin):
@@ -348,7 +348,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
         self.EditMenuSize = self.EditMenu.GetMenuItemCount()
 
-        inspectorID = wx.NewId()
+        inspectorID = wx.NewIdRef()
         self.Bind(wx.EVT_MENU, self.OnOpenWidgetInspector, id=inspectorID)
         accels = [wx.AcceleratorEntry(wx.ACCEL_CTRL | wx.ACCEL_ALT, ord('I'), inspectorID)]
 
@@ -373,7 +373,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                             # itself calling wx.Yield
                             wx.CallLater(50, OnMethod, evt)
                 return OnMethod
-            newid = wx.NewId()
+            newid = wx.NewIdRef()
             self.Bind(wx.EVT_MENU, OnMethodGen(self, method), id=newid)
             accels += [wx.AcceleratorEntry(wx.ACCEL_NORMAL, shortcut, newid)]
 
