@@ -2190,8 +2190,8 @@ class IDEFrame(wx.Frame):
             EditorToolBar.ToggleTool(ID_PLCOPENEDITOREDITORTOOLBARSELECTION, True)
 
     def ResetToolToggle(self, id):
-        tool = self.Panes["EditorToolBar"].FindById(id)
-        tool.SetToggle(False)
+        tool = self.Panes["EditorToolBar"]
+        tool.ToggleTool(toolId=id, toggle=False)
 
     def OnSelectionTool(self, event):
         selected = self.TabsOpened.GetSelection()
