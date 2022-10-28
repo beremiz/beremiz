@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
+
 import wx
 from wx.lib.scrolledpanel import ScrolledPanel
 
@@ -38,7 +38,7 @@ REQUIRED_PARAMS = ["projectName", "productName", "productVersion", "companyName"
 [
     TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
     POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
-] = range(10)
+] = list(range(10))
 
 
 # -------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ class ProjectPropertiesPanel(wx.Notebook):
 
     def SetValues(self, values):
         self.Values = values
-        for item, value in values.items():
+        for item, value in list(values.items()):
             if item == "language":
                 self.Language.SetStringSelection(value)
             elif item == "contentDescription":
@@ -255,7 +255,7 @@ class ProjectPropertiesPanel(wx.Notebook):
                 self.PageWidth.SetValue(value[0])
                 self.PageHeight.SetValue(value[1])
             elif item == "scaling":
-                for language, (x, y) in value.items():
+                for language, (x, y) in list(value.items()):
                     if language in self.Scalings:
                         self.Scalings[language][0].SetValue(x)
                         self.Scalings[language][1].SetValue(y)

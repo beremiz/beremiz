@@ -22,8 +22,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import time
 import json
 import os
@@ -110,12 +110,12 @@ class WampSession(wamp.ApplicationSession):
     def onConnect(self):
         if "secret" in self.config.extra:
             user = self.config.extra["ID"]
-            self.join(u"Automation", [u"wampcra"], user)
+            self.join("Automation", ["wampcra"], user)
         else:
-            self.join(u"Automation")
+            self.join("Automation")
 
     def onChallenge(self, challenge):
-        if challenge.method == u"wampcra":
+        if challenge.method == "wampcra":
             if "secret" in self.config.extra:
                 secret = self.config.extra["secret"].encode('utf8')
                 signature = auth.compute_wcs(
@@ -139,7 +139,7 @@ class WampSession(wamp.ApplicationSession):
                 registerOptions = None
                 print(_("TypeError register option: {}".format(e)))
 
-            self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
+            self.register(GetCallee(name), '.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
             self.subscribe(GetCallee(name), text(name))
@@ -185,7 +185,7 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
             _transportFactory = None
 
     def setClientFactoryOptions(self, options):
-        for key, value in options.items():
+        for key, value in list(options.items()):
             if key in ["maxDelay", "initialDelay", "maxRetries", "factor", "jitter"]:
                 setattr(self, key, value)
 
@@ -214,7 +214,7 @@ def CheckConfiguration(WampClientConf):
             _("WAMP configuration error:"))
 
 def UpdateWithDefault(d1, d2):
-    for k, v in d2.items():
+    for k, v in list(d2.items()):
         d1.setdefault(k, v)
 
 def GetConfiguration():

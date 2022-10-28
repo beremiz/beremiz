@@ -6,7 +6,7 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import os
 import hashlib
 import weakref
@@ -14,7 +14,7 @@ import re
 import tempfile
 from threading import Thread, Lock
 from functools import reduce
-from itertools import izip
+
 from operator import or_
 from tempfile import NamedTemporaryFile
 
@@ -34,7 +34,7 @@ from util.ProcessLogger import ProcessLogger
 # When running as a confined Snap, /tmp isn't accessible from the outside
 # and Widget DnD to Inkscape can't work, since it can't find generated svg 
 # This forces tmp directory in $SNAP_USER_DATA, accessible from other apps
-if os.environ.has_key("SNAP"):
+if "SNAP" in os.environ:
      NamedTemporaryFile_orig = NamedTemporaryFile
      tmpdir = os.path.join(os.environ["SNAP_USER_DATA"], ".tmp")
      if not os.path.exists(tmpdir):
@@ -249,9 +249,7 @@ class ArgEditor(ParamEditor):
         accepts = self.argdesc.get("accepts").split(',')
         self.setValidity(
             reduce(or_,
-                   map(lambda typename: 
-                           models[typename].match(txt) is not None,
-                       accepts), 
+                   [models[typename].match(txt) is not None for typename in accepts], 
                    False)
             if accepts and txt else None)
         self.ParentObj.RegenSVGLater()
@@ -283,9 +281,7 @@ class PathEditor(ParamEditor):
         event.Skip()
     
 def KeepDoubleNewLines(txt):
-    return "\n\n".join(map(
-        lambda s:re.sub(r'\s+',' ',s),
-        txt.split("\n\n")))
+    return "\n\n".join([re.sub(r'\s+',' ',s) for s in txt.split("\n\n")])
 
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
@@ -653,7 +649,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
             # TODO: check that only last arg has multiple ordinality
             args += [args[-1]]*(len(prefillargs)-len(args))
         self.args_box.Show(len(args)!=0)
-        for arg, prefillarg in izip(args,prefillargs):
+        for arg, prefillarg in zip(args,prefillargs):
             self.AddArgToSignature(arg, prefillarg)
 
         # TODO support predefined path count (as for XYGraph)

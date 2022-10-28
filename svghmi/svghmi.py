@@ -6,7 +6,7 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import os
 import sys
 import shutil
@@ -307,7 +307,7 @@ if sys.platform.startswith('win'):
     default_cmds={
         "launch":"cmd.exe /c 'start msedge {url}'",
         "watchdog":"cmd.exe /k 'echo watchdog for {url} !'"}
-elif os.environ.has_key("SNAP"):
+elif "SNAP" in os.environ:
     default_cmds={
         "launch":"xdg-open {url}",
         "watchdog":"echo Watchdog for {name} !"}
@@ -443,7 +443,7 @@ class SVGHMI(object):
         for line in result.split():
             strippedline = line.strip()
             attrs = dict(
-                zip(InkscapeGeomColumns, line.strip().split(',')))
+                list(zip(InkscapeGeomColumns, line.strip().split(','))))
 
             res.append(etree.Element("bbox", **attrs))
 

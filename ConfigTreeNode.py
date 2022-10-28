@@ -31,7 +31,7 @@ Config Tree Node base class.
 - ... TODO : document
 """
 
-from __future__ import absolute_import
+
 import os
 import traceback
 import types
@@ -319,7 +319,7 @@ class ConfigTreeNode(object):
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     def IterChildren(self):
-        for _CTNType, Children in self.Children.items():
+        for _CTNType, Children in list(self.Children.items()):
             for CTNInstance in Children:
                 yield CTNInstance
 
@@ -328,7 +328,7 @@ class ConfigTreeNode(object):
         ordered = [(chld.BaseParams.getIEC_Channel(), chld) for chld in self.IterChildren()]
         if ordered:
             ordered.sort()
-            return zip(*ordered)[1]
+            return list(zip(*ordered))[1]
         else:
             return []
 
@@ -543,8 +543,8 @@ class ConfigTreeNode(object):
         """
         # reorganize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
         # to ( name, (CTNClass, Help)), an make a dict
-        transpose = zip(*self.CTNChildrenTypes)
-        CTNChildrenTypes = dict(zip(transpose[0], zip(transpose[1], transpose[2])))
+        transpose = list(zip(*self.CTNChildrenTypes))
+        CTNChildrenTypes = dict(list(zip(transpose[0], list(zip(transpose[1], transpose[2])))))
         # Check that adding this confnode is allowed
         try:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
@@ -632,7 +632,7 @@ class ConfigTreeNode(object):
     def LoadXMLParams(self, CTNName=None):
         methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):
-            execfile(methode_name)
+            exec(compile(open(methode_name, "rb").read(), methode_name, 'exec'))
 
         ConfNodeName = CTNName if CTNName is not None else self.CTNName()
 

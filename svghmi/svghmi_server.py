@@ -5,7 +5,7 @@
 # Copyright (C) 2019: Edouard TISSERANT
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import errno
 from threading import RLock, Timer
 import os, time
@@ -273,7 +273,7 @@ def SendThreadProc():
                 break
 
 def AddPathToSVGHMIServers(path, factory, *args, **kwargs):
-    for k,v in svghmi_servers.iteritems():
+    for k,v in svghmi_servers.items():
         svghmi_root, svghmi_listener, path_list = v
         svghmi_root.putChild(path, factory(*args, **kwargs))
 

@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import wx
 import subprocess
@@ -75,8 +75,8 @@ def _get_inkscape_version():
     inkpath = get_inkscape_path()
     if inkpath is None:
         return None
-    return map(int, 
-        subprocess.check_output([inkpath,"--version"]).split()[1].split('.'))
+    return list(map(int, 
+        subprocess.check_output([inkpath,"--version"]).split()[1].split('.')))
 
 _inkscape_version = None
 def get_inkscape_version():
@@ -88,7 +88,7 @@ def get_inkscape_version():
     _inkscape_version = _get_inkscape_version()
     return _inkscape_version
 
-if os.environ.has_key("SNAP"):
+if "SNAP" in os.environ:
     def open_svg(svgfile):
         MessageBoxOnce("Launching Inkscape with xdg-open",
                 "Confined app can't launch Inkscape directly.\n"+

@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 from time import time as gettime
 from cycler import cycler
 
@@ -44,7 +44,7 @@ from controls.DebugVariablePanel.GraphButton import GraphButton
 
 
 # Graph variable display type
-GRAPH_PARALLEL, GRAPH_ORTHOGONAL = range(2)
+GRAPH_PARALLEL, GRAPH_ORTHOGONAL = list(range(2))
 
 # Canvas height
 [SIZE_MINI, SIZE_MIDDLE, SIZE_MAXI] = [0, 100, 200]
@@ -567,7 +567,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         """
         start_tick, end_tick = self.ParentWindow.GetRange()
         cursor_tick = None
-        items = self.ItemsDict.values()
+        items = list(self.ItemsDict.values())
 
         # Graph is orthogonal
         if self.GraphType == GRAPH_ORTHOGONAL:
@@ -641,7 +641,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 # parent
                 xw, yw = self.GetPosition()
                 self.ParentWindow.StartDragNDrop(
-                    self, self.ItemsDict.values()[item_idx],
+                    self, list(self.ItemsDict.values())[item_idx],
                     x + xw, y + yw,  # Current mouse position
                     x + xw, y + yw)  # Mouse position when button was clicked
 
@@ -679,7 +679,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         if self.ParentWindow.IsDragging():
             _width, height = self.GetSize()
             xw, yw = self.GetPosition()
-            item = self.ParentWindow.DraggingAxesPanel.ItemsDict.values()[0]
+            item = list(self.ParentWindow.DraggingAxesPanel.ItemsDict.values())[0]
             # Give mouse position in wx coordinate of parent
             self.ParentWindow.StopDragNDrop(item.GetVariable(),
                                             xw + event.x, yw + height - event.y)
@@ -746,7 +746,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             # If mouse is over an item label,
             if item_idx is not None:
                 self.PopupContextualButtons(
-                    self.ItemsDict.values()[item_idx],
+                    list(self.ItemsDict.values())[item_idx],
                     rect, menu_direction)
                 return
 
@@ -784,7 +784,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                     xw, yw = self.GetPosition()
                     self.ParentWindow.SetCursorTick(self.StartCursorTick)
                     self.ParentWindow.StartDragNDrop(
-                        self, self.ItemsDict.values()[0],
+                        self, list(self.ItemsDict.values())[0],
                         # Current mouse position
                         event.x + xw, height - event.y + yw,
                         # Mouse position when button was clicked
@@ -1029,7 +1029,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Graph type is parallel or orthogonal in 3D
         if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
             num_item = len(self.Items)
-            for idx in xrange(num_item):
+            for idx in range(num_item):
 
                 # Get color from color cycle (black if only one item)
                 color = ('k' if num_item == 1 else
@@ -1093,7 +1093,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Update position of items labels
         if self.GraphType == GRAPH_PARALLEL or self.Is3DCanvas():
             num_item = len(self.Items)
-            for idx in xrange(num_item):
+            for idx in range(num_item):
 
                 # In 3D graph items variable label are not displayed
                 if not self.Is3DCanvas():
@@ -1189,7 +1189,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 # each variable
                 start_tick = max(start_tick, self.GetItemsMinCommonTick())
                 end_tick = max(end_tick, start_tick)
-                items = self.ItemsDict.values()
+                items = list(self.ItemsDict.values())
 
                 # Get data and range for first variable (X coordinate)
                 x_data, x_min, x_max = items[0].GetDataAndValueRange(
@@ -1331,7 +1331,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             item.GetValue(self.CursorTick)
             if self.CursorTick is not None
             else (item.GetValue(), item.IsForced())) for item in self.Items]
-        values, forced = zip(*args)
+        values, forced = list(zip(*args))
 
         # Get path of each variable displayed simplified using panel variable
         # name mask
@@ -1339,7 +1339,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                   for item in self.Items]
 
         # Get style for each variable according to
-        styles = map(lambda x: {True: 'italic', False: 'normal'}[x], forced)
+        styles = [{True: 'italic', False: 'normal'}[x] for x in forced]
 
         # Graph is orthogonal 3D, set variables path as 3D axis label
         if self.Is3DCanvas():

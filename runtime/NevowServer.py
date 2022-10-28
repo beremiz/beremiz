@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import collections
 import shutil
@@ -78,7 +78,7 @@ class PLCStoppedHMI(PLCHMI):
 
 
 class MainPage(athena.LiveElement):
-    jsClass = u"WebInterface.PLC"
+    jsClass = "WebInterface.PLC"
     docFactory = loaders.stan(
         tags.invisible[
             tags.div(render=tags.directive('liveElement'))[
@@ -356,7 +356,7 @@ class WebInterface(athena.LivePage):
 
     def __init__(self, plcState=False, *a, **kw):
         super(WebInterface, self).__init__(*a, **kw)
-        self.jsModules.mapping[u'WebInterface'] = paths.AbsNeighbourFile(
+        self.jsModules.mapping['WebInterface'] = paths.AbsNeighbourFile(
             __file__, 'webinterface.js')
         self.plcState = plcState
         self.MainPage.setPLCState(plcState)
@@ -365,7 +365,7 @@ class WebInterface(athena.LivePage):
         return self.MainPage.getHMI()
 
     def LoadHMI(self, hmi, jsmodules):
-        for name, path in jsmodules.iteritems():
+        for name, path in jsmodules.items():
             self.jsModules.mapping[name] = os.path.join(WorkingDir, path)
         self.MainPage.setPLCStartedHMI(hmi)
 

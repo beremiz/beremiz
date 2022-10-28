@@ -27,7 +27,7 @@ Minimal tab controller for a simple text editor
 """
 
 
-from __future__ import absolute_import
+
 import os
 
 

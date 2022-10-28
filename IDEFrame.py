@@ -22,8 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import sys
 import base64
 from future.builtins import \
@@ -121,7 +121,7 @@ def AppendMenu(parent, help, kind, text, id=wx.ID_ANY):
 [
     TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
     POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
-] = range(10)
+] = list(range(10))
 
 
 def GetShortcutKeyCallbackFunction(viewer_function):
@@ -343,59 +343,59 @@ class IDEFrame(wx.Frame):
         }
 
     def _init_coll_MenuBar_Menus(self, parent):
-        parent.Append(menu=self.FileMenu, title=_(u'&File'))
-        parent.Append(menu=self.EditMenu, title=_(u'&Edit'))
-        parent.Append(menu=self.DisplayMenu, title=_(u'&Display'))
-        parent.Append(menu=self.HelpMenu, title=_(u'&Help'))
+        parent.Append(menu=self.FileMenu, title=_('&File'))
+        parent.Append(menu=self.EditMenu, title=_('&Edit'))
+        parent.Append(menu=self.DisplayMenu, title=_('&Display'))
+        parent.Append(menu=self.HelpMenu, title=_('&Help'))
 
     def _init_coll_FileMenu_Items(self, parent):
         pass
 
     def _init_coll_AddMenu_Items(self, parent, add_config=True):
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDDATATYPE,
-                   kind=wx.ITEM_NORMAL, text=_(u'&Data Type'))
+                   kind=wx.ITEM_NORMAL, text=_('&Data Type'))
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDFUNCTION,
-                   kind=wx.ITEM_NORMAL, text=_(u'&Function'))
+                   kind=wx.ITEM_NORMAL, text=_('&Function'))
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDFUNCTIONBLOCK,
-                   kind=wx.ITEM_NORMAL, text=_(u'Function &Block'))
+                   kind=wx.ITEM_NORMAL, text=_('Function &Block'))
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDPROGRAM,
-                   kind=wx.ITEM_NORMAL, text=_(u'&Program'))
+                   kind=wx.ITEM_NORMAL, text=_('&Program'))
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDRESOURCE,
-                   kind=wx.ITEM_NORMAL, text=_(u'&Resource'))
+                   kind=wx.ITEM_NORMAL, text=_('&Resource'))
         if add_config:
             AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUADDCONFIGURATION,
-                       kind=wx.ITEM_NORMAL, text=_(u'&Configuration'))
+                       kind=wx.ITEM_NORMAL, text=_('&Configuration'))
 
     def _init_coll_EditMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_UNDO,
-                   kind=wx.ITEM_NORMAL, text=_(u'Undo') + '\tCTRL+Z')
+                   kind=wx.ITEM_NORMAL, text=_('Undo') + '\tCTRL+Z')
         AppendMenu(parent, help='', id=wx.ID_REDO,
-                   kind=wx.ITEM_NORMAL, text=_(u'Redo') + '\tCTRL+Y')
+                   kind=wx.ITEM_NORMAL, text=_('Redo') + '\tCTRL+Y')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_CUT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Cut') + '\tCTRL+X')
+                   kind=wx.ITEM_NORMAL, text=_('Cut') + '\tCTRL+X')
         AppendMenu(parent, help='', id=wx.ID_COPY,
-                   kind=wx.ITEM_NORMAL, text=_(u'Copy') + '\tCTRL+C')
+                   kind=wx.ITEM_NORMAL, text=_('Copy') + '\tCTRL+C')
         AppendMenu(parent, help='', id=wx.ID_PASTE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Paste') + '\tCTRL+V')
+                   kind=wx.ITEM_NORMAL, text=_('Paste') + '\tCTRL+V')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_FIND,
-                   kind=wx.ITEM_NORMAL, text=_(u'Find') + '\tCTRL+F')
+                   kind=wx.ITEM_NORMAL, text=_('Find') + '\tCTRL+F')
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUFINDNEXT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Find Next') + '\tCTRL+K')
+                   kind=wx.ITEM_NORMAL, text=_('Find Next') + '\tCTRL+K')
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUFINDPREVIOUS,
-                   kind=wx.ITEM_NORMAL, text=_(u'Find Previous') + '\tCTRL+SHIFT+K')
+                   kind=wx.ITEM_NORMAL, text=_('Find Previous') + '\tCTRL+SHIFT+K')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Search in Project') + '\tCTRL+SHIFT+F')
+                   kind=wx.ITEM_NORMAL, text=_('Search in Project') + '\tCTRL+SHIFT+F')
         parent.AppendSeparator()
         add_menu = wx.Menu(title='')
         self._init_coll_AddMenu_Items(add_menu)
-        parent.Append(wx.ID_ADD, _(u"&Add Element"), add_menu)
+        parent.Append(wx.ID_ADD, _("&Add Element"), add_menu)
         AppendMenu(parent, help='', id=wx.ID_SELECTALL,
-                   kind=wx.ITEM_NORMAL, text=_(u'Select All') + '\tCTRL+A')
+                   kind=wx.ITEM_NORMAL, text=_('Select All') + '\tCTRL+A')
         AppendMenu(parent, help='', id=wx.ID_DELETE,
-                   kind=wx.ITEM_NORMAL, text=_(u'&Delete'))
+                   kind=wx.ITEM_NORMAL, text=_('&Delete'))
         self.Bind(wx.EVT_MENU, self.OnUndoMenu, id=wx.ID_UNDO)
         self.Bind(wx.EVT_MENU, self.OnRedoMenu, id=wx.ID_REDO)
         # self.Bind(wx.EVT_MENU, self.OnEnableUndoRedoMenu, id=ID_PLCOPENEDITOREDITMENUENABLEUNDOREDO)
@@ -424,22 +424,22 @@ class IDEFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnSelectAllMenu, id=wx.ID_SELECTALL)
         self.Bind(wx.EVT_MENU, self.OnDeleteMenu, id=wx.ID_DELETE)
 
-        self.AddToMenuToolBar([(wx.ID_UNDO, "undo", _(u'Undo'), None),
-                               (wx.ID_REDO, "redo", _(u'Redo'), None),
+        self.AddToMenuToolBar([(wx.ID_UNDO, "undo", _('Undo'), None),
+                               (wx.ID_REDO, "redo", _('Redo'), None),
                                None,
-                               (wx.ID_CUT, "cut", _(u'Cut'), None),
-                               (wx.ID_COPY, "copy", _(u'Copy'), None),
-                               (wx.ID_PASTE, "paste", _(u'Paste'), None),
+                               (wx.ID_CUT, "cut", _('Cut'), None),
+                               (wx.ID_COPY, "copy", _('Copy'), None),
+                               (wx.ID_PASTE, "paste", _('Paste'), None),
                                None,
-                               (ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, "find", _(u'Search in Project'), None),
-                               (ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN, "fullscreen", _(u'Toggle fullscreen mode'), None)])
+                               (ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, "find", _('Search in Project'), None),
+                               (ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN, "fullscreen", _('Toggle fullscreen mode'), None)])
 
     def _init_coll_DisplayMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_REFRESH,
-                   kind=wx.ITEM_NORMAL, text=_(u'Refresh') + '\tCTRL+R')
+                   kind=wx.ITEM_NORMAL, text=_('Refresh') + '\tCTRL+R')
         if self.EnableDebug:
             AppendMenu(parent, help='', id=wx.ID_CLEAR,
-                       kind=wx.ITEM_NORMAL, text=_(u'Clear Errors') + '\tCTRL+K')
+                       kind=wx.ITEM_NORMAL, text=_('Clear Errors') + '\tCTRL+K')
         parent.AppendSeparator()
         zoommenu = wx.Menu(title='')
         parent.Append(wx.ID_ZOOM_FIT, _("Zoom"), zoommenu)
@@ -450,15 +450,15 @@ class IDEFrame(wx.Frame):
 
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Switch perspective') + '\tF12')
+                   kind=wx.ITEM_NORMAL, text=_('Switch perspective') + '\tF12')
         self.Bind(wx.EVT_MENU, self.SwitchPerspective, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
 
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN,
-                   kind=wx.ITEM_NORMAL, text=_(u'Full screen') + '\tShift-F12')
+                   kind=wx.ITEM_NORMAL, text=_('Full screen') + '\tShift-F12')
         self.Bind(wx.EVT_MENU, self.SwitchFullScrMode, id=ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN)
 
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Reset Perspective'))
+                   kind=wx.ITEM_NORMAL, text=_('Reset Perspective'))
         self.Bind(wx.EVT_MENU, self.OnResetPerspective, id=ID_PLCOPENEDITORDISPLAYMENURESETPERSPECTIVE)
 
         self.Bind(wx.EVT_MENU, self.OnRefreshMenu, id=wx.ID_REFRESH)
@@ -792,7 +792,7 @@ class IDEFrame(wx.Frame):
     # -------------------------------------------------------------------------------
 
     def GetTabInfos(self, tab):
-        for page_name, (page_ref, _page_title) in self.MainTabs.iteritems():
+        for page_name, (page_ref, _page_title) in self.MainTabs.items():
             if page_ref == tab:
                 return ("main", page_name)
         return None
@@ -805,7 +805,7 @@ class IDEFrame(wx.Frame):
                     pos = child.GetPosition()
                     tab = {"pos": (pos.x, pos.y), "pages": []}
                     tab_size = child.GetSize()
-                    for page_idx in xrange(child.GetPageCount()):
+                    for page_idx in range(child.GetPageCount()):
                         page = child.GetWindowFromIdx(page_idx)
                         if "size" not in tab:
                             tab["size"] = (tab_size[0], tab_size[1] + page.GetSize()[1])
@@ -871,7 +871,7 @@ class IDEFrame(wx.Frame):
             self.AUIManager.LoadPerspective(self.DefaultPerspective["perspective"])
 
             for notebook in [self.LeftNoteBook, self.BottomNoteBook, self.RightNoteBook]:
-                for dummy in xrange(notebook.GetPageCount()):
+                for dummy in range(notebook.GetPageCount()):
                     notebook.RemovePage(0)
 
             notebooks = self.DefaultPerspective["notebooks"]
@@ -982,7 +982,7 @@ class IDEFrame(wx.Frame):
         return self.DrawingMode
 
     def RefreshScaling(self):
-        for i in xrange(self.TabsOpened.GetPageCount()):
+        for i in range(self.TabsOpened.GetPageCount()):
             editor = self.TabsOpened.GetPage(i)
             editor.RefreshScaling()
 
@@ -1014,7 +1014,7 @@ class IDEFrame(wx.Frame):
         self.RefreshTabCtrlEvent()
 
     def DeletePage(self, window):
-        for idx in xrange(self.TabsOpened.GetPageCount()):
+        for idx in range(self.TabsOpened.GetPageCount()):
             if self.TabsOpened.GetPage(idx) == window:
                 self.TabsOpened.DeletePage(idx)
                 self.RefreshTabCtrlEvent()
@@ -1024,7 +1024,7 @@ class IDEFrame(wx.Frame):
         """Function that fix difference in deleting all tabs between
         wx.Notebook and wx.aui.AUINotebook.
         """
-        for dummy in xrange(self.TabsOpened.GetPageCount()):
+        for dummy in range(self.TabsOpened.GetPageCount()):
             self.TabsOpened.DeletePage(0)
         self.RefreshTabCtrlEvent()
 
@@ -1065,7 +1065,7 @@ class IDEFrame(wx.Frame):
             elif answer == wx.ID_CANCEL:
                 return False
 
-        for idx in xrange(self.TabsOpened.GetPageCount()):
+        for idx in range(self.TabsOpened.GetPageCount()):
             window = self.TabsOpened.GetPage(idx)
             if not window.CheckSaveBeforeClosing():
                 return False
@@ -1114,7 +1114,7 @@ class IDEFrame(wx.Frame):
             window = self.TabsOpened.GetPage(selected)
             data = wx.PrintDialogData(self.PrintData)
             properties = self.Controler.GetProjectProperties(window.IsDebugging())
-            page_size = map(int, properties["pageSize"])
+            page_size = list(map(int, properties["pageSize"]))
             margins = (self.PageSetupData.GetMarginTopLeft(), self.PageSetupData.GetMarginBottomRight())
             printout = GraphicPrintout(window, page_size, margins, True)
             printout2 = GraphicPrintout(window, page_size, margins, True)
@@ -1138,7 +1138,7 @@ class IDEFrame(wx.Frame):
             dialog_data = wx.PrintDialogData(self.PrintData)
             dialog_data.SetToPage(1)
             properties = self.Controler.GetProjectProperties(window.IsDebugging())
-            page_size = map(int, properties["pageSize"])
+            page_size = list(map(int, properties["pageSize"]))
             margins = (self.PageSetupData.GetMarginTopLeft(), self.PageSetupData.GetMarginBottomRight())
             printer = wx.Printer(dialog_data)
             printout = GraphicPrintout(window, page_size, margins)
@@ -1227,7 +1227,7 @@ class IDEFrame(wx.Frame):
             self.EditMenu.Enable(wx.ID_DELETE, False)
 
     def CloseTabsWithoutModel(self, refresh=True):
-        idxs = range(self.TabsOpened.GetPageCount())
+        idxs = list(range(self.TabsOpened.GetPageCount()))
         idxs.reverse()
         for idx in idxs:
             window = self.TabsOpened.GetPage(idx)
@@ -1475,19 +1475,19 @@ class IDEFrame(wx.Frame):
             self._Refresh(FILEMENU, EDITMENU, DISPLAYMENU, EDITORTOOLBAR)
 
     def RefreshEditorNames(self, old_tagname, new_tagname):
-        for i in xrange(self.TabsOpened.GetPageCount()):
+        for i in range(self.TabsOpened.GetPageCount()):
             editor = self.TabsOpened.GetPage(i)
             if editor.GetTagName() == old_tagname:
                 editor.SetTagName(new_tagname)
 
     def IsOpened(self, tagname):
-        for idx in xrange(self.TabsOpened.GetPageCount()):
+        for idx in range(self.TabsOpened.GetPageCount()):
             if self.TabsOpened.GetPage(idx).IsViewing(tagname):
                 return idx
         return None
 
     def RefreshPageTitles(self):
-        for idx in xrange(self.TabsOpened.GetPageCount()):
+        for idx in range(self.TabsOpened.GetPageCount()):
             window = self.TabsOpened.GetPage(idx)
             icon = window.GetIcon()
             if icon is not None:
@@ -1601,7 +1601,7 @@ class IDEFrame(wx.Frame):
             if root is not None and root.IsOk():
                 words = tagname.split("::")
                 result = self.RecursiveProjectTreeItemSelection(
-                    root, zip(words[1:], self.TagNamePartsItemTypes.get(words[0], [])))
+                    root, list(zip(words[1:], self.TagNamePartsItemTypes.get(words[0], []))))
         return result
 
     def RecursiveProjectTreeItemSelection(self, root, items):
@@ -1890,7 +1890,7 @@ class IDEFrame(wx.Frame):
                 if old_selected != openedidx:
                     if old_selected >= 0:
                         self.TabsOpened.GetPage(old_selected).ResetBuffer()
-                for i in xrange(self.TabsOpened.GetPageCount()):
+                for i in range(self.TabsOpened.GetPageCount()):
                     window = self.TabsOpened.GetPage(i)
                     if window == new_window:
                         self.TabsOpened.SetSelection(i)
@@ -2083,7 +2083,7 @@ class IDEFrame(wx.Frame):
 
     def CloseObsoleteDebugTabs(self):
         if self.EnableDebug:
-            idxs = range(self.TabsOpened.GetPageCount())
+            idxs = list(range(self.TabsOpened.GetPageCount()))
             idxs.reverse()
             for idx in idxs:
                 editor = self.TabsOpened.GetPage(idx)
@@ -2572,9 +2572,9 @@ class IDEFrame(wx.Frame):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            self.Highlights = dict([(name, highlight) for name, highlight in self.Highlights.iteritems() if highlight != highlight_type])
+            self.Highlights = dict([(name, highlight) for name, highlight in self.Highlights.items() if highlight != highlight_type])
         self.RefreshProjectTree()
-        for i in xrange(self.TabsOpened.GetPageCount()):
+        for i in range(self.TabsOpened.GetPageCount()):
             viewer = self.TabsOpened.GetPage(i)
             viewer.ClearHighlights(highlight_type)
 

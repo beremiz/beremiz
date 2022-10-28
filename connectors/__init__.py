@@ -26,7 +26,6 @@
 # Package initialisation
 
 
-from __future__ import absolute_import
 import os
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase

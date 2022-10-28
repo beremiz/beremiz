@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.#
 
 
-from __future__ import absolute_import
+
 import wx
 
 from plcopen.structures import LOCATIONDATATYPES
@@ -54,7 +54,7 @@ def GetTypeFilterChoiceOptions():
 
 # turn LOCATIONDATATYPES inside-out
 LOCATION_SIZES = {}
-for size, types in LOCATIONDATATYPES.iteritems():
+for size, types in LOCATIONDATATYPES.items():
     for type in types:
         LOCATION_SIZES[type] = size
 

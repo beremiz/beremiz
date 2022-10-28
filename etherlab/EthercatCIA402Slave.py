@@ -9,7 +9,7 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import os
 
 import wx
@@ -424,7 +424,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             if variable in check_variable:
                 continue
 
-            var_infos = dict(zip(["name", "index", "subindex", "var_type", "dir"], variable))
+            var_infos = dict(list(zip(["name", "index", "subindex", "var_type", "dir"], variable)))
             var_infos["location"] = location_str
             var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
             var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos

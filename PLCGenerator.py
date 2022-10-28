@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import re
 from functools import reduce
 from six.moves import xrange
@@ -65,7 +65,7 @@ def ReIndentText(text, nb_spaces):
             while lines[line_num][spaces] == " ":
                 spaces += 1
             indent = ""
-            for dummy in xrange(spaces, nb_spaces):
+            for dummy in range(spaces, nb_spaces):
                 indent += " "
             for line in lines:
                 if line != "":
@@ -264,7 +264,7 @@ class ProgramGenerator(object):
 
     # Generate a POU defined and used in text
     def GeneratePouProgramInText(self, text):
-        for pou_name in self.PouComputed.keys():
+        for pou_name in list(self.PouComputed.keys()):
             model = re.compile("(?:^|[^0-9^A-Z])%s(?:$|[^0-9^A-Z])" % pou_name.upper())
             if model.search(text) is not None:
                 self.GeneratePouProgram(pou_name)
@@ -472,12 +472,12 @@ class ProgramGenerator(object):
         if len(self.DatatypeComputed) > 0:
             self.Program += [("TYPE\n", ())]
             # Generate every data types defined
-            for datatype_name in self.DatatypeComputed.keys():
+            for datatype_name in list(self.DatatypeComputed.keys()):
                 log("Generate Data Type %s"%datatype_name)
                 self.GenerateDataType(datatype_name)
             self.Program += [("END_TYPE\n\n", ())]
         # Generate every POUs defined
-        for pou_name in self.PouComputed.keys():
+        for pou_name in list(self.PouComputed.keys()):
             log("Generate POU %s"%pou_name)
             self.GeneratePouProgram(pou_name)
         if noconfig:
@@ -895,7 +895,7 @@ class PouProgramGenerator(object):
                             if connected is not None and connected not in self.ConnectionTypes:
                                 for connection in self.ExtractRelatedConnections(connected):
                                     self.ConnectionTypes[connection] = itype
-        for var_type, connections in undefined.items():
+        for var_type, connections in list(undefined.items()):
             related = []
             for connection in connections:
                 connection_type = self.ConnectionTypes.get(connection)
@@ -1055,7 +1055,7 @@ class PouProgramGenerator(object):
 
     def FactorizePaths(self, paths):
         same_paths = {}
-        uncomputed_index = range(len(paths))
+        uncomputed_index = list(range(len(paths)))
         factorized_paths = []
         for num, path in enumerate(paths):
             if isinstance(path, list):
@@ -1066,7 +1066,7 @@ class PouProgramGenerator(object):
             else:
                 factorized_paths.append(path)
                 uncomputed_index.remove(num)
-        for same_path, elements in same_paths.items():
+        for same_path, elements in list(same_paths.items()):
             if len(elements) > 1:
                 elements_paths = self.FactorizePaths([path for path, num in elements])
                 if len(elements_paths) > 1:
@@ -1452,7 +1452,7 @@ class PouProgramGenerator(object):
 
     def GenerateSFCStep(self, step, pou):
         step_name = step.getname()
-        if step_name not in self.SFCNetworks["Steps"].keys():
+        if step_name not in list(self.SFCNetworks["Steps"].keys()):
             if step.getinitialStep():
                 self.InitialSteps.append(step_name)
             step_infos = {"id":          step.getlocalId(),
@@ -1482,7 +1482,7 @@ class PouProgramGenerator(object):
                                 instances.extend(self.ExtractConvergenceInputs(transition, pou))
                 for instance in instances:
                     self.GenerateSFCTransition(instance, pou)
-                    if instance in self.SFCNetworks["Transitions"].keys():
+                    if instance in list(self.SFCNetworks["Transitions"].keys()):
                         target_info = (self.TagName, "transition", instance.getlocalId(), "to", step_infos["id"])
                         self.SFCNetworks["Transitions"][instance]["to"].append([(step_name, target_info)])
 
@@ -1516,7 +1516,7 @@ class PouProgramGenerator(object):
                             instances.extend(self.ExtractConvergenceInputs(transition, pou))
             for instance in instances:
                 self.GenerateSFCTransition(instance, pou)
-                if instance in self.SFCNetworks["Transitions"].keys():
+                if instance in list(self.SFCNetworks["Transitions"].keys()):
                     target_info = (self.TagName, "jump", jump.getlocalId(), "target")
                     self.SFCNetworks["Transitions"][instance]["to"].append([(jump_target, target_info)])
 
@@ -1530,7 +1530,7 @@ class PouProgramGenerator(object):
             step = body.getcontentInstance(stepLocalId)
             self.GenerateSFCStep(step, pou)
             step_name = step.getname()
-            if step_name in self.SFCNetworks["Steps"].keys():
+            if step_name in list(self.SFCNetworks["Steps"].keys()):
                 actions = actionBlock.getactions()
                 for i, action in enumerate(actions):
                     action_infos = {"id":        actionBlock.getlocalId(),
@@ -1555,7 +1555,7 @@ class PouProgramGenerator(object):
                     self.SFCNetworks["Steps"][step_name]["actions"].append(action_infos)
 
     def GenerateSFCAction(self, action_name, pou):
-        if action_name not in self.SFCNetworks["Actions"].keys():
+        if action_name not in list(self.SFCNetworks["Actions"].keys()):
             actionContent = pou.getaction(action_name)
             if actionContent is not None:
                 previous_tagname = self.TagName
@@ -1566,7 +1566,7 @@ class PouProgramGenerator(object):
                 self.TagName = previous_tagname
 
     def GenerateSFCTransition(self, transition, pou):
-        if transition not in self.SFCNetworks["Transitions"].keys():
+        if transition not in list(self.SFCNetworks["Transitions"].keys()):
             steps = []
             connections = transition.connectionPointIn.getconnections()
             if connections is not None and len(connections) == 1:
@@ -1639,12 +1639,12 @@ class PouProgramGenerator(object):
             for step in steps:
                 self.GenerateSFCStep(step, pou)
                 step_name = step.getname()
-                if step_name in self.SFCNetworks["Steps"].keys():
+                if step_name in list(self.SFCNetworks["Steps"].keys()):
                     transition_infos["from"].append([(step_name, (self.TagName, "transition", transition.getlocalId(), "from", step.getlocalId()))])
                     self.SFCNetworks["Steps"][step_name]["transitions"].append(transition)
 
     def ComputeSFCStep(self, step_name):
-        if step_name in self.SFCNetworks["Steps"].keys():
+        if step_name in list(self.SFCNetworks["Steps"].keys()):
             step_infos = self.SFCNetworks["Steps"].pop(step_name)
             self.Program += [(self.CurrentIndent, ())]
             if step_infos["initial"]:
@@ -1679,7 +1679,7 @@ class PouProgramGenerator(object):
                 self.ComputeSFCTransition(transition)
 
     def ComputeSFCAction(self, action_name):
-        if action_name in self.SFCNetworks["Actions"].keys():
+        if action_name in list(self.SFCNetworks["Actions"].keys()):
             action_content, action_info = self.SFCNetworks["Actions"].pop(action_name)
             self.Program += [("%sACTION " % self.CurrentIndent, ()),
                              (action_name, action_info),
@@ -1688,7 +1688,7 @@ class PouProgramGenerator(object):
             self.Program += [("%sEND_ACTION\n\n" % self.CurrentIndent, ())]
 
     def ComputeSFCTransition(self, transition):
-        if transition in self.SFCNetworks["Transitions"].keys():
+        if transition in list(self.SFCNetworks["Transitions"].keys()):
             transition_infos = self.SFCNetworks["Transitions"].pop(transition)
             self.Program += [("%sTRANSITION" % self.CurrentIndent, ())]
             if transition_infos["priority"] is not None:

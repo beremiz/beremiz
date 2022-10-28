@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import sys
 import subprocess
@@ -100,8 +100,7 @@ class ProcessLogger(object):
 
         if encoding is None:
             encoding = fsencoding
-        self.Command = [self.Command[0].encode(fsencoding)]+map(
-            lambda x: x.encode(encoding), self.Command[1:])
+        self.Command = [self.Command[0].encode(fsencoding)]+[x.encode(encoding) for x in self.Command[1:]]
 
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout

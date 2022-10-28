@@ -1,6 +1,6 @@
 # opcua/client.py
 
-from __future__ import absolute_import
+
 
 import os
 
@@ -158,7 +158,7 @@ class OPCUAClient(object):
         locstr = "_".join(map(str, current_location))
         name = self.BaseParams.getName()
         entries = []
-        for direction, data in self.modeldata.iteritems():
+        for direction, data in self.modeldata.items():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
                 dname, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
