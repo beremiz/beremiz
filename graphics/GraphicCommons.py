@@ -294,7 +294,7 @@ class Graphic_Element(ToolTipProducer):
             distances.append((sqrt((self.Pos.x + connector_pos.x - position.x) ** 2 +
                                    (self.Pos.y + connector_pos.y - position.y) ** 2),
                               connector))
-        distances.sort()
+        distances.sort(key=lambda n: n[0])
         if len(distances) > 0:
             return distances[0][1]
         return None

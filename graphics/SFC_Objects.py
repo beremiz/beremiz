@@ -23,6 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from functools import cmp_to_key
+from operator import eq
 import wx
 
 from graphics.GraphicCommons import *
@@ -1239,8 +1241,8 @@ class SFC_Divergence(Graphic_Element):
             for output in self.Outputs:
                 output_pos = output.GetRelPosition()
                 output.SetPosition(wx.Point(output_pos.x - minx, output_pos.y))
-        self.Inputs.sort(lambda x, y: cmp(x.Pos.x, y.Pos.x))
-        self.Outputs.sort(lambda x, y: cmp(x.Pos.x, y.Pos.x))
+        self.Inputs.sort(key=cmp_to_key(lambda x, y: eq(x.Pos.y, y.Pos.y)))
+        self.Outputs.sort(key=cmp_to_key(lambda x, y: eq(x.Pos.y, y.Pos.y)))
         self.Pos.x += minx
         self.Size[0] = maxx - minx
         connector.MoveConnected()

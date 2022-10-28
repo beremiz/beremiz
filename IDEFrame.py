@@ -23,6 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+from functools import cmp_to_key
+from operator import eq
 import sys
 import base64
 
@@ -155,7 +157,8 @@ def SimplifyTabLayout(tabs, rect):
     for tab in tabs:
         if tab["pos"][0] == rect.x:
             others = [t for t in tabs if t != tab]
-            others.sort(lambda x, y: cmp(x["pos"][0], y["pos"][0]))
+            others.sort(key=cmp_to_key(lambda x, y: eq(x["pos"][0],
+                                                       y["pos"][0])))
             for other in others:
                 if other["pos"][1] == tab["pos"][1] and \
                    other["size"][1] == tab["size"][1] and \
@@ -170,7 +173,8 @@ def SimplifyTabLayout(tabs, rect):
 
         elif tab["pos"][1] == rect.y:
             others = [t for t in tabs if t != tab]
-            others.sort(lambda x, y: cmp(x["pos"][1], y["pos"][1]))
+            others.sort(key=cmp_to_key(lambda x, y: eq(x["pos"][1],
+                                                       y["pos"][1])))
             for other in others:
                 if other["pos"][0] == tab["pos"][0] and \
                    other["size"][0] == tab["size"][0] and \
@@ -807,7 +811,7 @@ class IDEFrame(wx.Frame):
                         if tab_infos is not None:
                             tab["pages"].append((tab_infos, page_idx == child.GetActivePage()))
                     tabs.append(tab)
-        tabs.sort(lambda x, y: cmp(x["pos"], y["pos"]))
+        tabs.sort(key=cmp_to_key(lambda x, y: eq(x["pos"], y["pos"])))
         size = notebook.GetSize()
         return ComputeTabsLayout(tabs, wx.Rect(1, 1, size[0] - NOTEBOOK_BORDER, size[1] - NOTEBOOK_BORDER))
 
