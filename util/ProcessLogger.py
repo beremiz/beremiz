@@ -23,7 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 import os
 import sys
 import subprocess
@@ -141,7 +140,7 @@ class ProcessLogger(object):
         if _debug and self.logger:
             self.logger.write("(DEBUG) launching:\n" + self.Command_str + "\n")
 
-        self.Proc = subprocess.Popen(self.Command, **popenargs)
+        self.Proc = subprocess.Popen(self.Command, encoding="utf-8", **popenargs)
 
         self.outt = outputThread(
             self.Proc,

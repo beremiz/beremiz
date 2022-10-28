@@ -853,7 +853,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             return
 
         try:
-            defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder"))
+            defaultpath = DecodeFileSystemPath(self.Config.Read("lastopenedfolder").encode())
         except Exception:
             defaultpath = os.path.expanduser("~")
 
