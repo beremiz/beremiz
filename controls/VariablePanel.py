@@ -424,6 +424,8 @@ class VariableDropTarget(wx.TextDropTarget):
 
         return True
 
+        return True
+
     def ShowMessage(self, message):
         message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)
         message.ShowModal()

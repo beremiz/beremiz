@@ -122,6 +122,8 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
             return True
         return False
 
+        return True
+
     def OnLeave(self):
         """
         Function called when mouse is leave Drop Target
