@@ -586,20 +586,21 @@ detach_detachables();
 switch_page(default_page);
 
 var reconnect_delay = 0;
-// var periodic_reconnect_timer;
+var periodic_reconnect_timer;
 
 // Once connection established
 function ws_onopen(evt) {
-    /* 
-    // to force reconnect every hour
-    if(periodic_reconnect_timer){
-        window.clearTimeout(periodic_reconnect_timer);
+    // Work around memory leak with websocket on QtWebEngine
+    // reconnect every hour to force deallocate websocket garbage
+    if(window.navigator.userAgent.includes("QtWebEngine")){
+        if(periodic_reconnect_timer){
+            window.clearTimeout(periodic_reconnect_timer);
+        }
+        periodic_reconnect_timer = window.setTimeout(() => {
+            ws.close();
+            periodic_reconnect_timer = null;
+        }, 3600000);
     }
-    periodic_reconnect_timer = window.setTimeout(() => {
-        ws.close();
-        periodic_reconnect_timer = null;
-    }, 3600*1000);
-    */
 
     // forget subscriptions remotely
     send_reset();
