@@ -7,7 +7,7 @@
 import os
 from lxml import etree
 import util.paths as paths
-from plcopen.structures import StdBlckLibs
+from . structures import StdBlckLibs
 from XSLTransform import XSLTransform
 
 ScriptDirectory = paths.AbsDir(__file__)

@@ -28,8 +28,8 @@ import re
 from collections import OrderedDict
 from functools import reduce
 
-from plcopen.plcopen import LoadProject
-from plcopen.definitions import *
+from . plcopen import LoadProject
+from . definitions import *
 
 TypeHierarchy = dict(TypeHierarchy_list)
 

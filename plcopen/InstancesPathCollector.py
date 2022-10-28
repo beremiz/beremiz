@@ -4,7 +4,7 @@
 # See COPYING file for copyrights details.
 
 
-from plcopen.XSLTModelQuery import XSLTModelQuery
+from . XSLTModelQuery import XSLTModelQuery
 
 
 class InstancesPathCollector(XSLTModelQuery):

@@ -5,7 +5,7 @@
 
 
 from collections import OrderedDict, namedtuple
-from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+from . XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
 
 # -------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
