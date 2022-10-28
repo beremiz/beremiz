@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import traceback
 from time import sleep
 import copy
@@ -39,6 +39,7 @@ from Pyro.errors import PyroError
 import PSKManagement as PSK
 from connectors.PYRO.PSK_Adapter import setupPSKAdapter
 from runtime import PlcStatus
+import importlib
 
 
 def switch_pyro_adapter(use_ssl):
@@ -47,7 +48,7 @@ def switch_pyro_adapter(use_ssl):
     This is workaround for Pyro, because it doesn't work with SSL wrapper.
     """
     # Pyro.config.PYRO_BROKEN_MSGWAITALL = use_ssl
-    reload(Pyro.protocol)
+    importlib.reload(Pyro.protocol)
     if use_ssl:
         setupPSKAdapter()
 

@@ -44,7 +44,7 @@ class RingBuffer(object):
         note: only when this function is called, is an O(size) performance hit incurred,
         and this cost is amortized over the whole padding space
         """
-        print 'compacting'
+        print('compacting')
         self.buffer[:self.count] = self.view
         self.cursor -= self.size
 

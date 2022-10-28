@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import re
 from builtins import str as text
 
@@ -46,7 +46,7 @@ from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, RE
 
 
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT,
- STC_CODE_SECTION] = range(15, 18)
+ STC_CODE_SECTION] = list(range(15, 18))
 
 HIGHLIGHT_TYPES = {
     ERROR_HIGHLIGHT: STC_CODE_ERROR,
@@ -285,7 +285,7 @@ class CodeEditor(CustomStyledTextCtrl):
     def RefreshSectionStyling(self):
         self.Colourise(0, -1)
 
-        for line in xrange(self.GetLineCount()):
+        for line in range(self.GetLineCount()):
             self.SetLineState(line, 0)
 
         doc_end_pos = self.GetLength()
@@ -627,8 +627,8 @@ class VariablesTable(CustomTable):
         super(VariablesTable, self).__init__(*args, **kwargs)
         self.columnTypes = dict(self.__defaultColumnType)
         if my_columns is not None:
-            for key in my_columns.keys():
-                if key in self.columnTypes.keys():
+            for key in list(my_columns.keys()):
+                if key in list(self.columnTypes.keys()):
                     self.columnTypes[key] = my_columns[key]
 
     def GetValue(self, row, col):

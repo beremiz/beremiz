@@ -11,7 +11,7 @@ from util.paths import Bpath
 
 LocalRuntimeInterpreterPath = \
     os.environ["BEREMIZPYTHONPATH"] \
-    if os.environ.has_key("BEREMIZPYTHONPATH") \
+    if "BEREMIZPYTHONPATH" in os.environ \
     else sys.executable
 
 class LocalRuntimeMixin():

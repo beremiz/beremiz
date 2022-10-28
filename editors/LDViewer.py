@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 from future.builtins import round
 
 import wx
@@ -69,7 +69,7 @@ def CalcBranchSize(elements, stops):
         elif element_tree[element]:
             element_tree[element]["parents"].append("start")
     remove_stops = {"start": [], "stop": []}
-    for element, values in element_tree.items():
+    for element, values in list(element_tree.items()):
         if "stop" in values["children"]:
             removed = []
             for child in values["children"]:
@@ -88,7 +88,7 @@ def CalcBranchSize(elements, stops):
         element_tree[element]["parents"].remove("start")
     for element in remove_stops["stop"]:
         element_tree[element]["children"].remove("stop")
-    for element, values in element_tree.items():
+    for element, values in list(element_tree.items()):
         if values and "stop" in values["children"]:
             CalcWeight(element, element_tree)
             if values["weight"]:
@@ -301,7 +301,7 @@ class LD_Viewer(Viewer):
             return Viewer.SearchElements(self, bbox)
 
         elements = []
-        for element in self.Blocks.values() + self.Comments.values():
+        for element in list(self.Blocks.values()) + list(self.Comments.values()):
             if element.IsInSelection(bbox):
                 elements.append(element)
         return elements
@@ -1190,7 +1190,7 @@ class LD_Viewer(Viewer):
 
     def RefreshRungs(self, movey, fromidx):
         if movey != 0:
-            for i in xrange(fromidx, len(self.Rungs)):
+            for i in range(fromidx, len(self.Rungs)):
                 self.RungComments[i].Move(0, movey)
                 self.RungComments[i].RefreshModel()
                 self.Rungs[i].Move(0, movey)

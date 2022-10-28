@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import re
 from builtins import str as text
 
@@ -54,7 +54,7 @@ from util.TranslationCatalogs import NoTranslate
 [
     TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU, PROJECTTREE,
     POUINSTANCEVARIABLESPANEL, LIBRARYTREE, SCALING, PAGETITLES
-] = range(10)
+] = list(range(10))
 
 
 def GetVariableTableColnames(location):
@@ -123,7 +123,7 @@ class VariableTable(CustomTable):
         self.OPTIONS_DICT = dict([(_(option), option)
                                   for option in GetOptions()])
         self.VARIABLE_CLASSES_DICT = dict([(_(_class), _class)
-                                           for _class in GetFilterChoiceTransfer().itervalues()])
+                                           for _class in GetFilterChoiceTransfer().values()])
 
     def GetValueByName(self, row, colname):
         if row < self.GetNumberRows():
@@ -200,7 +200,7 @@ class VariableTable(CustomTable):
                                              retain=self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output", "Global"],
                                              non_retain=self.Parent.ElementType != "function" and var_class in ["Local", "Input", "Output"])
                         if len(options) > 1:
-                            editor = wx.grid.GridCellChoiceEditor(map(_, options))
+                            editor = wx.grid.GridCellChoiceEditor(list(map(_, options)))
                         else:
                             grid.SetReadOnly(row, col, True)
                     elif col != 0 and self._GetRowEdit(row):
@@ -447,7 +447,7 @@ class VariablePanel(wx.Panel):
         wx.Panel.__init__(self, parent, style=wx.TAB_TRAVERSAL)
 
         self.VARIABLE_CHOICES_DICT = dict([(_(_class), _class) for
-                                           _class in GetFilterChoiceTransfer().iterkeys()])
+                                           _class in GetFilterChoiceTransfer().keys()])
 
         self.MainSizer = wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=0)
         self.MainSizer.AddGrowableCol(0)
@@ -581,7 +581,7 @@ class VariablePanel(wx.Panel):
             self.ClassFilter.Append(_(choice))
 
         reverse_transfer = {}
-        for filter, choice in self.FilterChoiceTransfer.items():
+        for filter, choice in list(self.FilterChoiceTransfer.items()):
             reverse_transfer[choice] = filter
         self.ClassFilter.SetStringSelection(_(reverse_transfer[self.Filter]))
         self.RefreshTypeList()
@@ -995,7 +995,7 @@ class VariablePanel(wx.Panel):
 
     def AddVariableHighlight(self, infos, highlight_type):
         if isinstance(infos[0], tuple):
-            for i in xrange(*infos[0]):
+            for i in range(*infos[0]):
                 self.Table.AddHighlight((i,) + infos[1:], highlight_type)
             cell_visible = infos[0][0]
         else:
@@ -1007,7 +1007,7 @@ class VariablePanel(wx.Panel):
 
     def RemoveVariableHighlight(self, infos, highlight_type):
         if isinstance(infos[0], tuple):
-            for i in xrange(*infos[0]):
+            for i in range(*infos[0]):
                 self.Table.RemoveHighlight((i,) + infos[1:], highlight_type)
         else:
             self.Table.RemoveHighlight(infos, highlight_type)

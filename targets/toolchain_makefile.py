@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import re
 import operator
@@ -83,7 +83,7 @@ class toolchain_makefile(object):
                     deps.append(depfn)
         # recurse through deps
         # TODO detect cicular deps.
-        return reduce(operator.concat, map(self.concat_deps, deps), src)
+        return reduce(operator.concat, list(map(self.concat_deps, deps)), src)
 
     def build(self):
         srcfiles = []

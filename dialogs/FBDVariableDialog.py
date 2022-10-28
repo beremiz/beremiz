@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.GraphicCommons import INPUT, INOUT, OUTPUT
@@ -66,7 +66,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         }
 
         self.VARIABLE_CLASSES_DICT_REVERSE = dict(
-            [(value, key) for key, value in self.VARIABLE_CLASSES_DICT.iteritems()])
+            [(value, key) for key, value in self.VARIABLE_CLASSES_DICT.items()])
 
         # Init common sizers
         self._init_sizers(4, 2, 4, None, 3, 2)
@@ -120,7 +120,7 @@ class FBDVariableDialog(BlockPreviewDialog):
             flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Set options that can be selected in class combo box
-        for var_class, choice in self.VARIABLE_CLASSES_DICT.iteritems():
+        for var_class, choice in self.VARIABLE_CLASSES_DICT.items():
             if not exclude_input or var_class != INPUT:
                 self.Class.Append(choice)
         self.Class.SetSelection(0)
@@ -148,7 +148,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Refresh names in name list box by selecting variables in POU variables
         # list that can be applied to variable class
         self.VariableName.Clear()
-        for name, (var_type, _value_type) in self.VariableList.iteritems():
+        for name, (var_type, _value_type) in self.VariableList.items():
             if var_type != "Input" or var_class == INPUT:
                 self.VariableName.Append(name)
 
@@ -178,7 +178,7 @@ class FBDVariableDialog(BlockPreviewDialog):
             self.RefreshNameList()
 
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is variable expression
             if name == "expression":

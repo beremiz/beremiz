@@ -24,8 +24,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
 import sys
 import shutil
@@ -245,9 +245,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def _init_coll_FileMenu_Items(self, parent):
         AppendMenu(parent, help='', id=wx.ID_NEW,
-                   kind=wx.ITEM_NORMAL, text=_(u'New') + '\tCTRL+N')
+                   kind=wx.ITEM_NORMAL, text=_('New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
-                   kind=wx.ITEM_NORMAL, text=_(u'Open') + '\tCTRL+O')
+                   kind=wx.ITEM_NORMAL, text=_('Open') + '\tCTRL+O')
         parent.Append(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
         parent.AppendSeparator()
         parent.Append(wx.ID_ANY, _("&Tutorials and Examples"), self.TutorialsProjectsMenu)
@@ -256,7 +256,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         project_list = sorted(os.listdir(exemples_dir))
 
         for idx, dirname  in enumerate(project_list):
-            text = u'&%d: %s' % (idx + 1, dirname)
+            text = '&%d: %s' % (idx + 1, dirname)
 
             item = self.TutorialsProjectsMenu.Append(wx.ID_ANY, text, '')
 
@@ -273,23 +273,23 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             self.Bind(wx.EVT_MENU, OpenExemple, item)
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_SAVE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Save') + '\tCTRL+S')
+                   kind=wx.ITEM_NORMAL, text=_('Save') + '\tCTRL+S')
         AppendMenu(parent, help='', id=wx.ID_SAVEAS,
-                   kind=wx.ITEM_NORMAL, text=_(u'Save as') + '\tCTRL+SHIFT+S')
+                   kind=wx.ITEM_NORMAL, text=_('Save as') + '\tCTRL+SHIFT+S')
         AppendMenu(parent, help='', id=wx.ID_CLOSE,
-                   kind=wx.ITEM_NORMAL, text=_(u'Close Tab') + '\tCTRL+W')
+                   kind=wx.ITEM_NORMAL, text=_('Close Tab') + '\tCTRL+W')
         AppendMenu(parent, help='', id=wx.ID_CLOSE_ALL,
-                   kind=wx.ITEM_NORMAL, text=_(u'Close Project') + '\tCTRL+SHIFT+W')
+                   kind=wx.ITEM_NORMAL, text=_('Close Project') + '\tCTRL+SHIFT+W')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_PAGE_SETUP,
-                   kind=wx.ITEM_NORMAL, text=_(u'Page Setup') + '\tCTRL+ALT+P')
+                   kind=wx.ITEM_NORMAL, text=_('Page Setup') + '\tCTRL+ALT+P')
         AppendMenu(parent, help='', id=wx.ID_PREVIEW,
-                   kind=wx.ITEM_NORMAL, text=_(u'Preview') + '\tCTRL+SHIFT+P')
+                   kind=wx.ITEM_NORMAL, text=_('Preview') + '\tCTRL+SHIFT+P')
         AppendMenu(parent, help='', id=wx.ID_PRINT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Print') + '\tCTRL+P')
+                   kind=wx.ITEM_NORMAL, text=_('Print') + '\tCTRL+P')
         parent.AppendSeparator()
         AppendMenu(parent, help='', id=wx.ID_EXIT,
-                   kind=wx.ITEM_NORMAL, text=_(u'Quit') + '\tCTRL+Q')
+                   kind=wx.ITEM_NORMAL, text=_('Quit') + '\tCTRL+Q')
 
         self.Bind(wx.EVT_MENU, self.OnNewProjectMenu, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.OnOpenProjectMenu, id=wx.ID_OPEN)
@@ -302,11 +302,11 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         self.Bind(wx.EVT_MENU, self.OnPrintMenu, id=wx.ID_PRINT)
         self.Bind(wx.EVT_MENU, self.OnQuitMenu, id=wx.ID_EXIT)
 
-        self.AddToMenuToolBar([(wx.ID_NEW, "new", _(u'New'), None),
-                               (wx.ID_OPEN, "open", _(u'Open'), None),
-                               (wx.ID_SAVE, "save", _(u'Save'), None),
-                               (wx.ID_SAVEAS, "saveas", _(u'Save As...'), None),
-                               (wx.ID_PRINT, "print", _(u'Print'), None)])
+        self.AddToMenuToolBar([(wx.ID_NEW, "new", _('New'), None),
+                               (wx.ID_OPEN, "open", _('Open'), None),
+                               (wx.ID_SAVE, "save", _('Save'), None),
+                               (wx.ID_SAVEAS, "saveas", _('Save As...'), None),
+                               (wx.ID_PRINT, "print", _('Print'), None)])
 
     def _RecursiveAddMenuItems(self, menu, items):
         for name, text, helpstr, children in items:
@@ -326,14 +326,14 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         def handler(event):
             return wx.MessageBox(
                 version.GetCommunityHelpMsg(),
-                _(u'Community support'),
+                _('Community support'),
                 wx.OK | wx.ICON_INFORMATION)
 
-        item = parent.Append(wx.ID_ANY, _(u'Community support'), '')
+        item = parent.Append(wx.ID_ANY, _('Community support'), '')
         self.Bind(wx.EVT_MENU, handler, item)
 
         parent.Append(wx.MenuItem(helpString='', id=wx.ID_ABOUT,
-                      kind=wx.ITEM_NORMAL, text=_(u'About')))
+                      kind=wx.ITEM_NORMAL, text=_('About')))
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
     def _init_coll_ConnectionStatusBar_Fields(self, parent):
@@ -580,7 +580,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             elif answer == wx.ID_CANCEL:
                 return False
 
-        for idx in xrange(self.TabsOpened.GetPageCount()):
+        for idx in range(self.TabsOpened.GetPageCount()):
             window = self.TabsOpened.GetPage(idx)
             if not window.CheckSaveBeforeClosing():
                 return False
@@ -692,8 +692,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def RefreshRecentProjectsMenu(self):
         try:
-            recent_projects = map(DecodeFileSystemPath,
-                                  self.GetConfigEntry("RecentProjects", []))
+            recent_projects = list(map(DecodeFileSystemPath,
+                                  self.GetConfigEntry("RecentProjects", [])))
         except Exception:
             recent_projects = []
 
@@ -703,7 +703,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
         self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
-            text = u'&%d: %s' % (idx + 1, projectpath)
+            text = '&%d: %s' % (idx + 1, projectpath)
 
             item = self.RecentProjectsMenu.Append(wx.ID_ANY, text, '')
             self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), item)
@@ -773,7 +773,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             else:
                 panel = None
             if panel != self.LastPanelSelected:
-                for i in xrange(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
+                for i in range(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
                     item = self.EditMenu.FindItemByPosition(self.EditMenuSize)
                     if item is not None:
                         if item.IsSeparator():
@@ -791,7 +791,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             if panel is not None:
                 panel.RefreshConfNodeMenu(self.EditMenu)
         else:
-            for i in xrange(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
+            for i in range(self.EditMenuSize, self.EditMenu.GetMenuItemCount()):
                 item = self.EditMenu.FindItemByPosition(i)
                 if item is not None:
                     if item.IsSeparator():
@@ -819,7 +819,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         return cPickle.loads(str(self.Config.Read(entry_name, cPickle.dumps(default))))
 
     def ResetConnectionStatusBar(self):
-        for field in xrange(self.ConnectionStatusBar.GetFieldsCount()):
+        for field in range(self.ConnectionStatusBar.GetFieldsCount()):
             self.ConnectionStatusBar.SetStatusText('', field)
 
     def ResetView(self):
@@ -834,8 +834,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def RefreshConfigRecentProjects(self, projectpath, err=False):
         try:
-            recent_projects = map(DecodeFileSystemPath,
-                                  self.GetConfigEntry("RecentProjects", []))
+            recent_projects = list(map(DecodeFileSystemPath,
+                                  self.GetConfigEntry("RecentProjects", [])))
         except Exception:
             recent_projects = []
         if projectpath in recent_projects:
@@ -843,7 +843,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         if not err:
             recent_projects.insert(0, projectpath)
         self.Config.Write("RecentProjects", cPickle.dumps(
-            map(EncodeFileSystemPath, recent_projects[:MAX_RECENT_PROJECTS])))
+            list(map(EncodeFileSystemPath, recent_projects[:MAX_RECENT_PROJECTS]))))
         self.Config.Flush()
 
     def ResetPerspective(self):

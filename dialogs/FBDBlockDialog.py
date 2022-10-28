@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import re
 
 import wx
@@ -177,7 +177,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         default_name_model = GetBlockTypeDefaultNameModel(blocktype)
 
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is block name
             if name == "name":
@@ -212,7 +212,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         values["width"], values["height"] = self.Element.GetSize()
         values.update({
             name: control.GetValue()
-            for name, control in self.ParamsControl.iteritems()})
+            for name, control in self.ParamsControl.items()})
         return values
 
     def OnOK(self, event):

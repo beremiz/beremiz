@@ -23,7 +23,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.GraphicCommons import SELECTION_DIVERGENCE, \
@@ -126,7 +126,7 @@ class SFCDivergenceDialog(BlockPreviewDialog):
         """
         # Go through radio buttons and return type associated to the one that
         # is selected
-        for type, control in self.TypeRadioButtons.iteritems():
+        for type, control in self.TypeRadioButtons.items():
             if control.GetValue():
                 return type
         return None

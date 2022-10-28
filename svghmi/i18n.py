@@ -6,7 +6,7 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 from lxml import etree
 import os
 import sys
@@ -40,7 +40,7 @@ def open_pofile(pofile):
             poedit_path = None
 
     else:
-        if os.environ.has_key("SNAP"):
+        if "SNAP" in os.environ:
             MessageBoxOnce("Launching POEdit with xdg-open",
                     "Confined app can't launch POEdit directly.\n"+
                         "Instead, PO/POT file is passed to xdg-open.\n"+
@@ -131,7 +131,7 @@ def MatchTranslations(translations, messages, errcallback):
         langs.append((langname,langcode))
 
         broken = False
-        for msgid, msg in translation.iteritems():
+        for msgid, msg in translation.items():
             broken = True
             errcallback(_('{}: Unused translation "{}":"{}"\n').format(langcode,msgid,msg))
         if broken or langcode in broken_lang:
@@ -246,13 +246,13 @@ class POTWriter:
 
     def write(self, fp):
         timestamp = time.strftime('%Y-%m-%d %H:%M+%Z')
-        print >> fp, pot_header % {'time': timestamp}
+        print(pot_header % {'time': timestamp}, file=fp)
         reverse = {}
-        for k, v in self.__messages.items():
+        for k, v in list(self.__messages.items()):
             keys = list(v)
             keys.sort()
             reverse.setdefault(tuple(keys), []).append((k, v))
-        rkeys = reverse.keys()
+        rkeys = list(reverse.keys())
         rkeys.sort()
         for rkey in rkeys:
             rentries = reverse[rkey]
@@ -267,12 +267,12 @@ class POTWriter:
                     if len(locline) + len(s) <= 78:
                         locline = locline + s
                     else:
-                        print >> fp, locline
+                        print(locline, file=fp)
                         locline = locpfx + s
                 if len(locline) > len(locpfx):
-                    print >> fp, locline
-                print >> fp, 'msgid', normalize(k)
-                print >> fp, 'msgstr ""\n'
+                    print(locline, file=fp)
+                print('msgid', normalize(k), file=fp)
+                print('msgstr ""\n', file=fp)
 
 
 class POReader:
@@ -321,8 +321,8 @@ class POReader:
             # This is a message with plural forms
             elif l.startswith('msgid_plural'):
                 if section != ID:
-                    print >> sys.stderr, 'msgid_plural not preceded by msgid on %s:%d' %\
-                        (infile, lno)
+                    print('msgid_plural not preceded by msgid on %s:%d' %\
+                        (infile, lno), file=sys.stderr)
                     sys.exit(1)
                 l = l[12:]
                 msgid += '\0' # separator of singular and plural
@@ -332,16 +332,16 @@ class POReader:
                 section = STR
                 if l.startswith('msgstr['):
                     if not is_plural:
-                        print >> sys.stderr, 'plural without msgid_plural on %s:%d' %\
-                            (infile, lno)
+                        print('plural without msgid_plural on %s:%d' %\
+                            (infile, lno), file=sys.stderr)
                         sys.exit(1)
                     l = l.split(']', 1)[1]
                     if msgstr:
                         msgstr += '\0' # Separator of the various plural forms
                 else:
                     if is_plural:
-                        print >> sys.stderr, 'indexed msgstr required for plural on  %s:%d' %\
-                            (infile, lno)
+                        print('indexed msgstr required for plural on  %s:%d' %\
+                            (infile, lno), file=sys.stderr)
                         sys.exit(1)
                     l = l[6:]
             # Skip empty lines
@@ -354,9 +354,9 @@ class POReader:
             elif section == STR:
                 msgstr += l
             else:
-                print >> sys.stderr, 'Syntax error on %s:%d' % (infile, lno), \
-                      'before:'
-                print >> sys.stderr, l
+                print('Syntax error on %s:%d' % (infile, lno), \
+                      'before:', file=sys.stderr)
+                print(l, file=sys.stderr)
                 sys.exit(1)
         # Add last entry
         if section == STR:

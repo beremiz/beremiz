@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import socket
 from six.moves import xrange
 import wx
@@ -190,8 +190,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         if self.LatestSelection is not None:
             # if self.ByIPCheck.IsChecked():
             svcname, scheme, host, port = \
-                map(lambda col: self.getColumnText(self.LatestSelection, col),
-                    range(4))
+                [self.getColumnText(self.LatestSelection, col) for col in range(4)]
             return ("%s://%s:%s#%s" % (scheme, host, port, svcname)) \
                 if scheme[-1] == "S" \
                 else ("%s://%s:%s" % (scheme, host, port))
@@ -210,7 +209,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         '''
 
         # loop through the list items looking for the service that went offline
-        for idx in xrange(self.ServicesList.GetItemCount()):
+        for idx in range(self.ServicesList.GetItemCount()):
             # this is the unique identifier assigned to the item
             item_id = self.ServicesList.GetItemData(idx)
 

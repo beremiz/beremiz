@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 import wx.grid
 
@@ -204,8 +204,8 @@ class CustomTable(wx.grid.PyGridTableBase):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            for _row, row_highlights in self.Highlights.iteritems():
-                row_items = row_highlights.items()
+            for _row, row_highlights in self.Highlights.items():
+                row_items = list(row_highlights.items())
                 for col, col_highlights in row_items:
                     if highlight_type in col_highlights:
                         col_highlights.remove(highlight_type)

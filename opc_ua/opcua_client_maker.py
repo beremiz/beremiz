@@ -1,5 +1,5 @@
-from __future__ import print_function
-from __future__ import absolute_import
+
+
 
 import csv
 
@@ -444,7 +444,7 @@ class OPCUAClientList(list):
         self.log = log
 
     def append(self, value):
-        v = dict(zip(lstcolnames, value))
+        v = dict(list(zip(lstcolnames, value)))
 
         if type(v["IEC"]) != int:
             if len(self) == 0:
@@ -466,7 +466,7 @@ class OPCUAClientList(list):
             self.log("Variable {} (Id={}) has invalid type\n".format(v["Name"],v["Id"]))
             return False
 
-        if len(self)>0 and v["Id"] in zip(*self)[lstcolnames.index("Id")]:
+        if len(self)>0 and v["Id"] in list(zip(*self))[lstcolnames.index("Id")]:
             self.log("Variable {} (Id={}) already in list\n".format(v["Name"],v["Id"]))
             return False
 
@@ -483,8 +483,8 @@ class OPCUAClientModel(dict):
     def LoadCSV(self,path):
         with open(path, 'rb') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            buf = {direction:[] for direction, _model in self.iteritems()}
-            for direction, model in self.iteritems():
+            buf = {direction:[] for direction, _model in self.items()}
+            for direction, model in self.items():
                 self[direction][:] = []
             for row in reader:
                 direction = row[0]
@@ -492,7 +492,7 @@ class OPCUAClientModel(dict):
 
     def SaveCSV(self,path):
         with open(path, 'wb') as csvfile:
-            for direction, data in self.iteritems():
+            for direction, data in self.items():
                 writer = csv.writer(csvfile, delimiter=',',
                                 quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 for row in data:
@@ -661,7 +661,7 @@ void __publish_{locstr}(void)
             formatdict["init"] += """
     INIT_NoAuth()"""
 
-        for direction, data in self.iteritems():
+        for direction, data in self.items():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
                 name, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
@@ -706,7 +706,7 @@ if __name__ == "__main__":
     if argc > 2:
         AuthType = sys.argv[2]
         config["AuthType"] = AuthType
-        for (name, default), value in izip_longest(authParams[AuthType], sys.argv[3:]):
+        for (name, default), value in zip_longest(authParams[AuthType], sys.argv[3:]):
             if value is None:
                 if default is None:
                     raise Exception(name+" param expected")

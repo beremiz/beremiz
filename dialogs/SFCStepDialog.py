@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.SFC_Objects import SFC_Step
@@ -107,7 +107,7 @@ class SFCStepDialog(BlockPreviewDialog):
         @param values: Block parameters values
         """
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is step name
             if name == "name":
@@ -130,7 +130,7 @@ class SFCStepDialog(BlockPreviewDialog):
         values = {"name": self.StepName.GetValue()}
         values.update({
             name: control.IsChecked()
-            for name, control in self.ConnectorsCheckBox.iteritems()})
+            for name, control in self.ConnectorsCheckBox.items()})
         values["width"], values["height"] = self.Element.GetSize()
         return values
 
@@ -185,7 +185,7 @@ class SFCStepDialog(BlockPreviewDialog):
                                 self.Initial)
 
         # Update connectors of SFC step element according to check boxes value
-        for name, control in self.ConnectorsCheckBox.iteritems():
+        for name, control in self.ConnectorsCheckBox.items():
             if control.IsChecked():
                 getattr(self.Element, "Add" + name.capitalize())()
             else:
