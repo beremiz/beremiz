@@ -25,13 +25,13 @@
 
 
 import os
+import pickle
 import sys
 import shutil
 import time
 from time import time as gettime
 from threading import Lock, Timer, currentThread
 
-from six.moves import cPickle
 import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
@@ -814,7 +814,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         return OnMenu
 
     def GetConfigEntry(self, entry_name, default):
-        return cPickle.loads(str(self.Config.Read(entry_name, cPickle.dumps(default))))
+        return pickle.loads(self.Config.Read(entry_name,
+                                             pickle.dumps(default,
+                                                          0).decode()).encode())
 
     def ResetConnectionStatusBar(self):
         for field in range(self.ConnectionStatusBar.GetFieldsCount()):
@@ -840,8 +842,11 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             recent_projects.remove(projectpath)
         if not err:
             recent_projects.insert(0, projectpath)
-        self.Config.Write("RecentProjects", cPickle.dumps(
-            list(map(EncodeFileSystemPath, recent_projects[:MAX_RECENT_PROJECTS]))))
+        self.Config.Write("RecentProjects",
+                          pickle.dumps(
+                              list(map(EncodeFileSystemPath,
+                                       recent_projects[:MAX_RECENT_PROJECTS])),
+                              0))
         self.Config.Flush()
 
     def ResetPerspective(self):

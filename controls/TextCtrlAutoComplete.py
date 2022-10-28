@@ -23,8 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-from six.moves import cPickle
+import pickle
 import wx
 
 MAX_ITEM_COUNT = 10
@@ -198,10 +197,12 @@ class TextCtrlAutoComplete(wx.TextCtrl):
     def OnControlChanged(self, event):
         res = self.GetValue()
         config = wx.ConfigBase.Get()
-        listentries = cPickle.loads(str(config.Read(self.element_path, cPickle.dumps([]))))
+        listentries = pickle.loads(config.Read(self.element_path,
+                                               pickle.dumps([], 0).decode()
+                                              ).encode())
         if res and res not in listentries:
             listentries = (listentries + [res])[-MAX_ITEM_COUNT:]
-            config.Write(self.element_path, cPickle.dumps(listentries))
+            config.Write(self.element_path, pickle.dumps(listentries, 0))
             config.Flush()
             self.SetChoices(listentries)
         self.DismissListBox()
