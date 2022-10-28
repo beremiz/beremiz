@@ -26,7 +26,7 @@
 # Package initialisation
 
 
-
+import importlib
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase
 
@@ -34,7 +34,8 @@ connectors_packages = ["PYRO", "WAMP"]
 
 
 def _GetLocalConnectorClassFactory(name):
-    return lambda: getattr(__import__(name, globals(), locals()), name + "_connector_factory")
+    return lambda: getattr(importlib.import_module(f"connectors.{name}"),
+                           f"{name}_connector_factory")
 
 
 connectors = {name: _GetLocalConnectorClassFactory(name)
@@ -53,7 +54,7 @@ def _Import_Dialogs():
         per_URI_connectors = {}
         schemes = []
         for con_name in connectors_packages:
-            module = __import__(con_name + '_dialog', globals(), locals())
+            module = importlib.import_module(f"connectors.{con_name}_dialog")
 
             for scheme in module.Schemes:
                 per_URI_connectors[scheme] = getattr(module, con_name + '_dialog')
