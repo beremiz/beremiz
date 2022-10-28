@@ -29,7 +29,6 @@ import base64
 import wx
 import wx.grid
 import wx.aui
-from six.moves import cPickle
 
 from editors.EditorPanel import EditorPanel
 from editors.SFCViewer import SFC_Viewer
@@ -880,7 +879,7 @@ class IDEFrame(wx.Frame):
     def RestoreLastState(self):
         frame_size = None
         if self.Config.HasEntry("framesize"):
-            frame_size = cPickle.loads(str(self.Config.Read("framesize")))
+            frame_size = pickle.loads(self.Config.Read("framesize").encode())
 
         if frame_size is None:
             self.Maximize()
@@ -889,7 +888,7 @@ class IDEFrame(wx.Frame):
 
     def SaveLastState(self):
         if not self.IsMaximized():
-            self.Config.Write("framesize", cPickle.dumps(self.GetClientSize()))
+            self.Config.Write("framesize", pickle.dumps(self.GetClientSize(), 0))
         elif self.Config.HasEntry("framesize"):
             self.Config.DeleteEntry("framesize")
 
