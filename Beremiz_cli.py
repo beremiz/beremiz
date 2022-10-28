@@ -93,7 +93,7 @@ def run(session):
     return processor
 
 
-@cli.resultcallback()
+@cli.result_callback()
 @pass_session
 def process_pipeline(session, processors, **kwargs):
     ret = 0
