@@ -33,7 +33,6 @@ def AbsFile(file):
 
 
 def AbsDir(file):
-    file = AbsFile(file)
     return os.path.dirname(os.path.realpath(file))
 
 
