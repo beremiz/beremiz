@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import new
 from types import ModuleType
 
 # TODO use gettext instead
@@ -16,14 +15,14 @@ class FakeObject:
 
     def __getattr__(self,name):
         if name.startswith('__'):
-            raise AttributeError, name
+            raise AttributeError(name)
         return FakeObject(__classname__=self.__classname__+"."+name)
 
     def __call__(self, *args, **kwargs):
         return FakeObject(__classname__=self.__classname__+"()")
 
     def __getitem__(self, key):
-        raise IndexError, key
+        raise IndexError(key)
 
     def __str__(self):
         return self.__classname__
@@ -34,22 +33,21 @@ class FakeObject:
 
 class FakeClass:
     def __init__(self, *args, **kwargs):
-        print("DUMMY Class __init__ !",self.__name__,args,kwargs)
+        print(("DUMMY Class __init__ !",self.__name__,args,kwargs))
 
 
 class FakeModule(ModuleType):
     def __init__(self, name, classes):
         self.__modname__ = name
-        self.__objects__ = dict(map(lambda desc: 
-            (desc, new.classobj(desc, (FakeClass,), {}))
-            if type(desc)==str else desc, classes))
+        self.__objects__ = dict([(desc, type(desc, (FakeClass,), {}))
+            if type(desc)==str else desc for desc in classes])
         ModuleType(name)
 
     def __getattr__(self,name):
         if name.startswith('__'):
-            raise AttributeError, name
+            raise AttributeError(name)
   
-        if self.__objects__.has_key(name):
+        if name in self.__objects__:
             return self.__objects__[name]
   
         obj = FakeObject(__classname__=self.__modname__+"."+name)
