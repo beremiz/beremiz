@@ -36,7 +36,7 @@ class LocalRuntimeMixin():
                 self.local_runtime_log,
                 "\"%s\" \"%s\" -p %s -i localhost %s %s" % (
                     LocalRuntimeInterpreterPath,
-                    Bpath("Beremiz_service.py"),
+                    Bpath("service.py"),
                     self.runtime_port,
                     {False: "-x 0", True: "-x 1"}[self.use_gui],
                     self.local_runtime_tmpdir),
