@@ -14,9 +14,9 @@ model = [('host', _("Host:")),
          ('port', _("Port:"))]
 
 # (scheme, model, secure)
-models = [("LOCAL", [], False), ("PYRO", model, False), ("PYROS", model, True)]
+models = [("LOCAL", [], False), ("PYRO", model, False)]
 
-Schemes = list(zip(*models)[0])
+Schemes = list(zip(*models))[0]
 
 _PerSchemeConf = {sch: (mod, sec) for sch, mod, sec in models}
 

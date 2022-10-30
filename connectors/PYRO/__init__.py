@@ -23,35 +23,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
-
 import traceback
 from time import sleep
 import copy
 import socket
 import os.path
 
-import Pyro
-import Pyro.core
-import Pyro.util
-from Pyro.errors import PyroError
+import Pyro5
+import Pyro5.client
+import Pyro5.errors
 
-import PSKManagement as PSK
-from connectors.PYRO.PSK_Adapter import setupPSKAdapter
+# TODO: PSK
+
 from runtime import PlcStatus
 import importlib
 
 
-def switch_pyro_adapter(use_ssl):
-    """
-    Reloads Pyro module with new settings.
-    This is workaround for Pyro, because it doesn't work with SSL wrapper.
-    """
-    # Pyro.config.PYRO_BROKEN_MSGWAITALL = use_ssl
-    importlib.reload(Pyro.protocol)
-    if use_ssl:
-        setupPSKAdapter()
-
+Pyro5.config.SERPENT_BYTES_REPR = True
 
 def PYRO_connector_factory(uri, confnodesroot):
     """
@@ -60,34 +48,21 @@ def PYRO_connector_factory(uri, confnodesroot):
     confnodesroot.logger.write(_("PYRO connecting to URI : %s\n") % uri)
 
     scheme, location = uri.split("://")
-    use_ssl = scheme == "PYROS"
-    switch_pyro_adapter(use_ssl)
-    if use_ssl:
-        schemename = "PYROLOCPSK"
-        url, ID = location.split('#')  # TODO fix exception when # not found
-        # load PSK from project
-        secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID+'.secret')
-        if not os.path.exists(secpath):
-            confnodesroot.logger.write_error(
-                'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
-            return None
-        secret = open(secpath).read().partition(':')[2].rstrip('\n\r')
-        Pyro.config.PYROPSK = (secret, ID)
-        # strip ID from URL, so that pyro can understand it.
-        location = url
-    else:
-        schemename = "PYROLOC"
+
+    # TODO: use ssl
+
+    schemename = "PYRO"
 
     # Try to get the proxy object
     try:
-        RemotePLCObjectProxy = Pyro.core.getAttrProxyForURI(schemename + "://" + location + "/PLCObject")
+        RemotePLCObjectProxy = Pyro5.client.Proxy(f"{schemename}:PLCObject@{location}")
     except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
                 loc=location, ex=str(e)))
         return None
 
-    RemotePLCObjectProxy.adapter.setTimeout(60)
+    RemotePLCObjectProxy._pyroTimeout = 60
 
     def PyroCatcher(func, default=None):
         """
@@ -97,14 +72,14 @@ def PYRO_connector_factory(uri, confnodesroot):
         def catcher_func(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except Pyro.errors.ConnectionClosedError as e:
+            except Pyro5.errors.ConnectionClosedError as e:
                 confnodesroot._SetConnector(None)
                 confnodesroot.logger.write_error(_("Connection lost!\n"))
-            except Pyro.errors.ProtocolError as e:
+            except Pyro5.errors.ProtocolError as e:
                 confnodesroot.logger.write_error(_("Pyro exception: %s\n") % e)
             except Exception as e:
                 # confnodesroot.logger.write_error(traceback.format_exc())
-                errmess = ''.join(Pyro.util.getPyroTraceback(e))
+                errmess = ''.join(Pyro5.errors.get_pyro_traceback(e))
                 confnodesroot.logger.write_error(errmess + "\n")
                 print(errmess)
                 confnodesroot._SetConnector(None)

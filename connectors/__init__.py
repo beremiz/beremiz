@@ -31,7 +31,7 @@ import importlib
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase
 
-connectors_packages = ["PYRO", "WAMP"]
+connectors_packages = ["PYRO"]
 
 
 def _GetLocalConnectorClassFactory(name):
@@ -81,7 +81,7 @@ def ConnectorFactory(uri, confnodesroot):
         # started on demand, listening on random port
         scheme = "PYRO"
         runtime_port = confnodesroot.StartLocalRuntime()
-        uri = "PYROLOC://"+LocalHost+":" + str(runtime_port)
+        uri = f"PYRO://{LocalHost}:{runtime_port}"
 
     # commented code to enable for MDNS:// support
     # elif _scheme == "MDNS":
