@@ -56,7 +56,7 @@ def get_last_traceback(tb):
 
 
 lib_ext = {
-    "linux2": ".so",
+    "linux": ".so",
     "win32":  ".dll",
 }.get(sys.platform, "")
 
@@ -80,8 +80,7 @@ class PLCObject(object):
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         os.mkdir(self.tmpdir)
-        # FIXME : is argv of any use nowadays ?
-        self.argv = [WorkingDir] + argv  # force argv[0] to be "path" to exec...
+        self.argv = []
         self.statuschange = statuschange
         self.evaluator = evaluator
         self.pyruntimevars = pyruntimevars
