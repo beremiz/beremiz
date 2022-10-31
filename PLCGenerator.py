@@ -984,7 +984,7 @@ class PouProgramGenerator(object):
             orderedInstances = []
             for instance in body.getcontentInstances():
                 if isinstance(instance, (OutVariableClass, InOutVariableClass, BlockClass)):
-                    executionOrderId = instance.getexecutionOrderId()
+                    executionOrderId = instance.getexecutionOrderId() or 0  # 0 if None
                     if executionOrderId > 0:
                         orderedInstances.append((executionOrderId, instance))
                     elif isinstance(instance, (OutVariableClass, InOutVariableClass)):
@@ -1100,7 +1100,7 @@ class PouProgramGenerator(object):
 
         name = block.getinstanceName()
         type = block.gettypeName()
-        executionOrderId = block.getexecutionOrderId()
+        executionOrderId = block.getexecutionOrderId() or 0     # 0 if None
         input_variables = block.inputVariables.getvariable()
         output_variables = block.outputVariables.getvariable()
         inout_variables = {}
