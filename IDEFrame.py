@@ -24,8 +24,8 @@
 
 
 from functools import cmp_to_key
+import pickle
 from operator import eq
-import sys
 import base64
 
 import wx
