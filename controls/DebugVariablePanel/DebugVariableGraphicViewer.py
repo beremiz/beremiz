@@ -480,7 +480,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         @param item: Item from which data to export, all items if None
         (default None)
         """
-        if item and item.GetData():
+        if item is not None and item.GetData():
             self.ParentWindow.CopyDataToClipboard(
                 [(item, [entry for entry in item.GetData()])
                  for item in (self.Items
@@ -582,7 +582,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
             # Search for point that tick is the nearest from mouse X position
             # and set cursor tick to the tick of this point
-            if data and len(data) > 0:
+            if data is not None and len(data) > 0:
                 cursor_tick = data[numpy.argmin(
                     numpy.abs(data[:, 0] - event.xdata)), 0]
 
