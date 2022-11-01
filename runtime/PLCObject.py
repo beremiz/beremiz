@@ -132,7 +132,7 @@ class PLCObject(object):
             msg, = args
         PLCprint(msg)
         if self._LogMessage is not None:
-            return self._LogMessage(level, msg, len(msg))
+            return self._LogMessage(level, msg.encode(), len(msg))
         return None
 
     @RunInMain
@@ -160,8 +160,8 @@ class PLCObject(object):
                                      ctypes.byref(tv_sec),
                                      ctypes.byref(tv_nsec))
             if sz and sz <= maxsz:
-                self._log_read_buffer[sz] = '\x00'
-                return self._log_read_buffer.value, tick.value, tv_sec.value, tv_nsec.value
+                return (self._log_read_buffer[:sz].decode(), tick.value,
+                        tv_sec.value, tv_nsec.value)
         elif self._loading_error is not None and level == 0:
             return self._loading_error, 0, 0, 0
         return None
@@ -185,7 +185,7 @@ class PLCObject(object):
 
             self.PLC_ID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLC_ID")
             if len(md5) == 32:
-                self.PLC_ID.value = md5
+                self.PLC_ID.value = md5.encode()
 
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int
@@ -422,10 +422,11 @@ class PLCObject(object):
         res, cmd, blkid = "None", "None", ctypes.c_void_p()
         compile_cache = {}
         while True:
-            cmd = self._PythonIterator(res, blkid)
+            cmd = self._PythonIterator(res.encode(), blkid)
             FBID = blkid.value
             if cmd is None:
                 break
+            cmd = cmd.decode()
             try:
                 self.python_runtime_vars["FBID"] = FBID
                 ccmd, AST = compile_cache.get(FBID, (None, None))
@@ -489,7 +490,7 @@ class PLCObject(object):
         self.PythonThreadCondLock.release()
 
     def _fail(self, msg):
-        self.LogMessage(0, msg)
+        self.LogMessage(0, msg.decode())
         self.PLCStatus = PlcStatus.Broken
         self.StatusChange()
 
@@ -574,7 +575,7 @@ class PLCObject(object):
     def SeedBlob(self, seed):
         blob = (mkstemp(dir=self.tmpdir) + (hashlib.new('md5'),))
         _fd, _path, md5sum = blob
-        md5sum.update(seed)
+        md5sum.update(seed.encode())
         newBlobID = md5sum.digest()
         self.blobs[newBlobID] = blob
         return newBlobID
@@ -603,7 +604,8 @@ class PLCObject(object):
         blob = self.blobs.pop(blobID, None)
 
         if blob is None:
-            raise Exception(_("Missing data to create file: {}").format(newpath))
+            raise Exception(
+                _(f"Missing data to create file: {newpath}").decode())
 
         self._BlobAsFile(blob, newpath)
 

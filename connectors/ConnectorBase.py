@@ -13,7 +13,7 @@ class ConnectorBase(object):
 
     def BlobFromFile(self, filepath, seed):
         s = hashlib.new('md5')
-        s.update(seed)
+        s.update(seed.encode())
         blobID = self.SeedBlob(seed)
         with open(filepath, "rb") as f:
             while blobID == s.digest():
