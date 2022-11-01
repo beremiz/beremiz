@@ -4,13 +4,8 @@
 # See COPYING.Runtime file for copyrights details.
 #
 
-import ctypes
 from ctypes import *
 from datetime import timedelta as td
-
-ctypes.pythonapi.PyUnicode_AsUTF8.argtypes = (ctypes.c_void_p,)
-ctypes.pythonapi.PyUnicode_AsUTF8.restype = ctypes.POINTER(ctypes.c_char)
-
 
 class IEC_STRING(Structure):
     """
@@ -28,18 +23,18 @@ class IEC_TIME(Structure):
                 ("ns", c_long)]  # tv_nsec
 
 
-def _t(t, u=lambda x: x.value, p=lambda t, x: t(x)):
+def _t(t, u=lambda x: x.contents, p=lambda t, x: t(x)):
     return (t, u, p)
 
 
 def _ttime():
     return (IEC_TIME,
-            lambda x: td(0, x.s, x.ns/1000.0),
+            lambda x: td(0, x.contents.s, x.contents.ns/1000.0),
             lambda t, x: t(x.days * 24 * 3600 + x.seconds, x.microseconds*1000))
 
 
 SameEndianessTypeTranslator = {
-    "BOOL":       _t(c_uint8, lambda x: x.value != 0),
+    "BOOL":       _t(c_uint8, lambda x: bool(x.contents)),
     "STEP":       _t(c_uint8),
     "TRANSITION": _t(c_uint8),
     "ACTION":     _t(c_uint8),
@@ -47,7 +42,7 @@ SameEndianessTypeTranslator = {
     "USINT":      _t(c_uint8),
     "BYTE":       _t(c_uint8),
     "STRING":     (IEC_STRING,
-                   lambda x: x.body[:x.len],
+                   lambda x: x.contents.body[:x.contents.len],
                    lambda t, x: t(len(x), x)),
     "INT":        _t(c_int16),
     "UINT":       _t(c_uint16),
@@ -80,10 +75,10 @@ def UnpackDebugBuffer(buff, indexes):
     res = []
     buffoffset = 0
     buffsize = len(buff)
-    buffptr = cast(ctypes.pythonapi.PyString_AsString(id(buff)), c_void_p).value
+    buffptr = cast(cast(buff, c_char_p), c_void_p).value
     for iectype in indexes:
-        c_type, unpack_func, _pack_func = \
-            TypeTranslator.get(iectype, (None, None, None))
+        c_type, unpack_func, _pack_func = TypeTranslator.get(iectype,
+                                                             (None, None, None))
 
         cursor = c_void_p(buffptr + buffoffset)
         if iectype == "STRING":
@@ -97,8 +92,12 @@ def UnpackDebugBuffer(buff, indexes):
             size = sizeof(c_type)
 
         if c_type is not None and (buffoffset + size) <= buffsize:
-            value = unpack_func(cast(cursor,
-                                     POINTER(c_type)).contents)
+            n = cast(cursor, POINTER(c_type))
+            value = unpack_func(n)
+            if iectype not in ["BOOL", "DATE", "DT", "STRING", "TIME", "TOD"]:
+                value = value.value
+            elif iectype == "STRING":
+                value = value.decode()
             buffoffset += size
             res.append(value)
         else:
