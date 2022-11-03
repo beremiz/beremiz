@@ -43,8 +43,7 @@ authParams = {
         ("Certificate", "certificate.der"),
         ("PrivateKey", "private_key.pem"),
         ("Policy", "Basic256Sha256"),
-        ("Mode", "SignAndEncrypt"),
-        ("ApplicationUri", "")],
+        ("Mode", "SignAndEncrypt")],
     "UserPassword":[
         ("User", None),
         ("Password", None)]}
@@ -319,7 +318,6 @@ class OPCUAClientPanel(wx.SplitterWindow):
             elif AuthType=="x509":
                 self.client.set_security_string(
                     "{Policy},{Mode},{Certificate},{PrivateKey}".format(**config))
-                self.client.application_uri = config["ApplicationUri"]
 
             self.client.connect()
             self.client.load_type_definitions()  # load definition of server specific structures/extension objects
@@ -574,15 +572,13 @@ void __cleanup_{locstr}(void)
     retval = UA_Client_connect(client, uri);
 
 /* Note : Policy is ignored here since open62541 client supports all policies by default */
-#define INIT_x509(Policy, UpperCaseMode, PrivateKey, Certificate, ApplicationUri)                  \\
+#define INIT_x509(Policy, UpperCaseMode, PrivateKey, Certificate)                                  \\
     LogInfo("OPC-UA Init x509 %s,%s,%s,%s", #Policy, #UpperCaseMode, PrivateKey, Certificate);     \\
                                                                                                    \\
     UA_ByteString certificate = loadFile(Certificate);                                             \\
     UA_ByteString privateKey  = loadFile(PrivateKey);                                              \\
                                                                                                    \\
     cc->securityMode = UA_MESSAGESECURITYMODE_##UpperCaseMode;                                     \\
-    UA_String_clear(&cc->clientDescription.applicationUri);                                        \\
-    cc->clientDescription.applicationUri = UA_STRING_ALLOC(ApplicationUri);                        \\
     UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0);           \\
                                                                                                    \\
     retval = UA_Client_connect(client, uri);                                                       \\
@@ -656,10 +652,8 @@ void __publish_{locstr}(void)
         AuthType = config["AuthType"]
         if AuthType == "x509":
             config["UpperCaseMode"] = config["Mode"].upper()
-            if not config["ApplicationUri"]:
-                config["ApplicationUri"] = config["URI"]
             formatdict["init"] += """
-    INIT_x509({Policy}, {UpperCaseMode}, "{PrivateKey}", "{Certificate}", "{ApplicationUri}")""".format(**config)
+    INIT_x509({Policy}, {UpperCaseMode}, "{PrivateKey}", "{Certificate}")""".format(**config)
         elif AuthType == "UserPassword":
             formatdict["init"] += """
     INIT_UserPassword("{User}", "{Password}")""".format(**config)
