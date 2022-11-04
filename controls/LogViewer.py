@@ -144,7 +144,7 @@ class LogScrollBar(wx.Panel):
 
         width, height = self.GetClientSize()
 
-        gc.SetPen(wx.Pen(wx.NamedColour("GREY"), 3))
+        gc.SetPen(wx.Pen(wx.Colour("GREY"), 3))
         gc.SetBrush(wx.GREY_BRUSH)
 
         gc.DrawLines(ArrowPoints(wx.TOP, width * 0.75, width * 0.5, 2, (width + height) // 4 - 3))
@@ -161,7 +161,7 @@ class LogScrollBar(wx.Panel):
         if self.Parent.IsMessagePanelBottom():
             exclusion_rect.height = height - width - exclusion_rect.y
         if exclusion_rect != thumb_rect:
-            colour = wx.NamedColour("LIGHT GREY")
+            colour = wx.Colour("LIGHT GREY")
             gc.SetPen(wx.Pen(colour))
             gc.SetBrush(wx.Brush(colour))
 
@@ -215,7 +215,7 @@ class LogButton(object):
 
     def Draw(self, dc):
         dc.SetPen(wx.TRANSPARENT_PEN)
-        dc.SetBrush(wx.Brush(wx.NamedColour("LIGHT GREY")))
+        dc.SetBrush(wx.Brush(wx.Colour("LIGHT GREY")))
 
         dc.DrawRectangle(self.Position.x, self.Position.y,
                          self.Size.width, self.Size.height)
