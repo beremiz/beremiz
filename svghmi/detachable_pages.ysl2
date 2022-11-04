@@ -25,6 +25,17 @@ const "default_page" choose {
 emit "preamble:default-page" {
     |
     | var default_page = "«$default_page»";
+    const "screensaverpage", "$hmi_pages_descs[arg[1]/@value = 'ScreenSaver']";
+    const "delay" choose {
+        when "$screensaverpage" {
+            const "delaystr", "$screensaverpage/arg[2]/@value";
+            if "not(regexp:test($delaystr,'^[0-9]+$'))"
+                error > ScreenSaver page has missing or malformed delay argument.
+            value "$delaystr";
+        }
+        otherwise > null
+    }
+    | var screensaver_delay = «$delay»;
 }
 
 const "keypads_descs", "$parsed_widgets/widget[@type = 'Keypad']";
