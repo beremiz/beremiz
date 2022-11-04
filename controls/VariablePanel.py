@@ -322,7 +322,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                         selected = None
                                     dialog.Destroy()
                                     if selected is None:
-                                        return
+                                        return False
                                     if selected == 0:
                                         location = "%I" + location
                                     elif selected == 1:
@@ -357,7 +357,7 @@ class VariableDropTarget(wx.TextDropTarget):
                 var_name = dlg.GetValue() if dlg.ShowModal() == wx.ID_OK else None
                 dlg.Destroy()
                 if var_name is None:
-                    return
+                    return False
                 elif var_name.upper() in [
                         name.upper() for name in
                         self.ParentWindow.Controler.GetProjectPouNames(self.ParentWindow.Debug)]:
@@ -385,7 +385,7 @@ class VariableDropTarget(wx.TextDropTarget):
                                 selected = None
                             dialog.Destroy()
                             if selected is None:
-                                return
+                                return False
                             if selected == 0:
                                 location = "%I" + location
                             elif selected == 1:
@@ -396,7 +396,7 @@ class VariableDropTarget(wx.TextDropTarget):
                             configs = self.ParentWindow.Controler.GetProjectConfigNames(
                                 self.ParentWindow.Debug)
                             if len(configs) == 0:
-                                return
+                                return False
                             if not var_name.upper() in [
                                     name.upper() for name in
                                     self.ParentWindow.Controler.GetConfigurationVariableNames(configs[0])]:
@@ -414,7 +414,7 @@ class VariableDropTarget(wx.TextDropTarget):
                             var_infos.Class = "Local"
                             var_infos.InitialValue = values[0]
                         else:
-                            return
+                            return False
                     else:
                         var_infos.Class = "External"
                     var_infos.Number = len(self.ParentWindow.Values)
@@ -426,6 +426,9 @@ class VariableDropTarget(wx.TextDropTarget):
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+            return False
+
+        return True
 
     def ShowMessage(self, message):
         message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)

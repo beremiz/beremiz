@@ -134,6 +134,7 @@ class DebugVariableDropTarget(wx.TextDropTarget):
         # Display message if data is invalid
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+            return False
 
         # Data contain a reference to a variable to debug
         elif values[1] == "debug":
@@ -146,6 +147,9 @@ class DebugVariableDropTarget(wx.TextDropTarget):
             # Drag'n Drop was initiated by another control of Beremiz
             else:
                 self.ParentWindow.InsertValue(values[0], force=True)
+
+            return True
+        return False
 
     def OnLeave(self):
         """
