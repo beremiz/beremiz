@@ -9,7 +9,6 @@ widget_desc("Back") {
     shortdesc > Jump to previous page
 }
 
-// TODO: use es6
 widget_class("Back")
     ||
         on_click(evt) {
@@ -24,6 +23,6 @@ widget_class("Back")
             }
         }
         init() {
-            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+            this.element.onclick = this.on_click.bind(this);
         }
     ||
