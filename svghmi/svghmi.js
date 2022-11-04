@@ -428,6 +428,19 @@ document.body.addEventListener('contextmenu', e => {
     e.preventDefault();
 });
 
+var screensaver_timer = null;
+function reset_screensaver_timer() {
+    if(screensaver_timer){
+        window.clearTimeout(screensaver_timer);
+    }
+    screensaver_timer = window.setTimeout(() => {
+        switch_page("ScreenSaver");
+        screensaver_timer = null;
+    }, screensaver_delay*1000);
+}
+if(screensaver_delay)
+    document.body.addEventListener('pointerdown', reset_screensaver_timer);
+
 function detach_detachables() {
 
     for(let eltid in detachable_elements){
@@ -497,9 +510,12 @@ function switch_page(page_name, page_index) {
     jumps_need_update = true;
 
     requestHMIAnimation();
-    jump_history.push([page_name, page_index]);
-    if(jump_history.length > 42)
-        jump_history.shift();
+    let [last_page_name, last_page_index] = jump_history[jump_history.length-1];
+    if(last_page_name != page_name || last_page_index != page_index){
+        jump_history.push([page_name, page_index]);
+        if(jump_history.length > 42)
+            jump_history.shift();
+    }
 
     apply_hmi_value(current_page_var_index, page_index == undefined
         ? page_name
@@ -584,6 +600,9 @@ detach_detachables();
 
 // show main page
 switch_page(default_page);
+
+// initialize screensaver
+reset_screensaver_timer();
 
 var reconnect_delay = 0;
 var periodic_reconnect_timer;
