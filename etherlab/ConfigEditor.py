@@ -449,6 +449,8 @@ class ProcessVariableDropTarget(wx.TextDropTarget):
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+            return False
+        return True
 
     def ShowMessage(self, message):
         message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)
@@ -501,6 +503,8 @@ class StartupCommandDropTarget(wx.TextDropTarget):
 
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+            return False
+        return True
 
     def ShowMessage(self, message):
         message = wx.MessageDialog(self.ParentWindow, message, _("Error"), wx.OK | wx.ICON_ERROR)
