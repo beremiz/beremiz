@@ -137,8 +137,8 @@ hmi_widgets[&quot;g443-3&quot;].off_action = function(){
      showgrid="false"
      units="px"
      inkscape:zoom="0.40092403"
-     inkscape:cx="323.58553"
-     inkscape:cy="-56.756946"
+     inkscape:cx="2333.0807"
+     inkscape:cy="1015.6842"
      inkscape:window-width="1600"
      inkscape:window-height="836"
      inkscape:window-x="0"
@@ -6543,6 +6543,31 @@ hmi_widgets[&quot;g443-3&quot;].off_action = function(){
              style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px">Home</tspan></text>
       </g>
     </g>
+    <g
+       transform="translate(-519.60999,-498.54925)"
+       id="g1315-6"
+       inkscape:label="HMI:Back">
+      <rect
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5.20923424;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         id="rect943-3-2"
+         width="114.49817"
+         height="52.074696"
+         x="1682.5072"
+         y="-298.84613"
+         ry="23.177595"
+         rx="26.820074" />
+      <text
+         id="text949-6-6"
+         y="-260.38251"
+         x="1737.7013"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:1.04184675px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:1.04184675px"
+           y="-260.38251"
+           x="1737.7013"
+           id="tspan947-2-1"
+           sodipodi:role="line">Back</tspan></text>
+    </g>
   </g>
   <text
      xml:space="preserve"
@@ -8555,6 +8580,296 @@ hmi_widgets[&quot;g443-3&quot;].off_action = function(){
            x="1090.7626"
            id="tspan2337"
            sodipodi:role="line">Home</tspan></text>
+    </g>
+  </g>
+  <rect
+     y="-800"
+     x="1480"
+     height="720"
+     width="1280"
+     id="rect1282"
+     style="color:#000000;fill:#000000"
+     inkscape:label="HMI:Page:ScreenSaver:12" />
+  <g
+     id="g1280"
+     transform="matrix(4.3157423,0,0,4.3157423,1737.4823,-785.25938)"
+     style="stroke-width:0.23170985"
+     inkscape:label="anim">
+    <circle
+       id="circle1260"
+       style="fill:#ff6600;stroke-width:0.25819258px;font-variant-east_asian:normal;opacity:1;vector-effect:none;fill-opacity:1;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       r="50"
+       cy="80"
+       cx="80" />
+    <g
+       id="g1264"
+       transform="matrix(0.866,-0.5,0.25,0.433,80,80)"
+       style="stroke-width:0.23170985">
+      <path
+         id="path1262"
+         d="M 0,70 A 65,70 0 0 0 65,0 5,5 0 0 1 75,0 75,70 0 0 1 0,70 Z"
+         inkscape:connector-curvature="0"
+         style="fill:#ffffff;stroke-width:0.23170985">
+        <animateTransform
+           repeatCount="indefinite"
+           dur="21s"
+           to="0 0 0"
+           from="360 0 0"
+           type="rotate"
+           attributeName="transform" />
+      </path>
+    </g>
+    <path
+       id="path1266-3"
+       style="fill:#ff6600;stroke-width:0.25819826px;font-variant-east_asian:normal;opacity:1;vector-effect:none;fill-opacity:1;stroke:none;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none"
+       transform="matrix(0.866,-0.5,0.5,0.866,80,80)"
+       d="M 50,0 A 50,50 0 0 0 -50,0 Z"
+       inkscape:connector-curvature="0" />
+  </g>
+  <g
+     id="g1315"
+     inkscape:label="HMI:Back"
+     transform="translate(0,80)">
+    <rect
+       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5.20923424;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       id="rect943-3"
+       width="410.06546"
+       height="95.723877"
+       x="1536.5942"
+       y="-322.54138"
+       ry="23.177595"
+       rx="26.820074" />
+    <text
+       id="text949-6"
+       y="-260.38251"
+       x="1737.7013"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:1.04184675px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:1.04184675px"
+         y="-260.38251"
+         x="1737.7013"
+         id="tspan947-2"
+         sodipodi:role="line">Leave ScreenSaver</tspan></text>
+  </g>
+  <g
+     id="g4282-91"
+     inkscape:label="HMI:Jump:Home"
+     transform="translate(1466.2292,-1613.0769)">
+    <g
+       id="g4274-2"
+       inkscape:label="button">
+      <path
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         d="m 1217.4113,1410.4016 -22,24.5657 c -10.7925,12.0511 6.1317,35.5791 -13.5791,35.5791 h -174.2877 c -19.71078,0 -2.7866,-23.528 -13.57905,-35.5791 l -22,-24.5657 127.74845,-48.4334 z"
+         id="path4272-70"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cssssccc" />
+    </g>
+    <g
+       id="g4280-9"
+       inkscape:label="text">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="1090.7626"
+         y="1436.9814"
+         id="text4278-36"
+         inkscape:label="home_jmp"><tspan
+           sodipodi:role="line"
+           id="tspan4276-0"
+           x="1090.7626"
+           y="1436.9814"
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px">Home</tspan></text>
+    </g>
+  </g>
+  <g
+     id="g1077-8"
+     inkscape:label="HMI:Jump:Conf"
+     transform="matrix(0.57180538,0,0,0.57180538,1065.1448,-867.17294)">
+    <g
+       id="g1159-7"
+       inkscape:label="button">
+      <rect
+         rx="35.579063"
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         id="rect1020-9"
+         width="245.44583"
+         height="95.723877"
+         x="971.96545"
+         y="594.82263"
+         ry="35.579063"
+         inkscape:label="button" />
+    </g>
+    <g
+       id="g1156-2"
+       inkscape:label="text">
+      <text
+         inkscape:label="setting_jmp"
+         id="setting_jmp-0"
+         y="656.98151"
+         x="1090.7626"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           y="656.98151"
+           x="1090.7626"
+           id="tspan1024-2"
+           sodipodi:role="line">Settings</tspan></text>
+    </g>
+  </g>
+  <g
+     transform="matrix(0.57180538,0,0,0.57180538,1346.4405,-1101.6314)"
+     inkscape:label="HMI:Jump:RelativePageTest@/PUMP0"
+     id="g1458-3">
+    <g
+       inkscape:label="button"
+       id="g1450-7">
+      <rect
+         rx="35.579063"
+         inkscape:label="button"
+         ry="35.579063"
+         y="594.82263"
+         x="971.96545"
+         height="95.723877"
+         width="245.44583"
+         id="rect1448-5"
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
+    </g>
+    <g
+       inkscape:label="text"
+       id="g1456-9">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="1090.7626"
+         y="656.98151"
+         id="text1454-2"
+         inkscape:label="setting_jmp"><tspan
+           sodipodi:role="line"
+           x="1090.7626"
+           y="656.98151"
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           id="tspan1460-2">Pump 0</tspan></text>
+    </g>
+  </g>
+  <g
+     id="g1475-8"
+     inkscape:label="HMI:Jump:RelativePageTest@/PUMP1"
+     transform="matrix(0.57180538,0,0,0.57180538,1506.4405,-1101.6314)">
+    <g
+       id="g1467-9"
+       inkscape:label="button">
+      <rect
+         rx="35.579063"
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         id="rect1464-7"
+         width="245.44583"
+         height="95.723877"
+         x="971.96545"
+         y="594.82263"
+         ry="35.579063"
+         inkscape:label="button" />
+    </g>
+    <g
+       id="g1473-3"
+       inkscape:label="text">
+      <text
+         inkscape:label="setting_jmp"
+         id="text1471-6"
+         y="656.98151"
+         x="1090.7626"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           id="tspan1469-1"
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           y="656.98151"
+           x="1090.7626"
+           sodipodi:role="line">Pump 1</tspan><tspan
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           y="706.98151"
+           x="1090.7626"
+           sodipodi:role="line"
+           id="tspan1477-2" /></text>
+    </g>
+  </g>
+  <g
+     transform="matrix(0.57180538,0,0,0.57180538,1666.4405,-1101.6314)"
+     inkscape:label="HMI:Jump:RelativePageTest@/PUMP2"
+     id="g1491-9">
+    <g
+       inkscape:label="button"
+       id="g1481-3">
+      <rect
+         rx="35.579063"
+         inkscape:label="button"
+         ry="35.579063"
+         y="594.82263"
+         x="971.96545"
+         height="95.723877"
+         width="245.44583"
+         id="rect1479-1"
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate" />
+    </g>
+    <g
+       inkscape:label="text"
+       id="g1489-9">
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         x="1090.7626"
+         y="656.98151"
+         id="text1487-4"
+         inkscape:label="setting_jmp"><tspan
+           sodipodi:role="line"
+           x="1090.7626"
+           y="656.98151"
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           id="tspan1493-7">Pump 2</tspan><tspan
+           id="tspan1485-8"
+           sodipodi:role="line"
+           x="1090.7626"
+           y="706.98151"
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px" /></text>
+    </g>
+  </g>
+  <g
+     id="g1509-4"
+     inkscape:label="HMI:Jump:RelativePageTest@/PUMP3"
+     transform="matrix(0.57180538,0,0,0.57180538,1826.4405,-1101.6314)">
+    <g
+       id="g1499-5"
+       inkscape:label="button">
+      <rect
+         rx="35.579063"
+         style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;vector-effect:none;fill:#e6e6e6;fill-opacity:1;fill-rule:nonzero;stroke:#ff6600;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         id="rect1497-0"
+         width="245.44583"
+         height="95.723877"
+         x="971.96545"
+         y="594.82263"
+         ry="35.579063"
+         inkscape:label="button" />
+    </g>
+    <g
+       id="g1507-3"
+       inkscape:label="text">
+      <text
+         inkscape:label="setting_jmp"
+         id="text1505-6"
+         y="656.98151"
+         x="1090.7626"
+         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#ff6600;fill-opacity:1;stroke:none;stroke-width:0.99999994px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           y="656.98151"
+           x="1090.7626"
+           sodipodi:role="line"
+           id="tspan1511-1">Pump 3</tspan><tspan
+           style="text-align:center;text-anchor:middle;fill:#ff6600;stroke-width:0.99999994px"
+           y="706.98151"
+           x="1090.7626"
+           sodipodi:role="line"
+           id="tspan1503-0" /></text>
     </g>
   </g>
 </svg>
