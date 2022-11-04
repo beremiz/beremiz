@@ -278,7 +278,6 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
         FigureCanvas.__init__(self, parent, -1, self.Figure)
         self.SetWindowStyle(wx.WANTS_CHARS)
-        self.SetBackgroundColour(wx.WHITE)
 
         # Bind wx events
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)

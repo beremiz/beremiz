@@ -202,7 +202,6 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         # data is available
         self.Force = False
 
-        self.SetBackgroundColour(wx.WHITE)
 
         main_sizer = wx.BoxSizer(wx.VERTICAL)
 
