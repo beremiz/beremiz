@@ -174,6 +174,19 @@ class PouInstanceVariablesPanel(wx.Panel):
             self.DebugInstanceImage: _ButtonCallbacks(
                 self.DebugButtonCallback, self.DebugButtonDClickCallback)}
 
+        self.FilterCtrl = wx.SearchCtrl(self)
+        self.FilterCtrl.ShowCancelButton(True)
+        self.FilterCtrl.Bind(wx.EVT_TEXT, self.OnFilterUpdate)
+        self.FilterCtrl.Bind(wx.EVT_SEARCHCTRL_CANCEL_BTN, self.OnFilterCancel)
+
+        searchMenu = wx.Menu()
+        item = searchMenu.AppendCheckItem(-1, _("Match Case"))
+        self.Bind(wx.EVT_MENU, self.OnSearchMenu, item)
+        item = searchMenu.AppendCheckItem(-1, _("Whole Words"))
+        self.Bind(wx.EVT_MENU, self.OnSearchMenu, item)
+        self.FilterCtrl.SetMenu(searchMenu)
+
+
         buttons_sizer = wx.FlexGridSizer(cols=3, hgap=0, rows=1, vgap=0)
         buttons_sizer.Add(self.ParentButton)
         buttons_sizer.Add(self.InstanceChoice, flag=wx.GROW)
@@ -181,9 +194,10 @@ class PouInstanceVariablesPanel(wx.Panel):
         buttons_sizer.AddGrowableCol(1)
         buttons_sizer.AddGrowableRow(0)
 
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=3, vgap=0)
         main_sizer.Add(buttons_sizer, flag=wx.GROW)
         main_sizer.Add(self.VariablesList, flag=wx.GROW)
+        main_sizer.Add(self.FilterCtrl, flag=wx.GROW)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(1)
 
@@ -198,6 +212,11 @@ class PouInstanceVariablesPanel(wx.Panel):
         self.PouTagName = None
         self.PouInfos = None
         self.PouInstance = None
+
+        self.Filter = None
+        self.FilterCaseSensitive = False
+        self.FilterWholeWord = False
+
 
     def __del__(self):
         self.Controller = None
@@ -236,6 +255,21 @@ class PouInstanceVariablesPanel(wx.Panel):
 
         self.RefreshView()
 
+    def OnSearchMenu(self, event):
+        searchMenu = self.FilterCtrl.GetMenu().GetMenuItems()
+        self.FilterCaseSensitive = searchMenu[0].IsChecked()
+        self.FilterWholeWord = searchMenu[1].IsChecked()
+        self.RefreshView()
+
+    def OnFilterUpdate(self, event):
+        self.Filter = self.FilterCtrl.GetValue()
+        self.RefreshView()
+        event.Skip()
+
+    def OnFilterCancel(self, event):
+        self.FilterCtrl.SetValue('')
+        event.Skip()
+
     def RefreshView(self):
         self.Freeze()
         self.VariablesList.DeleteAllItems()
@@ -252,6 +286,15 @@ class PouInstanceVariablesPanel(wx.Panel):
         if self.PouInfos is not None:
             root = self.VariablesList.AddRoot("", data=self.PouInfos)
             for var_infos in self.PouInfos.variables:
+                if self.Filter:
+                    pattern = self.Filter
+                    varname = var_infos.name
+                    if not self.FilterCaseSensitive:
+                        pattern = pattern.upper()
+                        varname = varname.upper()
+                    if ((pattern != varname) if self.FilterWholeWord else
+                        (pattern not in varname)):
+                        continue
                 if var_infos.type is not None:
                     text = "%s (%s)" % (var_infos.name, var_infos.type)
                 else:

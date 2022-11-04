@@ -9,17 +9,20 @@ widget_desc("Back") {
     shortdesc > Jump to previous page
 }
 
-// TODO: use es6
 widget_class("Back")
     ||
         on_click(evt) {
             if(jump_history.length > 1){
-               jump_history.pop();
-               let [page_name, index] = jump_history.pop();
+               let page_name, index;
+               do {
+                   jump_history.pop(); // forget current page
+                   if(jump_history.length == 0) return;
+                   [page_name, index] = jump_history[jump_history.length-1];
+               } while(page_name == "ScreenSaver") // never go back to ScreenSaver
                switch_page(page_name, index);
             }
         }
         init() {
-            this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+            this.element.onclick = this.on_click.bind(this);
         }
     ||
