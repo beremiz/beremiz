@@ -637,6 +637,27 @@
     <xsl:value-of select="$default_page"/>
     <xsl:text>";
 </xsl:text>
+    <xsl:variable name="screensaverpage" select="$hmi_pages_descs[arg[1]/@value = 'ScreenSaver']"/>
+    <xsl:variable name="delay">
+      <xsl:choose>
+        <xsl:when test="$screensaverpage">
+          <xsl:variable name="delaystr" select="$screensaverpage/arg[2]/@value"/>
+          <xsl:if test="not(regexp:test($delaystr,'^[0-9]+$'))">
+            <xsl:message terminate="yes">
+              <xsl:text>ScreenSaver page has missing or malformed delay argument.</xsl:text>
+            </xsl:message>
+          </xsl:if>
+          <xsl:value-of select="$delaystr"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>null</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:text>var screensaver_delay = </xsl:text>
+    <xsl:value-of select="$delay"/>
+    <xsl:text>;
+</xsl:text>
     <xsl:text>
 </xsl:text>
   </xsl:template>
@@ -2907,9 +2928,17 @@
 </xsl:text>
     <xsl:text>        if(jump_history.length &gt; 1){
 </xsl:text>
-    <xsl:text>           jump_history.pop();
+    <xsl:text>           let page_name, index;
 </xsl:text>
-    <xsl:text>           let [page_name, index] = jump_history.pop();
+    <xsl:text>           do {
+</xsl:text>
+    <xsl:text>               jump_history.pop(); // forget current page
+</xsl:text>
+    <xsl:text>               if(jump_history.length == 0) return;
+</xsl:text>
+    <xsl:text>               [page_name, index] = jump_history[jump_history.length-1];
+</xsl:text>
+    <xsl:text>           } while(page_name == "ScreenSaver") // never go back to ScreenSaver
 </xsl:text>
     <xsl:text>           switch_page(page_name, index);
 </xsl:text>
@@ -2919,7 +2948,7 @@
 </xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.element.setAttribute("onclick", "hmi_widgets['"+this.element_id+"'].on_click(evt)");
+    <xsl:text>        this.element.onclick = this.on_click.bind(this);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -12099,6 +12128,32 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
+          <xsl:text>var screensaver_timer = null;
+</xsl:text>
+          <xsl:text>function reset_screensaver_timer() {
+</xsl:text>
+          <xsl:text>    if(screensaver_timer){
+</xsl:text>
+          <xsl:text>        window.clearTimeout(screensaver_timer);
+</xsl:text>
+          <xsl:text>    }
+</xsl:text>
+          <xsl:text>    screensaver_timer = window.setTimeout(() =&gt; {
+</xsl:text>
+          <xsl:text>        switch_page("ScreenSaver");
+</xsl:text>
+          <xsl:text>        screensaver_timer = null;
+</xsl:text>
+          <xsl:text>    }, screensaver_delay*1000);
+</xsl:text>
+          <xsl:text>}
+</xsl:text>
+          <xsl:text>if(screensaver_delay)
+</xsl:text>
+          <xsl:text>    document.body.addEventListener('pointerdown', reset_screensaver_timer);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
           <xsl:text>function detach_detachables() {
 </xsl:text>
           <xsl:text>
@@ -12237,11 +12292,17 @@
 </xsl:text>
           <xsl:text>    requestHMIAnimation();
 </xsl:text>
-          <xsl:text>    jump_history.push([page_name, page_index]);
+          <xsl:text>    let [last_page_name, last_page_index] = jump_history[jump_history.length-1];
 </xsl:text>
-          <xsl:text>    if(jump_history.length &gt; 42)
+          <xsl:text>    if(last_page_name != page_name || last_page_index != page_index){
 </xsl:text>
-          <xsl:text>        jump_history.shift();
+          <xsl:text>        jump_history.push([page_name, page_index]);
+</xsl:text>
+          <xsl:text>        if(jump_history.length &gt; 42)
+</xsl:text>
+          <xsl:text>            jump_history.shift();
+</xsl:text>
+          <xsl:text>    }
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -12410,6 +12471,12 @@
           <xsl:text>// show main page
 </xsl:text>
           <xsl:text>switch_page(default_page);
+</xsl:text>
+          <xsl:text>
+</xsl:text>
+          <xsl:text>// initialize screensaver
+</xsl:text>
+          <xsl:text>reset_screensaver_timer();
 </xsl:text>
           <xsl:text>
 </xsl:text>
