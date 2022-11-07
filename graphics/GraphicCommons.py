@@ -1472,7 +1472,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
                 else:
                     dc.SetPen(MiterPen(wx.GREEN))
             elif self.Value == "undefined":
-                dc.SetPen(MiterPen(wx.NamedColour("orange")))
+                dc.SetPen(MiterPen(wx.Colour("orange")))
             elif self.Forced:
                 dc.SetPen(MiterPen(wx.BLUE))
             else:
@@ -1532,7 +1532,7 @@ class Connector(DebugDataConsumer, ToolTipProducer):
 
         if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.ParentBlock.Parent.GetMiniFont())
-            dc.SetTextForeground(wx.NamedColour("purple"))
+            dc.SetTextForeground(wx.Colour("purple"))
             if self.ValueSize is None and isinstance(self.ComputedValue, str):
                 self.ValueSize = self.ParentBlock.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
@@ -2708,8 +2708,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 dc.SetPen(MiterPen(wx.GREEN))
                 dc.SetBrush(wx.GREEN_BRUSH)
         elif self.Value == "undefined":
-            dc.SetPen(MiterPen(wx.NamedColour("orange")))
-            dc.SetBrush(wx.Brush(wx.NamedColour("orange")))
+            dc.SetPen(MiterPen(wx.Colour("orange")))
+            dc.SetBrush(wx.Brush(wx.Colour("orange")))
         elif self.Forced:
             dc.SetPen(MiterPen(wx.BLUE))
             dc.SetBrush(wx.BLUE_BRUSH)
@@ -2740,7 +2740,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                         self.Points[self.SelectedSegment + 1].x + end, self.Points[self.SelectedSegment + 1].y)
         if self.Value is not None and not isinstance(self.Value, bool) and self.Value != "undefined":
             dc.SetFont(self.Parent.GetMiniFont())
-            dc.SetTextForeground(wx.NamedColour("purple"))
+            dc.SetTextForeground(wx.Colour("purple"))
             if self.ValueSize is None and isinstance(self.ComputedValue, str):
                 self.ValueSize = self.Parent.GetMiniTextExtent(self.ComputedValue)
             if self.ValueSize is not None:
