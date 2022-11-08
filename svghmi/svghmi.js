@@ -621,9 +621,6 @@ function ws_onopen(evt) {
         }, 3600000);
     }
 
-    // forget subscriptions remotely
-    send_reset();
-
     // forget earlier subscriptions locally
     reset_subscription_periods();
 
