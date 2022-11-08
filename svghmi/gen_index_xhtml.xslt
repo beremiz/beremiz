@@ -12514,12 +12514,6 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>    // forget subscriptions remotely
-</xsl:text>
-          <xsl:text>    send_reset();
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>    // forget earlier subscriptions locally
 </xsl:text>
           <xsl:text>    reset_subscription_periods();
