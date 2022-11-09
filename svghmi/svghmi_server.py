@@ -223,6 +223,7 @@ class HMIProtocol(WebSocketServerProtocol):
         _hmi_session = HMISession(self)
         registered = svghmi_session_manager.register(_hmi_session)
         self._hmi_session = _hmi_session
+        self._hmi_session.reset()
 
     def onClose(self, wasClean, code, reason):
         global svghmi_session_manager
