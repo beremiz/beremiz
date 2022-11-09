@@ -370,6 +370,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def GetDefaultTargetName(self):
         if wx.Platform == '__WXMSW__':
             return "Win32"
+        elif wx.Platform == '__WXMAC__':
+            return "OSX"
         else:
             return "Linux"
 
