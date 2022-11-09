@@ -10,8 +10,8 @@ import shutil
 from util.ProcessLogger import ProcessLogger
 from util.paths import Bpath
 
-LocalRuntimeInterpreterPath = \
-    os.environ.get("BEREMIZPYTHONPATH", sys.executable)
+_exec = sys.executable if "darwin" not in sys.platform else sys.executable + 'w'
+LocalRuntimeInterpreterPath = os.environ.get("BEREMIZPYTHONPATH", _exec)
 
 LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "localhost")
 
