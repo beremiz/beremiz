@@ -428,18 +428,22 @@ document.body.addEventListener('contextmenu', e => {
     e.preventDefault();
 });
 
-var screensaver_timer = null;
-function reset_screensaver_timer() {
-    if(screensaver_timer){
-        window.clearTimeout(screensaver_timer);
+if(screensaver_delay){
+    var screensaver_timer = null;
+    function reset_screensaver_timer() {
+        if(screensaver_timer){
+            window.clearTimeout(screensaver_timer);
+        }
+        screensaver_timer = window.setTimeout(() => {
+            switch_page("ScreenSaver");
+            screensaver_timer = null;
+        }, screensaver_delay*1000);
     }
-    screensaver_timer = window.setTimeout(() => {
-        switch_page("ScreenSaver");
-        screensaver_timer = null;
-    }, screensaver_delay*1000);
-}
-if(screensaver_delay)
     document.body.addEventListener('pointerdown', reset_screensaver_timer);
+    // initialize screensaver
+    reset_screensaver_timer();
+}
+
 
 function detach_detachables() {
 
@@ -600,9 +604,6 @@ detach_detachables();
 
 // show main page
 switch_page(default_page);
-
-// initialize screensaver
-reset_screensaver_timer();
 
 var reconnect_delay = 0;
 var periodic_reconnect_timer;
