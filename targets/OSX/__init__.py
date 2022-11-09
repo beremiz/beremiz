@@ -23,7 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 from ..toolchain_gcc import toolchain_gcc
 
 
@@ -33,8 +32,9 @@ class OSX_target(toolchain_gcc):
 
     def getBuilderCFLAGS(self):
         return toolchain_gcc.getBuilderCFLAGS(self) + \
-                ["-fPIC", "-Wno-deprecated-declarations",
-                 "-Wno-parentheses-equality", "-Wno-varargs"]
+            ["-fPIC", "-Wno-deprecated-declarations",
+             "-Wno-implicit-function-declaration", "-Wno-int-conversion",
+             "-Wno-parentheses-equality", "-Wno-varargs"]
 
     def getBuilderLDFLAGS(self):
         return toolchain_gcc.getBuilderLDFLAGS(self) + ["-shared"]
