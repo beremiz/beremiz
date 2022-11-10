@@ -12,7 +12,7 @@
 #include <semaphore.h>
 #include <dispatch/dispatch.h>
 
-static sem_t Run_PLC;
+static dispatch_semaphore_t Run_PLC;
 
 long AtomicCompareExchange(long *atomicvar, long compared, long exchange)
 {
@@ -46,7 +46,7 @@ static inline void PLC_timer_cancel(void *arg)
 static inline void PLC_timer_notify(void *arg)
 {
     PLC_GetTime(&__CURRENT_TIME);
-    sem_post(&Run_PLC);
+    dispatch_semaphore_signal(Run_PLC);
 }
 
 void PLC_SetTimer(unsigned long long next, unsigned long long period)
@@ -87,7 +87,7 @@ int ForceSaveRetainReq(void)
 void PLC_thread_proc(void *arg)
 {
     while (!PLC_shutdown) {
-        sem_wait(&Run_PLC);
+        dispatch_semaphore_wait(Run_PLC, DISPATCH_TIME_FOREVER);
         __run();
     }
     pthread_exit(0);
@@ -100,7 +100,7 @@ int startPLC(int argc, char **argv)
 
     PLC_shutdown = 0;
 
-    sem_init(&Run_PLC, 0, 0);
+    Run_PLC = dispatch_semaphore_create(0);
 
     pthread_create(&PLC_thread, NULL, (void *)&PLC_thread_proc, NULL);
 
@@ -151,10 +151,11 @@ int stopPLC()
 {
     /* Stop the PLC */
     PLC_shutdown = 1;
-    sem_post(&Run_PLC);
+    dispatch_semaphore_signal(Run_PLC);
     PLC_SetTimer(0, 0);
     pthread_join(PLC_thread, NULL);
-    sem_destroy(&Run_PLC);
+    dispatch_release(Run_PLC);
+    Run_PLC = NULL;
     dispatch_source_cancel(PLC_timer);
     __cleanup();
     pthread_mutex_destroy(&debug_wait_mutex);
