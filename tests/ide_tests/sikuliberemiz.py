@@ -109,7 +109,8 @@ class stdoutIdleObserver:
         self.pattern = None
         self.success_event = Event()
 
-        self.thread = Thread(target = self._waitStdoutProc).start()
+        if self.proc is not None:
+            self.thread = Thread(target = self._waitStdoutProc).start()
 
     def __del__(self):
         pass  # self.thread.join() ?
