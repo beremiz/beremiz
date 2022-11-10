@@ -150,7 +150,7 @@ class OPCUASubListPanel(wx.Panel):
             self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
 
         DropTarget = NodeDropTarget(self)
-        self.dvc.SetDropTarget(DropTarget)
+        self.SetDropTarget(DropTarget)
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
 
