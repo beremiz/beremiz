@@ -288,6 +288,26 @@ class OPCUAClientPanel(wx.SplitterWindow):
     def OnConnectButton(self, event):
         if self.connect_button.GetValue():
             
+            config = self.config_getter()
+            self.client = Client(config["URI"])
+            self.log("OPCUA browser: connecting to {}\n".format(config["URI"]))
+            
+            AuthType = config["AuthType"]
+            if AuthType=="UserPasword":
+                self.client.set_user(config["User"])
+                self.client.set_password(config["Password"])
+            elif AuthType=="x509":
+                self.client.set_security_string(
+                    "{Policy},{Mode},{Certificate},{PrivateKey}".format(**config))
+
+            try :
+                self.client.connect()
+            except Exception as e:
+                self.log("OPCUA browser: "+str(e)+"\n")
+                self.client = None
+                self.connect_button.SetValue(False)
+                return
+
             self.tree_panel = wx.Panel(self)
             self.tree_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
             self.tree_sizer.AddGrowableCol(0)
@@ -308,18 +328,6 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
             self.tree.SetMainColumn(0)
 
-            config = self.config_getter()
-            self.client = Client(config["URI"])
-            
-            AuthType = config["AuthType"]
-            if AuthType=="UserPasword":
-                self.client.set_user(config["User"])
-                self.client.set_password(config["Password"])
-            elif AuthType=="x509":
-                self.client.set_security_string(
-                    "{Policy},{Mode},{Certificate},{PrivateKey}".format(**config))
-
-            self.client.connect()
             self.client.load_type_definitions()  # load definition of server specific structures/extension objects
             rootnode = self.client.get_root_node()
 
