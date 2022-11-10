@@ -55,7 +55,7 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
         dispatch_suspend(PLC_timer);
     } else {
         dispatch_time_t start;
-        start = dispatch_time(DISPATCH_TIME_NOW, next);
+        start = dispatch_walltime(NULL, next);
         dispatch_source_set_timer(PLC_timer, start, period, 0);
         dispatch_resume(PLC_timer);
     }
