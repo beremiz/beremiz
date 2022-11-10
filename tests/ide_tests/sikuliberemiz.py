@@ -286,6 +286,11 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
                 return myMeth
             setattr(self, name, makeMyMeth(name))
 
+    def dragNdrop(self, src, dst):
+        sikuli.drag(src)
+        sikuli.mouseMove(5,0)
+        sikuli.dropAt(dst)
+
     def close(self):
         self.sikuliapp.close()
         self.sikuliapp = None
