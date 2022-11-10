@@ -189,7 +189,7 @@ class stdoutIdleObserver:
         return res
 
 class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
-    def __init__(self, projectpath=None, exemple=None):
+    def __init__(self, projectpath=None, exemple=None, testproject=None):
         """
         Starts Beremiz IDE, waits for main window to appear, maximize it.
 
@@ -224,6 +224,9 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
             command.append(opj(beremiz_path,"exemples",exemple))
         elif projectpath is not None:
             command.append(projectpath)
+        elif testproject is not None:
+            command.append(opj(beremiz_path,"tests","projects",testproject))
+
 
         # App class is broken in Sikuli 2.0.5: can't start process with arguments.
         # 
