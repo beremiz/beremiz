@@ -4,6 +4,7 @@ import os
 import sys
 import subprocess
 import traceback
+import signal
 from threading import Thread, Event, Lock
 from time import time as timesec
 
@@ -311,6 +312,41 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
         self.report.write("<pre>" + elapsed + text + "</pre>")
 
+
+class AuxiliaryProcess:
+    def __init__(self, beremiz_app, command):
+        self.app = beremiz_app
+        self.app.ReportText("Launching process " + repr(command))
+        self.proc = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=0)
+        self.app.ReportText("Launched process " + repr(command) + " PID: " + str(self.proc.pid))
+        if self.proc is not None:
+            self.thread = Thread(target = self._waitStdoutProc).start()
+
+    def _waitStdoutProc(self):
+        while True:
+            a = self.proc.stdout.readline()
+            if len(a) == 0 or a is None: 
+                break
+            a = "aux: "+a
+            sys.stdout.write(a)
+            self.ReportOutput(a)
+        self.ReportOutput("AuxStdoutFinish")
+
+    def close(self):
+        if self.proc is not None:
+            proc = self.proc
+            self.proc = None
+            # self.proc.stdout.close()
+            self.app.ReportText("Kill process PID: " + str(proc.pid))
+            try:
+                os.kill(proc.pid, signal.SIGTERM)
+            except OSError:
+                pass
+            proc.wait()
+            # self.thread.join()
+
+    def __del__(self):
+        self.close()
 
 def run_test(func, *args, **kwargs):
     app = BeremizApp(*args, **kwargs)
