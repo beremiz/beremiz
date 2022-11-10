@@ -114,7 +114,7 @@ class Iec2CSettings(object):
         return path
 
     def findCmd(self):
-        cmd = "iec2c" + (".exe" if wx.Platform == '__WXMSW__' else "")
+        cmd = "iec2c" + (".exe" if os.name == 'nt' else "")
         paths = [
             os.path.join(base_folder, "matiec")
         ]
