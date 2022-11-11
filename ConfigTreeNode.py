@@ -133,6 +133,15 @@ class ConfigTreeNode(object):
     def CTNTestModified(self):
         return self.ChangesToSave
 
+    def CTNMarkModified(self):
+        oldChangesToSave = self.ChangesToSave
+        self.ChangesToSave = True
+        if not oldChangesToSave:
+            appframe = self.GetCTRoot().AppFrame
+            if appframe is not None:
+                appframe.RefreshTitle()
+                appframe.RefreshPageTitles()
+
     def ProjectTestModified(self):
         """
         recursively check modified status
