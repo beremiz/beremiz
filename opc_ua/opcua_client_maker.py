@@ -447,9 +447,10 @@ class OPCUAClientPanel(wx.SplitterWindow):
         
 
 class OPCUAClientList(list):
-    def __init__(self, log = lambda m:None):
+    def __init__(self, log, change_callback):
         super(OPCUAClientList, self).__init__(self)
         self.log = log
+        self.change_callback = change_callback
 
     def append(self, value):
         v = dict(zip(lstcolnames, value))
@@ -480,13 +481,19 @@ class OPCUAClientList(list):
 
         list.append(self, [v[n] for n in lstcolnames])
 
+        self.change_callback()
+
         return True
 
+    def __delitem__(self, index):
+        list.__delitem__(self, index)
+        self.change_callback()
+
 class OPCUAClientModel(dict):
-    def __init__(self, log = lambda m:None):
+    def __init__(self, log, change_callback = lambda : None):
         super(OPCUAClientModel, self).__init__()
         for direction in directions:
-            self[direction] = OPCUAClientList(log)
+            self[direction] = OPCUAClientList(log, change_callback)
 
     def LoadCSV(self,path):
         with open(path, 'rb') as csvfile:
@@ -496,7 +503,8 @@ class OPCUAClientModel(dict):
                 self[direction][:] = []
             for row in reader:
                 direction = row[0]
-                self[direction].append(row[1:])
+                # avoids calling change callback whe loading CSV
+                list.append(self[direction],row[1:])
 
     def SaveCSV(self,path):
         with open(path, 'wb') as csvfile:
