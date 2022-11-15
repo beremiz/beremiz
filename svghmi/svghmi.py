@@ -650,8 +650,8 @@ browser_proc = None
 
 def svghmi_{location}_watchdog_trigger():
     global browser_proc
-    restart_proc = {svghmi_cmds[Watchdog]}
-    waitpid_timeout(restart_proc, "SVGHMI watchdog triggered command")
+    watchdog_proc = {svghmi_cmds[Watchdog]}
+    waitpid_timeout(watchdog_proc, "SVGHMI watchdog triggered command")
     stop_proc = {svghmi_cmds[Stop]}
     waitpid_timeout(stop_proc, "SVGHMI stop command")
     waitpid_timeout(browser_proc, "SVGHMI browser process")
