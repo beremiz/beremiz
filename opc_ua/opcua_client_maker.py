@@ -521,6 +521,7 @@ class OPCUAClientModel(dict):
 #include <open62541/client_highlevel.h>
 #include <open62541/plugin/log_stdout.h>
 #include <open62541/plugin/securitypolicy.h>
+#include <open62541/plugin/securitypolicy_default.h>
 
 #include <open62541/types.h>
 #include <open62541/types_generated_handling.h>
@@ -587,7 +588,7 @@ void __cleanup_{locstr}(void)
     UA_ClientConfig_setDefault(cc);                                                                \\
     retval = UA_Client_connect(client, uri);
 
-/* Note : Policy is ignored here since open62541 client supports all policies by default */
+/* Note : Single policy is enforced here, by default open62541 client supports all policies */
 #define INIT_x509(Policy, UpperCaseMode, PrivateKey, Certificate)                                  \\
     LogInfo("OPC-UA Init x509 %s,%s,%s,%s", #Policy, #UpperCaseMode, PrivateKey, Certificate);     \\
                                                                                                    \\
@@ -595,7 +596,35 @@ void __cleanup_{locstr}(void)
     UA_ByteString privateKey  = loadFile(PrivateKey);                                              \\
                                                                                                    \\
     cc->securityMode = UA_MESSAGESECURITYMODE_##UpperCaseMode;                                     \\
-    UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0);           \\
+                                                                                                   \\
+    /* replacement for default behaviour */                                                        \\
+    /* UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0); */     \\
+    do{{                                                                                           \\
+        retval = UA_ClientConfig_setDefault(cc);                                                   \\
+        if(retval != UA_STATUSCODE_GOOD)                                                           \\
+            break;                                                                                 \\
+                                                                                                   \\
+        UA_SecurityPolicy *sp = (UA_SecurityPolicy*)                                               \\
+            UA_realloc(cc->securityPolicies, sizeof(UA_SecurityPolicy) * 2);                       \\
+        if(!sp){{                                                                                  \\
+            retval = UA_STATUSCODE_BADOUTOFMEMORY;                                                 \\
+            break;                                                                                 \\
+        }}                                                                                         \\
+        cc->securityPolicies = sp;                                                                 \\
+                                                                                                   \\
+        retval = UA_SecurityPolicy_##Policy(&cc->securityPolicies[cc->securityPoliciesSize],       \\
+                                                 certificate, privateKey, &cc->logger);            \\
+        if(retval != UA_STATUSCODE_GOOD) {{                                                        \\
+            UA_LOG_WARNING(&cc->logger, UA_LOGCATEGORY_USERLAND,                                   \\
+                           "Could not add SecurityPolicy Policy with error code %s",               \\
+                           UA_StatusCode_name(retval));                                            \\
+            UA_free(cc->securityPolicies);                                                         \\
+            cc->securityPolicies = NULL;                                                           \\
+            break;                                                                                 \\
+        }}                                                                                         \\
+                                                                                                   \\
+        ++cc->securityPoliciesSize;                                                                \\
+    }} while(0);                                                                                   \\
                                                                                                    \\
     retval = UA_Client_connect(client, uri);                                                       \\
                                                                                                    \\
