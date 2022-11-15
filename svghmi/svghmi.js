@@ -637,6 +637,13 @@ function ws_onclose(evt) {
     ws = null;
     // reconect
     // TODO : add visible notification while waiting for reload
+    console.log(evt.wasClean)
+    console.log(evt.reason)
+    if(evt.code=1000){
+        // Do not attempt to reconnect immediately in case of Normal Closure
+        window.alert("Connection closed by server");
+        location.reload();
+    }
     window.setTimeout(create_ws, reconnect_delay);
     reconnect_delay += 500;
 };
