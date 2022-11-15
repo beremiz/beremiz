@@ -120,7 +120,6 @@ class stdoutIdleObserver:
             a = self.proc.stdout.readline()
             if len(a) == 0 or a is None: 
                 break
-            sys.stdout.write(a)
             self.ReportOutput(a)
             self.event.set()
             if self.pattern is not None and a.find(self.pattern) >= 0:
@@ -172,7 +171,6 @@ class stdoutIdleObserver:
         found = 0
         self.pattern = pattern
         end_time = timesec() + timeout
-        self.event.clear()
         while True:
             remain = end_time - timesec()
             if remain <= 0 :
@@ -319,27 +317,17 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
 
     def ReportOutput(self, text):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
+        sys.stdout.write(elapsed + text)
         self.report.write("<pre>" + elapsed + text + "</pre>")
 
 
-class AuxiliaryProcess:
+class AuxiliaryProcess(stdoutIdleObserver):
     def __init__(self, beremiz_app, command):
         self.app = beremiz_app
         self.app.ReportText("Launching process " + repr(command))
         self.proc = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=0)
         self.app.ReportText("Launched process " + repr(command) + " PID: " + str(self.proc.pid))
-        if self.proc is not None:
-            self.thread = Thread(target = self._waitStdoutProc).start()
-
-    def _waitStdoutProc(self):
-        while True:
-            a = self.proc.stdout.readline()
-            if len(a) == 0 or a is None: 
-                break
-            a = "aux: "+a
-            sys.stdout.write(a)
-            self.ReportOutput(a)
-        self.ReportOutput("AuxStdoutFinish")
+        stdoutIdleObserver.__init__(self)
 
     def close(self):
         if self.proc is not None:
@@ -354,6 +342,12 @@ class AuxiliaryProcess:
             proc.wait()
             # self.thread.join()
 
+    def ReportOutput(self, text):
+        self.app.ReportOutput("Aux: "+text)
+
+    def ReportScreenShot(self, msg):
+        self.app.ReportOutput("Aux: "+msg)
+
     def __del__(self):
         self.close()
 
@@ -367,7 +361,6 @@ def run_test(func, *args, **kwargs):
         # and catch exception cleanly anyhow
         e_type, e_value, e_traceback = sys.exc_info()
         err_msg = "\n".join(traceback.format_exception(e_type, e_value, e_traceback))
-        sys.stdout.write(err_msg)
         app.ReportOutput(err_msg)
         success = False
 
