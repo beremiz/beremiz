@@ -607,6 +607,7 @@ switch_page(default_page);
 
 var reconnect_delay = 0;
 var periodic_reconnect_timer;
+var force_reconnect = false;
 
 // Once connection established
 function ws_onopen(evt) {
@@ -617,6 +618,7 @@ function ws_onopen(evt) {
             window.clearTimeout(periodic_reconnect_timer);
         }
         periodic_reconnect_timer = window.setTimeout(() => {
+            force_reconnect = true;
             ws.close();
             periodic_reconnect_timer = null;
         }, 3600000);
@@ -635,17 +637,16 @@ function ws_onopen(evt) {
 function ws_onclose(evt) {
     console.log("Connection closed. code:"+evt.code+" reason:"+evt.reason+" wasClean:"+evt.wasClean+" Reload in "+reconnect_delay+"ms.");
     ws = null;
-    // reconect
-    // TODO : add visible notification while waiting for reload
-    console.log(evt.wasClean)
-    console.log(evt.reason)
-    if(evt.code=1000){
-        // Do not attempt to reconnect immediately in case of Normal Closure
+    // Do not attempt to reconnect immediately in case:
+    //    - connection was closed by server (PLC stop)
+    //    - connection was closed locally with an intention to reconnect
+    if(evt.code=1000 && !force_reconnect){
         window.alert("Connection closed by server");
         location.reload();
     }
     window.setTimeout(create_ws, reconnect_delay);
     reconnect_delay += 500;
+    force_reconnect = false;
 };
 
 var ws_url =
