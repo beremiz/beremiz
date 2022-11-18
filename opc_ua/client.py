@@ -101,7 +101,13 @@ class OPCUAClient(object):
         return self.modeldata
 
     def GetConfig(self):
-        cfg = lambda path: self.GetParamsAttributes("OPCUAClient."+path)["value"]
+        def cfg(path): 
+            try:
+                attr=self.GetParamsAttributes("OPCUAClient."+path)
+            except ValueError:
+                return None
+            return attr["value"]
+
         AuthType = cfg("AuthType")
         res = dict(URI=cfg("Server_URI"), AuthType=AuthType)
 
