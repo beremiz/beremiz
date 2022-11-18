@@ -12128,29 +12128,37 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>var screensaver_timer = null;
+          <xsl:text>if(screensaver_delay){
 </xsl:text>
-          <xsl:text>function reset_screensaver_timer() {
+          <xsl:text>    var screensaver_timer = null;
 </xsl:text>
-          <xsl:text>    if(screensaver_timer){
+          <xsl:text>    function reset_screensaver_timer() {
 </xsl:text>
-          <xsl:text>        window.clearTimeout(screensaver_timer);
+          <xsl:text>        if(screensaver_timer){
+</xsl:text>
+          <xsl:text>            window.clearTimeout(screensaver_timer);
+</xsl:text>
+          <xsl:text>        }
+</xsl:text>
+          <xsl:text>        screensaver_timer = window.setTimeout(() =&gt; {
+</xsl:text>
+          <xsl:text>            switch_page("ScreenSaver");
+</xsl:text>
+          <xsl:text>            screensaver_timer = null;
+</xsl:text>
+          <xsl:text>        }, screensaver_delay*1000);
 </xsl:text>
           <xsl:text>    }
 </xsl:text>
-          <xsl:text>    screensaver_timer = window.setTimeout(() =&gt; {
+          <xsl:text>    document.body.addEventListener('pointerdown', reset_screensaver_timer);
 </xsl:text>
-          <xsl:text>        switch_page("ScreenSaver");
+          <xsl:text>    // initialize screensaver
 </xsl:text>
-          <xsl:text>        screensaver_timer = null;
-</xsl:text>
-          <xsl:text>    }, screensaver_delay*1000);
+          <xsl:text>    reset_screensaver_timer();
 </xsl:text>
           <xsl:text>}
 </xsl:text>
-          <xsl:text>if(screensaver_delay)
-</xsl:text>
-          <xsl:text>    document.body.addEventListener('pointerdown', reset_screensaver_timer);
+          <xsl:text>
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -12474,15 +12482,11 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>// initialize screensaver
-</xsl:text>
-          <xsl:text>reset_screensaver_timer();
-</xsl:text>
-          <xsl:text>
-</xsl:text>
           <xsl:text>var reconnect_delay = 0;
 </xsl:text>
           <xsl:text>var periodic_reconnect_timer;
+</xsl:text>
+          <xsl:text>var force_reconnect = false;
 </xsl:text>
           <xsl:text>
 </xsl:text>
@@ -12503,6 +12507,8 @@
           <xsl:text>        }
 </xsl:text>
           <xsl:text>        periodic_reconnect_timer = window.setTimeout(() =&gt; {
+</xsl:text>
+          <xsl:text>            force_reconnect = true;
 </xsl:text>
           <xsl:text>            ws.close();
 </xsl:text>
@@ -12540,13 +12546,25 @@
 </xsl:text>
           <xsl:text>    ws = null;
 </xsl:text>
-          <xsl:text>    // reconect
+          <xsl:text>    // Do not attempt to reconnect immediately in case:
 </xsl:text>
-          <xsl:text>    // TODO : add visible notification while waiting for reload
+          <xsl:text>    //    - connection was closed by server (PLC stop)
+</xsl:text>
+          <xsl:text>    //    - connection was closed locally with an intention to reconnect
+</xsl:text>
+          <xsl:text>    if(evt.code=1000 &amp;&amp; !force_reconnect){
+</xsl:text>
+          <xsl:text>        window.alert("Connection closed by server");
+</xsl:text>
+          <xsl:text>        location.reload();
+</xsl:text>
+          <xsl:text>    }
 </xsl:text>
           <xsl:text>    window.setTimeout(create_ws, reconnect_delay);
 </xsl:text>
           <xsl:text>    reconnect_delay += 500;
+</xsl:text>
+          <xsl:text>    force_reconnect = false;
 </xsl:text>
           <xsl:text>};
 </xsl:text>
