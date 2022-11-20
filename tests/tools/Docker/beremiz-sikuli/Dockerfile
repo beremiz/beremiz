@@ -22,21 +22,27 @@ RUN set -xe \
     && TZ="America/Paris" \
        DEBIAN_FRONTEND="noninteractive" \
        apt-get install -y --no-install-recommends \
-               `# run sikuli` \
+               `# to run sikuli` \
                wget \
                libopencv4.2-java \
                openjdk-11-jre \
                \
-               `# run X based tests` \
+               `# to run X based tests` \
                fluxbox \
                wmctrl xdotool xvfb \
                x11vnc xterm xnest \
+               materia-gtk-theme \
                \
                `# to build tested apps` \
                build-essential automake flex bison mercurial \
                libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
                libpython2.7-dev libssl-dev \
                python2 virtualenv cmake
+
+
+# force bigger font and flat theme for GTK in order to make OCR more reliable
+RUN mkdir -p /etc/gtk-3.0
+RUN env echo -e '[Settings]\ngtk-font-name=FreeSans,12\ngtk-theme-name=Materia\n' > /etc/gtk-3.0/settings.ini
 
 # link obtained from https://raiman.github.io/SikuliX1/downloads.html
 RUN set -xe && \
