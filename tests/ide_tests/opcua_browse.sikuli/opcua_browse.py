@@ -14,14 +14,12 @@ from sikuliberemiz import run_test, AuxiliaryProcess
 def test(app):
 
     server = AuxiliaryProcess(app, ["/bin/bash",os.path.join(getBundlePath(),"opcua_service.bash")])
-    #server = AuxiliaryProcess(app, ["/bin/bash","-c","echo $PWD"])
 
-    app.doubleClick("opcua_node.png")
+    app.doubleClick("opcua_0")
 
     app.WaitIdleUI()
 
-    # app.click("Browse Server") # OCR didn't work because of gradient in button...
-    app.click("opcua_browse_server.png")
+    app.click("Server")
 
     app.WaitIdleUI()
 

@@ -29,7 +29,7 @@ def test(app):
     
     app.waitForChangeAndIdleStdout()
     
-    app.click("1646062660770.png")
+    app.click("main")
 
     app.WaitIdleUI()
     
