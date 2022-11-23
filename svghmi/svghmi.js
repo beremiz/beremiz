@@ -525,6 +525,9 @@ function switch_page(page_name, page_index) {
         ? page_name
         : page_name + "@" + hmitree_paths[page_index]);
 
+    // when entering a page, assignments are evaluated
+    new_desc.widgets[0][0].assign();
+
     return true;
 };
 

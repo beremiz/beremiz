@@ -25,7 +25,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -40,17 +40,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1600"
-     inkscape:window-height="836"
+     inkscape:window-width="1850"
+     inkscape:window-height="1036"
      id="namedview4"
      showgrid="false"
-     inkscape:zoom="0.23177389"
-     inkscape:cx="1999.5317"
-     inkscape:cy="-682.74047"
+     inkscape:zoom="0.46354778"
+     inkscape:cx="-544.27948"
+     inkscape:cy="655.56978"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     inkscape:current-layer="hmi0"
+     inkscape:current-layer="g2496"
      showguides="true"
      inkscape:guide-bbox="true"
      borderlayer="true"
@@ -67,7 +67,7 @@
      transform="translate(1320,1520)"
      width="100%"
      height="100%"
-     inkscape:label="HMI:Page:RelativePage@/FB_ZERO" />
+     inkscape:label="HMI:Page:RelativePage:p=6@p=page_number@/FB_ZERO" />
   <use
      sodipodi:insensitive="true"
      x="0"
@@ -77,7 +77,7 @@
      transform="translate(2640,759.99998)"
      width="100%"
      height="100%"
-     inkscape:label="HMI:Page:Relative" />
+     inkscape:label="HMI:Page:Relative:p=5@p=page_number" />
   <use
      x="0"
      y="0"
@@ -86,10 +86,10 @@
      transform="translate(3940,-2.1367187e-5)"
      width="100%"
      height="100%"
-     inkscape:label="HMI:Page:Conditional"
+     inkscape:label="HMI:Page:Conditional:p=4@p=page_number"
      sodipodi:insensitive="true" />
   <use
-     inkscape:label="HMI:Page:Unconditional"
+     inkscape:label="HMI:Page:Unconditional:p=3@p=page_number"
      height="100%"
      width="100%"
      transform="translate(2640,-2.1367187e-5)"
@@ -99,7 +99,7 @@
      x="0"
      sodipodi:insensitive="true" />
   <use
-     inkscape:label="HMI:Page:AbsolutePage"
+     inkscape:label="HMI:Page:AbsolutePage:p=2@p=page_number"
      height="100%"
      width="100%"
      transform="translate(1320,759.99998)"
@@ -116,7 +116,7 @@
      transform="translate(1320,-2.1367187e-5)"
      width="100%"
      height="100%"
-     inkscape:label="HMI:Page:Home"
+     inkscape:label="HMI:Page:Home:p=1@p=page_number"
      sodipodi:insensitive="true" />
   <text
      id="text837"
@@ -621,6 +621,18 @@
          id="tspan1849"
          x="-1166.3386"
          y="598.98303">HMI:Jump:RelativePage</tspan></text>
+    <text
+       inkscape:label="HMI:Display@page_number"
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.03883362px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="-75.162941"
+       y="702.24023"
+       id="text296"><tspan
+         sodipodi:role="line"
+         id="tspan294"
+         x="-75.162941"
+         y="702.24023"
+         style="stroke-width:1px">0</tspan></text>
   </g>
   <g
      id="g2585"
@@ -1200,7 +1212,7 @@
     <g
        id="g1711"
        inkscape:label="MYNODE:+1"
-       transform="matrix(1.3729714,0,0,1.3729714,-299.47126,-800.64485)"
+       transform="matrix(1.3729714,0,0,1.3729714,-359.47134,-800.64485)"
        style="stroke-width:0.7283473">
       <rect
          rx="15.554536"
@@ -1226,7 +1238,7 @@
     <g
        inkscape:label="MYNODE:3"
        id="g1837"
-       transform="translate(665.54481,-11.353461)">
+       transform="translate(620.54487,-11.353461)">
       <g
          transform="translate(1466.6549,2099.2529)"
          inkscape:label="HMI:Jump:RelativePage@/FB_TWO@enable=/FB_TWO/SOME_BOOL#enable"
@@ -1286,7 +1298,7 @@
       </g>
     </g>
     <g
-       transform="translate(342.39289,-11.353461)"
+       transform="translate(312.39295,-11.353461)"
        id="g1823"
        inkscape:label="MYNODE:2">
       <g
@@ -1350,7 +1362,7 @@
     <g
        inkscape:label="MYNODE:1"
        id="g1717"
-       transform="translate(19.240974,-11.353461)">
+       transform="translate(4.2410198,-11.353461)">
       <g
          transform="translate(1466.6549,2099.2529)"
          inkscape:label="HMI:Jump:RelativePage@/FB_ZERO@enable=/FB_ZERO/SOME_BOOL#enable"
@@ -1815,4 +1827,23 @@
        x="44.283585"
        y="-39.185921"
        id="tspan2966">- Press Ctrl+X to edit SVG elements directly with XML editor</tspan></text>
+  <g
+     transform="translate(-4020,2.1367187e-5)"
+     inkscape:label="HMI:VarInit:0@page_number"
+     id="g304">
+    <text
+       id="text302"
+       y="-108.39357"
+       x="3726.6924"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.66666603px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         y="-108.39357"
+         x="3726.6924"
+         id="tspan298"
+         sodipodi:role="line">declaration of user_level HMI local variable</tspan><tspan
+         id="tspan300"
+         y="-85.060234"
+         x="3726.6924"
+         sodipodi:role="line">(not a PLC variable)</tspan></text>
+  </g>
 </svg>
