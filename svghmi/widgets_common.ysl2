@@ -600,12 +600,14 @@ template "widget", mode="widget_class" {
 }
 
 const "included_ids","$parsed_widgets/widget[not(@type = $excluded_types) and not(@id = $discardable_elements/@id)]/@id";
+const "page_ids","$parsed_widgets/widget[@type = 'Page']/@id";
 const "hmi_widgets","$hmi_elements[@id = $included_ids]";
+const "page_widgets","$hmi_elements[@id = $page_ids]";
 const "result_widgets","$result_svg_ns//*[@id = $hmi_widgets/@id]";
 
 emit "declarations:hmi-elements" {
     | var hmi_widgets = {
-    apply "$hmi_widgets", mode="hmi_widgets";
+    apply "$hmi_widgets | $page_widgets", mode="hmi_widgets";
     | }
     |
 }
