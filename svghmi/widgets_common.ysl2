@@ -134,7 +134,7 @@ template "svg:*", mode="hmi_widgets" {
     |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$variables»],«$enable_expr»,{
     if "$widget/@enable_expr" {
 
-    |       assignments: [],
+    |       enable_assignments: [],
     |       compute_enable: function(value, oldval, varnum) {
     |         let result = false;
     |         do {
@@ -142,8 +142,8 @@ template "svg:*", mode="hmi_widgets" {
             const "varid","generate-id()";
             const "varnum","position()-1";
             if "@assign" foreach "$widget/path[@assign]" if "$varid = generate-id()" {
-    |           if(varnum == «$varnum») this.assignments[«position()-1»] = value;
-    |           let «@assign» = this.assignments[«position()-1»];
+    |           if(varnum == «$varnum») this.enable_assignments[«position()-1»] = value;
+    |           let «@assign» = this.enable_assignments[«position()-1»];
     |           if(«@assign» == undefined) break;
             }
         }
