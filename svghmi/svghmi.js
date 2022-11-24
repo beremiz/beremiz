@@ -666,7 +666,6 @@ function create_ws(){
 
 create_ws()
 
-const xmlns = "http://www.w3.org/2000/svg";
 var edit_callback;
 const localtypes = {"PAGE_LOCAL":null, "HMI_LOCAL":null}
 function edit_value(path, valuetype, callback, initial) {
