@@ -1217,6 +1217,8 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
+    <xsl:text>const xmlns = "http://www.w3.org/2000/svg";
+</xsl:text>
     <xsl:text>let id = document.getElementById.bind(document);
 </xsl:text>
     <xsl:text>var svg_root = id("</xsl:text>
@@ -9145,21 +9147,23 @@
 </xsl:text>
     <xsl:text>        // Compute visible Y range by merging fixed curves Y ranges
 </xsl:text>
-    <xsl:text>        for(let minmax of this.minmaxes){
+    <xsl:text>        for(let varopts of this.variables_options){
 </xsl:text>
-    <xsl:text>           if(minmax){
+    <xsl:text>            let minmax = varopts.minmax 
 </xsl:text>
-    <xsl:text>               let [min,max] = minmax;
+    <xsl:text>            if(minmax){
 </xsl:text>
-    <xsl:text>               if(min &lt; y_min)
+    <xsl:text>                let [min,max] = minmax;
 </xsl:text>
-    <xsl:text>                   y_min = min;
+    <xsl:text>                if(min &lt; y_min)
 </xsl:text>
-    <xsl:text>               if(max &gt; y_max)
+    <xsl:text>                    y_min = min;
 </xsl:text>
-    <xsl:text>                   y_max = max;
+    <xsl:text>                if(max &gt; y_max)
 </xsl:text>
-    <xsl:text>           }
+    <xsl:text>                    y_max = max;
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -9167,11 +9171,11 @@
 </xsl:text>
     <xsl:text>        if(y_min !== Infinity &amp;&amp; y_max !== -Infinity){
 </xsl:text>
-    <xsl:text>           this.fixed_y_range = true;
+    <xsl:text>            this.fixed_y_range = true;
 </xsl:text>
     <xsl:text>        } else {
 </xsl:text>
-    <xsl:text>           this.fixed_y_range = false;
+    <xsl:text>            this.fixed_y_range = false;
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -12754,8 +12758,6 @@
           <xsl:text>create_ws()
 </xsl:text>
           <xsl:text>
-</xsl:text>
-          <xsl:text>const xmlns = "http://www.w3.org/2000/svg";
 </xsl:text>
           <xsl:text>var edit_callback;
 </xsl:text>
