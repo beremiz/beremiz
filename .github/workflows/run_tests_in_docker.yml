@@ -40,7 +40,7 @@ jobs:
     - if: ${{ steps.cache-docker.outputs.cache-hit == false }}
       name: Create docker image
       run: |
-        cd beremiz/tests/tools/Docker/beremiz-sikuli
+        cd beremiz/tests/tools/Docker
         ./build_docker_image.sh
         docker image save --output="/tmp/latest.tar" beremiz_sikuli
 
@@ -51,12 +51,12 @@ jobs:
 
     - name: Create docker container
       run: |
-        cd beremiz/tests/tools/Docker/beremiz-sikuli
+        cd beremiz/tests/tools/Docker
         ./create_docker_container.sh ${{ github.workspace }}/test
         
     - name: Run tests in docker
       run: |
-        cd beremiz/tests/tools/Docker/beremiz-sikuli
+        cd beremiz/tests/tools/Docker
         ./do_test_in_docker.sh
 
     - name: Upload test resuts artifact
