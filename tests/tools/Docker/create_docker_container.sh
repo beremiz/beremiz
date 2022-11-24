@@ -3,7 +3,7 @@
 set -e
 
 # source directory containing beremiz, matiec, etc..
-SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../../../../.. && pwd )"
+SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../../../.. && pwd )"
 echo "SOURCE direcory : $SRCDIR"
 
 # absolute path to test directory. ~/test if not given as only argument
