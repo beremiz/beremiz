@@ -199,6 +199,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
             Returns:
                 Sikuli App class instance
         """
+        sikuli.OCR.Options().oem(0)
 
         self.screenshotnum = 0
         self.starttime = timesec()
