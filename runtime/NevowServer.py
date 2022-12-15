@@ -27,6 +27,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import os
 import collections
+import shutil
 import platform as platform_module
 from zope.interface import implements
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
@@ -230,6 +231,18 @@ class ISettings(annotate.TypedInterface):
                                                "Restart or Repair"),
                                            action=_("Do"))
 
+    # pylint: disable=no-self-argument
+    def uploadFile(
+            ctx=annotate.Context(),
+            uploadedfile=annotate.FileUpload(required=True,
+                                  label=_("File to upload"))):
+        pass
+
+    uploadFile = annotate.autocallable(uploadFile,
+                                           label=_(
+                                               "Upload a file to PLC working directory"),
+                                           action=_("Upload"))
+
 customSettingsURLs = {
 }
 
@@ -304,8 +317,14 @@ class SettingsPage(rend.Page):
             GetPLCObjectSingleton().RepairPLC()
         else:
             MainWorker.quit()
-            
-        
+
+    def uploadFile(self, uploadedfile, **kwargs):
+        if uploadedfile is not None:
+            fobj = getattr(uploadedfile, "file", None)
+        if fobj is not None:
+            with open(uploadedfile.filename, 'w') as destfd:
+                fobj.seek(0)
+                shutil.copyfileobj(fobj,destfd)
 
     def locateChild(self, ctx, segments):
         if segments[0] in customSettingsURLs:

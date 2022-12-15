@@ -464,11 +464,12 @@ emit "preamble:widget-base-class" {
                 }
             }
         }
-        
+
         undeafen(index){
             this.deafen[index] = undefined;
             let [new_val, old_val] = this.incoming[index];
             this.incoming[index] = undefined;
+            this.lastdispatch[index] = Date.now();
             this.do_dispatch(new_val, old_val, index);
         }
 
