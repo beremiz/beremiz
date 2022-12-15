@@ -28,11 +28,15 @@ def test(app):
     # Move to "Home" section of file selecor, otherwise address is 
     # "file ignored" at first run
     app.type("f", Key.CTRL)
+    app.WaitIdleUI()
     app.type(Key.ESC)
+    app.WaitIdleUI()
     app.type(Key.TAB)
+    app.WaitIdleUI()
     
     # Enter directory by name
     app.k.Address()
+    app.WaitIdleUI()
     
     # Fill address bar
     app.type(new_project_path + Key.ENTER)
