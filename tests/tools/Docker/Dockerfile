@@ -54,6 +54,7 @@ RUN set -xe && \
     ) | install /dev/stdin /usr/local/bin/sikulix
 
 
+# easy to remember 'do_tests' alias to invoke main makefile
 RUN env echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
 RUN chmod +x /usr/local/bin/do_tests
 
@@ -81,9 +82,4 @@ ENV TESSDATAPATH /home/$UNAME/tessdata
 
 # Points to python binary that test will use
 ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
-
-# easy to remember 'do_tests' alias to invoke main makefile
-ARG OWNDIRBASENAME=beremiz
-ENV OWNDIRBASENAME ${OWNDIRBASENAME}
-
 
