@@ -69,7 +69,17 @@ RUN ~/beremizenv/bin/pip install \
         twisted nevow autobahn click opcua \
         wxPython==4.1.1
 
-# Point to python binary test scripts will use
+RUN set -xe && \
+    cd  /home/$UNAME && mkdir tessdata && \
+    wget -q https://github.com/tesseract-ocr/tessdata/archive/refs/tags/4.1.0.tar.gz \
+         -O tessdata.tar.gz && \
+    echo 89e25c7c40a59be7195422a01f57fcb2 tessdata.tar.gz | md5sum -c && \
+    tar --strip-components=1 -C tessdata -x -v -z -f tessdata.tar.gz && \
+    rm tessdata.tar.gz
+
+ENV TESSDATAPATH /home/$UNAME/tessdata
+
+# Points to python binary that test will use
 ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
 
 # easy to remember 'do_tests' alias to invoke main makefile
