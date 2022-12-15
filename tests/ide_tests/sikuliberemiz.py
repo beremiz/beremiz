@@ -12,9 +12,9 @@ import sikuli
 
 beremiz_path = os.environ["BEREMIZPATH"]
 python_bin = os.environ.get("BEREMIZPYTHONPATH", "/usr/bin/python")
-
 opj = os.path.join
 
+tessdata_path = os.environ["TESSDATAPATH"]
 
 class KBDShortcut:
     """Send shortut to app by calling corresponding methods.
@@ -199,6 +199,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
             Returns:
                 Sikuli App class instance
         """
+        sikuli.OCR.Options().dataPath(tessdata_path)
         sikuli.OCR.Options().oem(0)
 
         self.screenshotnum = 0
