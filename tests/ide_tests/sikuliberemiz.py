@@ -5,8 +5,10 @@ import sys
 import subprocess
 import traceback
 import signal
+import re
 from threading import Thread, Event, Lock
 from time import time as timesec
+from xml.sax.saxutils import escape as escape_xml
 
 import sikuli
 
@@ -15,6 +17,13 @@ python_bin = os.environ.get("BEREMIZPYTHONPATH", "/usr/bin/python")
 opj = os.path.join
 
 tessdata_path = os.environ["TESSDATAPATH"]
+
+ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+def escape_ansi(line):
+    return ansi_escape.sub('', line)
+
+def escape(txt):
+    return escape_xml(escape_ansi(txt))
 
 class KBDShortcut:
     """Send shortut to app by calling corresponding methods.
@@ -59,6 +68,7 @@ class IDEIdleObserver:
             app (class BeremizApp)
         """
         self.r = sikuli.Region(self.sikuliapp.window())
+        self.targetOffset = self.r.getTopLeft()
 
         self.idechanged = False
         
@@ -199,19 +209,21 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
             Returns:
                 Sikuli App class instance
         """
-        sikuli.OCR.Options().dataPath(tessdata_path)
-        sikuli.OCR.Options().oem(0)
+        self.ocropts = sikuli.OCR.globalOptions()
+        self.ocropts.dataPath(tessdata_path)
+        self.ocropts.oem(0)
+        self.ocropts.smallFont()
 
-        self.screenshotnum = 0
+        self.imgnum = 0
         self.starttime = timesec()
         self.screen = sikuli.Screen()
 
-        self.report = open("report.html", "w")
-        self.report.write("""<!doctype html>
-<html>
+        self.report = open("report.xhtml", "w")
+        self.report.write("""\
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta charset="utf-8">
-    <meta name="color-scheme" content="light dark">
+    <meta charset="utf-8"/>
+    <meta name="color-scheme" content="light dark"/>
     <title>Test report</title>
   </head>
   <body>
@@ -273,21 +285,66 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         stdoutIdleObserver.__init__(self)
 
         # stubs for common sikuli calls to allow adding hooks later
-        for name in ["click","doubleClick","type","rightClick","wait"]:
-            def makeMyMeth(n):
+        for name, takes_matches in [
+            ("click", True),
+            ("doubleClick", True),
+            ("type", False),
+            ("rightClick", True),
+            ("wait", False)]:
+            def makeMyMeth(n,m):
                 def myMeth(*args, **kwargs):
                     self.ReportScreenShot("Begin: " + n + "(" + repr(args) + "," + repr(kwargs) + ")")
+                    if m:
+                        args = map(self.handle_PFRML_arg, args)
+                        kwargs = dict(map(lambda k,v:(k,self.handle_PFRML_arg(v)), kwargs.items()))
                     try:
                         getattr(sikuli, n)(*args, **kwargs)
                     finally:
                         self.ReportScreenShot("end: " + n + "(" + repr(args) + "," + repr(kwargs) + ")")
                 return myMeth
-            setattr(self, name, makeMyMeth(name))
+            setattr(self, name, makeMyMeth(name,takes_matches))
+
+    def handle_PFRML_arg(self, arg):
+        if type(arg)==list:
+            return self.findBest(*arg)
+        if type(arg)==str and not arg.endswith(".png"):
+            return self.findBest(arg)
+        return arg
+
+    def findBest(self, *args):
+        #match = self.r.findBest(*args)
+        match = None 
+        matches = sikuli.OCR.readWords(self.r) + sikuli.OCR.readLines(self.r)
+        for m in matches:
+            mText = m.getText().encode('ascii', 'ignore')
+            for arg in args:
+                if arg in mText:
+                    if match is None:
+                        match = m
+                    if mText == arg:
+                        match = m
+                        break
+        if match is None:
+            self.ReportText("Not found: " + repr(args) + " OCR content: ")
+            for m in matches:
+                self.ReportText(repr(m) + ": " + m.getText().encode('ascii', 'ignore'))
+            raise Exception("Not Found: " + repr(args))
+        
+        # translate match to screen ref
+        #match.setTargetOffset(self.targetOffset)
+        match.setTopLeft(match.getTopLeft().offset(self.targetOffset))
+
+        self.ReportTextImage("Found for " + repr(args) + ": " +
+            " ".join([repr(match), repr(match.getTarget()), repr(match.getTargetOffset())]),
+            self.screen.capture(match))
+        return match.getTarget()
 
     def dragNdrop(self, src, dst):
-        sikuli.drag(src)
+        self.ReportScreenShot("Drag: (" + repr(src) + ")")
+        sikuli.drag(self.handle_PFRML_arg(src))
         sikuli.mouseMove(5,0)
-        sikuli.dropAt(dst)
+        sikuli.dropAt(self.handle_PFRML_arg(dst))
+        self.ReportScreenShot("Drop: (" + repr(dst) + ")")
 
     def close(self):
         self.sikuliapp.close()
@@ -304,21 +361,26 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         stdoutIdleObserver.__del__(self)
 
     def ReportScreenShot(self, msg):
-        elapsed = "%.3fs: "%(timesec() - self.starttime)
-        fname = "capture"+str(self.screenshotnum)+".png"
         cap = self.screen.capture(self.r)
-        cap.save(".", fname)
-        self.screenshotnum = self.screenshotnum + 1
-        self.report.write( "<p>" + elapsed + msg + "<br/><img src=\""+ fname + "\">" + "</p>")
+        self.ReportTextImage(msg, cap)
+
+    def ReportTextImage(self, msg, img):
+        elapsed = "%.3fs: "%(timesec() - self.starttime)
+        fname = "capture"+str(self.imgnum)+".png"
+        img.save(".", fname)
+        self.imgnum = self.imgnum + 1
+        self.report.write( "<p>" + escape(elapsed + msg) + "<br/><img src=\""+ fname + "\"/>" + "</p>")
 
     def ReportText(self, text):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
-        self.report.write("<p>" + elapsed + text + "</p>")
+        #res = u"<p><![CDATA[" + elapsed + text + "]]></p>"
+        res = u"<p>" + escape(elapsed + text) + "</p>"
+        self.report.write(res)
 
     def ReportOutput(self, text):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
         sys.stdout.write(elapsed + text)
-        self.report.write("<pre>" + elapsed + text + "</pre>")
+        self.report.write("<pre>" + escape(elapsed + text) + "</pre>")
 
 
 class AuxiliaryProcess(stdoutIdleObserver):
