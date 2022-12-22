@@ -2160,7 +2160,7 @@
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
-    <xsl:text>    
+    <xsl:text>
 </xsl:text>
     <xsl:text>    undeafen(index){
 </xsl:text>
@@ -2169,6 +2169,10 @@
     <xsl:text>        let [new_val, old_val] = this.incoming[index];
 </xsl:text>
     <xsl:text>        this.incoming[index] = undefined;
+</xsl:text>
+    <xsl:text>        // TODO: add timestamp argument to dispatch, so that defered data do not appear wrong on graphs
+</xsl:text>
+    <xsl:text>        this.lastdispatch[index] = Date.now();
 </xsl:text>
     <xsl:text>        this.do_dispatch(new_val, old_val, index);
 </xsl:text>
@@ -5588,7 +5592,7 @@
     <xsl:if test="$have_value">
       <xsl:text>    animate: function(){
 </xsl:text>
-      <xsl:text>        this.value_elt.textContent = String(this.display);
+      <xsl:text>        multiline_to_svg_text(this.value_elt, String(this.display));
 </xsl:text>
       <xsl:text>    },
 </xsl:text>
@@ -5626,7 +5630,7 @@
 </xsl:text>
     </xsl:for-each>
     <xsl:if test="$have_value">
-      <xsl:text>        this.value_elt.textContent = "";
+      <xsl:text>        multiline_to_svg_text(this.value_elt, "");
 </xsl:text>
     </xsl:if>
     <xsl:text>    },
@@ -9268,6 +9272,8 @@
     <xsl:text>        let time = Date.now();
 </xsl:text>
     <xsl:text>
+</xsl:text>
+    <xsl:text>        console.log("dispatch(",value,oldval, index, time);
 </xsl:text>
     <xsl:text>        // naive local buffer impl. 
 </xsl:text>
