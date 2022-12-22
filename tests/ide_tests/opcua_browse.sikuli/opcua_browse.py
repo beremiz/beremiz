@@ -15,7 +15,7 @@ def test(app):
 
     server = AuxiliaryProcess(app, ["/bin/bash",os.path.join(getBundlePath(),"opcua_service.bash")])
 
-    app.doubleClick("opcua_0")
+    app.doubleClick(["opcua_0", "opcua"])
 
     app.WaitIdleUI()
 
@@ -29,7 +29,7 @@ def test(app):
 
     app.doubleClick("TestObject")
 
-    app.dragNdrop("TestIn", "output variables")
+    app.dragNdrop(["TestIn", "Testln"], "output variables")
 
     app.wait(1)
 

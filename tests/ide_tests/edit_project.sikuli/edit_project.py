@@ -25,7 +25,7 @@ def test(app):
 
     app.WaitIdleUI()
 
-    app.doubleClick("Hello world")
+    app.doubleClick("Hello")
 
     app.WaitIdleUI()
 

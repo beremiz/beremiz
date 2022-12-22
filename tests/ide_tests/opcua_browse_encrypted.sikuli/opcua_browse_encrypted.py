@@ -17,7 +17,7 @@ def test(app):
 
     server.waitPatternInStdout("CERTS READY", 5)
 
-    app.doubleClick("opcua_0")
+    app.doubleClick(["opcua_0", "opcua"])
 
     app.WaitIdleUI()
 
@@ -31,7 +31,7 @@ def test(app):
 
     app.doubleClick("TestObject")
 
-    app.dragNdrop("TestIn", "output variables")
+    app.dragNdrop(["TestIn", "Testln"], "output variables")
 
     app.wait(1)
 
