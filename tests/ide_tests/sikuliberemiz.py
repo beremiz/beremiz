@@ -347,8 +347,12 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         self.ReportScreenShot("Drop: (" + repr(dst) + ")")
 
     def close(self):
-        self.sikuliapp.close()
-        self.sikuliapp = None
+
+        self.ReportScreenShot("Close app")
+        os.kill(self.proc.pid, signal.SIGTERM)
+        #self.sikuliapp.close()
+        #self.sikuliapp = None
+
         self.report.write("""
   </body>
 </html>""")
