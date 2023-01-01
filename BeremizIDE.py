@@ -30,6 +30,7 @@ import os
 import sys
 import shutil
 import time
+import signal
 from time import time as gettime
 from threading import Lock, Timer, currentThread
 
@@ -508,6 +509,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         self.RefreshAll()
         self.LogConsole.SetFocus()
 
+        signal.signal(signal.SIGTERM,self.signalTERM_handler)
+
     def RefreshTitle(self):
         name = _("Beremiz")
         if self.CTR is not None:
@@ -643,6 +646,11 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         else:
             # prevent event to continue, i.e. cancel closing
             event.Veto()
+
+    def signalTERM_handler(self, sig, frame):
+        print ("Signal TERM caught: kill local runtime and quit, no save")
+        self.KillLocalRuntime()
+        sys.exit()
 
     def RefreshFileMenu(self):
         self.RefreshRecentProjectsMenu()
