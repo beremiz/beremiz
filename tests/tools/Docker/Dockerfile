@@ -17,12 +17,13 @@ ARG GID=1000
 RUN groupadd -g $GID $UNAME
 RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
 
-RUN apt-get install locales
-RUN locale-gen en_US.UTF-8
-RUN update-locale LANG=en_US.UTF-8
-
 RUN set -xe \
     && apt-get update \
+    && apt-get install locales \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8
+
+RUN set -xe \
     && TZ="America/Paris" \
        DEBIAN_FRONTEND="noninteractive" \
        apt-get install -y --no-install-recommends \
