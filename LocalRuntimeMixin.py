@@ -6,13 +6,12 @@ import sys
 import tempfile
 import random
 import shutil
+
 from util.ProcessLogger import ProcessLogger
 from util.paths import Bpath
 
 LocalRuntimeInterpreterPath = \
-    os.environ["BEREMIZPYTHONPATH"] \
-    if os.environ.has_key("BEREMIZPYTHONPATH") \
-    else sys.executable
+    os.environ.get("BEREMIZPYTHONPATH", sys.executable)
 
 class LocalRuntimeMixin():
 
