@@ -1927,7 +1927,7 @@ class IDEFrame(wx.Frame):
                 new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Paste POU"))
                 self.Bind(wx.EVT_MENU, self.OnPastePou, new_item)
                 if self.GetCopyBuffer() is None:
-                    menu.Enable(new_item, False)
+                    new_item.Enable(False)
 
             elif name == "Configurations":
                 menu = wx.Menu(title='')
