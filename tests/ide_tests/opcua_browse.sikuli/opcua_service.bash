@@ -6,12 +6,15 @@ echo "Instant OPC-UA server for test"
 exec $BEREMIZPYTHONPATH - << EOF
 
 import sys
+import os
 import time
 
 from opcua import ua, Server
 
 server = Server()
-server.set_endpoint("opc.tcp://127.0.0.1:4840/freeopcua/server/")
+host = os.environ.get("OPCUA_DEFAULT_HOST", "127.0.0.1")
+endpoint = "opc.tcp://"+host+":4840/freeopcua/server/"
+server.set_endpoint(endpoint)
 
 uri = "http://beremiz.github.io"
 idx = server.register_namespace(uri)
