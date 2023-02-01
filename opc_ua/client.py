@@ -22,6 +22,9 @@ Open62541IncludePaths = [os.path.join(Open62541Path, *dirs) for dirs in [
     ("include",),
     ("arch",)]]
 
+# Tests need to use other default hosts
+OPCUA_DEFAULT_HOST = os.environ.get("OPCUA_DEFAULT_HOST", "127.0.0.1")
+
 class OPCUAClientEditor(ConfTreeNodeEditor):
     CONFNODEEDITOR_TABS = [
         (_("OPC-UA Client"), "CreateOPCUAClient_UI")]
@@ -79,7 +82,7 @@ class OPCUAClient(object):
               </xsd:complexType>
             </xsd:element>
           </xsd:sequence>
-          <xsd:attribute name="Server_URI" type="xsd:string" use="optional" default="opc.tcp://localhost:4840"/>
+          <xsd:attribute name="Server_URI" type="xsd:string" use="optional" default="opc.tcp://"""+OPCUA_DEFAULT_HOST+""":4840"/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
