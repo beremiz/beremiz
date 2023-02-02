@@ -27,6 +27,7 @@
 
 
 from __future__ import absolute_import
+import os
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase
 
@@ -60,6 +61,8 @@ def _Import_Dialogs():
                 schemes += [scheme]
 
 
+LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "localhost")
+
 def ConnectorFactory(uri, confnodesroot):
     """
     Return a connector corresponding to the URI
@@ -77,7 +80,7 @@ def ConnectorFactory(uri, confnodesroot):
         # started on demand, listening on random port
         scheme = "PYRO"
         runtime_port = confnodesroot.StartLocalRuntime()
-        uri = "PYROLOC://127.0.0.1:" + str(runtime_port)
+        uri = "PYROLOC://"+LocalHost+":" + str(runtime_port)
 
     # commented code to enable for MDNS:// support
     # elif _scheme == "MDNS":
