@@ -117,7 +117,7 @@ def test(app):
     
     app.k.Build()
     
-    app.waitIdleStdout(5,30)
+    app.waitPatternInStdout("Successfully built.", 10)
     
     app.k.Connect()
     
