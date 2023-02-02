@@ -13,6 +13,8 @@ from util.paths import Bpath
 LocalRuntimeInterpreterPath = \
     os.environ.get("BEREMIZPYTHONPATH", sys.executable)
 
+LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "localhost")
+
 class LocalRuntimeMixin():
 
     def __init__(self, log, use_gui=True):
@@ -32,7 +34,7 @@ class LocalRuntimeMixin():
             # launch local runtime
             self.local_runtime = ProcessLogger(
                 self.local_runtime_log,
-                "\"%s\" \"%s\" -p %s -i localhost %s %s" % (
+                ("\"%s\" \"%s\" -p %s -i "+LocalHost+" %s %s") % (
                     LocalRuntimeInterpreterPath,
                     Bpath("Beremiz_service.py"),
                     self.runtime_port,
