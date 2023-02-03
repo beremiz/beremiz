@@ -47,6 +47,7 @@ class outputThread(Thread):
         self.callback = callback
         self.endcallback = endcallback
         self.fd = fd
+        self.daemon = True
 
     def run(self):
         outchunk = None
