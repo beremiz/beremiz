@@ -92,9 +92,9 @@ class _RequestPlug(object):
             if element["name"] == "ModbusRequest":
                 for child in element["children"]:
                     if child["name"] == "Function":
-                        list = list(modbus_function_dict.keys())
-                        list.sort()
-                        child["type"] = list
+                        _list = list(modbus_function_dict.keys())
+                        _list.sort()
+                        child["type"] = _list
         return infos
 
     def GetVariableLocationTree(self):
@@ -238,9 +238,9 @@ class _MemoryAreaPlug(object):
             if element["name"] == "MemoryArea":
                 for child in element["children"]:
                     if child["name"] == "MemoryAreaType":
-                        list = list(modbus_memtype_dict.keys())
-                        list.sort()
-                        child["type"] = list
+                        _list = list(modbus_memtype_dict.keys())
+                        _list.sort()
+                        child["type"] = _list
         return infos
 
     def GetVariableLocationTree(self):
