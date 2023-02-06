@@ -558,9 +558,12 @@ class ConfigTreeNode(object):
         ChildrenWithSameClass = self.Children.setdefault(CTNType, list())
         # Check count
         if getattr(CTNClass, "CTNMaxCount", None) and len(ChildrenWithSameClass) >= CTNClass.CTNMaxCount:
-            raise Exception(
-                _("Max count ({a1}) reached for this confnode of type {a2} ").
-                format(a1=CTNClass.CTNMaxCount, a2=CTNType))
+
+            msg = _("Max count ({a1}) reached for this confnode of type {a2} ").format(
+                    a1=CTNClass.CTNMaxCount, a2=CTNType)
+            self.GetCTRoot().logger.write_warning(msg)
+
+            return None
 
         # create the final class, derived of provided confnode and template
         class FinalCTNClass(CTNClass, ConfigTreeNode):
