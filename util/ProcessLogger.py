@@ -78,7 +78,7 @@ class ProcessLogger(object):
                  no_stdout=False, no_stderr=False, no_gui=True,
                  timeout=None, outlimit=None, errlimit=None,
                  endlog=None, keyword=None, kill_it=False, cwd=None,
-                 encoding=None, output_encoding=None):
+                 encoding=None, output_encoding=None, env=None):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -122,7 +122,8 @@ class ProcessLogger(object):
             "cwd":    os.getcwd() if cwd is None else cwd,
             "stdin":  subprocess.PIPE,
             "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE
+            "stderr": subprocess.PIPE,
+            "env":    env
         }
 
         if no_gui and os.name in ("nt", "ce"):
