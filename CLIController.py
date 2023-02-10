@@ -143,6 +143,9 @@ class CLIController(LocalRuntimeMixin, ProjectController):
                 _("\"%s\" is not a valid Beremiz project\n") % self.session.project_home)
             return True
 
+        if not os.path.isabs(self.session.project_home):
+            self.session.project_home = os.path.join(os.getcwd(), self.session.project_home)
+
         errmsg, error = self.LoadProject(self.session.project_home, self.session.buildpath)
         if error:
             self.logger.write_error(errmsg)
