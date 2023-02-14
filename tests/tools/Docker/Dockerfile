@@ -29,8 +29,8 @@ RUN set -xe \
        apt-get install -y --no-install-recommends \
                `# to run sikuli` \
                wget \
-               libopencv4.2-java \
                openjdk-11-jre \
+               libtesseract4 \
                \
                `# to run X based tests` \
                fluxbox \
