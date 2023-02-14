@@ -7,6 +7,7 @@
 #include <time.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <pthread.h>
 #include <locale.h>
 #include <semaphore.h>
@@ -237,6 +238,7 @@ void LockPython(void)
 }
 
 struct RT_to_nRT_signal_s {
+    int used;
     pthread_cond_t WakeCond;
     pthread_mutex_t WakeCondLock;
 };
@@ -257,6 +259,7 @@ void *create_RT_to_nRT_signal(char* name){
     if(!sig) 
     	_LogAndReturnNull("Failed allocating memory for RT_to_nRT signal");
 
+    sig->used = 1;
     pthread_cond_init(&sig->WakeCond, NULL);
     pthread_mutex_init(&sig->WakeCondLock, NULL);
 
@@ -266,10 +269,10 @@ void *create_RT_to_nRT_signal(char* name){
 void delete_RT_to_nRT_signal(void* handle){
     RT_to_nRT_signal_t *sig = (RT_to_nRT_signal_t*)handle;
 
-    pthread_cond_destroy(&sig->WakeCond);
-    pthread_mutex_destroy(&sig->WakeCondLock);
-
-    free(sig);
+    pthread_mutex_lock(&sig->WakeCondLock);
+    sig->used = 0;
+    pthread_cond_signal(&sig->WakeCond);
+    pthread_mutex_unlock(&sig->WakeCondLock);
 }
 
 int wait_RT_to_nRT_signal(void* handle){
@@ -277,7 +280,14 @@ int wait_RT_to_nRT_signal(void* handle){
     RT_to_nRT_signal_t *sig = (RT_to_nRT_signal_t*)handle;
     pthread_mutex_lock(&sig->WakeCondLock);
     ret = pthread_cond_wait(&sig->WakeCond, &sig->WakeCondLock);
+    if(!sig->used) ret = -EINVAL;
     pthread_mutex_unlock(&sig->WakeCondLock);
+
+    if(!sig->used){
+        pthread_cond_destroy(&sig->WakeCond);
+        pthread_mutex_destroy(&sig->WakeCondLock);
+        free(sig);
+    }
     return ret;
 }
 
