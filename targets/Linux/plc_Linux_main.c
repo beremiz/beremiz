@@ -12,7 +12,15 @@
 #include <locale.h>
 #include <semaphore.h>
 
-static sem_t Run_PLC;
+static unsigned long __debug_tick;
+
+static pthread_t PLC_thread;
+static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t python_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t debug_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static int PLC_shutdown = 0;
 
 long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
 {
@@ -31,37 +39,32 @@ void PLC_GetTime(IEC_TIME *CURRENT_TIME)
     CURRENT_TIME->tv_nsec = tmp.tv_nsec;
 }
 
-void PLC_timer_notify(sigval_t val)
-{
-    PLC_GetTime(&__CURRENT_TIME);
-    sem_post(&Run_PLC);
-}
+static long long period_ns = 0;
+struct timespec next_abs_time;
 
-timer_t PLC_timer;
+static void inc_timespec(struct timespec *ts, unsigned long long value_ns)
+{
+#ifdef __lldiv_t_defined
+    lldiv_t next_div = lldiv(ts->tv_sec * 1000000000 + ts->tv_nsec + value_ns, 1000000000);
+    ts->tv_sec = next_div.quot;
+    ts->tv_nsec = next_div.rem;
+#else
+    long long next_ns = ts->tv_sec * 1000000000 + ts->tv_nsec + value_ns;
+    ts->tv_sec = next_ns / 1000000000;
+    ts->tv_nsec = next_ns % 1000000000;
+#endif
+}
 
 void PLC_SetTimer(unsigned long long next, unsigned long long period)
 {
-    struct itimerspec timerValues;
-	/*
-	printf("SetTimer(%lld,%lld)\n",next, period);
-	*/
-    memset (&timerValues, 0, sizeof (struct itimerspec));
-	{
-#ifdef __lldiv_t_defined
-		lldiv_t nxt_div = lldiv(next, 1000000000);
-		lldiv_t period_div = lldiv(period, 1000000000);
-	    timerValues.it_value.tv_sec = nxt_div.quot;
-	    timerValues.it_value.tv_nsec = nxt_div.rem;
-	    timerValues.it_interval.tv_sec = period_div.quot;
-	    timerValues.it_interval.tv_nsec = period_div.rem;
-#else
-	    timerValues.it_value.tv_sec = next / 1000000000;
-	    timerValues.it_value.tv_nsec = next % 1000000000;
-	    timerValues.it_interval.tv_sec = period / 1000000000;
-	    timerValues.it_interval.tv_nsec = period % 1000000000;
-#endif
-	}
-    timer_settime (PLC_timer, 0, &timerValues, NULL);
+    /*
+    printf("SetTimer(%lld,%lld)\n",next, period);
+    */
+    period_ns = period;
+    clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
+    inc_timespec(&next_abs_time, next);
+    // interrupt clock_nanpsleep
+    pthread_kill(PLC_thread, SIGUSR1);
 }
 //
 void catch_signal(int sig)
@@ -72,16 +75,11 @@ void catch_signal(int sig)
   exit(0);
 }
 
-
-static unsigned long __debug_tick;
-
-pthread_t PLC_thread;
-static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t python_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t debug_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-int PLC_shutdown = 0;
+void PLCThreadSignalHandler(int sig)
+{
+    if (sig == SIGUSR2)
+        pthread_exit(NULL);
+}
 
 int ForceSaveRetainReq(void) {
     return PLC_shutdown;
@@ -90,8 +88,14 @@ int ForceSaveRetainReq(void) {
 void PLC_thread_proc(void *arg)
 {
     while (!PLC_shutdown) {
-        sem_wait(&Run_PLC);
+        // Sleep until next PLC run
+        // TODO check result of clock_nanosleep and wait again or exit eventually
+        int res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_abs_time, NULL);
+        if(res==EINTR) continue;
+        if(res!=0) return;
+        PLC_GetTime(&__CURRENT_TIME);
         __run();
+        inc_timespec(&next_abs_time, period_ns);
     }
     pthread_exit(0);
 }
@@ -99,20 +103,11 @@ void PLC_thread_proc(void *arg)
 #define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
-    struct sigevent sigev;
     setlocale(LC_NUMERIC, "C");
 
     PLC_shutdown = 0;
 
-    sem_init(&Run_PLC, 0, 0);
-
     pthread_create(&PLC_thread, NULL, (void*) &PLC_thread_proc, NULL);
-
-    memset (&sigev, 0, sizeof (struct sigevent));
-    sigev.sigev_value.sival_int = 0;
-    sigev.sigev_notify = SIGEV_THREAD;
-    sigev.sigev_notify_attributes = NULL;
-    sigev.sigev_notify_function = PLC_timer_notify;
 
     pthread_mutex_init(&debug_wait_mutex, NULL);
     pthread_mutex_init(&debug_mutex, NULL);
@@ -122,12 +117,16 @@ int startPLC(int argc,char **argv)
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
 
-    timer_create (CLOCK_MONOTONIC, &sigev, &PLC_timer);
     if(  __init(argc,argv) == 0 ){
-        PLC_SetTimer(common_ticktime__,common_ticktime__);
 
+        /* Signal to wakeup PLC thread when period changes */
+        signal(SIGUSR1, PLCThreadSignalHandler);
+        /* Signal to end PLC thread */
+        signal(SIGUSR2, PLCThreadSignalHandler);
         /* install signal handler for manual break */
         signal(SIGINT, catch_signal);
+
+        PLC_SetTimer(common_ticktime__,common_ticktime__);
     }else{
         return 1;
     }
@@ -155,11 +154,9 @@ int stopPLC()
 {
     /* Stop the PLC */
     PLC_shutdown = 1;
-    sem_post(&Run_PLC);
-    PLC_SetTimer(0,0);
-	pthread_join(PLC_thread, NULL);
-	sem_destroy(&Run_PLC);
-    timer_delete (PLC_timer);
+    /* Order PLCThread to exit */
+    pthread_kill(PLC_thread, SIGUSR2);
+    pthread_join(PLC_thread, NULL);
     __cleanup();
     pthread_mutex_destroy(&debug_wait_mutex);
     pthread_mutex_destroy(&debug_mutex);
@@ -197,7 +194,7 @@ int suspendDebug(int disable)
     /*__DEBUG is protected by this mutex */
     __DEBUG = !disable;
     if (disable)
-    	pthread_mutex_unlock(&debug_mutex);
+        pthread_mutex_unlock(&debug_mutex);
     return 0;
 }
 
@@ -247,7 +244,7 @@ typedef struct RT_to_nRT_signal_s RT_to_nRT_signal_t;
 
 #define _LogAndReturnNull(text) \
     {\
-    	char mstr[256] = text " for ";\
+        char mstr[256] = text " for ";\
         strncat(mstr, name, 255);\
         LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
         return NULL;\
@@ -256,8 +253,8 @@ typedef struct RT_to_nRT_signal_s RT_to_nRT_signal_t;
 void *create_RT_to_nRT_signal(char* name){
     RT_to_nRT_signal_t *sig = (RT_to_nRT_signal_t*)malloc(sizeof(RT_to_nRT_signal_t));
 
-    if(!sig) 
-    	_LogAndReturnNull("Failed allocating memory for RT_to_nRT signal");
+    if(!sig)
+        _LogAndReturnNull("Failed allocating memory for RT_to_nRT signal");
 
     sig->used = 1;
     pthread_cond_init(&sig->WakeCond, NULL);
