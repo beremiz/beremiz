@@ -44,12 +44,12 @@ struct timespec next_abs_time;
 
 static void inc_timespec(struct timespec *ts, unsigned long long value_ns)
 {
+    long long next_ns = ((long long) ts->tv_sec * 1000000000) + ts->tv_nsec + value_ns;
 #ifdef __lldiv_t_defined
-    lldiv_t next_div = lldiv(ts->tv_sec * 1000000000 + ts->tv_nsec + value_ns, 1000000000);
+    lldiv_t next_div = lldiv(next_ns, 1000000000);
     ts->tv_sec = next_div.quot;
     ts->tv_nsec = next_div.rem;
 #else
-    long long next_ns = ts->tv_sec * 1000000000 + ts->tv_nsec + value_ns;
     ts->tv_sec = next_ns / 1000000000;
     ts->tv_nsec = next_ns % 1000000000;
 #endif
@@ -66,7 +66,7 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
     // interrupt clock_nanpsleep
     pthread_kill(PLC_thread, SIGUSR1);
 }
-//
+
 void catch_signal(int sig)
 {
 //  signal(SIGTERM, catch_signal);
@@ -91,8 +91,13 @@ void PLC_thread_proc(void *arg)
         // Sleep until next PLC run
         // TODO check result of clock_nanosleep and wait again or exit eventually
         int res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_abs_time, NULL);
-        if(res==EINTR) continue;
-        if(res!=0) return;
+        if(res==EINTR){
+            continue;
+        }
+        if(res!=0){
+            printf("PLC thread died with error %d \n", res);
+            return;
+        }
         PLC_GetTime(&__CURRENT_TIME);
         __run();
         inc_timespec(&next_abs_time, period_ns);
@@ -106,8 +111,6 @@ int startPLC(int argc,char **argv)
     setlocale(LC_NUMERIC, "C");
 
     PLC_shutdown = 0;
-
-    pthread_create(&PLC_thread, NULL, (void*) &PLC_thread_proc, NULL);
 
     pthread_mutex_init(&debug_wait_mutex, NULL);
     pthread_mutex_init(&debug_mutex, NULL);
@@ -126,7 +129,11 @@ int startPLC(int argc,char **argv)
         /* install signal handler for manual break */
         signal(SIGINT, catch_signal);
 
-        PLC_SetTimer(common_ticktime__,common_ticktime__);
+        /* initialize next occurence and period */
+        period_ns = common_ticktime__;
+        clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
+
+        pthread_create(&PLC_thread, NULL, (void*) &PLC_thread_proc, NULL);
     }else{
         return 1;
     }
