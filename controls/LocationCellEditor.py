@@ -29,14 +29,14 @@ import wx
 from dialogs.BrowseLocationsDialog import BrowseLocationsDialog
 
 
-class LocationCellControl(wx.PyControl):
+class LocationCellControl(wx.Control):
 
     '''
     Custom cell editor control with a text box and a button that launches
     the BrowseLocationsDialog.
     '''
     def __init__(self, parent):
-        wx.PyControl.__init__(self, parent)
+        wx.Control.__init__(self, parent)
 
         main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
         main_sizer.AddGrowableCol(0)
@@ -198,9 +198,9 @@ class LocationCellEditor(wx.grid.GridCellEditor):
         pass
 
     def SetSize(self, rect):
-        self.CellControl.SetDimensions(rect.x + 1, rect.y,
-                                       rect.width, rect.height,
-                                       wx.SIZE_ALLOW_MINUS_ONE)
+        self.CellControl.SetSize(rect.x + 1, rect.y,
+                                 rect.width, rect.height,
+                                 wx.SIZE_ALLOW_MINUS_ONE)
 
     def Clone(self):
         return LocationCellEditor(self.Table, self.Controller)
