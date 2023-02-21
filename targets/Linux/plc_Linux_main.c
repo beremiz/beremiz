@@ -108,7 +108,6 @@ void PLC_thread_proc(void *arg)
 #define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
-    setlocale(LC_NUMERIC, "C");
 
     PLC_shutdown = 0;
 
