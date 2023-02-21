@@ -11,7 +11,8 @@ def get_translation(txt):
 
 class FakeObject:
     def __init__(self, *args, **kwargs):
-        self.__classname__ = kwargs["__classname__"]
+        if "__classname__" in kwargs:
+            self.__classname__ = kwargs["__classname__"]
 
     def __getattr__(self,name):
         if name.startswith('__'):
