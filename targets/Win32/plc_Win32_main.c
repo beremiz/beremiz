@@ -82,7 +82,6 @@ int startPLC(int argc,char **argv)
 {
 	unsigned long thread_id = 0;
     BOOL tmp;
-    setlocale(LC_NUMERIC, "C");
 
     debug_sem = CreateSemaphore(
                             NULL,           // default security attributes
