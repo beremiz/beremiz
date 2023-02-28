@@ -32,7 +32,11 @@ class Linux_target(toolchain_gcc):
     extension = ".so"
 
     def getBuilderCFLAGS(self):
-        return toolchain_gcc.getBuilderCFLAGS(self) + ["-fPIC"]
+        additional_cflags = ["-fPIC"]
+        build_for_realtime = self.CTRInstance.GetTarget().getcontent().getRealTime()
+        if build_for_realtime:
+            additional_cflags.append("-DREALTIME_LINUX")
+        return toolchain_gcc.getBuilderCFLAGS(self) + additional_cflags
 
     def getBuilderLDFLAGS(self):
         return toolchain_gcc.getBuilderLDFLAGS(self) + ["-shared", "-lrt"]

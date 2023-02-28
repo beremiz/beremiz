@@ -11,6 +11,9 @@
 #include <pthread.h>
 #include <locale.h>
 #include <semaphore.h>
+#ifdef REALTIME_LINUX
+#include <sys/mman.h>
+#endif
 
 static unsigned long __debug_tick;
 
@@ -105,10 +108,59 @@ void PLC_thread_proc(void *arg)
     pthread_exit(0);
 }
 
+#define _LogError(text,...) \
+    {\
+        char mstr[256];\
+        snprintf(mstr, 255, text, ##__VA_ARGS__);\
+        LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
+    }
 #define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
-    setlocale(LC_NUMERIC, "C");
+
+    int ret;
+	pthread_attr_t *pattr = NULL;
+
+#ifdef REALTIME_LINUX
+	struct sched_param param;
+	pthread_attr_t attr;
+
+    /* Lock memory */
+    ret = mlockall(MCL_CURRENT|MCL_FUTURE);
+    if(ret == -1) {
+		_LogError("mlockall failed: %m\n");
+		return ret;
+    }
+
+	/* Initialize pthread attributes (default values) */
+	ret = pthread_attr_init(&attr);
+	if (ret) {
+		_LogError("init pthread attributes failed\n");
+		return ret;
+	}
+
+	/* Set scheduler policy and priority of pthread */
+	ret = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+	if (ret) {
+		_LogError("pthread setschedpolicy failed\n");
+		return ret;
+	}
+	param.sched_priority = PLC_THREAD_PRIORITY;
+	ret = pthread_attr_setschedparam(&attr, &param);
+	if (ret) {
+		_LogError("pthread setschedparam failed\n");
+		return ret;
+	}
+
+	/* Use scheduling parameters of attr */
+	ret = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+	if (ret) {
+		_LogError("pthread setinheritsched failed\n");
+		return ret;
+	}
+
+	pattr = &attr;
+#endif
 
     PLC_shutdown = 0;
 
@@ -120,7 +172,7 @@ int startPLC(int argc,char **argv)
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
 
-    if(  __init(argc,argv) == 0 ){
+    if((ret = __init(argc,argv)) == 0 ){
 
         /* Signal to wakeup PLC thread when period changes */
         signal(SIGUSR1, PLCThreadSignalHandler);
@@ -133,9 +185,13 @@ int startPLC(int argc,char **argv)
         period_ns = common_ticktime__;
         clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
 
-        pthread_create(&PLC_thread, NULL, (void*) &PLC_thread_proc, NULL);
+        ret = pthread_create(&PLC_thread, pattr, (void*) &PLC_thread_proc, NULL);
+		if (ret) {
+			_LogError("create pthread failed\n");
+			return ret;
+		}
     }else{
-        return 1;
+        return ret;
     }
     return 0;
 }
