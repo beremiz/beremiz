@@ -149,7 +149,8 @@ TCPclient_parameters = [
     #                                                                       annotate.Integer, ...)
     ("host"             , _("Remote IP Address")     , ctypes.c_char_p,    MB_StrippedString),
     ("port"             , _("Remote Port Number")    , ctypes.c_char_p,    MB_StrippedString),
-    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer )
+    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer ),
+    ("req_delay"        , _("Request Delay (ms)")    , ctypes.c_ulonglong, annotate.Integer )
     ]
 
 RTUclient_parameters = [                                                   
@@ -161,7 +162,8 @@ RTUclient_parameters = [
     ("baud"             , _("Baud Rate")             , ctypes.c_int,       MB_Baud         ),
     ("parity"           , _("Parity")                , ctypes.c_int,       MB_Parity       ),
     ("stop_bits"        , _("Stop Bits")             , ctypes.c_int,       MB_StopBits     ),
-    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer)
+    ("comm_period"      , _("Invocation Rate (ms)")  , ctypes.c_ulonglong, annotate.Integer),
+    ("req_delay"        , _("Request Delay (ms)")    , ctypes.c_ulonglong, annotate.Integer)
     ]
 
 TCPserver_parameters = [                                                   
