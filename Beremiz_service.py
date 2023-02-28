@@ -186,6 +186,12 @@ def Bpath(*args):
     return os.path.join(beremiz_dir, *args)
 
 
+import locale
+# Matiec's standard library relies on libC's locale-dependent
+# string to/from number convertions, but IEC-61131 counts
+# on '.' for decimal point. Therefore locale is reset to "C" */
+locale.setlocale(locale.LC_NUMERIC, "C")
+
 def SetupI18n():
     # Get folder containing translation files
     localedir = os.path.join(beremiz_dir, "locale")
@@ -206,7 +212,6 @@ def SetupI18n():
     # Define locale domain
     loc.AddCatalog(domain)
 
-    import locale
     global default_locale
     default_locale = locale.getdefaultlocale()[1]
 
