@@ -126,8 +126,10 @@ ide_test_dir = $(src)/ide_tests
 sikuli_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.sikuli))
 pytest_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.pytest))
 
+fluxbox_command ?= echo "session.screen0.toolbar.placement: TopCenter" > fluxbox_init; (fluxbox -rc fluxbox_init >/dev/null 2>&1 &)
+
 define sikuli_idetest_command
-	(fluxbox >/dev/null 2>&1 &); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1)
+	$(fluxbox_command); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1)
 endef
 
 
@@ -135,7 +137,7 @@ DELAY=400
 KILL_DELAY=430
 PYTEST=$(dir $(BEREMIZPYTHONPATH))/pytest
 define pytest_idetest_command
-	(fluxbox >/dev/null 2>&1 &); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1)
+	$(fluxbox_command); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1)
 endef
 
 # Xnest based interactive sessions for tests edit and debug. 
@@ -169,10 +171,10 @@ ide_tests : $(ide_tests_targets)
 	echo "$(ide_tests_targets) : Passed"
 
 xnest_xterm: built_apps
-	$(call xnest_run, bash -c '(fluxbox &);xterm')
+	$(call xnest_run, bash -c '$(fluxbox_command);xterm')
 
 xnest_sikuli: built_apps
-	$(call xnest_run, bash -c '(fluxbox &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm')
+	$(call xnest_run, bash -c '$(fluxbox_command);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm')
 
 xvfb_sikuli: built_apps
 	echo "******************************************"
