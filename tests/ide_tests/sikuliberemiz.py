@@ -211,7 +211,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         """
         self.ocropts = sikuli.OCR.globalOptions()
         self.ocropts.dataPath(tessdata_path)
-        self.ocropts.oem(0)
+        self.ocropts.oem(2)
         self.ocropts.smallFont()
 
         self.imgnum = 0
