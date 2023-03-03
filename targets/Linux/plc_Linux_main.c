@@ -15,6 +15,16 @@
 #include <sys/mman.h>
 #endif
 
+#define _Log(level,text,...) \
+    {\
+        char mstr[256];\
+        snprintf(mstr, 255, text, ##__VA_ARGS__);\
+        LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
+    }
+
+#define _LogError(text,...) _Log(LOG_CRITICAL, text, ##__VA_ARGS__)
+#define _LogWarning(text,...) _Log(LOG_WARNING, text, ##__VA_ARGS__)
+
 static unsigned long __debug_tick;
 
 static pthread_t PLC_thread;
@@ -43,7 +53,7 @@ void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 }
 
 static long long period_ns = 0;
-struct timespec next_abs_time;
+struct timespec next_cycle_time;
 
 static void inc_timespec(struct timespec *ts, unsigned long long value_ns)
 {
@@ -64,8 +74,8 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
     printf("SetTimer(%lld,%lld)\n",next, period);
     */
     period_ns = period;
-    clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
-    inc_timespec(&next_abs_time, next);
+    clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
+    inc_timespec(&next_cycle_time, next);
     // interrupt clock_nanpsleep
     pthread_kill(PLC_thread, SIGUSR1);
 }
@@ -88,32 +98,79 @@ int ForceSaveRetainReq(void) {
     return PLC_shutdown;
 }
 
+#define MAX_JITTER period_ns/10
+#define MIN_IDLE_TIME_NS 1000000 /* 1ms */
+/* Macro to compare timespec, evaluate to True if a is past b */
+#define timespec_gt(a,b) (a.tv_sec > b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec > b.tv_nsec))
 void PLC_thread_proc(void *arg)
 {
+    /* initialize next occurence and period */
+    period_ns = common_ticktime__;
+    clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
+
     while (!PLC_shutdown) {
+        int res;
+        struct timespec plc_end_time;
+        int periods = 0;
+#ifdef REALTIME_LINUX
+        struct timespec deadline_time;
+        struct timespec plc_start_time;
+#endif
+
         // Sleep until next PLC run
-        // TODO check result of clock_nanosleep and wait again or exit eventually
-        int res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_abs_time, NULL);
+        res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle_time, NULL);
         if(res==EINTR){
             continue;
         }
         if(res!=0){
-            printf("PLC thread died with error %d \n", res);
+            _LogError("PLC thread timer returned error %d \n", res);
             return;
         }
+
+#ifdef REALTIME_LINUX
+        // timer overrun detection
+        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
+        deadline_time=next_cycle_time;
+        inc_timespec(&deadline_time, MAX_JITTER);
+        if(timespec_gt(plc_start_time, deadline_time)){
+            _LogWarning("PLC thread woken up too late. PLC cyclic task interval is too small.\n");
+        }
+#endif
+
         PLC_GetTime(&__CURRENT_TIME);
         __run();
-        inc_timespec(&next_abs_time, period_ns);
+
+        // ensure next PLC cycle occurence is in the future
+        clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+        while(timespec_gt(plc_end_time, next_cycle_time)){
+            periods += 1;
+            inc_timespec(&next_cycle_time, period_ns);
+        }
+
+        // plc execution time overrun detection
+        if(periods > 1) {
+            // Mitigate CPU hogging, in case of too small cyclic task interval:
+            //  - since cycle deadline already missed, better keep system responsive
+            //  - test if next cycle occurs after minimal idle
+            //  - enforce minimum idle time if not
+
+            struct timespec earliest_possible_time = plc_end_time;
+            inc_timespec(&earliest_possible_time, MIN_IDLE_TIME_NS);
+            while(timespec_gt(earliest_possible_time, next_cycle_time)){
+                periods += 1;
+                inc_timespec(&next_cycle_time, period_ns);
+            }
+
+            // increment tick count anyhow, so that task scheduling keeps consistent
+            __tick+=periods-1;
+
+            _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", periods);
+        }
     }
+
     pthread_exit(0);
 }
 
-#define _LogError(text,...) \
-    {\
-        char mstr[256];\
-        snprintf(mstr, 255, text, ##__VA_ARGS__);\
-        LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
-    }
 #define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
@@ -180,10 +237,6 @@ int startPLC(int argc,char **argv)
         signal(SIGUSR2, PLCThreadSignalHandler);
         /* install signal handler for manual break */
         signal(SIGINT, catch_signal);
-
-        /* initialize next occurence and period */
-        period_ns = common_ticktime__;
-        clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
 
         ret = pthread_create(&PLC_thread, pattr, (void*) &PLC_thread_proc, NULL);
 		if (ret) {
