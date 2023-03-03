@@ -64,8 +64,8 @@ class toolchain_gcc(object):
         """
         ldflags = self.CTRInstance.LDFLAGS + \
             [self.CTRInstance.GetTarget().getcontent().getLDFLAGS()]
-        if os.environ.has_key("LDLAGS"):
-            ldflags.append(os.environ["LDLAGS"])
+        if os.environ.has_key("LDFLAGS"):
+            ldflags.append(os.environ["LDFLAGS"])
         if os.environ.has_key("SYSROOT"):
             ldflags.append("--sysroot="+os.environ["SYSROOT"])
         return ldflags
