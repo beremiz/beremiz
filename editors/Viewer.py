@@ -91,6 +91,8 @@ else:
 ZOOM_FACTORS = [math.sqrt(2) ** x for x in xrange(-6, MAX_ZOOMIN)]
 
 
+WX_NO_LOGICAL = "gtk3" in wx.PlatformInfo
+
 def GetVariableCreationFunction(variable_type):
     def variableCreationFunction(viewer, id, specific_values):
         return FBD_Variable(viewer,
@@ -833,6 +835,8 @@ class Viewer(EditorPanel, DebugViewer):
         dc.SetFont(self.GetFont())
         self.Editor.DoPrepareDC(dc)
         dc.SetUserScale(self.ViewScale[0], self.ViewScale[1])
+        if WX_NO_LOGICAL:
+            dc.SetLogicalFunction = lambda *a,**k: None
 
     def GetLogicalDC(self):
         dc = wx.ClientDC(self.Editor)
@@ -2275,13 +2279,12 @@ class Viewer(EditorPanel, DebugViewer):
             if not event.Dragging() and (gettime() - self.LastHighlightCheckTime) > REFRESH_PERIOD:
                 self.LastHighlightCheckTime = gettime()
                 highlighted = self.FindElement(event, connectors=False)
-                if self.HighlightedElement is not None and self.HighlightedElement != highlighted:
-                    self.HighlightedElement.SetHighlighted(False)
-                    self.HighlightedElement = None
-                if highlighted is not None:
-                    if not self.Debug and isinstance(highlighted, (Wire, Graphic_Group)):
-                        highlighted.HighlightPoint(pos)
-                    if self.HighlightedElement != highlighted:
+                if self.HighlightedElement != highlighted:
+                    if self.HighlightedElement is not None:
+                        self.HighlightedElement.SetHighlighted(False)
+                    if highlighted is not None:
+                        if not self.Debug and isinstance(highlighted, (Wire, Graphic_Group)):
+                            highlighted.HighlightPoint(pos)
                         highlighted.SetHighlighted(True)
                 self.HighlightedElement = highlighted
             if self.rubberBand.IsShown():
