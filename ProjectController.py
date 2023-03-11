@@ -1329,7 +1329,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _OpenView(self, name=None, onlyopened=False):
         if name == "IEC code":
-            if self._IECCodeView is None:
+            if not self._IECCodeView:
                 plc_file = self._getIECcodepath()
 
                 self._IECCodeView = IECCodeViewer(
@@ -1351,7 +1351,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return self._IECCodeView
 
         elif name == "IEC raw code":
-            if self._IECRawCodeView is None:
+            if not self._IECRawCodeView:
                 controler = MiniTextControler(self._getIECrawcodepath(), self)
 
                 self._IECRawCodeView = IECCodeViewer(
@@ -1368,7 +1368,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return self._IECRawCodeView
 
         elif name == "Project Files":
-            if self._ProjectFilesView is None:
+            if not self._ProjectFilesView:
                 self._ProjectFilesView = FileManagementPanel(
                     self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
 
