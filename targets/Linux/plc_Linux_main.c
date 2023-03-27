@@ -117,6 +117,11 @@ void PLC_thread_proc(void *arg)
         struct timespec plc_start_time;
 #endif
 
+// BEREMIZ_TEST_CYCLES is defined in tests that need to emulate time:
+// - all BEREMIZ_TEST_CYCLES cycles are executed in a row with no pause
+// - __CURRENT_TIME is incremented each cycle according to emulated cycle period
+
+#ifndef BEREMIZ_TEST_CYCLES
         // Sleep until next PLC run
         res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle_time, NULL);
         if(res==EINTR){
@@ -126,6 +131,7 @@ void PLC_thread_proc(void *arg)
             _LogError("PLC thread timer returned error %d \n", res);
             return;
         }
+#endif // BEREMIZ_TEST_CYCLES
 
 #ifdef REALTIME_LINUX
         // timer overrun detection
@@ -137,12 +143,30 @@ void PLC_thread_proc(void *arg)
         }
 #endif
 
+#ifdef BEREMIZ_TEST_CYCLES
+#define xstr(s) str(s)
+#define str(arg) #arg
+        // fake current time
+        __CURRENT_TIME.tv_sec = next_cycle_time.tv_sec;
+        __CURRENT_TIME.tv_nsec = next_cycle_time.tv_nsec;
+        // exit loop when enough cycles
+        if(__tick >= BEREMIZ_TEST_CYCLES) {
+            _LogWarning("TEST PLC thread ended after "xstr(BEREMIZ_TEST_CYCLES)" cycles.\n");
+            // After pre-defined test cycles count, PLC thread exits.
+            // Remaining PLC runtime is expected to be cleaned-up/killed by test script
+            return;
+        }
+#else
         PLC_GetTime(&__CURRENT_TIME);
+#endif
         __run();
 
+#ifndef BEREMIZ_TEST_CYCLES
         // ensure next PLC cycle occurence is in the future
         clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
-        while(timespec_gt(plc_end_time, next_cycle_time)){
+        while(timespec_gt(plc_end_time, next_cycle_time))
+#endif
+        {
             periods += 1;
             inc_timespec(&next_cycle_time, period_ns);
         }
