@@ -237,10 +237,7 @@ if enablewx:
         import re
         import wx.adv
 
-        if wx.VERSION >= (3, 0, 0):
-            app = wx.App(redirect=False)
-        else:
-            app = wx.PySimpleApp(redirect=False)
+        app = wx.App(redirect=False)
         app.SetTopWindow(wx.Frame(None, -1))
 
         default_locale = None

@@ -1406,11 +1406,11 @@ class IDEFrame(wx.Frame):
         for child in self.TabsOpened.GetChildren():
             if isinstance(child, wx.aui.AuiTabCtrl):
                 auitabctrl.append(child)
-                if wx.VERSION > (4, 1, 0) and child not in self.AuiTabCtrl:
+                if wx.VERSION >= (4, 1, 0) and child not in self.AuiTabCtrl:
                     child.Bind(wx.EVT_LEFT_DCLICK, self.GetTabsOpenedDClickFunction(child))
         self.AuiTabCtrl = auitabctrl
         # on wxPython 4.0.7, AuiManager has no "RestorePane" method...
-        if wx.VERSION > (4, 1, 0) and self.TabsOpened.GetPageCount() == 0:
+        if wx.VERSION >= (4, 1, 0) and self.TabsOpened.GetPageCount() == 0:
             pane = self.AUIManager.GetPane(self.TabsOpened)
             # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
             if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
