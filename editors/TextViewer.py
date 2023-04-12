@@ -191,8 +191,12 @@ class TextViewer(EditorPanel):
     def Colourise(self, start, end):
         self.Editor.Colourise(start, end)
 
-    def StartStyling(self, pos):
-        self.Editor.StartStyling(pos)
+    if wx.VERSION < (4, 1, 0):
+        def StartStyling(self, pos, mask=0xff):
+            self.Editor.StartStyling(pos, mask)
+    else:
+        def StartStyling(self, pos, *ignored):
+            self.Editor.StartStyling(pos)
 
     INDIC0 = 0
     INDIC1 = 1
@@ -977,6 +981,6 @@ class TextViewer(EditorPanel):
             if highlight_start_pos < end_pos and highlight_end_pos > start_pos:
                 self.StartStyling(highlight_start_pos)
                 self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
-                self.StartStyling(highlight_start_pos)
+                self.StartStyling(highlight_start_pos, 0x00)
                 until_end = max(0, len(self.Editor.GetText()) - highlight_end_pos)
                 self.SetStyling(until_end, wx.stc.STC_STYLE_DEFAULT)
