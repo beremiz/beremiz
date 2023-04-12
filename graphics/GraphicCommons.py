@@ -137,6 +137,10 @@ def vector(p1, p2, normal=True):
     return vector
 
 
+def ivector(*a,**k):
+    return tuple(map(round, vector(*a,**k)))
+
+
 def norm(v):
     """
     Calculate the norm of a given vector
@@ -1976,8 +1980,8 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 lx, ly = x, y
 
             # Calculate the start and end directions
-            self.StartPoint = [None, vector(self.Points[0], self.Points[1])]
-            self.EndPoint = [None, vector(self.Points[-1], self.Points[-2])]
+            self.StartPoint = [None, ivector(self.Points[0], self.Points[1])]
+            self.EndPoint = [None, ivector(self.Points[-1], self.Points[-2])]
             # Calculate the start and end points
             self.StartPoint[0] = wx.Point(self.Points[0].x + round(CONNECTOR_SIZE * self.StartPoint[1][0]),
                                           self.Points[0].y + round(CONNECTOR_SIZE * self.StartPoint[1][1]))
@@ -1993,7 +1997,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                 if i > lp - 2:
                     break
 
-                segment = tuple(map(round,vector(self.Points[i], self.Points[i + 1])))
+                segment = ivector(self.Points[i], self.Points[i + 1])
 
                 # merge segment if requested
                 if merge_segments and 0 < i and \
@@ -2006,7 +2010,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
 
                 # remove corner when two segments are in opposite direction
                 if i < lp - 2:
-                    next = vector(self.Points[i + 1], self.Points[i + 2])
+                    next = ivector(self.Points[i + 1], self.Points[i + 2])
                     if is_null_vector(add_vectors(segment, next)):
                         self.Points.pop(i+1)
                         continue
@@ -2078,7 +2082,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             # The next point is the last
             if i + 1 == len(self.Points) - 1:
                 # Calculate the direction from current point to end point
-                v_end = tuple(map(round,vector(self.Points[i], end)))
+                v_end = vector(self.Points[i], end)
                 # The current point is the first
                 if i == 0:
                     # If the end point is not in the start direction, a point is added
@@ -2200,7 +2204,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
                             1,
                             DirectionChoice((self.Segments[0][1],
                                              self.Segments[0][0]),
-                                            tuple(map(round,vector(start, self.Points[1]))),
+                                            vector(start, self.Points[1]),
                                             self.Segments[1]))
                     else:
                         self.Points[1].x, self.Points[1].y = start.x, start.y
