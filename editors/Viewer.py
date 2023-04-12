@@ -805,8 +805,8 @@ class Viewer(EditorPanel, DebugViewer):
                 pos = mouse_event.GetLogicalPosition(dc)
                 xmax = self.GetScrollRange(wx.HORIZONTAL) - self.GetScrollThumb(wx.HORIZONTAL)
                 ymax = self.GetScrollRange(wx.VERTICAL) - self.GetScrollThumb(wx.VERTICAL)
-                scrollx = max(0, round(pos.x * self.ViewScale[0] - mouse_pos.x) / SCROLLBAR_UNIT)
-                scrolly = max(0, round(pos.y * self.ViewScale[1] - mouse_pos.y) / SCROLLBAR_UNIT)
+                scrollx = max(0, round(pos.x * self.ViewScale[0] - mouse_pos.x) // SCROLLBAR_UNIT)
+                scrolly = max(0, round(pos.y * self.ViewScale[1] - mouse_pos.y) // SCROLLBAR_UNIT)
                 if scrollx > xmax or scrolly > ymax:
                     self.RefreshScrollBars(max(0, scrollx - xmax), max(0, scrolly - ymax))
                     self.Scroll(scrollx, scrolly)
