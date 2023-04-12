@@ -717,7 +717,7 @@ class Viewer(EditorPanel, DebugViewer):
             faces["size"] -= 1
         self.Editor.SetFont(font)
         self.MiniTextDC = wx.MemoryDC(wx.Bitmap(1, 1))
-        self.MiniTextDC.SetFont(wx.Font(faces["size"] * 0.75, wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
+        self.MiniTextDC.SetFont(wx.Font(int(faces["size"] * 0.75), wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
 
         self.CurrentScale = None
         self.SetScale(ZOOM_FACTORS.index(1.0), False)
@@ -1373,7 +1373,7 @@ class Viewer(EditorPanel, DebugViewer):
         element.SetPosition(instance.x, instance.y)
         element.SetSize(instance.width, instance.height)
         for i, output_connector in enumerate(instance.outputs):
-            connector_pos = wx.Point(*output_connector.position)
+            connector_pos = wx.Point(*map(int, output_connector.position))
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
                                                  output_name=output_connector.name)
@@ -1389,7 +1389,7 @@ class Viewer(EditorPanel, DebugViewer):
                 if connectors["outputs"].index(connector) == i:
                     connector.SetPosition(connector_pos)
         for i, input_connector in enumerate(instance.inputs):
-            connector_pos = wx.Point(*input_connector.position)
+            connector_pos = wx.Point(*map(int,input_connector.position))
             if isinstance(element, FBD_Block):
                 connector = element.GetConnector(connector_pos,
                                                  input_name=input_connector.name)
@@ -1430,7 +1430,7 @@ class Viewer(EditorPanel, DebugViewer):
 
             points = link.points
             end_connector = connected.GetConnector(
-                wx.Point(points[-1].x, points[-1].y)
+                wx.Point(int(points[-1].x), int(points[-1].y))
                 if len(points) > 0 else wx.Point(0, 0),
                 link.formalParameter)
             if end_connector is not None:

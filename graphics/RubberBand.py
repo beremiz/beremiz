@@ -168,8 +168,8 @@ class RubberBand(object):
         for bbox in bboxes:
             if bbox is not None:
                 dc.DrawRectangle(
-                    bbox.x * scalex, bbox.y * scaley,
-                    bbox.width * scalex, bbox.height * scaley)
+                    round(bbox.x * scalex), round(bbox.y * scaley),
+                    round(bbox.width * scalex), round(bbox.height * scaley))
 
         dc.SetLogicalFunction(wx.COPY)
 
