@@ -447,9 +447,10 @@ class IDEFrame(wx.Frame):
             self.Bind(wx.EVT_MENU, self.GenerateZoomFunction(idx), new_item)
 
         parent.AppendSeparator()
-        AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
-                   kind=wx.ITEM_NORMAL, text=_('Switch perspective') + '\tF12')
-        self.Bind(wx.EVT_MENU, self.SwitchPerspective, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
+        if wx.VERSION >= (4, 1, 0):
+            AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE,
+                       kind=wx.ITEM_NORMAL, text=_('Switch perspective') + '\tF12')
+            self.Bind(wx.EVT_MENU, self.SwitchPerspective, id=ID_PLCOPENEDITORDISPLAYMENUSWITCHPERSPECTIVE)
 
         AppendMenu(parent, help='', id=ID_PLCOPENEDITORDISPLAYMENUFULLSCREEN,
                    kind=wx.ITEM_NORMAL, text=_('Full screen') + '\tShift-F12')
@@ -1405,10 +1406,11 @@ class IDEFrame(wx.Frame):
         for child in self.TabsOpened.GetChildren():
             if isinstance(child, wx.aui.AuiTabCtrl):
                 auitabctrl.append(child)
-                if child not in self.AuiTabCtrl:
+                if wx.VERSION > (4, 1, 0) and child not in self.AuiTabCtrl:
                     child.Bind(wx.EVT_LEFT_DCLICK, self.GetTabsOpenedDClickFunction(child))
         self.AuiTabCtrl = auitabctrl
-        if self.TabsOpened.GetPageCount() == 0:
+        # on wxPython 4.0.7, AuiManager has no "RestorePane" method...
+        if wx.VERSION > (4, 1, 0) and self.TabsOpened.GetPageCount() == 0:
             pane = self.AUIManager.GetPane(self.TabsOpened)
             # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
             if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
@@ -1498,6 +1500,8 @@ class IDEFrame(wx.Frame):
         return OnTabsOpenedDClick
 
     def SwitchPerspective(self, evt):
+        if not hasattr(self.AUIManager, "MaximizePane"):
+            return
         pane = self.AUIManager.GetPane(self.TabsOpened)
         # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
         IsMaximized = pane.IsMaximized() if hasattr(pane, "IsMaximized") \
