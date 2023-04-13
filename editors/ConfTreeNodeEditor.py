@@ -181,7 +181,7 @@ class ConfTreeNodeEditor(EditorPanel):
                 self.ConfNodeName = wx.TextCtrl(self.Editor,
                                                 size=wx.Size(150, 25))
                 self.ConfNodeName.SetFont(
-                    wx.Font(faces["size"] * 0.75, wx.DEFAULT, wx.NORMAL,
+                    wx.Font(round(faces["size"] * 0.75), wx.DEFAULT, wx.NORMAL,
                             wx.BOLD, faceName=faces["helv"]))
                 self.ConfNodeName.Bind(
                     wx.EVT_TEXT,
