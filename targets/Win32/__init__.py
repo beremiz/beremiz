@@ -31,5 +31,9 @@ class Win32_target(toolchain_gcc):
     dlopen_prefix = ""
     extension = ".dll"
 
+    def getBuilderCFLAGS(self):
+        return toolchain_gcc.getBuilderCFLAGS(self) + \
+            ["-Wno-implicit-function-declaration", "-Wno-int-conversion"]
+
     def getBuilderLDFLAGS(self):
         return toolchain_gcc.getBuilderLDFLAGS(self) + ["-shared", "-lwinmm"]
