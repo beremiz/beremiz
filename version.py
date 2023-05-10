@@ -47,8 +47,8 @@ def GetAboutDialogInfo(info):
     info.Version = app_version
 
     info.Copyright = ""
-    info.Copyright += "(C) 2006-2022 Edouard Tisserant\n"
-    info.Copyright += "(C) 2003-2021 Mario de Sousa\n"
+    info.Copyright += "(C) 2006-2023 Edouard Tisserant\n"
+    info.Copyright += "(C) 2003-2023 Mario de Sousa\n"
     info.Copyright += "(C) 2016-2018 Andrey Skvortsov\n"
     info.Copyright += "(C) 2006-2013 Laurent Bessard\n"
 
@@ -99,6 +99,7 @@ def GetAboutDialogInfo(info):
         "  Yiwei Yan <523136664@qq.com>, 2018",
         "  Ji Wang <2485567515@qq.com>, 2019",
         "  珂 曾 <15627997@qq.com>, 2019",
+        "  Gastonfeng<gastonfeng@gmail.com>, 2019",
         "",
 
         "Dutch (Netherlands)",
