@@ -29,7 +29,7 @@ import os
 import collections
 import shutil
 import platform as platform_module
-from zope.interface import implements
+from zope.interface import implementer
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
 from nevow.static import File
@@ -44,7 +44,7 @@ from runtime import MainWorker, GetPLCObjectSingleton
 
 PAGE_TITLE = 'Beremiz Runtime Web Interface'
 
-xhtml_header = '''<?xml version="1.0" encoding="utf-8"?>
+xhtml_header = b'''<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 '''
@@ -248,6 +248,7 @@ customSettingsURLs = {
 
 extensions_settings_od = collections.OrderedDict()
 
+@implementer(ISettings)
 class SettingsPage(rend.Page):
     # We deserve a slash
     addSlash = True
@@ -255,8 +256,6 @@ class SettingsPage(rend.Page):
     # This makes webform_css url answer some default CSS
     child_webform_css = webform.defaultCSS
     child_webinterface_css = File(paths.AbsNeighbourFile(__file__, 'webinterface.css'), 'text/css')
-
-    implements(ISettings)
    
     def __getattr__(self, name):
         global extensions_settings_od
