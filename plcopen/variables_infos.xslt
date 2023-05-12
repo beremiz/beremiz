@@ -155,7 +155,7 @@
     </xsl:variable>
     <xsl:value-of select="ns:SetType($name)"/>
   </xsl:template>
-  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*" priority="-1.0">
     <xsl:variable name="name">
       <xsl:value-of select="local-name()"/>
     </xsl:variable>

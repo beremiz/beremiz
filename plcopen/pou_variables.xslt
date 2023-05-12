@@ -218,7 +218,7 @@
   <xsl:template mode="var_class" match="ppx:pou">
     <xsl:value-of select="@pouType"/>
   </xsl:template>
-  <xsl:template mode="var_class" match="*[self::ppx:type or self::ppx:baseType]/*">
+  <xsl:template mode="var_class" match="*[self::ppx:type or self::ppx:baseType]/*" priority="-1.0">
     <xsl:param name="default_class"/>
     <xsl:value-of select="$default_class"/>
   </xsl:template>
@@ -241,7 +241,7 @@
   <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType]/ppx:wstring">
     <xsl:text>WSTRING</xsl:text>
   </xsl:template>
-  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType]/*">
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType]/*" priority="-1.0">
     <xsl:value-of select="local-name()"/>
   </xsl:template>
   <xsl:template mode="var_edit" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
@@ -259,7 +259,7 @@
   <xsl:template mode="var_edit" match="*[self::ppx:type or self::ppx:baseType]/ppx:array">
     <xsl:apply-templates mode="var_edit" select="ppx:baseType"/>
   </xsl:template>
-  <xsl:template mode="var_edit" match="*[self::ppx:type or self::ppx:baseType]/*">
+  <xsl:template mode="var_edit" match="*[self::ppx:type or self::ppx:baseType]/*" priority="-1.0">
     <xsl:text>false</xsl:text>
   </xsl:template>
   <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/ppx:derived">
@@ -283,7 +283,7 @@
   <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/ppx:struct">
     <xsl:text>false</xsl:text>
   </xsl:template>
-  <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/*">
+  <xsl:template mode="var_debug" match="*[self::ppx:type or self::ppx:baseType]/*" priority="-1.0">
     <xsl:text>true</xsl:text>
   </xsl:template>
 </xsl:stylesheet>

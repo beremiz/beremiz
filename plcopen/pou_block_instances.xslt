@@ -121,7 +121,7 @@
   <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring">
     <xsl:text>WSTRING</xsl:text>
   </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
+  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*" priority="-1.0">
     <xsl:value-of select="local-name()"/>
   </xsl:template>
   <xsl:template name="VariableBlockInfos">
