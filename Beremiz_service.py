@@ -31,7 +31,7 @@ import threading
 import shlex
 import traceback
 import threading
-from threading import Thread, Semaphore, Lock, currentThread
+from threading import Thread, Semaphore, Lock, current_thread
 import builtins
 from functools import partial
 
@@ -208,19 +208,7 @@ def SetupI18n():
     # Define locale domain
     loc.AddCatalog(domain)
 
-    global default_locale
-    default_locale = locale.getdefaultlocale()[1]
-
-    # sys.stdout.encoding = default_locale
-    # if Beremiz_service is started from Beremiz IDE
-    # sys.stdout.encoding is None (that means 'ascii' encoding').
-    # And unicode string returned by wx.GetTranslation() are
-    # automatically converted to 'ascii' string.
-    def unicode_translation(message):
-        return wx.GetTranslation(message).encode(default_locale)
-
-    builtins.__dict__['_'] = unicode_translation
-    # builtins.__dict__['_'] = wx.GetTranslation
+    builtins.__dict__['_'] = wx.GetTranslation
 
 
 # Life is hard... have a candy.
@@ -371,7 +359,7 @@ if enablewx:
                 _servicename = self.pyroserver.servicename
                 _servicename = '' if _servicename is None else _servicename
                 dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=_servicename)
-                dlg.SetTests([(lambda name: len(name) is not 0, _("Name must not be null!"))])
+                dlg.SetTests([(lambda name: len(name) != 0, _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
                     self.pyroserver.servicename = dlg.GetValue()
                     self.pyroserver.Restart()
@@ -448,10 +436,10 @@ if havewx:
         obj.res = default_evaluator(tocall, *args, **kwargs)
         wx_eval_lock.release()
 
-    main_thread_id = currentThread().ident
+    main_thread_id = current_thread().ident
     def evaluator(tocall, *args, **kwargs):
         # To prevent deadlocks, check if current thread is not one already main
-        current_id = currentThread().ident
+        current_id = current_thread().ident
 
         if main_thread_id != current_id:
             o = type('', (object,), dict(call=(tocall, args, kwargs), res=None))
