@@ -188,7 +188,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         value "@pouType";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType]/*" mode="var_class" {
+    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_class", priority="-1.0" {
         param "default_class";
         value "$default_class";
     }
@@ -214,7 +214,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         > WSTRING
     }
   
-    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_type" {
+    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_type", priority="-1.0" {
         > «local-name()»
     }
     
@@ -231,7 +231,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         apply "ppx:baseType", mode="var_edit";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_edit" {
+    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_edit", priority="-1.0" {
         > false
     }
     
@@ -261,7 +261,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         > false
     }
     
-    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_debug" {
+    template "*[self::ppx:type or self::ppx:baseType]/*", mode="var_debug", priority="-1.0" {
         > true
     }
     

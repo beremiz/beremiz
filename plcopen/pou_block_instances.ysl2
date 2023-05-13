@@ -7,7 +7,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     
     template "text()";
     
-    template "ppx:pou[ppx:body]|ppx:transition[ppx:body]|ppx:action[ppx:body]" {
+    template "ppx:pou[ppx:body]|ppx:transition[ppx:body]|ppx:action[ppx:body]", priority="-1.0" {
         apply "ppx:body/*[self::ppx:FBD or self::ppx:LD or self::ppx:SFC]/*";
     }
     

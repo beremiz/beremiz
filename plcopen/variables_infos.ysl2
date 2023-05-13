@@ -152,7 +152,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
         value "ns:SetType($name)";
     }
     
-    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*", mode="var_type" {
+    template "*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*", mode="var_type", priority="-1.0" {
         variable "name" > «local-name()»
         value "ns:SetType($name)";
     }
