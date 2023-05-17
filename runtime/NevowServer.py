@@ -237,7 +237,7 @@ class SettingsPage(rend.Page):
         if uploadedfile is not None:
             fobj = getattr(uploadedfile, "file", None)
         if fobj is not None:
-            with open(uploadedfile.filename, 'w') as destfd:
+            with open(uploadedfile.filename, 'wb') as destfd:
                 fobj.seek(0)
                 shutil.copyfileobj(fobj,destfd)
 
