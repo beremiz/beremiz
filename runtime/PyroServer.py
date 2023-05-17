@@ -22,7 +22,7 @@ from runtime.ServicePublisher import ServicePublisher
 
 def make_pyro_exposed_stub(method_name):
     stub = lambda self, *args, **kwargs: \
-        getattr(self.plc_object_instance, method_name)(self, *args, **kwargs)
+        getattr(self.plc_object_instance, method_name)(*args, **kwargs)
     stub.__name__ = method_name
     Pyro5.server.expose(stub)
     return stub

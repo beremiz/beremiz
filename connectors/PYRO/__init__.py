@@ -23,7 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import traceback
 from time import sleep
 import copy
 import socket
@@ -78,8 +77,7 @@ def PYRO_connector_factory(uri, confnodesroot):
             except Pyro5.errors.ProtocolError as e:
                 confnodesroot.logger.write_error(_("Pyro exception: %s\n") % e)
             except Exception as e:
-                # confnodesroot.logger.write_error(traceback.format_exc())
-                errmess = ''.join(Pyro5.errors.get_pyro_traceback(e))
+                errmess = ''.join(Pyro5.errors.get_pyro_traceback())
                 confnodesroot.logger.write_error(errmess + "\n")
                 print(errmess)
                 confnodesroot._SetConnector(None)
