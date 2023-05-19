@@ -23,14 +23,25 @@ class FakeObject:
         return FakeObject(__classname__=self.__classname__+"()")
 
     def __getitem__(self, key):
-        raise IndexError(key)
+        return FakeObject(__classname__=self.__classname__+"["+repr(key)+"]")
 
     def __str__(self):
         return self.__classname__
 
     def __or__(self, other):
         return FakeObject(__classname__=self.__classname__+"|"+other.__classname__)
+    
+    def __hash__(self) -> int:
+        return id(self)
 
+    def __cmp__(self,other):
+        return True
+    __lt__=__cmp__
+    __le__=__cmp__
+    __eq__=__cmp__
+    __ne__=__cmp__
+    __gt__=__cmp__
+    __ge__=__cmp__
 
 class FakeClass:
     def __init__(self, *args, **kwargs):
