@@ -27,7 +27,7 @@
 Beremiz Project Controller
 """
 
-
+import sys
 import os
 import traceback
 import time
@@ -368,12 +368,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "PROJECT"
 
     def GetDefaultTargetName(self):
-        if wx.Platform == '__WXMSW__':
-            return "Win32"
-        elif wx.Platform == '__WXMAC__':
-            return "OSX"
-        else:
+        if sys.platform.startswith('linux'):
             return "Linux"
+        elif sys.platform.startswith('darwin'):
+            return "OSX"
+        elif sys.platform.startswith('win32'):
+            return "Win32"
+        
+        # Fall back to Linux as default target
+        return "Linux"
+        
 
     def GetTarget(self):
         target = self.BeremizRoot.getTargetType()
