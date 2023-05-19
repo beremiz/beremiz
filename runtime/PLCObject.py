@@ -574,7 +574,7 @@ class PLCObject(object):
     def SeedBlob(self, seed):
         blob = (mkstemp(dir=self.tmpdir) + (hashlib.new('md5'),))
         _fd, _path, md5sum = blob
-        md5sum.update(seed.encode())
+        md5sum.update(seed)
         newBlobID = md5sum.digest()
         self.blobs[newBlobID] = blob
         return newBlobID

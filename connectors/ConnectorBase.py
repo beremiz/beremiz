@@ -14,7 +14,7 @@ class ConnectorBase(object):
     def BlobFromFile(self, filepath, seed):
         s = hashlib.new('md5')
         s.update(seed.encode())
-        blobID = self.SeedBlob(seed)
+        blobID = self.SeedBlob(seed.encode())
         with open(filepath, "rb") as f:
             while blobID == s.digest():
                 chunk = f.read(self.chuncksize)
