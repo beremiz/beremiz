@@ -131,7 +131,8 @@ class PLCObject(object):
             msg, = args
         PLCprint(msg)
         if self._LogMessage is not None:
-            return self._LogMessage(level, msg.encode(), len(msg))
+            bmsg = msg.encode()
+            return self._LogMessage(level, bmsg, len(bmsg))
         return None
 
     @RunInMain
@@ -489,7 +490,7 @@ class PLCObject(object):
         self.PythonThreadCondLock.release()
 
     def _fail(self, msg):
-        self.LogMessage(0, msg.decode())
+        self.LogMessage(0, msg)
         self.PLCStatus = PlcStatus.Broken
         self.StatusChange()
 
