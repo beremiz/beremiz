@@ -38,7 +38,8 @@ from runtime import PlcStatus
 import importlib
 
 
-Pyro5.config.SERPENT_BYTES_REPR = True
+Pyro5.config.SERIALIZER = "msgpack"
+
 
 def PYRO_connector_factory(uri, confnodesroot):
     """

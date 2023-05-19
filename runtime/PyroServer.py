@@ -20,6 +20,8 @@ import Pyro5.server
 import runtime
 from runtime.ServicePublisher import ServicePublisher
 
+Pyro5.config.SERIALIZER = "msgpack"
+
 def make_pyro_exposed_stub(method_name):
     stub = lambda self, *args, **kwargs: \
         getattr(self.plc_object_instance, method_name)(*args, **kwargs)
