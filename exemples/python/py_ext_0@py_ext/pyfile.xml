@@ -6,19 +6,19 @@
   </variables>
   <globals>
     <xhtml:p><![CDATA[
-print "All python PLC globals variables :", PLCGlobalsDesc
-print "Current extention name :", __ext_name__
+print("All python PLC globals variables :", PLCGlobalsDesc)
+print("Current extention name :", __ext_name__)
 
 def MyFunc(*args):
-    print args
+    print(args)
 
 def MyOtherFunc(*args):
-    print "other", args
+    print("other", args)
 
 def SomeChange(*args):
-    print "count",OnChange.SomeVarName.count
-    print "first",OnChange.SomeVarName.first
-    print "last",OnChange.SomeVarName.last
+    print("count",OnChange.SomeVarName.count)
+    print("first",OnChange.SomeVarName.first)
+    print("last",OnChange.SomeVarName.last)
 
 
 ]]></xhtml:p>

@@ -15,12 +15,12 @@ def MyPythonFunc(arg):
     i = ctypes.c_int()
     if(Python_to_C_Call(arg, i)):
         res = i.value
-        print "toC:", arg, "from C:", res, "FBID:", FBID
+        print("toC:", arg, "from C:", res, "FBID:", FBID)
     else:
-        print "Failed Python_to_C_Call failed"
+        print("Failed Python_to_C_Call failed")
         res = None
-    print "Python read PLC global :",PLCGlobals.Test_Python_Var
-    print "Python read PLC global Grumpf :",PLCGlobals.Grumpf
+    print("Python read PLC global :",PLCGlobals.Test_Python_Var)
+    print("Python read PLC global Grumpf :",PLCGlobals.Grumpf)
     PLCGlobals.Second_Python_Var = 789
     sys.stdout.flush()
     return res
@@ -47,23 +47,23 @@ b.start()
 global x, y
 x = 2
 y = 5
-print "py_runtime init:", x, ",", y
+print("py_runtime init:", x, ",", y)
 ]]></xhtml:p>
   </init>
   <cleanup>
     <xhtml:p><![CDATA[
-print "py_runtime cleanup"
+print("py_runtime cleanup")
 ]]></xhtml:p>
   </cleanup>
   <start>
     <xhtml:p><![CDATA[
 global x, y
-print "py_runtime start", x * x + y * y
+print("py_runtime start", x * x + y * y)
 ]]></xhtml:p>
   </start>
   <stop>
     <xhtml:p><![CDATA[
-print "py_runtime stop"
+print("py_runtime stop")
 ]]></xhtml:p>
   </stop>
 </PyFile>
