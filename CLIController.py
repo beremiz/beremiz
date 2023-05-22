@@ -78,38 +78,11 @@ class CLIController(LocalRuntimeMixin, ProjectController):
         log = Log()
         LocalRuntimeMixin.__init__(self, log, use_gui=False)
         ProjectController.__init__(self, None, log)
-        self.CLIStatusTimer = None
-        self.KillCLIStatusTimer = False
-
-
-    def StartCLIStatusTimer(self):
-        if self.CLIStatusTimer is not None:
-            return
-        self.CLIStatusTimer = Timer(0.5, self.CLIStatusTimerProc)
-        self.KillCLIStatusTimer = False
-        self.CLIStatusTimer.start()
-
-    def StopCLIStatusTimer(self):
-        if self.CLIStatusTimer is None:
-            return
-        self.KillCLIStatusTimer = True
-        self.CLIStatusTimer.cancel()
-        self.CLIStatusTimer = None
-
-    def CLIStatusTimerProc(self):
-        self.CLIStatusTimer = None
-        if not self.KillCLIStatusTimer:
-            self.PullPLCStatusProc(None)
-            self.StartCLIStatusTimer()
 
     def _SetConnector(self, connector, update_status=True):
         self._connector = connector
         self.previous_log_count = [None]*LogLevelsCount
-        if connector is not None:
-            self.StartCLIStatusTimer()
-        else:
-            self.StopCLIStatusTimer()
-            if update_status:
+        if connector is None and update_status:
                 self.UpdateMethodsFromPLCStatus()
 
     def UpdatePLCLog(self, log_count):
