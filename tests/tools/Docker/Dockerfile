@@ -2,7 +2,7 @@
 # Dockerfile for Beremiz
 # This container is used to run tests for Beremiz
 #
-FROM ubuntu:focal  
+FROM ubuntu:jammy  
                                         
 ENV TERM xterm-256color
     
@@ -41,8 +41,8 @@ RUN set -xe \
                `# to build tested apps` \
                build-essential automake flex bison mercurial \
                libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
-               libpython2.7-dev libssl-dev \
-               python2 virtualenv cmake
+               libpython3.10-dev libssl-dev \
+               python3.10 virtualenv cmake git
 
 
 # force bigger font and flat theme for GTK in order to make OCR more reliable
@@ -67,13 +67,24 @@ USER $UNAME
 
 RUN mkdir /home/$UNAME/build /home/$UNAME/src /home/$UNAME/test
 
-RUN virtualenv --python=$(which python2) ~/beremizenv
+RUN virtualenv ~/beremizenv
+
+# wxPython build req
+RUN ~/beremizenv/bin/pip install gattrdict
+
+RUN ~/beremizenv/bin/pip install wxpython
 
 RUN ~/beremizenv/bin/pip install \
         pytest pytest-timeout ddt \
-        lxml future matplotlib zeroconf2 enum34 pyro sslpsk posix_spawn \
-        twisted nevow autobahn click opcua \
-        wxPython==4.1.1
+        sslpsk posix_spawn \
+        opcua \
+        matplotlib lxml \
+        zeroconf \
+        pycountry \
+        Pyro5 msgpack autobahn click
+
+RUN ~/beremizenv/bin/pip install \
+        git+https://github.com/beremiz/nevow-py3.git@nevow-0.14.5.dev1
 
 RUN set -xe && \
     cd  /home/$UNAME && mkdir tessdata && \
