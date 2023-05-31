@@ -150,10 +150,10 @@ class HMITreeNode(object):
         s = hashlib.new('md5')
         self._hash(s)
         # limit size to HMI_HASH_SIZE as in svghmi.c
-        return list(map(ord,s.digest()))[:8]
+        return s.digest()[:8]
 
     def _hash(self, s):
-        s.update(str((self.name,self.nodetype)))
+        s.update(self.name.encode() + self.nodetype.encode())
         if hasattr(self, "children"):
             for c in self.children:
                 c._hash(s)
