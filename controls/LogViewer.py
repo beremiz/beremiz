@@ -39,7 +39,8 @@ from util.BitmapLibrary import GetBitmap
 THUMB_SIZE_RATIO = 1. / 8.
 
 
-def ArrowPoints(direction, width, height, xoffset, yoffset):
+def ArrowPoints(*args):
+    direction, width, height, xoffset, yoffset = map(lambda x:x if type(x)==int else int(x), args)
     if direction == wx.TOP:
         return [wx.Point(xoffset + 1, yoffset + height - 2),
                 wx.Point(xoffset + width // 2, yoffset + 1),

@@ -1202,7 +1202,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             LibCFilesAndCFLAGS, LibLDFLAGS, LibExtraFiles = self.GetLibrariesCCode(
                 buildpath)
         except UserAddressedException as e:
-            self.logger.write_error(e.message)
+            self.logger.write_error(str(e))
             return False
         except Exception as e:
             self.logger.write_error(
@@ -1216,7 +1216,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 buildpath,
                 self.PLCGeneratedLocatedVars)
         except UserAddressedException as e:
-            self.logger.write_error(e.message)
+            self.logger.write_error(str(e))
             return False
         except Exception:
             self.logger.write_error(
