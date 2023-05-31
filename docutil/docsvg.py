@@ -77,7 +77,7 @@ def _get_inkscape_version():
     if inkpath is None:
         return None
     return list(map(int, 
-        subprocess.check_output([inkpath,"--version"]).split()[1].split('.')))
+        subprocess.check_output([inkpath,"--version"]).split()[1].split(b'.')))
 
 _inkscape_version = None
 def get_inkscape_version():
