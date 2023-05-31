@@ -427,13 +427,12 @@ class SVGHMI(object):
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
         inkpath = get_inkscape_path()
-
         if inkpath is None:
             self.FatalError("SVGHMI: inkscape is not installed.")
 
         svgpath = self._getSVGpath()
         status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
-                                                     '"' + inkpath + '" -S "' + svgpath + '"',
+                                                     [inkpath, '-S', svgpath],
                                                      no_stdout=True,
                                                      no_stderr=True).spin()
         if status != 0:
@@ -611,7 +610,7 @@ class SVGHMI(object):
                 # print(transform.xslt.error_log)
                 # print(etree.tostring(result.xslt_profile,pretty_print=True))
 
-                with open(hash_path, 'wb') as digest_file:
+                with open(hash_path, 'w') as digest_file:
                     digest_file.write(digest)
             else:
                 self.GetCTRoot().logger.write("    No changes - XSLT transformation skipped\n")
@@ -677,14 +676,14 @@ def _runtime_{location}_svghmi_start():
         factory = HMIWebSocketServerFactory()
         factory.setProtocolOptions(maxConnections={maxConnections})
 
-        svghmi_root.putChild("ws", WebSocketResource(factory))
+        svghmi_root.putChild(b"ws", WebSocketResource(factory))
 
         svghmi_listener = reactor.listenTCP({port}, Site(svghmi_root), interface='{interface}')
         path_list = []
         svghmi_servers["{interface}:{port}"] = (svghmi_root, svghmi_listener, path_list)
 
     svghmi_root.putChild(
-        '{path}',
+        b'{path}',
         NoCacheFile('{xhtml}',
             defaultType='application/xhtml+xml'))
 

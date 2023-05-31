@@ -98,6 +98,7 @@ for name, classes in [
     ('wx.dataview',['PyDataViewIndexListModel']),
     ('matplotlib.backends.backend_agg',[]),
     ('wx.aui',[]),
+    ('wx.html',['HtmlWindow']),
     ('mpl_toolkits.mplot3d',[])]:
     modpath = None
     parentmod = None
