@@ -91,7 +91,7 @@ class ProcessLogger(object):
                 else:
                     self.Command.append(word)
         else:
-            self.Command = Command
+            self.Command = [x if type(x)==str else x.decode() for x in Command]
             self.Command_str = subprocess.list2cmdline(self.Command)
 
         fsencoding = sys.getfilesystemencoding()
