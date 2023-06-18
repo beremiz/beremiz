@@ -29,7 +29,7 @@ def test(app):
 
     app.doubleClick("TestObject")
 
-    app.dragNdrop(["TestIn", "Testln"], "output variables")
+    app.dragNdrop(["TestIn", "Testln","Testin"], "output variables")
 
     app.wait(1)
 
