@@ -1,13 +1,17 @@
 #!/bin/bash
 
+set -x -e
+
 echo "Instant encrypted OPC-UA server for test"
+
+rm -f my_cert.pem my_cert.der my_private_key.pem
 
 yes "" | openssl req -x509 -newkey rsa:2048 -keyout my_private_key.pem -out my_cert.pem \
         -days 355 -nodes -addext "subjectAltName = URI:urn:example.org:FreeOpcUa:python-opcua"
 openssl x509 -outform der -in my_cert.pem -out my_cert.der
 
 PROJECT_FILES_DIR=$BEREMIZPATH/tests/projects/opcua_browse_encrypted/project_files
-mkdir $PROJECT_FILES_DIR
+mkdir $PROJECT_FILES_DIR -p
 cp my_cert.der my_private_key.pem $PROJECT_FILES_DIR
 
 echo "CERTS READY"
@@ -18,37 +22,51 @@ exec $BEREMIZPYTHONPATH - << EOF
 import sys
 import os
 import time
+import asyncio
 
-from opcua import ua, Server
+from asyncua import ua, Server
+from asyncua.server.users import User, UserRole
 
-server = Server()
-host = os.environ.get("OPCUA_DEFAULT_HOST", "127.0.0.1")
-endpoint = "opc.tcp://"+host+":4840/freeopcua/server/"
-server.set_endpoint(endpoint)
+# Asyncua can't work without (over)simple shared cerificates/privkey.
+# No user is involved in that case, but asyncua needs it.
+# Over permessive User Manager hereafter helps cuting that corner.
+class AllAdminUserManager:
+    def get_user(self, iserver, username=None, password=None, certificate=None):
+        return User(role=UserRole.Admin)
 
-server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
-server.load_certificate("my_cert.der")
-server.load_private_key("my_private_key.pem")
+async def main():
+    server = Server(user_manager=AllAdminUserManager())
+    host = os.environ.get("OPCUA_DEFAULT_HOST", "127.0.0.1")
+    endpoint = "opc.tcp://"+host+":4840/freeopcua/server/"
+    await server.init()
+    server.set_endpoint(endpoint)
 
-uri = "http://beremiz.github.io"
-idx = server.register_namespace(uri)
+    server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
+    await server.load_certificate("my_cert.der")
+    await server.load_private_key("my_private_key.pem")
 
-objects = server.get_objects_node()
+    uri = "http://beremiz.github.io"
+    idx = await server.register_namespace(uri)
 
-testobj = objects.add_object(idx, "TestObject")
-testvarout = testobj.add_variable(idx, "TestOut", 1.2)
-testvar = testobj.add_variable(idx, "TestIn", 5.6)
-testvar.set_writable()
+    objects = server.get_objects_node()
 
-server.start()
+    testobj = await objects.add_object(idx, "TestObject")
+    testvarout = await testobj.add_variable(idx, "TestOut", 1.2)
+    testvar = await testobj.add_variable(idx, "TestIn", 5.6)
+    await testvar.set_writable()
 
-try:
-    while True:
-        time.sleep(1)
-        inval=testvar.get_value()
-        print inval
-        testvarout.set_value(inval*2)
-        sys.stdout.flush()
-finally:
-    server.stop()
+    await server.start()
+
+    try:
+        while True:
+            await asyncio.sleep(1)
+            inval = await testvar.get_value()
+            print(inval)
+            await testvarout.set_value(inval*2)
+            sys.stdout.flush()
+    finally:
+        await server.stop()
+
+asyncio.run(main())
+
 EOF

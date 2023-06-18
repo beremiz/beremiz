@@ -77,13 +77,13 @@ RUN ~/beremizenv/bin/pip install wxpython
 RUN ~/beremizenv/bin/pip install \
         pytest pytest-timeout ddt \
         sslpsk posix_spawn \
-        opcua \
         matplotlib lxml \
         zeroconf \
         pycountry \
         Pyro5 msgpack autobahn click
 
 RUN ~/beremizenv/bin/pip install \
+        git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82 \
         git+https://github.com/beremiz/nevow-py3.git@nevow-0.14.5.dev1
 
 RUN set -xe && \

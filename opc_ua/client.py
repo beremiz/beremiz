@@ -142,7 +142,7 @@ class OPCUAClient(object):
         c_code = '#include "beremiz.h"\n'
         c_code += self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
 
-        with open(c_path, 'wb') as c_file:
+        with open(c_path, 'w') as c_file:
             c_file.write(c_code)
 
         LDFLAGS = ['"' + os.path.join(Open62541LibraryPath, "libopen62541.a") + '"', '-lcrypto']
