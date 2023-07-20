@@ -24,27 +24,34 @@ jobs:
     - uses: actions/checkout@v3
       with:
           repository: open62541/open62541
-          ref: v1.3.3
+          ref: v1.3.6
           path: open62541
           submodules: recursive
 
-    - name: Cache docker image
-      id: cache-docker
-      uses: actions/cache@v3
+    - name: Restore cached docker image
+      id: cache-docker-restore
+      uses: actions/cache/restore@v3
       env:
         cache-name: cache-docker
       with:
         path: /tmp/latest.tar
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('beremiz/tests/tools/Docker/beremiz-sikuli') }}
 
-    - if: ${{ steps.cache-docker.outputs.cache-hit == false }}
+    - if: ${{ steps.cache-docker-restore.outputs.cache-hit == false }}
       name: Create docker image
       run: |
         cd beremiz/tests/tools/Docker
         ./build_docker_image.sh
         docker image save --output="/tmp/latest.tar" beremiz_sikuli
 
-    - if: ${{ steps.cache-docker.outputs.cache-hit != false }}
+    - name: Save docker image in cache
+      id: cache-docker-save
+      uses: actions/cache/save@v3
+      with:
+        path: /tmp/latest.tar
+        key: ${{ steps.cache-docker-restore.outputs.cache-primary-key }}
+
+    - if: ${{ steps.cache-docker-restore.outputs.cache-hit != false }}
       name: Re-use docker image
       run: |
         docker image load --input="/tmp/latest.tar" 
