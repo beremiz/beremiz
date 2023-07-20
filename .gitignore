@@ -4,3 +4,5 @@
 **/build/**
 *.class
 **/.svghmithumbs/**
+**/my_*.der
+**/my_*.pem
