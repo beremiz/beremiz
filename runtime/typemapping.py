@@ -94,10 +94,6 @@ def UnpackDebugBuffer(buff, indexes):
         if c_type is not None and (buffoffset + size) <= buffsize:
             ptr = cast(cursor, POINTER(c_type))
             value = unpack_func(ptr.contents)
-            if iectype not in ["BOOL", "DATE", "DT", "STRING", "TIME", "TOD"]:
-                value = value.value
-            elif iectype == "STRING":
-                value = value.decode()
             buffoffset += size
             res.append(value)
         else:
