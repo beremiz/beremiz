@@ -44,7 +44,8 @@ jobs:
         ./build_docker_image.sh
         docker image save --output="/tmp/latest.tar" beremiz_sikuli
 
-    - name: Save docker image in cache
+    - if: ${{ steps.cache-docker-restore.outputs.cache-hit == false }}
+      name: Save docker image in cache
       id: cache-docker-save
       uses: actions/cache/save@v3
       with:
