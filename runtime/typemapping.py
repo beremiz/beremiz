@@ -43,7 +43,7 @@ SameEndianessTypeTranslator = {
     "BYTE":       _t(c_uint8),
     "STRING":     (IEC_STRING,
                    lambda x: x.body[:x.len],
-                   lambda t, x: t(len(x), x)),
+                   lambda t, x: t(len(x), x.encode() if type(x)==str else x)),
     "INT":        _t(c_int16),
     "UINT":       _t(c_uint16),
     "WORD":       _t(c_uint16),
