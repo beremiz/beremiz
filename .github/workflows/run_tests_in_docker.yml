@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ wxPython4 ]
+    branches: [ python3 ]
 
 jobs:
 
