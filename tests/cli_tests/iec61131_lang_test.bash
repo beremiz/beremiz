@@ -7,7 +7,7 @@ coproc setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k --project-home $
 while read -t 5 -u ${COPROC[0]} line; do 
     echo "$line"
     if [[ "$line" == *ALL\ TESTS\ OK* ]]; then
-        pkill INT -s $COPROC_PID 
+        pkill -9 -s $COPROC_PID 
         exit 0
     fi
 done
