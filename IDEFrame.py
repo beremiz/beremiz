@@ -389,7 +389,7 @@ class IDEFrame(wx.Frame):
         parent.AppendSeparator()
         add_menu = wx.Menu(title='')
         self._init_coll_AddMenu_Items(add_menu)
-        parent.Append(wx.ID_ADD, _("&Add Element"), add_menu)
+        self.AddMenuItem = parent.AppendSubMenu(add_menu, _("&Add Element"))
         AppendMenu(parent, help='', id=wx.ID_SELECTALL,
                    kind=wx.ITEM_NORMAL, text=_('Select All') + '\tCTRL+A')
         AppendMenu(parent, help='', id=wx.ID_DELETE,
@@ -440,7 +440,7 @@ class IDEFrame(wx.Frame):
                        kind=wx.ITEM_NORMAL, text=_('Clear Errors') + '\tCTRL+K')
         parent.AppendSeparator()
         zoommenu = wx.Menu(title='')
-        parent.Append(wx.ID_ZOOM_FIT, _("Zoom"), zoommenu)
+        self.ZoomMenuItem = parent.AppendSubMenu(zoommenu, _("Zoom"))
         for idx, value in enumerate(ZOOM_FACTORS):
             new_item = AppendMenu(zoommenu, help='',
                        kind=wx.ITEM_RADIO, text=str(int(round(value * 100))) + "%")
@@ -1179,7 +1179,7 @@ class IDEFrame(wx.Frame):
                                  selected > -1 and self.SearchParams is not None)
             self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, True)
             MenuToolBar.EnableTool(ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, True)
-            self.EditMenu.Enable(wx.ID_ADD, True)
+            self.AddMenuItem.Enable(True)
             self.EditMenu.Enable(wx.ID_DELETE, True)
             if self.TabsOpened.GetPageCount() > 0:
                 self.EditMenu.Enable(wx.ID_CUT, True)
@@ -1219,7 +1219,7 @@ class IDEFrame(wx.Frame):
             self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUFINDPREVIOUS, False)
             self.EditMenu.Enable(ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, False)
             MenuToolBar.EnableTool(ID_PLCOPENEDITOREDITMENUSEARCHINPROJECT, False)
-            self.EditMenu.Enable(wx.ID_ADD, False)
+            self.AddMenuItem.Enable( False)
             self.EditMenu.Enable(wx.ID_DELETE, False)
 
     def CloseTabsWithoutModel(self, refresh=True):
@@ -1351,24 +1351,24 @@ class IDEFrame(wx.Frame):
                 if selected != -1:
                     window = self.TabsOpened.GetPage(selected)
                     if isinstance(window, Viewer):
-                        self.DisplayMenu.Enable(wx.ID_ZOOM_FIT, True)
-                        zoommenu = self.DisplayMenu.FindItemById(wx.ID_ZOOM_FIT).GetSubMenu()
+                        self.ZoomMenuItem.Enable(True)
+                        zoommenu = self.ZoomMenuItem.GetSubMenu()
                         zoomitem = zoommenu.FindItemByPosition(window.GetScale())
                         zoomitem.Check(True)
                     else:
-                        self.DisplayMenu.Enable(wx.ID_ZOOM_FIT, False)
+                        self.ZoomMenuItem.Enable(False)
                 else:
-                    self.DisplayMenu.Enable(wx.ID_ZOOM_FIT, False)
+                    self.ZoomMenuItem.Enable(False)
             else:
                 self.DisplayMenu.Enable(wx.ID_REFRESH, False)
-                self.DisplayMenu.Enable(wx.ID_ZOOM_FIT, False)
+                self.ZoomMenuItem.Enable(False)
             if self.EnableDebug:
                 self.DisplayMenu.Enable(wx.ID_CLEAR, True)
         else:
             self.DisplayMenu.Enable(wx.ID_REFRESH, False)
             if self.EnableDebug:
                 self.DisplayMenu.Enable(wx.ID_CLEAR, False)
-            self.DisplayMenu.Enable(wx.ID_ZOOM_FIT, False)
+            self.ZoomMenuItem.Enable(False)
 
     def OnRefreshMenu(self, event):
         self.RefreshEditor()
