@@ -135,7 +135,7 @@ endef
 
 DELAY=400
 KILL_DELAY=430
-PYTEST=$(dir $(BEREMIZPYTHONPATH))/pytest
+PYTEST=$(dir $(BEREMIZPYTHONPATH))pytest
 define pytest_idetest_command
 	$(fluxbox_command); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1)
 endef
