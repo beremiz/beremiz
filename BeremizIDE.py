@@ -31,7 +31,7 @@ import shutil
 import time
 import signal
 from time import time as gettime
-from threading import Lock, Timer, currentThread
+from threading import Lock, Timer, current_thread
 
 import wx.lib.buttons
 import wx.lib.statbmp
@@ -102,7 +102,7 @@ else:
     }
 
 
-MainThread = currentThread().ident
+MainThread = current_thread().ident
 REFRESH_PERIOD = 0.1
 
 
@@ -153,7 +153,7 @@ class LogPseudoFile(object):
             self.LastRefreshTimer = None
 
     def _should_write(self):
-        if MainThread == currentThread().ident:
+        if MainThread == current_thread().ident:
             app = wx.GetApp()
             if app is not None:
                 self._write()
@@ -247,9 +247,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                    kind=wx.ITEM_NORMAL, text=_('New') + '\tCTRL+N')
         AppendMenu(parent, help='', id=wx.ID_OPEN,
                    kind=wx.ITEM_NORMAL, text=_('Open') + '\tCTRL+O')
-        parent.Append(ID_FILEMENURECENTPROJECTS, _("&Recent Projects"), self.RecentProjectsMenu)
+        self.RecentProjectsMenuItem = parent.AppendSubMenu(self.RecentProjectsMenu, _("&Recent Projects"))
         parent.AppendSeparator()
-        parent.Append(wx.ID_ANY, _("&Tutorials and Examples"), self.TutorialsProjectsMenu)
+        parent.AppendSubMenu(self.TutorialsProjectsMenu, _("&Tutorials and Examples"))
 
         exemples_dir = Bpath("exemples")
         project_list = sorted(os.listdir(exemples_dir))
@@ -707,7 +707,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             item = self.RecentProjectsMenu.FindItemByPosition(0)
             self.RecentProjectsMenu.Remove(item)
 
-        self.FileMenu.Enable(ID_FILEMENURECENTPROJECTS, len(recent_projects) > 0)
+        self.RecentProjectsMenuItem.Enable(len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
             text = '&%d: %s' % (idx + 1, projectpath)
 
