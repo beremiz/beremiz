@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: CI Automated testing
 
 on:
   push:

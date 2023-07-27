@@ -1,6 +1,7 @@
 <!---
 [![docs](https://readthedocs.org/projects/beremiz/badge/?version=latest)](https://beremiz.readthedocs.io)
 -->
+[![CI Automated testing](https://github.com/beremiz/beremiz/actions/workflows/run_tests_in_docker.yml/badge.svg?branch=python3)](https://github.com/beremiz/beremiz/actions/workflows/run_tests_in_docker.yml)
 
 # Beremiz #
 
