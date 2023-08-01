@@ -59,6 +59,22 @@ RUN set -xe && \
     ) | install /dev/stdin /usr/local/bin/sikulix
 
 
+### SVGHMI dependencies : Chromium browser + Inkscape ###
+#
+# On ubuntu chromium is distrinuted as a snap.
+# Running snapd on docker is a mess.
+# As a workaround, there is a PPA where chromium .deb packges build is still beeing maintained :
+#
+# https://launchpad.net/~savoury1/+archive/ubuntu/chromium
+#     ppa:savoury1, maintained by Rob Savoury at the time of writing
+#
+# As a side effect of docker limitations, chromium need --no-sandbox command line argument.
+#
+RUN apt-get install -qqy --no-install-recommends gnupg software-properties-common \
+    && add-apt-repository -y ppa:savoury1/chromium \
+    && add-apt-repository -y ppa:savoury1/ffmpeg4 \
+    && apt-get install -qqy --no-install-recommends chromium-browser inkscape
+
 # easy to remember 'do_tests' alias to invoke main makefile
 RUN env echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
 RUN chmod +x /usr/local/bin/do_tests
