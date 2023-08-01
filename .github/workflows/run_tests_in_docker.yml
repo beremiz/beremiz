@@ -35,7 +35,7 @@ jobs:
         cache-name: cache-docker
       with:
         path: /tmp/latest.tar
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('beremiz/tests/tools/Docker/beremiz-sikuli') }}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('beremiz/tests/tools/Docker', 'beremiz/requirements.txt') }}
 
     - if: ${{ steps.cache-docker-restore.outputs.cache-hit == false }}
       name: Create docker image
