@@ -229,7 +229,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
   <body>
 """)
 
-        command = [python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
+        command = ["setsid", python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
 
         if exemple is not None:
             command.append(opj(beremiz_path,"exemples",exemple))
@@ -349,7 +349,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
     def close(self):
 
         self.ReportScreenShot("Close app")
-        os.kill(self.proc.pid, signal.SIGTERM)
+        os.kill(self.proc.pid, signal.SIGKILL)
         #self.sikuliapp.close()
         #self.sikuliapp = None
 
@@ -371,6 +371,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
     def ReportTextImage(self, msg, img):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
         fname = "capture"+str(self.imgnum)+".png"
+        sys.stdout.write(elapsed + " [" + fname + "] " + msg + "\n")
         img.save(".", fname)
         self.imgnum = self.imgnum + 1
         self.report.write( "<p>" + escape(elapsed + msg) + "<br/><img src=\""+ fname + "\"/>" + "</p>")
@@ -378,6 +379,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
     def ReportText(self, text):
         elapsed = "%.3fs: "%(timesec() - self.starttime)
         #res = u"<p><![CDATA[" + elapsed + text + "]]></p>"
+        sys.stdout.write(elapsed + text + "\n")
         res = u"<p>" + escape(elapsed + text) + "</p>"
         self.report.write(res)
 
