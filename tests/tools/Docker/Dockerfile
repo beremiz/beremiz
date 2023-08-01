@@ -85,23 +85,20 @@ RUN mkdir /home/$UNAME/build /home/$UNAME/src /home/$UNAME/test
 
 RUN virtualenv ~/beremizenv
 
-# wxPython build req
-RUN ~/beremizenv/bin/pip install gattrdict
+COPY requirements.txt /home/$UNAME
 
-RUN ~/beremizenv/bin/pip install wxpython
+# wxpython build requirements
+RUN ~/beremizenv/bin/pip install `grep gattrdict /home/$UNAME/requirements.txt`
 
+# beremiz python requirements
+RUN ~/beremizenv/bin/pip install -r /home/$UNAME/requirements.txt
+
+# tests python requirements
 RUN ~/beremizenv/bin/pip install \
-        pytest pytest-timeout ddt \
-        sslpsk posix_spawn \
-        matplotlib lxml \
-        zeroconf \
-        pycountry \
-        Pyro5 msgpack autobahn click
-
-RUN ~/beremizenv/bin/pip install \
-        git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82 \
-        git+https://github.com/beremiz/nevow-py3.git@nevow-0.14.5.dev1
-
+        pytest pytest-timeout ddt
+        
+#TODO sslpsk posix_spawn
+     
 RUN set -xe && \
     cd  /home/$UNAME && mkdir tessdata && \
     wget -q https://github.com/tesseract-ocr/tessdata/archive/refs/tags/4.1.0.tar.gz \

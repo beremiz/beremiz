@@ -6,3 +6,4 @@
 **/.svghmithumbs/**
 **/my_*.der
 **/my_*.pem
+tests/tools/Docker/requirements.txt
