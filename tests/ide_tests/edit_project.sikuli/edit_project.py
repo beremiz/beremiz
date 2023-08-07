@@ -23,6 +23,9 @@ def test(app):
 
     app.type(Key.DOWN * 10, Key.CTRL)
 
+    # Zoom in to allow OCR
+    app.type("+")
+
     app.WaitIdleUI()
 
     app.doubleClick("Hello")
