@@ -211,7 +211,11 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         """
         self.ocropts = sikuli.OCR.globalOptions()
         self.ocropts.dataPath(tessdata_path)
-        self.ocropts.oem(2)
+        
+        # 0 use legacy Tesseract (not so good, but repeatable)
+        # 1 use RNN Tesseract (better but non-repeatable)
+        # 2 use both
+        self.ocropts.oem(0)
         self.ocropts.smallFont()
 
         self.imgnum = 0
@@ -318,7 +322,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         for m in matches:
             mText = m.getText().encode('ascii', 'ignore')
             for arg in args:
-                if arg in mText:
+                if arg in mText or arg in mText.translate(None, "\"`'|-. "):
                     if match is None:
                         match = m
                     if mText == arg:
