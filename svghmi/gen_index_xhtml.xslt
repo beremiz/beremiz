@@ -2170,8 +2170,6 @@
 </xsl:text>
     <xsl:text>        this.incoming[index] = undefined;
 </xsl:text>
-    <xsl:text>        // TODO: add timestamp argument to dispatch, so that defered data do not appear wrong on graphs
-</xsl:text>
     <xsl:text>        this.lastdispatch[index] = Date.now();
 </xsl:text>
     <xsl:text>        this.do_dispatch(new_val, old_val, index);
@@ -9273,8 +9271,6 @@
 </xsl:text>
     <xsl:text>
 </xsl:text>
-    <xsl:text>        console.log("dispatch(",value,oldval, index, time);
-</xsl:text>
     <xsl:text>        // naive local buffer impl. 
 </xsl:text>
     <xsl:text>        // data is updated only when graph is visible
@@ -10985,9 +10981,19 @@
 </xsl:text>
           <xsl:text>
 </xsl:text>
-          <xsl:text>                if (re.numeric_arg.test(ph.type) &amp;&amp; (typeof arg !== 'number' &amp;&amp; isNaN(arg))) {
+          <xsl:text>                if (re.numeric_arg.test(ph.type)){
 </xsl:text>
-          <xsl:text>                    throw new TypeError(sprintf('[sprintf] expecting number but found %T', arg))
+          <xsl:text>                    let argtype = typeof arg;
+</xsl:text>
+          <xsl:text>                    if ( argtype !== 'bigint') {
+</xsl:text>
+          <xsl:text>                        if ( argtype !== 'number' &amp;&amp; isNaN(arg) ) {
+</xsl:text>
+          <xsl:text>                            throw new TypeError(sprintf('[sprintf] expecting number but found %T', arg))
+</xsl:text>
+          <xsl:text>                        }
+</xsl:text>
+          <xsl:text>                    }
 </xsl:text>
           <xsl:text>                }
 </xsl:text>
@@ -11481,13 +11487,27 @@
 </xsl:text>
           <xsl:text>const dvgetters = {
 </xsl:text>
-          <xsl:text>    INT: (dv,offset) =&gt; [dv.getInt16(offset, true), 2],
+          <xsl:text>    SINT:  (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
 </xsl:text>
-          <xsl:text>    BOOL: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+          <xsl:text>    INT:   (dv,offset) =&gt; [dv.getInt16(offset, true), 2],
 </xsl:text>
-          <xsl:text>    NODE: (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+          <xsl:text>    DINT:  (dv,offset) =&gt; [dv.getInt32(offset, true), 4],
 </xsl:text>
-          <xsl:text>    REAL: (dv,offset) =&gt; [dv.getFloat32(offset, true), 4],
+          <xsl:text>    LINT:  (dv,offset) =&gt; [dv.getBigInt64(offset, true), 8],
+</xsl:text>
+          <xsl:text>    USINT: (dv,offset) =&gt; [dv.getUint8(offset, true), 1],
+</xsl:text>
+          <xsl:text>    UINT:  (dv,offset) =&gt; [dv.getUint16(offset, true), 2],
+</xsl:text>
+          <xsl:text>    UDINT: (dv,offset) =&gt; [dv.getUint32(offset, true), 4],
+</xsl:text>
+          <xsl:text>    ULINT: (dv,offset) =&gt; [dv.getBigUint64(offset, true), 8],
+</xsl:text>
+          <xsl:text>    BOOL:  (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+</xsl:text>
+          <xsl:text>    NODE:  (dv,offset) =&gt; [dv.getInt8(offset, true), 1],
+</xsl:text>
+          <xsl:text>    REAL:  (dv,offset) =&gt; [dv.getFloat32(offset, true), 4],
 </xsl:text>
           <xsl:text>    STRING: (dv, offset) =&gt; {
 </xsl:text>
@@ -11717,7 +11737,21 @@
 </xsl:text>
           <xsl:text>const typedarray_types = {
 </xsl:text>
+          <xsl:text>    SINT: (number) =&gt; new Int8Array([number]),
+</xsl:text>
           <xsl:text>    INT: (number) =&gt; new Int16Array([number]),
+</xsl:text>
+          <xsl:text>    DINT: (number) =&gt; new Int32Array([number]),
+</xsl:text>
+          <xsl:text>    LINT: (number) =&gt; new Int64Array([number]),
+</xsl:text>
+          <xsl:text>    USINT: (number) =&gt; new Uint8Array([number]),
+</xsl:text>
+          <xsl:text>    UINT: (number) =&gt; new Uint16Array([number]),
+</xsl:text>
+          <xsl:text>    UDINT: (number) =&gt; new Uint32Array([number]),
+</xsl:text>
+          <xsl:text>    ULINT: (number) =&gt; new Uint64Array([number]),
 </xsl:text>
           <xsl:text>    BOOL: (truth) =&gt; new Int8Array([truth]),
 </xsl:text>

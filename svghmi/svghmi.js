@@ -24,10 +24,17 @@ function init_widgets() {
 var has_watchdog = window.location.hash == "#watchdog";
 
 const dvgetters = {
-    INT: (dv,offset) => [dv.getInt16(offset, true), 2],
-    BOOL: (dv,offset) => [dv.getInt8(offset, true), 1],
-    NODE: (dv,offset) => [dv.getInt8(offset, true), 1],
-    REAL: (dv,offset) => [dv.getFloat32(offset, true), 4],
+    SINT:  (dv,offset) => [dv.getInt8(offset, true), 1],
+    INT:   (dv,offset) => [dv.getInt16(offset, true), 2],
+    DINT:  (dv,offset) => [dv.getInt32(offset, true), 4],
+    LINT:  (dv,offset) => [dv.getBigInt64(offset, true), 8],
+    USINT: (dv,offset) => [dv.getUint8(offset, true), 1],
+    UINT:  (dv,offset) => [dv.getUint16(offset, true), 2],
+    UDINT: (dv,offset) => [dv.getUint32(offset, true), 4],
+    ULINT: (dv,offset) => [dv.getBigUint64(offset, true), 8],
+    BOOL:  (dv,offset) => [dv.getInt8(offset, true), 1],
+    NODE:  (dv,offset) => [dv.getInt8(offset, true), 1],
+    REAL:  (dv,offset) => [dv.getFloat32(offset, true), 4],
     STRING: (dv, offset) => {
         const size = dv.getInt8(offset);
         return [
@@ -142,7 +149,14 @@ function send_blob(data) {
 };
 
 const typedarray_types = {
+    SINT: (number) => new Int8Array([number]),
     INT: (number) => new Int16Array([number]),
+    DINT: (number) => new Int32Array([number]),
+    LINT: (number) => new Int64Array([number]),
+    USINT: (number) => new Uint8Array([number]),
+    UINT: (number) => new Uint16Array([number]),
+    UDINT: (number) => new Uint32Array([number]),
+    ULINT: (number) => new Uint64Array([number]),
     BOOL: (truth) => new Int8Array([truth]),
     NODE: (truth) => new Int8Array([truth]),
     REAL: (number) => new Float32Array([number]),
