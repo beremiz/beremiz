@@ -3,7 +3,7 @@ aiofiles==23.1.0
 aiosqlite==0.19.0
 async-timeout==4.0.2
 asyncua @ git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82
-attrdict==2.0.1
+attrdict3==2.0.2
 attrs==23.1.0
 autobahn==23.1.2
 Automat==22.10.0
