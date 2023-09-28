@@ -13,7 +13,7 @@ from util.paths import Bpath
 _exec = sys.executable if "darwin" not in sys.platform else sys.executable + 'w'
 LocalRuntimeInterpreterPath = os.environ.get("BEREMIZPYTHONPATH", _exec)
 
-LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "localhost")
+LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "127.0.0.1")
 
 class LocalRuntimeMixin():
 

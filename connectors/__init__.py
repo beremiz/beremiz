@@ -62,7 +62,7 @@ def _Import_Dialogs():
                 schemes += [scheme]
 
 
-LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "localhost")
+LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "127.0.0.1")
 
 def ConnectorFactory(uri, confnodesroot):
     """
