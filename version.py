@@ -49,6 +49,7 @@ def GetAboutDialogInfo(info):
     info.Copyright = ""
     info.Copyright += "(C) 2006-2023 Edouard Tisserant\n"
     info.Copyright += "(C) 2003-2023 Mario de Sousa\n"
+    info.Copyright += "(C) 2022-2023 GP Orcullo\n"
     info.Copyright += "(C) 2016-2018 Andrey Skvortsov\n"
     info.Copyright += "(C) 2006-2013 Laurent Bessard\n"
 
@@ -57,6 +58,7 @@ def GetAboutDialogInfo(info):
     info.Developers = (
         "Edouard Tisserant <contact@beremiz.fr>",
         "Mario de Sousa <msousa@fe.up.pt>",
+        "GP Orcullo <kinsamanka@gmail.com>",
         "Andrey Skvortsov <andrej.skvortzov@gmail.com>",
         "Sergey Surkov <surkov.sv@summatechnology.ru>",
         "Laurent Bessard <laurent.bessard@gmail.com>")
@@ -183,7 +185,7 @@ def GetAboutDialogInfo(info):
     return info
 
 
-app_version = "1.3-beta2"
+app_version = "1.4-beta2"
 
 if __name__ == "__main__":
     print(app_version)
