@@ -558,8 +558,9 @@ def FirstWorkerJob():
 
     # Beremiz IDE detects LOCAL:// runtime is ready by looking
     # for self.workdir in the daemon's stdout.
-    sys.stdout.write(_("Current working directory :") + WorkingDir + "\n")
-    sys.stdout.flush()
+    if sys.stdout:
+        sys.stdout.write(_("Current working directory :") + WorkingDir + "\n")
+        sys.stdout.flush()
 
     runtime.GetPLCObjectSingleton().AutoLoad(autostart)
 

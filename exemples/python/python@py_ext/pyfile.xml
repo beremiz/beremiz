@@ -11,6 +11,14 @@ Python_to_C_Call = PLCBinary.Python_to_C_Call
 Python_to_C_Call.restype = ctypes.c_int
 Python_to_C_Call.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
 
+
+def MyPrintFunction(msg):
+    if sys.stdout:
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+    else:
+        PLCObject.LogMessage(msg)
+
 def MyPythonFunc(arg):
     i = ctypes.c_int()
     if(Python_to_C_Call(arg, i)):
@@ -22,7 +30,9 @@ def MyPythonFunc(arg):
     print("Python read PLC global :",PLCGlobals.Test_Python_Var)
     print("Python read PLC global Grumpf :",PLCGlobals.Grumpf)
     PLCGlobals.Second_Python_Var = 789
-    sys.stdout.flush()
+
+    if sys.stdout:
+        sys.stdout.flush()
     return res
 
 async_error_test_code = """

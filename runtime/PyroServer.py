@@ -73,7 +73,8 @@ class PyroServer(object):
         if self._to_be_published():
             print(_("Publishing service on local network"))
 
-        sys.stdout.flush()
+        if sys.stdout:
+            sys.stdout.flush()
 
     def PyroLoop(self, when_ready):
         if self._to_be_published():

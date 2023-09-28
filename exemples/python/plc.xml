@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:21:19" contentDescription="This example shows many features in Beremiz:&#10;&#10;   1. How to implement python extensions.&#10;   2. How to implement basic C extension.&#10;   3. How to use C code in IEC POUs.&#10;   4. How to call C functions from python code.&#10;   5. How to avoid race conditions between IEC, C and python code.&#10;   6. How to convert betweet different IEC types.&#10;"/>
-  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2022-07-03T16:04:31">
+  <contentHeader name="Beremiz Python Support Tests" modificationDateTime="2023-09-28T17:24:49">
     <coordinateInfo>
       <pageSize x="1024" y="1024"/>
       <fbd>
@@ -274,7 +274,7 @@
               <connectionPointOut>
                 <relPosition x="315" y="15"/>
               </connectionPointOut>
-              <expression>'sys.stdout.write("Hello world\n")'</expression>
+              <expression>'MyPrintFunction("Hello world\n")'</expression>
             </inVariable>
             <block localId="5" width="125" height="80" typeName="python_eval" instanceName="py1" executionOrderId="0">
               <position x="686" y="400"/>
@@ -399,7 +399,7 @@
               <connectionPointOut>
                 <relPosition x="370" y="15"/>
               </connectionPointOut>
-              <expression>'sys.stdout.write("FBID :"+str(FBID)+"\n")'</expression>
+              <expression>'MyPrintFunction("FBID :"+str(FBID)+"\n")'</expression>
             </inVariable>
             <inVariable localId="11" height="30" width="290" executionOrderId="0" negated="false">
               <position x="295" y="735"/>
