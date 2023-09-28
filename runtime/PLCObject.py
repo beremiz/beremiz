@@ -62,8 +62,9 @@ lib_ext = {
 
 
 def PLCprint(message):
-    sys.stdout.write("PLCobject : "+message+"\n")
-    sys.stdout.flush()
+    if sys.stdout:
+        sys.stdout.write("PLCobject : "+message+"\n")
+        sys.stdout.flush()
 
 
 def RunInMain(func):
