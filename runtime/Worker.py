@@ -73,7 +73,7 @@ class worker(object):
                 self.reraise(_job)
 
         while not self._finish:
-            self.todo.wait_for(self.job is not None)
+            self.todo.wait_for(lambda: self.job is not None)
             self.job.do()
             self.done.notify()
             
