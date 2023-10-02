@@ -66,16 +66,21 @@ class worker(object):
         self.mutex.acquire()
         self.enabled = True
         if args or kwargs:
-            _job = job(*args, **kwargs)
-            _job.do()
-            # _job.success can't be None after do()
-            if not _job.success:
-                self.reraise(_job)
+            self.job = job(*args, **kwargs)
+            self.job.do()
+            # fail if first job fails
+            if not self.job.success:
+                self.reraise(self.job)
+            self.job = None
+
+        self.free.notify()
 
         while not self._finish:
             self.todo.wait_for(lambda: self.job is not None)
             self.job.do()
             self.done.notify()
+            self.job = None
+            self.free.notify()
             
         self.mutex.release()
 
@@ -90,9 +95,8 @@ class worker(object):
 
         def do_pending_job():
             self.mutex.acquire()
-            if self.job is not None:
-                self.job.do()
-                self.done.notify_all()
+            self.job.do()
+            self.done.notify_all()
             self.mutex.release()
 
         def wakerfeedingloop():
@@ -104,8 +108,9 @@ class worker(object):
                 self.job = job(*args, **kwargs)
                 waker(do_pending_job)
                 self.done.wait_for(lambda: self.job.success is not None)
+                # fail if first job fails
                 if not self.job.success:
-                    self.reraise(_job)
+                    self.reraise(self.job)
                 self.job = None
 
             self.free.notify()
