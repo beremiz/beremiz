@@ -1250,18 +1250,18 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="712.66262"
-     inkscape:cy="380.32243"
+     inkscape:zoom="1.979899"
+     inkscape:cx="636.64864"
+     inkscape:cy="149.25004"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g220"
      showgrid="false"
      units="px"
-     inkscape:window-width="3840"
+     inkscape:window-width="1920"
      inkscape:window-height="2096"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
+     inkscape:window-x="20"
+     inkscape:window-y="20"
+     inkscape:window-maximized="0"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -1514,22 +1514,6 @@
          d="m 37.67857,786.29085 v 3.75"
          id="path4582"
          inkscape:connector-curvature="0" />
-      <g
-         style="font-style:normal;font-weight:bold;font-size:6.32609px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-         id="text4584">
-        <path
-           d="m 33.828224,780.67935 c -0.362435,10e-6 -0.643526,0.13386 -0.843274,0.40156 -0.199751,0.26771 -0.299626,0.64456 -0.299624,1.13055 -2e-6,0.48393 0.09987,0.85974 0.299624,1.12745 0.199748,0.26771 0.480839,0.40156 0.843274,0.40156 0.364488,0 0.646609,-0.13385 0.846362,-0.40156 0.199746,-0.26771 0.299621,-0.64352 0.299624,-1.12745 -3e-6,-0.48599 -0.09988,-0.86284 -0.299624,-1.13055 -0.199753,-0.2677 -0.481874,-0.40155 -0.846362,-0.40156 m 0,-0.8618 c 0.741335,0 1.32205,0.21211 1.742147,0.63631 0.420087,0.42422 0.630133,1.01008 0.630138,1.7576 -5e-6,0.74545 -0.210051,1.33029 -0.630138,1.7545 -0.420097,0.42421 -1.000812,0.63631 -1.742147,0.63631 -0.739282,0 -1.319997,-0.2121 -1.742147,-0.63631 -0.420093,-0.42421 -0.630139,-1.00905 -0.630139,-1.7545 0,-0.74752 0.210046,-1.33338 0.630139,-1.7576 0.42215,-0.4242 1.002865,-0.63631 1.742147,-0.63631"
-           id="path4589"
-           inkscape:connector-curvature="0" />
-        <path
-           d="m 37.096294,779.90095 h 3.209381 v 0.89887 h -2.020149 v 0.85872 h 1.899681 v 0.89887 h -1.899681 v 1.95529 h -1.189232 v -4.61175"
-           id="path4591"
-           inkscape:connector-curvature="0" />
-        <path
-           d="m 41.420773,779.90095 h 3.209381 v 0.89887 h -2.020149 v 0.85872 h 1.899681 v 0.89887 h -1.899681 v 1.95529 h -1.189232 v -4.61175"
-           id="path4593"
-           inkscape:connector-curvature="0" />
-      </g>
       <path
          style="fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m 60.982143,810.04086 h -3.75"
@@ -1537,15 +1521,26 @@
          inkscape:connector-curvature="0" />
       <text
          xml:space="preserve"
-         style="font-style:normal;font-weight:bold;line-height:0%;font-family:sans-serif;-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
-         x="62.818459"
-         y="812.17749"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.2065px;line-height:0%;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.85055"
+         x="62.640198"
+         y="813.53357"
          id="text4613"><tspan
            sodipodi:role="line"
            id="tspan4615"
-           x="62.818459"
-           y="812.17749"
-           style="font-size:6.17189px;line-height:1.25;font-family:sans-serif">ON</tspan></text>
+           x="62.640198"
+           y="813.53357"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.2065px;line-height:1.25;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.85055">ON</tspan></text>
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.2065px;line-height:0%;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.85055"
+         x="27.640198"
+         y="784.53357"
+         id="text1542"><tspan
+           sodipodi:role="line"
+           id="tspan1540"
+           x="27.640198"
+           y="784.53357"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.2065px;line-height:1.25;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.85055">OFF</tspan></text>
     </g>
   </g>
 </svg>
