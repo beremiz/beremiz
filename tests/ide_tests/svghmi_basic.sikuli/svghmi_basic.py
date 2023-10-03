@@ -35,6 +35,8 @@ def test(app):
     app.waitForChangeAndIdleStdout()
     # app.WaitIdleUI()
 
+    app.ocropts.fontSize(20)
+    #app.ocropts.textHeight(25)
     app.click("OFF")
 
     # wait 10 seconds for 10 Grumpfs

@@ -216,6 +216,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         # 1 use RNN Tesseract (better but non-repeatable)
         # 2 use both
         self.ocropts.oem(0)
+        self.ocropts.psm(12)
         self.ocropts.smallFont()
 
         self.imgnum = 0
