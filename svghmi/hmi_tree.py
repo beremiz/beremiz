@@ -17,7 +17,15 @@ from lxml import etree
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
     "HMI_STRING":{},
+    "HMI_SINT":{},
     "HMI_INT":{},
+    "HMI_DINT":{},
+    "HMI_LINT":{},
+    "HMI_DINT":{},
+    "HMI_USINT":{},
+    "HMI_UINT":{},
+    "HMI_UDINT":{},
+    "HMI_ULINT":{},
     "HMI_BOOL":{},
     "HMI_REAL":{}
 }
