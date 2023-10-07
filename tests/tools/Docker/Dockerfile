@@ -87,9 +87,6 @@ RUN virtualenv ~/beremizenv
 
 COPY requirements.txt /home/$UNAME
 
-# wxpython build requirements
-RUN ~/beremizenv/bin/pip install `grep gattrdict /home/$UNAME/requirements.txt`
-
 # beremiz python requirements
 RUN ~/beremizenv/bin/pip install -r /home/$UNAME/requirements.txt
 
