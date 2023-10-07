@@ -39,6 +39,6 @@ sortedcontainers==2.4.0
 Twisted==22.10.0
 txaio==23.1.1
 typing_extensions==4.5.0
-wxPython==4.2.0
+wxPython==4.2.1
 zeroconf==0.62.0
 zope.interface==6.0
