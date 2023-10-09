@@ -205,7 +205,7 @@ class SVGHMILibrary(POULibrary):
                 if len(node.path) == 1:
                     extern_variables_declarations += [
                         "extern __IEC_" + node.iectype + "_" +
-                        "t" if node.vartype is "VAR" else "p"
+                        "t" if node.vartype == "VAR" else "p"
                         + node.cpath + ";"]
 
         assert(found_heartbeat)
