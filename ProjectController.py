@@ -1509,15 +1509,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if self.AppFrame is not None:
                 updated = True
                 self.AppFrame.RefreshStatusToolBar()
-                if status == PlcStatus.Disconnected:
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        _(status), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText('', 2)
-                else:
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        _(status), 2)
+                texts = [_(PlcStatus.Disconnected), ''] \
+                        if status == PlcStatus.Disconnected or self._connector is None else \
+                        [_("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), _(status)]
+                for i,txt in enumerate(texts):
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(txt, i+1)
         return updated
 
     def ShowPLCProgress(self, status="", progress=0):
