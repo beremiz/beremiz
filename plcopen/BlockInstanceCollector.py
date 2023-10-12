@@ -100,7 +100,7 @@ class BlockInstanceFactory(object):
     def __init__(self, block_instances):
         self.BlockInstances = block_instances
         self.CurrentInstance = None
-        self.SpecificValues = None
+        self.SpecificValues = []
         self.CurrentConnection = None
         self.CurrentLink = None
 
