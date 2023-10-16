@@ -117,6 +117,12 @@
   <xsl:template mode="var_type" match="ppx:dataType">
     <xsl:apply-templates mode="var_type" select="ppx:baseType"/>
   </xsl:template>
+  <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
+    <xsl:variable name="name">
+      <xsl:value-of select="local-name()"/>
+    </xsl:variable>
+    <xsl:value-of select="ns:SetType($name)"/>
+  </xsl:template>
   <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:struct">
     <xsl:apply-templates mode="var_type" select="ppx:variable"/>
   </xsl:template>
@@ -152,12 +158,6 @@
   <xsl:template mode="var_type" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring">
     <xsl:variable name="name">
       <xsl:text>WSTRING</xsl:text>
-    </xsl:variable>
-    <xsl:value-of select="ns:SetType($name)"/>
-  </xsl:template>
-  <xsl:template mode="var_type" priority="-1.0" match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
-    <xsl:variable name="name">
-      <xsl:value-of select="local-name()"/>
     </xsl:variable>
     <xsl:value-of select="ns:SetType($name)"/>
   </xsl:template>
