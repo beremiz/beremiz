@@ -472,7 +472,7 @@ def _AddWebNode(C_node_id, node_type, GetParamFuncs, SetParamFuncs, CoerceParamF
     # For some operations we cannot use the config name (e.g. filename to store config)
     # because the user may be using characters that are invalid for that purpose ('/' for
     # example), so we create a hash of the config_name, and use that instead.
-    config_hash = hashlib.md5(config_name).hexdigest()
+    config_hash = hashlib.md5(config_name.encode()).hexdigest()
     
     #PLCObject.LogMessage("Modbus web server extension::_AddWebNode("+str(C_node_id)+") config_name="+config_name)
 
@@ -628,9 +628,10 @@ def _runtime_%(location_str)s_modbus_websettings_init():
     #            that can use modbus extension build data
     for name, web_label, c_dtype, web_dtype, coerce_function in TCPclient_parameters + RTUclient_parameters + General_parameters:
         ParamFuncName                      = "__modbus_get_ClientNode_" + name        
-        GetClientParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
-        GetClientParamFuncs[name].restype  = c_dtype
-        GetClientParamFuncs[name].argtypes = [ctypes.c_int]
+        func                               = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
+        func.restype                       = c_dtype
+        func.argtypes                      = [ctypes.c_int]
+        GetClientParamFuncs[name] = (lambda *a,**k: func(*a,**k).decode()) if c_dtype == ctypes.c_char_p else func
         
     for name, web_label, c_dtype, web_dtype, coerce_function in TCPclient_parameters + RTUclient_parameters:
         ParamFuncName                      = "__modbus_set_ClientNode_" + name
@@ -643,10 +644,11 @@ def _runtime_%(location_str)s_modbus_websettings_init():
     #            that can use modbus extension build data
     for name, web_label, c_dtype, web_dtype, coerce_function in TCPserver_parameters + RTUslave_parameters + General_parameters:
         ParamFuncName                      = "__modbus_get_ServerNode_" + name        
-        GetServerParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
-        GetServerParamFuncs[name].restype  = c_dtype
-        GetServerParamFuncs[name].argtypes = [ctypes.c_int]
-        
+        func                               = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
+        func.restype                       = c_dtype
+        func.argtypes                      = [ctypes.c_int]
+        GetServerParamFuncs[name] = (lambda *a,**k: func(*a,**k).decode()) if c_dtype == ctypes.c_char_p else func
+
     for name, web_label, c_dtype, web_dtype, coerce_function in TCPserver_parameters + RTUslave_parameters:
         ParamFuncName                      = "__modbus_set_ServerNode_" + name
         SetServerParamFuncs[name]          = getattr(PLCObject.PLClibraryHandle, ParamFuncName)
