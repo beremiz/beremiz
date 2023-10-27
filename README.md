@@ -106,7 +106,7 @@ cd ~/Beremiz
 
 hg clone http://hg.beremiz.org/canfestival
 #  -- or --
-git clone https://github.com/beremiz/beremiz
+git clone https://github.com/beremiz/canfestival
 
 cd ~/Beremiz/canfestival
 ./configure --can=virtual
