@@ -196,10 +196,19 @@ def removeExtensionSetting(token):
     global extensions_settings_od
     extensions_settings_od.pop(token)
 
+
+def originalGetVersions():
+    return platform_module.system() + " " + platform_module.release()
+
+_getVersions = originalGetVersions
+
+def setVersionsCallable(versionsCallable):
+    global _getVersions
+    _getVersions = versionsCallable
+
 class ISettings(annotate.TypedInterface):
     platform = annotate.String(label=_("Platform"),
-                               default=platform_module.system() +
-                               " " + platform_module.release(),
+                               default=lambda *a,**k:_getVersions(),
                                immutable=True)
 
     # TODO version ?
