@@ -1,6 +1,47 @@
+body {
+	background-color: #f5faff;
+}
+
+h1 {
+    font-family: Tahoma, Verdana, sans-serif;
+	color: darkslateblue;
+}
+
+h2 {
+    font-family: Tahoma, Verdana, sans-serif;
+	color: darkslateblue;
+}
+
+fieldset {
+	font-family: Tahoma, Verdana, sans-serif;
+	color: #424242;
+}
+
+a {
+	font-family: Tahoma, Verdana, sans-serif;
+    color: darkslateblue;
+}
+
+a:hover {
+    color: crimson;
+}
+
+legend {
+	font-family: Tahoma, Verdana, sans-serif;
+	color: darkslateblue;
+}
 
 .freeform-label {
     float: left;
     width: 30%;
+	font-family: Tahoma, Verdana, sans-serif;
 }
 
+.freeform-input {
+    font-family: Tahoma, Verdana, sans-serif;
+}
+
+.freeform-form-label {
+    font-family: Tahoma, Verdana, sans-serif;
+	color: darkslateblue;
+}
