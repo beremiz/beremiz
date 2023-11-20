@@ -493,11 +493,13 @@ def deliverWampSecret(ctx, segments):
 
 def RegisterWebSettings(NS):
 
-    NS.ConfigurableSettings.addSettings(
+    WebSettings = NS.newExtensionSetting("Wamp Extension Settings", "wamp_settings")
+    WebSettings.addSettings(
         "wamp",
         _("Wamp Settings"),
         webFormInterface,
         _("Set"),
         wampConfig)
 
-    NS.customSettingsURLs[WAMP_SECRET_URL] = deliverWampSecret
+    WebSettings.addCustomURL(WAMP_SECRET_URL, deliverWampSecret)
+

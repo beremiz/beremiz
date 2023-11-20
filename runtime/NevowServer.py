@@ -183,6 +183,17 @@ class ConfigurableBindings(configurable.Configurable):
 
         self.bindingsNames.append(name)
             
+    customSettingsURLs = {}
+    def addCustomURL(self, segment, func):
+        self.customSettingsURLs[segment] = func
+
+    def removeCustomURL(self, segment):
+        del self.customSettingsURLs[segment]
+
+    def customLocateChild(self, ctx, segments):
+        segment = segments[0]
+        if segment in self.customSettingsURLs:
+            return self.customSettingsURLs[segment](ctx, segments)
 
 ConfigurableSettings = ConfigurableBindings()
 
@@ -210,8 +221,6 @@ class ISettings(annotate.TypedInterface):
     platform = annotate.String(label=_("Platform"),
                                default=lambda *a,**k:_getVersions(),
                                immutable=True)
-
-    # TODO version ?
 
     # pylint: disable=no-self-argument
     def sendLogMessage(
@@ -252,30 +261,36 @@ class ISettings(annotate.TypedInterface):
                                                "Upload a file to PLC working directory"),
                                            action=_("Upload"))
 
-customSettingsURLs = {
-}
-
 extensions_settings_od = collections.OrderedDict()
 
-class SettingsPage(rend.Page):
-    # We deserve a slash
+
+CSS_tags = [tags.link(rel='stylesheet',
+                      type='text/css',
+                      href=url.here.child("webform_css")),
+           tags.link(rel='stylesheet',
+                      type='text/css',
+                      href=url.here.child("webinterface_css"))]
+
+class StyledSettingsPage(rend.Page):
     addSlash = True
 
     # This makes webform_css url answer some default CSS
     child_webform_css = webform.defaultCSS
     child_webinterface_css = File(paths.AbsNeighbourFile(__file__, 'webinterface.css'), 'text/css')
 
+class SettingsPage(StyledSettingsPage):
+
     implements(ISettings)
    
-    def __getattr__(self, name):
-        global extensions_settings_od
-        if name.startswith('configurable_'):
-            token = name[13:]
-            def configurable_something(ctx):
-                settings, _display = extensions_settings_od[token]
-                return settings
-            return configurable_something
-        raise AttributeError
+    # def __getattr__(self, name):
+    #     global extensions_settings_od
+    #     if name.startswith('configurable_'):
+    #         token = name[13:]
+    #         def configurable_something(ctx):
+    #             settings, _display = extensions_settings_od[token]
+    #             return settings
+    #         return configurable_something
+    #     raise AttributeError
     
     def extensions_settings(self, context, data):
         """ Project extensions settings
@@ -285,25 +300,24 @@ class SettingsPage(rend.Page):
         res = []
         for token in extensions_settings_od:
             _settings, display = extensions_settings_od[token]
-            res += [tags.h2[display], webform.renderForms(token)] 
+            #res += [tags.a(href=token)[display]] 
+            res += [tags.p[tags.a(href=token)[display]]]
+            # res += [tags.h2[display], webform.renderForms(token)] 
         return res
 
     docFactory = loaders.stan([tags.html[
         tags.head[
             tags.title[_("Beremiz Runtime Settings")],
-            tags.link(rel='stylesheet',
-                      type='text/css',
-                      href=url.here.child("webform_css")),
-            tags.link(rel='stylesheet',
-                      type='text/css',
-                      href=url.here.child("webinterface_css"))
+            CSS_tags
         ],
         tags.body[
+            tags.h1["Settings:"],
             tags.a(href='/')['Back'],
-            tags.h1["Runtime settings:"],
+            tags.h2["Runtime service:"],
             webform.renderForms('staticSettings'),
-            tags.h1["Extensions settings:"],
+            tags.h2["Target specific:"],
             webform.renderForms('dynamicSettings'),
+            tags.h2["Extensions:"],
             extensions_settings
         ]]])
 
@@ -336,10 +350,45 @@ class SettingsPage(rend.Page):
                 shutil.copyfileobj(fobj,destfd)
 
     def locateChild(self, ctx, segments):
-        if segments[0] in customSettingsURLs:
-            return customSettingsURLs[segments[0]](ctx, segments)
+        segment = segments[0]
+        if segment in extensions_settings_od:
+            settings, display = extensions_settings_od[segment]
+            return ExtensionSettingsPage(settings, display), segments[1:]
+        else:
+            res = ConfigurableSettings.customLocateChild(ctx, segments)
+            if res:
+                return res 
         return super(SettingsPage, self).locateChild(ctx, segments)
 
+class ExtensionSettingsPage(StyledSettingsPage):
+
+    docFactory = loaders.stan([
+        tags.html[
+            tags.head()[
+                tags.title[tags.directive("title")],
+                CSS_tags
+            ],
+            tags.body[
+                tags.h1[tags.directive("title")],
+                tags.a(href='/settings')['Back'],
+                webform.renderForms('settings')
+            ]]])
+
+    def render_title(self, ctx, data):
+        return self._display_name
+
+    def configurable_settings(self, ctx):
+        return self._settings
+
+    def __init__(self, settings, display):
+        self._settings = settings
+        self._display_name = display
+
+    def locateChild(self, ctx, segments):
+        res = self._settings.customLocateChild(ctx, segments)
+        if res:
+            return res 
+        return super(ExtensionSettingsPage, self).locateChild(ctx, segments)
 
 class WebInterface(athena.LivePage):
 
