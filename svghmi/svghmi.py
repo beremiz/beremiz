@@ -617,7 +617,7 @@ class SVGHMI(object):
 
         else:
             target_file = open(target_path, 'wb')
-            target_file.write("""<!DOCTYPE html>
+            target_file.write(b"""<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>SVGHMI</title>
