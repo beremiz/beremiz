@@ -690,7 +690,7 @@ int __init_%(locstr)s (int argc, char **argv){
 			res |= pthread_attr_init(&attr);
 			res |= pthread_create(&(client_nodes[index].timer_thread_id), &attr, &__mb_client_timer_thread, (void *)((char *)NULL + index));
 			if (res !=  0) {
-				fprintf(stderr, "Modbus plugin: Error starting timer thread for modbus client node %%s\n", client_nodes[index].location);
+				fprintf(stderr, "Modbus plugin: Error (%%d) starting timer thread for modbus client node %%s\n", res, client_nodes[index].location);
 				goto error_exit;
 			}
 		}
@@ -703,7 +703,7 @@ int __init_%(locstr)s (int argc, char **argv){
 			res |= pthread_attr_init(&attr);
 			res |= pthread_create(&(client_nodes[index].thread_id), &attr, &__mb_client_thread, (void *)((char *)NULL + index));
 			if (res !=  0) {
-				fprintf(stderr, "Modbus plugin: Error starting thread for modbus client node %%s\n", client_nodes[index].location);
+				fprintf(stderr, "Modbus plugin: Error (%%d) starting thread for modbus client node %%s\n", res, client_nodes[index].location);
 				goto error_exit;
 			}
 		}
@@ -730,7 +730,7 @@ int __init_%(locstr)s (int argc, char **argv){
 			res |= pthread_attr_init(&attr);
 			res |= pthread_create(&(server_nodes[index].thread_id), &attr, &__mb_server_thread, (void *)&(server_nodes[index]));
 			if (res !=  0) {
-				fprintf(stderr, "Modbus plugin: Error starting modbus server thread for node %%s\n", server_nodes[index].location);
+				fprintf(stderr, "Modbus plugin: Error (%%d) starting modbus server thread for node %%s\n", res, server_nodes[index].location);
 				goto error_exit;
 			}
 		}
