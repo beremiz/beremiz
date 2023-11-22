@@ -2,46 +2,51 @@ body {
 	background-color: #f5faff;
 }
 
-h1 {
+* {
     font-family: Tahoma, Verdana, sans-serif;
-	color: darkslateblue;
 }
 
-h2 {
-    font-family: Tahoma, Verdana, sans-serif;
+h1, h2 {
 	color: darkslateblue;
 }
 
 fieldset {
-	font-family: Tahoma, Verdana, sans-serif;
 	color: #424242;
+	border: 1px solid gray;
+	border-radius: 4px;
 }
 
-a {
-	font-family: Tahoma, Verdana, sans-serif;
-    color: darkslateblue;
+input, select, button, a {
+	font-size: 14px;
 }
 
-a:hover {
-    color: crimson;
+button,
+input,
+select,
+textarea {
+    color: inherit;
 }
 
-legend {
-	font-family: Tahoma, Verdana, sans-serif;
+legend, .freeform-form-label {
 	color: darkslateblue;
 }
 
 .freeform-label {
     float: left;
     width: 30%;
-	font-family: Tahoma, Verdana, sans-serif;
 }
 
-.freeform-input {
-    font-family: Tahoma, Verdana, sans-serif;
+a {
+    background-color: #e9e9ed;
+    color: #424242;
+    padding: 2px 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: 1px solid gray;
+    border-radius: 4px;
 }
 
-.freeform-form-label {
-    font-family: Tahoma, Verdana, sans-serif;
-	color: darkslateblue;
+a:hover, a:active {
+    background-color: silver;
 }

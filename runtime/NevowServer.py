@@ -311,13 +311,13 @@ class SettingsPage(StyledSettingsPage):
             CSS_tags
         ],
         tags.body[
-            tags.h1["Settings:"],
+            tags.h1["Settings"],
             tags.a(href='/')['Back'],
-            tags.h2["Runtime service:"],
+            tags.h2["Runtime service"],
             webform.renderForms('staticSettings'),
-            tags.h2["Target specific:"],
+            tags.h2["Target specific"],
             webform.renderForms('dynamicSettings'),
-            tags.h2["Extensions:"],
+            tags.h2["Extensions"],
             extensions_settings
         ]]])
 
