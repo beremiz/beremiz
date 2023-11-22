@@ -72,22 +72,22 @@ MATIEC_ERROR_MODEL = re.compile(
 
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
-    for n, d, _h, c in catalog:
-        if isinstance(c, list):
-            children_types.extend(ExtractChildrenTypesFromCatalog(c))
+    for name, displayname, _helpstr, moduleclassname in catalog:
+        if isinstance(moduleclassname, list):
+            children_types.extend(ExtractChildrenTypesFromCatalog(moduleclassname))
         else:
-            children_types.append((n, GetClassImporter(c), d))
+            children_types.append((name, GetClassImporter(moduleclassname), displayname))
     return children_types
 
 
 def ExtractMenuItemsFromCatalog(catalog):
     menu_items = []
-    for n, d, h, c in catalog:
-        if isinstance(c, list):
-            children = ExtractMenuItemsFromCatalog(c)
+    for name, displayname, helpstr, moduleclassname in catalog:
+        if isinstance(moduleclassname, list):
+            children = ExtractMenuItemsFromCatalog(moduleclassname)
         else:
             children = []
-        menu_items.append((n, d, h, children))
+        menu_items.append((name, displayname, helpstr, children))
     return menu_items
 
 
@@ -203,7 +203,7 @@ def GetProjectControllerXSD():
               """ + "\n".join(['<xsd:attribute name=' +
                                '"Enable_' + libname + '_Library" ' +
                                'type="xsd:boolean" use="optional" default="' +
-                               ('true' if default else 'false') + '"/>'
+                               ('false' if type(default)==str or default==False else 'true') + '"/>'
                                for libname, _lib, default in features.libraries]) + """
               </xsd:complexType>
             </xsd:element>""") if len(features.libraries) > 0 else '') + """
@@ -282,7 +282,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def LoadLibraries(self):
         self.Libraries = []
         TypeStack = []
-        for libname, clsname, lib_enabled in features.libraries:
+        for libname, clsname, default in features.libraries:
+            lib_enabled = False if type(default)==str else default
             if self.BeremizRoot.Libraries is not None:
                 enable_attr = getattr(self.BeremizRoot.Libraries,
                                       "Enable_" + libname + "_Library")
@@ -293,6 +294,33 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries.append(Lib)
+
+    def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
+        """ 
+        Project controller applies libraries requirements when adding new CTN
+        """
+        res = ConfigTreeNode.CTNAddChild(self, CTNName, CTNType, IEC_Channel)
+
+        # find library associated with new CTN, if any
+        associated_lib = {default:libname 
+                          for libname, _clsname, default 
+                          in features.libraries}.get(CTNType, None)
+
+        # if any, then enable it if it wasn't and inform user
+        if associated_lib is not None:
+            # FIXME: This should be done with GetParamsAttribute
+            # but it fails with missing optional attributes
+            attrname = "Enable_" + associated_lib + "_Library"
+            libobj = self.BeremizRoot.Libraries
+            lib_enabled = False if libobj is None else getattr(libobj, attrname)
+            if not lib_enabled:
+                # use SetParamsAttribute to trigger reload of libs
+                self.SetParamsAttribute("BeremizRoot.Libraries.Enable_" + associated_lib + "_Library", True)
+                msg = _("Enabled {a1} library, required by {a2} extension\n").format(
+                    a1=associated_lib, a2=CTNType)
+                self.GetCTRoot().logger.write(msg)
+
+        return res
 
     def SetAppFrame(self, frame, logger):
         self.AppFrame = frame

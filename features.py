@@ -12,7 +12,7 @@ libraries = [
     ('Native', 'NativeLib.NativeLibrary', True),
     ('Python', 'py_ext.PythonLibrary', True),
     # FIXME ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
-    ('SVGHMI', 'svghmi.SVGHMILibrary', False)]
+    ('SVGHMI', 'svghmi.SVGHMILibrary', 'svghmi')]
 
 catalog = [
     ('opcua', _('OPC-UA client'), _('Map OPC-UA server as located variables'), 'opc_ua.OPCUAClient'),
