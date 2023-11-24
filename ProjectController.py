@@ -40,6 +40,7 @@ import shutil
 from datetime import datetime
 from weakref import WeakKeyDictionary
 from functools import reduce
+from collections import OrderedDict
 
 import wx
 
@@ -280,7 +281,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.LastBuiltIECcodeDigest = None
 
     def LoadLibraries(self):
-        self.Libraries = []
+        self.Libraries = OrderedDict()
         TypeStack = []
         for libname, clsname, default in features.libraries:
             lib_enabled = False if type(default)==str else default
@@ -293,7 +294,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if lib_enabled:
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
-                self.Libraries.append(Lib)
+                self.Libraries[libname] = Lib
 
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """ 
@@ -644,10 +645,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetLibrariesTypes(self):
         self.LoadLibraries()
-        return [lib.GetTypes() for lib in self.Libraries]
+        return [lib.GetTypes() for lib in self.Libraries.values()]
 
     def GetLibrariesSTCode(self):
-        return "\n".join([lib.GetSTCode() for lib in self.Libraries])
+        return "\n".join([lib.GetSTCode() for lib in self.Libraries.values()])
 
     def GetLibrariesCCode(self, buildpath):
         if len(self.Libraries) == 0:
@@ -657,7 +658,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.GetIECLibPath())
         LocatedCCodeAndFlags = []
         Extras = []
-        for lib in self.Libraries:
+        for lib in self.Libraries.values():
             res = lib.Generate_C(buildpath, self._VariablesList, LibIECCflags)
             LocatedCCodeAndFlags.append(res[:2])
             if len(res) > 2:
@@ -778,7 +779,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetConfNodeGlobalInstances(self):
         LibGlobals = []
-        for lib in self.Libraries:
+        for lib in self.Libraries.values():
             LibGlobals += lib.GlobalInstances()
         CTNGlobals = self._GlobalInstances()
         return LibGlobals + CTNGlobals
