@@ -14,17 +14,24 @@ PIPE = "42"
 
 
 class Popen(object):
-    def __init__(self, args, stdin=None, stdout=None):
+    def __init__(self, args, stdin=None, stdout=None, stderr=None):
         self.returncode = None
         self.stdout = None
+        self.stderr = None
         self.stdin = None
-        # TODO: stderr
         file_actions = posix_spawn.FileActions()
         if stdout is not None:
             # child's stdout, child 2 parent pipe
+            c1pread, c1pwrite = os.pipe()
+            # attach child's stdout to writing en of c1p pipe
+            file_actions.add_dup2(c1pwrite, 1)
+            # close other end
+            file_actions.add_close(c1pread)
+        if stderr is not None:
+            # child's stderr, child 2 parent pipe
             c2pread, c2pwrite = os.pipe()
-            # attach child's stdout to writing en of c2p pipe
-            file_actions.add_dup2(c2pwrite, 1)
+            # attach child's stderr to writing en of c2p pipe
+            file_actions.add_dup2(c2pwrite, 2)
             # close other end
             file_actions.add_close(c2pread)
         if stdin is not None:
@@ -36,7 +43,10 @@ class Popen(object):
             file_actions.add_close(p2cwrite)
         self.pid = posix_spawn.posix_spawnp(args[0], args, file_actions=file_actions)
         if stdout is not None:
-            self.stdout = os.fdopen(c2pread)
+            self.stdout = os.fdopen(c1pread)
+            os.close(c1pwrite)
+        if stderr is not None:
+            self.stderr = os.fdopen(c2pread)
             os.close(c2pwrite)
         if stdin is not None:
             self.stdin = os.fdopen(p2cwrite, 'w')
@@ -50,18 +60,26 @@ class Popen(object):
         if self.stdin is not None:
             self.stdin.close()
             self.stdin = None
+
         if self.stdout is not None:
             stdoutdata = self.stdout.read()
         else:
             stdoutdata = ""
 
-        # TODO
-        stderrdata = ""
+        if self.stderr is not None:
+            stderrdata = self.stderr.read()
+        else:
+            stderrdata = ""
 
         self._wait()
+
         if self.stdout is not None:
             self.stdout.close()
             self.stdout = None
+
+        if self.stderr is not None:
+            self.stderr.close()
+            self.stderr = None
 
         return (stdoutdata, stderrdata)
 
@@ -69,10 +87,17 @@ class Popen(object):
         if self.stdin is not None:
             self.stdin.close()
             self.stdin = None
+
         self._wait()
+
         if self.stdout is not None:
             self.stdout.close()
             self.stdout = None
+
+        if self.stderr is not None:
+            self.stderr.close()
+            self.stderr = None
+
         return self.returncode
 
     def poll(self):
@@ -84,9 +109,14 @@ class Popen(object):
                 if self.stdin is not None:
                     self.stdin.close()
                     self.stdin = None
+
                 if self.stdout is not None:
                     self.stdout.close()
                     self.stdout = None
+
+                if self.stderr is not None:
+                    self.stderr.close()
+                    self.stderr = None
 
         return self.returncode
 
@@ -96,9 +126,14 @@ class Popen(object):
         if self.stdin is not None:
             self.stdin.close()
             self.stdin = None
+
         if self.stdout is not None:
             self.stdout.close()
             self.stdout = None
+
+        if self.stderr is not None:
+            self.stderr.close()
+            self.stderr = None
 
 
 def call(*args):
