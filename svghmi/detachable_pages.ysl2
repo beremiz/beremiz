@@ -112,7 +112,7 @@ const "discardable_elements", "//svg:*[not(@id = $required_elements/@id)]";
 def "func:sumarized_elements" {
     param "elements";
     const "short_list", "$elements[not(ancestor::*/@id = $elements/@id)]";
-    const "filled_groups", """$short_list/parent::*[
+    const "filled_groups", """$short_list/parent::svg:g[
         not(child::*[
             not(@id = $discardable_elements/@id) and
             not(@id = $short_list/@id)
