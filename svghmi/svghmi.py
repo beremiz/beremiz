@@ -44,20 +44,19 @@ ScriptDirectory = paths.AbsDir(__file__)
 # note: this only works because library's Generate_C is
 #       systematicaly invoked before CTN's CTNGenerate_C
 
-hmi_tree_root = None
-
-on_hmitree_update = None
-
-maxConnectionsTotal = 0
 
 class SVGHMILibrary(POULibrary):
+
+    hmi_tree_root = None
+
+    maxConnectionsTotal = 0
+
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root, on_hmitree_update, maxConnectionsTotal
 
-        maxConnectionsTotal = 0
+        self.maxConnectionsTotal = 0
 
         already_found_watchdog = False
         found_SVGHMI_instance = False
@@ -65,7 +64,7 @@ class SVGHMILibrary(POULibrary):
             if isinstance(CTNChild, SVGHMI):
                 found_SVGHMI_instance = True
                 # collect maximum connection total for all svghmi nodes
-                maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
+                self.maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
 
                 # spot watchdog abuse
                 if CTNChild.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]:
@@ -114,14 +113,14 @@ class SVGHMILibrary(POULibrary):
         # Filter known HMI types
         hmi_types_instances = [v for v in varlist if v["derived"] in HMI_TYPES]
 
-        hmi_tree_root = None
+        self.hmi_tree_root = None
 
         # take first HMI_NODE (placed as special node), make it root
         for i,v in enumerate(hmi_types_instances):
             path = v["IEC_path"].split(".")
             derived = v["derived"]
             if derived == "HMI_NODE":
-                hmi_tree_root = HMITreeNode(path, "", derived, v["type"], v["vartype"], v["C_path"])
+                self.hmi_tree_root = HMITreeNode(path, "", derived, v["type"], v["vartype"], v["C_path"])
                 hmi_types_instances.pop(i)
                 break
 
@@ -144,7 +143,7 @@ class SVGHMILibrary(POULibrary):
             else:
                 name = path[-1]
             new_node = HMITreeNode(path, name, derived, v["type"], vartype, v["C_path"], **kwargs)
-            placement_result = hmi_tree_root.place_node(new_node)
+            placement_result = self.hmi_tree_root.place_node(new_node)
             if placement_result is not None:
                 cause, problematic_node = placement_result
                 if cause == "Non_Unique":
@@ -171,8 +170,7 @@ class SVGHMILibrary(POULibrary):
 
                 self.FatalError("SVGHMI : " + message)
 
-        if on_hmitree_update is not None:
-            on_hmitree_update(hmi_tree_root)
+        self.on_hmitree_update()
 
         variable_decl_array = []
         extern_variables_declarations = []
@@ -182,7 +180,7 @@ class SVGHMILibrary(POULibrary):
 
         hearbeat_IEC_path = ['CONFIG', 'HEARTBEAT']
 
-        for node in hmi_tree_root.traverse():
+        for node in self.hmi_tree_root.traverse():
             if not found_heartbeat and node.path == hearbeat_IEC_path:
                 hmi_tree_hearbeat_index = item_count
                 found_heartbeat = True
@@ -232,8 +230,8 @@ class SVGHMILibrary(POULibrary):
             "item_count": item_count,
             "var_access_code": targets.GetCode("var_access.c"),
             "PLC_ticktime": self.GetCTR().GetTicktime(),
-            "hmi_hash_ints": ",".join(map(str,hmi_tree_root.hash())),
-            "max_connections": maxConnectionsTotal
+            "hmi_hash_ints": ",".join(map(str,self.hmi_tree_root.hash())),
+            "max_connections": self.maxConnectionsTotal
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
@@ -254,7 +252,7 @@ class SVGHMILibrary(POULibrary):
         # Backup HMI Tree in XML form so that it can be loaded without building
         hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
         hmitree_backup_file = open(hmitree_backup_path, 'wb')
-        hmitree_backup_file.write(etree.tostring(hmi_tree_root.etree()))
+        hmitree_backup_file.write(etree.tostring(self.hmi_tree_root.etree()))
         hmitree_backup_file.close()
 
         return ((["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), "",
@@ -268,15 +266,18 @@ class SVGHMILibrary(POULibrary):
         return [(name, iec_type, "") for name, iec_type in SPECIAL_NODES]
 
 
+    registered_uis = []
+    def on_hmitree_update(self):
+        for uiref in self.registered_uis[:]:
+            obj = uiref()
+            if obj is None:
+                self.registered_uis.remove(uiref)
+            else:
+                obj.HMITreeUpdate(self.hmi_tree_root)
 
-def Register_SVGHMI_UI_for_HMI_tree_updates(ref):
-    global on_hmitree_update
-    def HMITreeUpdate(_hmi_tree_root):
-        obj = ref()
-        if obj is not None:
-            obj.HMITreeUpdate(_hmi_tree_root)
 
-    on_hmitree_update = HMITreeUpdate
+    def Register_SVGHMI_UI_for_HMI_tree_updates(self, uiref):
+        self.registered_uis.append(uiref)
 
 
 class SVGHMIEditor(ConfTreeNodeEditor):
@@ -288,18 +289,19 @@ class SVGHMIEditor(ConfTreeNodeEditor):
         self.Controler = controler
 
     def CreateSVGHMI_UI(self, parent):
-        global hmi_tree_root
+        ctroot = self.Controler.GetCTRoot()
+        svghmilib = ctroot.Libraries["SVGHMI"]
 
-        if hmi_tree_root is None:
-            buildpath = self.Controler.GetCTRoot()._getBuildPath()
+        if svghmilib.hmi_tree_root is None:
+            buildpath = ctroot._getBuildPath()
             hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
             if os.path.exists(hmitree_backup_path):
                 hmitree_backup_file = open(hmitree_backup_path, 'rb')
-                hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
+                svghmilib.hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
 
-        ret = SVGHMI_UI(parent, self.Controler, Register_SVGHMI_UI_for_HMI_tree_updates)
+        ret = SVGHMI_UI(parent, self.Controler, svghmilib.Register_SVGHMI_UI_for_HMI_tree_updates)
 
-        on_hmitree_update(hmi_tree_root)
+        svghmilib.on_hmitree_update()
 
         return ret
 
@@ -450,9 +452,10 @@ class SVGHMI(object):
         return res
 
     def GetHMITree(self):
-        global hmi_tree_root
+        ctroot = self.GetCTRoot()
+        svghmilib = ctroot.Libraries["SVGHMI"]
         self.ProgressStart("hmitree", "getting HMI tree")
-        res = [hmi_tree_root.etree(add_hash=True)]
+        res = [svghmilib.hmi_tree_root.etree(add_hash=True)]
         self.ProgressEnd("hmitree")
         return res
 
@@ -527,7 +530,10 @@ class SVGHMI(object):
             url=url)
 
     def CTNGenerate_C(self, buildpath, locations):
-        global hmi_tree_root
+        ctroot = self.GetCTRoot()
+        svghmilib = ctroot.Libraries["SVGHMI"]
+        hmi_tree_root = svghmilib.hmi_tree_root
+        
 
         if hmi_tree_root is None:
             self.FatalError("SVGHMI : Library is not selected. Please select it in project config.")
@@ -545,7 +551,7 @@ class SVGHMI(object):
         target_path = os.path.join(build_path, target_fname)
         hash_path = os.path.join(build_path, "svghmi_"+location_str+".md5")
 
-        self.GetCTRoot().logger.write("SVGHMI:\n")
+        ctroot.logger.write("SVGHMI:\n")
 
         if os.path.exists(svgfile):
 
@@ -729,7 +735,7 @@ def _runtime_{location}_svghmi_stop():
                    watchdog_initial = self.GetParamsAttributes("SVGHMI.WatchdogInitial")["value"],
                    watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
                    maxConnections = self.GetParamsAttributes("SVGHMI.MaxConnections")["value"],
-                   maxConnections_total = maxConnectionsTotal,
+                   maxConnections_total = svghmilib.maxConnectionsTotal,
                    **svghmi_options
         ))
 

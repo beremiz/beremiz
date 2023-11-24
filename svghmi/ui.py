@@ -717,7 +717,8 @@ class SVGHMI_UI(wx.SplitterWindow):
         register_for_HMI_tree_updates(weakref.ref(self))
 
     def HMITreeUpdate(self, hmi_tree_root):
-        self.SelectionTree.MakeTree(hmi_tree_root)
+        if self:
+            self.SelectionTree.MakeTree(hmi_tree_root)
 
     def OnHMITreeNodeSelection(self, hmitree_nodes):
         self.Staging.OnHMITreeNodeSelection(hmitree_nodes)
