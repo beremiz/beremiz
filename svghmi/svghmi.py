@@ -709,12 +709,12 @@ def _runtime_{location}_svghmi_stop():
         svghmi_watchdog = None
 
     svghmi_root, svghmi_listener, path_list = svghmi_servers["{interface}:{port}"]
-    svghmi_root.delEntity('{path}')
+    svghmi_root.delEntity(b'{path}')
 
     path_list.remove('{path}')
 
     if len(path_list)==0:
-        svghmi_root.delEntity("ws")
+        svghmi_root.delEntity(b"ws")
         svghmi_listener.stopListening()
         svghmi_servers.pop("{interface}:{port}")
 
