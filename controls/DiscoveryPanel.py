@@ -146,7 +146,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         wx.Panel.Destroy(self)
 
     def IfacesMonitor(self, event):
-        NewState = get_all_addresses(socket.AF_INET)
+        NewState = get_all_addresses()
 
         if self.IfacesMonitorState != NewState:
             if self.IfacesMonitorState is not None:
