@@ -38,7 +38,6 @@ from autobahn.wamp import types
 from autobahn.wamp.exception import TransportLost
 from autobahn.wamp.serializer import MsgPackSerializer
 
-from runtime import PlcStatus
 
 _WampSession = None
 _WampConnection = None
@@ -57,14 +56,6 @@ class WampSession(wamp.ApplicationSession):
         _WampSessionEvent.clear()
         _WampSession = None
         print('WAMP session left')
-
-
-PLCObjDefaults = {
-    "StartPLC":          False,
-    "GetTraceVariables": ("Broken", None),
-    "GetPLCstatus":      (PlcStatus.Broken, None),
-    "RemoteExec":        (-1, "RemoteExec script failed!")
-}
 
 
 def _WAMP_connector_factory(cls, uri, confnodesroot):
@@ -110,26 +101,6 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         AddToDoBeforeQuit(reactor.stop)
         reactor.run(installSignalHandlers=False)
 
-    def WampSessionProcMapper(funcname):
-        wampfuncname = text('.'.join((ID, funcname)))
-
-        def catcher_func(*args, **kwargs):
-            if _WampSession is not None:
-                try:
-                    return threads.blockingCallFromThread(
-                        reactor, _WampSession.call, wampfuncname,
-                        *args, **kwargs)
-                except TransportLost:
-                    confnodesroot.logger.write_error(_("Connection lost!\n"))
-                    confnodesroot._SetConnector(None)
-                except Exception:
-                    errmess = traceback.format_exc()
-                    confnodesroot.logger.write_error(errmess+"\n")
-                    print(errmess)
-                    # confnodesroot._SetConnector(None)
-            return PLCObjDefaults.get(funcname)
-        return catcher_func
-
     class WampPLCObjectProxy(object):
         def __init__(self):
             global _WampConnection
@@ -147,10 +118,30 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
             #
             # reactor.stop()
 
+        def WampSessionProcMapper(self, funcname):
+            wampfuncname = text('.'.join((ID, funcname)))
+
+            def catcher_func(*args, **kwargs):
+                if _WampSession is not None:
+                    try:
+                        return threads.blockingCallFromThread(
+                            reactor, _WampSession.call, wampfuncname,
+                            *args, **kwargs)
+                    except TransportLost:
+                        confnodesroot.logger.write_error(_("Connection lost!\n"))
+                        confnodesroot._SetConnector(None)
+                    except Exception:
+                        errmess = traceback.format_exc()
+                        confnodesroot.logger.write_error(errmess+"\n")
+                        print(errmess)
+                        # confnodesroot._SetConnector(None)
+                return self.PLCObjDefaults.get(funcname)
+            return catcher_func
+
         def __getattr__(self, attrName):
             member = self.__dict__.get(attrName, None)
             if member is None:
-                member = WampSessionProcMapper(attrName)
+                member = self.WampSessionProcMapper(attrName)
                 self.__dict__[attrName] = member
             return member
 

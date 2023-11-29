@@ -29,6 +29,7 @@ import os
 import sys
 import traceback
 import shutil
+import platform as platform_module
 from time import time
 import hashlib
 from tempfile import mkstemp
@@ -811,3 +812,7 @@ class PLCObject(object):
             return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
                     (line_no, e_value, script.splitlines()[line_no - 1]))
         return (0, kwargs.get("returnVal", None))
+
+    def GetVersions(self):
+        return platform_module.system() + " " + platform_module.release()
+
