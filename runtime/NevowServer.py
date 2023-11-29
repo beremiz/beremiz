@@ -28,7 +28,6 @@ from __future__ import print_function
 import os
 import collections
 import shutil
-import platform as platform_module
 from zope.interface import implements
 from nevow import appserver, inevow, tags, loaders, athena, url, rend
 from nevow.page import renderer
@@ -208,18 +207,9 @@ def removeExtensionSetting(token):
     extensions_settings_od.pop(token)
 
 
-def originalGetVersions():
-    return platform_module.system() + " " + platform_module.release()
-
-_getVersions = originalGetVersions
-
-def setVersionsCallable(versionsCallable):
-    global _getVersions
-    _getVersions = versionsCallable
-
 class ISettings(annotate.TypedInterface):
     platform = annotate.String(label=_("Platform"),
-                               default=lambda *a,**k:_getVersions(),
+                               default=lambda *a,**k:GetPLCObjectSingleton().GetVersions(),
                                immutable=True)
 
     # pylint: disable=no-self-argument

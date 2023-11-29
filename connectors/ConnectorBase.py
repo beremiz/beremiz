@@ -5,11 +5,20 @@
 
 from __future__ import absolute_import
 import hashlib
+from runtime import PlcStatus
 
 
 class ConnectorBase(object):
 
     chuncksize = 1024*1024
+
+    PLCObjDefaults = {
+        "StartPLC": False,
+        "GetTraceVariables": (PlcStatus.Broken, None),
+        "GetPLCstatus": (PlcStatus.Broken, None),
+        "RemoteExec": (-1, "RemoteExec script failed!"),
+        "GetVersions": "*** Unknown ***"
+    }
 
     def BlobFromFile(self, filepath, seed):
         s = hashlib.new('md5')
