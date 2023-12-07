@@ -34,7 +34,6 @@ import Pyro5.errors
 
 # TODO: PSK
 
-from runtime import PlcStatus
 import importlib
 
 
@@ -64,6 +63,9 @@ def PYRO_connector_factory(uri, confnodesroot):
 
     RemotePLCObjectProxy._pyroTimeout = 60
 
+    class MissingCallException(Exception):
+        pass
+
     def PyroCatcher(func, default=None):
         """
         A function that catch a Pyro exceptions, write error to logger
@@ -77,6 +79,8 @@ def PYRO_connector_factory(uri, confnodesroot):
                 confnodesroot.logger.write_error(_("Connection lost!\n"))
             except Pyro5.errors.ProtocolError as e:
                 confnodesroot.logger.write_error(_("Pyro exception: %s\n") % e)
+            except MissingCallException as e:
+                confnodesroot.logger.write_warning(_("Remote call not supported: %s\n") % e.message)
             except Exception as e:
                 errmess = ''.join(Pyro5.errors.get_pyro_traceback())
                 confnodesroot.logger.write_error(errmess + "\n")
@@ -94,13 +98,6 @@ def PYRO_connector_factory(uri, confnodesroot):
         ID, secret = IDPSK
         PSK.UpdateID(confnodesroot.ProjectPath, ID, secret, uri)
 
-    _special_return_funcs = {
-        "StartPLC": False,
-        "GetTraceVariables": (PlcStatus.Broken, None),
-        "GetPLCstatus": (PlcStatus.Broken, None),
-        "RemoteExec": (-1, "RemoteExec script failed!")
-    }
-
     class PyroProxyProxy(object):
         """
         A proxy proxy class to handle Beremiz Pyro interface specific behavior.
@@ -110,8 +107,12 @@ def PYRO_connector_factory(uri, confnodesroot):
             member = self.__dict__.get(attrName, None)
             if member is None:
                 def my_local_func(*args, **kwargs):
-                    return RemotePLCObjectProxy.__getattr__(attrName)(*args, **kwargs)
-                member = PyroCatcher(my_local_func, _special_return_funcs.get(attrName, None))
+                    call = RemotePLCObjectProxy.__getattr__(attrName)
+                    if call is None:
+                        raise MissingCallException(attrName)
+                    else:
+                        return call(*args, **kwargs)
+                member = PyroCatcher(my_local_func, self.PLCObjDefaults.get(attrName, None))
                 self.__dict__[attrName] = member
             return member
 
