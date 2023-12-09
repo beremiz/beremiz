@@ -206,7 +206,6 @@ class SettingsPage(StyledSettingsPage):
         ],
         tags.body[
             tags.h1["Settings"],
-            tags.a(href='/')['Back'],
             tags.h2["Runtime service"],
             webform.renderForms('staticSettings'),
             tags.h2["Target specific"],
@@ -264,7 +263,7 @@ class ExtensionSettingsPage(StyledSettingsPage):
             ],
             tags.body[
                 tags.h1[tags.directive("title")],
-                tags.a(href='/settings')['Back'],
+                tags.a(href='/')['Back'],
                 webform.renderForms('settings')
             ]]])
 
