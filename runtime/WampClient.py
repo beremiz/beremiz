@@ -443,7 +443,7 @@ registerAdapter(FileUploadDownloadRenderer, FileUploadDownload,
 
 def getDownloadUrl(ctx, argument):
     if lastKnownConfig is not None:
-        return url.URL.fromConstr(ctx).\
+        return url.URL.fromContext(ctx).\
             child(WAMP_SECRET_URL).\
             child(lastKnownConfig["ID"] + ".secret")
 
