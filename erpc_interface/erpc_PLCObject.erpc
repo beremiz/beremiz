@@ -1,0 +1,72 @@
+/* 
+   Written by Edouard TISSERANT (C) 2024
+   This file is part of Beremiz runtime and IDE
+   See COPYING.Runtime and COPYING file for copyrights details.
+*/
+
+program erpc_PLCObject
+
+struct PSKID {
+    string ID;
+    string PSK;
+};
+
+enum PLCstatus_enum {
+    Empty
+    Stopped,
+    Started,
+    Broken,
+    Disconnected
+}
+
+struct PLCstatus {
+    PLCstatus_enum PLCstatus;
+    uint32[4] logcounts;
+};
+
+struct trace_sample {
+    uint32 tick;
+    binary TraceBuffer;
+};
+
+struct TraceVariables {
+    PLCstatus_enum PLCstatus;
+    list<trace_sample> traces;
+};
+
+struct extra_file {
+    string fname;
+    binary blobID;
+};
+
+struct trace_order {
+    uint32 idx;
+    uint8 iectype;
+    binary force;
+};
+
+struct log_message {
+    string msg;
+    uint32 tick;
+    uint32 sec;
+    uint32 nsec;
+};
+
+
+interface BeremizPLCObjectService {
+    AppendChunkToBlob(in binary data, in binary blobID, out binary newBlobID) -> uint32
+    GetLogMessage(in uint8 level, in uint32 msgID, out log_message message) -> uint32
+    GetPLCID(out PSKID plcID) -> uint32
+    GetPLCstatus(out PLCstatus status) -> uint32
+    GetTraceVariables(in uint32 debugToken, out TraceVariables traces) -> uint32
+    MatchMD5(in string MD5, out bool match) -> uint32
+    NewPLC(in string md5sum, in binary plcObjectBlobID, in list<extra_file> extrafiles, out bool success) -> uint32
+    PurgeBlobs() -> uint32
+    /* NOT TO DO : RemoteExec(in ) -> uint32 */
+    RepairPLC() -> uint32
+    ResetLogCount() -> uint32
+    SeedBlob(in binary seed, out binary blobID) -> uint32
+    SetTraceVariablesList(in list<trace_order> orders) -> uint32
+    StartPLC() -> uint32
+    StopPLC() -> uint32
+}

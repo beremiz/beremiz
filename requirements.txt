@@ -13,6 +13,7 @@ constantly==15.1.0
 contourpy==1.0.7
 cryptography==40.0.2
 cycler==0.11.0
+erpc==1.11.0
 fonttools==4.39.3
 gattrdict==2.0.1
 hyperlink==21.0.0
@@ -30,12 +31,11 @@ Pillow==9.5.0
 pycountry==22.3.5
 pycparser==2.21
 pyparsing==3.0.9
-Pyro5==5.14
 python-dateutil==2.8.2
 pytz==2023.3
-serpent==1.41
 six==1.16.0
 sortedcontainers==2.4.0
+sslpsk3==1.1.1
 Twisted==22.10.0
 txaio==23.1.1
 typing_extensions==4.5.0

@@ -10,7 +10,7 @@ from runtime import PlcStatus
 
 class ConnectorBase(object):
 
-    chuncksize = 1024*1024
+    chuncksize = 0xfff # 4KB
 
     PLCObjDefaults = {
         "StartPLC": False,
