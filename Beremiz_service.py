@@ -36,7 +36,7 @@ import builtins
 from functools import partial
 
 import runtime
-from runtime.PyroServer import PyroServer
+from runtime.eRPCServer import eRPCServer as RPCServer
 from runtime.xenomai import TryPreloadXenomai
 from runtime import LogMessageAndException
 from runtime import PlcStatus
@@ -270,12 +270,12 @@ if enablewx:
             TBMENU_CHANGE_INTERFACE = wx.NewIdRef()
             TBMENU_LIVE_SHELL = wx.NewIdRef()
             TBMENU_WXINSPECTOR = wx.NewIdRef()
-            TBMENU_CHANGE_WD = wx.NewIdRef()
+            # TBMENU_CHANGE_WD = wx.NewIdRef()
             TBMENU_QUIT = wx.NewIdRef()
 
-            def __init__(self, pyroserver):
+            def __init__(self, rpc_server):
                 wx.adv.TaskBarIcon.__init__(self)
-                self.pyroserver = pyroserver
+                self.rpc_server = rpc_server
                 # Set the image
                 self.UpdateIcon(None)
 
@@ -287,7 +287,7 @@ if enablewx:
                 self.Bind(wx.EVT_MENU, self.OnTaskBarLiveShell, id=self.TBMENU_LIVE_SHELL)
                 self.Bind(wx.EVT_MENU, self.OnTaskBarWXInspector, id=self.TBMENU_WXINSPECTOR)
                 self.Bind(wx.EVT_MENU, self.OnTaskBarChangePort, id=self.TBMENU_CHANGE_PORT)
-                self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
+                # self.Bind(wx.EVT_MENU, self.OnTaskBarChangeWorkingDir, id=self.TBMENU_CHANGE_WD)
                 self.Bind(wx.EVT_MENU, self.OnTaskBarQuit, id=self.TBMENU_QUIT)
 
             def CreatePopupMenu(self):
@@ -304,7 +304,7 @@ if enablewx:
                 menu.Append(self.TBMENU_CHANGE_NAME, _("Change Name"))
                 menu.Append(self.TBMENU_CHANGE_INTERFACE, _("Change IP of interface to bind"))
                 menu.Append(self.TBMENU_CHANGE_PORT, _("Change Port Number"))
-                menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
+                # menu.Append(self.TBMENU_CHANGE_WD, _("Change working directory"))
                 menu.AppendSeparator()
                 menu.Append(self.TBMENU_LIVE_SHELL, _("Launch a live Python shell"))
                 menu.Append(self.TBMENU_WXINSPECTOR, _("Launch WX GUI inspector"))
@@ -332,37 +332,37 @@ if enablewx:
                 runtime.GetPLCObjectSingleton().StopPLC()
 
             def OnTaskBarChangeInterface(self, evt):
-                ip_addr = self.pyroserver.ip_addr
+                ip_addr = self.rpc_server.ip_addr
                 ip_addr = '' if ip_addr is None else ip_addr
                 dlg = ParamsEntryDialog(None, _("Enter the IP of the interface to bind"), defaultValue=ip_addr)
                 dlg.SetTests([(re.compile(r'\d{1,3}(?:\.\d{1,3}){3}$').match, _("IP is not valid!")),
                               (lambda x:len([x for x in x.split(".") if 0 <= int(x) <= 255]) == 4,
                                _("IP is not valid!"))])
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pyroserver.ip_addr = dlg.GetValue()
-                    self.pyroserver.Restart()
+                    self.rpc_server.ip_addr = dlg.GetValue()
+                    self.rpc_server.Restart()
 
             def OnTaskBarChangePort(self, evt):
-                dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.pyroserver.port))
+                dlg = ParamsEntryDialog(None, _("Enter a port number "), defaultValue=str(self.rpc_server.port))
                 dlg.SetTests([(str.isdigit, _("Port number must be an integer!")), (lambda port: 0 <= int(port) <= 65535, _("Port number must be 0 <= port <= 65535!"))])
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pyroserver.port = int(dlg.GetValue())
-                    self.pyroserver.Restart()
+                    self.rpc_server.port = int(dlg.GetValue())
+                    self.rpc_server.Restart()
 
-            def OnTaskBarChangeWorkingDir(self, evt):
-                dlg = wx.DirDialog(None, _("Choose a working directory "), self.pyroserver.workdir, wx.DD_NEW_DIR_BUTTON)
-                if dlg.ShowModal() == wx.ID_OK:
-                    self.pyroserver.workdir = dlg.GetPath()
-                    self.pyroserver.Restart()
+            # def OnTaskBarChangeWorkingDir(self, evt):
+            #     dlg = wx.DirDialog(None, _("Choose a working directory "), self.rpc_server.workdir, wx.DD_NEW_DIR_BUTTON)
+            #     if dlg.ShowModal() == wx.ID_OK:
+            #         self.rpc_server.workdir = dlg.GetPath()
+            #         self.rpc_server.Restart()
 
             def OnTaskBarChangeName(self, evt):
-                _servicename = self.pyroserver.servicename
+                _servicename = self.rpc_server.servicename
                 _servicename = '' if _servicename is None else _servicename
                 dlg = ParamsEntryDialog(None, _("Enter a name "), defaultValue=_servicename)
                 dlg.SetTests([(lambda name: len(name) != 0, _("Name must not be null!"))])
                 if dlg.ShowModal() == wx.ID_OK:
-                    self.pyroserver.servicename = dlg.GetValue()
-                    self.pyroserver.Restart()
+                    self.rpc_server.servicename = dlg.GetValue()
+                    self.rpc_server.Restart()
 
             def _LiveShellLocals(self):
                 return {"locals": runtime.GetPLCObjectSingleton().python_runtime_vars}
@@ -383,7 +383,7 @@ if enablewx:
 
             def OnTaskBarQuit(self, evt):
                 if wx.Platform == '__WXMSW__':
-                    Thread(target=self.pyroserver.Quit).start()
+                    Thread(target=self.rpc_server.Quit).start()
                 self.RemoveIcon()
                 wx.CallAfter(wx.GetApp().ExitMainLoop)
 
@@ -513,10 +513,10 @@ if servicename is not None and PSKpath is not None:
 runtime.CreatePLCObjectSingleton(
     WorkingDir, argv, statuschange, evaluator, pyruntimevars)
 
-pyroserver = PyroServer(servicename, interface, port)
+rpc_server = RPCServer(servicename, interface, port)
 
 if havewx:
-    taskbar_instance = BeremizTaskBarIcon(pyroserver)
+    taskbar_instance = BeremizTaskBarIcon(rpc_server)
 
 if havetwisted:
     if webport is not None:
@@ -533,28 +533,28 @@ if havetwisted:
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))
 
-pyro_thread = None
+rpc_server_thread = None
 
 def FirstWorkerJob():
     """
-    RPC through pyro/wamp/UI may lead to delegation to Worker,
+    RPC through rpc/wamp/UI may lead to delegation to Worker,
     then this function ensures that Worker is already
-    created when pyro starts
+    created when rpc starts
     """
-    global pyro_thread, pyroserver
+    global rpc_server_thread, rpc_server
 
-    pyro_thread_started = Lock()
-    pyro_thread_started.acquire()
-    pyro_thread = Thread(target=pyroserver.PyroLoop,
-                         kwargs=dict(when_ready=pyro_thread_started.release),
-                         name="PyroThread")
+    rpc_thread_started = Lock()
+    rpc_thread_started.acquire()
+    rpc_server_thread = Thread(target=rpc_server.Loop,
+                         kwargs=dict(when_ready=rpc_thread_started.release),
+                         name="RPCThread")
 
-    pyro_thread.start()
+    rpc_server_thread.start()
 
-    # Wait for pyro thread to be effective
-    pyro_thread_started.acquire()
+    # Wait for rpc thread to be effective
+    rpc_thread_started.acquire()
 
-    pyroserver.PrintServerInfo()
+    rpc_server.PrintServerInfo()
 
     # Beremiz IDE detects LOCAL:// runtime is ready by looking
     # for self.workdir in the daemon's stdout.
@@ -616,8 +616,8 @@ else:
         pass
 
 
-pyroserver.Quit()
-pyro_thread.join()
+rpc_server.Quit()
+rpc_server_thread.join()
 
 plcobj = runtime.GetPLCObjectSingleton()
 try:

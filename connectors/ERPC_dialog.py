@@ -14,16 +14,16 @@ model = [('host', _("Host:")),
          ('port', _("Port:"))]
 
 # (scheme, model, secure)
-models = [("LOCAL", [], False), ("PYRO", model, False)]
+models = [("LOCAL", [], False), ("ERPC", model, False)]
 
 Schemes = list(zip(*models))[0]
 
 _PerSchemeConf = {sch: (mod, sec) for sch, mod, sec in models}
 
 
-class PYRO_dialog(SchemeEditor):
+class ERPC_dialog(SchemeEditor):
     def __init__(self, scheme, *args, **kwargs):
-        # ID selector is enabled only on PYROS (secure)
+        # ID selector is enabled only on ERPC (secure)
         self.model, self.EnableIDSelector = _PerSchemeConf[scheme]
 
         SchemeEditor.__init__(self, scheme, *args, **kwargs)

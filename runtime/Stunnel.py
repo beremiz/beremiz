@@ -50,8 +50,8 @@ def getPSKID(errorlog):
         if not os.path.exists(_PSKpath):
             errorlog(
                 'Error: Pre-Shared-Key Secret in %s is missing!\n' % _PSKpath)
-            return None
+            return ("","")
         ID, _sep, PSK = open(_PSKpath).read().partition(':')
         PSK = PSK.rstrip('\n\r')
         return (ID, PSK)
-    return None
+    return ("","")

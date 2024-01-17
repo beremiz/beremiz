@@ -145,7 +145,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
     # TODO : GetPLCID()
     # TODO : PSK.UpdateID()
 
-    return WampPLCObjectProxy
+    return WampPLCObjectProxy()
 
 
 WAMP_connector_factory = partial(_WAMP_connector_factory, WampSession)

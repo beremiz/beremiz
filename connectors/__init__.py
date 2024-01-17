@@ -31,7 +31,7 @@ import importlib
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase
 
-connectors_packages = ["PYRO"]
+connectors_packages = ["ERPC", "WAMP"]
 
 
 def _GetLocalConnectorClassFactory(name):
@@ -71,38 +71,13 @@ def ConnectorFactory(uri, confnodesroot):
     """
     _scheme = uri.split("://")[0].upper()
 
-    # commented code to enable for MDNS:// support
-    # _scheme, location = uri.split("://")
-    # _scheme = _scheme.upper()
-
     if _scheme == "LOCAL":
         # Local is special case
-        # pyro connection to local runtime
+        # ERPC connection to local runtime
         # started on demand, listening on random port
-        scheme = "PYRO"
+        scheme = "ERPC"
         runtime_port = confnodesroot.StartLocalRuntime()
-        uri = f"PYRO://{LocalHost}:{runtime_port}"
-
-    # commented code to enable for MDNS:// support
-    # elif _scheme == "MDNS":
-    #     try:
-    #         from zeroconf import Zeroconf
-    #         r = Zeroconf()
-    #         i = r.get_service_info(zeroconf_service_type, location)
-    #         if i is None:
-    #             raise Exception("'%s' not found" % location)
-    #         ip = str(socket.inet_ntoa(i.address))
-    #         port = str(i.port)
-    #         newlocation = ip + ':' + port
-    #         confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
-    #         location = newlocation
-    #         # not a bug, but a workaround against obvious downgrade attack
-    #         scheme = "PYROS"
-    #         r.close()
-    #     except Exception:
-    #         confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n") % location)
-    #         confnodesroot.logger.write_error(traceback.format_exc())
-    #         return None
+        uri = f"ERPC://{LocalHost}:{runtime_port}"
 
     elif _scheme in connectors:
         scheme = _scheme
@@ -111,18 +86,9 @@ def ConnectorFactory(uri, confnodesroot):
     else:
         return None
 
-    # import module according to uri type and get connector specific baseclass
-    # first call to import the module,
-    # then call with parameters to create the class
-    connector_specific_class = connectors[scheme]()(uri, confnodesroot)
-
-    if connector_specific_class is None:
-        return None
-
-    # new class inheriting from generic and specific connector base classes
-    return type(_scheme + "_connector",
-                (ConnectorBase, connector_specific_class), {})()
-
+    return (connectors[scheme]
+            ()  # triggers import
+            (uri, confnodesroot))  # creates object
 
 def EditorClassFromScheme(scheme):
     _Import_Dialogs()

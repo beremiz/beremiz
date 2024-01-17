@@ -148,6 +148,7 @@ class PLCObject(object):
             return int(self._GetLogCount(level))
         elif self._loading_error is not None and level == 0:
             return 1
+        return 0
 
     @RunInMain
     def GetLogMessage(self, level, msgid):
@@ -557,7 +558,7 @@ class PLCObject(object):
         try:
             return self._GetPLCstatus()
         except EOFError:
-            return (PlcStatus.Disconnected, None)
+            return (PlcStatus.Disconnected, [0]*LogLevelsCount)
 
     @RunInMain
     def _GetPLCstatus(self):
