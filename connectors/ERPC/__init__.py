@@ -17,7 +17,7 @@ import erpc
 # eRPC service code
 from erpc_interface.erpc_PLCObject.interface import IBeremizPLCObjectService
 from erpc_interface.erpc_PLCObject.client import BeremizPLCObjectServiceClient
-from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum
+from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum, IECtype_enum
 
 import PSKManagement as PSK
 from connectors.ERPC.PSK_Adapter import SSLPSKClientTransport
@@ -55,10 +55,12 @@ ReturnWrappers = {
         lambda res:(enum_to_PLCstatus[res.PLCstatus], res.logcounts)),
     "GetTraceVariables":TranslatedReturnAsLastOutput(
         lambda res:(enum_to_PLCstatus[res.PLCstatus],
-                    [(sample.tick, sample.TraceBuffer) for sample in res.traces])),
+                    [(sample.tick, bytes(sample.TraceBuffer)) for sample in res.traces])),
     "MatchMD5":ReturnAsLastOutput,
     "NewPLC":ReturnAsLastOutput,
     "SeedBlob":ReturnAsLastOutput,
+    "SetTraceVariablesList": ReturnAsLastOutput,
+    "StopPLC":ReturnAsLastOutput,
 }
 
 ArgsWrappers = {
@@ -66,7 +68,9 @@ ArgsWrappers = {
         lambda md5sum, plcObjectBlobID, extrafiles: (
             md5sum, plcObjectBlobID, [extra_file(*f) for f in extrafiles]),
     "SetTraceVariablesList": 
-        lambda orders : ([trace_order(*order) for order in orders],)
+        lambda orders : ([
+            trace_order(idx, getattr(IECtype_enum, iectype), b"" if force is None else force) 
+            for idx, iectype, force in orders],)
 }
 
 def ERPC_connector_factory(uri, confnodesroot):

@@ -12,7 +12,7 @@ from inspect import getmembers, isfunction
 import erpc
 
 # eRPC service code
-from erpc_interface.erpc_PLCObject.common import PSKID, PLCstatus, TraceVariables, trace_sample, PLCstatus_enum, log_message
+from erpc_interface.erpc_PLCObject.common import PSKID, PLCstatus, TraceVariables, trace_sample, PLCstatus_enum, log_message, IECtype_enum
 from erpc_interface.erpc_PLCObject.interface import IBeremizPLCObjectService
 from erpc_interface.erpc_PLCObject.server import BeremizPLCObjectServiceService
 
@@ -22,6 +22,8 @@ from runtime.ServicePublisher import ServicePublisher
 
 
 CRITICAL_LOG_LEVEL = LogLevelsDict["CRITICAL"]
+
+enum_to_IECtype = dict(map(lambda t:(t[1],t[0]),getmembers(IECtype_enum, lambda x:type(x)==int)))
 
 def ReturnAsLastOutput(method, args_wrapper, *args):
     args[-1].value = method(*args_wrapper(*args[:-1]))
@@ -43,10 +45,12 @@ ReturnWrappers = {
     "GetPLCstatus":TranslatedReturnAsLastOutput(
         lambda res:PLCstatus(getattr(PLCstatus_enum, res[0]),res[1])),
     "GetTraceVariables":TranslatedReturnAsLastOutput(
-        lambda res:TraceVariables(res[0],[trace_sample(*sample) for sample in res[1]])),
+        lambda res:TraceVariables(getattr(PLCstatus_enum, res[0]),[trace_sample(*sample) for sample in res[1]])),
     "MatchMD5":ReturnAsLastOutput,
     "NewPLC":ReturnAsLastOutput,
     "SeedBlob":ReturnAsLastOutput,
+    "SetTraceVariablesList": ReturnAsLastOutput,
+    "StopPLC":ReturnAsLastOutput,
 }
 
 ArgsWrappers = {
@@ -56,7 +60,7 @@ ArgsWrappers = {
         lambda md5sum, plcObjectBlobID, extrafiles: (
             md5sum, bytes(plcObjectBlobID), [(f.fname, bytes(f.blobID)) for f in extrafiles]),
     "SetTraceVariablesList": 
-        lambda orders : ([(order.idx, order.iectype, order.force) for order in orders],)
+        lambda orders : ([(order.idx, enum_to_IECtype[order.iectype], None if len(order.force)==0 else order.force) for order in orders],)
 }
 
 def rpc_wrapper(method_name):

@@ -19,6 +19,32 @@ enum PLCstatus_enum {
     Disconnected
 }
 
+enum IECtype_enum {
+    BOOL,
+    STEP,
+    TRANSITION,
+    ACTION,
+    SINT,
+    USINT,
+    BYTE,
+    STRING,
+    INT,
+    UINT,
+    WORD,
+    DINT,
+    UDINT,
+    DWORD,
+    LINT,
+    ULINT,
+    LWORD,
+    REAL,
+    LREAL,
+    TIME,
+    TOD,
+    DATE,
+    DT,
+}
+
 struct PLCstatus {
     PLCstatus_enum PLCstatus;
     uint32[4] logcounts;
@@ -41,7 +67,7 @@ struct extra_file {
 
 struct trace_order {
     uint32 idx;
-    uint8 iectype;
+    IECtype_enum iectype;
     binary force;
 };
 
@@ -66,7 +92,7 @@ interface BeremizPLCObjectService {
     RepairPLC() -> uint32
     ResetLogCount() -> uint32
     SeedBlob(in binary seed, out binary blobID) -> uint32
-    SetTraceVariablesList(in list<trace_order> orders) -> uint32
+    SetTraceVariablesList(in list<trace_order> orders, out uint32 debugtoken) -> uint32
     StartPLC() -> uint32
-    StopPLC() -> uint32
+    StopPLC(out bool success) -> uint32
 }
