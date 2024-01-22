@@ -60,7 +60,7 @@ from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
-from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
+from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer, ValueToIECBytes
 from runtime import PlcStatus
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 from POULibrary import UserAddressedException
@@ -1615,8 +1615,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         2 : _("Debug: Too many variables forced. Max 256.\n"),
         # FORCE_BUFFER_OVERFLOW
         3 : _("Debug: Cumulated forced variables size too large. Max 1KB.\n"),
+        # FORCE_INVALID
+        3 : _("Debug: Invalid forced value.\n"),
         # DEBUG_SUSPENDED
-        4 : _("Debug: suspended.\n")
+        5 : _("Debug: suspended.\n")
     }
 
     def RegisterDebugVarToConnector(self):
@@ -1637,7 +1639,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         IECPath, (None, None))
                     if Idx is not None:
                         if IEC_Type in DebugTypesSize:
-                            Idxs.append((Idx, IEC_Type, fvalue, IECPath))
+                            Idxs.append(
+                                (Idx, IEC_Type, IECPath, 
+                                 ValueToIECBytes(IEC_Type, fvalue)))
                         else:
                             self.logger.write_warning(
                                 _("Debug: Unsupported type to debug '%s'\n") % IEC_Type)
@@ -1649,10 +1653,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             if Idxs:
                 Idxs.sort()
-                IdxsT = list(zip(*Idxs))
-                self.TracedIECPath = IdxsT[3]
-                self.TracedIECTypes = IdxsT[1]
-                res = self._connector.SetTraceVariablesList(list(zip(*IdxsT[0:3])))
+                Idxs, self.TracedIECTypes, self.TracedIECPath, Fvalues, = list(zip(*Idxs))
+                res = self._connector.SetTraceVariablesList(list(zip(Idxs, Fvalues)))
                 if res is not None and res > 0:
                     self.DebugToken = res
                 else:

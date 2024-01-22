@@ -224,7 +224,7 @@ class PLCObject(object):
 
             self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
             self._RegisterDebugVariable.restype = ctypes.c_int
-            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p]
+            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_uint32]
 
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
@@ -723,13 +723,8 @@ class PLCObject(object):
             if self._suspendDebug(False) == 0:
                 # keep a copy of requested idx
                 self._ResetDebugVariables()
-                for idx, iectype, force in idxs:
-                    if force is not None:
-                        c_type, _unpack_func, pack_func = \
-                            TypeTranslator.get(iectype,
-                                               (None, None, None))
-                        force = ctypes.byref(pack_func(c_type, force))
-                    res = self._RegisterDebugVariable(idx, force)
+                for idx, force in idxs:
+                    res = self._RegisterDebugVariable(idx, force, 0 if force is None else len(force))
                     if res != 0:
                         self._resumeDebug()
                         self._suspendDebug(True)
@@ -739,7 +734,7 @@ class PLCObject(object):
                 return self.DebugToken
         else:
             self._suspendDebug(True)
-        return 4 # DEBUG_SUSPENDED
+        return 5 # DEBUG_SUSPENDED
 
     def _TracesSwap(self):
         self.LastSwapTrace = time()
