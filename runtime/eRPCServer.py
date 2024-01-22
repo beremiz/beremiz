@@ -12,7 +12,7 @@ from inspect import getmembers, isfunction
 import erpc
 
 # eRPC service code
-from erpc_interface.erpc_PLCObject.common import PSKID, PLCstatus, TraceVariables, trace_sample, PLCstatus_enum, log_message, IECtype_enum
+from erpc_interface.erpc_PLCObject.common import PSKID, PLCstatus, TraceVariables, trace_sample, PLCstatus_enum, log_message
 from erpc_interface.erpc_PLCObject.interface import IBeremizPLCObjectService
 from erpc_interface.erpc_PLCObject.server import BeremizPLCObjectServiceService
 
@@ -22,8 +22,6 @@ from runtime.ServicePublisher import ServicePublisher
 
 
 CRITICAL_LOG_LEVEL = LogLevelsDict["CRITICAL"]
-
-enum_to_IECtype = dict(map(lambda t:(t[1],t[0]),getmembers(IECtype_enum, lambda x:type(x)==int)))
 
 def ReturnAsLastOutput(method, args_wrapper, *args):
     args[-1].value = method(*args_wrapper(*args[:-1]))
@@ -60,7 +58,7 @@ ArgsWrappers = {
         lambda md5sum, plcObjectBlobID, extrafiles: (
             md5sum, bytes(plcObjectBlobID), [(f.fname, bytes(f.blobID)) for f in extrafiles]),
     "SetTraceVariablesList": 
-        lambda orders : ([(order.idx, enum_to_IECtype[order.iectype], None if len(order.force)==0 else order.force) for order in orders],)
+        lambda orders : ([(order.idx, None if len(order.force)==0 else bytes(order.force)) for order in orders],)
 }
 
 def rpc_wrapper(method_name):

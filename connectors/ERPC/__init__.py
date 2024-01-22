@@ -17,7 +17,7 @@ import erpc
 # eRPC service code
 from erpc_interface.erpc_PLCObject.interface import IBeremizPLCObjectService
 from erpc_interface.erpc_PLCObject.client import BeremizPLCObjectServiceClient
-from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum, IECtype_enum
+from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum
 
 import PSKManagement as PSK
 from connectors.ERPC.PSK_Adapter import SSLPSKClientTransport
@@ -67,10 +67,10 @@ ArgsWrappers = {
     "NewPLC":
         lambda md5sum, plcObjectBlobID, extrafiles: (
             md5sum, plcObjectBlobID, [extra_file(*f) for f in extrafiles]),
-    "SetTraceVariablesList": 
+    "SetTraceVariablesList":
         lambda orders : ([
-            trace_order(idx, getattr(IECtype_enum, iectype), b"" if force is None else force) 
-            for idx, iectype, force in orders],)
+            trace_order(idx, b"" if force is None else force) 
+            for idx, force in orders],)
 }
 
 def ERPC_connector_factory(uri, confnodesroot):

@@ -348,9 +348,17 @@ void __publish_debug(void)
 #define TRACE_LIST_OVERFLOW    1
 #define FORCE_LIST_OVERFLOW    2
 #define FORCE_BUFFER_OVERFLOW  3
+#define FORCE_INVALID  4
+
+#define __ForceVariable_checksize(TYPENAME)                                             \
+    if(sizeof(TYPENAME) != force_size) {                                                \
+        error_code = FORCE_BUFFER_OVERFLOW;                                             \
+        goto error_cleanup;                                                             \
+    }
 
 #define __ForceVariable_case_t(TYPENAME)                                                \
         case TYPENAME##_ENUM :                                                          \
+            __ForceVariable_checksize(TYPENAME)                                         \
             /* add to force_list*/                                                      \
             force_list_addvar_cursor->dbgvardsc_index = idx;                            \
             ((__IEC_##TYPENAME##_t *)varp)->flags |= __IEC_FORCE_FLAG;                  \
@@ -359,6 +367,7 @@ void __publish_debug(void)
 #define __ForceVariable_case_p(TYPENAME)                                                \
         case TYPENAME##_P_ENUM :                                                        \
         case TYPENAME##_O_ENUM :                                                        \
+            __ForceVariable_checksize(TYPENAME)                                         \
             {                                                                           \
                 char *next_cursor = force_buffer_cursor + sizeof(TYPENAME);             \
                 if(next_cursor <= force_buffer_end ){                                   \
@@ -389,7 +398,7 @@ void __publish_debug(void)
 
 void ResetDebugVariables(void);
 
-int RegisterDebugVariable(dbgvardsc_index_t idx, void* force)
+int RegisterDebugVariable(dbgvardsc_index_t idx, void* force, size_t force_size)
 {
     int error_code = 0;
     if(idx < sizeof(dbgvardsc)/sizeof(dbgvardsc_t)){

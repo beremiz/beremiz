@@ -101,3 +101,9 @@ def UnpackDebugBuffer(buff, indexes):
     if buffoffset and buffoffset == buffsize:
         return res
     return None
+
+def ValueToIECBytes(iectype, value):
+    if value is None:
+        return None
+    c_type, _unpack_func, pack_func = TypeTranslator[iectype]
+    return bytes(pack_func(c_type, value))

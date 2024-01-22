@@ -19,32 +19,6 @@ enum PLCstatus_enum {
     Disconnected
 }
 
-enum IECtype_enum {
-    BOOL,
-    STEP,
-    TRANSITION,
-    ACTION,
-    SINT,
-    USINT,
-    BYTE,
-    STRING,
-    INT,
-    UINT,
-    WORD,
-    DINT,
-    UDINT,
-    DWORD,
-    LINT,
-    ULINT,
-    LWORD,
-    REAL,
-    LREAL,
-    TIME,
-    TOD,
-    DATE,
-    DT,
-}
-
 struct PLCstatus {
     PLCstatus_enum PLCstatus;
     uint32[4] logcounts;
@@ -67,7 +41,6 @@ struct extra_file {
 
 struct trace_order {
     uint32 idx;
-    IECtype_enum iectype;
     binary force;
 };
 
