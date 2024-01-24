@@ -2153,7 +2153,8 @@ class Viewer(EditorPanel, DebugViewer):
         event.Skip()
 
     def OnViewerRightDown(self, event):
-        self.Editor.CaptureMouse()
+        if not self.Editor.HasCapture():
+            self.Editor.CaptureMouse()
         if self.Mode == MODE_SELECTION:
             element = self.FindElement(event)
             if self.SelectedElement is not None and self.SelectedElement != element:
@@ -2173,6 +2174,8 @@ class Viewer(EditorPanel, DebugViewer):
         self.rubberBand.Reset()
         self.rubberBand.OnLeftDown(event, dc, self.Scaling)
         self.rubberBand.OnLeftUp(event, dc, self.Scaling)
+        if self.Editor.HasCapture():
+            self.Editor.ReleaseMouse()
         if self.SelectedElement is not None:
             if self.Debug:
                 Graphic_Element.OnRightUp(self.SelectedElement, event, self.GetLogicalDC(), self.Scaling)
