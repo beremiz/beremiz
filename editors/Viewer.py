@@ -634,7 +634,7 @@ class Viewer(EditorPanel, DebugViewer):
 
             add_menu = wx.Menu(title='')
             self.AddAddMenuItems(add_menu)
-            menu.AppendMenu(-1, _('Add'), add_menu)
+            menu.Append(wx.ID_NEW, _('Add'), add_menu)
 
         menu.AppendSeparator()
 
@@ -2184,8 +2184,6 @@ class Viewer(EditorPanel, DebugViewer):
             wx.CallAfter(self.SetCurrentCursor, 0)
         elif not self.Debug:
             self.PopupDefaultMenu(False)
-        if self.Editor.HasCapture():
-            self.Editor.ReleaseMouse()
         event.Skip()
 
     def OnViewerLeftDClick(self, event):
