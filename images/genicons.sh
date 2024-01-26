@@ -10,7 +10,7 @@ for fname in `ls *.svg`; do
         else
 	    rm  -f $i.png
 	    echo "$INKSCAPE" $fname -z -e $i.png -i $i
-	    "$INKSCAPE" $fname -z -e $i.png -i $i
+	    "$INKSCAPE" $fname -o $i.png -i $i
         fi
     done
 done
