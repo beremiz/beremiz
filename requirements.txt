@@ -24,7 +24,7 @@ kiwisolver==1.4.4
 lxml==4.9.2
 matplotlib==3.7.1
 msgpack==1.0.5
-Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@cb62cc37824361725c0c0a599802b15210e6aaa3#egg=Nevow
+Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@942d0d68bcd99bedfc5c10d988b4a2eaf8a6420d
 numpy==1.24.3
 packaging==23.1
 Pillow==9.5.0
@@ -35,7 +35,7 @@ python-dateutil==2.8.2
 pytz==2023.3
 six==1.16.0
 sortedcontainers==2.4.0
-sslpsk3==1.1.1
+sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
 Twisted==22.10.0
 txaio==23.1.1
 typing_extensions==4.5.0
