@@ -29,6 +29,8 @@ import os
 import re
 import operator
 import hashlib
+import subprocess
+import shlex
 from functools import reduce
 from util.ProcessLogger import ProcessLogger
 
@@ -164,7 +166,28 @@ class toolchain_gcc(object):
         self.compiler = self.getCompiler()
         self.linker = self.getLinker()
 
-        Builder_CFLAGS = ' '.join(self.getBuilderCFLAGS())
+        Builder_CFLAGS_str = ' '.join(self.getBuilderCFLAGS())
+        Builder_LDFLAGS_str = ' '.join(self.getBuilderLDFLAGS())
+
+        Builder_CFLAGS = shlex.split(Builder_CFLAGS_str)
+        Builder_LDFLAGS = shlex.split(Builder_LDFLAGS_str)
+
+        pattern = "{SYSROOT}"
+        if pattern in Builder_CFLAGS_str or pattern in Builder_LDFLAGS_str:
+            try:
+                sysrootb = subprocess.check_output(["arm-unknown-linux-gnueabihf-gcc","-print-sysroot"])
+            except subprocess.CalledProcessError:
+                self.CTRInstance.logger.write("GCC failed with -print-sysroot\n")
+                return False
+            except FileNotFoundError:
+                self.CTRInstance.logger.write("GCC not found\n")
+                return False
+
+            sysroot = sysrootb.decode().strip()
+
+            replace_sysroot = lambda l:list(map(lambda s:s.replace(pattern, sysroot), l))
+            Builder_CFLAGS = replace_sysroot(Builder_CFLAGS)
+            Builder_LDFLAGS = replace_sysroot(Builder_LDFLAGS)
 
         # ----------------- GENERATE OBJECT FILES ------------------------
         obns = []
@@ -194,8 +217,12 @@ class toolchain_gcc(object):
 
                         status, _result, _err_result = ProcessLogger(
                             self.CTRInstance.logger,
-                            "\"%s\" -c \"%s\" -o \"%s\" -O2 %s %s" %
-                            (self.compiler, CFile, objectfilename, Builder_CFLAGS, CFLAGS)
+                            [self.compiler,
+                             "-c", CFile,
+                             "-o", objectfilename,
+                             "-O2"]
+                            + Builder_CFLAGS
+                            + shlex.split(CFLAGS)
                         ).spin()
 
                         if status:
@@ -212,20 +239,14 @@ class toolchain_gcc(object):
         # Link all the object files into one binary file
         self.CTRInstance.logger.write(_("Linking :\n"))
         if relink:
-            # Generate list .o files
-            listobjstring = '"' + '"  "'.join(objs) + '"'
-
-            ALLldflags = ' '.join(self.getBuilderLDFLAGS())
 
             self.CTRInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.bin + "\n")
 
             status, _result, _err_result = ProcessLogger(
                 self.CTRInstance.logger,
-                "\"%s\" %s -o \"%s\" %s" %
-                (self.linker,
-                 listobjstring,
-                 self.bin_path,
-                 ALLldflags)
+                [self.linker] + objs
+                + ["-o", self.bin_path]
+                + Builder_LDFLAGS
             ).spin()
 
             if status:
