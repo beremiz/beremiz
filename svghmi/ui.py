@@ -81,7 +81,7 @@ class HMITreeSelector(wx.TreeCtrl):
 
     def OnTreeNodeSelection(self, event):
         items = self.GetSelections()
-        items_pydata = [self.GetPyData(item) for item in items]
+        items_pydata = [self.GetItemData(item) for item in items]
 
         # append new items to ordered item list
         for item_pydata in items_pydata:
@@ -488,7 +488,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         """
         global thumbnail_temp_path
         event.Skip()
-        item_pydata = self.widgetpicker.GetPyData(event.GetItem())
+        item_pydata = self.widgetpicker.GetItemData(event.GetItem())
         if item_pydata is not None:
             svgpath = item_pydata
 

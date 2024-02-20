@@ -28,6 +28,7 @@ import sys
 import subprocess
 import ctypes
 import time
+import shlex
 from threading import Timer, Lock, Thread, Semaphore, Condition
 import signal
 
@@ -82,16 +83,9 @@ class ProcessLogger(object):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
-            self.Command = []
-            for i, word in enumerate(Command.replace("'", '"').split('"')):
-                if i % 2 == 0:
-                    word = word.strip()
-                    if len(word) > 0:
-                        self.Command.extend(word.split())
-                else:
-                    self.Command.append(word)
+            self.Command = shlex.split(Command)
         else:
-            self.Command = [x if type(x)==str else x.decode() for x in Command]
+            self.Command = Command
             self.Command_str = subprocess.list2cmdline(self.Command)
 
         fsencoding = sys.getfilesystemencoding()
