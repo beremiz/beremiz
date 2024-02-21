@@ -24,7 +24,7 @@ kiwisolver==1.4.4
 lxml==4.9.2
 matplotlib==3.7.1
 msgpack==1.0.5
-Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@942d0d68bcd99bedfc5c10d988b4a2eaf8a6420d
+Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@6deba7284e159af46a412699f046e060d7026cf9
 numpy==1.24.3
 packaging==23.1
 Pillow==9.5.0
