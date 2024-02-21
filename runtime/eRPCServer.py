@@ -70,7 +70,6 @@ def rpc_wrapper(method_name):
 
     def exception_wrapper(self, *args):
         try:
-            print("Srv "+method_name)
             return_wrapper(method, args_wrapper, *args)
             return 0
         except Exception as e:
