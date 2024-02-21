@@ -106,7 +106,6 @@ def ERPC_connector_factory(uri, confnodesroot):
 
         def exception_wrapper(self, *args):
             try:
-                print("Clt "+method_name)
                 return return_wrapper(client_method, self, args_wrapper, *args)
             except erpc.transport.ConnectionClosed as e:
                 confnodesroot._SetConnector(None)
@@ -118,10 +117,9 @@ def ERPC_connector_factory(uri, confnodesroot):
             except MissingCallException as e:
                 confnodesroot.logger.write_warning(_("Remote call not supported: %s\n") % e.message)
             except Exception as e:
-                errmess = _("Exception calling remote PLC object fucntio %s:\n") % method_name \
+                errmess = _("Exception calling remote PLC object fucntion %s:\n") % method_name \
                           + traceback.format_exc()
                 confnodesroot.logger.write_error(errmess + "\n")
-                print(errmess)
                 confnodesroot._SetConnector(None)
 
             return self.PLCObjDefaults.get(method_name)
