@@ -51,7 +51,7 @@ def _get_inkscape_path():
         if inkcmd is None:
             return None
 
-        return inkcmd.replace('"%1"', '').strip().replace('"', '')
+        return inkcmd.replace('"%1"', '').strip().replace('"', '').encode()
 
     else:
         try:
