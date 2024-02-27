@@ -357,7 +357,7 @@ class PLCOpenEditor(IDEFrame):
 
     def OnAboutMenu(self, event):
         info = wx.adv.AboutDialogInfo()
-        info = version.GetAboutDialogInfo()
+        info = version.GetAboutDialogInfo(info)
         info.Name = "PLCOpenEditor"
         info.Description = _("PLCOpenEditor is part of Beremiz project.\n\n"
                              "Beremiz is an ") + info.Description
