@@ -62,6 +62,7 @@ class AboutDialog(wx.Dialog):
         description.Wrap(400)
         copyright = wx.StaticText(self, label=info.Copyright)
         url = HyperLinkCtrl(self, label=info.WebSite[0], URL=info.WebSite[1])
+        long_version = wx.StaticText(self, label=info.GetLongVersion())
 
         font = name.GetClassDefaultAttributes().font
         font.SetWeight(wx.FONTWEIGHT_BOLD)
@@ -84,6 +85,7 @@ class AboutDialog(wx.Dialog):
         sizer.Add(description, flag=wx.CENTER | wx.BOTTOM, border=10)
         sizer.Add(copyright, flag=wx.CENTER | wx.BOTTOM, border=10)
         sizer.Add(url, flag=wx.CENTER | wx.BOTTOM, border=15)
+        sizer.Add(long_version, flag=wx.CENTER | wx.BOTTOM, border=10)
         sizer.Add(btnSizer, flag=wx.CENTER | wx.BOTTOM, border=5)
 
         container = wx.BoxSizer(wx.VERTICAL)
