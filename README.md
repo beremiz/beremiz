@@ -142,7 +142,7 @@ make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBAC
 ### Launch Beremiz IDE
 
 ```
-~/Beremiz/venv/python ~/Beremiz/beremiz/Beremiz.py
+~/Beremiz/venv/bin/python ~/Beremiz/beremiz/Beremiz.py
 ```
 
 ## Run standalone Beremiz runtime ##
@@ -151,7 +151,7 @@ make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBAC
 
 ```
 mkdir ~/beremiz_runtime_workdir
-~/Beremiz/venv/python ~/Beremiz/beremiz/Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/beremiz_runtime_workdir
+~/Beremiz/venv/bin/python ~/Beremiz/beremiz/Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/beremiz_runtime_workdir
 ```
 
 To connect IDE with runtime, enter target location URI in project's settings (project->Config->BeremizRoot/URI_location) pointed to your running Beremiz service in this case :
