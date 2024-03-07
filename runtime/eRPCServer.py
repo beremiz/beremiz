@@ -21,8 +21,6 @@ from runtime.loglevels import LogLevelsDict
 from runtime.ServicePublisher import ServicePublisher
 
 
-CRITICAL_LOG_LEVEL = LogLevelsDict["CRITICAL"]
-
 def ReturnAsLastOutput(method, args_wrapper, *args):
     args[-1].value = method(*args_wrapper(*args[:-1]))
     return 0
@@ -107,40 +105,44 @@ class eRPCServer(object):
         if self._to_be_published():
             self.Publish()
 
+        # service handler calls PLC object though erpc_stubs's wrappers
+        handler = type(
+            "PLCObjectServiceHandlder", 
+            (IBeremizPLCObjectService,),
+            {name: rpc_wrapper(name)              
+                    for name,_func in getmembers(IBeremizPLCObjectService, isfunction)})()
+        
+        service = BeremizPLCObjectServiceService(handler)
+
+        # TODO initialize Serial transport layer if selected
+        # transport = erpc.transport.SerialTransport(device, baudrate)
+
+        # initialize TCP transport layer
+        self.transport = erpc.transport.TCPTransport(self.ip_addr, int(self.port), True)
+
+        self.server = erpc.simple_server.SimpleServer(self.transport, erpc.basic_codec.BasicCodec)
+        self.server.add_service(service)
+
+        when_ready()
+
         while self.continueloop:
 
-            # service handler calls PLC object though erpc_stubs's wrappers
-            handler = type(
-                "PLCObjectServiceHandlder", 
-                (IBeremizPLCObjectService,),
-                {name: rpc_wrapper(name)              
-                        for name,_func in getmembers(IBeremizPLCObjectService, isfunction)})()
-            
-            service = BeremizPLCObjectServiceService(handler)
+            try:
+                self.server.run()
+            except erpc.transport.ConnectionClosed:
+                PLC().LogMessage(LogLevelsDict["DEBUG"], 'eRPC client disconnected')
+            except Exception as e:
+                self.Unpublish()
+                #TODO crash better
+                raise e
 
-            # TODO initialize Serial transport layer if selected
-            # transport = erpc.transport.SerialTransport(device, baudrate)
-
-            # initialize TCP transport layer
-            self.transport = erpc.transport.TCPTransport(self.ip_addr, int(self.port), True)
-
-            self.server = erpc.simple_server.SimpleServer(self.transport, erpc.basic_codec.BasicCodec)
-            self.server.add_service(service)
-
-            when_ready()
-
-            self.server.run()
-
-        self.Unpublish()
 
     def Restart(self):
         self.server.stop()
-        self.transport.stop()
 
     def Quit(self):
         self.continueloop = False
         self.server.stop()
-        self.transport.stop()
 
     def Publish(self):
         self.servicepublisher = ServicePublisher("ERPC")
