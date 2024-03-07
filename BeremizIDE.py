@@ -980,8 +980,12 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         info = wx.adv.AboutDialogInfo()
         info = version.GetAboutDialogInfo(info)
         info.Name = "Beremiz"
-        with open(ThirdPartyPath("revisions.txt")) as f:
-            revisions=f.read()
+        try:
+            with open(ThirdPartyPath("revisions.txt")) as f:
+                revisions=f.read()
+        except Exception as e:
+            revisions="Can't load revisions.txt: "+str(e)
+        finally:
             info.SetVersion(info.GetVersion(), longVersion=revisions)
 
         info.Description = _("Open Source framework for automation, "

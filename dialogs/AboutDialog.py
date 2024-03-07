@@ -1,36 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# This file is part of Beremiz, a Integrated Development Environment for
-# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
-# This file is based on code written for Whyteboard project.
-#
 # Copyright (c) 2009, 2010 by Steven Sproat
 # Copyright (c) 2016 by Andrey Skvortsov <andrej.skvortzov@gmail.com>
-#
+# Copyright (c) 2024 by Edouard Tisserant
+
 # See COPYING file for copyrights details.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
-
-
-"""
-This module contains classes extended from wx.Dialog used by the GUI.
-"""
-
-
 
 import os
 import wx
@@ -40,8 +15,7 @@ from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 class AboutDialog(wx.Dialog):
     """
-    A replacement About Dialog for Windows, as it uses a generic frame that
-    well...sucks.
+    Simpler replacement of About Dialog that shows LongVersion
     """
     def __init__(self, parent, info):
         title = _("About") + " " + info.Name
@@ -173,7 +147,4 @@ class LicenseDialog(wx.Dialog):
 
 
 def ShowAboutDialog(parent, info):
-    if os.name == "nt":
-        AboutDialog(parent, info)
-    else:
-        wx.adv.AboutBox(info)
+    AboutDialog(parent, info)
