@@ -45,7 +45,7 @@ from editors.Viewer import Viewer
 from editors.TextViewer import TextViewer
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
-from util.paths import Bpath
+from util.paths import Bpath, ThirdPartyPath
 from util.MiniTextControler import MiniTextControler
 from util.BitmapLibrary import GetBitmap
 from controls.LogViewer import LogViewer
@@ -980,6 +980,10 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         info = wx.adv.AboutDialogInfo()
         info = version.GetAboutDialogInfo(info)
         info.Name = "Beremiz"
+        with open(ThirdPartyPath("revisions.txt")) as f:
+            revisions=f.read()
+            info.SetVersion(info.GetVersion(), longVersion=revisions)
+
         info.Description = _("Open Source framework for automation, "
             "implementing IEC 61131 IDE with constantly growing set of extensions "
             "and flexible PLC runtime.")
