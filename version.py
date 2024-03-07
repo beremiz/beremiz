@@ -104,6 +104,10 @@ def GetAboutDialogInfo(info):
         "  Gastonfeng<gastonfeng@gmail.com>, 2019",
         "",
 
+        "Czech",
+        "  Martin Pihrt <martinpihrt@seznam.cz>",
+        "",
+
         "Dutch (Netherlands)",
         "  Martijn Berntsen <mxberntsen@gmail.com>, 2019",
         "  Jordy van der Heijden <jordyvanderheijden@gmail.com>, 2018",
