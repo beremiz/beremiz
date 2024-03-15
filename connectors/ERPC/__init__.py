@@ -91,7 +91,18 @@ def ERPC_connector_factory(uri, confnodesroot):
         if port:
             port = int(port)
         else:
-            port = 3000
+            # default port depends on security
+            port = 4000 if IDhash else 3000
+
+        if not IDhash and _scheme=="ERPCS":
+            confnodesroot.logger.write_error(
+                f'Invalid URI "{uri}": ERPCS requires PLC ID after "#"\n')
+            return None
+        elif IDhash and _scheme!="ERPCS":
+            confnodesroot.logger.write_error(
+                f'URI "{uri}": Non-encrypted ERPC does not take a PLC ID after "#"\n')
+            return None
+
     except Exception as e:
         confnodesroot.logger.write_error(
             'Malformed URI "%s": %s\n' % (uri, str(e)))
@@ -136,13 +147,13 @@ def ERPC_connector_factory(uri, confnodesroot):
         if IDhash:
             ID = IDhash[0]
             # load PSK from project
-            secpath = os.path.join(str(confnodesroot.ProjectPath), 'psk', ID + '.secret')
+            secpath = os.path.join(confnodesroot.ProjectPath, 'psk', ID + '.secret')
             if not os.path.exists(secpath):
                 confnodesroot.logger.write_error(
                     'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
                 return None
-            secret = open(secpath).read().partition(':')[2].rstrip('\n\r')
-            transport = SSLPSKClientTransport(host, port, (secret, ID))
+            secret = open(secpath).read().partition(':')[2].rstrip('\n\r').encode()
+            transport = SSLPSKClientTransport(host, port, (secret, ID.encode()))
         else:
             # TODO if serial URI then 
             # transport = erpc.transport.SerialTransport(device, baudrate)
