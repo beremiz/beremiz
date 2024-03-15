@@ -468,6 +468,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         if inkpath is None:
             self.msg = _("Inkscape is not installed.")
             return False
+        inkpath = inkpath.decode()
 
         export_opt = "-o" if get_inkscape_version()[0] > 0 else "-e"
 
