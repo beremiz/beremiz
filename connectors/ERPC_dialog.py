@@ -14,7 +14,7 @@ model = [('host', _("Host:")),
          ('port', _("Port:"))]
 
 # (scheme, model, secure)
-models = [("LOCAL", [], False), ("ERPC", model, False)]
+models = [("LOCAL", [], False), ("ERPC", model, False), ("ERPCS", model, True)]
 
 Schemes = list(zip(*models))[0]
 
