@@ -15,12 +15,14 @@ import time
 import ast
 import wx
 import re
+from email.parser import HeaderParser
 
 # to have it for python 2, had to install 
 # https://pypi.org/project/pycountry/18.12.8/
 # python2 -m pip install pycountry==18.12.8 --user
 import pycountry
 from dialogs import MessageBoxOnce
+from POULibrary import UserAddressedException
 
 cmd_parser = re.compile(r'(?:"([^"]+)"\s*|([^\s]+)\s*)?')
 
@@ -67,8 +69,8 @@ def EtreeToMessages(msgs):
 
     for msg in msgs:
         messages.append((
-            "\n".join([line.text for line in msg]),
-            msg.get("label"), msg.get("id")))
+            b"\n".join([line.text.encode() for line in msg]),
+            msg.get("label").encode(), msg.get("id").encode()))
 
     return messages
 
@@ -77,7 +79,7 @@ def SaveCatalog(fname, messages):
     w = POTWriter()
     w.ImportMessages(messages)
 
-    with open(fname, 'w') as POT_file:
+    with open(fname, 'wb') as POT_file:
         w.write(POT_file)
 
 def GetPoFiles(dirpath):
@@ -91,9 +93,8 @@ def ReadTranslations(dirpath):
     translations = []
     for translation_name, po_path in GetPoFiles(dirpath):
         r = POReader()
-        with open(po_path, 'r') as PO_file:
-            r.read(PO_file)
-            translations.append((translation_name, r.get_messages()))
+        r.read(po_path)
+        translations.append((translation_name, r.get_messages()))
     return translations
 
 def MatchTranslations(translations, messages, errcallback):
@@ -155,15 +156,17 @@ def TranslationToEtree(langs,translated_messages):
         msgidel = etree.SubElement(msgsroot, "msgid")
         for msg in msgs:
             msgel = etree.SubElement(msgidel, "msg")
-            for line in msg.split("\n"):
+            for line in msg.split(b"\n"):
                 lineel = etree.SubElement(msgel, "line")
-                lineel.text = escape(line.encode("utf-8")).decode("utf-8")
+                lineel.text = escape(line).decode()
 
     return result
 
+# Code below is based on :
+#  cpython/Tools/i18n/pygettext.py
+#  cpython/Tools/i18n/msgfmt.py
 
-
-locpfx = '#:svghmi.svg:'
+locpfx = b'#:svghmi.svg:'
 
 pot_header = '''\
 # SOME DESCRIPTIVE TITLE.
@@ -185,52 +188,39 @@ msgstr ""
 '''
 escapes = []
 
-def make_escapes(pass_iso8859):
+def make_escapes():
     global escapes
-    escapes = [chr(i) for i in range(256)]
-    if pass_iso8859:
-        # Allow iso-8859 characters to pass through so that e.g. 'msgid
-        # "Höhe"' would result not result in 'msgid "H\366he"'.  Otherwise we
-        # escape any character outside the 32..126 range.
-        mod = 128
-    else:
-        mod = 256
-    for i in range(mod):
-        if not(32 <= i <= 126):
-            escapes[i] = "\\%03o" % i
-    escapes[ord('\\')] = '\\\\'
-    escapes[ord('\t')] = '\\t'
-    escapes[ord('\r')] = '\\r'
-    escapes[ord('\n')] = '\\n'
-    escapes[ord('\"')] = '\\"'
+    escapes = [b"\%03o" % i for i in range(128)]
+    for i in range(32, 127):
+        escapes[i] = bytes([i])
+    escapes[ord('\\')] = b'\\\\'
+    escapes[ord('\t')] = b'\\t'
+    escapes[ord('\r')] = b'\\r'
+    escapes[ord('\n')] = b'\\n'
+    escapes[ord('\"')] = b'\\"'
 
-make_escapes(pass_iso8859 = True)
-
-EMPTYSTRING = ''
+make_escapes()
 
 def escape(s):
-    global escapes
-    s = list(s)
-    for i in range(len(s)):
-        s[i] = escapes[ord(s[i])]
-    return EMPTYSTRING.join(s)
+    l = [escapes[c] if c < 128 else bytes([c]) for c in s]
+    return b''.join(l)
+    #return bytes([escapes[c] if c < 128 else c for c in s])
 
 def normalize(s):
     # This converts the various Python string types into a format that is
     # appropriate for .po files, namely much closer to C style.
-    lines = s.split('\n')
+    lines = s.split(b'\n')
     if len(lines) == 1:
-        s = '"' + escape(s) + '"'
+        s = b'"' + escape(s) + b'"'
     else:
         if not lines[-1]:
             del lines[-1]
-            lines[-1] = lines[-1] + '\n'
+            lines[-1] = lines[-1] + b'\n'
         for i in range(len(lines)):
             lines[i] = escape(lines[i])
-        lineterm = '\\n"\n"'
-        s = '""\n"' + lineterm.join(lines) + '"'
+        lineterm = b'\\n"\n"'
+        s = b'""\n"' + lineterm.join(lines) + b'"'
     return s
-
 
 class POTWriter:
     def __init__(self):
@@ -238,22 +228,22 @@ class POTWriter:
 
     def ImportMessages(self, msgs):
         for  msg, label, svgid in msgs:
-            self.addentry(msg.encode("utf-8"), label, svgid)
+            self.addentry(msg, label, svgid)
 
     def addentry(self, msg, label, svgid):
         entry = (label, svgid)
         self.__messages.setdefault(msg, set()).add(entry)
 
     def write(self, fp):
-        timestamp = time.strftime('%Y-%m-%d %H:%M+%Z')
-        print(pot_header % {'time': timestamp}, file=fp)
+        timestamp = time.strftime('%Y-%m-%d %H:%M%z')
+        header = pot_header % {'time': timestamp}
+        fp.write(header.encode())
         reverse = {}
-        for k, v in list(self.__messages.items()):
+        for k, v in self.__messages.items():
             keys = list(v)
             keys.sort()
             reverse.setdefault(tuple(keys), []).append((k, v))
-        rkeys = list(reverse.keys())
-        rkeys.sort()
+        rkeys = sorted(reverse.keys())
         for rkey in rkeys:
             rentries = reverse[rkey]
             rentries.sort()
@@ -262,17 +252,17 @@ class POTWriter:
                 v.sort()
                 locline = locpfx
                 for label, svgid in v:
-                    d = {'label': label, 'svgid': svgid}
-                    s = _(' %(label)s:%(svgid)s') % d
+                    d = {b'label': label, b'svgid': svgid}
+                    s = b' %(label)s:%(svgid)s' % d
                     if len(locline) + len(s) <= 78:
                         locline = locline + s
                     else:
-                        print(locline, file=fp)
+                        fp.write(locline)
                         locline = locpfx + s
                 if len(locline) > len(locpfx):
-                    print(locline, file=fp)
-                print('msgid', normalize(k), file=fp)
-                print('msgstr ""\n', file=fp)
+                    fp.write(locline)
+                fp.write(b'msgid '+normalize(k))
+                fp.write(b'msgstr ""\n')
 
 
 class POReader:
@@ -282,27 +272,39 @@ class POReader:
     def get_messages(self):
         return self.__messages
 
-    def add(self, msgid, msgstr, fuzzy):
+    def add(self, ctxt, msgid, msgstr, fuzzy):
         "Add a non-fuzzy translation to the dictionary."
         if not fuzzy and msgstr and msgid:
-            self.__messages[msgid.decode('utf-8')] = msgstr.decode('utf-8')
+            if ctxt is None:
+                self.__messages[msgid] = msgstr
+            else:
+                self.__messages[b"%b\x04%b" % (ctxt, id)] = str
 
-    def read(self, fp):
+    def read(self, infile):
         ID = 1
         STR = 2
+        CTXT = 3
 
-        lines = fp.readlines()
-        section = None
+
+        with open(infile, 'rb') as f:
+            lines = f.readlines()
+            
+        section = msgctxt = None
         fuzzy = 0
+
+        # Start off assuming Latin-1, so everything decodes without failure,
+        # until we know the exact encoding
+        encoding = 'latin-1'
 
         # Parse the catalog
         lno = 0
         for l in lines:
+            l = l.decode(encoding)
             lno += 1
             # If we get a comment line after a msgstr, this is a new entry
             if l[0] == '#' and section == STR:
-                self.add(msgid, msgstr, fuzzy)
-                section = None
+                self.add(msgctxt, msgid, msgstr, fuzzy)
+                section = msgctxt = None
                 fuzzy = 0
             # Record a fuzzy mark
             if l[:2] == '#,' and 'fuzzy' in l:
@@ -310,56 +312,66 @@ class POReader:
             # Skip comments
             if l[0] == '#':
                 continue
-            # Now we are in a msgid section, output previous section
-            if l.startswith('msgid') and not l.startswith('msgid_plural'):
+            # Now we are in a msgid or msgctxt section, output previous section
+            if l.startswith('msgctxt'):
                 if section == STR:
-                    self.add(msgid, msgstr, fuzzy)
+                    self.add(msgctxt, msgid, msgstr, fuzzy)
+                section = CTXT
+                l = l[7:]
+                msgctxt = b''
+            elif l.startswith('msgid') and not l.startswith('msgid_plural'):
+                if section == STR:
+                    self.add(msgctxt, msgid, msgstr, fuzzy)
+                    if not msgid:
+                        # See whether there is an encoding declaration
+                        p = HeaderParser()
+                        charset = p.parsestr(msgstr.decode(encoding)).get_content_charset()
+                        if charset:
+                            encoding = charset
                 section = ID
                 l = l[5:]
-                msgid = msgstr = ''
+                msgid = msgstr = b''
                 is_plural = False
             # This is a message with plural forms
             elif l.startswith('msgid_plural'):
                 if section != ID:
-                    print('msgid_plural not preceded by msgid on %s:%d' %\
-                        (infile, lno), file=sys.stderr)
-                    sys.exit(1)
+                    raise UserAddressedException(
+                        'msgid_plural not preceded by msgid on %s:%d' % (infile, lno))
                 l = l[12:]
-                msgid += '\0' # separator of singular and plural
+                msgid += b'\0' # separator of singular and plural
                 is_plural = True
             # Now we are in a msgstr section
             elif l.startswith('msgstr'):
                 section = STR
                 if l.startswith('msgstr['):
                     if not is_plural:
-                        print('plural without msgid_plural on %s:%d' %\
-                            (infile, lno), file=sys.stderr)
-                        sys.exit(1)
+                        raise UserAddressedException(
+                            'plural without msgid_plural on %s:%d' % (infile, lno))
                     l = l.split(']', 1)[1]
                     if msgstr:
-                        msgstr += '\0' # Separator of the various plural forms
+                        msgstr += b'\0' # Separator of the various plural forms
                 else:
                     if is_plural:
-                        print('indexed msgstr required for plural on  %s:%d' %\
-                            (infile, lno), file=sys.stderr)
-                        sys.exit(1)
+                        raise UserAddressedException(
+                            'indexed msgstr required for plural on  %s:%d' % (infile, lno))
                     l = l[6:]
             # Skip empty lines
             l = l.strip()
             if not l:
                 continue
             l = ast.literal_eval(l)
-            if section == ID:
-                msgid += l
+            if section == CTXT:
+                msgctxt += l.encode(encoding)
+            elif section == ID:
+                msgid += l.encode(encoding)
             elif section == STR:
-                msgstr += l
+                msgstr += l.encode(encoding)
             else:
-                print('Syntax error on %s:%d' % (infile, lno), \
-                      'before:', file=sys.stderr)
-                print(l, file=sys.stderr)
-                sys.exit(1)
+                raise UserAddressedException(
+                    'Syntax error on %s:%d' % (infile, lno) + 'before:\n %s'%l)
         # Add last entry
         if section == STR:
-            self.add(msgid, msgstr, fuzzy)
+            self.add(msgctxt, msgid, msgstr, fuzzy)
+
 
 
