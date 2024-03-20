@@ -17,9 +17,6 @@ import wx
 import re
 from email.parser import HeaderParser
 
-# to have it for python 2, had to install 
-# https://pypi.org/project/pycountry/18.12.8/
-# python2 -m pip install pycountry==18.12.8 --user
 import pycountry
 from dialogs import MessageBoxOnce
 from POULibrary import UserAddressedException
@@ -185,6 +182,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\\n"
 "Generated-By: SVGHMI 1.0\\n"
 
+
 '''
 escapes = []
 
@@ -202,9 +200,7 @@ def make_escapes():
 make_escapes()
 
 def escape(s):
-    l = [escapes[c] if c < 128 else bytes([c]) for c in s]
-    return b''.join(l)
-    #return bytes([escapes[c] if c < 128 else c for c in s])
+    return b''.join([escapes[c] if c < 128 else bytes([c]) for c in s])
 
 def normalize(s):
     # This converts the various Python string types into a format that is
@@ -257,12 +253,12 @@ class POTWriter:
                     if len(locline) + len(s) <= 78:
                         locline = locline + s
                     else:
-                        fp.write(locline)
+                        fp.write(locline + b'\n')
                         locline = locpfx + s
                 if len(locline) > len(locpfx):
-                    fp.write(locline)
-                fp.write(b'msgid '+normalize(k))
-                fp.write(b'msgstr ""\n')
+                    fp.write(locline + b'\n')
+                fp.write(b'msgid ' + normalize(k) + b'\n')
+                fp.write(b'msgstr ""\n\n')
 
 
 class POReader:
