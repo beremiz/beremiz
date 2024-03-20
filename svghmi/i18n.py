@@ -27,7 +27,7 @@ def open_pofile(pofile):
     """ Opens PO file with POEdit """
     
     if sys.platform.startswith('win'):
-        from six.moves import winreg
+        import winreg
         poedit_cmd = None
         try:
             poedit_cmd = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE,
@@ -89,9 +89,8 @@ def ReadTranslations(dirpath):
 
     translations = []
     for translation_name, po_path in GetPoFiles(dirpath):
-        r = POReader()
-        r.read(po_path)
-        translations.append((translation_name, r.get_messages()))
+        messages = POReader().read(po_path)
+        translations.append((translation_name, messages))
     return translations
 
 def MatchTranslations(translations, messages, errcallback):
@@ -102,16 +101,21 @@ def MatchTranslations(translations, messages, errcallback):
     """
     translated_messages = []
     broken_lang = set()
+    incomplete_lang = set()
     for msgid,label,svgid in messages:
         translated_message = []
         for langcode,translation in translations:
             msg = translation.pop(msgid, None)
             if msg is None:
+                # Missing translation (msgid not in .po)
                 broken_lang.add(langcode)
-                errcallback(_('{}: Missing translation for "{}" (label:{}, id:{})\n').format(langcode,msgid,label,svgid))
-                translated_message.append(msgid)
-            else:
-                translated_message.append(msg)
+                msg = msgid
+            elif msg == b"":
+                # Empty translation (msgid is in .po)
+                incomplete_lang.add(langcode)
+                msg = msgid
+            
+            translated_message.append(msg)
         translated_messages.append((msgid,translated_message))
     langs = []
     for langcode,translation in translations:
@@ -129,11 +133,16 @@ def MatchTranslations(translations, messages, errcallback):
         langs.append((langname,langcode))
 
         broken = False
-        for msgid, msg in translation.items():
+        if translation:
             broken = True
-            errcallback(_('{}: Unused translation "{}":"{}"\n').format(langcode,msgid,msg))
         if broken or langcode in broken_lang:
-            errcallback(_('Translation for {} is outdated, please edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(langcode,langcode))
+            errcallback((
+                    _('Translation for {} is outdated and incomplete.') 
+                    if langcode in incomplete_lang else
+                    _('Translation for {} is outdated.')).format(langcode) + 
+                " "+_('Edit {}.po, click "Catalog -> Update from POT File..." and select messages.pot.\n').format(langcode))
+        elif langcode in incomplete_lang:
+            errcallback(_('Translation for {} is incomplete. Edit {}.po to complete it.\n').format(langcode,langcode))
 
 
     return langs,translated_messages
@@ -265,25 +274,24 @@ class POReader:
     def __init__(self):
         self.__messages = {}
 
-    def get_messages(self):
-        return self.__messages
-
     def add(self, ctxt, msgid, msgstr, fuzzy):
-        "Add a non-fuzzy translation to the dictionary."
-        if not fuzzy and msgstr and msgid:
-            if ctxt is None:
-                self.__messages[msgid] = msgstr
-            else:
-                self.__messages[b"%b\x04%b" % (ctxt, id)] = str
+        "Add eventually empty translation to the dictionary."
+        if msgid:
+            self.__messages[msgid if ctxt is None else (b"%b\x04%b" % (ctxt, id))] = msgstr
 
     def read(self, infile):
         ID = 1
         STR = 2
         CTXT = 3
 
+        self.__messages = {}
 
-        with open(infile, 'rb') as f:
-            lines = f.readlines()
+        try:
+            with open(infile, 'rb') as f:
+                lines = f.readlines()
+        except Exception as e:
+            raise UserAddressedException(
+                        'Cannot open PO translation file :%s' % str(e))
             
         section = msgctxt = None
         fuzzy = 0
@@ -312,12 +320,14 @@ class POReader:
             if l.startswith('msgctxt'):
                 if section == STR:
                     self.add(msgctxt, msgid, msgstr, fuzzy)
+                    fuzzy = 0
                 section = CTXT
                 l = l[7:]
                 msgctxt = b''
             elif l.startswith('msgid') and not l.startswith('msgid_plural'):
                 if section == STR:
                     self.add(msgctxt, msgid, msgstr, fuzzy)
+                    fuzzy = 0
                     if not msgid:
                         # See whether there is an encoding declaration
                         p = HeaderParser()
@@ -368,6 +378,8 @@ class POReader:
         # Add last entry
         if section == STR:
             self.add(msgctxt, msgid, msgstr, fuzzy)
+
+        return self.__messages
 
 
 
