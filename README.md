@@ -49,7 +49,8 @@ sudo apt-get install \
   build-essential automake flex bison mercurial \
   libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
   libpython3.10-dev libssl-dev \
-  python3.10 virtualenv cmake git mercurial
+  python3.10 virtualenv cmake git mercurial \
+  python3-wxgtk4.0 python3-matplotlib python3-zeroconf
 ```
 
 
