@@ -694,7 +694,8 @@
   <func:function name="func:all_related_elements">
     <xsl:param name="page"/>
     <xsl:variable name="page_overlapping_geometry" select="$overlapping_geometry/elt[@id = $page/@id]/*"/>
-    <xsl:variable name="page_overlapping_elements" select="//svg:*[@id = $page_overlapping_geometry/@Id]"/>
+    <xsl:variable name="overlapping_candidates" select="//svg:*[not(starts-with((ancestor::svg:g | .) /@inkscape:label, 'DISCARD:'))]"/>
+    <xsl:variable name="page_overlapping_elements" select="$overlapping_candidates[@id = $page_overlapping_geometry/@Id]"/>
     <xsl:variable name="page_widgets_elements" select="&#10;        $hmi_elements[not(@id=$page/@id)&#10;                      and descendant-or-self::svg:*/@id = $page_overlapping_elements/@id]&#10;        /descendant-or-self::svg:*"/>
     <xsl:variable name="page_sub_elements" select="func:refered_elements($page | $page_overlapping_elements | $page_widgets_elements)"/>
     <func:result select="$page_sub_elements"/>
