@@ -199,6 +199,16 @@ widget_defs("Button") {
     activable();
 }
 
+// FlatButton is same as Button, but it has no active/inactive elements
+// and doesn't reflect current state
+widget_class("FlatButton"){
+    |     frequency = 5;
+    const "fsm","exsl:node-set($_button_fsm)";
+    call "generated_button_class" with "fsm", "$fsm";
+}
+
+widget_defs("FlatButton");
+
 widget_class("PushButton"){
     |     frequency = 20;
     const "fsm","exsl:node-set($_push_button_fsm)";
