@@ -9,6 +9,8 @@ Contents:
    :maxdepth: 2
 
    overview
-   manual/index
+   install
+   programming/index
+   svghmi/index
    standards
 
