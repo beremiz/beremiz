@@ -2907,7 +2907,7 @@
           </xsl:if>
         </xsl:for-each>
       </xsl:variable>
-      <xsl:variable name="isVarName" select="regexp:test($value,'^[a-zA-Z_][a-zA-Z0-9_]+$')"/>
+      <xsl:variable name="isVarName" select="regexp:test($value,'^[a-zA-Z_][a-zA-Z0-9_]*$')"/>
       <xsl:choose>
         <xsl:when test="$isVarName">
           <xsl:text>        const </xsl:text>
