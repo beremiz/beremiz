@@ -28,6 +28,12 @@ jobs:
           path: open62541
           submodules: recursive
 
+    - uses: actions/checkout@v3
+      with:
+          repository: beremiz/Modbus
+          ref: 4d7d67a8e911d744165709c20a254b5cb924ec71
+          path: Modbus
+
     - name: Restore cached docker image
       id: cache-docker-restore
       uses: actions/cache/restore@v3
