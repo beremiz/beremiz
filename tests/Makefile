@@ -71,7 +71,7 @@ build_dir = $(test_dir)/build
 # SOURCE and BUILD
 #
 
-BUILT_PROJECTS=beremiz matiec open62541
+BUILT_PROJECTS=beremiz matiec open62541 Modbus
 
 tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclude=.*.swp
 
@@ -105,7 +105,12 @@ $(build_dir)/open62541/build/bin/libopen62541.a: | $(build_dir)/open62541/$(open
 	cmake -D UA_ENABLE_ENCRYPTION=OPENSSL .. && \
 	make
 
-built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a
+$(build_dir)/Modbus/libmb.a: | $(build_dir)/Modbus/$(Modbus_checksum).sha1
+	cd $(build_dir)/Modbus && \
+	make
+
+
+built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a $(build_dir)/Modbus/libmb.a
 	touch $@
 
 define log_command
