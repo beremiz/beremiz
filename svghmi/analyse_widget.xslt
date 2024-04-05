@@ -875,10 +875,6 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>"active"+"inactive" labeled elements can be provided to show feedback when pressed
-</xsl:text>
-      <xsl:text>
-</xsl:text>
       <xsl:text>Exemples:
 </xsl:text>
       <xsl:text>
