@@ -16,3 +16,4 @@ Contents:
    i18n
    fonts
    hacking
+   widgets

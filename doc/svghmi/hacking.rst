@@ -1,9 +1,9 @@
-Trick and tips
+Developer mode
 ==============
 
-Add you own JavaScript code
----------------------------
-
-Go full screen
+Add JavaScript
 --------------
+
+Write new widget type
+---------------------
 

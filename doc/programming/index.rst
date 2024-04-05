@@ -10,3 +10,4 @@ Contents:
    edit
    connect
    run
+   stdlib/index
