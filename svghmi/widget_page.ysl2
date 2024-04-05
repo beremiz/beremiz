@@ -11,8 +11,6 @@ widget_desc("Page") {
     - name=value: setting variable with literal value.
     - name=other_name: copy variable content into another
 
-    "active"+"inactive" labeled elements can be provided to show feedback when pressed
-
     Exemples:
 
     HMI:Page:notify=1@notify=/PLCVAR

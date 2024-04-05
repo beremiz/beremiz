@@ -2908,7 +2908,7 @@
           </xsl:if>
         </xsl:for-each>
       </xsl:variable>
-      <xsl:variable name="isVarName" select="regexp:test($value,'^[a-zA-Z_][a-zA-Z0-9_]+$')"/>
+      <xsl:variable name="isVarName" select="regexp:test($value,'^[a-zA-Z_][a-zA-Z0-9_]*$')"/>
       <xsl:choose>
         <xsl:when test="$isVarName">
           <xsl:text>        const </xsl:text>
@@ -3305,6 +3305,34 @@
     <xsl:value-of select="$has_activity"/>
     <xsl:text>,
 </xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='FlatButton']" mode="widget_class">
+    <xsl:text>class </xsl:text>
+    <xsl:text>FlatButtonWidget</xsl:text>
+    <xsl:text> extends Widget{
+</xsl:text>
+    <xsl:text>    frequency = 5;
+</xsl:text>
+    <xsl:variable name="fsm" select="exsl:node-set($_button_fsm)"/>
+    <xsl:call-template name="generated_button_class">
+      <xsl:with-param name="fsm" select="$fsm"/>
+    </xsl:call-template>
+    <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='FlatButton']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
   </xsl:template>
   <xsl:template match="widget[@type='PushButton']" mode="widget_class">
     <xsl:text>class </xsl:text>
@@ -7247,10 +7275,6 @@
       <xsl:text>- name=value: setting variable with literal value.
 </xsl:text>
       <xsl:text>- name=other_name: copy variable content into another
-</xsl:text>
-      <xsl:text>
-</xsl:text>
-      <xsl:text>"active"+"inactive" labeled elements can be provided to show feedback when pressed
 </xsl:text>
       <xsl:text>
 </xsl:text>
