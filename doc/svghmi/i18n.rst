@@ -1,0 +1,14 @@
+Internationalization
+====================
+
+Selecting text to be translated
+-------------------------------
+
+Gettext, POedit and message catalogs
+------------------------------------
+
+Adding a new language
+---------------------
+
+Updating translations
+---------------------

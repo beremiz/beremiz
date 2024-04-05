@@ -78,7 +78,8 @@ const "overlapping_geometry", "exsl:node-set($_overlapping_geometry)";
 def "func:all_related_elements" {
     param "page";
     const "page_overlapping_geometry", "$overlapping_geometry/elt[@id = $page/@id]/*";
-    const "page_overlapping_elements", "//svg:*[@id = $page_overlapping_geometry/@Id]";
+    const "overlapping_candidates", "//svg:*[not(starts-with((ancestor::svg:g | .) /@inkscape:label, 'DISCARD:'))]";
+    const "page_overlapping_elements", "$overlapping_candidates[@id = $page_overlapping_geometry/@Id]";
     const "page_widgets_elements", """
         $hmi_elements[not(@id=$page/@id)
                       and descendant-or-self::svg:*/@id = $page_overlapping_elements/@id]

@@ -28,7 +28,3 @@ msgstr "Documentation de Beremiz"
 #: ../../index.rst:6
 msgid "Contents:"
 msgstr "Contenu"
-
-# 899ecb5f4ff84b8e98dbf5b1eaf7f393
-#~ msgid "Indices and tables"
-#~ msgstr "Index et tables"
