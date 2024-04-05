@@ -94,3 +94,9 @@ Fading
 
 ..
     TODO
+
+Go full screen
+--------------
+
+..
+    TODO
