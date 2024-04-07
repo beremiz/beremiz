@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Pages, Jumps and HMI_NODE relativity &#8212; Beremiz 1.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css?v=d59dc883" />
+    <script src="../_static/documentation_options.js?v=0ed52906"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Re-using elements with Inkscape clones (svg:use)" href="clones.html" />
+    <link rel="prev" title="Widget syntax" href="syntax.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="clones.html" title="Re-using elements with Inkscape clones (svg:use)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="syntax.html" title="Widget syntax"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">SVGHMI</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Pages, Jumps and HMI_NODE relativity</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="pages-jumps-and-hmi-node-relativity">
+<h1>Pages, Jumps and HMI_NODE relativity<a class="headerlink" href="#pages-jumps-and-hmi-node-relativity" title="Link to this heading">¶</a></h1>
+<p>Pages are full screen. Only one page is displayed at the same time.</p>
+<p>Page change is triggered by <code class="docutils literal notranslate"><span class="pre">HMI:Jump</span></code> and <code class="docutils literal notranslate"><span class="pre">HMI:Back</span></code>, or by changing <code class="docutils literal notranslate"><span class="pre">/CURRENTPAGE_N</span></code>.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>HMI:Page:PageName[@RootPath]
+HMI:Jump:PageName[@RelativePath]
+HMI:Back
+</pre></div>
+</div>
+<section id="absolute-and-relative-pages">
+<h2>Absolute and relative pages<a class="headerlink" href="#absolute-and-relative-pages" title="Link to this heading">¶</a></h2>
+<p>When <code class="docutils literal notranslate"><span class="pre">[&#64;RootPath]</span></code> is given, page is relative.</p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">HMI:Jump</span></code> to reach a relative page, a compatible
+<code class="docutils literal notranslate"><span class="pre">[&#64;RelativePath]</span></code> may be provided.</p>
+<p>To be compatible, <code class="docutils literal notranslate"><span class="pre">RootPath</span></code> and <code class="docutils literal notranslate"><span class="pre">RelativePath</span></code> must both point to
+HMI tree nodes of type <code class="docutils literal notranslate"><span class="pre">HMI_NODE</span></code> instanciated from same POU.</p>
+<p>Every widget using a path descendant of <code class="docutils literal notranslate"><span class="pre">RootPath</span></code> in a relative
+page is relative. Relative widgets get the <code class="docutils literal notranslate"><span class="pre">RootPath</span></code> section of
+their path replaced by <code class="docutils literal notranslate"><span class="pre">RelativePath</span></code>.</p>
+<p>Relative page label:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HMI</span><span class="p">:</span><span class="n">Page</span><span class="p">:</span><span class="n">PageName</span>
+</pre></div>
+</div>
+<p>Absolute page label:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HMI</span><span class="p">:</span><span class="n">Page</span><span class="p">:</span><span class="n">PageName</span><span class="nd">@RootPath</span>
+</pre></div>
+</div>
+<img alt="../_images/svghmi_relative.svg" src="../_images/svghmi_relative.svg" /></section>
+<section id="jump-and-back">
+<h2>Jump and Back<a class="headerlink" href="#jump-and-back" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">HMI:Jump</span></code> can have <code class="docutils literal notranslate"><span class="pre">inactive</span></code>, <code class="docutils literal notranslate"><span class="pre">active</span></code> and <code class="docutils literal notranslate"><span class="pre">disabled</span></code> labeled children:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inactive</span></code> is shown when target page is not currently displayed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">active</span></code> is shown when target page is currently displayed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disabled</span></code> is shown when relative page’s RootPath is set to 0, disabling jump.</p></li>
+</ul>
+</div></blockquote>
+<p>Relative page label:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HMI</span><span class="p">:</span><span class="n">Jump</span><span class="p">:</span><span class="n">PageName</span><span class="p">[</span><span class="nd">@RelativePath</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Absolute page label:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">HMI</span><span class="p">:</span><span class="n">Jump</span><span class="p">:</span><span class="n">PageName</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">HMI:Back</span></code> takes no parameter and just go back one step in page change history.</p>
+</section>
+<section id="special-currentpage-n-variable">
+<h2>Special <code class="docutils literal notranslate"><span class="pre">/CURRENTPAGE_N</span></code> variable<a class="headerlink" href="#special-currentpage-n-variable" title="Link to this heading">¶</a></h2>
+</section>
+<section id="overlapping-geometry">
+<h2>Overlapping geometry<a class="headerlink" href="#overlapping-geometry" title="Link to this heading">¶</a></h2>
+<p>If widget’s bounding box is included in page bounding box, then widget is part of page.</p>
+</section>
+<section id="references-frames">
+<h2>References frames<a class="headerlink" href="#references-frames" title="Link to this heading">¶</a></h2>
+<p>References frames help to unclutter page and widgets.</p>
+</section>
+<section id="screensaver">
+<h2>Screensaver<a class="headerlink" href="#screensaver" title="Link to this heading">¶</a></h2>
+</section>
+<section id="fading">
+<h2>Fading<a class="headerlink" href="#fading" title="Link to this heading">¶</a></h2>
+</section>
+<section id="go-full-screen">
+<h2>Go full screen<a class="headerlink" href="#go-full-screen" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Pages, Jumps and HMI_NODE relativity</a><ul>
+<li><a class="reference internal" href="#absolute-and-relative-pages">Absolute and relative pages</a></li>
+<li><a class="reference internal" href="#jump-and-back">Jump and Back</a></li>
+<li><a class="reference internal" href="#special-currentpage-n-variable">Special <code class="docutils literal notranslate"><span class="pre">/CURRENTPAGE_N</span></code> variable</a></li>
+<li><a class="reference internal" href="#overlapping-geometry">Overlapping geometry</a></li>
+<li><a class="reference internal" href="#references-frames">References frames</a></li>
+<li><a class="reference internal" href="#screensaver">Screensaver</a></li>
+<li><a class="reference internal" href="#fading">Fading</a></li>
+<li><a class="reference internal" href="#go-full-screen">Go full screen</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="syntax.html"
+                          title="previous chapter">Widget syntax</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="clones.html"
+                          title="next chapter">Re-using elements with Inkscape clones (svg:use)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/svghmi/pages.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="clones.html" title="Re-using elements with Inkscape clones (svg:use)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="syntax.html" title="Widget syntax"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >SVGHMI</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Pages, Jumps and HMI_NODE relativity</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright is 21st century inquisition.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

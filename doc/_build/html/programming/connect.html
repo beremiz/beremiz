@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Connect IDE to Runtime &#8212; Beremiz 1.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css?v=d59dc883" />
+    <script src="../_static/documentation_options.js?v=0ed52906"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Run PLC code, trace and force variables" href="run.html" />
+    <link rel="prev" title="Edit PLC program" href="edit.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="run.html" title="Run PLC code, trace and force variables"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="edit.html" title="Edit PLC program"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">IEC-61131 PLC programming</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Connect IDE to Runtime</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="connect-ide-to-runtime">
+<h1>Connect IDE to Runtime<a class="headerlink" href="#connect-ide-to-runtime" title="Link to this heading">¶</a></h1>
+<dl class="simple">
+<dt>Connection is described by the <em>URI_location</em> in project’s configuration.</dt><dd><p><code class="docutils literal notranslate"><span class="pre">Open</span> <span class="pre">project</span> <span class="pre">tree</span> <span class="pre">root</span> <span class="pre">-&gt;</span> <span class="pre">Config</span> <span class="pre">tab</span> <span class="pre">-&gt;</span> <span class="pre">URI_location</span></code></p>
+</dd>
+</dl>
+<section id="erpc">
+<h2>eRPC<a class="headerlink" href="#erpc" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="https://github.com/embeddedrpc/erpc">eRPC</a> (Embedded RPC) is an open source
+Remote Procedure Call (RPC) developed by NXP.</p>
+<p>In case of Beremiz, Runtime is the eRPC server and IDE is a client. Transport
+can be either TCP/IP or Serial.</p>
+<section id="uri-location-for-erpc">
+<h3><code class="docutils literal notranslate"><span class="pre">URI_location</span></code> for eRPC:<a class="headerlink" href="#uri-location-for-erpc" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ERPC://host[:port]</span></code> unencrypted connection. Default port is 3000.</dt><dd><p>This connection is highly unsecure, and should never be used on
+untrusted network. It is intended to be used on peer to peer connection
+such as ethernet over USB, for initial pairing with IDE.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">ERPCS://host[:port]</span></code> SSL-PSK encrypted connection.</dt><dd><p>Default port is 4000.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">LOCAL://</span></code> starts local runtime and connect with it through TCP/IP</dt><dd><p>bound to Localhost using random port.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</section>
+<section id="ssl-psk-setup">
+<h3>SSL-PSK setup:<a class="headerlink" href="#ssl-psk-setup" title="Link to this heading">¶</a></h3>
+<p>In order to provide practical secure communication in between runtime and IDE
+TLS-PSK connection according to rfc4279.</p>
+<section id="server-runtime">
+<h4>Server (runtime)<a class="headerlink" href="#server-runtime" title="Link to this heading">¶</a></h4>
+<p>PSK ciphersuite avoids the need for public key operations and certificate
+management. It is perfect for a performance-constrained environments with
+limited CPU power as a PLC.</p>
+<p><a class="reference external" href="https://www.stunnel.org/">Stunnel</a> is used to wrap unencrypted eRPC server
+into an TLS-PSK SSL socket. Hereafter is <code class="docutils literal notranslate"><span class="pre">stunnel.conf</span></code>:</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[ERPCPSK]</span>
+<span class="na">accept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">4000</span>
+<span class="na">connect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">127.0.0.1:3000</span>
+<span class="na">ciphers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PSK</span>
+<span class="na">sslVersion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">TLSv1.2</span>
+<span class="na">PSKsecrets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">psk.txt</span>
+</pre></div>
+</div>
+<p>List PSK ciphers available in server’s openssl:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>openssl ciphers -s -psk -tls1_2
+</pre></div>
+</div>
+<p>Launch <code class="docutils literal notranslate"><span class="pre">stunnel</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>stunnel ./stunnel.conf
+</pre></div>
+</div>
+</section>
+<section id="client-ide">
+<h4>Client (IDE)<a class="headerlink" href="#client-ide" title="Link to this heading">¶</a></h4>
+<p>Compare client’s available openssl PSK ciphers with Server’s ciphers. At least
+a few of them should match:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>openssl ciphers -s -psk -tls1_2
+</pre></div>
+</div>
+<p>Use unencrypted peer-to-peer connection such as network over USB
+or simple Ethernet cable, connect an obtain PSK:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ERPC://hostname[:port]
+</pre></div>
+</div>
+<p>Then use Identity Management dialog in IDE to select matching ID and generate
+<code class="docutils literal notranslate"><span class="pre">ERPCS</span></code> URI:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ERPCS://hostname[:port]#ID
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="wamp">
+<h2>WAMP<a class="headerlink" href="#wamp" title="Link to this heading">¶</a></h2>
+<p><a class="reference external" href="https://wamp-proto.org/">WAMP</a> is an open standard WebSocket subprotocol that provides two application messaging
+patterns in one unified protocol: Remote Procedure Calls + Publish &amp; Subscribe.</p>
+<p>Beremiz WAMP connector implementation uses python <code class="docutils literal notranslate"><span class="pre">autobahn</span></code> module, from the <a class="reference external" href="https://github.com/crossbario">crossbar.io</a> project.</p>
+<p>Both IDE and runtime are WAMP clients that connect to <code class="docutils literal notranslate"><span class="pre">crossbar</span></code> server through HTTP.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">URI_location</span></code> for WAMP:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">WAMP://host[:port]#realm#ID</span></code> Websocket over unencrypted HTTP transport.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">WAMPS://host[:port]#realm#ID</span></code> Websocket over secure HTTPS transport.</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Connect IDE to Runtime</a><ul>
+<li><a class="reference internal" href="#erpc">eRPC</a><ul>
+<li><a class="reference internal" href="#uri-location-for-erpc"><code class="docutils literal notranslate"><span class="pre">URI_location</span></code> for eRPC:</a></li>
+<li><a class="reference internal" href="#ssl-psk-setup">SSL-PSK setup:</a><ul>
+<li><a class="reference internal" href="#server-runtime">Server (runtime)</a></li>
+<li><a class="reference internal" href="#client-ide">Client (IDE)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#wamp">WAMP</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="edit.html"
+                          title="previous chapter">Edit PLC program</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="run.html"
+                          title="next chapter">Run PLC code, trace and force variables</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/programming/connect.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="run.html" title="Run PLC code, trace and force variables"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="edit.html" title="Edit PLC program"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >IEC-61131 PLC programming</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Connect IDE to Runtime</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright is 21st century inquisition.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Introduction to SVGHMI &#8212; Beremiz 1.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css?v=d59dc883" />
+    <script src="../_static/documentation_options.js?v=0ed52906"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Widget syntax" href="syntax.html" />
+    <link rel="prev" title="SVGHMI" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="syntax.html" title="Widget syntax"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="SVGHMI"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">SVGHMI</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Introduction to SVGHMI</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="introduction-to-svghmi">
+<h1>Introduction to SVGHMI<a class="headerlink" href="#introduction-to-svghmi" title="Link to this heading">¶</a></h1>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><img alt="../_images/svhgmi_pitch.svg" src="../_images/svhgmi_pitch.svg" /></td>
+<td><p>SVGHMI is a SVG based HMI toolkit. With it, PLC programmers and HMI designers
+can efficiently produce Scalable Web Based HMIs. &lt;br /&gt;  &lt;br /&gt; HMI design
+happens in <a class="reference external" href="https://inkscape.org">Inkscape</a>.
+Designer freely draws HMI pages and widgets following WYSIWYG principle.</p></td>
+</tr>
+</tbody>
+</table>
+<section id="wysiwyg-hmi-design-with-inkscape">
+<h2>WYSIWYG HMI design with Inkscape<a class="headerlink" href="#wysiwyg-hmi-design-with-inkscape" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><p>“<strong>What You See Is What You Get</strong>, is a system in which editing software
+allows content to be edited in a form that resembles its appearance when
+printed or displayed as a finished product.”</p>
+<p class="attribution">—Oxford English Dictionary</p>
+</div></blockquote>
+<p>Widgets can be selected from customizable widget library and drag’n’dropped
+directly in Inkscape.</p>
+<img alt="../_images/svghmi_dnd.svg" src="../_images/svghmi_dnd.svg" /><p>SVGHMI’s Page and Widget roles are assigned to SVG elements by changing objects
+name and description in Inkscape.</p>
+<img alt="../_images/svhgmi_inkscape.svg" src="../_images/svhgmi_inkscape.svg" /></section>
+<section id="hmi-tree-scale-together-with-plc-instance-tree">
+<h2>HMI tree scale together with PLC instance tree<a class="headerlink" href="#hmi-tree-scale-together-with-plc-instance-tree" title="Link to this heading">¶</a></h2>
+<p>In SVGHMI, <strong>scalability</strong> applies to both graphics and data. Once HMI and PLC
+are associated in a first version of a machine, it is easy to extend both of
+them simultaneously. In most cases DRY principle applies. PLC code or SVG
+elements can be re-used and extended.</p>
+<p>PLC data exposed to HMI is represented in an “HMI Tree” deduced from PLC
+program. More precisely, HMI Tree is a simplified subset of POU instances tree.
+PLC  programmer selects variables to be exposed by assigning them a derived
+HMI_* type. For example HMI_REAL is used instead of REAL to expose a floating
+point variable.</p>
+<img alt="../_images/svghmi_trees.svg" src="../_images/svghmi_trees.svg" /><p>In order to reduce HMI Tree complexity, structure of POU instance tree is not
+preserved by default. Only POUs having a single HMI_NODE variable defined
+appear in HMI Tree. This allows to expose variables that are spread in a
+complex hierarchy of POUs in a single HMI Tree node.</p>
+<img alt="../_images/svghmi_types.svg" src="../_images/svghmi_types.svg" /></section>
+<section id="re-usable-widgets-and-pages">
+<h2>Re-usable widgets and pages<a class="headerlink" href="#re-usable-widgets-and-pages" title="Link to this heading">¶</a></h2>
+<p>HMI elements are SVG elements whose labels start with <code class="docutils literal notranslate"><span class="pre">HMI:</span></code>.  They can be
+widgets or pages, and can point to locations in HMI tree with a path starting
+with a <code class="docutils literal notranslate"><span class="pre">/</span></code>, and with <code class="docutils literal notranslate"><span class="pre">/</span></code>-separated hierarchical levels.
+For example, <code class="docutils literal notranslate"><span class="pre">/THIS/IS/A/VALID/HMI_TREE/PATH</span></code>.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">HMI:Switch&#64;/GREENLIGHT</span></code></dt><dd><p>“Switch” type widget bound to a variable named GREENLIGHT at root of HMI tree</p>
+</dd>
+</dl>
+<p>Each <code class="docutils literal notranslate"><span class="pre">HMI:Page</span></code> has a unique name. <code class="docutils literal notranslate"><span class="pre">HMI:Jump</span></code> and <code class="docutils literal notranslate"><span class="pre">HMI:Back</span></code> widgets are
+used to switch to other pages. PLC can also trigger page change autonomously.
+HMI must have at least one SVG element labelled <code class="docutils literal notranslate"><span class="pre">HMI:Page:Home</span></code>. <code class="docutils literal notranslate"><span class="pre">Home</span></code> is
+a special page name: it will make this page the landing page when HMI is loaded.</p>
+<img alt="../_images/svhgmi_pages.svg" src="../_images/svhgmi_pages.svg" /><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">HMI:Page:Home</span></code></dt><dd><p>Mandatory “Home” page declaration</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">HMI:Jump:Home</span></code></dt><dd><p>Change current page to “Home” page when clicked</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">HMI:Back</span></code></dt><dd><p>Change current page back to previous page when clicked</p>
+</dd>
+</dl>
+<p>Pages and groups of widgets can be dynamically re-based to another compatible
+HMI Tree location. They can then be be re-used as HMI components, paired with
+corresponding POU instances on PLC side.</p>
+</section>
+<section id="simple-yet-powerful-widgets">
+<h2>Simple yet powerful widgets<a class="headerlink" href="#simple-yet-powerful-widgets" title="Link to this heading">¶</a></h2>
+<p>Widgets are meant to be as simple as possible. Still, they can become complex
+when implementing interactions that cannot be broken down into multiple
+independent widgets.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Meter Widget Template (<cite>HMI:Meter</cite>)</p></th>
+<th class="head"><p>Voltmeter (<cite>HMI:Meter</cite>)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><img alt="../_images/svghmi_meter.svg" src="../_images/svghmi_meter.svg" /></td>
+<td><img alt="../_images/svghmi_voltmeter.svg" src="../_images/svghmi_voltmeter.svg" /></td>
+</tr>
+</tbody>
+</table>
+<p>HMI and pages have their own local variables allowing interaction in between
+widgets bypassing HMI Tree. For example, position of <cite>HMI:Scrollbar</cite> can be
+directly connected to a position in <cite>HMI:JSONTable</cite> with a page local
+variable.</p>
+</section>
+<section id="how-does-it-work">
+<h2>How does it work ?<a class="headerlink" href="#how-does-it-work" title="Link to this heading">¶</a></h2>
+<p>HMI’s client and server code is generated during SVGHMI build, based on PLC
+code and HMI design.</p>
+<img alt="../_images/svghmi_overview.svg" src="../_images/svghmi_overview.svg" /><p>SVGHMI build is part of Beremiz build, available in IDE and command line.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Introduction to SVGHMI</a><ul>
+<li><a class="reference internal" href="#wysiwyg-hmi-design-with-inkscape">WYSIWYG HMI design with Inkscape</a></li>
+<li><a class="reference internal" href="#hmi-tree-scale-together-with-plc-instance-tree">HMI tree scale together with PLC instance tree</a></li>
+<li><a class="reference internal" href="#re-usable-widgets-and-pages">Re-usable widgets and pages</a></li>
+<li><a class="reference internal" href="#simple-yet-powerful-widgets">Simple yet powerful widgets</a></li>
+<li><a class="reference internal" href="#how-does-it-work">How does it work ?</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">SVGHMI</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="syntax.html"
+                          title="next chapter">Widget syntax</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/svghmi/intro.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="syntax.html" title="Widget syntax"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="SVGHMI"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >SVGHMI</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Introduction to SVGHMI</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright is 21st century inquisition.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

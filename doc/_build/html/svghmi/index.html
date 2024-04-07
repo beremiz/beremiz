@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>SVGHMI &#8212; Beremiz 1.4 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinxdoc.css?v=d59dc883" />
+    <script src="../_static/documentation_options.js?v=0ed52906"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Introduction to SVGHMI" href="intro.html" />
+    <link rel="prev" title="Standard library" href="../programming/stdlib/index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction to SVGHMI"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../programming/stdlib/index.html" title="Standard library"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">SVGHMI</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="svghmi">
+<h1>SVGHMI<a class="headerlink" href="#svghmi" title="Link to this heading">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction to SVGHMI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#wysiwyg-hmi-design-with-inkscape">WYSIWYG HMI design with Inkscape</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#hmi-tree-scale-together-with-plc-instance-tree">HMI tree scale together with PLC instance tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#re-usable-widgets-and-pages">Re-usable widgets and pages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#simple-yet-powerful-widgets">Simple yet powerful widgets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#how-does-it-work">How does it work ?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="syntax.html">Widget syntax</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="syntax.html#widget-type">Widget Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="syntax.html#update-frequency">Update Frequency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="syntax.html#parameters">Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="syntax.html#variable-bindings">Variable bindings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="syntax.html#enable-expression">Enable expression</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pages.html">Pages, Jumps and HMI_NODE relativity</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#absolute-and-relative-pages">Absolute and relative pages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#jump-and-back">Jump and Back</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#special-currentpage-n-variable">Special <code class="docutils literal notranslate"><span class="pre">/CURRENTPAGE_N</span></code> variable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#overlapping-geometry">Overlapping geometry</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#references-frames">References frames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#screensaver">Screensaver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#fading">Fading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pages.html#go-full-screen">Go full screen</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="clones.html">Re-using elements with Inkscape clones (svg:use)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="clones.html#re-use-of-pages">Re-use of pages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clones.html#re-use-of-widgets">Re-use of widgets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="clones.html#re-use-of-svg-elements-in-widgets">Re-use of SVG elements in widgets</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="groups.html">Using Groups (svg:g)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="groups.html#nesting-widgets">Nesting widgets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="groups.html#side-effects-of-optimization">Side effects of optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="variables.html">PLC variables and local variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="variables.html#plc-variables-start-with">PLC variables start with <code class="docutils literal notranslate"><span class="pre">/</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="variables.html#local-page-variables-start-with">Local Page variables start with <code class="docutils literal notranslate"><span class="pre">.</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="variables.html#local-hmi-variables">Local HMI variables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configure SVGHMI instances</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#ports-and-interfaces">Ports and interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#watchdog">Watchdog</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#launching-browser">Launching browser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#static-files">Static files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="i18n.html">Internationalization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#selecting-text-to-be-translated">Selecting text to be translated</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#gettext-poedit-and-message-catalogs">Gettext, POedit and message catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#adding-a-new-language">Adding a new language</a></li>
+<li class="toctree-l2"><a class="reference internal" href="i18n.html#updating-translations">Updating translations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fonts.html">Include fonts in HMI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fonts.html#inkscape-uses-system-fonts">Inkscape uses system fonts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fonts.html#supported-font-types">Supported font types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fonts.html#add-remove-fonts">Add/remove fonts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hacking.html">Developer mode</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="hacking.html#add-javascript">Add JavaScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking.html#write-new-widget-type">Write new widget type</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="widgets.html">Widget Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-animate">HMI:Animate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-animaterotation">HMI:Animaterotation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-assign">HMI:Assign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-back">HMI:Back</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-button">HMI:Button</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-circularbar">HMI:Circularbar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-circularslider">HMI:Circularslider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-custom">HMI:Custom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-customhtml">HMI:Customhtml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-display">HMI:Display</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-dropdown">HMI:Dropdown</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-foreach">HMI:Foreach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-input">HMI:Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-jsontable">HMI:Jsontable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-jump">HMI:Jump</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-keypad">HMI:Keypad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-list">HMI:List</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-listswitch">HMI:Listswitch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-meter">HMI:Meter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-multistate">HMI:Multistate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-page">HMI:Page</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-pathslider">HMI:Pathslider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-scrollbar">HMI:Scrollbar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-slider">HMI:Slider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-switch">HMI:Switch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-textlist">HMI:Textlist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-textstylelist">HMI:Textstylelist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-tooglebutton">HMI:Tooglebutton</a></li>
+<li class="toctree-l2"><a class="reference internal" href="widgets.html#hmi-xygraph">HMI:Xygraph</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../programming/stdlib/index.html"
+                          title="previous chapter">Standard library</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="intro.html"
+                          title="next chapter">Introduction to SVGHMI</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/svghmi/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="intro.html" title="Introduction to SVGHMI"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../programming/stdlib/index.html" title="Standard library"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Beremiz 1.4 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">SVGHMI</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright is 21st century inquisition.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>
