@@ -17,3 +17,4 @@ Contents:
    fonts
    hacking
    widgets
+   library

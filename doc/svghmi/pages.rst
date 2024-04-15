@@ -34,11 +34,15 @@ Absolute page label::
 
     HMI:Page:PageName@RootPath
 
+Example::
+
+    HMI:Page:PumpControl@/PUMP0
+
 .. image:: svghmi_relative.svg
 
 
-Jump and Back
--------------
+Jumps
+-----
 
 
 ``HMI:Jump`` can have ``inactive``, ``active`` and ``disabled`` labeled children:
@@ -49,18 +53,33 @@ Jump and Back
 
 Relative page label::
 
-    HMI:Jump:PageName[@RelativePath]
+    HMI:Jump:PageName@RelativePath
 
 Absolute page label::
 
     HMI:Jump:PageName
 
+Example::
 
-``HMI:Back`` takes no parameter and just go back one step in page change history.
+    HMI:Jump:PumpControl@/PUMP7
 
 
-Special ``/CURRENTPAGE_N`` variable
+Back: Jump to previous page
+----------------------------
+
+``HMI:Back`` takes no parameter and goes back one step in page change history when clicked.
+
+
+Special ``/CURRENT_PAGE_n`` variable
 -----------------------------------
+
+Each SVGHMI instance have its own ``/CURRENT_PAGE_n``, with ``n`` being the position of SVGHMI instance in Configuration Tree.
+
+By reading ``/CURRENT_PAGE_n`` value, PLC knows last page being displayed in HMI. Variable is of type STRING, and formatted as follows::
+
+    PageName
+
+
 
 ..
     TODO
@@ -73,6 +92,9 @@ If widget's bounding box is included in page bounding box, then widget is part o
 
 ..
     TODO
+
+Discarded element
+-----------------
 
 
 References frames
