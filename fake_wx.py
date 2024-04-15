@@ -85,7 +85,7 @@ for name, classes in [
     ('wx.lib.buttons',['GenBitmapTextButton']),
     ('wx.adv',['EditableListBox']),
     ('wx.grid',[
-        'Grid', 'PyGridTableBase', 'GridCellEditor', 'GridCellTextEditor',
+        'Grid', 'GridTableBase', 'GridCellEditor', 'GridCellTextEditor',
         'GridCellChoiceEditor']),
     ('wx.lib.agw.customtreectrl',['CustomTreeCtrl']),
     ('wx.lib.gizmos',[]),

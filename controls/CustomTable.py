@@ -33,7 +33,7 @@ else:
     ROW_HEIGHT = 28
 
 
-class CustomTable(wx.grid.PyGridTableBase):
+class CustomTable(wx.grid.GridTableBase):
 
     """
     A custom wx.grid.Grid Table using user supplied data

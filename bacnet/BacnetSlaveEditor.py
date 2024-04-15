@@ -515,7 +515,7 @@ class MSIObject(MultiSObject):
 
 
 class ObjectTable(CustomTable):
-    #  A custom wx.grid.PyGridTableBase using user supplied data
+    #  A custom wx.grid.GridTableBase using user supplied data
     #
     #  This will basically store a list of BACnet objects that the slave will support/implement.
     #  There will be one instance of this ObjectTable class for each BACnet object type
