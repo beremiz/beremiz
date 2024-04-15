@@ -692,7 +692,7 @@ class VariablesEditor(wx.Panel):
             controls_sizer.Add(button, border=5, flag=wx.BOTTOM)
 
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING, self.OnVariablesGridCellChange)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnVariablesGridCellChange)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
         main_sizer.Add(self.VariablesGrid, flag=wx.GROW)
