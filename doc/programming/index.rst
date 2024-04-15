@@ -7,6 +7,7 @@ Contents:
    :maxdepth: 2
 
    create
+   configuration
    edit
    connect
    run

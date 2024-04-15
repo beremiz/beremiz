@@ -96,3 +96,10 @@ Both IDE and runtime are WAMP clients that connect to ``crossbar`` server throug
 ..
     TODO : 
         crossbar server setup with example config and minimal backend.
+
+
+About Security
+--------------
+
+ ..
+    TODO :
