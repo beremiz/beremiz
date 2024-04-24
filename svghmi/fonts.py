@@ -56,7 +56,7 @@ def DataURIFromFile(filename, mimetype):
         "data:",
         mimetype,
         ";base64,",
-        b64encode(data).strip()])
+        b64encode(data).decode().strip()])
 
 def GetCSSFontFaceFromFontFile(filename):
     familyname, uniquename, formatname, mimetype = GetFontTypeAndFamilyName(filename)
