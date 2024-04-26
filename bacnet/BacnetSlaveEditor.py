@@ -367,7 +367,7 @@ class AnalogObject(ObjectProperties):
         "Engineering Units": {"GridCellEditor": wx.grid.GridCellChoiceEditor,
                               # use string renderer with choice editor!
                               "GridCellRenderer": wx.grid.GridCellStringRenderer,
-                              "GridCellEditorConstructorArgs": [x[0] for x in BACnetEngineeringUnits]}
+                              "GridCellEditorConstructorArgs": [[x[0] for x in BACnetEngineeringUnits]]}
     }
 
     # obj_properties should be a dictionary, with keys "Object Identifier",
