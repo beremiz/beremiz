@@ -8,6 +8,7 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
+   about
    overview
    install
    programming/index
