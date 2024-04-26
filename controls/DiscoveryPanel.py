@@ -25,12 +25,56 @@
 
 
 import socket
+import weakref
 import wx
 import wx.lib.mixins.listctrl as listmix
 from zeroconf import ServiceBrowser, Zeroconf, get_all_addresses
 
 service_type = '_Beremiz._tcp.local.'
 
+class ZeroConfListenerClass:
+    def __init__(self, dialog):
+        self.dialog = weakref.ref(dialog)
+        self.ZeroConfInstance = Zeroconf()
+        self.Browser = ServiceBrowser(self.ZeroConfInstance, service_type, self)
+
+    def clean(self):
+        if self.Browser is not None:
+            self.Browser.cancel()
+            self.Browser = None
+        if  self.ZeroConfInstance is not None:
+            self.ZeroConfInstance.close()
+            self.ZeroConfInstance = None
+
+    def __del__(self):
+        self.clean()
+
+    def update_service(self, zeroconf, _type, name):
+        self.remove_service(zeroconf, _type, name)
+        self.add_service(zeroconf, _type, name)
+
+    def add_service(self, zeroconf, _type, name):
+        info = self.ZeroConfInstance.get_service_info(_type, name)
+        if info is None:
+            return
+        typename = info.properties.get(b"protocol", None).decode()
+        ip = str(info.parsed_addresses()[0])
+        port = info.port
+
+        wx.CallAfter(self._add_service, typename, ip, port, name)
+
+    def _add_service(self, typename, ip, port, name):
+        dialog = self.dialog()
+        if not dialog: return
+        dialog._addService(typename, ip, port, name)
+
+    def remove_service(self, zeroconf, _type, name):
+        wx.CallAfter(self._remove_service, name)
+
+    def _remove_service(self, name):
+        dialog = self.dialog()
+        if not dialog: return
+        dialog._removeService(name)
 
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, name, pos=wx.DefaultPosition,
@@ -116,8 +160,6 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         self.nextItemId = 0
 
         self.URI = None
-        self.Browser = None
-        self.ZeroConfInstance = None
 
         self.RefreshList()
         self.LatestSelection = None
@@ -125,18 +167,16 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         self.IfacesMonitorState = None
         self.IfacesMonitorTimer = wx.Timer(self)
         self.IfacesMonitorTimer.Start(2000)
+        self.ZeroConfListener = None
         self.Bind(wx.EVT_TIMER, self.IfacesMonitor, self.IfacesMonitorTimer)
 
     def _cleanup(self):
         if self.IfacesMonitorTimer is not None:
             self.IfacesMonitorTimer.Stop()
             self.IfacesMonitorTimer = None
-        if self.Browser is not None:
-            self.Browser.cancel()
-            self.Browser = None
-        if self.ZeroConfInstance is not None:
-            self.ZeroConfInstance.close()
-            self.ZeroConfInstance = None
+        if self.ZeroConfListener is not None:
+            self.ZeroConfListener.clean()
+            self.ZeroConfListener = None
 
     def __del__(self):
         self._cleanup()
@@ -160,12 +200,7 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def RefreshList(self):
         self.ServicesList.DeleteAllItems()
-        if self.Browser is not None:
-            self.Browser.cancel()
-        if self.ZeroConfInstance is not None:
-            self.ZeroConfInstance.close()
-        self.ZeroConfInstance = Zeroconf()
-        self.Browser = ServiceBrowser(self.ZeroConfInstance, service_type, self)
+        self.ZeroConfListener = ZeroConfListenerClass(self)
 
     def OnRefreshButton(self, event):
         self.RefreshList()
@@ -179,11 +214,11 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
         return item.GetText()
 
     def OnItemSelected(self, event):
-        self.SetURI(event.m_itemIndex)
+        self.SetURI(event.GetIndex())
         event.Skip()
 
     def OnItemActivated(self, event):
-        self.SetURI(event.m_itemIndex)
+        self.SetURI(event.GetIndex())
         self.parent.EndModal(wx.ID_OK)
         event.Skip()
 
@@ -211,9 +246,6 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
             #     return str("MDNS://%s" % svcname)
         return None
 
-    def remove_service(self, zeroconf, _type, name):
-        wx.CallAfter(self._removeService, name)
-
     def _removeService(self, name):
         '''
         called when a service with the desired type goes offline.
@@ -231,20 +263,12 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
                 self.ServicesList.DeleteItem(idx)
                 break
 
-    def add_service(self, zeroconf, _type, name):
-        wx.CallAfter(self._addService, _type, name)
 
-    def _addService(self, _type, name):
+    def _addService(self, typename, ip, port, name):
         '''
         called when a service with the desired type is discovered.
         '''
-        info = self.ZeroConfInstance.get_service_info(_type, name)
-        if info is None:
-            return
         svcname = name.split(".")[0]
-        typename = info.properties.get("protocol", None)
-        ip = str(socket.inet_ntoa(info.address))
-        port = info.port
 
         num_items = self.ServicesList.GetItemCount()
 
