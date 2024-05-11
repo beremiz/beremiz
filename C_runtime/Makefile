@@ -7,13 +7,17 @@ APP_NAME = beremiz_runtime
 RUNTIME_ROOT = $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 ERPC_ROOT ?= $(abspath $(RUNTIME_ROOT)/../../erpc)
 ERPC_C_ROOT = $(ERPC_ROOT)/erpc_c
+BEREMIZ_ROOT = $(abspath $(RUNTIME_ROOT)/..)
+MATIEC_ROOT ?= $(abspath $(RUNTIME_ROOT)/../../matiec)
 
 INCLUDES += $(ERPC_C_ROOT)/infra \
             $(ERPC_C_ROOT)/port \
             $(ERPC_C_ROOT)/setup \
             $(ERPC_C_ROOT)/transports \
             $(ERPC_ROOT)/test/common/config \
-            $(ERPC_ROOT)/erpcgen/src
+            $(ERPC_ROOT)/erpcgen/src \
+            $(BEREMIZ_ROOT)/targets \
+            $(MATIEC_ROOT)/lib/C
 
 INCLUDES := $(foreach includes, $(INCLUDES), -I $(includes))
 
@@ -42,6 +46,8 @@ SOURCES +=  $(RUNTIME_ROOT)/c_erpc_PLCObject_client.cpp \
             $(RUNTIME_ROOT)/erpc_PLCObject_client.cpp \
             $(RUNTIME_ROOT)/erpc_PLCObject_interface.cpp \
             $(RUNTIME_ROOT)/erpc_PLCObject_server.cpp \
+			$(RUNTIME_ROOT)/md5.cpp \
+			$(RUNTIME_ROOT)/blob.cpp \
 			$(RUNTIME_ROOT)/posix_main.cpp \
 			$(RUNTIME_ROOT)/PLCObject.cpp
 

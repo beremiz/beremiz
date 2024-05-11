@@ -1,3 +1,14 @@
+/*
+ * Beremiz C++ runtime
+ *
+ * This file implements Beremiz C++ runtime Command Line Interface for POSIX
+ *
+ * Based on erpcsniffer.cpp, BSD-3-Clause, Copyright 2017 NXP
+ *
+ * Copyright 2024 Beremiz SAS
+ * 
+ * See COPYING for licensing details
+ */
 
 #include <stdlib.h>
 #include <vector>
@@ -294,7 +305,17 @@ public:
                 m_workingDir = std::filesystem::current_path().c_str();
             } else {
                 m_workingDir = m_positionalArgs[0].c_str();
+                std::filesystem::current_path(m_workingDir);
             }
+
+            // remove temporary directory if it already exists
+            if (std::filesystem::exists("tmp"))
+            {
+                std::filesystem::remove_all("tmp");
+            }
+
+            // Create temporary directory in working directory
+            std::filesystem::create_directory("tmp");
 
             Transport *_transport;
             switch (m_transport)

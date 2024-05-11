@@ -7,3 +7,11 @@
 **/my_*.der
 **/my_*.pem
 tests/tools/Docker/requirements.txt
+**/management.json
+**/.secret
+
+doc/_build/**
+doc/locale/**
+
+C_runtime/**/*.d
+C_runtime/**/*.o
