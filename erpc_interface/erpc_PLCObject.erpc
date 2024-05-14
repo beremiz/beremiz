@@ -65,7 +65,7 @@ interface BeremizPLCObjectService {
     RepairPLC() -> uint32
     ResetLogCount() -> uint32
     SeedBlob(in binary seed, out binary blobID) -> uint32
-    SetTraceVariablesList(in list<trace_order> orders, out uint32 debugtoken) -> uint32
+    SetTraceVariablesList(in list<trace_order> orders, out int32 debugtoken) -> uint32
     StartPLC() -> uint32
     StopPLC(out bool success) -> uint32
 }
