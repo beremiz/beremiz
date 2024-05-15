@@ -33,15 +33,22 @@ import conftest
 import controls.CustomIntCtrl
 
 
+wxApp = None
+
 class TestCustomIntCtrl(unittest.TestCase):
     def setUp(self):
-        self.app = wx.App()
+        global wxApp
+        if wxApp is None:
+            wxApp = wx.App()
         self.frame = wx.Frame(None)
 
     def tearDown(self):
+        global wxApp
         self.frame.Destroy()
-        wx.CallAfter(wx.Exit)
-        self.app.MainLoop()
+        if wxApp is not None:
+            wx.CallAfter(wx.Exit)
+            wxApp.MainLoop()
+            wxApp = None
 
     def testMaxLimit(self):
         """Test working upper bound"""
