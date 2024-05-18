@@ -8,6 +8,9 @@
 
 #include <map>
 #include <vector>
+#include <mutex>
+#include <thread>
+ 
 #include "blob.hpp"
 
 #include "erpc_PLCObject_interface.hpp"
@@ -36,7 +39,7 @@ typedef struct s_PLCSyms{
     void (*ResetDebugVariables)(void);
     int (*RegisterDebugVariable)(unsigned int idx, void* force, size_t force_size);
     void (*FreeDebugData)(void);
-    int (*GetDebugData)(unsigned long *tick, unsigned long *size, void **buffer);
+    int (*GetDebugData)(unsigned int *tick, unsigned int *size, void **buffer);
     int (*suspendDebug)(int disable);
     void (*ResumeDebug)(void);
     void (*ResetLogCount)(void);
@@ -64,11 +67,9 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t RepairPLC(void);
         uint32_t ResetLogCount(void);
         uint32_t SeedBlob(const binary_t * seed, binary_t * blobID);
-        uint32_t SetTraceVariablesList(const list_trace_order_1_t * orders, uint32_t * debugtoken);
+        uint32_t SetTraceVariablesList(const list_trace_order_1_t * orders, int32_t * debugtoken);
         uint32_t StartPLC(void);
         uint32_t StopPLC(bool * success);
-
-        // 
 
     private:
         // A map of all the blobs
@@ -76,6 +77,9 @@ class PLCObject : public BeremizPLCObjectService_interface
 
         // PLC object library handle
         void * m_handle;
+
+        // Shared object mutex
+        std::mutex m_PLClibMutex;
 
         // Symbols resolved from the PLC object
         PLCSyms m_PLCSyms;
@@ -90,16 +94,24 @@ class PLCObject : public BeremizPLCObjectService_interface
         // PLC ID
         PSKID m_plcID;
 
+        // Debug token, used for consistency check of traces
+        uint32_t m_debugToken;
+
+        // Trace thread
+        std::thread m_traceThread;
+
+        // Trace thread mutex
+        std::mutex m_tracesMutex;
+
+        // Trace double buffer
+        std::vector<trace_sample> m_traces;
+
         uint32_t BlobAsFile(const binary_t * BlobID, std::filesystem::path filename);
         uint32_t LoadPLC(void);
         uint32_t UnLoadPLC(void);
         uint32_t LogMessage(uint8_t level, std::string message);
- 
-
-
-
-
-    
+        uint32_t PurgePLC(void);
+        void TraceThreadProc(void);
 };
 
 #endif

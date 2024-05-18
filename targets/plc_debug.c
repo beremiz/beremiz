@@ -492,7 +492,7 @@ void FreeDebugData(void)
 }
 int WaitDebugData(unsigned long *tick);
 /* Wait until debug data ready and return pointer to it */
-int GetDebugData(unsigned long *tick, unsigned long *size, void **buffer){
+int GetDebugData(unsigned int *tick, unsigned int *size, void **buffer){
     int wait_error = WaitDebugData(tick);
     if(!wait_error){
         *size = trace_buffer_cursor - trace_buffer;
