@@ -13,7 +13,7 @@ constantly==15.1.0
 contourpy==1.0.7
 cryptography==40.0.2
 cycler==0.11.0
-erpc==1.11.0
+erpc==1.12.0
 fonttools==4.39.3
 gattrdict==2.0.1
 hyperlink==21.0.0
