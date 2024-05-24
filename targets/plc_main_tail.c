@@ -45,7 +45,7 @@ static void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uin
 typedef struct {
     uint32_t msgidx;
     uint32_t msgsize;
-    unsigned long tick;
+    unsigned int tick;
     IEC_TIME time;
 } mTail;
 
@@ -146,7 +146,7 @@ static IEC_TIME cal_begin;
 static long long Tsync = 0;
 static long long FreqCorr = 0;
 static int Nticks = 0;
-static unsigned long last_tick = 0;
+static unsigned int last_tick = 0;
 
 /*
  * Called on each external periodic sync event

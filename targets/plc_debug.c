@@ -170,7 +170,7 @@ void __init_debug(void)
 extern void InitiateDebugTransfer(void);
 extern void CleanupRetain(void);
 
-extern unsigned long __tick;
+extern unsigned int __tick;
 
 void __cleanup_debug(void)
 {
@@ -490,7 +490,7 @@ void FreeDebugData(void)
         BUFFER_FULL,
         BUFFER_EMPTY);
 }
-int WaitDebugData(unsigned long *tick);
+int WaitDebugData(unsigned int *tick);
 /* Wait until debug data ready and return pointer to it */
 int GetDebugData(unsigned int *tick, unsigned int *size, void **buffer){
     int wait_error = WaitDebugData(tick);

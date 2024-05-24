@@ -336,9 +336,9 @@ void LeaveDebugSection(void)
     }
 }
 
-extern unsigned long __tick;
+extern unsigned int __tick;
 
-int WaitDebugData(unsigned long *tick)
+int WaitDebugData(unsigned int *tick)
 {
     char cmd;
     int res;
