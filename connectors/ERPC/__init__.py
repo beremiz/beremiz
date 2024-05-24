@@ -126,7 +126,7 @@ def ERPC_connector_factory(uri, confnodesroot):
             except erpc.client.RequestError as e:
                 confnodesroot.logger.write_error(_("ERPC request error: %s\n") % e)                
             except MissingCallException as e:
-                confnodesroot.logger.write_warning(_("Remote call not supported: %s\n") % e.message)
+                confnodesroot.logger.write_warning(_("Remote call not supported: %s\n") % e)
             except Exception as e:
                 errmess = _("Exception calling remote PLC object fucntion %s:\n") % method_name \
                           + traceback.format_exc()
