@@ -14,12 +14,16 @@
 #include <vector>
 #include <filesystem>
 
+// eRPC includes
 #include "erpc_basic_codec.hpp"
 #include "erpc_serial_transport.hpp"
 #include "erpc_tcp_transport.hpp"
 #include "erpc_simple_server.hpp"
 
+// eRPC generated includes
 #include "erpc_PLCObject_server.hpp"
+
+// erpcgen includes (re-uses erpcgen's logging system and options parser)
 #include "Logging.hpp"
 #include "options.hpp"
 
@@ -28,13 +32,14 @@
 using namespace erpc;
 using namespace std;
 
+#define MSG_SIZE 1024*6
 class MyMessageBufferFactory : public MessageBufferFactory
 {
 public:
     virtual MessageBuffer create()
     {
-        uint8_t *buf = new uint8_t[1024];
-        return MessageBuffer(buf, 1024);
+        uint8_t *buf = new uint8_t[MSG_SIZE];
+        return MessageBuffer(buf, MSG_SIZE);
     }
 
     virtual void dispose(MessageBuffer *buf)
@@ -350,6 +355,9 @@ public:
                     break;
                 }
             }
+
+            Crc16 crc;
+            _transport->setCrc16(&crc);
 
             MyMessageBufferFactory _msgFactory;
             BasicCodecFactory _basicCodecFactory;

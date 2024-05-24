@@ -41,9 +41,7 @@ ERPC_SOURCES += $(ERPC_ROOT)/erpcgen/src/format_string.cpp \
                 $(ERPC_C_ROOT)/transports/erpc_serial_transport.cpp \
                 $(ERPC_C_ROOT)/transports/erpc_tcp_transport.cpp
 			
-SOURCES +=  $(RUNTIME_ROOT)/c_erpc_PLCObject_client.cpp \
-            $(RUNTIME_ROOT)/c_erpc_PLCObject_server.cpp \
-            $(RUNTIME_ROOT)/erpc_PLCObject_client.cpp \
+SOURCES +=  $(RUNTIME_ROOT)/erpc_PLCObject_client.cpp \
             $(RUNTIME_ROOT)/erpc_PLCObject_interface.cpp \
             $(RUNTIME_ROOT)/erpc_PLCObject_server.cpp \
 			$(RUNTIME_ROOT)/md5.cpp \
