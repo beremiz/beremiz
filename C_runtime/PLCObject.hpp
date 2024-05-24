@@ -10,7 +10,7 @@
 #include <vector>
 #include <mutex>
 #include <thread>
- 
+
 #include "blob.hpp"
 
 #include "erpc_PLCObject_interface.hpp"
@@ -26,28 +26,29 @@ using namespace erpcShim;
     ACTION(FreeDebugData)\
     ACTION(GetDebugData)\
     ACTION(suspendDebug)\
-    ACTION(ResumeDebug)\
+    ACTION(resumeDebug)\
     ACTION(ResetLogCount)\
     ACTION(GetLogCount)\
     ACTION(LogMessage)\
     ACTION(GetLogMessage)
 
-typedef struct s_PLCSyms{
-    uint8_t *PLC_ID;
-    int (*startPLC)(int argc,char **argv);
-    int (*stopPLC)(void);
-    void (*ResetDebugVariables)(void);
-    int (*RegisterDebugVariable)(unsigned int idx, void* force, size_t force_size);
-    void (*FreeDebugData)(void);
-    int (*GetDebugData)(unsigned int *tick, unsigned int *size, void **buffer);
-    int (*suspendDebug)(int disable);
-    void (*ResumeDebug)(void);
-    void (*ResetLogCount)(void);
-    uint32_t (*GetLogCount)(uint8_t level);
-    int (*LogMessage)(uint8_t level, char* buf, uint32_t size);
-    uint32_t (*GetLogMessage)(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec);
-} PLCSyms;
-
+extern "C" {   
+    typedef struct s_PLCSyms{
+        uint8_t *PLC_ID;
+        int (*startPLC)(int argc,char **argv);
+        int (*stopPLC)(void);
+        void (*ResetDebugVariables)(void);
+        int (*RegisterDebugVariable)(unsigned int idx, void* force, size_t force_size);
+        void (*FreeDebugData)(void);
+        int (*GetDebugData)(unsigned int *tick, unsigned int *size, void **buffer);
+        int (*suspendDebug)(int disable);
+        void (*resumeDebug)(void);
+        void (*ResetLogCount)(void);
+        uint32_t (*GetLogCount)(uint8_t level);
+        int (*LogMessage)(uint8_t level, char* buf, uint32_t size);
+        uint32_t (*GetLogMessage)(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec);
+    } PLCSyms;
+}
 class PLCObject : public BeremizPLCObjectService_interface
 {
     public:
@@ -91,8 +92,9 @@ class PLCObject : public BeremizPLCObjectService_interface
         // PLC status
         PLCstatus m_status;
 
-        // PLC ID
-        PSKID m_plcID;
+        // PSK
+        std::string m_PSK_ID;
+        std::string m_PSK_secret;
 
         // Debug token, used for consistency check of traces
         uint32_t m_debugToken;
@@ -111,6 +113,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t UnLoadPLC(void);
         uint32_t LogMessage(uint8_t level, std::string message);
         uint32_t PurgePLC(void);
+        void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
 };
 

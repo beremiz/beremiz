@@ -4,6 +4,7 @@
 #include <dlfcn.h>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "Logging.hpp"
 
@@ -26,10 +27,10 @@ PLCObject::PLCObject(void)
     m_status.PLCstatus = Empty;
     m_handle = NULL;
     m_debugToken = 0;
-    m_plcID.ID = "N/A"; // TODO
-    m_plcID.PSK = "N/A"; // TODO
     m_argc = 0;
     m_argv = NULL;
+    m_PSK_ID = "";
+    m_PSK_secret = "";
 }
 
 PLCObject::~PLCObject(void)
@@ -43,8 +44,15 @@ uint32_t PLCObject::AppendChunkToBlob(
     // Output new blob's md5 into newBlobID
     // Return 0 if success
 
-    auto nh = m_mapBlobIDToBlob.extract(std::vector<uint8_t>(
-        blobID->data, blobID->data + blobID->dataLength));
+    newBlobID->data = (uint8_t *)malloc(MD5::digestsize);
+    if (newBlobID->data == NULL)
+    {
+        return ENOMEM;
+    }
+
+    std::vector<uint8_t> k(blobID->data, blobID->data + blobID->dataLength);
+
+    auto nh = m_mapBlobIDToBlob.extract(k);
     if (nh.empty())
     {
         return ENOENT;
@@ -60,10 +68,13 @@ uint32_t PLCObject::AppendChunkToBlob(
 
     MD5::digest_t digest = blob->digest();
 
-    nh.key() = std::vector<uint8_t>(
-        (uint8_t)*digest.data, (uint8_t)*digest.data + MD5::digestsize);
+    std::vector<uint8_t> nk((uint8_t*)digest.data, (uint8_t*)digest.data + MD5::digestsize);
+    nh.key() = nk;
 
     m_mapBlobIDToBlob.insert(std::move(nh));
+
+    memcpy(newBlobID->data, digest.data, MD5::digestsize);
+    newBlobID->dataLength = MD5::digestsize;
 
     return 0;
 }
@@ -106,8 +117,25 @@ uint32_t PLCObject::GetLogMessage(
 
 uint32_t PLCObject::GetPLCID(PSKID *plcID)
 {
-    // Get PLC ID
-    *plcID = m_plcID;
+    // Get PSK ID
+    plcID->ID = (char *)malloc(m_PSK_ID.size() + 1);
+    if (plcID->ID == NULL)
+    {
+        return ENOMEM;
+    }
+    memcpy(plcID->ID, m_PSK_ID.c_str(), m_PSK_ID.size());
+    plcID->ID[m_PSK_ID.size()] = '\0';
+
+    // Get PSK secret
+    plcID->PSK = (char *)malloc(m_PSK_secret.size() + 1);
+    if (plcID->PSK == NULL)
+    {
+        free(plcID->ID);
+        return ENOMEM;
+    }
+    memcpy(plcID->PSK, m_PSK_secret.c_str(), m_PSK_secret.size());
+    plcID->PSK[m_PSK_secret.size()] = '\0';
+
     return 0;
 }
 
@@ -129,37 +157,47 @@ uint32_t PLCObject::GetTraceVariables(
     // Check if there are any traces
     m_tracesMutex.lock();
     size_t sz = m_traces.size();
-    if(sz == 0)
+    if(sz > 0)
     {
-        m_tracesMutex.unlock();
-        return ENOENT;
+        // Allocate memory for traces
+        traces->traces.elements = (trace_sample *)malloc(sz * sizeof(trace_sample));
+        if(traces->traces.elements == NULL)
+        {
+            m_tracesMutex.unlock();
+            return ENOMEM;
+        }
+        // Copy traces from vector
+        memcpy(traces->traces.elements, m_traces.data(), sz * sizeof(trace_sample));
+
+        // Clear the vector
+        // note that the data is not freed here, it is meant to be freed by eRPC server code
+        m_traces.clear();
     }
-
-    // Allocate memory for traces
-    traces->traces.elements = (trace_sample *)malloc(sz * sizeof(trace_sample));
-    if(traces->traces.elements == NULL)
-    {
-        m_tracesMutex.unlock();
-        return ENOMEM;
-    }
-    traces->traces.elementsCount = sz;
-
-    // Copy traces from vector
-    memcpy(traces->traces.elements, m_traces.data(), sz * sizeof(trace_sample));
-
-    // Clear the vector
-    // note that the data is not freed here, it is meant to be freed by eRPC server code
-    m_traces.clear();
     m_tracesMutex.unlock();
+
+    traces->traces.elementsCount = sz;
+    traces->PLCstatus = m_status.PLCstatus;
 
     return 0;
 }
 
 uint32_t PLCObject::MatchMD5(const char *MD5, bool *match)
 {
+    // an empty PLC is never considered to match
+    if(m_status.PLCstatus == Empty)
+    {
+        *match = false;
+        return 0;
+    }
+
     // Load the last transferred PLC md5 hex digest
     std::string md5sum;
-    std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
+    try {
+        std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
+    } catch (std::exception e) {
+        *match = false;
+        return 0;
+    }
 
     // Compare the given MD5 with the last transferred PLC md5
     *match = (md5sum == MD5);
@@ -208,11 +246,13 @@ uint32_t PLCObject::NewPLC(
 {
     if(m_status.PLCstatus == Started)
     {
+        *success = false;
         return EBUSY;
     }
 
     if(m_status.PLCstatus == Broken)
     {
+        *success = false;
         return EINVAL;
     }
 
@@ -246,37 +286,64 @@ uint32_t PLCObject::NewPLC(
         extra_files_log << extrafile->fname << std::endl;
     }
 
+    // Load the PLC object
+    uint32_t res = LoadPLC();
+    if (res != 0)
+    {
+        *success = false;
+        return res;
+    }
+
+    m_status.PLCstatus = Stopped;
+    *success = true;
+
     return 0;
 }
 
-#define DLSYM(sym)                                                      \
-    do                                                                  \
-    {                                                                   \
-        m_PLCSyms.sym = (decltype(m_PLCSyms.sym))dlsym(m_handle, #sym); \
-        if (m_PLCSyms.sym == NULL)                                      \
-        {                                                               \
-            return errno;                                               \
-        }                                                               \
+#define DLSYM(sym)                                                           \
+    do                                                                       \
+    {                                                                        \
+        m_PLCSyms.sym = (decltype(m_PLCSyms.sym))dlsym(m_handle, #sym);      \
+        if (m_PLCSyms.sym == NULL)                                           \
+        {                                                                    \
+            /* TODO: use log instead */                                      \
+            std::cout << "Error dlsym " #sym ": " << dlerror() << std::endl; \
+            return errno;                                                    \
+        }                                                                    \
     } while (0);
 
 uint32_t PLCObject::LoadPLC(void)
 {
     // Load the last transferred PLC md5 hex digest
     std::string md5sum;
-    std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
+    try {
+        std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
+    } catch (std::exception e) {
+        return ENOENT;
+    }
 
     // Concatenate md5sum and shared object extension to obtain filename
-    std::filesystem::path filename = std::filesystem::path(md5sum) += SHARED_OBJECT_EXT;
+    std::filesystem::path filename(md5sum + SHARED_OBJECT_EXT);
 
     // Load the shared object file
-    m_handle = dlopen(filename.c_str(), RTLD_NOW);
+    m_handle = dlopen(std::filesystem::absolute(filename).c_str(), RTLD_NOW);
     if (m_handle == NULL)
     {
+        std::cout << "Error: " << dlerror() << std::endl;
         return errno;
     }
 
     // Resolve shared object symbols
     FOR_EACH_PLC_SYMBOLS_DO(DLSYM);
+
+    // Set content of PLC_ID to md5sum
+    m_PLCSyms.PLC_ID = (uint8_t *)malloc(md5sum.size() + 1);
+    if (m_PLCSyms.PLC_ID == NULL)
+    {
+        return ENOMEM;
+    }
+    memcpy(m_PLCSyms.PLC_ID, md5sum.c_str(), md5sum.size());
+    m_PLCSyms.PLC_ID[md5sum.size()] = '\0';
 
     return 0;
 }
@@ -312,9 +379,8 @@ uint32_t PLCObject::PurgeBlobs(void)
     return 0;
 }
 
-uint32_t PLCObject::PurgePLC(void){
-    // Purge all blobs
-    PurgeBlobs();
+uint32_t PLCObject::PurgePLC(void)
+{
 
     // Open the extra files list
     std::ifstream extra_files_log(std::string(ExtraFilesList), std::ios::binary);
@@ -328,20 +394,24 @@ uint32_t PLCObject::PurgePLC(void){
 
     // Load the last transferred PLC md5 hex digest
     std::string md5sum;
-    std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
+    try {
+        std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
 
-    // Concatenate md5sum and shared object extension to obtain filename
-    std::filesystem::path filename =
-        std::filesystem::path(md5sum) += SHARED_OBJECT_EXT;
+        // Remove the PLC object shared object file
+        std::filesystem::remove(md5sum + SHARED_OBJECT_EXT);
+    } catch (std::exception e) {
+        // ignored
+    }
 
-    // Remove the PLC object shared object file
-    std::filesystem::remove(filename);
+    try {
+        // Remove the last transferred PLC md5 hex digest
+        std::filesystem::remove(std::string(LastTransferredPLC));
 
-    // Remove the last transferred PLC md5 hex digest
-    std::filesystem::remove(std::string(LastTransferredPLC));
-
-    // Remove the extra files list
-    std::filesystem::remove(std::string(ExtraFilesList));
+        // Remove the extra files list
+        std::filesystem::remove(std::string(ExtraFilesList));
+    } catch (std::exception e) {
+        // ignored
+    }
 
     return 0;
 }
@@ -388,7 +458,9 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
 
     MD5::digest_t digest = blob->digest();
 
-    m_mapBlobIDToBlob[std::vector<uint8_t>((uint8_t)*digest.data, (uint8_t)*digest.data + MD5::digestsize)] = blob;
+    std::vector<uint8_t> k((uint8_t*)digest.data, (uint8_t*)digest.data + MD5::digestsize);
+
+    m_mapBlobIDToBlob[k] = blob;
 
     blobID->data = (uint8_t *)malloc(MD5::digestsize);
     if (blobID->data == NULL)
@@ -400,10 +472,25 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
 
     return 0;
 }
+void PLCObject::PurgeTraceBuffer(void)
+{
+    // Free trace buffer
+    m_tracesMutex.lock();
+    for(trace_sample s : m_traces){
+        free(s.TraceBuffer.data);
+    }
+    m_traces.clear();
+    m_tracesMutex.unlock();
+}
 
 uint32_t PLCObject::SetTraceVariablesList(
     const list_trace_order_1_t *orders, int32_t *debugtoken)
 {
+    if(m_status.PLCstatus == Empty)
+    {
+        return EINVAL;
+    }
+
     // increment debug token
     m_debugToken++;
 
@@ -431,12 +518,15 @@ uint32_t PLCObject::SetTraceVariablesList(
             {
                 // if any error, disable debug
                 // since debug is already suspended, resume it first
-                m_PLCSyms.ResumeDebug();
+                m_PLCSyms.resumeDebug();
                 m_PLCSyms.suspendDebug(1);
                 *debugtoken = -res;
                 return EINVAL;
             }
         }
+
+        // old traces are not valid anymore
+        PurgeTraceBuffer();
 
         // Start debug thread if not already started
         if(!m_traceThread.joinable())
@@ -444,7 +534,7 @@ uint32_t PLCObject::SetTraceVariablesList(
             m_traceThread = std::thread(&PLCObject::TraceThreadProc, this);
         }
 
-        m_PLCSyms.ResumeDebug();
+        m_PLCSyms.resumeDebug();
         *debugtoken = m_debugToken;
         return 0;
     }
@@ -487,6 +577,13 @@ uint32_t PLCObject::StopPLC(bool *success)
 
 uint32_t PLCObject::LogMessage(uint8_t level, std::string message)
 {
+    // if PLC isn't loaded, log to stdout
+    if(m_PLCSyms.LogMessage == NULL)
+    {
+        std::cout << level << message << std::endl;
+        return ENOSYS;
+    }
+
     // Log std::string message with given level
     return m_PLCSyms.LogMessage(level, (char *)message.c_str(), message.size());
 }
@@ -495,7 +592,7 @@ void PLCObject::TraceThreadProc(void)
 {
     uint32_t err = 0;
 
-    m_PLCSyms.ResumeDebug();
+    m_PLCSyms.resumeDebug();
 
     while(m_status.PLCstatus == Started)
     {
@@ -537,13 +634,7 @@ void PLCObject::TraceThreadProc(void)
         }
     }
 
-    // Free trace buffer
-    m_tracesMutex.lock();
-    for(trace_sample s : m_traces){
-        free(s.TraceBuffer.data);
-    }
-    m_traces.clear();
-    m_tracesMutex.unlock();
+    PurgeTraceBuffer();
 
     LogMessage(err ? LOG_CRITICAL : LOG_INFO,
         err == ENOMEM ? "Out of memory in TraceThreadProc" : 
