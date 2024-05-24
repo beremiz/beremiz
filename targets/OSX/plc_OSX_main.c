@@ -69,7 +69,7 @@ void catch_signal(int sig)
     exit(0);
 }
 
-static unsigned long __debug_tick;
+static unsigned int __debug_tick;
 
 pthread_t PLC_thread;
 static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -165,9 +165,9 @@ int stopPLC()
     return 0;
 }
 
-extern unsigned long __tick;
+extern unsigned int __tick;
 
-int WaitDebugData(unsigned long *tick)
+int WaitDebugData(unsigned int *tick)
 {
     int res;
     if (PLC_shutdown)

@@ -146,7 +146,7 @@ int startPLC(int argc,char **argv)
     }
     return 0;
 }
-static unsigned long __debug_tick;
+static unsigned int __debug_tick;
 
 int TryEnterDebugSection(void)
 {
@@ -187,7 +187,7 @@ int stopPLC()
 }
 
 /* from plc_debugger.c */
-int WaitDebugData(unsigned long *tick)
+int WaitDebugData(unsigned int *tick)
 {
 	DWORD res;
 	res = WaitForSingleObject(debug_wait_sem, INFINITE);
