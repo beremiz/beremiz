@@ -98,6 +98,10 @@ class PLCObject(object):
         self.Traces = []
         self.DebugToken = 0
 
+        # Event to signal when PLC is stopped.
+        self.PlcStopped = Event()
+        self.PlcStopped.set()
+
         self._init_blobs()
 
     # First task of worker -> no @RunInMain
@@ -326,7 +330,7 @@ class PLCObject(object):
 
         return False
 
-    def PythonRuntimeCall(self, methodname, use_evaluator=True, reverse_order=False):
+    def PythonRuntimeCall(self, methodname, reverse_order=False):
         """
         Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
@@ -335,10 +339,7 @@ class PLCObject(object):
         if reverse_order:
             methods = reversed(methods)
         for method in methods:
-            if use_evaluator:
-                _res, exp = self.evaluator(method)
-            else:
-                _res, exp = default_evaluator(method)
+            _res, exp = default_evaluator(method)
             if exp is not None:
                 self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
@@ -402,7 +403,7 @@ class PLCObject(object):
             self.LogMessage(0, traceback.format_exc())
             raise
 
-        self.PythonRuntimeCall("init", use_evaluator=False)
+        self.PythonRuntimeCall("init")
 
         self.PythonThreadCondLock = Lock()
         self.PythonThreadCmdCond = Condition(self.PythonThreadCondLock)
@@ -417,7 +418,7 @@ class PLCObject(object):
         if self.python_runtime_vars is not None:
             self.PythonThreadCommand("Finish")
             self.PythonThread.join()
-            self.PythonRuntimeCall("cleanup", use_evaluator=False, reverse_order=True)
+            self.PythonRuntimeCall("cleanup", reverse_order=True)
 
         self.python_runtime_vars = None
 
@@ -470,6 +471,10 @@ class PLCObject(object):
                 self._PostStartPLC()
                 self.PythonThreadLoop()
                 self.PythonRuntimeCall("stop", reverse_order=True)
+                
+                # Signal that python runtime has stopped
+                self.PlcStopped.set()
+
             elif cmd == "Finish":
                 self.PythonThreadAcknowledge(cmd)
                 break
@@ -525,6 +530,11 @@ class PLCObject(object):
     @RunInMain
     def StartPLC(self):
 
+        # Prevent accidental call to StartPLC when already Started
+        if self.PLCStatus != PlcStatus.Stopped:
+            self.LogMessage(0,_("Problem starting PLC : PLC is not Stopped"))
+            return
+
         if self.PLClibraryHandle is None:
             if not self.LoadPLC():
                 self._fail(_("Problem starting PLC : can't load PLC"))
@@ -538,6 +548,7 @@ class PLCObject(object):
                 self.PLCStatus = PlcStatus.Started
                 self.StatusChange()
                 self.PythonThreadCommand("Start")
+                self.PlcStopped.clear()
             else:
                 self._fail(_("Problem starting PLC : error %d" % res))
 
@@ -546,13 +557,18 @@ class PLCObject(object):
         if self.PLCStatus == PlcStatus.Started:
             self.LogMessage("PLC stopped")
             self._stopPLC()
-            self.PLCStatus = PlcStatus.Stopped
-            self.StatusChange()
             if self.TraceThread is not None:
                 self.TraceThread.join()
                 self.TraceThread = None
-            return True
-        return False
+
+            # Wait for python runtime stop to complete
+            if self.PlcStopped.wait(timeout=5):
+                self.PLCStatus = PlcStatus.Stopped
+                self.StatusChange()
+            else:
+                self._fail(_("PLC timed out while stopping"))
+                
+        return self.PLCStatus == PlcStatus.Stopped
 
     def GetPLCstatus(self):
         try:
