@@ -71,6 +71,7 @@ static const char *k_optionsDefinition[] = { "?|help",
                                              "b:baudrate <baudrate>",
                                              "p:port <port>",
                                              "h:host <host>",
+                                             "a|autoload",
                                              NULL };
 
 /*! Help string. */
@@ -83,6 +84,7 @@ const char k_usageText[] =
   -b/--baudrate <baudrate>     Baud rate.\n\
   -p/--port <port>             Port name or port number.\n\
   -h/--host <host>             Host definition.\n\
+  -a/--autoload                Autoload.\n\
 \n\
 Available transports (use with -t option):\n\
   tcp      Tcp transport type (host, port number).\n\
@@ -127,6 +129,7 @@ protected:
     uint32_t m_baudrate;      /*!< Baudrate rate speed. */
     const char *m_port;       /*!< Name or number of port. Based on used transport. */
     const char *m_host;       /*!< Host name */
+    bool m_autoload = false;          /*!< Autoload flag. */
 
 public:
     /*!
@@ -236,6 +239,12 @@ public:
                 case 'h':
                 {
                     m_host = optarg;
+                    break;
+                }
+
+                case 'a':
+                {
+                    m_autoload = true;
                     break;
                 }
 
@@ -363,17 +372,21 @@ public:
             BasicCodecFactory _basicCodecFactory;
             SimpleServer _server;
 
-            BeremizPLCObjectService_service *svc;
-
             Log::info("Starting ERPC server...\n");
 
             _server.setMessageBufferFactory(&_msgFactory);
             _server.setTransport(_transport);
             _server.setCodecFactory(&_basicCodecFactory);
 
-            svc = new BeremizPLCObjectService_service(new PLCObject());
+            PLCObject plc_object = PLCObject();
+            BeremizPLCObjectService_service svc = BeremizPLCObjectService_service(&plc_object);
 
-            _server.addService(svc);
+            _server.addService(&svc);
+
+            if(m_autoload)
+            {
+                plc_object.AutoLoad();
+            }
 
             _server.run();
 

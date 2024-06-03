@@ -79,6 +79,26 @@ uint32_t PLCObject::AppendChunkToBlob(
     return 0;
 }
 
+uint32_t PLCObject::AutoLoad()
+{
+    // Load PLC object
+    uint32_t res = LoadPLC();
+    if (res != 0)
+    {
+        return res;
+    }
+
+    // Start PLC object
+    res = StartPLC();
+    if (res != 0)
+    {
+        return res;
+    }
+
+    return 0;
+}
+
+
 #define LOG_READ_BUFFER_SIZE 1 << 10 // 1KB
 
 uint32_t PLCObject::GetLogMessage(
