@@ -330,7 +330,7 @@ class PLCObject(object):
 
         return False
 
-    def PythonRuntimeCall(self, methodname, reverse_order=False):
+    def PythonRuntimeCall(self, methodname, use_evaluator=True, reverse_order=False):
         """
         Calls init, start, stop or cleanup method provided by
         runtime python files, loaded when new PLC uploaded
@@ -339,7 +339,10 @@ class PLCObject(object):
         if reverse_order:
             methods = reversed(methods)
         for method in methods:
-            _res, exp = default_evaluator(method)
+            if use_evaluator:
+                _res, exp = self.evaluator(method)
+            else:
+                _res, exp = default_evaluator(method)
             if exp is not None:
                 self.LogMessage(0, '\n'.join(traceback.format_exception(*exp)))
 
@@ -403,7 +406,7 @@ class PLCObject(object):
             self.LogMessage(0, traceback.format_exc())
             raise
 
-        self.PythonRuntimeCall("init")
+        self.PythonRuntimeCall("init", use_evaluator=False)
 
         self.PythonThreadCondLock = Lock()
         self.PythonThreadCmdCond = Condition(self.PythonThreadCondLock)
@@ -418,7 +421,7 @@ class PLCObject(object):
         if self.python_runtime_vars is not None:
             self.PythonThreadCommand("Finish")
             self.PythonThread.join()
-            self.PythonRuntimeCall("cleanup", reverse_order=True)
+            self.PythonRuntimeCall("cleanup", use_evaluator=False, reverse_order=True)
 
         self.python_runtime_vars = None
 
