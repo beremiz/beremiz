@@ -19,7 +19,7 @@
     {\
         char mstr[256];\
         snprintf(mstr, 255, text, ##__VA_ARGS__);\
-        LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
+        LogMessage(level, mstr, strlen(mstr));\
     }
 
 #define _LogError(text,...) _Log(LOG_CRITICAL, text, ##__VA_ARGS__)
