@@ -71,6 +71,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t SetTraceVariablesList(const list_trace_order_1_t * orders, int32_t * debugtoken);
         uint32_t StartPLC(void);
         uint32_t StopPLC(bool * success);
+        uint32_t AutoLoad();
 
     private:
         // A map of all the blobs

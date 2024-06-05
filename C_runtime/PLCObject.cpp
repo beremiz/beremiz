@@ -79,6 +79,26 @@ uint32_t PLCObject::AppendChunkToBlob(
     return 0;
 }
 
+uint32_t PLCObject::AutoLoad()
+{
+    // Load PLC object
+    uint32_t res = LoadPLC();
+    if (res != 0)
+    {
+        return res;
+    }
+
+    // Start PLC object
+    res = StartPLC();
+    if (res != 0)
+    {
+        return res;
+    }
+
+    return 0;
+}
+
+
 #define LOG_READ_BUFFER_SIZE 1 << 10 // 1KB
 
 uint32_t PLCObject::GetLogMessage(
@@ -89,24 +109,24 @@ uint32_t PLCObject::GetLogMessage(
     uint32_t tv_sec;
     uint32_t tv_nsec;
 
-    uint32_t resultLen = m_PLCSyms.GetLogMessage(
-        level, msgID, buf, LOG_READ_BUFFER_SIZE - 1,
-        &tick, &tv_sec, &tv_nsec);
-
-    if (resultLen == 0)
-    {
-        return ENOENT;
+    uint32_t resultLen;
+    if(m_status.PLCstatus == Empty){
+        resultLen = 0;
+    } else {
+        resultLen = m_PLCSyms.GetLogMessage(
+            level, msgID, buf, LOG_READ_BUFFER_SIZE - 1,
+            &tick, &tv_sec, &tv_nsec);
     }
 
     // Get log message with given msgID
-    message->msg = (char *)malloc(resultLen);
+    message->msg = (char *)malloc(resultLen + 1);
     if (message->msg == NULL)
     {
         return ENOMEM;
     }
     // Copy the log message into eRPC message
     memcpy(message->msg, buf, resultLen);
-    message->msg[resultLen + 1] = '\0';
+    message->msg[resultLen] = '\0';
 
     message->tick = tick;
     message->sec = tv_sec;
@@ -141,6 +161,16 @@ uint32_t PLCObject::GetPLCID(PSKID *plcID)
 
 uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
 {
+    if(m_status.PLCstatus == Empty){        
+        for(int lvl = 0; lvl < 4; lvl++){
+            m_status.logcounts[lvl] = 0;
+        }
+    } else {
+        // Get log counts
+        for(int lvl = 0; lvl < 4; lvl++){
+            m_status.logcounts[lvl] = m_PLCSyms.GetLogCount(lvl);
+        }
+    }
     // Get PLC status
     *status = m_status;
     return 0;

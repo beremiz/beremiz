@@ -24,7 +24,8 @@ jobs:
     - uses: actions/checkout@v3
       with:
           repository: open62541/open62541
-          ref: v1.3.6
+          # v1.3.7
+          ref: b8ac9e77f703e6ba5c012b886a8821037503daa6
           path: open62541
           submodules: recursive
 
@@ -34,6 +35,13 @@ jobs:
           ref: 4d7d67a8e911d744165709c20a254b5cb924ec71
           path: Modbus
 
+    - uses: actions/checkout@v3
+      with:
+          repository: EmbeddedRPC/erpc
+          # v1.12.0
+          ref: 85d3dd8656ccce4c2d929a69484fb8d88ec6c6c3
+          path: erpc
+              
     - name: Restore cached docker image
       id: cache-docker-restore
       uses: actions/cache/restore@v3
