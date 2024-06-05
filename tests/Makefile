@@ -71,7 +71,7 @@ build_dir = $(test_dir)/build
 # SOURCE and BUILD
 #
 
-BUILT_PROJECTS=beremiz matiec open62541 Modbus
+BUILT_PROJECTS=beremiz matiec open62541 Modbus erpc
 
 tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclude=.*.swp
 
@@ -109,8 +109,11 @@ $(build_dir)/Modbus/libmb.a: | $(build_dir)/Modbus/$(Modbus_checksum).sha1
 	cd $(build_dir)/Modbus && \
 	make
 
+$(build_dir)/beremiz/C_runtime/beremiz_runtime: | $(build_dir)/erpc/$(erpc_checksum).sha1
+	cd $(build_dir)/beremiz/C_runtime && \
+	make
 
-built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a $(build_dir)/Modbus/libmb.a
+built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a $(build_dir)/Modbus/libmb.a $(build_dir)/beremiz/C_runtime/beremiz_runtime
 	touch $@
 
 define log_command
