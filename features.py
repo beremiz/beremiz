@@ -15,6 +15,7 @@ libraries = [
     ('SVGHMI', 'svghmi.SVGHMILibrary', 'svghmi')]
 
 catalog = [
+    ('mqtt', _('MQTT client'), _('Map MQTT topics as located variables'), 'mqtt.MQTTClient'),
     ('opcua', _('OPC-UA client'), _('Map OPC-UA server as located variables'), 'opc_ua.OPCUAClient'),
     # FIXME ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),
     ('bacnet', _('Bacnet support'), _('Map located variables over Bacnet'), 'bacnet.bacnet.RootClass'),
