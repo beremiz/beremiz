@@ -50,6 +50,7 @@ class MQTTClient(object):
             </xsd:element>
           </xsd:sequence>
           <xsd:attribute name="Broker_URI" type="xsd:string" use="optional" default="ws://localhost:1883"/>
+          <xsd:attribute name="Client_ID" type="xsd:string" use="optional" default=""/>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
@@ -79,7 +80,7 @@ class MQTTClient(object):
             return attr["value"]
 
         AuthType = cfg("AuthType")
-        res = dict(URI=cfg("Broker_URI"), AuthType=AuthType)
+        res = dict(URI=cfg("Broker_URI"), AuthType=AuthType, clientID=cfg("Client_ID"))
 
         paramList = authParams.get(AuthType, None)
         if paramList:
