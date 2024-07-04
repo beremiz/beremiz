@@ -38,6 +38,18 @@ from util.ProcessLogger import ProcessLogger
 includes_re = re.compile(r'\s*#include\s*["<]([^">]*)[">].*')
 
 
+def compute_file_md5(filetocheck):
+    hasher = hashlib.md5()
+    with open(filetocheck, 'rb') as afile:
+        while True:
+            buf = afile.read(65536)
+            if len(buf) > 0:
+                hasher.update(buf)
+            else:
+                break
+    return hasher.hexdigest()
+
+
 class toolchain_gcc(object):
     """
     This abstract class contains GCC specific code.
@@ -136,9 +148,9 @@ class toolchain_gcc(object):
         # Get latest computed hash and deps
         oldhash, deps = self.srcmd5.get(bn, (None, []))
         # read source
-        src = open(os.path.join(self.buildpath, bn)).read()
+        src = os.path.join(self.buildpath, bn)
         # compute new hash
-        newhash = hashlib.md5(src.encode()).hexdigest()
+        newhash = compute_file_md5(src)
         # compare
         match = (oldhash == newhash)
         if not match:
@@ -256,7 +268,7 @@ class toolchain_gcc(object):
             self.CTRInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.bin + "\n")
 
         # Calculate md5 key and get data for the new created PLC
-        self.md5key = hashlib.md5(open(self.bin_path, "rb").read()).hexdigest()
+        self.md5key = compute_file_md5(self.bin_path)
 
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")
