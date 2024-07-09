@@ -10,9 +10,15 @@ from .mqtt_client_gen import MQTTClientPanel, MQTTClientModel, MQTT_IEC_types, a
 
 import util.paths as paths
 
-PahoMqttCPath = paths.ThirdPartyPath("MQTT")
-PahoMqttCLibraryPath = PahoMqttCPath 
-PahoMqttCIncludePaths = [PahoMqttCPath]
+
+# assumes that "build" directory was created in paho.mqtt.c source directory,
+# and cmake build was invoked from this directory
+PahoMqttCLibraryPath = paths.ThirdPartyPath("paho.mqtt.c", "build", "src")
+
+PahoMqttCIncludePaths = [
+    paths.ThirdPartyPath("paho.mqtt.c", "build"),  # VersionInfo.h
+    paths.ThirdPartyPath("paho.mqtt.c", "src")
+]
 
 class MQTTClientEditor(ConfTreeNodeEditor):
     CONFNODEEDITOR_TABS = [
@@ -107,7 +113,10 @@ class MQTTClient(object):
         locstr = "_".join(map(str, current_location))
         c_path = os.path.join(buildpath, "mqtt_client__%s.c" % locstr)
 
-        c_code = '#include "beremiz.h"\n'
+        c_code = """
+#include "iec_types_all.h"
+#include "beremiz.h"
+"""
         c_code += self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
 
         with open(c_path, 'w') as c_file:
