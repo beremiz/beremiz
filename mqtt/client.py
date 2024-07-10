@@ -122,7 +122,7 @@ class MQTTClient(object):
         with open(c_path, 'w') as c_file:
             c_file.write(c_code)
 
-        LDFLAGS = [' "' + os.path.join(PahoMqttCLibraryPath, "libpaho-mqtt3as.a") + '"', '-lcrypto']
+        LDFLAGS = [' "' + os.path.join(PahoMqttCLibraryPath, "libpaho-mqtt3cs.a") + '"', '-lssl', '-lcrypto']
 
         CFLAGS = ' '.join(['-I"' + path + '"' for path in PahoMqttCIncludePaths])
 
