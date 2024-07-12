@@ -55,6 +55,7 @@ class MQTTClient(object):
               </xsd:complexType>
             </xsd:element>
           </xsd:sequence>
+          <xsd:attribute name="Use_MQTT_5" type="xsd:boolean" use="optional" default="true"/>
           <xsd:attribute name="Broker_URI" type="xsd:string" use="optional" default="ws://localhost:1883"/>
           <xsd:attribute name="Client_ID" type="xsd:string" use="optional" default=""/>
         </xsd:complexType>
@@ -86,7 +87,11 @@ class MQTTClient(object):
             return attr["value"]
 
         AuthType = cfg("AuthType")
-        res = dict(URI=cfg("Broker_URI"), AuthType=AuthType, clientID=cfg("Client_ID"))
+        res = dict(
+            URI=cfg("Broker_URI"),
+            AuthType=AuthType,
+            clientID=cfg("Client_ID"),
+            UseMQTT5=cfg("Use_MQTT_5"))
 
         paramList = authParams.get(AuthType, None)
         if paramList:
