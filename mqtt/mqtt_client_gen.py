@@ -40,10 +40,10 @@ def boolean(v):
     else:
         return bool(v)
 
-lstcolnames  = [ "Topic",  "QoS",  "Retain", "Type", "Location"]
-lstcolwidths = [     100,     50,       100,    100,         50]
-lstcoltypess = [     str,    int,   boolean,    str,        int]
-lstcoldeflts = [ "a/b/c",    "1",     False, "DINT",        "0"]
+lstcolnames  = [ "Topic",  "QoS",  "Retained", "Type", "Location"]
+lstcolwidths = [     100,     50,         100,    100,         50]
+lstcoltypess = [     str,    int,     boolean,    str,        int]
+lstcoldeflts = [ "a/b/c",    "1",       False, "DINT",        "0"]
 Location_column = lstcolnames.index("Location")
 
 directions = ["input", "output"]
@@ -440,23 +440,51 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
 	conn_opts.password = Password;
 
 #ifdef USE_MQTT_5
-#define MY_SUBSCRIBE(Topic, QoS)                                                                  \\
+#define _SUBSCRIBE(Topic, QoS)                                                                  \\
         MQTTResponse response = MQTTClient_subscribe5(client, #Topic, QoS, NULL, NULL);           \\
         rc = response.reasonCode;                                                                 \\
         MQTTResponse_free(response);
 #else
-#define MY_SUBSCRIBE(Topic, QoS)                                                                  \\
+#define _SUBSCRIBE(Topic, QoS)                                                                  \\
         rc = MQTTClient_subscribe(client, #Topic, QoS);
 #endif
 
 #define INIT_SUBSCRIPTION(Topic, QoS)                                                             \\
     {{                                                                                            \\
-        MY_SUBSCRIBE(Topic, QoS)                                                                  \\
+        int rc;                                                                                   \\
+        _SUBSCRIBE(Topic, QoS)                                                                  \\
         if (rc != MQTTCLIENT_SUCCESS)                                                             \\
         {{                                                                                        \\
             LogError("MQTT client failed to subscribe to '%s', return code %d\\n", #Topic, rc);   \\
         }}                                                                                        \\
     }}
+
+
+
+
+
+#ifdef USE_MQTT_5
+#define _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \\
+        MQTTResponse response = MQTTClient_publish5(client, #Topic, sizeof(C_type),               \\
+            &PLC_##c_loc_name##_buf, QoS, Retained, NULL, NULL);                                  \\
+        rc = response.reasonCode;                                                                 \\
+        MQTTResponse_free(response);
+#else
+#define _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \\
+        rc = MQTTClient_publish(client, #Topic, sizeof(C_type),                                   \\
+            &PLC_##c_loc_name##_buf, QoS, Retained, NULL);
+#endif
+
+#define INIT_PUBLICATION(Topic, QoS, C_type, c_loc_name, Retained)                                \\
+    {{                                                                                            \\
+        int rc;                                                                                   \\
+        _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \\
+        if (rc != MQTTCLIENT_SUCCESS)                                                             \\
+        {{                                                                                        \\
+            LogError("MQTT client failed to subscribe to '%s', return code %d\\n", #Topic, rc);   \\
+        }}                                                                                        \\
+    }}
+
 
 int __init_{locstr}(int argc,char **argv)
 {{
@@ -564,7 +592,8 @@ void __publish_{locstr}(void)
         for direction, data in self.items():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
-                Topic, QoS, Retain, iec_type, iec_number = row
+                Topic, QoS, _Retained, iec_type, iec_number = row
+                Retained = 1 if _Retained=="True" else 0
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = iec_direction_prefix + iec_size_prefix + locstr + "_" + str(iec_number)
 
@@ -581,8 +610,8 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
     READ_VALUE({c_loc_name}, {C_type})""".format(**locals())
 
                 if direction == "output":
-                    # TODO: publish at init
-                    # formatdict["init"] += " NOTHING ! publish doesn't need init. "
+                    formatdict["init"] += """
+    INIT_PUBLICATION({Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
                     formatdict["publish"] += """
     WRITE_VALUE({c_loc_name}, {C_type})""".format(**locals())
 
