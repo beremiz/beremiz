@@ -40,11 +40,27 @@ def boolean(v):
     else:
         return bool(v)
 
-lstcolnames  = [ "Topic",  "QoS",  "Retained", "Type", "Location"]
-lstcolwidths = [     100,     50,         100,    100,         50]
-lstcoltypess = [     str,    int,     boolean,    str,        int]
-lstcoldeflts = [ "a/b/c",    "1",       False, "DINT",        "0"]
-Location_column = lstcolnames.index("Location")
+_lstcolnames  = [ "Topic",  "QoS",  "Retained", "Type", "Location"]
+_lstcolwidths = [     100,     50,         100,    100,         50]
+_lstcoltypess = [     str,    int,     boolean,    str,        int]
+_lstcoldeflts = [ "a/b/c",    "1",       False, "DINT",        "0"]
+
+subsublist = lambda l : l[0:2] + l[3:5]
+
+lstcoldsc = {
+    "input" : type("",(),dict(
+        lstcolnames  = subsublist(_lstcolnames),
+        lstcolwidths = subsublist(_lstcolwidths),
+        lstcoltypess = subsublist(_lstcoltypess),
+        lstcoldeflts = subsublist(_lstcoldeflts),
+        Location_column = 3)),
+    "output" : type("",(),dict(
+        lstcolnames  = _lstcolnames,
+        lstcolwidths = _lstcolwidths,
+        lstcoltypess = _lstcoltypess,
+        lstcoldeflts = _lstcoldeflts,
+        Location_column = 4)),
+}
 
 directions = ["input", "output"]
 
@@ -57,10 +73,11 @@ authParams = {
         ("Password", None)]}
 
 class MQTTTopicListModel(dv.PyDataViewIndexListModel):
-    def __init__(self, data, log):
+    def __init__(self, data, log, direction):
         dv.PyDataViewIndexListModel.__init__(self, len(data))
         self.data = data
         self.log = log
+        self.dsc = lstcoldsc[direction]
 
     def GetColumnType(self, col):
         return "string"
@@ -70,7 +87,7 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
 
     # This method is called when the user edits a data item in the view.
     def SetValueByRow(self, value, row, col):
-        expectedtype = lstcoltypess[col]
+        expectedtype = self.dsc.lstcoltypess[col]
 
         try:
             v = expectedtype(value)
@@ -78,7 +95,7 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
             self.log("String {} is invalid for type {}\n".format(value,expectedtype.__name__))
             return False
 
-        if col == lstcolnames.index("QoS") and v not in QoS_values:
+        if col == self.dsc.lstcolnames.index("QoS") and v not in QoS_values:
             self.log("{} is invalid for IdType\n".format(value))
             return False
 
@@ -87,7 +104,7 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
 
     # Report how many columns this model provides data for.
     def GetColumnCount(self):
-        return len(lstcolnames)
+        return len(self.dsc.lstcolnames)
 
     # Report the number of rows in the model
     def GetCount(self):
@@ -97,7 +114,7 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
     # Called to check if non-standard attributes should be used in the
     # cell at (row, col)
     def GetAttrByRow(self, row, col, attr):
-        if col == Location_column:
+        if col == self.dsc.Location_column:
             attr.SetColour('blue')
             attr.SetBold(True)
             return True
@@ -122,7 +139,7 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
             self.RowAppended()
 
     def InsertDefaultRow(self, row):
-        self.data.insert(row, lstcoldeflts[:])
+        self.data.insert(row, self.dsc.lstcoldeflts[:])
         # notify views
         self.RowInserted(row)
     
@@ -146,7 +163,8 @@ class MQTTTopicListPanel(wx.Panel):
 
         self.dvc.AssociateModel(self.model)
 
-        for idx,(colname,width) in enumerate(zip(lstcolnames,lstcolwidths)):
+        dsc = lstcoldsc[direction]
+        for idx,(colname,width) in enumerate(zip(dsc.lstcolnames,dsc.lstcolwidths)):
             self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
 
 
@@ -196,7 +214,8 @@ class MQTTClientPanel(wx.Panel):
         self.selected_splitter = wx.SplitterWindow(self, style=wx.SUNKEN_BORDER | wx.SP_3D)
 
         self.selected_datas = modeldata
-        self.selected_models = { direction:MQTTTopicListModel(self.selected_datas[direction], log) for direction in directions }
+        self.selected_models = { direction:MQTTTopicListModel(
+            self.selected_datas[direction], log, direction) for direction in directions }
         self.selected_lists = { direction:MQTTTopicListPanel(
                 self.selected_splitter, log, 
                 self.selected_models[direction], direction) 
@@ -221,19 +240,20 @@ class MQTTClientPanel(wx.Panel):
         
 
 class MQTTClientList(list):
-    def __init__(self, log, change_callback):
+    def __init__(self, log, change_callback, direction):
         super(MQTTClientList, self).__init__(self)
         self.log = log
         self.change_callback = change_callback
+        self.dsc = lstcoldsc[direction]
 
     def append(self, value):
-        v = dict(list(zip(lstcolnames, value)))
+        v = dict(list(zip(self.dsc.lstcolnames, value)))
 
         if type(v["Location"]) != int:
             if len(self) == 0:
                 v["Location"] = 0
             else:
-                iecnums = set(zip(*self)[Location_column])
+                iecnums = set(zip(*self)[self.dsc.Location_column])
                 greatest = max(iecnums)
                 holes = set(range(greatest)) - iecnums
                 v["Location"] = min(holes) if holes else greatest+1
@@ -243,17 +263,17 @@ class MQTTClientList(list):
             return False
 
         try:
-            for t,n in zip(lstcoltypess, lstcolnames):
+            for t,n in zip(self.dsc.lstcoltypess, self.dsc.lstcolnames):
                 v[n] = t(v[n]) 
         except ValueError: 
             self.log("MQTT topic {} (Location={}) has invalid type\n".format(v["Topic"],v["Location"]))
             return False
 
-        if len(self)>0 and v["Topic"] in list(zip(*self))[lstcolnames.index("Topic")]:
+        if len(self)>0 and v["Topic"] in list(zip(*self))[self.dsc.lstcolnames.index("Topic")]:
             self.log("MQTT topic {} (Location={}) already in the list\n".format(v["Topic"],v["Location"]))
             return False
 
-        list.append(self, [v[n] for n in lstcolnames])
+        list.append(self, [v[n] for n in self.dsc.lstcolnames])
 
         self.change_callback()
 
@@ -267,7 +287,7 @@ class MQTTClientModel(dict):
     def __init__(self, log, change_callback = lambda : None):
         super(MQTTClientModel, self).__init__()
         for direction in directions:
-            self[direction] = MQTTClientList(log, change_callback)
+            self[direction] = MQTTClientList(log, change_callback, direction)
 
     def LoadCSV(self,path):
         with open(path, 'r') as csvfile:
@@ -592,8 +612,11 @@ void __publish_{locstr}(void)
         for direction, data in self.items():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
-                Topic, QoS, _Retained, iec_type, iec_number = row
-                Retained = 1 if _Retained=="True" else 0
+                if direction == "input":
+                    Topic, QoS, iec_type, iec_number = row
+                else:
+                    Topic, QoS, _Retained, iec_type, iec_number = row
+                    Retained = 1 if _Retained=="True" else 0
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = iec_direction_prefix + iec_size_prefix + locstr + "_" + str(iec_number)
 
@@ -609,7 +632,7 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
                     formatdict["retrieve"] += """
     READ_VALUE({c_loc_name}, {C_type})""".format(**locals())
 
-                if direction == "output":
+                else:
                     formatdict["init"] += """
     INIT_PUBLICATION({Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
                     formatdict["publish"] += """
