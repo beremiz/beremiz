@@ -199,34 +199,24 @@ class MQTTTopicListPanel(wx.Panel):
         self.model.DeleteRows(rows)
 
 
-class MQTTClientPanel(wx.Panel):
+class MQTTClientPanel(wx.SplitterWindow):
     def __init__(self, parent, modeldata, log, config_getter):
         self.log = log
-        wx.Panel.__init__(self, parent)
-
-        # TODO replace FlexGridSizer with a simpler one
-        self.inout_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
-        self.inout_sizer.AddGrowableCol(0)
-        self.inout_sizer.AddGrowableRow(0)
+        wx.SplitterWindow.__init__(self, parent, style=wx.SUNKEN_BORDER | wx.SP_3D)
 
         self.config_getter = config_getter
-
-        self.selected_splitter = wx.SplitterWindow(self, style=wx.SUNKEN_BORDER | wx.SP_3D)
 
         self.selected_datas = modeldata
         self.selected_models = { direction:MQTTTopicListModel(
             self.selected_datas[direction], log, direction) for direction in directions }
         self.selected_lists = { direction:MQTTTopicListPanel(
-                self.selected_splitter, log, 
+                self, log, 
                 self.selected_models[direction], direction) 
             for direction in directions }
 
-        self.selected_splitter.SplitHorizontally(*[self.selected_lists[direction] for direction in directions]+[300])
+        self.SplitHorizontally(*[self.selected_lists[direction] for direction in directions]+[300])
 
-        self.inout_sizer.Add(self.selected_splitter, flag=wx.GROW)
-        self.inout_sizer.Layout()
         self.SetAutoLayout(True)
-        self.SetSizer(self.inout_sizer)
 
     def OnClose(self):
         pass
