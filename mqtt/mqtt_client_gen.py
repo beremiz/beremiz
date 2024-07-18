@@ -393,7 +393,14 @@ void __cleanup_{locstr}(void)
 {{
     int rc;
 
-    /* TODO stop publish thread */
+    /* stop publish thread */
+    MQTT_stop_thread = 1;
+    if (pthread_mutex_trylock(&MQTT_mutex) == 0){{
+        /* unblock publish thread so that it can stop normally */
+        pthread_cond_signal(&MQTT_new_data);
+        pthread_mutex_unlock(&MQTT_mutex);
+    }}
+    pthread_join(publishThread, NULL);
 
 #ifdef USE_MQTT_5
     if (rc = MQTTClient_disconnect5(client, 5000, MQTTREASONCODE_SUCCESS, NULL) != MQTTCLIENT_SUCCESS)
@@ -539,6 +546,8 @@ static void *__publish_thread(void *_unused) {{
         }}
 
         pthread_mutex_unlock(&MQTT_mutex);
+
+        if(MQTT_stop_thread) break;
     }}
 
     if(!MQTT_stop_thread){{
