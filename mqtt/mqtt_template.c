@@ -233,11 +233,20 @@ static void *__publish_thread(void *_unused) {{
     int rc = 0;
     while((rc = pthread_mutex_lock(&MQTT_mutex)) == 0 && !MQTT_stop_thread){{
         pthread_cond_wait(&MQTT_new_data, &MQTT_mutex);
-        if(MQTT_any_pub_var_changed && MQTTClient_isConnected(client)){{
+        {{
+            int is_connected = MQTTClient_isConnected(client);
+            if(MQTT_any_pub_var_changed && is_connected){{
 
             /* publish changes, and reset variable's state to UNCHANGED */
 {publish_changes}
-            MQTT_any_pub_var_changed = 0;
+                MQTT_any_pub_var_changed = 0;
+            }} else if(!is_connected){{
+                rc = _connect_mqtt();
+                if (rc != MQTTCLIENT_SUCCESS) {{
+                    LogError("MQTT Reconnect Failed, return code %d\n", rc);
+                    sleep(5);
+                }}
+            }}
         }}
 
         pthread_mutex_unlock(&MQTT_mutex);
