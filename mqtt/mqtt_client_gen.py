@@ -101,7 +101,9 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
             self.log("{} is invalid for IdType\n".format(value))
             return False
 
-        self.data[row][col] = v
+        line = self.data[row]
+        line[col] = v
+        self.data[row] = line
         return True
 
     # Report how many columns this model provides data for.
@@ -238,7 +240,7 @@ class MQTTClientList(list):
         self.change_callback = change_callback
         self.dsc = lstcoldsc[direction]
 
-    def append(self, value):
+    def _filter_line(self, value):
         v = dict(list(zip(self.dsc.lstcolnames, value)))
 
         if type(v["Location"]) != int:
@@ -250,30 +252,47 @@ class MQTTClientList(list):
                 holes = set(range(greatest)) - iecnums
                 v["Location"] = min(holes) if holes else greatest+1
 
-        if v["QoS"] not in QoS_values:
-            self.log("Unknown QoS\n".format(value))
-            return False
-
         try:
             for t,n in zip(self.dsc.lstcoltypess, self.dsc.lstcolnames):
                 v[n] = t(v[n]) 
         except ValueError: 
             self.log("MQTT topic {} (Location={}) has invalid type\n".format(v["Topic"],v["Location"]))
-            return False
+            return None
+
+        if v["QoS"] not in QoS_values:
+            self.log("Unknown QoS\n".format(value))
+            return None
 
         if len(self)>0 and v["Topic"] in list(zip(*self))[self.dsc.lstcolnames.index("Topic")]:
             self.log("MQTT topic {} (Location={}) already in the list\n".format(v["Topic"],v["Location"]))
-            return False
+            return None
 
-        list.append(self, [v[n] for n in self.dsc.lstcolnames])
+        return [v[n] for n in self.dsc.lstcolnames]
 
+    def insert(self, row, value):
+        v = self._filter_line(value)
+        if v is not None:
+            list.insert(self, row, v)
+            self.change_callback()
+            return True
+        return False
+
+    def append(self, value):
+        v = self._filter_line(value)
+        if v is not None:
+            list.append(self, v)
+            self.change_callback()
+            return True
+        return False
+
+    def __setitem__(self, index, value):
+        list.__setitem__(self, index, value)
         self.change_callback()
-
-        return True
 
     def __delitem__(self, index):
         list.__delitem__(self, index)
         self.change_callback()
+
 
 class MQTTClientModel(dict):
     def __init__(self, log, change_callback = lambda : None):
@@ -290,7 +309,11 @@ class MQTTClientModel(dict):
             for row in reader:
                 direction = row[0]
                 # avoids calling change callback when loading CSV
-                list.append(self[direction],row[1:])
+                l = self[direction]
+                v = l._filter_line(row[1:])
+                if v is not None:
+                    list.append(l,v)
+                # TODO be verbose in case of malformed CSV
 
     def SaveCSV(self,path):
         with open(path, 'w') as csvfile:
