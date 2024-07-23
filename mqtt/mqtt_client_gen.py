@@ -314,6 +314,7 @@ class MQTTClientModel(dict):
             topics          = "",
             cleanup         = "",
             init            = "",
+            init_pubsub     = "",
             retrieve        = "",
             publish         = "",
             publish_changes = ""
@@ -344,7 +345,7 @@ class MQTTClientModel(dict):
 
             formatdict["decl"] += """
 DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
-            formatdict["init"] += """
+            formatdict["init_pubsub"] += """
     INIT_PUBLICATION({Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
             formatdict["publish"] += """
         WRITE_VALUE({c_loc_name}, {C_type})""".format(**locals())
@@ -360,7 +361,7 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
 DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             formatdict["topics"] += """
     INIT_TOPIC({Topic}, {iec_type}, {c_loc_name})""".format(**locals())
-            formatdict["init"] += """
+            formatdict["init_pubsub"] += """
     INIT_SUBSCRIPTION({Topic}, {QoS})""".format(**locals())
             formatdict["retrieve"] += """
         READ_VALUE({c_loc_name}, {C_type})""".format(**locals())
