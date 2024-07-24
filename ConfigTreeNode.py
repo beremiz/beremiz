@@ -139,6 +139,7 @@ class ConfigTreeNode(object):
             if appframe is not None:
                 appframe.RefreshTitle()
                 appframe.RefreshPageTitles()
+                appframe.RefreshFileMenu()
 
     def ProjectTestModified(self):
         """
