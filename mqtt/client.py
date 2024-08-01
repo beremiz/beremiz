@@ -122,12 +122,20 @@ class MQTTClient(object):
 #include "iec_types_all.h"
 #include "beremiz.h"
 """
+        config = self.GetConfig()
         c_code += self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
 
         with open(c_path, 'w') as c_file:
             c_file.write(c_code)
 
-        LDFLAGS = [' "' + os.path.join(PahoMqttCLibraryPath, "libpaho-mqtt3cs.a") + '"', '-lssl', '-lcrypto']
+        if config["AuthType"] == "x509":
+            static_lib = "libpaho-mqtt3cs.a"
+            libs = ['-lssl', '-lcrypto']
+        else:
+            static_lib = "libpaho-mqtt3c.a"
+            libs = []
+
+        LDFLAGS = [' "' + os.path.join(PahoMqttCLibraryPath, static_lib) + '"'] + libs
 
         CFLAGS = ' '.join(['-I"' + path + '"' for path in PahoMqttCIncludePaths])
 
