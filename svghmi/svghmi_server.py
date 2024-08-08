@@ -174,7 +174,6 @@ class Watchdog(object):
         self.lock = RLock()
         self.initial_timeout = initial_timeout
         self.interval = interval
-        self.callback = callback
         with self.lock:
             self._start()
 
