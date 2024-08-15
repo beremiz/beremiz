@@ -643,10 +643,11 @@ class SVGHMI(object):
         svghmi_cmds = {}
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
+             args = shlex.split(given_command.format(**svghmi_options))
              svghmi_cmds[thing] = (
                 "Popen(" +
-                repr(shlex.split(given_command.format(**svghmi_options))) +
-                ")") if given_command else "None # no command given"
+                repr(args) +
+                ")") if args else "None # no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_%s_svghmi_.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')

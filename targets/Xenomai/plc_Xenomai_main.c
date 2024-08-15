@@ -17,6 +17,16 @@
 #include <alchemy/sem.h>
 #include <alchemy/pipe.h>
 
+#define _Log(level,text,...) \
+    {\
+        char mstr[256];\
+        snprintf(mstr, 255, text, ##__VA_ARGS__);\
+        LogMessage(level, mstr, strlen(mstr));\
+    }
+
+#define _LogError(text,...) _Log(LOG_CRITICAL, text, ##__VA_ARGS__)
+#define _LogWarning(text,...) _Log(LOG_WARNING, text, ##__VA_ARGS__)
+
 unsigned int PLC_state = 0;
 #define PLC_STATE_TASK_CREATED                 1
 #define PLC_STATE_DEBUG_PIPE_CREATED           2
@@ -94,13 +104,22 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 
 void PLC_task_proc(void *arg)
 {
+    unsigned long overruns = 0;
     PLC_SetTimer(common_ticktime__, common_ticktime__);
 
     while (!PLC_shutdown) {
         PLC_GetTime(&__CURRENT_TIME);
-        __run();
+        if(overruns == 0){
+            __run();
+        } else {
+            // in case of overrun, don't run PLC on next cycle, to prevent CPU hogging.
+            _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", overruns);
+            // rt_printf("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", overruns);
+            // increment tick count anyhow, so that task scheduling keeps consistent
+            __tick += overruns;
+        }
         if (PLC_shutdown) break;
-        rt_task_wait_period(NULL);
+        rt_task_wait_period(&overruns);
     }
     /* since xenomai 3 it is not enough to close()
        file descriptor to unblock read()... */
@@ -117,13 +136,6 @@ void PLC_task_proc(void *arg)
 }
 
 static unsigned long __debug_tick;
-
-#define _Log(text, err) \
-    {\
-        char mstr[256];\
-        snprintf(mstr, 255, text " for %s (%d)", name, err);\
-        LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
-    }
 
 void *create_RT_to_nRT_signal(char* name){
     int new_index = -1;
@@ -142,13 +154,13 @@ void *create_RT_to_nRT_signal(char* name){
 
     /* fail if none found */
     if(new_index == -1) {
-    	_Log("Maximum count of RT-PIPE reached while creating pipe", max_RT_to_nRT_signals);
+    	_LogError("Maximum count of RT-PIPE reached while creating pipe for %s (%d)", name, max_RT_to_nRT_signals);
         return NULL;
     }
 
     /* create rt pipe */
     if(ret = rt_pipe_create(&sig->pipe, name, new_index, PIPE_SIZE) < 0){
-    	_Log("Failed opening real-time end of RT-PIPE", ret);
+    	_LogError("Failed opening real-time end of RT-PIPE for %s (%d)", name, ret);
         return NULL;
     }
 
@@ -156,7 +168,7 @@ void *create_RT_to_nRT_signal(char* name){
     snprintf(pipe_dev, 63, "/dev/rtp%d", new_index);
     if((sig->pipe_fd = open(pipe_dev, O_RDWR)) == -1){
         rt_pipe_delete(&sig->pipe);
-    	_Log("Failed opening non-real-time end of RT-PIPE", errno);
+    	_LogError("Failed opening non-real-time end of RT-PIPE for %s (%d)", name, errno);
         return NULL;
     }
 
@@ -174,11 +186,11 @@ void delete_RT_to_nRT_signal(void* handle){
     if(!sig->used) return;
 
     if(ret = rt_pipe_delete(&sig->pipe) != 0){
-    	_Log("Failed closing real-time end of RT-PIPE", ret);
+    	_LogError("Failed closing real-time end of RT-PIPE for %s (%d)", name, ret);
     }
 
     if(close(sig->pipe_fd) != 0){
-    	_Log("Failed closing non-real-time end of RT-PIPE", errno);
+    	_LogError("Failed closing non-real-time end of RT-PIPE for %s (%d)", name, errno);
     }
 
     sig->used = 0;
