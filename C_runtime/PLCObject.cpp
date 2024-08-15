@@ -344,6 +344,9 @@ uint32_t PLCObject::NewPLC(
 
 uint32_t PLCObject::LoadPLC(void)
 {
+
+    // TODO use PLCLibMutex
+
     // Load the last transferred PLC md5 hex digest
     std::string md5sum;
     try {
