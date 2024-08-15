@@ -71,7 +71,6 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t SetTraceVariablesList(const list_trace_order_1_t * orders, int32_t * debugtoken);
         uint32_t StartPLC(void);
         uint32_t StopPLC(bool * success);
-        uint32_t AutoLoad();
 
     private:
         // A map of all the blobs
@@ -109,6 +108,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         // Trace double buffer
         std::vector<trace_sample> m_traces;
 
+        uint32_t AutoLoad();
         uint32_t BlobAsFile(const binary_t * BlobID, std::filesystem::path filename);
         uint32_t LoadPLC(void);
         uint32_t UnLoadPLC(void);
