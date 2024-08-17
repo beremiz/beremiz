@@ -148,7 +148,7 @@ class ActionBlockDialog(wx.Dialog):
         self.ActionsGrid = CustomGrid(self, size=wx.Size(-1, 250), style=wx.VSCROLL)
         self.ActionsGrid.DisableDragGridSize()
         self.ActionsGrid.EnableScrolling(False, True)
-        self.ActionsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING,
+        self.ActionsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                               self.OnActionsGridCellChange)
         main_sizer.Add(self.ActionsGrid, border=20,
                             flag=wx.GROW | wx.LEFT | wx.RIGHT)
