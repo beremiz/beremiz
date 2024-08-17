@@ -828,7 +828,7 @@ class ObjectEditor(wx.Panel):
         # use only to enable drag'n'drop
         # self.VariablesGrid.SetDropTarget(VariableDropTarget(self))
         self.VariablesGrid.Bind(
-            wx.grid.EVT_GRID_CELL_CHANGING,     self.OnVariablesGridCellChange)
+            wx.grid.EVT_GRID_CELL_CHANGED,     self.OnVariablesGridCellChange)
         # self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
         # self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,    self.OnVariablesGridEditorShown)
         self.MainSizer.Add(self.VariablesGrid, flag=wx.GROW)
