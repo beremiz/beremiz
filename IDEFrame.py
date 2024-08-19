@@ -1116,7 +1116,7 @@ class IDEFrame(wx.Frame):
             printout2 = GraphicPrintout(window, page_size, margins, True)
             preview = wx.PrintPreview(printout, printout2, data)
 
-            if preview.Ok():
+            if preview.IsOk():
                 preview_frame = wx.PreviewFrame(preview, self, _("Print preview"), style=wx.DEFAULT_FRAME_STYLE | wx.FRAME_FLOAT_ON_PARENT)
 
                 preview_frame.Initialize()
@@ -2599,7 +2599,7 @@ class GraphicPrintout(wx.Printout):
         self.PageSize = page_size
         if self.PageSize[0] == 0 or self.PageSize[1] == 0:
             self.PageSize = (1050, 1485)
-        self.Preview = preview
+        self.IsPreview = lambda *_x : preview
         self.Margins = margins
         self.FontSize = 5
         self.TextMargin = 3
@@ -2620,9 +2620,9 @@ class GraphicPrintout(wx.Printout):
 
     def OnBeginDocument(self, startPage, endPage):
         dc = self.GetDC()
-        if not self.Preview and isinstance(dc, wx.PostScriptDC):
+        if not self.IsPreview() and isinstance(dc, wx.PostScriptDC):
             dc.SetResolution(720)
-        super(GraphicPrintout, self).OnBeginDocument(startPage, endPage)
+        return super(GraphicPrintout, self).OnBeginDocument(startPage, endPage)
 
     def OnPrintPage(self, page):
         dc = self.GetDC()
@@ -2630,21 +2630,21 @@ class GraphicPrintout(wx.Printout):
         dc.Clear()
         dc.SetUserScale(1.0, 1.0)
         dc.SetDeviceOrigin(0, 0)
-        dc.printing = not self.Preview
+        dc.printing = not self.IsPreview()
 
         # Get the size of the DC in pixels
         ppiPrinterX, ppiPrinterY = self.GetPPIPrinter()
         pw, ph = self.GetPageSizePixels()
-        dw, dh = dc.GetSizeTuple()
+        dw, dh = dc.GetSize().Get()
         Xscale = (dw * ppiPrinterX) / (pw * 25.4)
         Yscale = (dh * ppiPrinterY) / (ph * 25.4)
 
-        fontsize = self.FontSize * Yscale
+        fontsize = round(self.FontSize * Yscale)
 
-        margin_left = self.Margins[0].x * Xscale
-        margin_top = self.Margins[0].y * Yscale
-        area_width = dw - self.Margins[1].x * Xscale - margin_left
-        area_height = dh - self.Margins[1].y * Yscale - margin_top
+        margin_left = round(self.Margins[0].x * Xscale)
+        margin_top = round(self.Margins[0].y * Yscale)
+        area_width = dw - round(self.Margins[1].x * Xscale) - margin_left
+        area_height = dh - round(self.Margins[1].y * Yscale) - margin_top
 
         dc.SetPen(MiterPen(wx.BLACK))
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
@@ -2667,7 +2667,7 @@ class GraphicPrintout(wx.Printout):
 
         # Set the scale and origin
         dc.SetDeviceOrigin(-posX + margin_left, -posY + margin_top)
-        dc.SetClippingRegion(posX, posY, self.PageSize[0] * scale, self.PageSize[1] * scale)
+        dc.SetClippingRegion(posX, posY, round(self.PageSize[0] * scale), round(self.PageSize[1] * scale))
         dc.SetUserScale(scale, scale)
 
         self.Viewer.DoDrawing(dc, True)
