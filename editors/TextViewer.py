@@ -877,12 +877,14 @@ class TextViewer(EditorPanel):
             lineText = self.Editor.GetTextRange(start_pos, end_pos).replace("\t", " ")
 
             # Code completion
-            if key == wx.WXK_SPACE and event.ControlDown():
+            if key == wx.WXK_SPACE and event.RawControlDown():
 
                 words = lineText.split(" ")
                 words = [word for i, word in enumerate(words) if word != '' or i == len(words) - 1]
 
                 kw = []
+
+                self.RefreshVariableTree()
 
                 if self.TextSyntax == "IL":
                     if len(words) == 1:
@@ -898,13 +900,17 @@ class TextViewer(EditorPanel):
                     kw = self.Keywords + list(self.Variables.keys()) + list(self.Functions.keys())
                 if len(kw) > 0:
                     if len(words[-1]) > 0:
-                        kw = [keyword for keyword in kw if keyword.startswith(words[-1])]
+                        kw = [keyword for keyword in kw if keyword.startswith(words[-1].upper())]
+                if len(kw) > 0:
                     kw.sort()
                     self.Editor.AutoCompSetIgnoreCase(True)
                     self.Editor.AutoCompShow(len(words[-1]), " ".join(kw))
                 key_handled = True
             elif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER:
-                if self.TextSyntax in ["ST", "ALL"]:
+                if self.Editor.AutoCompActive():
+                    self.Editor.AutoCompComplete()
+                    key_handled = True
+                elif self.TextSyntax in ["ST", "ALL"]:
                     indent = self.Editor.GetLineIndentation(line)
                     if LineStartswith(lineText.strip(), self.BlockStartKeywords):
                         indent = (indent // 2 + 1) * 2
