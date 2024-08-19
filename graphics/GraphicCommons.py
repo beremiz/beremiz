@@ -349,10 +349,10 @@ class Graphic_Element(ToolTipProducer):
         posx, posy = self.GetPosition()
         min_width, min_height = self.GetMinSize()
         if width < min_width:
-            self.Pos.x = max(0, self.Pos.x - (width - min_width) * x_factor)
+            self.Pos.x = max(0, round(self.Pos.x - (width - min_width) * x_factor))
             width = min_width
         if height < min_height:
-            self.Pos.y = max(0, self.Pos.y - (height - min_height) * y_factor)
+            self.Pos.y = max(0, round(self.Pos.y - (height - min_height) * y_factor))
             height = min_height
         if scaling is not None:
             self.Pos.x = round_scaling(self.Pos.x, scaling[0])
@@ -1026,16 +1026,16 @@ class Connector(DebugDataConsumer, ToolTipProducer):
     """
 
     # Create a new connector
-    def __init__(self, parent, name, type, position, direction, negated=False, edge="none", onlyone=False):
+    def __init__(self, parent, name, Type, position, direction, negated=False, edge="none", onlyone=False):
         DebugDataConsumer.__init__(self)
         ToolTipProducer.__init__(self, parent.Parent)
         self.ParentBlock = parent
         self.Name = name
-        self.Type = type
+        self.Type = Type
         self.Pos = position
         self.Direction = direction
         self.Wires = []
-        if self.ParentBlock.IsOfType("BOOL", type):
+        if self.ParentBlock.IsOfType("BOOL", Type):
             self.Negated = negated
             self.Edge = edge
         else:
@@ -1141,8 +1141,8 @@ class Connector(DebugDataConsumer, ToolTipProducer):
         return self.ParentBlock.IsOfType(type, reference) or self.ParentBlock.IsOfType(reference, type)
 
     # Changes the connector name
-    def SetType(self, type):
-        self.Type = type
+    def SetType(self, Type):
+        self.Type = Type
         for wire, _handle in self.Wires:
             wire.SetValid(wire.IsConnectedCompatible())
 
