@@ -1,0 +1,10 @@
+input,smta,1,DINT,0
+input,smtb,1,DINT,1
+input,smtc,1,DINT,2
+input,smtd,1,DINT,3
+input,smte,1,DINT,4
+output,smtf,1,False,DINT,0
+output,smtg,1,False,DINT,1
+output,smth,1,False,DINT,2
+output,smti,1,False,DINT,3
+output,smtj,1,False,DINT,4
