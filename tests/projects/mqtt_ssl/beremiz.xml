@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<BeremizRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" URI_location="PYRO://192.168.45.1:3000">
+  <TargetType>
+    <LHC2_GOT_012/>
+  </TargetType>
+  <Libraries Enable_SVGHMI_Library="false"/>
+</BeremizRoot>
