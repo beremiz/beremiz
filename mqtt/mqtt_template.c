@@ -56,6 +56,8 @@ static MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializ
 static MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 #endif
 
+MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
+
 /* condition to quit publish thread */
 static int MQTT_stop_thread = 0;
 
@@ -176,9 +178,19 @@ exit:
 #define INIT_NoAuth()                                                                             \
     LogInfo("MQTT Init no auth\n");
 
-#define INIT_x509(PrivateKey, Certificate)                                                        \
-    LogInfo("MQTT Init x509 %s,%s\n", PrivateKey, Certificate);
-    /* TODO */
+#define INIT_x509(Verify, KeyStore, TrustStore)                                                   \
+    LogInfo("MQTT Init x509 with %s,%s\n", KeyStore, TrustStore)                                  \
+    ssl_opts.verify = Verify;                                                                     \
+    ssl_opts.keyStore = KeyStore;                                                                 \
+    ssl_opts.trustStore = TrustStore;                                                             \
+    conn_opts.ssl = &ssl_opts;
+
+#define INIT_PSK(Secret, ID)                                                                      \
+    LogError("MQTT PSK NOT IMPLEMENTED\n")                                                        \
+    /* LogInfo("MQTT Init PSK for ID %s\n", ID) */                                                \
+    /* ssl_opts.ssl_psk_cb = TODO; */                                                             \
+    /* ssl_opts.ssl_psk_context = TODO; */                                                        \
+    conn_opts.ssl = &ssl_opts;
 
 #define INIT_UserPassword(User, Password)                                                         \
     LogInfo("MQTT Init UserPassword %s,%s\n", User, Password);                                    \

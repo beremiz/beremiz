@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import os
+import re
 
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
@@ -41,8 +42,15 @@ class MQTTClient(object):
                 <xsd:choice minOccurs="0">
                   <xsd:element name="x509">
                     <xsd:complexType>
-                      <xsd:attribute name="Certificate" type="xsd:string" use="optional" default="certificate.pem"/>
-                      <xsd:attribute name="PrivateKey" type="xsd:string" use="optional" default="private_key.pem"/>
+                      <xsd:attribute name="Client_certificate" type="xsd:string" use="optional" default="KeyStore.pem"/>
+                      <xsd:attribute name="Broker_certificate" type="xsd:string" use="optional" default="TrustStore.pem"/>
+                      <xsd:attribute name="Verify_hostname" type="xsd:boolean" use="optional" default="true"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                  <xsd:element name="PSK">
+                    <xsd:complexType>
+                      <xsd:attribute name="Secret" type="xsd:string" use="optional" default=""/>
+                      <xsd:attribute name="ID" type="xsd:string" use="optional" default=""/>
                     </xsd:complexType>
                   </xsd:element>
                   <xsd:element name="UserPassword">
@@ -96,12 +104,23 @@ class MQTTClient(object):
         paramList = authParams.get(AuthType, None)
         if paramList:
             for name,default in paramList:
-                value = cfg("AuthType."+name)
+
+                # Translate internal config naming into user config naming
+                displayed_name = {"KeyStore"   : "Client_certificate",
+                                  "TrustStore" : "Broker_certificate", 
+                                  "Verify"     : "Verify_hostname"}.get(name, name)
+
+                value = cfg("AuthType." + displayed_name)
                 if value == "" or value is None:
                     value = default
-                # cryptomaterial is expected to be in project's user provide file directory
-                if name in ["Certificate","PrivateKey"]:
-                    value = os.path.join(self.GetCTRoot()._getProjectFilesPath(), value)
+
+                if value is not None:
+                    # cryptomaterial is expected to be in project's user provided file directory
+
+                    # User input may contain char incompatible with C string literal escaping
+                    if name in ["User","Password","TrustStore","KeyStore","Broker_URI","Client_ID"]:
+                        value = re.sub(r'([\"\\])',  r'\\\1', value)
+
                 res[name] = value
 
         return res
@@ -123,7 +142,7 @@ class MQTTClient(object):
 #include "beremiz.h"
 """
         config = self.GetConfig()
-        c_code += self.modeldata.GenerateC(c_path, locstr, self.GetConfig())
+        c_code += self.modeldata.GenerateC(c_path, locstr, config)
 
         with open(c_path, 'w') as c_file:
             c_file.write(c_code)
