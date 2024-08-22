@@ -66,10 +66,12 @@ lstcoldsc = {
 
 directions = ["input", "output"]
 
+# expected configuration entries with internal default value
 authParams = {
     "x509":[
-        ("Certificate", "certificate.der"),
-        ("PrivateKey", "private_key.pem")],
+        ("Verify", True),
+        ("KeyStore", None),
+        ("TrustStore", None)],
     "UserPassword":[
         ("User", None),
         ("Password", None)]}
@@ -350,9 +352,15 @@ class MQTTClientModel(dict):
 #define USE_MQTT_5""".format(**config)
 
         AuthType = config["AuthType"]
+        print(config)
         if AuthType == "x509":
+            for k in ["KeyStore","TrustStore"]:
+                config[k] = '"'+config[k]+'"' if config[k] else "NULL"
             formatdict["init"] += """
-    INIT_x509("{PrivateKey}", "{Certificate}")""".format(**config)
+    INIT_x509({Verify:d}, {KeyStore}, {TrustStore})""".format(**config)
+        if AuthType == "PSK":
+            formatdict["init"] += """
+    INIT_PSK("{Secret}", "{ID}")""".format(**config)
         elif AuthType == "UserPassword":
             formatdict["init"] += """
     INIT_UserPassword("{User}", "{Password}")""".format(**config)
