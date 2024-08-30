@@ -177,12 +177,12 @@ class MQTTClient(object):
             entries.append((Topic, QoS, iec_type, iec_number, "I", LOCATION_VAR_INPUT))
 
         for Topic, QoS, iec_type, iec_number, iec_dir_prefix, loc_type in entries:
-            C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
+            _C_type, iec_size_prefix = MQTT_IEC_types.get(iec_type,(None,""))
             c_loc_name = "__" + iec_dir_prefix + iec_size_prefix + locstr + "_" + str(iec_number)
             children.append({
                 "name": Topic,
                 "type": loc_type,
-                "size": {"X":1, "B":8, "W":16, "D":32, "L":64}[iec_size_prefix],
+                "size": {"X":1, "B":8, "W":16, "D":32, "L":64, "":None}[iec_size_prefix],
                 "IEC_type": iec_type,
                 "var_name": c_loc_name,
                 "location": "%" + iec_dir_prefix + iec_size_prefix + ".".join([str(i) for i in current_location]) + "." + str(iec_number),

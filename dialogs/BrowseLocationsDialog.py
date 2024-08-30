@@ -134,7 +134,7 @@ class BrowseLocationsDialog(wx.Dialog):
         self.Controller = controller
         self.VarType = var_type
         self.BaseVarType = self.Controller.GetBaseType(self.VarType)
-        self.VarTypeSize = LOCATION_SIZES[self.BaseVarType]
+        self.VarTypeSize = LOCATION_SIZES[self.BaseVarType] if self.BaseVarType else None
         self.Locations = self.Controller.GetVariableLocationTree()
 
         # Define Tree item icon list
@@ -180,7 +180,7 @@ class BrowseLocationsDialog(wx.Dialog):
         if self.TypeFilter == 0:
             return True
 
-        if location_size != self.VarTypeSize:
+        if self.VarTypeSize is not None and location_size != self.VarTypeSize:
             return False
 
         if self.TypeFilter == 1:
