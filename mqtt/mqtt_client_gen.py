@@ -152,8 +152,16 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
     def ResetData(self):
         self.Reset(len(self.data))
 
+class MQQTTypeChoiceRenderer(dv.DataViewChoiceRenderer):
+    def __init__(self, types_getter):
+        dv.DataViewChoiceRenderer.__init__(self, types_getter())
+        self.types_getter = types_getter
+
+    def GetChoices(self):
+        return self.types_getter()
+
 class MQTTTopicListPanel(wx.Panel):
-    def __init__(self, parent, log, model, direction):
+    def __init__(self, parent, log, model, direction, types_getter):
         self.log = log
         wx.Panel.__init__(self, parent, -1)
 
@@ -171,7 +179,12 @@ class MQTTTopicListPanel(wx.Panel):
 
         dsc = lstcoldsc[direction]
         for idx,(colname,width) in enumerate(zip(dsc.lstcolnames,dsc.lstcolwidths)):
-            self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
+            if colname == "Type":
+                choice_DV_render = MQQTTypeChoiceRenderer(types_getter)
+                choice_DV_col = dv.DataViewColumn(colname, choice_DV_render, idx, width=width)
+                self.dvc.AppendColumn(choice_DV_col)
+            else:
+                self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
 
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -206,18 +219,16 @@ class MQTTTopicListPanel(wx.Panel):
 
 
 class MQTTClientPanel(wx.SplitterWindow):
-    def __init__(self, parent, modeldata, log, config_getter):
+    def __init__(self, parent, modeldata, log, types_getter):
         self.log = log
         wx.SplitterWindow.__init__(self, parent, style=wx.SUNKEN_BORDER | wx.SP_3D)
-
-        self.config_getter = config_getter
 
         self.selected_datas = modeldata
         self.selected_models = { direction:MQTTTopicListModel(
             self.selected_datas[direction], log, direction) for direction in directions }
         self.selected_lists = { direction:MQTTTopicListPanel(
                 self, log, 
-                self.selected_models[direction], direction) 
+                self.selected_models[direction], direction, types_getter) 
             for direction in directions }
 
         self.SplitHorizontally(*[self.selected_lists[direction] for direction in directions]+[300])
