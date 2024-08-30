@@ -29,7 +29,11 @@ class MQTTClientEditor(ConfTreeNodeEditor):
         self.Controler.GetCTRoot().logger.write(msg)
 
     def CreateMQTTClient_UI(self, parent):
-        return MQTTClientPanel(parent, self.Controler.GetModelData(), self.Log, self.Controler.GetConfig)
+        return MQTTClientPanel(
+            parent,
+            self.Controler.GetModelData(),
+            self.Log,
+            self.Controler.GetTypes)
 
 class MQTTClient(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
@@ -85,6 +89,10 @@ class MQTTClient(object):
 
     def GetModelData(self):
         return self.modeldata
+
+    def GetTypes(self):
+        datatype_candidates = self.GetCTRoot().GetDataTypes()
+        return datatype_candidates
 
     def GetConfig(self):
         def cfg(path): 
@@ -193,4 +201,10 @@ class MQTTClient(object):
                 "type": LOCATION_CONFNODE,
                 "location": ".".join([str(i) for i in current_location]) + ".x",
                 "children": children}
+
+
+    def CTNGlobalInstances(self):
+        location_str = "_".join(map(str, self.GetCurrentLocation()))
+        return [("MQTT_HAPPY_"+location_str, "DINT", "")]
+
 
