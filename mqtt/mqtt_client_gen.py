@@ -363,7 +363,6 @@ class MQTTClientModel(dict):
 #define USE_MQTT_5""".format(**config)
 
         AuthType = config["AuthType"]
-        print(config)
         if AuthType == "x509":
             for k in ["KeyStore","TrustStore"]:
                 config[k] = '"'+config[k]+'"' if config[k] else "NULL"
@@ -382,8 +381,13 @@ class MQTTClientModel(dict):
         for row in self["output"]:
             Topic, QoS, _Retained, iec_type, iec_number = row
             Retained = 1 if _Retained=="True" else 0
-            C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
-            c_loc_name = "__Q" + iec_size_prefix + locstr + "_" + str(iec_number)
+            if iec_type in MQTT_IEC_types:
+                C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
+                c_loc_name = "__Q" + iec_size_prefix + locstr + "_" + str(iec_number)
+            else:
+                C_type = iec_type.upper();
+                c_loc_name = "__Q" + locstr + "_" + str(iec_number)
+
 
             formatdict["decl"] += """
 DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
@@ -397,8 +401,13 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
         # inputs need to be sorted for bisection search 
         for row in sorted(self["input"]):
             Topic, QoS, iec_type, iec_number = row
-            C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
-            c_loc_name = "__I" + iec_size_prefix + locstr + "_" + str(iec_number)
+            if iec_type in MQTT_IEC_types:
+                C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
+                c_loc_name = "__I" + iec_size_prefix + locstr + "_" + str(iec_number)
+            else:
+                C_type = iec_type.upper();
+                c_loc_name = "__I" + locstr + "_" + str(iec_number)
+
             formatdict["decl"] += """
 DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             formatdict["topics"] += """
