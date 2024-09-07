@@ -1373,7 +1373,8 @@ class PLCControler(object):
         return False
 
     def IsEndType(self, typename):
-        if typename is not None:
+        # Check if the type is a base type        
+        if type(typename) == str:
             return not typename.startswith("ANY")
         return True
 

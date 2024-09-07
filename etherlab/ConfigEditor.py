@@ -672,7 +672,7 @@ class MasterEditor(ConfTreeNodeEditor):
         self.ProcessVariablesGrid = CustomGrid(self.EthercatMasterEditor, style=wx.VSCROLL)
         self.ProcessVariablesGrid.SetMinSize(wx.Size(0, 150))
         self.ProcessVariablesGrid.SetDropTarget(ProcessVariableDropTarget(self))
-        self.ProcessVariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING,
+        self.ProcessVariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                                        self.OnProcessVariablesGridCellChange)
         self.ProcessVariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,
                                        self.OnProcessVariablesGridCellLeftClick)
@@ -697,7 +697,7 @@ class MasterEditor(ConfTreeNodeEditor):
         self.StartupCommandsGrid = CustomGrid(self.EthercatMasterEditor, style=wx.VSCROLL)
         self.StartupCommandsGrid.SetDropTarget(StartupCommandDropTarget(self))
         self.StartupCommandsGrid.SetMinSize(wx.Size(0, 150))
-        self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGING,
+        self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED,
                                       self.OnStartupCommandsGridCellChange)
         self.StartupCommandsGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN,
                                       self.OnStartupCommandsGridEditorShow)

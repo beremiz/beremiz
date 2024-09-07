@@ -1542,15 +1542,18 @@ class Viewer(EditorPanel, DebugViewer):
     #                           Popup menu functions
     # -------------------------------------------------------------------------------
 
-    def GetForceVariableMenuFunction(self, iec_path, element):
-        iec_type = self.GetDataType(iec_path)
+    def GetForceVariableMenuFunction(self, iec_path, iec_type, value, immediate = False):
 
-        def ForceVariableFunction(event):
-            if iec_type is not None:
-                dialog = ForceVariableDialog(self.ParentWindow, iec_type, str(element.GetValue()))
-                if dialog.ShowModal() == wx.ID_OK:
-                    self.ParentWindow.AddDebugVariable(iec_path)
-                    self.ForceDataValue(iec_path, dialog.GetValue())
+        def ForceVariableFunction(event, value=value):
+            if not immediate:
+                # use value as default value in dialog
+                dialog = ForceVariableDialog(self.ParentWindow, iec_type, str(value))
+                if dialog.ShowModal() != wx.ID_OK:
+                    return
+                value = dialog.GetValue()
+            self.ParentWindow.AddDebugVariable(iec_path)
+            self.ForceDataValue(iec_path, value)
+
         return ForceVariableFunction
 
     def GetReleaseVariableMenuFunction(self, iec_path):
@@ -1570,13 +1573,39 @@ class Viewer(EditorPanel, DebugViewer):
 
     def PopupForceMenu(self):
         iec_path = self.GetElementIECPath(self.SelectedElement)
+        
+        if iec_path is None:
+            # GetElementIECPath() does not work for variables and coils
+            # In such case get the IEC path using the instance path
+            for ElementType in [FBD_Variable, LD_Coil]:
+                if isinstance(self.SelectedElement, ElementType):
+                    instance_path = self.GetInstancePath(True)
+                    iec_path = "%s.%s" % (instance_path, self.SelectedElement.GetName())
+                    menu = wx.Menu(title='')
+                    break
+
         if iec_path is not None:
             menu = wx.Menu(title='')
-            item = self.AppendItem(menu,
-                _("Force value"),
-                self.GetForceVariableMenuFunction(
-                    iec_path.upper(),
-                    self.SelectedElement))
+            iec_type = self.GetDataType(iec_path)
+            if iec_type == "BOOL":
+                self.AppendItem(menu, 
+                    _("Force Toggle"), 
+                    self.GetForceVariableMenuFunction(
+                        iec_path.upper(), iec_type, not(self.SelectedElement.GetValue()), True))
+                self.AppendItem(menu, 
+                    _("Force True"), 
+                    self.GetForceVariableMenuFunction(
+                        iec_path.upper(), iec_type, True, True))
+                self.AppendItem(menu, 
+                    _("Force False"), 
+                    self.GetForceVariableMenuFunction(
+                        iec_path.upper(), iec_type, False, True))
+            else:
+                self.AppendItem(menu,
+                    _("Force value"),
+                    self.GetForceVariableMenuFunction(
+                        iec_path.upper(), iec_type,
+                        self.SelectedElement.GetValue()))
 
             ritem = self.AppendItem(menu,
                 _("Release value"),
@@ -1585,6 +1614,7 @@ class Viewer(EditorPanel, DebugViewer):
                 ritem.Enable(True)
             else:
                 ritem.Enable(False)
+
             if self.Editor.HasCapture():
                 self.Editor.ReleaseMouse()
             self.Editor.PopupMenu(menu)

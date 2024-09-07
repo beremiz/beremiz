@@ -51,7 +51,10 @@ class LocalRuntimeMixin():
             # shutdown local runtime
             self.local_runtime.kill(gently=False)
             # clear temp dir
-            shutil.rmtree(self.local_runtime_tmpdir)
+            try:
+                shutil.rmtree(self.local_runtime_tmpdir)
+            except:
+                pass
 
             self.local_runtime = None
 

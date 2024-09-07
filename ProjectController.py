@@ -508,6 +508,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._setBuildPath(BuildPath)
         # get confnodes bloclist (is that usefull at project creation?)
         self.RefreshConfNodesBlockLists()
+        # default scaling
+        for iec_lang in ["FBD", "LD", "SFC"]:
+            PLCControler.SetProjectProperties(self, properties={"scaling": {iec_lang: (8, 8)}})
         # this will create files base XML files
         self.SaveProject()
         return None

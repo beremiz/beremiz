@@ -593,11 +593,11 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         dc.SetBrush(wx.Brush(HIGHLIGHTCOLOR))
         dc.SetLogicalFunction(wx.AND)
         # Draw two rectangles for representing the contact
-        left_left = (self.Pos.x - 1) * scalex - 2
-        right_left = (self.Pos.x + self.Size[0] - 2) * scalex - 2
-        top = (self.Pos.y - 1) * scaley - 2
-        width = 4 * scalex + 5
-        height = (self.Size[1] + 3) * scaley + 5
+        left_left = round((self.Pos.x - 1) * scalex) - 2
+        right_left = round((self.Pos.x + self.Size[0] - 2) * scalex) - 2
+        top = round((self.Pos.y - 1) * scaley) - 2
+        width = round(4 * scalex + 5)
+        height = round((self.Size[1] + 3) * scaley) + 5
 
         dc.DrawRectangle(left_left, top, width, height)
         dc.DrawRectangle(right_left, top, width, height)
@@ -974,31 +974,24 @@ class LD_Coil(Graphic_Element):
         elif self.Type == COIL_FALLING:
             typetext = "N"
 
-        if getattr(dc, "printing", False) and not isinstance(dc, wx.PostScriptDC):
-            # Draw an clipped ellipse for representing the coil
-            clipping_box = dc.GetClippingBox()
-            dc.SetClippingRegion(self.Pos.x - 1, self.Pos.y, self.Size[0] + 2, self.Size[1] + 1)
-            dc.DrawEllipse(self.Pos.x, self.Pos.y - int(self.Size[1] * (sqrt(2) - 1.) / 2.) + 1, self.Size[0], int(self.Size[1] * sqrt(2)) - 1)
-            dc.DestroyClippingRegion()
-            if clipping_box != (0, 0, 0, 0):
-                dc.SetClippingRegion(*clipping_box)
-            name_size = dc.GetTextExtent(self.Name)
-            if typetext != "":
-                type_size = dc.GetTextExtent(typetext)
-        else:
-            # Draw a two ellipse arcs for representing the coil
-            dc.DrawEllipticArc(self.Pos.x, self.Pos.y - int(self.Size[1] * (sqrt(2) - 1.) / 2.) + 1, self.Size[0], int(self.Size[1] * sqrt(2)) - 1, 135, 225)
-            dc.DrawEllipticArc(self.Pos.x, self.Pos.y - int(self.Size[1] * (sqrt(2) - 1.) / 2.) + 1, self.Size[0], int(self.Size[1] * sqrt(2)) - 1, -45, 45)
-            # Draw a point to avoid hole in left arc
-            if not getattr(dc, "printing", False):
-                if self.Value is not None and self.Value:
-                    dc.SetPen(MiterPen(wx.GREEN))
-                else:
-                    dc.SetPen(MiterPen(wx.BLACK))
-                dc.DrawPoint(self.Pos.x + 1, self.Pos.y + self.Size[1] // 2 + 1)
-            name_size = self.NameSize
-            if typetext != "":
-                type_size = self.TypeSize
+        printing = getattr(dc, "printing", False)
+        # Draw a two ellipse arcs for representing the coil
+        pos = (self.Pos.x,  
+               self.Pos.y - round(self.Size[1] * (sqrt(2) - 1.) / 2.) + 1, 
+               self.Size[0], round(self.Size[1] * sqrt(2)) - 1)
+        
+        if printing:
+            # workaround for printing bug with DrawEllipticArc
+            # add an offset to the y position proportional to the height of the ellipse
+            # sqrt(2) ratio obtained heuristically
+            pos = (pos[0], pos[1] + round(sqrt(2)*pos[3]), pos[2], pos[3])
+            
+        dc.DrawEllipticArc(*pos, 135, 225)
+        dc.DrawEllipticArc(*pos, -45, 45)
+        
+        name_size = self.NameSize
+        if typetext != "":
+            type_size = self.TypeSize
 
         # Draw coil name
         name_pos = (self.Pos.x + (self.Size[0] - name_size[0]) // 2,
