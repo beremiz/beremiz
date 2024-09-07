@@ -188,9 +188,7 @@ class LocationCellEditor(wx.grid.GridCellEditor):
             var_type = self.CellControl.GetVarType()
             if var_type is not None:
                 self.Table.SetValueByName(row, 'Type', var_type)
-        else:
-            wx.CallAfter(self.Table.Parent.ShowErrorMessage,
-                         _("Selected location is identical to previous one"))
+
         self.CellControl.Disable()
         return changed
 

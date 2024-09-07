@@ -155,10 +155,8 @@ class FBDVariableDialog(BlockPreviewDialog):
         # Get variable expression and select corresponding value in name list
         # box if it exists
         selected = self.Expression.GetValue()
-        if selected != "" and self.VariableName.FindString(selected) != wx.NOT_FOUND:
-            self.VariableName.SetStringSelection(selected)
-        else:
-            self.VariableName.SetSelection(wx.NOT_FOUND)
+        self.VariableName.SetSelection(
+            wx.NOT_FOUND if selected == "" else self.VariableName.FindString(selected, True))
 
         # Disable name list box if no name present inside
         self.VariableName.Enable(self.VariableName.GetCount() > 0)
@@ -185,10 +183,7 @@ class FBDVariableDialog(BlockPreviewDialog):
                 # Set expression text control value
                 self.Expression.ChangeValue(value)
                 # Select corresponding text in name list box if it exists
-                if self.VariableName.FindString(value) != wx.NOT_FOUND:
-                    self.VariableName.SetStringSelection(value)
-                else:
-                    self.VariableName.SetSelection(wx.NOT_FOUND)
+                self.VariableName.SetSelection(self.VariableName.FindString(value, True))
 
             # Parameter is variable execution order
             elif name == "executionOrder":
@@ -265,7 +260,7 @@ class FBDVariableDialog(BlockPreviewDialog):
         """
         # Select the corresponding value in name list box if it exists
         self.VariableName.SetSelection(
-            self.VariableName.FindString(self.Expression.GetValue()))
+            self.VariableName.FindString(self.Expression.GetValue(), True))
 
         self.Refresh()
         event.Skip()
