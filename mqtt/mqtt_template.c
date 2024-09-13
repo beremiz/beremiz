@@ -5,9 +5,14 @@
 #include <pthread.h>
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
+
+#include "frozen.h"
 
 #include "MQTTClient.h"
 #include "MQTTClientPersistence.h"
+
+#include "POUS.h"
 
 #define _Log(level, ...)                                                                          \
     {{                                                                                            \
@@ -42,12 +47,61 @@ void trace_callback(enum MQTTCLIENT_TRACE_LEVELS level, char* message)
 #define UNCHANGED 0
 
 #define DECL_VAR(iec_type, C_type, c_loc_name)                                                     \
-static C_type PLC_##c_loc_name##_buf = 0;                                                          \
-static C_type MQTT_##c_loc_name##_buf = 0;                                                         \
+static C_type PLC_##c_loc_name##_buf;                                                              \
+static C_type MQTT_##c_loc_name##_buf;                                                             \
 static int MQTT_##c_loc_name##_state = UNCHANGED;  /* systematically published at init */          \
 C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 {decl}
+
+/* JSON topic content encoding macros matching "json_decl" in substitution*/
+
+#define format_BOOL   "%B"
+#define format_SINT   "%hhd"
+#define format_USINT  "%uhhd"
+#define format_INT    "%hd" 
+#define format_UINT   "%uhd"
+#define format_DINT   "%d" 
+#define format_UDINT  "%ud"
+#define format_LINT   "%ld"
+#define format_ULINT  "%uld"
+#define format_REAL   "%f"
+#define format_LREAL  "%Lf"
+#define format_STRING "%*s"
+
+#define format_separator ", "
+
+#define format_SIMPLE(C_type, name, _A) #name " : " format_##C_type
+#define format_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(format, _A) " }}"
+
+#define arg_separator ,
+
+#define arg_SIMPLE(C_type, name, data_ptr) data_ptr->name
+#define arg_OBJECT(C_type, name, data_ptr) TYPE_##C_type(arg, (&data_ptr->name))
+
+#define DECL_JSON_INPUT(C_type, c_loc_name) \
+int json_parse_##c_loc_name(char *json, const int len, void *void_ptr) {{ \
+    C_type *struct_ptr = (C_type *)void_ptr; \
+    return json_scanf(json, len, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(arg, struct_ptr)); \
+}}
+
+/* Pre-allocated json output buffer for json_printf */
+#define json_out_size 1<<12 // 4K
+static char json_out_buf[json_out_size] = {{0,}};
+static int json_out_len = 0;
+
+#define DECL_JSON_OUTPUT(C_type, c_loc_name) \
+int json_gen_##c_loc_name(C_type *struct_ptr) {{ \
+    struct json_out out = JSON_OUT_BUF(json_out_buf, json_out_size); \
+    json_out_len = json_printf(&out, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(arg, struct_ptr)); \
+    if(json_out_len > json_out_size){{ \
+        json_out_len = 0; \
+        return -EOVERFLOW; \
+    }} \
+    return 0; \
+}}
+
+{json_decl}
 
 static MQTTClient client;
 #ifdef USE_MQTT_5
@@ -79,14 +133,23 @@ static pthread_cond_t MQTT_thread_wakeup = PTHREAD_COND_INITIALIZER;
 /* thread that handles publish and reconnection */
 static pthread_t MQTT_thread;
 
-#define INIT_TOPIC(topic, iec_type, c_loc_name)                                                    \
-{{#topic, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, iec_type##_ENUM}},
+#define INIT_TOPIC(topic, iec_type, c_loc_name) \
+{{#topic, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, 0, .vartype = iec_type##_ENUM}},
+
+#define INIT_JSON_TOPIC(topic, iec_type, c_loc_name) \
+{{#topic, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, 1, .json_parse_func=json_parse_##c_loc_name}},
+
+typedef int (*json_parse_func_t)(char *json, int len, void *void_ptr);
 
 static struct {{
     const char *topic; //null terminated topic string
     void *mqtt_pdata; // pointer to data from/for MQTT stack
     int *mqtt_pchanged; // pointer to changed flag
-    __IEC_types_enum vartype;
+    int is_json_type;
+    union {{
+       __IEC_types_enum vartype;
+       json_parse_func_t json_parse_func;
+    }};
 }} topics [] = {{
 {topics}
 }};
@@ -135,6 +198,7 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
     int size = sizeof(topics) / sizeof(topics[0]);
     int high = size - 1;
     int mid;
+    int is_json_type;
 
     // bisect topic among subscribed topics
     while (low <= high) {{
@@ -159,9 +223,15 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
     goto exit;
 
 found:
-    if(__get_type_enum_size(topics[mid].vartype) == message->payloadlen){{
+    
+    is_json_type = topics[mid].is_json_type;
+    if(is_json_type || __get_type_enum_size(topics[mid].vartype) == message->payloadlen){{
         if (pthread_mutex_lock(&MQTT_retrieve_mutex) == 0){{
-            memcpy(topics[mid].mqtt_pdata, (char*)message->payload, message->payloadlen);
+            if(is_json_type){{
+                (topics[mid].json_parse_func)((char*)message->payload, message->payloadlen, topics[mid].mqtt_pdata);
+            }} else {{
+                memcpy(topics[mid].mqtt_pdata, (char*)message->payload, message->payloadlen);
+            }}
             *topics[mid].mqtt_pchanged = 1;
             pthread_mutex_unlock(&MQTT_retrieve_mutex);
         }}
@@ -179,7 +249,7 @@ exit:
     LogInfo("MQTT Init no auth\n");
 
 #define INIT_x509(Verify, KeyStore, TrustStore)                                                   \
-    LogInfo("MQTT Init x509 with %s,%s\n", KeyStore, TrustStore)                                  \
+    LogInfo("MQTT Init x509 with %s,%s\n", KeyStore?KeyStore:"NULL", TrustStore?TrustStore:"NULL")\
     ssl_opts.verify = Verify;                                                                     \
     ssl_opts.keyStore = KeyStore;                                                                 \
     ssl_opts.trustStore = TrustStore;                                                             \
@@ -220,21 +290,30 @@ exit:
 
 
 #ifdef USE_MQTT_5
-#define _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \
-        MQTTResponse response = MQTTClient_publish5(client, #Topic, sizeof(C_type),               \
-            &MQTT_##c_loc_name##_buf, QoS, Retained, NULL, NULL);                                 \
+#define _PUBLISH(Topic, QoS, cstring_size, cstring_ptr, Retained)                                 \
+        MQTTResponse response = MQTTClient_publish5(client, #Topic, cstring_size,                  \
+            cstring_ptr, QoS, Retained, NULL, NULL);                                              \
         rc = response.reasonCode;                                                                 \
         MQTTResponse_free(response);
 #else
-#define _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \
-        rc = MQTTClient_publish(client, #Topic, sizeof(C_type),                                   \
-            &PLC_##c_loc_name##_buf, QoS, Retained, NULL);
+#define _PUBLISH(Topic, QoS, cstring_size, cstring_ptr, Retained)                                 \
+        rc = MQTTClient_publish(client, #Topic, cstring_size,                                     \
+            cstring_ptr, QoS, Retained, NULL);
 #endif
 
-#define INIT_PUBLICATION(Topic, QoS, C_type, c_loc_name, Retained)                                \
+#define PUBLISH_SIMPLE(Topic, QoS, C_type, c_loc_name, Retained)                                  \
+        _PUBLISH(Topic, QoS, sizeof(C_type), &MQTT_##c_loc_name##_buf, Retained)
+
+#define PUBLISH_JSON(Topic, QoS, C_type, c_loc_name, Retained)                                    \
+        int res = json_gen_##c_loc_name(&MQTT_##c_loc_name##_buf);                                \
+        if(res == 0) {{                                                                           \
+            _PUBLISH(Topic, QoS, json_out_len, json_out_buf, Retained)                            \
+        }}
+
+#define INIT_PUBLICATION(encoding, Topic, QoS, C_type, c_loc_name, Retained)                      \
     {{                                                                                            \
         int rc;                                                                                   \
-        _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \
+        PUBLISH_##encoding(Topic, QoS, C_type, c_loc_name, Retained)                              \
         if (rc != MQTTCLIENT_SUCCESS)                                                             \
         {{                                                                                        \
             LogError("MQTT client failed to init publication of '%s', return code %d\n", #Topic, rc);\
@@ -242,11 +321,11 @@ exit:
         }}                                                                                        \
     }}
 
-#define PUBLISH_CHANGE(Topic, QoS, C_type, c_loc_name, Retained)                                  \
+#define PUBLISH_CHANGE(encoding, Topic, QoS, C_type, c_loc_name, Retained)                        \
     if(MQTT_##c_loc_name##_state == CHANGED)                                                      \
     {{                                                                                            \
         int rc;                                                                                   \
-        _PUBLISH(Topic, QoS, C_type, c_loc_name, Retained)                                        \
+        PUBLISH_##encoding(Topic, QoS, C_type, c_loc_name, Retained)                              \
         if (rc != MQTTCLIENT_SUCCESS)                                                             \
         {{                                                                                        \
             LogError("MQTT client failed to publish '%s', return code %d\n", #Topic, rc);         \
@@ -399,7 +478,7 @@ void __retrieve_{locstr}(void)
 
 #define WRITE_VALUE(c_loc_name, C_type) \
     /* TODO care about endianess */ \
-    if(MQTT_##c_loc_name##_buf != PLC_##c_loc_name##_buf){{ \
+    if(memcmp(&MQTT_##c_loc_name##_buf, &PLC_##c_loc_name##_buf, sizeof(C_type))){{ \
         MQTT_##c_loc_name##_buf = PLC_##c_loc_name##_buf; \
         MQTT_##c_loc_name##_state = CHANGED; \
         MQTT_any_pub_var_changed = 1; \
