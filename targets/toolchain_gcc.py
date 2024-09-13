@@ -149,6 +149,8 @@ class toolchain_gcc(object):
         oldhash, deps = self.srcmd5.get(bn, (None, []))
         # read source
         src = os.path.join(self.buildpath, bn)
+        if not os.path.exists(src):
+            return False
         # compute new hash
         newhash = compute_file_md5(src)
         # compare

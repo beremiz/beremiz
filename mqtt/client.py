@@ -16,9 +16,12 @@ import util.paths as paths
 # and cmake build was invoked from this directory
 PahoMqttCLibraryPath = paths.ThirdPartyPath("paho.mqtt.c", "build", "src")
 
-PahoMqttCIncludePaths = [
+frozen_path = paths.ThirdPartyPath("frozen")
+
+MqttCIncludePaths = [
     paths.ThirdPartyPath("paho.mqtt.c", "build"),  # VersionInfo.h
-    paths.ThirdPartyPath("paho.mqtt.c", "src")
+    paths.ThirdPartyPath("paho.mqtt.c", "src"),
+    frozen_path
 ]
 
 class MQTTClientEditor(ConfTreeNodeEditor):
@@ -94,6 +97,10 @@ class MQTTClient(object):
         datatype_candidates = self.GetCTRoot().GetDataTypes()
         return datatype_candidates
 
+    def GetDataTypeInfos(self, typename):
+        tagname = "D::"+typename
+        return self.GetCTRoot().GetDataTypeInfos(tagname)
+
     def GetConfig(self):
         def cfg(path): 
             try:
@@ -150,7 +157,7 @@ class MQTTClient(object):
 #include "beremiz.h"
 """
         config = self.GetConfig()
-        c_code += self.modeldata.GenerateC(c_path, locstr, config)
+        c_code += self.modeldata.GenerateC(c_path, locstr, config, self.GetDataTypeInfos)
 
         with open(c_path, 'w') as c_file:
             c_file.write(c_code)
@@ -164,9 +171,12 @@ class MQTTClient(object):
 
         LDFLAGS = [' "' + os.path.join(PahoMqttCLibraryPath, static_lib) + '"'] + libs
 
-        CFLAGS = ' '.join(['-I"' + path + '"' for path in PahoMqttCIncludePaths])
+        CFLAGS = ' '.join(['-I"' + path + '"' for path in MqttCIncludePaths])
 
-        return [(c_path, CFLAGS)], LDFLAGS, True
+        # TODO: add frozen only if using JSON
+        frozen_c_path = os.path.join(frozen_path, "frozen.c")
+
+        return [(c_path, CFLAGS), (frozen_c_path, CFLAGS)], LDFLAGS, True
 
     def GetVariableLocationTree(self):
         current_location = self.GetCurrentLocation()

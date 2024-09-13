@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import csv
 import functools
 from threading import Thread
-from collections import OrderedDict
+from collections import OrderedDict as OD
 
 import wx
 import wx.dataview as dv
@@ -336,11 +336,13 @@ class MQTTClientModel(dict):
                 for row in data:
                     writer.writerow([direction] + row)
 
-    def GenerateC(self, path, locstr, config):
+    def GenerateC(self, path, locstr, config, datatype_info_getter):
         c_template_filepath = paths.AbsNeighbourFile(__file__, "mqtt_template.c")
         c_template_file = open(c_template_filepath , 'rb')
         c_template = c_template_file.read()
         c_template_file.close()
+
+        json_types = OD()
 
         formatdict = dict(
             locstr          = locstr,
@@ -353,7 +355,8 @@ class MQTTClientModel(dict):
             init_pubsub     = "",
             retrieve        = "",
             publish         = "",
-            publish_changes = ""
+            publish_changes = "",
+            json_decl       = ""
         )
 
 
@@ -384,19 +387,22 @@ class MQTTClientModel(dict):
             if iec_type in MQTT_IEC_types:
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = "__Q" + iec_size_prefix + locstr + "_" + str(iec_number)
+                encoding = "SIMPLE"
             else:
                 C_type = iec_type.upper();
                 c_loc_name = "__Q" + locstr + "_" + str(iec_number)
+                json_types.setdefault(iec_type,OD()).setdefault("OUTPUT",[]).append(c_loc_name)
+                encoding = "JSON"
 
 
             formatdict["decl"] += """
 DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             formatdict["init_pubsub"] += """
-    INIT_PUBLICATION({Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
+    INIT_PUBLICATION({encoding}, {Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
             formatdict["publish"] += """
         WRITE_VALUE({c_loc_name}, {C_type})""".format(**locals())
             formatdict["publish_changes"] += """
-            PUBLISH_CHANGE({Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
+            PUBLISH_CHANGE({encoding}, {Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
 
         # inputs need to be sorted for bisection search 
         for row in sorted(self["input"]):
@@ -404,18 +410,79 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             if iec_type in MQTT_IEC_types:
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = "__I" + iec_size_prefix + locstr + "_" + str(iec_number)
+                init_topic_call = "INIT_TOPIC"
             else:
                 C_type = iec_type.upper();
                 c_loc_name = "__I" + locstr + "_" + str(iec_number)
+                init_topic_call = "INIT_JSON_TOPIC"
+                json_types.setdefault(iec_type,OD()).setdefault("INPUT",[]).append(c_loc_name)
 
             formatdict["decl"] += """
 DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             formatdict["topics"] += """
-    INIT_TOPIC({Topic}, {iec_type}, {c_loc_name})""".format(**locals())
+    {init_topic_call}({Topic}, {iec_type}, {c_loc_name})""".format(**locals())
             formatdict["init_pubsub"] += """
     INIT_SUBSCRIPTION({Topic}, {QoS})""".format(**locals())
             formatdict["retrieve"] += """
         READ_VALUE({c_loc_name}, {C_type})""".format(**locals())
+
+        def recurseJsonTypes(datatype, basetypes):
+            basetypes.append(datatype)
+            # add derivated type first fo we can expect the list to be sorted
+            # with base types in last position
+            infos = datatype_info_getter(datatype)
+            for element in infos["elements"]:
+                field_datatype = element["Type"]
+                if field_datatype not in MQTT_IEC_types:
+                    recurseJsonTypes(field_datatype, basetypes)
+
+        print(json_types)
+
+        # collect all type dependencies
+        basetypes=[]  # use a list to keep them ordered
+        for iec_type,_instances in json_types.items():
+            recurseJsonTypes(iec_type, basetypes)
+
+        done_types = set()
+        # go backard to get most derivated type definition last
+        # so that CPP can always find base type deinition before
+        for iec_type in reversed(basetypes):
+            # avoid repeating type definition
+            if iec_type in done_types:
+                continue
+            done_types.add(iec_type)
+
+            C_type = iec_type.upper()
+            json_decl = "#define TYPE_" + C_type + "(_P, _A) \\\n"
+
+            infos = datatype_info_getter(iec_type)
+
+            elements = infos["elements"]
+            last = len(elements) - 1
+            for idx, element in enumerate(elements):
+                field_iec_type = element["Type"]
+                field_C_type = field_iec_type.upper()
+                field_name = element["Name"].upper()
+                if field_iec_type in MQTT_IEC_types:
+                    decl_type = "SIMPLE"
+                else:
+                    decl_type = "OBJECT"
+
+                json_decl += "    _P##_"+decl_type+"(" + field_C_type + ", " + field_name + ", _A)"
+                if idx != last:
+                    json_decl += " _P##_separator \\"
+                else:
+                    json_decl += "\n"
+                json_decl += "\n"
+
+
+            formatdict["json_decl"] += json_decl
+
+        for iec_type, instances in json_types.items():
+            C_type = iec_type.upper()
+            for direction, instance_list in instances.items():
+                for c_loc_name in instance_list:
+                    formatdict["json_decl"] += "DECL_JSON_"+direction+"("+C_type+", "+c_loc_name+")\n"
 
         Ccode = c_template.format(**formatdict)
 
