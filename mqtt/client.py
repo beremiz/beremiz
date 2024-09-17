@@ -28,15 +28,24 @@ class MQTTClientEditor(ConfTreeNodeEditor):
     CONFNODEEDITOR_TABS = [
         (_("MQTT Client"), "CreateMQTTClient_UI")]
 
+    MQTTClient_UI = None
+
     def Log(self, msg):
         self.Controler.GetCTRoot().logger.write(msg)
 
     def CreateMQTTClient_UI(self, parent):
-        return MQTTClientPanel(
+        self.MQTTClient_UI = MQTTClientPanel(
             parent,
             self.Controler.GetModelData(),
             self.Log,
             self.Controler.GetTypes)
+        return self.MQTTClient_UI
+
+    def RefreshView(self):
+        if(self.MQTTClient_UI):
+            self.MQTTClient_UI.RefreshView()
+        return ConfTreeNodeEditor.RefreshView(self)
+
 
 class MQTTClient(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
