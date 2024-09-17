@@ -152,14 +152,6 @@ class MQTTTopicListModel(dv.PyDataViewIndexListModel):
     def ResetData(self):
         self.Reset(len(self.data))
 
-class MQQTTypeChoiceRenderer(dv.DataViewChoiceRenderer):
-    def __init__(self, types_getter):
-        dv.DataViewChoiceRenderer.__init__(self, types_getter())
-        self.types_getter = types_getter
-
-    def GetChoices(self):
-        return self.types_getter()
-
 class MQTTTopicListPanel(wx.Panel):
     def __init__(self, parent, log, model, direction, types_getter):
         self.log = log
@@ -177,19 +169,12 @@ class MQTTTopicListPanel(wx.Panel):
 
         self.dvc.AssociateModel(self.model)
 
-        dsc = lstcoldsc[direction]
-        for idx,(colname,width) in enumerate(zip(dsc.lstcolnames,dsc.lstcolwidths)):
-            if colname == "Type":
-                choice_DV_render = MQQTTypeChoiceRenderer(types_getter)
-                choice_DV_col = dv.DataViewColumn(colname, choice_DV_render, idx, width=width)
-                self.dvc.AppendColumn(choice_DV_col)
-            else:
-                self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
-
+        self.types_getter = types_getter
+        self.direction =  direction
+        self.CreateDVCColumns()
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.direction =  direction
         titlestr = direction + " variables"
 
         title = wx.StaticText(self, label = titlestr)
@@ -206,6 +191,20 @@ class MQTTTopicListPanel(wx.Panel):
         self.Sizer.Add(topsizer, 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.Sizer.Add(self.dvc, 1, wx.EXPAND)
 
+
+    def CreateDVCColumns(self):
+        dsc = lstcoldsc[self.direction]
+        for idx,(colname,width) in enumerate(zip(dsc.lstcolnames,dsc.lstcolwidths)):
+            if colname == "Type":
+                choice_DV_render = dv.DataViewChoiceRenderer(self.types_getter())
+                choice_DV_col = dv.DataViewColumn(colname, choice_DV_render, idx, width=width)
+                self.dvc.AppendColumn(choice_DV_col)
+            else:
+                self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
+
+    def ResetDVCColumns(self):
+        self.dvc.ClearColumns()
+        self.CreateDVCColumns()
 
     def OnAddRow(self, evt):
         items = self.dvc.GetSelections()
@@ -235,6 +234,10 @@ class MQTTClientPanel(wx.SplitterWindow):
 
         self.SetAutoLayout(True)
 
+    def RefreshView(self):
+        for direction in directions:
+            self.selected_lists[direction].ResetDVCColumns()
+        
     def OnClose(self):
         pass
 
