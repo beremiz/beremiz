@@ -74,15 +74,20 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 #define format_SIMPLE(C_type, name, _A) #name " : " format_##C_type
 #define format_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(format, _A) " }}"
 
-#define arg_separator ,
+#define scanf_args_separator ,
 
-#define arg_SIMPLE(C_type, name, data_ptr) data_ptr->name
-#define arg_OBJECT(C_type, name, data_ptr) TYPE_##C_type(arg, (&data_ptr->name))
+#define scanf_args_SIMPLE(C_type, name, data_ptr) &data_ptr->name
+#define scanf_args_OBJECT(C_type, name, data_ptr) TYPE_##C_type(scanf_args, (&data_ptr->name))
+
+#define printf_args_separator ,
+
+#define printf_args_SIMPLE(C_type, name, data_ptr) data_ptr->name
+#define printf_args_OBJECT(C_type, name, data_ptr) TYPE_##C_type(printf_args, (&data_ptr->name))
 
 #define DECL_JSON_INPUT(C_type, c_loc_name) \
 int json_parse_##c_loc_name(char *json, const int len, void *void_ptr) {{ \
     C_type *struct_ptr = (C_type *)void_ptr; \
-    return json_scanf(json, len, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(arg, struct_ptr)); \
+    return json_scanf(json, len, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(scanf_args, struct_ptr)); \
 }}
 
 /* Pre-allocated json output buffer for json_printf */
@@ -93,7 +98,7 @@ static int json_out_len = 0;
 #define DECL_JSON_OUTPUT(C_type, c_loc_name) \
 int json_gen_##c_loc_name(C_type *struct_ptr) {{ \
     struct json_out out = JSON_OUT_BUF(json_out_buf, json_out_size); \
-    json_out_len = json_printf(&out, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(arg, struct_ptr)); \
+    json_out_len = json_printf(&out, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(printf_args, struct_ptr)); \
     if(json_out_len > json_out_size){{ \
         json_out_len = 0; \
         return -EOVERFLOW; \
