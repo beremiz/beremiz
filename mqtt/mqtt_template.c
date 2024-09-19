@@ -134,17 +134,18 @@ static pthread_cond_t MQTT_thread_wakeup = PTHREAD_COND_INITIALIZER;
 static pthread_t MQTT_thread;
 
 #define INIT_TOPIC(topic, iec_type, c_loc_name) \
-{{#topic, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, 0, .vartype = iec_type##_ENUM}},
+{{#topic, sizeof(#topic)-1, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, .is_json_type=0, .vartype = iec_type##_ENUM}},
 
 #define INIT_JSON_TOPIC(topic, iec_type, c_loc_name) \
-{{#topic, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, 1, .json_parse_func=json_parse_##c_loc_name}},
+{{#topic, sizeof(#topic)-1, &MQTT_##c_loc_name##_buf, &MQTT_##c_loc_name##_state, .is_json_type=1, .json_parse_func=json_parse_##c_loc_name}},
 
 typedef int (*json_parse_func_t)(char *json, int len, void *void_ptr);
 
 static struct {{
     const char *topic; //null terminated topic string
+    const unsigned int topic_len;
     void *mqtt_pdata; // pointer to data from/for MQTT stack
-    int *mqtt_pchanged; // pointer to changed flag
+    int *mqtt_pstate; // pointer to changed flag
     int is_json_type;
     union {{
        __IEC_types_enum vartype;
@@ -202,9 +203,30 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
 
     // bisect topic among subscribed topics
     while (low <= high) {{
-        int res;
+        int res, len, delta_len;
         mid = low + (high - low) / 2;
-        res = strncmp(topics[mid].topic, topicName, topicLen);
+        if(topicLen == 0) {{
+            // zero topic len means null-terminated
+            topicLen = strlen(topicName);
+        }}
+
+        len = topics[mid].topic_len;
+
+        // keep track of length difference
+        delta_len = len - topicLen;
+
+        // len = min(len, topicLen)
+        len = topicLen > len ? len : topicLen;
+
+        // compare strings as far as possible
+        res = strncmp(topics[mid].topic, topicName, len);
+
+        printf("%*s %s topic_len %d, delta_len %d, topicLen %d, len %d, res %d, low %d, mid %d, high %d\n", topicLen, topicName, topics[mid].topic, topics[mid].topic_len, delta_len, topicLen, len, res, low, mid, high);
+
+        // if partial comparison matches, longest string is the greatest
+        if (res == 0)
+            // update res to continue bisection
+            res = delta_len;
 
         // Check if key is present at mid
         if (res == 0)
@@ -219,20 +241,20 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
             high = mid - 1;
     }}
     // If we reach here, then the element was not present
-    LogWarning("MQTT unknown topic: %s", topicName);
+    LogWarning("MQTT unknown topic: %s\n", topicName);
     goto exit;
 
 found:
     
     is_json_type = topics[mid].is_json_type;
-    if(is_json_type || __get_type_enum_size(topics[mid].vartype) == message->payloadlen){{
+    if(is_json_type || (__get_type_enum_size(topics[mid].vartype) == message->payloadlen)){{
         if (pthread_mutex_lock(&MQTT_retrieve_mutex) == 0){{
             if(is_json_type){{
                 (topics[mid].json_parse_func)((char*)message->payload, message->payloadlen, topics[mid].mqtt_pdata);
             }} else {{
                 memcpy(topics[mid].mqtt_pdata, (char*)message->payload, message->payloadlen);
             }}
-            *topics[mid].mqtt_pchanged = 1;
+            *topics[mid].mqtt_pstate = CHANGED;
             pthread_mutex_unlock(&MQTT_retrieve_mutex);
         }}
     }} else {{
