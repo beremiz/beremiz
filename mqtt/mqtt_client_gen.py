@@ -407,7 +407,7 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             formatdict["publish_changes"] += """
             PUBLISH_CHANGE({encoding}, {Topic}, {QoS}, {C_type}, {c_loc_name}, {Retained})""".format(**locals())
 
-        # inputs need to be sorted for bisection search 
+        # inputs need to be sorted for bisection search
         for row in sorted(self["input"]):
             Topic, QoS, iec_type, iec_number = row
             if iec_type in MQTT_IEC_types:

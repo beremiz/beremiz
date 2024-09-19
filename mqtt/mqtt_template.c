@@ -19,8 +19,6 @@
         char mstr[256];                                                                           \
         snprintf(mstr, 255, __VA_ARGS__);                                                         \
         LogMessage(level, mstr, strlen(mstr));                                                    \
-        printf(__VA_ARGS__);                                                                      \
-        fflush(stdout);                                                                           \
     }}
 
 #define LogInfo(...) _Log(LOG_INFO, __VA_ARGS__);
@@ -225,8 +223,6 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
 
         // compare strings as far as possible
         res = strncmp(topics[mid].topic, topicName, len);
-
-        printf("%*s %s topic_len %d, delta_len %d, topicLen %d, len %d, res %d, low %d, mid %d, high %d\n", topicLen, topicName, topics[mid].topic, topics[mid].topic_len, delta_len, topicLen, len, res, low, mid, high);
 
         // if partial comparison matches, longest string is the greatest
         if (res == 0)
