@@ -54,38 +54,91 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 /* JSON topic content encoding macros matching "json_decl" in substitution*/
 
-#define format_BOOL   "%B"
-#define format_SINT   "%hhd"
-#define format_USINT  "%uhhd"
-#define format_INT    "%hd" 
-#define format_UINT   "%uhd"
-#define format_DINT   "%d" 
-#define format_UDINT  "%ud"
-#define format_LINT   "%ld"
-#define format_ULINT  "%uld"
-#define format_REAL   "%f"
-#define format_LREAL  "%Lf"
-#define format_STRING "%*s"
+#define printf_fmt_BOOL   "%B"
+#define printf_fmt_SINT   "%hhd"
+#define printf_fmt_USINT  "%uhhd"
+#define printf_fmt_INT    "%hd" 
+#define printf_fmt_UINT   "%uhd"
+#define printf_fmt_DINT   "%d" 
+#define printf_fmt_UDINT  "%ud"
+#define printf_fmt_LINT   "%ld"
+#define printf_fmt_ULINT  "%uld"
+#define printf_fmt_REAL   "%f"
+#define printf_fmt_LREAL  "%Lf"
+#define printf_fmt_STRING "%.*Q"
 
-#define format_separator ", "
+#define printf_fmt_separator ", "
 
-#define format_SIMPLE(C_type, name, _A) #name " : " format_##C_type
-#define format_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(format, _A) " }}"
+#define printf_fmt_SIMPLE(C_type, name, _A) #name " : " printf_fmt_##C_type
+#define printf_fmt_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(printf_fmt, _A) " }}"
+
+#define scanf_fmt_BOOL   "%B"
+#define scanf_fmt_SINT   "%hhd"
+#define scanf_fmt_USINT  "%uhhd"
+#define scanf_fmt_INT    "%hd" 
+#define scanf_fmt_UINT   "%uhd"
+#define scanf_fmt_DINT   "%d" 
+#define scanf_fmt_UDINT  "%ud"
+#define scanf_fmt_LINT   "%ld"
+#define scanf_fmt_ULINT  "%uld"
+#define scanf_fmt_REAL   "%f"
+#define scanf_fmt_LREAL  "%Lf"
+#define scanf_fmt_STRING "%M"
+
+#define scanf_fmt_separator ", "
+
+#define scanf_fmt_SIMPLE(C_type, name, _A) #name " : " scanf_fmt_##C_type
+#define scanf_fmt_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(scanf_fmt, _A) " }}"
+
+#define   scanf_arg_BOOL(name, data_ptr) &data_ptr->name
+#define   scanf_arg_SINT(name, data_ptr) &data_ptr->name
+#define  scanf_arg_USINT(name, data_ptr) &data_ptr->name
+#define    scanf_arg_INT(name, data_ptr) &data_ptr->name
+#define   scanf_arg_UINT(name, data_ptr) &data_ptr->name
+#define   scanf_arg_DINT(name, data_ptr) &data_ptr->name
+#define  scanf_arg_UDINT(name, data_ptr) &data_ptr->name
+#define   scanf_arg_LINT(name, data_ptr) &data_ptr->name
+#define  scanf_arg_ULINT(name, data_ptr) &data_ptr->name
+#define   scanf_arg_REAL(name, data_ptr) &data_ptr->name
+#define  scanf_arg_LREAL(name, data_ptr) &data_ptr->name
+#define scanf_arg_STRING(name, data_ptr) scan_string, &data_ptr->name 
 
 #define scanf_args_separator ,
 
-#define scanf_args_SIMPLE(C_type, name, data_ptr) &data_ptr->name
+#define scanf_args_SIMPLE(C_type, name, data_ptr) scanf_arg_##C_type(name, data_ptr)
 #define scanf_args_OBJECT(C_type, name, data_ptr) TYPE_##C_type(scanf_args, (&data_ptr->name))
+
+#define   printf_arg_BOOL(name, data_ptr) data_ptr->name
+#define   printf_arg_SINT(name, data_ptr) data_ptr->name
+#define  printf_arg_USINT(name, data_ptr) data_ptr->name
+#define    printf_arg_INT(name, data_ptr) data_ptr->name
+#define   printf_arg_UINT(name, data_ptr) data_ptr->name
+#define   printf_arg_DINT(name, data_ptr) data_ptr->name
+#define  printf_arg_UDINT(name, data_ptr) data_ptr->name
+#define   printf_arg_LINT(name, data_ptr) data_ptr->name
+#define  printf_arg_ULINT(name, data_ptr) data_ptr->name
+#define   printf_arg_REAL(name, data_ptr) data_ptr->name
+#define  printf_arg_LREAL(name, data_ptr) data_ptr->name
+#define printf_arg_STRING(name, data_ptr) data_ptr->name.len, data_ptr->name.body 
 
 #define printf_args_separator ,
 
-#define printf_args_SIMPLE(C_type, name, data_ptr) data_ptr->name
+#define printf_args_SIMPLE(C_type, name, data_ptr) printf_arg_##C_type(name, data_ptr)
 #define printf_args_OBJECT(C_type, name, data_ptr) TYPE_##C_type(printf_args, (&data_ptr->name))
+
+static void scan_string(const char *str, int len, void *user_data) {{
+	IEC_STRING *iecstr = (IEC_STRING*)user_data;
+	__strlen_t ieclen = len > STR_MAX_LEN ? STR_MAX_LEN : len;
+    printf("%.*s", len, str);
+    printf("%.*s", ieclen, str);
+	memcpy(iecstr->body, str, ieclen);
+    iecstr->len = ieclen;
+}}
 
 #define DECL_JSON_INPUT(C_type, c_loc_name) \
 int json_parse_##c_loc_name(char *json, const int len, void *void_ptr) {{ \
     C_type *struct_ptr = (C_type *)void_ptr; \
-    return json_scanf(json, len, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(scanf_args, struct_ptr)); \
+    return json_scanf(json, len, "{{" TYPE_##C_type(scanf_fmt,) "}}", TYPE_##C_type(scanf_args, struct_ptr)); \
 }}
 
 /* Pre-allocated json output buffer for json_printf */
@@ -96,7 +149,7 @@ static int json_out_len = 0;
 #define DECL_JSON_OUTPUT(C_type, c_loc_name) \
 int json_gen_##c_loc_name(C_type *struct_ptr) {{ \
     struct json_out out = JSON_OUT_BUF(json_out_buf, json_out_size); \
-    json_out_len = json_printf(&out, "{{" TYPE_##C_type(format,) "}}", TYPE_##C_type(printf_args, struct_ptr)); \
+    json_out_len = json_printf(&out, "{{" TYPE_##C_type(printf_fmt,) "}}", TYPE_##C_type(printf_args, struct_ptr)); \
     if(json_out_len > json_out_size){{ \
         json_out_len = 0; \
         return -EOVERFLOW; \
