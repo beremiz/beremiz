@@ -15,17 +15,18 @@ import util.paths as paths
 
 MQTT_IEC_types = dict(
 # IEC61131|  C  type   | sz
-    BOOL  = ("uint8_t" , "X"),
-    SINT  = ("int8_t"  , "B"),
-    USINT = ("uint8_t" , "B"),
-    INT   = ("int16_t" , "W"),
-    UINT  = ("uint16_t", "W"),
-    DINT  = ("uint32_t", "D"),
-    UDINT = ("int32_t" , "D"),
-    LINT  = ("int64_t" , "L"),
-    ULINT = ("uint64_t", "L"),
-    REAL  = ("float"   , "D"),
-    LREAL = ("double"  , "L"),
+    BOOL   = ("uint8_t" , "X"),
+    SINT   = ("int8_t"  , "B"),
+    USINT  = ("uint8_t" , "B"),
+    INT    = ("int16_t" , "W"),
+    UINT   = ("uint16_t", "W"),
+    DINT   = ("uint32_t", "D"),
+    UDINT  = ("int32_t" , "D"),
+    LINT   = ("int64_t" , "L"),
+    ULINT  = ("uint64_t", "L"),
+    REAL   = ("float"   , "D"),
+    LREAL  = ("double"  , "L"),
+    STRING = ("NOT IMPLEMENTED"  , "DONT USE")   # TODO STRING !!!
 )
 
 """
