@@ -69,8 +69,8 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 #define printf_fmt_separator ", "
 
-#define printf_fmt_SIMPLE(C_type, name, _A) #name " : " printf_fmt_##C_type
-#define printf_fmt_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(printf_fmt, _A) " }}"
+#define printf_fmt_SIMPLE(C_type, C_name, name, _A) #name " : " printf_fmt_##C_type
+#define printf_fmt_OBJECT(C_type, C_name, name, _A) #name " : {{ " TYPE_##C_type(printf_fmt, _A) " }}"
 
 #define scanf_fmt_BOOL   "%B"
 #define scanf_fmt_SINT   "%hhd"
@@ -87,8 +87,8 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 #define scanf_fmt_separator ", "
 
-#define scanf_fmt_SIMPLE(C_type, name, _A) #name " : " scanf_fmt_##C_type
-#define scanf_fmt_OBJECT(C_type, name, _A) #name " : {{ " TYPE_##C_type(scanf_fmt, _A) " }}"
+#define scanf_fmt_SIMPLE(C_type, C_name, name, _A) #name " : " scanf_fmt_##C_type
+#define scanf_fmt_OBJECT(C_type, C_name, name, _A) #name " : {{ " TYPE_##C_type(scanf_fmt, _A) " }}"
 
 #define   scanf_arg_BOOL(name, data_ptr) &data_ptr->name
 #define   scanf_arg_SINT(name, data_ptr) &data_ptr->name
@@ -105,8 +105,8 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 #define scanf_args_separator ,
 
-#define scanf_args_SIMPLE(C_type, name, data_ptr) scanf_arg_##C_type(name, data_ptr)
-#define scanf_args_OBJECT(C_type, name, data_ptr) TYPE_##C_type(scanf_args, (&data_ptr->name))
+#define scanf_args_SIMPLE(C_type, C_name, name, data_ptr) scanf_arg_##C_type(C_name, data_ptr)
+#define scanf_args_OBJECT(C_type, C_name, name, data_ptr) TYPE_##C_type(scanf_args, (&data_ptr->C_name))
 
 #define   printf_arg_BOOL(name, data_ptr) data_ptr->name
 #define   printf_arg_SINT(name, data_ptr) data_ptr->name
@@ -123,8 +123,8 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 #define printf_args_separator ,
 
-#define printf_args_SIMPLE(C_type, name, data_ptr) printf_arg_##C_type(name, data_ptr)
-#define printf_args_OBJECT(C_type, name, data_ptr) TYPE_##C_type(printf_args, (&data_ptr->name))
+#define printf_args_SIMPLE(C_type, C_name, name, data_ptr) printf_arg_##C_type(C_name, data_ptr)
+#define printf_args_OBJECT(C_type, C_name, name, data_ptr) TYPE_##C_type(printf_args, (&data_ptr->C_name))
 
 static void scan_string(const char *str, int len, void *user_data) {{
 	IEC_STRING *iecstr = (IEC_STRING*)user_data;

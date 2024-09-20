@@ -466,13 +466,14 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             for idx, element in enumerate(elements):
                 field_iec_type = element["Type"]
                 field_C_type = field_iec_type.upper()
-                field_name = element["Name"].upper()
+                field_name = element["Name"]
+                field_C_name = field_name.upper()
                 if field_iec_type in MQTT_IEC_types:
                     decl_type = "SIMPLE"
                 else:
                     decl_type = "OBJECT"
 
-                json_decl += "    _P##_"+decl_type+"(" + field_C_type + ", " + field_name + ", _A)"
+                json_decl += "    _P##_"+decl_type+"(" + field_C_type + ", " + field_C_name + ", " + field_name + ", _A)"
                 if idx != last:
                     json_decl += " _P##_separator \\"
                 else:
