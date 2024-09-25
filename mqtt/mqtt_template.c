@@ -71,6 +71,9 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 #define printf_fmt_SIMPLE(C_type, C_name, name, _A) #name " : " printf_fmt_##C_type
 #define printf_fmt_OBJECT(C_type, C_name, name, _A) #name " : {{ " TYPE_##C_type(printf_fmt, _A) " }}"
+#define printf_fmt_ARRAY(C_type, C_name, name, _A) #name " : [ " TYPE_##C_type(printf_fmt, _A) " ]"
+#define printf_fmt_ARRAY_SIMPLE(C_type, index, _A) printf_fmt_##C_type
+#define printf_fmt_ARRAY_OBJECT(C_type, index, _A) "{{ " TYPE_##C_type(printf_fmt, _A) " }}"
 
 #define scanf_fmt_BOOL   "%B"
 #define scanf_fmt_SINT   "%hhd"
@@ -89,42 +92,51 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 
 #define scanf_fmt_SIMPLE(C_type, C_name, name, _A) #name " : " scanf_fmt_##C_type
 #define scanf_fmt_OBJECT(C_type, C_name, name, _A) #name " : {{ " TYPE_##C_type(scanf_fmt, _A) " }}"
+#define scanf_fmt_ARRAY(C_type, C_name, name, _A) #name " : [ " TYPE_##C_type(scanf_fmt, _A) " ]"
+#define scanf_fmt_ARRAY_SIMPLE(C_type, index, _A) scanf_fmt_##C_type
+#define scanf_fmt_ARRAY_OBJECT(C_type, index, _A) "{{ " TYPE_##C_type(scanf_fmt, _A) " }}"
 
-#define   scanf_arg_BOOL(name, data_ptr) &data_ptr->name
-#define   scanf_arg_SINT(name, data_ptr) &data_ptr->name
-#define  scanf_arg_USINT(name, data_ptr) &data_ptr->name
-#define    scanf_arg_INT(name, data_ptr) &data_ptr->name
-#define   scanf_arg_UINT(name, data_ptr) &data_ptr->name
-#define   scanf_arg_DINT(name, data_ptr) &data_ptr->name
-#define  scanf_arg_UDINT(name, data_ptr) &data_ptr->name
-#define   scanf_arg_LINT(name, data_ptr) &data_ptr->name
-#define  scanf_arg_ULINT(name, data_ptr) &data_ptr->name
-#define   scanf_arg_REAL(name, data_ptr) &data_ptr->name
-#define  scanf_arg_LREAL(name, data_ptr) &data_ptr->name
-#define scanf_arg_STRING(name, data_ptr) scan_string, &data_ptr->name 
+#define   scanf_arg_BOOL(arg) arg
+#define   scanf_arg_SINT(arg) arg
+#define  scanf_arg_USINT(arg) arg
+#define    scanf_arg_INT(arg) arg
+#define   scanf_arg_UINT(arg) arg
+#define   scanf_arg_DINT(arg) arg
+#define  scanf_arg_UDINT(arg) arg
+#define   scanf_arg_LINT(arg) arg
+#define  scanf_arg_ULINT(arg) arg
+#define   scanf_arg_REAL(arg) arg
+#define  scanf_arg_LREAL(arg) arg
+#define scanf_arg_STRING(arg) scan_string, arg
 
 #define scanf_args_separator ,
 
-#define scanf_args_SIMPLE(C_type, C_name, name, data_ptr) scanf_arg_##C_type(C_name, data_ptr)
+#define scanf_args_SIMPLE(C_type, C_name, name, data_ptr) scanf_arg_##C_type(&data_ptr->C_name)
 #define scanf_args_OBJECT(C_type, C_name, name, data_ptr) TYPE_##C_type(scanf_args, (&data_ptr->C_name))
+#define scanf_args_ARRAY(C_type, C_name, name, data_ptr) TYPE_##C_type(scanf_args, data_ptr->C_name.table)
+#define scanf_args_ARRAY_SIMPLE(C_type, index, data_ptr) scanf_arg_##C_type(&data_ptr[index])
+#define scanf_args_ARRAY_OBJECT(C_type, index, data_ptr) TYPE_##C_type(scanf_args, (&data_ptr[index]))
 
-#define   printf_arg_BOOL(name, data_ptr) data_ptr->name
-#define   printf_arg_SINT(name, data_ptr) data_ptr->name
-#define  printf_arg_USINT(name, data_ptr) data_ptr->name
-#define    printf_arg_INT(name, data_ptr) data_ptr->name
-#define   printf_arg_UINT(name, data_ptr) data_ptr->name
-#define   printf_arg_DINT(name, data_ptr) data_ptr->name
-#define  printf_arg_UDINT(name, data_ptr) data_ptr->name
-#define   printf_arg_LINT(name, data_ptr) data_ptr->name
-#define  printf_arg_ULINT(name, data_ptr) data_ptr->name
-#define   printf_arg_REAL(name, data_ptr) data_ptr->name
-#define  printf_arg_LREAL(name, data_ptr) data_ptr->name
-#define printf_arg_STRING(name, data_ptr) data_ptr->name.len, data_ptr->name.body 
+#define   printf_arg_BOOL(arg) arg
+#define   printf_arg_SINT(arg) arg
+#define  printf_arg_USINT(arg) arg
+#define    printf_arg_INT(arg) arg
+#define   printf_arg_UINT(arg) arg
+#define   printf_arg_DINT(arg) arg
+#define  printf_arg_UDINT(arg) arg
+#define   printf_arg_LINT(arg) arg
+#define  printf_arg_ULINT(arg) arg
+#define   printf_arg_REAL(arg) arg
+#define  printf_arg_LREAL(arg) arg
+#define printf_arg_STRING(arg) arg.len, arg.body 
 
 #define printf_args_separator ,
 
-#define printf_args_SIMPLE(C_type, C_name, name, data_ptr) printf_arg_##C_type(C_name, data_ptr)
+#define printf_args_SIMPLE(C_type, C_name, name, data_ptr) printf_arg_##C_type(data_ptr->C_name)
 #define printf_args_OBJECT(C_type, C_name, name, data_ptr) TYPE_##C_type(printf_args, (&data_ptr->C_name))
+#define printf_args_ARRAY(C_type, C_name, name, data_ptr) TYPE_##C_type(printf_args, (&data_ptr->C_name.table))
+#define printf_args_ARRAY_SIMPLE(C_type, index, data_ptr) printf_arg_##C_type(data_ptr[index])
+#define printf_args_ARRAY_OBJECT(C_type, index, data_ptr) TYPE_##C_type(printf_args, (data_ptr[index]))
 
 static void scan_string(const char *str, int len, void *user_data) {{
 	IEC_STRING *iecstr = (IEC_STRING*)user_data;
