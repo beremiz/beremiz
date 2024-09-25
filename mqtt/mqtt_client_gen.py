@@ -430,56 +430,84 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             formatdict["retrieve"] += """
         READ_VALUE({c_loc_name}, {C_type})""".format(**locals())
 
-        def recurseJsonTypes(datatype, basetypes):
+        # collect all used type with their dependencies
+        basetypes=[]
+        arrays=set()
+        structures=set()
+        already_generated_types = set()
+
+        def recurseJsonTypes(datatype):
+            # append derivated type first so we can expect the list
+            # to be sorted with base types in last position
             basetypes.append(datatype)
-            # add derivated type first fo we can expect the list to be sorted
-            # with base types in last position
             infos = datatype_info_getter(datatype)
-            for element in infos["elements"]:
-                field_datatype = element["Type"]
-                if field_datatype not in MQTT_IEC_types:
-                    recurseJsonTypes(field_datatype, basetypes)
+            print(infos)
+            element_type = infos["type"]
+            if element_type == "Structure":
+                structures.add(datatype)
+                for element in infos["elements"]:
+                    field_datatype = element["Type"]
+                    if field_datatype not in MQTT_IEC_types:
+                        recurseJsonTypes(field_datatype)
+            elif element_type == "Array":
+                arrays.add(datatype)
+                item_datatype = infos["base_type"]
+                if item_datatype not in MQTT_IEC_types:
+                    recurseJsonTypes(item_datatype)
+        def typeCategory(iec_type):
+            if field_iec_type in arrays:
+                return "ARRAY"
+            elif field_iec_type in structures:
+                return "OBJECT"
+            return "SIMPLE"
 
-        print(json_types)
-
-        # collect all type dependencies
-        basetypes=[]  # use a list to keep them ordered
         for iec_type,_instances in json_types.items():
-            recurseJsonTypes(iec_type, basetypes)
+            recurseJsonTypes(iec_type)
 
-        done_types = set()
         # go backard to get most derivated type definition last
         # so that CPP can always find base type deinition before
         for iec_type in reversed(basetypes):
             # avoid repeating type definition
-            if iec_type in done_types:
+            if iec_type in already_generated_types:
                 continue
-            done_types.add(iec_type)
+            already_generated_types.add(iec_type)
 
             C_type = iec_type.upper()
             json_decl = "#define TYPE_" + C_type + "(_P, _A) \\\n"
 
             infos = datatype_info_getter(iec_type)
 
-            elements = infos["elements"]
-            last = len(elements) - 1
-            for idx, element in enumerate(elements):
-                field_iec_type = element["Type"]
+            element_type = infos["type"]
+            if element_type == "Structure":
+                elements = infos["elements"]
+                last = len(elements) - 1
+                for idx, element in enumerate(elements):
+                    field_iec_type = element["Type"]
+                    if type(field_iec_type) == tuple and field_iec_type[0] == "array":
+                        raise Exception("Inline arrays in structure are not supported. Please use a separate data type for array.")
+
+                    field_C_type = field_iec_type.upper()
+                    field_name = element["Name"]
+                    field_C_name = field_name.upper()
+                    decl_type = typeCategory(field_iec_type)
+
+                    json_decl += ("    _P##_" + decl_type + "(" + 
+                                  field_C_type + ", " + field_C_name + ", " + field_name + ", _A)" +
+                                  ("\n\n" if idx == last else " _P##_separator \\\n"))
+
+            elif element_type == "Array":
+                dimensions = infos["dimensions"]
+                if len(dimensions) > 1:
+                    raise Exception("Only 1 dimension arrays are supported")
+                count = int(dimensions[0][1]) - int(dimensions[0][0]) + 1
+                field_iec_type = infos["base_type"]
+                decl_type = typeCategory(field_iec_type)
                 field_C_type = field_iec_type.upper()
-                field_name = element["Name"]
-                field_C_name = field_name.upper()
-                if field_iec_type in MQTT_IEC_types:
-                    decl_type = "SIMPLE"
-                else:
-                    decl_type = "OBJECT"
-
-                json_decl += "    _P##_"+decl_type+"(" + field_C_type + ", " + field_C_name + ", " + field_name + ", _A)"
-                if idx != last:
-                    json_decl += " _P##_separator \\"
-                else:
-                    json_decl += "\n"
-                json_decl += "\n"
-
+                last = count - 1
+                for idx in range(count):
+                    json_decl += ("    _P##_ARRAY_" + decl_type + "(" +
+                                  field_C_type + ", " + repr(idx) + " , _A)" +
+                                  ("\n\n" if idx == last else " _P##_separator \\\n"))
 
             formatdict["json_decl"] += json_decl
 
