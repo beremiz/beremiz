@@ -103,7 +103,7 @@ class MQTTClient(object):
         return self.modeldata
 
     def GetTypes(self):
-        datatype_candidates = self.GetCTRoot().GetDataTypes()
+        datatype_candidates = self.GetCTRoot().GetDataTypes(basetypes=False, only_locatables=True)
         return datatype_candidates
 
     def GetDataTypeInfos(self, typename):

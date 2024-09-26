@@ -11,23 +11,39 @@ import wx.dataview as dv
 
 import util.paths as paths
 
-# from perfect_hash import generate_code, IntSaltHash
+MQTT_UNSUPPORTED_types = set([
+    "TIME",
+    "DATE",
+    "TOD",
+    "DT",
+    "STEP",
+    "TRANSITION",
+    "ACTION",
+    "STRING"
+])
 
-MQTT_IEC_types = dict(
+MQTT_IEC_types_list =[ 
 # IEC61131|  C  type   | sz
-    BOOL   = ("uint8_t" , "X"),
-    SINT   = ("int8_t"  , "B"),
-    USINT  = ("uint8_t" , "B"),
-    INT    = ("int16_t" , "W"),
-    UINT   = ("uint16_t", "W"),
-    DINT   = ("uint32_t", "D"),
-    UDINT  = ("int32_t" , "D"),
-    LINT   = ("int64_t" , "L"),
-    ULINT  = ("uint64_t", "L"),
-    REAL   = ("float"   , "D"),
-    LREAL  = ("double"  , "L"),
-    STRING = ("NOT IMPLEMENTED"  , "DONT USE")   # TODO STRING !!!
-)
+    ("BOOL" , ("uint8_t" , "X")),
+    ("SINT" , ("int8_t"  , "B")),
+    ("USINT", ("uint8_t" , "B")),
+    ("BYTE" , ("uint8_t" , "X")),
+    ("INT"  , ("int16_t" , "W")),
+    ("UINT" , ("uint16_t", "W")),
+    ("WORD" , ("uint16_t", "W")),
+    ("DINT" , ("int32_t" , "D")),
+    ("UDINT", ("uint32_t", "D")),
+    ("DWORD", ("uint32_t", "D")),
+    ("LINT" , ("int64_t" , "L")),
+    ("ULINT", ("uint64_t", "L")),
+    ("LWORD", ("uint64_t", "L")),
+    ("REAL" , ("float"   , "D")),
+    ("LREAL", ("double"  , "L"))
+]
+MQTT_IEC_SUPPORTED_types = list(zip(*MQTT_IEC_types_list)[0])
+MQTT_IEC_types = dict(MQTT_IEC_types_list)
+
+MQTT_JSON_SUPPORTED_types = set(MQTT_IEC_types.keys()+["STRING"])
 
 """
  QoS - Quality of Service
@@ -197,7 +213,7 @@ class MQTTTopicListPanel(wx.Panel):
         dsc = lstcoldsc[self.direction]
         for idx,(colname,width) in enumerate(zip(dsc.lstcolnames,dsc.lstcolwidths)):
             if colname == "Type":
-                choice_DV_render = dv.DataViewChoiceRenderer(self.types_getter())
+                choice_DV_render = dv.DataViewChoiceRenderer(MQTT_IEC_SUPPORTED_types + self.types_getter())
                 choice_DV_col = dv.DataViewColumn(colname, choice_DV_render, idx, width=width)
                 self.dvc.AppendColumn(choice_DV_col)
             else:
@@ -392,11 +408,14 @@ class MQTTClientModel(dict):
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = "__Q" + iec_size_prefix + locstr + "_" + str(iec_number)
                 encoding = "SIMPLE"
+            elif iec_type in MQTT_UNSUPPORTED_types:
+                raise Exception("Type "+iec_type+" is not supported in MQTT")
             else:
                 C_type = iec_type.upper();
                 c_loc_name = "__Q" + locstr + "_" + str(iec_number)
                 json_types.setdefault(iec_type,OD()).setdefault("OUTPUT",[]).append(c_loc_name)
                 encoding = "JSON"
+
 
 
             formatdict["decl"] += """
@@ -415,6 +434,8 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = "__I" + iec_size_prefix + locstr + "_" + str(iec_number)
                 init_topic_call = "INIT_TOPIC"
+            elif iec_type in MQTT_UNSUPPORTED_types:
+                raise Exception("Type "+iec_type+" is not supported in MQTT")
             else:
                 C_type = iec_type.upper();
                 c_loc_name = "__I" + locstr + "_" + str(iec_number)
@@ -446,12 +467,14 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
                 structures.add(datatype)
                 for element in infos["elements"]:
                     field_datatype = element["Type"]
-                    if field_datatype not in MQTT_IEC_types:
+                    if field_datatype not in MQTT_JSON_SUPPORTED_types and\
+                       field_datatype not in MQTT_UNSUPPORTED_types:
                         recurseJsonTypes(field_datatype)
             elif element_type == "Array":
                 arrays.add(datatype)
                 item_datatype = infos["base_type"]
-                if item_datatype not in MQTT_IEC_types:
+                if item_datatype not in MQTT_JSON_SUPPORTED_types and\
+                   item_datatype not in MQTT_UNSUPPORTED_types:
                     recurseJsonTypes(item_datatype)
         def typeCategory(iec_type):
             if field_iec_type in arrays:
