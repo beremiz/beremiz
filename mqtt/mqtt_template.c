@@ -141,8 +141,6 @@ C_type *c_loc_name = &PLC_##c_loc_name##_buf;
 static void scan_string(const char *str, int len, void *user_data) {{
 	IEC_STRING *iecstr = (IEC_STRING*)user_data;
 	__strlen_t ieclen = len > STR_MAX_LEN ? STR_MAX_LEN : len;
-    printf("%.*s", len, str);
-    printf("%.*s", ieclen, str);
 	memcpy(iecstr->body, str, ieclen);
     iecstr->len = ieclen;
 }}
