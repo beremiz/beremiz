@@ -441,7 +441,6 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
             # to be sorted with base types in last position
             basetypes.append(datatype)
             infos = datatype_info_getter(datatype)
-            print(infos)
             element_type = infos["type"]
             if element_type == "Structure":
                 structures.add(datatype)
