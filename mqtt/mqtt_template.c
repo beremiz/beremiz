@@ -44,6 +44,8 @@ void trace_callback(enum MQTTCLIENT_TRACE_LEVELS level, char* message)
 #define CHANGED 1
 #define UNCHANGED 0
 
+extern INT CONFIG__MQTT_STATUS_{locstr};
+
 #define DECL_VAR(iec_type, C_type, c_loc_name)                                                     \
 static C_type PLC_##c_loc_name##_buf;                                                              \
 static C_type MQTT_##c_loc_name##_buf;                                                             \
@@ -557,6 +559,7 @@ exit_error:
 void __retrieve_{locstr}(void)
 {{
     if (pthread_mutex_trylock(&MQTT_retrieve_mutex) == 0){{
+        CONFIG__MQTT_STATUS_{locstr} = MQTT_is_disconnected ? 0 : 1;
 {retrieve}
         pthread_mutex_unlock(&MQTT_retrieve_mutex);
     }}

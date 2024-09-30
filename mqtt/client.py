@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 import os
 import re
+import wx
 
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
@@ -26,9 +27,11 @@ MqttCIncludePaths = [
 
 class MQTTClientEditor(ConfTreeNodeEditor):
     CONFNODEEDITOR_TABS = [
-        (_("MQTT Client"), "CreateMQTTClient_UI")]
+        (_("MQTT Client"), "CreateMQTTClient_UI"),
+        (_("Info"), "CreateInfo_UI")]
 
     MQTTClient_UI = None
+    Info_UI = None
 
     def Log(self, msg):
         self.Controler.GetCTRoot().logger.write(msg)
@@ -40,6 +43,15 @@ class MQTTClientEditor(ConfTreeNodeEditor):
             self.Log,
             self.Controler.GetTypes)
         return self.MQTTClient_UI
+
+    def CreateInfo_UI(self, parent):
+        location_str = "_".join(map(str, self.Controler.GetCurrentLocation()))
+        information=("Connection status GLOBAL VAR is:\n\n\tMQTT_STATUS_"+location_str
+                    +", of type INT.\n\t"
+                    +"0 is disconnected\n\t"
+                    +"1 is connected\n")
+        self.Info_UI = wx.StaticText(parent, label = information)
+        return self.Info_UI
 
     def RefreshView(self):
         if(self.MQTTClient_UI):
@@ -224,6 +236,7 @@ class MQTTClient(object):
 
     def CTNGlobalInstances(self):
         location_str = "_".join(map(str, self.GetCurrentLocation()))
-        return [("MQTT_HAPPY_"+location_str, "DINT", "")]
+        return [("MQTT_STATUS_"+location_str, "INT", ""),
+               ]
 
 
