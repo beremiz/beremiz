@@ -19,6 +19,9 @@ widget_desc("ForEach") {
     Direct sub-elements can be either groups of widget to be spanned, labeled
     "ClassName:offset", or buttons to control the spanning, labeled
     "ClassName:+/-number".
+
+    In case of "ClassName:offset", offset for first element is 1.
+
     ||
 
     shortdesc > span widgets over a set of repeated HMI_NODEs
@@ -30,7 +33,7 @@ widget_desc("ForEach") {
 
 widget_defs("ForEach") {
 
-    if "count(path) != 1" error > ForEach widget «$hmi_element/@id» must have one HMI path given.
+    if "count(path) < 1" error > ForEach widget «$hmi_element/@id» must have one HMI path given.
     if "count(arg) != 1" error > ForEach widget «$hmi_element/@id» must have one argument given : a class name.
 
     const "class","arg[1]/@value";
@@ -65,6 +68,7 @@ widget_defs("ForEach") {
         const "item_path", "$items_paths[$pos]";
     |           [ /* item="«$elt_label»" path="«$item_path»" */
         if "count($elt)=0" error > Missing item labeled «$elt_label» in ForEach widget «$hmi_element/@id»
+        if "count($elt)>1" error > Duplicate item labeled «$elt_label» in ForEach widget «$hmi_element/@id»
         foreach "func:refered_elements($elt)[@id = $hmi_elements/@id][not(@id = $elt/@id)]" {
             if "not(func:is_descendant_path(func:widget(@id)/path/@value, $item_path))"
                 error > Widget id="«@id»" label="«@inkscape:label»" is having wrong path. Accroding to ForEach widget ancestor id="«$hmi_element/@id»", path should be descendant of "«$item_path»".
@@ -74,75 +78,116 @@ widget_defs("ForEach") {
     }
     |         ]
     |     },
-    |     item_offset: 0,
+    |     range: «count($hmi_index_items)»,
+    |     size: «count($unordered_items)»,
+    |     position: 0,
 }
 
 widget_class("ForEach")
 ||
+    items_subscribed = false;
 
     unsub_items(){
-        for(let item of this.items){
-            for(let widget of item) {
-                widget.unsub();
+        if(this.items_subscribed){
+            for(let item of this.items){
+                for(let widget of item) {
+                    widget.unsub();
+                }
             }
+            this.items_subscribed = false;
         }
     }
 
     unsub(){
+        super.unsub()
         this.unsub_items();
-        this.offset = 0;
-        this.relativeness = undefined;
     }
 
     sub_items(){
-        for(let i = 0; i < this.items.length; i++) {
-            let item = this.items[i];
-            let orig_item_index = this.index_pool[i];
-            let item_index = this.index_pool[i+this.item_offset];
-            let item_index_offset = item_index - orig_item_index;
-            if(this.relativeness[0])
-                item_index_offset += this.offset;
-            for(let widget of item) {
-                /* all variables of all widgets in a ForEach are all relative. 
-                   Really.
+        if(!this.items_subscribed){
+            for(let i = 0; i < this.size; i++) {
+                let item = this.items[i];
+                let orig_item_index = this.index_pool[i];
+                let item_index = this.index_pool[i+this.position];
+                let item_index_offset = item_index - orig_item_index;
+                if(this.relativeness[0])
+                    item_index_offset += this.offset;
+                for(let widget of item) {
+                    /* all variables of all widgets in a ForEach are all relative. 
+                       Really.
 
-                   TODO: allow absolute variables in ForEach widgets
-                */
-                widget.sub(item_index_offset, widget.indexes.map(_=>true));
+                       TODO: allow absolute variables in ForEach widgets
+                    */
+                    widget.sub(item_index_offset, widget.indexes.map(_=>true));
+                }
             }
         }
     }
 
-    sub(new_offset=0, relativeness=[]){
-        this.offset = new_offset;
-        this.relativeness = relativeness;
-        this.sub_items();
+    sub(new_offset, relativeness, container_id){
+        let position_given = this.indexes.length > 2;
+
+        // sub() will call apply_cache() and then dispatch()
+        // undefining position forces dispatch() to call apply_position()
+        if(position_given)
+            this.position = undefined;
+        
+        super.sub(new_offset, relativeness, container_id);
+
+        // if position isn't given as a variable
+        // dispatch() to call apply_position() aren't called
+        // and items must be subscibed now.
+        if(!position_given)
+            this.sub_items();
+
+        // as soon as subribed apply range and size once for all
+        this.apply_hmi_value(1, this.range);
+        this.apply_hmi_value(3, this.size);
     }
 
-    apply_cache() {
-        this.items.forEach(item=>item.forEach(widget=>widget.apply_cache()));
+    apply_position(new_position){
+        let old_position = this.position;
+        let limited_position = Math.round(Math.max(Math.min(new_position, this.range - this.size), 0));
+        if(this.position == limited_position){
+            return false;
+        }
+        this.unsub_items();
+        this.position = limited_position;
+        this.sub_items();
+        request_subscriptions_update();
+        jumps_need_update = true;
+        this.request_animate();
+        return true;
     }
 
     on_click(opstr, evt) {
-        let new_item_offset = eval(String(this.item_offset)+opstr);
-        if(new_item_offset + this.items.length > this.index_pool.length) {
-            if(this.item_offset + this.items.length == this.index_pool.length)
-                new_item_offset = 0;
+        let new_position = eval(String(this.position)+opstr);
+        if(new_position + this.size > this.range) {
+            if(this.position + this.size == this.range)
+                new_position = 0;
             else
-                new_item_offset = this.index_pool.length - this.items.length;
-        } else if(new_item_offset < 0) {
-            if(this.item_offset == 0)
-                new_item_offset = this.index_pool.length - this.items.length;
+                new_position = this.range - this.size;
+        } else if(new_position < 0) {
+            if(this.position == 0)
+                new_position = this.range - this.size;
             else
-                new_item_offset = 0;
+                new_position = 0;
         }
-        this.item_offset = new_item_offset;
-        this.unsub_items();
-        this.sub_items();
-        update_subscriptions();
-        this.apply_cache(); 
-        jumps_need_update = true;
-        requestHMIAnimation();
+        if(this.apply_position(new_position)){
+            this.apply_hmi_value(2, this.position);
+        }
     }
+
+    dispatch(value, oldval, index) {
+        // Only care about position, others are constants
+        if(index == 2){
+            this.apply_position(value);
+            if(this.position != value){
+                // widget refused or apply different value, force it back
+                this.apply_hmi_value(2, this.position);
+            }
+        }
+    }
+
 ||
 

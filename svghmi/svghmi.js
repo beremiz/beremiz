@@ -143,7 +143,7 @@ hmi_hash_u8 = new Uint8Array(hmi_hash);
 var ws = null;
 
 function send_blob(data) {
-    if(ws && data.length > 0) {
+    if(data.length > 0 && ws && ws.readyState == WebSocket.OPEN) {
         ws.send(new Blob([hmi_hash_u8].concat(data)));
     };
 };
@@ -178,6 +178,7 @@ function send_reset() {
 };
 
 var subscriptions = [];
+var subscriptions_update_requested = false;
 
 function subscribers(index) {
     let entry = subscriptions[index];
@@ -312,7 +313,10 @@ setup_lang();
 
 function update_subscriptions() {
     let delta = [];
-    if(!ws)
+
+    subscriptions_update_requested = false;
+
+    if(!ws || ws.readyState != WebSocket.OPEN)
         // dont' change subscriptions if not connected
         return;
 
@@ -348,6 +352,14 @@ function update_subscriptions() {
     }
     send_blob(delta);
 };
+
+function request_subscriptions_update(){
+    if(!subscriptions_update_requested){
+        subscriptions_update_requested = true;
+        Promise.resolve().then(update_subscriptions);
+    }
+}
+
 
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
@@ -513,7 +525,7 @@ function switch_page(page_name, page_index) {
 
     new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness,container_id));
 
-    update_subscriptions();
+    request_subscriptions_update();
 
     current_subscribed_page = page_name;
     current_page_index = page_index;
