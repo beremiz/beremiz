@@ -99,8 +99,8 @@ template "*", mode="parselabel"
             if "string-length(.) > 0" path {
                 // 1 : global match
                 // 2 : assign=
-                // 2 : /path
-                // 3 : min,max
+                // 3 : /path
+                // 4 : min,max
                 const "path_match", "regexp:match(.,$pathregex)";
                 const "pathassign", "substring-before($path_match[2],'=')";
                 const "pathminmax", "str:split($path_match[4],',')";
