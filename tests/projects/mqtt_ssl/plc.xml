@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="SMARTEH d.o.o." productName="LHC2_GOT_012" productVersion="1.1.359" creationDateTime="2024-07-25T15:43:22"/>
-  <contentHeader name="mqtt" modificationDateTime="2024-08-21T17:05:30">
+  <contentHeader name="mqtt" modificationDateTime="2024-09-30T15:44:04">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -15,12 +15,96 @@
     </coordinateInfo>
   </contentHeader>
   <types>
-    <dataTypes/>
+    <dataTypes>
+      <dataType name="inner">
+        <baseType>
+          <struct>
+            <variable name="a">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+            <variable name="b">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+            <variable name="c">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </struct>
+        </baseType>
+      </dataType>
+      <dataType name="outer">
+        <baseType>
+          <struct>
+            <variable name="aa">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+            <variable name="bb">
+              <type>
+                <derived name="inner"/>
+              </type>
+            </variable>
+            <variable name="cc">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+            <variable name="dd">
+              <type>
+                <derived name="datatype1"/>
+              </type>
+            </variable>
+          </struct>
+        </baseType>
+      </dataType>
+      <dataType name="datatype0">
+        <baseType>
+          <struct>
+            <variable name="kkk">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+            <variable name="xxx">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+            <variable name="complex">
+              <type>
+                <derived name="inner"/>
+              </type>
+            </variable>
+            <variable name="many">
+              <type>
+                <derived name="datatype1"/>
+              </type>
+            </variable>
+          </struct>
+        </baseType>
+      </dataType>
+      <dataType name="datatype1">
+        <baseType>
+          <array>
+            <dimension lower="1" upper="2"/>
+            <baseType>
+              <derived name="inner"/>
+            </baseType>
+          </array>
+        </baseType>
+      </dataType>
+    </dataTypes>
     <pous>
       <pou name="program0" pouType="program">
         <interface>
           <localVars>
-            <variable name="LocalVar0" address="%ID3.0">
+            <variable name="LocalVar0" address="%ID3.1">
               <type>
                 <DINT/>
               </type>
@@ -34,7 +118,7 @@
             </variable>
           </localVars>
           <localVars>
-            <variable name="LocalVar2" address="%QD3.0">
+            <variable name="LocalVar2" address="%QD3.1">
               <type>
                 <DINT/>
               </type>
@@ -47,17 +131,76 @@
               </type>
             </variable>
           </localVars>
+          <localVars>
+            <variable name="LocalVar4" address="%I3.0">
+              <type>
+                <derived name="outer"/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
+            <variable name="LocalVar5">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
+            <variable name="LocalVar6" address="%Q3.0">
+              <type>
+                <derived name="datatype0"/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
+            <variable name="LocalVar8">
+              <type>
+                <derived name="datatype0"/>
+              </type>
+            </variable>
+            <variable name="LocalVar7">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="GlobalVar0">
+              <type>
+                <derived name="datatype0"/>
+              </type>
+            </variable>
+          </externalVars>
+          <localVars>
+            <variable name="Stringy">
+              <type>
+                <string/>
+              </type>
+            </variable>
+            <variable name="Integery">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="MQTT_STATUS_3">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+          </externalVars>
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="26" width="82" negated="false">
+            <inVariable localId="1" executionOrderId="0" height="27" width="82" negated="false">
               <position x="173" y="47"/>
               <connectionPointOut>
                 <relPosition x="82" y="13"/>
               </connectionPointOut>
               <expression>LocalVar0</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="26" width="82" negated="false">
+            <outVariable localId="2" executionOrderId="0" height="27" width="82" negated="false">
               <position x="482" y="47"/>
               <connectionPointIn>
                 <relPosition x="0" y="13"/>
@@ -68,7 +211,7 @@
               </connectionPointIn>
               <expression>LocalVar1</expression>
             </outVariable>
-            <outVariable localId="3" executionOrderId="0" height="26" width="82" negated="false">
+            <outVariable localId="3" executionOrderId="0" height="27" width="82" negated="false">
               <position x="479" y="140"/>
               <connectionPointIn>
                 <relPosition x="0" y="13"/>
@@ -81,12 +224,132 @@
               </connectionPointIn>
               <expression>LocalVar2</expression>
             </outVariable>
-            <inVariable localId="4" executionOrderId="0" height="26" width="82" negated="false">
+            <inVariable localId="4" executionOrderId="0" height="27" width="82" negated="false">
               <position x="170" y="155"/>
               <connectionPointOut>
                 <relPosition x="82" y="13"/>
               </connectionPointOut>
               <expression>LocalVar3</expression>
+            </inVariable>
+            <inVariable localId="6" executionOrderId="0" height="27" width="122" negated="false">
+              <position x="663" y="212"/>
+              <connectionPointOut>
+                <relPosition x="122" y="13"/>
+              </connectionPointOut>
+              <expression>LocalVar4.bb.b</expression>
+            </inVariable>
+            <outVariable localId="7" executionOrderId="0" height="27" width="82" negated="false">
+              <position x="852" y="213"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="6">
+                  <position x="852" y="226"/>
+                  <position x="825" y="226"/>
+                  <position x="825" y="225"/>
+                  <position x="785" y="225"/>
+                </connection>
+              </connectionPointIn>
+              <expression>LocalVar5</expression>
+            </outVariable>
+            <inVariable localId="8" executionOrderId="0" height="27" width="82" negated="false">
+              <position x="690" y="64"/>
+              <connectionPointOut>
+                <relPosition x="82" y="13"/>
+              </connectionPointOut>
+              <expression>LocalVar7</expression>
+            </inVariable>
+            <outVariable localId="9" executionOrderId="0" height="27" width="114" negated="false">
+              <position x="959" y="30"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="8">
+                  <position x="959" y="43"/>
+                  <position x="866" y="43"/>
+                  <position x="866" y="77"/>
+                  <position x="772" y="77"/>
+                </connection>
+              </connectionPointIn>
+              <expression>LocalVar6.kkk</expression>
+            </outVariable>
+            <outVariable localId="10" executionOrderId="0" height="27" width="114" negated="false">
+              <position x="948" y="78"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="8">
+                  <position x="948" y="91"/>
+                  <position x="860" y="91"/>
+                  <position x="860" y="77"/>
+                  <position x="772" y="77"/>
+                </connection>
+              </connectionPointIn>
+              <expression>LocalVar8.kkk</expression>
+            </outVariable>
+            <outVariable localId="11" executionOrderId="0" height="27" width="122" negated="false">
+              <position x="977" y="132"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="8">
+                  <position x="977" y="145"/>
+                  <position x="874" y="145"/>
+                  <position x="874" y="77"/>
+                  <position x="772" y="77"/>
+                </connection>
+              </connectionPointIn>
+              <expression>GlobalVar0.kkk</expression>
+            </outVariable>
+            <inVariable localId="5" executionOrderId="0" height="27" width="122" negated="false">
+              <position x="713" y="292"/>
+              <connectionPointOut>
+                <relPosition x="122" y="13"/>
+              </connectionPointOut>
+              <expression>LocalVar4.bb.c</expression>
+            </inVariable>
+            <inOutVariable localId="12" executionOrderId="0" height="27" width="66" negatedOut="false" negatedIn="false">
+              <position x="921" y="292"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="5">
+                  <position x="921" y="305"/>
+                  <position x="835" y="305"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="66" y="13"/>
+              </connectionPointOut>
+              <expression>Stringy</expression>
+            </inOutVariable>
+            <outVariable localId="14" executionOrderId="0" height="27" width="162" negated="false">
+              <position x="1060" y="295"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="12">
+                  <position x="1060" y="308"/>
+                  <position x="1024" y="308"/>
+                  <position x="1024" y="305"/>
+                  <position x="987" y="305"/>
+                </connection>
+              </connectionPointIn>
+              <expression>LocalVar6.complex.c</expression>
+            </outVariable>
+            <outVariable localId="15" executionOrderId="0" height="27" width="74" negated="false">
+              <position x="760" y="340"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="16">
+                  <position x="760" y="353"/>
+                  <position x="684" y="353"/>
+                  <position x="684" y="356"/>
+                  <position x="674" y="356"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Integery</expression>
+            </outVariable>
+            <inVariable localId="16" executionOrderId="0" height="27" width="170" negated="false">
+              <position x="504" y="343"/>
+              <connectionPointOut>
+                <relPosition x="170" y="13"/>
+              </connectionPointOut>
+              <expression>LocalVar4.dd[1].a</expression>
             </inVariable>
           </FBD>
         </body>
@@ -101,6 +364,13 @@
             <pouInstance name="instance0" typeName="program0"/>
           </task>
         </resource>
+        <globalVars>
+          <variable name="GlobalVar0">
+            <type>
+              <derived name="datatype0"/>
+            </type>
+          </variable>
+        </globalVars>
       </configuration>
     </configurations>
   </instances>
