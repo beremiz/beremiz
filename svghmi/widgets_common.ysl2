@@ -348,7 +348,7 @@ emit "preamble:widget-base-class" {
             this.relativeness = undefined;
         }
 
-        sub(new_offset=0, relativeness, container_id){
+        sub(new_offset, relativeness, container_id){
             this.offset = new_offset;
             this.relativeness = relativeness;
             this.container_id = container_id ;
