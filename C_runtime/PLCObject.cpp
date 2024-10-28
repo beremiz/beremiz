@@ -675,3 +675,13 @@ void PLCObject::TraceThreadProc(void)
         "TraceThreadProc ended normally");
 }
 
+uint32_t PLCObject::ExtendedCall(const char * method, const binary_t * argument, binary_t * answer)
+{
+    // TODO
+
+    answer->data = (uint8_t*)"";
+    answer->dataLength = 0;
+
+    return 0;
+}
+

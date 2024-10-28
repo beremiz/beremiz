@@ -1919,6 +1919,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # Oups.
             self.logger.write_error(_("Connection failed to %s!\n") % uri)
         else:
+            VersionsInfoBytes = self._connector.ExtendedCall("GetVersions", bytes())
+            VersionsInfo = VersionsInfoBytes.decode()
+            self.logger.write(f"Version string: {VersionsInfo}\n")
             self.CompareLocalAndRemotePLC()
 
             # Init with actual PLC status and print it
