@@ -829,9 +829,9 @@ class PLCObject(object):
         """ Dispatch argument to registered service """
         return self.extended_calls[method](argument)
 
-    def RegisterExtendedCall(method, callback):
+    def RegisterExtendedCall(self, method, callback):
         self.extended_calls[method] = callback
 
-    def UnregisterExtendedCall(method):
+    def UnregisterExtendedCall(self, method):
         del self.extended_calls[method]
 
