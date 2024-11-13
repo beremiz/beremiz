@@ -85,7 +85,7 @@ class eRPCServer(object):
         self.transport = None
         self.servicename = servicename
         self.ip_addr = ip_addr
-        self.port = port
+        self.port = int(port)
         self.servicepublisher = None
 
     def _to_be_published(self):
@@ -118,7 +118,7 @@ class eRPCServer(object):
         # transport = erpc.transport.SerialTransport(device, baudrate)
 
         # initialize TCP transport layer
-        self.transport = erpc.transport.TCPTransport(self.ip_addr, int(self.port), True)
+        self.transport = erpc.transport.TCPTransport(self.ip_addr, self.port, True)
 
         self.server = erpc.simple_server.SimpleServer(self.transport, erpc.basic_codec.BasicCodec)
         self.server.add_service(service)

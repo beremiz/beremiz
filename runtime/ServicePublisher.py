@@ -34,7 +34,6 @@ service_type = '_Beremiz._tcp.local.'
 
 class ServicePublisher(object):
     def __init__(self, protocol):
-        # type: fully qualified service type name
         self.serviceproperties = {
             'description': 'Beremiz remote PLC',
             'protocol': protocol
@@ -50,12 +49,12 @@ class ServicePublisher(object):
     def RegisterService(self, name, ip, port):
         try:
             self._RegisterService(name, ip, port)
-        except Exception:
+        except Exception as e:
+            print(f"Failed to register service ({str(e)}), retrying in 2 seconds")
             self.retrytimer = threading.Timer(2, self.RegisterService, [name, ip, port])
             self.retrytimer.start()
 
     def _RegisterService(self, name, ip, port):
-        # name: fully qualified service name
         self.service_name = '%s.%s' % (name, service_type)
         self.name = name
         self.port = port
@@ -75,8 +74,8 @@ class ServicePublisher(object):
         self.server.register_service(
             zeroconf.ServiceInfo(service_type,
                                  self.service_name,
-                                 self.ip_32b,
                                  self.port,
+                                 addresses=[self.ip_32b],
                                  properties=self.serviceproperties))
         self.retrytimer = None
 
