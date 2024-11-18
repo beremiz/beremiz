@@ -3,46 +3,24 @@
 
 # See COPYING file for copyrights details.
 
-
-
-from itertools import repeat, islice, chain
-
+from connectors.ERPC_URI import schemes_desc, per_scheme_model
 from connectors.SchemeEditor import SchemeEditor
 
+## Scheme list for the dialog's combobox
 
-model = [('host', _("Host:")),
-         ('port', _("Port:"))]
+Schemes = list(zip(*schemes_desc))[0]
 
-# (scheme, model, secure)
-models = [("LOCAL", [], False), ("ERPC", model, False), ("ERPCS", model, True)]
 
-Schemes = list(zip(*models))[0]
-
-_PerSchemeConf = {sch: (mod, sec) for sch, mod, sec in models}
-
+## Specialized SchemeEditor panel for ERPC 
 
 class ERPC_dialog(SchemeEditor):
     def __init__(self, scheme, *args, **kwargs):
-        # ID selector is enabled only on ERPC (secure)
-        self.model, self.EnableIDSelector = _PerSchemeConf[scheme]
+        self.model, self.EnableIDSelector, self.parser, self.builder = per_scheme_model[scheme]
 
         SchemeEditor.__init__(self, scheme, *args, **kwargs)
 
-    # pylint: disable=unused-variable
     def SetLoc(self, loc):
-        hostport, ID = list(islice(chain(loc.split("#"), repeat("")), 2))
-        host, port = list(islice(chain(hostport.split(":"), repeat("")), 2))
-        self.SetFields(locals())
+        self.SetFields(self.parser(loc))
 
     def GetLoc(self):
-        if self.model:
-            fields = self.GetFields()
-            template = "{host}"
-            if fields['port']:
-                template += ":{port}"
-            if self.EnableIDSelector:
-                if fields['ID']:
-                    template += "#{ID}"
-
-            return template.format(**fields)
-        return ''
+        return self.builder(self.GetFields())

@@ -83,6 +83,8 @@ def ConnectorFactory(uri, confnodesroot):
         scheme = _scheme
     elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
         scheme = _scheme[:-1]
+    elif _scheme.split("-")[0] in connectors:
+        scheme = _scheme.split("-")[0]
     else:
         return None
 
