@@ -73,6 +73,36 @@ ArgsWrappers = {
             for idx, force in orders],)
 }
 
+def rpc_wrapper(method_name, confnodesroot):
+    client_method = getattr(BeremizPLCObjectServiceClient, method_name)
+    return_wrapper = ReturnWrappers.get(
+        method_name, 
+        lambda client_method, obj, args_wrapper, *args: client_method(obj, *args_wrapper(*args)))
+    args_wrapper = ArgsWrappers.get(method_name, lambda *x:x)
+
+    def exception_wrapper(self, *args):
+        try:
+            return return_wrapper(client_method, self, args_wrapper, *args)
+        except erpc.transport.ConnectionClosed as e:
+            confnodesroot._SetConnector(None)
+            confnodesroot.logger.write_error(_("Connection lost!\n"))
+        except erpc.codec.CodecError as e:
+            confnodesroot.logger.write_warning(_("ERPC codec error: %s\n") % e)
+        except erpc.client.RequestError as e:
+            confnodesroot.logger.write_error(_("ERPC request error: %s\n") % e)                
+        except MissingCallException as e:
+            confnodesroot.logger.write_warning(_("Remote call not supported: %s\n") % e)
+        except Exception as e:
+            errmess = _("Exception calling remote PLC object fucntion %s:\n") % method_name \
+                        + traceback.format_exc()
+            confnodesroot.logger.write_error(errmess + "\n")
+            confnodesroot._SetConnector(None)
+
+        return self.PLCObjDefaults.get(method_name)
+    return exception_wrapper
+
+
+
 def ERPC_connector_factory(uri, confnodesroot):
     """
     returns the ERPC connector
@@ -108,39 +138,11 @@ def ERPC_connector_factory(uri, confnodesroot):
             'Malformed URI "%s": %s\n' % (uri, str(e)))
         return None
 
-    def rpc_wrapper(method_name):
-        client_method = getattr(BeremizPLCObjectServiceClient, method_name)
-        return_wrapper = ReturnWrappers.get(
-            method_name, 
-            lambda client_method, obj, args_wrapper, *args: client_method(obj, *args_wrapper(*args)))
-        args_wrapper = ArgsWrappers.get(method_name, lambda *x:x)
-
-        def exception_wrapper(self, *args):
-            try:
-                return return_wrapper(client_method, self, args_wrapper, *args)
-            except erpc.transport.ConnectionClosed as e:
-                confnodesroot._SetConnector(None)
-                confnodesroot.logger.write_error(_("Connection lost!\n"))
-            except erpc.codec.CodecError as e:
-                confnodesroot.logger.write_warning(_("ERPC codec error: %s\n") % e)
-            except erpc.client.RequestError as e:
-                confnodesroot.logger.write_error(_("ERPC request error: %s\n") % e)                
-            except MissingCallException as e:
-                confnodesroot.logger.write_warning(_("Remote call not supported: %s\n") % e)
-            except Exception as e:
-                errmess = _("Exception calling remote PLC object fucntion %s:\n") % method_name \
-                          + traceback.format_exc()
-                confnodesroot.logger.write_error(errmess + "\n")
-                confnodesroot._SetConnector(None)
-
-            return self.PLCObjDefaults.get(method_name)
-        return exception_wrapper
-
 
     PLCObjectERPCProxy = type(
         "PLCObjectERPCProxy",
         (ConnectorBase, BeremizPLCObjectServiceClient),
-        {name: rpc_wrapper(name)
+        {name: rpc_wrapper(name, confnodesroot)
             for name,_func in getmembers(IBeremizPLCObjectService, isfunction)})
 
     try:

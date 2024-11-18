@@ -71,12 +71,14 @@ class ServicePublisher(object):
         print("MDNS brodcasted service address :" + ip)
         self.ip_32b = socket.inet_aton(ip)
 
-        self.server.register_service(
-            zeroconf.ServiceInfo(service_type,
-                                 self.service_name,
-                                 self.port,
-                                 addresses=[self.ip_32b],
-                                 properties=self.serviceproperties))
+        self.service_info = zeroconf.ServiceInfo(
+            service_type,
+            self.service_name,
+            self.port,
+            addresses=[self.ip_32b],
+            properties=self.serviceproperties)
+
+        self.server.register_service(self.service_info)
         self.retrytimer = None
 
     def UnRegisterService(self):
@@ -84,12 +86,7 @@ class ServicePublisher(object):
             self.retrytimer.cancel()
 
         if self.server is not None:
-            self.server.unregister_service(
-                zeroconf.ServiceInfo(service_type,
-                                     self.service_name,
-                                     self.ip_32b,
-                                     self.port,
-                                     properties=self.serviceproperties))
+            self.server.unregister_service(self.service_info)
             self.server.close()
             self.server = None
 
