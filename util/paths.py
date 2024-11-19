@@ -50,6 +50,10 @@ def ThirdPartyPath(name, *suffixes):
     """
     Return folder where to find sibling projects like Modbus, CanFestival, BACnet
     """
+    env_name = name.upper() + "_PATH"
+    if env_name in os.environ:
+        return os.path.join(os.environ[env_name], *suffixes)
+    
     return os.path.join(AbsParentDir(__file__, 2), name, *suffixes)
 
 def Bpath(*names):

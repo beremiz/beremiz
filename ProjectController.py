@@ -46,7 +46,7 @@ import wx
 
 import features
 import connectors
-import util.paths as paths
+import util.paths as pathutils
 from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
@@ -65,7 +65,6 @@ from runtime import PlcStatus
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 from POULibrary import UserAddressedException
 
-base_folder = paths.AbsParentDir(__file__)
 
 MATIEC_ERROR_MODEL = re.compile(
     r".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
@@ -116,7 +115,7 @@ class Iec2CSettings(object):
     def findCmd(self):
         cmd = "iec2c" + (".exe" if os.name == 'nt' else "")
         paths = [
-            os.path.join(base_folder, "matiec")
+            pathutils.ThirdPartyPath("matiec")
         ]
         path = self.findObject(
             paths, lambda p: os.path.isfile(os.path.join(p, cmd)))
@@ -129,7 +128,7 @@ class Iec2CSettings(object):
 
     def findLibPath(self):
         paths = [
-            os.path.join(base_folder, "matiec", "lib"),
+            pathutils.ThirdPartyPath("matiec", "lib"),
             "/usr/lib/matiec"
         ]
         path = self.findObject(
