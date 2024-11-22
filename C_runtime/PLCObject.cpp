@@ -679,7 +679,7 @@ uint32_t PLCObject::ExtendedCall(const char * method, const binary_t * argument,
 {
     // TODO
 
-    answer->data = (uint8_t*)"";
+    answer->data = (uint8_t *)malloc(0);
     answer->dataLength = 0;
 
     return 0;
