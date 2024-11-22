@@ -37,9 +37,9 @@ jobs:
 
     - uses: actions/checkout@v3
       with:
-          repository: EmbeddedRPC/erpc
-          # v1.13.0
-          ref: 90ae2314d9f495ad2a3678a2fb82ac327ea2f134
+          repository: beremiz/erpc
+          # v1.13.0 + no CRC on TCP
+          ref: d8fff72b15274b5f2a8f7895d9bc5c91eef584ec
           path: erpc
               
     - name: Restore cached docker image

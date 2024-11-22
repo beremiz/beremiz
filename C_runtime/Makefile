@@ -31,6 +31,7 @@ ERPC_SOURCES += $(ERPC_ROOT)/erpcgen/src/format_string.cpp \
                 $(ERPC_C_ROOT)/infra/erpc_server.cpp \
                 $(ERPC_C_ROOT)/infra/erpc_simple_server.cpp \
                 $(ERPC_C_ROOT)/infra/erpc_framed_transport.cpp \
+                $(ERPC_C_ROOT)/infra/erpc_nocrc_framed_transport.cpp \
                 $(ERPC_C_ROOT)/infra/erpc_message_buffer.cpp \
                 $(ERPC_C_ROOT)/infra/erpc_message_loggers.cpp \
                 $(ERPC_C_ROOT)/infra/erpc_transport_arbitrator.cpp \
