@@ -47,6 +47,7 @@ ReturnWrappers = {
     "SeedBlob":ReturnAsLastOutput,
     "SetTraceVariablesList": ReturnAsLastOutput,
     "StopPLC":ReturnAsLastOutput,
+    "ExtendedCall":ReturnAsLastOutput,
 }
 
 ArgsWrappers = {
@@ -59,7 +60,7 @@ ArgsWrappers = {
         lambda orders : ([(order.idx, None if len(order.force)==0 else bytes(order.force)) for order in orders],)
 }
 
-def rpc_wrapper(method_name):
+def rpc_wrapper(method_name, server):
     PLCobj = PLC()
     method=getattr(PLCobj, method_name)
     args_wrapper = ArgsWrappers.get(method_name, lambda *x:x)
@@ -72,7 +73,8 @@ def rpc_wrapper(method_name):
             return 0
         except Exception as e:
             print(traceback.format_exc())
-            PLCobj.LogMessage(CRITICAL_LOG_LEVEL, f'eRPC call {method_name} Exception "{str(e)}"')
+            PLCobj.LogMessage(LogLevelsDict["CRITICAL"], f'eRPC call {method_name} Exception "{str(e)}"')
+            server.transport.close()
             raise
         
     return exception_wrapper
@@ -109,7 +111,7 @@ class eRPCServer(object):
         handler = type(
             "PLCObjectServiceHandlder", 
             (IBeremizPLCObjectService,),
-            {name: rpc_wrapper(name)              
+            {name: rpc_wrapper(name, self)
                     for name,_func in getmembers(IBeremizPLCObjectService, isfunction)})()
         
         service = BeremizPLCObjectServiceService(handler)

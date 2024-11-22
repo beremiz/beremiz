@@ -62,6 +62,7 @@ ReturnWrappers = {
     "SeedBlob":ReturnAsLastOutput,
     "SetTraceVariablesList": ReturnAsLastOutput,
     "StopPLC":ReturnAsLastOutput,
+    "ExtendedCall":ReturnAsLastOutput,
 }
 
 ArgsWrappers = {

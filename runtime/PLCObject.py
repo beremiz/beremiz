@@ -103,6 +103,9 @@ class PLCObject(object):
         self.PlcStopped.set()
 
         self._init_blobs()
+        
+        # initialize extended calls with GetVersions call, ignoring arguments
+        self.extended_calls = {"GetVersions":lambda *_args:self.GetVersions().encode()}
 
     # First task of worker -> no @RunInMain
     def AutoLoad(self, autostart):
@@ -818,16 +821,17 @@ class PLCObject(object):
 
         self.TraceThread = None
 
-    def RemoteExec(self, script, *kwargs):
-        try:
-            exec(script, kwargs)
-        except Exception:
-            _e_type, e_value, e_traceback = sys.exc_info()
-            line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
-            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
-                    (line_no, e_value, script.splitlines()[line_no - 1]))
-        return (0, kwargs.get("returnVal", None))
-
     def GetVersions(self):
         return platform_module.system() + " " + platform_module.release()
+
+    @RunInMain
+    def ExtendedCall(self, method, argument):
+        """ Dispatch argument to registered service """
+        return self.extended_calls[method](argument)
+
+    def RegisterExtendedCall(self, method, callback):
+        self.extended_calls[method] = callback
+
+    def UnregisterExtendedCall(self, method):
+        del self.extended_calls[method]
 

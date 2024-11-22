@@ -61,11 +61,11 @@ interface BeremizPLCObjectService {
     MatchMD5(in string MD5, out bool match) -> uint32
     NewPLC(in string md5sum, in binary plcObjectBlobID, in list<extra_file> extrafiles, out bool success) -> uint32
     PurgeBlobs() -> uint32
-    /* NOT TO DO : RemoteExec(in ) -> uint32 */
     RepairPLC() -> uint32
     ResetLogCount() -> uint32
     SeedBlob(in binary seed, out binary blobID) -> uint32
     SetTraceVariablesList(in list<trace_order> orders, out int32 debugtoken) -> uint32
     StartPLC() -> uint32
     StopPLC(out bool success) -> uint32
+    ExtendedCall(in string method, in binary argument, out binary answer ) -> uint32
 }
