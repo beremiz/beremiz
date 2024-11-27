@@ -2474,8 +2474,8 @@ class Viewer(EditorPanel, DebugViewer):
             elif not self.Debug and self.SelectedElement is not None:
                 movex, movey = move
                 if not event.AltDown() or event.ShiftDown():
-                    movex *= scaling[0]
-                    movey *= scaling[1]
+                    movex = int(movex * scaling[0])
+                    movey = int(movey * scaling[1])
                     if event.ShiftDown() and not event.AltDown():
                         movex *= 10
                         movey *= 10
