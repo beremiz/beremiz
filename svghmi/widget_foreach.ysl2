@@ -29,6 +29,9 @@ widget_desc("ForEach") {
     arg name="class_name" accepts="string" > HMI_CLASS name
 
     path name="root" accepts="HMI_NODE" >  where to find HMI_NODEs whose HMI_CLASS is class_name
+    path name="position" accepts="HMI_INT" > position of HMI_NODE mapped to first item, among similar siblings
+    path name="range" accepts="HMI_INT" count="optional" >  count of HMI_NODE siblings
+    path name="size" accepts="HMI_INT" count="optional" >  count of visible items
 }
 
 widget_defs("ForEach") {
@@ -125,7 +128,7 @@ widget_class("ForEach")
     }
 
     sub(new_offset, relativeness, container_id){
-        let position_given = this.indexes.length > 2;
+        let position_given = this.indexes.length > 1;
 
         // sub() will call apply_cache() and then dispatch()
         // undefining position forces dispatch() to call apply_position()
@@ -141,8 +144,10 @@ widget_class("ForEach")
             this.sub_items();
 
         // as soon as subribed apply range and size once for all
-        this.apply_hmi_value(1, this.range);
-        this.apply_hmi_value(3, this.size);
+        if(this.indexes.length > 2)
+            this.apply_hmi_value(2, this.range);
+        if(this.indexes.length > 3)
+            this.apply_hmi_value(3, this.size);
     }
 
     apply_position(new_position){
@@ -174,17 +179,17 @@ widget_class("ForEach")
                 new_position = 0;
         }
         if(this.apply_position(new_position)){
-            this.apply_hmi_value(2, this.position);
+            this.apply_hmi_value(1, this.position);
         }
     }
 
     dispatch(value, oldval, index) {
         // Only care about position, others are constants
-        if(index == 2){
+        if(index == 1){
             this.apply_position(value);
             if(this.position != value){
                 // widget refused or apply different value, force it back
-                this.apply_hmi_value(2, this.position);
+                this.apply_hmi_value(1, this.position);
             }
         }
     }

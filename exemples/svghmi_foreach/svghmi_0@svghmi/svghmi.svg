@@ -220,7 +220,7 @@
        sodipodi:role="line">8888</tspan></text>
   <g
      id="g6077"
-     inkscape:label="HMI:ForEach:PUMP@/@range@position@size"
+     inkscape:label="HMI:ForEach:PUMP@/@position@range@size"
      transform="translate(-3180.7865,1314.0878)">
     <g
        id="g6130"
@@ -937,7 +937,7 @@
        style="fill:#000000;fill-opacity:1;stroke-width:0.5px">8888</tspan></text>
   <g
      transform="translate(-1160.7865,1314.0878)"
-     inkscape:label="HMI:ForEach:PUMP@/@range@position@size"
+     inkscape:label="HMI:ForEach:PUMP@/@position@range@size"
      id="g18442">
     <g
        transform="translate(32.987139)"

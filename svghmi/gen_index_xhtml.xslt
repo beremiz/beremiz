@@ -4681,7 +4681,7 @@
 </xsl:text>
     <xsl:text>    sub(new_offset, relativeness, container_id){
 </xsl:text>
-    <xsl:text>        let position_given = this.indexes.length &gt; 2;
+    <xsl:text>        let position_given = this.indexes.length &gt; 1;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -4713,9 +4713,13 @@
 </xsl:text>
     <xsl:text>        // as soon as subribed apply range and size once for all
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(1, this.range);
+    <xsl:text>        if(this.indexes.length &gt; 2)
 </xsl:text>
-    <xsl:text>        this.apply_hmi_value(3, this.size);
+    <xsl:text>            this.apply_hmi_value(2, this.range);
+</xsl:text>
+    <xsl:text>        if(this.indexes.length &gt; 3)
+</xsl:text>
+    <xsl:text>            this.apply_hmi_value(3, this.size);
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4779,7 +4783,7 @@
 </xsl:text>
     <xsl:text>        if(this.apply_position(new_position)){
 </xsl:text>
-    <xsl:text>            this.apply_hmi_value(2, this.position);
+    <xsl:text>            this.apply_hmi_value(1, this.position);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -4791,7 +4795,7 @@
 </xsl:text>
     <xsl:text>        // Only care about position, others are constants
 </xsl:text>
-    <xsl:text>        if(index == 2){
+    <xsl:text>        if(index == 1){
 </xsl:text>
     <xsl:text>            this.apply_position(value);
 </xsl:text>
@@ -4799,7 +4803,7 @@
 </xsl:text>
     <xsl:text>                // widget refused or apply different value, force it back
 </xsl:text>
-    <xsl:text>                this.apply_hmi_value(2, this.position);
+    <xsl:text>                this.apply_hmi_value(1, this.position);
 </xsl:text>
     <xsl:text>            }
 </xsl:text>
