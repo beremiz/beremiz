@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2023-03-11T14:33:27"/>
-  <contentHeader name="Unnamed" modificationDateTime="2024-11-27T15:23:14">
+  <contentHeader name="Unnamed" modificationDateTime="2024-11-28T11:40:10">
     <coordinateInfo>
       <fbd>
         <scaling x="8" y="8"/>
@@ -81,6 +81,14 @@
                 <INT/>
               </type>
             </variable>
+            <variable name="K">
+              <type>
+                <INT/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
           </localVars>
         </interface>
         <body>
@@ -89,12 +97,20 @@
 
 RESULT := 'Single iteration FOR loop'; 
 
-J := FALSE;
 FOR I:= 1 TO 1 DO
-  J := TRUE;
+  K := K + 1;
 END_FOR;
 
-IF NOT J THEN RETURN; END_IF;
+IF NOT (K = 1) THEN RETURN; END_IF;
+
+RESULT := 'Single iteration FOR BY loop'; 
+
+K := 0;
+FOR I:= 1 TO 2 BY 2 DO
+  K := K + 1;
+END_FOR;
+
+IF NOT (K = 1) THEN RETURN; END_IF;
 
 
 RESULT := 'By 2 FOR loop'; 
