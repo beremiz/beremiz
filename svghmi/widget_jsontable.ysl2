@@ -192,7 +192,7 @@ template "svg:text", mode="json_table_elt_render" {
 template "svg:image", mode="json_table_elt_render" {
     param "expressions";
     const "value_expr", "$expressions/expression[1]/@content";
-    |         id("«@id»").setAttribute('xlink:href', String(«$value_expr»));
+    |         id("«@id»").setAttribute('href', String(«$value_expr»));
 }
 
 // only labels coming from Json widget are counted in

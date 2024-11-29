@@ -89,13 +89,9 @@ def CSVRdStr(fname, rowname, colname):
             dialect = csv.Sniffer().sniff(csvfile.read(1024))
             csvfile.seek(0)
             reader = csv.reader(csvfile, dialect)
-            first_row = True
+            headers = dict([(name, index) for index, name in enumerate(reader.__next__()[1:])])
             for row in reader:
-                if first_row:
-                    headers = dict([(name, index) for index, name in enumerate(row[1:])])
-                    first_row = False
-                else:
-                    data[row[0]] = row[1:]
+                data[row[0]] = row[1:]
         except csv.Error:
             return "#CSV_ERROR"
         finally:

@@ -4817,7 +4817,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>If Image widget is a svg:image element, then xlink:href content is replaced by
+      <xsl:text>If Image widget is a svg:image element, then href content is replaced by
 </xsl:text>
       <xsl:text>value of given variable.
 </xsl:text>
@@ -4835,17 +4835,15 @@
 </xsl:text>
     <xsl:text>    dispatch(value, oldval, index) {
 </xsl:text>
-    <xsl:text>        this.fields[index] = value;
+    <xsl:text>        if (index == 0) {
 </xsl:text>
-    <xsl:text>        if(!this.ready){
+    <xsl:text>            this.given_url = value;
 </xsl:text>
-    <xsl:text>            this.readyfields[index] = true;
+    <xsl:text>            this.ready = true;
 </xsl:text>
-    <xsl:text>            this.ready = this.readyfields.every(x=&gt;x);
+    <xsl:text>            this.request_animate();
 </xsl:text>
     <xsl:text>        }
-</xsl:text>
-    <xsl:text>        this.request_animate();
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
@@ -4865,42 +4863,13 @@
     </xsl:variable>
     <xsl:value-of select="$disability"/>
     <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
-    <xsl:variable name="field_initializer">
-      <xsl:for-each select="path">
-        <xsl:choose>
-          <xsl:when test="@type='HMI_STRING'">
-            <xsl:text>""</xsl:text>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:text>0</xsl:text>
-          </xsl:otherwise>
-        </xsl:choose>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-      </xsl:for-each>
-    </xsl:variable>
-    <xsl:text>    fields: [</xsl:text>
-    <xsl:value-of select="$field_initializer"/>
-    <xsl:text>],
-</xsl:text>
-    <xsl:variable name="readyfield_initializer">
-      <xsl:for-each select="path">
-        <xsl:text>false</xsl:text>
-        <xsl:if test="position()!=last()">
-          <xsl:text>,</xsl:text>
-        </xsl:if>
-      </xsl:for-each>
-    </xsl:variable>
-    <xsl:text>    readyfields: [</xsl:text>
-    <xsl:value-of select="$readyfield_initializer"/>
-    <xsl:text>],
+    <xsl:text>    given_url: "",
 </xsl:text>
     <xsl:text>    ready: false,
 </xsl:text>
     <xsl:text>    animate: function(){
 </xsl:text>
-    <xsl:text>      this.element.setAttribute('xlink:href', this.fields[0]);
+    <xsl:text>      this.element.setAttribute('href', this.given_url);
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
@@ -5454,7 +5423,7 @@
     <xsl:variable name="value_expr" select="$expressions/expression[1]/@content"/>
     <xsl:text>        id("</xsl:text>
     <xsl:value-of select="@id"/>
-    <xsl:text>").setAttribute('xlink:href', String(</xsl:text>
+    <xsl:text>").setAttribute('href', String(</xsl:text>
     <xsl:value-of select="$value_expr"/>
     <xsl:text>));
 </xsl:text>

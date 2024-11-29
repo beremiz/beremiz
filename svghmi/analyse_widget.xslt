@@ -551,7 +551,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>If Image widget is a svg:image element, then xlink:href content is replaced by
+      <xsl:text>If Image widget is a svg:image element, then href content is replaced by
 </xsl:text>
       <xsl:text>value of given variable.
 </xsl:text>
