@@ -24,7 +24,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-
 import os
 from POULibrary import POULibrary
 from py_ext.PythonFileCTNMixin import PythonFileCTNMixin
@@ -46,7 +45,7 @@ def CSVRdInt(fname, rowidx, colidx):
     if data is None:
         data = list()
         try:
-            csvfile = open(fname, 'rb')
+            csvfile = open(fname, 'rt', encoding='utf-8')
         except IOError:
             return "#FILE_NOT_FOUND"
         try:
@@ -55,12 +54,12 @@ def CSVRdInt(fname, rowidx, colidx):
             reader = csv.reader(csvfile, dialect)
             for row in reader:
                 data.append(row)
-        except csv.Error:
+        except csv.Error as e:
             return "#CSV_ERROR"
         finally:
             csvfile.close()
         csv_int_files[fname] = data
-    
+
     try:
         row = data[rowidx]
     except IndexError:
@@ -83,14 +82,14 @@ def CSVRdStr(fname, rowname, colname):
     if entry is None:
         data = dict()
         try:
-            csvfile = open(fname, 'rb')
+            csvfile = open(fname, 'rt', encoding='utf-8')
         except IOError:
             return "#FILE_NOT_FOUND"
         try:
             dialect = csv.Sniffer().sniff(csvfile.read(1024))
             csvfile.seek(0)
             reader = csv.reader(csvfile, dialect)
-            headers = dict([(name, index) for index, name in enumerate(reader.next()[1:])])
+            headers = dict([(name, index) for index, name in enumerate(reader.__next__()[1:])])
             for row in reader:
                 data[row[0]] = row[1:]
         except csv.Error:
@@ -100,7 +99,7 @@ def CSVRdStr(fname, rowname, colname):
         csv_str_files[fname] = (headers, data)
     else:
         headers, data = entry
-    
+
     try:
         row = data[rowname]
     except KeyError:
@@ -116,12 +115,63 @@ def CSVRdStr(fname, rowname, colname):
     except IndexError:
         return "#COL_NOT_FOUND"
 
+
+csv_int_files = {}
+def CSVWrInt(fname, rowidx, colidx, content, save):
+    \"\"\"
+    Update value at row/column pointed by integer indexes
+    Assumes data starts at first row and first column, no headers.
+    \"\"\"
+    if save > 0:
+        global csv_int_files
+        data = csv_int_files.get(fname, None)
+        if data is None:
+            data = list()
+            try:
+                csvfile = open(fname, 'rt', encoding='utf-8')
+            except IOError:
+                return "#FILE_NOT_FOUND"
+            try:
+                dialect = csv.Sniffer().sniff(csvfile.read(1024))
+                csvfile.seek(0)
+                reader = csv.reader(csvfile, dialect)
+                for row in reader:
+                    data.append(row)
+            except csv.Error as e:
+                return "#CSV_ERROR"
+            finally:
+                csvfile.close()
+            csv_int_files[fname] = data
+
+        try:
+            row = data[rowidx]
+        except IndexError:
+            return "#ROW_NOT_FOUND"
+    
+        try:
+            row[colidx] = content
+        except IndexError:
+            return "#COL_NOT_FOUND"
+            
+        wfile = open(fname, 'rt+', encoding='utf-8')
+        wdialect = csv.Sniffer().sniff(wfile.read(1024))
+        wfile.seek(0)
+        writer = csv.writer(wfile, wdialect)
+        for row in data:
+            writer.writerow(row)
+        wfile.truncate()
+        wfile.close()
+        
+    return "#SUCCESS"
+
+
 def pyext_csv_reload():
     global csv_int_files, csv_str_files
     csv_int_files.clear()
     csv_str_files.clear()
 
 """
+
 
 class PythonLibrary(POULibrary):
     def GetLibraryPath(self):
@@ -155,7 +205,6 @@ class PythonLibrary(POULibrary):
         runtimefile.close()
         return ((["py_ext"], [(Gen_Pythonfile_path, IECCFLAGS)], True), "",
                 ("runtime_00_pyext.py", open(runtimefile_path, "rb")))
-
 
 
 class PythonFile(PythonFileCTNMixin):

@@ -6,7 +6,7 @@ widget_desc("JsonTable") {
     Send given variables as POST to http URL argument, spread returned JSON in
     SVG sub-elements of "data" labeled element.
     
-    Documentation to be written. see svghmi exemple.
+    Documentation to be written. see svghmi example.
     ||
 
     shortdesc > Http POST variables, spread JSON back
@@ -113,7 +113,7 @@ def "func:json_expressions" {
     param "label";
 
     // compute javascript expressions to access JSON data
-    // desscribed in given svg element's "label"
+    // described in given svg element's "label"
     // knowing that parent element already has given "expressions".
 
     choose {
@@ -128,7 +128,7 @@ def "func:json_expressions" {
                     when "contains($suffix,'=')" {
                         const "name", "substring-before($suffix,'=')";
                         if "$expr/@name[. != $name]"
-                            error > JsonTable : missplaced '=' or inconsistent names in Json data expressions.
+                            error > JsonTable : misplaced '=' or inconsistent names in Json data expressions.
                         attrib "name" value "$name";
                         attrib "content" > «$expr/@content»«substring-after($suffix,'=')»
                     }
@@ -176,7 +176,7 @@ template "svg:text", mode="json_table_elt_render" {
         when "count($from_textstylelist) > 0" {
             const "content_expr", "$expressions/expression[2]/@content";
             if "string-length($content_expr) = 0 or $expressions/expression[2]/@name != 'textContent'"
-                error > Clones (svg:use) in JsonTable Widget pointing to a HMI:TextStyleList widget or item must have a "textContent=.someVal" assignement following value expression in label.
+                error > Clones (svg:use) in JsonTable Widget pointing to a HMI:TextStyleList widget or item must have a "textContent=.someVal" assignment following value expression in label.
             |         {
             |           let elt = id("«@id»");
             |           elt.textContent = String(«$content_expr»);
@@ -189,8 +189,13 @@ template "svg:text", mode="json_table_elt_render" {
     }
 }
 
+template "svg:image", mode="json_table_elt_render" {
+    param "expressions";
+    const "value_expr", "$expressions/expression[1]/@content";
+    |         id("«@id»").setAttribute('href', String(«$value_expr»));
+}
 
-// only labels comming from Json widget are counted in
+// only labels coming from Json widget are counted in
 def "func:filter_non_widget_label" {
     param "elt";
     param "widget_elts";

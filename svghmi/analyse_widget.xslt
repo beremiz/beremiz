@@ -546,6 +546,20 @@
       <xsl:text> where to find HMI_NODEs whose HMI_CLASS is class_name</xsl:text>
     </path>
   </xsl:template>
+  <xsl:template match="widget[@type='Image']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>If Image widget is a svg:image element, then href content is replaced by
+</xsl:text>
+      <xsl:text>value of given variable.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Image display</xsl:text>
+    </shortdesc>
+  </xsl:template>
   <xsl:template match="widget[@type='Input']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
@@ -589,7 +603,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Documentation to be written. see svghmi exemple.
+      <xsl:text>Documentation to be written. see svghmi example.
 </xsl:text>
     </longdesc>
     <shortdesc>

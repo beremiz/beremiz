@@ -1,0 +1,35 @@
+// widget_image.ysl2
+
+widget_desc("Image") {
+    longdesc
+    ||
+    If Image widget is a svg:image element, then href content is replaced by
+    value of given variable.
+    ||
+
+    shortdesc > Image display
+}
+
+widget_class("Image")
+    ||
+        frequency = 5;
+        dispatch(value, oldval, index) {
+            if (index == 0) {
+                this.given_url = value;
+                this.ready = true;
+                this.request_animate();
+            }
+        }
+    ||
+
+widget_defs("Image") {
+    |     given_url: "",
+    |     ready: false,
+    |     animate: function(){
+    |       this.element.setAttribute('href', this.given_url);
+    |     },
+    |
+    |     init: function() {
+    |       this.animate();
+    |     },
+}

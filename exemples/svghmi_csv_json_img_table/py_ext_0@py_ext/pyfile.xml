@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='utf-8'?>
+<PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <variables>
+    <variable name="FileNotify" type="HMI_INT"/>
+    <variable name="CurrentPath" type="HMI_STRING" initial="..."/>
+    <variable name="FileName" type="HMI_STRING"/>
+  </variables>
+  <globals>
+    <xhtml:p><![CDATA[
+from twisted.web.resource import Resource
+from os import getcwd, listdir
+from os.path import dirname, isfile, join
+import collections, json
+
+
+class FilesJsonResource(Resource):
+    image_cache = {}
+
+    def render_GET(self, request):
+        request.setHeader('content-type', 'image/png')
+        img_name = request.args[b'name'][0].decode('utf-8')
+        p = getcwd()  + '/' + img_name
+        if p not in self.image_cache:
+            with open(p, 'rb') as image_file:
+                img_bytes = image_file.read()
+                self.image_cache[p] = img_bytes
+        else:
+            img_bytes = self.image_cache[p]
+        return img_bytes
+
+
+    def render_POST(self, request):
+        newstr = request.content.getvalue()
+        newdata = json.loads(newstr)
+        args = newdata['args']
+        range_feedback = newdata['range']
+        slider_position = newdata['position']
+        visible = newdata['visible']
+        extra = newdata['extra']
+        options = newdata['options']
+
+        path = PLCGlobals.CurrentPath
+        if path == '...':
+            PLCGlobals.CurrentPath = path = getcwd()
+
+        if len(options) == 1 :
+            action, = options
+            if action == 'action_reset':
+                PLCGlobals.CurrentPath = path = getcwd()
+        elif len(options) == 2 :
+            action, sent_path = options
+            if action == 'onClick[acknowledge]':
+                if sent_path.endswith('.csv'):
+                    PLCGlobals.FileName = sent_path
+                else:
+                    PLCGlobals.CurrentPath = path = sent_path
+
+        ld = listdir(path)
+        ld.sort()
+
+        if path != '/':
+            FileList = [
+                {
+                    'name': '..',
+                    'path': dirname(path),
+                    'type': 'folder',
+                    'status': 'active',
+                    'thumbnail': '/files?name=folder.png'
+                }
+            ]
+        else:
+            FileList = []
+
+        FileList.extend([
+            {
+                'name': f,
+                'path': join(path, f),
+                'type': 'folder',
+                'status': 'active',
+                'thumbnail': '/files?name=folder.png'
+            }
+            for f in ld
+            if not (isfile(join(path, f)) 
+            or f.startswith("."))
+        ])
+        FileList.extend([
+            {
+                'name': f,
+                'path': join(path, f),
+                'type': 'file',
+                'status': 'active',
+                'thumbnail': '/files?name=file.png'
+            }
+            for f in ld 
+            if isfile(join(path, f)) 
+            and f.endswith(".csv")
+        ])
+
+        answer = self.renderTable(
+            FileList, range_feedback, slider_position, visible, extra
+        )
+        janswer = json.dumps(answer)
+        return janswer.encode()
+
+    def renderTable(self, FileList, old_range, old_position, visible, extra):
+        if len(extra) > 0 and extra[0] != "":
+            fFiles = [fl for fl in FileList if extra[0] in fl]
+        else:
+            fFiles = FileList[:]
+        new_range = len(fFiles)
+        delta = new_range - visible
+        new_position = 0 if delta <= 0 else delta if old_position > delta else old_position
+        new_visible = new_range if delta <= 0 else visible
+
+        visible_files = []
+        for desc in fFiles[new_position:new_position + new_visible]:
+            visible_files.append(desc)
+
+        return new_range, new_position, visible_files
+
+
+]]></xhtml:p>
+  </globals>
+  <init>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </init>
+  <cleanup>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </cleanup>
+  <start>
+    <xhtml:p><![CDATA[
+
+AddPathToSVGHMIServers(b"files", FilesJsonResource)
+
+
+]]></xhtml:p>
+  </start>
+  <stop>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </stop>
+</PyFile>
