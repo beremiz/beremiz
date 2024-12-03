@@ -25,5 +25,4 @@
 
 
 from docutil.dochtml import *
-from docutil.docpdf import *
 from docutil.docsvg import *
