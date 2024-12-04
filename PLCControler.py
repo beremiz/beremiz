@@ -1357,7 +1357,12 @@ class PLCControler(object):
         return [x for x, _y in TypeHierarchy_list if not x.startswith("ANY")]
 
     def IsOfType(self, typename, reference, debug=False):
-        if reference is None or typename == reference:
+        if typename is None or reference is None:
+            return True
+        
+        typename = typename.upper()
+        reference = reference.upper()
+        if typename == reference:
             return True
 
         basetype = TypeHierarchy.get(typename)
