@@ -62,6 +62,8 @@ def CSVRdInt(fname, rowidx, colidx):
 
     try:
         row = data[rowidx]
+        if not row and rowidx == len(data)-1:
+            raise IndexError
     except IndexError:
         return "#ROW_NOT_FOUND"
 
@@ -116,53 +118,61 @@ def CSVRdStr(fname, rowname, colname):
         return "#COL_NOT_FOUND"
 
 
-csv_int_files = {}
-def CSVWrInt(fname, rowidx, colidx, content, save):
+def CSVWrInt(fname, rowidx, colidx, content):
     \"\"\"
     Update value at row/column pointed by integer indexes
     Assumes data starts at first row and first column, no headers.
     \"\"\"
-    if save > 0:
-        global csv_int_files
-        data = csv_int_files.get(fname, None)
-        if data is None:
-            data = list()
-            try:
-                csvfile = open(fname, 'rt', encoding='utf-8')
-            except IOError:
-                return "#FILE_NOT_FOUND"
-            try:
-                dialect = csv.Sniffer().sniff(csvfile.read(1024))
-                csvfile.seek(0)
-                reader = csv.reader(csvfile, dialect)
-                for row in reader:
-                    data.append(row)
-            except csv.Error as e:
-                return "#CSV_ERROR"
-            finally:
-                csvfile.close()
-            csv_int_files[fname] = data
 
+    global csv_int_files
+    dialect = None
+    data = csv_int_files.get(fname, None)
+    if data is None:
+        data = list()
         try:
+            csvfile = open(fname, 'rt', encoding='utf-8')
+        except IOError:
+            return "#FILE_NOT_FOUND"
+        try:
+            dialect = csv.Sniffer().sniff(csvfile.read(1024))
+            csvfile.seek(0)
+            reader = csv.reader(csvfile, dialect)
+            for row in reader:
+                data.append(row)
+        except csv.Error as e:
+            return "#CSV_ERROR"
+        finally:
+            csvfile.close()
+        csv_int_files[fname] = data
+
+    try:
+        if rowidx == len(data):
+            row = []
+            data.append(row)
+        else:
             row = data[rowidx]
-        except IndexError:
-            return "#ROW_NOT_FOUND"
-    
-        try:
+    except IndexError:
+        return "#ROW_NOT_FOUND"
+
+    try:
+        if rowidx > 0 and colidx >= len(data[0]):
+            raise IndexError
+        if colidx >= len(row):
+            row.extend([""] * (colidx - len(row)) + [content])
+        else:
             row[colidx] = content
-        except IndexError:
-            return "#COL_NOT_FOUND"
-            
-        wfile = open(fname, 'rt+', encoding='utf-8')
-        wdialect = csv.Sniffer().sniff(wfile.read(1024))
-        wfile.seek(0)
-        writer = csv.writer(wfile, wdialect)
+    except IndexError:
+        return "#COL_NOT_FOUND"
+
+    try:
+        wfile = open(fname, 'wt')
+        writer = csv.writer(wfile) if not(dialect) else csv.writer(wfile, dialect)
         for row in data:
             writer.writerow(row)
-        wfile.truncate()
+    finally:
         wfile.close()
-        
-    return "#SUCCESS"
+
+    return "OK"
 
 
 def pyext_csv_reload():

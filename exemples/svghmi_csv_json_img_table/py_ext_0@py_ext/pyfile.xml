@@ -52,6 +52,7 @@ class FilesJsonResource(Resource):
             if action == 'onClick[acknowledge]':
                 if sent_path.endswith('.csv'):
                     PLCGlobals.FileName = sent_path
+                    pyext_csv_reload()
                 else:
                     PLCGlobals.CurrentPath = path = sent_path
 
