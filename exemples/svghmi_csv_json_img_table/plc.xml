@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2019-08-06T14:23:42"/>
-  <contentHeader name="Unnamed" modificationDateTime="2024-12-05T12:05:23">
+  <contentHeader name="Unnamed" modificationDateTime="2024-12-06T15:20:59">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -252,9 +252,14 @@
                     <relPosition x="140" y="30"/>
                   </connectionPointOut>
                 </variable>
-                <variable formalParameter="RESULT">
+                <variable formalParameter="ERROR">
                   <connectionPointOut>
                     <relPosition x="140" y="50"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="RESULT">
+                  <connectionPointOut>
+                    <relPosition x="140" y="70"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
@@ -295,29 +300,123 @@
               <expression>SAVE</expression>
             </inVariable>
             <outVariable localId="18" executionOrderId="0" width="70" height="30" negated="false">
-              <position x="435" y="210"/>
+              <position x="735" y="230"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="12" formalParameter="ACK">
-                  <position x="435" y="225"/>
-                  <position x="380" y="225"/>
+                <connection refLocalId="20" formalParameter="OUT">
+                  <position x="735" y="245"/>
+                  <position x="685" y="245"/>
                 </connection>
               </connectionPointIn>
               <expression>SEC_ACK</expression>
             </outVariable>
             <outVariable localId="19" executionOrderId="0" width="70" height="30" negated="false">
-              <position x="435" y="240"/>
+              <position x="735" y="305"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
-                <connection refLocalId="12" formalParameter="RESULT">
-                  <position x="435" y="255"/>
-                  <position x="407" y="255"/>
-                  <position x="407" y="245"/>
-                  <position x="380" y="245"/>
+                <connection refLocalId="1" formalParameter="OUT">
+                  <position x="735" y="320"/>
+                  <position x="685" y="320"/>
                 </connection>
               </connectionPointIn>
               <expression>SEC_RES</expression>
             </outVariable>
+            <block localId="20" typeName="MOVE" executionOrderId="0" width="60" height="60">
+              <position x="625" y="195"/>
+              <inputVariables>
+                <variable formalParameter="EN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="22">
+                      <position x="625" y="225"/>
+                      <position x="595" y="225"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN" negated="true">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="12" formalParameter="ERROR">
+                      <position x="625" y="245"/>
+                      <position x="380" y="245"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ENO">
+                  <connectionPointOut>
+                    <relPosition x="60" y="30"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="60" y="50"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="1" typeName="MOVE" executionOrderId="0" width="60" height="60">
+              <position x="625" y="270"/>
+              <inputVariables>
+                <variable formalParameter="EN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="3">
+                      <position x="625" y="300"/>
+                      <position x="595" y="300"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="12" formalParameter="RESULT">
+                      <position x="625" y="320"/>
+                      <position x="452" y="320"/>
+                      <position x="452" y="265"/>
+                      <position x="380" y="265"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ENO">
+                  <connectionPointOut>
+                    <relPosition x="60" y="30"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="60" y="50"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <connector name="Ack" localId="21" width="60" height="25">
+              <position x="410" y="215"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="12" formalParameter="ACK">
+                  <position x="410" y="225"/>
+                  <position x="380" y="225"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <continuation name="Ack" localId="22" width="60" height="25">
+              <position x="535" y="215"/>
+              <connectionPointOut>
+                <relPosition x="60" y="10"/>
+              </connectionPointOut>
+            </continuation>
+            <continuation name="Ack" localId="3" width="60" height="25">
+              <position x="535" y="290"/>
+              <connectionPointOut>
+                <relPosition x="60" y="10"/>
+              </connectionPointOut>
+            </continuation>
           </FBD>
         </body>
       </pou>

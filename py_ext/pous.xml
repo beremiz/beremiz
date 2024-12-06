@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:53:26"/>
-  <contentHeader name="Beremiz non-standard POUs library" modificationDateTime="2024-12-06T12:12:39">
+  <contentHeader name="Beremiz non-standard POUs library" modificationDateTime="2024-12-06T15:13:47">
     <coordinateInfo>
       <fbd>
         <scaling x="8" y="8"/>
@@ -1772,6 +1772,11 @@
                 <BOOL/>
               </type>
             </variable>
+            <variable name="ERROR">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
             <variable name="RESULT">
               <type>
                 <string/>
@@ -1819,11 +1824,6 @@
             <variable name="R_TRIG2">
               <type>
                 <derived name="R_TRIG"/>
-              </type>
-            </variable>
-            <variable name="SR0">
-              <type>
-                <derived name="SR"/>
               </type>
             </variable>
             <variable name="csv_refresh0">
@@ -2108,12 +2108,14 @@
               <expression>SAVE</expression>
             </inVariable>
             <outVariable localId="43" height="32" width="40" executionOrderId="0" negated="false">
-              <position x="1232" y="504"/>
+              <position x="736" y="400"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
-                <connection refLocalId="38" formalParameter="Q1">
-                  <position x="1232" y="520"/>
-                  <position x="1168" y="520"/>
+                <connection refLocalId="40" formalParameter="ACK">
+                  <position x="736" y="416"/>
+                  <position x="688" y="416"/>
+                  <position x="688" y="512"/>
+                  <position x="656" y="512"/>
                 </connection>
               </connectionPointIn>
               <expression>ACK</expression>
@@ -2186,7 +2188,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="34" typeName="NE" executionOrderId="0" height="64" width="64">
+            <block localId="34" typeName="EQ" executionOrderId="0" height="72" width="64">
               <position x="880" y="512"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2224,21 +2226,21 @@
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <inVariable localId="36" executionOrderId="0" height="24" width="40" negated="false">
-              <position x="808" y="560"/>
+            <inVariable localId="36" executionOrderId="0" height="32" width="40" negated="false">
+              <position x="808" y="552"/>
               <connectionPointOut>
-                <relPosition x="40" y="8"/>
+                <relPosition x="40" y="16"/>
               </connectionPointOut>
               <expression>'#'</expression>
             </inVariable>
             <block localId="37" typeName="R_TRIG" instanceName="R_TRIG2" executionOrderId="0" height="48" width="64">
-              <position x="880" y="456"/>
+              <position x="736" y="456"/>
               <inputVariables>
                 <variable formalParameter="CLK">
                   <connectionPointIn>
                     <relPosition x="0" y="32"/>
                     <connection refLocalId="40" formalParameter="ACK">
-                      <position x="880" y="488"/>
+                      <position x="736" y="488"/>
                       <position x="688" y="488"/>
                       <position x="688" y="512"/>
                       <position x="656" y="512"/>
@@ -2255,60 +2257,25 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="38" typeName="SR" instanceName="SR0" executionOrderId="0" height="64" width="48">
-              <position x="1120" y="488"/>
-              <inputVariables>
-                <variable formalParameter="S1">
-                  <connectionPointIn>
-                    <relPosition x="0" y="32"/>
-                    <connection refLocalId="39" formalParameter="OUT">
-                      <position x="1120" y="520"/>
-                      <position x="1056" y="520"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="R" edge="rising">
-                  <connectionPointIn>
-                    <relPosition x="0" y="56"/>
-                    <connection refLocalId="46" formalParameter="Q">
-                      <position x="1120" y="544"/>
-                      <position x="1088" y="544"/>
-                      <position x="1088" y="616"/>
-                      <position x="376" y="616"/>
-                      <position x="376" y="512"/>
-                      <position x="360" y="512"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables>
-                <variable formalParameter="Q1">
-                  <connectionPointOut>
-                    <relPosition x="48" y="32"/>
-                  </connectionPointOut>
-                </variable>
-              </outputVariables>
-            </block>
-            <block localId="39" typeName="AND" executionOrderId="0" height="64" width="64">
-              <position x="992" y="488"/>
+            <block localId="39" typeName="AND" executionOrderId="0" height="72" width="64">
+              <position x="984" y="456"/>
               <inputVariables>
                 <variable formalParameter="IN1">
                   <connectionPointIn>
                     <relPosition x="0" y="32"/>
                     <connection refLocalId="37" formalParameter="Q">
-                      <position x="992" y="520"/>
-                      <position x="976" y="520"/>
-                      <position x="976" y="488"/>
-                      <position x="944" y="488"/>
+                      <position x="984" y="488"/>
+                      <position x="800" y="488"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
-                <variable formalParameter="IN2">
+                <variable formalParameter="IN2" negated="true">
                   <connectionPointIn>
                     <relPosition x="0" y="56"/>
                     <connection refLocalId="34" formalParameter="OUT">
-                      <position x="992" y="544"/>
+                      <position x="984" y="512"/>
+                      <position x="974" y="512"/>
+                      <position x="974" y="544"/>
                       <position x="944" y="544"/>
                     </connection>
                   </connectionPointIn>
@@ -2324,16 +2291,14 @@
               </outputVariables>
             </block>
             <block localId="53" typeName="csv_refresh" instanceName="csv_refresh0" executionOrderId="0" width="104" height="48">
-              <position x="1232" y="440"/>
+              <position x="1112" y="456"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
                   <connectionPointIn>
                     <relPosition x="0" y="32"/>
-                    <connection refLocalId="38" formalParameter="Q1">
-                      <position x="1232" y="472"/>
-                      <position x="1206" y="472"/>
-                      <position x="1206" y="520"/>
-                      <position x="1168" y="520"/>
+                    <connection refLocalId="39" formalParameter="OUT">
+                      <position x="1112" y="488"/>
+                      <position x="1048" y="488"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -2341,6 +2306,17 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
+            <outVariable localId="54" executionOrderId="0" width="56" height="32" negated="false">
+              <position x="1096" y="528"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="34" formalParameter="OUT">
+                  <position x="1096" y="544"/>
+                  <position x="944" y="544"/>
+                </connection>
+              </connectionPointIn>
+              <expression>ERROR</expression>
+            </outVariable>
           </FBD>
         </body>
       </pou>
