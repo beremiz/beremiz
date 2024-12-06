@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="0.0" creationDateTime="2008-12-14T16:53:26"/>
-  <contentHeader name="Beremiz non-standard POUs library" modificationDateTime="2024-12-05T16:40:43">
+  <contentHeader name="Beremiz non-standard POUs library" modificationDateTime="2024-12-06T12:12:39">
     <coordinateInfo>
       <fbd>
         <scaling x="8" y="8"/>
@@ -40,29 +40,36 @@
               </type>
             </variable>
           </outputVars>
+          <localVars>
+            <variable name="R_TRIG0">
+              <type>
+                <derived name="R_TRIG"/>
+              </type>
+            </variable>
+          </localVars>
         </interface>
         <body>
           <FBD>
             <outVariable localId="2" executionOrderId="0" height="32" width="176" negated="false">
-              <position x="696" y="200"/>
+              <position x="856" y="200"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
                 <connection refLocalId="12" formalParameter="OUT">
-                  <position x="696" y="216"/>
-                  <position x="656" y="216"/>
+                  <position x="856" y="216"/>
+                  <position x="816" y="216"/>
                 </connection>
               </connectionPointIn>
               <expression>pyext_csv_update_tmp</expression>
             </outVariable>
             <block localId="12" typeName="MOVE" executionOrderId="0" height="64" width="56">
-              <position x="600" y="160"/>
+              <position x="760" y="160"/>
               <inputVariables>
-                <variable formalParameter="EN" edge="rising">
+                <variable formalParameter="EN">
                   <connectionPointIn>
                     <relPosition x="0" y="32"/>
-                    <connection refLocalId="18" formalParameter="OUT">
-                      <position x="600" y="192"/>
-                      <position x="520" y="192"/>
+                    <connection refLocalId="19" formalParameter="Q">
+                      <position x="760" y="192"/>
+                      <position x="664" y="192"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -70,7 +77,7 @@
                   <connectionPointIn>
                     <relPosition x="0" y="56"/>
                     <connection refLocalId="17">
-                      <position x="600" y="216"/>
+                      <position x="760" y="216"/>
                       <position x="568" y="216"/>
                       <position x="568" y="240"/>
                       <position x="408" y="240"/>
@@ -100,12 +107,14 @@
               <expression>pyext_csv_update_tmp</expression>
             </inVariable>
             <outVariable localId="15" executionOrderId="0" width="48" height="32" negated="false">
-              <position x="880" y="176"/>
+              <position x="760" y="112"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
-                <connection refLocalId="12" formalParameter="ENO">
-                  <position x="880" y="192"/>
-                  <position x="656" y="192"/>
+                <connection refLocalId="19" formalParameter="Q">
+                  <position x="760" y="128"/>
+                  <position x="702" y="128"/>
+                  <position x="702" y="192"/>
+                  <position x="664" y="192"/>
                 </connection>
               </connectionPointIn>
               <expression>TRIG</expression>
@@ -150,6 +159,28 @@
               </connectionPointOut>
               <expression>pyext_csv_update</expression>
             </inVariable>
+            <block localId="19" typeName="R_TRIG" instanceName="R_TRIG0" executionOrderId="0" width="64" height="48">
+              <position x="600" y="160"/>
+              <inputVariables>
+                <variable formalParameter="CLK">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="18" formalParameter="OUT">
+                      <position x="600" y="192"/>
+                      <position x="520" y="192"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Q">
+                  <connectionPointOut>
+                    <relPosition x="64" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
           </FBD>
         </body>
       </pou>
