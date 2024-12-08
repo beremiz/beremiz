@@ -2538,8 +2538,8 @@ class Viewer(EditorPanel, DebugViewer):
 
     def GetScaledSize(self, width, height):
         if self.Scaling is not None:
-            width = round(width / self.Scaling[0] + 0.4) * self.Scaling[0]
-            height = round(height / self.Scaling[1] + 0.4) * self.Scaling[1]
+            width = round((width / self.Scaling[0] + 0.4) * self.Scaling[0])
+            height = round((height / self.Scaling[1] + 0.4) * self.Scaling[1])
         return width, height
 
     def AddNewElement(self, element, bbox, wire=None, connector=None):
