@@ -112,6 +112,9 @@
       </xsl:apply-templates>
     </xsl:for-each>
   </xsl:template>
+  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
+    <xsl:value-of select="local-name()"/>
+  </xsl:template>
   <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:derived">
     <xsl:value-of select="@name"/>
   </xsl:template>
@@ -120,9 +123,6 @@
   </xsl:template>
   <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/ppx:wstring">
     <xsl:text>WSTRING</xsl:text>
-  </xsl:template>
-  <xsl:template match="*[self::ppx:type or self::ppx:baseType or self::ppx:returnType]/*">
-    <xsl:value-of select="local-name()"/>
   </xsl:template>
   <xsl:template name="VariableBlockInfos">
     <xsl:param name="type"/>
