@@ -177,7 +177,6 @@ class PLCOpenEditor(IDEFrame):
 
     def OnCloseFrame(self, event):
         if self.Controler is None or self.CheckSaveBeforeClosing(_("Close Application")):
-            self.AUIManager.UnInit()
 
             self.SaveLastState()
 
@@ -315,7 +314,7 @@ class PLCOpenEditor(IDEFrame):
         self.GenerateProgramAs()
 
     def GenerateProgramAs(self):
-        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), os.path.basename(self.Controler.GetProgramFilePath()),  _("ST files (*.st)|*.st|All files|*.*"), wx.SAVE | wx.CHANGE_DIR)
+        dialog = wx.FileDialog(self, _("Choose a file"), os.getcwd(), os.path.basename(self.Controler.GetProgramFilePath()),  _("ST files (*.st)|*.st|All files|*.*"), wx.FD_SAVE | wx.FD_CHANGE_DIR)
         if dialog.ShowModal() == wx.ID_OK:
             self.GenerateProgram(dialog.GetPath())
         dialog.Destroy()

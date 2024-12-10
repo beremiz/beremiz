@@ -454,6 +454,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
         LocalRuntimeMixin.__init__(self, self.Log)
 
+        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
+
         self.LastPanelSelected = None
 
         # Define Tree item icon list
@@ -639,7 +641,6 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
     def OnCloseFrame(self, event):
         if self.TryCloseFrame():
             self.LogConsole.Disconnect(-1, -1, wx.wxEVT_KILL_FOCUS)
-            super(Beremiz, self).OnCloseFrame(event)
             event.Skip()
         else:
             # prevent event to continue, i.e. cancel closing

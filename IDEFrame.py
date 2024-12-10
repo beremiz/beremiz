@@ -555,6 +555,8 @@ class IDEFrame(wx.Frame):
                              self.OnPouSelectedChanged)
         self.TabsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSE,
                              self.OnPageClose)
+        self.TabsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_PAGE_CLOSED,
+                             self.OnPageClosed)
         self.TabsOpened.Bind(wx.aui.EVT_AUINOTEBOOK_END_DRAG,
                              self.OnPageDragged)
         self.AUIManager.AddPane(self.TabsOpened,
@@ -759,8 +761,6 @@ class IDEFrame(wx.Frame):
         self.SetRefreshFunctions()
         self.SetDeleteFunctions()
 
-        self.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-
         wx.CallAfter(self.InitFindDialog)
 
     def InitFindDialog(self):
@@ -921,8 +921,20 @@ class IDEFrame(wx.Frame):
         for element in elements:
             self.RefreshFunctions[element]()
 
+    def OnPageClosed(self, event):
+        """Callback function when AUINotebook Page closed
+
+        :param event: AUINotebook Event.
+        """
+        if self.TabsOpened.GetPageCount() == 0:
+            pane = self.AUIManager.GetPane(self.TabsOpened)
+            # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
+            if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
+                self.AUIManager.RestorePane(pane)
+            self.AUIManager.Update()
+
     def OnPageClose(self, event):
-        """Callback function when AUINotebook Page closed with CloseButton
+        """Callback function when AUINotebook Page closing with CloseButton
 
         :param event: AUINotebook Event.
         """
@@ -1148,9 +1160,6 @@ class IDEFrame(wx.Frame):
 
     def OnQuitMenu(self, event):
         self.Close()
-
-    def OnCloseFrame(self, event):
-        self.AUIManager.UnInit()
 
     # -------------------------------------------------------------------------------
     #                            Edit Menu Functions
@@ -1406,16 +1415,9 @@ class IDEFrame(wx.Frame):
         for child in self.TabsOpened.GetChildren():
             if isinstance(child, wx.aui.AuiTabCtrl):
                 auitabctrl.append(child)
-                if wx.VERSION >= (4, 1, 0) and child not in self.AuiTabCtrl:
+                if child not in self.AuiTabCtrl:
                     child.Bind(wx.EVT_LEFT_DCLICK, self.GetTabsOpenedDClickFunction(child))
         self.AuiTabCtrl = auitabctrl
-        # on wxPython 4.0.7, AuiManager has no "RestorePane" method...
-        if wx.VERSION >= (4, 1, 0) and self.TabsOpened.GetPageCount() == 0:
-            pane = self.AUIManager.GetPane(self.TabsOpened)
-            # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...
-            if (not hasattr(pane, "IsMaximized")) or pane.IsMaximized():
-                self.AUIManager.RestorePane(pane)
-            self.AUIManager.Update()
 
     def EnsureTabVisible(self, tab):
         notebook = tab.GetParent()
