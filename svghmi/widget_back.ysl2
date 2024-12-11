@@ -14,8 +14,6 @@ widget_desc("Back") {
 
 widget_class("Back") {
 ||
-    frequency = 2;
-
     onmouseup(evt) {
         svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
         this.activity_state = false;

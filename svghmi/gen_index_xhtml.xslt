@@ -2756,10 +2756,6 @@
     <xsl:text>BackWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
-    <xsl:text>    frequency = 2;
-</xsl:text>
-    <xsl:text>
-</xsl:text>
     <xsl:text>    onmouseup(evt) {
 </xsl:text>
     <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
