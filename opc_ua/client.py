@@ -148,7 +148,10 @@ class OPCUAClient(object):
         LDFLAGS = ['"' + os.path.join(Open62541LibraryPath, "libopen62541.a") + '"', '-lcrypto']
 
         CFLAGS = ' '.join(['-I"' + path + '"' for path in Open62541IncludePaths])
-
+        
+        # Add IEC library path to CFLAGS (needs beremiz.h)
+        CFLAGS += ' "-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath())
+        
         # Note: all user provided files are systematicaly copied, including cryptomaterial
 
         return [(c_path, CFLAGS)], LDFLAGS, True

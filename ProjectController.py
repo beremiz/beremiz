@@ -279,6 +279,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECcodeDigest = None
         self.LastBuiltIECcodeDigest = None
 
+        # compute CFLAGS for PLC code
+        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % os.path.abspath(self.iec2c_cfg.getLibCPath())
+
     def LoadLibraries(self):
         self.Libraries = OrderedDict()
         TypeStack = []
@@ -656,12 +659,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if len(self.Libraries) == 0:
             return [], [], ()
         self.GetIECProgramsAndVariables()
-        LibIECCflags = '"-I%s" -Wno-unused-function' % os.path.abspath(
-            self.GetIECLibPath())
         LocatedCCodeAndFlags = []
         Extras = []
         for lib in self.Libraries.values():
-            res = lib.Generate_C(buildpath, self._VariablesList, LibIECCflags)
+            res = lib.Generate_C(buildpath, self._VariablesList, self.plcCFLAGS)
             LocatedCCodeAndFlags.append(res[:2])
             if len(res) > 2:
                 Extras.extend(res[2:])
@@ -938,8 +939,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.PLCGeneratedLocatedVars = self.GetLocations()
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
-        # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % self.iec2c_cfg.getLibCPath()
 
         self.LastBuiltIECcodeDigest = self.IECcodeDigest
 
@@ -1253,13 +1252,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 _("Runtime IO extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
             return False
-
-        # Extensions also need plcCFLAGS in case they include beremiz.h
-        CTNLocationCFilesAndCFLAGS = [
-            (loc, [
-                (code, self.plcCFLAGS+" "+cflags)
-                for code,cflags in code_and_cflags], do_calls)
-            for loc, code_and_cflags, do_calls in CTNLocationCFilesAndCFLAGS]
 
         self.LocationCFilesAndCFLAGS = LibCFilesAndCFLAGS + \
             CTNLocationCFilesAndCFLAGS
