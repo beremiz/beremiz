@@ -2740,6 +2740,12 @@
     <longdesc>
       <xsl:text>Back widget brings focus back to previous page in history when clicked.
 </xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>"active" + "inactive" labeled elements can be provided and reflect whether
+</xsl:text>
+      <xsl:text>widget is pressed or not.
+</xsl:text>
     </longdesc>
     <shortdesc>
       <xsl:text>Jump to previous page</xsl:text>
@@ -2750,35 +2756,94 @@
     <xsl:text>BackWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
-    <xsl:text>    on_click(evt) {
+    <xsl:text>    onmouseup(evt) {
 </xsl:text>
-    <xsl:text>        if(jump_history.length &gt; 1){
+    <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
 </xsl:text>
-    <xsl:text>           let page_name, index;
+    <xsl:text>        this.activity_state = false;
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>        let page_name, index;
+</xsl:text>
+    <xsl:text>        if (jump_history.length &gt; 1) {
 </xsl:text>
     <xsl:text>           do {
 </xsl:text>
     <xsl:text>               jump_history.pop(); // forget current page
 </xsl:text>
-    <xsl:text>               if(jump_history.length == 0) return;
+    <xsl:text>               if (jump_history.length == 0) return;
 </xsl:text>
     <xsl:text>               [page_name, index] = jump_history[jump_history.length-1];
 </xsl:text>
-    <xsl:text>           } while(page_name == "ScreenSaver") // never go back to ScreenSaver
+    <xsl:text>           } while (page_name == "ScreenSaver") // never go back to ScreenSaver
 </xsl:text>
-    <xsl:text>           switch_page(page_name, index);
+    <xsl:text>           fading_page_switch(page_name, index);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>    onmousedown(){
+</xsl:text>
+    <xsl:text>        svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+</xsl:text>
+    <xsl:text>        this.activity_state = true;
+</xsl:text>
+    <xsl:text>        this.request_animate();
+</xsl:text>
+    <xsl:text>    }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
     <xsl:text>    init() {
 </xsl:text>
-    <xsl:text>        this.element.onclick = this.on_click.bind(this);
+    <xsl:text>        this.bound_onmouseup = this.onmouseup.bind(this);
+</xsl:text>
+    <xsl:text>        this.activity_state = false;
+</xsl:text>
+    <xsl:text>        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
 </xsl:text>
     <xsl:text>    }
 </xsl:text>
     <xsl:text>}
+</xsl:text>
+  </xsl:template>
+  <xsl:template match="widget[@type='Back']" mode="widget_defs">
+    <xsl:param name="hmi_element"/>
+    <xsl:variable name="disability">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/disabled</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory" select="'no'"/>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$disability"/>
+    <xsl:variable name="has_disability" select="string-length($disability)&gt;0"/>
+    <xsl:text>    activable_sub:{
+</xsl:text>
+    <xsl:variable name="activity">
+      <xsl:call-template name="defs_by_labels">
+        <xsl:with-param name="hmi_element" select="$hmi_element"/>
+        <xsl:with-param name="labels">
+          <xsl:text>/active /inactive</xsl:text>
+        </xsl:with-param>
+        <xsl:with-param name="mandatory">
+          <xsl:text>warn</xsl:text>
+        </xsl:with-param>
+      </xsl:call-template>
+    </xsl:variable>
+    <xsl:value-of select="$activity"/>
+    <xsl:variable name="has_activity" select="string-length($activity)&gt;0"/>
+    <xsl:text>    },
+</xsl:text>
+    <xsl:text>    has_activity: </xsl:text>
+    <xsl:value-of select="$has_activity"/>
+    <xsl:text>,
 </xsl:text>
   </xsl:template>
   <xsl:template match="widget[@type='Button']" mode="widget_desc">
@@ -4454,6 +4519,15 @@
     <path name="root" accepts="HMI_NODE">
       <xsl:text> where to find HMI_NODEs whose HMI_CLASS is class_name</xsl:text>
     </path>
+    <path name="position" accepts="HMI_INT">
+      <xsl:text>position of HMI_NODE mapped to first item, among similar siblings</xsl:text>
+    </path>
+    <path name="range" accepts="HMI_INT" count="optional">
+      <xsl:text> count of HMI_NODE siblings</xsl:text>
+    </path>
+    <path name="size" accepts="HMI_INT" count="optional">
+      <xsl:text> count of visible items</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='ForEach']" mode="widget_defs">
     <xsl:param name="hmi_element"/>
@@ -5606,7 +5680,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>If first path is pointint to HMI_NODE variable is used as new reference
+      <xsl:text>If first path is pointing to HMI_NODE variable is used as new reference
 </xsl:text>
       <xsl:text>when jumping to a relative page.
 </xsl:text>
@@ -5694,7 +5768,7 @@
 </xsl:text>
     <xsl:text>        target_page_is_current_page = false;
 </xsl:text>
-    <xsl:text>        button_beeing_pressed = false;
+    <xsl:text>        button_being_pressed = false;
 </xsl:text>
     <xsl:text>
 </xsl:text>
@@ -5710,9 +5784,9 @@
 </xsl:text>
     <xsl:text>                    this.indexes[0] + this.offset : undefined;
 </xsl:text>
-    <xsl:text>                this.button_beeing_pressed = false;
+    <xsl:text>                this.button_being_pressed = false;
 </xsl:text>
-    <xsl:text>                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
+    <xsl:text>                this.activity_state = this.target_page_is_current_page || this.button_being_pressed;
 </xsl:text>
     <xsl:text>                fading_page_switch(this.args[0], index);
 </xsl:text>
@@ -5730,7 +5804,7 @@
 </xsl:text>
     <xsl:text>                svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
 </xsl:text>
-    <xsl:text>                this.button_beeing_pressed = true;
+    <xsl:text>                this.button_being_pressed = true;
 </xsl:text>
     <xsl:text>                this.activity_state = true;
 </xsl:text>
@@ -5754,7 +5828,7 @@
 </xsl:text>
     <xsl:text>                this.target_page_is_current_page = ((ref_name == undefined || ref_name == page_name) &amp;&amp; index == ref_index);
 </xsl:text>
-    <xsl:text>                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
+    <xsl:text>                this.activity_state = this.target_page_is_current_page || this.button_being_pressed;
 </xsl:text>
     <xsl:text>                // Since called from animate, update activity directly
 </xsl:text>

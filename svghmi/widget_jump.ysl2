@@ -6,7 +6,7 @@ widget_desc("Jump") {
     Jump widget brings focus to a different page. Mandatory first argument
     gives name of the page.
 
-    If first path is pointint to HMI_NODE variable is used as new reference
+    If first path is pointing to HMI_NODE variable is used as new reference
     when jumping to a relative page.
 
     Additional arguments are unordered options:
@@ -53,7 +53,7 @@ widget_class("Jump") {
         activable = false;
         frequency = 2;
         target_page_is_current_page = false;
-        button_beeing_pressed = false;
+        button_being_pressed = false;
 
         onmouseup(evt) {
             svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
@@ -61,8 +61,8 @@ widget_class("Jump") {
                 const index =
                     (this.is_relative && this.indexes.length > 0) ?
                     this.indexes[0] + this.offset : undefined;
-                this.button_beeing_pressed = false;
-                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
+                this.button_being_pressed = false;
+                this.activity_state = this.target_page_is_current_page || this.button_being_pressed;
                 fading_page_switch(this.args[0], index);
                 this.notify();
             }
@@ -71,7 +71,7 @@ widget_class("Jump") {
         onmousedown(){
             if(this.enable_state) {
                 svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
-                this.button_beeing_pressed = true;
+                this.button_being_pressed = true;
                 this.activity_state = true;
                 this.request_animate();
             }
@@ -83,7 +83,7 @@ widget_class("Jump") {
                 const ref_index = this.indexes.length > 0 ? this.indexes[0] + this.offset : undefined;
                 const ref_name = this.args[0];
                 this.target_page_is_current_page = ((ref_name == undefined || ref_name == page_name) && index == ref_index);
-                this.activity_state = this.target_page_is_current_page || this.button_beeing_pressed;
+                this.activity_state = this.target_page_is_current_page || this.button_being_pressed;
                 // Since called from animate, update activity directly
                 if(this.enable_displayed_state && this.has_activity) {
                     this.animate_activity();

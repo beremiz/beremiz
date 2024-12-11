@@ -288,6 +288,12 @@
     <longdesc>
       <xsl:text>Back widget brings focus back to previous page in history when clicked.
 </xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>"active" + "inactive" labeled elements can be provided and reflect whether
+</xsl:text>
+      <xsl:text>widget is pressed or not.
+</xsl:text>
     </longdesc>
     <shortdesc>
       <xsl:text>Jump to previous page</xsl:text>
@@ -545,6 +551,15 @@
     <path name="root" accepts="HMI_NODE">
       <xsl:text> where to find HMI_NODEs whose HMI_CLASS is class_name</xsl:text>
     </path>
+    <path name="position" accepts="HMI_INT">
+      <xsl:text>position of HMI_NODE mapped to first item, among similar siblings</xsl:text>
+    </path>
+    <path name="range" accepts="HMI_INT" count="optional">
+      <xsl:text> count of HMI_NODE siblings</xsl:text>
+    </path>
+    <path name="size" accepts="HMI_INT" count="optional">
+      <xsl:text> count of visible items</xsl:text>
+    </path>
   </xsl:template>
   <xsl:template match="widget[@type='Image']" mode="widget_desc">
     <type>
@@ -627,7 +642,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>If first path is pointint to HMI_NODE variable is used as new reference
+      <xsl:text>If first path is pointing to HMI_NODE variable is used as new reference
 </xsl:text>
       <xsl:text>when jumping to a relative page.
 </xsl:text>
