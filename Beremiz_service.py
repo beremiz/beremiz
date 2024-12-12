@@ -226,6 +226,7 @@ if enablewx:
         import wx.adv
 
         app = wx.App(redirect=False)
+        app.GTKSuppressDiagnostics()
         app.SetTopWindow(wx.Frame(None, -1))
 
         default_locale = None
