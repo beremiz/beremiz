@@ -1,0 +1,15 @@
+asyncua @ git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82
+autobahn
+Brotli
+click
+erpc @ git+https://git@github.com/beremiz/erpc.git@d8fff72b15274b5f2a8f7895d9bc5c91eef584ec#subdirectory=erpc_python
+# gattrdict
+lxml
+matplotlib
+msgpack
+Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@81c2eaeaaa20022540a98a3106f72e0199fbcc1b
+pycountry
+# pyserial
+sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
+wxPython
+zeroconf
