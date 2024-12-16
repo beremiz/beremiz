@@ -642,7 +642,7 @@ class SVGHMI(object):
         res += ((target_fname, open(target_path, "rb")),)
 
         svghmi_cmds = {}
-        suppress_output = not(self.GetParamsAttributes("SVGHMI.SuppressBrowserOutput")["value"])
+        suppress_output = self.GetParamsAttributes("SVGHMI.SuppressBrowserOutput")["value"]
         stdstream = "subprocess.DEVNULL" if suppress_output else "None"
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
