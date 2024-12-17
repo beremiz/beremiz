@@ -11,12 +11,17 @@ It relies on open standards to be independent of the targeted device, and let yo
 
 With Beremiz, you conform to standards, avoid vendor lock, and contribute to the better future of Automation. 
 
-Beremiz consists of two components:
+Beremiz provides:
 
-* Integrated Development Environment (IDE), Beremiz.py. It is running on user's computer and is used to write/compile/debug PLC programs and control PLC runtime.
-* Reference runtime implementation in python, Beremiz_service.py. It's running on target platform, communicates with I/O and executes PLC program.
+* Integrated Development Environment (IDE). GUI to configure, write, build and debug PLC programs and control PLC runtime.
+* Command Line Interface (CLI). Build PLC and control PLC runtime in a terminal or from a script.
+* Runtimes, running on target platform communicates with I/O and executes PLC program.
+    * Python reference runtime implementation.
+    * C runtime for smaller targets.
 
-See official [Beremiz website](http://www.beremiz.org/) for more information.
+See official [Beremiz website](https://beremiz.org/) for more information.
+
+[Beremiz company](https://beremiz.fr/) develops and maintains the Beremiz Free Software project while also providing professional support services.
 
 ## Install latest release ##
 
