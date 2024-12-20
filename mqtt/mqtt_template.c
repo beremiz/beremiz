@@ -260,8 +260,10 @@ void connectionLost(void* context, char* reason)
 }}
 
 
+typedef int(*callback_fptr_t)(char* topic, char* data, uint32_t datalen);
+static callback_fptr_t __mqtt_python_callback_fptr_{name} = NULL;
 
-int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_message *message)
+static int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {{
     int low = 0;
     int size = sizeof(topics) / sizeof(topics[0]);
@@ -307,7 +309,15 @@ int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_mess
             high = mid - 1;
     }}
     // If we reach here, then the element was not present
-    LogWarning("MQTT unknown topic: %s\n", topicName);
+    if(__mqtt_python_callback_fptr_{name} && 
+       (*__mqtt_python_callback_fptr_{name})(topicName,
+                                     (char*)message->payload,
+                                     message->payloadlen) == 0){{
+        // Topic was handled in python
+        goto exit;
+    }} else {{
+        LogWarning("MQTT unknown topic: %s\n", topicName);
+    }}
     goto exit;
 
 found:
@@ -357,19 +367,19 @@ exit:
 
 #ifdef USE_MQTT_5
 #define _SUBSCRIBE(Topic, QoS)                                                                    \
-        MQTTResponse response = MQTTClient_subscribe5(client, #Topic, QoS, NULL, NULL);           \
+        MQTTResponse response = MQTTClient_subscribe5(client, Topic, QoS, NULL, NULL);            \
         /* when using MQTT5 responce code is 1 for some reason even if no error */                \
         rc = response.reasonCode == 1 ? MQTTCLIENT_SUCCESS : response.reasonCode;                 \
         MQTTResponse_free(response);
 #else
 #define _SUBSCRIBE(Topic, QoS)                                                                    \
-        rc = MQTTClient_subscribe(client, #Topic, QoS);
+        rc = MQTTClient_subscribe(client, Topic, QoS);
 #endif
 
 #define INIT_SUBSCRIPTION(Topic, QoS)                                                             \
     {{                                                                                            \
         int rc;                                                                                   \
-        _SUBSCRIBE(Topic, QoS)                                                                    \
+        _SUBSCRIBE(#Topic, QoS)                                                                   \
         if (rc != MQTTCLIENT_SUCCESS)                                                             \
         {{                                                                                        \
             LogError("MQTT client failed to subscribe to '%s', return code %d\n", #Topic, rc);    \
@@ -379,18 +389,18 @@ exit:
 
 #ifdef USE_MQTT_5
 #define _PUBLISH(Topic, QoS, cstring_size, cstring_ptr, Retained)                                 \
-        MQTTResponse response = MQTTClient_publish5(client, #Topic, cstring_size,                  \
+        MQTTResponse response = MQTTClient_publish5(client, Topic, cstring_size,                  \
             cstring_ptr, QoS, Retained, NULL, NULL);                                              \
         rc = response.reasonCode;                                                                 \
         MQTTResponse_free(response);
 #else
 #define _PUBLISH(Topic, QoS, cstring_size, cstring_ptr, Retained)                                 \
-        rc = MQTTClient_publish(client, #Topic, cstring_size,                                     \
+        rc = MQTTClient_publish(client, Topic, cstring_size,                                      \
             cstring_ptr, QoS, Retained, NULL);
 #endif
 
 #define PUBLISH_SIMPLE(Topic, QoS, C_type, c_loc_name, Retained)                                  \
-        _PUBLISH(Topic, QoS, sizeof(C_type), &MQTT_##c_loc_name##_buf, Retained)
+        _PUBLISH(#Topic, QoS, sizeof(C_type), &MQTT_##c_loc_name##_buf, Retained)
 
 #define PUBLISH_JSON(Topic, QoS, C_type, c_loc_name, Retained)                                    \
         int res = json_gen_##c_loc_name(&MQTT_##c_loc_name##_buf);                                \
@@ -589,3 +599,39 @@ void __publish_{locstr}(void)
     }}
 }}
 
+int __mqtt_python_publish_{name}(char* topic, char* data, uint32_t datalen, uint8_t QoS, uint8_t Retained)
+{{
+    int rc = 0;
+
+    if((rc = pthread_mutex_lock(&MQTT_thread_wakeup_mutex)) == 0){{
+        _PUBLISH(topic, QoS, datalen, data, Retained)
+        pthread_mutex_unlock(&MQTT_thread_wakeup_mutex);
+        if (rc != MQTTCLIENT_SUCCESS){{
+            LogError("MQTT python can't publish \"%s\", return code %d\n", topic, rc);
+            return rc;
+        }}
+    }} else {{
+        LogError("MQTT python can't obtain lock, return code %d\n", rc);
+        return rc;
+    }}
+    return 0;
+}}
+
+
+int __mqtt_python_subscribe_{name}(char* topic, uint8_t QoS)
+{{
+    int rc;
+    _SUBSCRIBE(topic, QoS)
+    if (rc != MQTTCLIENT_SUCCESS)
+    {{
+        LogError("MQTT client failed to subscribe to '%s', return code %d\n", topic, rc);
+        return rc;
+    }}
+    return 0;
+}}
+
+int __mqtt_python_callback_setter_{name}(callback_fptr_t cb)
+{{
+    __mqtt_python_callback_fptr_{name} = cb;
+    return 0;
+}}

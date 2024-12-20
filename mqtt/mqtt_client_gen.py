@@ -356,7 +356,7 @@ class MQTTClientModel(dict):
                 for row in data:
                     writer.writerow([direction] + row)
 
-    def GenerateC(self, path, locstr, config, datatype_info_getter):
+    def GenerateC(self, name, path, locstr, config, datatype_info_getter):
         c_template_filepath = paths.AbsNeighbourFile(__file__, "mqtt_template.c")
         c_template_file = open(c_template_filepath , 'rb')
         c_template = c_template_file.read()
@@ -365,6 +365,7 @@ class MQTTClientModel(dict):
         json_types = OD()
 
         formatdict = dict(
+            name            = name,
             locstr          = locstr,
             uri             = config["URI"],
             clientID        = config["clientID"],
