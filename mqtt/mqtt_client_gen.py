@@ -477,7 +477,8 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
                 if item_datatype not in MQTT_JSON_SUPPORTED_types and\
                    item_datatype not in MQTT_UNSUPPORTED_types:
                     recurseJsonTypes(item_datatype)
-        def typeCategory(iec_type):
+
+        def typeCategory(field_iec_type):
             if field_iec_type in arrays:
                 return "ARRAY"
             elif field_iec_type in structures:

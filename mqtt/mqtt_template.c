@@ -30,7 +30,7 @@
 // MQTTCLIENT_TRACE_PROTOCOL, MQTTCLIENT_TRACE_MAXIMUM, MQTTCLIENT_TRACE_ERROR
 #define MQTT_DEBUG_LEVEL MQTTCLIENT_TRACE_ERROR
 
-void trace_callback(enum MQTTCLIENT_TRACE_LEVELS level, char* message)
+static void trace_callback(enum MQTTCLIENT_TRACE_LEVELS level, char* message)
 {{
     if(level >= MQTT_DEBUG_LEVEL)
     {{
@@ -148,7 +148,7 @@ static void scan_string(const char *str, int len, void *user_data) {{
 }}
 
 #define DECL_JSON_INPUT(C_type, c_loc_name) \
-int json_parse_##c_loc_name(char *json, const int len, void *void_ptr) {{ \
+static int json_parse_##c_loc_name(char *json, const int len, void *void_ptr) {{ \
     C_type *struct_ptr = (C_type *)void_ptr; \
     return json_scanf(json, len, "{{" TYPE_##C_type(scanf_fmt,) "}}", TYPE_##C_type(scanf_args, struct_ptr)); \
 }}
@@ -159,7 +159,7 @@ static char json_out_buf[json_out_size] = {{0,}};
 static int json_out_len = 0;
 
 #define DECL_JSON_OUTPUT(C_type, c_loc_name) \
-int json_gen_##c_loc_name(C_type *struct_ptr) {{ \
+static int json_gen_##c_loc_name(C_type *struct_ptr) {{ \
     struct json_out out = JSON_OUT_BUF(json_out_buf, json_out_size); \
     json_out_len = json_printf(&out, "{{" TYPE_##C_type(printf_fmt,) "}}", TYPE_##C_type(printf_args, struct_ptr)); \
     if(json_out_len > json_out_size){{ \
@@ -247,7 +247,7 @@ void __cleanup_{locstr}(void)
     MQTTClient_destroy(&client);
 }}
 
-void connectionLost(void* context, char* reason)
+static void connectionLost(void* context, char* reason)
 {{
     int rc;
     LogWarning("ConnectionLost, reconnecting\\n");
