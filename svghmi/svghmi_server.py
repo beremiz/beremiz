@@ -253,7 +253,7 @@ def SendThreadProc():
     size = ctypes.c_uint32()
     ptr = ctypes.c_void_p()
     res = 0
-    while svghmi_continue_collect:
+    while svghmi_continue_collect.value:
         svghmi_wait()
         for svghmi_session in svghmi_session_manager.iter_sessions():
             res = svghmi_send_collect(
