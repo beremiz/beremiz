@@ -78,8 +78,8 @@ class ProcessLogger(object):
     def __init__(self, logger, Command, finish_callback=None,
                  no_stdout=False, no_stderr=False, no_gui=True,
                  timeout=None, outlimit=None, errlimit=None,
-                 endlog=None, keyword=None, kill_it=False, cwd=None,
-                 encoding=None, output_encoding=None, env=None):
+                 keyword=None, kill_it=False, cwd=None,
+                 encoding=None, output_encoding=None, env=None, show_cmd=_debug):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -133,8 +133,8 @@ class ProcessLogger(object):
         else:
             self.timeout = None
 
-        if _debug and self.logger:
-            self.logger.write("(DEBUG) launching:\n" + self.Command_str + "\n")
+        if show_cmd and self.logger:
+            self.logger.write(f"{popenargs['cwd']}$ {self.Command_str}\n")
 
         self.Proc = subprocess.Popen(self.Command, encoding="utf-8", errors="backslashreplace", **popenargs)
 

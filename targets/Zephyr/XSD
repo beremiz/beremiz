@@ -1,0 +1,7 @@
+
+                  <xsd:element name="Zephyr">
+                    <xsd:complexType>
+                      <xsd:attribute name="BoardName" type="xsd:string" use="optional" default="native_sim/native/64"/>
+                      <xsd:attribute name="Programmable" type="xsd:boolean" use="optional" default="false"/>
+                    </xsd:complexType>
+                  </xsd:element>

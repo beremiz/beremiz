@@ -61,3 +61,12 @@ def Bpath(*names):
     Return path of files in Beremiz project
     """
     return os.path.join(AbsParentDir(__file__, 1), *names)
+
+def AppDataPath(*names):
+    """
+    Return path of files in Beremiz project
+    """
+    if os.name == "posix":
+        return os.path.join(os.environ["HOME"], ".local", "share", "beremiz", *names)
+    
+    return os.path.join(os.environ["APPDATA"], "Beremiz", *names)
