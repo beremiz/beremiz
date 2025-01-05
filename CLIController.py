@@ -19,12 +19,13 @@ from runtime.loglevels import LogLevelsCount, LogLevels
 class Log:
 
     def __init__(self):
-        self.crlfpending = False
+        self.last_progress = None
 
     def write(self, s):
         if s:
-            if self.crlfpending:
-                sys.stdout.write("\n")
+            if self.last_progress:
+                sys.stdout.write(f"{self.last_progress}\n")
+                self.last_progress = None
             sys.stdout.write(s)
             sys.stdout.flush()
             self.crlfpending = 0
@@ -44,10 +45,7 @@ class Log:
         return False
 
     def progress(self, s):
-        if s:
-            sys.stdout.write(s+"\r")
-            self.crlfpending = True
-
+        self.last_progress = s
 
 def with_project_loaded(func):
     @wraps(func)
