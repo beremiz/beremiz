@@ -23,9 +23,6 @@ widget_desc("Input") {
 
 widget_class("Input")
 ||
-     on_op_click(opstr) {
-         this.change_hmi_value(0, opstr);
-     }
      edit_callback(new_val) {
          this.apply_hmi_value(0, new_val);
      }
@@ -98,6 +95,22 @@ widget_defs("Input") {
 
     foreach "$action_elements" {
     |     action_elt_«position()»: id("«@id»"),
+        const "current_id", "@id";
+        const "active", "$hmi_element/*[@id = $current_id]/*[regexp:test(@inkscape:label,'active')]";
+    |     activable_sub_«position()»: {
+        foreach "$active" {
+    |             «@inkscape:label»_elt: id("«@id»")`if "position()!=last()" > ,`
+        }
+    |     },
+    |     on_op_mouse_down_«position()»: function(){
+    |         svg_root.addEventListener("pointerup", this.bound_on_op_mouse_up_«position()», true);
+    |         set_activity_state(this.activable_sub_«position()», true);
+    |     },
+    |     on_op_mouse_up_«position()»: function(){
+    |         svg_root.removeEventListener("pointerup", this.bound_on_op_mouse_up_«position()», true);
+    |         set_activity_state(this.activable_sub_«position()», false);
+    |         this.change_hmi_value(0, "«func:escape_quotes(@inkscape:label)»");
+    |     },
     }
     |     init: function() {
 
@@ -110,7 +123,8 @@ widget_defs("Input") {
     }
 
     foreach "$action_elements" {
-    |         this.action_elt_«position()».onclick = () => this.on_op_click("«func:escape_quotes(@inkscape:label)»");
+    |         this.action_elt_«position()».onmousedown = () => this.on_op_mouse_down_«position()»();
+    |         this.bound_on_op_mouse_up_«position()» = this.on_op_mouse_up_«position()».bind(this);
     }
 
     if "$have_value" {

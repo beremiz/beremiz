@@ -4997,12 +4997,6 @@
     <xsl:text>InputWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
-    <xsl:text>     on_op_click(opstr) {
-</xsl:text>
-    <xsl:text>         this.change_hmi_value(0, opstr);
-</xsl:text>
-    <xsl:text>     }
-</xsl:text>
     <xsl:text>     edit_callback(new_val) {
 </xsl:text>
     <xsl:text>         this.apply_hmi_value(0, new_val);
@@ -5143,6 +5137,58 @@
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
+      <xsl:variable name="current_id" select="@id"/>
+      <xsl:variable name="active" select="$hmi_element/*[@id = $current_id]/*[regexp:test(@inkscape:label,'active')]"/>
+      <xsl:text>    activable_sub_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: {
+</xsl:text>
+      <xsl:for-each select="$active">
+        <xsl:text>            </xsl:text>
+        <xsl:value-of select="@inkscape:label"/>
+        <xsl:text>_elt: id("</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>")</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>    },
+</xsl:text>
+      <xsl:text>    on_op_mouse_down_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: function(){
+</xsl:text>
+      <xsl:text>        svg_root.addEventListener("pointerup", this.bound_on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, true);
+</xsl:text>
+      <xsl:text>        set_activity_state(this.activable_sub_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, true);
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
+      <xsl:text>    on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: function(){
+</xsl:text>
+      <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, true);
+</xsl:text>
+      <xsl:text>        set_activity_state(this.activable_sub_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, false);
+</xsl:text>
+      <xsl:text>        this.change_hmi_value(0, "</xsl:text>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:text>");
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
     </xsl:for-each>
     <xsl:text>    init: function() {
 </xsl:text>
@@ -5163,9 +5209,15 @@
     <xsl:for-each select="$action_elements">
       <xsl:text>        this.action_elt_</xsl:text>
       <xsl:value-of select="position()"/>
-      <xsl:text>.onclick = () =&gt; this.on_op_click("</xsl:text>
-      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
-      <xsl:text>");
+      <xsl:text>.onmousedown = () =&gt; this.on_op_mouse_down_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>();
+</xsl:text>
+      <xsl:text>        this.bound_on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text> = this.on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>.bind(this);
 </xsl:text>
     </xsl:for-each>
     <xsl:if test="$have_value">
