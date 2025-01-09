@@ -574,10 +574,11 @@ class SVGHMI(object):
         project_path = self.CTNPath()
         static_dir = os.path.join(project_path, "static") 
         static_files_pairs = []
-        for fname in os.listdir(static_dir):
-            undercover_fname = location_str+"_"+fname
-            static_files_pairs.append('(b"%s","%s")'%(fname, undercover_fname))
-            res += ((undercover_fname, open(os.path.join(static_dir, fname), "rb")),)
+        if os.path.exists(static_dir):
+            for fname in os.listdir(static_dir):
+                undercover_fname = location_str+"_"+fname
+                static_files_pairs.append('("%s","%s")'%(fname, undercover_fname))
+                res += ((undercover_fname, open(os.path.join(static_dir, fname), "rb")),)
         static_files = ",\n    ".join(static_files_pairs)
 
         if os.path.exists(svgfile):
