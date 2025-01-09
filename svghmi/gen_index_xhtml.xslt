@@ -4475,7 +4475,7 @@
     <longdesc>
       <xsl:text>ForEach widget is used to span a small set of widget over a larger set of
 </xsl:text>
-      <xsl:text>repeated HMI_NODEs. 
+      <xsl:text>repeated HMI_NODEs.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -4951,14 +4951,11 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:text>      this.animate();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:image[starts-with(@inkscape:label, 'HMI:Image')]">
+    <xsl:copy>
+      <xsl:apply-templates mode="inline_svg" select="@*[not(contains(name(), 'href'))] | node()"/>
+    </xsl:copy>
   </xsl:template>
   <xsl:template match="widget[@type='Input']" mode="widget_desc">
     <type>
@@ -10347,6 +10344,8 @@
           <xsl:text>    Object.keys(hmi_widgets).forEach(function(id) {
 </xsl:text>
           <xsl:text>        let widget = hmi_widgets[id];
+</xsl:text>
+          <xsl:text>        if(widget.curr_value != undefined) return;
 </xsl:text>
           <xsl:text>        widget.do_init();
 </xsl:text>
