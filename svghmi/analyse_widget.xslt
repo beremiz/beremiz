@@ -507,7 +507,7 @@
     <longdesc>
       <xsl:text>ForEach widget is used to span a small set of widget over a larger set of
 </xsl:text>
-      <xsl:text>repeated HMI_NODEs. 
+      <xsl:text>repeated HMI_NODEs.
 </xsl:text>
       <xsl:text>
 </xsl:text>

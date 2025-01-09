@@ -16,19 +16,6 @@ import collections, json
 class FilesJsonResource(Resource):
     image_cache = {}
 
-    def render_GET(self, request):
-        request.setHeader('content-type', 'image/png')
-        img_name = request.args[b'name'][0].decode('utf-8')
-        p = getcwd()  + '/' + img_name
-        if p not in self.image_cache:
-            with open(p, 'rb') as image_file:
-                img_bytes = image_file.read()
-                self.image_cache[p] = img_bytes
-        else:
-            img_bytes = self.image_cache[p]
-        return img_bytes
-
-
     def render_POST(self, request):
         newstr = request.content.getvalue()
         newdata = json.loads(newstr)
@@ -66,7 +53,7 @@ class FilesJsonResource(Resource):
                     'path': dirname(path),
                     'type': 'folder',
                     'status': 'active',
-                    'thumbnail': '/files?name=folder.png'
+                    'thumbnail': 'folder.png'
                 }
             ]
         else:
@@ -78,7 +65,7 @@ class FilesJsonResource(Resource):
                 'path': join(path, f),
                 'type': 'folder',
                 'status': 'active',
-                'thumbnail': '/files?name=folder.png'
+                'thumbnail': 'folder.png'
             }
             for f in ld
             if not (isfile(join(path, f)) 
@@ -90,7 +77,7 @@ class FilesJsonResource(Resource):
                 'path': join(path, f),
                 'type': 'file',
                 'status': 'active',
-                'thumbnail': '/files?name=file.png'
+                'thumbnail': 'file.png'
             }
             for f in ld 
             if isfile(join(path, f)) 

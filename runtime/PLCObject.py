@@ -591,10 +591,25 @@ class PLCObject(object):
         return getPSKID(partial(self.LogMessage, 0))
 
     def _init_blobs(self):
-        self.blobs = {}
+        self.blobs = {}  # dict of list
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         os.mkdir(self.tmpdir)
+
+    def _append_blob(self, blob, newBlobID):
+        self.blobs.setdefault(newBlobID,[]).append(blob)
+
+    def _pop_blob(self, blobID):
+        blobs = self.blobs.pop(blobID, None)
+
+        if blobs is None:
+            return None
+
+        blob = blobs.pop()
+        if blobs:
+            # insert same blob list back if not empty
+            blobs = self.blobs[blobID] = blobs
+        return blob
 
     @RunInMain
     def SeedBlob(self, seed):
@@ -602,35 +617,33 @@ class PLCObject(object):
         _fd, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
-        self.blobs[newBlobID] = blob
+        self._append_blob(blob, newBlobID)
         return newBlobID
 
     @RunInMain
     def AppendChunkToBlob(self, data, blobID):
-        blob = self.blobs.pop(blobID, None)
-
-        if blob is None:
-            return None
+        blob = self._pop_blob(blobID)
 
         fd, _path, md5sum = blob
         md5sum.update(data)
         newBlobID = md5sum.digest()
         os.write(fd, data)
-        self.blobs[newBlobID] = blob
+        self._append_blob(blob, newBlobID)
         return newBlobID
 
     @RunInMain
     def PurgeBlobs(self):
-        for fd, _path, _md5sum in list(self.blobs.values()):
-            os.close(fd)
+        for blobs in list(self.blobs.values()):
+            for fd, _path, _md5sum in blobs:
+                os.close(fd)
         self._init_blobs()
 
     def BlobAsFile(self, blobID, newpath):
-        blob = self.blobs.pop(blobID, None)
+        blob = self._pop_blob(blobID)
 
         if blob is None:
             raise Exception(
-                _(f"Missing data to create file: {newpath}").decode())
+                _(f"Missing data to create file: {newpath}"))
 
         self._BlobAsFile(blob, newpath)
 

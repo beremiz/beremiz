@@ -4475,7 +4475,7 @@
     <longdesc>
       <xsl:text>ForEach widget is used to span a small set of widget over a larger set of
 </xsl:text>
-      <xsl:text>repeated HMI_NODEs. 
+      <xsl:text>repeated HMI_NODEs.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -4951,14 +4951,11 @@
 </xsl:text>
     <xsl:text>    },
 </xsl:text>
-    <xsl:text>
-</xsl:text>
-    <xsl:text>    init: function() {
-</xsl:text>
-    <xsl:text>      this.animate();
-</xsl:text>
-    <xsl:text>    },
-</xsl:text>
+  </xsl:template>
+  <xsl:template xmlns="http://www.w3.org/2000/svg" mode="inline_svg" match="svg:image[starts-with(@inkscape:label, 'HMI:Image')]">
+    <xsl:copy>
+      <xsl:apply-templates mode="inline_svg" select="@*[not(contains(name(), 'href'))] | node()"/>
+    </xsl:copy>
   </xsl:template>
   <xsl:template match="widget[@type='Input']" mode="widget_desc">
     <type>
@@ -4996,12 +4993,6 @@
     <xsl:text>class </xsl:text>
     <xsl:text>InputWidget</xsl:text>
     <xsl:text> extends Widget{
-</xsl:text>
-    <xsl:text>     on_op_click(opstr) {
-</xsl:text>
-    <xsl:text>         this.change_hmi_value(0, opstr);
-</xsl:text>
-    <xsl:text>     }
 </xsl:text>
     <xsl:text>     edit_callback(new_val) {
 </xsl:text>
@@ -5143,6 +5134,58 @@
       <xsl:value-of select="@id"/>
       <xsl:text>"),
 </xsl:text>
+      <xsl:variable name="current_id" select="@id"/>
+      <xsl:variable name="active" select="$hmi_element/*[@id = $current_id]/*[regexp:test(@inkscape:label,'active')]"/>
+      <xsl:text>    activable_sub_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: {
+</xsl:text>
+      <xsl:for-each select="$active">
+        <xsl:text>            </xsl:text>
+        <xsl:value-of select="@inkscape:label"/>
+        <xsl:text>_elt: id("</xsl:text>
+        <xsl:value-of select="@id"/>
+        <xsl:text>")</xsl:text>
+        <xsl:if test="position()!=last()">
+          <xsl:text>,</xsl:text>
+        </xsl:if>
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
+      <xsl:text>    },
+</xsl:text>
+      <xsl:text>    on_op_mouse_down_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: function(){
+</xsl:text>
+      <xsl:text>        svg_root.addEventListener("pointerup", this.bound_on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, true);
+</xsl:text>
+      <xsl:text>        set_activity_state(this.activable_sub_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, true);
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
+      <xsl:text>    on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>: function(){
+</xsl:text>
+      <xsl:text>        svg_root.removeEventListener("pointerup", this.bound_on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, true);
+</xsl:text>
+      <xsl:text>        set_activity_state(this.activable_sub_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>, false);
+</xsl:text>
+      <xsl:text>        this.change_hmi_value(0, "</xsl:text>
+      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
+      <xsl:text>");
+</xsl:text>
+      <xsl:text>    },
+</xsl:text>
     </xsl:for-each>
     <xsl:text>    init: function() {
 </xsl:text>
@@ -5163,9 +5206,15 @@
     <xsl:for-each select="$action_elements">
       <xsl:text>        this.action_elt_</xsl:text>
       <xsl:value-of select="position()"/>
-      <xsl:text>.onclick = () =&gt; this.on_op_click("</xsl:text>
-      <xsl:value-of select="func:escape_quotes(@inkscape:label)"/>
-      <xsl:text>");
+      <xsl:text>.onmousedown = () =&gt; this.on_op_mouse_down_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>();
+</xsl:text>
+      <xsl:text>        this.bound_on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text> = this.on_op_mouse_up_</xsl:text>
+      <xsl:value-of select="position()"/>
+      <xsl:text>.bind(this);
 </xsl:text>
     </xsl:for-each>
     <xsl:if test="$have_value">
@@ -10295,6 +10344,8 @@
           <xsl:text>    Object.keys(hmi_widgets).forEach(function(id) {
 </xsl:text>
           <xsl:text>        let widget = hmi_widgets[id];
+</xsl:text>
+          <xsl:text>        if(widget.curr_value != undefined) return;
 </xsl:text>
           <xsl:text>        widget.do_init();
 </xsl:text>
