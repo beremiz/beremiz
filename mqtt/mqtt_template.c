@@ -405,7 +405,7 @@ exit:
 #define PUBLISH_JSON(Topic, QoS, C_type, c_loc_name, Retained)                                    \
         int res = json_gen_##c_loc_name(&MQTT_##c_loc_name##_buf);                                \
         if(res == 0) {{                                                                           \
-            _PUBLISH(Topic, QoS, json_out_len, json_out_buf, Retained)                            \
+            _PUBLISH(#Topic, QoS, json_out_len, json_out_buf, Retained)                            \
         }}
 
 #define INIT_PUBLICATION(encoding, Topic, QoS, C_type, c_loc_name, Retained)                      \
