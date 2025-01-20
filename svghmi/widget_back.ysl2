@@ -44,5 +44,5 @@ widget_class("Back") {
 }
 
 widget_defs("Back") {
-    activable();
+    optional_activable();
 }

@@ -10345,8 +10345,6 @@
 </xsl:text>
           <xsl:text>        let widget = hmi_widgets[id];
 </xsl:text>
-          <xsl:text>        if(widget.curr_value != undefined) return;
-</xsl:text>
           <xsl:text>        widget.do_init();
 </xsl:text>
           <xsl:text>    });
