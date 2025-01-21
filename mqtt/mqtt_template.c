@@ -260,8 +260,11 @@ static void connectionLost(void* context, char* reason)
 }}
 
 
-typedef int(*callback_fptr_t)(char* topic, char* data, uint32_t datalen);
-static callback_fptr_t __mqtt_python_callback_fptr_{name} = NULL;
+typedef int(*cb_onmsg_fptr_t)(char* topic, char* data, uint32_t datalen);
+static cb_onmsg_fptr_t __mqtt_python_cb_onmsg_fptr_{name} = NULL;
+
+typedef int(*cb_resub_fptr_t)(void);
+static cb_resub_fptr_t __mqtt_python_cb_resub_fptr_{name} = NULL;
 
 static int messageArrived(void *context, char *topicName, int topicLen, MQTTClient_message *message)
 {{
@@ -309,8 +312,8 @@ static int messageArrived(void *context, char *topicName, int topicLen, MQTTClie
             high = mid - 1;
     }}
     // If we reach here, then the element was not present
-    if(__mqtt_python_callback_fptr_{name} && 
-       (*__mqtt_python_callback_fptr_{name})(topicName,
+    if(__mqtt_python_cb_onmsg_fptr_{name} && 
+       (*__mqtt_python_cb_onmsg_fptr_{name})(topicName,
                                      (char*)message->payload,
                                      message->payloadlen) == 0){{
         // Topic was handled in python
@@ -457,6 +460,10 @@ static int _connect_mqtt(void)
     }}
 
 {init_pubsub}
+
+    if(__mqtt_python_cb_resub_fptr_{name}){{ 
+        (*__mqtt_python_cb_resub_fptr_{name})();
+    }}
 
     return MQTTCLIENT_SUCCESS;
 }}
@@ -630,8 +637,9 @@ int __mqtt_python_subscribe_{name}(char* topic, uint8_t QoS)
     return 0;
 }}
 
-int __mqtt_python_callback_setter_{name}(callback_fptr_t cb)
+int __mqtt_python_callback_setter_{name}(cb_onmsg_fptr_t cb_onmsg, cb_resub_fptr_t cb_resub)
 {{
-    __mqtt_python_callback_fptr_{name} = cb;
+    __mqtt_python_cb_onmsg_fptr_{name} = cb_onmsg;
+    __mqtt_python_cb_resub_fptr_{name} = cb_resub;
     return 0;
 }}
