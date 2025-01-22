@@ -2833,7 +2833,7 @@
           <xsl:text>/active /inactive</xsl:text>
         </xsl:with-param>
         <xsl:with-param name="mandatory">
-          <xsl:text>warn</xsl:text>
+          <xsl:text>no</xsl:text>
         </xsl:with-param>
       </xsl:call-template>
     </xsl:variable>
