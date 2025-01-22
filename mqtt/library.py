@@ -38,16 +38,16 @@ MQTT_subscribers_cbs = {}
 # - one callback registered to C side per client
 MQTT_client_cbs = {}
 
-def mqtt_per_client_cb_factory(client):
+def mqtt_per_client_cb_factory(clientname):
     def per_client_onmsg_cb(topic, dataptr, datalen):
         payload = ctypes.string_at(dataptr, datalen)
-        subscriber,_Qos = MQTT_subscribers_cbs[client].get(topic, None)
+        subscriber,_Qos = MQTT_subscribers_cbs[clientname].get(topic, None)
         if subscriber:
             subscriber(topic, payload)
             return 0
         return 1
     def per_client_resub_cb():
-        for topic,(_cb,Qos) in MQTT_subscribers_cbs[client].items():
+        for topic,(_cb,QoS) in MQTT_subscribers_cbs[clientname].items():
             _MQTT_subscribe(clientname, topic, QoS)
         return 1
     return per_client_onmsg_cb,per_client_resub_cb
