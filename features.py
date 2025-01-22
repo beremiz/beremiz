@@ -12,7 +12,8 @@ libraries = [
     ('Native', 'NativeLib.NativeLibrary', True),
     ('Python', 'py_ext.PythonLibrary', True),
     # FIXME ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
-    ('SVGHMI', 'svghmi.SVGHMILibrary', 'svghmi')]
+    ('SVGHMI', 'svghmi.SVGHMILibrary', 'svghmi'),
+    ('MQTT', 'mqtt.MQTTLibrary', False)]
 
 catalog = [
     ('mqtt', _('MQTT client'), _('Map MQTT topics as located variables'), 'mqtt.MQTTClient'),

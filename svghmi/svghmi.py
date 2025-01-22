@@ -399,6 +399,18 @@ class SVGHMI(object):
             "tooltip": _("Remove font previously added to HMI"),
             "method":   "_DelFont"
         },
+        {
+            "bitmap":    "AddFile",
+            "name":    _("Add File"),
+            "tooltip": _("Add file to be served for HMI"),
+            "method":   "_AddFile"
+        },
+        {
+            "bitmap":    "DelFile",
+            "name":    _("Delete File"),
+            "tooltip": _("Remove file previously added to HMI"),
+            "method":   "_DelFile"
+        },
     ]
 
     def _getSVGpath(self, project_path=None):
@@ -554,6 +566,21 @@ class SVGHMI(object):
 
         ctroot.logger.write("SVGHMI:\n")
 
+        # To serve user provided static files
+        #  - transfer them as file with a prefixed name
+        #    to avoid potential conflicts
+        #  - generate server code that serve them with 
+        #    original name as http path
+        project_path = self.CTNPath()
+        static_dir = os.path.join(project_path, "static") 
+        static_files_pairs = []
+        if os.path.exists(static_dir):
+            for fname in os.listdir(static_dir):
+                undercover_fname = location_str+"_"+fname
+                static_files_pairs.append('("%s","%s")'%(fname, undercover_fname))
+                res += ((undercover_fname, open(os.path.join(static_dir, fname), "rb")),)
+        static_files = ",\n    ".join(static_files_pairs)
+
         if os.path.exists(svgfile):
 
             hasher = hashlib.md5()
@@ -673,6 +700,10 @@ def svghmi_{location}_watchdog_trigger():
 
 max_svghmi_sessions = {maxConnections_total}
 
+_{location}_static_files = [
+    {static_files}
+]
+
 def _runtime_{location}_svghmi_start():
     global svghmi_watchdog, svghmi_servers, browser_proc
 
@@ -699,6 +730,10 @@ def _runtime_{location}_svghmi_start():
 
     path_list.append("{path}")
 
+    for url_path, file_path in _{location}_static_files:
+        svghmi_root.putChild(url_path, File(file_path))
+        path_list.append(url_path)
+
     browser_proc = {svghmi_cmds[Start]}
 
     if {enable_watchdog}:
@@ -723,6 +758,10 @@ def _runtime_{location}_svghmi_stop():
 
     path_list.remove('{path}')
 
+    for url_path, file_path in _{location}_static_files:
+        svghmi_root.delEntity(url_path)
+        path_list.remove(url_path)
+
     if len(path_list)==0:
         svghmi_root.delEntity(b"ws")
         svghmi_listener.stopListening()
@@ -740,6 +779,7 @@ def _runtime_{location}_svghmi_stop():
                    watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
                    maxConnections = self.GetParamsAttributes("SVGHMI.MaxConnections")["value"],
                    maxConnections_total = svghmilib.maxConnectionsTotal,
+                   static_files = static_files,
                    **svghmi_options
         ))
 
@@ -814,6 +854,62 @@ def _runtime_{location}_svghmi_stop():
         else:
             self.GetCTRoot().logger.write_error(_("POT file does not exist, add translatable text (label starting with '_') in Inkscape first\n"))
 
+    def _AddFile(self):
+        dialog = wx.FileDialog(
+            self.GetCTRoot().AppFrame,
+            _("Choose files so serve"),
+            os.path.expanduser("~"),
+            "",
+            _("Any files (*.*)|*.*"), wx.FD_OPEN)
+
+        if dialog.ShowModal() == wx.ID_OK:
+            staticfile = dialog.GetPath()
+            if not os.path.isfile(staticfile):
+                self.GetCTRoot().logger.write_error(
+                    _('Selected file%s is not a readable file\n')%staticfile)
+                return
+
+            project_path = self.CTNPath()
+
+            staticfname = os.path.basename(staticfile)
+            staticdir = os.path.join(project_path, "static") 
+            newstaticfile = os.path.join(staticdir, staticfname) 
+
+            if not os.path.exists(staticdir):
+                os.mkdir(staticdir)
+
+            shutil.copyfile(staticfile, newstaticfile)
+
+            self.GetCTRoot().logger.write(
+                _('Added file %s as %s\n')%(staticfile,newstaticfile))
+
+    def _DelFile(self):
+        project_path = self.CTNPath()
+        staticdir = os.path.join(project_path, "static") 
+        if not os.path.exists(staticdir) or len(os.listdir(staticdir))==0 :
+            self.GetCTRoot().logger.write_error(
+                _("No file in %s\n")%staticdir)
+            return
+        dialog = wx.FileDialog(
+            self.GetCTRoot().AppFrame,
+            _("Choose a file to remove"),
+            staticdir,
+            "",
+            _("Any files (*.*);*.*"), wx.FD_OPEN)
+        if dialog.ShowModal() == wx.ID_OK:
+            staticfile = dialog.GetPath()
+            if os.path.isfile(staticfile):
+                if os.path.relpath(staticfile, staticdir) == os.path.basename(staticfile):
+                    os.remove(staticfile) 
+                    self.GetCTRoot().logger.write(
+                        _('Removed static file%s\n')%staticfile)
+                else:
+                    self.GetCTRoot().logger.write_error(
+                        _("StaticFile to remove %s is not in %s\n") % (staticfile,staticdir))
+            else:
+                self.GetCTRoot().logger.write_error(
+                    _("StaticFile file does not exist: %s\n") % staticfile)
+        
     def _AddFont(self):
         dialog = wx.FileDialog(
             self.GetCTRoot().AppFrame,
@@ -852,6 +948,10 @@ def _runtime_{location}_svghmi_stop():
     def _DelFont(self):
         project_path = self.CTNPath()
         fontdir = os.path.join(project_path, "fonts") 
+        if not os.path.exists(fontdir) or len(os.listdir(fontdir))==0 :
+            self.GetCTRoot().logger.write_error(
+                _("No font file in %s\n")%fontdir)
+            return
         dialog = wx.FileDialog(
             self.GetCTRoot().AppFrame,
             _("Choose a font to remove"),

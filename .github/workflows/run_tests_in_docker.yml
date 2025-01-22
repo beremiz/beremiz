@@ -82,7 +82,7 @@ jobs:
         ./do_test_in_docker.sh
 
     - name: Upload test resuts artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: test_results

@@ -28,8 +28,16 @@ widget_defs("Image") {
     |     animate: function(){
     |       this.element.setAttribute('href', this.given_url);
     |     },
-    |
-    |     init: function() {
-    |       this.animate();
-    |     },
+}
+
+
+gen_index_xhtml { // following content is only available when generating xhtml file
+
+// strip inkscape embedded bitmap when it is meant to be replaced by HMI:Image widget
+svgtmpl "svg:image[starts-with(@inkscape:label, 'HMI:Image')]", mode="inline_svg" {
+    xsl:copy {
+        apply "@*[not(contains(name(), 'href'))] | node()", mode="inline_svg";
+    }
+}
+
 }

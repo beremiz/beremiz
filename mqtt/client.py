@@ -178,7 +178,8 @@ class MQTTClient(object):
 #include "beremiz.h"
 """
         config = self.GetConfig()
-        c_code += self.modeldata.GenerateC(c_path, locstr, config, self.GetDataTypeInfos)
+        name = self.BaseParams.getName()
+        c_code += self.modeldata.GenerateC(name, c_path, locstr, config, self.GetDataTypeInfos)
 
         with open(c_path, 'w') as c_file:
             c_file.write(c_code)
