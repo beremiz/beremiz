@@ -193,7 +193,7 @@ class LD_PowerRail(Graphic_Element):
             if scaling is not None:
                 position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
             if self.Type == LEFTRAIL:
-                connector.SetPosition(wx.Point(self.Size[0], position))
+                connector.SetPosition(wx.Point(int(self.Size[0]), int(position)))
             elif self.Type == RIGHTRAIL:
                 connector.SetPosition(wx.Point(0, position))
         self.RefreshConnected()
