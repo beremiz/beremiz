@@ -241,7 +241,7 @@ def GetConfiguration():
 
 
 def SetWampSecret(wampSecret):
-    with open(os.path.realpath(_WampSecret), 'w') as f:
+    with open(os.path.realpath(_WampSecret), 'wb') as f:
         f.write(wampSecret)
 
 
