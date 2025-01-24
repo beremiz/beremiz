@@ -5,7 +5,7 @@ widget_desc("ForEach") {
     longdesc
     ||
     ForEach widget is used to span a small set of widget over a larger set of
-    repeated HMI_NODEs. 
+    repeated HMI_NODEs.
 
     Idea is somewhat similar to relative page, but it all happens inside the
     ForEach widget, no page involved.
