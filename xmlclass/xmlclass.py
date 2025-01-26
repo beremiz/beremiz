@@ -575,7 +575,7 @@ def GenerateAnyInfos(infos):
     }
 
 
-def GenerateTagInfos(infos):
+def GenerateTagInfos(factory, infos):
     def ExtractTag(tree):
         if len(tree._attrs) > 0:
             raise ValueError("\"%s\" musn't have attributes!" % infos["name"])
@@ -593,15 +593,14 @@ def GenerateTagInfos(infos):
         else:
             return ""
 
-    def Initial():
-        p = etree.Element(infos["name"])
-        return p
+    def InitialTag():
+        return factory.Parser.CreateElement(infos["name"])
 
     return {
         "type": TAG,
         "extract": ExtractTag,
         "generate": GenerateTag,
-        "initial": Initial,
+        "initial": InitialTag,
         "check": lambda x: x is None or infos["minOccurs"] == 0 and x
     }
 
@@ -659,7 +658,7 @@ def ComputeContentChoices(factory, name, infos):
                     if element_infos is not None:
                         sequence_element["elmt_type"] = element_infos
         elif choice["elmt_type"] == "tag":
-            choice["elmt_type"] = GenerateTagInfos(choice)
+            choice["elmt_type"] = GenerateTagInfos(factory, choice)
             factory.AddToLookupClass(choice["name"], name, DefaultElementClass)
         else:
             choice_infos = factory.ExtractTypeInfos(choice["name"], name, choice["elmt_type"])
@@ -1147,7 +1146,7 @@ class ClassFactory(object):
             else:
                 elmtname = element["name"]
                 if element["elmt_type"] == "tag":
-                    infos = GenerateTagInfos(element)
+                    infos = GenerateTagInfos(self, element)
                     self.AddToLookupClass(element["name"], name, DefaultElementClass)
                 else:
                     infos = self.ExtractTypeInfos(element["name"], name, element["elmt_type"])
@@ -1489,8 +1488,7 @@ def generateGetElementInfos(factory, classinfos):
                         value = ""
                     else:
                         value = self.content.getLocalTag()
-                        if self.content is not None:
-                            children.extend(self.content.getElementInfos(value)["children"])
+                        children.extend(self.content.getElementInfos(value)["children"])
                 elif element["elmt_type"]["type"] == SIMPLETYPE:
                     children.append({
                         "name": element_name,
@@ -1736,7 +1734,14 @@ class DefaultElementClass(etree.ElementBase):
         return NAMESPACE_PATTERN.sub("", etree.tostring(self, encoding='unicode'))
 
     def getElementInfos(self, name, path=None, derived=False):
-        return {"name": name, "type": TAG, "value": None, "use": None, "children": []}
+        if path is not None:
+            raise ValueError("Simple element "+name+" accepts no path: "+path)
+        return {
+            "name": name,
+            "type": "element",
+            "value": None,
+            "use": "required",
+            "children": []}
 
 class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
