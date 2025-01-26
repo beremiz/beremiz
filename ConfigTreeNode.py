@@ -585,6 +585,8 @@ class ConfigTreeNode(object):
                 NewCTNName = self.FindNewName(CTNName)
                 # If dir have already be made, and file exist
                 if os.path.isdir(self.CTNPath(NewCTNName)):  # and os.path.isfile(self.ConfNodeXmlFilePath(CTNName)):
+                    # Make CTN aware that this configuration was loaded
+                    self.new_config = False
                     # Load the confnode.xml file into parameters members
                     self.LoadXMLParams(NewCTNName)
                     # Basic check. Better to fail immediately.
@@ -605,6 +607,8 @@ class ConfigTreeNode(object):
                     # just loaded, nothing to saved
                     self.ChangesToSave = False
                 else:
+                    # Make CTN aware that this is first time configuration
+                    self.new_config = True
                     # If confnode do not have corresponding file/dirs - they will be created on Save
                     self.CTNMakeDir()
                     # Find an IEC number
