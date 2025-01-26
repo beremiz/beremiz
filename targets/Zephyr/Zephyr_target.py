@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# This file is part of Beremiz IDE
+#
 # Copyright (C) 2024: Edouard TISSERANT
+#
 # See COPYING file for copyrights details.
 
 import os
 import shlex
 
-from os.path import join
-from ..toolchain_gcc import compute_file_md5
 from .ZephyrBuildBase import ZephyrBuildException
+from targets.Builder import Builder
 
 if os.name == 'nt':
     from .ZephyrWindowsBuild import ZephyrWindowsBuild as ZephyrBuild
@@ -17,51 +19,20 @@ else:
     from .ZephyrLinuxBuild import ZephyrLinuxBuild as ZephyrBuild
 
 
-class Zephyr_target():
+class Zephyr_target(Builder):
     dlopen_prefix = "./"
     extension = ".dlext"
-
-    def __init__(self, CTRInstance):
-        self.CTRInstance = CTRInstance
-        self.md5key = None
-        self.buildpath = None
-        self.SetBuildPath(self.CTRInstance._getBuildPath())
-
-    def GetBinaryPath(self):
-        return self.bin_path
-
-    def _GetMD5FileName(self):
-        return join(self.buildpath, "lastbuildPLC.md5")
-
-    def ResetBinaryMD5(self):
-        self.md5key = None
-        try:
-            os.remove(self._GetMD5FileName())
-        except Exception:
-            pass
-
-    def GetBinaryMD5(self):
-        if self.md5key is not None:
-            return self.md5key
-        else:
-            try:
-                return open(self._GetMD5FileName(), "r").read()
-            except Exception:
-                return None
-
-    def SetBuildPath(self, buildpath):
-        if self.buildpath != buildpath:
-            self.buildpath = buildpath
-            self.bin = self.CTRInstance.GetProjectName() + self.extension
-            self.bin_path = join(self.buildpath, self.bin)
-            self.md5key = None
 
     def getDebugEnabled(self):
         target_cfg = self.CTRInstance.GetTarget().getcontent()
         programmable = target_cfg.getProgrammable()
         # only programmable PLCs are debuggable
         return programmable
-          
+
+    def GetReservedIECChannels(self):
+        # TODO: get reserved IEC channels from selected board
+        return [0]
+              
     def build(self):
         log = self.CTRInstance.logger
         
@@ -115,7 +86,7 @@ class Zephyr_target():
         
         self.bin_path = binaries[0]
         
-        self.md5key = compute_file_md5(self.bin_path)
+        self.md5key = self.compute_file_md5(self.bin_path)
         
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")

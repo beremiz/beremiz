@@ -299,8 +299,16 @@ class ConfigTreeNode(object):
             elif isinstance(CTNLDFLAGS, list):
                 LDFLAGS += CTNLDFLAGS
 
+        children = self.IECSortedChildren()
+        reserved_channels = self.GetReservedIECChannels()
+        for CTNChild in children:
+            channel = CTNChild.BaseParams.getIEC_Channel()
+            if channel in reserved_channels:
+                self.FatalError(_("IEC channel %d is reserved for %s (%s)") % 
+                                 (channel, CTNChild.GetFullIEC_Channel(), CTNChild.CTNFullName()))
+
         # recurse through all children, and stack their results
-        for CTNChild in self.IECSortedChildren():
+        for CTNChild in children:
             new_location = CTNChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth = len(new_location)
@@ -441,13 +449,16 @@ class ConfigTreeNode(object):
             self.GetCTRoot().logger.write_warning(msg)
         return res
 
-    def GetAllChannels(self):
-        AllChannels = []
-        for CTNInstance in self.CTNParent.IterChildren():
-            if CTNInstance != self:
-                AllChannels.append(CTNInstance.BaseParams.getIEC_Channel())
-        AllChannels.sort()
-        return AllChannels
+    def GetReservedIECChannels(self):
+        return []
+    
+    def GetUsedIEC_Channels(self, exclude=None):
+        UsedIECChannels = self.GetReservedIECChannels()
+        for CTNInstance in self.IterChildren():
+            if CTNInstance != exclude:
+                UsedIECChannels.append(CTNInstance.BaseParams.getIEC_Channel())
+        UsedIECChannels.sort()
+        return UsedIECChannels
 
     def FindNewIEC_Channel(self, DesiredChannel):
         """
@@ -456,14 +467,13 @@ class ConfigTreeNode(object):
         """
         # Get Current IEC channel
         CurrentChannel = self.BaseParams.getIEC_Channel()
-        # Do nothing if no change
-        # if CurrentChannel == DesiredChannel: return CurrentChannel
+
         # Build a list of used Channels out of parent's Children
-        AllChannels = self.GetAllChannels()
+        UsedSiblingsChannels = self.CTNParent.GetUsedIEC_Channels(exclude=self)
 
         # Now, try to guess the nearest available channel
         res = DesiredChannel
-        while res in AllChannels:  # While channel not free
+        while res in UsedSiblingsChannels:  # While channel not free
             if res < CurrentChannel:  # Want to go down ?
                 res -= 1  # Test for n-1
                 if res < 0:

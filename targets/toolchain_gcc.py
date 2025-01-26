@@ -1,28 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# This file is part of Beremiz, a Integrated Development Environment for
-# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+# This file is part of Beremiz IDE
 #
-# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2007: Laurent BESSARD
 # Copyright (C) 2017: Paul Beltyukov
+# Copyright (C) 2025: Edouard TISSERANT
 #
 # See COPYING file for copyrights details.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 
 
 import os
@@ -33,36 +18,17 @@ import subprocess
 import shlex
 from functools import reduce
 from util.ProcessLogger import ProcessLogger
-
+from targets.Builder import Builder
 
 includes_re = re.compile(r'\s*#include\s*["<]([^">]*)[">].*')
 
 
-def compute_file_md5(filestocheck):
-    hasher = hashlib.md5()
-    if type(filestocheck) is str:
-        filestocheck = [filestocheck]
-    for filetocheck in filestocheck:
-        with open(filetocheck, 'rb') as afile:
-            while True:
-                buf = afile.read(65536)
-                if len(buf) > 0:
-                    hasher.update(buf)
-                else:
-                    break
-    return hasher.hexdigest()
-
-
-class toolchain_gcc(object):
+class toolchain_gcc(Builder):
     """
     This abstract class contains GCC specific code.
     It cannot be used as this and should be inherited in a target specific
     class such as target_linux or target_win32
     """
-    def __init__(self, CTRInstance):
-        self.CTRInstance = CTRInstance
-        self.buildpath = None
-        self.SetBuildPath(self.CTRInstance._getBuildPath())
 
     def getBuilderCFLAGS(self):
         """
@@ -99,34 +65,8 @@ class toolchain_gcc(object):
         """
         return self.CTRInstance.GetTarget().getcontent().getLinker()
 
-    def GetBinaryPath(self):
-        return self.bin_path
-
-    def _GetMD5FileName(self):
-        return os.path.join(self.buildpath, "lastbuildPLC.md5")
-
-    def ResetBinaryMD5(self):
-        self.md5key = None
-        try:
-            os.remove(self._GetMD5FileName())
-        except Exception:
-            pass
-
-    def GetBinaryMD5(self):
-        if self.md5key is not None:
-            return self.md5key
-        else:
-            try:
-                return open(self._GetMD5FileName(), "r").read()
-            except Exception:
-                return None
-
     def SetBuildPath(self, buildpath):
-        if self.buildpath != buildpath:
-            self.buildpath = buildpath
-            self.bin = self.CTRInstance.GetProjectName() + self.extension
-            self.bin_path = os.path.join(self.buildpath, self.bin)
-            self.md5key = None
+        if Builder.SetBuildPath(self, buildpath):
             self.srcmd5 = {}
 
     def append_cfile_deps(self, src, deps):
@@ -155,7 +95,7 @@ class toolchain_gcc(object):
         if not os.path.exists(src):
             return False
         # compute new hash
-        newhash = compute_file_md5(src)
+        newhash = self.compute_file_md5(src)
         # compare
         match = (oldhash == newhash)
         if not match:
@@ -273,7 +213,7 @@ class toolchain_gcc(object):
             self.CTRInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.bin + "\n")
 
         # Calculate md5 key and get data for the new created PLC
-        self.md5key = compute_file_md5(self.bin_path)
+        self.md5key = self.compute_file_md5(self.bin_path)
 
         # Store new PLC filename based on md5 key
         f = open(self._GetMD5FileName(), "w")
