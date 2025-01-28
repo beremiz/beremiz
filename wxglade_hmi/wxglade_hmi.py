@@ -85,6 +85,9 @@ class WxGladeHMI(PythonFileCTNMixin):
                             self._getWXGLADEpath())
         return PythonFileCTNMixin.OnCTNSave(self, from_project_path)
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
 
         # list containing description of all objects declared in wxglade

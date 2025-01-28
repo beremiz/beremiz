@@ -51,6 +51,9 @@ class SVGHMILibrary(POULibrary):
 
     maxConnectionsTotal = 0
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 

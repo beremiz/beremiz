@@ -30,7 +30,11 @@ _base_path = paths.AbsDir(__file__)
 
 # Lazy loading of target classes
 def _GetLocalTargetClassFactory(name):
-    return lambda: getattr(importlib.import_module(f"targets.{name}.{name}_target"), f"{name}_target")
+    def __GetLocalTargetClassFactory():
+        kls = getattr(importlib.import_module(f"targets.{name}.{name}_target"), f"{name}_target")
+        kls.GetTargetName = classmethod(lambda cls: name) # Add target name to class intependently of class name
+        return kls
+    return __GetLocalTargetClassFactory
 
 targets = {}
 targetchoices = ""

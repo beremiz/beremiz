@@ -564,6 +564,8 @@ class RootClass(object):
             generate_file_handle  .close()
 
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
 
     #
     # Generate the C source code files

@@ -665,6 +665,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         LocatedCCodeAndFlags = []
         Extras = []
         for lib in self.Libraries.values():
+            # check libraries compatibility with Target
+            if hasattr(lib, "SupportsTarget"):
+                builder = self.GetBuilder()
+                if not lib.SupportsTarget(builder):
+                    self.FatalError(_("Target %s is not compatible with %s library\n") % 
+                        (builder.GetTargetName(), lib.GetName()))
+
             res = lib.Generate_C(buildpath, self._VariablesList, self.plcCFLAGS)
             LocatedCCodeAndFlags.append(res[:2])
             if len(res) > 2:
@@ -960,6 +967,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # Get classname instance
             self._builder = targetclass(self)
         return self._builder
+
+    def CheckChildCompatible(self, child):
+        """
+        Check if the child is compatible with the parent
+        """
+        builder = self.GetBuilder()
+        if not hasattr(child, "SupportsTarget") or child.SupportsTarget(builder):
+            return True
+        self.FatalError(_("Target %s is not compatible with %s extension\n") % 
+                    (builder.GetTargetName(), child.CTNType))
 
     #
     #

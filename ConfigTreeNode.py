@@ -262,6 +262,12 @@ class ConfigTreeNode(object):
             instances.extend(CTNChild._GlobalInstances())
         return instances
 
+    def CheckChildCompatible(self, child):
+        """
+        Check if the child is compatible with the parent
+        """
+        return True
+
     def CTNGenerate_C(self, buildpath, locations):
         """
         Generate C code
@@ -278,6 +284,8 @@ class ConfigTreeNode(object):
         return [], "", False
 
     def _Generate_C(self, buildpath, locations):
+        if self.CTNParent is not None:
+            self.CTNParent.CheckChildCompatible(self)
         # Generate confnodes [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
         # extra_files = [(fname,fobject), ...]
         gen_result = self.CTNGenerate_C(buildpath, locations)

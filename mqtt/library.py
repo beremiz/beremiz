@@ -83,6 +83,9 @@ def MQTT_subscribe(clientname, topic, cb, QoS = 1):
 """
 
 class MQTTLibrary(POULibrary):
+
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
     
     def GetLibraryPath(self):
         return paths.AbsNeighbourFile(__file__, "pous.xml")
