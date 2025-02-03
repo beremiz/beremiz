@@ -12,6 +12,7 @@ import shlex
 
 from .ZephyrBuildBase import ZephyrBuildException
 from targets.Builder import Builder
+from C_runtime.zephyr import GetZephyrBuildOptions
 
 if os.name == 'nt':
     from .ZephyrWindowsBuild import ZephyrWindowsBuild as ZephyrBuild
@@ -36,15 +37,16 @@ class Zephyr_target(Builder):
     def build(self):
         log = self.CTRInstance.logger
         
-        options = []
-
         target_cfg = self.CTRInstance.GetTarget().getcontent()
         
-        board_name = target_cfg.getBoardName()
-        options.append(f"board_{board_name.split("/")[0]}")
+        board_cfg = target_cfg.getBoard().getcontent()
         
-        programmable = target_cfg.getProgrammable()
-        options.append("programmable" if programmable else "builtin")
+        board_name, options, cflags, user_dts = GetZephyrBuildOptions(board_cfg)
+        
+        programmable = "programmable" in options
+        if programmable:
+            assert("builtin" not in options)
+            options.append("builtin")
 
         log.write(f"Building Zephyr dependencies for board name: {board_name}\n")
 

@@ -7,16 +7,23 @@
 #
 # See COPYING file for copyrights details.
 
-
-from ..toolchain_gcc_XSD import XSD as toolchain_gcc_XSD
-
-# TODO one deduce boards from directories
-
+from C_runtime.zephyr import GetZephyrXSDChoices
+  
 XSD=f"""
 <xsd:element name="Zephyr">
     <xsd:complexType>
-        <xsd:attribute name="BoardName" type="xsd:string" use="optional" default="native_sim/native/64"/>
-        <xsd:attribute name="Programmable" type="xsd:boolean" use="optional" default="true"/>
+        <xsd:sequence>
+            <xsd:element name="Board">
+                <xsd:complexType>
+                    <xsd:choice minOccurs="1">
+                    """ + GetZephyrXSDChoices() + """
+                    </xsd:choice>
+                </xsd:complexType>
+            </xsd:element>    
+        </xsd:sequence>
+        <xsd:attribute name="VersionString" type="xsd:string" use="optional" default=""/>
+        <xsd:attribute name="DebugBuild" type="xsd:boolean" use="optional" default="false"/>
+        <xsd:attribute name="VerboseBuild" type="xsd:boolean" use="optional" default="false"/>
     </xsd:complexType>
 </xsd:element>
 """

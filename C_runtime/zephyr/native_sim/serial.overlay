@@ -1,0 +1,7 @@
+/ {
+    // 
+	beremiz_erpc_uart: uart2 {
+		status = "okay";
+		compatible = "zephyr,native-tty-uart";
+	};
+};

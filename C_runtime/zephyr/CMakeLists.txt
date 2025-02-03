@@ -1,12 +1,20 @@
 cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr)
-project(beremiz)
 
 if(CONFIG_LLEXT STREQUAL "y")
+  project(beremiz C CXX)
   # Programmable Beremiz runtime 
   # loads PLC as a LLEXT binary
+  # and communicates with it via eRPC
   target_sources(app PRIVATE 
-    zephyr_main_programmable.c
+    main_programmable.cpp
+    ../service/erpc_PLCObject_client.cpp
+    ../service/erpc_PLCObject_interface.cpp
+    ../service/erpc_PLCObject_server.cpp
+    ../md5.cpp
+		../blob.cpp
+		../PLCObject.cpp
+    ${CONFIG_BOARD}/*.c
   )
 
   # Create a relocatable ELF LLEXT binary
@@ -21,11 +29,13 @@ if(CONFIG_LLEXT STREQUAL "y")
   set(plc_target softplc_llext_lib)
 
 else()
+  project(beremiz C)
   # Non-programmable Beremiz runtime 
   # is statically linked to PLC code
+  # eRPC isn't included to spare resources
   target_sources(app PRIVATE
     $<TARGET_OBJECTS:softplc>
-    zephyr_main_builtin.c
+    main_builtin.c
   )
   
   # Create an object library for the PLC code
