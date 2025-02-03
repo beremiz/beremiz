@@ -1,27 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# This file is part of Beremiz, a Integrated Development Environment for
-# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
+# This file is part of Beremiz IDE
 #
-# Copyright (C) 2007: Edouard TISSERANT and Laurent BESSARD
+# Copyright (C) 2013: Laurent BESSARD
+# Copyright (C) 2025: Edouard TISSERANT
 #
 # See COPYING file for copyrights details.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
 
 import os
 import re
@@ -571,7 +556,8 @@ def GenerateAnyInfos(infos):
         "extract": ExtractAny,
         "generate": GenerateAny,
         "initial": InitialAny,
-        "check": lambda x: isinstance(x, (str, etree.ElementBase))
+        "check": lambda x: isinstance(x, (str, etree.ElementBase)),
+        "doc": infos["doc"]
     }
 
 
@@ -601,7 +587,10 @@ def GenerateTagInfos(factory, infos):
         "extract": ExtractTag,
         "generate": GenerateTag,
         "initial": InitialTag,
-        "check": lambda x: x is None or infos["minOccurs"] == 0 and x
+        "check": lambda x: x is None or infos["minOccurs"] == 0 and x,
+        "attributes":[],
+        "elements":[],
+        "doc": infos["doc"]
     }
 
 
@@ -657,10 +646,10 @@ def ComputeContentChoices(factory, name, infos):
                     element_infos = factory.ExtractTypeInfos(sequence_element["name"], name, sequence_element["elmt_type"])
                     if element_infos is not None:
                         sequence_element["elmt_type"] = element_infos
-        elif choice["elmt_type"] == "tag":
-            choice["elmt_type"] = GenerateTagInfos(factory, choice)
-            factory.AddToLookupClass(choice["name"], name, DefaultElementClass)
         else:
+            if choice["elmt_type"] == "tag":
+                choice["elmt_type"] = GenerateTagInfos(factory, choice)
+
             choice_infos = factory.ExtractTypeInfos(choice["name"], name, choice["elmt_type"])
             if choice_infos is not None:
                 choice["elmt_type"] = choice_infos
@@ -726,7 +715,7 @@ def GenerateElement(element_name, attributes, elements_model,
         children_structure = ""
         children = []
         for child in node.childNodes:
-            if child.nodeName not in ["#comment", "#text"]:
+            if child.nodeName not in ["#comment", "#text", "#cdata-section"]:
                 namespace, childname = DecomposeQualifiedName(child.nodeName)
                 children_structure += "%s " % childname
         result = elements_model.match(children_structure)
@@ -736,19 +725,18 @@ def GenerateElement(element_name, attributes, elements_model,
         if len(valid) < len(children_structure):
             raise ValueError("Invalid structure for \"%s\" children!. Element number %d invalid." % (node.nodeName, len(valid.split(" ")) - 1))
         for child in node.childNodes:
-            if child.nodeName != "#comment" and \
-               (accept_text or child.nodeName != "#text"):
-                if child.nodeName == "#text":
-                    children.append(GetAttributeValue(node))
+            if accept_text and child.nodeName in ["#text", "#cdata-section"]:
+                children.append(GetAttributeValue(node))
+                break
+            elif child.nodeName not in ["#comment", "#text", "#cdata-section"]:
+                namespace, childname = DecomposeQualifiedName(child.nodeName)
+                infos = factory.GetQualifiedNameInfos(childname, namespace)
+                if infos["type"] != SYNTAXELEMENT:
+                    raise ValueError("\"%s\" can't be a member child!" % childname)
+                if element_name in infos["extract"]:
+                    children.append(infos["extract"][element_name](factory, child))
                 else:
-                    namespace, childname = DecomposeQualifiedName(child.nodeName)
-                    infos = factory.GetQualifiedNameInfos(childname, namespace)
-                    if infos["type"] != SYNTAXELEMENT:
-                        raise ValueError("\"%s\" can't be a member child!" % childname)
-                    if element_name in infos["extract"]:
-                        children.append(infos["extract"][element_name](factory, child))
-                    else:
-                        children.append(infos["extract"]["default"](factory, child))
+                    children.append(infos["extract"]["default"](factory, child))
         return node.nodeName, attrs, children
     return ExtractElement
 
@@ -781,7 +769,7 @@ class ClassFactory(object):
         self.CurrentCompilations = []
 
         # Dictionaries for stocking Classes and Types generated
-        self.ComputeAfter = []
+        self.PendingClassCreations = []
         if self.FileName is not None:
             self.ComputedClasses = {self.FileName: {}}
         else:
@@ -1008,11 +996,22 @@ class ClassFactory(object):
             return self.CreateClass(name, parent, typeinfos)
         elif typeinfos["type"] == SIMPLETYPE:
             return typeinfos
+        elif typeinfos["type"] == TAG:
+            return self.CreateClass(name, parent, typeinfos)
+            
 
     def GetEquivalentParents(self, parent):
         return reduce(lambda x, y: x + y,
                       [[p] + self.GetEquivalentParents(p)
                        for p in list(self.EquivalentClassesParent.get(parent, {}).keys())], [])
+
+
+    def CreatePendingClasses(self): 
+        while len(self.PendingClassCreations) > 0:
+            result = self.CreateClass(*self.PendingClassCreations.pop(0))
+            if result is not None and \
+                not isinstance(result, str):
+                self.Namespaces[self.TargetNamespace][result["name"]] = result
 
     def CreateClasses(self):
         """
@@ -1023,18 +1022,11 @@ class ClassFactory(object):
             if infos["type"] == ELEMENT:
                 if not isinstance(infos["elmt_type"], str) and \
                    infos["elmt_type"]["type"] == COMPLEXTYPE:
-                    self.ComputeAfter.append((name, None, infos["elmt_type"], True))
-                    while len(self.ComputeAfter) > 0:
-                        result = self.CreateClass(*self.ComputeAfter.pop(0))
-                        if result is not None and not isinstance(result, str):
-                            self.Namespaces[self.TargetNamespace][result["name"]] = result
+                    self.PendingClassCreations.append((name, None, infos["elmt_type"], True))
+                    self.CreatePendingClasses()
             elif infos["type"] == COMPLEXTYPE:
-                self.ComputeAfter.append((name, None, infos))
-                while len(self.ComputeAfter) > 0:
-                    result = self.CreateClass(*self.ComputeAfter.pop(0))
-                    if result is not None and \
-                       not isinstance(result, str):
-                        self.Namespaces[self.TargetNamespace][result["name"]] = result
+                self.PendingClassCreations.append((name, None, infos))
+                self.CreatePendingClasses()
             elif infos["type"] == ELEMENTSGROUP:
                 elements = []
                 if "elements" in infos:
@@ -1044,13 +1036,8 @@ class ClassFactory(object):
                 for element in elements:
                     if not isinstance(element["elmt_type"], str) and \
                        element["elmt_type"]["type"] == COMPLEXTYPE:
-                        self.ComputeAfter.append((element["name"], infos["name"], element["elmt_type"]))
-                        while len(self.ComputeAfter) > 0:
-                            result = self.CreateClass(*self.ComputeAfter.pop(0))
-                            if result is not None and \
-                               not isinstance(result, str):
-                                self.Namespaces[self.TargetNamespace][result["name"]] = result
-
+                        self.PendingClassCreations.append((element["name"], infos["name"], element["elmt_type"]))
+                        self.CreatePendingClasses()
         for name, parents in self.ComputedClassesLookUp.items():
             if isinstance(parents, dict):
                 computed_classes = list(parents.items())
@@ -1088,7 +1075,7 @@ class ClassFactory(object):
             if result is None:
                 namespace, base_name = DecomposeQualifiedName(base_infos)
                 if self.AlreadyComputed.get(base_name, False):
-                    self.ComputeAfter.append((name, parent, classinfos))
+                    self.PendingClassCreations.append((name, parent, classinfos))
                     if self.TargetNamespace is not None:
                         return "%s:%s" % (self.TargetNamespace, classname)
                     else:
@@ -1146,10 +1133,8 @@ class ClassFactory(object):
             else:
                 elmtname = element["name"]
                 if element["elmt_type"] == "tag":
-                    infos = GenerateTagInfos(self, element)
-                    self.AddToLookupClass(element["name"], name, DefaultElementClass)
-                else:
-                    infos = self.ExtractTypeInfos(element["name"], name, element["elmt_type"])
+                    element["elmt_type"] = GenerateTagInfos(self, element)
+                infos = self.ExtractTypeInfos(element["name"], name, element["elmt_type"])
             if infos is not None:
                 element["elmt_type"] = infos
             if element["maxOccurs"] == "unbounded" or element["maxOccurs"] > 1:
@@ -1427,7 +1412,8 @@ def generateGetElementAttributes(factory, classinfos):
                     "name": attr["name"],
                     "use": attr["use"],
                     "type": gettypeinfos(attr["attr_type"]["basename"], attr["attr_type"]["facets"]),
-                    "value": getattr(self, attr["name"], "")}
+                    "value": getattr(self, attr["name"], ""),
+                    "doc": attr["doc"]}
                 attr_list.append(attr_params)
         return attr_list
     return getElementAttributes
@@ -1442,6 +1428,7 @@ def generateGetElementInfos(factory, classinfos):
         value = None
         use = "required"
         children = []
+        doc = []
         if path is not None:
             parts = path.split(".", 1)
             if parts[0] in attributes:
@@ -1471,14 +1458,16 @@ def generateGetElementInfos(factory, classinfos):
                 if len(parts) > 0:
                     return self.content.getElementInfos(name, path)
             elif "base" in classinfos:
-                classinfos["base"].getElementInfos(name, path)
+                return classinfos["base"].getElementInfos(name, path)
             else:
                 raise ValueError("Wrong path: "+path)
         else:
             if not derived:
                 children.extend(self.getElementAttributes())
             if "base" in classinfos:
-                children.extend(classinfos["base"].getElementInfos(self, name, derived=True)["children"])
+                base_infos = classinfos["base"].getElementInfos(self, name, derived=True)
+                children.extend(base_infos["children"])
+                doc.extend(base_infos["doc"])
             for element_name, element in list(elements.items()):
                 if element["minOccurs"] == 0:
                     use = "optional"
@@ -1488,7 +1477,9 @@ def generateGetElementInfos(factory, classinfos):
                         value = ""
                     else:
                         value = self.content.getLocalTag()
-                        children.extend(self.content.getElementInfos(value)["children"])
+                        content_infos = self.content.getElementInfos(value)
+                        children.extend(content_infos["children"])
+                        doc.extend(content_infos["doc"])
                 elif element["elmt_type"]["type"] == SIMPLETYPE:
                     children.append({
                         "name": element_name,
@@ -1501,7 +1492,14 @@ def generateGetElementInfos(factory, classinfos):
                     if instance is None:
                         instance = element["elmt_type"]["initial"]()
                     children.append(instance.getElementInfos(element_name))
-        return {"name": name, "type": attr_type, "value": value, "use": use, "children": children}
+        doc[0:0] = classinfos["doc"]
+        ret =  {"name": name,
+                "type": attr_type,
+                "value": value,
+                "use": use,
+                "children": children,
+                "doc": doc}
+        return ret
     return getElementInfos
 
 
@@ -1733,15 +1731,6 @@ class DefaultElementClass(etree.ElementBase):
     def tostring(self):
         return NAMESPACE_PATTERN.sub("", etree.tostring(self, encoding='unicode'))
 
-    def getElementInfos(self, name, path=None, derived=False):
-        if path is not None:
-            raise ValueError("Simple element "+name+" accepts no path: "+path)
-        return {
-            "name": name,
-            "type": "element",
-            "value": None,
-            "use": "required",
-            "children": []}
 
 class XMLElementClassLookUp(etree.PythonElementClassLookup):
 
