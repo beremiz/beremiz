@@ -111,9 +111,6 @@ def ERPC_connector_factory(uri, confnodesroot):
     """
     confnodesroot.logger.write(_("ERPC connecting to URI : %s\n") % uri)
 
-    # TODO add parsing for serial URI
-    # ERPC:///dev/ttyXX:baudrate or ERPC://:COM4:baudrate
-
     try:
         scheme, location = uri.split("://",1)
         _model, _useID, parser, _builder = per_scheme_model[scheme]
@@ -172,14 +169,25 @@ def ERPC_connector_factory(uri, confnodesroot):
                     loc=uri, ex=str(e)))
             return None
 
-    else:
-        # TODO if serial URI then 
-        # transport = erpc.transport.SerialTransport(device, baudrate)
+    elif scheme == "ERPC-SERIAL":
+        try:
+            device = location_data["device"]
+            baudrate = location_data["baudrate"]
+            transport = erpc.transport.SerialTransport(device, baudrate)
+            clientManager = erpc.client.ClientManager(transport, erpc.basic_codec.BasicCodec)
+            client = PLCObjectERPCProxy(clientManager)
+        except Exception as e:
+            confnodesroot.logger.write_error(
+                _("Connection to {loc} failed with exception {ex}\n").format(
+                    loc=uri, ex=str(e)))
+            return None
 
+    else:
         confnodesroot.logger.write_error(
             _("Unknown scheme {scheme} in URI {uri}\n").format(
                 scheme=scheme, uri=uri))
         return None
+
     # Check connection is effective.
     IDPSK = client.GetPLCID()
     if IDPSK:
