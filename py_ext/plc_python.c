@@ -156,7 +156,7 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 	}
 }
 
-char* PythonIterator(char* result, void** id)
+char* PythonIterator(char* result, void** id, int* is_last)
 {
 	char* next_command;
 	PYTHON_EVAL* data__;
@@ -213,6 +213,8 @@ char* PythonIterator(char* result, void** id)
 	/* next command is BUFFER */
 	next_command = (char*)__GET_VAR(data__->BUFFER, .body);
 	*id=data__;
+    /*check if last command in the queue */
+	*is_last = EvalFBs[(Current_Python_EvalFB + 1) %% %(python_eval_fb_count)d] == NULL;
 	/* free python mutex */
 	UnLockPython();
 	/* return the next command to eval */

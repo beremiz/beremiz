@@ -207,7 +207,7 @@ class PLCObject(object):
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
             if self._PythonIterator is not None:
                 self._PythonIterator.restype = ctypes.c_char_p
-                self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
+                self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_int)]
 
                 self._stopPLC = self._stopPLC_real
             else:
@@ -215,7 +215,7 @@ class PLCObject(object):
                 # as a call that block pythonthread until StopPLC
                 self.PlcStopping = Event()
 
-                def PythonIterator(res, blkid):
+                def PythonIterator(res, blkid, is_last):
                     self.PlcStopping.clear()
                     self.PlcStopping.wait()
                     return None
@@ -307,7 +307,7 @@ class PLCObject(object):
         self._GetDebugData = lambda: -1
         self._suspendDebug = lambda x: -1
         self._resumeDebug = lambda: None
-        self._PythonIterator = lambda: ""
+        self._PythonIterator = lambda *a: ""
         self._GetLogCount = None
         self._LogMessage = None
         self._GetLogMessage = None
@@ -389,7 +389,8 @@ class PLCObject(object):
             "WorkingDir":     self.workingdir,
             "PLCObject":      self,
             "PLCBinary":      self.PLClibraryHandle,
-            "PLCGlobalsDesc": []})
+            "PLCGlobalsDesc": [],
+            "OnIdle":         []})
 
         for methodname in MethodNames:
             self.python_runtime_vars["_runtime_%s" % methodname] = []
@@ -429,11 +430,12 @@ class PLCObject(object):
         self.python_runtime_vars = None
 
     def PythonThreadLoop(self):
-        res, cmd, blkid = "None", "None", ctypes.c_void_p()
+        res, cmd, blkid, is_last = "None", "None", ctypes.c_void_p(), ctypes.c_int()
         compile_cache = {}
         while True:
-            cmd = self._PythonIterator(res.encode(), blkid)
+            cmd = self._PythonIterator(res.encode(), blkid, ctypes.byref(is_last))
             FBID = blkid.value
+            GOING_IDLE = is_last.value != 0
             if cmd is None:
                 break
             cmd = cmd.decode()
@@ -454,6 +456,11 @@ class PLCObject(object):
             except Exception as e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
+
+            if GOING_IDLE:
+                todo = self.python_runtime_vars["OnIdle"]
+                while todo:
+                    todo.pop(0)()
 
     def PythonThreadProc(self):
         while True:
