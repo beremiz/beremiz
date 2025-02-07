@@ -267,7 +267,7 @@ def CSVWrStr(fname, rowname, colname, content):
     except KeyError:
         # adjust col headers content
         first_row = data[0] 
-        first_row += [""]*(max_row_len - len(first_row)) + [rowname]
+        first_row += [""]*(max_row_len - len(first_row)) + [colname]
         # create a new column
         colidx = col_headers[colname] = max_row_len
         max_row_len = max_row_len + 1
