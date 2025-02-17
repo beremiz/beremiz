@@ -231,7 +231,7 @@ class PLCObject(object):
 
             self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
             self._RegisterDebugVariable.restype = ctypes.c_int
-            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_uint32]
+            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p]
 
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
