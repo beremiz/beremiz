@@ -26,12 +26,16 @@ import time
 import json
 import os
 import re
+import shutil
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
+from twisted.internet.ssl import optionsForClientTLS, CertificateOptions
+from twisted.internet._sslverify import OpenSSLCertificateAuthorities
+from OpenSSL import crypto
 
 from formless import annotate, webform
 import formless
@@ -47,6 +51,7 @@ WorkingDir = None
 # Find pre-existing project WAMP config file
 _WampConf = None
 _WampSecret = None
+_WampTrust = None
 
 ExposedCalls = [
     ("StartPLC", {}),
@@ -78,7 +83,8 @@ defaultWampConfig = {
     "protocolOptions": {
         "autoPingInterval": 10,
         "autoPingTimeout": 5
-    }
+    },
+    "verifyHostname": True
 }
 
 # Those two lists are meant to be filled by customized runtime
@@ -220,7 +226,7 @@ def GetConfiguration():
     WampClientConf = None
 
     if os.path.exists(_WampConf):
-        try: 
+        try:
             WampClientConf = json.load(open(_WampConf))
             UpdateWithDefault(WampClientConf, defaultWampConfig)
         except ValueError:
@@ -238,11 +244,6 @@ def GetConfiguration():
 
     lastKnownConfig = WampClientConf.copy()
     return WampClientConf
-
-
-def SetWampSecret(wampSecret):
-    with open(os.path.realpath(_WampSecret), 'wb') as f:
-        f.write(wampSecret)
 
 
 def SetConfiguration(WampClientConf):
@@ -272,10 +273,16 @@ def IsCorrectUri(uri):
     return re.match(r'wss?://[^\s?:#-]+(:[0-9]+)?(/[^\s]*)?$', uri) is not None
 
 
-def RegisterWampClient(wampconf=None, wampsecret=None):
-    global _WampConf, _WampSecret
-    _WampConfDefault = os.path.join(WorkingDir, "wampconf.json")
-    _WampSecretDefault = os.path.join(WorkingDir, "wamp.secret")
+def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None):
+    global _WampConf, _WampSecret, _WampTrust
+    ConfDir = ConfDir if ConfDir else WorkingDir
+    KeyStore = KeyStore if KeyStore else WorkingDir
+
+    _WampConfDefault = os.path.join(ConfDir, "wampconf.json")
+    _WampSecretDefault = os.path.join(KeyStore, "wamp.secret")
+
+    if _WampTrust is None:
+        _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
 
     # set config file path only if not already set
     if _WampConf is None:
@@ -323,13 +330,28 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
 
     # start the client from a Twisted endpoint
     if _transportFactory:
-        connectWS(_transportFactory)
+        contextFactory=None
+        if _transportFactory.isSecure:
+            contextFactory = MakeSecureContextFactory(WampClientConf["verifyHostname"])
+
+        connectWS(_transportFactory, contextFactory)
         print(_("WAMP client connecting to :"), WampClientConf["url"])
         return True
     else:
         print(_("WAMP client can not connect to :"), WampClientConf["url"])
         return False
 
+def MakeSecureContextFactory(verifyHostname):
+    if not verifyHostname:
+        return None
+    trustRoot=None
+    if os.path.exists(_WampTrust):
+        cert = crypto.load_certificate(
+            crypto.FILETYPE_PEM,
+            six.u(open(_WampTrust, 'r').read())
+        )
+        trustRoot=OpenSSLCertificateAuthorities([cert])
+    return optionsForClientTLS(_transportFactory.host, trustRoot=trustRoot)
 
 def StopReconnectWampClient():
     if _transportFactory is not None:
@@ -377,11 +399,13 @@ def PublishEventWithOwnID(eventID, value):
 
 # WEB CONFIGURATION INTERFACE
 WAMP_SECRET_URL = "secret"
+WAMP_DELETE_TRUSTSTORE_URL = "delete_truststore"
 webExposedConfigItems = [
     'active', 'url', 'ID',
     "clientFactoryOptions.maxDelay",
     "protocolOptions.autoPingInterval",
-    "protocolOptions.autoPingTimeout"
+    "protocolOptions.autoPingTimeout",
+    "verifyHostname"
 ]
 
 
@@ -403,8 +427,17 @@ def wampConfig(**kwargs):
     if secretfile_field is not None:
         secretfile = getattr(secretfile_field, "file", None)
         if secretfile is not None:
-            secret = secretfile_field.file.read()
-            SetWampSecret(secret)
+            with open(os.path.realpath(_WampSecret), 'w') as destfd:
+                secretfile.seek(0)
+                shutil.copyfileobj(secretfile,destfd)
+
+    trustStore_field = kwargs["trustStore"]
+    if trustStore_field is not None:
+        trustStore_file = getattr(trustStore_field, "file", None)
+        if trustStore_file is not None:
+            with open(os.path.realpath(_WampTrust), 'w') as destfd:
+                trustStore_file.seek(0)
+                shutil.copyfileobj(trustStore_file,destfd)
 
     newConfig = lastKnownConfig.copy()
     for argname in webExposedConfigItems:
@@ -448,6 +481,43 @@ def getDownloadUrl(ctx, argument):
             child(lastKnownConfig["ID"] + ".secret")
 
 
+class FileUploadDelete(annotate.FileUpload):
+    pass
+
+
+class FileUploadDeleteRenderer(webform.FileUploadRenderer):
+
+    def input(self, context, slot, data, name, value):
+        # pylint: disable=expression-not-assigned
+        slot[_("Upload:")]
+        slot = webform.FileUploadRenderer.input(
+            self, context, slot, data, name, value)
+        file_exists = data.typedValue.getAttribute('file_exists')
+        if file_exists and file_exists():
+            unique = str(id(self))
+            file_delete = data.typedValue.getAttribute('file_delete')
+            slot = slot[
+                tags.a(href=file_delete, target=unique)[_("Delete")],
+                tags.iframe(srcdoc="File exists", name=unique,
+                            height="20", width="150",
+                            marginheight="5", marginwidth="5",
+                            scrolling="no", frameborder="0")
+            ]
+        return slot
+
+
+registerAdapter(FileUploadDeleteRenderer, FileUploadDelete,
+                formless.iformless.ITypedRenderer)
+
+
+def getTrustStorePresence():
+    return os.path.exists(_WampTrust)
+
+
+def getTrustStoreDeleteUrl(ctx, argument):
+    return url.URL.fromContext(ctx).child(WAMP_DELETE_TRUSTSTORE_URL)
+
+
 webFormInterface = [
     ("status",
      annotate.String(label=_("Current status"),
@@ -473,7 +543,14 @@ webFormInterface = [
                       default=wampConfigDefault)),
     ("protocolOptions.autoPingTimeout",
      annotate.Integer(label=_("Auto ping timeout (s)"),
-                      default=wampConfigDefault))
+                      default=wampConfigDefault)),
+    ("trustStore",
+     FileUploadDelete(label=_("File containing server certificate"),
+                      file_exists=getTrustStorePresence,
+                      file_delete=getTrustStoreDeleteUrl)),
+    ("verifyHostname",
+     annotate.Boolean(label=_("Verify hostname matches certificate hostname"),
+                      default=wampConfigDefault)),
     ]
 
 def deliverWampSecret(ctx, segments):
@@ -487,6 +564,10 @@ def deliverWampSecret(ctx, segments):
     secret = LoadWampSecret(_WampSecret)
     return static.Data(secret, 'application/octet-stream'), ()
 
+def deleteTrustStore(ctx, segments):
+    if os.path.exists(_WampTrust):
+        os.remove(_WampTrust)
+    return static.Data("TrustStore deleted", 'text/html'), ()
 
 def RegisterWebSettings(NS):
 
@@ -499,4 +580,5 @@ def RegisterWebSettings(NS):
         wampConfig)
 
     WebSettings.addCustomURL(WAMP_SECRET_URL, deliverWampSecret)
+    WebSettings.addCustomURL(WAMP_DELETE_TRUSTSTORE_URL, deleteTrustStore)
 
