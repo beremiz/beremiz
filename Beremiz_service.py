@@ -75,8 +75,9 @@ Usage of Beremiz PLC execution service :\n
   -x  enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
   -t  enable/disable Twisted web interface (0:disable 1:enable) (default:1)
   -w  web server port or "off" to disable web server (default:8009)
-  -c  WAMP client config file (can be overriden by wampconf.json in project)
-  -s  PSK secret path (default:PSK disabled)
+  -c  WAMP client config file or Configuration directory containing "wamconf.json" (default:Wamp disabled, config dir is working_dir)
+      Note: Wamp config is overriden by wampconf.json given in project files.
+  -s  PSK secret file or existing KeyStore directory containing "psk.txt" (default:PSK disabled, KeyStore is working_dir)
   -e  python extension (absolute path .py)
 
            working_dir - directory where are stored PLC files
@@ -96,6 +97,8 @@ interface = ''
 port = 3000
 webport = 8009
 PSKpath = None
+KeyStore = None
+ConfDir = None
 wampconf = None
 servicename = None
 autostart = False
@@ -148,9 +151,28 @@ for o, a in opts:
     elif o == "-w":
         webport = None if a == "off" else int(a)
     elif o == "-c":
-        wampconf = None if a == "off" else a
+        if a == "off":
+            wampconf = None 
+        elif os.path.isdir(a):
+            ConfDir = a
+            _PSKpath = os.path.join(a, "wampconf.json")
+            if os.path.isfile(_PSKpath):
+                wampconf = _PSKpath
+        elif os.path.isfile(a):
+            wampconf = a
+            ConfDir = os.path.dirname(a)
     elif o == "-s":
-        PSKpath = None if a == "off" else a
+        if a == "off":
+            PSKpath = None 
+        elif os.path.isdir(a):
+            KeyStore = a
+            _PSKpath = os.path.join(a, "psk.txt")
+            if os.path.isfile(_PSKpath):
+                PSKpath = _PSKpath
+        elif os.path.isfile(a) or os.path.isdir(os.path.dirname(a)):
+            PSKpath = a
+            KeyStore = os.path.dirname(a)
+
     elif o == "-e":
         fnameanddirname = list(os.path.split(os.path.realpath(a)))
         fnameanddirname.reverse()
