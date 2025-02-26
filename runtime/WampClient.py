@@ -74,7 +74,7 @@ ExposedCalls = [
 
 # de-activated dumb wamp config
 defaultWampConfig = {
-    "ID": "wamptest",
+    "ID": "wamptest", # replaced by service name (-n in CLI)
     "active": False,
     "realm": "Automation",
     "url": "ws://127.0.0.1:8888",
@@ -112,24 +112,26 @@ def GetCallee(name):
 class WampSession(wamp.ApplicationSession):
 
     def onConnect(self):
-        if "secret" in self.config.extra:
-            user = self.config.extra["ID"]
-            self.join("Automation", ["wampcra"], user)
-        else:
-            self.join("Automation")
+        user = self.config.extra["ID"]
+        self.join(self.config.realm, ["wampcra"], user)
 
     def onChallenge(self, challenge):
         if challenge.method == "wampcra":
-            if "secret" in self.config.extra:
-                secret = self.config.extra["secret"].encode('utf8')
-                signature = auth.compute_wcs(
-                    secret, challenge.extra['challenge'].encode('utf8'))
-                return signature.decode("ascii")
+            secret = self.config.extra["secret"]
+            if 'salt' in challenge.extra:
+                # salted secret
+                key = auth.derive_key(secret,
+                                      challenge.extra['salt'],
+                                      challenge.extra['iterations'],
+                                      challenge.extra['keylen'])
             else:
-                raise Exception("no secret given for authentication")
+                # plain, unsalted secret
+                key = secret
+
+            signature = auth.compute_wcs(key, challenge.extra['challenge'])
+            return signature
         else:
-            raise Exception(
-                "don't know how to handle authmethod {}".format(challenge.method))
+            raise Exception("Invalid authmethod {}".format(challenge.method))
 
     def onJoin(self, details):
         global _WampSession
@@ -158,7 +160,6 @@ class WampSession(wamp.ApplicationSession):
         super(WampSession, self).onLeave(details)
         _WampSession = None
         _transportFactory = None
-        print(_('WAMP session left'))
 
     def publishWithOwnID(self, eventID, value):
         ID = self.config.extra["ID"]
@@ -316,8 +317,7 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
         WampClientConf["secret"] = secret
 
     else:
-        print(_("WAMP authentication has no secret configured"))
-        _WampSecret = _WampSecretDefault
+        raise Exception(_("WAMP no secret file given"))
 
     if not WampClientConf["active"]:
         print(_("WAMP deactivated in configuration"))
