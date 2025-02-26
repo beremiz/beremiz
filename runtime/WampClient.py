@@ -41,6 +41,7 @@ from formless import annotate, webform
 import formless
 from nevow import tags, url, static
 from runtime import GetPLCObjectSingleton
+from runtime.Stunnel import getPSKID
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
@@ -304,7 +305,16 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
             _WampSecret = wampsecret
 
     if _WampSecret is not None:
-        WampClientConf["secret"] = LoadWampSecret(_WampSecret)
+        if _WampSecret == _WampSecretDefault:
+            # secret from project dir is raw (no ID prefix)
+            secret = LoadWampSecret(_WampSecret)
+        else:
+            # secret from command line is formated ID:PSK
+            # fall back to PSK data (works because wampsecret is PSKpath)
+            _ID, secret = getPSKID()
+
+        WampClientConf["secret"] = secret
+
     else:
         print(_("WAMP authentication has no secret configured"))
         _WampSecret = _WampSecretDefault

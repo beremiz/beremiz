@@ -595,7 +595,12 @@ class PLCObject(object):
 
     @RunInMain
     def GetPLCID(self):
-        return getPSKID(partial(self.LogMessage, 0))
+        try:
+            res = getPSKID()
+        except Exception as e:
+            self.LogMessage(0, str(e))
+            return ("","")
+        return res
 
     def _init_blobs(self):
         self.blobs = {}  # dict of list

@@ -45,12 +45,11 @@ def ensurePSK(ID, PSKpath):
         PSKgen(ID, PSKpath)
 
 
-def getPSKID(errorlog):
+def getPSKID():
     if _PSKpath is not None:
         if not os.path.exists(_PSKpath):
-            errorlog(
+            raise Exception(
                 'Error: Pre-Shared-Key Secret in %s is missing!\n' % _PSKpath)
-            return ("","")
         ID, _sep, PSK = open(_PSKpath).read().partition(':')
         PSK = PSK.rstrip('\n\r')
         return (ID, PSK)
