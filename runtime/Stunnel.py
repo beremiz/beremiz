@@ -30,7 +30,7 @@ def PSKgen(ID, PSKpath):
     secret = os.urandom(192)  # int(256/1.3333)
     secretstring = b2a_base64(secret)
 
-    PSKstring = ID+":"+secretstring
+    PSKstring = ID+":"+secretstring.decode()
     with open(PSKpath, 'w') as f:
         f.write(PSKstring)
     restartStunnel()

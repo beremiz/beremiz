@@ -362,7 +362,7 @@ def MakeSecureContextFactory(verifyHostname):
     if os.path.exists(_WampTrust):
         cert = crypto.load_certificate(
             crypto.FILETYPE_PEM,
-            six.u(open(_WampTrust, 'r').read())
+            open(_WampTrust, 'rb').read()
         )
         trustRoot=OpenSSLCertificateAuthorities([cert])
     return optionsForClientTLS(_transportFactory.host, trustRoot=trustRoot)
