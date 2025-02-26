@@ -551,7 +551,7 @@ if havetwisted:
 
     if havewamp:
         try:
-            WC.RegisterWampClient(wampconf, PSKpath, ConfDir, KeyStore)
+            WC.RegisterWampClient(wampconf, PSKpath, ConfDir, KeyStore, servicename)
             WC.RegisterWebSettings(NS)
         except Exception:
             LogMessageAndException(_("WAMP client startup failed. "))

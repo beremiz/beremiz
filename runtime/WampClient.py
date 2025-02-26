@@ -275,8 +275,12 @@ def IsCorrectUri(uri):
     return re.match(r'wss?://[^\s?:#-]+(:[0-9]+)?(/[^\s]*)?$', uri) is not None
 
 
-def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None):
-    global _WampConf, _WampSecret, _WampTrust
+def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
+    global _WampConf, _WampSecret, _WampTrust, defaultWampConfig
+
+    if servicename:
+        defaultWampConfig["ID"] = servicename
+
     ConfDir = ConfDir if ConfDir else WorkingDir
     KeyStore = KeyStore if KeyStore else WorkingDir
 
