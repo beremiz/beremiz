@@ -169,9 +169,9 @@ for o, a in opts:
             _PSKpath = os.path.join(a, "psk.txt")
             if os.path.isfile(_PSKpath):
                 PSKpath = _PSKpath
-        elif os.path.isfile(a) or os.path.isdir(os.path.dirname(a)):
+        elif os.path.isfile(a) or os.path.isdir(paths.AbsDir(a)):
             PSKpath = a
-            KeyStore = os.path.dirname(a)
+            KeyStore = paths.AbsDir(a)
 
     elif o == "-e":
         fnameanddirname = list(os.path.split(os.path.realpath(a)))
