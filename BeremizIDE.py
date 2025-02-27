@@ -65,7 +65,7 @@ from plcopen.types_enums import \
     ITEM_RESOURCE, \
     ITEM_CONFNODE
 
-from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL
+from ProjectController import ProjectController, GetAddMenuItems, MATIEC_ERROR_MODEL, ToDoBeforeQuit
 
 from IDEFrame import \
     TITLE,\
@@ -614,14 +614,6 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         else:
             return IDEFrame.LoadTab(self, notebook, page_infos)
 
-    # Strange hack required by WAMP connector, using twisted.
-    # Twisted reactor needs to be stopped only before quit,
-    # since it cannot be restarted
-    ToDoBeforeQuit = []
-
-    def AddToDoBeforeQuit(self, Thing):
-        self.ToDoBeforeQuit.append(Thing)
-
     def TryCloseFrame(self):
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
             if self.CTR is not None:
@@ -631,9 +623,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
             self.SaveLastState()
 
-            for Thing in self.ToDoBeforeQuit:
+            for Thing in ToDoBeforeQuit:
                 Thing()
-            self.ToDoBeforeQuit = []
+            ToDoBeforeQuit = []
 
             return True
         return False

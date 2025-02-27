@@ -90,12 +90,11 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         confnodesroot.logger.write(_("WAMP connecting to URL : %s\n") % url)
         return conn
 
-    AddToDoBeforeQuit = confnodesroot.AppFrame.AddToDoBeforeQuit
 
     def ThreadProc():
         global _WampConnection
         _WampConnection = RegisterWampClient()
-        AddToDoBeforeQuit(reactor.stop)
+        ToDoBeforeQuit.append(reactor.stop)
         reactor.run(installSignalHandlers=False)
 
     class WampPLCObjectProxy(object):

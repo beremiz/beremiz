@@ -2141,3 +2141,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for d in self.StatusMethods:
             if d["method"] == method and d.get("enabled", True) and d.get("shown", True):
                 getattr(self, method)()
+
+
+# Strange hack required by WAMP connector, using twisted.
+# Twisted reactor needs to be stopped only before quit,
+# since it cannot be restarted
+ToDoBeforeQuit = []
+
