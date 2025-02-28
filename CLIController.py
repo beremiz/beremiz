@@ -11,7 +11,7 @@ import click
 
 import fake_wx
 
-from ProjectController import ProjectController
+from ProjectController import ProjectController, ToDoBeforeQuit
 from LocalRuntimeMixin import LocalRuntimeMixin
 from runtime.loglevels import LogLevelsCount, LogLevels
 
@@ -154,8 +154,13 @@ class CLIController(LocalRuntimeMixin, ProjectController):
         
 
     def finish(self):
+        global ToDoBeforeQuit
 
         self._Disconnect()
+
+        for Thing in ToDoBeforeQuit:
+            Thing()
+        ToDoBeforeQuit = []
 
         if not self.session.keep:
             self.KillLocalRuntime()

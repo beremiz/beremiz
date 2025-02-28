@@ -85,17 +85,35 @@ RUN mkdir /home/$UNAME/build /home/$UNAME/src /home/$UNAME/test
 
 RUN virtualenv ~/beremizenv
 
-COPY requirements.txt /home/$UNAME
-
 # beremiz python requirements
+# file is placed here by build_docker_image.sh
+COPY requirements.txt /home/$UNAME
 RUN ~/beremizenv/bin/pip install -r /home/$UNAME/requirements.txt
 
-# tests python requirements
-RUN ~/beremizenv/bin/pip install \
-        pytest pytest-timeout ddt
-        
-#TODO sslpsk posix_spawn
+# tests specific python requirements : pytest pytest-timeout ddt crossbar
+
+## How to upgrade requirements and test requirements together:
+# pip install -r beremiz/requirements_latest.txt
+# pip freeze > beremiz/requirements.txt
+# pip install pytest pytest-timeout ddt crossbar
+# pip freeze > requirements_all.txt
+# sort requirements_all.txt -o requirements_all_sorted.txt 
+# sort beremiz/requirements.txt -o requirements_sorted.txt
+# comm -13 requirements_sorted.txt requirements_all_sorted.txt > beremiz/tests/tools/Docker/test_requirements.txt
+# rm requirements_all.txt requirements_sorted.txt requirements_all_sorted.txt
+
+COPY test_requirements.txt /home/$UNAME
+RUN ~/beremizenv/bin/pip install -r /home/$UNAME/test_requirements.txt --no-deps
      
+# Why --no-deps : 
+#    - Mandatory because crossbar's dependencies are expressed with github url,
+#      targeting master branch or specific tags. This is not reproducable, and 
+#      test has to be reproducible.
+#    - pip freeze generates dependencies pointing to particular commity hash,
+#      the way to go for reproducible test
+#    - because of broken crossbar requirements, 'pip install -r' fails meeting
+#      requirement expressed on a branch or tag with a commit hash based install
+
 RUN set -xe && \
     cd  /home/$UNAME && mkdir tessdata && \
     wget -q https://github.com/tesseract-ocr/tessdata/archive/refs/tags/4.1.0.tar.gz \
@@ -108,4 +126,6 @@ ENV TESSDATAPATH /home/$UNAME/tessdata
 
 # Points to python binary that test will use
 ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
+# use venv python and installed command by default
+ENV PATH="/home/$UNAME/beremizenv/bin:$PATH"
 

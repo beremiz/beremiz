@@ -8,6 +8,7 @@ lxml
 matplotlib
 msgpack
 Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@81c2eaeaaa20022540a98a3106f72e0199fbcc1b
+pyOpenSSL
 pycountry
 # pyserial
 sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c

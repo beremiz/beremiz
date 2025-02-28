@@ -152,15 +152,9 @@ def ERPC_connector_factory(uri, confnodesroot):
         try:
             if ID:
                 # load PSK from project
-                secpath = os.path.join(confnodesroot.ProjectPath, 'psk', ID + '.secret')
-                if not os.path.exists(secpath):
-                    confnodesroot.logger.write_error(
-                        'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
-                    return None
-                secret = open(secpath).read().partition(':')[2].rstrip('\n\r').encode()
-                transport = SSLPSKClientTransport(host, port, (secret, ID.encode())) # type: ignore
+                secret = PSK.GetSecret(confnodesroot.ProjectPath, ID)
+                transport = SSLPSKClientTransport(host, port, (secret.encode(), ID.encode()))
             else:
-
                 transport = erpc.transport.TCPTransport(host, port, False)
 
             clientManager = erpc.client.ClientManager(transport, erpc.basic_codec.BasicCodec)

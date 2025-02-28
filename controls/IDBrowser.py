@@ -12,12 +12,12 @@ from PSKManagement import *
 from dialogs.IDMergeDialog import IDMergeDialog
 
 
-class IDBrowserModel(dv.PyDataViewIndexListModel):
+class IDBrowserModel(dv.DataViewIndexListModel):
     def __init__(self, project_path, columncount):
         self.project_path = project_path
         self.columncount = columncount
         self.data = PSK.GetData(project_path)
-        dv.PyDataViewIndexListModel.__init__(self, len(self.data))
+        dv.DataViewIndexListModel.__init__(self, len(self.data))
 
     def _saveData(self):
         PSK.SaveData(self.project_path, self.data)

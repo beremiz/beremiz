@@ -231,7 +231,7 @@ class PLCObject(object):
 
             self._RegisterDebugVariable = self.PLClibraryHandle.RegisterDebugVariable
             self._RegisterDebugVariable.restype = ctypes.c_int
-            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_uint32]
+            self._RegisterDebugVariable.argtypes = [ctypes.c_int, ctypes.c_void_p]
 
             self._FreeDebugData = self.PLClibraryHandle.FreeDebugData
             self._FreeDebugData.restype = None
@@ -595,7 +595,12 @@ class PLCObject(object):
 
     @RunInMain
     def GetPLCID(self):
-        return getPSKID(partial(self.LogMessage, 0))
+        try:
+            res = getPSKID()
+        except Exception as e:
+            self.LogMessage(0, str(e))
+            return ("","")
+        return res
 
     def _init_blobs(self):
         self.blobs = {}  # dict of list
