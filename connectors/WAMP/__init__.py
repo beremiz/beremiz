@@ -29,12 +29,16 @@ from functools import partial
 from threading import Thread, Event
 
 from twisted.internet import reactor, threads
+from twisted.internet._sslverify import OpenSSLCertificateAuthorities
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
-from autobahn.wamp import types
+from autobahn.wamp import types, auth
 from autobahn.wamp.exception import TransportLost
 from autobahn.wamp.serializer import MsgPackSerializer
 
+from ProjectController import ToDoBeforeQuit
+from connectors.ConnectorBase import ConnectorBase
+import PSKManagement as PSK
 
 _WampSession = None
 _WampConnection = None
@@ -42,6 +46,29 @@ _WampSessionEvent = Event()
 
 
 class WampSession(wamp.ApplicationSession):
+    def onConnect(self):
+        user = self.config.extra["ID"]
+            self.config.realm, user))
+        self.join(self.config.realm, ["wampcra"], user)
+
+    def onChallenge(self, challenge):
+        if challenge.method == "wampcra":
+            secret = self.config.extra["secret"]
+            if 'salt' in challenge.extra:
+                # salted secret
+                key = auth.derive_key(secret,
+                                      challenge.extra['salt'],
+                                      challenge.extra['iterations'],
+                                      challenge.extra['keylen'])
+            else:
+                # plain, unsalted secret
+                key = secret
+
+            signature = auth.compute_wcs(key, challenge.extra['challenge'])
+            return signature
+        else:
+            raise Exception("Invalid authmethod {}".format(challenge.method))
+
     def onJoin(self, details):
         global _WampSession
         _WampSession = self
@@ -54,6 +81,19 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print('WAMP session left')
 
+def MakeSecureContextFactory(verifyHostname, trust_store=None):
+    if not verifyHostname:
+        return None
+    trustRoot=None
+    if trust_store:
+        if not os.path.exists(trust_store):
+            raise Exception("Wamp trust store not found")
+        cert = crypto.load_certificate(
+            crypto.FILETYPE_PEM,
+            open(trust_store, 'rb').read()
+        )
+        trustRoot=OpenSSLCertificateAuthorities([cert])
+    return optionsForClientTLS(_transportFactory.host, trustRoot=trustRoot)
 
 def _WAMP_connector_factory(cls, uri, confnodesroot):
     """
@@ -66,6 +106,16 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
                  "WAMPS": "wss"}[scheme]
     url = urlprefix+"://"+urlpath
 
+    try:
+        secret = PSK.GetSecret(confnodesroot.ProjectPath, ID)
+        # TODO: add x509 certificate management together with PSK management.
+        trust_store = None
+    except Exception as e:
+        confnodesroot.logger.write_error(
+            _("Connection to {loc} failed with exception {ex}\n").format(
+                loc=uri, ex=str(e)))
+        return None
+
     def RegisterWampClient():
 
         # start logging to console
@@ -74,7 +124,10 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         # create a WAMP application session factory
         component_config = types.ComponentConfig(
             realm=str(realm),
-            extra={"ID": ID})
+            extra={
+                "ID": ID,
+                "secret": secret
+            })
         session_factory = wamp.ApplicationSessionFactory(
             config=component_config)
         session_factory.session = cls
@@ -85,20 +138,25 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
             url=url,
             serializers=[MsgPackSerializer()])
 
+        contextFactory=None
+        if transport_factory.isSecure:
+            contextFactory = MakeSecureContextFactory(
+                verifyHostname=True,
+                trust_store=trust_store)
+
         # start the client from a Twisted endpoint
-        conn = connectWS(transport_factory)
+        conn = connectWS(transport_factory, contextFactory)
         confnodesroot.logger.write(_("WAMP connecting to URL : %s\n") % url)
         return conn
 
-    AddToDoBeforeQuit = confnodesroot.AppFrame.AddToDoBeforeQuit
 
     def ThreadProc():
         global _WampConnection
         _WampConnection = RegisterWampClient()
-        AddToDoBeforeQuit(reactor.stop)
+        ToDoBeforeQuit.append(reactor.stop)
         reactor.run(installSignalHandlers=False)
 
-    class WampPLCObjectProxy(object):
+    class WampPLCObjectProxy(ConnectorBase):
         def __init__(self):
             global _WampConnection
             if not reactor.running:
