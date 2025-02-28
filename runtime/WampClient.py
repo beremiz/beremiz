@@ -67,9 +67,9 @@ ExposedCalls = [
     ("MatchMD5", {}),
     ("SetTraceVariablesList", {}),
     ("GetTraceVariables", {}),
-    ("RemoteExec", {}),
     ("GetLogMessage", {}),
-    ("ResetLogCount", {})
+    ("ResetLogCount", {}),
+    ("ExtendedCall", {})
 ]
 
 # de-activated dumb wamp config
@@ -157,7 +157,6 @@ class WampSession(wamp.ApplicationSession):
 
     def onLeave(self, details):
         global _WampSession, _transportFactory
-        super(WampSession, self).onLeave(details)
         _WampSession = None
         _transportFactory = None
 
