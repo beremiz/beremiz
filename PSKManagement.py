@@ -104,13 +104,21 @@ def UpdateID(project_path, ID, secret, URI):
     dataForID[COL_URI] = URI
     # FIXME : could store time instead os a string and use DVC model's cmp
     # then date display could be smarter, etc - sortable sting hack for now
-    dataForID[COL_LAST] = time.strftime('%y/%M/%d-%H:%M:%S')
+    dataForID[COL_LAST] = time.strftime('%y/%m/%d-%H:%M:%S')
 
     if _is_new_ID:
         data.append(dataForID)
 
     SaveData(project_path, data)
 
+def GetSecret(project_path, ID):
+    # load PSK from project
+    secpath = os.path.join(project_path, 'psk', ID + '.secret')
+    if not os.path.exists(secpath):
+        raise ValueError(
+            'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
+    secret = open(secpath).read().partition(':')[2].rstrip('\n\r')
+    return secret
 
 def ExportIDs(project_path, export_zip):
     with ZipFile(export_zip, 'w') as zf:
