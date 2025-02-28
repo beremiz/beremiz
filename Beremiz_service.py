@@ -158,9 +158,9 @@ for o, a in opts:
             _PSKpath = os.path.join(a, "wampconf.json")
             if os.path.isfile(_PSKpath):
                 wampconf = _PSKpath
-        elif os.path.isfile(a):
+        elif os.path.isfile(a) or os.path.isdir(paths.AbsDir(a)):
             wampconf = a
-            ConfDir = os.path.dirname(a)
+            ConfDir = paths.AbsDir(a)
     elif o == "-s":
         if a == "off":
             PSKpath = None 
