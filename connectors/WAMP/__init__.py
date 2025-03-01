@@ -48,7 +48,6 @@ _WampSessionEvent = Event()
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
         user = self.config.extra["ID"]
-            self.config.realm, user))
         self.join(self.config.realm, ["wampcra"], user)
 
     def onChallenge(self, challenge):
