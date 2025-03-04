@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f ./CLI_OK ./PLC_OK
+rm -f ./CLI_OK ./PLC_OK ./PLC_CONNECTED
 
 # Start runtime one first time to generate PSK
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -s psk.txt -n test_wamp_ID -x 0 &
@@ -27,8 +27,15 @@ fi
 
 IFS=':' read -r wamp_ID wamp_secret < psk.txt
 
-# Start crossbar server
+# Prepare crossbar server configuration
 mkdir -p .crossbar
+
+yes "" | openssl req -nodes -new -x509 -keyout ./.crossbar/server.key \
+                 -addext "subjectAltName = DNS:localhost" \
+                 -out ./.crossbar/server.crt
+
+openssl dhparam -2 -outform PEM -out .crossbar/dhparam.pem 2048 
+
 cat > .crossbar/config.json <<JsonEnd
 {
     "version": 2,
@@ -68,7 +75,12 @@ cat > .crossbar/config.json <<JsonEnd
                     "type": "web",
                     "endpoint": {
                         "type": "tcp",
-                        "port": 8888
+                        "port": 8888,
+                        "tls": {
+                            "certificate": "server.crt",
+                            "key": "server.key",
+                            "dhparam": "dhparam.pem"
+                        }
                     },
                     "paths": {
                         "ws": {
@@ -127,9 +139,12 @@ cat > wampconf.json <<JsonEnd
 
     }, 
     "realm": "Automation", 
-    "url": "ws://127.0.0.1:8888/ws"
+    "url": "wss://localhost:8888/ws"
 }
 JsonEnd
+
+# Re-use self-signed server cert for client
+cp .crossbar/server.crt wampTrustStore.crt
 
 # Start Beremiz runtime again, with wamp enabled
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -c wampconf.json -s psk.txt -n test_wamp_ID -x 0 &> >(
@@ -137,6 +152,10 @@ $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -c wampconf.json -s psk.txt -
     while read line; do 
         # Wait for server to print modified value
         echo "PLC>> $line"
+        if [[ "$line" =~ ^"WAMP session joined" ]]; then
+            echo "PLC is connected"
+            touch ./PLC_CONNECTED
+        fi
         if [[ "$line" == "PLCobject : PLC started" ]]; then
             echo "PLC was programmed"
             touch ./PLC_OK
@@ -147,13 +166,32 @@ $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -c wampconf.json -s psk.txt -
 PLC_PID=$!
 
 echo wait for runtime to come up
-sleep 3
+res=110  # default to ETIMEDOUT
+c=30
+while ((c--)); do
+    if [[ -a ./PLC_CONNECTED ]]; then
+        res=0  # OK success
+        break
+    else
+        sleep 1
+    fi
+done
+
+if [ "$res" != "0" ] ; then
+    kill $SERVER_PID
+    kill $PLC_PID
+    echo timeout connecting PLC to crossbar.
+    exit $res
+fi
 
 # Prepare test project
 cp -a $BEREMIZPATH/tests/projects/wamp .
 # place PSK so that IDE already knows runtime
 mkdir -p wamp/psk
 cp psk.txt wamp/psk/${wamp_ID}.secret
+# Re-use self-signed server cert for client
+mkdir -p wamp/cert
+cp .crossbar/server.crt wamp/cert/localhost.crt
 
 # TODO: patch project's URI to connect to $BEREMIZ_LOCAL_HOST
 #       used in tests instead of 127.0.0.1
