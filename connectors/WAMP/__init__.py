@@ -24,21 +24,25 @@
 
 
 import sys
+import os
 import traceback
 from functools import partial
 from threading import Thread, Event
 
 from twisted.internet import reactor, threads
 from twisted.internet._sslverify import OpenSSLCertificateAuthorities
+from twisted.internet.ssl import optionsForClientTLS
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
 from autobahn.wamp.exception import TransportLost
 from autobahn.wamp.serializer import MsgPackSerializer
+from OpenSSL import crypto
 
 from ProjectController import ToDoBeforeQuit
 from connectors.ConnectorBase import ConnectorBase
 import PSKManagement as PSK
+import CertManagement as Cert
 
 _WampSession = None
 _WampConnection = None
@@ -104,11 +108,10 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
     urlprefix = {"WAMP":  "ws",
                  "WAMPS": "wss"}[scheme]
     url = urlprefix+"://"+urlpath
-
+    CN = urlpath.split("/")[0].split(":")[0]
     try:
         secret = PSK.GetSecret(confnodesroot.ProjectPath, ID)
-        # TODO: add x509 certificate management together with PSK management.
-        trust_store = None
+        trust_store = Cert.GetCertPath(confnodesroot.ProjectPath, CN)
     except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
@@ -139,9 +142,16 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
         contextFactory=None
         if transport_factory.isSecure:
-            contextFactory = MakeSecureContextFactory(
-                verifyHostname=True,
-                trust_store=trust_store)
+            trustRoot=None
+            if trust_store:
+                if not os.path.exists(trust_store):
+                    raise Exception("Wamp trust store not found")
+                cert = crypto.load_certificate(
+                    crypto.FILETYPE_PEM,
+                    open(trust_store, 'rb').read()
+                )
+                trustRoot=OpenSSLCertificateAuthorities([cert])
+            contextFactory = optionsForClientTLS(transport_factory.host, trustRoot=trustRoot)
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory, contextFactory)
