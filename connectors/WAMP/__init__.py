@@ -84,20 +84,6 @@ class WampSession(wamp.ApplicationSession):
         _WampSession = None
         print('WAMP session left')
 
-def MakeSecureContextFactory(verifyHostname, trust_store=None):
-    if not verifyHostname:
-        return None
-    trustRoot=None
-    if trust_store:
-        if not os.path.exists(trust_store):
-            raise Exception("Wamp trust store not found")
-        cert = crypto.load_certificate(
-            crypto.FILETYPE_PEM,
-            open(trust_store, 'rb').read()
-        )
-        trustRoot=OpenSSLCertificateAuthorities([cert])
-    return optionsForClientTLS(_transportFactory.host, trustRoot=trustRoot)
-
 def _WAMP_connector_factory(cls, uri, confnodesroot):
     """
     WAMP://127.0.0.1:12345/path#realm#ID
