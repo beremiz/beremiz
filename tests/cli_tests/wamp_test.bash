@@ -34,7 +34,6 @@ yes "" | openssl req -nodes -new -x509 -keyout ./.crossbar/server.key \
                  -addext "subjectAltName = DNS:localhost" \
                  -out ./.crossbar/server.crt
 
-openssl dhparam -2 -outform PEM -out .crossbar/dhparam.pem 2048 
 
 cat > .crossbar/config.json <<JsonEnd
 {
@@ -78,8 +77,7 @@ cat > .crossbar/config.json <<JsonEnd
                         "port": 8888,
                         "tls": {
                             "certificate": "server.crt",
-                            "key": "server.key",
-                            "dhparam": "dhparam.pem"
+                            "key": "server.key"
                         }
                     },
                     "paths": {
