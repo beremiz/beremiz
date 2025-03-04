@@ -51,7 +51,7 @@ _WampSessionEvent = Event()
 
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
-        user = self.config.extra["ID"]
+        user = self.config.extra["IDE_ID"]
         self.join(self.config.realm, ["wampcra"], user)
 
     def onChallenge(self, challenge):
@@ -76,7 +76,7 @@ class WampSession(wamp.ApplicationSession):
         global _WampSession
         _WampSession = self
         _WampSessionEvent.set()
-        print('WAMP session joined for :', self.config.extra["ID"])
+        print('WAMP session joined for :', self.config.extra["IDE_ID"])
 
     def onLeave(self, details):
         global _WampSession
@@ -86,17 +86,18 @@ class WampSession(wamp.ApplicationSession):
 
 def _WAMP_connector_factory(cls, uri, confnodesroot):
     """
-    WAMP://127.0.0.1:12345/path#realm#ID
-    WAMPS://127.0.0.1:12345/path#realm#ID
+    WAMP://127.0.0.1:12345/path#realm#PLC_ID
+    WAMPS://127.0.0.1:12345/path#realm#PLC_ID
     """
     scheme, location = uri.split("://")
-    urlpath, realm, ID = location.split('#')
+    urlpath, realm, PLC_ID = location.split('#')
     urlprefix = {"WAMP":  "ws",
                  "WAMPS": "wss"}[scheme]
     url = urlprefix+"://"+urlpath
     CN = urlpath.split("/")[0].split(":")[0]
     try:
-        secret = PSK.GetSecret(confnodesroot.ProjectPath, ID)
+
+        IDE_ID, secret = PSK.GetIDEIdentity()
         trust_store = Cert.GetCertPath(confnodesroot.ProjectPath, CN)
     except Exception as e:
         confnodesroot.logger.write_error(
@@ -113,7 +114,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         component_config = types.ComponentConfig(
             realm=str(realm),
             extra={
-                "ID": ID,
+                "IDE_ID": IDE_ID,
                 "secret": secret
             })
         session_factory = wamp.ApplicationSessionFactory(
@@ -169,7 +170,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
             # reactor.stop()
 
         def WampSessionProcMapper(self, funcname):
-            wampfuncname = str('.'.join((ID, funcname)))
+            wampfuncname = str('.'.join((PLC_ID, funcname)))
 
             def catcher_func(*args, **kwargs):
                 if _WampSession is not None:

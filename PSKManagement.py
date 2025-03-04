@@ -5,9 +5,13 @@
 
 
 import os
+from os.path import join, exists
 import time
 import json
 from zipfile import ZipFile
+from binascii import b2a_base64
+
+from util.paths import AppDataPath
 
 # PSK Management Data model :
 # [[ID,Desc, LastKnownURI, LastConnect]]
@@ -166,3 +170,25 @@ def ImportIDs(project_path, import_zip, should_I_replace_callback):
     SaveData(project_path, data)
 
     return data
+
+def GetIDEIdentity():
+    own_keystore = AppDataPath("keystore", "own")
+    if not exists(own_keystore):
+        os.makedirs(own_keystore)
+
+    own_identity = join(own_keystore, "default.psk")
+    if exists(own_identity):
+        ID, _sep, PSK = open(own_identity).read().partition(':')
+        secretstring = PSK.rstrip('\n\r')
+    else:
+        ID = os.urandom(8).hex()
+        # secret string length is 256
+        # b2a_base64 output len is 4/3 input len
+        secret = os.urandom(192)  # int(256/1.3333)
+        secretstring = b2a_base64(secret).decode()
+
+        PSKstring = ID+":"+secretstring
+        with open(own_identity, 'w') as f:
+            f.write(PSKstring)
+
+    return ID, secretstring

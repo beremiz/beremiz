@@ -2,7 +2,7 @@
 
 rm -f ./CLI_OK ./PLC_OK ./PLC_CONNECTED
 
-# Start runtime one first time to generate PSK
+# Start runtime one first time to generate PLC PSK
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -s psk.txt -n test_wamp_ID -x 0 &
 PLC_PID=$!
 res=110  # default to ETIMEDOUT
@@ -25,7 +25,38 @@ if [ "$res" != "0" ] ; then
     exit $res
 fi
 
-IFS=':' read -r wamp_ID wamp_secret < psk.txt
+IFS=':' read -r PLC_wamp_ID PLC_wamp_secret < psk.txt
+
+# Prepare test project
+cp -a $BEREMIZPATH/tests/projects/wamp .
+
+# Start CLI one first time to generate IDE PSK
+IDE_PSK=$HOME/.local/share/beremiz/keystore/own/default.psk
+rm -f $IDE_PSK
+$BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
+     --project-home wamp connect &
+CLI_PID=$!
+res=110  # default to ETIMEDOUT
+c=5
+while ((c--)); do
+    if [[ -a $IDE_PSK ]]; then
+        echo got IDE PSK.
+        res=0  # OK success
+        break
+    else
+        echo waiting IDE PSK.... $c
+        sleep 1
+    fi
+done
+
+kill $CLI_PID
+
+if [ "$res" != "0" ] ; then
+    echo timeout generating IDE PSK.
+    exit $res
+fi
+
+IFS=':' read -r IDE_wamp_ID IDE_wamp_secret < $IDE_PSK
 
 # Prepare crossbar server configuration
 mkdir -p .crossbar
@@ -33,7 +64,6 @@ mkdir -p .crossbar
 yes "" | openssl req -nodes -new -x509 -keyout ./.crossbar/server.key \
                  -addext "subjectAltName = DNS:localhost" \
                  -out ./.crossbar/server.crt
-
 
 cat > .crossbar/config.json <<JsonEnd
 {
@@ -87,8 +117,12 @@ cat > .crossbar/config.json <<JsonEnd
                                 "wampcra": {
                                     "type": "static",
                                     "users": {
-                                        "${wamp_ID}": {
-                                            "secret": "${wamp_secret}",
+                                        "${IDE_wamp_ID}": {
+                                            "secret": "${IDE_wamp_secret}",
+                                            "role": "authenticated"
+                                        },
+                                        "${PLC_wamp_ID}": {
+                                            "secret": "${PLC_wamp_secret}",
                                             "role": "authenticated"
                                         }
                                     }
@@ -129,7 +163,7 @@ sleep 3
 # Prepare runtime Wamp config
 cat > wampconf.json <<JsonEnd
 {
-    "ID": "${wamp_ID}", 
+    "ID": "${PLC_wamp_ID}", 
     "active": true, 
     "protocolOptions": {
         "autoPingInterval": 60, 
@@ -182,12 +216,7 @@ if [ "$res" != "0" ] ; then
     exit $res
 fi
 
-# Prepare test project
-cp -a $BEREMIZPATH/tests/projects/wamp .
-# place PSK so that IDE already knows runtime
-mkdir -p wamp/psk
-cp psk.txt wamp/psk/${wamp_ID}.secret
-# Re-use self-signed server cert for client
+# Re-use self-signed server cert for client in test project
 mkdir -p wamp/cert
 cp .crossbar/server.crt wamp/cert/localhost.crt
 
@@ -195,7 +224,7 @@ cp .crossbar/server.crt wamp/cert/localhost.crt
 #       used in tests instead of 127.0.0.1
 
 # Use CLI to build transfer and start PLC
-setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
+$BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
      --project-home wamp build transfer run &> >(
 echo "Start CLI loop"
 while read line; do 
