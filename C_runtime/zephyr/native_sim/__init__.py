@@ -4,6 +4,29 @@
 """
 Zephyr Native Simulation Target
 
+Possible configurations:
+
+1. **NonProgrammable**:
+    Simulate non-programmable PLCs. No dynamic loading, no RPC.
+
+2. **Serial**: Programmable through eRPC over Serial:
+    - `Device`: The default value is `/dev/ttyUSB0`.
+    - `Baudrate`: The default value is `115200`.
+    Use this configuration to simulate a programmable PLC using eRPC over a serial connection.
+    To connect simulation to simulation, either:
+        - use 2 USB-to-Serial adapters + null modem cable.
+        - launch socat to create a virtual null modem cable. For example:
+            `socat pty,link=/tmp/beremiz_runtime_tty,rawer pty,link=/tmp/beremiz_IDE_tty,rawer`
+            - set simulation serial-port to "/tmp/beremiz_runtime_tty"
+            - set IDE serial-port to "/tmp/beremiz_IDE_tty".
+
+3. **USB**: This configuration includes optional attributes for:
+    - `VendorID`: The default value is an empty string.
+    - `ProductID`: The default value is an empty string.
+
+4. **TCP**: This configuration includes an optional attribute for:
+    - `Port`: The default value is an empty string.
+
 """
 
 
@@ -58,17 +81,18 @@ To connect simulation to simulation, either:
 </xsd:element>
 """
 
-def GetBuildOptions(target_cfg):
+def GetBuildOptions(board_cfg):
     options = []
     board_name = "native_sim"
     c_flags = []
     user_dts = []
+    user_conf = []
     
-    sub_board_name = target_cfg.getSubBoardName().strip()
+    sub_board_name = board_cfg.getSubBoardName().strip()
     if sub_board_name:
         board_name += "/" + sub_board_name
     
-    simulation_type = target_cfg.getSimulationType().getContent()
+    simulation_type = board_cfg.getSimulationType().getcontent()
     simulation_type_name = simulation_type.getLocalTag()
     programmable = simulation_type_name != "NonProgrammable"
     
@@ -112,4 +136,4 @@ def GetBuildOptions(target_cfg):
             """)
             options.append("tcp")
         
-    return board_name, options, c_flags, user_dts
+    return board_name, options, c_flags, user_dts, user_conf

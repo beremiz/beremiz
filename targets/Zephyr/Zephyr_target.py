@@ -13,6 +13,7 @@ import shlex
 from .ZephyrBuildBase import ZephyrBuildException
 from targets.Builder import Builder
 from C_runtime.zephyr import GetZephyrBuildOptions
+from POULibrary import UserAddressedException
 
 if os.name == 'nt':
     from .ZephyrWindowsBuild import ZephyrWindowsBuild as ZephyrBuild
@@ -24,11 +25,25 @@ class Zephyr_target(Builder):
     dlopen_prefix = "./"
     extension = ".dlext"
 
-    def getDebugEnabled(self):
+    board_name=None
+    options=None
+    cflags=None
+    user_dts=None
+    user_conf=None
+
+    def _getConfig(self):
         target_cfg = self.CTRInstance.GetTarget().getcontent()
-        programmable = target_cfg.getProgrammable()
-        # only programmable PLCs are debuggable
-        return programmable
+        board = target_cfg.getBoard()
+        if board is None:
+            return
+        board_cfg = board.getcontent()
+        self.board_name, self.options, self.cflags, self.user_dts, self.user_conf = GetZephyrBuildOptions(board_cfg.getLocalTag(),board_cfg)
+
+    def getDebugEnabled(self):
+        self._getConfig()
+        if self.options:
+            return "programmable" in self.options
+        return True
 
     def GetReservedIECChannels(self):
         # TODO: get reserved IEC channels from selected board
@@ -36,22 +51,21 @@ class Zephyr_target(Builder):
               
     def build(self):
         log = self.CTRInstance.logger
+        self._getConfig()
         
-        target_cfg = self.CTRInstance.GetTarget().getcontent()
-        
-        board_cfg = target_cfg.getBoard().getcontent()
-        
-        board_name, options, cflags, user_dts = GetZephyrBuildOptions(board_cfg)
-        
-        programmable = "programmable" in options
-        if programmable:
-            assert("builtin" not in options)
-            options.append("builtin")
+        if self.board_name is None:
+            log.write_error(f"Zephyr: no board selected !\n")
+            return False
 
-        log.write(f"Building Zephyr dependencies for board name: {board_name}\n")
+        # Normalize options
+        self.options.append(self.board_name)
+        if "programmable" not in self.options:
+            self.options.append("builtin")
+           
+        log.write(f"Building Zephyr dependencies for board name: {self.board_name}\n")
 
         # Create Zephyr build instance
-        zb = ZephyrBuild(log, board_name, self.buildpath, options)
+        zb = ZephyrBuild(log, self.board_name, self.buildpath, self.options)
             
         try:        
             # Setup Zephyr build environment
@@ -78,7 +92,8 @@ class Zephyr_target(Builder):
         try:        
             # Build runtime and PLC
             binaries = zb.BuildPLC(PLC_CFILES, PLC_CFLAGS,
-                        force = need_rebuild)
+                                   self.cflags, self.user_dts, self.user_conf,
+                                   force = need_rebuild)
 
         except ZephyrBuildException as e:
             log.write_error(f"Error building Zephyr PLC: {e}\n")

@@ -3,6 +3,18 @@
 
 """
 Zephyr ooPLC Target
+
+Possible configurations:
+
+1. **NonProgrammable**: This configuration is used for non-programmable PLCs.
+
+2. **Serial**: Programmable through eRPC over Serial:
+    - `Baudrate`: The default value is `115200`.
+
+3. **USB**: This configuration includes optional attributes for:
+    - `VendorID`: The default value is an empty string.
+    - `ProductID`: The default value is an empty string.
+
 """
 
 
@@ -39,6 +51,7 @@ def GetBuildOptions(target_cfg):
     board_name = "ooplc"
     c_flags = []
     user_dts = []
+    user_conf = []
     
     ooplc_type = target_cfg.getOoPLCType().getContent()
     ooplc_type_name = ooplc_type.getLocalTag()
@@ -66,4 +79,4 @@ def GetBuildOptions(target_cfg):
                 }};
             """)
         
-    return board_name, options, c_flags, user_dts
+    return board_name, options, c_flags, user_dts, user_conf

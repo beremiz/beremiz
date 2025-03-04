@@ -48,7 +48,12 @@ else()
 
 endif()
 
+# Apply given flags to the runtime and PLC code
+target_compile_options(app PRIVATE
+  ${USER_C_FLAGS}
+)
 target_compile_options(${plc_target} PRIVATE
+  ${USER_C_FLAGS}
   ${PLC_C_FLAGS}
 )
 

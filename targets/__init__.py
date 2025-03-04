@@ -38,7 +38,7 @@ def GetBuilder(targename):
     assert(targename in targets)
     kls = getattr(importlib.import_module(f"targets.{targename}.{targename}_target"), f"{targename}_target")
     kls.GetTargetName = classmethod(lambda cls: targename) # Add target name to class intependently of class name
-    return kls()
+    return kls
 
 
 def GetTargetChoices():
@@ -46,7 +46,7 @@ def GetTargetChoices():
 
 
 def GetTargetCode(name):
-    targetdir = targets[name].__path__
+    targetdir = targets[name].__path__[0]
     return "\n".join([open(path.join(targetdir, fname)).read()
                       for fname in sorted(listdir(targetdir))
                       if (fname.startswith("plc_%s_main" % name)

@@ -57,13 +57,8 @@ class ZephyrBuildBase():
         self.ZephyrBoards = join(self.ZephyrBase, 'boards', 'others')
         self.ZephyrSDK = join(self.ZephyrDir, 'zephyr-sdk-'+ZephyrSdkVersion)
 
-        self.runtime_src = Bpath("C_runtime")
+        self.runtime_src = Bpath("C_runtime","zephyr")
         self.runtime_build = join(self.buildpath, "zephyr_runtime")
-
-        produced_fnames = ["softplc.llext"] if "programmable" in options else []
-        produced_fnames.append("zephyr.elf")
-
-        self.produced_binaries = [join(self.runtime_build, "zephyr", fname) for fname in produced_fnames]
 
     def EnsureWest(self, force=False):
         if force:
@@ -241,33 +236,64 @@ class ZephyrBuildBase():
         # If any of the dependencies was reinstalled, we need to rebuild the runtime
         return need_reinstall
 
-    def BuildPLC(self, c_files, c_flags, force=False):
+    def BuildPLC(self, plc_c_files, plc_c_flags,
+                 user_c_flags, user_dts, user_conf,
+                 force=False):
         "Build Zephyr runtime and PLC"
         if force and exists(self.runtime_build):
             rmtree(self.runtime_build)
 
         self.log.write("Building Beremiz runtime and PLC for Zephyr\n")
         
-        extraconf_files_list = []
-        for opt in self.options:
-            extraconf_file = join(self.runtime_src, f"prj_{opt}.conf")
-            if exists(extraconf_file):
-                extraconf_files_list.append(extraconf_file)
-            else:
-                self.log.write_warning(f"No optional config for '{opt}'\n")
+        # Collect optional config files and dts overlays
+        extraconf_files = []
+        dts_files = []
+        for dirpath in [self.runtime_src, join(self.runtime_src, self.board)]:
+            for opt in self.options:
+                extraconf_file = join(dirpath, f"{opt}.conf")
+                if exists(extraconf_file):
+                    extraconf_files.append(extraconf_file)
+                dts_file = join(dirpath, f"{opt}.overlay")
+                if exists(dts_file):
+                    dts_files.append(dts_file)
 
-        extraconf_files = ';'.join(extraconf_files_list)
+        # Add user.conf if any
+        if user_conf:
+            user_conf_path = join(self.runtime_build, "user.conf")
+            with open(user_conf_path, "w") as f:
+                f.write("\n".join(user_conf))
+            extraconf_files.append(user_conf_path)
+
+        # Create overlay dts in build directory, based on user_dts content
+        if user_dts:
+            user_dts_path = join(self.runtime_build, "user.dts")
+            with open(user_dts_path, "w") as f:
+                f.write("\n".join(user_dts))
+            dts_files.append(user_dts_path)
+
+        WestCommand = [
+            'build',
+            '-b', self.board,
+            '-d', self.runtime_build,
+            '-p', 'always' if force else 'auto',
+            self.runtime_src, '--',
+            '-D', f'EXTRA_CONF_FILE={';'.join(extraconf_files)}',
+            '-D', f'PLC_C_FILES={';'.join(plc_c_files)}',
+            '-D', f'PLC_C_FLAGS={';'.join(plc_c_flags)}']
+        if user_c_flags:
+            WestCommand += [
+            '-D', f'USER_C_FLAGS={';'.join(user_c_flags)}']
+        if dts_files:
+            WestCommand += [
+            '-D', f'DTC_OVERLAY_FILE={';'.join(user_c_flags)}']
         
-        res,*_ignore = self.RunWest(['build',
-                                     '-b', self.board,
-                                     '-d', self.runtime_build,
-                                     '-p', 'always' if force else 'auto',
-                                     self.runtime_src, '--',
-                                     '-D', f'EXTRA_CONF_FILE={extraconf_files}',
-                                     '-D', f'PLC_C_FILES={';'.join(c_files)}',
-                                     '-D', f'PLC_C_FLAGS={';'.join(c_flags)}'],
-                                    working_dir = self.runtime_src)
+        # Build with west
+        res,*_ignore = self.RunWest(WestCommand, working_dir = self.runtime_src)
         if res != 0:
             raise ZephyrBuildException("Failed to build Beremiz runtime and PLC for Zephyr")
 
-        return self.produced_binaries
+        produced_fnames = ["zephyr.elf"]
+        if "programmable" in self.options:
+            produced_fnames.append("softplc.llext")
+
+        return [join(self.runtime_build, "zephyr", fname) for fname in produced_fnames]

@@ -67,10 +67,7 @@ class Builder:
     compute_file_md5 = staticmethod(compute_file_md5)
 
     def getDebugEnabled(self):
-        target_cfg = self.CTRInstance.GetTarget().getcontent()
-        programmable = target_cfg.getProgrammable()
-        # only programmable PLCs are debuggable
-        return programmable
+        return True
 
     def GetReservedIECChannels(self):
         return []
