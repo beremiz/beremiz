@@ -31,7 +31,7 @@ from threading import Thread, Event
 
 from twisted.internet import reactor, threads
 from twisted.internet._sslverify import OpenSSLCertificateAuthorities
-from twisted.internet.ssl import optionsForClientTLS
+from twisted.internet.ssl import optionsForClientTLS, VerificationError
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
@@ -46,7 +46,8 @@ import CertManagement as Cert
 
 _WampSession = None
 _WampConnection = None
-_WampSessionEvent = Event()
+_WampConnectEvent = Event()
+_WampError = ""
 
 
 class WampSession(wamp.ApplicationSession):
@@ -73,16 +74,39 @@ class WampSession(wamp.ApplicationSession):
             raise Exception("Invalid authmethod {}".format(challenge.method))
 
     def onJoin(self, details):
-        global _WampSession
+        global _WampSession, _WampConnectEvent
         _WampSession = self
-        _WampSessionEvent.set()
-        print('WAMP session joined for :', self.config.extra["IDE_ID"])
+        _WampConnectEvent.set()
+        print('WAMP session joined for: ', self.config.extra["IDE_ID"])
 
     def onLeave(self, details):
-        global _WampSession
-        _WampSessionEvent.clear()
+        global _WampSession, _WampError, _WampConnectEvent
         _WampSession = None
-        print('WAMP session left')
+        if details.reason == "wamp.close.normal":
+            _WampError = "Closed normally"
+        elif details.reason == "wamp.error.not_authorized":
+            _WampError = "WAMP authentication failed. Check IDE identity in security manager."
+        else:
+            _WampError = f"WAMP closed with error {details.reason}: {details.message}"
+        _WampConnectEvent.set()
+
+
+class ComplainingWampWebSocketClientFactory(WampWebSocketClientFactory):
+
+    def clientConnectionLost(self, connector, reason):
+        global _WampError, _WampConnectEvent, _WampSession
+
+        if not reason.check(VerificationError):
+            # Verification failed
+            _WampError = "WAMP TLS certificate verification failed. "+\
+                         "Provide valid certicate in security manager."
+        else:
+            _WampError = "WAMP connection lost: "+reason.getErrorMessage()
+        
+        _WampSession = None
+        _WampConnectEvent.set()
+
+    clientConnectionFailed = clientConnectionLost
 
 def _WAMP_connector_factory(cls, uri, confnodesroot):
     """
@@ -122,7 +146,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         session_factory.session = cls
 
         # create a WAMP-over-WebSocket transport client factory
-        transport_factory = WampWebSocketClientFactory(
+        transport_factory = ComplainingWampWebSocketClientFactory(
             session_factory,
             url=url,
             serializers=[MsgPackSerializer()])
@@ -131,13 +155,14 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         if transport_factory.isSecure:
             trustRoot=None
             if trust_store:
-                if not os.path.exists(trust_store):
-                    raise Exception("Wamp trust store not found")
-                cert = crypto.load_certificate(
-                    crypto.FILETYPE_PEM,
-                    open(trust_store, 'rb').read()
-                )
-                trustRoot=OpenSSLCertificateAuthorities([cert])
+                if os.path.exists(trust_store):
+                    cert = crypto.load_certificate(
+                        crypto.FILETYPE_PEM,
+                        open(trust_store, 'rb').read()
+                    )
+                    trustRoot=OpenSSLCertificateAuthorities([cert])
+                else:
+                    confnodesroot.logger.write_warning("Wamp trust store not found")
             contextFactory = optionsForClientTLS(transport_factory.host, trustRoot=trustRoot)
 
         # start the client from a Twisted endpoint
@@ -152,17 +177,25 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         ToDoBeforeQuit.append(reactor.stop)
         reactor.run(installSignalHandlers=False)
 
+    global _WampConnection, _WampSession, _WampConnectEvent, _WampError
+    _WampConnectEvent.clear()
+    if not reactor.running:
+        Thread(target=ThreadProc).start()
+    else:
+        _WampConnection = threads.blockingCallFromThread(
+            reactor, RegisterWampClient)
+    if not _WampConnectEvent.wait(4):
+        threads.blockingCallFromThread(
+            reactor, _WampConnection.stopConnecting)
+        confnodesroot.logger.write_error("WAMP connection timeout\n")
+        return None
+    else:
+        if _WampSession is None:
+            confnodesroot.logger.write_error(f"WAMP connection failed: {_WampError}\n")
+            return None
+
+
     class WampPLCObjectProxy(ConnectorBase):
-        def __init__(self):
-            global _WampConnection
-            if not reactor.running:
-                Thread(target=ThreadProc).start()
-            else:
-                _WampConnection = threads.blockingCallFromThread(
-                    reactor, RegisterWampClient)
-            if not _WampSessionEvent.wait(5):
-                _WampConnection.stopConnecting()
-                raise Exception(_("WAMP connection timeout"))
 
         def __del__(self):
             _WampConnection.disconnect()
