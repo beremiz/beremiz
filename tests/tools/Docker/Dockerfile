@@ -128,4 +128,4 @@ ENV TESSDATAPATH /home/$UNAME/tessdata
 ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
 # use venv python and installed command by default
 ENV PATH="/home/$UNAME/beremizenv/bin:$PATH"
-
+ENV PYTHONUNBUFFERED=1

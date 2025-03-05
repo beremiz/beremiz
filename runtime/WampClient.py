@@ -33,7 +33,7 @@ from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
-from twisted.internet.ssl import optionsForClientTLS, CertificateOptions
+from twisted.internet.ssl import optionsForClientTLS
 from twisted.internet._sslverify import OpenSSLCertificateAuthorities
 from OpenSSL import crypto
 
@@ -51,6 +51,7 @@ WorkingDir = None
 
 # Find pre-existing project WAMP config file
 _WampConf = None
+_WampSercretFile = None
 _WampSecret = None
 _WampTrust = None
 
@@ -143,7 +144,7 @@ class WampSession(wamp.ApplicationSession):
                 registerOptions = types.RegisterOptions(**kwargs)
             except TypeError as e:
                 registerOptions = None
-                print(_("TypeError register option: {}".format(e)))
+                print("TypeError register option: {}".format(e))
 
             self.register(GetCallee(name), '.'.join((ID, name)), registerOptions)
 
@@ -153,7 +154,7 @@ class WampSession(wamp.ApplicationSession):
         for func in DoOnJoin:
             func(self)
 
-        print(_('WAMP session joined (%s) by:' % time.ctime()), ID)
+        print('WAMP session joined (%s) by: %s' % (time.ctime(), ID))
 
     def onLeave(self, details):
         global _WampSession, _transportFactory
@@ -185,7 +186,7 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
                 self.setProtocolOptions(**protocolOptions)
             _transportFactory = self
         except Exception as e:
-            print(_("Custom protocol options failed :"), e)
+            print("Custom protocol options failed :", e)
             _transportFactory = None
 
     def setClientFactoryOptions(self, options):
@@ -198,13 +199,13 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         return ReconnectingClientFactory.buildProtocol(self, addr)
 
     def clientConnectionFailed(self, connector, reason):
-        print(_("WAMP Client connection failed (%s) .. retrying ..") %
+        print("WAMP Client connection failed (%s) .. retrying .." %
               time.ctime())
         super(ReconnectingWampWebSocketClientFactory,
               self).clientConnectionFailed(connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        print(_("WAMP Client connection lost (%s) .. retrying ..") %
+        print("WAMP Client connection lost (%s) .. retrying .." %
               time.ctime())
         super(ReconnectingWampWebSocketClientFactory,
               self).clientConnectionFailed(connector, reason)
@@ -266,7 +267,7 @@ def SetConfiguration(WampClientConf):
 def LoadWampSecret(secretfname):
     WSClientWampSecret = open(secretfname, 'rb').read()
     if len(WSClientWampSecret) == 0:
-        raise Exception(_("WAMP secret empty"))
+        raise Exception(_("WAMP secret is empty"))
     return WSClientWampSecret
 
 
@@ -275,7 +276,8 @@ def IsCorrectUri(uri):
 
 
 def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
-    global _WampConf, _WampSecret, _WampTrust, defaultWampConfig
+    from twisted.internet import reactor
+    global _WampConf, _WampSecret, _WampSercretFile, _WampTrust, defaultWampConfig
 
     if servicename:
         defaultWampConfig["ID"] = servicename
@@ -299,32 +301,37 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
 
     WampClientConf = GetConfiguration()
 
+    if not WampClientConf["active"]:
+        print("WAMP deactivated in configuration")
+        return
+
     # set secret file path only if not already set
-    if _WampSecret is None:
+    if _WampSercretFile is None:
         # default project's wamp secret also
         # has precedance over commandline given
         if os.path.exists(_WampSecretDefault):
-            _WampSecret = _WampSecretDefault
+            _WampSercretFile = _WampSecretDefault
         else:
-            _WampSecret = wampsecret
+            _WampSercretFile = wampsecret
 
-    if _WampSecret is not None:
-        if _WampSecret == _WampSecretDefault:
+    if _WampSercretFile is not None:
+        if _WampSercretFile == _WampSecretDefault:
             # secret from project dir is raw (no ID prefix)
-            secret = LoadWampSecret(_WampSecret)
+            _WampSecret = LoadWampSecret(_WampSercretFile)
         else:
             # secret from command line is formated ID:PSK
             # fall back to PSK data (works because wampsecret is PSKpath)
-            _ID, secret = getPSKID()
-
-        WampClientConf["secret"] = secret
-
+            _ID, _WampSecret = getPSKID()
     else:
         raise Exception(_("WAMP no secret file given"))
 
-    if not WampClientConf["active"]:
-        print(_("WAMP deactivated in configuration"))
-        return
+    reactor.callInThread(_RegisterWampClient)
+
+def _RegisterWampClient():
+    global _WampSecret
+    WampClientConf = GetConfiguration()
+
+    WampClientConf["secret"] = _WampSecret
 
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
@@ -348,11 +355,9 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
             contextFactory = MakeSecureContextFactory(WampClientConf["verifyHostname"])
 
         connectWS(_transportFactory, contextFactory)
-        print(_("WAMP client connecting to :"), WampClientConf["url"])
-        return True
+        print("WAMP client connecting to :", WampClientConf["url"])
     else:
-        print(_("WAMP client can not connect to :"), WampClientConf["url"])
-        return False
+        print("WAMP client can not connect to :", WampClientConf["url"])
 
 def MakeSecureContextFactory(verifyHostname):
     if not verifyHostname:
@@ -382,7 +387,7 @@ def StartReconnectWampClient():
         return True
     else:
         # do connect
-        RegisterWampClient()
+        _RegisterWampClient()
         return True
 
 
@@ -440,7 +445,7 @@ def wampConfig(**kwargs):
     if secretfile_field is not None:
         secretfile = getattr(secretfile_field, "file", None)
         if secretfile is not None:
-            with open(os.path.realpath(_WampSecret), 'w') as destfd:
+            with open(os.path.realpath(_WampSercretFile), 'w') as destfd:
                 secretfile.seek(0)
                 shutil.copyfileobj(secretfile,destfd)
 
@@ -574,7 +579,7 @@ def deliverWampSecret(ctx, segments):
 
     # TODO: make beautifull message in case of exception
     # while loading secret (if empty or dont exist)
-    secret = LoadWampSecret(_WampSecret)
+    secret = LoadWampSecret(_WampSercretFile)
     return static.Data(secret, 'application/octet-stream'), ()
 
 def deleteTrustStore(ctx, segments):

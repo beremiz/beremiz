@@ -152,6 +152,11 @@ class CLIController(LocalRuntimeMixin, ProjectController):
 
         return 0 if self._Stop() else 1
         
+    @with_project_loaded
+    @connected
+    def connect_project(self):
+
+        return 0
 
     def finish(self):
         global ToDoBeforeQuit
