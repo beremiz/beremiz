@@ -615,6 +615,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             return IDEFrame.LoadTab(self, notebook, page_infos)
 
     def TryCloseFrame(self):
+        global ToDoBeforeQuit
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
             if self.CTR is not None:
                 self.CTR.KillDebugThread()
