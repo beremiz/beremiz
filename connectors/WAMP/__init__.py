@@ -99,7 +99,7 @@ class ComplainingWampWebSocketClientFactory(WampWebSocketClientFactory):
         if not reason.check(VerificationError):
             # Verification failed
             _WampError = "WAMP TLS certificate verification failed. "+\
-                         "Provide valid certicate in security manager."
+                         "Provide valid certicate in identity manager."
         else:
             _WampError = "WAMP connection lost: "+reason.getErrorMessage()
         
@@ -122,7 +122,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
     try:
 
         IDE_ID, secret = PSK.GetIDEIdentity()
-        trust_store = Cert.GetCertPath(confnodesroot.ProjectPath, CN)
+        trust_store = Cert.GetCertPath(CN)
     except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
