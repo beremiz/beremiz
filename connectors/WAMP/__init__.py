@@ -185,9 +185,12 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         _WampConnection = threads.blockingCallFromThread(
             reactor, RegisterWampClient)
     if not _WampConnectEvent.wait(4):
-        threads.blockingCallFromThread(
-            reactor, _WampConnection.stopConnecting)
         confnodesroot.logger.write_error("WAMP connection timeout\n")
+        try:
+            threads.blockingCallFromThread(
+                reactor, _WampConnection.stopConnecting)
+        except:
+            pass
         return None
     else:
         if _WampSession is None:

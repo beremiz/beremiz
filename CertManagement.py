@@ -34,7 +34,7 @@ def _mgtpath():
 def _ensureCertdir():
     certpath = _certpath()
     if not os.path.exists(certpath):
-        os.mkdir(certpath)
+        os.makedirs(certpath)
     return certpath
 
 

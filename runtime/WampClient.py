@@ -33,7 +33,7 @@ from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
-from twisted.internet.ssl import optionsForClientTLS
+from twisted.internet.ssl import optionsForClientTLS, VerificationError
 from twisted.internet._sslverify import OpenSSLCertificateAuthorities
 from OpenSSL import crypto
 
@@ -42,6 +42,7 @@ import formless
 from nevow import tags, url, static
 from runtime import GetPLCObjectSingleton
 from runtime.Stunnel import getPSKID
+from runtime.loglevels import LogLevelsDict
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
@@ -136,6 +137,8 @@ class WampSession(wamp.ApplicationSession):
 
     def onJoin(self, details):
         global _WampSession
+        GetPLCObjectSingleton().LogMessage(LogLevelsDict["INFO"], 
+            'WAMP session joined for: '+self.config.extra["ID"])
         _WampSession = self
         ID = self.config.extra["ID"]
 
@@ -154,10 +157,10 @@ class WampSession(wamp.ApplicationSession):
         for func in DoOnJoin:
             func(self)
 
-        print('WAMP session joined (%s) by: %s' % (time.ctime(), ID))
-
     def onLeave(self, details):
         global _WampSession, _transportFactory
+        GetPLCObjectSingleton().LogMessage(LogLevelsDict["INFO"], 
+            'WAMP session left for: {} reason: "{}" message: "{}"'.format(self.config.extra["ID"], details.reason, details.message))
         _WampSession = None
         _transportFactory = None
 
@@ -198,17 +201,31 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         self.resetDelay()
         return ReconnectingClientFactory.buildProtocol(self, addr)
 
+    def _clientConnectionLostOrFailed(self, connector, reason):
+        """ report connection lost """
+        if not reason.check(VerificationError):
+            # Verification failed
+            GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                "WAMP TLS certificate verification failed: "+\
+                reason.getErrorMessage()+
+                "\nProvide a certicate on web interface or as wampTrustStore.crt in project files.")
+        else:
+            GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                "WAMP connection lost: "+reason.getErrorMessage())
+        
     def clientConnectionFailed(self, connector, reason):
         print("WAMP Client connection failed (%s) .. retrying .." %
               time.ctime())
         super(ReconnectingWampWebSocketClientFactory,
               self).clientConnectionFailed(connector, reason)
+        self._clientConnectionLostOrFailed(connector, reason)
 
     def clientConnectionLost(self, connector, reason):
         print("WAMP Client connection lost (%s) .. retrying .." %
               time.ctime())
         super(ReconnectingWampWebSocketClientFactory,
               self).clientConnectionFailed(connector, reason)
+        self._clientConnectionLostOrFailed(connector, reason)
 
 
 def CheckConfiguration(WampClientConf):
@@ -328,7 +345,7 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
     reactor.callInThread(_RegisterWampClient)
 
 def _RegisterWampClient():
-    global _WampSecret
+    global _WampSecret, _transportFactory
     WampClientConf = GetConfiguration()
 
     WampClientConf["secret"] = _WampSecret
@@ -357,9 +374,11 @@ def _RegisterWampClient():
         connectWS(_transportFactory, contextFactory)
         print("WAMP client connecting to :", WampClientConf["url"])
     else:
-        print("WAMP client can not connect to :", WampClientConf["url"])
+        GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+            "WAMP configuration invalid:", WampClientConf["url"])
 
 def MakeSecureContextFactory(verifyHostname):
+    global _transportFactory
     if not verifyHostname:
         return None
     trustRoot=None
