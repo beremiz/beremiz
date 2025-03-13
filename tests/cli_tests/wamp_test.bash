@@ -187,7 +187,7 @@ $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -c wampconf.json -s psk.txt -
     while read line; do 
         # Wait for server to print modified value
         echo "PLC>> $line"
-        if [[ "$line" =~ ^"WAMP session joined" ]]; then
+        if [[ "$line" =~ "WAMP session joined" ]]; then
             echo "PLC is connected"
             touch ./PLC_CONNECTED
         fi
