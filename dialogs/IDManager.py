@@ -3,6 +3,8 @@
 import wx
 from controls.IDBrowser import IDBrowser
 from controls.CertBrowser import CertBrowser
+from controls.OwnIdentityPanel import OwnIdentityPanel
+
 
 class IDManageNB(wx.Notebook):
     def __init__(self, parent, ctr):
@@ -19,7 +21,7 @@ class IDManageNB(wx.Notebook):
         self.id_browser = IDBrowser(self, ctr)
         self.AddPage(self.id_browser, "Controllers")
 
-        win = wx.Panel(self, -1)
+        win = OwnIdentityPanel(self, -1)
         self.AddPage(win, "IDE")
 
         self.cert_browser = CertBrowser(self, ctr.logger)

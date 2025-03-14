@@ -21,9 +21,10 @@ from util.paths import AppDataPath
 COL_CN, COL_DESC, COL_LAST = list(range(3))
 REPLACE, KEEP, CANCEL = list(range(3))
 
+keystore_path = AppDataPath("keystore")
 
 def _certpath():
-    certpath = AppDataPath("keystore", "cert")
+    certpath = os.path.join(keystore_path, "cert")
     return certpath
 
 
@@ -160,3 +161,45 @@ def ImportCert(filepath, log, sircb):
         shutil.copyfile(filepath, new_filename)
         _touchCN(CN)
     return True
+
+
+def _clientCertPath():
+    own_keystore = os.path.join(keystore_path, "own")
+    if not os.path.exists(own_keystore):
+        os.makedirs(own_keystore)
+    return os.path.join(own_keystore, "client.crt")
+
+def GetClientCertificateInfo():
+    file_path =  _clientCertPath()
+    if os.path.exists(file_path):
+        info = ""
+        try:
+            with open(file_path, "rb") as cert_file:
+                cert_data = cert_file.read()
+            cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+
+            # Support for legacy common name
+            common_names = cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
+            for cn in common_names:
+                info += "Common Name: %s\n"%cn.value
+            ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            SAN = ext.value.get_values_for_type(x509.DNSName)
+            for SANEntry in SAN:
+                info += "SubjectAltName: %s\n"%SANEntry
+
+            info += "Fingerprint: %s\n"%cert.fingerprint(hashes.SHA256()).hex()
+            info += "Creation date: %s\n"%cert.not_valid_before.isoformat()
+            info += "Expiration date: %s\n"%cert.not_valid_after.isoformat()
+        except Exception as e:
+            info += "Error while loading certificate: %s\n"%str(e)
+        return info
+    return "No client certificate available"
+
+def ImportClientCert(filepath):
+    certpath = _clientCertPath()
+    shutil.copyfile(filepath, certpath)
+
+def RemoveClientCert():
+    certpath = _clientCertPath()
+    if os.path.exists(certpath ):
+        os.remove(certpath)
