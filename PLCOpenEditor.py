@@ -360,7 +360,7 @@ class PLCOpenEditor(IDEFrame):
             directory, filename = os.path.split(filepath)
         else:
             directory, filename = os.getcwd(), "%(projectName)s.xml" % self.Controler.GetProjectProperties()
-        dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.SAVE | wx.OVERWRITE_PROMPT)
+        dialog = wx.FileDialog(self, _("Choose a file"), directory, filename,  _("PLCOpen files (*.xml)|*.xml|All files|*.*"), wx.FD_SAVE | wx.OVERWRITE_PROMPT)
         if dialog.ShowModal() == wx.ID_OK:
             filepath = dialog.GetPath()
             if os.path.isdir(os.path.dirname(filepath)):

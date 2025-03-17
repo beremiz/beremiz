@@ -4,12 +4,11 @@
 # See COPYING file for copyrights details.
 
 
-from operator import eq
 import wx
 import wx.dataview as dv
 import PSKManagement as PSK
 from PSKManagement import *
-from dialogs.IDMergeDialog import IDMergeDialog
+from dialogs.MsgConfirmDialog import MsgConfirmDialog
 
 
 class IDBrowserModel(dv.DataViewIndexListModel):
@@ -37,16 +36,6 @@ class IDBrowserModel(dv.DataViewIndexListModel):
 
     def GetCount(self):
         return len(self.data)
-
-    def Compare(self, item1, item2, col, ascending):
-        if not ascending:  # swap sort order?
-            item2, item1 = item1, item2
-        row1 = self.GetRow(item1)
-        row2 = self.GetRow(item2)
-        if col == 0:
-            return eq(int(self.data[row1][col]), int(self.data[row2][col]))
-        else:
-            return eq(self.data[row1][col], self.data[row2][col])
 
     def DeleteRows(self, rows):
         rows = list(rows)
@@ -185,7 +174,7 @@ class IDBrowser(wx.Panel):
     def ShouldIReplaceCallback(self, existing, replacement):
         ID, URI, DESC, LAST = existing
         _ID, _URI, _DESC, _LAST = replacement
-        dlg = IDMergeDialog(
+        dlg = MsgConfirmDialog(
             self,
             _("Import IDs"),
             (_("Replace information for ID {ID} ?") + "\n\n" +

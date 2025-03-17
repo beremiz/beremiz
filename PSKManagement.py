@@ -5,13 +5,15 @@
 
 
 import os
-from os.path import join, exists
 import time
 import json
+import shutil
 from zipfile import ZipFile
 from binascii import b2a_base64
 
 from util.paths import AppDataPath
+
+### Controllers Identities ###
 
 # PSK Management Data model :
 # [[ID,Desc, LastKnownURI, LastConnect]]
@@ -171,13 +173,20 @@ def ImportIDs(project_path, import_zip, should_I_replace_callback):
 
     return data
 
-def GetIDEIdentity():
+
+### IDE Identity ###
+
+def _own_psk_path():
     own_keystore = AppDataPath("keystore", "own")
-    if not exists(own_keystore):
+    if not os.path.exists(own_keystore):
         os.makedirs(own_keystore)
 
-    own_identity = join(own_keystore, "default.psk")
-    if exists(own_identity):
+    return os.path.join(own_keystore, "default.psk")
+
+
+def GetIDEIdentity():
+    own_identity = _own_psk_path()
+    if os.path.exists(own_identity):
         ID, _sep, PSK = open(own_identity).read().partition(':')
         secretstring = PSK.rstrip('\n\r')
     else:
@@ -192,3 +201,17 @@ def GetIDEIdentity():
             f.write(PSKstring)
 
     return ID, secretstring
+
+
+def ExportIDEIdentity(filepath):
+    own_identity = _own_psk_path()
+    shutil.copyfile(own_identity, filepath)
+
+def ImportIDEIdentity(filepath):
+    own_identity = _own_psk_path()
+    shutil.copyfile(filepath, own_identity)
+
+def RemoveIDEIdentity():
+    own_identity = _own_psk_path()
+    if os.path.exists(own_identity):
+        os.remove(own_identity)

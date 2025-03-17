@@ -8,7 +8,7 @@ import wx
 
 
 # class RichMessageDialog is still not available in wxPython 3.0.2
-class IDMergeDialog(wx.Dialog):
+class MsgConfirmDialog(wx.Dialog):
     def __init__(self, parent, title, question, optiontext, button_texts):
         wx.Dialog.__init__(self, parent, title=title)
 
@@ -18,9 +18,12 @@ class IDMergeDialog(wx.Dialog):
         main_sizer.Add(message, border=20,
                              flag=wx.ALIGN_CENTER_HORIZONTAL | wx.TOP | wx.LEFT | wx.RIGHT)
 
-        self.check = wx.CheckBox(self, label=optiontext)
-        main_sizer.Add(self.check, border=20,
-                             flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
+        if optiontext:
+            self.check = wx.CheckBox(self, label=optiontext)
+            main_sizer.Add(self.check, border=20,
+                                 flag=wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_CENTER_HORIZONTAL)
+        else:
+            self.check = None
 
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
         for label, wxID in zip(button_texts, [wx.ID_YES, wx.ID_NO, wx.ID_CANCEL]):
@@ -48,4 +51,5 @@ class IDMergeDialog(wx.Dialog):
             event.Skip()
 
     def OptionChecked(self):
-        return self.check.GetValue()
+        if self.check:
+            return self.check.GetValue()

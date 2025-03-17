@@ -65,9 +65,6 @@ def _MQTT_subscribe(clientname, topic, QoS):
 def MQTT_subscribe(clientname, topic, cb, QoS = 1):
     global MQTT_client_cbs, MQTT_subscribers_cbs
 
-    MQTT_subscribers_cbs.setdefault(clientname, {})[topic] = (cb, QoS)
-    res = _MQTT_subscribe(clientname, topic, QoS)
-
     c_cbs = MQTT_client_cbs.get(clientname, None)
     if c_cbs is None:
         cb_onmsg, cb_resub = mqtt_per_client_cb_factory(clientname)
@@ -77,6 +74,9 @@ def MQTT_subscribe(clientname, topic, cb, QoS = 1):
         register_c_function = getattr(PLCBinary, "__mqtt_python_callback_setter_"+clientname )
         register_c_function.argtypes = [mqtt_c_cb_onmsg_type, mqtt_c_cb_resub_type]
         register_c_function(*c_cbs)
+
+    MQTT_subscribers_cbs.setdefault(clientname, {})[topic] = (cb, QoS)
+    res = _MQTT_subscribe(clientname, topic, QoS)
 
     return res
 

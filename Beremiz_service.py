@@ -587,15 +587,13 @@ def FirstWorkerJob():
 
     runtime.GetPLCObjectSingleton().AutoLoad(autostart)
 
-if havetwisted and havewx:
-
-    waker_func = wx.CallAfter
-
+if havetwisted:
+    waker_func = reactor.callFromThread
+        
     # This orders ui loop to signal when ready on Stdout
     waker_func(print,"UI thread started successfully.")
 
-    # interleaved worker copes with wxreactor by delegating all asynchronous
-    # calls to wx's mainloop
+    # interleaved worker delegates all calls to reactor
     runtime.MainWorker.interleave(waker_func, reactor.stop, FirstWorkerJob)
 
     try:
@@ -607,30 +605,19 @@ if havetwisted and havewx:
 
 elif havewx:
 
+    waker_func = wx.CallAfter
+
+    # This orders ui loop to signal when ready on Stdout
+    waker_func(print,"UI thread started successfully.")
+
+    # interleaved worker delegates all calls to reactor
+    runtime.MainWorker.interleave(waker_func, app.ExitMainLoop, FirstWorkerJob)
+
     try:
-        app.MainLoop
+        app.MainLoop()
     except KeyboardInterrupt:
         pass
 
-elif havetwisted:
-
-    ui_thread_started = Lock()
-    ui_thread_started.acquire()
-
-    reactor.callLater(0, ui_thread_started.release)
-
-    ui_thread = Thread(
-        target=partial(reactor.run, installSignalHandlers=False),
-        name="UIThread")
-    ui_thread.start()
-
-    ui_thread_started.acquire()
-    print("UI thread started successfully.")
-    try:
-        # blocking worker loop
-        runtime.MainWorker.runloop(FirstWorkerJob)
-    except KeyboardInterrupt:
-        pass
 else:
     try:
         # blocking worker loop

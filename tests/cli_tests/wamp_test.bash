@@ -2,6 +2,9 @@
 
 rm -f ./CLI_OK ./PLC_OK ./PLC_CONNECTED
 
+APPDATA=$HOME/.local/share/beremiz
+KEYSTORE=$APPDATA/keystore
+
 # Start runtime one first time to generate PLC PSK
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -s psk.txt -n test_wamp_ID -x 0 &
 PLC_PID=$!
@@ -31,7 +34,7 @@ IFS=':' read -r PLC_wamp_ID PLC_wamp_secret < psk.txt
 cp -a $BEREMIZPATH/tests/projects/wamp .
 
 # Start CLI one first time to generate IDE PSK
-IDE_PSK=$HOME/.local/share/beremiz/keystore/own/default.psk
+IDE_PSK=$KEYSTORE/own/default.psk
 rm -f $IDE_PSK
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
      --project-home wamp connect &
@@ -184,7 +187,7 @@ $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -c wampconf.json -s psk.txt -
     while read line; do 
         # Wait for server to print modified value
         echo "PLC>> $line"
-        if [[ "$line" =~ ^"WAMP session joined" ]]; then
+        if [[ "$line" =~ "WAMP session joined" ]]; then
             echo "PLC is connected"
             touch ./PLC_CONNECTED
         fi
@@ -217,8 +220,9 @@ if [ "$res" != "0" ] ; then
 fi
 
 # Re-use self-signed server cert for client in test project
-mkdir -p wamp/cert
-cp .crossbar/server.crt wamp/cert/localhost.crt
+IDE_CERT=$KEYSTORE/cert
+mkdir -p $IDE_CERT
+cp .crossbar/server.crt $IDE_CERT/localhost.crt
 
 # TODO: patch project's URI to connect to $BEREMIZ_LOCAL_HOST
 #       used in tests instead of 127.0.0.1

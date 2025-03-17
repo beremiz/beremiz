@@ -566,14 +566,20 @@ class PLCObject(object):
                 self._fail(_("Problem starting PLC : error %d" % res))
 
     @RunInMain
-    def StopPLC(self):
+    def StopPLCLoop(self):
         if self.PLCStatus == PlcStatus.Started:
             self.LogMessage("PLC stopped")
             self._stopPLC()
             if self.TraceThread is not None:
                 self.TraceThread.join()
                 self.TraceThread = None
+            return True
+        return False
 
+    # Does not @RunInMain since python runtime Stop call must run in 
+    # main thread, and StopPLC waits for it to complete
+    def StopPLC(self):
+        if self.StopPLCLoop():
             # Wait for python runtime stop to complete
             if self.PlcStopped.wait(timeout=5):
                 self.PLCStatus = PlcStatus.Stopped
