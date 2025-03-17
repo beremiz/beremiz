@@ -32,13 +32,4 @@ int wait_RT_to_nRT_signal(void* handle);
 int unblock_RT_to_nRT_signal(void* handle);
 void nRT_reschedule(void);
 
-
-#ifdef REALTIME_LINUX
-
-#ifndef PLC_THREAD_PRIORITY
-#define PLC_THREAD_PRIORITY 80
-#endif
- 
-#endif
-
 #endif
