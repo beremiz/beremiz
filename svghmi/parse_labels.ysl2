@@ -2,18 +2,18 @@
 
 
 //  Parses:
-//  "HMI:WidgetType|freq:param1:param2@a=path1,path1min,path1max@b=path2#a+b>3"
+//  "HMI:WidgetType|freq:param1:param2@a=.path0@a=path1,path1min,path1max@b=path2#a+b>3"
 //
 //  Into:
-//  widget type="WidgetType" id="blah456" {
+//  widget type="WidgetType" id="blah456" enable_expr="a+b>3" {
 //      arg value="param1";
 //      arg value="param2";
-//      path value=".path1" index=".path1" min="path1min" max="path1max" type="PAGE_LOCAL";
-//      path value="/path1" index="348" type="HMI_INT";
-//      path value="path4" index="path4" type="HMI_LOCAL";
+//      path value=".path0" index=".path0" type="PAGE_LOCAL";
+//      path value="/path1" index="348" type="HMI_INT" min="path1min" max="path1max" assign="a";
+//      path value="path4" index="path4" type="HMI_LOCAL" assign=b;
 //  }
 //
-const "pathregex",!"'^(\w+=)?([^,=]+)([-.\d,]*)$'"!;
+const "pathregex",!"'^(\w+=)?([^,=]+)([-.\w,]*)$'"!;
 
 const "newline" |
 const "twonewlines", "concat($newline,$newline)";

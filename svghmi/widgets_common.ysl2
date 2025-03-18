@@ -107,7 +107,7 @@ template "svg:*", mode="hmi_widgets" {
         }
         > , {
         if "@min and @max"{
-                > minmax:[«@min», «@max»]
+                > minmax:["«@min»", "«@max»"]
                 if "@assign"
                     > ,
         }
@@ -132,20 +132,36 @@ template "svg:*", mode="hmi_widgets" {
     }
 
     |   "«@id»": new «$widget/@type»Widget ("«@id»",«$freq»,[«$args»],[«$variables»],«$enable_expr»,{
-    if "$widget/@enable_expr" {
 
-    |       enable_assignments: [],
+    |       var_assignments: [],
+    |       assignment_idx: {
+        foreach "$widget/path" { // nested loop to map assignments to varnum
+            const "varid","generate-id()";
+            if "@assign" foreach "$widget/path[@assign]" if "$varid = generate-id()" {
+    |           "«@assign»":«position()-1» `if "position()!=last()" > ,`
+            }
+        }
+    |       },
+    |       varnum_assignments: [
+        foreach "$widget/path" { // nested loop to map assignments to varnum
+            const "varid","generate-id()";
+            choose {
+                when "@assign" foreach "$widget/path[@assign]" if "$varid = generate-id()" {
+    >           «position()-1»
+                } otherwise {
+    >           undefined
+                }
+            }
+            if "position()!=last()" > ,\n
+        }
+    |       ],
+    if "$widget/@enable_expr" {
     |       compute_enable: function(value, oldval, varnum) {
     |         let result = false;
     |         do {
-        foreach "$widget/path" {
-            const "varid","generate-id()";
-            const "varnum","position()-1";
-            if "@assign" foreach "$widget/path[@assign]" if "$varid = generate-id()" {
-    |           if(varnum == «$varnum») this.enable_assignments[«position()-1»] = value;
-    |           let «@assign» = this.enable_assignments[«position()-1»];
+        foreach "$widget/path[@assign]" {
+    |           let «@assign» = this.var_assignments[«position()-1»];
     |           if(«@assign» == undefined) break;
-            }
         }
     |           result = «$widget/@enable_expr»;
     |         } while(0);
@@ -393,7 +409,16 @@ emit "preamble:widget-base-class" {
         clip_min_max(index, new_val) {
             let minmax = this.variables_options[index].minmax;
             if(minmax !== undefined && typeof new_val == "number") {
-                let [min,max] = minmax;
+                let [min,max] = minmax.map(token => {
+                    const num = Number(token);
+                    if(!isNaN(num) && isFinite(num)){
+                        return num;
+                    }else{
+                        let idx = this.assignment_idx[token];
+                        if(idx != undefined)
+                            return this.var_assignments[idx];
+                    }
+                });
                 if(new_val < min){
                     this.undershot(new_val, min);
                     return min;
@@ -535,15 +560,22 @@ emit "preamble:widget-base-class" {
         }
 
         do_dispatch(value, oldval, varnum) {
-            if(this.dispatch) try {
-                this.dispatch(value, oldval, varnum);
-            } catch(err) {
-                console.log(err);
-            }
-            if(this.enable_expr) try {
-                this.compute_enable(value, oldval, varnum);
-            } catch(err) {
-                console.log(err);
+            if(this.enable_expr || this.dispatch){
+                let idx = this.varnum_assignments[varnum];
+                if(idx != undefined)
+                    this.var_assignments[idx] = value;
+
+                if(this.dispatch) try {
+                    this.dispatch(value, oldval, varnum);
+                } catch(err) {
+                    console.log(err);
+                }
+
+                if(idx != undefined && this.enable_expr) try {
+                    this.compute_enable(value, oldval, varnum);
+                } catch(err) {
+                    console.log(err);
+                }
             }
         }
 

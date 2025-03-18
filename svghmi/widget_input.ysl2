@@ -66,8 +66,8 @@ widget_defs("Input") {
 
     if "$have_value"
     |     frequency: 5,
-    |     dispatch: function(value) {
-
+    |     dispatch: function(value, oldval, varnum) {
+    |         if(varnum != 0) return;
 
     if "$have_value or $have_edit" {
         choose{
