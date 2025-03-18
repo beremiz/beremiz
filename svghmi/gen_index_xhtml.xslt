@@ -138,7 +138,7 @@
       </xsl:with-param>
     </xsl:apply-templates>
   </xsl:template>
-  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\w,]*)$'"/>
   <xsl:variable name="newline">
     <xsl:text>
 </xsl:text>
@@ -1390,11 +1390,11 @@
         </xsl:choose>
         <xsl:text>, {</xsl:text>
         <xsl:if test="@min and @max">
-          <xsl:text>minmax:[</xsl:text>
+          <xsl:text>minmax:["</xsl:text>
           <xsl:value-of select="@min"/>
-          <xsl:text>, </xsl:text>
+          <xsl:text>", "</xsl:text>
           <xsl:value-of select="@max"/>
-          <xsl:text>]</xsl:text>
+          <xsl:text>"]</xsl:text>
           <xsl:if test="@assign">
             <xsl:text>,</xsl:text>
           </xsl:if>
@@ -1448,40 +1448,73 @@
     <xsl:value-of select="$enable_expr"/>
     <xsl:text>,{
 </xsl:text>
-    <xsl:if test="$widget/@enable_expr">
-      <xsl:text>      enable_assignments: [],
+    <xsl:text>      var_assignments: [],
 </xsl:text>
+    <xsl:text>      assignment_idx: {
+</xsl:text>
+    <xsl:for-each select="$widget/path">
+      <xsl:variable name="varid" select="generate-id()"/>
+      <xsl:if test="@assign">
+        <xsl:for-each select="$widget/path[@assign]">
+          <xsl:if test="$varid = generate-id()">
+            <xsl:text>          "</xsl:text>
+            <xsl:value-of select="@assign"/>
+            <xsl:text>":</xsl:text>
+            <xsl:value-of select="position()-1"/>
+            <xsl:text> </xsl:text>
+            <xsl:if test="position()!=last()">
+              <xsl:text>,</xsl:text>
+            </xsl:if>
+            <xsl:text>
+</xsl:text>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:text>      },
+</xsl:text>
+    <xsl:text>      varnum_assignments: [
+</xsl:text>
+    <xsl:for-each select="$widget/path">
+      <xsl:variable name="varid" select="generate-id()"/>
+      <xsl:choose>
+        <xsl:when test="@assign">
+          <xsl:for-each select="$widget/path[@assign]">
+            <xsl:if test="$varid = generate-id()">
+              <xsl:text>          </xsl:text>
+              <xsl:value-of select="position()-1"/>
+            </xsl:if>
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:text>          undefined</xsl:text>
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:if test="position()!=last()">
+        <xsl:text>,
+</xsl:text>
+      </xsl:if>
+    </xsl:for-each>
+    <xsl:text>      ],
+</xsl:text>
+    <xsl:if test="$widget/@enable_expr">
       <xsl:text>      compute_enable: function(value, oldval, varnum) {
 </xsl:text>
       <xsl:text>        let result = false;
 </xsl:text>
       <xsl:text>        do {
 </xsl:text>
-      <xsl:for-each select="$widget/path">
-        <xsl:variable name="varid" select="generate-id()"/>
-        <xsl:variable name="varnum" select="position()-1"/>
-        <xsl:if test="@assign">
-          <xsl:for-each select="$widget/path[@assign]">
-            <xsl:if test="$varid = generate-id()">
-              <xsl:text>          if(varnum == </xsl:text>
-              <xsl:value-of select="$varnum"/>
-              <xsl:text>) this.enable_assignments[</xsl:text>
-              <xsl:value-of select="position()-1"/>
-              <xsl:text>] = value;
+      <xsl:for-each select="$widget/path[@assign]">
+        <xsl:text>          let </xsl:text>
+        <xsl:value-of select="@assign"/>
+        <xsl:text> = this.var_assignments[</xsl:text>
+        <xsl:value-of select="position()-1"/>
+        <xsl:text>];
 </xsl:text>
-              <xsl:text>          let </xsl:text>
-              <xsl:value-of select="@assign"/>
-              <xsl:text> = this.enable_assignments[</xsl:text>
-              <xsl:value-of select="position()-1"/>
-              <xsl:text>];
+        <xsl:text>          if(</xsl:text>
+        <xsl:value-of select="@assign"/>
+        <xsl:text> == undefined) break;
 </xsl:text>
-              <xsl:text>          if(</xsl:text>
-              <xsl:value-of select="@assign"/>
-              <xsl:text> == undefined) break;
-</xsl:text>
-            </xsl:if>
-          </xsl:for-each>
-        </xsl:if>
       </xsl:for-each>
       <xsl:text>          result = </xsl:text>
       <xsl:value-of select="$widget/@enable_expr"/>
@@ -1998,7 +2031,25 @@
 </xsl:text>
     <xsl:text>        if(minmax !== undefined &amp;&amp; typeof new_val == "number") {
 </xsl:text>
-    <xsl:text>            let [min,max] = minmax;
+    <xsl:text>            let [min,max] = minmax.map(token =&gt; {
+</xsl:text>
+    <xsl:text>                const num = Number(token);
+</xsl:text>
+    <xsl:text>                if(!isNaN(num) &amp;&amp; isFinite(num)){
+</xsl:text>
+    <xsl:text>                    return num;
+</xsl:text>
+    <xsl:text>                }else{
+</xsl:text>
+    <xsl:text>                    let idx = this.assignment_idx[token];
+</xsl:text>
+    <xsl:text>                    if(idx != undefined)
+</xsl:text>
+    <xsl:text>                        return this.var_assignments[idx];
+</xsl:text>
+    <xsl:text>                }
+</xsl:text>
+    <xsl:text>            });
 </xsl:text>
     <xsl:text>            if(new_val &lt; min){
 </xsl:text>
@@ -2282,23 +2333,37 @@
 </xsl:text>
     <xsl:text>    do_dispatch(value, oldval, varnum) {
 </xsl:text>
-    <xsl:text>        if(this.dispatch) try {
+    <xsl:text>        if(this.enable_expr || this.dispatch){
 </xsl:text>
-    <xsl:text>            this.dispatch(value, oldval, varnum);
+    <xsl:text>            let idx = this.varnum_assignments[varnum];
 </xsl:text>
-    <xsl:text>        } catch(err) {
+    <xsl:text>            if(idx != undefined)
 </xsl:text>
-    <xsl:text>            console.log(err);
+    <xsl:text>                this.var_assignments[idx] = value;
 </xsl:text>
-    <xsl:text>        }
+    <xsl:text>
 </xsl:text>
-    <xsl:text>        if(this.enable_expr) try {
+    <xsl:text>            if(this.dispatch) try {
 </xsl:text>
-    <xsl:text>            this.compute_enable(value, oldval, varnum);
+    <xsl:text>                this.dispatch(value, oldval, varnum);
 </xsl:text>
-    <xsl:text>        } catch(err) {
+    <xsl:text>            } catch(err) {
 </xsl:text>
-    <xsl:text>            console.log(err);
+    <xsl:text>                console.log(err);
+</xsl:text>
+    <xsl:text>            }
+</xsl:text>
+    <xsl:text>
+</xsl:text>
+    <xsl:text>            if(idx != undefined &amp;&amp; this.enable_expr) try {
+</xsl:text>
+    <xsl:text>                this.compute_enable(value, oldval, varnum);
+</xsl:text>
+    <xsl:text>            } catch(err) {
+</xsl:text>
+    <xsl:text>                console.log(err);
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -5091,7 +5156,9 @@
       <xsl:text>    frequency: 5,
 </xsl:text>
     </xsl:if>
-    <xsl:text>    dispatch: function(value) {
+    <xsl:text>    dispatch: function(value, oldval, varnum) {
+</xsl:text>
+    <xsl:text>        if(varnum != 0) return;
 </xsl:text>
     <xsl:if test="$have_value or $have_edit">
       <xsl:choose>
