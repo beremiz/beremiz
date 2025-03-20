@@ -32,6 +32,8 @@ IFS=':' read -r PLC_wamp_ID PLC_wamp_secret < psk.txt
 
 # Prepare test project
 cp -a $BEREMIZPATH/tests/projects/wamp .
+URI="WAMPS://localhost:8888/ws#Automation#${PLC_wamp_ID}"
+sed -i "s,TEST_URI,${URI},g" wamp/beremiz.xml
 
 # Start CLI one first time to generate IDE PSK
 IDE_PSK=$KEYSTORE/own/default.psk
@@ -174,6 +176,7 @@ cat > wampconf.json <<JsonEnd
 
     }, 
     "realm": "Automation", 
+    "authentication": "PSK",
     "url": "wss://localhost:8888/ws"
 }
 JsonEnd

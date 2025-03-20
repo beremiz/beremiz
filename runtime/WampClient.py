@@ -33,7 +33,7 @@ from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
-from twisted.internet.ssl import optionsForClientTLS, VerificationError
+from twisted.internet.ssl import PrivateCertificate, optionsForClientTLS, VerificationError
 from twisted.internet._sslverify import OpenSSLCertificateAuthorities
 from OpenSSL import crypto
 
@@ -46,6 +46,13 @@ from runtime.loglevels import LogLevelsDict
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
 
+
+AUTH_NONE = "None"
+AUTH_PSK =  "PSK"
+AUTH_CLIENTCERT = "ClientCertificate"
+AUTHENTICATION_TYPES = [AUTH_NONE, AUTH_PSK, AUTH_CLIENTCERT]
+SSL_AUTHENTICATION_TYPES = [AUTH_CLIENTCERT]
+
 _transportFactory = None
 _WampSession = None
 WorkingDir = None
@@ -55,6 +62,7 @@ _WampConf = None
 _WampSercretFile = None
 _WampSecret = None
 _WampTrust = None
+_WampClientCert = None
 
 ExposedCalls = [
     ("StartPLC", {}),
@@ -87,6 +95,7 @@ defaultWampConfig = {
         "autoPingInterval": 10,
         "autoPingTimeout": 5
     },
+    "authentication": "None",
     "verifyHostname": True
 }
 
@@ -115,7 +124,21 @@ class WampSession(wamp.ApplicationSession):
 
     def onConnect(self):
         user = self.config.extra["ID"]
-        self.join(self.config.realm, ["wampcra"], user)
+        auth = self.config.extra["authentication"]
+        if auth == AUTH_PSK:
+            self.join(self.config.realm, ["wampcra"], user)
+        elif auth == AUTH_NONE:
+            self.join(self.config.realm, ["anonymous"])
+        elif auth in SSL_AUTHENTICATION_TYPES:
+            authextra = {
+                'channel_binding': "None" # "tls-unique"
+            }
+            self.join(self.config.realm,
+                      authmethods=['tls'],
+                      authid=user,
+                      authextra=authextra) 
+        else:
+            raise Exception("Invalid authentication: "+auth)
 
     def onChallenge(self, challenge):
         if challenge.method == "wampcra":
@@ -294,7 +317,7 @@ def IsCorrectUri(uri):
 
 def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
     from twisted.internet import reactor
-    global _WampConf, _WampSecret, _WampSercretFile, _WampTrust, defaultWampConfig
+    global _WampConf, _WampSecret, _WampSercretFile, _WampClientCert, _WampTrust, defaultWampConfig
 
     if servicename:
         defaultWampConfig["ID"] = servicename
@@ -304,6 +327,9 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
 
     _WampConfDefault = os.path.join(ConfDir, "wampconf.json")
     _WampSecretDefault = os.path.join(KeyStore, "wamp.secret")
+
+    if _WampClientCert is None:
+        _WampClientCert = os.path.join(KeyStore, "wampClientCert.pem")
 
     if _WampTrust is None:
         _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
@@ -344,6 +370,8 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
 
     reactor.callInThread(_RegisterWampClient)
 
+    return WampClientConf
+
 def _RegisterWampClient():
     global _WampSecret, _transportFactory
     WampClientConf = GetConfiguration()
@@ -365,30 +393,44 @@ def _RegisterWampClient():
         url=WampClientConf["url"],
         serializers=[MsgPackSerializer()])
 
-    # start the client from a Twisted endpoint
+    # start the client
     if _transportFactory:
+        auth = WampClientConf["authentication"]
+        verify = WampClientConf["verifyHostname"]
+
         contextFactory=None
         if _transportFactory.isSecure:
-            contextFactory = MakeSecureContextFactory(WampClientConf["verifyHostname"])
+            client_cert=None
+            trustRoot=None
+            ssl_auth = auth in SSL_AUTHENTICATION_TYPES
+            if ssl_auth:
+                if os.path.exists(_WampClientCert):
+                    client_cert = PrivateCertificate.loadPEM(open(_WampClientCert, 'rb').read())
+                else:
+                    GetPLCObjectSingleton().LogMessage(LogLevelsDict["ERROR"], 
+                        "WAMP client certificate not provided for:", WampClientConf["url"])
+                    return
+            if verify:
+                if os.path.exists(_WampTrust):
+                    cert = crypto.load_certificate(crypto.FILETYPE_PEM,
+                        open(_WampTrust, 'rb').read())
+                    trustRoot = OpenSSLCertificateAuthorities([cert])
+            if verify or ssl_auth:
+                contextFactory=optionsForClientTLS(_transportFactory.host,
+                                                   trustRoot=trustRoot,
+                                                   clientCertificate=client_cert)
+        else:
+            # non encrypted connection is not accepted in case some security is requested
+            if auth != AUTH_NONE or verify:
+                GetPLCObjectSingleton().LogMessage(LogLevelsDict["ERROR"], 
+                    "WAMP connection must be secure:", WampClientConf["url"])
+                return
 
         connectWS(_transportFactory, contextFactory)
         print("WAMP client connecting to :", WampClientConf["url"])
     else:
         GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
             "WAMP configuration invalid:", WampClientConf["url"])
-
-def MakeSecureContextFactory(verifyHostname):
-    global _transportFactory
-    if not verifyHostname:
-        return None
-    trustRoot=None
-    if os.path.exists(_WampTrust):
-        cert = crypto.load_certificate(
-            crypto.FILETYPE_PEM,
-            open(_WampTrust, 'rb').read()
-        )
-        trustRoot=OpenSSLCertificateAuthorities([cert])
-    return optionsForClientTLS(_transportFactory.host, trustRoot=trustRoot)
 
 def StopReconnectWampClient():
     if _transportFactory is not None:
@@ -436,12 +478,14 @@ def PublishEventWithOwnID(eventID, value):
 
 # WEB CONFIGURATION INTERFACE
 WAMP_SECRET_URL = "secret"
+WAMP_DELETE_CLIENTCERT_URL = "delete_clientcert"
 WAMP_DELETE_TRUSTSTORE_URL = "delete_truststore"
 webExposedConfigItems = [
     'active', 'url', 'ID',
     "clientFactoryOptions.maxDelay",
     "protocolOptions.autoPingInterval",
     "protocolOptions.autoPingTimeout",
+    "authentication",
     "verifyHostname"
 ]
 
@@ -467,6 +511,14 @@ def wampConfig(**kwargs):
             with open(os.path.realpath(_WampSercretFile), 'w') as destfd:
                 secretfile.seek(0)
                 shutil.copyfileobj(secretfile,destfd)
+
+    clientCert_field = kwargs["clientCert"]
+    if clientCert_field is not None:
+        clientCert_file = getattr(clientCert_field, "file", None)
+        if clientCert_file is not None:
+            with open(os.path.realpath(_WampClientCert), 'w') as destfd:
+                clientCert_file.seek(0)
+                shutil.copyfileobj(clientCert_file,destfd)
 
     trustStore_field = kwargs["trustStore"]
     if trustStore_field is not None:
@@ -547,6 +599,14 @@ registerAdapter(FileUploadDeleteRenderer, FileUploadDelete,
                 formless.iformless.ITypedRenderer)
 
 
+def getClientCertPresence():
+    return os.path.exists(_WampClientCert)
+
+
+def getClientCertDeleteUrl(ctx, argument):
+    return url.URL.fromContext(ctx).child(WAMP_DELETE_CLIENTCERT_URL)
+
+
 def getTrustStorePresence():
     return os.path.exists(_WampTrust)
 
@@ -585,6 +645,11 @@ webFormInterface = [
      FileUploadDelete(label=_("File containing server certificate"),
                       file_exists=getTrustStorePresence,
                       file_delete=getTrustStoreDeleteUrl)),
+    ("authentication",
+     annotate.Choice(AUTHENTICATION_TYPES,
+                     required=True,
+                     label=_("Authentication type"))),
+
     ("verifyHostname",
      annotate.Boolean(label=_("Verify hostname matches certificate hostname"),
                       default=wampConfigDefault)),
@@ -600,6 +665,11 @@ def deliverWampSecret(ctx, segments):
     # while loading secret (if empty or dont exist)
     secret = LoadWampSecret(_WampSercretFile)
     return static.Data(secret, 'application/octet-stream'), ()
+
+def deleteClientCert(ctx, segments):
+    if os.path.exists(_WampClientCert):
+        os.remove(_WampClientCert)
+    return static.Data("ClientCert deleted", 'text/html'), ()
 
 def deleteTrustStore(ctx, segments):
     if os.path.exists(_WampTrust):
