@@ -1,12 +1,15 @@
 #!/bin/bash
 
+#set -x
+
 rm -f ./CLI_OK ./PLC_OK ./PLC_CONNECTED
 
-APPDATA=$HOME/.local/share/beremiz
-KEYSTORE=$APPDATA/keystore
+export BEREMIZ_APPDATA=`pwd`/AppData
+mkdir -p $BEREMIZ_APPDATA
+KEYSTORE=$BEREMIZ_APPDATA/keystore
 
 # Set BEREMIZ_LOCAL_HOST to localhost if not already set
-:${BEREMIZ_LOCAL_HOST:=localhost}
+: ${BEREMIZ_LOCAL_HOST:=localhost}
 
 # Start runtime one first time to generate PLC PSK
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -s psk.txt -n test_wamp_ID -x 0 &
@@ -68,11 +71,15 @@ fi
 IFS=':' read -r IDE_wamp_ID IDE_wamp_secret < $IDE_PSK
 
 # Prepare crossbar server configuration
-mkdir -p .crossbar
+mkdir -p certs/server .crossbar
 
-yes "" | openssl req -nodes -new -x509 -keyout ./.crossbar/server.key \
-                 -addext "subjectAltName = DNS:${BEREMIZ_LOCAL_HOST}" \
-                 -out ./.crossbar/server.crt
+openssl req -nodes -new -x509 -keyout certs/server/server.key \
+                 -subj "/C=FR/L=Paris/O=Beremiz/OU=server/CN=${BEREMIZ_LOCAL_HOST}" \
+                 -addext "subjectAltName=DNS:${BEREMIZ_LOCAL_HOST}" \
+                 -out certs/server/server.crt
+
+cp certs/server/server.key ./.crossbar/server.key
+cp certs/server/server.crt ./.crossbar/server.crt
 
 cat > .crossbar/config.json <<JsonEnd
 {

@@ -1,15 +1,18 @@
 #!/bin/bash
 
+#set -x
+
 rm -f ./CLI_OK ./PLC_OK ./PLC_CONNECTED
 
-APPDATA=$HOME/.local/share/beremiz
-KEYSTORE=$APPDATA/keystore
+export BEREMIZ_APPDATA=`pwd`/AppData
+mkdir -p $BEREMIZ_APPDATA
+KEYSTORE=$BEREMIZ_APPDATA/keystore
 
 PLC_wamp_ID="PLC_1234"
 IDE_wamp_ID="IDE_1234"
 
 # Set BEREMIZ_LOCAL_HOST to localhost if not already set
-:${BEREMIZ_LOCAL_HOST:=localhost}
+: ${BEREMIZ_LOCAL_HOST:=localhost}
 
 URI="WAMPS-CRT://${BEREMIZ_LOCAL_HOST}:8888/ws#Automation#${PLC_wamp_ID}"
 
@@ -17,10 +20,11 @@ URI="WAMPS-CRT://${BEREMIZ_LOCAL_HOST}:8888/ws#Automation#${PLC_wamp_ID}"
 client_cns=(${IDE_wamp_ID} ${PLC_wamp_ID})
 
 # Create base directory for the certificates and keys
-mkdir -p certs/ca certs/server certs/clients
+mkdir -p certs/server certs/clients
 
-yes "" | openssl req -nodes -new -x509 -keyout certs/server/server.key \
-                 -addext "subjectAltName = DNS:${BEREMIZ_LOCAL_HOST}" \
+openssl req -nodes -new -x509 -keyout certs/server/server.key \
+                 -subj "/C=FR/L=Paris/O=Beremiz/OU=server/CN=${BEREMIZ_LOCAL_HOST}" \
+                 -addext "subjectAltName=DNS:${BEREMIZ_LOCAL_HOST}" \
                  -out certs/server/server.crt
 
 # Declare an associative array to store client certificate SHA1 fingerprints
@@ -30,10 +34,17 @@ declare -A client_fingerprints
 for cn in "${client_cns[@]}"; do
 
     # Generate client cert to be signed
-    openssl req -nodes -newkey rsa:2048 -keyout certs/clients/${cn}.key -out certs/clients/${cn}.csr -subj "/C=AU/ST=NSW/L=Sydney/O=Beremiz/OU=client/CN=${cn}"
+    openssl req -nodes -newkey rsa:2048 -keyout certs/clients/${cn}.key \
+            -subj "/C=FR/L=Paris/O=Beremiz/OU=client/CN=${cn}" \
+            -addext "subjectAltName=DNS:${cn}" \
+            -out certs/clients/${cn}.csr
 
     # Sign the client cert
-    openssl x509 -req -in certs/clients/${cn}.csr -CA certs/server/server.crt -CAkey certs/server/server.key -out certs/clients/${cn}.crt
+    openssl x509 -req -in certs/clients/${cn}.csr \
+            -CA certs/server/server.crt \
+            -CAkey certs/server/server.key \
+            -out certs/clients/${cn}.crt \
+            # -extfile <(printf "subjectAltName=DNS:${cn}")
 
     # Get the SHA1 fingerprint of the client certificate
     fingerprint=$(openssl x509 -in certs/clients/${cn}.crt -noout -fingerprint -sha1 | sed 's/.*=//')
@@ -194,6 +205,7 @@ cat > .crossbar/config.json <<JsonEnd
 }
 JsonEnd
 crossbar start &> crossbar_log.txt &
+
 SERVER_PID=$!
 res=110  # default to ETIMEDOUT
 c=15
@@ -232,6 +244,7 @@ cat > wampconf.json <<JsonEnd
     "url": "wss://${BEREMIZ_LOCAL_HOST}:8888/ws"
 }
 JsonEnd
+
 
 # Re-use self-signed server cert for client
 cp .crossbar/server.crt wampTrustStore.crt
@@ -287,6 +300,7 @@ mkdir -p $IDE_CERT
 cp .crossbar/server.crt $IDE_CERT/${BEREMIZ_LOCAL_HOST}.crt
 
 IDE_CLIENT_CERT=$KEYSTORE/own/client.crt
+mkdir -p $KEYSTORE/own
 rm -f $IDE_CLIENT_CERT
 cp certs/clients/${IDE_wamp_ID}.pem $IDE_CLIENT_CERT
 

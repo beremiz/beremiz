@@ -170,7 +170,7 @@ def GetClientCert():
     return os.path.join(own_keystore, "client.crt")
 
 def GetClientCertificateInfo():
-    file_path =  GetClientCert()
+    file_path = GetClientCert()
     if os.path.exists(file_path):
         info = ""
         try:
@@ -182,16 +182,20 @@ def GetClientCertificateInfo():
             common_names = cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
             for cn in common_names:
                 info += "Common Name: %s\n"%cn.value
-            ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
-            SAN = ext.value.get_values_for_type(x509.DNSName)
-            for SANEntry in SAN:
-                info += "SubjectAltName: %s\n"%SANEntry
+            try:
+                ext = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+                SAN = ext.value.get_values_for_type(x509.DNSName)
+                for SANEntry in SAN:
+                    info += "SubjectAltName: %s\n"%SANEntry
+            except x509.extensions.ExtensionNotFound:
+                info += "No SubjectAltName\n"
 
             info += "Fingerprint: %s\n"%cert.fingerprint(hashes.SHA256()).hex()
             info += "Creation date: %s\n"%cert.not_valid_before.isoformat()
             info += "Expiration date: %s\n"%cert.not_valid_after.isoformat()
         except Exception as e:
             info += "Error while loading certificate: %s\n"%str(e)
+            print(e.__class__)
         return info
     return "No client certificate available"
 

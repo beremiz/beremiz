@@ -66,6 +66,9 @@ def AppDataPath(*names):
     """
     Return path of files in Beremiz project
     """
+    if "BEREMIZ_APPDATA" in os.environ:
+        return os.path.join(os.environ["BEREMIZ_APPDATA"], *names)
+
     if os.name == "posix":
         return os.path.join(os.environ["HOME"], ".local", "share", "beremiz", *names)
     
