@@ -82,12 +82,12 @@ def ConnectorFactory(uri, confnodesroot):
     else:
         _scheme = _scheme.split("-")[0]
 
-    if _scheme in connectors:
-        scheme = _scheme
-    elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
-        scheme = _scheme[:-1]
-    else:
-        return None
+        if _scheme in connectors:
+            scheme = _scheme
+        elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
+            scheme = _scheme[:-1]
+        else:
+            return None
 
     return (connectors[scheme]
             ()  # triggers import
