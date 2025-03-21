@@ -79,12 +79,13 @@ def ConnectorFactory(uri, confnodesroot):
         runtime_port = confnodesroot.StartLocalRuntime()
         uri = f"ERPC://{LocalHost}:{runtime_port}"
 
-    elif _scheme in connectors:
+    else:
+        _scheme = _scheme.split("-")[0]
+
+    if _scheme in connectors:
         scheme = _scheme
     elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
         scheme = _scheme[:-1]
-    elif _scheme.split("-")[0] in connectors:
-        scheme = _scheme.split("-")[0]
     else:
         return None
 

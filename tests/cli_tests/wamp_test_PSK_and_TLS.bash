@@ -5,6 +5,9 @@ rm -f ./CLI_OK ./PLC_OK ./PLC_CONNECTED
 APPDATA=$HOME/.local/share/beremiz
 KEYSTORE=$APPDATA/keystore
 
+# Set BEREMIZ_LOCAL_HOST to localhost if not already set
+:${BEREMIZ_LOCAL_HOST:=localhost}
+
 # Start runtime one first time to generate PLC PSK
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -s psk.txt -n test_wamp_ID -x 0 &
 PLC_PID=$!
@@ -30,9 +33,10 @@ fi
 
 IFS=':' read -r PLC_wamp_ID PLC_wamp_secret < psk.txt
 
+URI="WAMPS://${BEREMIZ_LOCAL_HOST}:8888/ws#Automation#${PLC_wamp_ID}"
+
 # Prepare test project
 cp -a $BEREMIZPATH/tests/projects/wamp .
-URI="WAMPS://localhost:8888/ws#Automation#${PLC_wamp_ID}"
 sed -i "s,TEST_URI,${URI},g" wamp/beremiz.xml
 
 # Start CLI one first time to generate IDE PSK
@@ -67,7 +71,7 @@ IFS=':' read -r IDE_wamp_ID IDE_wamp_secret < $IDE_PSK
 mkdir -p .crossbar
 
 yes "" | openssl req -nodes -new -x509 -keyout ./.crossbar/server.key \
-                 -addext "subjectAltName = DNS:localhost" \
+                 -addext "subjectAltName = DNS:${BEREMIZ_LOCAL_HOST}" \
                  -out ./.crossbar/server.crt
 
 cat > .crossbar/config.json <<JsonEnd
@@ -177,7 +181,7 @@ cat > wampconf.json <<JsonEnd
     }, 
     "realm": "Automation", 
     "authentication": "PSK",
-    "url": "wss://localhost:8888/ws"
+    "url": "wss://${BEREMIZ_LOCAL_HOST}:8888/ws"
 }
 JsonEnd
 
@@ -225,10 +229,7 @@ fi
 # Re-use self-signed server cert for client in test project
 IDE_CERT=$KEYSTORE/cert
 mkdir -p $IDE_CERT
-cp .crossbar/server.crt $IDE_CERT/localhost.crt
-
-# TODO: patch project's URI to connect to $BEREMIZ_LOCAL_HOST
-#       used in tests instead of 127.0.0.1
+cp .crossbar/server.crt $IDE_CERT/${BEREMIZ_LOCAL_HOST}.crt
 
 # Use CLI to build transfer and start PLC
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \

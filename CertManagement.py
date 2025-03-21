@@ -163,14 +163,14 @@ def ImportCert(filepath, log, sircb):
     return True
 
 
-def _clientCertPath():
+def GetClientCert():
     own_keystore = os.path.join(keystore_path, "own")
     if not os.path.exists(own_keystore):
         os.makedirs(own_keystore)
     return os.path.join(own_keystore, "client.crt")
 
 def GetClientCertificateInfo():
-    file_path =  _clientCertPath()
+    file_path =  GetClientCert()
     if os.path.exists(file_path):
         info = ""
         try:
@@ -196,10 +196,10 @@ def GetClientCertificateInfo():
     return "No client certificate available"
 
 def ImportClientCert(filepath):
-    certpath = _clientCertPath()
+    certpath = GetClientCert()
     shutil.copyfile(filepath, certpath)
 
 def RemoveClientCert():
-    certpath = _clientCertPath()
+    certpath = GetClientCert()
     if os.path.exists(certpath ):
         os.remove(certpath)

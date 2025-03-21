@@ -123,22 +123,22 @@ def GetCallee(name):
 class WampSession(wamp.ApplicationSession):
 
     def onConnect(self):
-        user = self.config.extra["ID"]
         auth = self.config.extra["authentication"]
-        if auth == AUTH_PSK:
-            self.join(self.config.realm, ["wampcra"], user)
-        elif auth == AUTH_NONE:
-            self.join(self.config.realm, ["anonymous"])
-        elif auth in SSL_AUTHENTICATION_TYPES:
-            authextra = {
-                'channel_binding': "None" # "tls-unique"
-            }
-            self.join(self.config.realm,
-                      authmethods=['tls'],
-                      authid=user,
-                      authextra=authextra) 
+        if auth == AUTH_NONE:
+            accepted_method = "anonymous"
+            authID = None
         else:
-            raise Exception("Invalid authentication: "+auth)
+            authID = self.config.extra["ID"]
+            if auth == AUTH_PSK:
+                accepted_method = "wampcra"
+            elif auth in SSL_AUTHENTICATION_TYPES:
+                accepted_method = "tls"
+            else:
+                raise Exception("Invalid authentication: "+auth)
+
+        self.join(self.config.realm,
+                  authmethods=[accepted_method],
+                  authid=authID)
 
     def onChallenge(self, challenge):
         if challenge.method == "wampcra":

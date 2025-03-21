@@ -31,7 +31,7 @@ from threading import Thread, Event
 
 from twisted.internet import reactor, threads
 from twisted.internet._sslverify import OpenSSLCertificateAuthorities
-from twisted.internet.ssl import optionsForClientTLS, VerificationError
+from twisted.internet.ssl import PrivateCertificate, optionsForClientTLS, VerificationError
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
@@ -50,10 +50,30 @@ _WampConnectEvent = Event()
 _WampError = ""
 
 
+AUTH_NONE = "None"
+AUTH_PSK =  "PSK"
+AUTH_CLIENTCERT = "ClientCertificate"
+AUTHENTICATION_TYPES = [AUTH_NONE, AUTH_PSK, AUTH_CLIENTCERT]
+SSL_AUTHENTICATION_TYPES = [AUTH_CLIENTCERT]
+
 class WampSession(wamp.ApplicationSession):
     def onConnect(self):
-        user = self.config.extra["IDE_ID"]
-        self.join(self.config.realm, ["wampcra"], user)
+        auth = self.config.extra["authentication"]
+        if auth == AUTH_NONE:
+            accepted_method = "anonymous"
+            authID = None
+        else:
+            authID = self.config.extra["IDE_ID"]
+            if auth == AUTH_PSK:
+                accepted_method = "wampcra"
+            elif auth in SSL_AUTHENTICATION_TYPES:
+                accepted_method = "tls"
+            else:
+                raise Exception("Invalid authentication: "+auth)
+
+        self.join(self.config.realm,
+                  authmethods=[accepted_method],
+                  authid=authID)
 
     def onChallenge(self, challenge):
         if challenge.method == "wampcra":
@@ -112,17 +132,28 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
     """
     WAMP://127.0.0.1:12345/path#realm#PLC_ID
     WAMPS://127.0.0.1:12345/path#realm#PLC_ID
+    WAMP-CRT://127.0.0.1:12345/path#realm#PLC_ID
     """
     scheme, location = uri.split("://")
     urlpath, realm, PLC_ID = location.split('#')
-    urlprefix = {"WAMP":  "ws",
-                 "WAMPS": "wss"}[scheme]
+    urlprefix                  , ssl_auth, use_secret, use_ssl, verify, auth            = {
+        "WAMP":          ("ws" , 0       , 1         , 0      , 0     , AUTH_PSK        ),
+        "WAMP-ANNON":    ("ws" , 0       , 0         , 0      , 0     , AUTH_NONE       ),
+        "WAMPS":         ("wss", 0       , 1         , 1      , 1     , AUTH_PSK        ),
+        "WAMPS-ANNON":   ("wss", 0       , 0         , 1      , 1     , AUTH_NONE       ),
+        "WAMPS-INSECURE":("wss", 0       , 0         , 1      , 0     , AUTH_NONE       ),
+        "WAMPS-NOVERIFY":("wss", 0       , 1         , 1      , 0     , AUTH_PSK        ),
+        "WAMPS-CRT":     ("wss", 1       , 0         , 1      , 1     , AUTH_CLIENTCERT ),
+        }[scheme]
     url = urlprefix+"://"+urlpath
     CN = urlpath.split("/")[0].split(":")[0]
     try:
-
         IDE_ID, secret = PSK.GetIDEIdentity()
-        trust_store = Cert.GetCertPath(CN)
+        if use_ssl:
+            trust_store = Cert.GetCertPath(CN)
+            if ssl_auth:
+                client_cert_file = Cert.GetClientCert()
+
     except Exception as e:
         confnodesroot.logger.write_error(
             _("Connection to {loc} failed with exception {ex}\n").format(
@@ -134,15 +165,17 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
         # start logging to console
         # log.startLogging(sys.stdout)
 
+        extraconf={
+            "IDE_ID": IDE_ID,
+            "authentication": auth
+        }
+        if use_secret:
+            extraconf["secret"] = secret
         # create a WAMP application session factory
-        component_config = types.ComponentConfig(
-            realm=str(realm),
-            extra={
-                "IDE_ID": IDE_ID,
-                "secret": secret
-            })
         session_factory = wamp.ApplicationSessionFactory(
-            config=component_config)
+            config=types.ComponentConfig(
+                realm=str(realm),
+                extra=extraconf))
         session_factory.session = cls
 
         # create a WAMP-over-WebSocket transport client factory
@@ -153,17 +186,25 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
         contextFactory=None
         if transport_factory.isSecure:
+
+            client_cert=None
             trustRoot=None
-            if trust_store:
-                if os.path.exists(trust_store):
-                    cert = crypto.load_certificate(
-                        crypto.FILETYPE_PEM,
-                        open(trust_store, 'rb').read()
-                    )
-                    trustRoot=OpenSSLCertificateAuthorities([cert])
+            if ssl_auth:
+                if os.path.exists(client_cert_file):
+                    client_cert = PrivateCertificate.loadPEM(open(client_cert_file, 'rb').read())
                 else:
-                    confnodesroot.logger.write_warning("Wamp trust store not found")
-            contextFactory = optionsForClientTLS(transport_factory.host, trustRoot=trustRoot)
+                    confnodesroot.logger.write_error(
+                        _("WAMP client certificate not provided for: {loc}\n").format(loc=uri))
+                    return
+            if verify:
+                if os.path.exists(trust_store):
+                    cert = crypto.load_certificate(crypto.FILETYPE_PEM,
+                        open(trust_store, 'rb').read())
+                    trustRoot = OpenSSLCertificateAuthorities([cert])
+            if verify or ssl_auth:
+                contextFactory=optionsForClientTLS(transport_factory.host,
+                                                   trustRoot=trustRoot,
+                                                   clientCertificate=client_cert)
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory, contextFactory)
