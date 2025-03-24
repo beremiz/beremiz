@@ -539,7 +539,7 @@ def wampConfig(**kwargs):
             tmpConf = newConfig
             while argname_path:
                 tmpConf = tmpConf.setdefault(argname_path.pop(0), {})
-            tmpConf[arg_last] = arg
+            tmpConf[arg_last] = arg.decode() if type(arg)==bytes else arg
 
     SetConfiguration(newConfig)
 

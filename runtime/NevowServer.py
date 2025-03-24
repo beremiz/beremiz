@@ -224,9 +224,9 @@ class SettingsPage(StyledSettingsPage):
         return ConfigurableSettings
 
     def sendLogMessage(self, level, message, **kwargs):
-        level = LogLevelsDict[level]
+        level = LogLevelsDict[level.decode()]
         GetPLCObjectSingleton().LogMessage(
-            level, "Web form log message: " + message)
+            level, "Web form log message: " + message.decode())
 
     def restartOrRepairPLC(self, action, **kwargs):
         if(action == "Repair"):
