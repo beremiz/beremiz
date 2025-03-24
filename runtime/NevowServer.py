@@ -178,7 +178,6 @@ CSS_tags = [tags.link(rel='stylesheet',
                       type='text/css',
                       href=url.here.child("webinterface_css"))]
 
-@implementer(ISettings)
 class StyledSettingsPage(rend.Page):
     addSlash = True
 
@@ -186,6 +185,7 @@ class StyledSettingsPage(rend.Page):
     child_webform_css = webform.defaultCSS
     child_webinterface_css = File(paths.AbsNeighbourFile(__file__, 'webinterface.css'), 'text/css')
 
+@implementer(ISettings)
 class SettingsPage(StyledSettingsPage):
    
     def extensions_settings(self, context, data):
