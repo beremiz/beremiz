@@ -69,7 +69,9 @@ class WampSession(wamp.ApplicationSession):
             elif auth in SSL_AUTHENTICATION_TYPES:
                 accepted_method = "tls"
             else:
-                raise Exception("Invalid authentication: "+auth)
+                log = self.config.extra["log"]
+                log.write_error("WAMP Invalid authentication: %s\n"%auth)
+                return
 
         self.join(self.config.realm,
                   authmethods=[accepted_method],
@@ -91,13 +93,15 @@ class WampSession(wamp.ApplicationSession):
             signature = auth.compute_wcs(key, challenge.extra['challenge'])
             return signature
         else:
-            raise Exception("Invalid authmethod {}".format(challenge.method))
+            log = self.config.extra["log"]
+            log.write_error("Invalid authmethod {}\n".format(challenge.method))
 
     def onJoin(self, details):
         global _WampSession, _WampConnectEvent
         _WampSession = self
         _WampConnectEvent.set()
-        print('WAMP session joined for: ', self.config.extra["IDE_ID"])
+        log = self.config.extra["log"]
+        log.write('WAMP session joined for: %s\n'%self.config.extra["IDE_ID"])
 
     def onLeave(self, details):
         global _WampSession, _WampError, _WampConnectEvent
@@ -107,7 +111,10 @@ class WampSession(wamp.ApplicationSession):
         elif details.reason == "wamp.error.not_authorized":
             _WampError = "WAMP authentication failed. Check IDE identity in security manager."
         else:
-            _WampError = f"WAMP closed with error {details.reason}: {details.message}"
+            _WampError = "WAMP closed with error {}: {}".format(details.reason, details.message)
+            # this case can go silent if connection was already established, so log it additionally.
+            log = self.config.extra["log"]
+            log.write_error(_WampError+"\n")
         _WampConnectEvent.set()
 
 
@@ -167,7 +174,8 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
         extraconf={
             "IDE_ID": IDE_ID,
-            "authentication": auth
+            "authentication": auth,
+            "log": confnodesroot.logger
         }
         if use_secret:
             extraconf["secret"] = secret
@@ -247,7 +255,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
             # reactor.stop()
 
         def WampSessionProcMapper(self, funcname):
-            wampfuncname = str('.'.join((PLC_ID, funcname)))
+            wampfuncname = '.'.join((PLC_ID, funcname))
 
             def catcher_func(*args, **kwargs):
                 if _WampSession is not None:

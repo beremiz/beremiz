@@ -10,9 +10,11 @@ import time
 import json
 from zipfile import ZipFile
 from cryptography import x509
+from twisted.internet.ssl import PrivateCertificate
 from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
+import OpenSSL
 
 from util.paths import AppDataPath
 
@@ -176,7 +178,8 @@ def GetClientCertificateInfo():
         try:
             with open(file_path, "rb") as cert_file:
                 cert_data = cert_file.read()
-            cert = x509.load_pem_x509_certificate(cert_data, default_backend())
+            client_cert = PrivateCertificate.loadPEM(cert_data)
+            cert = client_cert.original.to_cryptography()
 
             # Support for legacy common name
             common_names = cert.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)
@@ -193,6 +196,8 @@ def GetClientCertificateInfo():
             info += "Fingerprint: %s\n"%cert.fingerprint(hashes.SHA256()).hex()
             info += "Creation date: %s\n"%cert.not_valid_before.isoformat()
             info += "Expiration date: %s\n"%cert.not_valid_after.isoformat()
+        except OpenSSL.crypto.Error:
+            info += "Imported PEM is invalid, it must contain Certificate and Private Key.\n"
         except Exception as e:
             info += "Error while loading certificate: %s\n"%str(e)
             print(e.__class__)

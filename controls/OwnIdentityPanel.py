@@ -125,7 +125,7 @@ class OwnIdentityPanel(wx.Panel):
 
     def OnImportClientCertButton(self, event):
         dialog = wx.FileDialog(self, _("Choose a file"),
-            wildcard=_("Certificate files (*.crt)|*.crt|All files|*.*"),
+            wildcard=_("Certificate files (*.pem)|*.pem|All files|*.*"),
             style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
         if dialog.ShowModal() == wx.ID_OK:
             if self._confirm_overwrite_identity():
