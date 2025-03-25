@@ -26,3 +26,5 @@ doc/_build
 doc/locale
 
 ^.*\$py.class$
+
+tests/tools/Docker/requirements.txt
