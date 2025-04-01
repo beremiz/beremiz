@@ -136,24 +136,34 @@ class ComplainingWampWebSocketClientFactory(WampWebSocketClientFactory):
     clientConnectionFailed = clientConnectionLost
 
 def _WAMP_connector_factory(cls, uri, confnodesroot):
-    """
-    WAMP://127.0.0.1:12345/path#realm#PLC_ID
+    __doc__ = """
+    Expected URI format:
+
     WAMPS://127.0.0.1:12345/path#realm#PLC_ID
-    WAMP-CRT://127.0.0.1:12345/path#realm#PLC_ID
+
+    Accepted schemes: WAMP WAMP-ANNON WAMPS WAMPS-ANNON WAMPS-INSECURE WAMPS-NOVERIFY WAMPS-CRT
     """
-    scheme, location = uri.split("://")
-    urlpath, realm, PLC_ID = location.split('#')
-    urlprefix                  , ssl_auth, use_secret, use_ssl, verify, auth            = {
-        "WAMP":          ("ws" , 0       , 1         , 0      , 0     , AUTH_PSK        ),
-        "WAMP-ANNON":    ("ws" , 0       , 0         , 0      , 0     , AUTH_NONE       ),
-        "WAMPS":         ("wss", 0       , 1         , 1      , 1     , AUTH_PSK        ),
-        "WAMPS-ANNON":   ("wss", 0       , 0         , 1      , 1     , AUTH_NONE       ),
-        "WAMPS-INSECURE":("wss", 0       , 0         , 1      , 0     , AUTH_NONE       ),
-        "WAMPS-NOVERIFY":("wss", 0       , 1         , 1      , 0     , AUTH_PSK        ),
-        "WAMPS-CRT":     ("wss", 1       , 0         , 1      , 1     , AUTH_CLIENTCERT ),
-        }[scheme]
-    url = urlprefix+"://"+urlpath
-    CN = urlpath.split("/")[0].split(":")[0]
+
+    try:
+        scheme, location = uri.split("://")
+        urlpath, realm, PLC_ID = location.split('#')
+        urlprefix                  , ssl_auth, use_secret, use_ssl, verify, auth            = {
+            "WAMP":          ("ws" , 0       , 1         , 0      , 0     , AUTH_PSK        ),
+            "WAMP-ANNON":    ("ws" , 0       , 0         , 0      , 0     , AUTH_NONE       ),
+            "WAMPS":         ("wss", 0       , 1         , 1      , 1     , AUTH_PSK        ),
+            "WAMPS-ANNON":   ("wss", 0       , 0         , 1      , 1     , AUTH_NONE       ),
+            "WAMPS-INSECURE":("wss", 0       , 0         , 1      , 0     , AUTH_NONE       ),
+            "WAMPS-NOVERIFY":("wss", 0       , 1         , 1      , 0     , AUTH_PSK        ),
+            "WAMPS-CRT":     ("wss", 1       , 0         , 1      , 1     , AUTH_CLIENTCERT ),
+            }[scheme]
+        url = urlprefix+"://"+urlpath
+        CN = urlpath.split("/")[0].split(":")[0]
+    except Exception as e:
+        confnodesroot.logger.write_error(
+            _("Malformed URI: {uri} failure: {ex}\n").format(
+                uri=uri, ex=str(e)) + __doc__)
+        return None
+        
     try:
         IDE_ID, secret = PSK.GetIDEIdentity()
         if use_ssl:
@@ -163,8 +173,8 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
     except Exception as e:
         confnodesroot.logger.write_error(
-            _("Connection to {loc} failed with exception {ex}\n").format(
-                loc=uri, ex=str(e)))
+            _("Connection to {uri} ({url}) failed with exception {ex}\n").format(
+                uri=uri, url=url, ex=str(e)))
         return None
 
     def RegisterWampClient():
@@ -202,7 +212,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
                     client_cert = PrivateCertificate.loadPEM(open(client_cert_file, 'rb').read())
                 else:
                     confnodesroot.logger.write_error(
-                        _("WAMP client certificate not provided for: {loc}\n").format(loc=uri))
+                        _("WAMP client certificate not provided for: {CN}\n").format(CN=CN))
                     return
             if verify:
                 if os.path.exists(trust_store):
@@ -216,7 +226,7 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
 
         # start the client from a Twisted endpoint
         conn = connectWS(transport_factory, contextFactory)
-        confnodesroot.logger.write(_("WAMP connecting to URL : %s\n") % url)
+        confnodesroot.logger.write(_("WAMP connecting to: %s\n") % uri)
         return conn
 
 
