@@ -692,4 +692,5 @@ def RegisterWebSettings(NS):
 
     WebSettings.addCustomURL(WAMP_SECRET_URL, deliverWampSecret)
     WebSettings.addCustomURL(WAMP_DELETE_TRUSTSTORE_URL, deleteTrustStore)
+    WebSettings.addCustomURL(WAMP_DELETE_CLIENTCERT_URL, deleteClientCert)
 
