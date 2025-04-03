@@ -267,7 +267,7 @@ def GetConfiguration():
 
     WampClientConf = None
 
-    if os.path.exists(_WampConf):
+    if _WampConf and os.path.exists(_WampConf):
         try:
             WampClientConf = json.load(open(_WampConf))
             UpdateWithDefault(WampClientConf, defaultWampConfig)
@@ -315,24 +315,12 @@ def IsCorrectUri(uri):
     return re.match(r'wss?://[^\s?:#-]+(:[0-9]+)?(/[^\s]*)?$', uri) is not None
 
 
-def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
-    from twisted.internet import reactor
-    global _WampConf, _WampSecret, _WampSercretFile, _WampClientCert, _WampTrust, defaultWampConfig
-
-    if servicename:
-        defaultWampConfig["ID"] = servicename
+def PrepWampClientConfig(wampconf, ConfDir):
+    global _WampConf
 
     ConfDir = ConfDir if ConfDir else WorkingDir
-    KeyStore = KeyStore if KeyStore else WorkingDir
 
     _WampConfDefault = os.path.join(ConfDir, "wampconf.json")
-    _WampSecretDefault = os.path.join(KeyStore, "wamp.secret")
-
-    if _WampClientCert is None:
-        _WampClientCert = os.path.join(KeyStore, "wampClientCert.pem")
-
-    if _WampTrust is None:
-        _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
 
     # set config file path only if not already set
     if _WampConf is None:
@@ -342,7 +330,27 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
         else:
             _WampConf = wampconf
 
-    WampClientConf = GetConfiguration()
+    return GetConfiguration()
+
+def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
+    from twisted.internet import reactor
+    global _WampConf, _WampSecret, _WampSercretFile, _WampClientCert, _WampTrust, defaultWampConfig
+
+    if servicename:
+        defaultWampConfig["ID"] = servicename
+
+    WampClientConf = PrepWampClientConfig(wampconf, ConfDir)
+
+    KeyStore = KeyStore if KeyStore else WorkingDir
+
+    _WampSecretDefault = os.path.join(KeyStore, "wamp.secret")
+
+    if _WampClientCert is None:
+        _WampClientCert = os.path.join(KeyStore, "wampClientCert.pem")
+
+    if _WampTrust is None:
+        _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
+
 
     if not WampClientConf["active"]:
         print("WAMP deactivated in configuration")
@@ -370,7 +378,6 @@ def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=No
 
     reactor.callInThread(_RegisterWampClient)
 
-    return WampClientConf
 
 def _RegisterWampClient():
     global _WampSecret, _transportFactory
@@ -407,8 +414,8 @@ def _RegisterWampClient():
                 if os.path.exists(_WampClientCert):
                     client_cert = PrivateCertificate.loadPEM(open(_WampClientCert, 'rb').read())
                 else:
-                    GetPLCObjectSingleton().LogMessage(LogLevelsDict["ERROR"], 
-                        "WAMP client certificate not provided for:", WampClientConf["url"])
+                    GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                        "WAMP client certificate not provided for: " + WampClientConf["url"])
                     return
             if verify:
                 if os.path.exists(_WampTrust):
@@ -422,15 +429,15 @@ def _RegisterWampClient():
         else:
             # non encrypted connection is not accepted in case some security is requested
             if auth != AUTH_NONE or verify:
-                GetPLCObjectSingleton().LogMessage(LogLevelsDict["ERROR"], 
-                    "WAMP connection must be secure:", WampClientConf["url"])
+                GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                    "WAMP connection must be secure: " + WampClientConf["url"])
                 return
 
         connectWS(_transportFactory, contextFactory)
-        print("WAMP client connecting to :", WampClientConf["url"])
+        print("WAMP client connecting to: " + WampClientConf["url"])
     else:
         GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
-            "WAMP configuration invalid:", WampClientConf["url"])
+            "WAMP configuration invalid: " + WampClientConf["url"])
 
 def StopReconnectWampClient():
     if _transportFactory is not None:
