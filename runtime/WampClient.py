@@ -59,10 +59,12 @@ WorkingDir = None
 
 # Find pre-existing project WAMP config file
 _WampConf = None
-_WampSercretFile = None
+_WampSecretFile = None
 _WampSecret = None
 _WampTrust = None
 _WampClientCert = None
+_UsedWampTrust = None
+_UsedWampClientCert = None
 
 ExposedCalls = [
     ("StartPLC", {}),
@@ -239,16 +241,14 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
     def clientConnectionFailed(self, connector, reason):
         print("WAMP Client connection failed (%s) .. retrying .." %
               time.ctime())
-        super(ReconnectingWampWebSocketClientFactory,
-              self).clientConnectionFailed(connector, reason)
         self._clientConnectionLostOrFailed(connector, reason)
+        return ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
         print("WAMP Client connection lost (%s) .. retrying .." %
               time.ctime())
-        super(ReconnectingWampWebSocketClientFactory,
-              self).clientConnectionFailed(connector, reason)
         self._clientConnectionLostOrFailed(connector, reason)
+        return ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
 
 def CheckConfiguration(WampClientConf):
@@ -297,7 +297,9 @@ def SetConfiguration(WampClientConf):
 
     with open(os.path.realpath(_WampConf), 'w') as f:
         json.dump(WampClientConf, f, sort_keys=True, indent=4)
+
     StopReconnectWampClient()
+
     if 'active' in WampClientConf and WampClientConf['active']:
         StartReconnectWampClient()
 
@@ -314,74 +316,71 @@ def LoadWampSecret(secretfname):
 def IsCorrectUri(uri):
     return re.match(r'wss?://[^\s?:#-]+(:[0-9]+)?(/[^\s]*)?$', uri) is not None
 
+_RegisterWampClientArgs = None
+def RegisterWampClient(*a,**kw):
+    from twisted.internet import reactor
+    global _RegisterWampClientArgs
+    _RegisterWampClientArgs = (a,kw)
+    reactor.callFromThread(_RegisterWampClient)
+    
 
-def PrepWampClientConfig(wampconf, ConfDir):
-    global _WampConf
+def ApplyWampClientConfig(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
+    global _WampConf, _WampSecret, _WampSecretFile, _WampClientCert, _WampTrust, defaultWampConfig
+    global _UsedWampClientCert, _UsedWampTrust
+
+    if servicename:
+        defaultWampConfig["ID"] = servicename
 
     ConfDir = ConfDir if ConfDir else WorkingDir
 
     _WampConfDefault = os.path.join(ConfDir, "wampconf.json")
 
-    # set config file path only if not already set
-    if _WampConf is None:
-        # default project's wampconf has precedance over commandline given
-        if os.path.exists(_WampConfDefault) or wampconf is None:
-            _WampConf = _WampConfDefault
-        else:
-            _WampConf = wampconf
+    # default project's wampconf has precedance over commandline given
+    if os.path.exists(_WampConfDefault) or wampconf is None:
+        _WampConf = _WampConfDefault
+    else:
+        _WampConf = wampconf
 
-    return GetConfiguration()
-
-def RegisterWampClient(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
-    from twisted.internet import reactor
-    global _WampConf, _WampSecret, _WampSercretFile, _WampClientCert, _WampTrust, defaultWampConfig
-
-    if servicename:
-        defaultWampConfig["ID"] = servicename
-
-    WampClientConf = PrepWampClientConfig(wampconf, ConfDir)
+    WampClientConf = GetConfiguration()
 
     KeyStore = KeyStore if KeyStore else WorkingDir
 
     _WampSecretDefault = os.path.join(KeyStore, "wamp.secret")
 
-    if _WampClientCert is None:
-        _WampClientCert = os.path.join(KeyStore, "wampClientCert.pem")
+    _WampClientCert = os.path.join(KeyStore, "wampClientCert.pem")
+    _UsedWampClientCert = _WampClientCert
+    _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
+    _UsedWampTrust = _WampTrust
 
-    if _WampTrust is None:
-        _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
+    # default project's wamp secret also
+    # has precedance over commandline given
+    if os.path.exists(_WampSecretDefault):
+        _WampSecretFile = _WampSecretDefault
+    else:
+        _WampSecretFile = wampsecret
 
+    if _WampSecretFile is not None:
+        if _WampSecretFile == _WampSecretDefault:
+            # secret from project dir is raw (no ID prefix)
+            _WampSecret = LoadWampSecret(_WampSecretFile)
+        else:
+            # secret from command line is formated ID:PSK
+            # fall back to PSK data (works because wampsecret is PSKpath)
+            _ID, _WampSecret = getPSKID()
 
     if not WampClientConf["active"]:
         print("WAMP deactivated in configuration")
         return
 
-    # set secret file path only if not already set
-    if _WampSercretFile is None:
-        # default project's wamp secret also
-        # has precedance over commandline given
-        if os.path.exists(_WampSecretDefault):
-            _WampSercretFile = _WampSecretDefault
-        else:
-            _WampSercretFile = wampsecret
-
-    if _WampSercretFile is not None:
-        if _WampSercretFile == _WampSecretDefault:
-            # secret from project dir is raw (no ID prefix)
-            _WampSecret = LoadWampSecret(_WampSercretFile)
-        else:
-            # secret from command line is formated ID:PSK
-            # fall back to PSK data (works because wampsecret is PSKpath)
-            _ID, _WampSecret = getPSKID()
-    else:
-        raise Exception(_("WAMP no secret file given"))
-
-    reactor.callInThread(_RegisterWampClient)
-
+    return WampClientConf
 
 def _RegisterWampClient():
-    global _WampSecret, _transportFactory
-    WampClientConf = GetConfiguration()
+    global _WampSecret, _transportFactory, _RegisterWampClientArgs
+
+    a,kw = _RegisterWampClientArgs
+    WampClientConf = ApplyWampClientConfig(*a, **kw)
+    if WampClientConf is None:
+        return # in case Wamp is not activated
 
     WampClientConf["secret"] = _WampSecret
 
@@ -411,16 +410,16 @@ def _RegisterWampClient():
             trustRoot=None
             ssl_auth = auth in SSL_AUTHENTICATION_TYPES
             if ssl_auth:
-                if os.path.exists(_WampClientCert):
-                    client_cert = PrivateCertificate.loadPEM(open(_WampClientCert, 'rb').read())
+                if os.path.exists(_UsedWampClientCert):
+                    client_cert = PrivateCertificate.loadPEM(open(_UsedWampClientCert, 'rb').read())
                 else:
                     GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
                         "WAMP client certificate not provided for: " + WampClientConf["url"])
                     return
             if verify:
-                if os.path.exists(_WampTrust):
+                if os.path.exists(_UsedWampTrust):
                     cert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                        open(_WampTrust, 'rb').read())
+                        open(_UsedWampTrust, 'rb').read())
                     trustRoot = OpenSSLCertificateAuthorities([cert])
             if verify or ssl_auth:
                 contextFactory=optionsForClientTLS(_transportFactory.host,
@@ -440,24 +439,17 @@ def _RegisterWampClient():
             "WAMP configuration invalid: " + WampClientConf["url"])
 
 def StopReconnectWampClient():
-    if _transportFactory is not None:
-        _transportFactory.stopTrying()
+    global _WampSession, _transportFactory
     if _WampSession is not None:
         _WampSession.leave()
-
+    _WampSession = None
+    if _transportFactory is not None:
+        _transportFactory.stopTrying()
+    _transportFactory = None
 
 def StartReconnectWampClient():
-    if _WampSession:
-        # do reconnect and reset continueTrying and initialDelay parameter
-        if _transportFactory is not None:
-            _transportFactory.resetDelay()
-        _WampSession.disconnect()
-        return True
-    else:
-        # do connect
-        _RegisterWampClient()
-        return True
-
+    from twisted.internet import reactor
+    reactor.callLater(1, _RegisterWampClient)
 
 def GetSession():
     return _WampSession
@@ -515,7 +507,10 @@ def wampConfig(**kwargs):
     if secretfile_field is not None:
         secretfile = getattr(secretfile_field, "file", None)
         if secretfile is not None:
-            with open(os.path.realpath(_WampSercretFile), 'w') as destfd:
+            if _WampSecretFile is None:
+                raise annotate.ValidateError({},
+                    "No keystore available to store secret. Use -s option to set it.")
+            with open(os.path.realpath(_WampSecretFile), 'w') as destfd:
                 secretfile.seek(0)
                 shutil.copyfileobj(secretfile,destfd)
 
@@ -674,7 +669,9 @@ def deliverWampSecret(ctx, segments):
 
     # TODO: make beautifull message in case of exception
     # while loading secret (if empty or dont exist)
-    secret = LoadWampSecret(_WampSercretFile)
+    if _WampSecretFile is None:
+        return None
+    secret = LoadWampSecret(_WampSecretFile)
     return static.Data(secret, 'application/octet-stream'), ()
 
 def deleteClientCert(ctx, segments):
