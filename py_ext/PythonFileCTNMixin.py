@@ -298,7 +298,7 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
         varpubonchangefmt = """\
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
         IEC_%(IECtype)s tmp = __GET_VAR(%(configname)s__%(uppername)s);
-        if(NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
+        if(___NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
             if(__%(name)s_rbuffer_written == 0);
                 __%(name)s_rbuffer_firstval = __%(name)s_rbuffer;
             __%(name)s_rbuffer_lastval = tmp;
