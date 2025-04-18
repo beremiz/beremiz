@@ -14,6 +14,8 @@
 
 #include "POUS.h"
 
+extern char *PLC_ID;
+
 #define _Log(level, ...)                                                                          \
     {{                                                                                            \
         char mstr[256];                                                                           \
@@ -509,7 +511,7 @@ static void *__MQTT_thread_proc(void *_unused) {{
 int __init_{locstr}(int argc,char **argv)
 {{
     char *uri = "{uri}";
-    char *clientID = "{clientID}";
+    char *clientID = {clientID};
     int rc;
 
     MQTTClient_createOptions createOpts = MQTTClient_createOptions_initializer;

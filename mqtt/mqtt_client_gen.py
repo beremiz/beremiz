@@ -373,7 +373,6 @@ class MQTTClientModel(dict):
             name            = name,
             locstr          = locstr,
             uri             = config["URI"],
-            clientID        = config["clientID"],
             decl            = "",
             topics          = "",
             cleanup         = "",
@@ -384,6 +383,10 @@ class MQTTClientModel(dict):
             publish_changes = "",
             json_decl       = ""
         )
+
+
+        clientID = config["clientID"]
+        formatdict["clientID"] = '"'+clientID+'"' if len(clientID) > 0 else "PLC_ID"
 
 
         # Use Config's "MQTTVersion" to switch between protocol version at build time
