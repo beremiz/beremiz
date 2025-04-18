@@ -356,6 +356,11 @@ class MQTTClientModel(dict):
                 for row in data:
                     writer.writerow([direction] + row)
 
+    def SanitizeTopic(self, config, topic):
+        # TODO deal with escaped and unsupported chars
+        #      shall we check for "/" at the beginning ?
+        return topic
+
     def GenerateC(self, name, path, locstr, config, datatype_info_getter):
         c_template_filepath = paths.AbsNeighbourFile(__file__, "mqtt_template.c")
         c_template_file = open(c_template_filepath , 'rb')
@@ -404,6 +409,7 @@ class MQTTClientModel(dict):
 
         for row in self["output"]:
             Topic, QoS, _Retained, iec_type, iec_number = row
+            Topic = self.SanitizeTopic(config, Topic)
             Retained = 1 if _Retained=="True" else 0
             if iec_type in MQTT_IEC_types:
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
@@ -431,6 +437,7 @@ DECL_VAR({iec_type}, {C_type}, {c_loc_name})""".format(**locals())
         # inputs need to be sorted for bisection search
         for row in sorted(self["input"]):
             Topic, QoS, iec_type, iec_number = row
+            Topic = self.SanitizeTopic(config, Topic)
             if iec_type in MQTT_IEC_types:
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = "__I" + iec_size_prefix + locstr + "_" + str(iec_number)
