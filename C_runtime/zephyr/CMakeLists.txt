@@ -44,6 +44,19 @@ else()
     ${PLC_C_FILES}
   )
 
+  # Inherit Zephyr compiler flags
+  target_include_directories(softplc PRIVATE
+    $<TARGET_PROPERTY:zephyr_interface,INTERFACE_INCLUDE_DIRECTORIES>
+  )
+  target_compile_options(softplc PRIVATE
+    $<TARGET_PROPERTY:zephyr_interface,INTERFACE_COMPILE_OPTIONS>
+  )
+
+  # Ensure zephyr interface is built before the PLC code
+  add_dependencies(softplc
+    zephyr_interface
+  )
+
   set(plc_target softplc)
 
 endif()
