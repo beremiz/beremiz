@@ -39,13 +39,13 @@ static int PLC_shutdown = 0;
 
 long AtomicCompareExchange(long *atomicvar, long compared, long exchange)
 {
-	return __atomic_compare_exchange_n(atomicvar, &compared, exchange,
-									   0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	__atomic_compare_exchange_n(atomicvar, &compared, exchange, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	return compared;
 }
 long long AtomicCompareExchange64(long long *atomicvar, long long compared, long long exchange)
 {
-	return __atomic_compare_exchange_n(atomicvar, &compared, exchange,
-									   0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	__atomic_compare_exchange_n(atomicvar, &compared, exchange, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	return compared;
 }
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
