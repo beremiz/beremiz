@@ -233,7 +233,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
             self.ConfNodeParamsSizer = wx.BoxSizer(wx.VERTICAL)
             self.ParamsEditorSizer.Add(self.ConfNodeParamsSizer, border=5,
-                                            flag=wx.LEFT | wx.RIGHT | wx.BOTTOM)
+                                            flag= wx.GROW | wx.LEFT | wx.RIGHT | wx.BOTTOM)
 
             self.RefreshConfNodeParamsSizer()
 
@@ -376,7 +376,7 @@ class ConfTreeNodeEditor(EditorPanel):
                     doc_cp = wx.CollapsiblePane(self.ParamsEditor, label=sample_label,
                                             style=wx.CP_DEFAULT_STYLE|wx.CP_NO_TLW_RESIZE)
                     doc_cp.SetBackgroundColour(wx.NullColour)
-                    def OnPaneChanged(evt=None):
+                    def OnPaneChanged(evt=None, doc_cp=doc_cp, sample_label=sample_label):
                         self.ParamsEditor.Layout()
                         self.ParamsEditor.FitInside()
                         if doc_cp.IsExpanded():
@@ -390,7 +390,16 @@ class ConfTreeNodeEditor(EditorPanel):
 
                 doc_p.SetBackgroundColour(wx.NullColour)
                 doc_cp.SetFont(wx.Font(wx.FontInfo(faces["size"] // 2)))
-                statictext = wx.StaticText(doc_p, label=doc_content)
+                # Dirty hack to force TextCtrl to correct size (https://forums.wxwidgets.org/viewtopic.php?t=44472)
+                _statictext = wx.StaticText(doc_p, label=doc_content)
+                statictext = wx.TextCtrl(parent=doc_p, value=doc_content, size=_statictext.GetSize(),
+                                         style=wx.BORDER_NONE | wx.TE_READONLY | wx.TE_MULTILINE | wx.TE_NO_VSCROLL)
+                statictext.SetFont(_statictext.GetFont())
+                statictext.SetForegroundColour(_statictext.GetForegroundColour())
+                _statictext.Destroy()
+                del _statictext
+                
+                
                 border = wx.BoxSizer()
                 border.Add(statictext, 1, wx.EXPAND|wx.ALL, 5)
                 doc_p.SetSizer(border)
@@ -398,6 +407,8 @@ class ConfTreeNodeEditor(EditorPanel):
             flags = (wx.GROW | wx.LEFT | wx.RIGHT)
             if first:
                 flags |= wx.TOP
+            else:
+                sizer.Add(wx.StaticLine(self.ParamsEditor), flag=wx.EXPAND | wx.ALL, border=5)
 
             if element_infos["type"] == "element":
                 name = element_infos["name"]
@@ -443,7 +454,6 @@ class ConfTreeNodeEditor(EditorPanel):
                     nextsizer = boxsizer
 
                 value_ctrl = None
-                value_ctrl_flag = 0
 
                 if isinstance(element_infos["type"], list):
                     if isinstance(element_infos["value"], tuple):
@@ -521,7 +531,6 @@ class ConfTreeNodeEditor(EditorPanel):
                     if element_infos["type"] == "boolean":
                         checkbox = wx.CheckBox(self.ParamsEditor)
                         value_ctrl = checkbox
-                        value_ctrl_flag = wx.ALIGN_CENTER_VERTICAL | wx.RIGHT
                         if element_infos["value"] is not None:
                             checkbox.SetValue(element_infos["value"])
                         checkbox.Bind(wx.EVT_CHECKBOX,
@@ -558,7 +567,7 @@ class ConfTreeNodeEditor(EditorPanel):
                             uriSizer.AddGrowableCol(0)
                             uriSizer.AddGrowableRow(0)
 
-                            self.EditButton = wx.Button(self.ParamsEditor, label='...', size=wx.Size(30, -1))
+                            self.EditButton = wx.Button(self.ParamsEditor, label=' ... ', size=wx.Size(-1, -1), style=wx.BU_EXACTFIT)
                             self.Bind(wx.EVT_BUTTON, self.UriOptions, self.EditButton)
 
                             uriSizer.Add(textctrl, flag=wx.GROW)
@@ -575,7 +584,7 @@ class ConfTreeNodeEditor(EditorPanel):
                         textctrl.Bind(wx.EVT_TEXT, callback)
                         textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
 
-                nextsizer.Add(value_ctrl, flag=value_ctrl_flag)
+                nextsizer.Add(value_ctrl, flag= wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT)
 
                 if not isinstance(element_infos["type"], list) and element_infos.get("use", None) == "optional":
                     undo_bt = wx.BitmapButton(self.ParamsEditor, 
@@ -588,6 +597,7 @@ class ConfTreeNodeEditor(EditorPanel):
                     nextsizer.Add(undo_bt, border=5, flag=wx.ALIGN_CENTER_VERTICAL | wx.LEFT)
                 else:
                     nextsizer.AddSpacer(16+5)
+                    
             first = False
         sizer.Layout()
         self.RefreshScrollbars()
