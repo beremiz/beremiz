@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <BeremizRoot URI_location="ERPC://192.168.1.28:3000">
   <TargetType>
-    <Zephyr>
+    <Zephyr VersionString="a.b.c">
       <Board>
         <NativeSimulation>
           <SimulationType>

@@ -30,14 +30,24 @@ class Zephyr_target(Builder):
     cflags=None
     user_dts=None
     user_conf=None
+    version_string=None
+    debug_build=None
+    verbose_build=None
+
 
     def _getConfig(self):
         target_cfg = self.CTRInstance.GetTarget().getcontent()
+        self.version_string = target_cfg.getVersionString()
+        self.debug_build = target_cfg.getDebugBuild()
+        self.verbose_build = target_cfg.getVerboseBuild()
+        
         board = target_cfg.getBoard()
         if board is None:
             return
         board_cfg = board.getcontent()
         self.board_name, self.options, self.cflags, self.user_dts, self.user_conf = GetZephyrBuildOptions(board_cfg.getLocalTag(),board_cfg)
+        if self.debug_build:
+            self.options.append("debug")
 
     def getDebugEnabled(self):
         self._getConfig()
@@ -61,7 +71,7 @@ class Zephyr_target(Builder):
         self.options.append(self.board_name)
         if "programmable" not in self.options:
             self.options.append("builtin")
-           
+
         log.write(f"Building Zephyr dependencies for board name: {self.board_name}\n")
 
         # Create Zephyr build instance
@@ -76,6 +86,10 @@ class Zephyr_target(Builder):
             return False
 
         PLC_CFLAGS = ["-Wno-double-promotion", "-Wno-unused-variable"] #TODO: Make this unnecessary
+        
+        if self.version_string:
+            PLC_CFLAGS += ["-DPLC_VERSION_STRING=" + self.version_string]
+           
         PLC_CFILES = []
         for _Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
             for CFile, CFLAGS in CFilesAndCFLAGS:
@@ -93,7 +107,7 @@ class Zephyr_target(Builder):
             # Build runtime and PLC
             binaries = zb.BuildPLC(PLC_CFILES, PLC_CFLAGS,
                                    self.cflags, self.user_dts, self.user_conf,
-                                   force = need_rebuild)
+                                   self.verbose_build, force = need_rebuild)
 
         except ZephyrBuildException as e:
             log.write_error(f"Error building Zephyr PLC: {e}\n")

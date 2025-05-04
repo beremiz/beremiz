@@ -238,10 +238,13 @@ class ZephyrBuildBase():
 
     def BuildPLC(self, plc_c_files, plc_c_flags,
                  user_c_flags, user_dts, user_conf,
-                 force=False):
+                 verbose_build, force=False):
         "Build Zephyr runtime and PLC"
         if force and exists(self.runtime_build):
             rmtree(self.runtime_build)
+            
+        if not exists(self.runtime_build):
+            os.makedirs(self.runtime_build)
 
         self.log.write("Building Beremiz runtime and PLC for Zephyr\n")
         
@@ -271,7 +274,9 @@ class ZephyrBuildBase():
                 f.write("\n".join(user_dts))
             dts_files.append(user_dts_path)
 
-        WestCommand = [
+        WestCommand = ['-v'] if verbose_build else []
+        
+        WestCommand += [
             'build',
             '-b', self.board,
             '-d', self.runtime_build,
