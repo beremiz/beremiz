@@ -3721,9 +3721,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>DropDown widget let user select an entry in a list of texts, given as
-</xsl:text>
-      <xsl:text>arguments. Single variable path is index of selection.
+      <xsl:text>DropDown widget can have one, two or three path variables.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -3735,7 +3733,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>When user clicks on "button", "text" is duplicated to display enties in the
+      <xsl:text>When user clicks on "button", "text" is duplicated to display entries in the
 </xsl:text>
       <xsl:text>limit of available space in page, and "box" is extended to contain all
 </xsl:text>
@@ -3743,19 +3741,47 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>When only one argument is given and argment contains "#langs" then list of
-</xsl:text>
-      <xsl:text>texts is automatically set to the human-readable list of supported
-</xsl:text>
-      <xsl:text>languages by this HMI. 
+      <xsl:text>The first variable path is index of selection, and the second is value of selection.
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>If "text" labeled element is of type svg:use and refers to a svg:text 
+      <xsl:text>In case there are one or two path variables, a list of texts is defined via
 </xsl:text>
-      <xsl:text>element part of a TextList widget, no argument is expected. In that case
+      <xsl:text>arguments.
 </xsl:text>
-      <xsl:text>list of texts is set to TextList content.
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If there are no arguments, it is expected that "text" labeled element is of
+</xsl:text>
+      <xsl:text>type svg:use and refers to a svg:text element part of a TextList widget.
+</xsl:text>
+      <xsl:text>In that case list of texts is set to TextList content.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>When only one argument is given and its value is "#langs" then list of
+</xsl:text>
+      <xsl:text>texts is automatically set to the human-readable list of supported
+</xsl:text>
+      <xsl:text>languages by this HMI.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Otherwise, arguments are used as dropdown options.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In case there are three path variables, arguments are not expected and ignored.
+</xsl:text>
+      <xsl:text>The third path variable is a string containing the list of entries.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Examples:
+</xsl:text>
+      <xsl:text>HMI:DropDown:Red:Green:Blue:Other@/SELECTED_INDEX@/SELECTED_VALUE
+</xsl:text>
+      <xsl:text>HMI:DropDown@/SELECTED_INDEX@/SELECTED_VALUE@/OPTIONS
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -3764,8 +3790,14 @@
     <arg name="entries" count="many" accepts="string">
       <xsl:text>drop-down menu entries</xsl:text>
     </arg>
-    <path name="selection" accepts="HMI_INT">
+    <path name="selected_inex" accepts="HMI_INT">
       <xsl:text>selection index</xsl:text>
+    </path>
+    <path name="selected_value" accepts="HMI_STRING">
+      <xsl:text>selection value</xsl:text>
+    </path>
+    <path name="options" accepts="HMI_STRING">
+      <xsl:text>drop-down menu entries</xsl:text>
     </path>
   </xsl:template>
   <xsl:template match="widget[@type='DropDown']" mode="widget_class">
@@ -3773,9 +3805,17 @@
     <xsl:text>DropDownWidget</xsl:text>
     <xsl:text> extends Widget{
 </xsl:text>
-    <xsl:text>        dispatch(value) {
+    <xsl:text>        dispatch(value, old_val, index) {
 </xsl:text>
-    <xsl:text>            if(!this.opened) this.set_selection(value);
+    <xsl:text>            if (index == 0) {
+</xsl:text>
+    <xsl:text>                if (!this.opened) this.set_selection(value);
+</xsl:text>
+    <xsl:text>            } else if (index == 2) {
+</xsl:text>
+    <xsl:text>                this.content = value.split(":");
+</xsl:text>
+    <xsl:text>            }
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -3890,6 +3930,16 @@
     <xsl:text>            // and contains selection when menu is closed
 </xsl:text>
     <xsl:text>            this.text_elt.firstElementChild.textContent = display_str;
+</xsl:text>
+    <xsl:text>            // If there is more than one path variable,
+</xsl:text>
+    <xsl:text>            // meaning there is a variable for selection value,
+</xsl:text>
+    <xsl:text>            // write the value in it
+</xsl:text>
+    <xsl:text>            if (this.indexes_length &gt; 1)
+</xsl:text>
+    <xsl:text>                this.apply_hmi_value(1, display_str);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>
@@ -4453,6 +4503,12 @@
     <xsl:text>init_specific: function() {
 </xsl:text>
     <xsl:choose>
+      <xsl:when test="count(path) = 3">
+        <xsl:text>  this.text_elt = id("</xsl:text>
+        <xsl:value-of select="$text_elt/@id"/>
+        <xsl:text>");
+</xsl:text>
+      </xsl:when>
       <xsl:when test="count(arg) = 1 and arg[1]/@value = '#langs'">
         <xsl:text>  this.text_elt = id("</xsl:text>
         <xsl:value-of select="$text_elt/@id"/>
@@ -4464,7 +4520,7 @@
       <xsl:when test="count(arg) = 0">
         <xsl:if test="not($text_elt[self::svg:use])">
           <xsl:message terminate="yes">
-            <xsl:text>No argrument for HMI:DropDown widget id="</xsl:text>
+            <xsl:text>No argument for HMI:DropDown widget id="</xsl:text>
             <xsl:value-of select="$hmi_element/@id"/>
             <xsl:text>" and "text" labeled element is not a svg:use element</xsl:text>
           </xsl:message>

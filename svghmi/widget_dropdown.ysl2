@@ -4,39 +4,58 @@ widget_desc("DropDown") {
 
     longdesc
     ||
-    DropDown widget let user select an entry in a list of texts, given as
-    arguments. Single variable path is index of selection.
+    DropDown widget can have one, two or three path variables.
 
     It needs "text" (svg:text or svg:use referring to svg:text),
     "box" (svg:rect), "button" (svg:*), and "highlight" (svg:rect)
     labeled elements.
 
-    When user clicks on "button", "text" is duplicated to display enties in the
+    When user clicks on "button", "text" is duplicated to display entries in the
     limit of available space in page, and "box" is extended to contain all
     texts. "highlight" is moved over pre-selected entry.
 
-    When only one argument is given and argment contains "#langs" then list of
-    texts is automatically set to the human-readable list of supported
-    languages by this HMI. 
+    The first variable path is index of selection, and the second is value of selection.
 
-    If "text" labeled element is of type svg:use and refers to a svg:text 
-    element part of a TextList widget, no argument is expected. In that case
-    list of texts is set to TextList content.
+    In case there are one or two path variables, a list of texts is defined via
+    arguments.
+
+    If there are no arguments, it is expected that "text" labeled element is of
+    type svg:use and refers to a svg:text element part of a TextList widget.
+    In that case list of texts is set to TextList content.
+
+    When only one argument is given and its value is "#langs" then list of
+    texts is automatically set to the human-readable list of supported
+    languages by this HMI.
+
+    Otherwise, arguments are used as dropdown options.
+
+    In case there are three path variables, arguments are not expected and ignored.
+    The third path variable is a string containing the list of entries.
+
+    Examples:
+    HMI:DropDown:Red:Green:Blue:Other@/SELECTED_INDEX@/SELECTED_VALUE
+    HMI:DropDown@/SELECTED_INDEX@/SELECTED_VALUE@/OPTIONS
     ||
 
     shortdesc > Let user select text entry in a drop-down menu
 
     arg name="entries" count="many" accepts="string" > drop-down menu entries
 
-    path name="selection" accepts="HMI_INT" > selection index
+    path name="selected_inex" accepts="HMI_INT" > selection index
+    path name="selected_value" accepts="HMI_STRING" > selection value
+    path name="options" accepts="HMI_STRING" > drop-down menu entries
 }
 
 // TODO: support i18n of menu entries using svg:text elements with labels starting with "_"
 
 widget_class("DropDown") {
 ||
-        dispatch(value) {
-            if(!this.opened) this.set_selection(value);
+        dispatch(value, old_val, index) {
+            if (index == 0) {
+                if (!this.opened) this.set_selection(value);
+            } else if (index == 2) {
+                this.content = value.split(":");
+            }
         }
         init() {
             this.init_specific();
@@ -94,6 +113,11 @@ widget_class("DropDown") {
             // It is assumed that first span always stays,
             // and contains selection when menu is closed
             this.text_elt.firstElementChild.textContent = display_str;
+            // If there is more than one path variable,
+            // meaning there is a variable for selection value,
+            // write the value in it
+            if (this.indexes_length > 1)
+                this.apply_hmi_value(1, display_str);
         }
         grow_text(up_to) {
             let count = 1;
@@ -371,14 +395,18 @@ widget_defs("DropDown") {
     const "text_elt","$hmi_element//*[@inkscape:label='text'][1]";
     | init_specific: function() {
     choose{
+        // special case when items in variable
+        when "count(path) = 3" {
+            |   this.text_elt = id("«$text_elt/@id»");
+        }
         // special case when used for language selection
         when "count(arg) = 1 and arg[1]/@value = '#langs'" {
             |   this.text_elt = id("«$text_elt/@id»");
             |   this.content = langs.map(([lname,lcode]) => lname);
         }
-        when "count(arg) = 0"{ 
+        when "count(arg) = 0"{
             if "not($text_elt[self::svg:use])"
-                error > No argrument for HMI:DropDown widget id="«$hmi_element/@id»" and "text" labeled element is not a svg:use element
+                error > No argument for HMI:DropDown widget id="«$hmi_element/@id»" and "text" labeled element is not a svg:use element
             const "real_text_elt","$result_widgets[@id = $hmi_element/@id]//*[@original=$text_elt/@id]/svg:text";
             |   this.text_elt = id("«$real_text_elt/@id»");
             const "from_list_id", "substring-after($text_elt/@xlink:href,'#')";
