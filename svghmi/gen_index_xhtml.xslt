@@ -3721,7 +3721,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>DropDown widget can have two or three path variables.
+      <xsl:text>DropDown widget can have one, two or three path variables.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -3745,7 +3745,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>In case there are two path variables, a list of texts is defined via
+      <xsl:text>In case there are one or two path variables, a list of texts is defined via
 </xsl:text>
       <xsl:text>arguments.
 </xsl:text>
@@ -3931,7 +3931,15 @@
 </xsl:text>
     <xsl:text>            this.text_elt.firstElementChild.textContent = display_str;
 </xsl:text>
-    <xsl:text>            this.apply_hmi_value(1, display_str);
+    <xsl:text>            // If there is more than one path variable,
+</xsl:text>
+    <xsl:text>            // meaning there is a variable for selection value,
+</xsl:text>
+    <xsl:text>            // write the value in it
+</xsl:text>
+    <xsl:text>            if (this.indexes_length &gt; 1)
+</xsl:text>
+    <xsl:text>                this.apply_hmi_value(1, display_str);
 </xsl:text>
     <xsl:text>        }
 </xsl:text>

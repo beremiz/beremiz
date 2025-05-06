@@ -4,7 +4,7 @@ widget_desc("DropDown") {
 
     longdesc
     ||
-    DropDown widget can have two or three path variables.
+    DropDown widget can have one, two or three path variables.
 
     It needs "text" (svg:text or svg:use referring to svg:text),
     "box" (svg:rect), "button" (svg:*), and "highlight" (svg:rect)
@@ -16,7 +16,7 @@ widget_desc("DropDown") {
 
     The first variable path is index of selection, and the second is value of selection.
 
-    In case there are two path variables, a list of texts is defined via
+    In case there are one or two path variables, a list of texts is defined via
     arguments.
 
     If there are no arguments, it is expected that "text" labeled element is of
@@ -113,7 +113,11 @@ widget_class("DropDown") {
             // It is assumed that first span always stays,
             // and contains selection when menu is closed
             this.text_elt.firstElementChild.textContent = display_str;
-            this.apply_hmi_value(1, display_str);
+            // If there is more than one path variable,
+            // meaning there is a variable for selection value,
+            // write the value in it
+            if (this.indexes_length > 1)
+                this.apply_hmi_value(1, display_str);
         }
         grow_text(up_to) {
             let count = 1;

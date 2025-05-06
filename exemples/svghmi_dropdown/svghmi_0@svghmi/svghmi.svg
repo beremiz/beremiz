@@ -990,8 +990,8 @@
      id="namedview4"
      showgrid="true"
      inkscape:zoom="0.85825083"
-     inkscape:cx="398.4849"
-     inkscape:cy="5130.7844"
+     inkscape:cx="399.65007"
+     inkscape:cy="5131.9496"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -1229,5 +1229,81 @@
          id="tspan461"
          x="124.9453"
          y="850.32782">Dynamic content</tspan></text>
+    <g
+       id="g315"
+       inkscape:label="HMI:DropDown:a:b:c@/SELECTED_INDEX_3"
+       transform="translate(21.362579,229.7691)">
+      <rect
+         inkscape:label="box"
+         ry="6.6557026"
+         y="796.4234"
+         x="23.21323"
+         height="52.580051"
+         width="516.45929"
+         id="rect305"
+         style="opacity:0.4;fill:#b3b3b3;fill-opacity:1;fill-rule:nonzero;stroke:#101010;stroke-width:1.8461;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill"
+         rx="6.6557026" />
+      <rect
+         inkscape:label="highlight"
+         y="806.69781"
+         x="44.838551"
+         height="32.03125"
+         width="395.31253"
+         id="rect307"
+         style="opacity:0.4;fill:#c0a229;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.3916;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:markers stroke fill" />
+      <path
+         inkscape:label="button"
+         sodipodi:nodetypes="cccc"
+         inkscape:connector-curvature="0"
+         id="path309"
+         d="m 455.56143,802.3612 34.08581,40.46592 36.02744,-40.49079 z"
+         style="fill:#c0a229;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <text
+         inkscape:label="text"
+         id="text313"
+         y="830.14612"
+         x="43.864151"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#343434;fill-opacity:1;stroke:none"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:24px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#343434;fill-opacity:1"
+           y="830.14612"
+           x="43.864151"
+           id="tspan311"
+           sodipodi:role="line">Here will be our dropdown text</tspan></text>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#343434;fill-opacity:1;stroke:none"
+       x="105.98413"
+       y="1008.1844"
+       id="text319"
+       inkscape:label="Static"><tspan
+         sodipodi:role="line"
+         id="tspan317"
+         x="105.98413"
+         y="1008.1844">Static content</tspan></text>
+    <text
+       inkscape:label="HMI:Display@/SELECTED_INDEX_3"
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:40.0497px;line-height:125%;font-family:sans-serif;text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#ff8c00;fill-opacity:1;stroke:none;stroke-width:0.285903px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="561.20978"
+       y="1010.1584"
+       id="text584"><tspan
+         sodipodi:role="line"
+         id="tspan582"
+         x="561.20978"
+         y="1010.1584"
+         style="font-size:36.4799px;text-align:end;text-anchor:end;fill:#ff8c00;stroke-width:0.285903px">8</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:18.6667px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#343434;fill-opacity:1;stroke:none"
+       x="453.12918"
+       y="1009.1401"
+       id="text588"
+       inkscape:label="You_Select"><tspan
+         sodipodi:role="line"
+         id="tspan586"
+         x="453.12918"
+         y="1009.1401">selected index:</tspan></text>
   </g>
 </svg>

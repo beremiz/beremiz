@@ -453,7 +453,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>DropDown widget can have two or three path variables.
+      <xsl:text>DropDown widget can have one, two or three path variables.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -477,7 +477,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>In case there are two path variables, a list of texts is defined via
+      <xsl:text>In case there are one or two path variables, a list of texts is defined via
 </xsl:text>
       <xsl:text>arguments.
 </xsl:text>
