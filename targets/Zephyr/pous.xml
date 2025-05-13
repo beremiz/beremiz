@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <fileHeader companyName="Unknown"
+              productName="Unnamed"
+              productVersion="1"
+              creationDateTime="2013-01-29T14:01:00"/>
+  <contentHeader name="Unnamed"
+                 modificationDateTime="2013-02-26T15:59:13">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="0" y="0"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <pous>
+      <pou name="GETVERSIONSTRING" pouType="functionBlock">
+        <interface>
+          <outputVars>
+            <variable name="VERSION">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </outputVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[
+{{
+ #define STRINGify(x) __STRING_LITERAL(sizeof(#x),#x)
+ STRING TMP = STRINGify(PLC_VERSION_STRING);
+ SetFbVar(VERSION, TMP);
+ #undef STRINGify
+}}
+]]>
+          </ST>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations/>
+  </instances>
+</project>

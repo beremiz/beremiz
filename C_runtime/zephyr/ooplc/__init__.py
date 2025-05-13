@@ -78,5 +78,9 @@ def GetBuildOptions(target_cfg):
                     product-id = <0x{product_id}>;
                 }};
             """)
-        
-    return board_name, options, c_flags, user_dts, user_conf
+
+    libraries = [("NativeSim", SimplePOULibraryFactory(paths.AbsNeighbourFile(__file__, "pous.xml")))]
+
+    preamble = ''
+
+    return board_name, options, c_flags, user_dts, user_conf, libraries, preamble

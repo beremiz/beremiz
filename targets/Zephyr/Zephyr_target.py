@@ -13,13 +13,13 @@ import shlex
 from .ZephyrBuildBase import ZephyrBuildException
 from targets.Builder import Builder
 from C_runtime.zephyr import GetZephyrBuildOptions
-from POULibrary import UserAddressedException
+from POULibrary import SimplePOULibraryFactory
+import util.paths as paths
 
 if os.name == 'nt':
     from .ZephyrWindowsBuild import ZephyrWindowsBuild as ZephyrBuild
 else:
     from .ZephyrLinuxBuild import ZephyrLinuxBuild as ZephyrBuild
-
 
 class Zephyr_target(Builder):
     dlopen_prefix = "./"
@@ -45,7 +45,14 @@ class Zephyr_target(Builder):
         if board is None:
             return
         board_cfg = board.getcontent()
-        self.board_name, self.options, self.cflags, self.user_dts, self.user_conf = GetZephyrBuildOptions(board_cfg.getLocalTag(),board_cfg)
+        (self.board_name,
+         self.options,
+         self.cflags,
+         self.user_dts,
+         self.user_conf,
+         self.board_libraries,
+         self.preamble) = GetZephyrBuildOptions(board_cfg.getLocalTag(),board_cfg)
+        
         if self.debug_build:
             self.options.append("debug")
 
@@ -125,3 +132,22 @@ class Zephyr_target(Builder):
         f.close()
 
         return True
+
+    def GetLibraries(self, ctr, typestack):
+        self._getConfig()
+        
+        # Zephyr specific libraries
+        res = [("Zephyr",
+                SimplePOULibraryFactory(
+                    paths.AbsNeighbourFile(__file__, "pous.xml")
+                )(ctr, "Zephyr", typestack))]
+        
+        # Add board specific libraries
+        for libname, libclass in self.board_libraries:
+            res.append((libname, libclass(ctr, libname, typestack)))
+
+        return res              
+
+    def GetPLCHeadersPreamble(self):
+        self._getConfig()
+        return self.preamble

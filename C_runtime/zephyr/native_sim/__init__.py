@@ -135,5 +135,10 @@ def GetBuildOptions(board_cfg):
             }};
             """)
             options.append("tcp")
-        
-    return board_name, options, c_flags, user_dts, user_conf
+    
+    libraries = [("NativeSim", SimplePOULibraryFactory(paths.AbsNeighbourFile(__file__, "pous.xml")))]
+
+    # Needed by C code included in FBs of pous.xml
+    preamble = '#include "nsi_main.h"\n'
+
+    return board_name, options, c_flags, user_dts, user_conf, libraries, preamble

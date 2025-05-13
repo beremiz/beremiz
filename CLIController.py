@@ -75,7 +75,8 @@ class CLIController(LocalRuntimeMixin, ProjectController):
         self.session = session
         log = Log()
         LocalRuntimeMixin.__init__(self, log, use_gui=False)
-        ProjectController.__init__(self, None, log)
+        ProjectController.__init__(self)
+        self.logger = log
 
     def _SetConnector(self, connector, update_status=True):
         self._connector = connector

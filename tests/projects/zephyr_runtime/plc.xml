@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Generic PLC" productVersion="1" creationDateTime="2013-01-29T14:01:00" contentDescription="This example shows logging functionality in Beremiz.&#10;Here are shown two ways of logging:&#10;- from IEC PLC program;&#10;- from python extension.&#10;"/>
-  <contentHeader name="Logging example" modificationDateTime="2024-11-27T21:53:48">
+  <contentHeader name="Logging example" modificationDateTime="2025-05-13T10:52:05">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -87,6 +87,16 @@ END_IF;
             <variable name="C_Pragma0">
               <type>
                 <derived name="C_Pragma"/>
+              </type>
+            </variable>
+            <variable name="EXIT_SIM0">
+              <type>
+                <derived name="EXIT_SIM"/>
+              </type>
+            </variable>
+            <variable name="SIM_PRINT0">
+              <type>
+                <derived name="SIM_PRINT"/>
               </type>
             </variable>
           </localVars>
@@ -268,14 +278,14 @@ END_IF;
               </outputVariables>
             </block>
             <block localId="11" width="65" height="209" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0">
-              <position x="1307" y="266"/>
+              <position x="1387" y="266"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
                   <connectionPointIn>
                     <relPosition x="0" y="51"/>
-                    <connection refLocalId="3" formalParameter="OUT">
-                      <position x="1307" y="317"/>
-                      <position x="300" y="317"/>
+                    <connection refLocalId="22">
+                      <position x="1395" y="317"/>
+                      <position x="1349" y="317"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -283,7 +293,7 @@ END_IF;
                   <connectionPointIn>
                     <relPosition x="0" y="114"/>
                     <connection refLocalId="8" formalParameter="OUT">
-                      <position x="1307" y="380"/>
+                      <position x="1387" y="380"/>
                       <position x="1194" y="380"/>
                     </connection>
                   </connectionPointIn>
@@ -292,8 +302,8 @@ END_IF;
                   <connectionPointIn>
                     <relPosition x="0" y="177"/>
                     <connection refLocalId="12">
-                      <position x="1307" y="443"/>
-                      <position x="1280" y="443"/>
+                      <position x="1387" y="443"/>
+                      <position x="1360" y="443"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -302,7 +312,7 @@ END_IF;
               <outputVariables/>
             </block>
             <inVariable localId="12" height="30" width="79" executionOrderId="0" negated="false">
-              <position x="1201" y="428"/>
+              <position x="1281" y="428"/>
               <connectionPointOut>
                 <relPosition x="79" y="15"/>
               </connectionPointOut>
@@ -380,6 +390,135 @@ END_IF;
               <inOutVariables/>
               <outputVariables/>
             </block>
+            <block localId="17" typeName="GT" executionOrderId="0" width="63" height="60">
+              <position x="766" y="542"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="5" formalParameter="OUT">
+                      <position x="766" y="572"/>
+                      <position x="640" y="572"/>
+                      <position x="640" y="442"/>
+                      <position x="531" y="442"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="18">
+                      <position x="766" y="592"/>
+                      <position x="737" y="592"/>
+                      <position x="737" y="605"/>
+                      <position x="709" y="605"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="63" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="18" executionOrderId="0" width="26" height="27" negated="false">
+              <position x="683" y="592"/>
+              <connectionPointOut>
+                <relPosition x="26" y="13"/>
+              </connectionPointOut>
+              <expression>10</expression>
+            </inVariable>
+            <block localId="19" typeName="EXIT_SIM" instanceName="EXIT_SIM0" executionOrderId="0" width="87" height="60">
+              <position x="925" y="539"/>
+              <inputVariables>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="17" formalParameter="OUT">
+                      <position x="925" y="569"/>
+                      <position x="877" y="569"/>
+                      <position x="877" y="572"/>
+                      <position x="829" y="572"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="EXIT_CODE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="7">
+                      <position x="925" y="589"/>
+                      <position x="900" y="589"/>
+                      <position x="900" y="600"/>
+                      <position x="883" y="600"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <inVariable localId="7" executionOrderId="0" width="26" height="27" negated="false">
+              <position x="857" y="587"/>
+              <connectionPointOut>
+                <relPosition x="26" y="13"/>
+              </connectionPointOut>
+              <expression>42</expression>
+            </inVariable>
+            <block localId="20" typeName="SIM_PRINT" instanceName="SIM_PRINT0" executionOrderId="0" width="82" height="60">
+              <position x="1428" y="512"/>
+              <inputVariables>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="13">
+                      <position x="1428" y="542"/>
+                      <position x="1402" y="542"/>
+                      <position x="1402" y="520"/>
+                      <position x="1377" y="520"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="MSG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="8" formalParameter="OUT">
+                      <position x="1428" y="562"/>
+                      <position x="1234" y="562"/>
+                      <position x="1234" y="380"/>
+                      <position x="1194" y="380"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <connector name="Connection0" localId="21" width="126" height="28">
+              <position x="330" y="303"/>
+              <connectionPointIn>
+                <relPosition x="0" y="14"/>
+                <connection refLocalId="3" formalParameter="OUT">
+                  <position x="330" y="317"/>
+                  <position x="300" y="317"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <continuation name="Connection0" localId="22" width="126" height="28">
+              <position x="1231" y="303"/>
+              <connectionPointOut>
+                <relPosition x="126" y="14"/>
+              </connectionPointOut>
+            </continuation>
+            <continuation name="Connection0" localId="13" width="126" height="28">
+              <position x="1251" y="506"/>
+              <connectionPointOut>
+                <relPosition x="126" y="14"/>
+              </connectionPointOut>
+            </continuation>
           </FBD>
         </body>
       </pou>

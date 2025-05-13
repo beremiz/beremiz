@@ -13,10 +13,6 @@
 #include <errno.h>
 #include <pthread.h>
 
-#ifndef PLC_THREAD_PRIORITY
-#define PLC_THREAD_PRIORITY 80
-#endif
-
 #define _Log(level, text, ...)                    \
 	{                                             \
 		char mstr[256];                           \
@@ -51,7 +47,7 @@ long long AtomicCompareExchange64(long long *atomicvar, long long compared, long
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
 	struct timespec tmp;
-	clock_gettime(CLOCK_REALTIME, &tmp);
+	clock_gettime(CLOCK_MONOTONIC, &tmp);
 	CURRENT_TIME->tv_sec = tmp.tv_sec;
 	CURRENT_TIME->tv_nsec = tmp.tv_nsec;
 }
@@ -110,6 +106,17 @@ void PLC_thread_proc(void *arg)
 		int periods = 0;
 		struct timespec deadline_time;
 		struct timespec plc_start_time;
+		
+		// Sleep until next PLC run
+		res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle_time, NULL);
+		if(res==EINTR){
+			continue;
+		}
+		if(res!=0){
+			_LogError("PLC thread timer returned error %d \n", res);
+			return;
+		}
+		
 		// timer overrun detection
 		clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
 		deadline_time = next_cycle_time;
@@ -178,7 +185,7 @@ int startPLC(int argc, char **argv)
 		_LogError("pthread setschedpolicy failed\n");
 		return ret;
 	}
-	param.sched_priority = PLC_THREAD_PRIORITY;
+	param.sched_priority = sched_get_priority_max(SCHED_FIFO);
 	ret = pthread_attr_setschedparam(&attr, &param);
 	if (ret)
 	{
