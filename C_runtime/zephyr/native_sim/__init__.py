@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from POULibrary import SimplePOULibraryFactory
+import util.paths as paths
 
 """
 Zephyr Native Simulation Target
