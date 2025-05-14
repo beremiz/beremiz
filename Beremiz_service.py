@@ -71,6 +71,7 @@ Usage of Beremiz PLC execution service :\n
   -i  IP address of interface to bind to (default:localhost)
   -p  port number default:3000
   -h  print this help text and quit
+  -v  verbose output
   -a  autostart PLC (0:disable 1:enable) (default:0)
   -x  enable/disable wxTaskbarIcon (0:disable 1:enable) (default:1)
   -t  enable/disable Twisted web interface (0:disable 1:enable) (default:1)
@@ -85,7 +86,7 @@ Usage of Beremiz PLC execution service :\n
 
 
 try:
-    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:h", ["help", "version", "status-change=", "on-plc-start=", "on-plc-stop="])
+    opts, argv = getopt.getopt(sys.argv[1:], "i:p:n:x:t:a:w:c:e:s:hv", ["help", "version", "status-change=", "on-plc-start=", "on-plc-stop="])
 except getopt.GetoptError as err:
     # print help information and exit:
     print(str(err))  # will print something like "option -a not recognized"
@@ -106,6 +107,7 @@ enablewx = True
 havewx = False
 enabletwisted = True
 havetwisted = False
+verbose = False
 
 extensions = []
 statuschange = []
@@ -123,6 +125,8 @@ for o, a in opts:
     if o == "--version":
         version()
         sys.exit()
+    if o == "-v":
+        verbose = True  
     if o == "--on-plc-start":
         statuschange.append(status_change_call_factory(PlcStatus.Started, a))
     elif o == "--on-plc-stop":
@@ -507,6 +511,10 @@ installThreadExcepthook()
 havewamp = False
 
 if havetwisted:
+    if verbose:
+        from twisted.logger import globalLogPublisher, textFileLogObserver
+        globalLogPublisher.addObserver(textFileLogObserver(sys.stdout))
+
     if webport is not None:
         try:
             import runtime.NevowServer as NS  # pylint: disable=ungrouped-imports

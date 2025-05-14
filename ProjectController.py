@@ -47,7 +47,7 @@ import wx
 import features
 import connectors
 import util.paths as pathutils
-from util.misc import CheckPathPerm, GetClassImporter
+from util.misc import CheckPathPerm, GetClassImporter, GetDeveloperMode
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from util.BitmapLibrary import GetBitmap
@@ -1278,10 +1278,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
         except UserAddressedException as e:
             self.logger.write_error(str(e))
             return False
-        except Exception:
+        except Exception as e:
             self.logger.write_error(
                 _("Runtime IO extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
+            if(GetDeveloperMode()):
+                raise e
             return False
 
         self.LocationCFilesAndCFLAGS = LibCFilesAndCFLAGS + \
@@ -1939,6 +1941,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Exception while connecting to '{uri}': {ex}\n").format(
                     uri=uri, ex=e))
+            if GetDeveloperMode():
+                # If developer mode, raise exception
+                raise e
 
         # Did connection success ?
         if self._connector is None:
