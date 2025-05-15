@@ -50,6 +50,7 @@ xhtml_header = b'''<?xml version="1.0" encoding="utf-8"?>
 
 WorkingDir = None
 
+
 class ConfigurableBindings(configurable.Configurable):
 
     def __init__(self):
@@ -128,7 +129,6 @@ class ISettings(annotate.TypedInterface):
                                default=lambda *a,**k:GetPLCObjectSingleton().GetVersions(),
                                immutable=True)
 
-
     # pylint: disable=no-self-argument
     def sendLogMessage(
             ctx=annotate.Context(),
@@ -178,12 +178,14 @@ CSS_tags = [tags.link(rel='stylesheet',
                       type='text/css',
                       href=url.here.child("webinterface_css"))]
 
-class StyledSettingsPage(rend.Page):
+class StyledSettingsPageMixin():
     addSlash = True
-
     # This makes webform_css url answer some default CSS
     child_webform_css = webform.defaultCSS
     child_webinterface_css = File(paths.AbsNeighbourFile(__file__, 'webinterface.css'), 'text/css')
+
+class StyledSettingsPage(StyledSettingsPageMixin, rend.Page):
+    pass
 
 @implementer(ISettings)
 class SettingsPage(StyledSettingsPage):
@@ -263,7 +265,7 @@ class ExtensionSettingsPage(StyledSettingsPage):
             ],
             tags.body[
                 tags.h1[tags.directive("title")],
-                tags.a(href='/')['Back'],
+                tags.a(href='/settings')['Back'],
                 webform.renderForms('settings')
             ]]])
 
@@ -284,10 +286,26 @@ class ExtensionSettingsPage(StyledSettingsPage):
         return super(ExtensionSettingsPage, self).locateChild(ctx, segments)
 
 
+class LandingPage(rend.Page):
+    addSlash = True
+    docFactory = loaders.stan(
+        tags.html[
+            tags.head[tags.title[PAGE_TITLE]],
+            tags.body[
+                tags.a(href="settings")["Access Settings"]
+            ]
+        ]
+    )
+
+    def child_settings(self, context):
+        return SettingsPage()
+
 def RegisterWebsite(iface, port):
-    website = SettingsPage()
+    website = LandingPage()
     site = appserver.NevowSite(website)
 
     reactor.listenTCP(port, site, interface=iface)
     print(_('HTTP interface port :'), port)
     return website
+
+
