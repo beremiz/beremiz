@@ -33,7 +33,9 @@ class Zephyr_target(Builder):
     version_string=None
     debug_build=None
     verbose_build=None
-
+    board_libraries=[]
+    board_IEC_channels=[]
+    preamble=""
 
     def _getConfig(self):
         target_cfg = self.CTRInstance.GetTarget().getcontent()
@@ -45,12 +47,15 @@ class Zephyr_target(Builder):
         if board is None:
             return
         board_cfg = board.getcontent()
+        if board_cfg is None:
+            return
         (self.board_name,
          self.options,
          self.cflags,
          self.user_dts,
          self.user_conf,
          self.board_libraries,
+         self.board_IEC_channels,
          self.preamble) = GetZephyrBuildOptions(board_cfg.getLocalTag(),board_cfg)
         
         if self.debug_build:
@@ -63,8 +68,7 @@ class Zephyr_target(Builder):
         return True
 
     def GetReservedIECChannels(self):
-        # TODO: get reserved IEC channels from selected board
-        return [0]
+        return self.board_IEC_channels
               
     def build(self):
         log = self.CTRInstance.logger
@@ -74,10 +78,10 @@ class Zephyr_target(Builder):
             log.write_error(f"Zephyr: no board selected !\n")
             return False
 
-        # Normalize options
-        self.options.append(self.board_name)
+        # Normalize options:
+        self.options.append(self.board_name.split("/")[0])  # Include board name
         if "programmable" not in self.options:
-            self.options.append("builtin")
+            self.options.append("builtin")  # Fallback to builtin if not programmable
 
         log.write(f"Building Zephyr dependencies for board name: {self.board_name}\n")
 

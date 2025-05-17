@@ -251,7 +251,7 @@ class ZephyrBuildBase():
         # Collect optional config files and dts overlays
         extraconf_files = []
         dts_files = []
-        for dirpath in [self.runtime_src, join(self.runtime_src, self.board)]:
+        for dirpath in [self.runtime_src, join(self.runtime_src, self.board.split("/")[0])]:
             for opt in self.options:
                 extraconf_file = join(dirpath, f"{opt}.conf")
                 if exists(extraconf_file):
@@ -290,7 +290,7 @@ class ZephyrBuildBase():
             '-D', f'USER_C_FLAGS={';'.join(user_c_flags)}']
         if dts_files:
             WestCommand += [
-            '-D', f'DTC_OVERLAY_FILE={';'.join(user_c_flags)}']
+            '-D', f'DTC_OVERLAY_FILE={';'.join(dts_files)}']
         
         # Build with west
         res,*_ignore = self.RunWest(WestCommand, working_dir = self.runtime_src)

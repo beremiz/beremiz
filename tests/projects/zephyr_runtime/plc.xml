@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Generic PLC" productVersion="1" creationDateTime="2013-01-29T14:01:00" contentDescription="This example shows logging functionality in Beremiz.&#10;Here are shown two ways of logging:&#10;- from IEC PLC program;&#10;- from python extension.&#10;"/>
-  <contentHeader name="Logging example" modificationDateTime="2025-05-13T10:52:05">
+  <contentHeader name="Logging example" modificationDateTime="2025-05-16T11:08:28">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -97,6 +97,18 @@ END_IF;
             <variable name="SIM_PRINT0">
               <type>
                 <derived name="SIM_PRINT"/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
+            <variable name="gpio_out0" address="%QX0.1.0">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="gpio_led" address="%QX0.3.0">
+              <type>
+                <BOOL/>
               </type>
             </variable>
           </localVars>
@@ -498,11 +510,13 @@ END_IF;
               <outputVariables/>
             </block>
             <connector name="Connection0" localId="21" width="126" height="28">
-              <position x="330" y="303"/>
+              <position x="416" y="201"/>
               <connectionPointIn>
                 <relPosition x="0" y="14"/>
                 <connection refLocalId="3" formalParameter="OUT">
-                  <position x="330" y="317"/>
+                  <position x="416" y="215"/>
+                  <position x="320" y="215"/>
+                  <position x="320" y="317"/>
                   <position x="300" y="317"/>
                 </connection>
               </connectionPointIn>
@@ -519,6 +533,32 @@ END_IF;
                 <relPosition x="126" y="14"/>
               </connectionPointOut>
             </continuation>
+            <outVariable localId="23" executionOrderId="0" width="82" height="27" negated="false">
+              <position x="597" y="254"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="3" formalParameter="OUT">
+                  <position x="597" y="267"/>
+                  <position x="448" y="267"/>
+                  <position x="448" y="317"/>
+                  <position x="300" y="317"/>
+                </connection>
+              </connectionPointIn>
+              <expression>gpio_out0</expression>
+            </outVariable>
+            <outVariable localId="24" executionOrderId="0" width="74" height="27" negated="false">
+              <position x="600" y="284"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="3" formalParameter="OUT">
+                  <position x="600" y="297"/>
+                  <position x="529" y="297"/>
+                  <position x="529" y="317"/>
+                  <position x="300" y="317"/>
+                </connection>
+              </connectionPointIn>
+              <expression>gpio_led</expression>
+            </outVariable>
           </FBD>
         </body>
       </pou>

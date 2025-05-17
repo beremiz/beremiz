@@ -308,7 +308,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.Libraries[libname] = Lib
 
     def GetReservedIECChannels(self):
-        return self.GetBuilder().GetReservedIECChannels()
+        reserved = self.GetBuilder().GetReservedIECChannels()
+        return [IECChannel for IECChannel, CTNClass in reserved]
+
+    def GetReservedCTNs(self):
+        reserved = self.GetBuilder().GetReservedIECChannels()
+        res = []
+        for IECChannel, CTNClass in reserved:
+            class FinalPseudoCTNClass(CTNClass, ConfigTreeNode):
+                def __init__(self, parent):
+                    self.CTNParent = parent
+                    ConfigTreeNode.__init__(self)
+                    self.BaseParams.setIEC_Channel(IECChannel)
+            res.append(FinalPseudoCTNClass(self))
+        return res
 
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """ 
@@ -716,7 +729,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         - location is a string of this variable's location, like "%IX0.0.0"
         '''
         children = []
-        for child in self.IECSortedChildren():
+        for child in self.GetReservedCTNs() + self.IECSortedChildren():
             children.append(child.GetVariableLocationTree())
         return children
 

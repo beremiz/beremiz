@@ -81,6 +81,8 @@ def GetBuildOptions(target_cfg):
 
     libraries = [("NativeSim", SimplePOULibraryFactory(paths.AbsNeighbourFile(__file__, "pous.xml")))]
 
-    preamble = ''
+    IEC_channels = []
 
-    return board_name, options, c_flags, user_dts, user_conf, libraries, preamble
+    preamble = ''
+    
+    return board_name, options, c_flags, user_dts, user_conf, libraries, IEC_channels, preamble

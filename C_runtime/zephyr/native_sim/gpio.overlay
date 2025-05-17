@@ -1,0 +1,17 @@
+
+
+/ {
+	/* re-use gpio-led to add a GPIO output */
+	leds {
+		led1: led_1 {
+			gpios = < &gpio0 0x1 0x0 >;
+			label = "Red LED";
+		};
+	};
+
+	/* TODO : add simulated input */
+};
+
+&gpio0 {
+	ngpios = <3>;
+};

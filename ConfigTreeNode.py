@@ -312,11 +312,11 @@ class ConfigTreeNode(object):
         for CTNChild in children:
             channel = CTNChild.BaseParams.getIEC_Channel()
             if channel in reserved_channels:
-                self.FatalError(_("IEC channel %d is reserved for %s (%s)") % 
+                self.FatalError(_("IEC channel %d is reserved. Please move Configuration Tree Node %s (%s) to another location") % 
                                  (channel, CTNChild.GetFullIEC_Channel(), CTNChild.CTNFullName()))
 
         # recurse through all children, and stack their results
-        for CTNChild in children:
+        for CTNChild in self.GetReservedCTNs() + children:
             new_location = CTNChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth = len(new_location)
@@ -343,7 +343,7 @@ class ConfigTreeNode(object):
         ordered = [(chld.BaseParams.getIEC_Channel(), chld) for chld in self.IterChildren()]
         if ordered:
             ordered.sort()
-            return list(zip(*ordered))[1]
+            return [chld for _chn, chld in ordered]
         else:
             return []
 
@@ -458,6 +458,9 @@ class ConfigTreeNode(object):
         return res
 
     def GetReservedIECChannels(self):
+        return []
+    
+    def GetReservedCTNs(self):
         return []
     
     def GetUsedIEC_Channels(self, exclude=None):
