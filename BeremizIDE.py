@@ -862,10 +862,11 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                               EncodeFileSystemPath(os.path.dirname(projectpath)))
             self.Config.Flush()
             self.ResetView()
-            ctr = ProjectController(self, self.Log)
+            ctr = ProjectController()
             result = ctr.NewProject(projectpath)
             if not result:
                 self.CTR = ctr
+                self.CTR.SetAppFrame(self, self.Log)
                 self.Controler = self.CTR
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
@@ -903,7 +904,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                               EncodeFileSystemPath(os.path.dirname(projectpath)))
             self.Config.Flush()
             self.ResetView()
-            self.CTR = ProjectController(self, self.Log)
+            self.CTR = ProjectController()
+            self.CTR.SetAppFrame(self, self.Log)
             self.Controler = self.CTR
             result, err = self.CTR.LoadProject(projectpath)
             if not result:
