@@ -45,6 +45,7 @@ if "SNAP" in os.environ:
 
 
 ScriptDirectory = paths.AbsDir(__file__)
+default_libdir = os.path.join(ScriptDirectory, "widgetlib")
 
 HMITreeDndMagicWord = "text/beremiz-hmitree"
 
@@ -304,7 +305,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
         if self.libdir is None:
-            self.libdir = os.path.join(ScriptDirectory, "widgetlib") 
+            self.libdir = default_libdir
 
         self.picker_desc_splitter = wx.SplitterWindow(self, style=wx.SUNKEN_BORDER | wx.SP_3D)
 
@@ -313,10 +314,21 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.picker_sizer.AddGrowableCol(0)
         self.picker_sizer.AddGrowableRow(1)
 
-        self.widgetpicker = WidgetPicker(self.picker_panel, self.libdir)
+        self.buttons_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
+        self.buttons_sizer.AddGrowableCol(0)
         self.libbutton = wx.Button(self.picker_panel, -1, _("Select SVG widget library"))
+        self.undolibbt = wx.BitmapButton(self.picker_panel, 
+                        bitmap=wx.ArtProvider.GetBitmap(wx.ART_UNDO, wx.ART_TOOLBAR, (16,16)),
+                        style=wx.BORDER_NONE)
+        self.Bind(wx.EVT_BUTTON, self.OnResetLibDir, self.undolibbt)
 
-        self.picker_sizer.Add(self.libbutton, flag=wx.GROW)
+        self.buttons_sizer.Add(self.libbutton, flag=wx.GROW)
+
+        self.buttons_sizer.Add(self.undolibbt, flag=wx.GROW)
+
+        self.widgetpicker = WidgetPicker(self.picker_panel, self.libdir)
+
+        self.picker_sizer.Add(self.buttons_sizer, flag=wx.GROW)
         self.picker_sizer.Add(self.widgetpicker, flag=wx.GROW)
         self.picker_sizer.Layout()
         self.picker_panel.SetAutoLayout(True)
@@ -438,6 +450,11 @@ class WidgetLibBrowser(wx.SplitterWindow):
             w = self.bmp.GetWidth()
             dc.DrawBitmap(self.bmp, (sz.width - w)//2, _preview_margin)
 
+
+    def OnResetLibDir(self, event):
+        self.libdir = default_libdir 
+        self.RememberLibDir(self.libdir)
+        self.widgetpicker.MakeTree(self.libdir)
 
 
     def OnSelectLibDir(self, event):
