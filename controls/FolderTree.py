@@ -70,7 +70,7 @@ class FolderTree(wx.Panel):
             self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnTreeItemExpanded, self.Tree)
             self.Tree.Bind(wx.EVT_LEFT_DOWN, self.OnTreeLeftDown)
         else:
-            self.Bind(wx.EVT_TREE_ITEM_EXPANDED, self.OnTreeItemExpanded, self.Tree)
+            self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnTreeItemExpanded, self.Tree)
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnTreeItemCollapsed, self.Tree)
         self.Bind(wx.EVT_TREE_BEGIN_LABEL_EDIT, self.OnTreeBeginLabelEdit, self.Tree)
         self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.OnTreeEndLabelEdit, self.Tree)
