@@ -66,22 +66,24 @@ _WampClientCert = None
 _UsedWampTrust = None
 _UsedWampClientCert = None
 
+defaultRegistrationOptions = {"invoke": u"last"}
+
 ExposedCalls = [
-    ("StartPLC", {}),
-    ("StopPLC", {}),
-    ("GetPLCstatus", {}),
-    ("GetPLCID", {}),
-    ("SeedBlob", {}),
-    ("AppendChunkToBlob", {}),
-    ("PurgeBlobs", {}),
-    ("NewPLC", {}),
-    ("RepairPLC", {}),
-    ("MatchMD5", {}),
-    ("SetTraceVariablesList", {}),
-    ("GetTraceVariables", {}),
-    ("GetLogMessage", {}),
-    ("ResetLogCount", {}),
-    ("ExtendedCall", {})
+    ("StartPLC", defaultRegistrationOptions),
+    ("StopPLC", defaultRegistrationOptions),
+    ("GetPLCstatus", defaultRegistrationOptions),
+    ("GetPLCID", defaultRegistrationOptions),
+    ("SeedBlob", defaultRegistrationOptions),
+    ("AppendChunkToBlob", defaultRegistrationOptions),
+    ("PurgeBlobs", defaultRegistrationOptions),
+    ("NewPLC", defaultRegistrationOptions),
+    ("RepairPLC", defaultRegistrationOptions),
+    ("MatchMD5", defaultRegistrationOptions),
+    ("SetTraceVariablesList", defaultRegistrationOptions),
+    ("GetTraceVariables", defaultRegistrationOptions),
+    ("GetLogMessage", defaultRegistrationOptions),
+    ("ResetLogCount", defaultRegistrationOptions),
+    ("ExtendedCall", defaultRegistrationOptions)
 ]
 
 # de-activated dumb wamp config

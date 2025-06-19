@@ -35,7 +35,7 @@ from twisted.internet.ssl import PrivateCertificate, optionsForClientTLS, Verifi
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
-from autobahn.wamp.exception import TransportLost
+from autobahn.wamp.exception import TransportLost, ApplicationError
 from autobahn.wamp.serializer import MsgPackSerializer
 from OpenSSL import crypto
 
@@ -276,9 +276,12 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
                     except TransportLost:
                         confnodesroot.logger.write_error(_("Connection lost!\n"))
                         confnodesroot._SetConnector(None)
+                    except ApplicationError as e:
+                        confnodesroot.logger.write_error(_("Connection closed because of error: ") + e.error_message() + "\n")
+                        confnodesroot._SetConnector(None)
                     except Exception:
                         errmess = traceback.format_exc()
-                        confnodesroot.logger.write_error(errmess+"\n")
+                        confnodesroot.logger.write_error(_("Unexcpected exception in WAMP connector: ") + errmess + "\n")
                         print(errmess)
                         # confnodesroot._SetConnector(None)
                 return self.PLCObjDefaults.get(funcname)
@@ -295,6 +298,5 @@ def _WAMP_connector_factory(cls, uri, confnodesroot):
     # TODO : PSK.UpdateID()
 
     return WampPLCObjectProxy()
-
 
 WAMP_connector_factory = partial(_WAMP_connector_factory, WampSession)
