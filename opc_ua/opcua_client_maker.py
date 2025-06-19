@@ -507,9 +507,9 @@ class OPCUAClientList(list):
             if len(self) == 0:
                 v["IEC"] = 0
             else:
-                iecnums = set(zip(*self)[lstcolnames.index("IEC")])
+                iecnums = set(list(zip(*self))[lstcolnames.index("IEC")])
                 greatest = max(iecnums)
-                holes = set(range(greatest)) - iecnums
+                holes = set(range(int(greatest))) - iecnums
                 v["IEC"] = min(holes) if holes else greatest+1
 
         if v["IdType"] not in UA_NODE_ID_types:
