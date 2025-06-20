@@ -459,9 +459,11 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
         {
             case setval:
             {
-                uint32_t index = *(uint32_t*)(cursor);
+                uint32_t index; //  = *(uint32_t*)(cursor);
                 uint8_t const *valptr = cursor + sizeof(uint32_t);
 
+                // unaligned access forces memcpy instead of cast
+                memcpy(&index, cursor, sizeof(uint32_t));
 
                 if(index == heartbeat_index)
                     was_hearbeat = 1;
@@ -536,8 +538,12 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
 
             case subscribe:
             {
-                uint32_t index = *(uint32_t*)(cursor);
-                uint16_t refresh_period_ms = *(uint32_t*)(cursor + sizeof(uint32_t));
+                uint32_t index; // = *(uint32_t*)(cursor);
+                uint16_t refresh_period_ms; // = *(uint32_t*)(cursor + sizeof(uint32_t));
+
+                // unaligned access forces memcpy instead of cast
+                memcpy(&index, cursor, sizeof(uint32_t));
+                memcpy(&refresh_period_ms, cursor+sizeof(uint32_t), sizeof(uint16_t));
 
                 if(index < HMI_ITEM_COUNT)
                 {
