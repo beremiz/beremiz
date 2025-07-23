@@ -83,6 +83,8 @@ endef
 $(foreach project,$(BUILT_PROJECTS),$(eval $(call make_checksum_assign,$(project))))
 
 $(build_dir):
+	ls -l $(HOME) $(test_dir)
+	id
 	mkdir -p $(build_dir)
 
 define make_src_rule
