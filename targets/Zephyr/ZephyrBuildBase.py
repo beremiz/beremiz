@@ -282,15 +282,15 @@ class ZephyrBuildBase():
             '-d', self.runtime_build,
             '-p', 'always' if force else 'auto',
             self.runtime_src, '--',
-            '-D', f'EXTRA_CONF_FILE={';'.join(extraconf_files)}',
-            '-D', f'PLC_C_FILES={';'.join(plc_c_files)}',
-            '-D', f'PLC_C_FLAGS={';'.join(plc_c_flags)}']
+            '-D', f'EXTRA_CONF_FILE={";".join(extraconf_files)}',
+            '-D', f'PLC_C_FILES={";".join(plc_c_files)}',
+            '-D', f'PLC_C_FLAGS={";".join(plc_c_flags)}']
         if user_c_flags:
             WestCommand += [
-            '-D', f'USER_C_FLAGS={';'.join(user_c_flags)}']
+            '-D', f'USER_C_FLAGS={";".join(user_c_flags)}']
         if dts_files:
             WestCommand += [
-            '-D', f'DTC_OVERLAY_FILE={';'.join(dts_files)}']
+            '-D', f'DTC_OVERLAY_FILE={";".join(dts_files)}']
         
         # Build with west
         res,*_ignore = self.RunWest(WestCommand, working_dir = self.runtime_src)
