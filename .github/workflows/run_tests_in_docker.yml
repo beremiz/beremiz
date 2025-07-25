@@ -75,9 +75,10 @@ jobs:
     - name: Create docker container
       run: |
         cd beremiz/tests/tools/Docker
-        mkdir -p ${{ github.workspace }}/test
-        chown -R 1001:1001 ${{ github.workspace }}/test
         ./create_docker_container.sh ${{ github.workspace }}/test
+        docker start beremiz_sikuli_current
+        docker exec -i -t -u root beremiz_sikuli_current bash -c "chown -R ubuntu:ubuntu /home/ubuntu/test"
+        docker stop beremiz_sikuli_current
         
     - name: Run tests in docker
       run: |
