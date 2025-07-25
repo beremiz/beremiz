@@ -77,7 +77,7 @@ jobs:
         cd beremiz/tests/tools/Docker
         ./create_docker_container.sh ${{ github.workspace }}/test
         docker start beremiz_sikuli_current
-        docker exec -i -t -u root beremiz_sikuli_current bash -c "chown -R ubuntu:ubuntu /home/ubuntu/test"
+        docker exec -u root beremiz_sikuli_current bash -c "chown -R ubuntu:ubuntu /home/ubuntu/test"
         docker stop beremiz_sikuli_current
         
     - name: Run tests in docker
