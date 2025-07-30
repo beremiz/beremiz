@@ -278,6 +278,8 @@ def CSVWrStr(fname, rowname, colname, content):
         # create a new cell
         row += [""]*(colidx - len(row)) + [content]
 
+    data[rowidx] = row
+    entry.args = (fname, dialect, col_headers, row_headers, max_row_len, data)
     _CSV_str_modified(entry)
 
     return "OK"
