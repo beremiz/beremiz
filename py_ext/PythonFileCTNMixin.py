@@ -357,7 +357,7 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
 #include "config.h"
 #include "beremiz.h"
 
-PYTHON_POLL* __%(location_str)s_notifier;
+PYTHON_POLL_data__* __%(location_str)s_notifier;
 
 /* User variables reference */
 %(vardec)s
