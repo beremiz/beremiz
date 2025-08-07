@@ -19,7 +19,7 @@
 #include <string.h>
 
 /* The fifo (fixed size, as number of FB is fixed) */
-static PYTHON_EVAL* EvalFBs[%(python_eval_fb_count)d];
+static PYTHON_EVAL_data__* EvalFBs[%(python_eval_fb_count)d];
 /* Producer and consumer cursors */
 static int Current_PLC_EvalFB;
 static int Current_Python_EvalFB;
@@ -87,7 +87,7 @@ void __publish_py_ext()
  * Called by the PLC, each time a python_eval
  * FB instance is executed
  */
-void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
+void __PythonEvalFB(int poll, PYTHON_EVAL_data__* data__)
 {
     if(!__GET_VAR(data__->TRIG)){
         /* ACK is False when TRIG is false, except a pulse when receiving result */
@@ -159,7 +159,7 @@ void __PythonEvalFB(int poll, PYTHON_EVAL* data__)
 char* PythonIterator(char* result, void** id, int* is_last)
 {
 	char* next_command;
-	PYTHON_EVAL* data__;
+	PYTHON_EVAL_data__* data__;
 	//printf("PythonIterator result %%s\n", result);
     /*emergency exit*/
     if(PythonState & PYTHON_FINISHED) return NULL;

@@ -1109,7 +1109,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     "MEM": "extern __IEC_%(type)s_p %(C_path)s;",
                     "OUT": "extern __IEC_%(type)s_p %(C_path)s;",
                     "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
-                    "FB":  "extern       %(type)s   %(C_path)s;"
+                    "FB":  "extern %(type)s_data__ %(C_path)s;"
                 }[v["vartype"]] % v
                 for v in self._VariablesList if v["C_path"].find('.') < 0]),
             "variable_decl_array": ",\n".join(variable_decl_array),

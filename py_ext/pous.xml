@@ -2876,7 +2876,7 @@
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[{extern void __PythonEvalFB(int, PYTHON_EVAL*);__PythonEvalFB(0, data__);}]]></xhtml:p>
+            <xhtml:p><![CDATA[{extern void __PythonEvalFB(int, PYTHON_EVAL_data__*);__PythonEvalFB(0, data__);}]]></xhtml:p>
           </ST>
         </body>
       </pou>
@@ -2936,7 +2936,7 @@
         </interface>
         <body>
           <ST>
-            <xhtml:p><![CDATA[{extern void __PythonEvalFB(int, PYTHON_EVAL*);__PythonEvalFB(1,(PYTHON_EVAL*)(void*)data__);}]]></xhtml:p>
+            <xhtml:p><![CDATA[{extern void __PythonEvalFB(int, PYTHON_EVAL_data__*);__PythonEvalFB(1,(PYTHON_EVAL_data__*)(void*)data__);}]]></xhtml:p>
           </ST>
         </body>
       </pou>
