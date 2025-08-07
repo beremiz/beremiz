@@ -220,10 +220,6 @@ class SVGHMILibrary(POULibrary):
                 }[v["vartype"]] % v
                 for v in varlist if v["C_path"].find('.') < 0]
 
-        # TODO check if programs need to be declared separately
-        # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
-        #                                     p for p in self._ProgramList]),
-
         # C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
         svghmi_c_file = open(svghmi_c_filepath, 'r')

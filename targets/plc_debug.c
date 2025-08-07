@@ -79,11 +79,6 @@ static const char *force_buffer_end = force_buffer + FORCE_BUFFER_SIZE;
 #endif
 
 /***
- * Declare programs 
- **/
-%(programs_declarations)s
-
-/***
  * Declare global variables from resources and conf 
  **/
 %(extern_variables_declarations)s
