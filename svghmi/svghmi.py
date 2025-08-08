@@ -209,10 +209,16 @@ class SVGHMILibrary(POULibrary):
         assert(found_heartbeat)
 
         # TODO : filter only requiered external declarations
-        for v in varlist:
-            if v["C_path"].find('.') < 0:
-                extern_variables_declarations += [
-                    "extern %(type)s %(C_path)s;" % v]
+        extern_variables_declarations += [
+                {
+                    "EXT": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "IN":  "extern __IEC_%(type)s_p %(C_path)s;",
+                    "MEM": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "OUT": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
+                    "FB":  "extern %(type)s_data__ %(C_path)s;"
+                }[v["vartype"]] % v
+                for v in varlist if v["C_path"].find('.') < 0]
 
         # TODO check if programs need to be declared separately
         # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
