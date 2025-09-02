@@ -2,7 +2,7 @@
  * Tail of code common to all C targets
  **/
 
-/** 
+/**
  * LOGGING
  **/
 #ifndef TARGET_LOGGING_DISABLE
@@ -17,31 +17,53 @@
 #define LOG_BUFFER_MASK (LOG_BUFFER_SIZE-1)
 
 static char LogBuff[LOG_LEVELS][LOG_BUFFER_SIZE] LOG_BUFFER_ATTRS;
+/**
+ * Copy data to the log buffer, handling wraparound
+ * @param level Log level (0-3)
+ * @param buffpos Position in buffer to start copying
+ * @param buf Source buffer to copy from
+ * @param size Number of bytes to copy
+ */
 static void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(&LogBuff[level][buffpos], buf, size);
     }else{
-        uint32_t remaining = LOG_BUFFER_SIZE - buffpos; 
+        uint32_t remaining = LOG_BUFFER_SIZE - buffpos;
         memcpy(&LogBuff[level][buffpos], buf, remaining);
         memcpy(LogBuff[level], (char*)buf + remaining, size - remaining);
     }
 }
+/**
+ * Copy data from the log buffer, handling wraparound
+ * @param level Log level (0-3)
+ * @param buffpos Position in buffer to start copying from
+ * @param buf Destination buffer to copy to
+ * @param size Number of bytes to copy
+ */
 static void inline copy_from_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(buf, &LogBuff[level][buffpos], size);
     }else{
-        uint32_t remaining = LOG_BUFFER_SIZE - buffpos; 
+        uint32_t remaining = LOG_BUFFER_SIZE - buffpos;
         memcpy(buf, &LogBuff[level][buffpos], remaining);
         memcpy((char*)buf + remaining, LogBuff[level], size - remaining);
     }
 }
 
-/* Log buffer structure
-
- |<-Tail1.msgsize->|<-sizeof(mTail)->|<--Tail2.msgsize-->|<-sizeof(mTail)->|...
- |  Message1 Body  |      Tail1      |   Message2 Body   |      Tail2      |
-
-*/
+/**
+ * Log buffer structure
+ *
+ * The log buffer is a circular buffer that stores messages with their metadata.
+ * Each entry consists of:
+ * 1. Message body (variable size)
+ * 2. Metadata tail structure (fixed size)
+ *
+ * Buffer layout:
+ * |<-msg1.size->|<-sizeof(mTail)->|<--msg2.size-->|<-sizeof(mTail)->|...
+ * | Message1    | Tail1           | Message2      | Tail2           |
+ *
+ * The LogCursor tracks both the message count (upper 32 bits) and buffer position (lower 32 bits)
+ */
 typedef struct {
     uint32_t msgidx;
     uint32_t msgsize;
@@ -53,62 +75,115 @@ typedef struct {
    |63 ... 32|31 ... 0|
    | Message | Buffer |
    | counter | Index  | */
+/**
+ * Log cursors for each log level
+ *
+ * Each cursor is a 64-bit value containing:
+ * - Upper 32 bits: message counter
+ * - Lower 32 bits: buffer index position
+ */
 static uint64_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 
+/**
+ * Reset log counters for all log levels
+ * This clears all logged messages by resetting the cursors
+ */
 void ResetLogCount(void) {
-	uint8_t level;
-	for(level=0;level<LOG_LEVELS;level++){
-		LogCursor[level] = 0;
-	}
+    uint8_t level;
+    for(level=0; level<LOG_LEVELS; level++){
+        LogCursor[level] = 0;
+    }
 }
 
-/* Store one log message of give size */
+/**
+ * Store one log message of given size
+ * @param level Log level (0-3)
+ * @param buf Message buffer to log
+ * @param size Size of message in bytes
+ * @return 1 on success, 0 on failure
+ */
 int LogMessage(uint8_t level, char* buf, uint32_t size){
-    if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
-        uint32_t buffpos;
-        uint64_t new_cursor, old_cursor;
-
-        mTail tail;
-        tail.msgsize = size;
-        tail.tick = __tick;
-        PLC_GetTime(&tail.time);
-
-        /* We cannot increment both msg index and string pointer 
-           in a single atomic operation but we can detect having been interrupted.
-           So we can try with atomic compare and swap in a loop until operation
-           succeeds non interrupted */
-        do{
-            old_cursor = LogCursor[level];
-            buffpos = (uint32_t)old_cursor;
-            tail.msgidx = (old_cursor >> 32); 
-            new_cursor = ((uint64_t)(tail.msgidx + 1)<<32) 
-                         | (uint64_t)((buffpos + size + sizeof(mTail)) & LOG_BUFFER_MASK);
-        }while(AtomicCompareExchange64(
-            (long long*)&LogCursor[level],
-            (long long)old_cursor,
-            (long long)new_cursor)!=(long long)old_cursor);
-
-        copy_to_log(level, buffpos, buf, size);
-        copy_to_log(level, (buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
-
-        return 1; /* Success */
-    }else{
-    	char mstr[] = "Logging error : message too big";
-        LogMessage(LOG_CRITICAL, mstr, sizeof(mstr));
+    // Check valid log level to prevent array access violations
+    if(level >= LOG_LEVELS) {
+        return 0;
     }
-    return 0;
+
+    // Check if message fits in buffer (excluding tail structure)
+    if(size >= LOG_BUFFER_SIZE - sizeof(mTail)){
+        // Message too big for buffer, drop message
+        return 0;
+    }
+
+    uint32_t buffpos;
+    uint64_t new_cursor, old_cursor;
+
+    mTail tail;
+    tail.msgsize = size;
+    tail.tick = __tick;
+    PLC_GetTime(&tail.time);
+
+    // Check if buffer is nearly full before attempting to log
+    uint64_t current_cursor = LogCursor[level];
+    uint32_t current_pos = (uint32_t)current_cursor;
+    uint32_t next_pos = (current_pos + size + sizeof(mTail)) & LOG_BUFFER_MASK;
+
+    // If wrapping around and there's less than 1KB free space, reset buffer
+    if(next_pos < current_pos && (LOG_BUFFER_SIZE - current_pos) < 1024) {
+        ResetLogCount();
+    }
+
+    /* We cannot increment both msg index and string pointer
+       in a single atomic operation but we can detect having been interrupted.
+       So we can try with atomic compare and swap in a loop until operation
+       succeeds non interrupted */
+    do{
+        old_cursor = LogCursor[level];
+        buffpos = (uint32_t)old_cursor;
+
+        // Normal operation, use the current index from cursor
+        tail.msgidx = (old_cursor >> 32);
+
+        // Calculate next position after this message would be added
+        next_pos = (buffpos + size + sizeof(mTail)) & LOG_BUFFER_MASK;
+
+        new_cursor = ((uint64_t)(tail.msgidx + 1)<<32) | (uint64_t)next_pos;
+    }while(AtomicCompareExchange64(
+        (long long*)&LogCursor[level],
+        (long long)old_cursor,
+        (long long)new_cursor)!=(long long)old_cursor);
+
+    copy_to_log(level, buffpos, buf, size);
+    copy_to_log(level, next_pos - sizeof(mTail), &tail, sizeof(mTail));
+
+    return 1; /* Success */
 }
 
 uint32_t GetLogCount(uint8_t level){
+    // Check valid log level to prevent array access violations
+    if(level >= LOG_LEVELS) {
+        return 0;
+    }
+
     return (uint64_t)LogCursor[level] >> 32;
 }
 
 /* Return message size and content */
 uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec){
+    // Check valid log level to prevent array access violations
+    if(level >= LOG_LEVELS) {
+        return 0;
+    }
+
+    // Check if requested message index is valid
+    uint32_t current_msg_count = (uint64_t)LogCursor[level] >> 32;
+    if(msgidx >= current_msg_count) {
+        return 0;
+    }
+
     uint64_t cursor = LogCursor[level];
     if(cursor){
         /* seach cursor */
-        uint32_t stailpos = (uint32_t)cursor; 
+        uint32_t stailpos = (uint32_t)cursor;
         uint32_t smsgidx;
         mTail tail;
         tail.msgidx = cursor >> 32;
@@ -122,12 +197,12 @@ uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_s
         }while((tail.msgidx == smsgidx - 1) && (tail.msgidx > msgidx));
 
         if(tail.msgidx == msgidx){
-            uint32_t sbuffpos = (stailpos - tail.msgsize ) & LOG_BUFFER_MASK; 
+            uint32_t sbuffpos = (stailpos - tail.msgsize ) & LOG_BUFFER_MASK;
             uint32_t totalsize = tail.msgsize;
-            *tick = tail.tick; 
-            *tv_sec = tail.time.tv_sec; 
-            *tv_nsec = tail.time.tv_nsec; 
-            copy_from_log(level, sbuffpos, buf, 
+            *tick = tail.tick;
+            *tv_sec = tail.time.tv_sec;
+            *tv_nsec = tail.time.tv_nsec;
+            copy_from_log(level, sbuffpos, buf,
                           totalsize > max_size ? max_size : totalsize);
             return totalsize;
         }
@@ -152,7 +227,7 @@ static unsigned int last_tick = 0;
  * Called on each external periodic sync event
  * make PLC tick synchronous with external sync
  * ratio defines when PLC tick occurs between two external sync
- * @param sync_align_ratio 
+ * @param sync_align_ratio
  *          0->100 : align ratio
  *          < 0 : no align, calibrate period
  **/
@@ -226,3 +301,4 @@ void align_tick(int sync_align_ratio)
 }
 
 #endif
+
