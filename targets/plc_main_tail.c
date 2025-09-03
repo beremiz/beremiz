@@ -127,8 +127,8 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
     uint32_t current_pos = (uint32_t)current_cursor;
     uint32_t next_pos = (current_pos + size + sizeof(mTail)) & LOG_BUFFER_MASK;
 
-    // If wrapping around and there's less than 1KB free space, reset buffer
-    if(next_pos < current_pos && (LOG_BUFFER_SIZE - current_pos) < 1024) {
+    // If wrapping around, reset log count
+    if(next_pos < current_pos) {
         ResetLogCount();
     }
 
