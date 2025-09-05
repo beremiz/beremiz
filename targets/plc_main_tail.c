@@ -129,7 +129,8 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
 
     // If wrapping around, reset log count
     if(next_pos < current_pos) {
-        ResetLogCount();
+		// Reset logs for level that is wrapping around
+        LogCursor[level] = 0;
     }
 
     /* We cannot increment both msg index and string pointer
