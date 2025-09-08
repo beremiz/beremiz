@@ -127,12 +127,6 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
     uint32_t current_pos = (uint32_t)current_cursor;
     uint32_t next_pos = (current_pos + size + sizeof(mTail)) & LOG_BUFFER_MASK;
 
-    // If wrapping around, reset log count
-    if(next_pos < current_pos) {
-		// Reset logs for level that is wrapping around
-        LogCursor[level] = 0;
-    }
-
     /* We cannot increment both msg index and string pointer
        in a single atomic operation but we can detect having been interrupted.
        So we can try with atomic compare and swap in a loop until operation
