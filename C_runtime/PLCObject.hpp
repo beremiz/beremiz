@@ -47,6 +47,7 @@ extern "C" {
         uint32_t (*GetLogCount)(uint8_t level);
         int (*LogMessage)(uint8_t level, char* buf, uint32_t size);
         uint32_t (*GetLogMessage)(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec);
+        int (*DebugControl)(uint8_t key);
     } PLCSyms;
 }
 class PLCObject : public BeremizPLCObjectService_interface
@@ -72,6 +73,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t StartPLC(void);
         uint32_t StopPLC(bool * success);
         uint32_t ExtendedCall(const char * method, const binary_t * argument, binary_t * answer);
+        uint32_t DebugControl(uint8_t key);
 
         // Public interface used by runtime
         uint32_t AutoLoad();

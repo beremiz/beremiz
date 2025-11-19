@@ -68,4 +68,5 @@ interface BeremizPLCObjectService {
     StartPLC() -> uint32
     StopPLC(out bool success) -> uint32
     ExtendedCall(in string method, in binary argument, out binary answer ) -> uint32
+    DebugControl(in uint8 key) -> uint32
 }

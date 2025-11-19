@@ -608,6 +608,41 @@ uint32_t PLCObject::StopPLC(bool *success)
     return res;
 }
 
+uint32_t PLCObject::DebugControl(uint8_t key){
+    
+#define START_DEBUG     0
+#define DBG_STEP        1
+#define DBG_PAUSE       2
+#define DBG_RESUME      3
+#define END_DEBUG       4
+    switch (key)
+    {
+        case START_DEBUG:
+            LogMessage(LOG_INFO, "START_DEBUG");
+            break;
+        case DBG_STEP:
+            LogMessage(LOG_INFO, "DBG_STEP");
+            break;
+        case DBG_PAUSE:
+            LogMessage(LOG_INFO, "DBG_PAUSE");
+            break;
+        case DBG_RESUME:
+            LogMessage(LOG_INFO, "DBG_RESUME");
+            break;
+        default:
+            LogMessage(LOG_WARNING, "UNKNOWN_KEY"); 
+            break;
+    }
+    uint32_t res = m_PLCSyms.DebugControl(key);
+    if(res == 0)
+    {
+        m_status.PLCstatus = Stopped;
+    } else {
+        m_status.PLCstatus = Broken;
+    }
+    return 0;
+}
+
 uint32_t PLCObject::LogMessage(uint8_t level, std::string message)
 {
     // if PLC isn't loaded, log to stdout
