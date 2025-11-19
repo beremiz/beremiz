@@ -378,7 +378,7 @@ class PLCControler(object):
             elif words[0] != "D":
                 obj = self.GetEditedElement(tagname, debug)
             if obj is not None:
-                return self.POUVariablesCollector.Collect(obj, debug)
+                return self.POUVariablesCollector.Collect(obj, debug, self.Project.getdataTypes())
 
         return None
 
