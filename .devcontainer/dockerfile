@@ -1,0 +1,61 @@
+FROM ubuntu:jammy
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Yekaterinburg
+
+# Set hostname
+RUN echo "docker" > /etc/hostname
+
+# Set locales
+RUN apt-get update && apt-get install -y locales
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen
+RUN sed -i '/ru_RU.UTF-8/s/^# //g' /etc/locale.gen
+RUN locale-gen
+RUN update-locale LANG=ru_RU.UTF-8
+
+ENV LANG ru_RU.UTF-8
+
+# Install required packages
+RUN apt-get update && apt-get install -y \
+    python-is-python3 sudo nano vim \
+    adwaita-icon-theme adwaita-icon-theme-full libnotify4 libsdl2-2.0-0 \
+    build-essential automake flex bison \
+    libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
+    libpython3.10-dev libssl-dev unzip \
+    python3.10 virtualenv cmake git wget gcc-arm-none-eabi
+
+# Create user
+ARG USER=user
+RUN useradd -ms /bin/bash ${USER}
+RUN echo "${USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN echo "PS1='\[\033[01;32m\]\u@\h\[\033[00m\] \[\033[01;34m\]\W\[\033[00m\]$ '" >> /home/${USER}/.bashrc
+
+# Install python requirements
+COPY requirements.txt /tmp/
+RUN pip install --no-cache-dir -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04 wxPython==4.2.4
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Build matiec and add to path
+WORKDIR /home/${USER}
+
+RUN git clone https://github.com/beremiz/matiec.git matiec
+RUN cd matiec && \
+    autoreconf -i && \
+    ./configure && \
+    make && \
+    cp iec2c iec2iec /usr/bin/
+
+RUN mkdir /home/${USER}/toolchain
+WORKDIR /home/${USER}/toolchain
+
+# RUN wget https://github.com/EmbeddedRPC/erpc/releases/download/1.12.0/Linux_x64.zip
+# RUN unzip Linux_x64.zip
+# RUN rm -rf Linux_x64.zip
+# ENV PATH $PATH:/home/user/toolchain/Linux_x64
+
+# RUN wget -qO- https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz | tar -xJ
+# ENV PATH $PATH:/home/user/toolchain/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin
+
+USER ${USER}
+# RUN sudo chmod +x /home/user/toolchain/Linux_x64/erpcgen 
+WORKDIR /home/${USER}

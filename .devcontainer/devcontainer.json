@@ -1,0 +1,24 @@
+{
+  "name": "Beremiz Workspace",
+  "build": {
+    "dockerfile": "dockerfile",
+    "context": ".."
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/user/workspace,type=bind",
+  "workspaceFolder": "/home/user/workspace",
+  // Mount project folders here, example:
+  "mounts": [
+  ],
+  "runArgs": ["--network=host"],
+  "initializeCommand": "xhost +local:docker",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "actboy168.tasks",
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-vscode.cpptools"
+      ]
+    }
+  }
+}
