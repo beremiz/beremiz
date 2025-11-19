@@ -8,6 +8,8 @@ def _(x):
     return x
 
 
+Resumed = _("Resumed")
+Paused = _("Paused")
 Broken = _("Broken")
 Started = _("Started")
 Stopped = _("Stopped")
