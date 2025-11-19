@@ -7,7 +7,84 @@
 #include <time.h>
 #include <windows.h>
 #include <locale.h>
+#include <stdint.h>
 
+static CRITICAL_SECTION event_lock;
+static CONDITION_VARIABLE event_cond;
+static uint32_t event_bits = 0;
+static uint8_t events_initialized = 0;
+
+void set_event_bits(uint32_t bits) {
+    EnterCriticalSection(&event_lock);
+    event_bits |= bits;
+    WakeAllConditionVariable(&event_cond);
+    LeaveCriticalSection(&event_lock);
+}
+
+void clear_event_bits(uint32_t bits) {
+    EnterCriticalSection(&event_lock);
+    event_bits &= ~bits;
+    LeaveCriticalSection(&event_lock);
+}
+
+uint32_t wait_event_bits(uint32_t mask) {
+    EnterCriticalSection(&event_lock);
+    while ((event_bits & mask) == 0) {
+        SleepConditionVariableCS(&event_cond, &event_lock, INFINITE);
+    }
+    uint32_t bits = event_bits & mask;
+    LeaveCriticalSection(&event_lock);
+    return bits;
+}
+
+static volatile uint8_t is_debug = 0;
+#define RUN_STATE   (1 << 0)
+#define STEP_STATE  (1 << 1)
+#define DEBUG_BIT_MASK    (RUN_STATE | STEP_STATE)
+#define START_DEBUG     0
+#define DBG_STEP        1
+#define DBG_PAUSE       2
+#define DBG_RESUME      3
+#define END_DEBUG       4
+#define UNKNOWN_KEY     5
+
+int DebugControl(uint8_t key) {
+    if (! events_initialized){
+        InitializeCriticalSection(&event_lock);
+        InitializeConditionVariable(&event_cond);
+        events_initialized = 1;
+    }
+
+    switch (key) {
+        case START_DEBUG:   
+            is_debug = 1;
+            clear_event_bits(DEBUG_BIT_MASK);
+            LogMessage(LOG_INFO, "START_DEBUG\n", strlen("START_DEBUG\n") );
+            return 0;
+        case DBG_STEP:
+            is_debug = 1;
+            clear_event_bits(DEBUG_BIT_MASK);
+            set_event_bits(STEP_STATE);    
+            LogMessage(LOG_INFO, "STEP\n", strlen("STEP\n") );
+            return 0;
+        case DBG_PAUSE:
+            is_debug = 1;
+            clear_event_bits(DEBUG_BIT_MASK);
+            LogMessage(LOG_INFO, "PAUSE\n", strlen("PAUSE\n") );
+            return 0;
+        case DBG_RESUME:
+            set_event_bits(RUN_STATE);
+            LogMessage(LOG_INFO, "DBG_RESUME\n", strlen("DBG_RESUME\n") );    
+            return 0;
+        case END_DEBUG:
+            is_debug = 0;
+            set_event_bits(RUN_STATE);
+            LogMessage(LOG_INFO, "END_DEBUG\n", strlen("END_DEBUG\n") );    
+            return 0;
+    }
+    LogMessage(LOG_CRITICAL, "END_DEBUG\n", strlen("END_DEBUG\n") );    
+    return UNKNOWN_KEY; 
+}
 
 long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
 {
@@ -62,6 +139,16 @@ void PlcLoop()
         if (WaitForSingleObject(PLC_timer, INFINITE) != WAIT_OBJECT_0){
             PLC_shutdown = 1;
             break;
+        }
+        if (is_debug){
+            uint32_t bits = wait_event_bits(DEBUG_BIT_MASK);
+            switch (bits) {
+                case RUN_STATE:
+                    break;
+                case STEP_STATE:
+                    clear_event_bits(DEBUG_BIT_MASK);
+                    break;
+            }
         }
         PLC_GetTime(&__CURRENT_TIME);
         __run();
@@ -126,7 +213,7 @@ int startPLC(int argc,char **argv)
         printf("startPLC CreateSemaphore python_wait_sem error: %d\n", GetLastError());
         return 1;
     }
-
+    
 
     /* Create a waitable timer */
     timeBeginPeriod(1);
@@ -169,7 +256,7 @@ void LeaveDebugSection(void)
 
 int stopPLC()
 {
- 	
+ 	__tick = 0;
     PLC_shutdown = 1;
     // force last wakeup of PLC thread
     SetWaitableTimer(PLC_timer, 0, 0, NULL, NULL, 0);

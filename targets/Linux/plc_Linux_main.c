@@ -11,9 +11,14 @@
 #include <pthread.h>
 #include <locale.h>
 #include <semaphore.h>
+#include <stdint.h>
 #ifdef REALTIME_LINUX
 #include <sys/mman.h>
 #endif
+
+#define RUN_STATE   (1 << 0)
+#define STEP_STATE  (1 << 1)
+#define DEBUG_BIT_MASK    (RUN_STATE | STEP_STATE)
 
 #define _Log(level,text,...) \
     {\
@@ -32,6 +37,9 @@ static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t python_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t debug_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static pthread_mutex_t event_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t event_cond = PTHREAD_COND_INITIALIZER;
 
 static int PLC_shutdown = 0;
 
@@ -88,6 +96,31 @@ void catch_signal(int sig)
   exit(0);
 }
 
+
+uint32_t event_bits = 0;
+void set_event_bits(uint32_t bits) {
+    pthread_mutex_lock(&event_mutex);
+    event_bits |= bits;
+    pthread_cond_broadcast(&event_cond);  // wake all waiters
+    pthread_mutex_unlock(&event_mutex);
+}
+
+void clear_event_bits(uint32_t bits) {
+    pthread_mutex_lock(&event_mutex);
+    event_bits &= ~bits;
+    pthread_mutex_unlock(&event_mutex);
+}
+
+uint32_t wait_event_bits(uint32_t mask) {
+    pthread_mutex_lock(&event_mutex);
+    while ((event_bits & mask) == 0) {
+        pthread_cond_wait(&event_cond, &event_mutex);
+    }
+    uint32_t bits = event_bits & mask;
+    pthread_mutex_unlock(&event_mutex);
+    return bits;
+}
+
 void PLCThreadSignalHandler(int sig)
 {
     if (sig == SIGUSR2)
@@ -98,20 +131,72 @@ int ForceSaveRetainReq(void) {
     return PLC_shutdown;
 }
 
+static volatile uint8_t is_debug = 0;
+
+int DebugControl(uint8_t key){
+#define START_DEBUG     0
+#define DBG_STEP        1
+#define DBG_PAUSE       2
+#define DBG_RESUME      3
+#define END_DEBUG       4
+#define UNKNOWN_KEY     5
+    switch (key)
+    {
+        case START_DEBUG:
+            //for ignore RTC counters
+            is_debug = 1;
+            clear_event_bits(DEBUG_BIT_MASK);
+            return 0;
+        case DBG_STEP:
+            is_debug = 1;
+            clear_event_bits(DEBUG_BIT_MASK);
+            set_event_bits(STEP_STATE);    
+            return 0;
+        case DBG_PAUSE:
+            is_debug = 1;
+            clear_event_bits(DEBUG_BIT_MASK);
+            return 0;
+        case DBG_RESUME:
+            // clear_event_bits(DEBUG_BIT_MASK);
+            set_event_bits(RUN_STATE);    
+            return 0;
+        case END_DEBUG:
+            is_debug = 0;
+            set_event_bits(RUN_STATE);
+            return 0;
+    }
+    return UNKNOWN_KEY; 
+}
+
 #define MAX_JITTER period_ns/10
 #define MIN_IDLE_TIME_NS 1000000 /* 1ms */
 /* Macro to compare timespec, evaluate to True if a is past b */
 #define timespec_gt(a,b) (a.tv_sec > b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec > b.tv_nsec))
 void PLC_thread_proc(void *arg)
-{
+{   
     /* initialize next occurence and period */
     period_ns = common_ticktime__;
     clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
 
+    
     while (!PLC_shutdown) {
         int res;
         struct timespec plc_end_time;
         int periods = 0;
+        
+       
+        if (is_debug){
+            uint32_t bits = wait_event_bits(DEBUG_BIT_MASK);
+            switch (bits) {
+                case RUN_STATE:
+                    break;
+                case STEP_STATE:
+                    clear_event_bits(DEBUG_BIT_MASK);
+                    break;
+            }
+        }
+        
+    
 #ifdef REALTIME_LINUX
         struct timespec deadline_time;
         struct timespec plc_start_time;
@@ -164,7 +249,7 @@ void PLC_thread_proc(void *arg)
 #ifndef BEREMIZ_TEST_CYCLES
         // ensure next PLC cycle occurence is in the future
         clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
-        while(timespec_gt(plc_end_time, next_cycle_time))
+        while(timespec_gt(plc_end_time, next_cycle_time) )
 #endif
         {
             periods += 1;
@@ -172,7 +257,7 @@ void PLC_thread_proc(void *arg)
         }
 
         // plc execution time overrun detection
-        if(periods > 1) {
+        if(periods > 1 && is_debug == 0) {
             // Mitigate CPU hogging, in case of too small cyclic task interval:
             //  - since cycle deadline already missed, better keep system responsive
             //  - test if next cycle occurs after minimal idle
@@ -249,6 +334,8 @@ int startPLC(int argc,char **argv)
     pthread_mutex_init(&debug_mutex, NULL);
     pthread_mutex_init(&python_wait_mutex, NULL);
     pthread_mutex_init(&python_mutex, NULL);
+    pthread_mutex_init(&event_mutex, NULL);
+    pthread_cond_init(&event_cond, NULL);
 
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
@@ -293,15 +380,18 @@ void LeaveDebugSection(void)
 int stopPLC()
 {
     /* Stop the PLC */
+    __tick = 0;
     PLC_shutdown = 1;
     /* Order PLCThread to exit */
     pthread_kill(PLC_thread, SIGUSR2);
     pthread_join(PLC_thread, NULL);
     __cleanup();
+    pthread_cond_destroy(&event_cond);
     pthread_mutex_destroy(&debug_wait_mutex);
     pthread_mutex_destroy(&debug_mutex);
     pthread_mutex_destroy(&python_wait_mutex);
     pthread_mutex_destroy(&python_mutex);
+    pthread_mutex_destroy(&event_mutex);
     return 0;
 }
 

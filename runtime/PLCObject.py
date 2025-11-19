@@ -263,6 +263,10 @@ class PLCObject(object):
             self._GetLogMessage.restype = ctypes.c_uint32
             self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
 
+            self._DebugControl = self.PLClibraryHandle.DebugControl
+            self._DebugControl.restype = ctypes.c_int
+            self._DebugControl.argtypes = [ctypes.c_uint8]
+
             self._loading_error = None
 
         except Exception:
@@ -313,6 +317,7 @@ class PLCObject(object):
         self._GetLogMessage = None
         self._PLClibraryHandle = None
         self.PLClibraryHandle = None
+        self._DebugControl = lambda x: 0
 
     def _FreePLC(self):
         """
@@ -854,6 +859,11 @@ class PLCObject(object):
 
     def GetVersions(self):
         return platform_module.system() + " " + platform_module.release()
+
+    @RunInMain
+    def DebugControl(self, key):
+        self._DebugControl(key)
+        return 0
 
     @RunInMain
     def ExtendedCall(self, method, argument):
