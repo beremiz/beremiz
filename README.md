@@ -37,13 +37,7 @@ Some example and test are shown on [Beremiz youtube channel](https://www.youtube
 
 ## Development with Beremiz ##
 
-Developers are invited to subscribe to [mailing list](https://sourceforge.net/p/beremiz/mailman/beremiz-devel/) (beremiz-devel@lists.sourceforge.net).
-
-The list is moderated and requires subscription before posting.
-
-To subscribe to the mailing list go [here](https://sourceforge.net/p/beremiz/mailman/beremiz-devel/).
-
-Searchable archive using search engine of your choice is available [here](http://beremiz-devel.2374573.n4.nabble.com/).
+Please use [GitHub's issues](https://github.com/beremiz/beremiz/issues) and [Pull Requests](https://github.com/beremiz/beremiz/pulls) to contribute.
 
 ## Build on Linux (developer setup) ##
 
@@ -51,12 +45,11 @@ Searchable archive using search engine of your choice is available [here](http:/
 ```
 # install required system packages as root
 sudo apt-get install \
-  build-essential automake flex bison mercurial \
+  build-essential automake flex bison \
   libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
   libpython3.10-dev libssl-dev \
-  python3.10 virtualenv cmake git mercurial
+  python3.10 virtualenv cmake git
 ```
-
 
 ### Prepare build directory
 
@@ -65,14 +58,6 @@ All commands hereafter assume that selected directory to contain all downloaded 
 ```
 mkdir ~/Beremiz
 cd ~/Beremiz
-```
-
-### Get Source Code (Mercurial)
-
-```
-cd ~/Beremiz
-hg clone https://hg.beremiz.org/beremiz
-hg clone https://hg.beremiz.org/matiec
 ```
 
 ### Get Source Code (Git)
@@ -109,8 +94,6 @@ Only needed for CANopen support. Please read CanFestival manual to choose CAN in
 ```
 cd ~/Beremiz
 
-hg clone http://hg.beremiz.org/canfestival
-#  -- or --
 git clone https://github.com/beremiz/canfestival
 
 cd ~/Beremiz/canfestival
@@ -125,8 +108,6 @@ Only needed for Modbus support.
 ```
 cd ~/Beremiz
 
-hg clone http://hg.beremiz.org/Modbus
-#  -- or --
 git clone https://github.com/beremiz/Modbus
 
 cd ~/Beremiz/Modbus
@@ -162,7 +143,7 @@ mkdir ~/beremiz_runtime_workdir
 To connect IDE with runtime, enter target location URI in project's settings (project->Config->BeremizRoot/URI_location) pointed to your running Beremiz service in this case :
 
 ```
-PYRO://127.0.0.1:61194
+ERPC://127.0.0.1:61194
 ```
 
 If project's URL is 'LOCAL://', then IDE launches on demand a local instance of Beremiz python runtime working on a temporary directory.
