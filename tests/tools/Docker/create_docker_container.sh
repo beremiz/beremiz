@@ -15,9 +15,9 @@ UNAME=ubuntu
 UHOME=/home/$UNAME
 
 # define TESTDEBUG in env to enable dev-mode. This enables :
-#   - debug pasthrough for Xnest
+#   - debug passthrough for Xnest
 #   - VNC port passthrough
-DEBUGARGS="-v /tmp/.X11-unix/X0:/tmp/.X11-unix/X0 -e DISPLAY=$DISPLAY -p 5900:5900"
+DEBUGARGS="-v /tmp/.X11-unix:/tmp/.X11-unix -v $XAUTHORITY:$XAUTHORITY -e DISPLAY=$DISPLAY -e XAUTHORITY=$XAUTHORITY -p 5900:5900"
 
 echo "Creating docker container"
 docker create \
