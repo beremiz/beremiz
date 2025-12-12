@@ -93,13 +93,13 @@ $(build_dir)/$(1)/$($(1)_checksum).sha1: | $(build_dir) $(workspace)/$(1)
 endef
 $(foreach project,$(BUILT_PROJECTS),$(eval $(call make_src_rule,$(project))))
 
-$(build_dir)/matiec/iec2c: | $(build_dir)/matiec/$(matiec_checksum).sha1
+$(build_dir)/matiec/iec2c: $(build_dir)/matiec/$(matiec_checksum).sha1
 	cd $(build_dir)/matiec && \
     autoreconf -i && \
     ./configure && \
     make
 
-$(build_dir)/open62541/build/bin/libopen62541.a: | $(build_dir)/open62541/$(open62541_checksum).sha1
+$(build_dir)/open62541/build/bin/libopen62541.a: $(build_dir)/open62541/$(open62541_checksum).sha1
 	cd $(build_dir)/open62541 && \
     rm -rf build && mkdir build && cd build && \
 	cmake -D UA_ENABLE_ENCRYPTION=OPENSSL .. && \
@@ -109,7 +109,7 @@ $(build_dir)/Modbus/libmb.a: | $(build_dir)/Modbus/$(Modbus_checksum).sha1
 	cd $(build_dir)/Modbus && \
 	make
 
-$(build_dir)/beremiz/C_runtime/beremiz_runtime: | $(build_dir)/erpc/$(erpc_checksum).sha1
+$(build_dir)/beremiz/C_runtime/beremiz_runtime: $(build_dir)/erpc/$(erpc_checksum).sha1
 	cd $(build_dir)/beremiz/C_runtime && \
 	make
 
