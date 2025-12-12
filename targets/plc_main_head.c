@@ -13,13 +13,26 @@ void config_init__(void);
 /*
  * Prototypes of functions provided by generated target C code
  * */
-long long AtomicCompareExchange64(long long*, long long, long long);
 #ifndef PLC_NO_DEBUG
 void __init_debug(void);
 void __cleanup_debug(void);
 /*void __retrieve_debug(void);*/
 void __publish_debug(void);
 #endif
+
+#ifndef TARGET_LOGGING_DISABLE
+
+#ifndef LOG_BUFFER_SIZE
+#define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
+#endif
+#ifndef LOG_BUFFER_ATTRS
+#define LOG_BUFFER_ATTRS
+#endif
+
+static char LogBuff[LOG_LEVELS][LOG_BUFFER_SIZE] LOG_BUFFER_ATTRS;
+
+#endif
+
 /*
  *  Variables used by generated C softPLC and plugins
  **/
@@ -76,6 +89,10 @@ int __init(int argc,char **argv)
     /* Effective tick time with 1ms default value */
     if(!common_ticktime__)
         common_ticktime__ = 1000000;
+
+#ifndef TARGET_LOGGING_DISABLE
+    memset(LogBuff, 0, sizeof(LogBuff));
+#endif
 
     config_init__();
 #ifndef PLC_NO_DEBUG

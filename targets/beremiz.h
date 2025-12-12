@@ -25,7 +25,7 @@ static inline int LogMessage(uint8_t level, char* buf, uint32_t size)
 int     LogMessage(uint8_t level, char* buf, uint32_t size);
 #endif
 
-long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
+uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t exchange);
 void *create_RT_to_nRT_signal(char* name);
 void delete_RT_to_nRT_signal(void* handle);
 int wait_RT_to_nRT_signal(void* handle);

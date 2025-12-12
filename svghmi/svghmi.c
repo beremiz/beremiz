@@ -39,8 +39,8 @@ typedef enum {
 } buf_state_t;
 
 static int global_write_dirty = 0;
-static long hmitree_rlock = 0;
-static long hmitree_wlock = 0;
+static uint32_t hmitree_rlock = 0;
+static uint32_t hmitree_wlock = 0;
 
 typedef struct hmi_tree_item_s hmi_tree_item_t;
 struct hmi_tree_item_s{

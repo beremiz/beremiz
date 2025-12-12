@@ -46,11 +46,7 @@ unsigned int PLC_state = 0;
 #define DEBUG_PENDING_DATA 1
 #define DEBUG_UNLOCK 1
 
-long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
-{
-    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
-}
-long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
+uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t exchange)
 {
     return __sync_val_compare_and_swap(atomicvar, compared, exchange);
 }

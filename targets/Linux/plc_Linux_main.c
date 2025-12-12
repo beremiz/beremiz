@@ -35,13 +35,14 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int PLC_shutdown = 0;
 
-long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
+// Exchange 'atomicvar' with 'exchange' value if 'atomicvar' is equal to 'compared' value.
+// Returns the value of 'atomicvar' before the exchange.
+uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t exchange)
 {
-    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
-}
-long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
-{
-    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
+    __atomic_compare_exchange_n(atomicvar, &compared, exchange, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    // if it succeeds, 'atomicvar' was equal to 'compared'
+    // if it fails, 'compared' will contain the current value of 'atomicvar'
+    return compared;
 }
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)

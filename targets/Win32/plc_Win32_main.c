@@ -9,21 +9,9 @@
 #include <locale.h>
 
 
-long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
+uint32_t AtomicCompareExchange(uint32_t* atomicvar, uint32_t compared, uint32_t exchange)
 {
     return InterlockedCompareExchange(atomicvar, exchange, compared);
-}
-CRITICAL_SECTION Atomic64CS; 
-long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
-{
-    long long res;
-    EnterCriticalSection(&Atomic64CS);
-    res=*atomicvar;
-    if(*atomicvar == compared){
-        *atomicvar = exchange;
-    }
-    LeaveCriticalSection(&Atomic64CS);
-    return res;
 }
 
 struct timeb timetmp;

@@ -256,19 +256,19 @@ del __ext_name__
 extern  __IEC_%(IECtype)s_t %(configname)s__%(uppername)s;
 IEC_%(IECtype)s __%(name)s_rbuffer = __INIT_%(IECtype)s;
 IEC_%(IECtype)s __%(name)s_wbuffer;
-long __%(name)s_rlock = 0;
-long __%(name)s_wlock = 0;
+uint32_t __%(name)s_rlock = 0;
+uint32_t __%(name)s_wlock = 0;
 int __%(name)s_wbuffer_written = 0;
 void __SafeGetPLCGlob_%(name)s(IEC_%(IECtype)s *pvalue){
     while(AtomicCompareExchange(&__%(name)s_rlock, 0, 1));
     *pvalue = __%(name)s_rbuffer;
-    AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+    AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
 }
 void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
     while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
     __%(name)s_wbuffer = *value;
     __%(name)s_wbuffer_written = 1;
-    AtomicCompareExchange((long*)&__%(name)s_wlock, 1, 0);
+    AtomicCompareExchange((uint32_t*)&__%(name)s_wlock, 1, 0);
 }
 
 """
@@ -288,13 +288,13 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
             %(configname)s__%(uppername)s.value = __%(name)s_wbuffer;
             __%(name)s_wbuffer_written = 0;
         }
-        AtomicCompareExchange((long*)&__%(name)s_wlock, 1, 0);
+        AtomicCompareExchange((uint32_t*)&__%(name)s_wlock, 1, 0);
     }
 """
         varpubfmt = """\
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
         __%(name)s_rbuffer = __GET_VAR(%(configname)s__%(uppername)s);
-        AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+        AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
     }
 """
 
@@ -310,7 +310,7 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
             __%(name)s_rbuffer_written += 1;
             some_change_found = 1;
         }
-        AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+        AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
     }
 """
 
@@ -321,7 +321,7 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
     __%(name)s_onchange_lastval = __%(name)s_rbuffer_lastval;
     /* mark variable as unchanged */
     __%(name)s_rbuffer_written = 0;
-    AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+    AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
 
 """
         vardec = "\n".join([(vardecfmt + vardeconchangefmt

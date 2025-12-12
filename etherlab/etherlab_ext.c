@@ -18,8 +18,8 @@ See COPYING file for copyrights details.
 #define ACQUIRED 1
 #define ANSWERED 2
 
-long SDOLock = FREE;
-extern long AtomicCompareExchange(long* atomicvar,long compared, long exchange);
+uint32_t SDOLock = FREE;
+extern uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t exchange);
 
 int AcquireSDOLock() {
 	return AtomicCompareExchange(&SDOLock, FREE, ACQUIRED) == FREE;

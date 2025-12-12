@@ -7,16 +7,8 @@
  **/
 #ifndef TARGET_LOGGING_DISABLE
 
-#ifndef LOG_BUFFER_SIZE
-#define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
-#endif
-#ifndef LOG_BUFFER_ATTRS
-#define LOG_BUFFER_ATTRS
-#endif
-
 #define LOG_BUFFER_MASK (LOG_BUFFER_SIZE-1)
 
-static char LogBuff[LOG_LEVELS][LOG_BUFFER_SIZE] LOG_BUFFER_ATTRS;
 static void inline copy_to_log(uint8_t level, uint32_t buffpos, void* buf, uint32_t size){
     if(buffpos + size < LOG_BUFFER_SIZE){
         memcpy(&LogBuff[level][buffpos], buf, size);
@@ -49,11 +41,9 @@ typedef struct {
     IEC_TIME time;
 } mTail;
 
-/* Log cursor : 64b
-   |63 ... 32|31 ... 0|
-   | Message | Buffer |
-   | counter | Index  | */
-static uint64_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
+/* Log cursor : 32b index in log buffer, accessed atomically */
+static uint32_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
+static uint32_t LogIndex[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 
 void ResetLogCount(void) {
 	uint8_t level;
@@ -65,31 +55,40 @@ void ResetLogCount(void) {
 /* Store one log message of give size */
 int LogMessage(uint8_t level, char* buf, uint32_t size){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
-        uint32_t buffpos;
-        uint64_t new_cursor, old_cursor;
+        uint32_t new_cursor, old_cursor;
+        uint32_t new_index, old_index;
+        uint32_t result;
 
         mTail tail;
         tail.msgsize = size;
         tail.tick = __tick;
         PLC_GetTime(&tail.time);
 
-        /* We cannot increment both msg index and string pointer 
-           in a single atomic operation but we can detect having been interrupted.
-           So we can try with atomic compare and swap in a loop until operation
-           succeeds non interrupted */
+        /* Try fetch and then increment "atomically" and loop if (unlikely) interrupted.*/
         do{
             old_cursor = LogCursor[level];
-            buffpos = (uint32_t)old_cursor;
-            tail.msgidx = (old_cursor >> 32); 
-            new_cursor = ((uint64_t)(tail.msgidx + 1)<<32) 
-                         | (uint64_t)((buffpos + size + sizeof(mTail)) & LOG_BUFFER_MASK);
-        }while(AtomicCompareExchange64(
-            (long long*)&LogCursor[level],
-            (long long)old_cursor,
-            (long long)new_cursor)!=(long long)old_cursor);
+            new_cursor = ((old_cursor + size + sizeof(mTail)) & LOG_BUFFER_MASK);
+            result = AtomicCompareExchange(
+                (uint32_t*)&LogCursor[level],
+                (uint32_t)old_cursor,
+                (uint32_t)new_cursor);
+        }while((result!=(uint32_t)old_cursor));
 
-        copy_to_log(level, buffpos, buf, size);
-        copy_to_log(level, (buffpos + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
+        /* Doesn't matter much if indices do not strictly follow */
+        do{
+            old_index = LogIndex[level];
+            new_index = old_index + 1;
+            result = AtomicCompareExchange(
+                (uint32_t*)&LogIndex[level],
+                (uint32_t)old_index,
+                (uint32_t)new_index);
+        }while((result!=(uint32_t)old_index));
+
+
+        tail.msgidx = old_index;
+
+        copy_to_log(level, old_cursor, buf, size);
+        copy_to_log(level, old_cursor + size & LOG_BUFFER_MASK, &tail, sizeof(mTail));
 
         return 1; /* Success */
     }else{
@@ -100,28 +99,31 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
 }
 
 uint32_t GetLogCount(uint8_t level){
-    return (uint64_t)LogCursor[level] >> 32;
+    return LogIndex[level];
 }
 
 /* Return message size and content */
 uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec){
-    uint64_t cursor = LogCursor[level];
-    if(cursor){
-        /* seach cursor */
-        uint32_t stailpos = (uint32_t)cursor; 
-        uint32_t smsgidx;
-        mTail tail;
-        tail.msgidx = cursor >> 32;
-        tail.msgsize = 0;
+    if(LogIndex[level] > 0){
+        uint32_t cursor = LogCursor[level];
+        uint32_t stailpos = (cursor - sizeof(mTail)) & LOG_BUFFER_MASK;
+        uint32_t initial_stailpos = stailpos;
+        uint32_t old_stailpos = stailpos;
+        int found = 0;
+
+        mTail tail = {0};
 
         /* Message search loop */
         do {
-            smsgidx = tail.msgidx;
-            stailpos = (stailpos - sizeof(mTail) - tail.msgsize ) & LOG_BUFFER_MASK;
             copy_from_log(level, stailpos, &tail, sizeof(mTail));
-        }while((tail.msgidx == smsgidx - 1) && (tail.msgidx > msgidx));
+            if(tail.msgsize == 0) break;
+            if(found = (tail.msgidx == msgidx)) break;
+            old_stailpos = stailpos;
+            stailpos = (stailpos - sizeof(mTail) - tail.msgsize ) & LOG_BUFFER_MASK;
+        }while(!((stailpos <= initial_stailpos) && (old_stailpos > initial_stailpos)) // don't cross start position
+            && (stailpos != initial_stailpos));                           // don't loop forever
 
-        if(tail.msgidx == msgidx){
+        if(found){
             uint32_t sbuffpos = (stailpos - tail.msgsize ) & LOG_BUFFER_MASK; 
             uint32_t totalsize = tail.msgsize;
             *tick = tail.tick; 

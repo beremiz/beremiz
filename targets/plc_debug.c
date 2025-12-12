@@ -37,7 +37,7 @@ typedef unsigned short trace_buf_offset_t;
 #define TRACE_LIST_SIZE 1024
 
 /* Atomically accessed variable for buffer state */
-static long trace_buffer_state = BUFFER_EMPTY;
+static uint32_t trace_buffer_state = BUFFER_EMPTY;
 
 typedef struct trace_item_s {
     dbgvardsc_index_t dbgvardsc_index;
@@ -210,8 +210,7 @@ unsigned int GetRetainSize(void)
 
 extern void PLC_GetTime(IEC_TIME*);
 extern int TryEnterDebugSection(void);
-extern long AtomicCompareExchange(long*, long, long);
-extern long long AtomicCompareExchange64(long long* , long long , long long);
+extern uint32_t AtomicCompareExchange(uint32_t*, uint32_t, uint32_t);
 extern void LeaveDebugSection(void);
 extern void ValidateRetainBuffer(void);
 extern void InValidateRetainBuffer(void);
@@ -242,7 +241,7 @@ void __publish_debug(void)
     /* Check there is no running debugger re-configuration */
     if(TryEnterDebugSection()){
         /* Lock buffer */
-        long latest_state = AtomicCompareExchange(
+        uint32_t latest_state = AtomicCompareExchange(
             &trace_buffer_state,
             BUFFER_EMPTY,
             BUFFER_FULL);
