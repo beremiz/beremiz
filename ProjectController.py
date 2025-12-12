@@ -2044,6 +2044,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
+        # Check if transfer is done by builder
+        if self._connector.DelegateTransferToBuilder():
+            self.logger.write(_("Transfer is ensured by build system.\n"))
+            return builder.Transfer(self._connector)
+
         # recover md5 from last build
         MD5 = builder.GetBinaryMD5()
 

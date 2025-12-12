@@ -80,4 +80,8 @@ class Builder:
 
     def GetPLCHeadersPreamble(self):
         return ""
-    
+
+    def Transfer(self, connector):
+        self.CTRInstance.logger.write_error("Target doesn't support direct transfer/flashing !\n")
+        return False
+
