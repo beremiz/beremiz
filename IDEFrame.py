@@ -673,8 +673,8 @@ class IDEFrame(wx.Frame):
         self.AUIManager.Update()
 
     def __init__(self, parent, enable_debug=False):
-        wx.Frame.__init__(self, id=ID_PLCOPENEDITOR, name='IDEFrame',
-                          parent=parent, pos=wx.DefaultPosition,
+        wx.Frame.__init__(self, parent, id=ID_PLCOPENEDITOR, name='IDEFrame',
+                          pos=wx.DefaultPosition,
                           size=wx.Size(1000, 600),
                           style=wx.DEFAULT_FRAME_STYLE)
 
@@ -682,6 +682,9 @@ class IDEFrame(wx.Frame):
 
         self.Controler = None
         self.Config = wx.ConfigBase.Get()
+        
+        # Enable debug (variable trace/force) and other beremiz related features
+        # False in PLCOpenEditor
         self.EnableDebug = enable_debug
 
         self.InitEditorToolbarItems()

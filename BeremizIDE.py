@@ -434,12 +434,18 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         self.ProgressStatusBar.Hide()
         self.SetStatusBar(self.ConnectionStatusBar)
 
-    def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, debug=True, logf=None):
+    def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, devmode=False, logf=None):
+
+        self.devmode = devmode
 
         # Add beremiz's icon in top left corner of the frame
         self.icon = wx.Icon(Bpath("images", "brz.ico"), wx.BITMAP_TYPE_ICO)
 
-        IDEFrame.__init__(self, parent, debug)
+        IDEFrame.__init__(self, parent, True)
+        
+        if devmode and logf is None:
+            logf = sys.stdout
+
         self.Log = LogPseudoFile(self.LogConsole, self.SelectTab, logf)
 
         LocalRuntimeMixin.__init__(self, self.Log)
@@ -493,8 +499,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshAfterLoad()
-        if self.EnableDebug:
-            self.DebugVariablePanel.SetDataProducer(self.CTR)
+        self.DebugVariablePanel.SetDataProducer(self.CTR)
 
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, DISPLAYMENU)
         self.RefreshAll()
@@ -821,9 +826,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             self.CTR.CloseProject()
         self.CTR = None
         self.Log.flush()
-        if self.EnableDebug:
-            self.DebugVariablePanel.SetDataProducer(None)
-            self.ResetConnectionStatusBar()
+        self.DebugVariablePanel.SetDataProducer(None)
+        self.ResetConnectionStatusBar()
 
     def RefreshConfigRecentProjects(self, projectpath, err=False):
         try:
@@ -872,8 +876,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
                 self.RefreshConfigRecentProjects(projectpath)
-                if self.EnableDebug:
-                    self.DebugVariablePanel.SetDataProducer(self.CTR)
+                self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self.RefreshAfterLoad()
                 IDEFrame.OnAddNewProject(self, event)
             else:
@@ -914,8 +917,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
-                if self.EnableDebug:
-                    self.DebugVariablePanel.SetDataProducer(self.CTR)
+                self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self.RefreshAfterLoad()
             else:
                 self.CTR = None

@@ -194,7 +194,7 @@ class BeremizIDELauncher(object):
         self.handle_exception = util.ExceptionHandler.AddExceptHook(version.app_version, logf=self.logf)
 
     def CreateUI(self):
-        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath, logf=self.logf)
+        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath, logf=self.logf, devmode=self.devmode)
 
     def CloseSplash(self):
         if self.splash:
