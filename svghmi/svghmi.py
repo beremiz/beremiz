@@ -987,3 +987,6 @@ def _runtime_{location}_svghmi_stop():
 
     def GetIconName(self):
         return "SVGHMI"
+
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"

@@ -111,7 +111,7 @@ class toolchain_gcc(Builder):
 
     def calc_source_md5(self):
         wholesrcdata = ""
-        for _Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+        for _Location, CFilesAndCFLAGS, _DoCalls, *_req in self.CTRInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
             for CFile, _CFLAGS in CFilesAndCFLAGS:
                 CFileName = os.path.basename(CFile)
@@ -150,7 +150,7 @@ class toolchain_gcc(Builder):
         obns = []
         objs = []
         relink = not os.path.exists(self.bin_path)
-        for Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+        for Location, CFilesAndCFLAGS, _DoCalls, *_req in self.CTRInstance.LocationCFilesAndCFLAGS:
             if CFilesAndCFLAGS:
                 if Location:
                     self.CTRInstance.logger.write(".".join(map(str, Location))+" :\n")

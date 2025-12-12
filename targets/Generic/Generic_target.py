@@ -48,7 +48,7 @@ class Generic_target(Builder):
         srcfiles = []
         cflags = []
         wholesrcdata = ""
-        for _Location, CFilesAndCFLAGS, _DoCalls in self.CTRInstance.LocationCFilesAndCFLAGS:
+        for _Location, CFilesAndCFLAGS, _DoCalls, *_req in self.CTRInstance.LocationCFilesAndCFLAGS:
             # Get CFiles list to give it to makefile
             for CFile, CFLAGS in CFilesAndCFLAGS:
                 CFileName = os.path.basename(CFile)
