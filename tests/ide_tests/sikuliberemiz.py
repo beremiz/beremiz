@@ -52,7 +52,7 @@ class KBDShortcut:
             fkey = (fkey,)
 
         def PressShortCut():
-            self.app.sikuliapp.focus()
+            # self.app.sikuliapp.focus()
             sikuli.type(*fkey)
             self.app.ReportText("Sending " + name + " shortcut")
 
