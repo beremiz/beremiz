@@ -190,6 +190,9 @@ typedef struct {
 
 } beremiz_plc_ABI;
 
+#define BEREMIZ_PLC_ABI_MAGIC 0x1EC61131
+#define BEREMIZ_PLC_ABI_VERSION 0x1
+
 #endif // PLC_USES_ABI
 
 #endif
