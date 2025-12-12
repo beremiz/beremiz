@@ -2,7 +2,7 @@ aiofiles==24.1.0
 aiosqlite==0.21.0
 asyncua @ git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82
 attrs==25.3.0
-autobahn==24.4.2
+autobahn @ git+https://github.com/crossbario/autobahn-python.git@7bc85b34e200640ab98a41cfddb38267f39bc92e
 Automat==25.4.16
 Brotli==1.1.0
 cffi==1.17.1

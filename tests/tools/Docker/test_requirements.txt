@@ -13,14 +13,14 @@ bitarray==3.5.2
 bitstring==4.3.1
 cbor2==5.6.5
 certifi==2025.7.14
-cfxdb==23.12.1
+cfxdb @ git+https://github.com/crossbario/cfxdb.git@c54a8043865abb29726daf6565693265e8830e33
 chardet==5.2.0
 charset-normalizer==3.4.2
 ckzg==2.1.1
 colorama==0.4.6
 cookiecutter==2.6.0
 cramjam==2.10.0
-crossbar==22.6.1
+crossbar @ git+https://git@github.com/crossbario/crossbar.git@c1a78363866be39e9e624226980bbe2d90e9fd65
 cytoolz==1.0.1
 ddt==1.7.2
 docker==7.1.0
@@ -67,13 +67,16 @@ propcache==0.3.2
 psutil==7.0.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
+py-cid @ git+https://github.com/crossbario/py-cid.git@e1dc52a43ced53845679405f78d92fb18f093653
 pycryptodome==3.23.0
 pydantic==2.11.7
 pydantic_core==2.33.2
 py-ecc==8.0.0
 py-eth-sig-utils==0.4.0
 Pygments==2.19.2
-py-multihash==2.0.1
+py-multibase==1.0.3
+py-multicodec==0.2.1
+py-multihash @ git+https://github.com/crossbario/py-multihash.git@86b54b8f9f0cf14c7370f38ae32f2b4b14f5b5e0
 PyNaCl==1.5.0
 PyQRCode==1.2.1
 pytest==8.4.1
@@ -114,6 +117,6 @@ websockets==15.0.1
 Werkzeug==1.0.1
 wsaccel==0.6.7
 xbr==21.2.1
-yapf==0.29.0
+yapf==0.43.0
 yarl==1.20.1
-zlmdb==23.1.1
+zlmdb @ git+https://github.com/crossbario/zlmdb.git@16270e41d5fadd2615cd735723cb629700fa12e8
