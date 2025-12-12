@@ -84,9 +84,14 @@ jobs:
         cd beremiz/tests/tools/Docker
         ./do_test_in_docker.sh
 
-    - name: Upload test resuts artifact
+    - name: Prepare test results for artifact upload
+      run: |
+        cd beremiz/tests/tools/Docker
+        # change ownership of test results to back to current user
+        ./exec_in_docker_as_root.sh "chown -R $(id -u):$(id -g) /home/ubuntu/test"
+
+    - name: Upload test results artifact
       uses: actions/upload-artifact@v4
-      if: failure()
       with:
         name: test_results
         path: ${{ github.workspace }}/test
