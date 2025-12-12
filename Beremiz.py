@@ -48,6 +48,7 @@ class BeremizIDELauncher(object):
         self.modules = ["BeremizIDE"]
         self.handle_exception = None
         self.logf = None
+        self.devmode = False
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
