@@ -38,15 +38,18 @@ from util.ProcessLogger import ProcessLogger
 includes_re = re.compile(r'\s*#include\s*["<]([^">]*)[">].*')
 
 
-def compute_file_md5(filetocheck):
+def compute_file_md5(filestocheck):
     hasher = hashlib.md5()
-    with open(filetocheck, 'rb') as afile:
-        while True:
-            buf = afile.read(65536)
-            if len(buf) > 0:
-                hasher.update(buf)
-            else:
-                break
+    if type(filestocheck) is str:
+        filestocheck = [filestocheck]
+    for filetocheck in filestocheck:
+        with open(filetocheck, 'rb') as afile:
+            while True:
+                buf = afile.read(65536)
+                if len(buf) > 0:
+                    hasher.update(buf)
+                else:
+                    break
     return hasher.hexdigest()
 
 

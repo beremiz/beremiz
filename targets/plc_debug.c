@@ -276,7 +276,7 @@ void __publish_debug(void)
             /* iterate over trace list */
             while(trace_list_collect_cursor < trace_list_addvar_cursor){
                 void *value_p = NULL;
-                size_t size;
+                size_t size = 0;
                 char* next_cursor;
 
                 dbgvardsc_t *dsc = &dbgvardsc[
@@ -320,7 +320,7 @@ void __publish_debug(void)
     /* iterate over retain list */
     while(retain_list_collect_cursor < retain_list_size){
         void *value_p = NULL;
-        size_t size;
+        size_t size = 0;
         char* next_cursor;
 
         dbgvardsc_t *dsc = &dbgvardsc[
