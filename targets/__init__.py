@@ -3,7 +3,7 @@
 
 # This file is part of Beremiz IDE
 #
-# Copyright (C) 2007: Laurent BESSARD
+# Copyright (C) 2013: Laurent BESSARD
 # Copyright (C) 2017: Andrey Skvortsov
 # Copyright (C) 2025: Edouard TISSERANT
 #
@@ -15,52 +15,42 @@
 """
 Beremiz Targets
 
-- Target are python packages, containing at least one "XSD" file
-- Target class may inherit from a toolchain_(toolchainname)
+- Targets are python packages, containing "XSD" string and a target module containing a class inheriting from Builder
 - The target folder's name must match to name define in the XSD for TargetType
 """
 
 
-from os import listdir, path
-import util.paths as paths
 import importlib
+import util.paths as paths
+from os import listdir, path
 
-_base_path = paths.AbsDir(__file__)
-
-
-# Lazy loading of target classes
-def _GetLocalTargetClassFactory(name):
-    def __GetLocalTargetClassFactory():
-        kls = getattr(importlib.import_module(f"targets.{name}.{name}_target"), f"{name}_target")
-        kls.GetTargetName = classmethod(lambda cls: name) # Add target name to class intependently of class name
-        return kls
-    return __GetLocalTargetClassFactory
 
 targets = {}
 targetchoices = ""
-for name in listdir(_base_path):
-    if (path.isdir(path.join(_base_path, name)) and
-        not name.startswith("__")):
-        targets[name] = {"class": _GetLocalTargetClassFactory(name),
-                         "code":  {fname: path.join(_base_path, name, fname)
-                                  for fname in listdir(path.join(_base_path, name))
-                                  if (fname.startswith("plc_%s_main" % name) and
-                                      fname.endswith(".c"))}}
-        targetchoices += getattr(importlib.import_module(f"targets.{name}"), f"XSD")
+for name in sorted(listdir(__path__[0])):
+    if (path.isdir(path.join(__path__[0], name)) and not name.startswith("__")):
+        module = importlib.import_module(f"targets.{name}")
+        targets[name] = module
+        targetchoices += getattr(module, f"XSD")
 
 
-def GetBuilder(targetname):
-    return targets[targetname]["class"]()
+def GetBuilder(targename):
+    assert(targename in targets)
+    kls = getattr(importlib.import_module(f"targets.{targename}.{targename}_target"), f"{targename}_target")
+    kls.GetTargetName = classmethod(lambda cls: targename) # Add target name to class intependently of class name
+    return kls
 
 
 def GetTargetChoices():
     return targetchoices
 
 
-def GetTargetCode(targetname):
-    codedesc = targets[targetname]["code"]
-    code = "\n".join([open(fpath).read() for _fname, fpath in sorted(codedesc.items())])
-    return code
+def GetTargetCode(name):
+    targetdir = targets[name].__path__[0]
+    return "\n".join([open(path.join(targetdir, fname)).read()
+                      for fname in sorted(listdir(targetdir))
+                      if (fname.startswith("plc_%s_main" % name)
+                          and fname.endswith(".c"))])
 
 
 def GetHeader():
