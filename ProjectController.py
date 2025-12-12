@@ -193,7 +193,7 @@ def GetProjectControllerXSD():
       <xsd:element name="BeremizRoot">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:element name="TargetType">
+            <xsd:element name="TargetType" minOccurs="0" maxOccurs="1">
               <xsd:complexType>
                 <xsd:{xsd_tag} minOccurs="1">
                    {"\n".join(target_choices)}
