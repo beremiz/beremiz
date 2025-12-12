@@ -10,6 +10,8 @@
 #include <pthread.h>
 #include <locale.h>
 #include <semaphore.h>
+#include <math.h>
+#include <stdarg.h>
 #include <dispatch/dispatch.h>
 
 static dispatch_semaphore_t Run_PLC;
@@ -26,6 +28,28 @@ void PLC_GetTime(IEC_TIME * CURRENT_TIME)
     CURRENT_TIME->tv_sec = tmp.tv_sec;
     CURRENT_TIME->tv_nsec = tmp.tv_nsec;
 }
+
+int iec_lib_snprintf(char *__s, size_t __maxlen, const char *__format, ...)
+{
+	va_list args;
+	va_start(args, __format);
+	int ret = vsnprintf(__s, __maxlen, __format, args);
+	va_end(args);
+	return ret;
+}
+
+double iec_lib_acos(double x) { return acos(x); }
+double iec_lib_asin(double x) { return asin(x); }
+double iec_lib_atan(double x) { return atan(x); }
+double iec_lib_cos(double x) { return cos(x); }
+double iec_lib_exp(double x) { return exp(x); }
+double iec_lib_fmod(double x, double y) { return fmod(x, y); }
+double iec_lib_log(double x) { return log(x); }
+double iec_lib_log10(double x) { return log10(x); }
+double iec_lib_pow(double x, double y) { return pow(x, y); }
+double iec_lib_sin(double x) { return sin(x); }
+double iec_lib_sqrt(double x) { return sqrt(x); }
+double iec_lib_tan(double x) { return tan(x); }
 
 dispatch_queue_t queue;
 dispatch_source_t PLC_timer;
