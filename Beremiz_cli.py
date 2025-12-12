@@ -29,10 +29,19 @@ pass_session = click.make_pass_decorator(CLISession)
 )
 @click.option(
     "--config",
-    nargs=2,
+    nargs=3,
     multiple=True,
-    metavar="KEY VALUE",
-    help="Overrides a config key/value pair.",
+    metavar="KEY TYPE VALUE",
+    help="""Overrides a config key/value pair.
+    KEY:
+        ex: TargetType.Board.BuildType.EnableMCUBoot
+    
+    TYPE=boolean/string/integer
+    VALUE:
+        boolean: true/false
+        string: "string with space"
+        integer: 1234
+    """,
 )
 @click.option(
     "--keep", "-k", is_flag=True,

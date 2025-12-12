@@ -127,8 +127,12 @@ class CLIController(LocalRuntimeMixin, ProjectController):
             return True
 
     def apply_config(self):
-        for k,v in self.session.config:
-            self.SetParamsAttribute("BeremizRoot."+k, v)
+        for k,t,v in self.session.config:
+            _t = {
+                "boolean": lambda val:val=="true",
+                "string": lambda val:val,
+                "integer": lambda val:int(val)}[t]
+            self.SetParamsAttribute("BeremizRoot."+k, _t(v))
 
     @with_project_loaded
     def clean_project(self):
