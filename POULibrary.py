@@ -69,6 +69,18 @@ class POULibrary(object):
         raise Exception("Not implemented")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
+        """
+        Generate C code for Libraries
+        
+        Generate_C returns a tuple :
+          (["library_name"],[(Cfiles, CFLAGS)], DoCalls), LDFLAGS, *extra_files
+
+        extra_files is:
+          [(fname,fobject), ...]
+          
+        DoCalls is either a Boolean, a dictionary, or a string,
+        see definitions in ConfigTreeNode.CTNGenerate_C
+        """
         # Pure python or IEC libs doesn't produce C code
         return ((""), [], False), ""
 

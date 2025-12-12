@@ -270,7 +270,8 @@ class ConfigTreeNode(object):
 
     def CTNGenerate_C(self, buildpath, locations):
         """
-        Generate C code
+        Generate C code for CTNs
+        
         @param locations: List of complete variables locations \
             [{"IEC_TYPE" : the IEC type (i.e. "INT", "STRING", ...)
             "NAME" : name of the variable (generally "__IW0_1_2" style)
@@ -278,7 +279,38 @@ class ConfigTreeNode(object):
             "SIZE" : size "X", "B", "W", "D", "L"
             "LOC" : tuple of interger for IEC location (0,1,2,...)
             }, ...]
-        @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
+        @return: [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
+
+
+        CTNGenerate_C returns a tuple :
+          [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
+          
+        extra_files is:
+          [(fname,fobject), ...]
+          
+        DoCalls is either a Boolean, a dictionary, or a string
+            True: 
+                - file exposes symbols to call on 
+                init, cleanup, retrieve, publish
+            False:
+                - file do not exposes symbols
+            Dictionary:
+                - file exposes symbols to call on
+                init, cleanup, retrieve, publish
+                - init call takes pointer to extension
+                ABI structure instance
+                - dictionary contains:
+                    extention_name -> str
+                    current_version -> int
+                    minimum_version -> int
+            String:
+                - "runtime_ABI" file is meant to be compiled
+                and link with runtime
+                - file exposes symbols to call INDIRECTLY on 
+                init, cleanup, retrieve, publish
+                - location string is associated with __bind_{location}
+                call in an extension descriptor, used by StartPLC
+              
         """
         self.GetCTRoot().logger.write_warning(".".join(map(str, self.GetCurrentLocation())) + " -> Nothing to do\n")
         return [], "", False
@@ -286,14 +318,22 @@ class ConfigTreeNode(object):
     def _Generate_C(self, buildpath, locations):
         if self.CTNParent is not None:
             self.CTNParent.CheckChildCompatible(self)
-        # Generate confnodes [(Cfiles, CFLAGS)], LDFLAGS, DoCalls, extra_files
-        # extra_files = [(fname,fobject), ...]
-        gen_result = self.CTNGenerate_C(buildpath, locations)
-        CTNCFilesAndCFLAGS, CTNLDFLAGS, DoCalls = gen_result[:3]
-        extra_files = gen_result[3:]
-        # if some files have been generated put them in the list with their location
+
+        (
+            CTNCFilesAndCFLAGS,
+            CTNLDFLAGS,
+            DoCalls,
+            *extra_files
+        ) = self.CTNGenerate_C(buildpath, locations)
+
         if CTNCFilesAndCFLAGS:
-            LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(), CTNCFilesAndCFLAGS, DoCalls)]
+            LocationCFilesAndCFLAGS = [(self.GetCurrentLocation(),
+                                        CTNCFilesAndCFLAGS, 
+                                        *(
+                                            (True, DoCalls) 
+                                            if type(DoCalls) == dict else 
+                                            (DoCalls,)
+                                        ))]
         else:
             LocationCFilesAndCFLAGS = []
 

@@ -705,7 +705,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             LocatedCCodeAndFlags.append(res[:2])
             if len(res) > 2:
                 Extras.extend(res[2:])
-        return list(map(list, list(zip(*LocatedCCodeAndFlags)))) + [tuple(Extras)]
+        return list(map(list, list(zip(*LocatedCCodeAndFlags)))) + [Extras]
 
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
@@ -1189,9 +1189,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         # filter location that are related to code that will be called
         # in retreive, publish, init, cleanup
-        locreqs = [("_".join(map(str, loc)), requirements)
+        locreqs = [("_".join(map(str, loc)),
+                    requirements[0] if requirements else None)
                    for loc, _Cfiles, DoCalls, *requirements in
-                   self.LocationCFilesAndCFLAGS if loc and DoCalls]
+                   self.LocationCFilesAndCFLAGS if loc and DoCalls==True]
         
         plc_main_fields = {
             "calls_prototypes": "\n".join([
