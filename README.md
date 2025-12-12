@@ -23,6 +23,14 @@ See official [Beremiz website](https://beremiz.org/) for more information.
 
 [Beremiz company](https://beremiz.fr/) develops and maintains the Beremiz Free Software project while also providing professional support services.
 
+## Licensing ##
+
+Beremiz IDE source code is licensed under the [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) or later, see COPYING_for_IDE.
+
+Beremiz Python runtime source code is licensed under the [LPGLv2](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html) or later, see COPYING_for_Python_Runtime.
+
+Beremiz C++ runtime source code is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html) or later, see COPYING_for_C_Runtime.
+
 ## Install latest release ##
 
 Windows installer and Snap package for Linux are available in [Github releases](https://github.com/beremiz/beremiz/releases) and [Snapcraft's store](https://snapcraft.io/beremiz)

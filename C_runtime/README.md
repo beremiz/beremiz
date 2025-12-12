@@ -1,6 +1,6 @@
 # Beremiz C++ runtime
 
-This project is licensed under the [LPGLv2](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html) license.
+Beremiz C++ runtime source code is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html) or later, see COPYING_for_C_Runtime.
 
 ## Warning: Work in Progress
 
