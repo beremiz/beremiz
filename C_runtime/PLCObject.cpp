@@ -15,7 +15,7 @@
 // File name of the extra files list
 #define ExtraFilesList "extra_files.txt"
 #define MAX_ERPC_PAYLOAD_SIZE 4096
-#define DEBUGGER_TIMEOUT 3000
+#define DEBUGGER_TIMEOUT_S 3
 
 PLCObject::PLCObject(void)
 {
@@ -181,7 +181,10 @@ uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
 uint32_t PLCObject::GetTraceVariables(
     uint32_t debugToken, TraceVariables *traces)
 {
-    tick_debugger_presence = Get_uptime();
+    if (m_status.PLCstatus == Started)
+    {
+        m_PLCSyms.PLC_GetTime(&last_uploaded_trace);
+    }
 
     // Check if there are any traces
     TraceMutexLock();
@@ -411,7 +414,7 @@ uint32_t PLCObject::SetTraceVariablesList(
         return 0;
     }
 
-    tick_debugger_presence = Get_uptime();
+    m_PLCSyms.PLC_GetTime(&last_uploaded_trace);
 
     // increment debug token
     m_debugToken++;
@@ -514,92 +517,94 @@ void PLCObject::TraceThreadProc(void)
 
     while(m_status.PLCstatus == Started)
     {
-            unsigned int tick;
-            unsigned int size;
-            void * buff;
+        unsigned int tick;
+        unsigned int size;
+        void * buff;
 
+        int res;
+
+        if((res = m_PLCSyms.GetDebugData(&tick, &size, &buff)) == 0){
             // Data allocated here is meant to be erpc_mallocd by eRPC server code
             uint8_t* ourData = NULL;
 
-            int res = m_PLCSyms.GetDebugData(&tick, &size, &buff);
-
-            if(res == 0)
-            {   
-                ourData = (uint8_t *)erpc_malloc(size);
-                if(ourData != NULL)
-                {
-                    memcpy(ourData, buff, size);
-                }
-                m_PLCSyms.FreeDebugData();
-            }
-
-            // PLC shutdown
-            if (res)
-            {
-                err = 0;
+            ourData = (uint8_t *)erpc_malloc(size);
+            if(ourData == NULL){
+                err = ENOMEM;
                 break;
             }
 
-                if(ourData == NULL)
+            memcpy(ourData, buff, size);
+
+            m_PLCSyms.FreeDebugData();
+
+            IEC_TIMESPEC now;
+            m_PLCSyms.PLC_GetTime(&now);
+
+            if(now.tv_sec - last_uploaded_trace.tv_sec >= DEBUGGER_TIMEOUT_S)
+            {
+                //release lock before suspending debug
+                m_PLCSyms.resumeDebug();
+                m_PLCSyms.suspendDebug(1);
+                erpc_free(ourData);
+                break;
+            }
+            else
+            {
+                // exact size of the trace_sample without the pointer on buffer and taking the buffer instead
+                // because size is limited regarding of the max erpc payload
+                // size of trace_sample struct + buffer + tick + datalength
+                std::size_t new_sample_size = sizeof(trace_sample) + size + sizeof(uint32_t) + sizeof(uint32_t);
+
+                TraceMutexLock();
+
+                // if payload size would become too large we cant put newest sample, so we keep droping oldest ones
+                while (((m_trace_byte_size + new_sample_size) > MAX_ERPC_PAYLOAD_SIZE) && (count_array > 0))
                 {
-                    err = res == 0 ? ENOMEM : res ;
-                    break;
+                    auto& oldest = m_traces[tail_array];
+                    std::size_t removed_size = sizeof(trace_sample) + oldest.TraceBuffer.dataLength + sizeof(uint32_t) + sizeof(uint32_t);
+                    m_trace_byte_size -= removed_size;
+                    erpc_free(oldest.TraceBuffer.data);
 
+                    tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
+                    count_array--;
                 }
-                else if(Get_uptime() - tick_debugger_presence > DEBUGGER_TIMEOUT )
+
+                // oldest sample is dropped before inserting a new one if ring buffer is full
+                if (count_array == MAX_ELEMENTS_TRACE)
                 {
-                    m_PLCSyms.suspendDebug(1);
+                    trace_sample& overwritten = m_traces[tail_array];
+                    std::size_t overwritten_size = sizeof(trace_sample) + overwritten.TraceBuffer.dataLength + sizeof(uint32_t) + sizeof(uint32_t);
+                    m_trace_byte_size -= overwritten_size;
+                    erpc_free(overwritten.TraceBuffer.data);
+
+                    tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
+                    count_array--;
                 }
-                else 
-                {   
 
-                    // exact size of the trace_sample without the pointer on buffer and taking the buffer instead
-                    // because size is limited regarding of the max erpc payload
-                    // size of trace_sample struct + buffer + tick + datalength
-                    std::size_t new_sample_size = sizeof(trace_sample) + size + sizeof(uint32_t) + sizeof(uint32_t);
-                        
-                    TraceMutexLock();
-                    
-                    // we cant put newest sample keep droping oldest ones
-                    if (((m_trace_byte_size + new_sample_size) > MAX_ERPC_PAYLOAD_SIZE) && (count_array > 0))
-                    {
-                        auto& oldest = m_traces[tail_array];
-                        std::size_t removed_size = sizeof(trace_sample) + oldest.TraceBuffer.dataLength + sizeof(uint32_t) + sizeof(uint32_t);
-                        m_trace_byte_size -= removed_size;
-                        erpc_free(oldest.TraceBuffer.data);
+                // insert the new sample
+                m_traces[head_array] = (trace_sample{tick, binary_t{ourData, size}});
+                m_trace_byte_size = m_trace_byte_size + new_sample_size;
+                head_array = (head_array + 1) % MAX_ELEMENTS_TRACE;
+                count_array ++;
 
-                        tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
-                        count_array--;
-                    }
+                TraceMutexUnlock();
+                
+                m_PLCSyms.resumeDebug();
+            }
+        } else {
+            // PLC shutdown
+            err = 0;
+            break;
+        }
 
-                    // oldest sample is drop before rewrite
-                    if (count_array == MAX_ELEMENTS_TRACE)
-                    {
-                        trace_sample& overwritten = m_traces[tail_array];
-                        std::size_t overwritten_size = sizeof(trace_sample) + overwritten.TraceBuffer.dataLength + sizeof(uint32_t) + sizeof(uint32_t);
-                        m_trace_byte_size -= overwritten_size;
-                        erpc_free(overwritten.TraceBuffer.data);
-
-                        tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
-                        count_array--;
-                    }
-
-                    // insert the new sample
-                    m_traces[head_array] = (trace_sample{tick, binary_t{ourData, size}});
-                    m_trace_byte_size = m_trace_byte_size + new_sample_size;       
-                    head_array = (head_array + 1) % MAX_ELEMENTS_TRACE;    
-                    count_array ++;
-
-                    TraceMutexUnlock(); 
-                }   
     }
     m_PLCSyms.FreeDebugData();
 
     PurgeTraceBuffer();
 
     LogMessage(err ? LOG_CRITICAL : LOG_INFO,
-        err == ENOMEM ? "Out of memory in TraceThreadProc" : 
-        err ? "TraceThreadProc ended because of error" : 
+        err == ENOMEM ? "Out of memory in TraceThreadProc" :
+        err ? "TraceThreadProc ended because of error" :
         "TraceThreadProc ended normally");
     StopDebugThread();
 }

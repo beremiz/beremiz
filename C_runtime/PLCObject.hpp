@@ -15,6 +15,8 @@
 
 #include "erpc_PLCObject_interface.hpp"
 
+#include "iec_types.h"
+
 using namespace erpcShim;
 
 #define MAX_ELEMENTS_TRACE 10
@@ -34,7 +36,8 @@ using namespace erpcShim;
     ACTION(ResetLogCount)\
     ACTION(GetLogCount)\
     ACTION(LogMessage)\
-    ACTION(GetLogMessage)
+    ACTION(GetLogMessage)\
+    ACTION(PLC_GetTime)
 
 extern "C" {   
     typedef struct s_PLCSyms{
@@ -51,6 +54,7 @@ extern "C" {
         uint32_t (*GetLogCount)(uint8_t level);
         int (*LogMessage)(uint8_t level, char* buf, uint32_t size);
         uint32_t (*GetLogMessage)(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec);
+        void (*PLC_GetTime)(IEC_TIME *CURRENT_TIME);
     } PLCSyms;
 }
 class PLCObject : public BeremizPLCObjectService_interface
@@ -84,13 +88,13 @@ class PLCObject : public BeremizPLCObjectService_interface
     protected:
 
         // used to monitor presence de beremiz debugger
-        uint64_t tick_debugger_presence;
+        IEC_TIMESPEC last_uploaded_trace;
 
         // A map of all the blobs
         std::map<std::vector<uint8_t>, Blob*> m_mapBlobIDToBlob;
 
         // Symbols resolved from the PLC object
-        PLCSyms m_PLCSyms;
+        PLCSyms m_PLCSyms = {0};
 
         // argc and argv for the PLC object
         int m_argc;
@@ -113,7 +117,6 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint8_t head_array = 0;
         uint32_t m_trace_byte_size;
 
-        virtual uint64_t Get_uptime() = 0;
         virtual uint32_t LoadPLC(void) = 0;
         virtual uint32_t UnLoadPLC(void) = 0;
         virtual uint32_t PurgePLC(void) = 0;

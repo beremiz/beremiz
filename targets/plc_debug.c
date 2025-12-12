@@ -318,7 +318,10 @@ void __publish_debug(void)
             /* Leave debug section,
              * Trigger asynchronous transmission 
              * (returns immediately) */
-            InitiateDebugTransfer(__tick); /* size */
+            if (trace_list_collect_cursor != trace_list)
+            {
+                InitiateDebugTransfer(__tick); /* size */
+            }
         }
         LeaveDebugSection();
     }
