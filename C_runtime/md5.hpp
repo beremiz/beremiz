@@ -62,9 +62,9 @@ public:
         digestsize = 16
     };    
 
-private:
     void init();
 
+private:
     void transform(const uint8_t block[blocksize]);
     static void decode(uint32_t output[], const uint8_t input[], size_type len);
     static void encode(uint8_t output[], const uint32_t input[], size_type len);

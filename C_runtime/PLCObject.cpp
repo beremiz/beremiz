@@ -235,6 +235,8 @@ uint32_t PLCObject::NewPLC(
     const char *md5sum, const binary_t *plcObjectBlobID,
     const list_extra_file_1_t *extrafiles, bool *success)
 {
+    uint32_t res;
+
     if(m_status.PLCstatus == Started)
     {
         *success = false;
@@ -254,10 +256,15 @@ uint32_t PLCObject::NewPLC(
     PurgePLC();
 
     // Save blobs to files
-    SaveBlobs(md5sum, plcObjectBlobID, extrafiles);
+    res = SaveBlobs(md5sum, plcObjectBlobID, extrafiles);
+    if (res != 0)
+    {
+        *success = false;
+        return res;
+    }
 
     // Load the PLC object
-    uint32_t res = LoadPLC();
+    res = LoadPLC();
     if (res != 0)
     {
         *success = false;
@@ -314,14 +321,13 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
     // Return 0 if success
 
     Blob *blob = NULL;
-    try
+    blob = NewBlob();
+    if(blob == NULL)
     {
-        blob = NewBlob(seed->data, seed->dataLength);
+        return ENOMEM;
     }
-    catch (int e)
-    {
-        return e;
-    }
+
+    blob->Seed(seed->data, seed->dataLength);
 
     MD5::digest_t digest = blob->digest();
 

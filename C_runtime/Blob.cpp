@@ -1,6 +1,10 @@
 #include "Blob.hpp"
 
-Blob::Blob(uint8_t *seedData, size_t seedLength)
+Blob::Blob()
+{
+}
+
+void Blob::Seed(uint8_t *seedData, size_t seedLength)
 {
     // Seed the MD5 hash with the seed data
     md5.update(seedData, seedLength);

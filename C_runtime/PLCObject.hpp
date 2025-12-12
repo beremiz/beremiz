@@ -104,7 +104,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         virtual uint32_t LoadPLC(void) = 0;
         virtual uint32_t UnLoadPLC(void) = 0;
         virtual uint32_t PurgePLC(void) = 0;
-        virtual void SaveBlobs(
+        virtual uint32_t SaveBlobs(
             const char *md5sum,
             const binary_t *plcObjectBlobID,
             const list_extra_file_1_t *extrafiles) = 0;
@@ -114,7 +114,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         virtual void TraceMutexUnlock(void) = 0;
         virtual void PLCLibMutexLock(void) = 0;
         virtual void PLCLibMutexUnlock(void) = 0;
-        virtual Blob *NewBlob(uint8_t *data, size_t length) = 0;
+        virtual Blob *NewBlob() = 0;
         virtual void DeleteBlob(Blob *blob) = 0;
 
         void PurgeTraceBuffer(void);

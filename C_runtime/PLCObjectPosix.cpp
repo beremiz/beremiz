@@ -52,7 +52,7 @@ uint32_t PLCObjectPosix::BlobAsFile(
     // Realize the blob into a file
     uint32_t res = dynamic_cast<BlobPosix*>(blob)->asFile(filename);
 
-    delete blob;
+    DeleteBlob(blob);
 
     if (res != 0)
     {
@@ -61,14 +61,19 @@ uint32_t PLCObjectPosix::BlobAsFile(
     return 0;
 }
 
-void PLCObjectPosix::SaveBlobs(
+uint32_t PLCObjectPosix::SaveBlobs(
     const char *md5sum,
     const binary_t *plcObjectBlobID,
     const list_extra_file_1_t *extrafiles)
 {
+    uint32_t res;
 
     // Create the PLC object shared object file
-    BlobAsFile(plcObjectBlobID, std::string(md5sum) + SharedObjectExtension);
+    res = BlobAsFile(plcObjectBlobID, std::string(md5sum) + SharedObjectExtension);
+    if (res != 0)
+    {
+        return res;
+    }
 
     // create "lasttransferedPLC.md5" file and Save md5sum in it
     std::ofstream(std::string(LastTransferredPLC), std::ios::binary) << md5sum;
@@ -81,12 +86,17 @@ void PLCObjectPosix::SaveBlobs(
     {
         extra_file *extrafile = extrafiles->elements + i;
 
-        BlobAsFile(plcObjectBlobID, extrafile->fname);
+        res = BlobAsFile(plcObjectBlobID, extrafile->fname);
+        if (res != 0)
+        {
+            return res;
+        }
 
         // Save the extra file name in "extra_files.txt"
         extra_files_log << extrafile->fname << std::endl;
     }
 
+    return 0;
 }
 
 uint32_t PLCObjectPosix::PurgePLC(void)
@@ -237,9 +247,9 @@ void PLCObjectPosix::PLCLibMutexUnlock(void)
     m_PLClibMutex.unlock();
 }
 
-Blob *PLCObjectPosix::NewBlob(uint8_t *data, size_t length)
+Blob *PLCObjectPosix::NewBlob()
 {
-    return new BlobPosix(data, length);
+    return new BlobPosix();
 }
 
 void PLCObjectPosix::DeleteBlob(Blob *blob)

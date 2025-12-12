@@ -32,7 +32,7 @@ class PLCObjectPosix : public PLCObject
         virtual uint32_t UnLoadPLC(void);
         virtual uint32_t PurgePLC(void);
 
-        virtual void SaveBlobs(
+        virtual uint32_t SaveBlobs(
             const char *md5sum,
             const binary_t *plcObjectBlobID,
             const list_extra_file_1_t *extrafiles);
@@ -42,7 +42,7 @@ class PLCObjectPosix : public PLCObject
         virtual void TraceMutexUnlock(void);
         virtual void PLCLibMutexLock(void);
         virtual void PLCLibMutexUnlock(void);
-        virtual Blob *NewBlob(uint8_t *data, size_t length);
+        virtual Blob *NewBlob();
         virtual void DeleteBlob(Blob *blob);
 
     private:

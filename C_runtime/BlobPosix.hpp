@@ -8,7 +8,7 @@
 class BlobPosix : public Blob
 {
 public:
-    BlobPosix(uint8_t *seedData, size_t seedLength);
+    BlobPosix();
     virtual ~BlobPosix();
     
     uint32_t asFile(std::filesystem::path &filename);

@@ -5,8 +5,8 @@
 
 #include "BlobPosix.hpp"
 
-BlobPosix::BlobPosix(uint8_t *seedData, size_t seedLength)
-    : Blob(seedData, seedLength), m_file(nullptr)
+BlobPosix::BlobPosix()
+    : Blob(), m_file(nullptr)
 {
     // Create a temporary file to store blob data
     // not using tmpfile() because we need to know the filename

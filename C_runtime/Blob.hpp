@@ -7,9 +7,10 @@
 class Blob
 {
 public:
-    Blob(uint8_t *seedData, size_t seedLength);
+    Blob();
     virtual ~Blob();
     MD5::digest_t digest();
+    void Seed(uint8_t *seedData, size_t seedLength);
     virtual uint32_t appendChunk(uint8_t *data, size_t length);
 
 protected:
