@@ -127,6 +127,11 @@ class CLIController(LocalRuntimeMixin, ProjectController):
             self.SetParamsAttribute("BeremizRoot."+k, v)
 
     @with_project_loaded
+    def clean_project(self):
+        self._Clean()
+        return 0
+
+    @with_project_loaded
     def build_project(self, target):
 
         if target:

@@ -62,6 +62,16 @@ def ensure_controller(func):
 
     return func_wrapper
 
+
+@cli.command()
+@pass_session
+@ensure_controller
+def clean(session):
+    """Cleans project. """
+    def processor():
+        return session.controller.clean_project()
+    return processor
+
 @cli.command()
 @click.option(
     "--target", "-t", help="Target system triplet."
