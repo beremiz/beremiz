@@ -31,8 +31,7 @@ import time
 import shlex
 from threading import Timer, Lock, Thread, Semaphore, Condition
 import signal
-
-_debug = os.path.exists("BEREMIZ_DEBUG")
+from util.misc import GetDeveloperMode
 
 class outputThread(Thread):
     """
@@ -79,7 +78,7 @@ class ProcessLogger(object):
                  no_stdout=False, no_stderr=False, no_gui=True,
                  timeout=None, outlimit=None, errlimit=None,
                  keyword=None, kill_it=False, cwd=None,
-                 encoding=None, output_encoding=None, env=None, show_cmd=_debug):
+                 encoding=None, output_encoding=None, env=None, show_cmd=False):
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -133,7 +132,7 @@ class ProcessLogger(object):
         else:
             self.timeout = None
 
-        if show_cmd and self.logger:
+        if (show_cmd or GetDeveloperMode())and self.logger:
             self.logger.write(f"{popenargs['cwd']}$ {self.Command_str}\n")
 
         self.Proc = subprocess.Popen(self.Command, encoding="utf-8", errors="backslashreplace", **popenargs)
