@@ -85,12 +85,14 @@ jobs:
         ./do_test_in_docker.sh
 
     - name: Prepare test results for artifact upload
+      if: ${{ always() }}
       run: |
         cd beremiz/tests/tools/Docker
         # change ownership of test results to back to current user
         ./exec_in_docker_as_root.sh "chown -R $(id -u):$(id -g) /home/ubuntu/test"
 
     - name: Upload test results artifact
+      if: ${{ always() }}
       uses: actions/upload-artifact@v4
       with:
         name: test_results
