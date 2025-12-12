@@ -42,6 +42,8 @@ class PLCObjectPosix : public PLCObject
         virtual void TraceMutexUnlock(void);
         virtual void PLCLibMutexLock(void);
         virtual void PLCLibMutexUnlock(void);
+        virtual Blob *NewBlob(uint8_t *data, size_t length);
+        virtual void DeleteBlob(Blob *blob);
 
     private:
         virtual uint32_t BlobAsFile(const binary_t * BlobID, std::filesystem::path filename);

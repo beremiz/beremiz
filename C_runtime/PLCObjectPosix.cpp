@@ -6,6 +6,7 @@
 
 #include "Logging.hpp"
 #include "PLCObjectPosix.hpp"
+#include "BlobPosix.hpp"
 
 // File name of the last transferred PLC md5 hex digest
 // with typo in the name, for compatibility with Python runtime
@@ -49,7 +50,7 @@ uint32_t PLCObjectPosix::BlobAsFile(
     Blob *blob = nh.mapped();
 
     // Realize the blob into a file
-    uint32_t res = blob->asFile(filename);
+    uint32_t res = dynamic_cast<BlobPosix*>(blob)->asFile(filename);
 
     delete blob;
 
@@ -234,4 +235,14 @@ void PLCObjectPosix::PLCLibMutexLock(void)
 void PLCObjectPosix::PLCLibMutexUnlock(void)
 {
     m_PLClibMutex.unlock();
+}
+
+Blob *PLCObjectPosix::NewBlob(uint8_t *data, size_t length)
+{
+    return new BlobPosix(data, length);
+}
+
+void PLCObjectPosix::DeleteBlob(Blob *blob)
+{
+    delete dynamic_cast<BlobPosix*>(blob);
 }

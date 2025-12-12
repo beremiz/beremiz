@@ -276,7 +276,7 @@ uint32_t PLCObject::PurgeBlobs(void)
 
     for (auto &blob : m_mapBlobIDToBlob)
     {
-        delete blob.second;
+        DeleteBlob(blob.second);
     }
     m_mapBlobIDToBlob.clear();
 
@@ -316,7 +316,7 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
     Blob *blob = NULL;
     try
     {
-        blob = new Blob(seed->data, seed->dataLength);
+        blob = NewBlob(seed->data, seed->dataLength);
     }
     catch (int e)
     {

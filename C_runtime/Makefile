@@ -47,7 +47,8 @@ SOURCES +=  $(RUNTIME_ROOT)/service/erpc_PLCObject_client.cpp \
             $(RUNTIME_ROOT)/service/erpc_PLCObject_interface.cpp \
             $(RUNTIME_ROOT)/service/erpc_PLCObject_server.cpp \
 			$(RUNTIME_ROOT)/md5.cpp \
-			$(RUNTIME_ROOT)/blob.cpp \
+			$(RUNTIME_ROOT)/Blob.cpp \
+			$(RUNTIME_ROOT)/BlobPosix.cpp \
 			$(RUNTIME_ROOT)/posix_main.cpp \
 			$(RUNTIME_ROOT)/PLCObject.cpp \
             $(RUNTIME_ROOT)/PLCObjectPosix.cpp

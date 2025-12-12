@@ -1,11 +1,12 @@
-
 #include <stdlib.h>
 #include <errno.h>
-
-#include "blob.hpp"
 #include <unistd.h>
+#include <cstdio>
 
-Blob::Blob(uint8_t *seedData, size_t seedLength)
+#include "BlobPosix.hpp"
+
+BlobPosix::BlobPosix(uint8_t *seedData, size_t seedLength)
+    : Blob(seedData, seedLength), m_file(nullptr)
 {
     // Create a temporary file to store blob data
     // not using tmpfile() because we need to know the filename
@@ -26,35 +27,17 @@ Blob::Blob(uint8_t *seedData, size_t seedLength)
 
     // Save a copy of the filename
     m_filename = (char *)template_name;
-
-    // Seed the MD5 hash with the seed data
-    md5.update(seedData, seedLength);
 }
 
-Blob::~Blob() {
+BlobPosix::~BlobPosix()
+{
     if (m_file != NULL) {
         std::fclose(m_file);
         std::remove(m_filename.c_str());
     }
 }
 
-MD5::digest_t Blob::digest() {
-    return md5.digest();
-}
-
-uint32_t Blob::appendChunk(uint8_t *data, size_t length) {
-    // Write data to file
-    if (std::fwrite(data, 1, length, m_file) != length) {
-        return errno;
-    }
-
-    // Update MD5 hash
-    md5.update(data, length);
-
-    return 0;
-}
-
-uint32_t Blob::asFile(std::filesystem::path &filename)
+uint32_t BlobPosix::asFile(std::filesystem::path &filename)
 {
     // Flush file
     if (std::fflush(m_file) != 0) {
@@ -71,12 +54,23 @@ uint32_t Blob::asFile(std::filesystem::path &filename)
         return errno;
     }
 
-    m_file = NULL;
+    m_file = nullptr;
 
     // Rename temp file to final file
     if (std::rename(m_filename.c_str(), filename.c_str()) != 0) {
         return errno;
     }
+
+    return 0;
+}
+
+uint32_t BlobPosix::appendChunk(uint8_t *data, size_t length) {
+    // Write data to file
+    if (std::fwrite(data, 1, length, m_file) != length) {
+        return errno;
+    }
+
+    Blob::appendChunk(data, length);
 
     return 0;
 }

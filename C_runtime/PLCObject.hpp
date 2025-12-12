@@ -11,7 +11,7 @@
 #include <mutex>
 #include <thread>
 
-#include "blob.hpp"
+#include "Blob.hpp"
 
 #include "erpc_PLCObject_interface.hpp"
 
@@ -114,6 +114,8 @@ class PLCObject : public BeremizPLCObjectService_interface
         virtual void TraceMutexUnlock(void) = 0;
         virtual void PLCLibMutexLock(void) = 0;
         virtual void PLCLibMutexUnlock(void) = 0;
+        virtual Blob *NewBlob(uint8_t *data, size_t length) = 0;
+        virtual void DeleteBlob(Blob *blob) = 0;
 
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
