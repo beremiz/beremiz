@@ -714,6 +714,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.logger.write_error(
                     _("Runtime library extensions discovery failed !\n"))
                 self.logger.write_error(traceback.format_exc())
+                return
 
             self.ClearConfNodeTypes()
             self.AddConfNodeTypesList(libs)
