@@ -181,7 +181,7 @@ uint32_t PLCObject::GetTraceVariables(
     }
 
     // Check if there are any traces
-    m_tracesMutex.lock();
+    TraceMutexLock();
     size_t sz = m_traces.size();
     if(sz > 0)
     {
@@ -189,7 +189,7 @@ uint32_t PLCObject::GetTraceVariables(
         traces->traces.elements = (trace_sample *)malloc(sz * sizeof(trace_sample));
         if(traces->traces.elements == NULL)
         {
-            m_tracesMutex.unlock();
+            TraceMutexUnlock();
             return ENOMEM;
         }
         // Copy traces from vector
@@ -199,7 +199,7 @@ uint32_t PLCObject::GetTraceVariables(
         // note that the data is not freed here, it is meant to be freed by eRPC server code
         m_traces.clear();
     }
-    m_tracesMutex.unlock();
+    TraceMutexUnlock();
 
     traces->traces.elementsCount = sz;
     traces->PLCstatus = m_status.PLCstatus;
@@ -342,12 +342,12 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
 void PLCObject::PurgeTraceBuffer(void)
 {
     // Free trace buffer
-    m_tracesMutex.lock();
+    TraceMutexLock();
     for(trace_sample s : m_traces){
         free(s.TraceBuffer.data);
     }
     m_traces.clear();
-    m_tracesMutex.unlock();
+    TraceMutexUnlock();
 }
 
 uint32_t PLCObject::SetTraceVariablesList(
@@ -396,10 +396,7 @@ uint32_t PLCObject::SetTraceVariablesList(
         PurgeTraceBuffer();
 
         // Start debug thread if not already started
-        if(!m_traceThread.joinable())
-        {
-            m_traceThread = std::thread(&PLCObject::TraceThreadProc, this);
-        }
+        EnsureDebugThread();
 
         m_PLCSyms.resumeDebug();
         *debugtoken = m_debugToken;
@@ -434,10 +431,7 @@ uint32_t PLCObject::StopPLC(bool *success)
     }
 
     // Stop debug thread
-    if(m_traceThread.joinable())
-    {
-        m_traceThread.join();
-    }
+    StopDebugThread();
 
     return res;
 }
@@ -470,7 +464,7 @@ void PLCObject::TraceThreadProc(void)
         // Data allocated here is meant to be freed by eRPC server code
         uint8_t* ourData = NULL;
 
-        m_PLClibMutex.lock();
+        PLCLibMutexLock();
 
         int res = m_PLCSyms.GetDebugData(&tick, &size, &buff);
 
@@ -484,7 +478,7 @@ void PLCObject::TraceThreadProc(void)
             m_PLCSyms.FreeDebugData();
         }
 
-        m_PLClibMutex.unlock();
+        PLCLibMutexUnlock();
 
         if(ourData == NULL)
         {
@@ -493,11 +487,11 @@ void PLCObject::TraceThreadProc(void)
 
         } else {   
 
-            m_tracesMutex.lock();
+            TraceMutexLock();
 
             m_traces.push_back(trace_sample{tick, binary_t{ourData, size}});
 
-            m_tracesMutex.unlock();
+            TraceMutexUnlock();
         }
     }
 

@@ -191,3 +191,47 @@ uint32_t PLCObjectPosix::UnLoadPLC(void)
     }
     return 0;
 }
+
+void PLCObjectPosix::ThreadTrampoline(void){
+    // Call the PLCObject::TraceThreadProc method
+    PLCObject::TraceThreadProc();
+}
+
+
+void PLCObjectPosix::EnsureDebugThread(void)
+{
+    // Start debug thread if not already started
+    if(!m_traceThread.joinable())
+    {
+        m_traceThread = std::thread(&PLCObjectPosix::ThreadTrampoline, this);
+    }
+}
+
+void PLCObjectPosix::StopDebugThread(void)
+{
+    // Stop debug thread
+    if(m_traceThread.joinable())
+    {
+        m_traceThread.join();
+    }
+}
+
+void PLCObjectPosix::TraceMutexLock(void)
+{
+    m_tracesMutex.lock();
+}
+
+void PLCObjectPosix::TraceMutexUnlock(void)
+{
+    m_tracesMutex.unlock();
+}
+
+void PLCObjectPosix::PLCLibMutexLock(void)
+{
+    m_PLClibMutex.lock();
+}
+
+void PLCObjectPosix::PLCLibMutexUnlock(void)
+{
+    m_PLClibMutex.unlock();
+}

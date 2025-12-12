@@ -81,9 +81,6 @@ class PLCObject : public BeremizPLCObjectService_interface
         // A map of all the blobs
         std::map<std::vector<uint8_t>, Blob*> m_mapBlobIDToBlob;
 
-        // Shared object mutex
-        std::mutex m_PLClibMutex;
-
         // Symbols resolved from the PLC object
         PLCSyms m_PLCSyms;
 
@@ -101,12 +98,6 @@ class PLCObject : public BeremizPLCObjectService_interface
         // Debug token, used for consistency check of traces
         uint32_t m_debugToken;
 
-        // Trace thread
-        std::thread m_traceThread;
-
-        // Trace thread mutex
-        std::mutex m_tracesMutex;
-
         // Trace double buffer
         std::vector<trace_sample> m_traces;
 
@@ -117,6 +108,12 @@ class PLCObject : public BeremizPLCObjectService_interface
             const char *md5sum,
             const binary_t *plcObjectBlobID,
             const list_extra_file_1_t *extrafiles) = 0;
+        virtual void EnsureDebugThread(void) = 0;
+        virtual void StopDebugThread(void) = 0;
+        virtual void TraceMutexLock(void) = 0;
+        virtual void TraceMutexUnlock(void) = 0;
+        virtual void PLCLibMutexLock(void) = 0;
+        virtual void PLCLibMutexUnlock(void) = 0;
 
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
