@@ -54,7 +54,7 @@ class PLCObject : public BeremizPLCObjectService_interface
     public:
 
         PLCObject(void);
-        ~PLCObject(void);
+        virtual ~PLCObject(void);
 
         // ERPC interface
         uint32_t AppendChunkToBlob(const binary_t * data, const binary_t * blobID, binary_t * newBlobID);
@@ -77,12 +77,9 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t AutoLoad();
         uint32_t LogMessage(uint8_t level, std::string message);
 
-    private:
+    protected:
         // A map of all the blobs
         std::map<std::vector<uint8_t>, Blob*> m_mapBlobIDToBlob;
-
-        // PLC object library handle
-        void * m_handle;
 
         // Shared object mutex
         std::mutex m_PLClibMutex;
@@ -113,10 +110,14 @@ class PLCObject : public BeremizPLCObjectService_interface
         // Trace double buffer
         std::vector<trace_sample> m_traces;
 
-        uint32_t BlobAsFile(const binary_t * BlobID, std::filesystem::path filename);
-        uint32_t LoadPLC(void);
-        uint32_t UnLoadPLC(void);
-        uint32_t PurgePLC(void);
+        virtual uint32_t LoadPLC(void) = 0;
+        virtual uint32_t UnLoadPLC(void) = 0;
+        virtual uint32_t PurgePLC(void) = 0;
+        virtual void SaveBlobs(
+            const char *md5sum,
+            const binary_t *plcObjectBlobID,
+            const list_extra_file_1_t *extrafiles) = 0;
+
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
 };

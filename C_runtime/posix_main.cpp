@@ -28,6 +28,7 @@
 #include "options.hpp"
 
 #include "PLCObject.hpp"
+#include "PLCObjectPosix.hpp"
 
 using namespace erpc;
 using namespace std;
@@ -378,7 +379,7 @@ public:
             _server.setTransport(_transport);
             _server.setCodecFactory(&_basicCodecFactory);
 
-            PLCObject plc_object = PLCObject();
+            PLCObjectPosix plc_object = PLCObjectPosix();
             BeremizPLCObjectService_service svc = BeremizPLCObjectService_service(&plc_object);
 
             _server.addService(&svc);
