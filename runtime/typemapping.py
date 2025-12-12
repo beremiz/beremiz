@@ -19,6 +19,7 @@ class IEC_TIME(Structure):
     """
     Must be changed according to changes in iec_types.h
     """
+    _pack_ = 1
     _fields_ = [("s", c_int64),   # tv_sec
                 ("ns", c_int32)]  # tv_nsec
 
