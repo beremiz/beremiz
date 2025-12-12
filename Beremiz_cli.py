@@ -123,7 +123,8 @@ def connect(session):
 
 @cli.result_callback()
 @pass_session
-def process_pipeline(session, processors, **kwargs):
+@click.pass_context
+def process_pipeline(ctx, session, processors, **kwargs):
     ret = 0
     for processor in processors:
         ret = processor()
@@ -132,7 +133,7 @@ def process_pipeline(session, processors, **kwargs):
                 click.echo("Command sequence aborted")
             break
 
-    if session.keep:
+    if ret == 0 and session.keep:
         click.echo("Press Ctrl+C to quit")
         try:
             while True:
@@ -143,7 +144,9 @@ def process_pipeline(session, processors, **kwargs):
 
     session.controller.finish()
 
-    return ret
+    if ret != 0:
+        click.echo("Command failed with code {}".format(ret))
+        ctx.exit(ret)
 
 if __name__ == '__main__':
     cli()
