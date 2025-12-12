@@ -426,6 +426,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "PROJECT"
 
     def GetDefaultTargetName(self):
+        if features.targets:
+            return features.targets[0]
+        
         if sys.platform.startswith('linux'):
             return "Linux"
         elif sys.platform.startswith('darwin'):
@@ -439,7 +442,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetTarget(self):
         target = self.BeremizRoot.getTargetType()
-        if target.getcontent() is None:
+        if target is None or target.getcontent() is None:
             temp_root = self.Parser.CreateRoot()
             target = self.Parser.CreateElement("TargetType", "BeremizRoot")
             temp_root.setTargetType(target)
