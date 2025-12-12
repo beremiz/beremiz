@@ -1,8 +1,9 @@
 name: CI Automated testing
 
 on:
-  push:
-    branches: [ python3 ]
+  workflow_dispatch:
+  # push:
+  #   branches: [ zephyr ]
 
 jobs:
 
