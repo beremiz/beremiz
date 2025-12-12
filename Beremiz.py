@@ -113,6 +113,8 @@ class BeremizIDELauncher(object):
 
         self.app = BeremizApp(redirect=self.debug)
         self.app.SetAppName('beremiz')
+        if not self.debug:
+            self.app.GTKSuppressDiagnostics()
 
     def ShowSplashScreen(self):
         class Splash(AdvancedSplash):
