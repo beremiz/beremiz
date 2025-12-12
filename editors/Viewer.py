@@ -1156,7 +1156,8 @@ class Viewer(EditorPanel, DebugViewer):
                 if refresh_rect is None:
                     refresh_rect = element.GetRedrawRect()
                 else:
-                    refresh_rect.Union(element.GetRedrawRect())
+                    if element.GetRedrawRect() is not None:
+                        refresh_rect.Union(element.GetRedrawRect())
             self.ElementRefreshList = []
             self.ElementRefreshList_lock.release()
 
