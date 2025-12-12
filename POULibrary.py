@@ -80,6 +80,9 @@ class POULibrary(object):
 
         raise UserAddressedException(message)
 
+    def SupportsTarget(self, target):
+        return True
+
 def SimplePOULibraryFactory(path):
     class SimplePOULibrary(POULibrary):
         def GetLibraryPath(self):

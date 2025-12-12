@@ -236,7 +236,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     EditorType = ProjectNodeEditor
     iec2c_cfg = None
 
-    def __init__(self, frame, logger):
+    def __init__(self):
         PLCControler.__init__(self)
         ConfigTreeNode.__init__(self)
 
@@ -249,7 +249,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DispatchDebugValuesTimer = None
         self.DebugValuesBuffers = []
         self.DebugTicks = []
-        self.SetAppFrame(frame, logger)
 
         # Setup debug information
         self.IECdebug_datas = {}
@@ -281,6 +280,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # compute CFLAGS for PLC code
         self.plcCFLAGS = '"-I%s" -Wno-unused-function' % os.path.abspath(self.iec2c_cfg.getLibCPath())
+        
+        self.AppFrame = None
+        self.logger = None
 
     def LoadLibraries(self):
         self.Libraries = OrderedDict()
@@ -295,6 +297,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             if lib_enabled:
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
+                TypeStack.append(Lib.GetTypes())
+                self.Libraries[libname] = Lib
+
+        # add target specific libraries
+        builder = self.GetBuilder()
+        if builder is not None:
+            for libname, Lib in builder.GetLibraries(self, TypeStack):
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries[libname] = Lib
 
@@ -666,11 +675,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Extras = []
         for lib in self.Libraries.values():
             # check libraries compatibility with Target
-            if hasattr(lib, "SupportsTarget"):
-                builder = self.GetBuilder()
-                if not lib.SupportsTarget(builder):
-                    self.FatalError(_("Target %s is not compatible with %s library\n") % 
-                        (builder.GetTargetName(), lib.GetName()))
+            builder = self.GetBuilder()
+            if not lib.SupportsTarget(builder):
+                self.FatalError(_("Target %s is not compatible with %s library\n") % 
+                    (builder.GetTargetName(), lib.GetName()))
 
             res = lib.Generate_C(buildpath, self._VariablesList, self.plcCFLAGS)
             LocatedCCodeAndFlags.append(res[:2])
@@ -797,9 +805,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         CTNGlobals = self._GlobalInstances()
         return LibGlobals + CTNGlobals
 
-    def _Generate_SoftPLC(self):
+    def _Generate_SoftPLC(self, builder):
         if self._Generate_PLC_ST():
-            return self._Compile_ST_to_SoftPLC()
+            return self._Compile_ST_to_SoftPLC(builder)
         return False
 
     def _Generate_PLC_ST(self):
@@ -856,7 +864,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         return True
 
-    def _Compile_ST_to_SoftPLC(self):
+    def _Compile_ST_to_SoftPLC(self, builder):
         iec2c_libpath = self.iec2c_cfg.getLibPath()
         if iec2c_libpath is None:
             self.logger.write_error(_("matiec installation is not found\n"))
@@ -941,7 +949,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
             with open(H_file, 'r') as original:
                 data = original.read()
             with open(H_file, 'w') as modified:
-                modified.write('#include "beremiz.h"\n' + data)
+                # prepend beremiz include to generated headers
+                header = builder.GetPLCHeadersPreamble()
+                header += '#include "beremiz.h"\n'
+                modified.write(header + data)
 
         self.logger.write(_("Extracting Located Variables...\n"))
         # Keep track of generated located variables for later use by
@@ -1197,8 +1208,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.logger.flush()
         self.logger.write(_("Start build in %s\n") % buildpath)
 
+        # Get current or fresh builder
+        builder = self.GetBuilder()
+        if builder is None:
+            self.logger.write_error(_("Fatal : cannot get builder.\n"))
+            return False
+
         # Generate SoftPLC IEC code
-        IECGenRes = self._Generate_SoftPLC()
+        IECGenRes = self._Generate_SoftPLC(builder)
         self.UpdateButtons()
 
         # If IEC code gen fail, bail out.
@@ -1213,12 +1230,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Collect platform specific C code
         # Code and other files from extension
         if not self._Generate_runtime():
-            return False
-
-        # Get current or fresh builder
-        builder = self.GetBuilder()
-        if builder is None:
-            self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
         # Build

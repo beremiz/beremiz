@@ -226,7 +226,12 @@ int startPLC(int argc,char **argv)
 		_LogError("pthread setschedpolicy failed\n");
 		return ret;
 	}
-	param.sched_priority = PLC_THREAD_PRIORITY;
+
+    #ifndef PLC_THREAD_PRIORITY
+    #define PLC_THREAD_PRIORITY 80
+    #endif
+    
+    param.sched_priority = PLC_THREAD_PRIORITY;
 	ret = pthread_attr_setschedparam(&attr, &param);
 	if (ret) {
 		_LogError("pthread setschedparam failed\n");

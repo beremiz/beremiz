@@ -71,3 +71,10 @@ class Builder:
 
     def GetReservedIECChannels(self):
         return []
+    
+    def GetLibraries(self, ctr, typestack):
+        return []
+
+    def GetPLCHeadersPreamble(self):
+        return ""
+    

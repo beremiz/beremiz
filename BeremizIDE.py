@@ -471,10 +471,11 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             projectOpen = DecodeFileSystemPath(projectOpen, False)
 
         if projectOpen is not None and os.path.isdir(projectOpen):
-            self.CTR = ProjectController(self, self.Log)
+            self.CTR = ProjectController()
             self.Controler = self.CTR
             result, _err = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
+                self.CTR.SetAppFrame(self, self.Log)
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
