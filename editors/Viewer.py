@@ -1545,7 +1545,7 @@ class Viewer(EditorPanel, DebugViewer):
     def GetForceVariableMenuFunction(self, iec_path, iec_type, value, immediate = False):
 
         def ForceVariableFunction(event, value=value):
-            if not immediate:
+            if not immediate and iec_type != None:
                 # use value as default value in dialog
                 dialog = ForceVariableDialog(self.ParentWindow, iec_type, str(value))
                 if dialog.ShowModal() != wx.ID_OK:
