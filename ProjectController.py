@@ -1298,11 +1298,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
         c_source = []
         
         if self.GetBuilder().getDebugEnabled():
-            # debugger explicitely disabled, disable C code instrumentation
-            self.plcCFLAGS += " -DPLC_NO_DEBUG"
-        else:
             # add debugger code
             c_source.append((self.Generate_plc_debugger, "plc_debugger.c", "Debugger"))
+        else:
+            # debugger explicitely disabled, disable C code instrumentation
+            self.plcCFLAGS += " -DPLC_NO_DEBUG"
 
         c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 
