@@ -2024,7 +2024,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # Init with actual PLC status and print it
             self.UpdateMethodsFromPLCStatus()
             if self.previous_plcstate in [PlcStatus.Started, PlcStatus.Stopped]:
-                if self.DebugAvailable() and self.GetIECProgramsAndVariables():
+                if self.GetIECProgramsAndVariables():
                     self.logger.write(_("Debugger ready\n"))
                     self._connect_debug()
                 else:

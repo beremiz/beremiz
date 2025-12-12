@@ -465,9 +465,6 @@ class PLCControler(object):
             errors.append("No project opened")
         return "", errors, warnings
 
-    def DebugAvailable(self):
-        return self.CurrentCompiledProject is not None
-
     def ProgramTransferred(self):
         if self.NextCompiledProject is None:
             self.CurrentCompiledProject = self.NextCompiledProject
