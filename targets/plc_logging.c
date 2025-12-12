@@ -72,7 +72,7 @@ uint32_t _sfx(AtomicCompareExchange)(uint32_t *atomicvar, uint32_t compared, uin
 #define _sfx(fn) fn
 #endif
 
-/* Store one log message of give size */
+/* Store one log message of given size */
 int _sfx(LogMessage)(uint8_t level, char* buf, uint32_t size
 #ifdef PLC_USES_ABI
 , unsigned int __tick
