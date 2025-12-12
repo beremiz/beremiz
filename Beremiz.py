@@ -31,6 +31,7 @@ import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
+from util.misc import SetDeveloperMode
 
 
 class BeremizIDELauncher(object):
@@ -45,7 +46,6 @@ class BeremizIDELauncher(object):
         self.splash = None
         self.splashPath = self.Bpath("images", "splash.png")
         self.modules = ["BeremizIDE"]
-        self.debug = os.path.exists("BEREMIZ_DEBUG")
         self.handle_exception = None
         self.logf = None
 
@@ -58,6 +58,7 @@ class BeremizIDELauncher(object):
         print("")
         print("Supported options:")
         print("-h --help                    Print this help")
+        print("-d --devmode               i Run in development mode")
         print("-u --updatecheck URL         Retrieve update information by checking URL")
         print("-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions")
         print("-l --log path                write content of console tab to given file")
@@ -65,13 +66,16 @@ class BeremizIDELauncher(object):
         print("")
 
     def SetCmdOptions(self):
-        self.shortCmdOpts = "hu:e:l:"
-        self.longCmdOpts = ["help", "updatecheck=", "extend=", "log="]
+        self.shortCmdOpts = "hdu:e:l:"
+        self.longCmdOpts = ["help", "devmode", "updatecheck=", "extend=", "log="]
 
     def ProcessOption(self, o, a):
         if o in ("-h", "--help"):
             self.Usage()
             sys.exit()
+        if o in ("-d", "--devmode"):
+            self.devmode = True
+            SetDeveloperMode()
         if o in ("-u", "--updatecheck"):
             self.updateinfo_url = a
         if o in ("-e", "--extend"):
@@ -111,9 +115,12 @@ class BeremizIDELauncher(object):
                 self.ShowSplashScreen()
                 return True
 
-        self.app = BeremizApp(redirect=self.debug)
+        self.app = BeremizApp(
+            # on windows, this makes stdout and stderr visible in separate windows
+            # on other platforms better to use the normal stdout and stderr
+            redirect=self.devmode and sys.platform.startswith('win'))
         self.app.SetAppName('beremiz')
-        if not self.debug:
+        if not self.devmode:
             self.app.GTKSuppressDiagnostics()
 
     def ShowSplashScreen(self):
@@ -218,7 +225,11 @@ class BeremizIDELauncher(object):
 
     def Start(self):
         self.PreStart()
-        self.InstallExceptionHandler()
+        if not self.devmode:
+            # if in devmode mode, we don't want to install the exception handler
+            # because we want to see the exception in the console
+            # and not in a popup window
+            self.InstallExceptionHandler()
         self.MainLoop()
 
 

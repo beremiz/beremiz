@@ -84,3 +84,14 @@ def InstallLocalRessources(CWD):
 
     # Internationalization
     AddCatalog(os.path.join(CWD, "locale"))
+
+
+_developer_mode = False
+
+def GetDeveloperMode():
+    global _developer_mode
+    return _developer_mode
+
+def SetDeveloperMode():
+    global _developer_mode
+    _developer_mode = True
