@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
           repository: beremiz/matiec
-          ref: 28071ba70b5bc6ca0b4aac0e67c185c31f8b23bd
+          ref: 0dff6e0437a80010c32418c6c3b87ea2887da072
           path: matiec
 
     - uses: actions/checkout@v3
@@ -40,7 +40,7 @@ jobs:
       with:
           repository: beremiz/erpc
           # v1.13.0 + no CRC on TCP
-          ref: d8fff72b15274b5f2a8f7895d9bc5c91eef584ec
+          ref: 057446b5697bab499da571474d6ad8523883f1cb
           path: erpc
               
     - name: Restore cached docker image
