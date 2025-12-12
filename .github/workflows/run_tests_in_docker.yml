@@ -75,6 +75,8 @@ jobs:
       run: |
         cd beremiz/tests/tools/Docker
         ./create_docker_container.sh ${{ github.workspace }}/test
+        # workaround for ownership of shared volume on github actions
+        ./exec_in_docker_as_root.sh "chown -R ubuntu:ubuntu /home/ubuntu/test"
         
     - name: Run tests in docker
       run: |
