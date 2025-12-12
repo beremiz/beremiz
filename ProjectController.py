@@ -618,6 +618,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return infos
 
     def CloseProject(self):
+
+        if self._connector is not None :
+            self._Disconnect()
+
         self.ClearChildren()
         self.ResetAppFrame(None)
 
