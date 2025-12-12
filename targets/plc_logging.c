@@ -63,8 +63,21 @@ void ResetLogCount(void) {
 	}
 }
 
+#ifdef PLC_USES_ABI
+#define _sfx(fn) fn##_impl
+void _sfx(PLC_GetTime)(IEC_TIME *CURRENT_TIME);
+uint32_t _sfx(AtomicCompareExchange)(uint32_t *atomicvar, uint32_t compared, uint32_t exchange);
+
+#else
+#define _sfx(fn) fn
+#endif
+
 /* Store one log message of give size */
-int LogMessage(uint8_t level, char* buf, uint32_t size){
+int _sfx(LogMessage)(uint8_t level, char* buf, uint32_t size
+#ifdef PLC_USES_ABI
+, unsigned int __tick
+#endif
+){
     if(size < LOG_BUFFER_SIZE - sizeof(mTail)){
         uint32_t new_cursor, old_cursor;
         uint32_t new_index, old_index;
@@ -73,13 +86,13 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
         mTail tail;
         tail.msgsize = size;
         tail.tick = __tick;
-        PLC_GetTime(&tail.time);
+        _sfx(PLC_GetTime)(&tail.time);
 
         /* Try fetch and then increment "atomically" and loop if (unlikely) interrupted.*/
         do{
             old_cursor = LogCursor[level];
             new_cursor = ((old_cursor + size + sizeof(mTail)) & LOG_BUFFER_MASK);
-            result = AtomicCompareExchange(
+            result = _sfx(AtomicCompareExchange)(
                 (uint32_t*)&LogCursor[level],
                 (uint32_t)old_cursor,
                 (uint32_t)new_cursor);
@@ -89,7 +102,7 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
         do{
             old_index = LogIndex[level];
             new_index = old_index + 1;
-            result = AtomicCompareExchange(
+            result = _sfx(AtomicCompareExchange)(
                 (uint32_t*)&LogIndex[level],
                 (uint32_t)old_index,
                 (uint32_t)new_index);
@@ -104,7 +117,11 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
         return 1; /* Success */
     }else{
     	char mstr[] = "Logging error : message too big";
-        LogMessage(LOG_CRITICAL, mstr, sizeof(mstr));
+        _sfx(LogMessage)(LOG_CRITICAL, mstr, sizeof(mstr)
+        #ifdef PLC_USES_ABI
+        , __tick
+        #endif
+        );
     }
     return 0;
 }

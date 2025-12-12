@@ -1368,16 +1368,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # debugger explicitely disabled, disable C code instrumentation
             self.plcCFLAGS += " -DPLC_NO_DEBUG"
 
-        # Same principle for getLoggingEnabled and plc_logging.c
-
-        if self.GetBuilder().getLoggingEnabled():
-            c_source.append((partial(targets.GetCode,"plc_logging.c"), "plc_logging.c", "Logging"))
-        else:
+        logging_enabled = self.GetBuilder().getLoggingEnabled()
+        if not logging_enabled:
             self.plcCFLAGS += " -DPLC_NO_LOGGING"
 
         if self.GetBuilder().getABIEnabled():
             c_source.append((partial(targets.GetCode,"plc_ABI.c"), "plc_ABI.c", "ABI"))
             self.plcCFLAGS += " -DPLC_USES_ABI"
+        elif logging_enabled:
+            # add logging code only if not using ABI.
+            # When using ABI, logging is expected in the runtime
+            c_source.append((partial(targets.GetCode,"plc_logging.c"), "plc_logging.c", "Logging"))
 
         c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 

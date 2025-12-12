@@ -121,8 +121,9 @@ typedef void (*Remind_t)(unsigned int offset, unsigned int count, void *p);
 typedef void (*CleanupRetain_t)(void);
 typedef void (*InitRetain_t)(void);
 
+typedef int (*LogMessage_t)(uint8_t level, char* buf, uint32_t size, unsigned int __tick);
+
 // Runtime -> PLC calls
-typedef int (*LogMessage_t)(uint8_t level, char* buf, uint32_t size);
 typedef unsigned long long (*GetCommonTickTime_t)(void);
 
 typedef unsigned int (*Run_t)(unsigned int periods_passed);
@@ -169,10 +170,12 @@ typedef struct {
     CleanupRetain_t CleanupRetain;
     InitRetain_t InitRetain;
 
-    // Runtime -> PLC calls
 #ifndef PLC_NO_LOGGING
     LogMessage_t LogMessage;
 #endif
+
+    // Runtime -> PLC calls
+
     GetCommonTickTime_t GetCommonTickTime;
 
     Run_t __run;
