@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# See COPYING file for copyrights details.
+# This file is part of Beremiz IDE
 #
+# Copyright (C) 2007: Laurent BESSARD
+# Copyright (C) 2025: Edouard TISSERANT
+#
+# See COPYING file for copyrights details.
 
 
 import os
@@ -11,44 +15,18 @@ import operator
 import hashlib
 from functools import reduce
 from util.ProcessLogger import ProcessLogger
+from targets.Builder import Builder
 
 
 includes_re = re.compile(r'\s*#include\s*["<]([^">]*)[">].*')
 
 
-class Generic_target(object):
-    def __init__(self, CTRInstance):
-        self.CTRInstance = CTRInstance
-        self.md5key = None
-        self.buildpath = None
-        self.SetBuildPath(self.CTRInstance._getBuildPath())
+class Generic_target(Builder):
 
     def SetBuildPath(self, buildpath):
         if self.buildpath != buildpath:
             self.buildpath = buildpath
             self.md5key = None
-
-    def GetBinaryPath(self):
-        return None
-
-    def _GetMD5FileName(self):
-        return os.path.join(self.buildpath, "lastbuildPLC.md5")
-
-    def ResetBinaryMD5(self):
-        self.md5key = None
-        try:
-            os.remove(self._GetMD5FileName())
-        except Exception:
-            pass
-
-    def GetBinaryMD5(self):
-        if self.md5key is not None:
-            return self.md5key
-        else:
-            try:
-                return open(self._GetMD5FileName(), "r").read()
-            except IOError:
-                return None
 
     def concat_deps(self, bn):
         # read source

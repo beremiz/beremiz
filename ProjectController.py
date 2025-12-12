@@ -298,6 +298,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 TypeStack.append(Lib.GetTypes())
                 self.Libraries[libname] = Lib
 
+    def GetReservedIECChannels(self):
+        return self.GetBuilder().GetReservedIECChannels()
+
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """ 
         Project controller applies libraries requirements when adding new CTN
@@ -1275,12 +1278,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Template based part of C code generation
         # files are stacked at the beginning, as files of confnode tree root
-        c_source = [
-            #  debugger code
-            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
-            # init/cleanup/retrieve/publish, run and align code
-            (self.Generate_plc_main, "plc_main.c", "Common runtime")
-        ]
+        c_source = []
+        
+        if self.GetBuilder().getDebugEnabled():
+            # debugger explicitely disabled, disable C code instrumentation
+            self.plcCFLAGS += " -DPLC_NO_DEBUG"
+        else:
+            # add debugger code
+            c_source.append((self.Generate_plc_debugger, "plc_debugger.c", "Debugger"))
+
+        c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 
         for generator, filename, name in c_source:
             try:
