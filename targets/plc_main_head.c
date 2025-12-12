@@ -14,11 +14,12 @@ void config_init__(void);
  * Prototypes of functions provided by generated target C code
  * */
 long long AtomicCompareExchange64(long long*, long long, long long);
+#ifndef PLC_NO_DEBUG
 void __init_debug(void);
 void __cleanup_debug(void);
 /*void __retrieve_debug(void);*/
 void __publish_debug(void);
-
+#endif
 /*
  *  Variables used by generated C softPLC and plugins
  **/
@@ -55,7 +56,9 @@ void __run(void)
 
     config_run__(__tick);
 
+#ifndef PLC_NO_DEBUG
     __publish_debug();
+#endif
 
     %(publish_calls)s
 
@@ -75,7 +78,9 @@ int __init(int argc,char **argv)
         common_ticktime__ = 1000000;
 
     config_init__();
+#ifndef PLC_NO_DEBUG
     __init_debug();
+#endif
     %(init_calls)s
     return res;
 }
@@ -85,7 +90,9 @@ int __init(int argc,char **argv)
 void __cleanup(void)
 {
     %(cleanup_calls)s
+#ifndef PLC_NO_DEBUG
     __cleanup_debug();
+#endif
 }
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME);
