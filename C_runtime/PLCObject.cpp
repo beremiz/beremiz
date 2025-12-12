@@ -82,6 +82,7 @@ uint32_t PLCObject::AutoLoad()
     uint32_t res = LoadPLC();
     if (res != 0)
     {
+        m_status.PLCstatus = Empty;
         return res;
     }
     m_status.PLCstatus = Stopped;
@@ -157,6 +158,12 @@ uint32_t PLCObject::GetPLCID(PSKID *plcID)
     plcID->PSK[m_PSK_secret.size()] = '\0';
 
     return 0;
+}
+
+
+void PLCObject::SetPLCstatusEmpty()
+{
+    m_status.PLCstatus = Empty;
 }
 
 uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
