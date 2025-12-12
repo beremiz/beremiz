@@ -185,6 +185,7 @@ void PLC_thread_proc(void *arg)
             _LogWarning("TEST PLC thread ended after "xstr(BEREMIZ_TEST_CYCLES)" cycles.\n");
             // After pre-defined test cycles count, PLC thread exits.
             // Remaining PLC runtime is expected to be cleaned-up/killed by test script
+            clock_nanosleep(CLOCK_MONOTONIC, 0, 1000*1000*1000 , NULL);
             return;
         }
 #endif
