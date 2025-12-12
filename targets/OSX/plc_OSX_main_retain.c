@@ -158,7 +158,7 @@ int CheckFilehash(void)
     return 1;
 }
 
-void InitRetain(void)
+int InitRetain(size_t buffer_size)
 {
     int i;
 
@@ -197,6 +197,7 @@ void InitRetain(void)
     retain_info.header_crc = GenerateCRC32Sum(retain_info.hash,
                                               retain_info.hash_size,
                                               retain_info.header_crc);
+	return 0;
 }
 
 void CleanupRetain(void)

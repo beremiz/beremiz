@@ -12,7 +12,7 @@
  * */
 #ifdef TARGET_DEBUG_AND_RETAIN_DISABLE
 
-void __init_debug    (void){}
+int __init_debug    (void){return 0;}
 void __cleanup_debug (void){}
 void __retrieve_debug(void){}
 void __publish_debug (void){}
@@ -24,6 +24,7 @@ void __publish_debug (void){}
 /*for memcpy*/
 #include <string.h>
 #include <stdio.h>
+#include <errno.h>
 
 typedef unsigned int uint32_t;
 
@@ -115,9 +116,9 @@ void __for_each_variable_do(__for_each_variable_do_fp fp)
 void Remind(unsigned int offset, unsigned int count, void * p);
 
 extern int CheckRetainBuffer(void);
-extern void InitRetain(void);
+extern int InitRetain(size_t);
 
-void __init_debug(void)
+int __init_debug(void)
 {
     /* init local static vars */
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
@@ -131,17 +132,13 @@ void __init_debug(void)
     force_list_apply_cursor = force_list;
 #endif
 
-    InitRetain();
-    /* Iterate over all variables to fill debug buffer */
-    if(CheckRetainBuffer()){
+    int buffer_ready = 0;
+    while(1){
         unsigned int retain_offset = 0;
         retain_list_collect_cursor = 0;
-
-        /* iterate over retain list */
         while(retain_list_collect_cursor < retain_list_size){
             void *value_p = NULL;
             size_t size;
-            char* next_cursor;
 
             dbgvardsc_t *dsc = &dbgvardsc[
                 retain_list[retain_list_collect_cursor]];
@@ -149,16 +146,36 @@ void __init_debug(void)
             UnpackVar(dsc, &value_p, NULL, &size);
 
             /* if buffer not full */
-            Remind(retain_offset, size, value_p);
+            if(buffer_ready)
+                Remind(retain_offset, size, value_p);
+                
             /* increment cursor according size*/
             retain_offset += size;
-
             retain_list_collect_cursor++;
         }
-    }else{
-        char mstr[] = "RETAIN memory invalid - defaults used";
-        LogMessage(LOG_WARNING, mstr, sizeof(mstr));
+        if(!buffer_ready){
+            int res = InitRetain(retain_offset);
+            buffer_ready = (res == 0);
+            if (buffer_ready) {
+                if(CheckRetainBuffer())
+                    continue;
+                else {
+                    char mstr[] = "RETAIN memory invalid - defaults used";
+                    LogMessage(LOG_WARNING, mstr, sizeof(mstr));
+                    return 0;
+                }
+            } else {
+                char mstr[] = "RETAIN memory cannot be allocated";
+                LogMessage(LOG_WARNING, mstr, sizeof(mstr));
+                return res;
+            }
+        }
+        else
+        {
+            return 0;
+        }
     }
+	return 0;
 }
 
 extern void InitiateDebugTransfer(int tick);
@@ -190,7 +207,6 @@ unsigned int GetRetainSize(void)
     while(retain_list_collect_cursor < retain_list_size){
         void *value_p = NULL;
         size_t size;
-        char* next_cursor;
 
         dbgvardsc_t *dsc = &dbgvardsc[
             retain_list[retain_list_collect_cursor]];
@@ -253,7 +269,6 @@ void __publish_debug(void)
             while(!stop && force_list_apply_cursor < force_list_addvar_cursor){
                 dbgvardsc_t *dsc = &dbgvardsc[
                     force_list_apply_cursor->dbgvardsc_index];
-                void *varp = dsc->ptr;
                 __IEC_types_enum vartype = dsc->type;
                 switch(vartype){
                     __ANY(__ReForceOutput_case_p)
@@ -316,7 +331,6 @@ void __publish_debug(void)
     while(retain_list_collect_cursor < retain_list_size){
         void *value_p = NULL;
         size_t size = 0;
-        char* next_cursor;
 
         dbgvardsc_t *dsc = &dbgvardsc[
             retain_list[retain_list_collect_cursor]];

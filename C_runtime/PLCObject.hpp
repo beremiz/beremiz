@@ -10,12 +10,16 @@
 #include <vector>
 #include <mutex>
 #include <thread>
-
+#include <array>
 #include "Blob.hpp"
 
 #include "erpc_PLCObject_interface.hpp"
 
 using namespace erpcShim;
+
+#define MAX_ELEMENTS_TRACE 10
+
+// #define LOG_DEBUG_ERPC
 
 #define FOR_EACH_PLC_SYMBOLS_DO(ACTION) \
     ACTION(PLC_ID)\
@@ -78,6 +82,10 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t LogMessage(uint8_t level, std::string message);
 
     protected:
+
+        // used to monitor presence de beremiz debugger
+        uint64_t tick_debugger_presence;
+
         // A map of all the blobs
         std::map<std::vector<uint8_t>, Blob*> m_mapBlobIDToBlob;
 
@@ -99,8 +107,13 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t m_debugToken;
 
         // Trace double buffer
-        std::vector<trace_sample> m_traces;
+        std::array <trace_sample, MAX_ELEMENTS_TRACE> m_traces;
+        uint8_t count_array = 0;
+        uint8_t tail_array = 0;
+        uint8_t head_array = 0;
+        uint32_t m_trace_byte_size;
 
+        virtual uint64_t Get_uptime() = 0;
         virtual uint32_t LoadPLC(void) = 0;
         virtual uint32_t UnLoadPLC(void) = 0;
         virtual uint32_t PurgePLC(void) = 0;

@@ -20,11 +20,11 @@ void InValidateRetainBuffer(void);
 void Retain(unsigned int offset, unsigned int count, void *p);
 void Remind(unsigned int offset, unsigned int count, void *p);
 void CleanupRetain(void);
-void InitRetain(void);
+int InitRetain(size_t buffer_size);
 
 // Debug
 #ifndef PLC_NO_DEBUG
-void __init_debug(void);
+int __init_debug(void);
 void __cleanup_debug(void);
 void __publish_debug(void);
 int TryEnterDebugSection(void);
@@ -121,7 +121,8 @@ int __init(int argc, char **argv)
     config_init__();
 
 #ifndef PLC_NO_DEBUG
-    __init_debug();
+    if((res = __init_debug()) != 0)
+        return res;
 #endif
 
     %(init_calls)s

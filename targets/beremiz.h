@@ -55,7 +55,7 @@ void InValidateRetainBuffer(void);
 void Retain(unsigned int offset, unsigned int count, void *p);
 void Remind(unsigned int offset, unsigned int count, void *p);
 void CleanupRetain(void);
-void InitRetain(void);
+int InitRetain(size_t buffer_size);
 
 #define __PLC_LOG_FUNCTION \
 int     LogMessage(uint8_t level, char* buf, uint32_t size)
@@ -119,7 +119,7 @@ typedef void (*InValidateRetainBuffer_t)(void);
 typedef void (*Retain_t)(unsigned int offset, unsigned int count, void *p);
 typedef void (*Remind_t)(unsigned int offset, unsigned int count, void *p);
 typedef void (*CleanupRetain_t)(void);
-typedef void (*InitRetain_t)(void);
+typedef int (*InitRetain_t)(size_t buffer_size);
 
 typedef int (*LogMessage_t)(uint8_t level, char* buf, uint32_t size, unsigned int __tick);
 

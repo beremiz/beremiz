@@ -4,9 +4,9 @@
 #include <vector>
 
 #include "PLCObject.hpp"
+#include "erpc_port.h"
 
 #include "beremiz.h"
-
 
 // File name of the last transferred PLC md5 hex digest
 // with typo in the name, for compatibility with Python runtime
@@ -14,8 +14,8 @@
 
 // File name of the extra files list
 #define ExtraFilesList "extra_files.txt"
-
-
+#define MAX_ERPC_PAYLOAD_SIZE 4096
+#define DEBUGGER_TIMEOUT 3000
 
 PLCObject::PLCObject(void)
 {
@@ -25,6 +25,7 @@ PLCObject::PLCObject(void)
     m_argv = NULL;
     m_PSK_ID = "";
     m_PSK_secret = "";
+    m_trace_byte_size = 0;
 }
 
 PLCObject::~PLCObject(void)
@@ -37,8 +38,7 @@ uint32_t PLCObject::AppendChunkToBlob(
     // Append data to blob with given blobID
     // Output new blob's md5 into newBlobID
     // Return 0 if success
-
-    newBlobID->data = (uint8_t *)malloc(MD5::digestsize);
+    newBlobID->data = (uint8_t *)erpc_malloc(MD5::digestsize);
     if (newBlobID->data == NULL)
     {
         return ENOMEM;
@@ -76,11 +76,15 @@ uint32_t PLCObject::AppendChunkToBlob(
 uint32_t PLCObject::AutoLoad()
 {
     // Load PLC object
+#ifndef LOG_DEBUG_ERPC
+    LogMessage(LOG_INFO, "Autoload PLC");
+#endif
     uint32_t res = LoadPLC();
     if (res != 0)
     {
         return res;
     }
+    m_status.PLCstatus = Stopped;
 
     // Start PLC object
     res = StartPLC();
@@ -113,7 +117,7 @@ uint32_t PLCObject::GetLogMessage(
     }
 
     // Get log message with given msgID
-    message->msg = (char *)malloc(resultLen + 1);
+    message->msg = (char *)erpc_malloc(resultLen + 1);
     if (message->msg == NULL)
     {
         return ENOMEM;
@@ -131,8 +135,10 @@ uint32_t PLCObject::GetLogMessage(
 
 uint32_t PLCObject::GetPLCID(PSKID *plcID)
 {
+    //Start of connection between plc and beremiz
+
     // Get PSK ID
-    plcID->ID = (char *)malloc(m_PSK_ID.size() + 1);
+    plcID->ID = (char *)erpc_malloc(m_PSK_ID.size() + 1);
     if (plcID->ID == NULL)
     {
         return ENOMEM;
@@ -141,10 +147,10 @@ uint32_t PLCObject::GetPLCID(PSKID *plcID)
     plcID->ID[m_PSK_ID.size()] = '\0';
 
     // Get PSK secret
-    plcID->PSK = (char *)malloc(m_PSK_secret.size() + 1);
+    plcID->PSK = (char *)erpc_malloc(m_PSK_secret.size() + 1);
     if (plcID->PSK == NULL)
     {
-        free(plcID->ID);
+        erpc_free(plcID->ID);
         return ENOMEM;
     }
     memcpy(plcID->PSK, m_PSK_secret.c_str(), m_PSK_secret.size());
@@ -170,37 +176,62 @@ uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
     return 0;
 }
 
+
+
 uint32_t PLCObject::GetTraceVariables(
     uint32_t debugToken, TraceVariables *traces)
 {
-    if(debugToken != m_debugToken)
-    {
-        return EINVAL;
-    }
+    tick_debugger_presence = Get_uptime();
 
     // Check if there are any traces
     TraceMutexLock();
-    size_t sz = m_traces.size();
-    if(sz > 0)
+    // Allocate memory for traces
+    traces->traces.elements = (trace_sample *)erpc_malloc(count_array * sizeof(trace_sample));
+
+    if(debugToken != m_debugToken)
     {
-        // Allocate memory for traces
-        traces->traces.elements = (trace_sample *)malloc(sz * sizeof(trace_sample));
-        if(traces->traces.elements == NULL)
-        {
-            TraceMutexUnlock();
-            return ENOMEM;
-        }
-        // Copy traces from vector
-        memcpy(traces->traces.elements, m_traces.data(), sz * sizeof(trace_sample));
-
-        // Clear the vector
-        // note that the data is not freed here, it is meant to be freed by eRPC server code
-        m_traces.clear();
+        LogMessage(LOG_CRITICAL, "Debug tokens desync");
+        traces->PLCstatus = Broken;
+        traces->traces.elementsCount = 0;
+        TraceMutexUnlock();
+        return 0;
     }
-    TraceMutexUnlock();
 
-    traces->traces.elementsCount = sz;
+    if(count_array > 0)
+    {
+
+        if (traces->traces.elements == NULL) {
+#ifndef LOG_DEBUG_ERPC
+            LogMessage(LOG_INFO, "Trace elements are none");
+#endif
+            traces->traces.elementsCount = 0;
+            TraceMutexUnlock();
+            return 0;
+        }
+
+        if (head_array > tail_array) {
+            // Data is already linear
+            memcpy(traces->traces.elements, &m_traces[tail_array], count_array * sizeof(trace_sample));
+        }
+        else
+        {
+            memcpy(traces->traces.elements, &m_traces[tail_array], (MAX_ELEMENTS_TRACE - tail_array) * sizeof(trace_sample));
+            memcpy(traces->traces.elements + (MAX_ELEMENTS_TRACE - tail_array), &m_traces[0], head_array * sizeof(trace_sample));
+
+        }
+
+        // note that the data is not erpc_mallocd here, it is meant to be erpc_mallocd by eRPC server code
+    }
+     TraceMutexUnlock();
+
+    traces->traces.elementsCount = count_array;
     traces->PLCstatus = m_status.PLCstatus;
+
+    //Reset the array
+    head_array = 0;
+    tail_array = 0;
+    count_array = 0;
+    m_trace_byte_size = 0;
 
     return 0;
 }
@@ -217,7 +248,7 @@ uint32_t PLCObject::MatchMD5(const char *MD5, bool *match)
     std::string md5sum = GetLastTransferredPLC_MD5();
 
     // Compare the given MD5 with the last transferred PLC md5
-    *match = (md5sum == MD5);
+    *match = (MD5 != nullptr && md5sum == MD5);
 
     return 0;
 }
@@ -227,6 +258,10 @@ uint32_t PLCObject::NewPLC(
     const list_extra_file_1_t *extrafiles, bool *success)
 {
     uint32_t res;
+
+#ifndef LOG_DEBUG_ERPC
+    LogMessage(LOG_INFO, "New PLC");
+#endif
 
     if(m_status.PLCstatus == Started)
     {
@@ -240,43 +275,49 @@ uint32_t PLCObject::NewPLC(
         return EINVAL;
     }
 
-    // Unload the PLC object
-    UnLoadPLC();
-
-    // Purge the PLC object
-    PurgePLC();
-
     // Save blobs to files
     res = SaveBlobs(md5sum, plcObjectBlobID, extrafiles);
     if (res != 0)
     {
+        LogMessage(LOG_CRITICAL, "Saves blobs failed");
         *success = false;
         return res;
     }
 
     // Load the PLC object
-    res = LoadPLC();
+    res = AutoLoad();
     if (res != 0)
     {
+        LogMessage(LOG_CRITICAL, "Autoload failed");
         *success = false;
         return res;
     }
 
-    m_status.PLCstatus = Stopped;
-    *success = true;
-
+    //Default state after trnasfer is Stopped
+    res = m_PLCSyms.stopPLC();
+    if(res != 0)
+    {
+        m_status.PLCstatus = Broken;
+        *success = false;
+    } 
+    else
+    {
+        m_status.PLCstatus = Stopped;
+        *success = true;
+    }
     return 0;
 }
 
 uint32_t PLCObject::PurgeBlobs(void)
 {
     // Purge all blobs
-
     for (auto &blob : m_mapBlobIDToBlob)
     {
         DeleteBlob(blob.second);
     }
     m_mapBlobIDToBlob.clear();
+
+    m_status.PLCstatus = Empty;
 
     return 0;
 }
@@ -284,7 +325,6 @@ uint32_t PLCObject::PurgeBlobs(void)
 uint32_t PLCObject::RepairPLC(void)
 {
     // Repair the PLC object
-
     if(m_status.PLCstatus == Broken)
     {
         // Unload the PLC object
@@ -292,10 +332,12 @@ uint32_t PLCObject::RepairPLC(void)
 
         // Purge the PLC object
         PurgePLC();
+
+        m_status.PLCstatus = Empty;
+
     }
 
-
-    LogMessage(LOG_WARNING, "RepairPLC not implemented");
+   
     return 0;
 }
 
@@ -305,11 +347,18 @@ uint32_t PLCObject::ResetLogCount(void)
     return 0;
 }
 
+
 uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
 {
     // Create a blob with given seed
     // Output new blob's md5 into blobID
     // Return 0 if success
+#ifndef LOG_DEBUG_ERPC
+    LogMessage(LOG_INFO, "PLC transfer init");
+#endif
+
+    // Unload the PLC object
+    UnLoadPLC();
 
     Blob *blob = NULL;
     blob = NewBlob();
@@ -326,7 +375,7 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
 
     m_mapBlobIDToBlob[k] = blob;
 
-    blobID->data = (uint8_t *)malloc(MD5::digestsize);
+    blobID->data = (uint8_t *)erpc_malloc(MD5::digestsize);
     if (blobID->data == NULL)
     {
         return ENOMEM;
@@ -334,26 +383,35 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
     memcpy(blobID->data, digest.data, MD5::digestsize);
     blobID->dataLength = MD5::digestsize;
 
+    m_status.PLCstatus = Empty;
+
     return 0;
 }
 void PLCObject::PurgeTraceBuffer(void)
 {
     // Free trace buffer
     TraceMutexLock();
-    for(trace_sample s : m_traces){
-        free(s.TraceBuffer.data);
+    while (count_array > 0) {
+        trace_sample& s =  m_traces[tail_array];
+        erpc_free(s.TraceBuffer.data);
+
+        tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
+        count_array--;
     }
-    m_traces.clear();
+    head_array = tail_array = m_trace_byte_size = 0;
     TraceMutexUnlock();
 }
 
 uint32_t PLCObject::SetTraceVariablesList(
     const list_trace_order_1_t *orders, int32_t *debugtoken)
-{
+{   
     if(m_status.PLCstatus == Empty)
     {
-        return EINVAL;
+        LogMessage(LOG_WARNING, "Could not set trace variable: PLC empty");
+        return 0;
     }
+
+    tick_debugger_presence = Get_uptime();
 
     // increment debug token
     m_debugToken++;
@@ -368,6 +426,7 @@ uint32_t PLCObject::SetTraceVariablesList(
 
     // suspend debug before any operation
     int res = m_PLCSyms.suspendDebug(0);
+
     if(res == 0)
     {
         // forget about all previous debug variables
@@ -376,6 +435,7 @@ uint32_t PLCObject::SetTraceVariablesList(
         // call RegisterTraceVariables for each trace order
         for (unsigned int i = 0; i < orders->elementsCount; i++)
         {
+
             trace_order *order = orders->elements + i;
             res = m_PLCSyms.RegisterDebugVariable(order->idx, order->force.data, order->force.dataLength);
             if(res != 0)
@@ -388,7 +448,6 @@ uint32_t PLCObject::SetTraceVariablesList(
                 return EINVAL;
             }
         }
-
         // old traces are not valid anymore
         PurgeTraceBuffer();
 
@@ -399,7 +458,7 @@ uint32_t PLCObject::SetTraceVariablesList(
         *debugtoken = m_debugToken;
         return 0;
     }
-    return res;
+    return 0;
 }
 
 uint32_t PLCObject::StartPLC(void)
@@ -423,8 +482,10 @@ uint32_t PLCObject::StopPLC(bool *success)
     if(res == 0)
     {
         m_status.PLCstatus = Stopped;
+        *success = true;
     } else {
         m_status.PLCstatus = Broken;
+        *success = false;
     }
 
     // Stop debug thread
@@ -449,48 +510,90 @@ uint32_t PLCObject::LogMessage(uint8_t level, std::string message)
 void PLCObject::TraceThreadProc(void)
 {
     uint32_t err = 0;
-
     m_PLCSyms.resumeDebug();
 
     while(m_status.PLCstatus == Started)
     {
-        unsigned int tick;
-        unsigned int size;
-        void * buff;
+            unsigned int tick;
+            unsigned int size;
+            void * buff;
 
-        // Data allocated here is meant to be freed by eRPC server code
-        uint8_t* ourData = NULL;
+            // Data allocated here is meant to be erpc_mallocd by eRPC server code
+            uint8_t* ourData = NULL;
 
-        PLCLibMutexLock();
+            int res = m_PLCSyms.GetDebugData(&tick, &size, &buff);
 
-        int res = m_PLCSyms.GetDebugData(&tick, &size, &buff);
-
-        if(res == 0)
-        {   
-            ourData = (uint8_t *)malloc(size);
-            if(ourData != NULL)
-            {
-                memcpy(ourData, buff, size);
+            if(res == 0)
+            {   
+                ourData = (uint8_t *)erpc_malloc(size);
+                if(ourData != NULL)
+                {
+                    memcpy(ourData, buff, size);
+                }
+                m_PLCSyms.FreeDebugData();
             }
-            m_PLCSyms.FreeDebugData();
-        }
 
-        PLCLibMutexUnlock();
+            // PLC shutdown
+            if (res)
+            {
+                err = 0;
+                break;
+            }
 
-        if(ourData == NULL)
-        {
-            err = res == 0 ? ENOMEM : res;
-            break;
+                if(ourData == NULL)
+                {
+                    err = res == 0 ? ENOMEM : res ;
+                    break;
 
-        } else {   
+                }
+                else if(Get_uptime() - tick_debugger_presence > DEBUGGER_TIMEOUT )
+                {
+                    m_PLCSyms.suspendDebug(1);
+                }
+                else 
+                {   
 
-            TraceMutexLock();
+                    // exact size of the trace_sample without the pointer on buffer and taking the buffer instead
+                    // because size is limited regarding of the max erpc payload
+                    // size of trace_sample struct + buffer + tick + datalength
+                    std::size_t new_sample_size = sizeof(trace_sample) + size + sizeof(uint32_t) + sizeof(uint32_t);
+                        
+                    TraceMutexLock();
+                    
+                    // we cant put newest sample keep droping oldest ones
+                    if (((m_trace_byte_size + new_sample_size) > MAX_ERPC_PAYLOAD_SIZE) && (count_array > 0))
+                    {
+                        auto& oldest = m_traces[tail_array];
+                        std::size_t removed_size = sizeof(trace_sample) + oldest.TraceBuffer.dataLength + sizeof(uint32_t) + sizeof(uint32_t);
+                        m_trace_byte_size -= removed_size;
+                        erpc_free(oldest.TraceBuffer.data);
 
-            m_traces.push_back(trace_sample{tick, binary_t{ourData, size}});
+                        tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
+                        count_array--;
+                    }
 
-            TraceMutexUnlock();
-        }
+                    // oldest sample is drop before rewrite
+                    if (count_array == MAX_ELEMENTS_TRACE)
+                    {
+                        trace_sample& overwritten = m_traces[tail_array];
+                        std::size_t overwritten_size = sizeof(trace_sample) + overwritten.TraceBuffer.dataLength + sizeof(uint32_t) + sizeof(uint32_t);
+                        m_trace_byte_size -= overwritten_size;
+                        erpc_free(overwritten.TraceBuffer.data);
+
+                        tail_array = (tail_array + 1) % MAX_ELEMENTS_TRACE;
+                        count_array--;
+                    }
+
+                    // insert the new sample
+                    m_traces[head_array] = (trace_sample{tick, binary_t{ourData, size}});
+                    m_trace_byte_size = m_trace_byte_size + new_sample_size;       
+                    head_array = (head_array + 1) % MAX_ELEMENTS_TRACE;    
+                    count_array ++;
+
+                    TraceMutexUnlock(); 
+                }   
     }
+    m_PLCSyms.FreeDebugData();
 
     PurgeTraceBuffer();
 
@@ -498,13 +601,13 @@ void PLCObject::TraceThreadProc(void)
         err == ENOMEM ? "Out of memory in TraceThreadProc" : 
         err ? "TraceThreadProc ended because of error" : 
         "TraceThreadProc ended normally");
+    StopDebugThread();
 }
 
 uint32_t PLCObject::ExtendedCall(const char * method, const binary_t * argument, binary_t * answer)
 {
     // TODO
-
-    answer->data = (uint8_t *)malloc(0);
+    answer->data = (uint8_t *)erpc_malloc(0);
     answer->dataLength = 0;
 
     return 0;

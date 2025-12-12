@@ -504,7 +504,8 @@ void CleanupRetain(void)
 {
 }
 
-void InitRetain(void)
+int InitRetain(size_t buffer_size)
 {
+    return 0;
 }
 #endif // !HAVE_RETAIN
