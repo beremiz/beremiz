@@ -1111,12 +1111,12 @@ class PLCControler(object):
 
     # Function that add a new confnode to the confnode list
     def AddConfNodeTypesList(self, typeslist):
-        self.ConfNodeTypes.extend(typeslist)
+        f_typeslist = [confnodetypes for confnodetypes in typeslist if confnodetypes["types"] is not None]
+        self.ConfNodeTypes.extend(f_typeslist)
         addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
                      "list": [pou.getblockInfos()
                               for pou in confnodetypes["types"].getpous()]}
-                    for confnodetypes in typeslist
-                    if confnodetypes["types"] is not None]
+                    for confnodetypes in f_typeslist]
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
             for desc in cat["list"]:
