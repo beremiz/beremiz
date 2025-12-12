@@ -5,7 +5,10 @@
 FROM ubuntu:noble
                                         
 ENV TERM xterm-256color
-    
+
+ENV TZ America/Paris
+ENV DEBIAN_FRONTEND noninteractive
+
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -20,9 +23,7 @@ RUN set -xe \
     && update-locale LANG=en_US.UTF-8
 
 RUN set -xe \
-    && TZ="America/Paris" \
-       DEBIAN_FRONTEND="noninteractive" \
-       apt-get install -y --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
                `# to run sikuli` \
                wget \
                openjdk-11-jre \
