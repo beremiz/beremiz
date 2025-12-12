@@ -39,7 +39,7 @@ RUN set -xe \
                libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
                libpython3-dev libssl-dev \
                python3-wxgtk4.0 \
-               python3-venv virtualenv cmake git
+               python3-venv virtualenv cmake ninja-build git
 
 # force bigger font and flat theme for GTK in order to make OCR more reliable
 RUN mkdir -p /etc/gtk-3.0
