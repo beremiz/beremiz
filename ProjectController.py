@@ -195,7 +195,7 @@ def GetProjectControllerXSD():
           <xsd:sequence>
             <xsd:element name="TargetType" minOccurs="0" maxOccurs="1">
               <xsd:complexType>
-                <xsd:{xsd_tag} minOccurs="1">
+                <xsd:{xsd_tag} minOccurs="1" maxOccurs="1">
                    {"\n".join(target_choices)}
                 </xsd:{xsd_tag}>
               </xsd:complexType>
@@ -461,8 +461,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return params
 
     def SetParamsAttribute(self, path, value):
-        if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
-            self.BeremizRoot.setTargetType(self.GetTarget())
+        if path.startswith("BeremizRoot.TargetType."):
+            targettype = self.BeremizRoot.getTargetType()
+            if targettype is None or targettype.getcontent() is None:
+                self.BeremizRoot.setTargetType(self.GetTarget())
         res = ConfigTreeNode.SetParamsAttribute(self, path, value)
         if path.startswith("BeremizRoot.Libraries."):
             wx.CallAfter(self.RefreshConfNodesBlockLists)
