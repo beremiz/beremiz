@@ -11,7 +11,7 @@ TESTDIR=${1:-~/test}
 mkdir -p $TESTDIR
 echo "TEST direcory : $TESTDIR"
 
-UNAME=testing
+UNAME=ubuntu
 UHOME=/home/$UNAME
 
 # define TESTDEBUG in env to enable dev-mode. This enables :

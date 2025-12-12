@@ -38,6 +38,6 @@ tomli==2.2.1
 Twisted==24.11.0
 txaio==23.1.1
 typing_extensions==4.12.2
-wxPython==4.2.2
+wxPython==4.2.1
 zeroconf==0.145.1
 zope.interface==7.2

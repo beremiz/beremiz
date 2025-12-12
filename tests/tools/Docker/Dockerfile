@@ -2,7 +2,7 @@
 # Dockerfile for Beremiz
 # This container is used to run tests for Beremiz
 #
-FROM ubuntu:jammy  
+FROM ubuntu:noble
                                         
 ENV TERM xterm-256color
     
@@ -10,16 +10,12 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-ARG UNAME=testing
+ARG UNAME=ubuntu
 ENV UNAME ${UNAME}
-ARG UID=1000
-ARG GID=1000
-RUN groupadd -g $GID $UNAME
-RUN useradd -m -u $UID -g $GID -s /bin/bash $UNAME
 
 RUN set -xe \
     && apt-get update \
-    && apt-get install locales \
+    && apt-get install locales -y \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8
 
@@ -30,7 +26,7 @@ RUN set -xe \
                `# to run sikuli` \
                wget \
                openjdk-11-jre \
-               libtesseract4 \
+               tesseract-ocr \
                \
                `# to run X based tests` \
                fluxbox \
@@ -41,22 +37,31 @@ RUN set -xe \
                `# to build tested apps` \
                build-essential automake flex bison mercurial \
                libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
-               libpython3.10-dev libssl-dev \
-               python3.10 virtualenv cmake git
-
+               libpython3-dev libssl-dev \
+               python3-wxgtk4.0 \
+               python3-venv virtualenv cmake git
 
 # force bigger font and flat theme for GTK in order to make OCR more reliable
 RUN mkdir -p /etc/gtk-3.0
 RUN env echo -e '[Settings]\ngtk-font-name=FreeSans,12\ngtk-theme-name=Materia\n' > /etc/gtk-3.0/settings.ini
 
-# link obtained from https://raiman.github.io/SikuliX1/downloads.html
+                                # link obtained from https://raiman.github.io/SikuliX1/downloads.html
+#RUN set -xe && \
+#    wget -qP /usr/local/bin \
+#        https://launchpad.net/sikuli/sikulix/2.0.5/+download/sikulixide-2.0.5.jar && \
+#    echo 0795f1e0866ee5a7a84e4c89793ea78c /usr/local/bin/sikulixide-2.0.5.jar | md5sum -c && \
+#    ( echo '#!/bin/sh' && \
+#      echo "exec java -jar /usr/local/bin/sikulixide-*.jar \"\$@\"" \
+#    ) | install /dev/stdin /usr/local/bin/sikulix
+
 RUN set -xe && \
     wget -qP /usr/local/bin \
-        https://launchpad.net/sikuli/sikulix/2.0.5/+download/sikulixide-2.0.5.jar && \
-    echo 0795f1e0866ee5a7a84e4c89793ea78c /usr/local/bin/sikulixide-2.0.5.jar | md5sum -c && \
+        https://oss.sonatype.org/service/local/repositories/snapshots/content/com/sikulix/sikulixidelux/2.0.6-SNAPSHOT/sikulixidelux-2.0.6-20230417.154102-17.jar && \
+    echo 205551891355da0a54db9924db9b2b36 /usr/local/bin/sikulixidelux-2.0.6-20230417.154102-17.jar | md5sum -c && \
     ( echo '#!/bin/sh' && \
-      echo "exec java -jar /usr/local/bin/sikulixide-*.jar \"\$@\"" \
+      echo "exec java -jar /usr/local/bin/sikulixidelux-2.0.6-20230417.154102-17.jar \"\$@\"" \
     ) | install /dev/stdin /usr/local/bin/sikulix
+
 
 
 ### SVGHMI dependencies : Chromium browser + Inkscape ###
@@ -76,19 +81,19 @@ RUN apt-get install -qqy --no-install-recommends gnupg software-properties-commo
     && apt-get install -qqy --no-install-recommends chromium-browser inkscape
 
 # easy to remember 'do_tests' alias to invoke main makefile
-RUN env echo -e '#!/bin/bash\nmake -f /home/testing/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
+RUN echo '#!/bin/bash\nmake -f /home/'$UNAME'/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
 RUN chmod +x /usr/local/bin/do_tests
 
 USER $UNAME
 
 RUN mkdir /home/$UNAME/build /home/$UNAME/src /home/$UNAME/test
 
-RUN virtualenv ~/beremizenv
+RUN python3 -m venv --system-site-packages ~/beremizenv
 
 # beremiz python requirements
 # file is placed here by build_docker_image.sh
 COPY requirements.txt /home/$UNAME
-RUN ~/beremizenv/bin/pip install -r /home/$UNAME/requirements.txt
+RUN ~/beremizenv/bin/pip install --upgrade --no-deps -r /home/$UNAME/requirements.txt
 
 # tests specific python requirements : pytest pytest-timeout ddt crossbar
 
@@ -107,13 +112,15 @@ RUN ~/beremizenv/bin/pip install -r /home/$UNAME/test_requirements.txt --no-deps
      
 # Why --no-deps : 
 #    - Mandatory because crossbar's dependencies are expressed with github url,
-#      targeting master branch or specific tags. This is not reproducable, and 
+#      targeting master branch or specific tags. This is not reproducible, and 
 #      test has to be reproducible.
-#    - pip freeze generates dependencies pointing to particular commity hash,
+#    - pip freeze generates dependencies pointing to particular commit hash,
 #      the way to go for reproducible test
 #    - because of broken crossbar requirements, 'pip install -r' fails meeting
 #      requirement expressed on a branch or tag with a commit hash based install
 
+
+# Additional Tesseract data files to allow OCR in legacy mode ("oem(0)" in sikuli)
 RUN set -xe && \
     cd  /home/$UNAME && mkdir tessdata && \
     wget -q https://github.com/tesseract-ocr/tessdata/archive/refs/tags/4.1.0.tar.gz \

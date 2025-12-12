@@ -282,8 +282,15 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
         # Maximize window x and y
         subprocess.check_call(["wmctrl", "-i", "-r", windowID, "-b", "add,maximized_vert,maximized_horz"])
 
-        # switchApp creates an App object by finding window by title, is not supposed to spawn a process
-        self.sikuliapp = sikuli.switchApp(wtitle)
+        ## With sikuli 2.0.5, switchApp was used to create an App object by
+        ## finding window by title, without spawning a process
+        # self.sikuliapp = sikuli.switchApp(wtitle)
+        ## this is broken in sikuli 2.0.6
+        
+        ## As retaliation, use undocumented withPID method to create App object
+        ## (found by accident in dir(sikuli.App))
+        self.sikuliapp = sikuli.App.withPID(ppid)
+        
         self.k = KBDShortcut(self)
 
         IDEIdleObserver.__init__(self)
