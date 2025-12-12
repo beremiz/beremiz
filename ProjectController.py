@@ -704,9 +704,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if getattr(self, "Children", None) is not None:
             self.ClearConfNodeTypes()
             self.AddConfNodeTypesList(self.GetLibrariesTypes())
-        if self.AppFrame is not None:
-            self.AppFrame.RefreshLibraryPanel()
-            self.AppFrame.RefreshEditor()
+            if self.AppFrame is not None:
+                self.AppFrame.RefreshLibraryPanel()
+                self.AppFrame.RefreshEditor()
 
     # Update a PLCOpenEditor Pou variable location
     def UpdateProjectVariableLocation(self, old_leading, new_leading):
