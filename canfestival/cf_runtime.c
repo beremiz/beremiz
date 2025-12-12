@@ -105,7 +105,7 @@ void __cleanup_%(locstr)s(void)
     init_level++;
 
 /***************************  INIT  *****************************************/
-int __init_%(locstr)s(int argc,char **argv)
+int __init_%(locstr)s(int argc,void **argv)
 {
 #ifndef NOT_USE_DYNAMIC_LOADING
     if( !LoadCanDriver("%(candriver)s") ){

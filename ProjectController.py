@@ -1189,40 +1189,57 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         # filter location that are related to code that will be called
         # in retreive, publish, init, cleanup
-        locstrs = ["_".join(map(str, x)) for x in [loc for loc, _Cfiles, DoCalls in
-                       self.LocationCFilesAndCFLAGS if loc and DoCalls]]
+        locreqs = [("_".join(map(str, loc)), requirements)
+                   for loc, _Cfiles, DoCalls, *requirements in
+                   self.LocationCFilesAndCFLAGS if loc and DoCalls]
+        
+        plc_main_fields = {
+            "calls_prototypes": "\n".join([
+                "\n".join([
+                    f"int __init_{locstr}(int argc,void **argv);",
+                    f"void __cleanup_{locstr}(void);",
+                    f"void __retrieve_{locstr}(void);",
+                    f"void __publish_{locstr}(void);"])
+                for locstr, _req in locreqs]),
+            "retrieve_calls": "\n    ".join([
+                f"__retrieve_{locstr}();"
+                for locstr, _req in locreqs]),
+            "publish_calls": "\n    ".join([
+                f"__publish_{locreqs[i - 1][0]}();" for i in range(len(locreqs), 0, -1)]),
+            "init_calls": "\n    ".join([
+                "\n    ".join([
+                    f"init_level={i + 1};",
+                    f"if((res = __init_{locstr}(EXT_INIT_ARGS({i}))))",
+                    "    return res;"])
+                for i, (locstr, _req) in enumerate(locreqs)]),
+            "cleanup_calls": "\n    ".join([
+                f"if(init_level >= {i}) " +
+                f"__cleanup_{locreqs[i - 1][0]}();"
+                for i in range(len(locreqs), 0, -1)]),
+            "extensions_requirements": " \\\n".join([
+                "EXT_REQUIREMENT(\"%s\",%d,%d)" % (
+                    req['extention_name'],
+                    req['current_version'],
+                    req['minimum_version'])
+                if req else "EXT_NO_REQUIREMENT"
+                for _locstr, req in locreqs])
+     
+        } if not self.BeremizRoot.getDisable_Extensions() else {
+            
+            "calls_prototypes": "\n",
+            "retrieve_calls":   "\n",
+            "publish_calls":    "\n",
+            "init_calls":       "\n",
+            "cleanup_calls":    "\n",
+            "extensions_requirements": "\n"
+        }
 
         # Generate main, based on template
-        if not self.BeremizRoot.getDisable_Extensions():
-            plc_main_code = targets.GetCode("plc_main_head.c") % {
-                "calls_prototypes": "\n".join([(
-                    "int __init_%(s)s(int argc,char **argv);\n" +
-                    "void __cleanup_%(s)s(void);\n" +
-                    "void __retrieve_%(s)s(void);\n" +
-                    "void __publish_%(s)s(void);") % {'s': locstr} for locstr in locstrs]),
-                "retrieve_calls": "\n    ".join([
-                    "__retrieve_%s();" % locstr for locstr in locstrs]),
-                "publish_calls": "\n    ".join([  # Call publish in reverse order
-                    "__publish_%s();" % locstrs[i - 1] for i in range(len(locstrs), 0, -1)]),
-                "init_calls": "\n    ".join([
-                    "init_level=%d; " % (i + 1) +
-                    "if((res = __init_%s(argc,argv))){" % locstr +
-                    # "printf(\"%s\"); "%locstr + #for debug
-                    "return res;}" for i, locstr in enumerate(locstrs)]),
-                "cleanup_calls": "\n    ".join([
-                    "if(init_level >= %d) " % i +
-                    "__cleanup_%s();" % locstrs[i - 1] for i in range(len(locstrs), 0, -1)])
-            }
-        else:
-            plc_main_code = targets.GetCode("plc_main_head.c") % {
-                "calls_prototypes": "\n",
-                "retrieve_calls":   "\n",
-                "publish_calls":    "\n",
-                "init_calls":       "\n",
-                "cleanup_calls":    "\n"
-            }
-        plc_main_code += targets.GetTargetCode(
-            self.GetTarget().getcontent().getLocalTag())
+        plc_main_code = targets.GetCode("plc_main_head.c") % plc_main_fields
+
+        # Append target-specific code
+        plc_main_code += targets.GetTargetCode(self.GetBuilder().GetTargetName())
+        
         return plc_main_code
 
     def _Build(self):
@@ -1357,6 +1374,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
             c_source.append((partial(targets.GetCode,"plc_logging.c"), "plc_logging.c", "Logging"))
         else:
             self.plcCFLAGS += " -DPLC_NO_LOGGING"
+
+        if self.GetBuilder().getABIEnabled():
+            c_source.append((partial(targets.GetCode,"plc_ABI.c"), "plc_ABI.c", "ABI"))
+            self.plcCFLAGS += " -DPLC_USES_ABI"
 
         c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 

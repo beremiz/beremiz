@@ -88,7 +88,7 @@ static int first_sent=0;
 }
 
 /* EtherCAT plugin functions */
-int __init_%(location)s(int argc,char **argv)
+int __init_%(location)s(int argc,void **argv)
 {
     uint32_t abort_code;
     size_t result_size;

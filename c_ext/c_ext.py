@@ -103,7 +103,7 @@ class CFile(CodeFile):
 
         # Adding Beremiz confnode functions
         text += "/* Beremiz confnode functions */\n"
-        text += "int __init_%s(int argc,char **argv)\n{\n" % location_str
+        text += "int __init_%s(int argc,void **argv)\n{\n" % location_str
         text += self.CodeFile.initFunction.getanyText().strip()
         text += "  return 0;\n}\n\n"
 

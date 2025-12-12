@@ -72,6 +72,9 @@ class Builder:
     def getLoggingEnabled(self):
         return True
 
+    def getABIEnabled(self):
+        return False
+
     def GetReservedIECChannels(self):
         return []
     

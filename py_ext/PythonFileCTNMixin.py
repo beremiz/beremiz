@@ -366,7 +366,7 @@ PYTHON_POLL_data__* __%(location_str)s_notifier;
 %(vardec)s
 
 /* Beremiz confnode functions */
-int __init_%(location_str)s(int argc,char **argv){
+int __init_%(location_str)s(int argc,void **argv){
     __%(location_str)s_notifier = __GET_GLOBAL_ON_%(location_str)s_CHANGE();
     __SET_VAR(__%(location_str)s_notifier->,TRIG,,__BOOL_LITERAL(TRUE));
     __SET_VAR(__%(location_str)s_notifier->,CODE,,__STRING_LITERAL(%(pysafe_pypoll_code_len)d,%(pysafe_pypoll_code)s));

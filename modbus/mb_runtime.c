@@ -586,7 +586,7 @@ static void *__mb_client_timer_thread(void *_index) {
 
 
 int __cleanup_%(locstr)s ();
-int __init_%(locstr)s (int argc, char **argv){
+int __init_%(locstr)s (int argc, void **argv){
 	int index;
 
 	for (index=0; index < NUMBER_OF_CLIENT_NODES;index++) {

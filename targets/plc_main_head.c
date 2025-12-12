@@ -90,10 +90,18 @@ unsigned int __run(unsigned int periods_passed)
 }
 
 /*
- * Initialize variables according to PLC's default values,
- * and then init plugins with that values
+ * Initialize PLC and calls plugins init functions
  **/
-int __init(int argc,char **argv)
+
+#ifdef PLC_USES_ABI
+// from plc_ABI.c
+extern beremiz_plc_ABI *beremiz_plc_interface_ptr;
+#define EXT_INIT_ARGS(index) beremiz_plc_interface_ptr->argcs[index],beremiz_plc_interface_ptr->argvs[index]
+#else
+#define EXT_INIT_ARGS(index) 0,NULL
+#endif
+
+int __init(int argc, char **argv)
 {
     int res = 0;
     init_level = 0;
@@ -115,6 +123,7 @@ int __init(int argc,char **argv)
     %(init_calls)s
     return res;
 }
+
 /*
  * Calls plugin cleanup proc.
  **/
@@ -126,5 +135,13 @@ void __cleanup(void)
 #endif
 }
 
+/*
+ * Extensions requirements
+ **/
+#define EXTENSIONS_REQUIREMENTS \
+%(extensions_requirements)s
 
+/*
+ * plc_${target_name}_main.c is concatenated verbatim after this
+ **/
 
