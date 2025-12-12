@@ -47,7 +47,7 @@ struct trace_order {
 struct log_message {
     string msg;
     uint32 tick;
-    uint32 sec;
+    uint64 sec;
     uint32 nsec;
 };
 
