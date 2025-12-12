@@ -134,6 +134,9 @@ class OPCUAClient(object):
         self.modeldata.SaveCSV(self.GetFileName())
         return True
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
         locstr = "_".join(map(str, current_location))

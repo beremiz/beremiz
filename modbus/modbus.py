@@ -871,6 +871,9 @@ class RootClass(object):
             Node_Configuration_Names.extend([(child.GetCurrentLocation(), child.GetConfigName())])
         return Node_Configuration_Names
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
         # print "#############"
         # print self.__class__

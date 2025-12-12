@@ -113,6 +113,9 @@ class PythonFileCTNMixin(CodeFile):
         """
         return var.getonchange()
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
         location_str = "_".join(map(str, self.GetCurrentLocation()))

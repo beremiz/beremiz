@@ -22,6 +22,9 @@ class PythonLibrary(POULibrary):
     def GetLibraryPath(self):
         return paths.AbsNeighbourFile(__file__, "pous.xml")
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+    
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
 
         plc_python_filepath = paths.AbsNeighbourFile(__file__, "plc_python.c")
