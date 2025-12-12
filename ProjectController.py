@@ -265,6 +265,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.Children = {}
         self._View = None
         # After __init__ root confnode is not valid
+        self.Project = None
         self.ProjectPath = None
         self._setBuildPath(None)
         self.debug_break = False
@@ -701,7 +702,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
-        if getattr(self, "Children", None) is not None:
+        if self.Project is not None:
             self.ClearConfNodeTypes()
             self.AddConfNodeTypesList(self.GetLibrariesTypes())
             if self.AppFrame is not None:
