@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CFile xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <includes>
+    <xhtml:p><![CDATA[
+#include <stdio.h>
+#include <stdarg.h>
+]]></xhtml:p>
+  </includes>
+  <variables/>
+  <globals>
+    <xhtml:p><![CDATA[
+void MyPrintFunc(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    fflush(stdout);
+}
+]]></xhtml:p>
+  </globals>
+  <initFunction>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </initFunction>
+  <cleanUpFunction>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </cleanUpFunction>
+  <retrieveFunction>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </retrieveFunction>
+  <publishFunction>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </publishFunction>
+</CFile>

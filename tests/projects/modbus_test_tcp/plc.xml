@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Beremiz" productName="Beremiz" productVersion="1" creationDateTime="2018-07-27T13:19:12"/>
-  <contentHeader name="Modbus" modificationDateTime="2024-04-04T17:20:49">
+  <contentHeader name="Modbus" modificationDateTime="2025-08-21T18:00:02">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -364,12 +364,23 @@ OUT := T2.Q;]]></xhtml:p>
               </type>
             </variable>
           </inputVars>
+          <localVars>
+            <variable name="LOGGER0">
+              <type>
+                <derived name="LOGGER"/>
+              </type>
+            </variable>
+          </localVars>
         </interface>
         <body>
           <ST>
             <xhtml:p><![CDATA[IF in0 = in1 AND in1 = in2 AND NOT(success) THEN
   success := TRUE;
-  { printf("TEST OK\n"); fflush(stdout); }
+  LOGGER0(
+     TRIG := TRUE,
+     MSG := 'TEST OK',
+     LEVEL := CRITICAL);
+
 END_IF;]]></xhtml:p>
           </ST>
         </body>

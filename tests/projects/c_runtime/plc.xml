@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Generic PLC" productVersion="1" creationDateTime="2013-01-29T14:01:00" contentDescription="This example shows logging functionality in Beremiz.&#10;Here are shown two ways of logging:&#10;- from IEC PLC program;&#10;- from python extension.&#10;"/>
-  <contentHeader name="Logging example" modificationDateTime="2024-06-03T22:15:34">
+  <contentHeader name="Logging example" modificationDateTime="2025-08-21T17:01:24">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
@@ -45,8 +45,7 @@
 IF rtrig.Q THEN 
 {{
   short inval = GetFbVar(IN);
-  printf("C runtime OK #%d\n", inval);
-  fflush(stdout);
+  MyPrintFunc("C runtime OK #%d\n", inval);
 }}
 END_IF;
 ]]></xhtml:p>
