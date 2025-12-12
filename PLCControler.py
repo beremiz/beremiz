@@ -1115,7 +1115,8 @@ class PLCControler(object):
         addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
                      "list": [pou.getblockInfos()
                               for pou in confnodetypes["types"].getpous()]}
-                    for confnodetypes in typeslist]
+                    for confnodetypes in typeslist
+                    if confnodetypes["types"] is not None]
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
             for desc in cat["list"]:
@@ -1317,9 +1318,11 @@ class PLCControler(object):
             if result is not None:
                 return result
         for confnodetype in self.ConfNodeTypes:
-            result = confnodetype["types"].getdataType(typename)
-            if result is not None:
-                return result
+            confnodetype_types = confnodetype["types"]
+            if confnodetype_types is not None:
+                result = confnodetype_types.getdataType(typename)
+                if result is not None:
+                    return result
         return None
 
     # Return Data Type Object Base Type

@@ -36,15 +36,22 @@ class POULibrary(object):
         from PLCControler import PLCControler
         self.CTR = ref(CTR)
         self.LibName = LibName
-        self.LibraryControler = PLCControler()
-        self.LibraryControler.OpenXMLFile(self.GetLibraryPath())
-        self.LibraryControler.ClearConfNodeTypes()
-        self.LibraryControler.AddConfNodeTypesList(TypeStack)
+        libpath = self.GetLibraryPath()
+        if libpath is not None:            
+            self.LibraryControler = PLCControler()
+            self.LibraryControler.OpenXMLFile(libpath)
+            self.LibraryControler.ClearConfNodeTypes()
+            self.LibraryControler.AddConfNodeTypesList(TypeStack)
+        else:
+            self.LibraryControler = None
         self.program = None
 
     def GetSTCode(self):
-        if not self.program:
-            self.program = self.LibraryControler.GenerateProgram(noconfig=True)[0]+"\n"
+        if self.program is None:
+            if self.LibraryControler is not None:
+                self.program = self.LibraryControler.GenerateProgram(noconfig=True)[0]+"\n"
+            else:
+                self.program = f"(* Library {self.LibName} produced no ST code *)"
         return self.program
 
     def GetName(self):
@@ -54,7 +61,9 @@ class POULibrary(object):
         return self.CTR()
 
     def GetTypes(self):
-        return {"name": self.GetName(), "types": self.LibraryControler.Project}
+        return {"name": self.GetName(),
+                "types": self.LibraryControler.Project
+                         if self.LibraryControler else None}
 
     def GetLibraryPath(self):
         raise Exception("Not implemented")
@@ -68,10 +77,11 @@ class POULibrary(object):
         @return: [varlist_object, ...]
         """
         varlists = []
-        for configuration in self.LibraryControler.Project.getconfigurations():
-            varlist = configuration.getglobalVars()
-            if len(varlist)>0 :
-                varlists += varlist
+        if self.LibraryControler:
+            for configuration in self.LibraryControler.Project.getconfigurations():
+                varlist = configuration.getglobalVars()
+                if len(varlist)>0 :
+                    varlists += varlist
         return varlists
 
     def FatalError(self, message):
