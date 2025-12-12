@@ -321,6 +321,7 @@ error:
 #define DEBUG_FREE 0
 #define DEBUG_BUSY 1
 static long debug_state = DEBUG_FREE;
+IEC_BOOL __DEBUG = 0;
 
 int TryEnterDebugSection(void)
 {

@@ -123,6 +123,8 @@ int startPLC(int argc, char **argv)
     return 0;
 }
 
+IEC_BOOL __DEBUG = 0;
+
 int TryEnterDebugSection(void)
 {
     if (pthread_mutex_trylock(&debug_mutex) == 0) {

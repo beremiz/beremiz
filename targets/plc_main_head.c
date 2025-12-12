@@ -40,7 +40,6 @@ void __init_logging(void);
  *  Variables used by generated C softPLC and plugins
  **/
 IEC_TIME __CURRENT_TIME = {0, 0};
-IEC_BOOL __DEBUG = 0;
 unsigned int __tick = 0;
 char *PLC_ID = 0;
 

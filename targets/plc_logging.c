@@ -99,7 +99,7 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
         tail.msgidx = old_index;
 
         copy_to_log(level, old_cursor, buf, size);
-        copy_to_log(level, old_cursor + size & LOG_BUFFER_MASK, &tail, sizeof(mTail));
+        copy_to_log(level, (old_cursor + size) & LOG_BUFFER_MASK, &tail, sizeof(mTail));
 
         return 1; /* Success */
     }else{
@@ -128,7 +128,7 @@ uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_s
         do {
             copy_from_log(level, stailpos, &tail, sizeof(mTail));
             if(tail.msgsize == 0) break;
-            if(found = (tail.msgidx == msgidx)) break;
+            if((found = (tail.msgidx == msgidx))) break;
             old_stailpos = stailpos;
             stailpos = (stailpos - sizeof(mTail) - tail.msgsize ) & LOG_BUFFER_MASK;
         }while(!((stailpos <= initial_stailpos) && (old_stailpos > initial_stailpos)) // don't cross start position

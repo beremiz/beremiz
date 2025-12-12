@@ -133,7 +133,9 @@ int startPLC(int argc,char **argv)
     }
     return 0;
 }
+
 static unsigned int __debug_tick;
+IEC_BOOL __DEBUG = 0;
 
 int TryEnterDebugSection(void)
 {
