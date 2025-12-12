@@ -1,43 +1,43 @@
 aiofiles==24.1.0
 aiosqlite==0.21.0
 asyncua @ git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82
-attrs==25.1.0
-autobahn @ git+https://github.com/crossbario/autobahn-python.git@7bc85b34e200640ab98a41cfddb38267f39bc92e
-Automat==24.8.1
+attrs==25.3.0
+autobahn==24.4.2
+Automat==25.4.16
 Brotli==1.1.0
 cffi==1.17.1
-click==8.1.8
+click==8.2.1
 constantly==23.10.4
-contourpy==1.3.1
-cryptography==44.0.1
+contourpy==1.3.2
+cryptography==45.0.5
 cycler==0.12.1
 erpc @ git+https://git@github.com/beremiz/erpc.git@d8fff72b15274b5f2a8f7895d9bc5c91eef584ec#subdirectory=erpc_python
-fonttools==4.56.0
+fonttools==4.59.0
 hyperlink==21.0.0
 idna==3.10
 ifaddr==0.2.0
 incremental==24.7.2
 kiwisolver==1.4.8
-lxml==5.3.1
-matplotlib==3.10.1
-msgpack==1.1.0
+lxml==6.0.0
+matplotlib==3.10.3
+msgpack==1.1.1
 Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@fe14898bc3e8aaa2ff982b6fb07c76c3b0bec77d
-numpy==2.2.3
-packaging==24.2
-pillow==11.1.0
+numpy==2.3.2
+packaging==25.0
+pillow==11.3.0
 pycountry==24.6.1
 pycparser==2.22
-pyOpenSSL==25.0.0
-pyparsing==3.2.1
+pyOpenSSL==25.1.0
+pyparsing==3.2.3
 python-dateutil==2.9.0.post0
-pytz==2025.1
+pytz==2025.2
+setuptools==80.9.0
 six==1.17.0
 sortedcontainers==2.4.0
 sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
-tomli==2.2.1
-Twisted==24.11.0
-txaio==23.1.1
-typing_extensions==4.12.2
+Twisted==25.5.0
+txaio==25.6.1
+typing_extensions==4.14.1
 wxPython==4.2.1
-zeroconf==0.145.1
+zeroconf==0.147.0
 zope.interface==7.2

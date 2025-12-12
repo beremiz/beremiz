@@ -7,10 +7,11 @@ erpc @ git+https://git@github.com/beremiz/erpc.git@d8fff72b15274b5f2a8f7895d9bc5
 lxml
 matplotlib
 msgpack
-Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@81c2eaeaaa20022540a98a3106f72e0199fbcc1b
+Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@fe14898bc3e8aaa2ff982b6fb07c76c3b0bec77d
 pyOpenSSL
 pycountry
 # pyserial
 sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
-wxPython
+# Forced to version 4.2.1, the one used in latest Ubuntu LTS 24.04, to speed up build/tests
+wxPython==4.2.1
 zeroconf
