@@ -44,6 +44,7 @@ class PLCObjectPosix : public PLCObject
         virtual void PLCLibMutexUnlock(void);
         virtual Blob *NewBlob();
         virtual void DeleteBlob(Blob *blob);
+        virtual std::string GetLastTransferredPLC_MD5(void);
 
     private:
         virtual uint32_t BlobAsFile(const binary_t * BlobID, std::filesystem::path filename);

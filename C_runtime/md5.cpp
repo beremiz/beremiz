@@ -59,12 +59,12 @@ documentation and/or software.
 // F, G, H and I are basic MD5 functions.
 inline uint32_t MD5::F(uint32_t x, uint32_t y, uint32_t z)
 {
-    return x & y | ~x & z;
+    return (x & y) | (~x & z);
 }
 
 inline uint32_t MD5::G(uint32_t x, uint32_t y, uint32_t z)
 {
-    return x & z | y & ~z;
+    return (x & z) | (y & ~z);
 }
 
 inline uint32_t MD5::H(uint32_t x, uint32_t y, uint32_t z)

@@ -3,8 +3,6 @@
 #include <iostream>
 #include <vector>
 
-#include "Logging.hpp"
-
 #include "PLCObject.hpp"
 
 #include "beremiz.h"
@@ -95,7 +93,7 @@ uint32_t PLCObject::AutoLoad()
 }
 
 
-#define LOG_READ_BUFFER_SIZE 1 << 10 // 1KB
+#define LOG_READ_BUFFER_SIZE (1 << 10) // 1KB
 
 uint32_t PLCObject::GetLogMessage(
     uint8_t level, uint32_t msgID, log_message *message)
@@ -216,14 +214,7 @@ uint32_t PLCObject::MatchMD5(const char *MD5, bool *match)
         return 0;
     }
 
-    // Load the last transferred PLC md5 hex digest
-    std::string md5sum;
-    try {
-        std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
-    } catch (std::exception e) {
-        *match = false;
-        return 0;
-    }
+    std::string md5sum = GetLastTransferredPLC_MD5();
 
     // Compare the given MD5 with the last transferred PLC md5
     *match = (md5sum == MD5);
@@ -383,7 +374,7 @@ uint32_t PLCObject::SetTraceVariablesList(
         m_PLCSyms.ResetDebugVariables();
 
         // call RegisterTraceVariables for each trace order
-        for (int i = 0; i < orders->elementsCount; i++)
+        for (unsigned int i = 0; i < orders->elementsCount; i++)
         {
             trace_order *order = orders->elements + i;
             res = m_PLCSyms.RegisterDebugVariable(order->idx, order->force.data, order->force.dataLength);

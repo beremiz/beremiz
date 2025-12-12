@@ -116,6 +116,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         virtual void PLCLibMutexUnlock(void) = 0;
         virtual Blob *NewBlob() = 0;
         virtual void DeleteBlob(Blob *blob) = 0;
+        virtual std::string GetLastTransferredPLC_MD5(void) = 0;
 
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);

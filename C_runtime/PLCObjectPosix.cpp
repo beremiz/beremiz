@@ -256,3 +256,16 @@ void PLCObjectPosix::DeleteBlob(Blob *blob)
 {
     delete dynamic_cast<BlobPosix*>(blob);
 }
+
+std::string PLCObjectPosix::GetLastTransferredPLC_MD5(void)
+{
+    // Load the last transferred PLC md5 hex digest
+    std::string md5sum;
+    try {
+        std::ifstream(std::string(LastTransferredPLC), std::ios::binary) >> md5sum;
+    } catch (std::exception e) {
+        return "";
+    }
+
+    return md5sum;
+}
