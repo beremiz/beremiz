@@ -31,8 +31,14 @@ import importlib
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase
 
-connectors_packages = ["ERPC", "WAMP"]
-
+# Dynamically collect connector package names from subdirectories containing __init__.py
+current_dir = path.dirname(__file__)
+connectors_packages = [
+    name for name in listdir(current_dir)
+    if not name.startswith("__") and
+       path.isdir(path.join(current_dir, name)) and
+       path.isfile(path.join(current_dir, name, "__init__.py"))
+]
 
 def _GetLocalConnectorClassFactory(name):
     return lambda: getattr(importlib.import_module(f"connectors.{name}"),

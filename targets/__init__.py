@@ -29,7 +29,10 @@ import features
 targets = {}
 targetchoices = []
 for name in sorted(listdir(__path__[0])):
-    if (path.isdir(path.join(__path__[0], name)) and not name.startswith("__")):
+    dirpath = path.join(__path__[0], name)
+    if (not name.startswith("__") and
+        path.isdir(dirpath) and
+        path.isfile(path.join(dirpath, "__init__.py"))):
         if not features.targets or name in features.targets:
             module = importlib.import_module(f"targets.{name}")
             targets[name] = module
