@@ -236,21 +236,17 @@ int RetainSaveNeeded(void)
 {
 	int ret = 0;
 	static IEC_TIME last_save;
-	IEC_TIME now;
 	double diff_s;
 
 	/* no retain */
 	if (!retain_info.retain_size)
 		return 0;
 
-	/* periodic retain flush to avoid high I/O load */
-	PLC_GetTime(&now);
-
-	diff_s = CalcDiffSeconds(&now, &last_save);
+	diff_s = CalcDiffSeconds(&__CURRENT_TIME, &last_save);
 
 	if ((diff_s > FILE_RETAIN_SAVE_PERIOD_S) || ForceSaveRetainReq()) {
 		ret = 1;
-		last_save = now;
+		last_save = __CURRENT_TIME;
 	}
 	return ret;
 }

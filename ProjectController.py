@@ -39,7 +39,7 @@ import hashlib
 import shutil
 from datetime import datetime
 from weakref import WeakKeyDictionary
-from functools import reduce
+from functools import partial, reduce
 from collections import OrderedDict
 
 import wx
@@ -1202,7 +1202,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             }
         plc_main_code += targets.GetTargetCode(
             self.GetTarget().getcontent().getLocalTag())
-        plc_main_code += targets.GetCode("plc_main_tail.c")
         return plc_main_code
 
     def _Build(self):
@@ -1330,6 +1329,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         else:
             # debugger explicitely disabled, disable C code instrumentation
             self.plcCFLAGS += " -DPLC_NO_DEBUG"
+
+        # Same principle for getLoggingEnabled and plc_logging.c
+
+        if self.GetBuilder().getLoggingEnabled():
+            c_source.append((partial(targets.GetCode,"plc_logging.c"), "plc_logging.c", "Logging"))
+        else:
+            self.plcCFLAGS += " -DPLC_NO_LOGGING"
 
         c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 

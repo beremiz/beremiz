@@ -101,18 +101,20 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 void PLC_task_proc(void *arg)
 {
     unsigned long overruns = 0;
+    int periods_passed = 0;
+
     PLC_SetTimer(common_ticktime__, common_ticktime__);
 
     while (!PLC_shutdown) {
-        PLC_GetTime(&__CURRENT_TIME);
         if(overruns == 0){
-            __run();
+            __run(periods_passed);
+            periods_passed = 1;
         } else {
             // in case of overrun, don't run PLC on next cycle, to prevent CPU hogging.
             _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", overruns);
             // rt_printf("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", overruns);
             // increment tick count anyhow, so that task scheduling keeps consistent
-            __tick += overruns;
+            periods_passed = overruns + 1;
         }
         if (PLC_shutdown) break;
         rt_task_wait_period(&overruns);
@@ -344,8 +346,6 @@ void LeaveDebugSection(void)
     }
 }
 
-extern unsigned int __tick;
-
 int WaitDebugData(unsigned int *tick)
 {
     char cmd;
@@ -362,11 +362,11 @@ int WaitDebugData(unsigned int *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     char msg = DEBUG_PENDING_DATA;
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     send_RT_to_nRT_signal(WaitDebug_handle, msg);
 }

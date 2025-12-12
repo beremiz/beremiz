@@ -69,6 +69,9 @@ class Builder:
     def getDebugEnabled(self):
         return True
 
+    def getLoggingEnabled(self):
+        return True
+
     def GetReservedIECChannels(self):
         return []
     

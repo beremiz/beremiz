@@ -51,8 +51,7 @@ void PlcLoop()
             PLC_shutdown = 1;
             break;
         }
-        PLC_GetTime(&__CURRENT_TIME);
-        __run();
+        __run(1);
     }
 }
 
@@ -186,10 +185,10 @@ int WaitDebugData(unsigned int *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     ReleaseSemaphore(debug_wait_sem, 1, NULL);
 }

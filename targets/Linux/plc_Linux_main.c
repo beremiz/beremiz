@@ -47,10 +47,14 @@ uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t e
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
+    #ifndef BEREMIZ_TEST_CYCLES
+
     struct timespec tmp;
     clock_gettime(CLOCK_REALTIME, &tmp);
     CURRENT_TIME->tv_sec = tmp.tv_sec;
     CURRENT_TIME->tv_nsec = tmp.tv_nsec;
+
+    #endif
 }
 
 static long long period_ns = 0;
@@ -105,6 +109,8 @@ int ForceSaveRetainReq(void) {
 #define timespec_gt(a,b) (a.tv_sec > b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec > b.tv_nsec))
 void PLC_thread_proc(void *arg)
 {
+  	int periods_passed = 0;
+
     /* initialize next occurence and period */
     period_ns = common_ticktime__;
     clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
@@ -157,10 +163,8 @@ void PLC_thread_proc(void *arg)
             // Remaining PLC runtime is expected to be cleaned-up/killed by test script
             return;
         }
-#else
-        PLC_GetTime(&__CURRENT_TIME);
 #endif
-        __run();
+        __run(periods_passed);
 
 #ifndef BEREMIZ_TEST_CYCLES
         // ensure next PLC cycle occurence is in the future
@@ -186,11 +190,9 @@ void PLC_thread_proc(void *arg)
                 inc_timespec(&next_cycle_time, period_ns);
             }
 
-            // increment tick count anyhow, so that task scheduling keeps consistent
-            __tick+=periods-1;
-
             _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", periods);
         }
+        periods_passed = periods;
     }
 
     pthread_exit(0);
@@ -311,8 +313,6 @@ int stopPLC()
     return 0;
 }
 
-extern unsigned int __tick;
-
 int WaitDebugData(unsigned int *tick)
 {
     int res;
@@ -325,10 +325,10 @@ int WaitDebugData(unsigned int *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     pthread_mutex_unlock(&debug_wait_mutex);
 }

@@ -39,7 +39,6 @@ static inline void PLC_timer_cancel(void *arg)
 
 static inline void PLC_timer_notify(void *arg)
 {
-    PLC_GetTime(&__CURRENT_TIME);
     dispatch_semaphore_signal(Run_PLC);
 }
 
@@ -82,7 +81,7 @@ void PLC_thread_proc(void *arg)
 {
     while (!PLC_shutdown) {
         dispatch_semaphore_wait(Run_PLC, DISPATCH_TIME_FOREVER);
-        __run();
+        __run(1);
     }
     pthread_exit(0);
 }
@@ -159,8 +158,6 @@ int stopPLC()
     return 0;
 }
 
-extern unsigned int __tick;
-
 int WaitDebugData(unsigned int *tick)
 {
     int res;
@@ -174,10 +171,10 @@ int WaitDebugData(unsigned int *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     pthread_mutex_unlock(&debug_wait_mutex);
 }

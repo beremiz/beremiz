@@ -162,16 +162,14 @@ void __init_debug(void)
     }
 }
 
-extern void InitiateDebugTransfer(void);
+extern void InitiateDebugTransfer(int tick);
 extern void CleanupRetain(void);
-
-extern unsigned int __tick;
 
 void __cleanup_debug(void)
 {
 #ifndef TARGET_ONLINE_DEBUG_DISABLE
     trace_buffer_cursor = trace_buffer;
-    InitiateDebugTransfer();
+    InitiateDebugTransfer(__tick);
 #endif    
 
     CleanupRetain();
@@ -208,7 +206,6 @@ unsigned int GetRetainSize(void)
 }
 
 
-extern void PLC_GetTime(IEC_TIME*);
 extern int TryEnterDebugSection(void);
 extern uint32_t AtomicCompareExchange(uint32_t*, uint32_t, uint32_t);
 extern void LeaveDebugSection(void);
@@ -307,7 +304,7 @@ void __publish_debug(void)
             /* Leave debug section,
              * Trigger asynchronous transmission 
              * (returns immediately) */
-            InitiateDebugTransfer(); /* size */
+            InitiateDebugTransfer(__tick); /* size */
         }
         LeaveDebugSection();
     }
