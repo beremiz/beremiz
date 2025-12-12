@@ -82,7 +82,7 @@ class Builder:
         return []
 
     def GetPLCHeadersPreamble(self):
-        return ""
+        return '#include <stdio.h>\n'
 
     def Transfer(self, connector):
         self.CTRInstance.logger.write_error("Target doesn't support direct transfer/flashing !\n")

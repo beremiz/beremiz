@@ -18,7 +18,7 @@ opj = os.path.join
 
 tessdata_path = os.environ["TESSDATAPATH"]
 
-ansi_escape = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
+ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
 def escape_ansi(line):
     return ansi_escape.sub('', line)
 
