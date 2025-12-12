@@ -473,9 +473,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         if projectOpen is not None and os.path.isdir(projectOpen):
             self.CTR = ProjectController()
             self.Controler = self.CTR
+            self.CTR.SetAppFrame(self, self.Log)
             result, _err = self.CTR.LoadProject(projectOpen, buildpath)
             if not result:
-                self.CTR.SetAppFrame(self, self.Log)
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
@@ -862,12 +862,12 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                               EncodeFileSystemPath(os.path.dirname(projectpath)))
             self.Config.Flush()
             self.ResetView()
-            ctr = ProjectController()
-            result = ctr.NewProject(projectpath)
+            
+            self.CTR = ProjectController()
+            self.CTR.SetAppFrame(self, self.Log)
+            self.Controler = self.CTR
+            result = self.CTR.NewProject(projectpath)
             if not result:
-                self.CTR = ctr
-                self.CTR.SetAppFrame(self, self.Log)
-                self.Controler = self.CTR
                 self.LibraryPanel.SetController(self.Controler)
                 self.ProjectTree.Enable(True)
                 self.PouInstanceVariablesPanel.SetController(self.Controler)
@@ -877,6 +877,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 self.RefreshAfterLoad()
                 IDEFrame.OnAddNewProject(self, event)
             else:
+                self.CTR = None
+                self.Controler = None
                 self.ResetView()
                 self.ShowErrorMessage(result)
             self.RefreshAll()
@@ -916,6 +918,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                     self.DebugVariablePanel.SetDataProducer(self.CTR)
                 self.RefreshAfterLoad()
             else:
+                self.CTR = None
+                self.Controler = None
                 self.ResetView()
                 self.ShowErrorMessage(result)
             self.RefreshAll()

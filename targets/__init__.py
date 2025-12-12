@@ -23,15 +23,17 @@ Beremiz Targets
 import importlib
 import util.paths as paths
 from os import listdir, path
+import features
 
 
 targets = {}
-targetchoices = ""
+targetchoices = []
 for name in sorted(listdir(__path__[0])):
     if (path.isdir(path.join(__path__[0], name)) and not name.startswith("__")):
-        module = importlib.import_module(f"targets.{name}")
-        targets[name] = module
-        targetchoices += getattr(module, f"XSD")
+        if not features.targets or name in features.targets:
+            module = importlib.import_module(f"targets.{name}")
+            targets[name] = module
+            targetchoices.append(getattr(module, f"XSD"))
 
 
 def GetBuilder(targename):

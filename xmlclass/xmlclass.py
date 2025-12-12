@@ -1269,6 +1269,14 @@ def generateGetattrMethod(factory, class_definition, classinfos):
     elements = dict([(element["name"], element) for element in classinfos["elements"]])
 
     def getattrMethod(self, name):
+        # fallbacks for xsd:sequences that do not expose getcontent/setcontent
+        # used in context of xsd:choice being replaced by xsd:sequence
+        # when only one choice is available
+        if name == "getcontent":
+            return lambda : self[0] if len(self) > 0 else None
+        if name == "setcontent":
+            return lambda x : self.__setitem__(0, x) if len(self) > 0 else self.append(x)
+
         if name in attributes:
             attribute_infos = attributes[name]
             attribute_infos["attr_type"] = FindTypeInfos(factory, attribute_infos["attr_type"])

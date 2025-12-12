@@ -186,16 +186,18 @@ class Iec2CSettings(object):
 
 
 def GetProjectControllerXSD():
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    target_choices = targets.GetTargetChoices()
+    xsd_tag = "choice" if len(target_choices) > 1 else "sequence"
+    XSD = f"""<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="BeremizRoot">
         <xsd:complexType>
           <xsd:sequence>
             <xsd:element name="TargetType">
               <xsd:complexType>
-                <xsd:choice minOccurs="0">
-                """ + targets.GetTargetChoices() + """
-                </xsd:choice>
+                <xsd:{xsd_tag} minOccurs="1">
+                   {"\n".join(target_choices)}
+                </xsd:{xsd_tag}>
               </xsd:complexType>
             </xsd:element>""" + (("""
             <xsd:element name="Libraries" minOccurs="0">
@@ -703,8 +705,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
         if self.Project is not None:
+            try:
+                libs = self.GetLibrariesTypes()
+            except UserAddressedException as e:
+                self.logger.write_error(str(e))
+                return
+            except Exception as e:
+                self.logger.write_error(
+                    _("Runtime library extensions discovery failed !\n"))
+                self.logger.write_error(traceback.format_exc())
+
             self.ClearConfNodeTypes()
-            self.AddConfNodeTypesList(self.GetLibrariesTypes())
+            self.AddConfNodeTypesList(libs)
             if self.AppFrame is not None:
                 self.AppFrame.RefreshLibraryPanel()
                 self.AppFrame.RefreshEditor()
@@ -984,7 +996,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Return a Builder (compile C code into machine code)
         """
         # Get target, module and class name
-        targetname = self.GetTarget().getcontent().getLocalTag()
+        targetcfg = self.GetTarget().getcontent()
+        if targetcfg is None:
+            return None
+        targetname = targetcfg.getLocalTag()
         targetclass = targets.GetBuilder(targetname)
 
         # if target already

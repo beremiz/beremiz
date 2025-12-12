@@ -28,3 +28,6 @@ catalog = [
     ('svghmi', _('SVGHMI'), _('SVG based HMI'), 'svghmi.SVGHMI')]
 
 file_editors = []
+
+# If empty allows all targets
+targets = []
