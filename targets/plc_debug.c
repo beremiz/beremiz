@@ -236,7 +236,7 @@ extern void InValidateRetainBuffer(void);
                     /* outputs real value must be systematically forced */                          \
                     if(vartype == TYPENAME##_O_ENUM)                                                \
                         /* overwrite value pointed by backup */                                     \
-                        *((TYPENAME *)force_list_apply_cursor->value_pointer_backup) =  \
+                        *((TYPENAME *)force_list_apply_cursor->value_pointer_backup) =              \
                             *((TYPENAME *)force_buffer_cursor);                                     \
                     /* inc force_buffer cursor */                                                   \
                     force_buffer_cursor = next_cursor;                                              \
@@ -380,6 +380,9 @@ void __publish_debug(void)
                 if(next_cursor <= force_buffer_end ){                                   \
                     /* add to force_list*/                                              \
                     force_list_addvar_cursor->dbgvardsc_index = idx;                    \
+                    /* outputs real value must be systematically forced */              \
+                    if(vartype == TYPENAME##_O_ENUM)                                    \
+                        *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
                     /* save pointer to backup */                                        \
                     force_list_addvar_cursor->value_pointer_backup =                    \
                         ((__IEC_##TYPENAME##_p *)varp)->value;                          \
@@ -392,9 +395,6 @@ void __publish_debug(void)
                     ((__IEC_##TYPENAME##_p *)varp)->flags |= __IEC_FORCE_FLAG;          \
                     /* inc force_buffer cursor */                                       \
                     force_buffer_cursor = next_cursor;                                  \
-                    /* outputs real value must be systematically forced */              \
-                    if(vartype == TYPENAME##_O_ENUM)                                    \
-                        *(((__IEC_##TYPENAME##_p *)varp)->value) = *((TYPENAME *)force);\
                 } else {                                                                \
                     error_code = FORCE_BUFFER_OVERFLOW;                                 \
                     goto error_cleanup;                                                 \
@@ -454,8 +454,11 @@ error_cleanup:
             break;
 
 #define ResetForcedVariable_case_p(TYPENAME)                                            \
-        case TYPENAME##_P_ENUM :                                                        \
         case TYPENAME##_O_ENUM :                                                        \
+            /* in case of output, overwrite value one last time */                      \
+            *((TYPENAME *)force_list_apply_cursor->value_pointer_backup) =              \
+                *((TYPENAME *)force_buffer_cursor);                                     \
+        case TYPENAME##_P_ENUM :                                                        \
             ((__IEC_##TYPENAME##_p *)varp)->flags &= ~__IEC_FORCE_FLAG;                 \
             /* restore backup to pointer */                                             \
             ((__IEC_##TYPENAME##_p *)varp)->value =                                     \
