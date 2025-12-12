@@ -32,8 +32,10 @@ void InitiateDebugTransfer(int tick);
 #endif
 
 // Logging
+#ifndef PLC_USES_ABI /* not on PLC side if using ABI */
 #ifndef PLC_NO_LOGGING
 void __init_logging(void);
+#endif
 #endif
 
 /*
@@ -110,8 +112,10 @@ int __init(int argc, char **argv)
     if(!common_ticktime__)
         common_ticktime__ = 1000000;
 
+#ifndef PLC_USES_ABI /* not on PLC side if using ABI */
 #ifndef PLC_NO_LOGGING
     __init_logging();
+#endif
 #endif
 
     config_init__();

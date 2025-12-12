@@ -25,8 +25,7 @@ void __publish_debug (void){}
 #include <string.h>
 #include <stdio.h>
 
-typedef unsigned int dbgvardsc_index_t;
-typedef unsigned short trace_buf_offset_t;
+typedef unsigned int uint32_t;
 
 #define BUFFER_EMPTY 0
 #define BUFFER_FULL 1
@@ -40,7 +39,7 @@ typedef unsigned short trace_buf_offset_t;
 static uint32_t trace_buffer_state = BUFFER_EMPTY;
 
 typedef struct trace_item_s {
-    dbgvardsc_index_t dbgvardsc_index;
+    uint32_t dbgvardsc_index;
 } trace_item_t;
 
 trace_item_t trace_list[TRACE_LIST_SIZE];
@@ -60,7 +59,7 @@ static const char *trace_buffer_end = trace_buffer + TRACE_BUFFER_SIZE;
 #define FORCE_LIST_SIZE 256
 
 typedef struct force_item_s {
-    dbgvardsc_index_t dbgvardsc_index;
+    uint32_t dbgvardsc_index;
     void *value_pointer_backup;
 } force_item_t;
 
@@ -92,11 +91,11 @@ static const dbgvardsc_t dbgvardsc[] = {
 %(variable_decl_array)s
 };
 
-static const dbgvardsc_index_t retain_list[] = {
+static const uint32_t retain_list[] = {
 %(retain_vardsc_index_array)s
 };
 static unsigned int retain_list_collect_cursor = 0;
-static const unsigned int retain_list_size = sizeof(retain_list)/sizeof(dbgvardsc_index_t);
+static const unsigned int retain_list_size = sizeof(retain_list)/sizeof(uint32_t);
 
 typedef void(*__for_each_variable_do_fp)(dbgvardsc_t*);
 void __for_each_variable_do(__for_each_variable_do_fp fp)
@@ -389,7 +388,7 @@ void __publish_debug(void)
 
 void ResetDebugVariables(void);
 
-int RegisterDebugVariable(dbgvardsc_index_t idx, void* force, size_t force_size)
+int RegisterDebugVariable(uint32_t idx, void* force, size_t force_size)
 {
     int error_code = 0;
     if(idx < sizeof(dbgvardsc)/sizeof(dbgvardsc_t)){

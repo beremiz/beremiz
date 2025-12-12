@@ -38,7 +38,7 @@ extern "C" {
         int (*startPLC)(int argc,char **argv);
         int (*stopPLC)(void);
         void (*ResetDebugVariables)(void);
-        int (*RegisterDebugVariable)(unsigned int idx, void* force, size_t force_size);
+        int (*RegisterDebugVariable)(uint32_t idx, void* force, size_t force_size);
         void (*FreeDebugData)(void);
         int (*GetDebugData)(unsigned int *tick, unsigned int *size, void **buffer);
         int (*suspendDebug)(int disable);
