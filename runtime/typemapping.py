@@ -11,6 +11,7 @@ class IEC_STRING(Structure):
     """
     Must be changed according to changes in iec_types.h
     """
+    _pack_ = 1
     _fields_ = [("len", c_uint8),
                 ("body", c_char * 126)]
 
