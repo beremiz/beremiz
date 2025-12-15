@@ -13,7 +13,7 @@
 
 uint32_t AtomicCompareExchange(uint32_t* atomicvar, uint32_t compared, uint32_t exchange)
 {
-    return InterlockedCompareExchange(atomicvar, exchange, compared);
+    return InterlockedCompareExchange((volatile long int *)atomicvar, exchange, compared);
 }
 
 struct timeb timetmp;
@@ -263,19 +263,6 @@ void UnLockPython(void)
 void LockPython(void)
 {
 	WaitForSingleObject(python_sem, INFINITE);
-}
-
-static void __attribute__((constructor))
-beremiz_dll_init(void)
-{
-    InitializeCriticalSection(&Atomic64CS);
-
-}
-
-static void __attribute__((destructor))
-beremiz_dll_destroy(void)
-{
-    DeleteCriticalSection(&Atomic64CS);
 }
 
 struct RT_to_nRT_signal_s {
