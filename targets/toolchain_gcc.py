@@ -132,7 +132,7 @@ class toolchain_gcc(Builder):
         pattern = "{SYSROOT}"
         if pattern in Builder_CFLAGS_str or pattern in Builder_LDFLAGS_str:
             try:
-                sysrootb = subprocess.check_output(["arm-unknown-linux-gnueabihf-gcc","-print-sysroot"])
+                sysrootb = subprocess.check_output([self.compiler,"-print-sysroot"])
             except subprocess.CalledProcessError:
                 self.CTRInstance.logger.write("GCC failed with -print-sysroot\n")
                 return False
