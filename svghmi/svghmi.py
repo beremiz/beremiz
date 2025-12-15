@@ -446,10 +446,11 @@ class SVGHMI(object):
         # invoke inskscape -S, csv-parse output, produce elements
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
-        inkpath = get_inkscape_path().decode()
+        inkpath = get_inkscape_path()
         if inkpath is None:
             self.FatalError("SVGHMI: inkscape is not installed.")
 
+        inkpath = inkpath.decode()
         svgpath = self._getSVGpath()
         status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
                                                      [inkpath, '-S', svgpath],
