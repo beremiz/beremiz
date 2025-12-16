@@ -262,6 +262,9 @@ void __publish_debug(void)
         if(latest_state == BUFFER_EMPTY)
         {
             int stop = 0;
+
+            /* Reset force buffer cursor */
+            force_buffer_cursor = force_buffer;
             /* Reset force list cursor */
             force_list_apply_cursor = force_list;
 
@@ -455,9 +458,6 @@ error_cleanup:
 
 #define ResetForcedVariable_case_p(TYPENAME)                                            \
         case TYPENAME##_O_ENUM :                                                        \
-            /* in case of output, overwrite value one last time */                      \
-            *((TYPENAME *)force_list_apply_cursor->value_pointer_backup) =              \
-                *((TYPENAME *)force_buffer_cursor);                                     \
         case TYPENAME##_P_ENUM :                                                        \
             ((__IEC_##TYPENAME##_p *)varp)->flags &= ~__IEC_FORCE_FLAG;                 \
             /* restore backup to pointer */                                             \
