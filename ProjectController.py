@@ -281,11 +281,18 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECcodeDigest = None
         self.LastBuiltIECcodeDigest = None
 
-        # compute CFLAGS for PLC code
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % os.path.abspath(self.iec2c_cfg.getLibCPath())
-        
         self.AppFrame = None
         self.logger = None
+        self.additionalCFLAGS = []
+
+                 # compute CFLAGS for PLC code
+    def getPLC_CFLAGS(self):
+        libCPath = self.iec2c_cfg.getLibCPath()
+        if libCPath is None:
+            self.logger.write_error(_("Couldn't find MatIEC C library.\n"))
+            return ''
+        return '"-I%s" -Wno-unused-function' % os.path.abspath(libCPath) + \
+                ' ' + ' '.join(self.additionalCFLAGS)
 
     def LoadLibraries(self):
         self.Libraries = OrderedDict()
@@ -705,7 +712,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.FatalError(_("Target %s is not compatible with %s library\n") % 
                     (builder.GetTargetName(), lib.GetName()))
 
-            res = lib.Generate_C(buildpath, self._VariablesList, self.plcCFLAGS)
+            res = lib.Generate_C(buildpath, self._VariablesList, self.getPLC_CFLAGS())
             LocatedCCodeAndFlags.append(res[:2])
             if len(res) > 2:
                 Extras.extend(res[2:])
@@ -1042,7 +1049,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
 
-        return ([(C_file_name, self.plcCFLAGS)
+        return ([(C_file_name, self.getPLC_CFLAGS())
                  for C_file_name in self.PLCGeneratedCFiles],
                 "",  # no ldflags
                 False)  # do not expose retreive/publish calls
@@ -1365,21 +1372,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Template based part of C code generation
         # files are stacked at the beginning, as files of confnode tree root
         c_source = []
+        self.additionalCFLAGS = []
         
         if self.GetBuilder().getDebugEnabled():
             # add debugger code
             c_source.append((self.Generate_plc_debugger, "plc_debugger.c", "Debugger"))
         else:
             # debugger explicitely disabled, disable C code instrumentation
-            self.plcCFLAGS += " -DPLC_NO_DEBUG"
+            self.additionalCFLAGS.append("-DPLC_NO_DEBUG")
 
         logging_enabled = self.GetBuilder().getLoggingEnabled()
         if not logging_enabled:
-            self.plcCFLAGS += " -DPLC_NO_LOGGING"
-
+            self.additionalCFLAGS.append("-DPLC_NO_LOGGING")
         if self.GetBuilder().getABIEnabled():
             c_source.append((partial(targets.GetCode,"plc_ABI.c"), "plc_ABI.c", "ABI"))
-            self.plcCFLAGS += " -DPLC_USES_ABI"
+            self.additionalCFLAGS.append("-DPLC_USES_ABI")
         elif logging_enabled:
             # add logging code only if not using ABI.
             # When using ABI, logging is expected in the runtime
@@ -1398,7 +1405,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # Insert this file as first file to be compiled at root
                 # confnode
                 self.LocationCFilesAndCFLAGS[0][1].insert(
-                    0, (code_path, self.plcCFLAGS))
+                    0, (code_path, self.getPLC_CFLAGS()))
             except Exception:
                 self.logger.write_error(name + _(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
