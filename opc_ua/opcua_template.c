@@ -9,6 +9,13 @@
 #include <open62541/types.h>
 #include <open62541/types_generated_handling.h>
 
+#include <stdint.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
+
 #define _Log(level, ...)                                                                           \
     {{                                                                                             \
         char mstr[256];                                                                            \
@@ -50,26 +57,62 @@ loadFile(const char *const path) {{
     return fileContents;
 }}
 
+/* OPCUA client */
 static UA_Client *client;
 static UA_ClientConfig *cc;
 
-#define DECL_VAR(ua_type, C_type, c_loc_name)                                                       \
-static UA_Variant c_loc_name##_variant;                                                             \
-static C_type c_loc_name##_buf = 0;                                                                 \
+#define DECL_VAR(iec_type, C_type, c_loc_name)                                                     \
+static UA_Variant c_loc_name##_variant;                                                                 \
+static C_type c_loc_name##_buf = 0;                                                             \
 C_type *c_loc_name = &c_loc_name##_buf;
 
 {decl}
 
+/* URI of OPCUA, used by the background thread to connect and retry */
+static char *OPCUA_uri;
+
+/* condition to quit connection thread */
+static int OPCUA_stop_thread = 0;
+
+/* Keep track of connection state */
+static volatile int OPCUA_is_disconnected = 1;
+
+/* mutex to protect client operations */
+static pthread_mutex_t OPCUA_client_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/* wakeup connection thread */
+static pthread_cond_t OPCUA_thread_wakeup = PTHREAD_COND_INITIALIZER;
+
+/* thread that handles connection and reconnection */
+static pthread_t OPCUA_thread;
+
 void __cleanup_{locstr}(void)
 {{
-    UA_Client_disconnect(client);
-    UA_Client_delete(client);
+    /* stop connection thread */
+    OPCUA_stop_thread = 1;
+    if (pthread_mutex_lock(&OPCUA_client_mutex) == 0){{
+        /* unblock connection thread so that it can stop normally */
+        pthread_cond_signal(&OPCUA_thread_wakeup);
+        pthread_mutex_unlock(&OPCUA_client_mutex);
+    }}
+    /* Wait for thread to finish */
+    pthread_join(OPCUA_thread, NULL);
+    /* Cleanup client */
+    if (client) {{
+        UA_Client_disconnect(client);
+        UA_Client_delete(client);
+    }}
 }}
 
 #define INIT_NoAuth()                                                                              \
     LogInfo("OPC-UA Init no auth");                                                                \
     UA_ClientConfig_setDefault(cc);                                                                \
-    retval = UA_Client_connect(client, uri);
+    OPCUA_stop_thread = 0;                                                                         \
+    int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                      \
+    if (rc != 0) {{                                                                                \
+        LogError("OPC-UA Failed to create thread: %d", rc);                                        \
+        UA_Client_delete(client);                                                                  \
+    }}
 
 /* Note : Single policy is enforced here, by default open62541 client supports all policies */
 #define INIT_x509(Policy, UpperCaseMode, PrivateKey, Certificate)                                  \
@@ -83,9 +126,11 @@ void __cleanup_{locstr}(void)
     /* replacement for default behaviour */                                                        \
     /* UA_ClientConfig_setDefaultEncryption(cc, certificate, privateKey, NULL, 0, NULL, 0); */     \
     do{{                                                                                           \
-        retval = UA_ClientConfig_setDefault(cc);                                                   \
-        if(retval != UA_STATUSCODE_GOOD)                                                           \
+        UA_StatusCode initRetval = UA_ClientConfig_setDefault(cc);                                 \
+        if(initRetval != UA_STATUSCODE_GOOD) {{                                                    \
+            retval = initRetval;                                                                   \
             break;                                                                                 \
+        }}                                                                                         \
                                                                                                    \
         UA_SecurityPolicy *sp = (UA_SecurityPolicy*)                                               \
             UA_realloc(cc->securityPolicies, sizeof(UA_SecurityPolicy) * 2);                       \
@@ -95,21 +140,30 @@ void __cleanup_{locstr}(void)
         }}                                                                                         \
         cc->securityPolicies = sp;                                                                 \
                                                                                                    \
-        retval = UA_SecurityPolicy_##Policy(&cc->securityPolicies[cc->securityPoliciesSize],       \
+        UA_StatusCode spRetval = UA_SecurityPolicy_##Policy(&cc->securityPolicies[cc->securityPoliciesSize],       \
                                                  certificate, privateKey, &cc->logger);            \
-        if(retval != UA_STATUSCODE_GOOD) {{                                                        \
+        if(spRetval != UA_STATUSCODE_GOOD) {{                                                      \
             UA_LOG_WARNING(&cc->logger, UA_LOGCATEGORY_USERLAND,                                   \
                            "Could not add SecurityPolicy Policy with error code %s",               \
-                           UA_StatusCode_name(retval));                                            \
+                           UA_StatusCode_name(spRetval));                                          \
             UA_free(cc->securityPolicies);                                                         \
             cc->securityPolicies = NULL;                                                           \
+            retval = spRetval;                                                                     \
             break;                                                                                 \
         }}                                                                                         \
                                                                                                    \
         ++cc->securityPoliciesSize;                                                                \
+        retval = UA_STATUSCODE_GOOD;                                                               \
     }} while(0);                                                                                   \
                                                                                                    \
-    retval = UA_Client_connect(client, uri);                                                       \
+    if(retval == UA_STATUSCODE_GOOD) {{                                                            \
+        OPCUA_stop_thread = 0;                                                                     \
+        int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                  \
+        if (rc != 0) {{                                                                            \
+            LogError("OPC-UA Failed to create thread: %d", rc);                                    \
+            UA_Client_delete(client);                                                              \
+        }}                                                                                          \
+    }}                                                                                              \
                                                                                                    \
     UA_ByteString_clear(&certificate);                                                             \
     UA_ByteString_clear(&privateKey);
@@ -125,12 +179,34 @@ void __cleanup_{locstr}(void)
 #define INIT_WRITE_VARIANT(ua_type, ua_type_enum, c_loc_name)                                      \
     UA_Variant_setScalar(&c_loc_name##_variant, (ua_type*)c_loc_name, &UA_TYPES[ua_type_enum]);
 
+static void* __OPCUA_thread_proc(void *arg) {{ 
+    while(!OPCUA_stop_thread) {{
+        if (OPCUA_is_disconnected) {{
+            sleep(1);
+            
+            if((pthread_mutex_lock(&OPCUA_client_mutex)) == 0) {{ 
+                UA_StatusCode retval = UA_Client_connect(client, OPCUA_uri);
+                if (retval == UA_STATUSCODE_GOOD) {{
+                    OPCUA_is_disconnected = 0;
+                    LogInfo("OPC-UA Connected");
+                }} else {{
+                    OPCUA_is_disconnected = 1;
+                    LogError("OPC-UA Connection failed with status code %s", UA_StatusCode_name(retval));
+                }}
+                pthread_mutex_unlock(&OPCUA_client_mutex);
+            }}
+        }} 
+    }}
+    return NULL;
+}}
+
 int __init_{locstr}(int argc,char **argv)
 {{
-    UA_StatusCode retval;
+    UA_StatusCode retval = UA_STATUSCODE_GOOD;
     client = UA_Client_new();
     cc = UA_Client_getConfig(client);
     char *uri = "{uri}";
+    OPCUA_uri = uri;
 {init}
 
     if(retval != UA_STATUSCODE_GOOD) {{
@@ -142,23 +218,32 @@ int __init_{locstr}(int argc,char **argv)
 }}
 
 #define READ_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)        \
-    retval = UA_Client_readValueAttribute(                                                         \
-        client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);                      \
-    if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(&c_loc_name##_variant) &&               \
-       c_loc_name##_variant.type == &UA_TYPES[ua_type_enum]) {{                                    \
-            c_loc_name##_buf = *(ua_type*)c_loc_name##_variant.data;                               \
-            UA_Variant_clear(&c_loc_name##_variant);  /* Unalloc requiered on each read ! */       \
+    {{                                                                                            \
+        if(!OPCUA_is_disconnected && pthread_mutex_trylock(&OPCUA_client_mutex) == 0) {{          \
+            UA_StatusCode retval = UA_Client_readValueAttribute(                                  \
+                client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);                           \
+            if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(&c_loc_name##_variant) &&                  \
+                c_loc_name##_variant.type == &UA_TYPES[ua_type_enum]) {{                                         \
+                c_loc_name##_buf = *(ua_type*)c_loc_name##_variant.data;                                        \
+            }}                                                                                      \
+            UA_Variant_clear(&c_loc_name##_variant);                                  \
+            pthread_mutex_unlock(&OPCUA_client_mutex);                                             \
+        }}                                                                                          \
     }}
 
 void __retrieve_{locstr}(void)
 {{
-    UA_StatusCode retval;
 {retrieve}
 }}
 
-#define WRITE_VALUE(ua_type, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)                     \
-    UA_Client_writeValueAttribute(                                                                 \
-        client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);
+#define WRITE_VALUE(ua_type, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)                    \
+    {{                                                                                             \
+        if(!OPCUA_is_disconnected && pthread_mutex_trylock(&OPCUA_client_mutex) == 0) {{           \
+            UA_Client_writeValueAttribute(                                                         \
+                client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);                           \
+            pthread_mutex_unlock(&OPCUA_client_mutex);                                             \
+        }}                                                                                          \
+    }}
 
 void __publish_{locstr}(void)
 {{
