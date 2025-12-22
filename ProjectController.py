@@ -1346,8 +1346,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 raise e
             return False
 
-        self.LocationCFilesAndCFLAGS = LibCFilesAndCFLAGS + \
-            CTNLocationCFilesAndCFLAGS
+        self.LocationCFilesAndCFLAGS = CTNLocationCFilesAndCFLAGS + LibCFilesAndCFLAGS
         self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
         ExtraFiles = CTNExtraFiles + LibExtraFiles
 
