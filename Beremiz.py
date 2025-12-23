@@ -31,7 +31,7 @@ import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
-from util.misc import SetDeveloperMode
+from util.misc import SetDeveloperMode, SetSDKPath
 
 
 class BeremizIDELauncher(object):
@@ -59,7 +59,8 @@ class BeremizIDELauncher(object):
         print("")
         print("Supported options:")
         print("-h --help                    Print this help")
-        print("-d --devmode               i Run in development mode")
+        print("-d --devmode                 Run in development mode")
+        print("-s --sdkpath PATH            Use PATH as SDK location")
         print("-u --updatecheck URL         Retrieve update information by checking URL")
         print("-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions")
         print("-l --log path                write content of console tab to given file")
@@ -67,8 +68,8 @@ class BeremizIDELauncher(object):
         print("")
 
     def SetCmdOptions(self):
-        self.shortCmdOpts = "hdu:e:l:"
-        self.longCmdOpts = ["help", "devmode", "updatecheck=", "extend=", "log="]
+        self.shortCmdOpts = "hdsu:e:l:"
+        self.longCmdOpts = ["help", "devmode", "sdkpath=", "updatecheck=", "extend=", "log="]
 
     def ProcessOption(self, o, a):
         if o in ("-h", "--help"):
@@ -77,6 +78,13 @@ class BeremizIDELauncher(object):
         if o in ("-d", "--devmode"):
             self.devmode = True
             SetDeveloperMode()
+        if o in ("-s", "--sdkpath"):
+            if a is not None and os.path.isdir(a):
+                SetSDKPath(a)
+            else:
+                print("Invalid SDK path: %s" % a)
+                self.Usage()
+                sys.exit(2)
         if o in ("-u", "--updatecheck"):
             self.updateinfo_url = a
         if o in ("-e", "--extend"):

@@ -47,7 +47,7 @@ import wx
 import features
 import connectors
 import util.paths as pathutils
-from util.misc import CheckPathPerm, GetClassImporter, GetDeveloperMode
+from util.misc import CheckPathPerm, GetClassImporter, GetDeveloperMode, GetSDKPath
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from util.BitmapLibrary import GetBitmap
@@ -1012,12 +1012,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         Return a Builder (compile C code into machine code)
         """
-        # Get target, module and class name
-        targetcfg = self.GetTarget().getcontent()
-        if targetcfg is None:
-            return None
-        targetname = targetcfg.getLocalTag()
-        targetclass = targets.GetBuilder(targetname)
+        if GetSDKPath():
+            from plc_sdk_builder import PLCSDKBuilder
+            targetclass = PLCSDKBuilder
+        else:
+            # Get target, module and class name
+            targetcfg = self.GetTarget().getcontent()
+            if targetcfg is None:
+                return None
+            targetname = targetcfg.getLocalTag()
+            targetclass = targets.GetBuilder(targetname)
 
         # if target already
         if self._builder is None or not isinstance(self._builder, targetclass):
