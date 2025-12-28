@@ -27,7 +27,7 @@ import re
 
 import wx
 
-from controls import CustomEditableListBox
+from controls.CustomEditableListBox import CustomEditableListBox
 
 # -------------------------------------------------------------------------------
 #                                  Helpers

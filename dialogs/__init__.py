@@ -27,28 +27,28 @@
 
 
 
-from dialogs.CommentEditDialog import CommentEditDialog
-from dialogs.ConnectionDialog import ConnectionDialog
-from dialogs.ActionBlockDialog import ActionBlockDialog
-from dialogs.FBDBlockDialog import FBDBlockDialog
-from dialogs.FBDVariableDialog import FBDVariableDialog
-from dialogs.LDElementDialog import LDElementDialog
-from dialogs.LDPowerRailDialog import LDPowerRailDialog
-from dialogs.SFCStepDialog import SFCStepDialog
-from dialogs.SFCStepNameDialog import SFCStepNameDialog
-from dialogs.SFCTransitionDialog import SFCTransitionDialog
-from dialogs.SFCDivergenceDialog import SFCDivergenceDialog
-from dialogs.ForceVariableDialog import ForceVariableDialog
-from dialogs.ArrayTypeDialog import ArrayTypeDialog
-from dialogs.DurationEditorDialog import DurationEditorDialog
-from dialogs.SearchInProjectDialog import SearchInProjectDialog
-from dialogs.BrowseLocationsDialog import BrowseLocationsDialog
-from dialogs.ProjectDialog import ProjectDialog
-from dialogs.PouDialog import PouDialog
-from dialogs.PouTransitionDialog import PouTransitionDialog
-from dialogs.PouActionDialog import PouActionDialog
-from dialogs.FindInPouDialog import FindInPouDialog
-from dialogs.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
-from dialogs.UriEditor import UriEditor
-from dialogs.IDManager import IDManager
-from dialogs.MessageBoxOnce import MessageBoxOnce
+# from dialogs.CommentEditDialog import CommentEditDialog
+# from dialogs.ConnectionDialog import ConnectionDialog
+# from dialogs.ActionBlockDialog import ActionBlockDialog
+# from dialogs.FBDBlockDialog import FBDBlockDialog
+# from dialogs.FBDVariableDialog import FBDVariableDialog
+# from dialogs.LDElementDialog import LDElementDialog
+# from dialogs.LDPowerRailDialog import LDPowerRailDialog
+# from dialogs.SFCStepDialog import SFCStepDialog
+# from dialogs.SFCStepNameDialog import SFCStepNameDialog
+# from dialogs.SFCTransitionDialog import SFCTransitionDialog
+# from dialogs.SFCDivergenceDialog import SFCDivergenceDialog
+# from dialogs.ForceVariableDialog import ForceVariableDialog
+# from dialogs.ArrayTypeDialog import ArrayTypeDialog
+# from dialogs.DurationEditorDialog import DurationEditorDialog
+# from dialogs.SearchInProjectDialog import SearchInProjectDialog
+# from dialogs.BrowseLocationsDialog import BrowseLocationsDialog
+# from dialogs.ProjectDialog import ProjectDialog
+# from dialogs.PouDialog import PouDialog
+# from dialogs.PouTransitionDialog import PouTransitionDialog
+# from dialogs.PouActionDialog import PouActionDialog
+# from dialogs.FindInPouDialog import FindInPouDialog
+# from dialogs.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
+# from dialogs.UriEditor import UriEditor
+# from dialogs.IDManager import IDManager
+# from dialogs.MessageBoxOnce import MessageBoxOnce

@@ -40,9 +40,20 @@ from editors.Viewer import Viewer, ZOOM_FACTORS
 from editors.ResourceEditor import ConfigurationEditor, ResourceEditor
 from editors.DataTypeEditor import DataTypeEditor
 from PLCControler import *
-from controls import CustomTree, LibraryPanel, PouInstanceVariablesPanel, SearchResultPanel
+
+from controls.CustomTree import CustomTree
 from controls.DebugVariablePanel import DebugVariablePanel
-from dialogs import ProjectDialog, PouDialog, PouTransitionDialog, PouActionDialog, FindInPouDialog, SearchInProjectDialog
+from controls.LibraryPanel import LibraryPanel
+from controls.PouInstanceVariablesPanel import PouInstanceVariablesPanel
+from controls.SearchResultPanel import SearchResultPanel
+
+from dialogs.SearchInProjectDialog import SearchInProjectDialog
+from dialogs.ProjectDialog import ProjectDialog
+from dialogs.PouDialog import PouDialog
+from dialogs.PouTransitionDialog import PouTransitionDialog
+from dialogs.PouActionDialog import PouActionDialog
+from dialogs.FindInPouDialog import FindInPouDialog
+
 from util.BitmapLibrary import GetBitmap
 from plcopen.types_enums import *
 

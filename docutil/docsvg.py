@@ -28,7 +28,7 @@ import os
 import sys
 import wx
 import subprocess
-from dialogs import MessageBoxOnce
+from dialogs.MessageBoxOnce import MessageBoxOnce
 
 
 def _get_inkscape_path():

@@ -42,7 +42,7 @@ from functools import reduce
 from lxml import etree
 
 from xmlclass import GenerateParserFromXSDstring
-from PLCControler import LOCATION_CONFNODE
+from plcopen.types_enums import LOCATION_CONFNODE
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from POULibrary import UserAddressedException
 

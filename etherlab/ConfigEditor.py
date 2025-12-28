@@ -20,8 +20,12 @@ import wx.adv
 import wx.lib.buttons
 
 from plcopen.structures import IEC_KEYWORDS, TestIdentifier
-from controls import CustomGrid, CustomTable, FolderTree
+
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
+from controls.FolderTree import FolderTree
 from controls.CustomStyledTextCtrl import NAVIGATION_KEYS
+
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor, SCROLLBAR_UNIT
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate

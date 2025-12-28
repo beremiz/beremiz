@@ -11,7 +11,7 @@
 
 
 
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigTreeNode import ConfigTreeNode
 
 from etherlab.ConfigEditor import NodeEditor

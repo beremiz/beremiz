@@ -18,7 +18,7 @@ import re
 from email.parser import HeaderParser
 
 import pycountry
-from dialogs import MessageBoxOnce
+from dialogs.MessageBoxOnce import MessageBoxOnce
 from POULibrary import UserAddressedException
 
 cmd_parser = re.compile(r'(?:"([^"]+)"\s*|([^\s]+)\s*)?')

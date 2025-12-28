@@ -51,7 +51,8 @@ from IDEFrame import \
     DecodeFileSystemPath
 from editors.Viewer import Viewer
 from PLCControler import PLCControler
-from dialogs import ProjectDialog
+
+from dialogs.ProjectDialog import ProjectDialog
 from dialogs.AboutDialog import ShowAboutDialog
 
 

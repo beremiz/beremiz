@@ -27,7 +27,7 @@ import os
 
 from modbus.mb_utils import *
 from ConfigTreeNode import ConfigTreeNode
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 import util.paths as paths
 
 ModbusPath = paths.ThirdPartyPath("Modbus")

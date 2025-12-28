@@ -7,7 +7,7 @@ import re
 import wx
 
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
 from .mqtt_client_gen import MQTTClientPanel, MQTTClientModel, MQTT_IEC_types, authParams
 
 import util.paths as paths

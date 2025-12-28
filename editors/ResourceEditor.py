@@ -28,7 +28,11 @@ import wx.lib.buttons
 import wx.grid
 
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD, ERROR_HIGHLIGHT
-from controls import CustomGrid, CustomTable, DurationCellEditor
+
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
+from controls.DurationCellEditor import DurationCellEditor
+
 from dialogs.DurationEditorDialog import IEC_TIME_MODEL
 from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap

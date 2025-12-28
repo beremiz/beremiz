@@ -34,7 +34,7 @@ import wx
 
 from bacnet.BacnetSlaveEditor import *
 from bacnet.BacnetSlaveEditor import ObjectProperties
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 from ConfigTreeNode import ConfigTreeNode
 import util.paths as paths
 

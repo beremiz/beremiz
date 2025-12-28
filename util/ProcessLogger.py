@@ -31,7 +31,7 @@ import time
 import shlex
 from threading import Timer, Lock, Thread, Semaphore, Condition
 import signal
-from util.misc import GetDeveloperMode
+from util import GetDeveloperMode
 
 class outputThread(Thread):
     """

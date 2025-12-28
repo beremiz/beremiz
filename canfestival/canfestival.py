@@ -36,9 +36,7 @@ import util.paths as paths
 
 from util.TranslationCatalogs import AddCatalog
 from ConfigTreeNode import ConfigTreeNode
-from PLCControler import \
-    LOCATION_CONFNODE, \
-    LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 
 CanFestivalPath = paths.ThirdPartyPath("CanFestival-3")  # noqa
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))  # noqa

@@ -33,8 +33,11 @@ from editors.EditorPanel import EditorPanel
 
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE, PAGETITLES
 
-from controls import TextCtrlAutoComplete
-from dialogs import BrowseValuesLibraryDialog, UriEditor
+from controls.TextCtrlAutoComplete import TextCtrlAutoComplete
+
+from dialogs.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
+from dialogs.UriEditor import UriEditor
+
 from util.BitmapLibrary import GetBitmap
 
 if wx.Platform == '__WXMSW__':

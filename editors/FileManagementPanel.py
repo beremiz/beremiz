@@ -32,7 +32,7 @@ import wx.lib.buttons
 
 from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
-from controls import FolderTree
+from controls.FolderTree import FolderTree
 
 
 class FileManagementPanel(EditorPanel):

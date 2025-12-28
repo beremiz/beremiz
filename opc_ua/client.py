@@ -5,7 +5,7 @@
 import os
 
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
 from .opcua_client_maker import OPCUAClientPanel, OPCUAClientModel, UA_IEC_types, authParams
 
 import util.paths as paths

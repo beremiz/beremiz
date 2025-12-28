@@ -14,7 +14,7 @@ import os
 
 import wx
 
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
 from MotionLibrary import AxisXSD
 from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave

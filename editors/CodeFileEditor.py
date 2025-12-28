@@ -33,7 +33,8 @@ import wx.lib.buttons
 
 from plcopen.plcopen import TestTextElement
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS, DefaultType
-from controls import CustomGrid, CustomTable
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap

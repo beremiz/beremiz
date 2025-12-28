@@ -19,7 +19,8 @@ import wx.adv
 import wx.lib.buttons
 
 # --------------------------------------------------------------------
-from controls import CustomGrid, CustomTable
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
 from runtime import PlcStatus
 # --------------------------------------------------------------------
 

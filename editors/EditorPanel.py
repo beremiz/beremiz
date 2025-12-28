@@ -26,7 +26,7 @@
 
 import wx
 
-from controls import VariablePanel
+from controls.VariablePanel import VariablePanel
 
 
 class EditorPanel(wx.SplitterWindow):

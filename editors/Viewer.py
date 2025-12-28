@@ -33,7 +33,7 @@ import wx
 
 from plcopen.structures import *
 from plcopen.types_enums import ComputePouName
-from PLCControler import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
+from plcopen.types_enums import ITEM_VAR_LOCAL, ITEM_POU, ITEM_PROGRAM, ITEM_FUNCTIONBLOCK
 
 from graphics.GraphicCommons import *
 from graphics.FBD_Objects import *
@@ -42,7 +42,18 @@ from graphics.SFC_Objects import *
 from graphics.RubberBand import RubberBand
 from graphics.DebugDataConsumer import DebugDataConsumer
 
-from dialogs import *
+from dialogs.CommentEditDialog import CommentEditDialog
+from dialogs.ConnectionDialog import ConnectionDialog
+from dialogs.ActionBlockDialog import ActionBlockDialog
+from dialogs.FBDBlockDialog import FBDBlockDialog
+from dialogs.FBDVariableDialog import FBDVariableDialog
+from dialogs.LDElementDialog import LDElementDialog
+from dialogs.LDPowerRailDialog import LDPowerRailDialog
+from dialogs.SFCStepDialog import SFCStepDialog
+from dialogs.SFCTransitionDialog import SFCTransitionDialog
+from dialogs.SFCDivergenceDialog import SFCDivergenceDialog
+from dialogs.ForceVariableDialog import ForceVariableDialog
+
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
 from editors.EditorPanel import EditorPanel
 

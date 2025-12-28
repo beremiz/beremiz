@@ -28,7 +28,7 @@
 import wx
 
 from plcopen.structures import LOCATIONDATATYPES
-from PLCControler import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_MODULE, LOCATION_GROUP, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate
 

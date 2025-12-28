@@ -19,9 +19,10 @@ import wx
 
 from xmlclass import *
 
-from PLCControler import UndoBuffer, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
+from PLCControler import UndoBuffer
+from plcopen.types_enums import LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT
 from ConfigTreeNode import ConfigTreeNode
-from dialogs import BrowseValuesLibraryDialog
+from dialogs.BrowseValuesLibraryDialog import BrowseValuesLibraryDialog
 from IDEFrame import TITLE, FILEMENU, PROJECTTREE
 from POULibrary import POULibrary
 

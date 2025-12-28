@@ -31,8 +31,14 @@ import wx.grid
 import wx.lib.buttons
 from plcopen.structures import IEC_KEYWORDS, TestIdentifier, DefaultType
 from graphics.GraphicCommons import REFRESH_HIGHLIGHT_PERIOD
-from controls import CustomEditableListBox, CustomGrid, CustomTable, CustomIntCtrl
-from dialogs import ArrayTypeDialog
+
+from controls.CustomEditableListBox import CustomEditableListBox
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
+from controls.CustomIntCtrl import CustomIntCtrl
+
+from dialogs.ArrayTypeDialog import ArrayTypeDialog
+
 from editors.EditorPanel import EditorPanel
 from util.BitmapLibrary import GetBitmap
 from util.TranslationCatalogs import NoTranslate

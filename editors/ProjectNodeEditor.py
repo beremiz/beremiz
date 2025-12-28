@@ -26,7 +26,8 @@
 
 import wx
 
-from controls import ProjectPropertiesPanel, VariablePanel
+from controls.ProjectPropertiesPanel import ProjectPropertiesPanel
+from controls.VariablePanel import VariablePanel
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from plcopen.types_enums import ComputeConfigurationName
 
