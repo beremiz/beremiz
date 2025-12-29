@@ -149,7 +149,7 @@ class toolchain_gcc(Builder):
         # ----------------- GENERATE OBJECT FILES ------------------------
         obns = []
         objs = []
-        relink = not os.path.exists(self.bin_path)
+        must_link = not os.path.exists(self.bin_path)
         for Location, CFilesAndCFLAGS, _DoCalls, *_req in self.CTRInstance.LocationCFilesAndCFLAGS:
             if CFilesAndCFLAGS:
                 if Location:
@@ -168,7 +168,7 @@ class toolchain_gcc(Builder):
                     if match:
                         self.CTRInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
                     else:
-                        relink = True
+                        must_link = True
 
                         self.CTRInstance.logger.write("   [CC]  "+bn+" -> "+obn+"\n")
 
@@ -195,20 +195,9 @@ class toolchain_gcc(Builder):
         # ---------------- GENERATE OUTPUT FILE --------------------------
         # Link all the object files into one binary file
         self.CTRInstance.logger.write(_("Linking :\n"))
-        if relink:
-
-            self.CTRInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.bin + "\n")
-
-            status, _result, _err_result = ProcessLogger(
-                self.CTRInstance.logger,
-                [self.linker] + objs
-                + ["-o", self.bin_path]
-                + Builder_LDFLAGS
-            ).spin()
-
-            if status:
+        if must_link:
+            if not self.link(objs, obns, Builder_LDFLAGS):
                 return False
-
         else:
             self.CTRInstance.logger.write("   [pass]  " + ' '.join(obns)+" -> " + self.bin + "\n")
 
@@ -220,4 +209,19 @@ class toolchain_gcc(Builder):
         f.write(self.md5key)
         f.close()
 
+        return True
+
+    def link(self, objs, obns, LDFLAGS):
+        self.CTRInstance.logger.write("   [CC]  " + ' '.join(obns)+" -> " + self.bin + "\n")
+
+        status, _result, _err_result = ProcessLogger(
+            self.CTRInstance.logger,
+            [self.linker] + objs
+            + ["-o", self.bin_path]
+            + LDFLAGS
+        ).spin()
+
+        if status:
+            self.CTRInstance.logger.write_error(_("Linking failed with %d.\n") % status)
+            return False
         return True

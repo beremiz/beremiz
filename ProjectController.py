@@ -1257,8 +1257,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Generate main, based on template
         plc_main_code = targets.GetCode("plc_main_head.c") % plc_main_fields
 
-        # Append target-specific code
-        plc_main_code += targets.GetTargetCode(self.GetBuilder().GetTargetName())
+        if not GetSDKPath():
+            # Append target-specific code if not using SDK
+            plc_main_code += targets.GetTargetCode(self.GetBuilder().GetTargetName())
         
         return plc_main_code
 
