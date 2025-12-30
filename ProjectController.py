@@ -1257,9 +1257,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Generate main, based on template
         plc_main_code = targets.GetCode("plc_main_head.c") % plc_main_fields
 
-        if not GetSDKPath():
+        sdk_path = GetSDKPath()
+        if not sdk_path:
             # Append target-specific code if not using SDK
             plc_main_code += targets.GetTargetCode(self.GetBuilder().GetTargetName())
+        else:
+            sdk_main_code_path = os.path.join(sdk_path, "plc_main_sdk.c")
+            plc_main_code += open(sdk_main_code_path, "r").read()
         
         return plc_main_code
 
@@ -1399,6 +1403,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # add logging code only if not using ABI.
             # When using ABI, logging is expected in the runtime
             c_source.append((partial(targets.GetCode,"plc_logging.c"), "plc_logging.c", "Logging"))
+
+        sdk_path = GetSDKPath()
+        if sdk_path:
+            self.additionalCFLAGS.append('"-I%s"' % sdk_path)
 
         c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 
