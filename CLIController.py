@@ -79,6 +79,12 @@ class CLIController(LocalRuntimeMixin, ProjectController):
         if connector is None and update_status:
                 self.UpdateMethodsFromPLCStatus()
 
+    def ClearPLCLog(self):
+        connector = self._connector
+        if connector:
+            connector.ResetLogCount()
+            self.previous_log_count = [None]*LogLevelsCount
+
     def UpdatePLCLog(self, log_count):
         connector = self._connector
         new_messages = []
@@ -161,6 +167,12 @@ class CLIController(LocalRuntimeMixin, ProjectController):
     @connected
     def connect_project(self):
 
+        return 0
+
+    @connected
+    def clear_log(self):
+        
+        self.ClearPLCLog()
         return 0
 
     def finish(self):

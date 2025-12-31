@@ -107,7 +107,7 @@ def build(session, target):
 @pass_session
 @ensure_controller
 def transfer(session):
-    """Transfer program to PLC runtim."""
+    """Transfer program to PLC runtime."""
     def processor():
         return session.controller.transfer_project()
     return processor
@@ -116,7 +116,7 @@ def transfer(session):
 @pass_session
 @ensure_controller
 def run(session):
-    """Run program already present in PLC. """
+    """Run program already present in PLC."""
     def processor():
         return session.controller.run_project()
     return processor
@@ -125,7 +125,7 @@ def run(session):
 @pass_session
 @ensure_controller
 def stop(session):
-    """Stop program running in PLC. """
+    """Stop program running in PLC."""
     def processor():
         return session.controller.stop_project()
     return processor
@@ -139,6 +139,14 @@ def connect(session):
         return session.controller.connect_project()
     return processor
 
+@cli.command()
+@pass_session
+@ensure_controller
+def flush(session):
+    """Empty PLC log."""
+    def processor():
+        return session.controller.clear_log()
+    return processor
 
 @cli.result_callback()
 @pass_session
