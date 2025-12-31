@@ -60,6 +60,7 @@ void ResetLogCount(void) {
 	uint8_t level;
 	for(level=0;level<LOG_LEVELS;level++){
 		LogCursor[level] = 0;
+        LogIndex[level] = 0;
 	}
 }
 
