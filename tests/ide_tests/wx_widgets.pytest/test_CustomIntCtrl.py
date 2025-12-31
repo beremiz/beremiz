@@ -30,7 +30,7 @@ import time
 
 import wx
 import conftest
-import controls.CustomIntCtrl
+from controls.CustomIntCtrl import CustomIntCtrl
 
 
 wxApp = None
@@ -92,7 +92,7 @@ class TestCustomIntCtrl(unittest.TestCase):
             self.event_happend = True
             event.Skip()
 
-        self.int_ctrl.Bind(controls.CustomIntCtrl.EVT_CUSTOM_INT, EventHandler)
+        self.int_ctrl.Bind(CustomIntCtrl.EVT_CUSTOM_INT, EventHandler)
 
         val = (self.max_val + self.min_val) // 2
 
@@ -127,7 +127,7 @@ class TestCustomIntCtrl(unittest.TestCase):
 
     def AddControls(self):
         vs = wx.BoxSizer(wx.VERTICAL)
-        self.int_ctrl = controls.CustomIntCtrl(self.frame)
+        self.int_ctrl = CustomIntCtrl(self.frame)
         self.txt_ctrl = wx.TextCtrl(self.frame)
         vs.Add(self.int_ctrl, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
         vs.Add(self.txt_ctrl, 0, wx.ALIGN_CENTRE | wx.ALL, 5)
