@@ -53,15 +53,16 @@ static uint32_t LogCursor[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 static uint32_t LogIndex[LOG_LEVELS] LOG_BUFFER_ATTRS = {0x0,0x0,0x0,0x0};
 
 void __init_logging(void) {
-    memset(LogBuff, 0, sizeof(LogBuff));
-}
-
-void ResetLogCount(void) {
 	uint8_t level;
 	for(level=0;level<LOG_LEVELS;level++){
 		LogCursor[level] = 0;
         LogIndex[level] = 0;
 	}
+    memset(LogBuff, 0, sizeof(LogBuff));
+}
+
+void ResetLogCount(void) {
+    __init_logging();
 }
 
 #ifdef PLC_USES_ABI
