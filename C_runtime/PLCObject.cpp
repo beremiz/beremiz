@@ -166,7 +166,7 @@ void PLCObject::SetPLCstatusEmpty()
     m_status.PLCstatus = Empty;
 }
 
-uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
+void PLCObject::GetLogCounts(void)
 {
     if(m_status.PLCstatus == Empty){        
         for(int lvl = 0; lvl < 4; lvl++){
@@ -178,6 +178,12 @@ uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
             m_status.logcounts[lvl] = m_PLCSyms.GetLogCount(lvl);
         }
     }
+}
+
+
+uint32_t PLCObject::GetPLCstatus(PLCstatus *status)
+{
+    GetLogCounts();
     // Get PLC status
     *status = m_status;
     return 0;

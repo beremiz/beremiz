@@ -134,9 +134,12 @@ class PLCObject : public BeremizPLCObjectService_interface
         virtual Blob *NewBlob() = 0;
         virtual void DeleteBlob(Blob *blob) = 0;
         virtual std::string GetLastTransferredPLC_MD5(void) = 0;
+        
+        virtual void GetLogCounts(void);
 
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
+
 };
 
 #endif
