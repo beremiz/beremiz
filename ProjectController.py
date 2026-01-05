@@ -47,7 +47,8 @@ import wx
 import features
 import connectors
 import util.paths as pathutils
-from util.misc import CheckPathPerm, GetClassImporter, GetDeveloperMode, GetSDKPath
+from util import GetDeveloperMode, GetSDKPath
+from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
 from util.BitmapLibrary import GetBitmap

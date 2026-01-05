@@ -11,6 +11,8 @@ from importlib import import_module
 
 import click
 
+from util import SetDeveloperMode, SetSDKPath
+
 class CLISession(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -49,6 +51,9 @@ pass_session = click.make_pass_decorator(CLISession)
 )
 @click.option("--verbose", "-v", is_flag=True, help="Enables verbose mode.")
 @click.option(
+    "--sdkpath", "-s", help="Path to PLC SDK folder."
+)
+@click.option(
     "--buildpath", "-b", help="Where to store files created during build."
 )
 @click.option(
@@ -65,6 +70,11 @@ def ensure_controller(func):
     @wraps(func)
     def func_wrapper(session, *args, **kwargs):
         if session.controller is None:
+            import_module("fake_wx")
+            if session.verbose:
+                SetDeveloperMode()
+            if session.sdkpath is not None:
+                SetSDKPath(session.sdkpath)
             session.controller = import_module("CLIController").CLIController(session)
         ret = func(session, *args, **kwargs)
         return ret

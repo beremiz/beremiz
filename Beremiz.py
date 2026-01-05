@@ -31,7 +31,7 @@ import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
-from util.misc import SetDeveloperMode, SetSDKPath
+from util import SetDeveloperMode, SetSDKPath
 
 
 class BeremizIDELauncher(object):

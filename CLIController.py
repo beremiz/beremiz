@@ -7,15 +7,9 @@ from functools import wraps
 from threading import Timer
 from datetime import datetime
 
-import click
-
-import fake_wx
-
 from ProjectController import ProjectController, ToDoBeforeQuit
 from LocalRuntimeMixin import LocalRuntimeMixin
 from runtime.loglevels import LogLevelsCount, LogLevels
-from util.misc import SetDeveloperMode
-
 
 class Log:
 
@@ -74,8 +68,6 @@ def connected(func):
 class CLIController(LocalRuntimeMixin, ProjectController):
     def __init__(self, session):
         self.session = session
-        if session.verbose:
-            SetDeveloperMode()
         log = Log()
         LocalRuntimeMixin.__init__(self, log, use_gui=False)
         ProjectController.__init__(self)
