@@ -32,6 +32,7 @@ from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON
 
 import util.paths as paths
 from util import SetDeveloperMode, SetSDKPath
+from dialogs.SDKManager import SDKManagerDialog
 
 
 class BeremizIDELauncher(object):
@@ -49,6 +50,7 @@ class BeremizIDELauncher(object):
         self.handle_exception = None
         self.logf = None
         self.devmode = False
+        self.sdk_selector = False
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
@@ -60,6 +62,7 @@ class BeremizIDELauncher(object):
         print("Supported options:")
         print("-h --help                    Print this help")
         print("-d --devmode                 Run in development mode")
+        print("-p --plcsdkselector          Show SDK location selector dialog at startup")
         print("-s --sdkpath PATH            Use PATH as SDK location")
         print("-u --updatecheck URL         Retrieve update information by checking URL")
         print("-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions")
@@ -68,8 +71,8 @@ class BeremizIDELauncher(object):
         print("")
 
     def SetCmdOptions(self):
-        self.shortCmdOpts = "hdsu:e:l:"
-        self.longCmdOpts = ["help", "devmode", "sdkpath=", "updatecheck=", "extend=", "log="]
+        self.shortCmdOpts = "hdpsu:e:l:"
+        self.longCmdOpts = ["help", "devmode", "plcsdkselector", "sdkpath=", "updatecheck=", "extend=", "log="]
 
     def ProcessOption(self, o, a):
         if o in ("-h", "--help"):
@@ -78,6 +81,8 @@ class BeremizIDELauncher(object):
         if o in ("-d", "--devmode"):
             self.devmode = True
             SetDeveloperMode()
+        if o in ("-p", "--plcsdkselector"):
+            self.sdk_selector = True            
         if o in ("-s", "--sdkpath"):
             if a is not None and os.path.isdir(a):
                 SetSDKPath(a)
@@ -121,6 +126,16 @@ class BeremizIDELauncher(object):
 
         class BeremizApp(BeremizAppType):
             def OnInit(_self):  # pylint: disable=no-self-argument
+                if self.sdk_selector:                
+                    dlg = SDKManagerDialog(None, paths.AppDataPath("sdks"))
+                    dlg_result = dlg.ShowModal() == wx.ID_OK
+                    dlg.Destroy()
+                    if dlg_result:
+                        sdk_path = dlg.GetSelectedSDKPath()
+                        if sdk_path:
+                            SetSDKPath(sdk_path)
+                    else:
+                        return False
                 self.ShowSplashScreen()
                 return True
 
