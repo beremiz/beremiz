@@ -40,7 +40,7 @@ UA_NODE_ID_types = {
 lstcolnames  = [  "Name", "NSIdx", "IdType", "Id", "Type", "IEC"]
 lstcolwidths = [     100,      50,      100,  100,    100,    50]
 lstcoltypess = [     str,     int,      str,  str,    str,   int]
-
+lstcoldeflts = [    "Name",     0,      "int",    "0",    "Boolean",     0]
 directions = ["input", "output"]
 
 authParams = {
@@ -71,7 +71,7 @@ class OPCUASubListModel(dv.DataViewIndexListModel):
 
         try:
             v = expectedtype(value)
-        except ValueError: 
+        except ValueError:
             self.log("String {} is invalid for type {}\n".format(value,expectedtype.__name__))
             return False
 
@@ -112,12 +112,16 @@ class OPCUASubListModel(dv.DataViewIndexListModel):
             # notify the view(s) using this model that it has been removed
             self.RowDeleted(row)
 
+    def InsertDefaultRow(self, row):
+        self.data.insert(row, lstcoldeflts[:])
+        # notify views
+        self.RowInserted(row)
 
     def AddRow(self, value):
         if self.data.append(value):
             # notify views
             self.RowAppended()
-    
+
     def ResetData(self):
         self.Reset(len(self.data))
 
@@ -151,8 +155,7 @@ class OPCUASubListPanel(wx.Panel):
 
         self.dvc.AssociateModel(self.model)
 
-        for idx,(colname,width) in enumerate(zip(lstcolnames,lstcolwidths)):
-            self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
+        self.CreateDVCColumns()
 
         DropTarget = NodeDropTarget(self)
         self.SetDropTarget(DropTarget)
@@ -164,16 +167,47 @@ class OPCUASubListPanel(wx.Panel):
 
         title = wx.StaticText(self, label = titlestr)
 
+        addbt = wx.Button(self, label="Add")
+        self.Bind(wx.EVT_BUTTON, self.OnAddRow, addbt)
         delbt = wx.Button(self, label="Delete Row(s)")
         self.Bind(wx.EVT_BUTTON, self.OnDeleteRows, delbt)
 
         topsizer = wx.BoxSizer(wx.HORIZONTAL)
         topsizer.Add(title, 1, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
+        topsizer.Add(addbt, 0, wx.LEFT|wx.RIGHT, 5)
         topsizer.Add(delbt, 0, wx.LEFT|wx.RIGHT, 5)
         self.Sizer.Add(topsizer, 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.Sizer.Add(self.dvc, 1, wx.EXPAND)
 
+    def CreateDVCColumns(self):
+        for idx,(colname,width) in enumerate(zip(lstcolnames,lstcolwidths)):
+            if colname == "IdType":
+                choice_DV_render = dv.DataViewChoiceRenderer(
+                    list(UA_NODE_ID_types.keys())
+                )
+                choice_DV_col = dv.DataViewColumn(
+                    colname, choice_DV_render, idx, width=width
+                )
+                self.dvc.AppendColumn(choice_DV_col)
+            elif colname == "Type":
+                choice_DV_render = dv.DataViewChoiceRenderer(
+                    list(UA_IEC_types.keys())
+                )
+                choice_DV_col = dv.DataViewColumn(
+                    colname, choice_DV_render, idx, width=width
+                )
+                self.dvc.AppendColumn(choice_DV_col)
+            else:
+                self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
 
+    def ResetDVCColumns(self):
+        self.dvc.ClearColumns()
+        self.CreateDVCColumns()
+
+    def OnAddRow(self, evt):
+        items = self.dvc.GetSelections()
+        row = self.model.GetRow(items[0]) if items else 0
+        self.model.InsertDefaultRow(row)
 
     def OnDeleteRows(self, evt):
         items = self.dvc.GetSelections()
@@ -182,7 +216,7 @@ class OPCUASubListPanel(wx.Panel):
 
 
     def OnNodeDnD(self):
-        # Have to find OPC-UA client extension panel from here 
+        # Have to find OPC-UA client extension panel from here
         # in order to avoid keeping reference (otherwise __del__ isn't called)
         #             splitter.        panel.      splitter
         ClientPanel = self.GetParent().GetParent().GetParent()
@@ -216,7 +250,7 @@ class OPCUASubListPanel(wx.Panel):
 
 
 il = None
-fldridx = None    
+fldridx = None
 fldropenidx = None
 fileidx = None
 smileidx = None
@@ -227,9 +261,9 @@ treecolwidths = [     250,     100,      50,  200]
 
 
 def prepare_image_list():
-    global il, fldridx, fldropenidx, fileidx, smileidx    
+    global il, fldridx, fldropenidx, fileidx, smileidx
 
-    if il is not None: 
+    if il is not None:
         return
 
     il = wx.ImageList(isz[0], isz[1])
@@ -284,8 +318,8 @@ class OPCUAClientPanel(wx.SplitterWindow):
         self.selected_datas = modeldata
         self.selected_models = { direction:OPCUASubListModel(self.selected_datas[direction], log) for direction in directions }
         self.selected_lists = { direction:OPCUASubListPanel(
-                self.selected_splitter, log, 
-                self.selected_models[direction], direction) 
+                self.selected_splitter, log,
+                self.selected_models[direction], direction)
             for direction in directions }
 
         self.selected_splitter.SplitHorizontally(*[self.selected_lists[direction] for direction in directions]+[300])
@@ -323,7 +357,7 @@ class OPCUAClientPanel(wx.SplitterWindow):
     @ExecuteSychronouslyWithTimeout(5)
     async def ConnectAsyncUAClient(self, config):
         client = Client(config["URI"])
-        
+
         AuthType = config["AuthType"]
         if AuthType=="UserPasword":
             await client.set_user(config["User"])
@@ -355,10 +389,10 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
     def OnConnectButton(self, event):
         if self.connect_button.GetValue():
-            
+
             config = self.config_getter()
             self.log("OPCUA browser: connecting to {}\n".format(config["URI"]))
-            
+
             try :
                 rootnode, rootnodeproperties = self.ConnectAsyncUAClient(config)
             except Exception as e:
@@ -471,12 +505,12 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
         # filter out vanished items
         self.ordered_nps = [
-            np 
-            for np in self.ordered_nps 
+            np
+            for np in self.ordered_nps
             if np in nps]
 
     def GetSelectedNodes(self):
-        return self.ordered_nps 
+        return self.ordered_nps
 
     def OnTreeBeginDrag(self, event):
         """
@@ -493,8 +527,8 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
     def Reset(self):
         for direction in directions:
-            self.selected_models[direction].ResetData() 
-        
+            self.selected_models[direction].ResetData()
+
 
 class OPCUAClientList(list):
     def __init__(self, log, change_callback):
@@ -520,8 +554,8 @@ class OPCUAClientList(list):
 
         try:
             for t,n in zip(lstcoltypess, lstcolnames):
-                v[n] = t(v[n]) 
-        except ValueError: 
+                v[n] = t(v[n])
+        except ValueError:
             self.log("Variable {} (Id={}) has invalid type\n".format(v["Name"],v["Id"]))
             return False
 
@@ -570,7 +604,7 @@ class OPCUAClientModel(dict):
         c_template = c_template_file.read()
         c_template = c_template.decode('utf-8')
         c_template_file.close()
-        
+
         formatdict = dict(
             locstr   = locstr,
             uri      = config["URI"],
@@ -578,7 +612,7 @@ class OPCUAClientModel(dict):
             cleanup  = "",
             init     = "",
             retrieve = "",
-            publish  = "" 
+            publish  = ""
         )
 
         AuthType = config["AuthType"]
@@ -618,7 +652,7 @@ DECL_VAR({ua_type}, {C_type}, {c_loc_name})""".format(**locals())
     WRITE_VALUE({ua_type}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
 
         Ccode = c_template.format(**formatdict)
-        
+
         return Ccode
 
 if __name__ == "__main__":
@@ -657,7 +691,7 @@ if __name__ == "__main__":
     def OnGenerate(evt):
         dlg = wx.FileDialog(
             frame, message="Generate file as ...", defaultDir=os.getcwd(),
-            defaultFile="", 
+            defaultFile="",
             wildcard="C (*.c)|*.c", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
             )
 
@@ -682,9 +716,9 @@ int LogMessage(uint8_t level, char* buf, uint32_t size){
 int main(int argc, char *argv[]) {
 
     __init_test(arc,argv);
-   
+
     __retrieve_test();
-   
+
     __publish_test();
 
     __cleanup_test();
@@ -717,7 +751,7 @@ int main(int argc, char *argv[]) {
     def OnSave(evt):
         dlg = wx.FileDialog(
             frame, message="Save file as ...", defaultDir=os.getcwd(),
-            defaultFile="", 
+            defaultFile="",
             wildcard="CSV (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
             )
 
@@ -758,4 +792,3 @@ int main(int argc, char *argv[]) {
     frame.Show()
 
     app.MainLoop()
-
