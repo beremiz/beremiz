@@ -173,7 +173,7 @@ class PLCObject(object):
                 return (self._log_read_buffer[:sz].decode(), tick.value,
                         tv_sec.value, tv_nsec.value)
         elif self._loading_error is not None and level == 0:
-            return self._loading_error, 0, 0, 0
+            return self._loading_error.decode(), 0, 0, 0
         return None
 
     def _GetMD5FileName(self):
