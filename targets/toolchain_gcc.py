@@ -69,23 +69,14 @@ class toolchain_gcc(Builder):
         if Builder.SetBuildPath(self, buildpath):
             self.srcmd5 = {}
 
-    def append_cfile_deps(self, src, deps):
+    def append_cfile_deps(self, srcname, deps):
+        src = open(os.path.join(self.buildpath, srcname), "r").read()
         for l in src.splitlines():
             res = includes_re.match(l)
             if res is not None:
                 depfn = res.groups()[0]
                 if os.path.exists(os.path.join(self.buildpath, depfn)):
                     deps.append(depfn)
-
-    def concat_deps(self, bn):
-        # read source
-        src = open(os.path.join(self.buildpath, bn), "r").read()
-        # update direct dependencies
-        deps = []
-        self.append_cfile_deps(src, deps)
-        # recurse through deps
-        # TODO detect cicular deps.
-        return reduce(operator.concat, list(map(self.concat_deps, deps)), src)
 
     def check_and_update_hash_and_deps(self, bn):
         # Get latest computed hash and deps
@@ -108,15 +99,6 @@ class toolchain_gcc(Builder):
         # recurse through deps
         # TODO detect cicular deps.
         return reduce(operator.and_, list(map(self.check_and_update_hash_and_deps, deps)), match)
-
-    def calc_source_md5(self):
-        wholesrcdata = ""
-        for _Location, CFilesAndCFLAGS, _DoCalls, *_req in self.CTRInstance.LocationCFilesAndCFLAGS:
-            # Get CFiles list to give it to makefile
-            for CFile, _CFLAGS in CFilesAndCFLAGS:
-                CFileName = os.path.basename(CFile)
-                wholesrcdata += self.concat_deps(CFileName)
-        return hashlib.md5(wholesrcdata).hexdigest()
 
     def build(self):
         # Retrieve compiler and linker
