@@ -3,7 +3,7 @@
 # Makefile to generate XSLT stylesheets from ysl2 files in the same directory
 
 # This uses YML2. 
-#   hg clone https://pep.foundation/dev/repos/yml2/
+# https://github.com/beremiz/yml2
 
 # It should be just fine if yml2 is cloned just asside beremiz
 # otherwise, point yml2path to yml2 source directory
