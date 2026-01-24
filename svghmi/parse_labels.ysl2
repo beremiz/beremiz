@@ -13,7 +13,7 @@
 //      path value="path4" index="path4" type="HMI_LOCAL" assign=b;
 //  }
 //
-const "pathregex",!"'^(\w+=)?([^,=]+)([-.\w,]*)$'"!;
+const "pathregex",!"'^(\\w+=)?([^,=]+)([-.\\w,]*)$'"!;
 
 const "newline" |
 const "twonewlines", "concat($newline,$newline)";
