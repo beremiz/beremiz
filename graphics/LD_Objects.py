@@ -187,9 +187,9 @@ class LD_PowerRail(Graphic_Element):
         interval = height / max(len(self.Connectors) - 1, 1)
         for i, connector in enumerate(self.Connectors):
             if self.RealConnectors:
-                position = self.Extensions[0] + int(round(self.RealConnectors[i] * height))
+                position = self.Extensions[0] + round(self.RealConnectors[i] * height)
             else:
-                position = self.Extensions[0] + int(round(i * interval))
+                position = self.Extensions[0] + round(i * interval)
             if scaling is not None:
                 position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
             if self.Type == LEFTRAIL:
@@ -312,7 +312,7 @@ class LD_PowerRail(Graphic_Element):
             movey = max(-self.BoundingBox.y, movey)
             if scaling is not None:
                 position = handle.GetRelPosition()
-                movey = round((self.Pos.y + position.y + movey) / scaling[1]) * scaling[1] - self.Pos.y - position.y
+                movey = int(round((self.Pos.y + position.y + movey) / scaling[1]) * scaling[1]) - self.Pos.y - position.y
             self.MoveConnector(handle, movey)
             return 0, movey
         elif self.Parent.GetDrawingMode() == FREEDRAWING_MODE:
@@ -470,7 +470,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
 
     # Refresh the size of text for name
     def RefreshNameSize(self):
-        if self.Name != "":
+        if self.Name:
             self.NameSize = self.Parent.GetTextExtent(self.Name)
         else:
             self.NameSize = 0, 0
@@ -484,17 +484,17 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
             typetext = "P"
         elif self.Type == CONTACT_FALLING:
             typetext = "N"
-        if typetext != "":
+        if typetext:
             self.TypeSize = self.Parent.GetTextExtent(typetext)
         else:
             self.TypeSize = 0, 0
 
     # Refresh the contact bounding box
     def RefreshBoundingBox(self):
-        # Calculate the size of the name outside the contact
-        text_width, text_height = self.Parent.GetTextExtent(self.Name)
         # Calculate the bounding box size
-        if self.Name != "":
+        if self.Name:
+            # Calculate the size of the name outside the contact
+            text_width, text_height = self.Parent.GetTextExtent(self.Name)
             bbx_x = self.Pos.x - max(0, (text_width - self.Size[0]) // 2)
             bbx_width = max(self.Size[0], text_width)
             bbx_y = self.Pos.y - (text_height + 2)
@@ -504,6 +504,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
             bbx_width = self.Size[0]
             bbx_y = self.Pos.y
             bbx_height = self.Size[1]
+            text_width, text_height = 0, 0
         self.BoundingBox = wx.Rect(bbx_x, bbx_y, bbx_width + 1, bbx_height + 1)
 
     # Returns the block minimum size
@@ -545,7 +546,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         scaling = self.Parent.GetScaling()
         position = self.Size[1] // 2 + 1
         if scaling is not None:
-            position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
+            position = int(round((self.Pos.y + position) / scaling[1]) * scaling[1]) - self.Pos.y
         self.Input.SetPosition(wx.Point(0, position))
         self.Output.SetPosition(wx.Point(self.Size[0], position))
         self.RefreshConnected()
@@ -659,13 +660,14 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
         elif self.Type == CONTACT_FALLING:
             typetext = "N"
 
+        type_size = (0, 0)
         if getattr(dc, "printing", False):
-            name_size = dc.GetTextExtent(self.Name)
-            if typetext != "":
+            name_size = dc.GetTextExtent(self.Name) if self.Name else (0, 0)
+            if typetext:
                 type_size = dc.GetTextExtent(typetext)
         else:
             name_size = self.NameSize
-            if typetext != "":
+            if typetext:
                 type_size = self.TypeSize
 
         # Draw two rectangles for representing the contact
@@ -676,7 +678,7 @@ class LD_Contact(Graphic_Element, DebugDataConsumer):
                     self.Pos.y - (name_size[1] + 2))
         dc.DrawText(self.Name, name_pos[0], name_pos[1])
         # Draw the modifier symbol in the middle of contact
-        if typetext != "":
+        if typetext:
             type_pos = (self.Pos.x + (self.Size[0] - type_size[0]) // 2 + 1,
                         self.Pos.y + (self.Size[1] - type_size[1]) // 2)
             dc.DrawText(typetext, type_pos[0], type_pos[1])
@@ -786,7 +788,7 @@ class LD_Coil(Graphic_Element):
 
     # Refresh the size of text for name
     def RefreshNameSize(self):
-        if self.Name != "":
+        if self.Name:
             self.NameSize = self.Parent.GetTextExtent(self.Name)
         else:
             self.NameSize = 0, 0
@@ -804,7 +806,7 @@ class LD_Coil(Graphic_Element):
             typetext = "P"
         elif self.Type == COIL_FALLING:
             typetext = "N"
-        if typetext != "":
+        if typetext:
             self.TypeSize = self.Parent.GetTextExtent(typetext)
         else:
             self.TypeSize = 0, 0
@@ -812,9 +814,9 @@ class LD_Coil(Graphic_Element):
     # Refresh the coil bounding box
     def RefreshBoundingBox(self):
         # Calculate the size of the name outside the coil
-        text_width, text_height = self.Parent.GetTextExtent(self.Name)
+        text_width, text_height = self.Parent.GetTextExtent(self.Name) if self.Name else (0, 0)
         # Calculate the bounding box size
-        if self.Name != "":
+        if self.Name:
             bbx_x = self.Pos.x - max(0, (text_width - self.Size[0]) // 2)
             bbx_width = max(self.Size[0], text_width)
             bbx_y = self.Pos.y - (text_height + 2)
@@ -865,7 +867,7 @@ class LD_Coil(Graphic_Element):
         scaling = self.Parent.GetScaling()
         position = self.Size[1] // 2 + 1
         if scaling is not None:
-            position = round((self.Pos.y + position) / scaling[1]) * scaling[1] - self.Pos.y
+            position = int(round((self.Pos.y + position) / scaling[1]) * scaling[1]) - self.Pos.y
         self.Input.SetPosition(wx.Point(0, position))
         self.Output.SetPosition(wx.Point(self.Size[0], position))
         self.RefreshConnected()
