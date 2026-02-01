@@ -627,9 +627,39 @@ class OPCUAClientModel(dict):
             formatdict["init"] += """
     INIT_NoAuth()"""
 
+        seen_names_inputs = set()
+        seen_names_outputs = set()
+
+        seen_iec_inputs = set()
+        seen_iec_outputs = set()
+
         for direction, data in self.items():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
+                name, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
+                iec_type, C_type, iec_size_prefix, ua_type_enum, ua_type = UA_IEC_types[
+                    ua_type
+                ]
+
+                if name in seen_names_inputs:
+                    raise Exception(f"Name '{name}' already exists in Inputs")
+                if name in seen_names_outputs:
+                    raise Exception(f"Name '{name}' already exists in Outputs")
+
+                seen_names_inputs.add(name)
+                seen_names_outputs.add(name)
+
+                if iec_type in seen_iec_inputs:
+                    raise Exception(f"IEC value '{iec_type}' already exists in Inputs")
+                if iec_type in seen_iec_outputs:
+                    raise Exception(f"IEC value '{iec_type}' already exists in Outputs")
+
+                seen_iec_inputs.add(iec_type)
+                seen_iec_outputs.add(iec_type)
+
+                if ua_nodeid_type not in UA_NODE_ID_types:
+                    raise Exception(f"Invalid node ID type: {ua_nodeid_type}")
+
                 name, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
                 iec_type, C_type, iec_size_prefix, ua_type_enum, ua_type = UA_IEC_types[ua_type]
                 c_loc_name = iec_direction_prefix + iec_size_prefix + locstr + "_" + str(iec_number)
