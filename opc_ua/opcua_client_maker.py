@@ -641,21 +641,25 @@ class OPCUAClientModel(dict):
                     ua_type
                 ]
 
-                if name in seen_names_inputs:
-                    raise Exception(f"Name '{name}' already exists in Inputs")
-                if name in seen_names_outputs:
-                    raise Exception(f"Name '{name}' already exists in Outputs")
+                if iec_direction_prefix == "__I":
+                    if name in seen_names_inputs:
+                        raise Exception(f"Name '{name}' already exists in Inputs")
+                    seen_names_inputs.add(name)
+                    if iec_number in seen_iec_inputs:
+                        raise Exception(
+                            f"IEC value '{iec_number}' already exists in Inputs"
+                        )
+                    seen_iec_inputs.add(iec_number)
 
-                seen_names_inputs.add(name)
-                seen_names_outputs.add(name)
-
-                if iec_type in seen_iec_inputs:
-                    raise Exception(f"IEC value '{iec_type}' already exists in Inputs")
-                if iec_type in seen_iec_outputs:
-                    raise Exception(f"IEC value '{iec_type}' already exists in Outputs")
-
-                seen_iec_inputs.add(iec_type)
-                seen_iec_outputs.add(iec_type)
+                if iec_direction_prefix == "__Q":
+                    if name in seen_names_outputs:
+                        raise Exception(f"Name '{name}' already exists in Outputs")
+                    seen_names_outputs.add(name)
+                    if iec_number in seen_iec_outputs:
+                        raise Exception(
+                            f"IEC value '{iec_number}' already exists in Outputs"
+                        )
+                    seen_iec_outputs.add(iec_number)
 
                 if ua_nodeid_type not in UA_NODE_ID_types:
                     raise Exception(f"Invalid node ID type: {ua_nodeid_type}")
