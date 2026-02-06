@@ -235,8 +235,8 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
         horizontal_pos = self.Size[0] // 2
         vertical_pos = self.Size[1] // 2
         if scaling is not None:
-            horizontal_pos = round((self.Pos.x + horizontal_pos) / scaling[0]) * scaling[0] - self.Pos.x
-            vertical_pos = round((self.Pos.y + vertical_pos) / scaling[1]) * scaling[1] - self.Pos.y
+            horizontal_pos = int(round((self.Pos.x + horizontal_pos) / scaling[0]) * scaling[0]) - self.Pos.x
+            vertical_pos = int(round((self.Pos.y + vertical_pos) / scaling[1]) * scaling[1]) - self.Pos.y
         # Update input position if it exists
         if self.Input:
             self.Input.SetPosition(wx.Point(horizontal_pos, 0))
@@ -463,8 +463,8 @@ class SFC_Step(Graphic_Element, DebugDataConsumer):
             movex = max(-self.BoundingBox.x, movex)
             movey = max(-self.BoundingBox.y, movey)
             if scaling is not None:
-                movex = round((self.Pos.x + movex) / scaling[0]) * scaling[0] - self.Pos.x
-                movey = round((self.Pos.y + movey) / scaling[1]) * scaling[1] - self.Pos.y
+                movex = int(round((self.Pos.x + movex) / scaling[0]) * scaling[0]) - self.Pos.x
+                movey = int(round((self.Pos.y + movey) / scaling[1]) * scaling[1]) - self.Pos.y
             if self.Parent.GetDrawingMode() == FREEDRAWING_MODE:
                 self.Move(movex, movey)
                 self.RefreshConnected()
@@ -759,8 +759,8 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         horizontal_pos = self.Size[0] // 2
         vertical_pos = self.Size[1] // 2
         if scaling is not None:
-            horizontal_pos = round((self.Pos.x + horizontal_pos) / scaling[0]) * scaling[0] - self.Pos.x
-            vertical_pos = round((self.Pos.y + vertical_pos) / scaling[1]) * scaling[1] - self.Pos.y
+            horizontal_pos = int(round((self.Pos.x + horizontal_pos) / scaling[0]) * scaling[0]) - self.Pos.x
+            vertical_pos = int(round((self.Pos.y + vertical_pos) / scaling[1]) * scaling[1]) - self.Pos.y
         # Update input position
         self.Input.SetPosition(wx.Point(horizontal_pos, 0))
         # Update output position
@@ -917,7 +917,7 @@ class SFC_Transition(Graphic_Element, DebugDataConsumer):
         if self.Parent.GetDrawingMode() != FREEDRAWING_MODE:
             movex = max(-self.BoundingBox.x, movex)
             if scaling is not None:
-                movex = round((self.Pos.x + movex) / scaling[0]) * scaling[0] - self.Pos.x
+                movex = int(round((self.Pos.x + movex) / scaling[0]) * scaling[0]) - self.Pos.x
             self.Move(movex, 0)
             self.RefreshInputPosition()
             self.RefreshOutputPosition()
@@ -1425,7 +1425,7 @@ class SFC_Divergence(Graphic_Element):
         if handle_type == HANDLE_CONNECTOR:
             movex = max(-self.BoundingBox.x, movex)
             if scaling is not None:
-                movex = round((self.Pos.x + movex) / scaling[0]) * scaling[0] - self.Pos.x
+                movex = int(round((self.Pos.x + movex) / scaling[0]) * scaling[0]) - self.Pos.x
             self.MoveConnector(handle, movex)
             if self.Parent.GetDrawingMode() != FREEDRAWING_MODE:
                 self.RefreshConnectedPosition(handle)
@@ -1611,7 +1611,7 @@ class SFC_Jump(Graphic_Element):
         scaling = self.Parent.GetScaling()
         horizontal_pos = self.Size[0] // 2
         if scaling is not None:
-            horizontal_pos = round((self.Pos.x + horizontal_pos) / scaling[0]) * scaling[0] - self.Pos.x
+            horizontal_pos = int(round((self.Pos.x + horizontal_pos) / scaling[0]) * scaling[0]) - self.Pos.x
         self.Input.SetPosition(wx.Point(horizontal_pos, 0))
         self.RefreshConnected()
 
@@ -1685,7 +1685,7 @@ class SFC_Jump(Graphic_Element):
         if self.Parent.GetDrawingMode() != FREEDRAWING_MODE:
             movex = max(-self.BoundingBox.x, movex)
             if scaling is not None:
-                movex = round((self.Pos.x + movex) / scaling[0]) * scaling[0] - self.Pos.x
+                movex = int(round((self.Pos.x + movex) / scaling[0]) * scaling[0]) - self.Pos.x
             self.Move(movex, 0)
             self.RefreshInputPosition()
             return movex, 0
@@ -1891,7 +1891,7 @@ class SFC_ActionBlock(Graphic_Element):
         scaling = self.Parent.GetScaling()
         vertical_pos = SFC_ACTION_MIN_SIZE[1] // 2
         if scaling is not None:
-            vertical_pos = round((self.Pos.y + vertical_pos) / scaling[1]) * scaling[1] - self.Pos.y
+            vertical_pos = int(round((self.Pos.y + vertical_pos) / scaling[1]) * scaling[1]) - self.Pos.y
         self.Input.SetPosition(wx.Point(0, vertical_pos))
         self.RefreshConnected()
 
@@ -1962,7 +1962,7 @@ class SFC_ActionBlock(Graphic_Element):
             if handle_type == HANDLE_MOVE:
                 movex = max(-self.BoundingBox.x, movex)
                 if scaling is not None:
-                    movex = round((self.Pos.x + movex) / scaling[0]) * scaling[0] - self.Pos.x
+                    movex = int(round((self.Pos.x + movex) / scaling[0]) * scaling[0]) - self.Pos.x
                 wires = self.Input.GetWires()
                 if len(wires) == 1:
                     input_pos = wires[0][0].GetOtherConnected(self.Input).GetPosition(False)
