@@ -262,8 +262,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugUpdatePending = False
         self.ResetIECProgramsAndVariables()
 
-        # In both new or load scenario, no need to save
-        self.ChangesToSave = False
         # root have no parent
         self.CTNParent = None
         # Keep track of the confnode type name
@@ -288,8 +286,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.AppFrame = None
         self.logger = None
         self.additionalCFLAGS = []
+        
+        self._reservedCTNInstances = []
 
-                 # compute CFLAGS for PLC code
+    # compute CFLAGS for PLC code
     def getPLC_CFLAGS(self):
         libCPath = self.iec2c_cfg.getLibCPath()
         if libCPath is None:
@@ -326,21 +326,39 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return [IECChannel for IECChannel, CTNClass in reserved]
 
     def GetReservedCTNs(self):
+        if self._reservedCTNInstances:
+            return self._reservedCTNInstances
         reserved = self.GetBuilder().GetReservedIECChannels()
-        res = []
         for IECChannel, CTNClass in reserved:
             class FinalPseudoCTNClass(CTNClass, ConfigTreeNode):
                 def __init__(self, parent):
                     self.CTNParent = parent
                     ConfigTreeNode.__init__(self)
+                    # forces IEC_Channel and Name attributes
                     self.BaseParams.setIEC_Channel(IECChannel)
-            res.append(FinalPseudoCTNClass(self))
-        return res
+                    self.BaseParams.setName(CTNClass.CTNName() if hasattr(CTNClass, "CTNName") else CTNClass.__name__)
+                    self.CTNType = CTNClass.__name__
+                    # Prevent modification of IEC_Channel and Name attributes of reserved CTNs
+                    self.EditorType = type("ReservedCTNEditor", (self.EditorType,), {"SHOW_BASE_PARAMS": False})
+                    
+            self._reservedCTNInstances.append(FinalPseudoCTNClass(self))
+        return self._reservedCTNInstances
 
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """ 
-        Project controller applies libraries requirements when adding new CTN
+        Project controller:
+            - load reserved CTN XML configs
+            - applies libraries requirements when adding new CTN
         """
+        
+        reserved = self.GetReservedCTNs()
+        for CTN in reserved:
+            if CTN.CTNType == CTNType:
+                if os.path.isdir(CTN.CTNPath(CTNName)):
+                    CTN.LoadXMLParams(CTNName)
+                CTN.LoadChildren()
+                return CTN
+        
         res = ConfigTreeNode.CTNAddChild(self, CTNName, CTNType, IEC_Channel)
 
         # find library associated with new CTN, if any
@@ -763,7 +781,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         - location is a string of this variable's location, like "%IX0.0.0"
         '''
         children = []
-        for child in self.GetReservedCTNs() + self.IECSortedChildren():
+        for child in self.IECSortedChildren():
             children.append(child.GetVariableLocationTree())
         return children
 
@@ -1031,6 +1049,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self._builder is None or not isinstance(self._builder, targetclass):
             # Get classname instance
             self._builder = targetclass(self)
+            self._reservedCTNInstances = []
+
         return self._builder
 
     def CheckChildCompatible(self, child):

@@ -92,6 +92,7 @@ class ConfigTreeNode(object):
         self._View = None
         # copy ConfNodeMethods so that it can be later customized
         self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
+        self.ChangesToSave = False
 
     def ConfNodeBaseXmlFilePath(self, CTNName=None):
         return os.path.join(self.CTNPath(CTNName), "baseconfnode.xml")
@@ -175,7 +176,7 @@ class ConfigTreeNode(object):
             return params
 
     def SetParamsAttribute(self, path, value):
-        self.ChangesToSave = True
+        self.CTNMarkModified()
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel":
             old_leading = ".".join(map(str, self.GetCurrentLocation()))
@@ -348,15 +349,9 @@ class ConfigTreeNode(object):
                 LDFLAGS += CTNLDFLAGS
 
         children = self.IECSortedChildren()
-        reserved_channels = self.GetReservedIECChannels()
-        for CTNChild in children:
-            channel = CTNChild.BaseParams.getIEC_Channel()
-            if channel in reserved_channels:
-                self.FatalError(_("IEC channel %d is reserved. Please move Configuration Tree Node %s (%s) to another location") % 
-                                 (channel, CTNChild.GetFullIEC_Channel(), CTNChild.CTNFullName()))
 
         # recurse through all children, and stack their results
-        for CTNChild in self.GetReservedCTNs() + children:
+        for CTNChild in children:
             new_location = CTNChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth = len(new_location)
@@ -374,12 +369,13 @@ class ConfigTreeNode(object):
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     def IterChildren(self):
+        for CTNInstance in self.GetReservedCTNs():
+            yield CTNInstance
         for _CTNType, Children in list(self.Children.items()):
             for CTNInstance in Children:
                 yield CTNInstance
 
     def IECSortedChildren(self):
-        # reorder children by IEC_channels
         ordered = [(chld.BaseParams.getIEC_Channel(), chld) for chld in self.IterChildren()]
         if ordered:
             ordered.sort()
