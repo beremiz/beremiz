@@ -336,7 +336,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     ConfigTreeNode.__init__(self)
                     # forces IEC_Channel and Name attributes
                     self.BaseParams.setIEC_Channel(IECChannel)
-                    self.BaseParams.setName(CTNClass.CTNName() if hasattr(CTNClass, "CTNName") else CTNClass.__name__)
+                    self.BaseParams.setName(self.CTNName() if hasattr(CTNClass, "CTNName") else CTNClass.__name__)
                     self.CTNType = CTNClass.__name__
                     # Prevent modification of IEC_Channel and Name attributes of reserved CTNs
                     self.EditorType = type("ReservedCTNEditor", (self.EditorType,), {"SHOW_BASE_PARAMS": False})
