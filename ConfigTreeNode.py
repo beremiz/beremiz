@@ -710,9 +710,9 @@ class ConfigTreeNode(object):
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception as exc:
-                msg = _("Couldn't load confnode base parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=str(exc))
-                self.GetCTRoot().logger.write_error(msg)
-                self.GetCTRoot().logger.write_error(traceback.format_exc())
+                msg = _("Missing base parameters {a1} :\n {a2}\n").format(a1=ConfNodeName, a2=str(exc))
+                self.GetCTRoot().logger.write_warning(msg)
+                #self.GetCTRoot().logger.write_error(traceback.format_exc())
 
         # Get the xml tree
         if self.CTNParams:
@@ -727,9 +727,9 @@ class ConfigTreeNode(object):
                 self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception as exc:
-                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=str(exc))
-                self.GetCTRoot().logger.write_error(msg)
-                self.GetCTRoot().logger.write_error(traceback.format_exc())
+                msg = _("Missing configuration for {a1} :\n {a2}\n").format(a1=ConfNodeName, a2=str(exc))
+                self.GetCTRoot().logger.write_warning(msg)
+                #self.GetCTRoot().logger.write_error(traceback.format_exc())
 
     def LoadChildren(self):
         # Iterate over all CTNName@CTNType in confnode directory, and try to open them
