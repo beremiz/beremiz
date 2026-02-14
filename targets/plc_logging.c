@@ -170,6 +170,8 @@ void record_##var_name(struct timespec *start, struct timespec *end) {          
 // Generate the three recording functions
 DEFINE_RECORD_TIME_FUNC(run_time_ns_avg)
 
+unsigned long long GetCommonTickTime();
+
 /* Return message size and content */
 uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec){
     if(!max_size || !buf || !tick || !tv_sec || !tv_nsec)

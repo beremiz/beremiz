@@ -73,12 +73,8 @@ uint32_t PLCObject::AppendChunkToBlob(
     return 0;
 }
 
-uint32_t PLCObject::AutoLoad()
+uint32_t PLCObject::LoadAndStart()
 {
-    // Load PLC object
-#ifndef LOG_DEBUG_ERPC
-    LogMessage(LOG_INFO, "Autoload PLC");
-#endif
     uint32_t res = LoadPLC();
     if (res != 0)
     {
@@ -95,6 +91,14 @@ uint32_t PLCObject::AutoLoad()
     }
 
     return 0;
+}
+
+uint32_t PLCObject::AutoLoad()
+{
+    // Load PLC object
+    LogMessage(LOG_INFO, "Autoload PLC");
+
+    return LoadAndStart();
 }
 
 
@@ -215,9 +219,6 @@ uint32_t PLCObject::GetTraceVariables(
     {
 
         if (traces->traces.elements == NULL) {
-#ifndef LOG_DEBUG_ERPC
-            LogMessage(LOG_INFO, "Trace elements are none");
-#endif
             traces->traces.elementsCount = 0;
             TraceMutexUnlock();
             return 0;
@@ -273,9 +274,7 @@ uint32_t PLCObject::NewPLC(
 {
     uint32_t res;
 
-#ifndef LOG_DEBUG_ERPC
     LogMessage(LOG_INFO, "New PLC");
-#endif
 
     if(m_status.PLCstatus == Started)
     {
@@ -299,10 +298,9 @@ uint32_t PLCObject::NewPLC(
     }
 
     // Load the PLC object
-    res = AutoLoad();
+    res = LoadAndStart();
     if (res != 0)
     {
-        LogMessage(LOG_CRITICAL, "Autoload failed");
         *success = false;
         return res;
     }
@@ -367,9 +365,6 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
     // Create a blob with given seed
     // Output new blob's md5 into blobID
     // Return 0 if success
-#ifndef LOG_DEBUG_ERPC
-    LogMessage(LOG_INFO, "PLC transfer init");
-#endif
 
     Blob *blob = NULL;
     blob = NewBlob();
@@ -478,6 +473,7 @@ uint32_t PLCObject::StartPLC(void)
     uint32_t res = m_PLCSyms.startPLC(m_argc, m_argv);
     if(res != 0)
     {
+        LogMessage(LOG_CRITICAL, "Failed to start PLC");
         m_status.PLCstatus = Broken;
         return res;
     }

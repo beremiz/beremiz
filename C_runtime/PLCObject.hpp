@@ -21,8 +21,6 @@ using namespace erpcShim;
 
 #define MAX_ELEMENTS_TRACE 10
 
-// #define LOG_DEBUG_ERPC
-
 #define FOR_EACH_PLC_SYMBOLS_DO(ACTION) \
     ACTION(PLC_ID)\
     ACTION(startPLC)\
@@ -139,6 +137,7 @@ class PLCObject : public BeremizPLCObjectService_interface
 
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
+        uint32_t LoadAndStart(void);
 
 };
 
