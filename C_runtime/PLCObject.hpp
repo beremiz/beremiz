@@ -74,7 +74,7 @@ class PLCObject : public BeremizPLCObjectService_interface
         uint32_t NewPLC(const char * md5sum, const binary_t * plcObjectBlobID, const list_extra_file_1_t * extrafiles, bool * success);
         uint32_t PurgeBlobs(void);
         uint32_t ResetLogCount(void);
-        uint32_t SeedBlob(const binary_t * seed, binary_t * blobID);
+        virtual uint32_t SeedBlob(const binary_t * seed, binary_t * blobID);
         uint32_t SetTraceVariablesList(const list_trace_order_1_t * orders, int32_t * debugtoken);
         uint32_t ExtendedCall(const char * method, const binary_t * argument, binary_t * answer);
 

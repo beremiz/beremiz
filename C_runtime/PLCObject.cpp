@@ -371,9 +371,6 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
     LogMessage(LOG_INFO, "PLC transfer init");
 #endif
 
-    // Unload the PLC object
-    UnLoadPLC();
-
     Blob *blob = NULL;
     blob = NewBlob();
     if(blob == NULL)
