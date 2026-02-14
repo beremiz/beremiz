@@ -1609,8 +1609,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
             self.logger.write_error(_("Build directory already clean\n"))
-        # kill the builder
-        self._builder = None
         self.CompareLocalAndRemotePLC()
         self.UpdateButtons()
 
