@@ -96,6 +96,8 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int PLC_shutdown = 0;
 
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
 int ForceSaveRetainReq(void)
 {
     return PLC_shutdown;
@@ -104,8 +106,12 @@ int ForceSaveRetainReq(void)
 void PLC_thread_proc(void *arg)
 {
     while (!PLC_shutdown) {
+        struct timespec plc_start_time, plc_end_time;
         dispatch_semaphore_wait(Run_PLC, DISPATCH_TIME_FOREVER);
+        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
         __run(1);
+        clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+		record_run_time_ns_avg(&plc_start_time, &plc_end_time);
     }
     pthread_exit(0);
 }

@@ -116,6 +116,8 @@ int send_RT_to_nRT_signal(void* handle, char payload){
 
 int PLC_shutdown = 0;
 
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
 void PLC_SetTimer(unsigned long long next, unsigned long long period)
 {
   RTIME current_time = rt_timer_read();
@@ -131,7 +133,11 @@ void PLC_task_proc(void *arg)
 
     while (!PLC_shutdown) {
         if(overruns == 0){
+            struct timespec plc_start_time, plc_end_time;
+            clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
             __run(periods_passed);
+            clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+            record_run_time_ns_avg(&plc_start_time, &plc_end_time);
             periods_passed = 1;
         } else {
             // in case of overrun, don't run PLC on next cycle, to prevent CPU hogging.

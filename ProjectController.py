@@ -37,7 +37,7 @@ import re
 import tempfile
 import hashlib
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from weakref import WeakKeyDictionary
 from functools import partial, reduce
 from collections import OrderedDict
@@ -1623,6 +1623,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
 
+
+    def GetPLCStats(self):
+        stats_txt = ""
+
+        # Call GetLogMessage with special 0xFF level to obtain stats
+        if self._connector:
+            message = self._connector.GetLogMessage(0xFF, 0)
+            if message is not None:
+                stats_string, _tick, tv_sec, tv_nsec = message
+                date = datetime.fromtimestamp(tv_sec + tv_nsec * 1e-9, tz=timezone.utc)
+                stats_txt = "Stats[%s]: %s\n" % (date.isoformat(' '), stats_string)
+
+        return stats_txt
+
     def UpdatePLCLog(self, log_count):
         if log_count:
             if self.AppFrame is not None:
@@ -1681,22 +1695,11 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         if status == PlcStatus.Disconnected or self._connector is None else \
                         [_("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), _(status)]
                 for i,txt in enumerate(texts):
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(txt, i+1)
-        return updated
-
-    def ShowPLCProgress(self, status="", progress=0):
-        self.AppFrame.ProgressStatusBar.Show()
-        self.AppFrame.ConnectionStatusBar.SetStatusText(
-            _(status), 1)
-        self.AppFrame.ProgressStatusBar.SetValue(progress)
-
-    def HidePLCProgress(self):
-        # clear previous_plcstate to restore status
-        # in UpdateMethodsFromPLCStatus()
-        self.previous_plcstate = ""
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(txt, i)
         if self.AppFrame is not None:
-            self.AppFrame.ProgressStatusBar.Hide()
-        self.UpdateMethodsFromPLCStatus()
+            self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetPLCStats(), 2)
+
+        return updated
 
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
@@ -2159,10 +2162,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # arbitrarily use MD5 as a seed, could be any string
             object_blob = self._connector.BlobFromFile(object_path, MD5)
         except IOError as e:
-            self.HidePLCProgress()
             self.logger.write_error(repr(e))
         else:
-            self.HidePLCProgress()
             self.logger.write(_("PLC data transfered successfully.\n"))
 
             if self._connector.NewPLC(MD5, object_blob, extrafiles):

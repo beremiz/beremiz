@@ -169,12 +169,11 @@ class PLCObject(object):
                                      ctypes.byref(tick),
                                      ctypes.byref(tv_sec),
                                      ctypes.byref(tv_nsec))
-            if sz and sz <= maxsz:
-                return (self._log_read_buffer[:sz].decode(), tick.value,
-                        tv_sec.value, tv_nsec.value)
+            return ("<empty>" if sz==0 else "<overflow>" if sz > maxsz else self._log_read_buffer[:sz].decode(),
+                    tick.value, tv_sec.value, tv_nsec.value)
         elif self._loading_error is not None and level == 0:
-            return self._loading_error.decode(), 0, 0, 0
-        return None
+            return self._loading_error, 0, 0, 0
+        return "", 0, 0, 0
 
     def _GetMD5FileName(self):
         return os.path.join(self.workingdir, "lasttransferedPLC.md5")

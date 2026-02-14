@@ -104,14 +104,12 @@ uint32_t PLCObject::GetLogMessage(
     uint8_t level, uint32_t msgID, log_message *message)
 {
     char buf[LOG_READ_BUFFER_SIZE];
-    uint32_t tick;
-    uint32_t tv_sec;
-    uint32_t tv_nsec;
+    uint32_t tick = 0;
+    uint32_t tv_sec = 0;
+    uint32_t tv_nsec = 0;
 
-    uint32_t resultLen;
-    if(m_status.PLCstatus == Empty){
-        resultLen = 0;
-    } else {
+    uint32_t resultLen = 0;
+    if(m_PLCSyms.GetLogMessage){
         resultLen = m_PLCSyms.GetLogMessage(
             level, msgID, buf, LOG_READ_BUFFER_SIZE - 1,
             &tick, &tv_sec, &tv_nsec);

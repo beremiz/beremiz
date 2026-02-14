@@ -37,6 +37,7 @@ import wx.lib.buttons
 import wx.lib.statbmp
 import wx.stc
 import wx.adv
+from wx import StatusBar
 
 
 import version
@@ -50,7 +51,6 @@ from util.MiniTextControler import MiniTextControler
 from util.BitmapLibrary import GetBitmap
 from controls.LogViewer import LogViewer
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl
-from controls import EnhancedStatusBar as esb
 from dialogs.AboutDialog import ShowAboutDialog
 
 from plcopen.types_enums import \
@@ -335,15 +335,6 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                       kind=wx.ITEM_NORMAL, text=_('About')))
         self.Bind(wx.EVT_MENU, self.OnAboutMenu, id=wx.ID_ABOUT)
 
-    def _init_coll_ConnectionStatusBar_Fields(self, parent):
-        parent.SetFieldsCount(3)
-
-        parent.SetStatusText(i=0, text='')
-        parent.SetStatusText(i=1, text='')
-        parent.SetStatusText(i=2, text='')
-
-        parent.SetStatusWidths([-1, 300, 200])
-
     def _init_ctrls(self, prnt):
         IDEFrame._init_ctrls(self, prnt)
 
@@ -427,11 +418,10 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
         self.AUIManager.Update()
 
-        self.ConnectionStatusBar = esb.EnhancedStatusBar(self, style=wx.STB_SIZEGRIP)
-        self._init_coll_ConnectionStatusBar_Fields(self.ConnectionStatusBar)
-        self.ProgressStatusBar = wx.Gauge(self.ConnectionStatusBar, -1, range=100)
-        self.ConnectionStatusBar.AddWidget(self.ProgressStatusBar, esb.ESB_EXACT_FIT, esb.ESB_EXACT_FIT, 2)
-        self.ProgressStatusBar.Hide()
+        self.ConnectionStatusBar = StatusBar(self, style=wx.STB_SIZEGRIP)
+        self.ConnectionStatusBar.SetFieldsCount(3)
+        for i in range(3):
+            self.ConnectionStatusBar.SetStatusText('', i)
         self.SetStatusBar(self.ConnectionStatusBar)
 
     def __init__(self, parent, projectOpen=None, buildpath=None, ctr=None, devmode=False, logf=None):

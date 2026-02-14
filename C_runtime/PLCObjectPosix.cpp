@@ -26,9 +26,16 @@
 #define SHARED_OBJECT_EXT ".so"
 #endif
 
+#define ULSYM(sym)            \
+    do                        \
+    {                         \
+        m_PLCSyms.sym = NULL; \
+    } while (0);
+
 PLCObjectPosix::PLCObjectPosix(void) : PLCObject()
 {
     m_handle = NULL;
+    FOR_EACH_PLC_SYMBOLS_DO(ULSYM);
 }
 
 PLCObjectPosix::~PLCObjectPosix(void)
@@ -184,12 +191,6 @@ uint32_t PLCObjectPosix::LoadPLC(void)
 
     return 0;
 }
-
-#define ULSYM(sym)            \
-    do                        \
-    {                         \
-        m_PLCSyms.sym = NULL; \
-    } while (0);
 
 uint32_t PLCObjectPosix::UnLoadPLC(void)
 {

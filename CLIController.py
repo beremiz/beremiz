@@ -5,11 +5,12 @@ import os
 import sys
 from functools import wraps
 from threading import Timer
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ProjectController import ProjectController, ToDoBeforeQuit
 from LocalRuntimeMixin import LocalRuntimeMixin
 from runtime.loglevels import LogLevelsCount, LogLevels
+from runtime import PlcStatus
 
 class Log:
 
@@ -100,7 +101,7 @@ class CLIController(LocalRuntimeMixin, ProjectController):
                         message = connector.GetLogMessage(level, msgidx)
                         if message is not None:
                             msg, _tick, tv_sec, tv_nsec = message
-                            date = datetime.utcfromtimestamp(tv_sec + tv_nsec * 1e-9)
+                            date = datetime.fromtimestamp(tv_sec + tv_nsec * 1e-9, timezone.utc)
                             txt = "%s at %s: %s\n" % (LogLevels[level], date.isoformat(' '), msg)
                             new_messages.append((date,txt))
                         else:
@@ -109,6 +110,23 @@ class CLIController(LocalRuntimeMixin, ProjectController):
             new_messages.sort()
             for date, txt in new_messages:
                 self.logger.write(txt)
+
+    def UpdateMethodsFromPLCStatus(self):
+        status = PlcStatus.Disconnected
+        if self._connector is not None:
+            PLCstatus = self._connector.GetPLCstatus()
+            status, log_count = PLCstatus
+            if status == PlcStatus.Disconnected:
+                self._SetConnector(None, False)
+            else:
+                self.UpdatePLCLog(log_count)
+                self.logger.write(self.GetPLCStats())
+
+        if self.previous_plcstate != status:
+            self.previous_plcstate = status
+            self.logger.write("PLC Status: %s\n" % status)
+            
+        return False
 
     def check_and_load_project(self):
         if not os.path.isdir(self.session.project_home):

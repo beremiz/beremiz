@@ -4,6 +4,8 @@
 
 #include "beremiz.h"
 #include <string.h>
+#include <time.h>
+#include <stdio.h>
 
 #ifndef LOG_BUFFER_SIZE
 #define LOG_BUFFER_SIZE (1<<14) /*16Ko*/
@@ -132,8 +134,67 @@ uint32_t GetLogCount(uint8_t level){
     return LogIndex[level];
 }
 
+
+// PLC execution statistics
+#define STATS_EMA_ALPHA 0.2f  // Exponential moving average smoothing factor
+
+// Macro to generate timing record functions
+#define DEFINE_RECORD_TIME_FUNC(var_name)                                                             \
+static uint32_t var_name = 0;                                                                         \
+static int var_name##_valid = 0;                                                                      \
+void record_##var_name(struct timespec *start, struct timespec *end) {                                \
+    int32_t sec_diff = end->tv_sec - start->tv_sec;                                                   \
+	uint32_t delta_ns;                                                                                \
+    if (sec_diff == 0 && end->tv_nsec >= start->tv_nsec) {                                            \
+        /* Same second, simple subtraction */                                                         \
+        delta_ns = end->tv_nsec - start->tv_nsec;                                                     \
+		var_name##_valid = 1;                                                                         \
+    } else if (sec_diff == 1) {                                                                       \
+        /* Crossed second boundary */                                                                 \
+        delta_ns = (1000000000U - start->tv_nsec) + end->tv_nsec;                                     \
+		var_name##_valid = 1;                                                                         \
+    } else {                                                                                          \
+        /* Overflow (> 1 second or negative time), mark stats invalid */                              \
+        var_name##_valid = 0;                                                                         \
+		var_name = 0;                                                                                 \
+		return;                                                                                       \
+    }                                                                                                 \
+	if(var_name##_valid){                                                                             \
+		var_name = (uint32_t)(STATS_EMA_ALPHA * delta_ns + (1.0f - STATS_EMA_ALPHA) * (var_name));    \
+	} else {                                                                                          \
+		var_name = delta_ns;                                                                          \
+		var_name##_valid = 1;                                                                         \
+	}                                                                                                 \
+}
+
+// Generate the three recording functions
+DEFINE_RECORD_TIME_FUNC(run_time_ns_avg)
+
 /* Return message size and content */
 uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec){
+    if(!max_size || !buf || !tick || !tv_sec || !tv_nsec)
+        return 0;
+
+    if(level == 0xFF){ // Get stats
+        uint64_t period_ns = GetCommonTickTime();
+		if(run_time_ns_avg_valid){
+            IEC_TIME now;
+            _sfx(PLC_GetTime)(&now);
+            *tv_sec = now.tv_sec; 
+            *tv_nsec = now.tv_nsec; 
+            *tick = 0; 
+
+			return snprintf(buf, max_size,
+					"PLC Cycle: %d%% of %dms", 
+					(int)(((uint64_t)run_time_ns_avg*100)/period_ns),
+					(int)(period_ns/1000000));
+		} else {
+			return snprintf(buf, max_size,
+					"PLC Cycle: %dms",
+					(int)(period_ns/1000000));
+		}    
+    }
+    
     if(LogIndex[level] > 0){
         uint32_t cursor = LogCursor[level];
         uint32_t stailpos = (cursor - sizeof(mTail)) & LOG_BUFFER_MASK;
@@ -166,3 +227,4 @@ uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_s
     }
     return 0;
 }
+
