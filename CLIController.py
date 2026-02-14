@@ -148,7 +148,12 @@ class CLIController(LocalRuntimeMixin, ProjectController):
                 "boolean": lambda val:val=="true",
                 "string": lambda val:val,
                 "integer": lambda val:int(val)}[t]
-            self.SetParamsAttribute("BeremizRoot."+k, _t(v))
+            parts = k.split(".", 1)
+            child = self.GetChildByName(parts[0]) if len(parts) > 1 else None
+            if child is not None:
+                child.SetParamsAttribute(parts[1], _t(v))
+            else:
+                self.SetParamsAttribute("BeremizRoot."+k, _t(v))
 
     @with_project_loaded
     def clean_project(self):
