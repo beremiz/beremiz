@@ -73,8 +73,11 @@ uint32_t PLCObject::AppendChunkToBlob(
     return 0;
 }
 
-uint32_t PLCObject::LoadAndStart()
+uint32_t PLCObject::AutoLoad()
 {
+    // Load PLC object
+    LogMessage(LOG_INFO, "Autoload PLC");
+
     uint32_t res = LoadPLC();
     if (res != 0)
     {
@@ -91,14 +94,6 @@ uint32_t PLCObject::LoadAndStart()
     }
 
     return 0;
-}
-
-uint32_t PLCObject::AutoLoad()
-{
-    // Load PLC object
-    LogMessage(LOG_INFO, "Autoload PLC");
-
-    return LoadAndStart();
 }
 
 
@@ -298,12 +293,13 @@ uint32_t PLCObject::NewPLC(
     }
 
     // Load the PLC object
-    res = LoadAndStart();
+    res = LoadPLC();
     if (res != 0)
     {
-        *success = false;
+        m_status.PLCstatus = Empty;
         return res;
     }
+    m_status.PLCstatus = Stopped;
 
     //Default state after trnasfer is Stopped
     res = m_PLCSyms.stopPLC();

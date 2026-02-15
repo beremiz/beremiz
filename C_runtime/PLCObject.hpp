@@ -137,7 +137,6 @@ class PLCObject : public BeremizPLCObjectService_interface
 
         void PurgeTraceBuffer(void);
         void TraceThreadProc(void);
-        uint32_t LoadAndStart(void);
 
 };
 

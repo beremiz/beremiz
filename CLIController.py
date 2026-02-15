@@ -126,7 +126,7 @@ class CLIController(LocalRuntimeMixin, ProjectController):
             self.previous_plcstate = status
             self.logger.write("PLC Status: %s\n" % status)
             
-        return False
+        return status
 
     def check_and_load_project(self):
         if not os.path.isdir(self.session.project_home):

@@ -1615,8 +1615,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def _UpdateButtons(self):
         self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
         self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
-        if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
-            self.AppFrame.RefreshStatusToolBar()
+        self.UpdateMethodsFromPLCStatus()
 
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
@@ -1669,7 +1668,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
     }
 
     def UpdateMethodsFromPLCStatus(self):
-        updated = False
         status = PlcStatus.Disconnected
         if self._connector is not None:
             PLCstatus = self._connector.GetPLCstatus()
@@ -1687,7 +1685,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ShowMethod(method, active)
             self.previous_plcstate = status
             if self.AppFrame is not None:
-                updated = True
                 self.AppFrame.RefreshStatusToolBar()
                 texts = [_(PlcStatus.Disconnected), ''] \
                         if status == PlcStatus.Disconnected or self._connector is None else \
@@ -1697,7 +1694,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self.AppFrame is not None:
             self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetPLCStats(), 2)
 
-        return updated
+        return status
 
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
@@ -2118,11 +2115,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
-        # Check if transfer is done by builder
-        if self._connector.DelegateTransferToBuilder():
-            self.logger.write(_("Transfer is ensured by build system.\n"))
-            return builder.Transfer(self._connector)
-
         # recover md5 from last build
         MD5 = builder.GetBinaryMD5()
 
@@ -2131,6 +2123,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Failed : Must build before transfer.\n"))
             return False
+
+        # Check if transfer is done by builder
+        if self._connector.DelegateTransferToBuilder():
+            self.logger.write(_("Transfer is ensured by build system.\n"))
+            return builder.Transfer(self._connector)
+
 
         # Compare PLC project with PLC on target
         if self._connector.MatchMD5(MD5):

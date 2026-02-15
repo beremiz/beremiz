@@ -75,7 +75,8 @@ def ensure_controller(func):
                 SetDeveloperMode()
             if session.sdkpath is not None:
                 SetSDKPath(session.sdkpath)
-            session.controller = import_module("CLIController").CLIController(session)
+            session.module = import_module("CLIController")
+            session.controller = session.module.CLIController(session)
         ret = func(session, *args, **kwargs)
         return ret
 
@@ -164,8 +165,9 @@ def process_pipeline(ctx, session, processors, **kwargs):
         click.echo("Press Ctrl+C to quit")
         try:
             while True:
-                session.controller.UpdateMethodsFromPLCStatus()
-                time.sleep(0.5)
+                PLC_State = session.controller.UpdateMethodsFromPLCStatus()
+                if PLC_State != session.module.PlcStatus.Disconnected:
+                    time.sleep(0.5)
         except KeyboardInterrupt:
             pass
 
