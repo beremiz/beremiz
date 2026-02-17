@@ -1,6 +1,5 @@
 #include <string.h>
-#include <fstream>
-#include <iostream>
+#include <stdio.h>
 #include <vector>
 
 #include "PLCObject.hpp"
@@ -502,7 +501,7 @@ uint32_t PLCObject::LogMessage(uint8_t level, std::string message)
     // if PLC isn't loaded, log to stdout
     if(m_PLCSyms.LogMessage == NULL)
     {
-        std::cout << level << message << std::endl;
+        fprintf(stderr, "%d: %s\n", level, message.c_str());
         return ENOSYS;
     }
 
