@@ -620,6 +620,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
     def OnCloseFrame(self, event):
         if self.TryCloseFrame():
             self.LogConsole.Disconnect(-1, -1, wx.wxEVT_KILL_FOCUS)
+            self.AUIManager.UnInit()
             event.Skip()
         else:
             # prevent event to continue, i.e. cancel closing
