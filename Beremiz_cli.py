@@ -166,8 +166,9 @@ def process_pipeline(ctx, session, processors, **kwargs):
         try:
             while True:
                 PLC_State = session.controller.UpdateMethodsFromPLCStatus()
-                if PLC_State != session.module.PlcStatus.Disconnected:
-                    time.sleep(0.5)
+                if PLC_State == session.module.PlcStatus.Disconnected:
+                    break
+                time.sleep(0.5)
         except KeyboardInterrupt:
             pass
 
