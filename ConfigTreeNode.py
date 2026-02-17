@@ -58,7 +58,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
         </xsd:schema>""")
 
 NameTypeSeparator = '@'
-XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}")
+XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}\n")
 
 
 class ConfigTreeNode(object):
@@ -692,6 +692,9 @@ class ConfigTreeNode(object):
             child.ClearChildren()
         self.Children = {}
 
+    LoadErrorImpliesUserCheck = \
+        _("Note: loading errors are expected when opening projects written for different targets. Check config.\n")
+        
     def LoadXMLParams(self, CTNName=None):
         methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):
@@ -706,7 +709,9 @@ class ConfigTreeNode(object):
                 self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
                 if error is not None:
                     (fname, lnum, src) = ((ConfNodeName + " BaseParams",) + error)
-                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger = self.GetCTRoot().logger
+                    logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger.write_warning(self.LoadErrorImpliesUserCheck)
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception as exc:
@@ -721,7 +726,9 @@ class ConfigTreeNode(object):
                 obj, error = self.Parser.LoadXMLString(xmlfile.read())
                 if error is not None:
                     (fname, lnum, src) = ((ConfNodeName,) + error)
-                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger = self.GetCTRoot().logger
+                    logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger.write_warning(self.LoadErrorImpliesUserCheck)
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
