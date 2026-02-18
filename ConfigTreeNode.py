@@ -176,7 +176,7 @@ class ConfigTreeNode(object):
             return params
 
     def SetParamsAttribute(self, path, value):
-        self.CTNMarkModified()
+        self.ChangesToSave = True
         # Filter IEC_Channel and Name, that have specific behavior
         if path == "BaseParams.IEC_Channel":
             old_leading = ".".join(map(str, self.GetCurrentLocation()))
