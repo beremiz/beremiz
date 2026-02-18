@@ -59,6 +59,10 @@ pass_session = click.make_pass_decorator(CLISession)
 @click.option(
     "--uri", "-u", help="URI to reach remote PLC."
 )
+@click.option(
+    "--extend", "-e", multiple=True, metavar="PATH",
+    help="Extend functionality by loading additional extension at start.",
+)
 @click.version_option("0.1")
 @click.pass_context
 def cli(ctx, **kwargs):
@@ -75,12 +79,24 @@ def ensure_controller(func):
                 SetDeveloperMode()
             if session.sdkpath is not None:
                 SetSDKPath(session.sdkpath)
+            LoadExtensions(session.extend)
             session.module = import_module("CLIController")
             session.controller = session.module.CLIController(session)
         ret = func(session, *args, **kwargs)
         return ret
 
     return func_wrapper
+
+
+def LoadExtensions(extensions):
+    for extfilename in extensions:
+        from util.TranslationCatalogs import AddCatalog
+        from util.BitmapLibrary import AddBitmapFolder
+        extension_folder = os.path.split(os.path.realpath(extfilename))[0]
+        sys.path.append(extension_folder)
+        AddCatalog(os.path.join(extension_folder, "locale"))
+        AddBitmapFolder(os.path.join(extension_folder, "images"))
+        exec(compile(open(extfilename, "rb").read(), extfilename, 'exec'))
 
 
 @cli.command()
