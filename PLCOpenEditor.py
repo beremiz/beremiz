@@ -181,6 +181,7 @@ class PLCOpenEditor(IDEFrame):
 
             self.SaveLastState()
 
+            self.AUIManager.UnInit()
             event.Skip()
         else:
             event.Veto()
@@ -420,3 +421,4 @@ if __name__ == '__main__':
     app = PLCOpenEditorApp()
     app.Show()
     app.MainLoop()
+    os._exit(0)

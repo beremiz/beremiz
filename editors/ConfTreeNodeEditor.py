@@ -349,7 +349,12 @@ class ConfTreeNodeEditor(EditorPanel):
         dialog = UriEditor(CTR_AppFrame, CTR, uri)
 
         if dialog.ShowModal() == wx.ID_OK:
-            CTR_BeremizRoot.setURI_location(dialog.GetURI())
+            new_uri = dialog.GetURI()
+            CTR_BeremizRoot.setURI_location(new_uri)
+            changed = uri != new_uri
+            if not changed:
+                return
+            CTR.ChangesToSave |= changed
             if CTR._View is not None:
                 CTR._View.RefreshView()
             if CTR_AppFrame is not None:
@@ -524,10 +529,11 @@ class ConfTreeNodeEditor(EditorPanel):
                                            style=wx.SP_ARROW_KEYS | wx.ALIGN_RIGHT)
                     spinctrl.SetRange(scmin, scmax)
                     value_ctrl = spinctrl
-                    if element_infos["value"] is not None:
-                        spinctrl.SetValue(element_infos["value"])
+                    spinctrl_val = element_infos["value"]
+                    if spinctrl_val is not None:
+                        spinctrl.SetValue(spinctrl_val)
                     spinctrl.Bind(wx.EVT_SPINCTRL,
-                                  self.GetTextCtrlCallBackFunction(spinctrl, element_path),
+                                  self.GetTextCtrlCallBackFunction(spinctrl, element_path, spinctrl_val),
                                   spinctrl)
 
                 else:
@@ -551,11 +557,12 @@ class ConfTreeNodeEditor(EditorPanel):
                                                style=wx.SP_ARROW_KEYS | wx.ALIGN_RIGHT)
                         spinctrl.SetRange(scmin, scmax)
                         value_ctrl = spinctrl
-                        if element_infos["value"] is not None:
-                            spinctrl.SetValue(element_infos["value"])
+                        spinctrl_val = element_infos["value"]
+                        if spinctrl_val is not None:
+                            spinctrl.SetValue(spinctrl_val)
                         spinctrl.Bind(wx.EVT_SPINCTRL,
-                                      self.GetTextCtrlCallBackFunction(spinctrl, element_path),
-                                      spinctrl)
+                                    self.GetTextCtrlCallBackFunction(spinctrl, element_path, spinctrl_val),
+                                    spinctrl)
 
                     else:
                         choices = self.ParentWindow.GetConfigEntry(element_path, [""])
@@ -580,9 +587,10 @@ class ConfTreeNodeEditor(EditorPanel):
                         else:
                             value_ctrl = textctrl
 
-                        if element_infos["value"] is not None:
-                            textctrl.ChangeValue(str(element_infos["value"]))
-                        callback = self.GetTextCtrlCallBackFunction(textctrl, element_path)
+                        textctrl_val = element_infos["value"]
+                        if textctrl_val is not None:
+                            textctrl.ChangeValue(str(textctrl_val))
+                        callback = self.GetTextCtrlCallBackFunction(textctrl, element_path, textctrl_val)
                         textctrl.Bind(wx.EVT_TEXT_ENTER, callback)
                         textctrl.Bind(wx.EVT_TEXT, callback)
                         textctrl.Bind(wx.EVT_KILL_FOCUS, callback)
@@ -652,18 +660,27 @@ class ConfTreeNodeEditor(EditorPanel):
             event.Skip()
         return OnChoiceContentChanged
 
-    def GetTextCtrlCallBackFunction(self, textctrl, path, refresh=False):
-        def OnTextCtrlChanged(event):
-            res = self.SetConfNodeParamsAttribute(path, textctrl.GetValue())
-            if res != textctrl.GetValue():
+    def GetTextCtrlCallBackFunction(self, textctrl, path, refresh=False, initial=None):
+        def OnTextCtrlChanged(event, mem=dict(last_val=initial)):
+            event.Skip()
+            new_val = textctrl.GetValue()
+            if mem["last_val"] is not None:
+                if mem["last_val"] == new_val:
+                    # prevent spurious model updates
+                    return
+            res = self.SetConfNodeParamsAttribute(path, new_val)
+            new_val = textctrl.GetValue()
+            if res != new_val:
                 if isinstance(textctrl, wx.SpinCtrl):
                     textctrl.SetValue(res)
                 elif res is not None:
                     textctrl.ChangeValue(str(res))
+                mem["last_val"] = res
+            else:
+                mem["last_val"] = new_val
             if refresh:
                 wx.CallAfter(self.ParentWindow._Refresh, TITLE, FILEMENU, PROJECTTREE, PAGETITLES)
                 wx.CallAfter(self.ParentWindow.SelectProjectTreeItem, self.GetTagName())
-            event.Skip()
         return OnTextCtrlChanged
 
     def GetResetFunction(self, path):

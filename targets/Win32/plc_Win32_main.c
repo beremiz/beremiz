@@ -62,6 +62,8 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 
 int PLC_shutdown;
 
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
 int ForceSaveRetainReq(void) {
     return PLC_shutdown;
 }
@@ -71,11 +73,15 @@ void PlcLoop()
 {
     PLC_shutdown = 0;
     while(!PLC_shutdown) {
+        struct timespec plc_start_time, plc_end_time;
         if (WaitForSingleObject(PLC_timer, INFINITE) != WAIT_OBJECT_0){
             PLC_shutdown = 1;
             break;
         }
+        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
         __run(1);
+        clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+		record_run_time_ns_avg(&plc_start_time, &plc_end_time);
     }
 }
 

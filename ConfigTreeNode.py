@@ -58,7 +58,7 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
         </xsd:schema>""")
 
 NameTypeSeparator = '@'
-XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}")
+XSDSchemaErrorMessage = _("{a1} XML file doesn't follow XSD schema at line {a2}:\n{a3}\n")
 
 
 class ConfigTreeNode(object):
@@ -92,6 +92,7 @@ class ConfigTreeNode(object):
         self._View = None
         # copy ConfNodeMethods so that it can be later customized
         self.ConfNodeMethods = [dic.copy() for dic in self.ConfNodeMethods]
+        self.ChangesToSave = False
 
     def ConfNodeBaseXmlFilePath(self, CTNName=None):
         return os.path.join(self.CTNPath(CTNName), "baseconfnode.xml")
@@ -348,15 +349,9 @@ class ConfigTreeNode(object):
                 LDFLAGS += CTNLDFLAGS
 
         children = self.IECSortedChildren()
-        reserved_channels = self.GetReservedIECChannels()
-        for CTNChild in children:
-            channel = CTNChild.BaseParams.getIEC_Channel()
-            if channel in reserved_channels:
-                self.FatalError(_("IEC channel %d is reserved. Please move Configuration Tree Node %s (%s) to another location") % 
-                                 (channel, CTNChild.GetFullIEC_Channel(), CTNChild.CTNFullName()))
 
         # recurse through all children, and stack their results
-        for CTNChild in self.GetReservedCTNs() + children:
+        for CTNChild in children:
             new_location = CTNChild.GetCurrentLocation()
             # How deep are we in the tree ?
             depth = len(new_location)
@@ -374,12 +369,13 @@ class ConfigTreeNode(object):
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
     def IterChildren(self):
+        for CTNInstance in self.GetReservedCTNs():
+            yield CTNInstance
         for _CTNType, Children in list(self.Children.items()):
             for CTNInstance in Children:
                 yield CTNInstance
 
     def IECSortedChildren(self):
-        # reorder children by IEC_channels
         ordered = [(chld.BaseParams.getIEC_Channel(), chld) for chld in self.IterChildren()]
         if ordered:
             ordered.sort()
@@ -696,6 +692,9 @@ class ConfigTreeNode(object):
             child.ClearChildren()
         self.Children = {}
 
+    LoadErrorImpliesUserCheck = \
+        _("Note: loading errors are expected when opening projects written for different targets. Check config.\n")
+        
     def LoadXMLParams(self, CTNName=None):
         methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):
@@ -710,13 +709,15 @@ class ConfigTreeNode(object):
                 self.BaseParams, error = _BaseParamsParser.LoadXMLString(basexmlfile.read())
                 if error is not None:
                     (fname, lnum, src) = ((ConfNodeName + " BaseParams",) + error)
-                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger = self.GetCTRoot().logger
+                    logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger.write_warning(self.LoadErrorImpliesUserCheck)
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception as exc:
-                msg = _("Couldn't load confnode base parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=str(exc))
-                self.GetCTRoot().logger.write_error(msg)
-                self.GetCTRoot().logger.write_error(traceback.format_exc())
+                msg = _("Missing base parameters {a1} :\n {a2}\n").format(a1=ConfNodeName, a2=str(exc))
+                self.GetCTRoot().logger.write_warning(msg)
+                #self.GetCTRoot().logger.write_error(traceback.format_exc())
 
         # Get the xml tree
         if self.CTNParams:
@@ -725,15 +726,17 @@ class ConfigTreeNode(object):
                 obj, error = self.Parser.LoadXMLString(xmlfile.read())
                 if error is not None:
                     (fname, lnum, src) = ((ConfNodeName,) + error)
-                    self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger = self.GetCTRoot().logger
+                    logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
+                    logger.write_warning(self.LoadErrorImpliesUserCheck)
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)
                 xmlfile.close()
             except Exception as exc:
-                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=ConfNodeName, a2=str(exc))
-                self.GetCTRoot().logger.write_error(msg)
-                self.GetCTRoot().logger.write_error(traceback.format_exc())
+                msg = _("Missing configuration for {a1} :\n {a2}\n").format(a1=ConfNodeName, a2=str(exc))
+                self.GetCTRoot().logger.write_warning(msg)
+                #self.GetCTRoot().logger.write_error(traceback.format_exc())
 
     def LoadChildren(self):
         # Iterate over all CTNName@CTNType in confnode directory, and try to open them

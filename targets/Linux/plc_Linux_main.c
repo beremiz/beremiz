@@ -27,6 +27,8 @@
 #define _LogError(text,...) _Log(LOG_CRITICAL, text, ##__VA_ARGS__)
 #define _LogWarning(text,...) _Log(LOG_WARNING, text, ##__VA_ARGS__)
 
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
 static unsigned int __debug_tick;
 
 static pthread_t PLC_thread;
@@ -127,6 +129,10 @@ int ForceSaveRetainReq(void) {
     return PLC_shutdown;
 }
 
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
+}
+
 #define MAX_JITTER period_ns/10
 #define MIN_IDLE_TIME_NS 1000000 /* 1ms */
 /* Macro to compare timespec, evaluate to True if a is past b */
@@ -136,16 +142,16 @@ void PLC_thread_proc(void *arg)
   	int periods_passed = 0;
 
     /* initialize next occurence and period */
-    period_ns = common_ticktime__;
+    period_ns = GetCommonTickTime();
     clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
 
     while (!PLC_shutdown) {
         int res;
         struct timespec plc_end_time;
+        struct timespec plc_start_time;
         int periods = 0;
 #ifdef REALTIME_LINUX
         struct timespec deadline_time;
-        struct timespec plc_start_time;
 #endif
 
 // BEREMIZ_TEST_CYCLES is defined in tests that need to emulate time:
@@ -162,11 +168,11 @@ void PLC_thread_proc(void *arg)
             _LogError("PLC thread timer returned error %d \n", res);
             return;
         }
-#endif // BEREMIZ_TEST_CYCLES
+        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
+#endif
 
 #ifdef REALTIME_LINUX
         // timer overrun detection
-        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
         deadline_time=next_cycle_time;
         inc_timespec(&deadline_time, MAX_JITTER);
         if(timespec_gt(plc_start_time, deadline_time)){
@@ -218,6 +224,10 @@ void PLC_thread_proc(void *arg)
             _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", periods);
         }
         periods_passed = periods;
+
+#ifndef BEREMIZ_TEST_CYCLES
+		record_run_time_ns_avg(&plc_start_time, &plc_end_time);
+#endif
     }
 
     pthread_exit(0);

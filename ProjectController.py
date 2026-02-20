@@ -37,7 +37,7 @@ import re
 import tempfile
 import hashlib
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from weakref import WeakKeyDictionary
 from functools import partial, reduce
 from collections import OrderedDict
@@ -262,8 +262,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugUpdatePending = False
         self.ResetIECProgramsAndVariables()
 
-        # In both new or load scenario, no need to save
-        self.ChangesToSave = False
         # root have no parent
         self.CTNParent = None
         # Keep track of the confnode type name
@@ -288,8 +286,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.AppFrame = None
         self.logger = None
         self.additionalCFLAGS = []
+        
+        self._reservedCTNInstances = []
 
-                 # compute CFLAGS for PLC code
+    # compute CFLAGS for PLC code
     def getPLC_CFLAGS(self):
         libCPath = self.iec2c_cfg.getLibCPath()
         if libCPath is None:
@@ -326,21 +326,39 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return [IECChannel for IECChannel, CTNClass in reserved]
 
     def GetReservedCTNs(self):
+        if self._reservedCTNInstances:
+            return self._reservedCTNInstances
         reserved = self.GetBuilder().GetReservedIECChannels()
-        res = []
         for IECChannel, CTNClass in reserved:
             class FinalPseudoCTNClass(CTNClass, ConfigTreeNode):
                 def __init__(self, parent):
                     self.CTNParent = parent
                     ConfigTreeNode.__init__(self)
+                    # forces IEC_Channel and Name attributes
                     self.BaseParams.setIEC_Channel(IECChannel)
-            res.append(FinalPseudoCTNClass(self))
-        return res
+                    self.BaseParams.setName(self.CTNName() if hasattr(CTNClass, "CTNName") else CTNClass.__name__)
+                    self.CTNType = CTNClass.__name__
+                    # Prevent modification of IEC_Channel and Name attributes of reserved CTNs
+                    self.EditorType = type("ReservedCTNEditor", (self.EditorType,), {"SHOW_BASE_PARAMS": False})
+                    
+            self._reservedCTNInstances.append(FinalPseudoCTNClass(self))
+        return self._reservedCTNInstances
 
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """ 
-        Project controller applies libraries requirements when adding new CTN
+        Project controller:
+            - load reserved CTN XML configs
+            - applies libraries requirements when adding new CTN
         """
+        
+        reserved = self.GetReservedCTNs()
+        for CTN in reserved:
+            if CTN.CTNType == CTNType:
+                if os.path.isdir(CTN.CTNPath(CTNName)):
+                    CTN.LoadXMLParams(CTNName)
+                CTN.LoadChildren()
+                return CTN
+        
         res = ConfigTreeNode.CTNAddChild(self, CTNName, CTNType, IEC_Channel)
 
         # find library associated with new CTN, if any
@@ -763,7 +781,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         - location is a string of this variable's location, like "%IX0.0.0"
         '''
         children = []
-        for child in self.GetReservedCTNs() + self.IECSortedChildren():
+        for child in self.IECSortedChildren():
             children.append(child.GetVariableLocationTree())
         return children
 
@@ -1031,6 +1049,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if self._builder is None or not isinstance(self._builder, targetclass):
             # Get classname instance
             self._builder = targetclass(self)
+            self._reservedCTNInstances = []
+
         return self._builder
 
     def CheckChildCompatible(self, child):
@@ -1589,19 +1609,30 @@ class ProjectController(ConfigTreeNode, PLCControler):
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
             self.logger.write_error(_("Build directory already clean\n"))
-        # kill the builder
-        self._builder = None
         self.CompareLocalAndRemotePLC()
         self.UpdateButtons()
 
     def _UpdateButtons(self):
         self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
         self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
-        if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
-            self.AppFrame.RefreshStatusToolBar()
+        self.UpdateMethodsFromPLCStatus()
 
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
+
+
+    def GetPLCStats(self):
+        stats_txt = ""
+
+        # Call GetLogMessage with special 0xFF level to obtain stats
+        if self._connector:
+            message = self._connector.GetLogMessage(0xFF, 0)
+            if message is not None:
+                stats_string, _tick, tv_sec, tv_nsec = message
+                date = datetime.fromtimestamp(tv_sec + tv_nsec * 1e-9, tz=timezone.utc)
+                stats_txt = "Stats[%s]: %s\n" % (date.isoformat(' '), stats_string)
+
+        return stats_txt
 
     def UpdatePLCLog(self, log_count):
         if log_count:
@@ -1637,7 +1668,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
     }
 
     def UpdateMethodsFromPLCStatus(self):
-        updated = False
         status = PlcStatus.Disconnected
         if self._connector is not None:
             PLCstatus = self._connector.GetPLCstatus()
@@ -1655,28 +1685,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.ShowMethod(method, active)
             self.previous_plcstate = status
             if self.AppFrame is not None:
-                updated = True
                 self.AppFrame.RefreshStatusToolBar()
                 texts = [_(PlcStatus.Disconnected), ''] \
                         if status == PlcStatus.Disconnected or self._connector is None else \
                         [_("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), _(status)]
                 for i,txt in enumerate(texts):
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(txt, i+1)
-        return updated
-
-    def ShowPLCProgress(self, status="", progress=0):
-        self.AppFrame.ProgressStatusBar.Show()
-        self.AppFrame.ConnectionStatusBar.SetStatusText(
-            _(status), 1)
-        self.AppFrame.ProgressStatusBar.SetValue(progress)
-
-    def HidePLCProgress(self):
-        # clear previous_plcstate to restore status
-        # in UpdateMethodsFromPLCStatus()
-        self.previous_plcstate = ""
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(txt, i)
         if self.AppFrame is not None:
-            self.AppFrame.ProgressStatusBar.Hide()
-        self.UpdateMethodsFromPLCStatus()
+            self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetPLCStats(), 2)
+
+        return status
 
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
@@ -2097,11 +2115,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
-        # Check if transfer is done by builder
-        if self._connector.DelegateTransferToBuilder():
-            self.logger.write(_("Transfer is ensured by build system.\n"))
-            return builder.Transfer(self._connector)
-
         # recover md5 from last build
         MD5 = builder.GetBinaryMD5()
 
@@ -2110,6 +2123,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Failed : Must build before transfer.\n"))
             return False
+
+        # Check if transfer is done by builder
+        if self._connector.DelegateTransferToBuilder():
+            self.logger.write(_("Transfer is ensured by build system.\n"))
+            return builder.Transfer(self._connector)
+
 
         # Compare PLC project with PLC on target
         if self._connector.MatchMD5(MD5):
@@ -2139,10 +2158,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # arbitrarily use MD5 as a seed, could be any string
             object_blob = self._connector.BlobFromFile(object_path, MD5)
         except IOError as e:
-            self.HidePLCProgress()
             self.logger.write_error(repr(e))
         else:
-            self.HidePLCProgress()
             self.logger.write(_("PLC data transfered successfully.\n"))
 
             if self._connector.NewPLC(MD5, object_blob, extrafiles):

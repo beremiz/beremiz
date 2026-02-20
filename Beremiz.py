@@ -255,6 +255,10 @@ class BeremizIDELauncher(object):
             # and not in a popup window
             self.InstallExceptionHandler()
         self.MainLoop()
+        # Skip Python finalization to avoid SIP double-free crash
+        # in sipOMFinalise: GTK destroys child C++ widgets during frame
+        # destruction, but SIP's object map retains stale pointers.
+        os._exit(0)
 
 
 if __name__ == '__main__':

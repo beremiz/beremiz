@@ -1,6 +1,5 @@
 #include <string.h>
-#include <fstream>
-#include <iostream>
+#include <stdio.h>
 #include <vector>
 
 #include "PLCObject.hpp"
@@ -76,9 +75,8 @@ uint32_t PLCObject::AppendChunkToBlob(
 uint32_t PLCObject::AutoLoad()
 {
     // Load PLC object
-#ifndef LOG_DEBUG_ERPC
     LogMessage(LOG_INFO, "Autoload PLC");
-#endif
+
     uint32_t res = LoadPLC();
     if (res != 0)
     {
@@ -104,14 +102,12 @@ uint32_t PLCObject::GetLogMessage(
     uint8_t level, uint32_t msgID, log_message *message)
 {
     char buf[LOG_READ_BUFFER_SIZE];
-    uint32_t tick;
-    uint32_t tv_sec;
-    uint32_t tv_nsec;
+    uint32_t tick = 0;
+    uint32_t tv_sec = 0;
+    uint32_t tv_nsec = 0;
 
-    uint32_t resultLen;
-    if(m_status.PLCstatus == Empty){
-        resultLen = 0;
-    } else {
+    uint32_t resultLen = 0;
+    if(m_PLCSyms.GetLogMessage){
         resultLen = m_PLCSyms.GetLogMessage(
             level, msgID, buf, LOG_READ_BUFFER_SIZE - 1,
             &tick, &tv_sec, &tv_nsec);
@@ -217,9 +213,6 @@ uint32_t PLCObject::GetTraceVariables(
     {
 
         if (traces->traces.elements == NULL) {
-#ifndef LOG_DEBUG_ERPC
-            LogMessage(LOG_INFO, "Trace elements are none");
-#endif
             traces->traces.elementsCount = 0;
             TraceMutexUnlock();
             return 0;
@@ -275,9 +268,7 @@ uint32_t PLCObject::NewPLC(
 {
     uint32_t res;
 
-#ifndef LOG_DEBUG_ERPC
     LogMessage(LOG_INFO, "New PLC");
-#endif
 
     if(m_status.PLCstatus == Started)
     {
@@ -301,13 +292,13 @@ uint32_t PLCObject::NewPLC(
     }
 
     // Load the PLC object
-    res = AutoLoad();
+    res = LoadPLC();
     if (res != 0)
     {
-        LogMessage(LOG_CRITICAL, "Autoload failed");
-        *success = false;
+        m_status.PLCstatus = Empty;
         return res;
     }
+    m_status.PLCstatus = Stopped;
 
     //Default state after trnasfer is Stopped
     res = m_PLCSyms.stopPLC();
@@ -369,12 +360,6 @@ uint32_t PLCObject::SeedBlob(const binary_t *seed, binary_t *blobID)
     // Create a blob with given seed
     // Output new blob's md5 into blobID
     // Return 0 if success
-#ifndef LOG_DEBUG_ERPC
-    LogMessage(LOG_INFO, "PLC transfer init");
-#endif
-
-    // Unload the PLC object
-    UnLoadPLC();
 
     Blob *blob = NULL;
     blob = NewBlob();
@@ -483,6 +468,7 @@ uint32_t PLCObject::StartPLC(void)
     uint32_t res = m_PLCSyms.startPLC(m_argc, m_argv);
     if(res != 0)
     {
+        LogMessage(LOG_CRITICAL, "Failed to start PLC");
         m_status.PLCstatus = Broken;
         return res;
     }
@@ -515,7 +501,7 @@ uint32_t PLCObject::LogMessage(uint8_t level, std::string message)
     // if PLC isn't loaded, log to stdout
     if(m_PLCSyms.LogMessage == NULL)
     {
-        std::cout << level << message << std::endl;
+        fprintf(stderr, "%d: %s\n", level, message.c_str());
         return ENOSYS;
     }
 
