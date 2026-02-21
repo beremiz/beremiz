@@ -10,6 +10,7 @@
 # See COPYING file for copyrights details.
 
 from __future__ import absolute_import
+from functools import cmp_to_key
 import os
 import shutil
 import csv
@@ -86,7 +87,7 @@ class EntryListFactory(object):
     def AddEntry(self, context, *args):
         index, subindex = map(lambda x: int(x[0]), args[:2])
         if len(args) > 9:
-		    new_entry_infos = {
+            new_entry_infos = {
             key: translate(arg[0]) if len(arg) > 0 else default
             for (key, translate, default), arg
             in zip(ENTRY_INFOS_KEYS, args)}
@@ -304,7 +305,7 @@ def SortGroupItems(group):
     for item in group["children"]:
         if item["type"] == ETHERCAT_GROUP:
             SortGroupItems(item)
-    group["children"].sort(GroupItemCompare)
+    group["children"].sort(key=cmp_to_key(GroupItemCompare))
 
 def ExtractPdoInfos(pdo, pdo_type, entries, limits=None):
     pdo_index = pdo.getIndex().getcontent()
@@ -450,7 +451,6 @@ for mapping needed location variables
                                 "devices": [],
                                 # add jblee for support Moduler Device Profile (MDP)
                                 "modules": []})
-                            })
 
                     for device in self.devices_xpath(self.modules_infos):
                         device_group = device.getGroupType()
@@ -555,10 +555,10 @@ for mapping needed location variables
         if self.Library is None:
             self.LoadModules()
         library = []
-        for vendor_id, vendor in self.Library.iteritems():
+        for vendor_id, vendor in self.Library.items():
             groups = []
             children_dict = {}
-            for group_type, group in vendor["groups"].iteritems():
+            for group_type, group in vendor["groups"].items():
                 group_infos = {"name": group["name"],
                                "order": group["order"],
                                "type": ETHERCAT_GROUP,
@@ -581,7 +581,7 @@ for mapping needed location variables
                         group_infos["children"].append(device_infos)
                         device_type_occurrences = device_dict.setdefault(device_type, [])
                         device_type_occurrences.append(device_infos)
-                for device_type_occurrences in device_dict.itervalues():
+                for device_type_occurrences in device_dict.values():
                     if len(device_type_occurrences) > 1:
                         for occurrence in device_type_occurrences:
                             occurrence["name"] += _(" (rev. %s)") % occurrence["infos"]["revision_number"]
@@ -596,7 +596,7 @@ for mapping needed location variables
                                 "type": ETHERCAT_VENDOR,
                                 "infos": None,
                                 "children": groups})
-        library.sort(lambda x, y: cmp(x["name"], y["name"]))
+        library.sort(key=lambda x: x["name"])
         return library
 
     def GetVendors(self):
@@ -606,7 +606,7 @@ for mapping needed location variables
         vendor = ExtractHexDecValue(module_infos["vendor"])
         vendor_infos = self.Library.get(vendor)
         if vendor_infos is not None:
-            for _group_name, group_infos in vendor_infos["groups"].iteritems():
+            for _group_name, group_infos in vendor_infos["groups"].items():
                 for device_type, device_infos in group_infos["devices"]:
                     product_code = ExtractHexDecValue(device_infos.getType().getProductCode())
                     revision_number = ExtractHexDecValue(device_infos.getType().getRevisionNo())
@@ -622,7 +622,7 @@ for mapping needed location variables
         vendor = ExtractHexDecValue(module_infos["vendor"])
         vendor_infos = self.Library.get(vendor)
         if vendor_infos is not None:
-            for group_name, group_infos in vendor_infos["groups"].iteritems():
+            for group_name, group_infos in vendor_infos["groups"].items():
                 return group_infos["modules"]
                 #for device_type, module_list, idx_inc, slot_inc in group_infos["modules"]:
                 #    return module_list, idx_inc, slot_inc
@@ -665,7 +665,7 @@ for mapping needed location variables
         extra_params = [param for param, _params_infos in self.MODULES_EXTRA_PARAMS]
         writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(['Vendor', 'product_code', 'revision_number'] + extra_params)
-        for (vendor, product_code, revision_number), module_extra_params in self.ModulesExtraParams.iteritems():
+        for (vendor, product_code, revision_number), module_extra_params in self.ModulesExtraParams.items():
             writer.writerow([vendor, product_code, revision_number] +
                             [module_extra_params.get(param, '')
                              for param in extra_params])

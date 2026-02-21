@@ -326,8 +326,12 @@ class _CommonSlave(object):
         """
         Clear the specified SDO entry information.
         """
-        for dummy in range(6):
-            self.SaveSDOData.append([])
+        self.SaveDatatypeDescription = []
+        self.SaveCommunicationObject = []
+        self.SaveManufacturerSpecific = []
+        self.SaveProfileSpecific = []
+        self.SaveReserved = []
+        self.SaveAllSDOData = []
 
     def GetAllSDOValuesFromSlave(self):
         """
@@ -886,7 +890,7 @@ class _CommonSlave(object):
             # get device identity from <Device>-<Type>
             # vendor ID; by default, pre-defined value in self.ModulesLibrary
             # if device type in 'vendor' item equals to actual slave device type, set 'vendor_id' to vendor ID.
-            for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+            for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
                 for available_device in vendor["groups"][vendor["groups"].keys()[0]]["devices"]:
                     if available_device[0] == type_infos["device_type"]:
                         smartview_infos["vendor_id"] = "0x" + "{:0>8x}".format(vendor_id)
@@ -1077,7 +1081,7 @@ class _CommonSlave(object):
 
             # get VendorID for EEPROM offset 0x0010-0x0013;
             data = ""
-            for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
+            for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
                 for available_device in vendor["groups"][vendor["groups"].keys()[0]]["devices"]:
                     if available_device[0] == type_infos["device_type"]:
                         data = "{:0>8x}".format(vendor_id)
@@ -1306,8 +1310,8 @@ class _CommonSlave(object):
         #  element2-2; <EtherCATInfo>-<Groups>-<Group>-<Type>
         if grouptypeflag is False:
             if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
-                    for group_type, group_etc in vendor["groups"].iteritems():
+                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
+                    for group_type, group_etc in vendor["groups"].items():
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_type
@@ -1330,8 +1334,8 @@ class _CommonSlave(object):
 
         #  element3; <EtherCATInfo>-<Descriptions>-<Groups>-<Group>-<Name(LcId is "1033")>
         if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-            for _vendorId, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
-                for group_type, group_etc in vendor["groups"].iteritems():
+            for _vendorId, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
+                for group_type, group_etc in vendor["groups"].items():
                     for device_item in group_etc["devices"]:
                         if device == device_item[1]:
                             data = group_etc["name"]
@@ -1394,8 +1398,8 @@ class _CommonSlave(object):
         #  element5-2; <EtherCATInfo>-<Descriptions>-<Groups>-<Group>-<Image16x14>
         if imageflag is False:
             if self.Controler.CTNParent.CTNParent.ModulesLibrary.Library is not None:
-                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.iteritems():
-                    for group_type, group_etc in vendor["groups"].iteritems():
+                for _vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
+                    for group_type, group_etc in vendor["groups"].items():
                         for device_item in group_etc["devices"]:
                             if device == device_item[1]:
                                 data = group_etc
@@ -1555,7 +1559,7 @@ class _CommonSlave(object):
         eeprom.append("01")  # Physical Layer Port info - assume 01
         #  CoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>
         coe_details = 1  # sdo enabled
-        with device.getMailbox() as mb
+        with device.getMailbox() as mb:
             if mb is not None:
                 coe = mb.getCoE()
                 if coe is not None:

@@ -11,6 +11,7 @@
 
 from __future__ import absolute_import
 from __future__ import division
+from functools import cmp_to_key
 import os
 
 from etherlab.EthercatSlave import ExtractHexDecValue, DATATYPECONVERSION, ExtractName
@@ -235,8 +236,8 @@ class _EthercatCFileGenerator(object):
         }
 
         # Initialize variable storing variable mapping state
-        for slave_entries in self.UsedVariables.itervalues():
-            for entry_infos in slave_entries.itervalues():
+        for slave_entries in self.UsedVariables.values():
+            for entry_infos in slave_entries.values():
                 entry_infos["mapped"] = False
 
         # Sort slaves by position (IEC_Channel)
@@ -491,8 +492,8 @@ class _EthercatCFileGenerator(object):
                         selected_pdos.append(pdo_index)
 
                 excluded_pdos = []
-                for exclusion_scope in exclusive_pdos.itervalues():
-                    exclusion_scope.sort(ExclusionSortFunction)
+                for exclusion_scope in exclusive_pdos.values():
+                    exclusion_scope.sort(key=cmp_to_key(ExclusionSortFunction))
                     start_excluding_index = 0
                     if exclusion_scope[0]["matching"] > 0:
                         selected_pdos.append(exclusion_scope[0]["index"])
@@ -548,8 +549,8 @@ class _EthercatCFileGenerator(object):
                         if entry_check_list and check_data in entry_check_list:
                             if (entry_infos["index"] == 0) or (entry_infos["name"] == None):
                                 pass
-                            else: 
-                        entry_infos.update(type_infos)
+                            else:
+                                entry_infos.update(type_infos)
                         entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                         entry_check_list.append(check_data)
                         
@@ -648,7 +649,7 @@ class _EthercatCFileGenerator(object):
                                 category_infos["max_index"] = max_index
                                 break
 
-                    for (index, subindex), entry_declaration in slave_variables.iteritems():
+                    for (index, subindex), entry_declaration in slave_variables.items():
 
                         if not entry_declaration["mapped"]:
                             entry = device_entries.get((index, subindex), None)
@@ -750,7 +751,7 @@ class _EthercatCFileGenerator(object):
 
                 str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
             
-            #for (index, subindex), entry_declaration in slave_variables.iteritems():
+            #for (index, subindex), entry_declaration in slave_variables.items():
             #    if not entry_declaration["mapped"]:
             #        message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
             #                        (index, subindex, type_infos["device_type"])

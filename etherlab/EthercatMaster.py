@@ -12,7 +12,7 @@
 
 import os
 from copy import deepcopy
-from functools import reduce
+from functools import reduce, cmp_to_key
 from lxml import etree
 
 import wx
@@ -39,7 +39,7 @@ from etherlab.EthercatSlave import \
 try:
     from etherlab.EthercatCIA402Slave import _EthercatCIA402SlaveCTN
     HAS_MCL = True
-except Exception:
+except Exception as e:
     HAS_MCL = False
 
 # --------------------------------------------------
@@ -172,7 +172,7 @@ if cls:
                 "Subindex": InitCmd.getSubIndex(),
                 "Value": InitCmd.getData(),
                 "Description": comment})
-        commands.sort(sort_commands)
+        commands.sort(key=cmp_to_key(sort_commands))
         return commands
     setattr(cls, "getStartupCommands", getStartupCommands)
 
