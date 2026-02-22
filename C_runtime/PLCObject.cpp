@@ -296,22 +296,12 @@ uint32_t PLCObject::NewPLC(
     if (res != 0)
     {
         m_status.PLCstatus = Empty;
+        *success = false;
         return res;
     }
     m_status.PLCstatus = Stopped;
 
-    //Default state after trnasfer is Stopped
-    res = m_PLCSyms.stopPLC();
-    if(res != 0)
-    {
-        m_status.PLCstatus = Broken;
-        *success = false;
-    } 
-    else
-    {
-        m_status.PLCstatus = Stopped;
-        *success = true;
-    }
+    *success = true;
     return 0;
 }
 
