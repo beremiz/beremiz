@@ -896,9 +896,9 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         # Calculate figure bounding box. Y coordinate is inverted in matplotlib
         # figure comparing to wx panel
         width, height = self.GetSize()
-        ax, ay, aw, ah = map(int, self.figure.gca().get_position().bounds)
-        bbox = wx.Rect(ax * width, height - (ay + ah) * height - 1,
-                       aw * width + 2, ah * height + 1)
+        ax, ay, aw, ah = self.figure.gca().get_position().bounds
+        bbox = wx.Rect(int(ax * width), height - int((ay + ah) * height) - 1,
+                       int(aw * width) + 2, int(ah * height) + 1)
 
         # If parent_coordinate, add Viewer position in parent
         if parent_coordinate:
