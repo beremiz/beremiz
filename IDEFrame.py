@@ -513,6 +513,8 @@ class IDEFrame(wx.Frame):
         self.AUIManager = wx.aui.AuiManager(self)
         self.AUIManager.SetDockSizeConstraint(0.5, 0.5)
         self.Panes = {}
+        # guard against deferred callbacks reaching AUIManager after UnInit()
+        self._closing = False
 
         self.LeftNoteBook = wx.aui.AuiNotebook(
             self, ID_PLCOPENEDITORLEFTNOTEBOOK,
@@ -932,6 +934,9 @@ class IDEFrame(wx.Frame):
 
         :param elements: List of elements to refresh.
         """
+        # CallAfter'd refreshes can fire after AUIManager.UnInit()
+        if self._closing:
+            return
         for element in elements:
             self.RefreshFunctions[element]()
 
@@ -940,6 +945,9 @@ class IDEFrame(wx.Frame):
 
         :param event: AUINotebook Event.
         """
+        # pending PAGE_CLOSED events can fire after AUIManager.UnInit()
+        if self._closing:
+            return
         if self.TabsOpened.GetPageCount() == 0:
             pane = self.AUIManager.GetPane(self.TabsOpened)
             # on wxPython 4.1.0, AuiPaneInfo has no "IsMaximized" attribute...

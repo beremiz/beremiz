@@ -181,6 +181,8 @@ class PLCOpenEditor(IDEFrame):
 
             self.SaveLastState()
 
+            # prevent deferred callbacks from calling AUIManager.Update()
+            self._closing = True
             self.AUIManager.UnInit()
             event.Skip()
         else:
