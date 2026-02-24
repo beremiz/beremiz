@@ -240,6 +240,8 @@ def SetupI18n():
 # Life is hard... have a candy.
 # pylint: disable=wrong-import-position,wrong-import-order
 if enablewx:
+    from util import SuppressGTKDiagnostics
+    SuppressGTKDiagnostics()
     try:
         import wx
         havewx = True
@@ -252,7 +254,6 @@ if enablewx:
         import wx.adv
 
         app = wx.App(redirect=False)
-        app.GTKSuppressDiagnostics()
         app.SetTopWindow(wx.Frame(None, -1))
 
         default_locale = None

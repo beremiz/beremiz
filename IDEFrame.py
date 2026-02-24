@@ -2164,7 +2164,6 @@ class IDEFrame(wx.Frame):
             EditorToolBar.Realize()
             self.AUIManager.GetPane("EditorToolBar").BestSize(EditorToolBar.GetBestSize())
             self.AUIManager.GetPane("EditorToolBar").Hide()
-            self.AUIManager.Update()
 
     def RefreshEditorToolBar(self):
         selected = self.TabsOpened.GetSelection()
@@ -2192,12 +2191,12 @@ class IDEFrame(wx.Frame):
                         self.CurrentEditorToolBar.append(id)
                 EditorToolBar.Realize()
                 self.AUIManager.GetPane("EditorToolBar").Show()
-                self.AUIManager.Update()
                 self.AUIManager.GetPane("EditorToolBar").BestSize(EditorToolBar.GetBestSize())
-                self.AUIManager.Update()
+            self.AUIManager.Update()
         elif menu is None:
             self.ResetEditorToolBar()
             self.CurrentMenu = menu
+            self.AUIManager.Update()
         self.ResetCurrentMode()
 
     # -------------------------------------------------------------------------------

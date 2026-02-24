@@ -27,11 +27,13 @@ import os
 import sys
 import getopt
 
+from util import SuppressGTKDiagnostics, SetDeveloperMode, SetSDKPath
+SuppressGTKDiagnostics()
+
 import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
-from util import SetDeveloperMode, SetSDKPath
 from dialogs.SDKManager import SDKManagerDialog
 
 
@@ -144,8 +146,6 @@ class BeremizIDELauncher(object):
             # on other platforms better to use the normal stdout and stderr
             redirect=self.devmode and sys.platform.startswith('win'))
         self.app.SetAppName('beremiz')
-        if not self.devmode:
-            self.app.GTKSuppressDiagnostics()
 
     def ShowSplashScreen(self):
         class Splash(AdvancedSplash):

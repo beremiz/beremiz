@@ -30,6 +30,9 @@ import os
 import sys
 import getopt
 
+from util import SuppressGTKDiagnostics
+SuppressGTKDiagnostics()
+
 import wx
 import wx.adv
 
