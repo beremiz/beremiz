@@ -751,6 +751,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.Editor.Bind(wx.EVT_LEAVE_WINDOW, self.OnLeaveViewer)
         self.Editor.Bind(wx.EVT_MOTION, self.OnViewerMotion)
         self.Editor.Bind(wx.EVT_CHAR, self.OnChar)
+        self.Editor.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnEditorCaptureLost)
         self.Editor.Bind(wx.EVT_SCROLLWIN, self.OnScrollWindow)
         self.Editor.Bind(wx.EVT_SCROLLWIN_THUMBRELEASE, self.OnScrollStop)
         self.Editor.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheelWindow)
@@ -2368,6 +2369,15 @@ class Viewer(EditorPanel, DebugViewer):
                         wx.CallAfter(self.SetCurrentCursor, 0)
             self.UpdateScrollPos(event)
         event.Skip()
+
+    def OnEditorCaptureLost(self, event):
+        """
+        Function called when mouse capture is lost on self.Editor
+        @param event: wx.MouseCaptureLostEvent
+        """
+        # Reset all mouse tracking state.
+        self.StartMousePos = None
+        self.StartScreenPos = None
 
     def OnLeaveViewer(self, event):
         if self.SelectedElement is not None and self.SelectedElement.GetDragging():
