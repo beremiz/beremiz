@@ -33,6 +33,12 @@ from threading import Timer, Lock, Thread, Semaphore, Condition
 import signal
 from util import GetDeveloperMode
 
+default_environ={}
+
+def SetDefaultEnv(env):
+    global default_environ
+    default_environ = env
+
 class outputThread(Thread):
     """
     Thread is used to print the output of a command to the stdout
@@ -79,6 +85,7 @@ class ProcessLogger(object):
                  timeout=None, outlimit=None, errlimit=None,
                  keyword=None, kill_it=False, cwd=None,
                  encoding=None, output_encoding=None, env=None, show_cmd=False):
+        global default_environ
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
@@ -110,6 +117,11 @@ class ProcessLogger(object):
         self.startsem = Semaphore(0)
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
+
+        if env is None:
+            env = os.environ.copy()
+
+        env.update(default_environ)
 
         popenargs = {
             "cwd":    os.getcwd() if cwd is None else cwd,

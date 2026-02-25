@@ -36,6 +36,10 @@ from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON
 import util.paths as paths
 from dialogs.SDKManager import SDKManagerDialog
 
+from util.ProcessLogger import SetDefaultEnv
+# BEremiz console doesn't support colors yet.
+SetDefaultEnv({"NO_COLOR":"1",
+               "GCC_COLORS":""})
 
 class BeremizIDELauncher(object):
     def __init__(self):
