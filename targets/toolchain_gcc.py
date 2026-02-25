@@ -147,7 +147,7 @@ class toolchain_gcc(Builder):
 
                     match = self.check_and_update_hash_and_deps(bn)
 
-                    if match:
+                    if match and os.path.exists(objectfilename):
                         self.CTRInstance.logger.write("   [pass]  "+bn+" -> "+obn+"\n")
                     else:
                         must_link = True
