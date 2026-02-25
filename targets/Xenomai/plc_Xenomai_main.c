@@ -118,6 +118,14 @@ int PLC_shutdown = 0;
 
 void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
 
+int ForceSaveRetainReq(void) {
+    return PLC_shutdown;
+}
+
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
+}
+
 void PLC_SetTimer(unsigned long long next, unsigned long long period)
 {
   RTIME current_time = rt_timer_read();

@@ -103,6 +103,10 @@ int ForceSaveRetainReq(void)
     return PLC_shutdown;
 }
 
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
+}
+
 void PLC_thread_proc(void *arg)
 {
     while (!PLC_shutdown) {

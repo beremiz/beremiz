@@ -68,6 +68,10 @@ int ForceSaveRetainReq(void) {
     return PLC_shutdown;
 }
 
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
+}
+
 /* Variable used to stop plcloop thread */
 void PlcLoop()
 {
