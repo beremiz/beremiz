@@ -24,10 +24,14 @@ def test(app):
     app.WaitIdleUI()
 
     app.doubleClick("Objects")
+ 
+    app.type(Key.ENTER)
 
     app.WaitIdleUI()
 
     app.doubleClick("TestObject")
+ 
+    app.type(Key.ENTER)
 
     app.dragNdrop(["TestIn", "Testln","Testin"], "output variables")
 
