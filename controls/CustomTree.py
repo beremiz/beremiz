@@ -52,6 +52,19 @@ def GetCurrentCheckedImage(self):
 
 CT.GenericTreeItem.GetCurrentCheckedImage = GetCurrentCheckedImage
 
+# Fix wxPython bug: ESC during tree label editing destroys the text control
+# synchronously inside the key press handler, causing a GTK assertion failure.
+# The Enter key path already uses wx.CallAfter(self.Finish) — do the same for ESC.
+_OriginalStopEditing = CT.TreeTextCtrl.StopEditing
+
+
+def _DeferredStopEditing(self):
+    self._owner.OnCancelEdit(self._itemEdited)
+    wx.CallAfter(self.Finish)
+
+
+CT.TreeTextCtrl.StopEditing = _DeferredStopEditing
+
 
 class CustomTree(CT.CustomTreeCtrl):
 
