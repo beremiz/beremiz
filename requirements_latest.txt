@@ -11,6 +11,7 @@ Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@fe14898bc3e8aaa2ff982b6
 pyOpenSSL
 pycountry
 # pyserial
+service_identity
 sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
 # Forced to version 4.2.1, the one used in latest Ubuntu LTS 24.04, to speed up build/tests
 wxPython==4.2.1

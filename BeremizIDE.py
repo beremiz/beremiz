@@ -711,7 +711,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 text, id = infos
                 submenu = wx.Menu('')
                 self.GenerateMenuRecursive(kind, submenu)
-                menu.AppendMenu(id, text, submenu)
+                menu.Append(id, text, submenu)
             elif kind == wx.ITEM_SEPARATOR:
                 menu.AppendSeparator()
             else:

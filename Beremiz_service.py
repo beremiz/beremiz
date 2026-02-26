@@ -253,6 +253,7 @@ if enablewx:
         import re
         import wx.adv
 
+        wx.Log.SetLogLevel(wx.LOG_Warning)
         app = wx.App(redirect=False)
         app.SetTopWindow(wx.Frame(None, -1))
 

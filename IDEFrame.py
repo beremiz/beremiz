@@ -2016,7 +2016,7 @@ class IDEFrame(wx.Frame):
                         self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "functionBlock"), new_item)
                     new_item = AppendMenu(change_menu, help='', kind=wx.ITEM_NORMAL, text=_("Program"))
                     self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "program"), new_item)
-                    menu.AppendMenu(wx.ID_ANY, _("Duplicate as..."), change_menu)
+                    menu.Append(wx.ID_ANY, _("Duplicate as..."), change_menu)
 
             elif item_infos["type"] == ITEM_CONFIGURATION:
                 menu = wx.Menu(title='')

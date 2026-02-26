@@ -636,13 +636,13 @@ class DataTypeEditor(EditorPanel):
             for base_type in self.Controler.GetBaseTypes():
                 new_entry = AppendMenu(base_menu, help='', kind=wx.ITEM_NORMAL, text=base_type)
                 self.Bind(wx.EVT_MENU, self.GetElementTypeFunction(base_type), new_entry)
-            type_menu.AppendMenu(wx.ID_ANY, _("Base Types"), base_menu)
+            type_menu.Append(wx.ID_ANY, _("Base Types"), base_menu)
 
             datatype_menu = wx.Menu(title='')
             for datatype in self.Controler.GetDataTypes(self.TagName, False):
                 new_entry = AppendMenu(datatype_menu, help='', kind=wx.ITEM_NORMAL, text=datatype)
                 self.Bind(wx.EVT_MENU, self.GetElementTypeFunction(datatype), new_entry)
-            type_menu.AppendMenu(wx.ID_ANY, _("User Data Types"), datatype_menu)
+            type_menu.Append(wx.ID_ANY, _("User Data Types"), datatype_menu)
 
             new_entry = AppendMenu(type_menu, help='', kind=wx.ITEM_NORMAL, text=_("Array"))
             self.Bind(wx.EVT_MENU, self.ElementArrayTypeFunction, new_entry)

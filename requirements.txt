@@ -31,6 +31,7 @@ pyOpenSSL==25.1.0
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 pytz==2025.2
+service_identity==24.2.0
 setuptools==80.9.0
 six==1.17.0
 sortedcontainers==2.4.0

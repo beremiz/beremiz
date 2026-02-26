@@ -34,6 +34,7 @@ from util import SuppressGTKDiagnostics
 SuppressGTKDiagnostics()
 
 import wx
+wx.Log.SetLogLevel(wx.LOG_Warning)
 import wx.adv
 
 import version

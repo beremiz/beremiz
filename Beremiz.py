@@ -31,6 +31,7 @@ from util import SuppressGTKDiagnostics, SetDeveloperMode, SetSDKPath
 SuppressGTKDiagnostics()
 
 import wx
+wx.Log.SetLogLevel(wx.LOG_Warning)
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
