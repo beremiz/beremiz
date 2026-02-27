@@ -388,7 +388,7 @@ void __publish_%(location_str)s(void){
     passing_changes_to_python |= some_change_found;
     // call python part if there was at least a change
     if(passing_changes_to_python){
-        PYTHON_POLL_body__(__%(location_str)s_notifier);
+        __PythonEvalFB(1,__%(location_str)s_notifier);
         passing_changes_to_python &= !(__GET_VAR(__%(location_str)s_notifier->ACK,));
     }
 }
