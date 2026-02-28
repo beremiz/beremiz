@@ -680,19 +680,18 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
 
     def RefreshRecentProjectsMenu(self):
+        
+        if self.RecentProjectsMenu.GetMenuItemCount() > 0:
+            return
         try:
             recent_projects = list(map(DecodeFileSystemPath,
                                   self.GetConfigEntry("RecentProjects", [])))
         except Exception:
             recent_projects = []
 
-        while self.RecentProjectsMenu.GetMenuItemCount() > 0:
-            item = self.RecentProjectsMenu.FindItemByPosition(0)
-            self.RecentProjectsMenu.Remove(item)
-
         self.RecentProjectsMenuItem.Enable(len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
-            text = '&%d: %s' % (idx + 1, projectpath)
+            text = '&%d: %s' % (idx + 1, os.path.basename(projectpath))
 
             item = self.RecentProjectsMenu.Append(wx.ID_ANY, text, '')
             self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), item)
@@ -821,6 +820,11 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         self.Log.flush()
         self.DebugVariablePanel.SetDataProducer(None)
         self.ResetConnectionStatusBar()
+        
+        # Clear recent project menus
+        while self.RecentProjectsMenu.GetMenuItemCount() > 0:
+            item = self.RecentProjectsMenu.FindItemByPosition(0)
+            self.RecentProjectsMenu.Remove(item)
 
     def RefreshConfigRecentProjects(self, projectpath, err=False):
         try:
