@@ -628,6 +628,8 @@ elif havewx:
     except KeyboardInterrupt:
         pass
 
+    runtime.MainWorker.stop()
+
 else:
     try:
         # blocking worker loop

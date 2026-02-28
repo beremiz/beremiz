@@ -76,7 +76,9 @@ class worker(object):
         self.free.notify()
 
         while not self._finish:
-            self.todo.wait_for(lambda: self.job is not None)
+            self.todo.wait_for(lambda: self.job is not None or self._finish)
+            if self._finish:
+                break
             self.job.do()
             self.done.notify()
             self.job = None
@@ -116,7 +118,7 @@ class worker(object):
             self.free.notify()
 
             while not self._finish:
-                self.todo.wait_for(lambda: self.job is not None)
+                self.todo.wait_for(lambda: self.job is not None or self._finish)
                 if self._finish:
                     break
                 waker(do_pending_job)
