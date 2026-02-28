@@ -12,11 +12,8 @@
 
 import os
 import re
-import operator
-import hashlib
 import subprocess
 import shlex
-from functools import reduce
 from util.ProcessLogger import ProcessLogger
 from targets.Builder import Builder
 
@@ -69,36 +66,45 @@ class toolchain_gcc(Builder):
         if Builder.SetBuildPath(self, buildpath):
             self.srcmd5 = {}
 
-    def append_cfile_deps(self, srcname, deps):
-        src = open(os.path.join(self.buildpath, srcname), "r").read()
-        for l in src.splitlines():
-            res = includes_re.match(l)
-            if res is not None:
-                depfn = res.groups()[0]
-                if os.path.exists(os.path.join(self.buildpath, depfn)):
-                    deps.append(depfn)
+    def _collect_includes(self, bn, files, visited, buildpath_real):
+        if bn in visited:
+            return
+        visited.add(bn)
+
+        filepath = os.path.join(self.buildpath, bn)
+        if not os.path.realpath(filepath).startswith(buildpath_real):
+            return
+        if not os.path.isfile(filepath):
+            return
+
+        files.append(bn)
+
+        with open(filepath, "r") as f:
+            for line in f:
+                res = includes_re.match(line)
+                if res is not None:
+                    self._collect_includes(res.group(1), files, visited, buildpath_real)
 
     def check_and_update_hash_and_deps(self, bn):
-        # Get latest computed hash and deps
-        oldhash, deps = self.srcmd5.get(bn, (None, []))
-        # read source
-        src = os.path.join(self.buildpath, bn)
-        if not os.path.exists(src):
+        # Collect source and all transitive includes within build directory
+        files = []
+        self._collect_includes(bn, files, set(),
+                               os.path.realpath(self.buildpath) + os.sep)
+
+        if not files:
             return False
-        # compute new hash
-        newhash = self.compute_file_md5(src)
-        # compare
-        match = (oldhash == newhash)
-        if not match:
-            # file have changed
-            # update direct dependencies
-            deps = []
-            self.append_cfile_deps(src, deps)
-            # store that hashand deps
-            self.srcmd5[bn] = (newhash, deps)
-        # recurse through deps
-        # TODO detect cicular deps.
-        return reduce(operator.and_, list(map(self.check_and_update_hash_and_deps, deps)), match)
+
+        # Compute combined hash of all collected files
+        newhash = self.compute_file_md5(
+            [os.path.join(self.buildpath, f) for f in sorted(files)])
+
+        # Compare with cached hash
+        oldhash = self.srcmd5.get(bn)
+        if oldhash == newhash:
+            return True
+
+        self.srcmd5[bn] = newhash
+        return False
 
     def build(self):
         # Retrieve compiler and linker
