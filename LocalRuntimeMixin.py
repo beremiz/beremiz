@@ -48,12 +48,15 @@ class LocalRuntimeMixin():
 
     def KillLocalRuntime(self):
         if self.local_runtime is not None:
+            # Prevent background threads from writing to the log
+            # widget after the UI is torn down.
+            self.local_runtime.logger = None
             # shutdown local runtime
             self.local_runtime.kill(gently=False)
             # clear temp dir
             try:
                 shutil.rmtree(self.local_runtime_tmpdir)
-            except:
+            except Exception:
                 pass
 
             self.local_runtime = None

@@ -603,6 +603,10 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
     def TryCloseFrame(self):
         global ToDoBeforeQuit
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
+            # set _closing early so that deferred callbacks posted during
+            # cleanup (_Disconnect, KillLocalRuntime) won't reach AUIManager
+            # after UnInit() — prevents SIGSEGV in AUIManager.Update().
+            self._closing = True
             if self.CTR is not None:
                 self.CTR.KillDebugThread()
                 self.CTR._Disconnect()
@@ -619,8 +623,6 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def OnCloseFrame(self, event):
         if self.TryCloseFrame():
-            # prevent deferred callbacks from calling AUIManager.Update()
-            self._closing = True
             self.LogConsole.Disconnect(-1, -1, wx.wxEVT_KILL_FOCUS)
             self.AUIManager.UnInit()
             event.Skip()
@@ -726,6 +728,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         self.AUIManager.Update()
 
     def RefreshStatusToolBar(self):
+        if self._closing:
+            return
         StatusToolBar = self.Panes["StatusToolBar"]
         StatusToolBar.ClearTools()
         StatusToolBar.SetMinSize(StatusToolBar.GetToolBitmapSize())
