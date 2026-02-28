@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2023-03-11T14:33:27"/>
-  <contentHeader name="Unnamed" modificationDateTime="2024-11-28T11:40:10">
+  <contentHeader name="Unnamed" modificationDateTime="2026-02-27T10:18:14">
     <coordinateInfo>
       <fbd>
         <scaling x="8" y="8"/>
@@ -2604,11 +2604,46 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
   <instances>
     <configurations>
       <configuration name="config">
-        <resource name="resource1">
+        <resource name="resourceA">
+          <task name="plc_task" priority="1" interval="T#100ms">
+            <pouInstance name="instance0" typeName="main_test"/>
+          </task>
+          <globalVars>
+            <variable name="ResourceGlobal">
+              <type>
+                <DINT/>
+              </type>
+              <initialValue>
+                <simpleValue value="1"/>
+              </initialValue>
+            </variable>
+          </globalVars>
+        </resource>
+        <resource name="resourceB">
           <task name="task0" priority="0" interval="T#20ms">
             <pouInstance name="instance0" typeName="main_test"/>
           </task>
+          <globalVars>
+            <variable name="ResourceGlobal">
+              <type>
+                <DINT/>
+              </type>
+              <initialValue>
+                <simpleValue value="2"/>
+              </initialValue>
+            </variable>
+          </globalVars>
         </resource>
+        <globalVars constant="true">
+          <variable name="ResetCounterValue">
+            <type>
+              <INT/>
+            </type>
+            <initialValue>
+              <simpleValue value="17"/>
+            </initialValue>
+          </variable>
+        </globalVars>
       </configuration>
     </configurations>
   </instances>
