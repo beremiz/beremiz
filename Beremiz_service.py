@@ -655,4 +655,4 @@ if havetwisted:
 elif havewx:
     app.ExitMainLoop()
 
-sys.exit(0)
+os._exit(0)
