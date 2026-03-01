@@ -443,9 +443,8 @@ class ViewerDropTarget(wx.TextDropTarget):
                 child_path += "[%s]" % ",".join([str(dimension[0]) for dimension in child_dimensions])
                 child_name += "[]"
 
-            item = self.AppendItem(menu,
-                child_name,
-                self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type))
+            item = menu.Append(wx.ID_ANY, child_name, kind=wx.ITEM_NORMAL)
+            self.ParentWindow.Bind(wx.EVT_MENU, self.GetAddVariableBlockFunction(x, y, scaling, var_class, child_path, child_type), item)
             if len(child_tree) > 0:
                 child_menu = wx.Menu(title='')
                 self.GenerateTreeMenu(x, y, scaling, child_menu, child_path, var_class, child_tree)
