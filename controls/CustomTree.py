@@ -65,6 +65,21 @@ def _DeferredStopEditing(self):
 
 CT.TreeTextCtrl.StopEditing = _DeferredStopEditing
 
+# Fix wxPython4/wxGTK bug: during AUI sash drag, OnInternalIdle can trigger
+# CaptureMouse on a window that already has capture, causing an assertion
+# failure that leaves the IDE unresponsive.
+# Guard against older wx versions that do not define OnInternalIdle on this class.
+if hasattr(CT.CustomTreeCtrl, 'OnInternalIdle'):
+    _OriginalOnInternalIdle = CT.CustomTreeCtrl.OnInternalIdle
+
+    def _SafeOnInternalIdle(self):
+        try:
+            _OriginalOnInternalIdle(self)
+        except wx.wxAssertionError:
+            pass
+
+    CT.CustomTreeCtrl.OnInternalIdle = _SafeOnInternalIdle
+
 
 class CustomTree(CT.CustomTreeCtrl):
 
