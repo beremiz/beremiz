@@ -57,7 +57,7 @@ RUN env echo -e '[Settings]\ngtk-font-name=FreeSans,12\ngtk-theme-name=Materia\n
 
 RUN set -xe && \
     wget -qP /usr/local/bin \
-        https://oss.sonatype.org/service/local/repositories/snapshots/content/com/sikulix/sikulixidelux/2.0.6-SNAPSHOT/sikulixidelux-2.0.6-20230417.154102-17.jar && \
+        https://github.com/beremiz/SikuliX1/releases/download/2.0.6-20230417/sikulixidelux-2.0.6-20230417.154102-17.jar && \
     echo 205551891355da0a54db9924db9b2b36 /usr/local/bin/sikulixidelux-2.0.6-20230417.154102-17.jar | md5sum -c && \
     ( echo '#!/bin/sh' && \
       echo "exec java -jar /usr/local/bin/sikulixidelux-2.0.6-20230417.154102-17.jar \"\$@\"" \
