@@ -238,7 +238,8 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
         for name, bitmap, help in [
                 ("CurrentButton",     "current",      _("Go to current value")),
-                ("ExportGraphButton", "export_graph", _("Export graph values to clipboard"))]:
+                ("ExportGraphButton", "export_graph", _("Export graph values to clipboard")),
+                ("ClearAllButton",    "delete_graph", _("Remove all variables"))]:
             button = wx.lib.buttons.GenBitmapButton(
                 self, bitmap=GetBitmap(bitmap),
                 size=wx.Size(28, 28), style=wx.NO_BORDER)
@@ -692,6 +693,11 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
                      for item in items
                      if item.IsNumVariable()]
         wx.CallAfter(self.CopyDataToClipboard, variables)
+        event.Skip()
+
+    def OnClearAllButton(self, event):
+        self.ResetView()
+        self.ForceRefresh()
         event.Skip()
 
     def OnPositionChanging(self, event):
