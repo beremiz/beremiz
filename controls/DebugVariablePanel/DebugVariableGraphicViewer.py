@@ -269,6 +269,22 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
         FigureCanvas.__init__(self, parent, -1, self.Figure)
         self.SetWindowStyle(wx.WANTS_CHARS)
 
+        # Override matplotlib's _set_capture to tolerate wxGTK/AUI capture-stack
+        # corruption: ReleaseMouse() asserts if this window is not top of stack
+        # (e.g. during AUI sash drag), leaving the IDE unresponsive.
+        def _safe_set_capture(capture=True):
+            try:
+                if self.HasCapture():
+                    self.ReleaseMouse()
+            except wx.wxAssertionError:
+                pass
+            if capture:
+                try:
+                    self.CaptureMouse()
+                except wx.wxAssertionError:
+                    pass
+        self._set_capture = _safe_set_capture
+
         # Bind wx events
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnLeftDClick)
         self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
@@ -984,7 +1000,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
 
         # Add 3D projection if graph is in 3D
         if self.Is3DCanvas():
-            self.Axes = self.Figure.gca(projection='3d')
+            self.Axes = self.Figure.add_subplot(111, projection='3d')
             self.SetAxesColor(['b'])
 
             # Override function to prevent too much refresh when graph is
@@ -999,7 +1015,7 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
             self.Axes.tick_params(axis='z', labelsize='small')
 
         else:
-            self.Axes = self.Figure.gca()
+            self.Axes = self.Figure.add_subplot(111)
             self.SetAxesColor(COLOR_CYCLE)
 
         # Set size of X and Y axis labels
@@ -1261,8 +1277,8 @@ class DebugVariableGraphicViewer(DebugVariableViewer, FigureCanvas):
                 # Graph is orthogonal 3D
                 else:
                     # Remove all plots already defined in 3D canvas
-                    while len(self.Axes.lines) > 0:
-                        self.Axes.lines.pop()
+                    for line in self.Axes.lines[:]:
+                        line.remove()
 
                     # Get data and range for third variable (Z coordinate)
                     z_data, z_min, z_max = items[2].GetDataAndValueRange(
