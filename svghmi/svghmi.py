@@ -6,8 +6,9 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import os
+import sys
 import shutil
 import hashlib
 import shlex
@@ -43,20 +44,22 @@ ScriptDirectory = paths.AbsDir(__file__)
 # note: this only works because library's Generate_C is
 #       systematicaly invoked before CTN's CTNGenerate_C
 
-hmi_tree_root = None
-
-on_hmitree_update = None
-
-maxConnectionsTotal = 0
 
 class SVGHMILibrary(POULibrary):
+
+    hmi_tree_root = None
+
+    maxConnectionsTotal = 0
+
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def GetLibraryPath(self):
          return paths.AbsNeighbourFile(__file__, "pous.xml")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
-        global hmi_tree_root, on_hmitree_update, maxConnectionsTotal
 
-        maxConnectionsTotal = 0
+        self.maxConnectionsTotal = 0
 
         already_found_watchdog = False
         found_SVGHMI_instance = False
@@ -64,7 +67,7 @@ class SVGHMILibrary(POULibrary):
             if isinstance(CTNChild, SVGHMI):
                 found_SVGHMI_instance = True
                 # collect maximum connection total for all svghmi nodes
-                maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
+                self.maxConnectionsTotal += CTNChild.GetParamsAttributes("SVGHMI.MaxConnections")["value"]
 
                 # spot watchdog abuse
                 if CTNChild.GetParamsAttributes("SVGHMI.EnableWatchdog")["value"]:
@@ -113,14 +116,14 @@ class SVGHMILibrary(POULibrary):
         # Filter known HMI types
         hmi_types_instances = [v for v in varlist if v["derived"] in HMI_TYPES]
 
-        hmi_tree_root = None
+        self.hmi_tree_root = None
 
         # take first HMI_NODE (placed as special node), make it root
         for i,v in enumerate(hmi_types_instances):
             path = v["IEC_path"].split(".")
             derived = v["derived"]
             if derived == "HMI_NODE":
-                hmi_tree_root = HMITreeNode(path, "", derived, v["type"], v["vartype"], v["C_path"])
+                self.hmi_tree_root = HMITreeNode(path, "", derived, v["type"], v["vartype"], v["C_path"])
                 hmi_types_instances.pop(i)
                 break
 
@@ -143,7 +146,7 @@ class SVGHMILibrary(POULibrary):
             else:
                 name = path[-1]
             new_node = HMITreeNode(path, name, derived, v["type"], vartype, v["C_path"], **kwargs)
-            placement_result = hmi_tree_root.place_node(new_node)
+            placement_result = self.hmi_tree_root.place_node(new_node)
             if placement_result is not None:
                 cause, problematic_node = placement_result
                 if cause == "Non_Unique":
@@ -170,8 +173,7 @@ class SVGHMILibrary(POULibrary):
 
                 self.FatalError("SVGHMI : " + message)
 
-        if on_hmitree_update is not None:
-            on_hmitree_update(hmi_tree_root)
+        self.on_hmitree_update()
 
         variable_decl_array = []
         extern_variables_declarations = []
@@ -181,7 +183,7 @@ class SVGHMILibrary(POULibrary):
 
         hearbeat_IEC_path = ['CONFIG', 'HEARTBEAT']
 
-        for node in hmi_tree_root.traverse():
+        for node in self.hmi_tree_root.traverse():
             if not found_heartbeat and node.path == hearbeat_IEC_path:
                 hmi_tree_hearbeat_index = item_count
                 found_heartbeat = True
@@ -204,20 +206,22 @@ class SVGHMILibrary(POULibrary):
                 if len(node.path) == 1:
                     extern_variables_declarations += [
                         "extern __IEC_" + node.iectype + "_" +
-                        "t" if node.vartype is "VAR" else "p"
+                        "t" if node.vartype == "VAR" else "p"
                         + node.cpath + ";"]
 
         assert(found_heartbeat)
 
         # TODO : filter only requiered external declarations
-        for v in varlist:
-            if v["C_path"].find('.') < 0:
-                extern_variables_declarations += [
-                    "extern %(type)s %(C_path)s;" % v]
-
-        # TODO check if programs need to be declared separately
-        # "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
-        #                                     p for p in self._ProgramList]),
+        extern_variables_declarations += [
+                {
+                    "EXT": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "IN":  "extern __IEC_%(type)s_p %(C_path)s;",
+                    "MEM": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "OUT": "extern __IEC_%(type)s_p %(C_path)s;",
+                    "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
+                    "FB":  "extern %(type)s_data__ %(C_path)s;"
+                }[v["vartype"]] % v
+                for v in varlist if v["C_path"].find('.') < 0]
 
         # C code to observe/access HMI tree variables
         svghmi_c_filepath = paths.AbsNeighbourFile(__file__, "svghmi.c")
@@ -231,8 +235,8 @@ class SVGHMILibrary(POULibrary):
             "item_count": item_count,
             "var_access_code": targets.GetCode("var_access.c"),
             "PLC_ticktime": self.GetCTR().GetTicktime(),
-            "hmi_hash_ints": ",".join(map(str,hmi_tree_root.hash())),
-            "max_connections": maxConnectionsTotal
+            "hmi_hash_ints": ",".join(map(str,self.hmi_tree_root.hash())),
+            "max_connections": self.maxConnectionsTotal
             }
 
         gen_svghmi_c_path = os.path.join(buildpath, "svghmi.c")
@@ -253,7 +257,7 @@ class SVGHMILibrary(POULibrary):
         # Backup HMI Tree in XML form so that it can be loaded without building
         hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
         hmitree_backup_file = open(hmitree_backup_path, 'wb')
-        hmitree_backup_file.write(etree.tostring(hmi_tree_root.etree()))
+        hmitree_backup_file.write(etree.tostring(self.hmi_tree_root.etree()))
         hmitree_backup_file.close()
 
         return ((["svghmi"], [(gen_svghmi_c_path, IECCFLAGS)], True), "",
@@ -267,15 +271,18 @@ class SVGHMILibrary(POULibrary):
         return [(name, iec_type, "") for name, iec_type in SPECIAL_NODES]
 
 
+    registered_uis = []
+    def on_hmitree_update(self):
+        for uiref in self.registered_uis[:]:
+            obj = uiref()
+            if obj is None:
+                self.registered_uis.remove(uiref)
+            else:
+                obj.HMITreeUpdate(self.hmi_tree_root)
 
-def Register_SVGHMI_UI_for_HMI_tree_updates(ref):
-    global on_hmitree_update
-    def HMITreeUpdate(_hmi_tree_root):
-        obj = ref()
-        if obj is not None:
-            obj.HMITreeUpdate(_hmi_tree_root)
 
-    on_hmitree_update = HMITreeUpdate
+    def Register_SVGHMI_UI_for_HMI_tree_updates(self, uiref):
+        self.registered_uis.append(uiref)
 
 
 class SVGHMIEditor(ConfTreeNodeEditor):
@@ -287,25 +294,30 @@ class SVGHMIEditor(ConfTreeNodeEditor):
         self.Controler = controler
 
     def CreateSVGHMI_UI(self, parent):
-        global hmi_tree_root
+        ctroot = self.Controler.GetCTRoot()
+        svghmilib = ctroot.Libraries["SVGHMI"]
 
-        if hmi_tree_root is None:
-            buildpath = self.Controler.GetCTRoot()._getBuildPath()
+        if svghmilib.hmi_tree_root is None:
+            buildpath = ctroot._getBuildPath()
             hmitree_backup_path = os.path.join(buildpath, "hmitree.xml")
             if os.path.exists(hmitree_backup_path):
                 hmitree_backup_file = open(hmitree_backup_path, 'rb')
-                hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
+                svghmilib.hmi_tree_root = HMITreeNode.from_etree(etree.parse(hmitree_backup_file).getroot())
 
-        ret = SVGHMI_UI(parent, self.Controler, Register_SVGHMI_UI_for_HMI_tree_updates)
+        ret = SVGHMI_UI(parent, self.Controler, svghmilib.Register_SVGHMI_UI_for_HMI_tree_updates)
 
-        on_hmitree_update(hmi_tree_root)
+        svghmilib.on_hmitree_update()
 
         return ret
 
-if wx.Platform == '__WXMSW__':
+if sys.platform.startswith('win'):
     default_cmds={
         "launch":"cmd.exe /c 'start msedge {url}'",
         "watchdog":"cmd.exe /k 'echo watchdog for {url} !'"}
+elif "SNAP" in os.environ:
+    default_cmds={
+        "launch":"xdg-open {url}",
+        "watchdog":"echo Watchdog for {name} !"}
 else:
     default_cmds={
         "launch":"chromium {url}",
@@ -319,6 +331,7 @@ class SVGHMI(object):
           <xsd:attribute name="OnStart" type="xsd:string" use="optional" default="%(launch)s"/>
           <xsd:attribute name="OnStop" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="OnWatchdog" type="xsd:string" use="optional" default="%(watchdog)s"/>
+          <xsd:attribute name="SuppressBrowserOutput" type="xsd:boolean" use="optional" default="true"/>
           <xsd:attribute name="EnableWatchdog" type="xsd:boolean" use="optional" default="false"/>
           <xsd:attribute name="WatchdogInitial" use="optional" default="30">
             <xsd:simpleType>
@@ -391,6 +404,18 @@ class SVGHMI(object):
             "tooltip": _("Remove font previously added to HMI"),
             "method":   "_DelFont"
         },
+        {
+            "bitmap":    "AddFile",
+            "name":    _("Add File"),
+            "tooltip": _("Add file to be served for HMI"),
+            "method":   "_AddFile"
+        },
+        {
+            "bitmap":    "DelFile",
+            "name":    _("Delete File"),
+            "tooltip": _("Remove file previously added to HMI"),
+            "method":   "_DelFile"
+        },
     ]
 
     def _getSVGpath(self, project_path=None):
@@ -422,13 +447,13 @@ class SVGHMI(object):
         InkscapeGeomColumns = ["Id", "x", "y", "w", "h"]
 
         inkpath = get_inkscape_path()
-
         if inkpath is None:
             self.FatalError("SVGHMI: inkscape is not installed.")
 
+        inkpath = inkpath.decode()
         svgpath = self._getSVGpath()
         status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
-                                                     '"' + inkpath + '" -S "' + svgpath + '"',
+                                                     [inkpath, '-S', svgpath],
                                                      no_stdout=True,
                                                      no_stderr=True).spin()
         if status != 0:
@@ -438,7 +463,7 @@ class SVGHMI(object):
         for line in result.split():
             strippedline = line.strip()
             attrs = dict(
-                zip(InkscapeGeomColumns, line.strip().split(',')))
+                list(zip(InkscapeGeomColumns, line.strip().split(','))))
 
             res.append(etree.Element("bbox", **attrs))
 
@@ -446,9 +471,10 @@ class SVGHMI(object):
         return res
 
     def GetHMITree(self):
-        global hmi_tree_root
+        ctroot = self.GetCTRoot()
+        svghmilib = ctroot.Libraries["SVGHMI"]
         self.ProgressStart("hmitree", "getting HMI tree")
-        res = [hmi_tree_root.etree(add_hash=True)]
+        res = [svghmilib.hmi_tree_root.etree(add_hash=True)]
         self.ProgressEnd("hmitree")
         return res
 
@@ -523,7 +549,10 @@ class SVGHMI(object):
             url=url)
 
     def CTNGenerate_C(self, buildpath, locations):
-        global hmi_tree_root
+        ctroot = self.GetCTRoot()
+        svghmilib = ctroot.Libraries["SVGHMI"]
+        hmi_tree_root = svghmilib.hmi_tree_root
+        
 
         if hmi_tree_root is None:
             self.FatalError("SVGHMI : Library is not selected. Please select it in project config.")
@@ -541,7 +570,22 @@ class SVGHMI(object):
         target_path = os.path.join(build_path, target_fname)
         hash_path = os.path.join(build_path, "svghmi_"+location_str+".md5")
 
-        self.GetCTRoot().logger.write("SVGHMI:\n")
+        ctroot.logger.write("SVGHMI:\n")
+
+        # To serve user provided static files
+        #  - transfer them as file with a prefixed name
+        #    to avoid potential conflicts
+        #  - generate server code that serve them with 
+        #    original name as http path
+        project_path = self.CTNPath()
+        static_dir = os.path.join(project_path, "static") 
+        static_files_pairs = []
+        if os.path.exists(static_dir):
+            for fname in os.listdir(static_dir):
+                undercover_fname = location_str+"_"+fname
+                static_files_pairs.append('("%s","%s")'%(fname, undercover_fname))
+                res += ((undercover_fname, open(os.path.join(static_dir, fname), "rb")),)
+        static_files = ",\n    ".join(static_files_pairs)
 
         if os.path.exists(svgfile):
 
@@ -549,7 +593,7 @@ class SVGHMI(object):
             hmi_tree_root._hash(hasher)
             pofiles = GetPoFiles(self.CTNPath())
             filestocheck = [svgfile] + \
-                           (list(zip(*pofiles)[1]) if pofiles else []) + \
+                           (list(list(zip(*pofiles))[1]) if pofiles else []) + \
                            self.GetFontsFiles()
 
             for filetocheck in filestocheck:
@@ -606,14 +650,14 @@ class SVGHMI(object):
                 # print(transform.xslt.error_log)
                 # print(etree.tostring(result.xslt_profile,pretty_print=True))
 
-                with open(hash_path, 'wb') as digest_file:
+                with open(hash_path, 'w') as digest_file:
                     digest_file.write(digest)
             else:
                 self.GetCTRoot().logger.write("    No changes - XSLT transformation skipped\n")
 
         else:
             target_file = open(target_path, 'wb')
-            target_file.write("""<!DOCTYPE html>
+            target_file.write(b"""<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>SVGHMI</title>
@@ -631,12 +675,13 @@ class SVGHMI(object):
         res += ((target_fname, open(target_path, "rb")),)
 
         svghmi_cmds = {}
+        suppress_output = self.GetParamsAttributes("SVGHMI.SuppressBrowserOutput")["value"]
+        stdstream = "subprocess.DEVNULL" if suppress_output else "None"
         for thing in ["Start", "Stop", "Watchdog"]:
              given_command = self.GetParamsAttributes("SVGHMI.On"+thing)["value"]
-             svghmi_cmds[thing] = (
-                "Popen(" +
-                repr(shlex.split(given_command.format(**svghmi_options))) +
-                ")") if given_command else "None # no command given"
+             args = shlex.split(given_command.format(**svghmi_options))
+             svghmi_cmds[thing] = f"Popen({repr(args)}, stdout={stdstream},stderr={stdstream})" \
+                                  if args else "None # no command given"
 
         runtimefile_path = os.path.join(buildpath, "runtime_%s_svghmi_.py" % location_str)
         runtimefile = open(runtimefile_path, 'w')
@@ -645,6 +690,8 @@ class SVGHMI(object):
 # -*- coding: utf-8 -*-
 
 # generated by beremiz/svghmi/svghmi.py
+
+import subprocess
 
 browser_proc = None
 
@@ -659,6 +706,10 @@ def svghmi_{location}_watchdog_trigger():
 
 max_svghmi_sessions = {maxConnections_total}
 
+_{location}_static_files = [
+    {static_files}
+]
+
 def _runtime_{location}_svghmi_start():
     global svghmi_watchdog, svghmi_servers, browser_proc
 
@@ -672,18 +723,24 @@ def _runtime_{location}_svghmi_start():
         factory = HMIWebSocketServerFactory()
         factory.setProtocolOptions(maxConnections={maxConnections})
 
-        svghmi_root.putChild("ws", WebSocketResource(factory))
+        svghmi_root.putChild(b"ws", WebSocketResource(factory))
 
         svghmi_listener = reactor.listenTCP({port}, Site(svghmi_root), interface='{interface}')
         path_list = []
         svghmi_servers["{interface}:{port}"] = (svghmi_root, svghmi_listener, path_list)
 
     svghmi_root.putChild(
-        '{path}',
+        b'{path}',
         NoCacheFile('{xhtml}',
             defaultType='application/xhtml+xml'))
 
     path_list.append("{path}")
+
+    for url_path, file_path in _{location}_static_files:
+        if isinstance(url_path, str):
+            url_path = url_path.encode('utf-8')
+        svghmi_root.putChild(url_path, File(file_path))
+        path_list.append(url_path)
 
     browser_proc = {svghmi_cmds[Start]}
 
@@ -705,12 +762,16 @@ def _runtime_{location}_svghmi_stop():
         svghmi_watchdog = None
 
     svghmi_root, svghmi_listener, path_list = svghmi_servers["{interface}:{port}"]
-    svghmi_root.delEntity('{path}')
+    svghmi_root.delEntity(b'{path}')
 
     path_list.remove('{path}')
 
+    for url_path, file_path in _{location}_static_files:
+        svghmi_root.delEntity(url_path)
+        path_list.remove(url_path)
+
     if len(path_list)==0:
-        svghmi_root.delEntity("ws")
+        svghmi_root.delEntity(b"ws")
         svghmi_listener.stopListening()
         svghmi_servers.pop("{interface}:{port}")
 
@@ -725,7 +786,8 @@ def _runtime_{location}_svghmi_stop():
                    watchdog_initial = self.GetParamsAttributes("SVGHMI.WatchdogInitial")["value"],
                    watchdog_interval = self.GetParamsAttributes("SVGHMI.WatchdogInterval")["value"],
                    maxConnections = self.GetParamsAttributes("SVGHMI.MaxConnections")["value"],
-                   maxConnections_total = maxConnectionsTotal,
+                   maxConnections_total = svghmilib.maxConnectionsTotal,
+                   static_files = static_files,
                    **svghmi_options
         ))
 
@@ -736,7 +798,7 @@ def _runtime_{location}_svghmi_stop():
         return res
 
     def _ImportSVG(self):
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a SVG file"), os.getcwd(), "",  _("SVG files (*.svg)|*.svg|All files|*.*"), wx.OPEN)
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a SVG file"), os.getcwd(), "",  _("SVG files (*.svg)|*.svg|All files|*.*"), wx.FD_OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             svgpath = dialog.GetPath()
             if os.path.isfile(svgpath):
@@ -780,7 +842,7 @@ def _runtime_{location}_svghmi_stop():
     def _EditPO(self):
         """ Select a specific translation and edit it with POEdit """
         project_path = self.CTNPath()
-        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a PO file"), project_path, "",  _("PO files (*.po)|*.po"), wx.OPEN)
+        dialog = wx.FileDialog(self.GetCTRoot().AppFrame, _("Choose a PO file"), project_path, "",  _("PO files (*.po)|*.po"), wx.FD_OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             POFile = dialog.GetPath()
             if os.path.isfile(POFile):
@@ -800,13 +862,69 @@ def _runtime_{location}_svghmi_stop():
         else:
             self.GetCTRoot().logger.write_error(_("POT file does not exist, add translatable text (label starting with '_') in Inkscape first\n"))
 
+    def _AddFile(self):
+        dialog = wx.FileDialog(
+            self.GetCTRoot().AppFrame,
+            _("Choose files so serve"),
+            os.path.expanduser("~"),
+            "",
+            _("Any files (*.*)|*.*"), wx.FD_OPEN)
+
+        if dialog.ShowModal() == wx.ID_OK:
+            staticfile = dialog.GetPath()
+            if not os.path.isfile(staticfile):
+                self.GetCTRoot().logger.write_error(
+                    _('Selected file%s is not a readable file\n')%staticfile)
+                return
+
+            project_path = self.CTNPath()
+
+            staticfname = os.path.basename(staticfile)
+            staticdir = os.path.join(project_path, "static") 
+            newstaticfile = os.path.join(staticdir, staticfname) 
+
+            if not os.path.exists(staticdir):
+                os.mkdir(staticdir)
+
+            shutil.copyfile(staticfile, newstaticfile)
+
+            self.GetCTRoot().logger.write(
+                _('Added file %s as %s\n')%(staticfile,newstaticfile))
+
+    def _DelFile(self):
+        project_path = self.CTNPath()
+        staticdir = os.path.join(project_path, "static") 
+        if not os.path.exists(staticdir) or len(os.listdir(staticdir))==0 :
+            self.GetCTRoot().logger.write_error(
+                _("No file in %s\n")%staticdir)
+            return
+        dialog = wx.FileDialog(
+            self.GetCTRoot().AppFrame,
+            _("Choose a file to remove"),
+            staticdir,
+            "",
+            _("Any files (*.*);*.*"), wx.FD_OPEN)
+        if dialog.ShowModal() == wx.ID_OK:
+            staticfile = dialog.GetPath()
+            if os.path.isfile(staticfile):
+                if os.path.relpath(staticfile, staticdir) == os.path.basename(staticfile):
+                    os.remove(staticfile) 
+                    self.GetCTRoot().logger.write(
+                        _('Removed static file%s\n')%staticfile)
+                else:
+                    self.GetCTRoot().logger.write_error(
+                        _("StaticFile to remove %s is not in %s\n") % (staticfile,staticdir))
+            else:
+                self.GetCTRoot().logger.write_error(
+                    _("StaticFile file does not exist: %s\n") % staticfile)
+        
     def _AddFont(self):
         dialog = wx.FileDialog(
             self.GetCTRoot().AppFrame,
             _("Choose a font"),
             os.path.expanduser("~"),
             "",
-            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.OPEN)
+            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.FD_OPEN)
 
         if dialog.ShowModal() == wx.ID_OK:
             fontfile = dialog.GetPath()
@@ -838,12 +956,16 @@ def _runtime_{location}_svghmi_stop():
     def _DelFont(self):
         project_path = self.CTNPath()
         fontdir = os.path.join(project_path, "fonts") 
+        if not os.path.exists(fontdir) or len(os.listdir(fontdir))==0 :
+            self.GetCTRoot().logger.write_error(
+                _("No font file in %s\n")%fontdir)
+            return
         dialog = wx.FileDialog(
             self.GetCTRoot().AppFrame,
             _("Choose a font to remove"),
             fontdir,
             "",
-            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.OPEN)
+            _("Font files (*.ttf;*.otf;*.woff;*.woff2)|*.ttf;*.otf;*.woff;*.woff2"), wx.FD_OPEN)
         if dialog.ShowModal() == wx.ID_OK:
             fontfile = dialog.GetPath()
             if os.path.isfile(fontfile):
@@ -868,3 +990,6 @@ def _runtime_{location}_svghmi_stop():
 
     def GetIconName(self):
         return "SVGHMI"
+
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"

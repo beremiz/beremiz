@@ -1,0 +1,43 @@
+// widget_image.ysl2
+
+widget_desc("Image") {
+    longdesc
+    ||
+    If Image widget is a svg:image element, then href content is replaced by
+    value of given variable.
+    ||
+
+    shortdesc > Image display
+}
+
+widget_class("Image")
+    ||
+        frequency = 5;
+        dispatch(value, oldval, index) {
+            if (index == 0) {
+                this.given_url = value;
+                this.ready = true;
+                this.request_animate();
+            }
+        }
+    ||
+
+widget_defs("Image") {
+    |     given_url: "",
+    |     ready: false,
+    |     animate: function(){
+    |       this.element.setAttribute('href', this.given_url);
+    |     },
+}
+
+
+gen_index_xhtml { // following content is only available when generating xhtml file
+
+// strip inkscape embedded bitmap when it is meant to be replaced by HMI:Image widget
+svgtmpl "svg:image[starts-with(@inkscape:label, 'HMI:Image')]", mode="inline_svg" {
+    xsl:copy {
+        apply "@*[not(contains(name(), 'href'))] | node()", mode="inline_svg";
+    }
+}
+
+}

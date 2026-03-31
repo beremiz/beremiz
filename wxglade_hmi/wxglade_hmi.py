@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import os
 import sys
 import shutil
@@ -85,6 +85,9 @@ class WxGladeHMI(PythonFileCTNMixin):
                             self._getWXGLADEpath())
         return PythonFileCTNMixin.OnCTNSave(self, from_project_path)
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
 
         # list containing description of all objects declared in wxglade
@@ -97,6 +100,9 @@ class WxGladeHMI(PythonFileCTNMixin):
             wxgfile = open(wxgfile_path, 'r')
             wxgtree = minidom.parse(wxgfile)
             wxgfile.close()
+            
+            real_nodes = [n for n in wxgtree.childNodes if n.nodeType == n.ELEMENT_NODE]
+            print("Nodos reales en wxgfile:", len(real_nodes))
 
             for node in wxgtree.childNodes[1].childNodes:
                 if node.nodeType == wxgtree.ELEMENT_NODE:
@@ -122,7 +128,8 @@ class WxGladeHMI(PythonFileCTNMixin):
                 ['-o', wxghmipyfile_path, '-g', 'python', wxgfile_path], wait=True)
 
             hmipyfile = open(hmipyfile_path, 'r')
-            define_hmi = hmipyfile.read().decode('utf-8')
+#            define_hmi = hmipyfile.read().decode('utf-8')
+            define_hmi = hmipyfile.read()
             hmipyfile.close()
 
         else:

@@ -6,8 +6,8 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
-from itertools import izip, imap
+
+
 from pprint import pformat
 import weakref
 import hashlib
@@ -17,12 +17,20 @@ from lxml import etree
 HMI_TYPES_DESC = {
     "HMI_NODE":{},
     "HMI_STRING":{},
+    "HMI_SINT":{},
     "HMI_INT":{},
+    "HMI_DINT":{},
+    "HMI_LINT":{},
+    "HMI_DINT":{},
+    "HMI_USINT":{},
+    "HMI_UINT":{},
+    "HMI_UDINT":{},
+    "HMI_ULINT":{},
     "HMI_BOOL":{},
     "HMI_REAL":{}
 }
 
-HMI_TYPES = HMI_TYPES_DESC.keys()
+HMI_TYPES = list(HMI_TYPES_DESC.keys())
 
 class HMITreeNode(object):
     def __init__(self, path, name, nodetype, iectype = None, vartype = None, cpath = None, hmiclass = None):
@@ -56,7 +64,7 @@ class HMITreeNode(object):
         for child in self.children:
             if child.path is not None:
                 in_common = 0
-                for child_path_item, node_path_item in izip(child.path, node.path):
+                for child_path_item, node_path_item in zip(child.path, node.path):
                     if child_path_item == node_path_item:
                         in_common +=1
                     else:
@@ -105,7 +113,7 @@ class HMITreeNode(object):
         res = etree.Element(self.nodetype, **attribs)
 
         if hasattr(self, "children"):
-            for child_etree in imap(lambda c:c.etree(), self.children):
+            for child_etree in map(lambda c:c.etree(), self.children):
                 res.append(child_etree)
 
         return res
@@ -150,10 +158,10 @@ class HMITreeNode(object):
         s = hashlib.new('md5')
         self._hash(s)
         # limit size to HMI_HASH_SIZE as in svghmi.c
-        return map(ord,s.digest())[:8]
+        return s.digest()[:8]
 
     def _hash(self, s):
-        s.update(str((self.name,self.nodetype)))
+        s.update(self.name.encode() + self.nodetype.encode())
         if hasattr(self, "children"):
             for c in self.children:
                 c._hash(s)

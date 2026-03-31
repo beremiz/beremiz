@@ -24,10 +24,17 @@ function init_widgets() {
 var has_watchdog = window.location.hash == "#watchdog";
 
 const dvgetters = {
-    INT: (dv,offset) => [dv.getInt16(offset, true), 2],
-    BOOL: (dv,offset) => [dv.getInt8(offset, true), 1],
-    NODE: (dv,offset) => [dv.getInt8(offset, true), 1],
-    REAL: (dv,offset) => [dv.getFloat32(offset, true), 4],
+    SINT:  (dv,offset) => [dv.getInt8(offset, true), 1],
+    INT:   (dv,offset) => [dv.getInt16(offset, true), 2],
+    DINT:  (dv,offset) => [dv.getInt32(offset, true), 4],
+    LINT:  (dv,offset) => [dv.getBigInt64(offset, true), 8],
+    USINT: (dv,offset) => [dv.getUint8(offset, true), 1],
+    UINT:  (dv,offset) => [dv.getUint16(offset, true), 2],
+    UDINT: (dv,offset) => [dv.getUint32(offset, true), 4],
+    ULINT: (dv,offset) => [dv.getBigUint64(offset, true), 8],
+    BOOL:  (dv,offset) => [dv.getInt8(offset, true), 1],
+    NODE:  (dv,offset) => [dv.getInt8(offset, true), 1],
+    REAL:  (dv,offset) => [dv.getFloat32(offset, true), 4],
     STRING: (dv, offset) => {
         const size = dv.getInt8(offset);
         return [
@@ -136,13 +143,20 @@ hmi_hash_u8 = new Uint8Array(hmi_hash);
 var ws = null;
 
 function send_blob(data) {
-    if(ws && data.length > 0) {
+    if(data.length > 0 && ws && ws.readyState == WebSocket.OPEN) {
         ws.send(new Blob([hmi_hash_u8].concat(data)));
     };
 };
 
 const typedarray_types = {
+    SINT: (number) => new Int8Array([number]),
     INT: (number) => new Int16Array([number]),
+    DINT: (number) => new Int32Array([number]),
+    LINT: (number) => new Int64Array([number]),
+    USINT: (number) => new Uint8Array([number]),
+    UINT: (number) => new Uint16Array([number]),
+    UDINT: (number) => new Uint32Array([number]),
+    ULINT: (number) => new Uint64Array([number]),
     BOOL: (truth) => new Int8Array([truth]),
     NODE: (truth) => new Int8Array([truth]),
     REAL: (number) => new Float32Array([number]),
@@ -164,6 +178,7 @@ function send_reset() {
 };
 
 var subscriptions = [];
+var subscriptions_update_requested = false;
 
 function subscribers(index) {
     let entry = subscriptions[index];
@@ -298,7 +313,10 @@ setup_lang();
 
 function update_subscriptions() {
     let delta = [];
-    if(!ws)
+
+    subscriptions_update_requested = false;
+
+    if(!ws || ws.readyState != WebSocket.OPEN)
         // dont' change subscriptions if not connected
         return;
 
@@ -334,6 +352,14 @@ function update_subscriptions() {
     }
     send_blob(delta);
 };
+
+function request_subscriptions_update(){
+    if(!subscriptions_update_requested){
+        subscriptions_update_requested = true;
+        Promise.resolve().then(update_subscriptions);
+    }
+}
+
 
 function send_hmi_value(index, value) {
     if(index > last_remote_index){
@@ -499,7 +525,7 @@ function switch_page(page_name, page_index) {
 
     new_desc.widgets.map(([widget,relativeness])=>widget.sub(new_offset,relativeness,container_id));
 
-    update_subscriptions();
+    request_subscriptions_update();
 
     current_subscribed_page = page_name;
     current_page_index = page_index;

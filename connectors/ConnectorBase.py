@@ -3,18 +3,27 @@
 
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import hashlib
+from runtime import PlcStatus
 
 
 class ConnectorBase(object):
 
-    chuncksize = 1024*1024
+    chuncksize = 0xfff # 4KB
+
+    PLCObjDefaults = {
+        "StartPLC": False,
+        "GetTraceVariables": (PlcStatus.Broken, None),
+        "GetPLCstatus": (PlcStatus.Broken, None),
+        "RemoteExec": (-1, "RemoteExec script failed!"),
+        "GetVersions": "*** Unknown ***"
+    }
 
     def BlobFromFile(self, filepath, seed):
         s = hashlib.new('md5')
-        s.update(seed)
-        blobID = self.SeedBlob(seed)
+        s.update(seed.encode())
+        blobID = self.SeedBlob(seed.encode())
         with open(filepath, "rb") as f:
             while blobID == s.digest():
                 chunk = f.read(self.chuncksize)
@@ -23,3 +32,6 @@ class ConnectorBase(object):
                 blobID = self.AppendChunkToBlob(chunk, blobID)
                 s.update(chunk)
         raise IOError("Data corrupted during transfer or connection lost")
+
+    def DelegateTransferToBuilder(self):
+        return False

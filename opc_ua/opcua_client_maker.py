@@ -1,14 +1,19 @@
-from __future__ import print_function
-from __future__ import absolute_import
+
+
 
 import csv
+import asyncio
+import functools
+from threading import Thread
 
-from opcua import Client
-from opcua import ua
+from asyncua import Client
+from asyncua import ua
 
 import wx
-from wx.lib.agw.hypertreelist import HyperTreeList as TreeListCtrl
+import wx.lib.gizmos as gizmos  # Formerly wx.gizmos in Classic
 import wx.dataview as dv
+
+import util.paths as paths
 
 
 UA_IEC_types = dict(
@@ -35,12 +40,22 @@ UA_NODE_ID_types = {
 lstcolnames  = [  "Name", "NSIdx", "IdType", "Id", "Type", "IEC"]
 lstcolwidths = [     100,      50,      100,  100,    100,    50]
 lstcoltypess = [     str,     int,      str,  str,    str,   int]
-
+lstcoldeflts = [    "Name",     0,      "int",    "0",    "Boolean",     0]
 directions = ["input", "output"]
 
-class OPCUASubListModel(dv.PyDataViewIndexListModel):
+authParams = {
+    "x509":[
+        ("Certificate", "certificate.der"),
+        ("PrivateKey", "private_key.pem"),
+        ("Policy", "Basic256Sha256"),
+        ("Mode", "SignAndEncrypt")],
+    "UserPassword":[
+        ("User", None),
+        ("Password", None)]}
+
+class OPCUASubListModel(dv.DataViewIndexListModel):
     def __init__(self, data, log):
-        dv.PyDataViewIndexListModel.__init__(self, len(data))
+        dv.DataViewIndexListModel.__init__(self, len(data))
         self.data = data
         self.log = log
 
@@ -56,7 +71,7 @@ class OPCUASubListModel(dv.PyDataViewIndexListModel):
 
         try:
             v = expectedtype(value)
-        except ValueError: 
+        except ValueError:
             self.log("String {} is invalid for type {}\n".format(value,expectedtype.__name__))
             return False
 
@@ -97,12 +112,16 @@ class OPCUASubListModel(dv.PyDataViewIndexListModel):
             # notify the view(s) using this model that it has been removed
             self.RowDeleted(row)
 
+    def InsertDefaultRow(self, row):
+        self.data.insert(row, lstcoldeflts[:])
+        # notify views
+        self.RowInserted(row)
 
     def AddRow(self, value):
         if self.data.append(value):
             # notify views
             self.RowAppended()
-    
+
     def ResetData(self):
         self.Reset(len(self.data))
 
@@ -136,11 +155,10 @@ class OPCUASubListPanel(wx.Panel):
 
         self.dvc.AssociateModel(self.model)
 
-        for idx,(colname,width) in enumerate(zip(lstcolnames,lstcolwidths)):
-            self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
+        self.CreateDVCColumns()
 
         DropTarget = NodeDropTarget(self)
-        self.dvc.SetDropTarget(DropTarget)
+        self.SetDropTarget(DropTarget)
 
         self.Sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -149,16 +167,47 @@ class OPCUASubListPanel(wx.Panel):
 
         title = wx.StaticText(self, label = titlestr)
 
+        addbt = wx.Button(self, label="Add")
+        self.Bind(wx.EVT_BUTTON, self.OnAddRow, addbt)
         delbt = wx.Button(self, label="Delete Row(s)")
         self.Bind(wx.EVT_BUTTON, self.OnDeleteRows, delbt)
 
         topsizer = wx.BoxSizer(wx.HORIZONTAL)
         topsizer.Add(title, 1, wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, 5)
+        topsizer.Add(addbt, 0, wx.LEFT|wx.RIGHT, 5)
         topsizer.Add(delbt, 0, wx.LEFT|wx.RIGHT, 5)
         self.Sizer.Add(topsizer, 0, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
         self.Sizer.Add(self.dvc, 1, wx.EXPAND)
 
+    def CreateDVCColumns(self):
+        for idx,(colname,width) in enumerate(zip(lstcolnames,lstcolwidths)):
+            if colname == "IdType":
+                choice_DV_render = dv.DataViewChoiceRenderer(
+                    list(UA_NODE_ID_types.keys())
+                )
+                choice_DV_col = dv.DataViewColumn(
+                    colname, choice_DV_render, idx, width=width
+                )
+                self.dvc.AppendColumn(choice_DV_col)
+            elif colname == "Type":
+                choice_DV_render = dv.DataViewChoiceRenderer(
+                    list(UA_IEC_types.keys())
+                )
+                choice_DV_col = dv.DataViewColumn(
+                    colname, choice_DV_render, idx, width=width
+                )
+                self.dvc.AppendColumn(choice_DV_col)
+            else:
+                self.dvc.AppendTextColumn(colname,  idx, width=width, mode=dv.DATAVIEW_CELL_EDITABLE)
 
+    def ResetDVCColumns(self):
+        self.dvc.ClearColumns()
+        self.CreateDVCColumns()
+
+    def OnAddRow(self, evt):
+        items = self.dvc.GetSelections()
+        row = self.model.GetRow(items[0]) if items else 0
+        self.model.InsertDefaultRow(row)
 
     def OnDeleteRows(self, evt):
         items = self.dvc.GetSelections()
@@ -167,38 +216,33 @@ class OPCUASubListPanel(wx.Panel):
 
 
     def OnNodeDnD(self):
-        # Have to find OPC-UA client extension panel from here 
+        # Have to find OPC-UA client extension panel from here
         # in order to avoid keeping reference (otherwise __del__ isn't called)
         #             splitter.        panel.      splitter
         ClientPanel = self.GetParent().GetParent().GetParent()
         nodes = ClientPanel.GetSelectedNodes()
-        for node in nodes:
-            cname = node.get_node_class().name
-            dname = node.get_display_name().Text
-            if cname != "Variable":
-                self.log("Node {} ignored (not a variable)".format(dname))
+        for node, properties in nodes:
+            if properties.cname != "Variable":
+                self.log("Node {} ignored (not a variable)".format(properties.dname))
                 continue
 
-            tname = node.get_data_type_as_variant_type().name
+            tname = properties.variant_type
             if tname not in UA_IEC_types:
-                self.log("Node {} ignored (unsupported type)".format(dname))
+                self.log("Node {} ignored (unsupported type)".format(properties.dname))
                 continue
 
-            access = node.get_access_level()
             if {"input":ua.AccessLevel.CurrentRead,
-                "output":ua.AccessLevel.CurrentWrite}[self.direction] not in access:
-                self.log("Node {} ignored because of insuficient access rights".format(dname))
+                "output":ua.AccessLevel.CurrentWrite}[self.direction] not in properties.access:
+                self.log("Node {} ignored because of insuficient access rights".format(properties.dname))
                 continue
 
-            nsid = node.nodeid.NamespaceIndex
-            nid =  node.nodeid.Identifier
-            nid_type =  type(nid).__name__
-            iecid = nid
+            nid_type =  type(properties.nid).__name__
+            iecid = properties.nid
 
-            value = [dname,
-                     nsid,
+            value = [properties.dname,
+                     properties.nsid,
                      nid_type,
-                     nid,
+                     properties.nid,
                      tname,
                      iecid]
             self.model.AddRow(value)
@@ -206,7 +250,7 @@ class OPCUASubListPanel(wx.Panel):
 
 
 il = None
-fldridx = None    
+fldridx = None
 fldropenidx = None
 fileidx = None
 smileidx = None
@@ -217,9 +261,9 @@ treecolwidths = [     250,     100,      50,  200]
 
 
 def prepare_image_list():
-    global il, fldridx, fldropenidx, fileidx, smileidx    
+    global il, fldridx, fldropenidx, fileidx, smileidx
 
-    if il is not None: 
+    if il is not None:
         return
 
     il = wx.ImageList(isz[0], isz[1])
@@ -229,20 +273,43 @@ def prepare_image_list():
     smileidx    = il.Add(wx.ArtProvider.GetBitmap(wx.ART_ADD_BOOKMARK, wx.ART_OTHER, isz))
 
 
+AsyncUAClientLoop = None
+def AsyncUAClientLoopProc():
+    asyncio.set_event_loop(AsyncUAClientLoop)
+    AsyncUAClientLoop.run_forever()
+
+def ExecuteSychronously(func, timeout=1):
+    def AsyncSychronizer(*args, **kwargs):
+        global AsyncUAClientLoop
+        # create asyncio loop
+        if AsyncUAClientLoop is None:
+            AsyncUAClientLoop = asyncio.new_event_loop()
+            Thread(target=AsyncUAClientLoopProc, daemon=True).start()
+        # schedule work in this loop
+        future = asyncio.run_coroutine_threadsafe(func(*args, **kwargs), AsyncUAClientLoop)
+        # wait max 5sec until connection completed
+        return future.result(timeout)
+    return AsyncSychronizer
+
+def ExecuteSychronouslyWithTimeout(timeout):
+    return functools.partial(ExecuteSychronously,timeout=timeout)
+
+
 class OPCUAClientPanel(wx.SplitterWindow):
-    def __init__(self, parent, modeldata, log, uri_getter):
+    def __init__(self, parent, modeldata, log, config_getter):
         self.log = log
         wx.SplitterWindow.__init__(self, parent, -1)
 
-        self.ordered_nodes = []
+        self.ordered_nps = []
 
         self.inout_panel = wx.Panel(self)
         self.inout_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
         self.inout_sizer.AddGrowableCol(0)
         self.inout_sizer.AddGrowableRow(1)
 
+        self.clientloop = None
         self.client = None
-        self.uri_getter = uri_getter
+        self.config_getter = config_getter
 
         self.connect_button = wx.ToggleButton(self.inout_panel, -1, "Browse Server")
 
@@ -251,8 +318,8 @@ class OPCUAClientPanel(wx.SplitterWindow):
         self.selected_datas = modeldata
         self.selected_models = { direction:OPCUASubListModel(self.selected_datas[direction], log) for direction in directions }
         self.selected_lists = { direction:OPCUASubListPanel(
-                self.selected_splitter, log, 
-                self.selected_models[direction], direction) 
+                self.selected_splitter, log,
+                self.selected_models[direction], direction)
             for direction in directions }
 
         self.selected_splitter.SplitHorizontally(*[self.selected_lists[direction] for direction in directions]+[300])
@@ -269,24 +336,80 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
     def OnClose(self):
         if self.client is not None:
-            self.client.disconnect()
+            asyncio.run(self.client.disconnect())
             self.client = None
 
     def __del__(self):
         self.OnClose()
 
+    async def GetAsyncUANodeProperties(self, node):
+        properties = type("UANodeProperties",(),dict(
+                nsid = node.nodeid.NamespaceIndex,
+                nid =  node.nodeid.Identifier,
+                dname = (await node.read_display_name()).Text,
+                cname = (await node.read_node_class()).name,
+            ))
+        if properties.cname == "Variable":
+            properties.access = await node.get_access_level()
+            properties.variant_type = (await node.read_data_type_as_variant_type()).name
+        return properties
+
+    @ExecuteSychronouslyWithTimeout(5)
+    async def ConnectAsyncUAClient(self, config):
+        client = Client(config["URI"])
+
+        AuthType = config["AuthType"]
+        if AuthType=="UserPasword":
+            await client.set_user(config["User"])
+            await client.set_password(config["Password"])
+        elif AuthType=="x509":
+            await client.set_security_string(
+                "{Policy},{Mode},{Certificate},{PrivateKey}".format(**config))
+
+        await client.connect()
+        self.client = client
+
+        # load definition of server specific structures/extension objects
+        await self.client.load_type_definitions()
+
+        # returns root node object and its properties
+        rootnode = self.client.get_root_node()
+        return rootnode, await self.GetAsyncUANodeProperties(rootnode)
+
+    @ExecuteSychronously
+    async def DisconnectAsyncUAClient(self):
+        if self.client is not None:
+            await self.client.disconnect()
+            self.client = None
+
+    @ExecuteSychronously
+    async def GetAsyncUANodeChildren(self, node):
+        children = await node.get_children()
+        return [ (child, await self.GetAsyncUANodeProperties(child)) for child in children]
+
     def OnConnectButton(self, event):
         if self.connect_button.GetValue():
-            
+
+            config = self.config_getter()
+            self.log("OPCUA browser: connecting to {}\n".format(config["URI"]))
+
+            try :
+                rootnode, rootnodeproperties = self.ConnectAsyncUAClient(config)
+            except Exception as e:
+                self.log("Exception in OPCUA browser: "+repr(e)+"\n")
+                self.client = None
+                self.connect_button.SetValue(False)
+                return
+
             self.tree_panel = wx.Panel(self)
             self.tree_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
             self.tree_sizer.AddGrowableCol(0)
             self.tree_sizer.AddGrowableRow(0)
 
-            self.tree = TreeListCtrl(self.tree_panel, -1, style=0, agwStyle=
-                                            wx.TR_DEFAULT_STYLE
-                                            | wx.TR_MULTIPLE
-                                            | wx.TR_FULL_ROW_HIGHLIGHT
+            self.tree = gizmos.TreeListCtrl(self.tree_panel, -1, style=0, agwStyle=
+                                            gizmos.TR_DEFAULT_STYLE
+                                            | gizmos.TR_MULTIPLE
+                                            | gizmos.TR_FULL_ROW_HIGHLIGHT
                                        )
 
             prepare_image_list()
@@ -298,12 +421,7 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
             self.tree.SetMainColumn(0)
 
-            self.client = Client(self.uri_getter())
-            self.client.connect()
-            self.client.load_type_definitions()  # load definition of server specific structures/extension objects
-            rootnode = self.client.get_root_node()
-
-            rootitem = self.AddNodeItem(self.tree.AddRoot, rootnode)
+            rootitem = self.AddNodeItem(self.tree.AddRoot, rootnode, rootnodeproperties)
 
             # Populate first level so that root can be expanded
             self.CreateSubItems(rootitem)
@@ -315,7 +433,7 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
             self.tree.Expand(rootitem)
 
-            hint = wx.StaticText(self, label = "Drag'n'drop desired variables from tree to Input or Output list")
+            hint = wx.StaticText(self.tree_panel, label = "Drag'n'drop desired variables from tree to Input or Output list")
 
             self.tree_sizer.Add(self.tree, flag=wx.GROW)
             self.tree_sizer.Add(hint, flag=wx.GROW)
@@ -325,29 +443,23 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
             self.SplitVertically(self.tree_panel, self.inout_panel, 500)
         else:
-            self.client.disconnect()
-            self.client = None
+            self.DisconnectAsyncUAClient()
             self.Unsplit(self.tree_panel)
             self.tree_panel.Destroy()
 
-
     def CreateSubItems(self, item):
-        node, browsed = self.tree.GetPyData(item)
+        node, properties, browsed = self.tree.GetPyData(item)
         if not browsed:
-            for subnode in node.get_children():
-                self.AddNodeItem(lambda n: self.tree.AppendItem(item, n), subnode)
-            self.tree.SetPyData(item,(node, True))
+            children = self.GetAsyncUANodeChildren(node)
+            for subnode, subproperties in children:
+                self.AddNodeItem(lambda n: self.tree.AppendItem(item, n), subnode, subproperties)
+            self.tree.SetPyData(item,(node, properties, True))
 
-    def AddNodeItem(self, item_creation_func, node):
-        nsid = node.nodeid.NamespaceIndex
-        nid =  node.nodeid.Identifier
-        dname = node.get_display_name().Text
-        cname = node.get_node_class().name
+    def AddNodeItem(self, item_creation_func, node, properties):
+        item = item_creation_func(properties.dname)
 
-        item = item_creation_func(dname)
-
-        if cname == "Variable":
-            access = node.get_access_level()
+        if properties.cname == "Variable":
+            access = properties.access
             normalidx = fileidx
             r = ua.AccessLevel.CurrentRead in access
             w = ua.AccessLevel.CurrentWrite in access
@@ -359,14 +471,14 @@ class OPCUAClientPanel(wx.SplitterWindow):
                 ext = "WO"  # not sure this one exist
             else:
                 ext = "no access"  # not sure this one exist
-            cname = "Var "+node.get_data_type_as_variant_type().name+" (" + ext + ")"
+            cname = "Var "+properties.variant_type+" (" + ext + ")"
         else:
             normalidx = fldridx
 
-        self.tree.SetPyData(item,(node, False))
-        self.tree.SetItemText(item, cname, 1)
-        self.tree.SetItemText(item, str(nsid), 2)
-        self.tree.SetItemText(item, type(nid).__name__+": "+str(nid), 3)
+        self.tree.SetPyData(item,(node, properties, False))
+        self.tree.SetItemText(item, properties.cname, 1)
+        self.tree.SetItemText(item, str(properties.nsid), 2)
+        self.tree.SetItemText(item, type(properties.nid).__name__+": "+str(properties.nid), 3)
         self.tree.SetItemImage(item, normalidx, which = wx.TreeItemIcon_Normal)
         self.tree.SetItemImage(item, fldropenidx, which = wx.TreeItemIcon_Expanded)
 
@@ -384,28 +496,28 @@ class OPCUAClientPanel(wx.SplitterWindow):
         items = self.tree.GetSelections()
         items_pydata = [self.tree.GetPyData(item) for item in items]
 
-        nodes = [node for node, _unused in items_pydata]
+        nps = [(node,properties) for node, properties, unused in items_pydata]
 
         # append new nodes to ordered list
-        for node in nodes:
-            if node not in self.ordered_nodes:
-                self.ordered_nodes.append(node)
+        for np in nps:
+            if np not in self.ordered_nps:
+                self.ordered_nps.append(np)
 
         # filter out vanished items
-        self.ordered_nodes = [
-            node 
-            for node in self.ordered_nodes 
-            if node in nodes]
+        self.ordered_nps = [
+            np
+            for np in self.ordered_nps
+            if np in nps]
 
     def GetSelectedNodes(self):
-        return self.ordered_nodes 
+        return self.ordered_nps
 
     def OnTreeBeginDrag(self, event):
         """
         Called when a drag is started in tree
         @param event: wx.TreeEvent
         """
-        if self.ordered_nodes:
+        if self.ordered_nps:
             # Just send a recognizable mime-type, drop destination
             # will get python data from parent
             data = wx.CustomDataObject(OPCUAClientDndMagicWord)
@@ -415,24 +527,25 @@ class OPCUAClientPanel(wx.SplitterWindow):
 
     def Reset(self):
         for direction in directions:
-            self.selected_models[direction].ResetData() 
-        
+            self.selected_models[direction].ResetData()
+
 
 class OPCUAClientList(list):
-    def __init__(self, log = lambda m:None):
+    def __init__(self, log, change_callback):
         super(OPCUAClientList, self).__init__(self)
         self.log = log
+        self.change_callback = change_callback
 
     def append(self, value):
-        v = dict(zip(lstcolnames, value))
+        v = dict(list(zip(lstcolnames, value)))
 
         if type(v["IEC"]) != int:
             if len(self) == 0:
                 v["IEC"] = 0
             else:
-                iecnums = set(zip(*self)[lstcolnames.index("IEC")])
+                iecnums = set(list(zip(*self))[lstcolnames.index("IEC")])
                 greatest = max(iecnums)
-                holes = set(range(greatest)) - iecnums
+                holes = set(range(int(greatest))) - iecnums
                 v["IEC"] = min(holes) if holes else greatest+1
 
         if v["IdType"] not in UA_NODE_ID_types:
@@ -441,125 +554,116 @@ class OPCUAClientList(list):
 
         try:
             for t,n in zip(lstcoltypess, lstcolnames):
-                v[n] = t(v[n]) 
-        except ValueError: 
+                v[n] = t(v[n])
+        except ValueError:
             self.log("Variable {} (Id={}) has invalid type\n".format(v["Name"],v["Id"]))
             return False
 
-        if len(self)>0 and v["Id"] in zip(*self)[lstcolnames.index("Id")]:
+        if len(self)>0 and v["Id"] in list(zip(*self))[lstcolnames.index("Id")]:
             self.log("Variable {} (Id={}) already in list\n".format(v["Name"],v["Id"]))
             return False
 
         list.append(self, [v[n] for n in lstcolnames])
 
+        self.change_callback()
+
         return True
 
+    def __delitem__(self, index):
+        list.__delitem__(self, index)
+        self.change_callback()
+
 class OPCUAClientModel(dict):
-    def __init__(self, log = lambda m:None):
+    def __init__(self, log, change_callback = lambda : None):
         super(OPCUAClientModel, self).__init__()
         for direction in directions:
-            self[direction] = OPCUAClientList(log)
+            self[direction] = OPCUAClientList(log, change_callback)
 
     def LoadCSV(self,path):
-        with open(path, 'rb') as csvfile:
+        with open(path, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            buf = {direction:[] for direction, _model in self.iteritems()}
-            for direction, model in self.iteritems():
+            buf = {direction:[] for direction, _model in self.items()}
+            for direction, model in self.items():
                 self[direction][:] = []
             for row in reader:
                 direction = row[0]
-                self[direction].append(row[1:])
+                # avoids calling change callback whe loading CSV
+                list.append(self[direction],row[1:])
 
     def SaveCSV(self,path):
-        with open(path, 'wb') as csvfile:
-            for direction, data in self.iteritems():
+        with open(path, 'w') as csvfile:
+            for direction, data in self.items():
                 writer = csv.writer(csvfile, delimiter=',',
                                 quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 for row in data:
                     writer.writerow([direction] + row)
 
-    def GenerateC(self, path, locstr, server_uri):
-        template = """/* code generated by beremiz OPC-UA extension */
+    def GenerateC(self, path, locstr, config):
+        c_template_filepath = paths.AbsNeighbourFile(__file__, "opcua_template.c")
+        c_template_file = open(c_template_filepath , 'rb')
+        c_template = c_template_file.read()
+        c_template = c_template.decode('utf-8')
+        c_template_file.close()
 
-#include <open62541/client_config_default.h>
-#include <open62541/client_highlevel.h>
-#include <open62541/plugin/log_stdout.h>
-
-static UA_Client *client;
-
-#define DECL_VAR(ua_type, C_type, c_loc_name)                                                       \\
-static UA_Variant c_loc_name##_variant;                                                             \\
-static C_type c_loc_name##_buf = 0;                                                                 \\
-C_type *c_loc_name = &c_loc_name##_buf;
-
-%(decl)s
-
-void __cleanup_%(locstr)s(void)
-{
-    UA_Client_disconnect(client);
-    UA_Client_delete(client);
-}
-
-
-#define INIT_READ_VARIANT(ua_type, c_loc_name)                                                     \\
-    UA_Variant_init(&c_loc_name##_variant);
-
-#define INIT_WRITE_VARIANT(ua_type, ua_type_enum, c_loc_name)       \\
-    UA_Variant_setScalar(&c_loc_name##_variant, (ua_type*)c_loc_name, &UA_TYPES[ua_type_enum]);
-
-int __init_%(locstr)s(int argc,char **argv)
-{
-    UA_StatusCode retval;
-    client = UA_Client_new();
-    UA_ClientConfig_setDefault(UA_Client_getConfig(client));
-%(init)s
-
-    /* Connect to server */
-    retval = UA_Client_connect(client, "%(uri)s");
-    if(retval != UA_STATUSCODE_GOOD) {
-        UA_Client_delete(client);
-        return EXIT_FAILURE;
-    }
-}
-
-#define READ_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)        \\
-    retval = UA_Client_readValueAttribute(                                                         \\
-        client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);                      \\
-    if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(&c_loc_name##_variant) &&               \\
-       c_loc_name##_variant.type == &UA_TYPES[ua_type_enum]) {                                     \\
-            c_loc_name##_buf = *(ua_type*)c_loc_name##_variant.data;                               \\
-            UA_Variant_clear(&c_loc_name##_variant);  /* Unalloc requiered on each read ! */       \\
-    }
-
-void __retrieve_%(locstr)s(void)
-{
-    UA_StatusCode retval;
-%(retrieve)s
-}
-
-#define WRITE_VALUE(ua_type, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)       \\
-    UA_Client_writeValueAttribute(                                                                 \\
-        client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);
-
-void __publish_%(locstr)s(void)
-{
-%(publish)s
-}
-
-"""
-        
         formatdict = dict(
             locstr   = locstr,
-            uri      = server_uri,
+            uri      = config["URI"],
             decl     = "",
             cleanup  = "",
             init     = "",
             retrieve = "",
-            publish  = "" 
+            publish  = ""
         )
-        for direction, data in self.iteritems():
+
+        AuthType = config["AuthType"]
+        if AuthType == "x509":
+            config["UpperCaseMode"] = config["Mode"].upper()
+            formatdict["init"] += """
+    INIT_x509({Policy}, {UpperCaseMode}, "{PrivateKey}", "{Certificate}")""".format(**config)
+        elif AuthType == "UserPassword":
+            formatdict["init"] += """
+    INIT_UserPassword("{User}", "{Password}")""".format(**config)
+        else:
+            formatdict["init"] += """
+    INIT_NoAuth()"""
+
+        seen_names_inputs = set()
+        seen_names_outputs = set()
+
+        seen_iec_inputs = set()
+        seen_iec_outputs = set()
+
+        for direction, data in self.items():
             iec_direction_prefix = {"input": "__I", "output": "__Q"}[direction]
             for row in data:
+                name, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
+                iec_type, C_type, iec_size_prefix, ua_type_enum, ua_type = UA_IEC_types[
+                    ua_type
+                ]
+
+                if iec_direction_prefix == "__I":
+                    if name in seen_names_inputs:
+                        raise Exception(f"Name '{name}' already exists in Inputs")
+                    seen_names_inputs.add(name)
+                    if iec_number in seen_iec_inputs:
+                        raise Exception(
+                            f"IEC value '{iec_number}' already exists in Inputs"
+                        )
+                    seen_iec_inputs.add(iec_number)
+
+                if iec_direction_prefix == "__Q":
+                    if name in seen_names_outputs:
+                        raise Exception(f"Name '{name}' already exists in Outputs")
+                    seen_names_outputs.add(name)
+                    if iec_number in seen_iec_outputs:
+                        raise Exception(
+                            f"IEC value '{iec_number}' already exists in Outputs"
+                        )
+                    seen_iec_outputs.add(iec_number)
+
+                if ua_nodeid_type not in UA_NODE_ID_types:
+                    raise Exception(f"Invalid node ID type: {ua_nodeid_type}")
+
                 name, ua_nsidx, ua_nodeid_type, _ua_node_id, ua_type, iec_number = row
                 iec_type, C_type, iec_size_prefix, ua_type_enum, ua_type = UA_IEC_types[ua_type]
                 c_loc_name = iec_direction_prefix + iec_size_prefix + locstr + "_" + str(iec_number)
@@ -570,19 +674,19 @@ void __publish_%(locstr)s(void)
 DECL_VAR({ua_type}, {C_type}, {c_loc_name})""".format(**locals())
 
                 if direction == "input":
-                    formatdict["init"] +="""
+                    formatdict["init"] += """
     INIT_READ_VARIANT({ua_type}, {c_loc_name})""".format(**locals())
                     formatdict["retrieve"] += """
     READ_VALUE({ua_type}, {ua_type_enum}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
 
                 if direction == "output":
-                    formatdict["init"] +="""
+                    formatdict["init"] += """
     INIT_WRITE_VARIANT({ua_type}, {ua_type_enum}, {c_loc_name})""".format(**locals())
                     formatdict["publish"] += """
     WRITE_VALUE({ua_type}, {c_loc_name}, {ua_nodeid_type}, {ua_nsidx}, {ua_node_id})""".format(**locals())
 
-        Ccode = template%formatdict
-        
+        Ccode = c_template.format(**formatdict)
+
         return Ccode
 
 if __name__ == "__main__":
@@ -594,7 +698,20 @@ if __name__ == "__main__":
 
     frame = wx.Frame(None, -1, "OPCUA Client Test App", size=(800,600))
 
-    uri = sys.argv[1] if len(sys.argv)>1 else "opc.tcp://localhost:4840"
+    argc = len(sys.argv)
+
+    config={}
+    config["URI"] = sys.argv[1] if argc>1 else "opc.tcp://localhost:4840"
+
+    if argc > 2:
+        AuthType = sys.argv[2]
+        config["AuthType"] = AuthType
+        for (name, default), value in zip_longest(authParams[AuthType], sys.argv[3:]):
+            if value is None:
+                if default is None:
+                    raise Exception(name+" param expected")
+                value = default
+            config[name] = value
 
     test_panel = wx.Panel(frame)
     test_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=2, vgap=0)
@@ -603,12 +720,12 @@ if __name__ == "__main__":
 
     modeldata = OPCUAClientModel(print)
 
-    opcuatestpanel = OPCUAClientPanel(test_panel, modeldata, print, lambda:uri)
+    opcuatestpanel = OPCUAClientPanel(test_panel, modeldata, print, lambda:config)
 
     def OnGenerate(evt):
         dlg = wx.FileDialog(
             frame, message="Generate file as ...", defaultDir=os.getcwd(),
-            defaultFile="", 
+            defaultFile="",
             wildcard="C (*.c)|*.c", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
             )
 
@@ -624,14 +741,18 @@ gcc %s -o %s \\
     -I ../../open62541/arch/ ../../open62541/build/bin/libopen62541.a
 */
 
-"""%(path, path[:-2]) + modeldata.GenerateC(path, "test", uri) + """
+"""%(path, path[:-2]) + modeldata.GenerateC(path, "test", config) + """
+
+int LogMessage(uint8_t level, char* buf, uint32_t size){
+    printf("log level:%d message:'%.*s'\\n", level, size, buf);
+};
 
 int main(int argc, char *argv[]) {
 
     __init_test(arc,argv);
-   
+
     __retrieve_test();
-   
+
     __publish_test();
 
     __cleanup_test();
@@ -640,7 +761,7 @@ int main(int argc, char *argv[]) {
 }
 """
 
-            with open(path, 'wb') as Cfile:
+            with open(path, 'w') as Cfile:
                 Cfile.write(Ccode)
 
 
@@ -664,7 +785,7 @@ int main(int argc, char *argv[]) {
     def OnSave(evt):
         dlg = wx.FileDialog(
             frame, message="Save file as ...", defaultDir=os.getcwd(),
-            defaultFile="", 
+            defaultFile="",
             wildcard="CSV (*.csv)|*.csv", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
             )
 
@@ -705,4 +826,3 @@ int main(int argc, char *argv[]) {
     frame.Show()
 
     app.MainLoop()
-

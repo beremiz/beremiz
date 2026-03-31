@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from util.BitmapLibrary import GetBitmap
@@ -57,13 +57,6 @@ class GraphButton(object):
 
         # Save reference to callback function
         self.Callback = callback
-
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to callback function
-        self.callback = None
 
     def SetBitmap(self, bitmap):
         """
@@ -146,7 +139,7 @@ class GraphButton(object):
         # Test if point is inside button
         w, h = self.Bitmap.GetSize()
         rect = wx.Rect(self.Position.x, self.Position.y, w, h)
-        return rect.InsideXY(x, y)
+        return rect.Contains(x, y)
 
     def ProcessCallback(self):
         """

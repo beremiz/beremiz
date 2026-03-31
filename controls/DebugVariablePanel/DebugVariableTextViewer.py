@@ -23,8 +23,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 
 import wx
 
@@ -50,15 +50,6 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         wx.TextDropTarget.__init__(self)
         self.ParentControl = parent
         self.ParentWindow = window
-
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to Debug Variable Text Viewer and Debug Variable
-        # Panel
-        self.ParentControl = None
-        self.ParentWindow = None
 
     def OnDragOver(self, x, y, d):
         """
@@ -96,6 +87,7 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
         # Display message if data is invalid
         if message is not None:
             wx.CallAfter(self.ShowMessage, message)
+            return False
 
         # Data contain a reference to a variable to debug
         elif values[1] == "debug":
@@ -118,6 +110,10 @@ class DebugVariableTextDropTarget(wx.TextDropTarget):
                 self.ParentWindow.InsertValue(values[0],
                                               target_idx,
                                               force=True)
+            return True
+        return False
+
+        return True
 
     def OnLeave(self):
         """
@@ -195,7 +191,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
 
         # Create buffered DC for drawing in panel
         width, height = self.GetSize()
-        bitmap = wx.EmptyBitmap(width, height)
+        bitmap = wx.Bitmap(width, height)
         dc = wx.BufferedDC(wx.PaintDC(self), bitmap)
         dc.Clear()
 
@@ -203,10 +199,8 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         # rendering
         gc = wx.GCDC(dc)
 
-        gc.BeginDrawing()
-
         # Get first item
-        item = self.ItemsDict.values()[0]
+        item = list(self.ItemsDict.values())[0]
 
         # Get item variable path masked according Debug Variable Panel mask
         item_path = item.GetVariable(
@@ -232,15 +226,13 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         # Draw other Viewer common elements
         self.DrawCommonElements(gc)
 
-        gc.EndDrawing()
-
     def OnLeftDown(self, event):
         """
         Function called when mouse left button is pressed
         @param event: wx.MouseEvent
         """
         # Get first item
-        item = self.ItemsDict.values()[0]
+        item = list(self.ItemsDict.values())[0]
 
         # Calculate item path bounding box
         _width, height = self.GetSize()
@@ -251,8 +243,8 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         # Test if mouse has been pressed in this bounding box. In that case
         # start a move drag'n drop of item variable
         x, y = event.GetPosition()
-        item_path_bbox = wx.Rect(20, (height - h) / 2, w, h)
-        if item_path_bbox.InsideXY(x, y):
+        item_path_bbox = wx.Rect(20, (height - h) // 2, w, h)
+        if item_path_bbox.Contains(x, y):
             self.ShowButtons(False)
             data = wx.TextDataObject(str((item.GetVariable(), "debug", "move")))
             dragSource = wx.DropSource(self)
@@ -279,7 +271,7 @@ class DebugVariableTextViewer(DebugVariableViewer, wx.Panel):
         @param event: wx.MouseEvent
         """
         # Only numeric variables can be toggled to graph canvas
-        if self.ItemsDict.values()[0].IsNumVariable():
+        if list(self.ItemsDict.values())[0].IsNumVariable():
             self.ParentWindow.ToggleViewerType(self)
 
     def OnPaint(self, event):

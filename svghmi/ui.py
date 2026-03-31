@@ -6,7 +6,7 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import os
 import hashlib
 import weakref
@@ -14,7 +14,7 @@ import re
 import tempfile
 from threading import Thread, Lock
 from functools import reduce
-from itertools import izip
+
 from operator import or_
 from tempfile import NamedTemporaryFile
 
@@ -31,7 +31,21 @@ from docutil import get_inkscape_path, get_inkscape_version
 
 from util.ProcessLogger import ProcessLogger
 
+# When running as a confined Snap, /tmp isn't accessible from the outside
+# and Widget DnD to Inkscape can't work, since it can't find generated svg 
+# This forces tmp directory in $SNAP_USER_DATA, accessible from other apps
+if "SNAP" in os.environ:
+     NamedTemporaryFile_orig = NamedTemporaryFile
+     tmpdir = os.path.join(os.environ["SNAP_USER_DATA"], ".tmp")
+     if not os.path.exists(tmpdir):
+         os.mkdir(tmpdir)
+     def NamedTemporaryFile(*args,**kwargs):
+        kwargs["dir"] = tmpdir
+        return NamedTemporaryFile_orig(*args, **kwargs)
+
+
 ScriptDirectory = paths.AbsDir(__file__)
+default_libdir = os.path.join(ScriptDirectory, "widgetlib")
 
 HMITreeDndMagicWord = "text/beremiz-hmitree"
 
@@ -58,17 +72,17 @@ class HMITreeSelector(wx.TreeCtrl):
                 display_name = ('{} (class={})'.format(c.name, c.hmiclass)) \
                                if c.hmiclass is not None else c.name
                 tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, c)
+                self.SetItemData(tc_child, c)
 
                 self._recurseTree(c,tc_child)
             else:
                 display_name = '{} {}'.format(c.nodetype[4:], c.name)
                 tc_child = self.AppendItem(current_tc_root, display_name)
-                self.SetPyData(tc_child, c)
+                self.SetItemData(tc_child, c)
 
     def OnTreeNodeSelection(self, event):
         items = self.GetSelections()
-        items_pydata = [self.GetPyData(item) for item in items]
+        items_pydata = [self.GetItemData(item) for item in items]
 
         # append new items to ordered item list
         for item_pydata in items_pydata:
@@ -106,7 +120,7 @@ class HMITreeSelector(wx.TreeCtrl):
         root_display_name = _("Please build to see HMI Tree") \
             if hmi_tree_root is None else "HMI"
         self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, hmi_tree_root)
+        self.SetItemData(self.root, hmi_tree_root)
 
         if hmi_tree_root is not None:
             self._recurseTree(hmi_tree_root, self.root)
@@ -146,11 +160,11 @@ class WidgetPicker(wx.TreeCtrl):
                     for d in dirlist:
                         current_tc_root = self.AppendItem(current_tc_root, d)
                         res.append(current_tc_root)
-                        self.SetPyData(current_tc_root, None)
+                        self.SetItemData(current_tc_root, None)
                     dirlist = []
                     res.pop()
                 tc_child = self.AppendItem(current_tc_root, f)
-                self.SetPyData(tc_child, p)
+                self.SetItemData(tc_child, p)
         return res
 
     def MakeTree(self, lib_dir = None):
@@ -163,7 +177,7 @@ class WidgetPicker(wx.TreeCtrl):
         root_display_name = _("Please select widget library directory") \
             if lib_dir is None else os.path.basename(lib_dir)
         self.root = self.AddRoot(root_display_name)
-        self.SetPyData(self.root, None)
+        self.SetItemData(self.root, None)
 
         if lib_dir is not None and os.path.exists(lib_dir):
             self._recurseTree(lib_dir, self.root, [])
@@ -236,9 +250,7 @@ class ArgEditor(ParamEditor):
         accepts = self.argdesc.get("accepts").split(',')
         self.setValidity(
             reduce(or_,
-                   map(lambda typename: 
-                           models[typename].match(txt) is not None,
-                       accepts), 
+                   [models[typename].match(txt) is not None for typename in accepts], 
                    False)
             if accepts and txt else None)
         self.ParentObj.RegenSVGLater()
@@ -270,9 +282,7 @@ class PathEditor(ParamEditor):
         event.Skip()
     
 def KeepDoubleNewLines(txt):
-    return "\n\n".join(map(
-        lambda s:re.sub(r'\s+',' ',s),
-        txt.split("\n\n")))
+    return "\n\n".join([re.sub(r'\s+',' ',s) for s in txt.split("\n\n")])
 
 _conf_key = "SVGHMIWidgetLib"
 _preview_height = 200
@@ -295,7 +305,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.Config = wx.ConfigBase.Get()
         self.libdir = self.RecallLibDir()
         if self.libdir is None:
-            self.libdir = os.path.join(ScriptDirectory, "widgetlib") 
+            self.libdir = default_libdir
 
         self.picker_desc_splitter = wx.SplitterWindow(self, style=wx.SUNKEN_BORDER | wx.SP_3D)
 
@@ -304,10 +314,21 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.picker_sizer.AddGrowableCol(0)
         self.picker_sizer.AddGrowableRow(1)
 
-        self.widgetpicker = WidgetPicker(self.picker_panel, self.libdir)
+        self.buttons_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
+        self.buttons_sizer.AddGrowableCol(0)
         self.libbutton = wx.Button(self.picker_panel, -1, _("Select SVG widget library"))
+        self.undolibbt = wx.BitmapButton(self.picker_panel, 
+                        bitmap=wx.ArtProvider.GetBitmap(wx.ART_UNDO, wx.ART_TOOLBAR, (16,16)),
+                        style=wx.BORDER_NONE)
+        self.Bind(wx.EVT_BUTTON, self.OnResetLibDir, self.undolibbt)
 
-        self.picker_sizer.Add(self.libbutton, flag=wx.GROW)
+        self.buttons_sizer.Add(self.libbutton, flag=wx.GROW)
+
+        self.buttons_sizer.Add(self.undolibbt, flag=wx.GROW)
+
+        self.widgetpicker = WidgetPicker(self.picker_panel, self.libdir)
+
+        self.picker_sizer.Add(self.buttons_sizer, flag=wx.GROW)
         self.picker_sizer.Add(self.widgetpicker, flag=wx.GROW)
         self.picker_sizer.Layout()
         self.picker_panel.SetAutoLayout(True)
@@ -326,7 +347,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         self.main_sizer.AddGrowableCol(0)
         self.main_sizer.AddGrowableRow(2)
 
-        self.staticmsg = wx.StaticText(self, label = _("Drag selected Widget from here to Inkscape"))
+        self.staticmsg = wx.StaticText(self.main_panel, label = _("Drag selected Widget from here to Inkscape"))
         self.preview = wx.Panel(self.main_panel, size=(-1, _preview_height + _preview_margin*2))
         self.signature_sizer = wx.BoxSizer(wx.VERTICAL)
         self.args_box = wx.StaticBox(self.main_panel, -1,
@@ -427,8 +448,13 @@ class WidgetLibBrowser(wx.SplitterWindow):
             # Get Preview panel size
             sz = self.preview.GetClientSize()
             w = self.bmp.GetWidth()
-            dc.DrawBitmap(self.bmp, (sz.width - w)/2, _preview_margin)
+            dc.DrawBitmap(self.bmp, (sz.width - w)//2, _preview_margin)
 
+
+    def OnResetLibDir(self, event):
+        self.libdir = default_libdir 
+        self.RememberLibDir(self.libdir)
+        self.widgetpicker.MakeTree(self.libdir)
 
 
     def OnSelectLibDir(self, event):
@@ -459,15 +485,15 @@ class WidgetLibBrowser(wx.SplitterWindow):
         if inkpath is None:
             self.msg = _("Inkscape is not installed.")
             return False
+        inkpath = inkpath.decode()
 
         export_opt = "-o" if get_inkscape_version()[0] > 0 else "-e"
 
         # TODO: spawn a thread, to decouple thumbnail gen
         status, result, _err_result = ProcessLogger(
-            self.Controler.GetCTRoot().logger,
-            '"' + inkpath + '" "' + svgpath + '" ' +
-            export_opt + ' "' + thumbpath +
-            '" -D -h ' + str(_preview_height)).spin()
+            #self.Controler.GetCTRoot().logger,
+            None,
+            [ inkpath, svgpath, export_opt, thumbpath, "-D", "-h", str(_preview_height)]).spin()
         if status != 0:
             self.msg = _("Inkscape couldn't generate thumbnail.")
             return False
@@ -480,7 +506,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
         """
         global thumbnail_temp_path
         event.Skip()
-        item_pydata = self.widgetpicker.GetPyData(event.GetItem())
+        item_pydata = self.widgetpicker.GetItemData(event.GetItem())
         if item_pydata is not None:
             svgpath = item_pydata
 
@@ -639,7 +665,7 @@ class WidgetLibBrowser(wx.SplitterWindow):
             # TODO: check that only last arg has multiple ordinality
             args += [args[-1]]*(len(prefillargs)-len(args))
         self.args_box.Show(len(args)!=0)
-        for arg, prefillarg in izip(args,prefillargs):
+        for arg, prefillarg in zip(args,prefillargs):
             self.AddArgToSignature(arg, prefillarg)
 
         # TODO support predefined path count (as for XYGraph)
@@ -709,7 +735,8 @@ class SVGHMI_UI(wx.SplitterWindow):
         register_for_HMI_tree_updates(weakref.ref(self))
 
     def HMITreeUpdate(self, hmi_tree_root):
-        self.SelectionTree.MakeTree(hmi_tree_root)
+        if self:
+            self.SelectionTree.MakeTree(hmi_tree_root)
 
     def OnHMITreeNodeSelection(self, hmitree_nodes):
         self.Staging.OnHMITreeNodeSelection(hmitree_nodes)

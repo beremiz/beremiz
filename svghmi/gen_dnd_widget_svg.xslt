@@ -4,7 +4,7 @@
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
   <xsl:variable name="widgetparams" select="ns:GetWidgetParams()"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
-  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\w,]*)$'"/>
   <xsl:variable name="newline">
     <xsl:text>
 </xsl:text>

@@ -23,13 +23,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 from collections import OrderedDict
 from functools import reduce
 
 import wx
-from matplotlib.backends.backend_wxagg import _convert_agg_to_wx_bitmap
 
 from dialogs.ForceVariableDialog import ForceVariableDialog
 
@@ -39,7 +38,7 @@ from dialogs.ForceVariableDialog import ForceVariableDialog
  HIGHLIGHT_AFTER,
  HIGHLIGHT_LEFT,
  HIGHLIGHT_RIGHT,
- HIGHLIGHT_RESIZE] = range(6)
+ HIGHLIGHT_RESIZE] = list(range(6))
 
 # Viewer highlight styles
 HIGHLIGHT = {
@@ -66,20 +65,13 @@ class DebugVariableViewer(object):
         items = [] if items is None else items
         self.ItemsDict = OrderedDict([(item.GetVariable(), item)
                                       for item in items])
-        self.Items = self.ItemsDict.viewvalues()
+        self.Items = self.ItemsDict.values()
 
         # Variable storing current highlight displayed in Viewer
         self.Highlight = HIGHLIGHT_NONE
         # List of buttons
         self.Buttons = []
         self.InitHighlightPensBrushes()
-
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Remove reference to Debug Variable Panel
-        self.ParentWindow = None
 
     def InitHighlightPensBrushes(self):
         """
@@ -111,7 +103,7 @@ class DebugVariableViewer(object):
         Return items displayed by Viewer
         @return: List of items displayed in Viewer
         """
-        return self.ItemsDict.values()
+        return list(self.ItemsDict.values())
 
     def AddItem(self, item):
         """
@@ -150,7 +142,7 @@ class DebugVariableViewer(object):
         Function that unsubscribe and remove every item that store values of
         a variable that doesn't exist in PLC anymore
         """
-        for item in self.ItemsDict.values()[:]:
+        for item in self.ItemsDict.values():
             iec_path = item.GetVariable()
 
             # Check that variablepath exist in PLC
@@ -310,8 +302,10 @@ class DebugVariableViewer(object):
                 srcX = srcBBox.x - (srcPos.x if destBBox.x == 0 else 0)
                 srcY = srcBBox.y - (srcPos.y if destBBox.y == 0 else 0)
 
-                srcBmp = _convert_agg_to_wx_bitmap(
-                    srcPanel.get_renderer(), None)
+                agg_bitmap = srcPanel.get_renderer()
+                srcBmp = wx.Bitmap.FromBufferRGBA(int(agg_bitmap.width), int(agg_bitmap.height),
+                                        agg_bitmap.buffer_rgba())
+
                 srcDC = wx.MemoryDC()
                 srcDC.SelectObject(srcBmp)
 
@@ -347,13 +341,13 @@ class DebugVariableViewer(object):
         """
         Function called when Force button is pressed
         """
-        self.ForceValue(self.ItemsDict.values()[0])
+        self.ForceValue(list(self.ItemsDict.values())[0])
 
     def OnReleaseButton(self):
         """
         Function called when Release button is pressed
         """
-        self.ReleaseValue(self.ItemsDict.values()[0])
+        self.ReleaseValue(list(self.ItemsDict.values())[0])
 
     def OnMouseDragging(self, x, y):
         """

@@ -1,0 +1,2896 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <fileHeader companyName="Higen"
+              productName="MCL"
+              productVersion="1"
+              creationDateTime="2012-01-06T15:20:13"/>
+  <contentHeader name="MotionTest1"
+                 modificationDateTime="2013-07-14T17:27:56">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="8" y="8"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="main" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="Done">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="Axis">
+              <type>
+                <derived name="AXIS_REF"/>
+              </type>
+            </variable>
+            <variable name="mPn">
+              <type>
+                <LREAL/>
+              </type>
+            </variable>
+            <variable name="mVn">
+              <type>
+                <LREAL/>
+              </type>
+            </variable>
+            <variable name="bt1">
+              <type>
+                <derived name="wxgetval"/>
+              </type>
+            </variable>
+            <variable name="Block1">
+              <type>
+                <derived name="wxgetval"/>
+              </type>
+            </variable>
+            <variable name="Block6">
+              <type>
+                <derived name="wxgetval"/>
+              </type>
+            </variable>
+            <variable name="MC_Sim0">
+              <type>
+                <derived name="MC_Sim"/>
+              </type>
+            </variable>
+            <variable name="MC_Power0">
+              <type>
+                <derived name="MC_Power"/>
+              </type>
+            </variable>
+            <variable name="MC_ReadActualPosition0">
+              <type>
+                <derived name="MC_ReadActualPosition"/>
+              </type>
+            </variable>
+            <variable name="MC_SetPosition0">
+              <type>
+                <derived name="MC_SetPosition"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute0">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="Output">
+              <type>
+                <derived name="MC_OUTPUT_REF"/>
+              </type>
+            </variable>
+            <variable name="OutputBits">
+              <type>
+                <DWORD/>
+              </type>
+            </variable>
+            <variable name="Track1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="Track2">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="Track3">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="Velocity">
+              <type>
+                <LREAL/>
+              </type>
+              <initialValue>
+                <simpleValue value="1000.0"/>
+              </initialValue>
+            </variable>
+            <variable name="TrackList">
+              <type>
+                <derived name="MC_TRACK_REF"/>
+              </type>
+            </variable>
+            <variable name="CamSwitchList">
+              <type>
+                <derived name="MC_CAMSWITCH_REF"/>
+              </type>
+            </variable>
+            <variable name="MC_TRACK_REF_FROM_CSV0">
+              <type>
+                <derived name="MC_TRACK_REF_FROM_CSV"/>
+              </type>
+            </variable>
+            <variable name="MC_CAMSWITCH_REF_FROM_CSV0">
+              <type>
+                <derived name="MC_CAMSWITCH_REF_FROM_CSV"/>
+              </type>
+            </variable>
+            <variable name="MC_DigitalCamSwitch0">
+              <type>
+                <derived name="MC_DigitalCamSwitch"/>
+              </type>
+            </variable>
+            <variable name="MC_CreateOutput0">
+              <type>
+                <derived name="MC_CreateOutput"/>
+              </type>
+            </variable>
+            <variable name="MC_ReadActualVelocity0">
+              <type>
+                <derived name="MC_ReadActualVelocity"/>
+              </type>
+            </variable>
+            <variable name="MC_ReadOutputBits0">
+              <type>
+                <derived name="MC_ReadOutputBits"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute1">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute2">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute3">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute4">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute5">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_ReadOutputBit0">
+              <type>
+                <derived name="MC_ReadOutputBit"/>
+              </type>
+            </variable>
+            <variable name="MC_ReadOutputBit1">
+              <type>
+                <derived name="MC_ReadOutputBit"/>
+              </type>
+            </variable>
+            <variable name="MC_WriteParameter0">
+              <type>
+                <derived name="MC_WriteParameter"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute6">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute7">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute8">
+              <type>
+                <derived name="MC_MoveAbsolute"/>
+              </type>
+            </variable>
+            <variable name="MC_ReadOutputBit2">
+              <type>
+                <derived name="MC_ReadOutputBit"/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <FBD>
+            <inVariable localId="30" height="32" width="88">
+              <position x="56" y="67"/>
+              <connectionPointOut>
+                <relPosition x="88" y="13"/>
+              </connectionPointOut>
+              <expression>'button_1'</expression>
+            </inVariable>
+            <block localId="46" width="72" height="48" typeName="wxgetval" instanceName="bt1">
+              <position x="200" y="43"/>
+              <inputVariables>
+                <variable formalParameter="name">
+                  <connectionPointIn>
+                    <relPosition x="0" y="37"/>
+                    <connection refLocalId="30">
+                      <position x="200" y="80"/>
+                      <position x="144" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="val">
+                  <connectionPointOut>
+                    <relPosition x="72" y="37"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <connector name="pwr" localId="1" height="32" width="64">
+              <position x="320" y="67"/>
+              <connectionPointIn>
+                <relPosition x="0" y="13"/>
+                <connection refLocalId="46" formalParameter="val">
+                  <position x="320" y="80"/>
+                  <position x="272" y="80"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <connector name="go_axis" localId="3" height="32" width="112">
+              <position x="320" y="136"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="5" formalParameter="val">
+                  <position x="320" y="152"/>
+                  <position x="272" y="152"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <inVariable localId="4" height="32" width="88">
+              <position x="56" y="136"/>
+              <connectionPointOut>
+                <relPosition x="88" y="16"/>
+              </connectionPointOut>
+              <expression>'button_2'</expression>
+            </inVariable>
+            <block localId="5" width="72" height="40" typeName="wxgetval" instanceName="Block1">
+              <position x="200" y="120"/>
+              <inputVariables>
+                <variable formalParameter="name">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="4">
+                      <position x="200" y="152"/>
+                      <position x="144" y="152"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="val">
+                  <connectionPointOut>
+                    <relPosition x="72" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="29" height="32" width="80">
+              <position x="64" y="219"/>
+              <connectionPointOut>
+                <relPosition x="80" y="13"/>
+              </connectionPointOut>
+              <expression>'button_3'</expression>
+            </inVariable>
+            <connector name="enable_cams" localId="59" height="32" width="128">
+              <position x="320" y="216"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="64" formalParameter="val">
+                  <position x="320" y="232"/>
+                  <position x="272" y="232"/>
+                </connection>
+              </connectionPointIn>
+            </connector>
+            <block localId="64" width="72" height="40" typeName="wxgetval" instanceName="Block6">
+              <position x="200" y="203"/>
+              <inputVariables>
+                <variable formalParameter="name">
+                  <connectionPointIn>
+                    <relPosition x="0" y="29"/>
+                    <connection refLocalId="29">
+                      <position x="200" y="232"/>
+                      <position x="144" y="232"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="val">
+                  <connectionPointOut>
+                    <relPosition x="72" y="29"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="42" width="104" height="112" typeName="MC_Sim" instanceName="MC_Sim0">
+              <position x="640" y="83"/>
+              <inputVariables>
+                <variable formalParameter="MaxVel">
+                  <connectionPointIn>
+                    <relPosition x="0" y="37"/>
+                    <connection refLocalId="43">
+                      <position x="640" y="120"/>
+                      <position x="592" y="120"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="MaxAcc">
+                  <connectionPointIn>
+                    <relPosition x="0" y="69"/>
+                    <connection refLocalId="43">
+                      <position x="640" y="152"/>
+                      <position x="616" y="152"/>
+                      <position x="616" y="120"/>
+                      <position x="592" y="120"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="MaxDec">
+                  <connectionPointIn>
+                    <relPosition x="0" y="93"/>
+                    <connection refLocalId="43">
+                      <position x="640" y="176"/>
+                      <position x="616" y="176"/>
+                      <position x="616" y="120"/>
+                      <position x="592" y="120"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="104" y="37"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="49" height="32" width="64">
+              <position x="768" y="104"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="42" formalParameter="Axis">
+                  <position x="768" y="120"/>
+                  <position x="744" y="120"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Axis</expression>
+            </outVariable>
+            <inVariable localId="76" height="32" width="88">
+              <position x="432" y="1152"/>
+              <connectionPointOut>
+                <relPosition x="88" y="16"/>
+              </connectionPointOut>
+              <expression>0.0</expression>
+            </inVariable>
+            <continuation name="pwr" localId="79" height="32" width="64">
+              <position x="104" y="1104"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+            </continuation>
+            <inVariable localId="90" height="32" width="64">
+              <position x="104" y="1056"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Axis</expression>
+            </inVariable>
+            <block localId="91" width="176" height="256" typeName="MC_Power" instanceName="MC_Power0">
+              <position x="200" y="1032"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="90">
+                      <position x="200" y="1072"/>
+                      <position x="168" y="1072"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Enable">
+                  <connectionPointIn>
+                    <relPosition x="0" y="88"/>
+                    <connection refLocalId="79">
+                      <position x="200" y="1120"/>
+                      <position x="168" y="1120"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="EnablePositive">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="EnableNegative">
+                  <connectionPointIn>
+                    <relPosition x="0" y="184"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="176" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Status">
+                  <connectionPointOut>
+                    <relPosition x="176" y="88"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Valid">
+                  <connectionPointOut>
+                    <relPosition x="176" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="176" y="184"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="176" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="92" width="176" height="248" typeName="MC_ReadActualPosition" instanceName="MC_ReadActualPosition0">
+              <position x="200" y="728"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="96">
+                      <position x="200" y="768"/>
+                      <position x="136" y="768"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Enable">
+                  <connectionPointIn>
+                    <relPosition x="0" y="80"/>
+                    <connection refLocalId="93">
+                      <position x="200" y="808"/>
+                      <position x="168" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="176" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Valid">
+                  <connectionPointOut>
+                    <relPosition x="176" y="80"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="176" y="112"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="176" y="152"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="176" y="192"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointOut>
+                    <relPosition x="176" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="93" height="32" width="96">
+              <position x="72" y="792"/>
+              <connectionPointOut>
+                <relPosition x="96" y="16"/>
+              </connectionPointOut>
+              <expression>BOOL#TRUE</expression>
+            </inVariable>
+            <outVariable localId="94" height="32" width="40">
+              <position x="400" y="944"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="92" formalParameter="Position">
+                  <position x="400" y="960"/>
+                  <position x="376" y="960"/>
+                </connection>
+              </connectionPointIn>
+              <expression>mPn</expression>
+            </outVariable>
+            <block localId="95" width="176" height="256" typeName="MC_SetPosition" instanceName="MC_SetPosition0">
+              <position x="552" y="1032"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="91" formalParameter="Axis">
+                      <position x="552" y="1072"/>
+                      <position x="376" y="1072"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="88"/>
+                    <connection refLocalId="91" formalParameter="Status">
+                      <position x="552" y="1120"/>
+                      <position x="376" y="1120"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="76">
+                      <position x="552" y="1168"/>
+                      <position x="520" y="1168"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Relative">
+                  <connectionPointIn>
+                    <relPosition x="0" y="184"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ExecutionMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="176" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="176" y="88"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="176" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="176" y="184"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="176" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="96" height="32" width="64">
+              <position x="72" y="752"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Axis</expression>
+            </inVariable>
+            <inVariable localId="99" height="32" width="96">
+              <position x="424" y="792"/>
+              <connectionPointOut>
+                <relPosition x="96" y="16"/>
+              </connectionPointOut>
+              <expression>BOOL#TRUE</expression>
+            </inVariable>
+            <outVariable localId="100" height="32" width="48">
+              <position x="776" y="944"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="119" formalParameter="Velocity">
+                  <position x="776" y="960"/>
+                  <position x="744" y="960"/>
+                </connection>
+              </connectionPointIn>
+              <expression>mVn</expression>
+            </outVariable>
+            <continuation name="go_axis" localId="9" height="32" width="112">
+              <position x="912" y="792"/>
+              <connectionPointOut>
+                <relPosition x="112" y="16"/>
+              </connectionPointOut>
+            </continuation>
+            <block localId="101" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute0">
+              <position x="1080" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="23">
+                      <position x="1080" y="776"/>
+                      <position x="1024" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="9">
+                      <position x="1080" y="808"/>
+                      <position x="1024" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="102">
+                      <position x="1080" y="872"/>
+                      <position x="1024" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="28">
+                      <position x="1080" y="904"/>
+                      <position x="1024" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="28">
+                      <position x="1080" y="936"/>
+                      <position x="1050" y="936"/>
+                      <position x="1050" y="904"/>
+                      <position x="1024" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="28">
+                      <position x="1080" y="968"/>
+                      <position x="1050" y="968"/>
+                      <position x="1050" y="904"/>
+                      <position x="1024" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="23" height="32" width="64">
+              <position x="960" y="760"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Axis</expression>
+            </inVariable>
+            <inVariable localId="102" height="32" width="56">
+              <position x="968" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>2200.0</expression>
+            </inVariable>
+            <inVariable localId="28" height="32" width="64">
+              <position x="960" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <inVariable localId="43" height="32" width="40">
+              <position x="552" y="104"/>
+              <connectionPointOut>
+                <relPosition x="40" y="16"/>
+              </connectionPointOut>
+              <expression>100</expression>
+            </inVariable>
+            <block localId="109" width="200" height="112" typeName="MC_TRACK_REF_FROM_CSV" instanceName="MC_TRACK_REF_FROM_CSV0">
+              <position x="712" y="552"/>
+              <inputVariables>
+                <variable formalParameter="FileName">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="110">
+                      <position x="712" y="584"/>
+                      <position x="664" y="584"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="200" y="32"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Valid">
+                  <connectionPointOut>
+                    <relPosition x="200" y="64"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="TrackList">
+                  <connectionPointOut>
+                    <relPosition x="200" y="96"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="110" height="32" width="72">
+              <position x="592" y="568"/>
+              <connectionPointOut>
+                <relPosition x="72" y="16"/>
+              </connectionPointOut>
+              <expression>'test.trk'</expression>
+            </inVariable>
+            <outVariable localId="112" height="32" width="72">
+              <position x="952" y="632"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="109" formalParameter="TrackList">
+                  <position x="952" y="648"/>
+                  <position x="912" y="648"/>
+                </connection>
+              </connectionPointIn>
+              <expression>TrackList</expression>
+            </outVariable>
+            <inVariable localId="48" height="32" width="64">
+              <position x="1296" y="240"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Axis</expression>
+            </inVariable>
+            <inVariable localId="51" height="32" width="72">
+              <position x="1288" y="336"/>
+              <connectionPointOut>
+                <relPosition x="72" y="16"/>
+              </connectionPointOut>
+              <expression>TrackList</expression>
+            </inVariable>
+            <block localId="113" width="240" height="136" typeName="MC_CAMSWITCH_REF_FROM_CSV" instanceName="MC_CAMSWITCH_REF_FROM_CSV0">
+              <position x="672" y="336"/>
+              <inputVariables>
+                <variable formalParameter="FileName">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="52">
+                      <position x="672" y="376"/>
+                      <position x="624" y="376"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="240" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Valid">
+                  <connectionPointOut>
+                    <relPosition x="240" y="80"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CamSwitchList">
+                  <connectionPointOut>
+                    <relPosition x="240" y="112"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="114" height="32" width="112">
+              <position x="952" y="432"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="113" formalParameter="CamSwitchList">
+                  <position x="952" y="448"/>
+                  <position x="912" y="448"/>
+                </connection>
+              </connectionPointIn>
+              <expression>CamSwitchList</expression>
+            </outVariable>
+            <inVariable localId="52" height="32" width="72">
+              <position x="552" y="360"/>
+              <connectionPointOut>
+                <relPosition x="72" y="16"/>
+              </connectionPointOut>
+              <expression>'test.dcs'</expression>
+            </inVariable>
+            <continuation name="enable_cams" localId="53" height="32" width="120">
+              <position x="952" y="336"/>
+              <connectionPointOut>
+                <relPosition x="120" y="16"/>
+              </connectionPointOut>
+            </continuation>
+            <inVariable localId="54" height="32" width="112">
+              <position x="1248" y="272"/>
+              <connectionPointOut>
+                <relPosition x="112" y="16"/>
+              </connectionPointOut>
+              <expression>CamSwitchList</expression>
+            </inVariable>
+            <block localId="115" width="72" height="112" typeName="AND">
+              <position x="1168" y="352"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="53">
+                      <position x="1168" y="384"/>
+                      <position x="1120" y="384"/>
+                      <position x="1120" y="352"/>
+                      <position x="1072" y="352"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="64"/>
+                    <connection refLocalId="113" formalParameter="Valid">
+                      <position x="1168" y="416"/>
+                      <position x="912" y="416"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN3">
+                  <connectionPointIn>
+                    <relPosition x="0" y="96"/>
+                    <connection refLocalId="109" formalParameter="Valid">
+                      <position x="1168" y="448"/>
+                      <position x="1128" y="448"/>
+                      <position x="1128" y="616"/>
+                      <position x="912" y="616"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="72" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="116" height="32" width="64">
+              <position x="1296" y="304"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Output</expression>
+            </inVariable>
+            <block localId="117" width="200" height="288" typeName="MC_DigitalCamSwitch" instanceName="MC_DigitalCamSwitch0">
+              <position x="1440" y="216"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="48">
+                      <position x="1440" y="256"/>
+                      <position x="1360" y="256"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Switches">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="54">
+                      <position x="1440" y="288"/>
+                      <position x="1360" y="288"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Outputs">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                    <connection refLocalId="116">
+                      <position x="1440" y="320"/>
+                      <position x="1360" y="320"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TrackOptions">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="51">
+                      <position x="1440" y="352"/>
+                      <position x="1360" y="352"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Enable">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="115" formalParameter="OUT">
+                      <position x="1440" y="384"/>
+                      <position x="1240" y="384"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="EnableMask">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="125">
+                      <position x="1440" y="416"/>
+                      <position x="1360" y="416"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ValueSource">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="200" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Switches">
+                  <connectionPointOut>
+                    <relPosition x="200" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Outputs">
+                  <connectionPointOut>
+                    <relPosition x="200" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="TrackOptions">
+                  <connectionPointOut>
+                    <relPosition x="200" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="InOperation">
+                  <connectionPointOut>
+                    <relPosition x="200" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="200" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="200" y="232"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="200" y="264"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="2" height="32" width="64">
+              <position x="1120" y="152"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="118" formalParameter="Output">
+                  <position x="1120" y="168"/>
+                  <position x="1048" y="168"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Output</expression>
+            </outVariable>
+            <block localId="118" width="136" height="48" typeName="MC_CreateOutput" instanceName="MC_CreateOutput0">
+              <position x="912" y="136"/>
+              <inputVariables/>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Output">
+                  <connectionPointOut>
+                    <relPosition x="136" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="119" width="176" height="248" typeName="MC_ReadActualVelocity" instanceName="MC_ReadActualVelocity0">
+              <position x="568" y="728"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="92" formalParameter="Axis">
+                      <position x="568" y="768"/>
+                      <position x="376" y="768"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Enable">
+                  <connectionPointIn>
+                    <relPosition x="0" y="80"/>
+                    <connection refLocalId="99">
+                      <position x="568" y="808"/>
+                      <position x="520" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="176" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Valid">
+                  <connectionPointOut>
+                    <relPosition x="176" y="80"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="176" y="112"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="176" y="152"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="176" y="192"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointOut>
+                    <relPosition x="176" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="120" width="152" height="48" typeName="MC_ReadOutputBits" instanceName="MC_ReadOutputBits0">
+              <position x="1736" y="288"/>
+              <inputVariables>
+                <variable formalParameter="Output">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="117" formalParameter="Outputs">
+                      <position x="1736" y="320"/>
+                      <position x="1640" y="320"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Bits">
+                  <connectionPointOut>
+                    <relPosition x="152" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="121" height="32" width="88">
+              <position x="1928" y="304"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="120" formalParameter="Bits">
+                  <position x="1928" y="320"/>
+                  <position x="1888" y="320"/>
+                </connection>
+              </connectionPointIn>
+              <expression>OutputBits</expression>
+            </outVariable>
+            <block localId="6" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute1">
+              <position x="1608" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="101" formalParameter="Axis">
+                      <position x="1608" y="776"/>
+                      <position x="1352" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="101" formalParameter="Done">
+                      <position x="1608" y="808"/>
+                      <position x="1352" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="7">
+                      <position x="1608" y="872"/>
+                      <position x="1560" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="8">
+                      <position x="1608" y="904"/>
+                      <position x="1560" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="8">
+                      <position x="1608" y="936"/>
+                      <position x="1584" y="936"/>
+                      <position x="1584" y="904"/>
+                      <position x="1560" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="8">
+                      <position x="1608" y="968"/>
+                      <position x="1584" y="968"/>
+                      <position x="1584" y="904"/>
+                      <position x="1560" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="7" height="32" width="56">
+              <position x="1504" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>2100.0</expression>
+            </inVariable>
+            <inVariable localId="8" height="32" width="64">
+              <position x="1496" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="14" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute2">
+              <position x="2040" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="6" formalParameter="Axis">
+                      <position x="2040" y="776"/>
+                      <position x="1880" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="6" formalParameter="Done">
+                      <position x="2040" y="808"/>
+                      <position x="1880" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="15">
+                      <position x="2040" y="872"/>
+                      <position x="1992" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="16">
+                      <position x="2040" y="904"/>
+                      <position x="1992" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="16">
+                      <position x="2040" y="936"/>
+                      <position x="2018" y="936"/>
+                      <position x="2018" y="904"/>
+                      <position x="1992" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="16">
+                      <position x="2040" y="968"/>
+                      <position x="2018" y="968"/>
+                      <position x="2018" y="904"/>
+                      <position x="1992" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="15" height="32" width="56">
+              <position x="1936" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>2600.0</expression>
+            </inVariable>
+            <inVariable localId="16" height="32" width="64">
+              <position x="1928" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="17" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute3">
+              <position x="2488" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="14" formalParameter="Axis">
+                      <position x="2488" y="776"/>
+                      <position x="2312" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="14" formalParameter="Done">
+                      <position x="2488" y="808"/>
+                      <position x="2312" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="18">
+                      <position x="2488" y="872"/>
+                      <position x="2440" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="19">
+                      <position x="2488" y="904"/>
+                      <position x="2440" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="19">
+                      <position x="2488" y="936"/>
+                      <position x="2464" y="936"/>
+                      <position x="2464" y="904"/>
+                      <position x="2440" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="19">
+                      <position x="2488" y="968"/>
+                      <position x="2464" y="968"/>
+                      <position x="2464" y="904"/>
+                      <position x="2440" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="18" height="32" width="56">
+              <position x="2384" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>2400.0</expression>
+            </inVariable>
+            <inVariable localId="19" height="32" width="64">
+              <position x="2376" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="20" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute4">
+              <position x="2952" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="17" formalParameter="Axis">
+                      <position x="2952" y="776"/>
+                      <position x="2760" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="17" formalParameter="Done">
+                      <position x="2952" y="808"/>
+                      <position x="2760" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="22">
+                      <position x="2952" y="872"/>
+                      <position x="2912" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="24">
+                      <position x="2952" y="904"/>
+                      <position x="2912" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="24">
+                      <position x="2952" y="936"/>
+                      <position x="2934" y="936"/>
+                      <position x="2934" y="904"/>
+                      <position x="2912" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="24">
+                      <position x="2952" y="968"/>
+                      <position x="2934" y="968"/>
+                      <position x="2934" y="904"/>
+                      <position x="2912" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="22" height="32" width="56">
+              <position x="2856" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>5000.0</expression>
+            </inVariable>
+            <inVariable localId="24" height="32" width="64">
+              <position x="2848" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="25" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute5">
+              <position x="3416" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="20" formalParameter="Axis">
+                      <position x="3416" y="776"/>
+                      <position x="3224" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="20" formalParameter="Done">
+                      <position x="3416" y="808"/>
+                      <position x="3224" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="26">
+                      <position x="3416" y="872"/>
+                      <position x="3376" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="27">
+                      <position x="3416" y="904"/>
+                      <position x="3376" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="27">
+                      <position x="3416" y="936"/>
+                      <position x="3398" y="936"/>
+                      <position x="3398" y="904"/>
+                      <position x="3376" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="27">
+                      <position x="3416" y="968"/>
+                      <position x="3398" y="968"/>
+                      <position x="3398" y="904"/>
+                      <position x="3376" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                    <connection refLocalId="130">
+                      <position x="3416" y="1032"/>
+                      <position x="3384" y="1032"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="26" height="32" width="56">
+              <position x="3320" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>2000.0</expression>
+            </inVariable>
+            <inVariable localId="27" height="32" width="64">
+              <position x="3312" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="122" width="152" height="88" typeName="MC_ReadOutputBit" instanceName="MC_ReadOutputBit0">
+              <position x="1736" y="376"/>
+              <inputVariables>
+                <variable formalParameter="Output">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="117" formalParameter="Outputs">
+                      <position x="1736" y="416"/>
+                      <position x="1664" y="416"/>
+                      <position x="1664" y="320"/>
+                      <position x="1640" y="320"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="OutputNumber">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="124">
+                      <position x="1736" y="448"/>
+                      <position x="1704" y="448"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Bit">
+                  <connectionPointOut>
+                    <relPosition x="152" y="40"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="123" height="32" width="56">
+              <position x="1928" y="400"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="122" formalParameter="Bit">
+                  <position x="1928" y="416"/>
+                  <position x="1888" y="416"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Track1</expression>
+            </outVariable>
+            <inVariable localId="124" height="32" width="24">
+              <position x="1680" y="432"/>
+              <connectionPointOut>
+                <relPosition x="24" y="16"/>
+              </connectionPointOut>
+              <expression>0</expression>
+            </inVariable>
+            <block localId="10" width="152" height="88" typeName="MC_ReadOutputBit" instanceName="MC_ReadOutputBit1">
+              <position x="1736" y="496"/>
+              <inputVariables>
+                <variable formalParameter="Output">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="117" formalParameter="Outputs">
+                      <position x="1736" y="536"/>
+                      <position x="1664" y="536"/>
+                      <position x="1664" y="320"/>
+                      <position x="1640" y="320"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="OutputNumber">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="12">
+                      <position x="1736" y="568"/>
+                      <position x="1704" y="568"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Bit">
+                  <connectionPointOut>
+                    <relPosition x="152" y="40"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="11" height="32" width="56">
+              <position x="1928" y="520"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="10" formalParameter="Bit">
+                  <position x="1928" y="536"/>
+                  <position x="1888" y="536"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Track2</expression>
+            </outVariable>
+            <inVariable localId="12" height="32" width="24">
+              <position x="1680" y="552"/>
+              <connectionPointOut>
+                <relPosition x="24" y="16"/>
+              </connectionPointOut>
+              <expression>1</expression>
+            </inVariable>
+            <inVariable localId="125" height="32" width="24">
+              <position x="1336" y="400"/>
+              <connectionPointOut>
+                <relPosition x="24" y="16"/>
+              </connectionPointOut>
+              <expression>7</expression>
+            </inVariable>
+            <block localId="126" width="192" height="224" typeName="MC_WriteParameter" instanceName="MC_WriteParameter0">
+              <position x="200" y="336"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="50">
+                      <position x="200" y="376"/>
+                      <position x="152" y="376"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="80"/>
+                    <connection refLocalId="127">
+                      <position x="200" y="416"/>
+                      <position x="152" y="416"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ParameterNumber">
+                  <connectionPointIn>
+                    <relPosition x="0" y="120"/>
+                    <connection refLocalId="128">
+                      <position x="200" y="456"/>
+                      <position x="152" y="456"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Value">
+                  <connectionPointIn>
+                    <relPosition x="0" y="160"/>
+                    <connection refLocalId="129">
+                      <position x="200" y="496"/>
+                      <position x="152" y="496"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ExecutionMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="192" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="192" y="80"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="192" y="120"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="192" y="160"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="192" y="200"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="50" height="32" width="64">
+              <position x="88" y="360"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Axis</expression>
+            </inVariable>
+            <inVariable localId="127" height="32" width="96">
+              <position x="56" y="400"/>
+              <connectionPointOut>
+                <relPosition x="96" y="16"/>
+              </connectionPointOut>
+              <expression>BOOL#TRUE</expression>
+            </inVariable>
+            <inVariable localId="128" height="32" width="48">
+              <position x="104" y="440"/>
+              <connectionPointOut>
+                <relPosition x="48" y="16"/>
+              </connectionPointOut>
+              <expression>1016</expression>
+            </inVariable>
+            <inVariable localId="129" height="32" width="56">
+              <position x="96" y="480"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>5000.0</expression>
+            </inVariable>
+            <inVariable localId="130" height="32" width="120">
+              <position x="3264" y="1016"/>
+              <connectionPointOut>
+                <relPosition x="120" y="16"/>
+              </connectionPointOut>
+              <expression>mcShortestWay</expression>
+            </inVariable>
+            <inVariable localId="13" height="32" width="152">
+              <position x="3728" y="1016"/>
+              <connectionPointOut>
+                <relPosition x="152" y="16"/>
+              </connectionPointOut>
+              <expression>mcPositiveDirection</expression>
+            </inVariable>
+            <block localId="21" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute6">
+              <position x="3928" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="25" formalParameter="Axis">
+                      <position x="3928" y="776"/>
+                      <position x="3688" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="25" formalParameter="Done">
+                      <position x="3928" y="808"/>
+                      <position x="3688" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="31">
+                      <position x="3928" y="872"/>
+                      <position x="3888" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="32">
+                      <position x="3928" y="904"/>
+                      <position x="3888" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="32">
+                      <position x="3928" y="936"/>
+                      <position x="3914" y="936"/>
+                      <position x="3914" y="904"/>
+                      <position x="3888" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="32">
+                      <position x="3928" y="968"/>
+                      <position x="3914" y="968"/>
+                      <position x="3914" y="904"/>
+                      <position x="3888" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                    <connection refLocalId="13">
+                      <position x="3928" y="1032"/>
+                      <position x="3880" y="1032"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="31" height="32" width="56">
+              <position x="3832" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>4000.0</expression>
+            </inVariable>
+            <inVariable localId="32" height="32" width="64">
+              <position x="3824" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="34" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute7">
+              <position x="4464" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="21" formalParameter="Axis">
+                      <position x="4464" y="776"/>
+                      <position x="4200" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="21" formalParameter="Done">
+                      <position x="4464" y="808"/>
+                      <position x="4200" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="35">
+                      <position x="4464" y="872"/>
+                      <position x="4424" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="36">
+                      <position x="4464" y="904"/>
+                      <position x="4408" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="36">
+                      <position x="4464" y="936"/>
+                      <position x="4446" y="936"/>
+                      <position x="4446" y="904"/>
+                      <position x="4408" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="36">
+                      <position x="4464" y="968"/>
+                      <position x="4446" y="968"/>
+                      <position x="4446" y="904"/>
+                      <position x="4408" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="35" height="32" width="56">
+              <position x="4368" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>6000.0</expression>
+            </inVariable>
+            <inVariable localId="36" height="32" width="64">
+              <position x="4360" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="33" width="272" height="344" typeName="MC_MoveAbsolute" instanceName="MC_MoveAbsolute8">
+              <position x="4952" y="736"/>
+              <inputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="34" formalParameter="Axis">
+                      <position x="4952" y="776"/>
+                      <position x="4736" y="776"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Execute">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="34" formalParameter="Done">
+                      <position x="4952" y="808"/>
+                      <position x="4736" y="808"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="ContinuousUpdate">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Position">
+                  <connectionPointIn>
+                    <relPosition x="0" y="136"/>
+                    <connection refLocalId="37">
+                      <position x="4952" y="872"/>
+                      <position x="4912" y="872"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Velocity">
+                  <connectionPointIn>
+                    <relPosition x="0" y="168"/>
+                    <connection refLocalId="38">
+                      <position x="4952" y="904"/>
+                      <position x="4912" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Acceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="200"/>
+                    <connection refLocalId="38">
+                      <position x="4952" y="936"/>
+                      <position x="4934" y="936"/>
+                      <position x="4934" y="904"/>
+                      <position x="4912" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Deceleration">
+                  <connectionPointIn>
+                    <relPosition x="0" y="232"/>
+                    <connection refLocalId="38">
+                      <position x="4952" y="968"/>
+                      <position x="4934" y="968"/>
+                      <position x="4934" y="904"/>
+                      <position x="4912" y="904"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Jerk">
+                  <connectionPointIn>
+                    <relPosition x="0" y="264"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="Direction">
+                  <connectionPointIn>
+                    <relPosition x="0" y="296"/>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="BufferMode">
+                  <connectionPointIn>
+                    <relPosition x="0" y="328"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Axis">
+                  <connectionPointOut>
+                    <relPosition x="272" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Done">
+                  <connectionPointOut>
+                    <relPosition x="272" y="72"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Busy">
+                  <connectionPointOut>
+                    <relPosition x="272" y="104"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Active">
+                  <connectionPointOut>
+                    <relPosition x="272" y="136"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="CommandAborted">
+                  <connectionPointOut>
+                    <relPosition x="272" y="168"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="Error">
+                  <connectionPointOut>
+                    <relPosition x="272" y="200"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="ErrorID">
+                  <connectionPointOut>
+                    <relPosition x="272" y="232"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="37" height="32" width="56">
+              <position x="4856" y="856"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>0.0</expression>
+            </inVariable>
+            <inVariable localId="38" height="32" width="64">
+              <position x="4848" y="888"/>
+              <connectionPointOut>
+                <relPosition x="64" y="16"/>
+              </connectionPointOut>
+              <expression>Velocity</expression>
+            </inVariable>
+            <block localId="39" width="152" height="88" typeName="MC_ReadOutputBit" instanceName="MC_ReadOutputBit2">
+              <position x="1736" y="616"/>
+              <inputVariables>
+                <variable formalParameter="Output">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="117" formalParameter="Outputs">
+                      <position x="1736" y="656"/>
+                      <position x="1664" y="656"/>
+                      <position x="1664" y="320"/>
+                      <position x="1640" y="320"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="OutputNumber">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="41">
+                      <position x="1736" y="688"/>
+                      <position x="1704" y="688"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Bit">
+                  <connectionPointOut>
+                    <relPosition x="152" y="40"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <outVariable localId="40" height="32" width="56">
+              <position x="1928" y="640"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="39" formalParameter="Bit">
+                  <position x="1928" y="656"/>
+                  <position x="1888" y="656"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Track3</expression>
+            </outVariable>
+            <inVariable localId="41" height="32" width="24">
+              <position x="1680" y="672"/>
+              <connectionPointOut>
+                <relPosition x="24" y="16"/>
+              </connectionPointOut>
+              <expression>2</expression>
+            </inVariable>
+          </FBD>
+        </body>
+        <documentation>
+<![CDATA[--]]>
+        </documentation>
+      </pou>
+      <pou name="wxgetval" pouType="functionBlock">
+        <interface>
+          <localVars>
+            <variable name="getpy">
+              <type>
+                <derived name="python_gear"/>
+              </type>
+            </variable>
+            <variable name="latch">
+              <type>
+                <derived name="SR"/>
+              </type>
+            </variable>
+          </localVars>
+          <inputVars>
+            <variable name="name">
+              <type>
+                <string/>
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="val">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </outputVars>
+        </interface>
+        <body>
+          <FBD>
+            <block localId="3" width="72" height="104" typeName="EQ">
+              <position x="824" y="168"/>
+              <inputVariables>
+                <variable formalParameter="EN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="39" formalParameter="ACK">
+                      <position x="824" y="200"/>
+                      <position x="696" y="200"/>
+                      <position x="696" y="80"/>
+                      <position x="672" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="64"/>
+                    <connection refLocalId="39" formalParameter="RESULT">
+                      <position x="824" y="232"/>
+                      <position x="712" y="232"/>
+                      <position x="712" y="112"/>
+                      <position x="672" y="112"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="88"/>
+                    <connection refLocalId="4">
+                      <position x="824" y="256"/>
+                      <position x="792" y="256"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ENO">
+                  <connectionPointOut>
+                    <relPosition x="72" y="32"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="72" y="64"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="4" height="32" width="56">
+              <position x="736" y="240"/>
+              <connectionPointOut>
+                <relPosition x="56" y="16"/>
+              </connectionPointOut>
+              <expression>'False'</expression>
+            </inVariable>
+            <inVariable localId="29" height="32" width="96">
+              <position x="408" y="96"/>
+              <connectionPointOut>
+                <relPosition x="96" y="16"/>
+              </connectionPointOut>
+              <expression>BOOL#TRUE</expression>
+            </inVariable>
+            <inVariable localId="30" height="32" width="96">
+              <position x="280" y="120"/>
+              <connectionPointOut>
+                <relPosition x="96" y="16"/>
+              </connectionPointOut>
+              <expression>'ButtonBox.'</expression>
+            </inVariable>
+            <inVariable localId="31" height="32" width="48">
+              <position x="744" y="120"/>
+              <connectionPointOut>
+                <relPosition x="48" y="16"/>
+              </connectionPointOut>
+              <expression>'True'</expression>
+            </inVariable>
+            <block localId="39" width="104" height="120" typeName="python_gear" instanceName="getpy">
+              <position x="568" y="40"/>
+              <inputVariables>
+                <variable formalParameter="N">
+                  <connectionPointIn>
+                    <relPosition x="0" y="40"/>
+                    <connection refLocalId="40">
+                      <position x="568" y="80"/>
+                      <position x="504" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="TRIG">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="29">
+                      <position x="568" y="112"/>
+                      <position x="504" y="112"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="CODE">
+                  <connectionPointIn>
+                    <relPosition x="0" y="104"/>
+                    <connection refLocalId="44" formalParameter="OUT">
+                      <position x="568" y="144"/>
+                      <position x="546" y="144"/>
+                      <position x="546" y="160"/>
+                      <position x="504" y="160"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ACK">
+                  <connectionPointOut>
+                    <relPosition x="104" y="40"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="RESULT">
+                  <connectionPointOut>
+                    <relPosition x="104" y="72"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="40" height="32" width="40">
+              <position x="464" y="64"/>
+              <connectionPointOut>
+                <relPosition x="40" y="16"/>
+              </connectionPointOut>
+              <expression>100</expression>
+            </inVariable>
+            <block localId="41" width="72" height="104" typeName="EQ">
+              <position x="824" y="48"/>
+              <inputVariables>
+                <variable formalParameter="EN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="39" formalParameter="ACK">
+                      <position x="824" y="80"/>
+                      <position x="672" y="80"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="64"/>
+                    <connection refLocalId="39" formalParameter="RESULT">
+                      <position x="824" y="112"/>
+                      <position x="672" y="112"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="88"/>
+                    <connection refLocalId="31">
+                      <position x="824" y="136"/>
+                      <position x="792" y="136"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="ENO">
+                  <connectionPointOut>
+                    <relPosition x="72" y="32"/>
+                  </connectionPointOut>
+                </variable>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="72" y="64"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <block localId="42" width="56" height="64" typeName="SR" instanceName="latch">
+              <position x="928" y="80"/>
+              <inputVariables>
+                <variable formalParameter="S1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="41" formalParameter="OUT">
+                      <position x="928" y="112"/>
+                      <position x="896" y="112"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="R">
+                  <connectionPointIn>
+                    <relPosition x="0" y="56"/>
+                    <connection refLocalId="3" formalParameter="OUT">
+                      <position x="928" y="136"/>
+                      <position x="918" y="136"/>
+                      <position x="918" y="232"/>
+                      <position x="896" y="232"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Q1">
+                  <connectionPointOut>
+                    <relPosition x="56" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="1" height="32" width="96">
+              <position x="280" y="200"/>
+              <connectionPointOut>
+                <relPosition x="96" y="16"/>
+              </connectionPointOut>
+              <expression>'.GetValue()'</expression>
+            </inVariable>
+            <block localId="44" width="72" height="80" typeName="CONCAT">
+              <position x="432" y="128"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="30">
+                      <position x="432" y="160"/>
+                      <position x="404" y="160"/>
+                      <position x="404" y="136"/>
+                      <position x="376" y="136"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="48"/>
+                    <connection refLocalId="45">
+                      <position x="432" y="176"/>
+                      <position x="376" y="176"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN3">
+                  <connectionPointIn>
+                    <relPosition x="0" y="72"/>
+                    <connection refLocalId="1">
+                      <position x="432" y="200"/>
+                      <position x="404" y="200"/>
+                      <position x="404" y="216"/>
+                      <position x="376" y="216"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="72" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="45" height="32" width="48">
+              <position x="328" y="160"/>
+              <connectionPointOut>
+                <relPosition x="48" y="16"/>
+              </connectionPointOut>
+              <expression>name</expression>
+            </inVariable>
+            <outVariable localId="46" height="32" width="32">
+              <position x="1008" y="96"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="42" formalParameter="Q1">
+                  <position x="1008" y="112"/>
+                  <position x="984" y="112"/>
+                </connection>
+              </connectionPointIn>
+              <expression>val</expression>
+            </outVariable>
+          </FBD>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="conf">
+        <resource name="res">
+          <task name="milisecond" interval="T#10ms" priority="0">
+            <pouInstance name="maininstance" typeName="main"/>
+          </task>
+        </resource>
+      </configuration>
+    </configurations>
+  </instances>
+</project>

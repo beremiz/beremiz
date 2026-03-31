@@ -1,0 +1,6 @@
+Track Number;First On Position;Last On Position;Axis Direction;Cam Switch Mode;Duration
+1;2000.0;3000.0;1;0;
+1;2500.0;3000.0;2;0;
+1;4000.0;1000.0;0;0;
+2;3000.0;;0;1;T#1350ms
+3;0.0;2000.0;0;0;

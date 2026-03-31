@@ -26,15 +26,23 @@
 # Package initialisation
 
 
-from __future__ import absolute_import
+import os
+import importlib
 from os import listdir, path
 from connectors.ConnectorBase import ConnectorBase
 
-connectors_packages = ["PYRO", "WAMP"]
-
+# Dynamically collect connector package names from subdirectories containing __init__.py
+current_dir = path.dirname(__file__)
+connectors_packages = [
+    name for name in listdir(current_dir)
+    if not name.startswith("__") and
+       path.isdir(path.join(current_dir, name)) and
+       path.isfile(path.join(current_dir, name, "__init__.py"))
+]
 
 def _GetLocalConnectorClassFactory(name):
-    return lambda: getattr(__import__(name, globals(), locals()), name + "_connector_factory")
+    return lambda: getattr(importlib.import_module(f"connectors.{name}"),
+                           f"{name}_connector_factory")
 
 
 connectors = {name: _GetLocalConnectorClassFactory(name)
@@ -53,12 +61,14 @@ def _Import_Dialogs():
         per_URI_connectors = {}
         schemes = []
         for con_name in connectors_packages:
-            module = __import__(con_name + '_dialog', globals(), locals())
+            module = importlib.import_module(f"connectors.{con_name}_dialog")
 
             for scheme in module.Schemes:
                 per_URI_connectors[scheme] = getattr(module, con_name + '_dialog')
                 schemes += [scheme]
 
+
+LocalHost = os.environ.get("BEREMIZ_LOCAL_HOST", "127.0.0.1")
 
 def ConnectorFactory(uri, confnodesroot):
     """
@@ -67,59 +77,27 @@ def ConnectorFactory(uri, confnodesroot):
     """
     _scheme = uri.split("://")[0].upper()
 
-    # commented code to enable for MDNS:// support
-    # _scheme, location = uri.split("://")
-    # _scheme = _scheme.upper()
-
     if _scheme == "LOCAL":
         # Local is special case
-        # pyro connection to local runtime
+        # ERPC connection to local runtime
         # started on demand, listening on random port
-        scheme = "PYRO"
-        runtime_port = confnodesroot.AppFrame.StartLocalRuntime(
-            taskbaricon=True)
-        uri = "PYROLOC://127.0.0.1:" + str(runtime_port)
+        scheme = "ERPC"
+        runtime_port = confnodesroot.StartLocalRuntime()
+        uri = f"ERPC://{LocalHost}:{runtime_port}"
 
-    # commented code to enable for MDNS:// support
-    # elif _scheme == "MDNS":
-    #     try:
-    #         from zeroconf import Zeroconf
-    #         r = Zeroconf()
-    #         i = r.get_service_info(zeroconf_service_type, location)
-    #         if i is None:
-    #             raise Exception("'%s' not found" % location)
-    #         ip = str(socket.inet_ntoa(i.address))
-    #         port = str(i.port)
-    #         newlocation = ip + ':' + port
-    #         confnodesroot.logger.write(_("'{a1}' is located at {a2}\n").format(a1=location, a2=newlocation))
-    #         location = newlocation
-    #         # not a bug, but a workaround against obvious downgrade attack
-    #         scheme = "PYROS"
-    #         r.close()
-    #     except Exception:
-    #         confnodesroot.logger.write_error(_("MDNS resolution failure for '%s'\n") % location)
-    #         confnodesroot.logger.write_error(traceback.format_exc())
-    #         return None
-
-    elif _scheme in connectors:
-        scheme = _scheme
-    elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
-        scheme = _scheme[:-1]
     else:
-        return None
+        _scheme = _scheme.split("-")[0]
 
-    # import module according to uri type and get connector specific baseclass
-    # first call to import the module,
-    # then call with parameters to create the class
-    connector_specific_class = connectors[scheme]()(uri, confnodesroot)
+        if _scheme in connectors:
+            scheme = _scheme
+        elif _scheme[-1] == 'S' and _scheme[:-1] in connectors:
+            scheme = _scheme[:-1]
+        else:
+            return None
 
-    if connector_specific_class is None:
-        return None
-
-    # new class inheriting from generic and specific connector base classes
-    return type(_scheme + "_connector",
-                (ConnectorBase, connector_specific_class), {})()
-
+    return (connectors[scheme]
+            ()  # triggers import
+            (uri, confnodesroot))  # creates object
 
 def EditorClassFromScheme(scheme):
     _Import_Dialogs()

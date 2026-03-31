@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 from functools import reduce
 
 import wx
@@ -52,16 +52,16 @@ def GenerateName(infos):
 class SearchResultPanel(wx.Panel):
 
     def _init_coll_MainSizer_Items(self, parent):
-        parent.AddSizer(self.HeaderSizer, 0, border=0, flag=wx.GROW)
-        parent.AddWindow(self.SearchResultsTree, 1, border=0, flag=wx.GROW)
+        parent.Add(self.HeaderSizer, 0, border=0, flag=wx.GROW)
+        parent.Add(self.SearchResultsTree, 1, border=0, flag=wx.GROW)
 
     def _init_coll_MainSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
         parent.AddGrowableRow(1)
 
     def _init_coll_HeaderSizer_Items(self, parent):
-        parent.AddWindow(self.HeaderLabel, 1, border=5, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
-        parent.AddWindow(self.ResetButton, 0, border=0, flag=0)
+        parent.Add(self.HeaderLabel, 1, border=5, flag=wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER_VERTICAL)
+        parent.Add(self.ResetButton, 0, border=0, flag=0)
 
     def _init_coll_HeaderSizer_Growables(self, parent):
         parent.AddGrowableCol(0)
@@ -90,7 +90,7 @@ class SearchResultPanel(wx.Panel):
         self.ResetButton = wx.lib.buttons.GenBitmapButton(
             self, bitmap=GetBitmap("reset"),
             size=wx.Size(28, 28), style=wx.NO_BORDER)
-        self.ResetButton.SetToolTipString(_("Reset search result"))
+        self.ResetButton.SetToolTip(_("Reset search result"))
         self.Bind(wx.EVT_BUTTON, self.OnResetButton, self.ResetButton)
 
         self._init_sizers()
@@ -172,7 +172,7 @@ class SearchResultPanel(wx.Panel):
                 "type": ITEM_PROJECT,
                 "data": None,
                 "text": None,
-                "matches": None,
+                "matches": 0,
             }
             search_results_tree_children = search_results_tree_infos.setdefault("children", [])
             for tagname in self.ElementsOrder:
@@ -289,9 +289,9 @@ class SearchResultPanel(wx.Panel):
             start, end = infos["data"][1:3]
             text_lines = infos["text"].splitlines()
             start_idx = start[1]
-            end_idx = reduce(lambda x, y: x + y, map(lambda x: len(x) + 1, text_lines[:end[0] - start[0]]), end[1] + 1)
+            end_idx = reduce(lambda x, y: x + y, [len(x) + 1 for x in text_lines[:end[0] - start[0]]], end[1] + 1)
             style = wx.TextAttr(wx.BLACK, wx.Colour(206, 204, 247))
-        elif infos["type"] is not None and infos["matches"] > 1:
+        elif infos["type"] is not None and infos["matches"] > 0:
             text = _("(%d matches)") % infos["matches"]
             start_idx, end_idx = 0, len(text)
             style = wx.TextAttr(wx.Colour(0, 127, 174))
@@ -320,7 +320,7 @@ class SearchResultPanel(wx.Panel):
             item, root_cookie = self.SearchResultsTree.GetNextChild(root, root_cookie)
 
     def ShowSearchResults(self, item):
-        data = self.SearchResultsTree.GetPyData(item)
+        data = self.SearchResultsTree.GetItemData(item)
         if isinstance(data, tuple):
             search_results = [data]
         else:

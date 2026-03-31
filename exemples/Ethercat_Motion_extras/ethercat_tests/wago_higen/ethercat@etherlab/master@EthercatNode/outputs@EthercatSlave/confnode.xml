@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CTNParams>
+  <TxPDOs/>
+  <RxPDOs>
+    <PDO>0x1600</PDO>
+  </RxPDOs>
+</CTNParams>

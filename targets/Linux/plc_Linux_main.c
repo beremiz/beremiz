@@ -11,8 +11,25 @@
 #include <pthread.h>
 #include <locale.h>
 #include <semaphore.h>
+#include <math.h>
+#include <stdarg.h>
+#ifdef REALTIME_LINUX
+#include <sys/mman.h>
+#endif
 
-static unsigned long __debug_tick;
+#define _Log(level,text,...) \
+    {\
+        char mstr[256];\
+        snprintf(mstr, 255, text, ##__VA_ARGS__);\
+        LogMessage(level, mstr, strlen(mstr));\
+    }
+
+#define _LogError(text,...) _Log(LOG_CRITICAL, text, ##__VA_ARGS__)
+#define _LogWarning(text,...) _Log(LOG_WARNING, text, ##__VA_ARGS__)
+
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
+static unsigned int __debug_tick;
 
 static pthread_t PLC_thread;
 static pthread_mutex_t python_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -22,25 +39,52 @@ static pthread_mutex_t debug_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int PLC_shutdown = 0;
 
-long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
+// Exchange 'atomicvar' with 'exchange' value if 'atomicvar' is equal to 'compared' value.
+// Returns the value of 'atomicvar' before the exchange.
+uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t exchange)
 {
-    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
-}
-long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
-{
-    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
+    __atomic_compare_exchange_n(atomicvar, &compared, exchange, 0, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    // if it succeeds, 'atomicvar' was equal to 'compared'
+    // if it fails, 'compared' will contain the current value of 'atomicvar'
+    return compared;
 }
 
 void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 {
+    #ifndef BEREMIZ_TEST_CYCLES
+
     struct timespec tmp;
     clock_gettime(CLOCK_REALTIME, &tmp);
     CURRENT_TIME->tv_sec = tmp.tv_sec;
     CURRENT_TIME->tv_nsec = tmp.tv_nsec;
+
+    #endif
 }
 
+int iec_lib_snprintf(char *__s, size_t __maxlen, const char *__format, ...)
+{
+	va_list args;
+	va_start(args, __format);
+	int ret = vsnprintf(__s, __maxlen, __format, args);
+	va_end(args);
+	return ret;
+}
+
+double iec_lib_acos(double x) { return acos(x); }
+double iec_lib_asin(double x) { return asin(x); }
+double iec_lib_atan(double x) { return atan(x); }
+double iec_lib_cos(double x) { return cos(x); }
+double iec_lib_exp(double x) { return exp(x); }
+double iec_lib_fmod(double x, double y) { return fmod(x, y); }
+double iec_lib_log(double x) { return log(x); }
+double iec_lib_log10(double x) { return log10(x); }
+double iec_lib_pow(double x, double y) { return pow(x, y); }
+double iec_lib_sin(double x) { return sin(x); }
+double iec_lib_sqrt(double x) { return sqrt(x); }
+double iec_lib_tan(double x) { return tan(x); }
+
 static long long period_ns = 0;
-struct timespec next_abs_time;
+struct timespec next_cycle_time;
 
 static void inc_timespec(struct timespec *ts, unsigned long long value_ns)
 {
@@ -61,8 +105,8 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
     printf("SetTimer(%lld,%lld)\n",next, period);
     */
     period_ns = period;
-    clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
-    inc_timespec(&next_abs_time, next);
+    clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
+    inc_timespec(&next_cycle_time, next);
     // interrupt clock_nanpsleep
     pthread_kill(PLC_thread, SIGUSR1);
 }
@@ -85,30 +129,162 @@ int ForceSaveRetainReq(void) {
     return PLC_shutdown;
 }
 
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
+}
+
+#define MAX_JITTER period_ns/10
+#define MIN_IDLE_TIME_NS 1000000 /* 1ms */
+/* Macro to compare timespec, evaluate to True if a is past b */
+#define timespec_gt(a,b) (a.tv_sec > b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec > b.tv_nsec))
 void PLC_thread_proc(void *arg)
 {
+  	int periods_passed = 0;
+
+    /* initialize next occurence and period */
+    period_ns = GetCommonTickTime();
+    clock_gettime(CLOCK_MONOTONIC, &next_cycle_time);
+
     while (!PLC_shutdown) {
+        int res;
+        struct timespec plc_end_time;
+        struct timespec plc_start_time;
+        int periods = 0;
+#ifdef REALTIME_LINUX
+        struct timespec deadline_time;
+#endif
+
+// BEREMIZ_TEST_CYCLES is defined in tests that need to emulate time:
+// - all BEREMIZ_TEST_CYCLES cycles are executed in a row with no pause
+// - __CURRENT_TIME is incremented each cycle according to emulated cycle period
+
+#ifndef BEREMIZ_TEST_CYCLES
         // Sleep until next PLC run
-        // TODO check result of clock_nanosleep and wait again or exit eventually
-        int res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_abs_time, NULL);
+        res = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next_cycle_time, NULL);
         if(res==EINTR){
             continue;
         }
         if(res!=0){
-            printf("PLC thread died with error %d \n", res);
+            _LogError("PLC thread timer returned error %d \n", res);
             return;
         }
-        PLC_GetTime(&__CURRENT_TIME);
-        __run();
-        inc_timespec(&next_abs_time, period_ns);
+        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
+#endif
+
+#ifdef REALTIME_LINUX
+        // timer overrun detection
+        deadline_time=next_cycle_time;
+        inc_timespec(&deadline_time, MAX_JITTER);
+        if(timespec_gt(plc_start_time, deadline_time)){
+            _LogWarning("PLC thread woken up too late. PLC cyclic task interval is too small.\n");
+        }
+#endif
+
+#ifdef BEREMIZ_TEST_CYCLES
+#define xstr(s) str(s)
+#define str(arg) #arg
+        // fake current time
+        __CURRENT_TIME.tv_sec = next_cycle_time.tv_sec;
+        __CURRENT_TIME.tv_nsec = next_cycle_time.tv_nsec;
+        // exit loop when enough cycles
+        if(__tick >= BEREMIZ_TEST_CYCLES) {
+            _LogWarning("TEST PLC thread ended after "xstr(BEREMIZ_TEST_CYCLES)" cycles.\n");
+            // After pre-defined test cycles count, PLC thread exits.
+            // Remaining PLC runtime is expected to be cleaned-up/killed by test script
+            clock_nanosleep(CLOCK_MONOTONIC, 0, 1000*1000*1000 , NULL);
+            return;
+        }
+#endif
+        __run(periods_passed);
+
+#ifndef BEREMIZ_TEST_CYCLES
+        // ensure next PLC cycle occurence is in the future
+        clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+        while(timespec_gt(plc_end_time, next_cycle_time))
+#endif
+        {
+            periods += 1;
+            inc_timespec(&next_cycle_time, period_ns);
+        }
+
+        // plc execution time overrun detection
+        if(periods > 1) {
+            // Mitigate CPU hogging, in case of too small cyclic task interval:
+            //  - since cycle deadline already missed, better keep system responsive
+            //  - test if next cycle occurs after minimal idle
+            //  - enforce minimum idle time if not
+
+            struct timespec earliest_possible_time = plc_end_time;
+            inc_timespec(&earliest_possible_time, MIN_IDLE_TIME_NS);
+            while(timespec_gt(earliest_possible_time, next_cycle_time)){
+                periods += 1;
+                inc_timespec(&next_cycle_time, period_ns);
+            }
+
+            _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", periods);
+        }
+        periods_passed = periods;
+
+#ifndef BEREMIZ_TEST_CYCLES
+		record_run_time_ns_avg(&plc_start_time, &plc_end_time);
+#endif
     }
+
     pthread_exit(0);
 }
 
 #define maxval(a,b) ((a>b)?a:b)
 int startPLC(int argc,char **argv)
 {
-    setlocale(LC_NUMERIC, "C");
+
+    int ret;
+	pthread_attr_t *pattr = NULL;
+
+#ifdef REALTIME_LINUX
+	struct sched_param param;
+	pthread_attr_t attr;
+
+    /* Lock memory */
+    ret = mlockall(MCL_CURRENT|MCL_FUTURE);
+    if(ret == -1) {
+		_LogError("mlockall failed: %m\n");
+		return ret;
+    }
+
+	/* Initialize pthread attributes (default values) */
+	ret = pthread_attr_init(&attr);
+	if (ret) {
+		_LogError("init pthread attributes failed\n");
+		return ret;
+	}
+
+	/* Set scheduler policy and priority of pthread */
+	ret = pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+	if (ret) {
+		_LogError("pthread setschedpolicy failed\n");
+		return ret;
+	}
+
+    #ifndef PLC_THREAD_PRIORITY
+    #define PLC_THREAD_PRIORITY 80
+    #endif
+    
+    param.sched_priority = PLC_THREAD_PRIORITY;
+	ret = pthread_attr_setschedparam(&attr, &param);
+	if (ret) {
+		_LogError("pthread setschedparam failed\n");
+		return ret;
+	}
+
+	/* Use scheduling parameters of attr */
+	ret = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+	if (ret) {
+		_LogError("pthread setinheritsched failed\n");
+		return ret;
+	}
+
+	pattr = &attr;
+#endif
 
     PLC_shutdown = 0;
 
@@ -120,7 +296,7 @@ int startPLC(int argc,char **argv)
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
 
-    if(  __init(argc,argv) == 0 ){
+    if((ret = __init(argc,argv)) == 0 ){
 
         /* Signal to wakeup PLC thread when period changes */
         signal(SIGUSR1, PLCThreadSignalHandler);
@@ -129,16 +305,18 @@ int startPLC(int argc,char **argv)
         /* install signal handler for manual break */
         signal(SIGINT, catch_signal);
 
-        /* initialize next occurence and period */
-        period_ns = common_ticktime__;
-        clock_gettime(CLOCK_MONOTONIC, &next_abs_time);
-
-        pthread_create(&PLC_thread, NULL, (void*) &PLC_thread_proc, NULL);
+        ret = pthread_create(&PLC_thread, pattr, (void*) &PLC_thread_proc, NULL);
+		if (ret) {
+			_LogError("create pthread failed\n");
+			return ret;
+		}
     }else{
-        return 1;
+        return ret;
     }
     return 0;
 }
+
+IEC_BOOL __DEBUG = 0;
 
 int TryEnterDebugSection(void)
 {
@@ -172,9 +350,7 @@ int stopPLC()
     return 0;
 }
 
-extern unsigned long __tick;
-
-int WaitDebugData(unsigned long *tick)
+int WaitDebugData(unsigned int *tick)
 {
     int res;
     if (PLC_shutdown) return 1;
@@ -186,10 +362,10 @@ int WaitDebugData(unsigned long *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     pthread_mutex_unlock(&debug_wait_mutex);
 }

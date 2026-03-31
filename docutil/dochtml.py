@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import subprocess
 import wx
 import wx.html
@@ -41,7 +41,7 @@ def OpenHtmlFrame(self, title, file, size):
         window.Show()
 
 
-EVT_HTML_URL_CLICK = wx.NewId()
+EVT_HTML_URL_CLICK = wx.NewIdRef()
 
 
 class HtmlWindowUrlClick(wx.PyEvent):

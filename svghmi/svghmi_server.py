@@ -5,7 +5,7 @@
 # Copyright (C) 2019: Edouard TISSERANT
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import errno
 from threading import RLock, Timer
 import os, time
@@ -174,7 +174,6 @@ class Watchdog(object):
         self.lock = RLock()
         self.initial_timeout = initial_timeout
         self.interval = interval
-        self.callback = callback
         with self.lock:
             self._start()
 
@@ -254,7 +253,7 @@ def SendThreadProc():
     size = ctypes.c_uint32()
     ptr = ctypes.c_void_p()
     res = 0
-    while svghmi_continue_collect:
+    while svghmi_continue_collect.value:
         svghmi_wait()
         for svghmi_session in svghmi_session_manager.iter_sessions():
             res = svghmi_send_collect(
@@ -273,7 +272,10 @@ def SendThreadProc():
                 break
 
 def AddPathToSVGHMIServers(path, factory, *args, **kwargs):
-    for k,v in svghmi_servers.iteritems():
+    # Asegúrate de que path sea bytes
+    if isinstance(path, str):
+        path = path.encode('utf-8')
+    for k,v in svghmi_servers.items():
         svghmi_root, svghmi_listener, path_list = v
         svghmi_root.putChild(path, factory(*args, **kwargs))
 
@@ -307,18 +309,18 @@ class NoCacheFile(File):
 def waitpid_timeout(proc, helpstr="", timeout = 3):
     if proc is None:
         return
-    def waitpid_timeout_loop(pid=proc.pid, timeout = timeout):
+    def waitpid_timeout_loop(proc = proc, timeout = timeout):
         try:
-            while os.waitpid(pid,os.WNOHANG) == (0,0):
-                time.sleep(1)
-                timeout = timeout - 1
-                if not timeout:
+            while proc.poll() is None:
+                time.sleep(.1)
+                timeout = timeout - .1
+                if timeout <= 0:
                     GetPLCObjectSingleton().LogMessage(
                         LogLevelsDict["WARNING"], 
-                        "Timeout waiting for {} PID: {}".format(helpstr, str(pid)))
+                        "Timeout waiting for {} PID: {}".format(helpstr, str(proc.pid)))
                     break
         except OSError:
             # workaround exception "OSError: [Errno 10] No child processes"
             pass
-    Thread(target=waitpid_timeout_loop, name="Zombie hunter").start()
+    waitpid_timeout_loop()
 

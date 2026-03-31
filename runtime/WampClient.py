@@ -22,26 +22,36 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-from __future__ import absolute_import
-from __future__ import print_function
 import time
 import json
 import os
 import re
-from six import text_type as text
+import shutil
 from autobahn.twisted import wamp
 from autobahn.twisted.websocket import WampWebSocketClientFactory, connectWS
 from autobahn.wamp import types, auth
 from autobahn.wamp.serializer import MsgPackSerializer
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.python.components import registerAdapter
+from twisted.internet.ssl import PrivateCertificate, optionsForClientTLS, VerificationError
+from twisted.internet._sslverify import OpenSSLCertificateAuthorities
+from OpenSSL import crypto
 
 from formless import annotate, webform
 import formless
 from nevow import tags, url, static
 from runtime import GetPLCObjectSingleton
+from runtime.Stunnel import getPSKID
+from runtime.loglevels import LogLevelsDict
 
 mandatoryConfigItems = ["ID", "active", "realm", "url"]
+
+
+AUTH_NONE = "None"
+AUTH_PSK =  "PSK"
+AUTH_CLIENTCERT = "ClientCertificate"
+AUTHENTICATION_TYPES = [AUTH_NONE, AUTH_PSK, AUTH_CLIENTCERT]
+SSL_AUTHENTICATION_TYPES = [AUTH_CLIENTCERT]
 
 _transportFactory = None
 _WampSession = None
@@ -49,29 +59,36 @@ WorkingDir = None
 
 # Find pre-existing project WAMP config file
 _WampConf = None
+_WampSecretFile = None
 _WampSecret = None
+_WampTrust = None
+_WampClientCert = None
+_UsedWampTrust = None
+_UsedWampClientCert = None
+
+defaultRegistrationOptions = {"invoke": u"last"}
 
 ExposedCalls = [
-    ("StartPLC", {}),
-    ("StopPLC", {}),
-    ("GetPLCstatus", {}),
-    ("GetPLCID", {}),
-    ("SeedBlob", {}),
-    ("AppendChunkToBlob", {}),
-    ("PurgeBlobs", {}),
-    ("NewPLC", {}),
-    ("RepairPLC", {}),
-    ("MatchMD5", {}),
-    ("SetTraceVariablesList", {}),
-    ("GetTraceVariables", {}),
-    ("RemoteExec", {}),
-    ("GetLogMessage", {}),
-    ("ResetLogCount", {})
+    ("StartPLC", defaultRegistrationOptions),
+    ("StopPLC", defaultRegistrationOptions),
+    ("GetPLCstatus", defaultRegistrationOptions),
+    ("GetPLCID", defaultRegistrationOptions),
+    ("SeedBlob", defaultRegistrationOptions),
+    ("AppendChunkToBlob", defaultRegistrationOptions),
+    ("PurgeBlobs", defaultRegistrationOptions),
+    ("NewPLC", defaultRegistrationOptions),
+    ("RepairPLC", defaultRegistrationOptions),
+    ("MatchMD5", defaultRegistrationOptions),
+    ("SetTraceVariablesList", defaultRegistrationOptions),
+    ("GetTraceVariables", defaultRegistrationOptions),
+    ("GetLogMessage", defaultRegistrationOptions),
+    ("ResetLogCount", defaultRegistrationOptions),
+    ("ExtendedCall", defaultRegistrationOptions)
 ]
 
 # de-activated dumb wamp config
 defaultWampConfig = {
-    "ID": "wamptest",
+    "ID": "wamptest", # replaced by service name (-n in CLI)
     "active": False,
     "realm": "Automation",
     "url": "ws://127.0.0.1:8888",
@@ -81,7 +98,9 @@ defaultWampConfig = {
     "protocolOptions": {
         "autoPingInterval": 10,
         "autoPingTimeout": 5
-    }
+    },
+    "authentication": "None",
+    "verifyHostname": True
 }
 
 # Those two lists are meant to be filled by customized runtime
@@ -108,27 +127,45 @@ def GetCallee(name):
 class WampSession(wamp.ApplicationSession):
 
     def onConnect(self):
-        if "secret" in self.config.extra:
-            user = self.config.extra["ID"]
-            self.join(u"Automation", [u"wampcra"], user)
+        auth = self.config.extra["authentication"]
+        if auth == AUTH_NONE:
+            accepted_method = "anonymous"
+            authID = None
         else:
-            self.join(u"Automation")
+            authID = self.config.extra["ID"]
+            if auth == AUTH_PSK:
+                accepted_method = "wampcra"
+            elif auth in SSL_AUTHENTICATION_TYPES:
+                accepted_method = "tls"
+            else:
+                raise Exception("Invalid authentication: "+auth)
+
+        self.join(self.config.realm,
+                  authmethods=[accepted_method],
+                  authid=authID)
 
     def onChallenge(self, challenge):
-        if challenge.method == u"wampcra":
-            if "secret" in self.config.extra:
-                secret = self.config.extra["secret"].encode('utf8')
-                signature = auth.compute_wcs(
-                    secret, challenge.extra['challenge'].encode('utf8'))
-                return signature.decode("ascii")
+        if challenge.method == "wampcra":
+            secret = self.config.extra["secret"]
+            if 'salt' in challenge.extra:
+                # salted secret
+                key = auth.derive_key(secret,
+                                      challenge.extra['salt'],
+                                      challenge.extra['iterations'],
+                                      challenge.extra['keylen'])
             else:
-                raise Exception("no secret given for authentication")
+                # plain, unsalted secret
+                key = secret
+
+            signature = auth.compute_wcs(key, challenge.extra['challenge'])
+            return signature
         else:
-            raise Exception(
-                "don't know how to handle authmethod {}".format(challenge.method))
+            raise Exception("Invalid authmethod {}".format(challenge.method))
 
     def onJoin(self, details):
         global _WampSession
+        GetPLCObjectSingleton().LogMessage(LogLevelsDict["INFO"], 
+            'WAMP session joined for: '+self.config.extra["ID"])
         _WampSession = self
         ID = self.config.extra["ID"]
 
@@ -137,28 +174,26 @@ class WampSession(wamp.ApplicationSession):
                 registerOptions = types.RegisterOptions(**kwargs)
             except TypeError as e:
                 registerOptions = None
-                print(_("TypeError register option: {}".format(e)))
+                print("TypeError register option: {}".format(e))
 
-            self.register(GetCallee(name), u'.'.join((ID, name)), registerOptions)
+            self.register(GetCallee(name), '.'.join((ID, name)), registerOptions)
 
         for name in SubscribedEvents:
-            self.subscribe(GetCallee(name), text(name))
+            self.subscribe(GetCallee(name), str(name))
 
         for func in DoOnJoin:
             func(self)
 
-        print(_('WAMP session joined (%s) by:' % time.ctime()), ID)
-
     def onLeave(self, details):
         global _WampSession, _transportFactory
-        super(WampSession, self).onLeave(details)
+        GetPLCObjectSingleton().LogMessage(LogLevelsDict["INFO"], 
+            'WAMP session left for: {} reason: "{}" message: "{}"'.format(self.config.extra["ID"], details.reason, details.message))
         _WampSession = None
         _transportFactory = None
-        print(_('WAMP session left'))
 
     def publishWithOwnID(self, eventID, value):
         ID = self.config.extra["ID"]
-        self.publish(text(ID+'.'+eventID), value)
+        self.publish(str(ID+'.'+eventID), value)
 
 
 class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, ReconnectingClientFactory):
@@ -181,11 +216,11 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
                 self.setProtocolOptions(**protocolOptions)
             _transportFactory = self
         except Exception as e:
-            print(_("Custom protocol options failed :"), e)
+            print("Custom protocol options failed :", e)
             _transportFactory = None
 
     def setClientFactoryOptions(self, options):
-        for key, value in options.items():
+        for key, value in list(options.items()):
             if key in ["maxDelay", "initialDelay", "maxRetries", "factor", "jitter"]:
                 setattr(self, key, value)
 
@@ -193,17 +228,29 @@ class ReconnectingWampWebSocketClientFactory(WampWebSocketClientFactory, Reconne
         self.resetDelay()
         return ReconnectingClientFactory.buildProtocol(self, addr)
 
+    def _clientConnectionLostOrFailed(self, connector, reason):
+        """ report connection lost """
+        if not reason.check(VerificationError):
+            # Verification failed
+            GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                "WAMP TLS certificate verification failed: "+\
+                reason.getErrorMessage()+
+                "\nProvide a certicate on web interface or as wampTrustStore.crt in project files.")
+        else:
+            GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                "WAMP connection lost: "+reason.getErrorMessage())
+        
     def clientConnectionFailed(self, connector, reason):
-        print(_("WAMP Client connection failed (%s) .. retrying ..") %
+        print("WAMP Client connection failed (%s) .. retrying .." %
               time.ctime())
-        super(ReconnectingWampWebSocketClientFactory,
-              self).clientConnectionFailed(connector, reason)
+        self._clientConnectionLostOrFailed(connector, reason)
+        return ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
 
     def clientConnectionLost(self, connector, reason):
-        print(_("WAMP Client connection lost (%s) .. retrying ..") %
+        print("WAMP Client connection lost (%s) .. retrying .." %
               time.ctime())
-        super(ReconnectingWampWebSocketClientFactory,
-              self).clientConnectionFailed(connector, reason)
+        self._clientConnectionLostOrFailed(connector, reason)
+        return ReconnectingClientFactory.clientConnectionLost(self, connector, reason)
 
 
 def CheckConfiguration(WampClientConf):
@@ -214,7 +261,7 @@ def CheckConfiguration(WampClientConf):
             _("WAMP configuration error:"))
 
 def UpdateWithDefault(d1, d2):
-    for k, v in d2.items():
+    for k, v in list(d2.items()):
         d1.setdefault(k, v)
 
 def GetConfiguration():
@@ -222,8 +269,8 @@ def GetConfiguration():
 
     WampClientConf = None
 
-    if os.path.exists(_WampConf):
-        try: 
+    if _WampConf and os.path.exists(_WampConf):
+        try:
             WampClientConf = json.load(open(_WampConf))
             UpdateWithDefault(WampClientConf, defaultWampConfig)
         except ValueError:
@@ -243,11 +290,6 @@ def GetConfiguration():
     return WampClientConf
 
 
-def SetWampSecret(wampSecret):
-    with open(os.path.realpath(_WampSecret), 'w') as f:
-        f.write(wampSecret)
-
-
 def SetConfiguration(WampClientConf):
     global lastKnownConfig
 
@@ -257,7 +299,9 @@ def SetConfiguration(WampClientConf):
 
     with open(os.path.realpath(_WampConf), 'w') as f:
         json.dump(WampClientConf, f, sort_keys=True, indent=4)
+
     StopReconnectWampClient()
+
     if 'active' in WampClientConf and WampClientConf['active']:
         StartReconnectWampClient()
 
@@ -267,47 +311,80 @@ def SetConfiguration(WampClientConf):
 def LoadWampSecret(secretfname):
     WSClientWampSecret = open(secretfname, 'rb').read()
     if len(WSClientWampSecret) == 0:
-        raise Exception(_("WAMP secret empty"))
+        raise Exception(_("WAMP secret is empty"))
     return WSClientWampSecret
 
 
 def IsCorrectUri(uri):
     return re.match(r'wss?://[^\s?:#-]+(:[0-9]+)?(/[^\s]*)?$', uri) is not None
 
+_RegisterWampClientArgs = None
+def RegisterWampClient(*a,**kw):
+    from twisted.internet import reactor
+    global _RegisterWampClientArgs
+    _RegisterWampClientArgs = (a,kw)
+    reactor.callFromThread(_RegisterWampClient)
+    
 
-def RegisterWampClient(wampconf=None, wampsecret=None):
-    global _WampConf, _WampSecret
-    _WampConfDefault = os.path.join(WorkingDir, "wampconf.json")
-    _WampSecretDefault = os.path.join(WorkingDir, "wamp.secret")
+def ApplyWampClientConfig(wampconf=None, wampsecret=None, ConfDir=None, KeyStore=None, servicename=None):
+    global _WampConf, _WampSecret, _WampSecretFile, _WampClientCert, _WampTrust, defaultWampConfig
+    global _UsedWampClientCert, _UsedWampTrust
 
-    # set config file path only if not already set
-    if _WampConf is None:
-        # default project's wampconf has precedance over commandline given
-        if os.path.exists(_WampConfDefault) or wampconf is None:
-            _WampConf = _WampConfDefault
-        else:
-            _WampConf = wampconf
+    if servicename:
+        defaultWampConfig["ID"] = servicename
+
+    ConfDir = ConfDir if ConfDir else WorkingDir
+
+    _WampConfDefault = os.path.join(ConfDir, "wampconf.json")
+
+    # default project's wampconf has precedance over commandline given
+    if os.path.exists(_WampConfDefault) or wampconf is None:
+        _WampConf = _WampConfDefault
+    else:
+        _WampConf = wampconf
 
     WampClientConf = GetConfiguration()
 
-    # set secret file path only if not already set
-    if _WampSecret is None:
-        # default project's wamp secret also
-        # has precedance over commandline given
-        if os.path.exists(_WampSecretDefault):
-            _WampSecret = _WampSecretDefault
-        else:
-            _WampSecret = wampsecret
+    KeyStore = KeyStore if KeyStore else WorkingDir
 
-    if _WampSecret is not None:
-        WampClientConf["secret"] = LoadWampSecret(_WampSecret)
+    _WampSecretDefault = os.path.join(KeyStore, "wamp.secret")
+
+    _WampClientCert = os.path.join(KeyStore, "wampClientCert.pem")
+    _UsedWampClientCert = _WampClientCert
+    _WampTrust = os.path.join(KeyStore, "wampTrustStore.crt")
+    _UsedWampTrust = _WampTrust
+
+    # default project's wamp secret also
+    # has precedance over commandline given
+    if os.path.exists(_WampSecretDefault):
+        _WampSecretFile = _WampSecretDefault
     else:
-        print(_("WAMP authentication has no secret configured"))
-        _WampSecret = _WampSecretDefault
+        _WampSecretFile = wampsecret
+
+    if _WampSecretFile is not None:
+        if _WampSecretFile == _WampSecretDefault:
+            # secret from project dir is raw (no ID prefix)
+            _WampSecret = LoadWampSecret(_WampSecretFile)
+        else:
+            # secret from command line is formated ID:PSK
+            # fall back to PSK data (works because wampsecret is PSKpath)
+            _ID, _WampSecret = getPSKID()
 
     if not WampClientConf["active"]:
-        print(_("WAMP deactivated in configuration"))
+        print("WAMP deactivated in configuration")
         return
+
+    return WampClientConf
+
+def _RegisterWampClient():
+    global _WampSecret, _transportFactory, _RegisterWampClientArgs
+
+    a,kw = _RegisterWampClientArgs
+    WampClientConf = ApplyWampClientConfig(*a, **kw)
+    if WampClientConf is None:
+        return # in case Wamp is not activated
+
+    WampClientConf["secret"] = _WampSecret
 
     # create a WAMP application session factory
     component_config = types.ComponentConfig(
@@ -324,35 +401,57 @@ def RegisterWampClient(wampconf=None, wampsecret=None):
         url=WampClientConf["url"],
         serializers=[MsgPackSerializer()])
 
-    # start the client from a Twisted endpoint
+    # start the client
     if _transportFactory:
-        connectWS(_transportFactory)
-        print(_("WAMP client connecting to :"), WampClientConf["url"])
-        return True
-    else:
-        print(_("WAMP client can not connect to :"), WampClientConf["url"])
-        return False
+        auth = WampClientConf["authentication"]
+        verify = WampClientConf["verifyHostname"]
 
+        contextFactory=None
+        if _transportFactory.isSecure:
+            client_cert=None
+            trustRoot=None
+            ssl_auth = auth in SSL_AUTHENTICATION_TYPES
+            if ssl_auth:
+                if os.path.exists(_UsedWampClientCert):
+                    client_cert = PrivateCertificate.loadPEM(open(_UsedWampClientCert, 'rb').read())
+                else:
+                    GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                        "WAMP client certificate not provided for: " + WampClientConf["url"])
+                    return
+            if verify:
+                if os.path.exists(_UsedWampTrust):
+                    cert = crypto.load_certificate(crypto.FILETYPE_PEM,
+                        open(_UsedWampTrust, 'rb').read())
+                    trustRoot = OpenSSLCertificateAuthorities([cert])
+            if verify or ssl_auth:
+                contextFactory=optionsForClientTLS(_transportFactory.host,
+                                                   trustRoot=trustRoot,
+                                                   clientCertificate=client_cert)
+        else:
+            # non encrypted connection is not accepted in case some security is requested
+            if auth != AUTH_NONE or verify:
+                GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+                    "WAMP connection must be secure: " + WampClientConf["url"])
+                return
+
+        connectWS(_transportFactory, contextFactory)
+        print("WAMP client connecting to: " + WampClientConf["url"])
+    else:
+        GetPLCObjectSingleton().LogMessage(LogLevelsDict["WARNING"], 
+            "WAMP configuration invalid: " + WampClientConf["url"])
 
 def StopReconnectWampClient():
-    if _transportFactory is not None:
-        _transportFactory.stopTrying()
+    global _WampSession, _transportFactory
     if _WampSession is not None:
         _WampSession.leave()
-
+    _WampSession = None
+    if _transportFactory is not None:
+        _transportFactory.stopTrying()
+    _transportFactory = None
 
 def StartReconnectWampClient():
-    if _WampSession:
-        # do reconnect and reset continueTrying and initialDelay parameter
-        if _transportFactory is not None:
-            _transportFactory.resetDelay()
-        _WampSession.disconnect()
-        return True
-    else:
-        # do connect
-        RegisterWampClient()
-        return True
-
+    from twisted.internet import reactor
+    reactor.callLater(1, _RegisterWampClient)
 
 def GetSession():
     return _WampSession
@@ -370,21 +469,25 @@ def getWampStatus():
 
 def PublishEvent(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publish(text(eventID), value)
+        _WampSession.publish(str(eventID), value)
 
 
 def PublishEventWithOwnID(eventID, value):
     if getWampStatus() == "Attached":
-        _WampSession.publishWithOwnID(text(eventID), value)
+        _WampSession.publishWithOwnID(str(eventID), value)
 
 
 # WEB CONFIGURATION INTERFACE
 WAMP_SECRET_URL = "secret"
+WAMP_DELETE_CLIENTCERT_URL = "delete_clientcert"
+WAMP_DELETE_TRUSTSTORE_URL = "delete_truststore"
 webExposedConfigItems = [
     'active', 'url', 'ID',
     "clientFactoryOptions.maxDelay",
     "protocolOptions.autoPingInterval",
-    "protocolOptions.autoPingTimeout"
+    "protocolOptions.autoPingTimeout",
+    "authentication",
+    "verifyHostname"
 ]
 
 
@@ -406,8 +509,28 @@ def wampConfig(**kwargs):
     if secretfile_field is not None:
         secretfile = getattr(secretfile_field, "file", None)
         if secretfile is not None:
-            secret = secretfile_field.file.read()
-            SetWampSecret(secret)
+            if _WampSecretFile is None:
+                raise annotate.ValidateError({},
+                    "No keystore available to store secret. Use -s option to set it.")
+            with open(os.path.realpath(_WampSecretFile), 'w') as destfd:
+                secretfile.seek(0)
+                shutil.copyfileobj(secretfile,destfd)
+
+    clientCert_field = kwargs["clientCert"]
+    if clientCert_field is not None:
+        clientCert_file = getattr(clientCert_field, "file", None)
+        if clientCert_file is not None:
+            with open(os.path.realpath(_WampClientCert), 'w') as destfd:
+                clientCert_file.seek(0)
+                shutil.copyfileobj(clientCert_file,destfd)
+
+    trustStore_field = kwargs["trustStore"]
+    if trustStore_field is not None:
+        trustStore_file = getattr(trustStore_field, "file", None)
+        if trustStore_file is not None:
+            with open(os.path.realpath(_WampTrust), 'w') as destfd:
+                trustStore_file.seek(0)
+                shutil.copyfileobj(trustStore_file,destfd)
 
     newConfig = lastKnownConfig.copy()
     for argname in webExposedConfigItems:
@@ -420,7 +543,7 @@ def wampConfig(**kwargs):
             tmpConf = newConfig
             while argname_path:
                 tmpConf = tmpConf.setdefault(argname_path.pop(0), {})
-            tmpConf[arg_last] = arg
+            tmpConf[arg_last] = arg.decode() if type(arg)==bytes else arg
 
     SetConfiguration(newConfig)
 
@@ -451,6 +574,51 @@ def getDownloadUrl(ctx, argument):
             child(lastKnownConfig["ID"] + ".secret")
 
 
+class FileUploadDelete(annotate.FileUpload):
+    pass
+
+
+class FileUploadDeleteRenderer(webform.FileUploadRenderer):
+
+    def input(self, context, slot, data, name, value):
+        # pylint: disable=expression-not-assigned
+        slot[_("Upload:")]
+        slot = webform.FileUploadRenderer.input(
+            self, context, slot, data, name, value)
+        file_exists = data.typedValue.getAttribute('file_exists')
+        if file_exists and file_exists():
+            unique = str(id(self))
+            file_delete = data.typedValue.getAttribute('file_delete')
+            slot = slot[
+                tags.a(href=file_delete, target=unique)[_("Delete")],
+                tags.iframe(srcdoc="File exists", name=unique,
+                            height="20", width="150",
+                            marginheight="5", marginwidth="5",
+                            scrolling="no", frameborder="0")
+            ]
+        return slot
+
+
+registerAdapter(FileUploadDeleteRenderer, FileUploadDelete,
+                formless.iformless.ITypedRenderer)
+
+
+def getClientCertPresence():
+    return os.path.exists(_WampClientCert)
+
+
+def getClientCertDeleteUrl(ctx, argument):
+    return url.URL.fromContext(ctx).child(WAMP_DELETE_CLIENTCERT_URL)
+
+
+def getTrustStorePresence():
+    return os.path.exists(_WampTrust)
+
+
+def getTrustStoreDeleteUrl(ctx, argument):
+    return url.URL.fromContext(ctx).child(WAMP_DELETE_TRUSTSTORE_URL)
+
+
 webFormInterface = [
     ("status",
      annotate.String(label=_("Current status"),
@@ -476,7 +644,23 @@ webFormInterface = [
                       default=wampConfigDefault)),
     ("protocolOptions.autoPingTimeout",
      annotate.Integer(label=_("Auto ping timeout (s)"),
-                      default=wampConfigDefault))
+                      default=wampConfigDefault)),
+    ("clientCert",
+     FileUploadDelete(label=_("File containing client certificate"),
+                      file_exists=getClientCertPresence,
+                      file_delete=getClientCertDeleteUrl)),
+    ("trustStore",
+     FileUploadDelete(label=_("File containing server certificate"),
+                      file_exists=getTrustStorePresence,
+                      file_delete=getTrustStoreDeleteUrl)),
+    ("authentication",
+     annotate.Choice(AUTHENTICATION_TYPES,
+                     required=True,
+                     label=_("Authentication type"),
+                     default=wampConfigDefault)),
+    ("verifyHostname",
+     annotate.Boolean(label=_("Verify hostname matches certificate hostname"),
+                      default=wampConfigDefault)),
     ]
 
 def deliverWampSecret(ctx, segments):
@@ -487,17 +671,32 @@ def deliverWampSecret(ctx, segments):
 
     # TODO: make beautifull message in case of exception
     # while loading secret (if empty or dont exist)
-    secret = LoadWampSecret(_WampSecret)
+    if _WampSecretFile is None:
+        return None
+    secret = LoadWampSecret(_WampSecretFile)
     return static.Data(secret, 'application/octet-stream'), ()
 
+def deleteClientCert(ctx, segments):
+    if os.path.exists(_WampClientCert):
+        os.remove(_WampClientCert)
+    return static.Data("ClientCert deleted", 'text/html'), ()
+
+def deleteTrustStore(ctx, segments):
+    if os.path.exists(_WampTrust):
+        os.remove(_WampTrust)
+    return static.Data("TrustStore deleted", 'text/html'), ()
 
 def RegisterWebSettings(NS):
 
-    NS.ConfigurableSettings.addSettings(
+    WebSettings = NS.newExtensionSetting("Wamp Extension Settings", "wamp_settings")
+    WebSettings.addSettings(
         "wamp",
         _("Wamp Settings"),
         webFormInterface,
         _("Set"),
         wampConfig)
 
-    NS.customSettingsURLs[WAMP_SECRET_URL] = deliverWampSecret
+    WebSettings.addCustomURL(WAMP_SECRET_URL, deliverWampSecret)
+    WebSettings.addCustomURL(WAMP_DELETE_TRUSTSTORE_URL, deleteTrustStore)
+    WebSettings.addCustomURL(WAMP_DELETE_CLIENTCERT_URL, deleteClientCert)
+

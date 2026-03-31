@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-from __future__ import print_function
-from __future__ import unicode_literals
+
+
 
 __author__ = 'Gavin Beatty <gavinbeatty@gmail.com>'
 __version__ = '2.1.0.dev0'

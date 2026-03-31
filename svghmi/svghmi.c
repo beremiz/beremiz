@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <errno.h>
+#include <string.h>
 #include "iec_types_all.h"
 #include "POUS.h"
 #include "config.h"
@@ -39,8 +40,8 @@ typedef enum {
 } buf_state_t;
 
 static int global_write_dirty = 0;
-static long hmitree_rlock = 0;
-static long hmitree_wlock = 0;
+static uint32_t hmitree_rlock = 0;
+static uint32_t hmitree_wlock = 0;
 
 typedef struct hmi_tree_item_s hmi_tree_item_t;
 struct hmi_tree_item_s{
@@ -459,9 +460,11 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
         {
             case setval:
             {
-                uint32_t index = *(uint32_t*)(cursor);
+                uint32_t index; //  = *(uint32_t*)(cursor);
                 uint8_t const *valptr = cursor + sizeof(uint32_t);
 
+                // unaligned access forces memcpy instead of cast
+                memcpy(&index, cursor, sizeof(uint32_t));
 
                 if(index == heartbeat_index)
                     was_hearbeat = 1;
@@ -536,8 +539,12 @@ int svghmi_recv_dispatch(uint32_t session_index, uint32_t size, const uint8_t *p
 
             case subscribe:
             {
-                uint32_t index = *(uint32_t*)(cursor);
-                uint16_t refresh_period_ms = *(uint32_t*)(cursor + sizeof(uint32_t));
+                uint32_t index; // = *(uint32_t*)(cursor);
+                uint16_t refresh_period_ms; // = *(uint32_t*)(cursor + sizeof(uint32_t));
+
+                // unaligned access forces memcpy instead of cast
+                memcpy(&index, cursor, sizeof(uint32_t));
+                memcpy(&refresh_period_ms, cursor+sizeof(uint32_t), sizeof(uint16_t));
 
                 if(index < HMI_ITEM_COUNT)
                 {

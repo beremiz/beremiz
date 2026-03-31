@@ -12,11 +12,14 @@ libraries = [
     ('Native', 'NativeLib.NativeLibrary', True),
     ('Python', 'py_ext.PythonLibrary', True),
     ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
-    ('SVGHMI', 'svghmi.SVGHMILibrary', False)]
+    ('SVGHMI', 'svghmi.SVGHMILibrary', 'svghmi'),
+    ('MQTT', 'mqtt.MQTTLibrary', False),
+    ('Motion', 'MotionLibrary.MotionLibrary', False)]
 
 catalog = [
+    ('mqtt', _('MQTT client'), _('Map MQTT topics as located variables'), 'mqtt.MQTTClient'),
     ('opcua', _('OPC-UA client'), _('Map OPC-UA server as located variables'), 'opc_ua.OPCUAClient'),
-    ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),
+    # FIXME ('canfestival', _('CANopen support'), _('Map located variables over CANopen'), 'canfestival.canfestival.RootClass'),
     ('bacnet', _('Bacnet support'), _('Map located variables over Bacnet'), 'bacnet.bacnet.RootClass'),
     ('etherlab', _('EtherCAT master'), _('Map located variables over EtherCAT'), 'etherlab.etherlab.RootClass'),
     ('modbus', _('Modbus support'), _('Map located variables over Modbus'), 'modbus.modbus.RootClass'),
@@ -24,5 +27,9 @@ catalog = [
     ('py_ext', _('Python file'), _('Add Python code executed asynchronously'), 'py_ext.PythonFile'),
     ('wxglade_hmi', _('WxGlade GUI'), _('Add a simple WxGlade based GUI.'), 'wxglade_hmi.WxGladeHMI'),
     ('svghmi', _('SVGHMI'), _('SVG based HMI'), 'svghmi.SVGHMI')]
+    #('motion', _('Motion library'), _('Add Motion runtime ejes y estados'), 'MotionLibrary.MotionClient')]
 
 file_editors = []
+
+# If empty allows all targets
+targets = []

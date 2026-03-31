@@ -4,25 +4,45 @@ widget_desc("Back") {
     longdesc
     ||
     Back widget brings focus back to previous page in history when clicked.
+
+    "active" + "inactive" labeled elements can be provided and reflect whether
+    widget is pressed or not.
     ||
 
     shortdesc > Jump to previous page
 }
 
-widget_class("Back")
-    ||
-        on_click(evt) {
-            if(jump_history.length > 1){
-               let page_name, index;
-               do {
-                   jump_history.pop(); // forget current page
-                   if(jump_history.length == 0) return;
-                   [page_name, index] = jump_history[jump_history.length-1];
-               } while(page_name == "ScreenSaver") // never go back to ScreenSaver
-               switch_page(page_name, index);
-            }
+widget_class("Back") {
+||
+    onmouseup(evt) {
+        svg_root.removeEventListener("pointerup", this.bound_onmouseup, true);
+        this.activity_state = false;
+        this.request_animate();
+        let page_name, index;
+        if (jump_history.length > 1) {
+           do {
+               jump_history.pop(); // forget current page
+               if (jump_history.length == 0) return;
+               [page_name, index] = jump_history[jump_history.length-1];
+           } while (page_name == "ScreenSaver") // never go back to ScreenSaver
+           fading_page_switch(page_name, index);
         }
-        init() {
-            this.element.onclick = this.on_click.bind(this);
-        }
-    ||
+    }
+
+    onmousedown(){
+        svg_root.addEventListener("pointerup", this.bound_onmouseup, true);
+        this.activity_state = true;
+        this.request_animate();
+    }
+
+    init() {
+        this.bound_onmouseup = this.onmouseup.bind(this);
+        this.activity_state = false;
+        this.element.addEventListener("pointerdown", this.onmousedown.bind(this));
+    }
+||
+}
+
+widget_defs("Back") {
+    optional_activable();
+}

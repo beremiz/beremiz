@@ -1,0 +1,100 @@
+name: CI Automated testing
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ zephyr ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+          path: beremiz
+
+    - uses: actions/checkout@v3
+      with:
+          repository: beremiz/matiec
+          ref: 2b595efea02c1a3ac1a095fb6bb4c0b34ba7046e
+          path: matiec
+
+    - uses: actions/checkout@v3
+      with:
+          repository: open62541/open62541
+          # v1.3.7
+          ref: b8ac9e77f703e6ba5c012b886a8821037503daa6
+          path: open62541
+          submodules: recursive
+
+    - uses: actions/checkout@v3
+      with:
+          repository: beremiz/Modbus
+          ref: 4d7d67a8e911d744165709c20a254b5cb924ec71
+          path: Modbus
+
+    - uses: actions/checkout@v3
+      with:
+          repository: beremiz/erpc
+          # v1.13.0 + no CRC on TCP
+          ref: 057446b5697bab499da571474d6ad8523883f1cb
+          path: erpc
+              
+    - name: Restore cached docker image
+      id: cache-docker-restore
+      uses: actions/cache/restore@v3
+      env:
+        cache-name: cache-docker
+      with:
+        path: /tmp/latest.tar
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('beremiz/tests/tools/Docker', 'beremiz/requirements.txt') }}
+
+    - if: ${{ steps.cache-docker-restore.outputs.cache-hit == false }}
+      name: Create docker image
+      run: |
+        cd beremiz/tests/tools/Docker
+        ./build_docker_image.sh
+        docker image save --output="/tmp/latest.tar" beremiz_sikuli
+
+    - if: ${{ steps.cache-docker-restore.outputs.cache-hit == false }}
+      name: Save docker image in cache
+      id: cache-docker-save
+      uses: actions/cache/save@v3
+      with:
+        path: /tmp/latest.tar
+        key: ${{ steps.cache-docker-restore.outputs.cache-primary-key }}
+
+    - if: ${{ steps.cache-docker-restore.outputs.cache-hit != false }}
+      name: Re-use docker image
+      run: |
+        docker image load --input="/tmp/latest.tar" 
+
+    - name: Create docker container
+      run: |
+        cd beremiz/tests/tools/Docker
+        ./create_docker_container.sh ${{ github.workspace }}/test
+        # workaround for ownership of shared volume on github actions
+        ./exec_in_docker_as_root.sh "chown -R ubuntu:ubuntu /home/ubuntu/test"
+        
+    - name: Run tests in docker
+      run: |
+        cd beremiz/tests/tools/Docker
+        ./do_test_in_docker.sh
+
+    - name: Prepare test results for artifact upload
+      if: ${{ always() }}
+      run: |
+        cd beremiz/tests/tools/Docker
+        # change ownership of test results to back to current user
+        ./exec_in_docker_as_root.sh "chown -R $(id -u):$(id -g) /home/ubuntu/test"
+
+    - name: Upload test results artifact
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test_results
+        path: ${{ github.workspace }}/test
+        retention-days: 5

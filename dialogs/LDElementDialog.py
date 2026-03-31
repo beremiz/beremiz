@@ -24,7 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.GraphicCommons import CONTACT_NORMAL, CONTACT_REVERSE, \
@@ -63,7 +63,7 @@ class LDElementDialog(BlockPreviewDialog):
 
         # Create label for LD element modifier
         modifier_label = wx.StaticText(self, label=_('Modifier:'))
-        self.LeftGridSizer.AddWindow(modifier_label, border=5,
+        self.LeftGridSizer.Add(modifier_label, border=5,
                                      flag=wx.GROW | wx.BOTTOM)
 
         # Create radio buttons for selecting LD element modifier
@@ -84,13 +84,13 @@ class LDElementDialog(BlockPreviewDialog):
                                           style=(wx.RB_GROUP if first else 0))
             radio_button.SetValue(first)
             self.Bind(wx.EVT_RADIOBUTTON, self.OnModifierChanged, radio_button)
-            self.LeftGridSizer.AddWindow(radio_button, flag=wx.GROW)
+            self.LeftGridSizer.Add(radio_button, flag=wx.GROW)
             self.ModifierRadioButtons[modifier] = radio_button
             first = False
 
         # Create label for LD element variable
         element_variable_label = wx.StaticText(self, label=_('Variable:'))
-        self.LeftGridSizer.AddWindow(element_variable_label, border=5,
+        self.LeftGridSizer.Add(element_variable_label, border=5,
                                      flag=wx.GROW | wx.TOP)
 
         # Create a combo box for defining LD element variable
@@ -99,15 +99,15 @@ class LDElementDialog(BlockPreviewDialog):
                   self.ElementVariable)
         self.Bind(wx.EVT_TEXT, self.OnVariableChanged,
                   self.ElementVariable)
-        self.LeftGridSizer.AddWindow(self.ElementVariable, border=5,
+        self.LeftGridSizer.Add(self.ElementVariable, border=5,
                                      flag=wx.GROW | wx.TOP)
 
         # Add preview panel and associated label to sizers
-        self.RightGridSizer.AddWindow(self.PreviewLabel, flag=wx.GROW)
-        self.RightGridSizer.AddWindow(self.Preview, flag=wx.GROW)
+        self.RightGridSizer.Add(self.PreviewLabel, flag=wx.GROW)
+        self.RightGridSizer.Add(self.Preview, flag=wx.GROW)
 
         # Add buttons sizer to sizers
-        self.MainSizer.AddSizer(self.ButtonSizer, border=20,
+        self.MainSizer.Add(self.ButtonSizer, border=20,
                                 flag=wx.ALIGN_RIGHT | wx.BOTTOM | wx.LEFT | wx.RIGHT)
 
         # Save LD element class
@@ -117,7 +117,7 @@ class LDElementDialog(BlockPreviewDialog):
         self.RefreshVariableList()
 
         # Set values in ElementVariable
-        for name, (var_type, value_type) in self.VariableList.iteritems():
+        for name, (var_type, value_type) in self.VariableList.items():
             # Only select BOOL variable and avoid input for coil
             if (type == "contact" or var_type != "Input") and \
                value_type == "BOOL":
@@ -134,7 +134,7 @@ class LDElementDialog(BlockPreviewDialog):
         """
         # Go through radio buttons and return modifier associated to the one
         # that is selected
-        for modifier, control in self.ModifierRadioButtons.iteritems():
+        for modifier, control in self.ModifierRadioButtons.items():
             if control.GetValue():
                 return modifier
         return None
@@ -145,7 +145,7 @@ class LDElementDialog(BlockPreviewDialog):
         @param values: LD element parameters values
         """
         # For each parameters defined, set corresponding control value
-        for name, value in values.items():
+        for name, value in list(values.items()):
 
             # Parameter is LD element variable
             if name == "variable":
@@ -198,8 +198,9 @@ class LDElementDialog(BlockPreviewDialog):
             self.GetElementModifier(),
             value)
 
-        button = self.ButtonSizer.GetAffirmativeButton()
-        button.Enable(value != "")
+        # FIXME : how to disable OK button when content is not valid
+        # button = self.ButtonSizer.GetAffirmativeButton()
+        # button.Enable(value != "")
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.DrawPreview(self)

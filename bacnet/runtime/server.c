@@ -576,7 +576,7 @@ static void *__bn_server_thread(void *_server_node)  {
 
 int __cleanup_%(locstr)s ();
 
-int __init_%(locstr)s (int argc, char **argv){
+int __init_%(locstr)s (int argc, void **argv){
 	int index;
 
     init_done = 0;

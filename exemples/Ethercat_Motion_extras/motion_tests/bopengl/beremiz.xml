@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<BeremizRoot URI_location="PYRO://Beremiz_testbot._PYRO._tcp.local.">
+  <TargetType/>
+  <Libraries Enable_Etherlab_Library="true" Enable_Motion_Library="true"/>
+</BeremizRoot>

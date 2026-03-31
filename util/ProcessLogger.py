@@ -23,16 +23,21 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
 import os
 import sys
 import subprocess
 import ctypes
 import time
+import shlex
 from threading import Timer, Lock, Thread, Semaphore, Condition
 import signal
+from util import GetDeveloperMode
 
-_debug = os.path.exists("BEREMIZ_DEBUG")
+default_environ={}
+
+def SetDefaultEnv(env):
+    global default_environ
+    default_environ = env
 
 class outputThread(Thread):
     """
@@ -47,6 +52,7 @@ class outputThread(Thread):
         self.callback = callback
         self.endcallback = endcallback
         self.fd = fd
+        self.daemon = True
 
     def run(self):
         outchunk = None
@@ -77,19 +83,13 @@ class ProcessLogger(object):
     def __init__(self, logger, Command, finish_callback=None,
                  no_stdout=False, no_stderr=False, no_gui=True,
                  timeout=None, outlimit=None, errlimit=None,
-                 endlog=None, keyword=None, kill_it=False, cwd=None,
-                 encoding=None, output_encoding=None):
+                 keyword=None, kill_it=False, cwd=None,
+                 encoding=None, output_encoding=None, env=None, show_cmd=False):
+        global default_environ
         self.logger = logger
         if not isinstance(Command, list):
             self.Command_str = Command
-            self.Command = []
-            for i, word in enumerate(Command.replace("'", '"').split('"')):
-                if i % 2 == 0:
-                    word = word.strip()
-                    if len(word) > 0:
-                        self.Command.extend(word.split())
-                else:
-                    self.Command.append(word)
+            self.Command = shlex.split(Command)
         else:
             self.Command = Command
             self.Command_str = subprocess.list2cmdline(self.Command)
@@ -99,8 +99,7 @@ class ProcessLogger(object):
 
         if encoding is None:
             encoding = fsencoding
-        self.Command = [self.Command[0].encode(fsencoding)]+map(
-            lambda x: x.encode(encoding), self.Command[1:])
+        self.Command = [self.Command[0].encode(fsencoding)]+[x.encode(encoding) for x in self.Command[1:]]
 
         self.finish_callback = finish_callback
         self.no_stdout = no_stdout
@@ -119,11 +118,17 @@ class ProcessLogger(object):
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
 
+        if env is None:
+            env = os.environ.copy()
+
+        env.update(default_environ)
+
         popenargs = {
             "cwd":    os.getcwd() if cwd is None else cwd,
             "stdin":  subprocess.PIPE,
             "stdout": subprocess.PIPE,
-            "stderr": subprocess.PIPE
+            "stderr": subprocess.PIPE,
+            "env":    env
         }
 
         if no_gui and os.name in ("nt", "ce"):
@@ -139,10 +144,10 @@ class ProcessLogger(object):
         else:
             self.timeout = None
 
-        if _debug and self.logger:
-            self.logger.write("(DEBUG) launching:\n" + self.Command_str + "\n")
+        if (show_cmd or GetDeveloperMode())and self.logger:
+            self.logger.write(f"{popenargs['cwd']}$ {self.Command_str}\n")
 
-        self.Proc = subprocess.Popen(self.Command, **popenargs)
+        self.Proc = subprocess.Popen(self.Command, encoding="utf-8", errors="backslashreplace", **popenargs)
 
         self.outt = outputThread(
             self.Proc,

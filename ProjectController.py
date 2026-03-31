@@ -27,8 +27,7 @@
 Beremiz Project Controller
 """
 
-
-from __future__ import absolute_import
+import sys
 import os
 import traceback
 import time
@@ -37,18 +36,18 @@ import shutil
 import re
 import tempfile
 import hashlib
-from datetime import datetime
+import shutil
+from datetime import datetime, timezone
 from weakref import WeakKeyDictionary
-from functools import reduce
-from itertools import izip
-from distutils.dir_util import copy_tree
-from six.moves import xrange
+from functools import partial, reduce
+from collections import OrderedDict
 
 import wx
 
 import features
 import connectors
-import util.paths as paths
+import util.paths as pathutils
+from util import GetDeveloperMode, GetSDKPath
 from util.misc import CheckPathPerm, GetClassImporter
 from util.MiniTextControler import MiniTextControler
 from util.ProcessLogger import ProcessLogger
@@ -57,17 +56,19 @@ from editors.FileManagementPanel import FileManagementPanel
 from editors.ProjectNodeEditor import ProjectNodeEditor
 from editors.IECCodeViewer import IECCodeViewer
 from editors.DebugViewer import DebugViewer, REFRESH_PERIOD
-from dialogs import UriEditor, IDManager
+
+from dialogs.UriEditor import UriEditor
+from dialogs.IDManager import IDManager
+
 from PLCControler import PLCControler
 from plcopen.structures import IEC_KEYWORDS
 from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
-from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer
+from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer, ValueToIECBytes
 from runtime import PlcStatus
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 from POULibrary import UserAddressedException
 
-base_folder = paths.AbsParentDir(__file__)
 
 MATIEC_ERROR_MODEL = re.compile(
     r".*\.st:(\d+)-(\d+)\.\.(\d+)-(\d+): (?:error)|(?:warning) : (.*)$")
@@ -75,22 +76,22 @@ MATIEC_ERROR_MODEL = re.compile(
 
 def ExtractChildrenTypesFromCatalog(catalog):
     children_types = []
-    for n, d, _h, c in catalog:
-        if isinstance(c, list):
-            children_types.extend(ExtractChildrenTypesFromCatalog(c))
+    for name, displayname, _helpstr, moduleclassname in catalog:
+        if isinstance(moduleclassname, list):
+            children_types.extend(ExtractChildrenTypesFromCatalog(moduleclassname))
         else:
-            children_types.append((n, GetClassImporter(c), d))
+            children_types.append((name, GetClassImporter(moduleclassname), displayname))
     return children_types
 
 
 def ExtractMenuItemsFromCatalog(catalog):
     menu_items = []
-    for n, d, h, c in catalog:
-        if isinstance(c, list):
-            children = ExtractMenuItemsFromCatalog(c)
+    for name, displayname, helpstr, moduleclassname in catalog:
+        if isinstance(moduleclassname, list):
+            children = ExtractMenuItemsFromCatalog(moduleclassname)
         else:
             children = []
-        menu_items.append((n, d, h, children))
+        menu_items.append((name, displayname, helpstr, children))
     return menu_items
 
 
@@ -116,9 +117,9 @@ class Iec2CSettings(object):
         return path
 
     def findCmd(self):
-        cmd = "iec2c" + (".exe" if wx.Platform == '__WXMSW__' else "")
+        cmd = "iec2c" + (".exe" if os.name == 'nt' else "")
         paths = [
-            os.path.join(base_folder, "matiec")
+            pathutils.ThirdPartyPath("matiec")
         ]
         path = self.findObject(
             paths, lambda p: os.path.isfile(os.path.join(p, cmd)))
@@ -131,7 +132,7 @@ class Iec2CSettings(object):
 
     def findLibPath(self):
         paths = [
-            os.path.join(base_folder, "matiec", "lib"),
+            pathutils.ThirdPartyPath("matiec", "lib"),
             "/usr/lib/matiec"
         ]
         path = self.findObject(
@@ -189,16 +190,19 @@ class Iec2CSettings(object):
 
 
 def GetProjectControllerXSD():
-    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    target_choices = targets.GetTargetChoices()
+    xsd_tag = "choice" if len(target_choices) > 1 else "sequence"
+    targets_xml = "\n".join(target_choices)
+    XSD = f"""<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="BeremizRoot">
         <xsd:complexType>
           <xsd:sequence>
-            <xsd:element name="TargetType">
+            <xsd:element name="TargetType" minOccurs="0" maxOccurs="1">
               <xsd:complexType>
-                <xsd:choice minOccurs="0">
-                """ + targets.GetTargetChoices() + """
-                </xsd:choice>
+                <xsd:{xsd_tag} minOccurs="1" maxOccurs="1">
+                   {targets_xml}
+                </xsd:{xsd_tag}>
               </xsd:complexType>
             </xsd:element>""" + (("""
             <xsd:element name="Libraries" minOccurs="0">
@@ -206,7 +210,7 @@ def GetProjectControllerXSD():
               """ + "\n".join(['<xsd:attribute name=' +
                                '"Enable_' + libname + '_Library" ' +
                                'type="xsd:boolean" use="optional" default="' +
-                               ('true' if default else 'false') + '"/>'
+                               ('false' if type(default)==str or default==False else 'true') + '"/>'
                                for libname, _lib, default in features.libraries]) + """
               </xsd:complexType>
             </xsd:element>""") if len(features.libraries) > 0 else '') + """
@@ -239,7 +243,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
     EditorType = ProjectNodeEditor
     iec2c_cfg = None
 
-    def __init__(self, frame, logger):
+    def __init__(self):
         PLCControler.__init__(self)
         ConfigTreeNode.__init__(self)
 
@@ -252,7 +256,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DispatchDebugValuesTimer = None
         self.DebugValuesBuffers = []
         self.DebugTicks = []
-        self.SetAppFrame(frame, logger)
 
         # Setup debug information
         self.IECdebug_datas = {}
@@ -260,8 +263,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.DebugUpdatePending = False
         self.ResetIECProgramsAndVariables()
 
-        # In both new or load scenario, no need to save
-        self.ChangesToSave = False
         # root have no parent
         self.CTNParent = None
         # Keep track of the confnode type name
@@ -269,6 +270,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.Children = {}
         self._View = None
         # After __init__ root confnode is not valid
+        self.Project = None
         self.ProjectPath = None
         self._setBuildPath(None)
         self.debug_break = False
@@ -282,13 +284,26 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.IECcodeDigest = None
         self.LastBuiltIECcodeDigest = None
 
-    def __del__(self):
-        self.KillDebugThread()
+        self.AppFrame = None
+        self.logger = None
+        self.additionalCFLAGS = []
+        
+        self._reservedCTNInstances = []
+
+    # compute CFLAGS for PLC code
+    def getPLC_CFLAGS(self):
+        libCPath = self.iec2c_cfg.getLibCPath()
+        if libCPath is None:
+            self.logger.write_error(_("Couldn't find MatIEC C library.\n"))
+            return ''
+        return '"-I%s" -Wno-unused-function' % os.path.abspath(libCPath) + \
+                ' ' + ' '.join(self.additionalCFLAGS)
 
     def LoadLibraries(self):
-        self.Libraries = []
+        self.Libraries = OrderedDict()
         TypeStack = []
-        for libname, clsname, lib_enabled in features.libraries:
+        for libname, clsname, default in features.libraries:
+            lib_enabled = False if type(default)==str else default
             if self.BeremizRoot.Libraries is not None:
                 enable_attr = getattr(self.BeremizRoot.Libraries,
                                       "Enable_" + libname + "_Library")
@@ -298,7 +313,75 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if lib_enabled:
                 Lib = GetClassImporter(clsname)()(self, libname, TypeStack)
                 TypeStack.append(Lib.GetTypes())
-                self.Libraries.append(Lib)
+                self.Libraries[libname] = Lib
+
+        # add target specific libraries
+        builder = self.GetBuilder()
+        if builder is not None:
+            for libname, Lib in builder.GetLibraries(self, TypeStack):
+                TypeStack.append(Lib.GetTypes())
+                self.Libraries[libname] = Lib
+
+    def GetReservedIECChannels(self):
+        reserved = self.GetBuilder().GetReservedIECChannels()
+        return [IECChannel for IECChannel, CTNClass in reserved]
+
+    def GetReservedCTNs(self):
+        if self._reservedCTNInstances:
+            return self._reservedCTNInstances
+        reserved = self.GetBuilder().GetReservedIECChannels()
+        for IECChannel, CTNClass in reserved:
+            class FinalPseudoCTNClass(CTNClass, ConfigTreeNode):
+                def __init__(self, parent):
+                    self.CTNParent = parent
+                    ConfigTreeNode.__init__(self)
+                    # forces IEC_Channel and Name attributes
+                    self.BaseParams.setIEC_Channel(IECChannel)
+                    self.BaseParams.setName(self.CTNName() if hasattr(CTNClass, "CTNName") else CTNClass.__name__)
+                    self.CTNType = CTNClass.__name__
+                    # Prevent modification of IEC_Channel and Name attributes of reserved CTNs
+                    self.EditorType = type("ReservedCTNEditor", (self.EditorType,), {"SHOW_BASE_PARAMS": False})
+                    
+            self._reservedCTNInstances.append(FinalPseudoCTNClass(self))
+        return self._reservedCTNInstances
+
+    def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
+        """ 
+        Project controller:
+            - load reserved CTN XML configs
+            - applies libraries requirements when adding new CTN
+        """
+        
+        reserved = self.GetReservedCTNs()
+        for CTN in reserved:
+            if CTN.CTNType == CTNType:
+                if os.path.isdir(CTN.CTNPath(CTNName)):
+                    CTN.LoadXMLParams(CTNName)
+                CTN.LoadChildren()
+                return CTN
+        
+        res = ConfigTreeNode.CTNAddChild(self, CTNName, CTNType, IEC_Channel)
+
+        # find library associated with new CTN, if any
+        associated_lib = {default:libname 
+                          for libname, _clsname, default 
+                          in features.libraries}.get(CTNType, None)
+
+        # if any, then enable it if it wasn't and inform user
+        if associated_lib is not None:
+            # FIXME: This should be done with GetParamsAttribute
+            # but it fails with missing optional attributes
+            attrname = "Enable_" + associated_lib + "_Library"
+            libobj = self.BeremizRoot.Libraries
+            lib_enabled = False if libobj is None else getattr(libobj, attrname)
+            if not lib_enabled:
+                # use SetParamsAttribute to trigger reload of libs
+                self.SetParamsAttribute("BeremizRoot.Libraries.Enable_" + associated_lib + "_Library", True)
+                msg = _("Enabled {a1} library, required by {a2} extension\n").format(
+                    a1=associated_lib, a2=CTNType)
+                self.GetCTRoot().logger.write(msg)
+
+        return res
 
     def SetAppFrame(self, frame, logger):
         self.AppFrame = frame
@@ -373,14 +456,23 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return "PROJECT"
 
     def GetDefaultTargetName(self):
-        if wx.Platform == '__WXMSW__':
-            return "Win32"
-        else:
+        if features.targets:
+            return features.targets[0]
+        
+        if sys.platform.startswith('linux'):
             return "Linux"
+        elif sys.platform.startswith('darwin'):
+            return "OSX"
+        elif sys.platform.startswith('win32'):
+            return "Win32"
+        
+        # Fall back to Linux as default target
+        return "Linux"
+        
 
     def GetTarget(self):
         target = self.BeremizRoot.getTargetType()
-        if target.getcontent() is None:
+        if target is None or target.getcontent() is None:
             temp_root = self.Parser.CreateRoot()
             target = self.Parser.CreateElement("TargetType", "BeremizRoot")
             temp_root.setTargetType(target)
@@ -399,8 +491,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return params
 
     def SetParamsAttribute(self, path, value):
-        if path.startswith("BeremizRoot.TargetType.") and self.BeremizRoot.getTargetType().getcontent() is None:
-            self.BeremizRoot.setTargetType(self.GetTarget())
+        if path.startswith("BeremizRoot.TargetType."):
+            targettype = self.BeremizRoot.getTargetType()
+            if targettype is None or targettype.getcontent() is None:
+                self.BeremizRoot.setTargetType(self.GetTarget())
         res = ConfigTreeNode.SetParamsAttribute(self, path, value)
         if path.startswith("BeremizRoot.Libraries."):
             wx.CallAfter(self.RefreshConfNodesBlockLists)
@@ -479,6 +573,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._setBuildPath(BuildPath)
         # get confnodes bloclist (is that usefull at project creation?)
         self.RefreshConfNodesBlockLists()
+        # default scaling
+        for iec_lang in ["FBD", "LD", "SFC"]:
+            PLCControler.SetProjectProperties(self, properties={"scaling": {iec_lang: (8, 8)}})
         # this will create files base XML files
         self.SaveProject()
         return None
@@ -551,6 +648,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         return infos
 
     def CloseProject(self):
+
+        if self._connector is not None :
+            self._Disconnect()
+
         self.ClearChildren()
         self.ResetAppFrame(None)
 
@@ -587,7 +688,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 old_projectfiles_path = self._getProjectFilesPath(
                     from_project_path)
                 if os.path.isdir(old_projectfiles_path):
-                    copy_tree(old_projectfiles_path,
+                    shutil.copytree(old_projectfiles_path,
                               self._getProjectFilesPath(self.ProjectPath))
             self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
             result = self.CTNRequestSave(from_project_path)
@@ -616,34 +717,49 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetLibrariesTypes(self):
         self.LoadLibraries()
-        return [lib.GetTypes() for lib in self.Libraries]
+        return [lib.GetTypes() for lib in self.Libraries.values()]
 
     def GetLibrariesSTCode(self):
-        return "\n".join([lib.GetSTCode() for lib in self.Libraries])
+        return "\n".join([lib.GetSTCode() for lib in self.Libraries.values()])
 
     def GetLibrariesCCode(self, buildpath):
         if len(self.Libraries) == 0:
             return [], [], ()
         self.GetIECProgramsAndVariables()
-        LibIECCflags = '"-I%s" -Wno-unused-function' % os.path.abspath(
-            self.GetIECLibPath())
         LocatedCCodeAndFlags = []
         Extras = []
-        for lib in self.Libraries:
-            res = lib.Generate_C(buildpath, self._VariablesList, LibIECCflags)
+        for lib in self.Libraries.values():
+            # check libraries compatibility with Target
+            builder = self.GetBuilder()
+            if not lib.SupportsTarget(builder):
+                self.FatalError(_("Target %s is not compatible with %s library\n") % 
+                    (builder.GetTargetName(), lib.GetName()))
+
+            res = lib.Generate_C(buildpath, self._VariablesList, self.getPLC_CFLAGS())
             LocatedCCodeAndFlags.append(res[:2])
             if len(res) > 2:
                 Extras.extend(res[2:])
-        return map(list, zip(*LocatedCCodeAndFlags)) + [tuple(Extras)]
+        return list(map(list, list(zip(*LocatedCCodeAndFlags)))) + [Extras]
 
     # Update PLCOpenEditor ConfNode Block types from loaded confnodes
     def RefreshConfNodesBlockLists(self):
-        if getattr(self, "Children", None) is not None:
+        if self.Project is not None:
+            try:
+                libs = self.GetLibrariesTypes()
+            except UserAddressedException as e:
+                self.logger.write_error(str(e))
+                return
+            except Exception as e:
+                self.logger.write_error(
+                    _("Runtime library extensions discovery failed !\n"))
+                self.logger.write_error(traceback.format_exc())
+                return
+
             self.ClearConfNodeTypes()
-            self.AddConfNodeTypesList(self.GetLibrariesTypes())
-        if self.AppFrame is not None:
-            self.AppFrame.RefreshLibraryPanel()
-            self.AppFrame.RefreshEditor()
+            self.AddConfNodeTypesList(libs)
+            if self.AppFrame is not None:
+                self.AppFrame.RefreshLibraryPanel()
+                self.AppFrame.RefreshEditor()
 
     # Update a PLCOpenEditor Pou variable location
     def UpdateProjectVariableLocation(self, old_leading, new_leading):
@@ -750,14 +866,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def GetConfNodeGlobalInstances(self):
         LibGlobals = []
-        for lib in self.Libraries:
+        for lib in self.Libraries.values():
             LibGlobals += lib.GlobalInstances()
         CTNGlobals = self._GlobalInstances()
         return LibGlobals + CTNGlobals
 
-    def _Generate_SoftPLC(self):
+    def _Generate_SoftPLC(self, builder):
         if self._Generate_PLC_ST():
-            return self._Compile_ST_to_SoftPLC()
+            return self._Compile_ST_to_SoftPLC(builder)
         return False
 
     def _Generate_PLC_ST(self):
@@ -808,13 +924,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
             plc_file.write(POUsIECCodeContent)
 
         hasher = hashlib.md5()
-        hasher.update(IECCodeContent)
-        hasher.update(POUsIECCodeContent)
+        hasher.update(IECCodeContent.encode())
+        hasher.update(POUsIECCodeContent.encode())
         self.IECcodeDigest = hasher.hexdigest()
 
         return True
 
-    def _Compile_ST_to_SoftPLC(self):
+    def _Compile_ST_to_SoftPLC(self, builder):
         iec2c_libpath = self.iec2c_cfg.getLibPath()
         if iec2c_libpath is None:
             self.logger.write_error(_("matiec installation is not found\n"))
@@ -888,20 +1004,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 _("Error : At least one configuration and one resource must be declared in PLC !\n"))
             return False
         # transform those base names to full names with path
-        C_files = map(
-            lambda filename: os.path.join(buildpath, filename), C_files)
+        C_files = [os.path.join(buildpath, filename) for filename in C_files]
 
         # prepend beremiz include to configuration header
         H_files = [fname for fname in result.splitlines() if fname[
             -2:] == ".h" or fname[-2:] == ".H"]
         H_files.remove("LOCATED_VARIABLES.h")
-        H_files = map(
-            lambda filename: os.path.join(buildpath, filename), H_files)
+        H_files = [os.path.join(buildpath, filename) for filename in H_files]
         for H_file in H_files:
             with open(H_file, 'r') as original:
                 data = original.read()
             with open(H_file, 'w') as modified:
-                modified.write('#include "beremiz.h"\n' + data)
+                # prepend beremiz include to generated headers
+                header = builder.GetPLCHeadersPreamble()
+                header += '#include "beremiz.h"\n'
+                modified.write(header + data)
 
         self.logger.write(_("Extracting Located Variables...\n"))
         # Keep track of generated located variables for later use by
@@ -909,8 +1026,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.PLCGeneratedLocatedVars = self.GetLocations()
         # Keep track of generated C files for later use by self.CTNGenerate_C
         self.PLCGeneratedCFiles = C_files
-        # compute CFLAGS for plc
-        self.plcCFLAGS = '"-I%s" -Wno-unused-function' % self.iec2c_cfg.getLibCPath()
 
         self.LastBuiltIECcodeDigest = self.IECcodeDigest
 
@@ -920,15 +1035,34 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         Return a Builder (compile C code into machine code)
         """
-        # Get target, module and class name
-        targetname = self.GetTarget().getcontent().getLocalTag()
-        targetclass = targets.GetBuilder(targetname)
+        if GetSDKPath():
+            from plc_sdk_builder import PLCSDKBuilder
+            targetclass = PLCSDKBuilder
+        else:
+            # Get target, module and class name
+            targetcfg = self.GetTarget().getcontent()
+            if targetcfg is None:
+                return None
+            targetname = targetcfg.getLocalTag()
+            targetclass = targets.GetBuilder(targetname)
 
         # if target already
         if self._builder is None or not isinstance(self._builder, targetclass):
             # Get classname instance
             self._builder = targetclass(self)
+            self._reservedCTNInstances = []
+
         return self._builder
+
+    def CheckChildCompatible(self, child):
+        """
+        Check if the child is compatible with the parent
+        """
+        builder = self.GetBuilder()
+        if not hasattr(child, "SupportsTarget") or child.SupportsTarget(builder):
+            return True
+        self.FatalError(_("Target %s is not compatible with %s extension\n") % 
+                    (builder.GetTargetName(), child.CTNType))
 
     #
     #
@@ -944,7 +1078,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         @return: [(C_file_name, CFLAGS),...] , LDFLAGS_TO_APPEND
         """
 
-        return ([(C_file_name, self.plcCFLAGS)
+        return ([(C_file_name, self.getPLC_CFLAGS())
                  for C_file_name in self.PLCGeneratedCFiles],
                 "",  # no ldflags
                 False)  # do not expose retreive/publish calls
@@ -954,7 +1088,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Reset variable and program list that are parsed from
         CSV file generated by IEC2C compiler.
         """
-        self._ProgramList = None
         self._VariablesList = None
         self._DbgVariablesList = None
         self._IECPathToIdx = {}
@@ -968,14 +1101,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         Each section is marked with a line staring with '//'
         list of all variables used in various POUs
         """
-        if self._ProgramList is None or self._VariablesList is None:
+        if self._VariablesList is None:
             try:
                 csvfile = os.path.join(self._getBuildPath(), "VARIABLES.csv")
                 # describes CSV columns
                 ProgramsListAttributeName = ["num", "C_path", "type"]
                 VariablesListAttributeName = [
                     "num", "vartype", "IEC_path", "C_path", "type", "derived", "retain"]
-                self._ProgramList = []
                 self._VariablesList = []
                 self._DbgVariablesList = []
                 self._IECPathToIdx = {}
@@ -992,15 +1124,16 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         ListGroup[-1].append(strippedline)
 
                 # first section contains programs
-                for line in ListGroup[0]:
-                    # Split and Maps each field to dictionnary entries
-                    attrs = dict(
-                        zip(ProgramsListAttributeName, line.strip().split(';')))
-                    # Truncate "C_path" to remove conf an resources names
-                    attrs["C_path"] = '__'.join(
-                        attrs["C_path"].split(".", 2)[1:])
-                    # Push this dictionnary into result.
-                    self._ProgramList.append(attrs)
+                # *** first section was useless and is now ignored ***
+                # for line in ListGroup[0]:
+                #     # Split and Maps each field to dictionnary entries
+                #     attrs = dict(
+                #         list(zip(ProgramsListAttributeName, line.strip().split(';'))))
+                #     # Truncate "C_path" to remove conf an resources names
+                #     attrs["C_path"] = '__'.join(
+                #         attrs["C_path"].split(".", 2)[1:])
+                #     # Push this dictionnary into result.
+                #     self._ProgramList.append(attrs)
 
                 # second section contains all variables
                 config_FBs = {}
@@ -1008,7 +1141,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 for line in ListGroup[1]:
                     # Split and Maps each field to dictionnary entries
                     attrs = dict(
-                        zip(VariablesListAttributeName, line.strip().split(';')))
+                        list(zip(VariablesListAttributeName, line.strip().split(';'))))
                     # Truncate "C_path" to remove conf an resources names
                     parts = attrs["C_path"].split(".", 2)
                     if len(parts) > 2:
@@ -1072,8 +1205,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 retain_indexes.append("/* "+v["C_path"]+" */ "+str(i))
 
         debug_code = targets.GetCode("plc_debug.c") % {
-            "programs_declarations": "\n".join(["extern %(type)s %(C_path)s;" %
-                                                p for p in self._ProgramList]),
             "extern_variables_declarations": "\n".join([
                 {
                     "EXT": "extern __IEC_%(type)s_p %(C_path)s;",
@@ -1081,7 +1212,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     "MEM": "extern __IEC_%(type)s_p %(C_path)s;",
                     "OUT": "extern __IEC_%(type)s_p %(C_path)s;",
                     "VAR": "extern __IEC_%(type)s_t %(C_path)s;",
-                    "FB":  "extern       %(type)s   %(C_path)s;"
+                    "FB":  "extern %(type)s_data__ %(C_path)s;"
                 }[v["vartype"]] % v
                 for v in self._VariablesList if v["C_path"].find('.') < 0]),
             "variable_decl_array": ",\n".join(variable_decl_array),
@@ -1098,42 +1229,63 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         # filter location that are related to code that will be called
         # in retreive, publish, init, cleanup
-        locstrs = map(lambda x: "_".join(map(str, x)),
-                      [loc for loc, _Cfiles, DoCalls in
-                       self.LocationCFilesAndCFLAGS if loc and DoCalls])
+        locreqs = [("_".join(map(str, loc)),
+                    requirements[0] if requirements else None)
+                   for loc, _Cfiles, DoCalls, *requirements in
+                   self.LocationCFilesAndCFLAGS if loc and DoCalls==True]
+        
+        plc_main_fields = {
+            "calls_prototypes": "\n".join([
+                "\n".join([
+                    f"int __init_{locstr}(int argc,void **argv);",
+                    f"void __cleanup_{locstr}(void);",
+                    f"void __retrieve_{locstr}(void);",
+                    f"void __publish_{locstr}(void);"])
+                for locstr, _req in locreqs]),
+            "retrieve_calls": "\n    ".join([
+                f"__retrieve_{locstr}();"
+                for locstr, _req in locreqs]),
+            "publish_calls": "\n    ".join([
+                f"__publish_{locreqs[i - 1][0]}();" for i in range(len(locreqs), 0, -1)]),
+            "init_calls": "\n    ".join([
+                "\n    ".join([
+                    f"init_level={i + 1};",
+                    f"if((res = __init_{locstr}(EXT_INIT_ARGS({i}))))",
+                    "    return res;"])
+                for i, (locstr, _req) in enumerate(locreqs)]),
+            "cleanup_calls": "\n    ".join([
+                f"if(init_level >= {i}) " +
+                f"__cleanup_{locreqs[i - 1][0]}();"
+                for i in range(len(locreqs), 0, -1)]),
+            "extensions_requirements": " \\\n".join([
+                "EXT_REQUIREMENT(\"%s\",%d,%d)" % (
+                    req['extention_name'],
+                    req['current_version'],
+                    req['minimum_version'])
+                if req else "EXT_NO_REQUIREMENT"
+                for _locstr, req in locreqs])
+     
+        } if not self.BeremizRoot.getDisable_Extensions() else {
+            
+            "calls_prototypes": "\n",
+            "retrieve_calls":   "\n",
+            "publish_calls":    "\n",
+            "init_calls":       "\n",
+            "cleanup_calls":    "\n",
+            "extensions_requirements": "\n"
+        }
 
         # Generate main, based on template
-        if not self.BeremizRoot.getDisable_Extensions():
-            plc_main_code = targets.GetCode("plc_main_head.c") % {
-                "calls_prototypes": "\n".join([(
-                    "int __init_%(s)s(int argc,char **argv);\n" +
-                    "void __cleanup_%(s)s(void);\n" +
-                    "void __retrieve_%(s)s(void);\n" +
-                    "void __publish_%(s)s(void);") % {'s': locstr} for locstr in locstrs]),
-                "retrieve_calls": "\n    ".join([
-                    "__retrieve_%s();" % locstr for locstr in locstrs]),
-                "publish_calls": "\n    ".join([  # Call publish in reverse order
-                    "__publish_%s();" % locstrs[i - 1] for i in xrange(len(locstrs), 0, -1)]),
-                "init_calls": "\n    ".join([
-                    "init_level=%d; " % (i + 1) +
-                    "if((res = __init_%s(argc,argv))){" % locstr +
-                    # "printf(\"%s\"); "%locstr + #for debug
-                    "return res;}" for i, locstr in enumerate(locstrs)]),
-                "cleanup_calls": "\n    ".join([
-                    "if(init_level >= %d) " % i +
-                    "__cleanup_%s();" % locstrs[i - 1] for i in xrange(len(locstrs), 0, -1)])
-            }
+        plc_main_code = targets.GetCode("plc_main_head.c") % plc_main_fields
+
+        sdk_path = GetSDKPath()
+        if not sdk_path:
+            # Append target-specific code if not using SDK
+            plc_main_code += targets.GetTargetCode(self.GetBuilder().GetTargetName())
         else:
-            plc_main_code = targets.GetCode("plc_main_head.c") % {
-                "calls_prototypes": "\n",
-                "retrieve_calls":   "\n",
-                "publish_calls":    "\n",
-                "init_calls":       "\n",
-                "cleanup_calls":    "\n"
-            }
-        plc_main_code += targets.GetTargetCode(
-            self.GetTarget().getcontent().getLocalTag())
-        plc_main_code += targets.GetCode("plc_main_tail.c")
+            sdk_main_code_path = os.path.join(sdk_path, "plc_main_sdk.c")
+            plc_main_code += open(sdk_main_code_path, "r").read()
+        
         return plc_main_code
 
     def _Build(self):
@@ -1153,8 +1305,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.logger.flush()
         self.logger.write(_("Start build in %s\n") % buildpath)
 
+        # Get current or fresh builder
+        builder = self.GetBuilder()
+        if builder is None:
+            self.logger.write_error(_("Fatal : cannot get builder.\n"))
+            return False
+
         # Generate SoftPLC IEC code
-        IECGenRes = self._Generate_SoftPLC()
+        IECGenRes = self._Generate_SoftPLC(builder)
         self.UpdateButtons()
 
         # If IEC code gen fail, bail out.
@@ -1169,12 +1327,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # Collect platform specific C code
         # Code and other files from extension
         if not self._Generate_runtime():
-            return False
-
-        # Get current or fresh builder
-        builder = self.GetBuilder()
-        if builder is None:
-            self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
         # Build
@@ -1204,7 +1356,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             LibCFilesAndCFLAGS, LibLDFLAGS, LibExtraFiles = self.GetLibrariesCCode(
                 buildpath)
         except UserAddressedException as e:
-            self.logger.write_error(e.message)
+            self.logger.write_error(str(e))
             return False
         except Exception as e:
             self.logger.write_error(
@@ -1218,16 +1370,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 buildpath,
                 self.PLCGeneratedLocatedVars)
         except UserAddressedException as e:
-            self.logger.write_error(e.message)
+            self.logger.write_error(str(e))
             return False
-        except Exception:
+        except Exception as e:
             self.logger.write_error(
                 _("Runtime IO extensions C code generation failed !\n"))
             self.logger.write_error(traceback.format_exc())
+            if(GetDeveloperMode()):
+                raise e
             return False
 
-        self.LocationCFilesAndCFLAGS = LibCFilesAndCFLAGS + \
-            CTNLocationCFilesAndCFLAGS
+        self.LocationCFilesAndCFLAGS = CTNLocationCFilesAndCFLAGS + LibCFilesAndCFLAGS
         self.LDFLAGS = CTNLDFLAGS + LibLDFLAGS
         ExtraFiles = CTNExtraFiles + LibExtraFiles
 
@@ -1242,6 +1395,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for fname, fobject in ExtraFiles:
             fpath = os.path.join(extrafilespath, fname)
             open(fpath, "wb").write(fobject.read())
+            fobject.close()
         # Now we can forget ExtraFiles (will close files object)
         del ExtraFiles
 
@@ -1251,12 +1405,32 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         # Template based part of C code generation
         # files are stacked at the beginning, as files of confnode tree root
-        c_source = [
-            #  debugger code
-            (self.Generate_plc_debugger, "plc_debugger.c", "Debugger"),
-            # init/cleanup/retrieve/publish, run and align code
-            (self.Generate_plc_main, "plc_main.c", "Common runtime")
-        ]
+        c_source = []
+        self.additionalCFLAGS = []
+        
+        if self.GetBuilder().getDebugEnabled():
+            # add debugger code
+            c_source.append((self.Generate_plc_debugger, "plc_debugger.c", "Debugger"))
+        else:
+            # debugger explicitely disabled, disable C code instrumentation
+            self.additionalCFLAGS.append("-DPLC_NO_DEBUG")
+
+        logging_enabled = self.GetBuilder().getLoggingEnabled()
+        if not logging_enabled:
+            self.additionalCFLAGS.append("-DPLC_NO_LOGGING")
+        if self.GetBuilder().getABIEnabled():
+            c_source.append((partial(targets.GetCode,"plc_ABI.c"), "plc_ABI.c", "ABI"))
+            self.additionalCFLAGS.append("-DPLC_USES_ABI")
+        elif logging_enabled:
+            # add logging code only if not using ABI.
+            # When using ABI, logging is expected in the runtime
+            c_source.append((partial(targets.GetCode,"plc_logging.c"), "plc_logging.c", "Logging"))
+
+        sdk_path = GetSDKPath()
+        if sdk_path:
+            self.additionalCFLAGS.append('"-I%s"' % sdk_path)
+
+        c_source.append((self.Generate_plc_main, "plc_main.c", "Common runtime"))
 
         for generator, filename, name in c_source:
             try:
@@ -1269,7 +1443,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 # Insert this file as first file to be compiled at root
                 # confnode
                 self.LocationCFilesAndCFLAGS[0][1].insert(
-                    0, (code_path, self.plcCFLAGS))
+                    0, (code_path, self.getPLC_CFLAGS()))
             except Exception:
                 self.logger.write_error(name + _(" generation failed !\n"))
                 self.logger.write_error(traceback.format_exc())
@@ -1322,7 +1496,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _OpenView(self, name=None, onlyopened=False):
         if name == "IEC code":
-            if self._IECCodeView is None:
+            if not self._IECCodeView:
                 plc_file = self._getIECcodepath()
 
                 self._IECCodeView = IECCodeViewer(
@@ -1344,7 +1518,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return self._IECCodeView
 
         elif name == "IEC raw code":
-            if self._IECRawCodeView is None:
+            if not self._IECRawCodeView:
                 controler = MiniTextControler(self._getIECrawcodepath(), self)
 
                 self._IECRawCodeView = IECCodeViewer(
@@ -1361,7 +1535,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             return self._IECRawCodeView
 
         elif name == "Project Files":
-            if self._ProjectFilesView is None:
+            if not self._ProjectFilesView:
                 self._ProjectFilesView = FileManagementPanel(
                     self.AppFrame.TabsOpened, self, name, self._getProjectFilesPath(), True)
 
@@ -1388,9 +1562,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
                     if editor_name == "":
                         if len(editors) == 1:
-                            editor_name = editors.keys()[0]
+                            editor_name = list(editors.keys())[0]
                         elif len(editors) > 0:
-                            names = editors.keys()
+                            names = list(editors.keys())
                             dialog = wx.SingleChoiceDialog(
                                 self.AppFrame,
                                 _("Select an editor:"),
@@ -1427,7 +1601,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self._IECRawCodeView = None
         if self._ProjectFilesView == view:
             self._ProjectFilesView = None
-        if view in self._FileEditors.values():
+        if view in list(self._FileEditors.values()):
             self._FileEditors.pop(view.GetFilePath())
 
     def _Clean(self):
@@ -1437,19 +1611,30 @@ class ProjectController(ConfigTreeNode, PLCControler):
             shutil.rmtree(os.path.join(self._getBuildPath()))
         else:
             self.logger.write_error(_("Build directory already clean\n"))
-        # kill the builder
-        self._builder = None
         self.CompareLocalAndRemotePLC()
         self.UpdateButtons()
 
     def _UpdateButtons(self):
         self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
         self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
-        if self.AppFrame is not None and not self.UpdateMethodsFromPLCStatus():
-            self.AppFrame.RefreshStatusToolBar()
+        self.UpdateMethodsFromPLCStatus()
 
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
+
+
+    def GetPLCStats(self):
+        stats_txt = ""
+
+        # Call GetLogMessage with special 0xFF level to obtain stats
+        if self._connector:
+            message = self._connector.GetLogMessage(0xFF, 0)
+            if message is not None:
+                stats_string, _tick, tv_sec, tv_nsec = message
+                date = datetime.fromtimestamp(tv_sec + tv_nsec * 1e-9, tz=timezone.utc)
+                stats_txt = "Stats[%s]: %s\n" % (date.isoformat(' '), stats_string)
+
+        return stats_txt
 
     def UpdatePLCLog(self, log_count):
         if log_count:
@@ -1485,7 +1670,6 @@ class ProjectController(ConfigTreeNode, PLCControler):
     }
 
     def UpdateMethodsFromPLCStatus(self):
-        updated = False
         status = PlcStatus.Disconnected
         if self._connector is not None:
             PLCstatus = self._connector.GetPLCstatus()
@@ -1499,35 +1683,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
             allmethods = self.DefaultMethods.copy()
             allmethods.update(
                 self.MethodsFromStatus.get(status, {}))
-            for method, active in allmethods.items():
+            for method, active in list(allmethods.items()):
                 self.ShowMethod(method, active)
             self.previous_plcstate = status
             if self.AppFrame is not None:
-                updated = True
                 self.AppFrame.RefreshStatusToolBar()
-                if status == PlcStatus.Disconnected:
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        _(status), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText('', 2)
-                else:
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        _("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), 1)
-                    self.AppFrame.ConnectionStatusBar.SetStatusText(
-                        _(status), 2)
-        return updated
+                texts = [_(PlcStatus.Disconnected), ''] \
+                        if status == PlcStatus.Disconnected or self._connector is None else \
+                        [_("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), _(status)]
+                for i,txt in enumerate(texts):
+                    self.AppFrame.ConnectionStatusBar.SetStatusText(txt, i)
+        if self.AppFrame is not None:
+            self.AppFrame.ConnectionStatusBar.SetStatusText(self.GetPLCStats(), 2)
 
-    def ShowPLCProgress(self, status="", progress=0):
-        self.AppFrame.ProgressStatusBar.Show()
-        self.AppFrame.ConnectionStatusBar.SetStatusText(
-            _(status), 1)
-        self.AppFrame.ProgressStatusBar.SetValue(progress)
-
-    def HidePLCProgress(self):
-        # clear previous_plcstate to restore status
-        # in UpdateMethodsFromPLCStatus()
-        self.previous_plcstate = ""
-        self.AppFrame.ProgressStatusBar.Hide()
-        self.UpdateMethodsFromPLCStatus()
+        return status
 
     def PullPLCStatusProc(self, event):
         self.UpdateMethodsFromPLCStatus()
@@ -1544,7 +1713,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         debug_vars = UnpackDebugBuffer(
                             debug_buff, self.TracedIECTypes)
                         if debug_vars is not None:
-                            for IECPath, values_buffer, value in izip(
+                            for IECPath, values_buffer, value in zip(
                                     self.TracedIECPath,
                                     self.DebugValuesBuffers,
                                     debug_vars):
@@ -1570,7 +1739,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
 
         buffers, self.DebugValuesBuffers = (self.DebugValuesBuffers,
-                                            [list() for dummy in xrange(len(self.TracedIECPath))])
+                                            [list() for dummy in range(len(self.TracedIECPath))])
 
         ticks, self.DebugTicks = self.DebugTicks, []
 
@@ -1585,8 +1754,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         2 : _("Debug: Too many variables forced. Max 256.\n"),
         # FORCE_BUFFER_OVERFLOW
         3 : _("Debug: Cumulated forced variables size too large. Max 1KB.\n"),
+        # FORCE_INVALID
+        3 : _("Debug: Invalid forced value.\n"),
         # DEBUG_SUSPENDED
-        4 : _("Debug: suspended.\n")
+        5 : _("Debug: suspended.\n")
     }
 
     def RegisterDebugVarToConnector(self):
@@ -1595,7 +1766,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.TracedIECTypes = []
         if self._connector is not None and self.debug_status != PlcStatus.Broken:
             IECPathsToPop = []
-            for IECPath, data_tuple in self.IECdebug_datas.iteritems():
+            for IECPath, data_tuple in self.IECdebug_datas.items():
                 WeakCallableDict, _data_log, _status, fvalue, _buffer_list = data_tuple
                 if len(WeakCallableDict) == 0:
                     # Callable Dict is empty.
@@ -1607,7 +1778,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         IECPath, (None, None))
                     if Idx is not None:
                         if IEC_Type in DebugTypesSize:
-                            Idxs.append((Idx, IEC_Type, fvalue, IECPath))
+                            Idxs.append(
+                                (Idx, IEC_Type, IECPath, 
+                                 ValueToIECBytes(IEC_Type, fvalue)))
                         else:
                             self.logger.write_warning(
                                 _("Debug: Unsupported type to debug '%s'\n") % IEC_Type)
@@ -1619,10 +1792,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
             if Idxs:
                 Idxs.sort()
-                IdxsT = zip(*Idxs)
-                self.TracedIECPath = IdxsT[3]
-                self.TracedIECTypes = IdxsT[1]
-                res = self._connector.SetTraceVariablesList(zip(*IdxsT[0:3]))
+                Idxs, self.TracedIECTypes, self.TracedIECPath, Fvalues, = list(zip(*Idxs))
+                res = self._connector.SetTraceVariablesList(list(zip(Idxs, Fvalues)))
                 if res is not None and res > 0:
                     self.DebugToken = res
                 else:
@@ -1687,7 +1858,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
             else:
                 IECdebug_data[4] = reduce(
                     lambda x, y: x | y,
-                    IECdebug_data[0].itervalues(),
+                    iter(IECdebug_data[0].values()),
                     False)
 
         self.AppendDebugUpdate()
@@ -1724,7 +1895,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if data_tuple is not None:
             WeakCallableDict, _data_log, _status, _fvalue, buffer_list = data_tuple
             # data_log.append((debug_tick, value))
-            for weakcallable, buffer_list in WeakCallableDict.iteritems():
+            for weakcallable, buffer_list in WeakCallableDict.items():
                 function = getattr(weakcallable, function_name, None)
                 if function is not None:
                     # FIXME: apparently, despite of weak ref objects,
@@ -1790,25 +1961,35 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         Start PLC
         """
+        success = False
         if self.GetIECProgramsAndVariables():
             self._connector.StartPLC()
             self.logger.write(_("Starting PLC\n"))
             self._connect_debug()
+            success = True
         else:
             self.logger.write_error(_("Couldn't start PLC !\n"))
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        return success
 
     def _Stop(self):
         """
         Stop PLC
         """
+        success = True
         if self._connector is not None and not self._connector.StopPLC():
             self.logger.write_error(_("Couldn't stop PLC !\n"))
+            success = False
 
         # debugthread should die on his own
         # self.KillDebugThread()
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        return success
+
+    def StartLocalRuntime(self):
+        if self.AppFrame:
+            return self.AppFrame.StartLocalRuntime()
 
     def _SetConnector(self, connector, update_status=True):
         self._connector = connector
@@ -1826,6 +2007,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 wx.CallAfter(self.UpdateMethodsFromPLCStatus)
 
     def _Connect(self):
+        success = False
         # don't accept re-connetion if already connected
         if self._connector is not None:
             self.logger.write_error(
@@ -1870,23 +2052,32 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Exception while connecting to '{uri}': {ex}\n").format(
                     uri=uri, ex=e))
+            if GetDeveloperMode():
+                # If developer mode, raise exception
+                raise e
 
         # Did connection success ?
         if self._connector is None:
             # Oups.
             self.logger.write_error(_("Connection failed to %s!\n") % uri)
         else:
+            VersionsInfoBytes = self._connector.ExtendedCall("GetVersions", bytes())
+            if VersionsInfoBytes is not None:
+                VersionsInfo = VersionsInfoBytes.decode()
+                self.logger.write(f"Version string: {VersionsInfo}\n")
             self.CompareLocalAndRemotePLC()
 
             # Init with actual PLC status and print it
             self.UpdateMethodsFromPLCStatus()
             if self.previous_plcstate in [PlcStatus.Started, PlcStatus.Stopped]:
-                if self.DebugAvailable() and self.GetIECProgramsAndVariables():
+                if self.GetIECProgramsAndVariables():
                     self.logger.write(_("Debugger ready\n"))
                     self._connect_debug()
                 else:
                     self.logger.write_warning(
                         _("Debug does not match PLC - stop/transfert/start to re-enable\n"))
+            success = True
+        return success
 
     def CompareLocalAndRemotePLC(self):
         if self._connector is None:
@@ -1910,6 +2101,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self._SetConnector(None)
 
     def _Transfer(self):
+        success = False
         if self.IsPLCStarted():
             dialog = wx.MessageDialog(
                 self.AppFrame,
@@ -1933,6 +2125,12 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(
                 _("Failed : Must build before transfer.\n"))
             return False
+
+        # Check if transfer is done by builder
+        if self._connector.DelegateTransferToBuilder():
+            self.logger.write(_("Transfer is ensured by build system.\n"))
+            return builder.Transfer(self._connector)
+
 
         # Compare PLC project with PLC on target
         if self._connector.MatchMD5(MD5):
@@ -1962,26 +2160,27 @@ class ProjectController(ConfigTreeNode, PLCControler):
             # arbitrarily use MD5 as a seed, could be any string
             object_blob = self._connector.BlobFromFile(object_path, MD5)
         except IOError as e:
-            self.HidePLCProgress()
             self.logger.write_error(repr(e))
         else:
-            self.HidePLCProgress()
             self.logger.write(_("PLC data transfered successfully.\n"))
 
             if self._connector.NewPLC(MD5, object_blob, extrafiles):
                 if self.GetIECProgramsAndVariables():
                     self.UnsubscribeAllDebugIECVariable()
                     self.ProgramTransferred()
-                    self.AppFrame.CloseObsoleteDebugTabs()
-                    self.AppFrame.RefreshPouInstanceVariablesPanel()
-                    self.AppFrame.LogViewer.ResetLogCounters()
+                    if self.AppFrame is not None:
+                        self.AppFrame.CloseObsoleteDebugTabs()
+                        self.AppFrame.RefreshPouInstanceVariablesPanel()
+                        self.AppFrame.LogViewer.ResetLogCounters()
                     self.logger.write(_("PLC installed successfully.\n"))
+                    success = True
                 else:
                     self.logger.write_error(_("Missing debug data\n"))
             else:
                 self.logger.write_error(_("PLC couldn't be installed\n"))
 
         wx.CallAfter(self.UpdateMethodsFromPLCStatus)
+        return success
 
     def _Repair(self):
         dialog = wx.MessageDialog(
@@ -2097,3 +2296,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for d in self.StatusMethods:
             if d["method"] == method and d.get("enabled", True) and d.get("shown", True):
                 getattr(self, method)()
+
+
+# Strange hack required by WAMP connector, using twisted.
+# Twisted reactor needs to be stopped only before quit,
+# since it cannot be restarted
+ToDoBeforeQuit = []
+

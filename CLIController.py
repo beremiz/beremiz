@@ -1,0 +1,213 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+from functools import wraps
+from threading import Timer
+from datetime import datetime, timezone
+
+from ProjectController import ProjectController, ToDoBeforeQuit
+from LocalRuntimeMixin import LocalRuntimeMixin
+from runtime.loglevels import LogLevelsCount, LogLevels
+from runtime import PlcStatus
+
+class Log:
+
+    def __init__(self):
+        self.last_progress = None
+
+    def write(self, s):
+        if s:
+            if self.last_progress:
+                sys.stdout.write(f"{self.last_progress}\n")
+                self.last_progress = None
+            sys.stdout.write(s)
+            sys.stdout.flush()
+            self.crlfpending = 0
+
+    def write_error(self, s):
+        if s:
+            self.write("Error: "+s)
+
+    def write_warning(self, s):
+        if s:
+            self.write("Warning: "+s)
+
+    def flush(self):
+        sys.stdout.flush()
+        
+    def isatty(self):
+        return False
+
+    def progress(self, s):
+        self.last_progress = s
+
+def with_project_loaded(func):
+    @wraps(func)
+    def func_wrapper(self, *args, **kwargs):
+        if not self.HasOpenedProject():
+            if self.check_and_load_project():
+                return 1 
+            self.apply_config()
+        return func(self, *args, **kwargs)
+
+    return func_wrapper
+
+def connected(func):
+    @wraps(func)
+    def func_wrapper(self, *args, **kwargs):
+        if self._connector is None:
+            if self.session.uri:
+                self.BeremizRoot.setURI_location(self.session.uri)
+            if not self._Connect():
+                return 1
+        return func(self, *args, **kwargs)
+
+    return func_wrapper
+
+class CLIController(LocalRuntimeMixin, ProjectController):
+    def __init__(self, session):
+        self.session = session
+        log = Log()
+        LocalRuntimeMixin.__init__(self, log, use_gui=False)
+        ProjectController.__init__(self)
+        self.logger = log
+
+    def _SetConnector(self, connector, update_status=True):
+        self._connector = connector
+        self.previous_log_count = [None]*LogLevelsCount
+        if connector is None and update_status:
+                self.UpdateMethodsFromPLCStatus()
+
+    def ClearPLCLog(self):
+        connector = self._connector
+        if connector:
+            connector.ResetLogCount()
+            self.previous_log_count = [None]*LogLevelsCount
+
+    def UpdatePLCLog(self, log_count):
+        connector = self._connector
+        new_messages = []
+        if connector:
+            for level, count, prev in zip(
+                range(LogLevelsCount), log_count, self.previous_log_count):
+                if count is not None and prev != count:
+                    if prev is None:
+                        dump_end = max(-1, count - 10)
+                    else:
+                        dump_end = prev - 1
+                    for msgidx in range(count-1, dump_end, -1):
+                        message = connector.GetLogMessage(level, msgidx)
+                        if message is not None:
+                            msg, _tick, tv_sec, tv_nsec = message
+                            date = datetime.fromtimestamp(tv_sec + tv_nsec * 1e-9, timezone.utc)
+                            txt = "%s at %s: %s\n" % (LogLevels[level], date.isoformat(' '), msg)
+                            new_messages.append((date,txt))
+                        else:
+                            break
+                self.previous_log_count[level] = count
+            new_messages.sort()
+            for date, txt in new_messages:
+                self.logger.write(txt)
+
+    def UpdateMethodsFromPLCStatus(self):
+        status = PlcStatus.Disconnected
+        if self._connector is not None:
+            PLCstatus = self._connector.GetPLCstatus()
+            status, log_count = PLCstatus
+            if status == PlcStatus.Disconnected:
+                self._SetConnector(None, False)
+            else:
+                self.UpdatePLCLog(log_count)
+                self.logger.write(self.GetPLCStats())
+
+        if self.previous_plcstate != status:
+            self.previous_plcstate = status
+            self.logger.write("PLC Status: %s\n" % status)
+            
+        return status
+
+    def check_and_load_project(self):
+        if not os.path.isdir(self.session.project_home):
+            self.logger.write_error(
+                _("\"%s\" is not a valid Beremiz project\n") % self.session.project_home)
+            return True
+
+        if not os.path.isabs(self.session.project_home):
+            self.session.project_home = os.path.join(os.getcwd(), self.session.project_home)
+
+        errmsg, error = self.LoadProject(self.session.project_home, self.session.buildpath)
+        if error:
+            self.logger.write_error(errmsg)
+            return True
+
+    def apply_config(self):
+        for k,t,v in self.session.config:
+            _t = {
+                "boolean": lambda val:val=="true",
+                "string": lambda val:val,
+                "integer": lambda val:int(val)}[t]
+            parts = k.split(".", 1)
+            child = self.GetChildByName(parts[0]) if len(parts) > 1 else None
+            if child is not None:
+                child.SetParamsAttribute(parts[1], _t(v))
+            else:
+                self.SetParamsAttribute("BeremizRoot."+k, _t(v))
+
+    @with_project_loaded
+    def clean_project(self):
+        self._Clean()
+        return 0
+
+    @with_project_loaded
+    def build_project(self, target):
+
+        if target:
+            self.SetParamsAttribute("BeremizRoot.TargetType", target)
+            
+        return 0 if self._Build() else 1
+
+    @with_project_loaded
+    @connected
+    def transfer_project(self):
+
+        return 0 if self._Transfer() else 1
+
+    @with_project_loaded
+    @connected
+    def run_project(self):
+
+        return 0 if self._Run() else 1
+        
+    @with_project_loaded
+    @connected
+    def stop_project(self):
+
+        return 0 if self._Stop() else 1
+        
+    @with_project_loaded
+    @connected
+    def connect_project(self):
+
+        return 0
+
+    @connected
+    def clear_log(self):
+        
+        self.ClearPLCLog()
+        return 0
+
+    def finish(self):
+        global ToDoBeforeQuit
+
+        self._Disconnect()
+
+        for Thing in ToDoBeforeQuit:
+            Thing()
+        ToDoBeforeQuit = []
+
+        if not self.session.keep:
+            self.KillLocalRuntime()
+
+

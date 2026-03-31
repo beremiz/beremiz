@@ -23,21 +23,18 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
 import re
-from builtins import str as text
 
 import wx
 import wx.grid
 import wx.stc as stc
 import wx.lib.buttons
-from six.moves import xrange
 
 
 from plcopen.plcopen import TestTextElement
 from plcopen.structures import TestIdentifier, IEC_KEYWORDS, DefaultType
-from controls import CustomGrid, CustomTable
+from controls.CustomGrid import CustomGrid
+from controls.CustomTable import CustomTable
 from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursorPos, NAVIGATION_KEYS
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 from util.BitmapLibrary import GetBitmap
@@ -46,7 +43,7 @@ from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, RE
 
 
 [STC_CODE_ERROR, STC_CODE_SEARCH_RESULT,
- STC_CODE_SECTION] = range(15, 18)
+ STC_CODE_SECTION] = list(range(15, 18))
 
 HIGHLIGHT_TYPES = {
     ERROR_HIGHLIGHT: STC_CODE_ERROR,
@@ -285,23 +282,28 @@ class CodeEditor(CustomStyledTextCtrl):
     def RefreshSectionStyling(self):
         self.Colourise(0, -1)
 
-        for line in xrange(self.GetLineCount()):
+        for line in range(self.GetLineCount()):
             self.SetLineState(line, 0)
 
         doc_end_pos = self.GetLength()
         for section in self.Controler.SECTIONS_NAMES:
             section_comments = self.SectionsComments[section]
-            start_pos = self.FindText(0, doc_end_pos, section_comments["comment"])
-            end_pos = start_pos + len(section_comments["comment"])
-            self.StartStyling(start_pos, 0xff)
+            txttofind = section_comments["comment"]
+            results = self.FindText(0, doc_end_pos, txttofind)
+            if wx.VERSION < (4, 1, 0):
+                start_pos = results
+                end_pos = start_pos+len(txttofind)
+            else:
+                start_pos, end_pos = results
+            self.StartStyling(start_pos)
             self.SetStyling(end_pos - start_pos, STC_CODE_SECTION)
             self.SetLineState(self.LineFromPosition(start_pos), 1)
 
-        self.StartStyling(end_pos, 0x00)
+        self.StartStyling(end_pos)
         self.SetStyling(doc_end_pos - end_pos, stc.STC_STYLE_DEFAULT)
 
     def DoGetBestSize(self):
-        return self.ParentWindow.GetPanelBestSize()
+        return self.ParentWindow.GetBestSize()
 
     def RefreshModel(self):
         text = self.GetText()
@@ -597,7 +599,7 @@ class CodeEditor(CustomStyledTextCtrl):
                 highlight_end_pos = end[1] + 1
             else:
                 highlight_end_pos = self.GetLineEndPosition(end[0] - 1) + end[1] + 2
-            self.StartStyling(highlight_start_pos, 0xff)
+            self.StartStyling(highlight_start_pos)
             self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
             self.StartStyling(highlight_end_pos, 0x00)
             self.SetStyling(len(self.GetText()) - highlight_end_pos, stc.STC_STYLE_DEFAULT)
@@ -614,8 +616,7 @@ class AllGridCellEditor(wx.grid.GridCellTextEditor):
 
 class ClassGridCellEditor(wx.grid.GridCellChoiceEditor):
     def __init__(self, table, row, col):
-        wx.grid.GridCellChoiceEditor.__init__(self)
-        self.SetParameters("input,memory,output")
+        wx.grid.GridCellChoiceEditor.__init__(self,["input","memory","output"])
 
 
 class VariablesTable(CustomTable):
@@ -629,8 +630,8 @@ class VariablesTable(CustomTable):
         super(VariablesTable, self).__init__(*args, **kwargs)
         self.columnTypes = dict(self.__defaultColumnType)
         if my_columns is not None:
-            for key in my_columns.keys():
-                if key in self.columnTypes.keys():
+            for key in list(my_columns.keys()):
+                if key in list(self.columnTypes.keys()):
                     self.columnTypes[key] = my_columns[key]
 
     def GetValue(self, row, col):
@@ -638,7 +639,7 @@ class VariablesTable(CustomTable):
             if col == 0:
                 return row + 1
             else:
-                return text(self.data[row].get(self.GetColLabelValue(col, False), ""))
+                return str(self.data[row].get(self.GetColLabelValue(col, False), ""))
 
     def _updateColAttrs(self, grid):
         """
@@ -678,7 +679,7 @@ class VariablesEditor(wx.Panel):
         main_sizer.AddGrowableRow(0)
 
         controls_sizer = wx.BoxSizer(wx.VERTICAL)
-        main_sizer.AddSizer(controls_sizer, border=5, flag=wx.ALL)
+        main_sizer.Add(controls_sizer, border=5, flag=wx.ALL)
 
         for name, bitmap, help in [
                 ("AddVariableButton", "add_element", _("Add variable")),
@@ -687,15 +688,15 @@ class VariablesEditor(wx.Panel):
                 ("DownVariableButton", "down", _("Move variable down"))]:
             button = wx.lib.buttons.GenBitmapButton(self, bitmap=GetBitmap(bitmap),
                                                     size=wx.Size(28, 28), style=wx.NO_BORDER)
-            button.SetToolTipString(help)
+            button.SetToolTip(help)
             setattr(self, name, button)
-            controls_sizer.AddWindow(button, border=5, flag=wx.BOTTOM)
+            controls_sizer.Add(button, border=5, flag=wx.BOTTOM)
 
         self.VariablesGrid = CustomGrid(self, style=wx.VSCROLL)
-        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGE, self.OnVariablesGridCellChange)
+        self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnVariablesGridCellChange)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.OnVariablesGridCellLeftClick)
         self.VariablesGrid.Bind(wx.grid.EVT_GRID_EDITOR_SHOWN, self.OnVariablesGridEditorShown)
-        main_sizer.AddWindow(self.VariablesGrid, flag=wx.GROW)
+        main_sizer.Add(self.VariablesGrid, flag=wx.GROW)
 
         self.SetSizer(main_sizer)
 
@@ -785,7 +786,7 @@ class VariablesEditor(wx.Panel):
         self.VariablesGrid.RefreshButtons()
 
     def DoGetBestSize(self):
-        return self.ParentWindow.GetPanelBestSize()
+        return self.ParentWindow.GetBestSize()
 
     def ShowErrorMessage(self, message):
         dialog = wx.MessageDialog(self, message, _("Error"), wx.OK | wx.ICON_ERROR)
@@ -826,17 +827,17 @@ class VariablesEditor(wx.Panel):
             type_menu = wx.Menu(title='')
             base_menu = wx.Menu(title='')
             for base_type in self.Controler.GetBaseTypes():
-                new_entry = base_menu.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=base_type)
+                new_entry = base_menu.Append(wx.ID_ANY, base_type)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(base_type), new_entry)
             type_menu.AppendMenu(wx.ID_ANY, "Base Types", base_menu)
             datatype_menu = wx.Menu(title='')
             for datatype in self.Controler.GetDataTypes():
-                new_entry = datatype_menu.Append(help='', id=wx.ID_ANY, kind=wx.ITEM_NORMAL, text=datatype)
+                new_entry = datatype_menu.Append(wx.ID_ANY, item=datatype)
                 self.Bind(wx.EVT_MENU, self.GetVariableTypeFunction(datatype), new_entry)
             type_menu.AppendMenu(wx.ID_ANY, "User Data Types", datatype_menu)
             rect = self.VariablesGrid.BlockToDeviceRect((row, col), (row, col))
 
-            self.VariablesGrid.PopupMenuXY(type_menu, rect.x + rect.width, rect.y + self.VariablesGrid.GetColLabelSize())
+            self.VariablesGrid.PopupMenu(type_menu, rect.x + rect.width, rect.y + self.VariablesGrid.GetColLabelSize())
             type_menu.Destroy()
             event.Veto()
         else:

@@ -23,13 +23,11 @@
 # used in safety-critical situations without a full and competent review.
 
 
-from __future__ import absolute_import
 import os
-from six.moves import xrange
 
 from modbus.mb_utils import *
 from ConfigTreeNode import ConfigTreeNode
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 import util.paths as paths
 
 ModbusPath = paths.ThirdPartyPath("Modbus")
@@ -94,9 +92,9 @@ class _RequestPlug(object):
             if element["name"] == "ModbusRequest":
                 for child in element["children"]:
                     if child["name"] == "Function":
-                        list = modbus_function_dict.keys()
-                        list.sort()
-                        child["type"] = list
+                        _list = list(modbus_function_dict.keys())
+                        _list.sort()
+                        child["type"] = _list
         return infos
 
     def GetVariableLocationTree(self):
@@ -240,9 +238,9 @@ class _MemoryAreaPlug(object):
             if element["name"] == "MemoryArea":
                 for child in element["children"]:
                     if child["name"] == "MemoryAreaType":
-                        list = modbus_memtype_dict.keys()
-                        list.sort()
-                        child["type"] = list
+                        _list = list(modbus_memtype_dict.keys())
+                        _list.sort()
+                        child["type"] = _list
         return infos
 
     def GetVariableLocationTree(self):
@@ -319,11 +317,19 @@ class _ModbusTCPclientPlug(object):
                 </xsd:restriction>
             </xsd:simpleType>
           </xsd:attribute>
+          <xsd:attribute name="Request_Delay_in_ms" use="optional" default="0">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="0"/>
+                    <xsd:maxInclusive value="2147483647"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
     """
-    # NOTE: Max value of 2147483647 (i32_max) for Invocation_Rate_in_ms
+    # NOTE: Max value of 2147483647 (i32_max) for Invocation_Rate_in_ms and Request_Delay_in_ms
     # corresponds to aprox 25 days.
     CTNChildrenTypes = [("ModbusRequest", _RequestPlug, "Request")]
     # TODO: Replace with CTNType !!!
@@ -565,11 +571,19 @@ class _ModbusRTUclientPlug(object):
                 </xsd:restriction>
             </xsd:simpleType>
           </xsd:attribute>
+          <xsd:attribute name="Request_Delay_in_ms" use="optional" default="0">
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:integer">
+                    <xsd:minInclusive value="0"/>
+                    <xsd:maxInclusive value="2147483647"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
     """
-    # NOTE: Max value of 2147483647 (i32_max) for Invocation_Rate_in_ms
+    # NOTE: Max value of 2147483647 (i32_max) for Invocation_Rate_in_ms and Request_Delay_in_ms
     # corresponds to aprox 25 days.
     CTNChildrenTypes = [("ModbusRequest", _RequestPlug, "Request")]
     # TODO: Replace with CTNType !!!
@@ -602,7 +616,7 @@ class _ModbusRTUclientPlug(object):
                     if child["name"] == "Stop_Bits":
                         child["type"] = modbus_serial_stopbits_list
                     if child["name"] == "Parity":
-                        child["type"] = modbus_serial_parity_dict.keys()
+                        child["type"] = list(modbus_serial_parity_dict.keys())
         return infos
 
     # Return the number of (modbus library) nodes this specific RTU client will need
@@ -693,7 +707,7 @@ class _ModbusRTUslavePlug(object):
                     if child["name"] == "Stop_Bits":
                         child["type"] = modbus_serial_stopbits_list
                     if child["name"] == "Parity":
-                        child["type"] = modbus_serial_parity_dict.keys()
+                        child["type"] = list(modbus_serial_parity_dict.keys())
         return infos
 
     # Return the number of (modbus library) nodes this specific RTU slave will need
@@ -857,6 +871,9 @@ class RootClass(object):
             Node_Configuration_Names.extend([(child.GetCurrentLocation(), child.GetConfigName())])
         return Node_Configuration_Names
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
         # print "#############"
         # print self.__class__
@@ -1010,7 +1027,7 @@ class RootClass(object):
                             start_address = int(GetCTVal(subchild, 2))
                             relative_addr = absloute_address - start_address
                             # test if relative address in request specified range
-                            if relative_addr in xrange(int(GetCTVal(subchild, 1))):
+                            if relative_addr in range(int(GetCTVal(subchild, 1))):
                                 if str(iecvar["NAME"]) not in loc_vars_list:
                                     loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
                                         server_id, memarea, absloute_address))
@@ -1064,7 +1081,7 @@ class RootClass(object):
                             start_address = int(GetCTVal(subchild, 2))
                             relative_addr = absloute_address - start_address
                             # test if relative address in request specified range
-                            if relative_addr in xrange(int(GetCTVal(subchild, 1))):
+                            if relative_addr in range(int(GetCTVal(subchild, 1))):
                                 if str(iecvar["NAME"]) not in loc_vars_list:
                                     loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &server_nodes[%d].mem_area.%s[%d];" % (
                                         server_id, memarea, absloute_address))
@@ -1100,7 +1117,7 @@ class RootClass(object):
                         #        two numbers are always '0.0', and the first two identify the request.
                         #        In the following if, we check for this condition by checking
                         #        if there are at least 4 or more number in the location's address.
-                        if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
+                        if (        relative_addr in range(int(GetCTVal(subchild, 2)))  # condition (a) explained above
                             and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append("u16 *" + str(iecvar["NAME"]) + " = &client_requests[%d].plcv_buffer[%d];" % (client_requestid, relative_addr))
@@ -1161,7 +1178,7 @@ class RootClass(object):
                         #        two numbers are always '0.0', and the first two identify the request.
                         #        In the following if, we check for this condition by checking
                         #        if there are at least 4 or more number in the location's address.
-                        if (        relative_addr in xrange(int(GetCTVal(subchild, 2)))  # condition (a) explained above
+                        if (        relative_addr in range(int(GetCTVal(subchild, 2)))  # condition (a) explained above
                             and len(iecvar["LOC"]) < 5):                                  # condition (b) explained above
                             if str(iecvar["NAME"]) not in loc_vars_list:
                                 loc_vars.append(

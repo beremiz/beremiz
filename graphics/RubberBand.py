@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from graphics.GraphicCommons import GetScaledEventPosition
@@ -94,7 +94,7 @@ class RubberBand(object):
 
         # Change viewer mouse cursor to reflect a rubberband bounding box is
         # edited
-        self.DrawingSurface.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+        self.DrawingSurface.SetCursor(wx.Cursor(wx.CURSOR_CROSS))
 
         self.Redraw()
 
@@ -139,6 +139,11 @@ class RubberBand(object):
 
         self.Redraw()
 
+    def SetRubberBandPen(self, dc):
+        # Set DC drawing style
+        dc.SetPen(wx.Pen(wx.WHITE, style=wx.DOT))
+        dc.SetLogicalFunction(wx.XOR)
+
     def DrawBoundingBoxes(self, bboxes, dc=None):
         """
         Draw a list of bounding box on Viewer in the order given using XOR
@@ -155,17 +160,16 @@ class RubberBand(object):
         scalex, scaley = dc.GetUserScale()
         dc.SetUserScale(1, 1)
 
-        # Set DC drawing style
-        dc.SetPen(wx.Pen(wx.WHITE, style=wx.DOT))
+        self.SetRubberBandPen(dc)
+
         dc.SetBrush(wx.TRANSPARENT_BRUSH)
-        dc.SetLogicalFunction(wx.XOR)
 
         # Draw the bounding boxes using viewer scale factor
         for bbox in bboxes:
             if bbox is not None:
                 dc.DrawRectangle(
-                    bbox.x * scalex, bbox.y * scaley,
-                    bbox.width * scalex, bbox.height * scaley)
+                    round(bbox.x * scalex), round(bbox.y * scaley),
+                    round(bbox.width * scalex), round(bbox.height * scaley))
 
         dc.SetLogicalFunction(wx.COPY)
 
@@ -195,3 +199,29 @@ class RubberBand(object):
         """
         # Erase last bbox and draw current bbox
         self.DrawBoundingBoxes([self.CurrentBBox], dc)
+
+
+def PatchRubberBandForGTK3():
+    """
+    GTK3 implementation of DC doesn't support SetLogicalFuntion(XOR)
+    Then Rubberband can't be erased by just redrawing it on the same place
+    So this is a complete refresh instead, eating a lot of CPU.
+    """
+    def Redraw(self, dc=None):
+        self.Viewer.Refresh()
+        self.Draw()
+
+    RubberBand.Redraw = Redraw
+
+    def Erase(self, dc=None):
+        self.Viewer.Refresh()
+
+    RubberBand.Erase = Erase
+
+    def SetRubberBandPen(self, dc):
+        dc.SetPen(wx.Pen(wx.BLACK, style=wx.DOT))
+
+    RubberBand.SetRubberBandPen = SetRubberBandPen
+
+if "gtk3" in wx.PlatformInfo:
+    PatchRubberBandForGTK3()

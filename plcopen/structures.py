@@ -23,13 +23,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import re
 from collections import OrderedDict
 from functools import reduce
 
-from plcopen.plcopen import LoadProject
-from plcopen.definitions import *
+from . plcopen import LoadProject
+from . definitions import *
 
 TypeHierarchy = dict(TypeHierarchy_list)
 
@@ -53,7 +53,7 @@ def GetSubTypes(type):
     """
     Returns list of all types that correspont to the ANY* meta type
     """
-    return [typename for typename, _parenttype in TypeHierarchy.items() if not typename.startswith("ANY") and IsOfType(typename, type)]
+    return [typename for typename, _parenttype in list(TypeHierarchy.items()) if not typename.startswith("ANY") and IsOfType(typename, type)]
 
 
 DataTypeRange = dict(DataTypeRange_list)
@@ -78,7 +78,7 @@ StdBlckLibs = {libname: LoadProject(tc6fname)[0]
                for libname, tc6fname in StdTC6Libs}
 StdBlckLst = [{"name": libname, "list":
                [GetBlockInfos(pous) for pous in lib.getpous()]}
-              for libname, lib in StdBlckLibs.iteritems()]
+              for libname, lib in StdBlckLibs.items()]
 
 # -------------------------------------------------------------------------------
 #                             Test identifier
@@ -148,7 +148,7 @@ def csv_input_translate(str_decl, variables, base):
     len_of_not_predifined_variable = len([True for param_type in decl if param_type not in variables])
 
     for param_type in decl:
-        if param_type in variables.keys():
+        if param_type in list(variables.keys()):
             param_name = param_type
             param_type = variables[param_type]
         elif len_of_not_predifined_variable > 1:
@@ -202,7 +202,7 @@ def get_standard_funtions(table):
                 Function_decl = dict([(champ, val) for champ, val in zip(fonctions, fields[1:]) if champ])
                 baseinputnumber = int(Function_decl.get("baseinputnumber", 1))
                 Function_decl["baseinputnumber"] = baseinputnumber
-                for param, value in Function_decl.iteritems():
+                for param, value in Function_decl.items():
                     if param in translate:
                         Function_decl[param] = translate[param](value)
                 Function_decl["type"] = "function"
@@ -250,13 +250,13 @@ def get_standard_funtions(table):
                         store = True
                         for (InTypes, OutTypes) in ANY_TO_ANY_FILTERS.get(filter_name, []):
                             outs = reduce(lambda a, b: a or b,
-                                          map(lambda testtype: IsOfType(
+                                          [IsOfType(
                                               Function_decl["outputs"][0][1],
-                                              testtype), OutTypes))
+                                              testtype) for testtype in OutTypes])
                             inps = reduce(lambda a, b: a or b,
-                                          map(lambda testtype: IsOfType(
+                                          [IsOfType(
                                               Function_decl["inputs"][0][1],
-                                              testtype), InTypes))
+                                              testtype) for testtype in InTypes])
                             if inps and outs and Function_decl["outputs"][0][1] != Function_decl["inputs"][0][1]:
                                 store = True
                                 break
@@ -308,7 +308,7 @@ for category in StdBlckLst:
 TYPE_BLOCK_START_KEYWORDS = ["TYPE", "STRUCT"]
 TYPE_BLOCK_END_KEYWORDS = ["END_TYPE", "END_STRUCT"]
 TYPE_KEYWORDS = ["ARRAY", "OF", "T", "D", "TIME_OF_DAY", "DATE_AND_TIME"] + TYPE_BLOCK_START_KEYWORDS + TYPE_BLOCK_END_KEYWORDS
-TYPE_KEYWORDS.extend([keyword for keyword in TypeHierarchy.keys() if keyword not in TYPE_KEYWORDS])
+TYPE_KEYWORDS.extend([keyword for keyword in list(TypeHierarchy.keys()) if keyword not in TYPE_KEYWORDS])
 
 
 # Keywords for Variable Declaration
@@ -340,7 +340,7 @@ IL_KEYWORDS = [
 ST_BLOCK_START_KEYWORDS = ["IF", "ELSIF", "ELSE", "CASE", "FOR", "WHILE", "REPEAT"]
 ST_BLOCK_END_KEYWORDS = ["END_IF", "END_CASE", "END_FOR", "END_WHILE", "END_REPEAT"]
 ST_KEYWORDS = [
-    "TRUE", "FALSE", "THEN", "OF", "TO", "BY", "DO", "DO", "UNTIL", "EXIT",
+    "TRUE", "FALSE", "THEN", "OF", "TO", "BY", "DO", "DO", "UNTIL", "EXIT", "CONTINUE",
     "RETURN", "NOT", "MOD", "AND", "XOR", "OR"
 ] + ST_BLOCK_START_KEYWORDS + ST_BLOCK_END_KEYWORDS
 

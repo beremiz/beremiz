@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from dialogs.DurationEditorDialog import DurationEditorDialog
@@ -46,12 +46,12 @@ class DurationCellControl(wx.PyControl):
         self.Duration = wx.TextCtrl(self, size=wx.Size(0, -1),
                                     style=wx.TE_PROCESS_ENTER)
         self.Duration.Bind(wx.EVT_KEY_DOWN, self.OnDurationChar)
-        main_sizer.AddWindow(self.Duration, flag=wx.GROW)
+        main_sizer.Add(self.Duration, flag=wx.GROW)
 
         # create browse button
         self.EditButton = wx.Button(self, label='...', size=wx.Size(30, -1))
         self.Bind(wx.EVT_BUTTON, self.OnEditButtonClick, self.EditButton)
-        main_sizer.AddWindow(self.EditButton, flag=wx.GROW)
+        main_sizer.Add(self.EditButton, flag=wx.GROW)
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
@@ -98,18 +98,15 @@ class DurationCellControl(wx.PyControl):
         self.Duration.SetFocus()
 
 
-class DurationCellEditor(wx.grid.PyGridCellEditor):
+class DurationCellEditor(wx.grid.GridCellEditor):
     '''
     Grid cell editor that uses DurationCellControl to display an edit button.
     '''
     def __init__(self, table, colname):
-        wx.grid.PyGridCellEditor.__init__(self)
+        wx.grid.GridCellEditor.__init__(self)
 
         self.Table = table
         self.Colname = colname
-
-    def __del__(self):
-        self.CellControl = None
 
     def Create(self, parent, id, evt_handler):
         self.CellControl = DurationCellControl(parent)

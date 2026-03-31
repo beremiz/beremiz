@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<CIA402SlaveParams EnableDigitalInputs="true" RatioNumerator="65536" RatioDenominator="360" PositionOffset="0" LimitSwitchNC="false" HomingLimitWindow="10" HomingVelocity="360" TorqueRatioNumerator="10" TorqueRatioDenominator="1">
+  <RxPDOs>
+    <PDO>0x1600</PDO>
+  </RxPDOs>
+  <TxPDOs>
+    <PDO>0x1a00</PDO>
+  </TxPDOs>
+  <TxPDO/>
+  <RxPDO/>
+</CIA402SlaveParams>

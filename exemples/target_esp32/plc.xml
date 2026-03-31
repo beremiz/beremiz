@@ -1,0 +1,360 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="Desconocido" productName="Unnamed" productVersion="1" creationDateTime="2026-03-01T14:16:40"/>
+  <contentHeader name="Unnamed" modificationDateTime="2026-03-16T02:26:01">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="8" y="8"/>
+      </fbd>
+      <ld>
+        <scaling x="8" y="8"/>
+      </ld>
+      <sfc>
+        <scaling x="8" y="8"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="program0" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="functionBlock00">
+              <type>
+                <derived name="functionBlock0"/>
+              </type>
+            </variable>
+          </localVars>
+          <inputVars>
+            <variable name="Input1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_get_level(PIN_IN1)]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="Input2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_get_level(PIN_IN2)]]></xhtml:p>
+              </documentation>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Output1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="Output2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+          </outputVars>
+          <inputVars>
+            <variable name="Start">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Done">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="Busy">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="Error">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+          </outputVars>
+          <inputVars>
+            <variable name="TargetPos">
+              <type>
+                <LREAL/>
+              </type>
+              <initialValue>
+                <simpleValue value="10.1"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="Speed">
+              <type>
+                <LREAL/>
+              </type>
+              <initialValue>
+                <simpleValue value="1.1"/>
+              </initialValue>
+              <documentation>
+                <xhtml:p><![CDATA[leer con gpio_set_level(PIN_OUT2)]]></xhtml:p>
+              </documentation>
+            </variable>
+          </inputVars>
+          <localVars>
+            <variable name="functionBlock01">
+              <type>
+                <derived name="functionBlock0"/>
+              </type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <FBD>
+            <inVariable localId="2" executionOrderId="0" width="48" height="24" negated="false">
+              <position x="80" y="88"/>
+              <connectionPointOut>
+                <relPosition x="48" y="8"/>
+              </connectionPointOut>
+              <expression>Input1</expression>
+            </inVariable>
+            <inVariable localId="3" executionOrderId="0" width="48" height="24" negated="false">
+              <position x="80" y="120"/>
+              <connectionPointOut>
+                <relPosition x="48" y="8"/>
+              </connectionPointOut>
+              <expression>Input2</expression>
+            </inVariable>
+            <outVariable localId="4" executionOrderId="0" width="56" height="24" negated="false">
+              <position x="416" y="88"/>
+              <connectionPointIn>
+                <relPosition x="0" y="8"/>
+                <connection refLocalId="5" formalParameter="Out1">
+                  <position x="416" y="96"/>
+                  <position x="320" y="96"/>
+                </connection>
+              </connectionPointIn>
+              <expression>Output1</expression>
+            </outVariable>
+            <block localId="5" typeName="functionBlock0" instanceName="functionBlock01" executionOrderId="0" width="96" height="64">
+              <position x="224" y="64"/>
+              <inputVariables>
+                <variable formalParameter="In0">
+                  <connectionPointIn>
+                    <relPosition x="0" y="32"/>
+                    <connection refLocalId="2">
+                      <position x="224" y="96"/>
+                      <position x="128" y="96"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="In1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="56"/>
+                    <connection refLocalId="3">
+                      <position x="224" y="120"/>
+                      <position x="176" y="120"/>
+                      <position x="176" y="128"/>
+                      <position x="128" y="128"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="Out1">
+                  <connectionPointOut>
+                    <relPosition x="96" y="32"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+          </FBD>
+        </body>
+      </pou>
+      <pou name="functionBlock0" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="In0">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+            <variable name="In1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Out1">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="Out2">
+              <type>
+                <BOOL/>
+              </type>
+              <initialValue>
+                <simpleValue value="0"/>
+              </initialValue>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <LD>
+            <leftPowerRail localId="1" width="9" height="83">
+              <position x="72" y="88"/>
+              <connectionPointOut formalParameter="">
+                <relPosition x="9" y="24"/>
+              </connectionPointOut>
+              <connectionPointOut formalParameter="">
+                <relPosition x="9" y="64"/>
+              </connectionPointOut>
+            </leftPowerRail>
+            <rightPowerRail localId="2" width="6" height="43">
+              <position x="440" y="96"/>
+              <connectionPointIn>
+                <relPosition x="0" y="16"/>
+                <connection refLocalId="5">
+                  <position x="440" y="112"/>
+                  <position x="376" y="112"/>
+                </connection>
+              </connectionPointIn>
+            </rightPowerRail>
+            <contact localId="3" negated="false" width="24" height="18">
+              <position x="144" y="104"/>
+              <connectionPointIn>
+                <relPosition x="0" y="8"/>
+                <connection refLocalId="1">
+                  <position x="144" y="112"/>
+                  <position x="81" y="112"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="24" y="8"/>
+              </connectionPointOut>
+              <variable>In0</variable>
+            </contact>
+            <contact localId="4" negated="false" width="27" height="21">
+              <position x="144" y="144"/>
+              <connectionPointIn>
+                <relPosition x="0" y="8"/>
+                <connection refLocalId="1">
+                  <position x="144" y="152"/>
+                  <position x="81" y="152"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="27" y="8"/>
+              </connectionPointOut>
+              <variable>Out1</variable>
+            </contact>
+            <coil localId="5" negated="false" width="24" height="18">
+              <position x="352" y="104"/>
+              <connectionPointIn>
+                <relPosition x="0" y="8"/>
+                <connection refLocalId="6">
+                  <position x="352" y="112"/>
+                  <position x="288" y="112"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="24" y="8"/>
+              </connectionPointOut>
+              <variable>Out1</variable>
+            </coil>
+            <contact localId="6" negated="true" width="24" height="18">
+              <position x="264" y="104"/>
+              <connectionPointIn>
+                <relPosition x="0" y="8"/>
+                <connection refLocalId="3">
+                  <position x="264" y="112"/>
+                  <position x="168" y="112"/>
+                </connection>
+                <connection refLocalId="4">
+                  <position x="264" y="112"/>
+                  <position x="217" y="112"/>
+                  <position x="217" y="152"/>
+                  <position x="171" y="152"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="24" y="8"/>
+              </connectionPointOut>
+              <variable>In1</variable>
+            </contact>
+          </LD>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="config">
+        <resource name="resource1">
+          <task name="task0" priority="0" interval="T#20ms">
+            <pouInstance name="instance0" typeName="program0"/>
+          </task>
+        </resource>
+      </configuration>
+    </configurations>
+  </instances>
+</project>

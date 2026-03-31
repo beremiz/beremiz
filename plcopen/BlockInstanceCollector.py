@@ -3,9 +3,9 @@
 # This file is part of Beremiz.
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 from collections import OrderedDict, namedtuple
-from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+from . XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
 
 # -------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
@@ -124,14 +124,14 @@ class BlockInstanceFactory(object):
         self.SpecificValues = None
 
         self.CurrentInstance = _BlockInstanceInfos(
-            *(_translate_args([_StringValue, int] + [float] * 4, args) +
+            *(_translate_args([_StringValue, int] + [int] * 4, args) +
               [specific_values, [], []]))
 
         self.BlockInstances[self.CurrentInstance.id] = self.CurrentInstance
 
     def AddInstanceConnection(self, context, *args):
         connection_args = _translate_args(
-            [_StringValue] * 2 + [_BoolValue, _StringValue] + [float] * 2, args)
+            [_StringValue] * 2 + [_BoolValue, _StringValue] + [int] * 2, args)
 
         self.CurrentConnection = _InstanceConnectionInfos(
             *(connection_args[1:4] + [
@@ -152,7 +152,7 @@ class BlockInstanceFactory(object):
 
     def AddLinkPoint(self, context, *args):
         self.CurrentLink.points.append(_Point(
-            *_translate_args([float] * 2, args)))
+            *_translate_args([int] * 2, args)))
 
     def AddAction(self, context, *args):
         if len(self.SpecificValues) == 0:

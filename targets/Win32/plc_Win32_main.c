@@ -7,23 +7,13 @@
 #include <time.h>
 #include <windows.h>
 #include <locale.h>
+#include <math.h>
+#include <stdarg.h>
 
 
-long AtomicCompareExchange(long* atomicvar, long compared, long exchange)
+uint32_t AtomicCompareExchange(uint32_t* atomicvar, uint32_t compared, uint32_t exchange)
 {
-    return InterlockedCompareExchange(atomicvar, exchange, compared);
-}
-CRITICAL_SECTION Atomic64CS; 
-long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
-{
-    long long res;
-    EnterCriticalSection(&Atomic64CS);
-    res=*atomicvar;
-    if(*atomicvar == compared){
-        *atomicvar = exchange;
-    }
-    LeaveCriticalSection(&Atomic64CS);
-    return res;
+    return InterlockedCompareExchange((volatile long int *)atomicvar, exchange, compared);
 }
 
 struct timeb timetmp;
@@ -35,11 +25,27 @@ void PLC_GetTime(IEC_TIME *CURRENT_TIME)
 	(*CURRENT_TIME).tv_nsec = timetmp.millitm * 1000000;
 }
 
-void PLC_timer_notify()
+int iec_lib_snprintf(char *__s, size_t __maxlen, const char *__format, ...)
 {
-    PLC_GetTime(&__CURRENT_TIME);
-    __run();
+	va_list args;
+	va_start(args, __format);
+	int ret = vsnprintf(__s, __maxlen, __format, args);
+	va_end(args);
+	return ret;
 }
+
+double iec_lib_acos(double x) { return acos(x); }
+double iec_lib_asin(double x) { return asin(x); }
+double iec_lib_atan(double x) { return atan(x); }
+double iec_lib_cos(double x) { return cos(x); }
+double iec_lib_exp(double x) { return exp(x); }
+double iec_lib_fmod(double x, double y) { return fmod(x, y); }
+double iec_lib_log(double x) { return log(x); }
+double iec_lib_log10(double x) { return log10(x); }
+double iec_lib_pow(double x, double y) { return pow(x, y); }
+double iec_lib_sin(double x) { return sin(x); }
+double iec_lib_sqrt(double x) { return sqrt(x); }
+double iec_lib_tan(double x) { return tan(x); }
 
 HANDLE PLC_timer = NULL;
 void PLC_SetTimer(unsigned long long next, unsigned long long period)
@@ -56,8 +62,14 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 
 int PLC_shutdown;
 
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
 int ForceSaveRetainReq(void) {
     return PLC_shutdown;
+}
+
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
 }
 
 /* Variable used to stop plcloop thread */
@@ -65,9 +77,15 @@ void PlcLoop()
 {
     PLC_shutdown = 0;
     while(!PLC_shutdown) {
-        if (WaitForSingleObject(PLC_timer, INFINITE) != WAIT_OBJECT_0)
+        struct timespec plc_start_time, plc_end_time;
+        if (WaitForSingleObject(PLC_timer, INFINITE) != WAIT_OBJECT_0){
             PLC_shutdown = 1;
-        PLC_timer_notify();
+            break;
+        }
+        clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
+        __run(1);
+        clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+		record_run_time_ns_avg(&plc_start_time, &plc_end_time);
     }
 }
 
@@ -82,7 +100,6 @@ int startPLC(int argc,char **argv)
 {
 	unsigned long thread_id = 0;
     BOOL tmp;
-    setlocale(LC_NUMERIC, "C");
 
     debug_sem = CreateSemaphore(
                             NULL,           // default security attributes
@@ -150,7 +167,9 @@ int startPLC(int argc,char **argv)
     }
     return 0;
 }
-static unsigned long __debug_tick;
+
+static unsigned int __debug_tick;
+IEC_BOOL __DEBUG = 0;
 
 int TryEnterDebugSection(void)
 {
@@ -173,9 +192,16 @@ void LeaveDebugSection(void)
 
 int stopPLC()
 {
-    CloseHandle(PLC_timer);
+ 	
+    PLC_shutdown = 1;
+    // force last wakeup of PLC thread
+    SetWaitableTimer(PLC_timer, 0, 0, NULL, NULL, 0);
+    // wait end of PLC thread
     WaitForSingleObject(PLC_thread, INFINITE);
+
     __cleanup();
+
+    CloseHandle(PLC_timer);
     CloseHandle(debug_wait_sem);
     CloseHandle(debug_sem);
     CloseHandle(python_wait_sem);
@@ -184,7 +210,7 @@ int stopPLC()
 }
 
 /* from plc_debugger.c */
-int WaitDebugData(unsigned long *tick)
+int WaitDebugData(unsigned int *tick)
 {
 	DWORD res;
 	res = WaitForSingleObject(debug_wait_sem, INFINITE);
@@ -195,10 +221,10 @@ int WaitDebugData(unsigned long *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     ReleaseSemaphore(debug_wait_sem, 1, NULL);
 }
@@ -247,19 +273,6 @@ void UnLockPython(void)
 void LockPython(void)
 {
 	WaitForSingleObject(python_sem, INFINITE);
-}
-
-static void __attribute__((constructor))
-beremiz_dll_init(void)
-{
-    InitializeCriticalSection(&Atomic64CS);
-
-}
-
-static void __attribute__((destructor))
-beremiz_dll_destroy(void)
-{
-    DeleteCriticalSection(&Atomic64CS);
 }
 
 struct RT_to_nRT_signal_s {

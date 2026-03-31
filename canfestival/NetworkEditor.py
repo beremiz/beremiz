@@ -22,7 +22,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
+
 import wx
 
 from networkeditortemplate import NetworkEditorTemplate
@@ -68,7 +68,7 @@ class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(0)
 
-        main_sizer.AddWindow(self.NetworkNodes, 0, border=5, flag=wx.GROW | wx.ALL)
+        main_sizer.Add(self.NetworkNodes, 0, border=5, flag=wx.GROW | wx.ALL)
 
         self.NetworkEditor.SetSizer(main_sizer)
 

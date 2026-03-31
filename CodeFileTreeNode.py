@@ -23,11 +23,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
 import os
 import re
 import traceback
-from builtins import str as text
 from copy import deepcopy
 
 from lxml import etree
@@ -109,7 +107,7 @@ class CodeFile(object):
 
         filepath = self.CodeFileName()
         if os.path.isfile(filepath):
-            xmlfile = open(filepath, 'r')
+            xmlfile = open(filepath, 'r', encoding='utf-8', errors='backslashreplace')
             codefile_xml = xmlfile.read()
             xmlfile.close()
 
@@ -128,7 +126,7 @@ class CodeFile(object):
                     self.GetCTRoot().logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
                 self.CreateCodeFileBuffer(True)
             except Exception as exc:
-                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=self.CTNName(), a2=text(exc))
+                msg = _("Couldn't load confnode parameters {a1} :\n {a2}").format(a1=self.CTNName(), a2=str(exc))
                 self.GetCTRoot().logger.write_error(msg)
                 self.GetCTRoot().logger.write_error(traceback.format_exc())
                 raise Exception
@@ -195,7 +193,7 @@ class CodeFile(object):
             self.CodeFile,
             pretty_print=True,
             xml_declaration=True,
-            encoding='utf-8'))
+            encoding='utf-8').decode())
         xmlfile.close()
 
         self.MarkCodeFileAsSaved()

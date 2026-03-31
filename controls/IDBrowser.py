@@ -3,20 +3,20 @@
 
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import wx
 import wx.dataview as dv
 import PSKManagement as PSK
 from PSKManagement import *
-from dialogs.IDMergeDialog import IDMergeDialog
+from dialogs.MsgConfirmDialog import MsgConfirmDialog
 
 
-class IDBrowserModel(dv.PyDataViewIndexListModel):
+class IDBrowserModel(dv.DataViewIndexListModel):
     def __init__(self, project_path, columncount):
         self.project_path = project_path
         self.columncount = columncount
         self.data = PSK.GetData(project_path)
-        dv.PyDataViewIndexListModel.__init__(self, len(self.data))
+        dv.DataViewIndexListModel.__init__(self, len(self.data))
 
     def _saveData(self):
         PSK.SaveData(self.project_path, self.data)
@@ -36,16 +36,6 @@ class IDBrowserModel(dv.PyDataViewIndexListModel):
 
     def GetCount(self):
         return len(self.data)
-
-    def Compare(self, item1, item2, col, ascending):
-        if not ascending:  # swap sort order?
-            item2, item1 = item1, item2
-        row1 = self.GetRow(item1)
-        row2 = self.GetRow(item2)
-        if col == 0:
-            return cmp(int(self.data[row1][col]), int(self.data[row2][col]))
-        else:
-            return cmp(self.data[row1][col], self.data[row2][col])
 
     def DeleteRows(self, rows):
         rows = list(rows)
@@ -184,7 +174,7 @@ class IDBrowser(wx.Panel):
     def ShouldIReplaceCallback(self, existing, replacement):
         ID, URI, DESC, LAST = existing
         _ID, _URI, _DESC, _LAST = replacement
-        dlg = IDMergeDialog(
+        dlg = MsgConfirmDialog(
             self,
             _("Import IDs"),
             (_("Replace information for ID {ID} ?") + "\n\n" +

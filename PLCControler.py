@@ -24,15 +24,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
 from copy import deepcopy
 import os
 import re
 import datetime
 from time import localtime
 from functools import reduce
-from future.builtins import round
 
 import util.paths as paths
 from plcopen import *
@@ -74,7 +71,7 @@ class UndoBuffer(object):
             self.MinIndex = 0
             self.MaxIndex = 0
         # Initialising buffer with currentstate at the first place
-        for i in xrange(UNDO_BUFFER_LENGTH):
+        for i in range(UNDO_BUFFER_LENGTH):
             if i == 0:
                 self.Buffer.append(currentstate)
             else:
@@ -457,8 +454,8 @@ class PLCControler(object):
                 self.NextCompiledProject = self.Copy(self.Project)
                 program_text = "".join([item[0] for item in self.ProgramChunks])
                 if filepath is not None:
-                    programfile = open(filepath, "w")
-                    programfile.write(program_text.encode("utf-8"))
+                    programfile = open(filepath, "w", encoding='utf-8')
+                    programfile.write(program_text)
                     programfile.close()
                     self.ProgramFilePath = filepath
                 return program_text, errors, warnings
@@ -467,9 +464,6 @@ class PLCControler(object):
         else:
             errors.append("No project opened")
         return "", errors, warnings
-
-    def DebugAvailable(self):
-        return self.CurrentCompiledProject is not None
 
     def ProgramTransferred(self):
         if self.NextCompiledProject is None:
@@ -1114,11 +1108,12 @@ class PLCControler(object):
 
     # Function that add a new confnode to the confnode list
     def AddConfNodeTypesList(self, typeslist):
-        self.ConfNodeTypes.extend(typeslist)
+        f_typeslist = [confnodetypes for confnodetypes in typeslist if confnodetypes["types"] is not None]
+        self.ConfNodeTypes.extend(f_typeslist)
         addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
                      "list": [pou.getblockInfos()
                               for pou in confnodetypes["types"].getpous()]}
-                    for confnodetypes in typeslist]
+                    for confnodetypes in f_typeslist]
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
             for desc in cat["list"]:
@@ -1184,7 +1179,7 @@ class PLCControler(object):
         for _sectioname, blocktype in self.TotalTypesDict.get(typename, []):
             if inputs is not None and inputs != "undefined":
                 block_inputs = tuple([var_type for _name, var_type, _modifier in blocktype["inputs"]])
-                if reduce(lambda x, y: x and y, map(lambda x: x[0] == "ANY" or self.IsOfType(*x), zip(inputs, block_inputs)), True):
+                if reduce(lambda x, y: x and y, [x[0] == "ANY" or self.IsOfType(*x) for x in zip(inputs, block_inputs)], True):
                     return blocktype
             else:
                 if result_blocktype:
@@ -1247,7 +1242,7 @@ class PLCControler(object):
         if project is not None and words[0] in ["P", "T", "A"]:
             name = words[1]
         blocktypes = []
-        for blocks in self.TotalTypesDict.itervalues():
+        for blocks in self.TotalTypesDict.values():
             for _sectioname, block in blocks:
                 if block["type"] == "functionBlock":
                     blocktypes.append(block["name"])
@@ -1302,7 +1297,7 @@ class PLCControler(object):
             result = project.getpou(typename)
             if result is not None:
                 return result
-        for standardlibrary in StdBlckLibs.values():
+        for standardlibrary in list(StdBlckLibs.values()):
             result = standardlibrary.getpou(typename)
             if result is not None:
                 return result
@@ -1320,9 +1315,11 @@ class PLCControler(object):
             if result is not None:
                 return result
         for confnodetype in self.ConfNodeTypes:
-            result = confnodetype["types"].getdataType(typename)
-            if result is not None:
-                return result
+            confnodetype_types = confnodetype["types"]
+            if confnodetype_types is not None:
+                result = confnodetype_types.getdataType(typename)
+                if result is not None:
+                    return result
         return None
 
     # Return Data Type Object Base Type
@@ -1376,14 +1373,15 @@ class PLCControler(object):
         return False
 
     def IsEndType(self, typename):
-        if typename is not None:
+        # Check if the type is a base type        
+        if type(typename) == str:
             return not typename.startswith("ANY")
         return True
 
     def IsLocatableDataType(self, datatype, debug=False):
         basetype_content = datatype.baseType.getcontent()
         basetype_content_type = basetype_content.getLocalTag()
-        if basetype_content_type in ["enum", "struct"]:
+        if basetype_content_type in ["enum"]:
             return False
         elif basetype_content_type == "derived":
             return self.IsLocatableType(basetype_content.getname())
@@ -1455,7 +1453,7 @@ class PLCControler(object):
 
     # Return Subrange types
     def GetSubrangeBaseTypes(self, exclude, debug=False):
-        subrange_basetypes = DataTypeRange.keys()
+        subrange_basetypes = list(DataTypeRange.keys())
         project = self.GetProject(debug)
         if project is not None:
             subrange_basetypes.extend(
@@ -1970,9 +1968,9 @@ class PLCControler(object):
                 new_pos[0] -= width // 2
                 new_pos[1] -= height // 2
             else:
-                new_pos = map(lambda x: x + 30, new_pos)
+                new_pos = [x + 30 for x in new_pos]
             if scaling[0] != 0 and scaling[1] != 0:
-                min_pos = map(lambda x: 30 / x, scaling)
+                min_pos = [30 / x for x in scaling]
                 minx = round(min_pos[0])
                 if int(min_pos[0]) == round(min_pos[0]):
                     minx += 1
@@ -2118,7 +2116,7 @@ class PLCControler(object):
                     self.ChangeEditedElementPouVar(tagname, old_type, old_name, new_type, new_name)
             elif new_name != old_name:
                 self.ChangeEditedElementPouVar(tagname, old_type, old_name, new_type, new_name)
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "name":
                     if value != "":
                         block.setinstanceName(value)
@@ -2179,7 +2177,7 @@ class PLCControler(object):
             variable = element.getinstance(id)
             if variable is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "name":
                     variable.setexpression(value)
                 elif param == "executionOrder" and variable.getexecutionOrderId() != value:
@@ -2232,7 +2230,7 @@ class PLCControler(object):
             connection = element.getinstance(id)
             if connection is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "name":
                     connection.setname(value)
                 elif param == "height":
@@ -2264,7 +2262,7 @@ class PLCControler(object):
         element = self.GetEditedElement(tagname)
         if element is not None:
             comment = element.getinstance(id)
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "content":
                     comment.setcontentText(value)
                 elif param == "height":
@@ -2291,7 +2289,7 @@ class PLCControler(object):
             powerrail = element.getinstance(id)
             if powerrail is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "height":
                     powerrail.setheight(value)
                 elif param == "width":
@@ -2330,7 +2328,7 @@ class PLCControler(object):
             contact = element.getinstance(id)
             if contact is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "name":
                     contact.setvariable(value)
                 elif param == "type":
@@ -2373,7 +2371,7 @@ class PLCControler(object):
             coil = element.getinstance(id)
             if coil is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "name":
                     coil.setvariable(value)
                 elif param == "type":
@@ -2419,7 +2417,7 @@ class PLCControler(object):
             step = element.getinstance(id)
             if step is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "name":
                     step.setname(value)
                 elif param == "initial":
@@ -2469,7 +2467,7 @@ class PLCControler(object):
             transition = element.getinstance(id)
             if transition is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "type" and value != "connection":
                     transition.setconditionContent(value, infos["condition"])
                 elif param == "height":
@@ -2529,7 +2527,7 @@ class PLCControler(object):
             divergence = element.getinstance(id)
             if divergence is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "height":
                     divergence.setheight(value)
                 elif param == "width":
@@ -2580,7 +2578,7 @@ class PLCControler(object):
             jump = element.getinstance(id)
             if jump is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "target":
                     jump.settargetName(value)
                 elif param == "height":
@@ -2610,7 +2608,7 @@ class PLCControler(object):
             actionBlock = element.getinstance(id)
             if actionBlock is None:
                 return
-            for param, value in infos.items():
+            for param, value in list(infos.items()):
                 if param == "actions":
                     actionBlock.setactions(value)
                 elif param == "height":

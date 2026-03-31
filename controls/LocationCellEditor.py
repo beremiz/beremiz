@@ -23,20 +23,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from dialogs.BrowseLocationsDialog import BrowseLocationsDialog
 
 
-class LocationCellControl(wx.PyControl):
+class LocationCellControl(wx.Control):
 
     '''
     Custom cell editor control with a text box and a button that launches
     the BrowseLocationsDialog.
     '''
     def __init__(self, parent):
-        wx.PyControl.__init__(self, parent)
+        wx.Control.__init__(self, parent)
 
         main_sizer = wx.FlexGridSizer(cols=2, hgap=0, rows=1, vgap=0)
         main_sizer.AddGrowableCol(0)
@@ -46,12 +46,12 @@ class LocationCellControl(wx.PyControl):
         self.Location = wx.TextCtrl(self, size=wx.Size(0, -1),
                                     style=wx.TE_PROCESS_ENTER)
         self.Location.Bind(wx.EVT_KEY_DOWN, self.OnLocationChar)
-        main_sizer.AddWindow(self.Location, flag=wx.GROW)
+        main_sizer.Add(self.Location, flag=wx.GROW)
 
         # create browse button
         self.BrowseButton = wx.Button(self, label='...', size=wx.Size(30, -1))
         self.BrowseButton.Bind(wx.EVT_BUTTON, self.OnBrowseButtonClick)
-        main_sizer.AddWindow(self.BrowseButton, flag=wx.GROW)
+        main_sizer.Add(self.BrowseButton, flag=wx.GROW)
 
         self.Bind(wx.EVT_SIZE, self.OnSize)
 
@@ -61,9 +61,6 @@ class LocationCellControl(wx.PyControl):
         self.VarType = None
         self.Default = False
         self.VariableName = None
-
-    def __del__(self):
-        self.Controller = None
 
     def SetController(self, controller):
         self.Controller = controller
@@ -150,19 +147,15 @@ class LocationCellControl(wx.PyControl):
         self.Location.SetFocus()
 
 
-class LocationCellEditor(wx.grid.PyGridCellEditor):
+class LocationCellEditor(wx.grid.GridCellEditor):
     '''
     Grid cell editor that uses LocationCellControl to display a browse button.
     '''
     def __init__(self, table, controller):
-        wx.grid.PyGridCellEditor.__init__(self)
+        wx.grid.GridCellEditor.__init__(self)
 
         self.Table = table
         self.Controller = controller
-
-    def __del__(self):
-        self.CellControl = None
-        self.Controller = None
 
     def Create(self, parent, id, evt_handler):
         self.CellControl = LocationCellControl(parent)
@@ -178,7 +171,7 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
             self.CellControl.SetVarType(self.Table.GetValueByName(row, 'Type'))
         self.CellControl.SetFocus()
 
-    def EndEditInternal(self, row, col, grid, old_loc):
+    def EndEdit(self, row, col, grid, old_loc):
         loc = self.CellControl.GetValue()
         changed = loc != old_loc
         if changed:
@@ -195,24 +188,17 @@ class LocationCellEditor(wx.grid.PyGridCellEditor):
             var_type = self.CellControl.GetVarType()
             if var_type is not None:
                 self.Table.SetValueByName(row, 'Type', var_type)
-        else:
-            wx.CallAfter(self.Table.Parent.ShowErrorMessage,
-                         _("Selected location is identical to previous one"))
+
         self.CellControl.Disable()
         return changed
 
-    if wx.VERSION >= (3, 0, 0):
-        def EndEdit(self, row, col, grid, oldval):
-            return self.EndEditInternal(row, col, grid, oldval)
-    else:
-        def EndEdit(self, row, col, grid):
-            old_loc = self.Table.GetValueByName(row, 'Location')
-            return self.EndEditInternal(row, col, grid, old_loc)
+    def ApplyEdit(self, row, col, grid):
+        pass
 
     def SetSize(self, rect):
-        self.CellControl.SetDimensions(rect.x + 1, rect.y,
-                                       rect.width, rect.height,
-                                       wx.SIZE_ALLOW_MINUS_ONE)
+        self.CellControl.SetSize(rect.x + 1, rect.y,
+                                 rect.width, rect.height,
+                                 wx.SIZE_ALLOW_MINUS_ONE)
 
     def Clone(self):
         return LocationCellEditor(self.Table, self.Controller)

@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 import wx.grid
 
@@ -33,14 +33,14 @@ else:
     ROW_HEIGHT = 28
 
 
-class CustomTable(wx.grid.PyGridTableBase):
+class CustomTable(wx.grid.GridTableBase):
 
     """
     A custom wx.grid.Grid Table using user supplied data
     """
     def __init__(self, parent, data, colnames):
         # The base class must be initialized *first*
-        wx.grid.PyGridTableBase.__init__(self)
+        wx.grid.GridTableBase.__init__(self)
         self.data = data
         self.colnames = colnames
         self.Highlights = {}
@@ -64,7 +64,7 @@ class CustomTable(wx.grid.PyGridTableBase):
             return self.colnames[col]
 
     def GetRowLabelValue(self, row, translate=True):
-        return row
+        return str(row)
 
     def GetValue(self, row, col):
         if row < self.GetNumberRows():
@@ -204,8 +204,8 @@ class CustomTable(wx.grid.PyGridTableBase):
         if highlight_type is None:
             self.Highlights = {}
         else:
-            for _row, row_highlights in self.Highlights.iteritems():
-                row_items = row_highlights.items()
+            for _row, row_highlights in self.Highlights.items():
+                row_items = list(row_highlights.items())
                 for col, col_highlights in row_items:
                     if highlight_type in col_highlights:
                         col_highlights.remove(highlight_type)

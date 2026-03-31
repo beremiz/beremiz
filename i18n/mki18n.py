@@ -79,12 +79,10 @@ You can get the gettext tools from the following sites:
 # -------------
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
+
 import os
 import sys
 import re
-from builtins import str as text
 import wx
 
 
@@ -122,10 +120,7 @@ def getSupportedLanguageDict(appname):
 def getlanguageDict():
     languageDict = {}
     getSupportedLanguageDict('Beremiz')
-    if wx.VERSION >= (3, 0, 0):
-        _app = wx.App()
-    else:
-        _app = wx.PySimpleApp()
+    _app = wx.App()
 
     for lang in [x for x in dir(wx) if x.startswith("LANGUAGE")]:
         i = wx.Locale(wx.LANGUAGE_DEFAULT).GetLanguageInfo(getattr(wx, lang))
@@ -229,7 +224,7 @@ def makePO(applicationDirectoryPath,  applicationDomain=None, verbose=0):
 
     languageDict = getSupportedLanguageDict(applicationName)
 
-    for langCode in languageDict.keys():
+    for langCode in list(languageDict.keys()):
         if langCode == 'en':
             pass
         else:
@@ -254,7 +249,7 @@ def catPO(applicationDirectoryPath, listOf_extraPo, applicationDomain=None, targ
 
     languageDict = getSupportedLanguageDict(applicationName)
 
-    for langCode in languageDict.keys():
+    for langCode in list(languageDict.keys()):
         if langCode == 'en':
             pass
         else:
@@ -308,7 +303,7 @@ def makeMO(applicationDirectoryPath, targetDir='./locale', applicationDomain=Non
 
     languageDict = getSupportedLanguageDict(applicationName)
 
-    for langCode in languageDict.keys():
+    for langCode in list(languageDict.keys()):
         if (langCode == 'en') and (forceEnglish == 0):
             pass
         else:
@@ -414,7 +409,7 @@ def mkdir(directory):
     # translate the path separators
     directory = unixpath(directory)
     # build a list of all directory elements
-    aList = filter(lambda x: len(x) > 0, directory.split('/'))
+    aList = [x for x in directory.split('/') if len(x) > 0]
     theLen = len(aList)
     # if the first element is a Windows-style disk drive
     # concatenate it with the first directory
@@ -515,7 +510,7 @@ if __name__ == "__main__":
             makePO(appDirPath, option['domain'], option['verbose'])
             exit_code = 0
         except IOError as e:
-            printUsage(text(e) + '\n   You must write a file app.fil that contains the list of all files to parse.')
+            printUsage(str(e) + '\n   You must write a file app.fil that contains the list of all files to parse.')
     if option['mo']:
         makeMO(appDirPath, option['moTarget'], option['domain'], option['verbose'], option['forceEnglish'])
         exit_code = 0

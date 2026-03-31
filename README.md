@@ -1,4 +1,7 @@
+<!---
 [![docs](https://readthedocs.org/projects/beremiz/badge/?version=latest)](https://beremiz.readthedocs.io)
+-->
+[![CI Automated testing](https://github.com/beremiz/beremiz/actions/workflows/run_tests_in_docker.yml/badge.svg?branch=python3)](https://github.com/beremiz/beremiz/actions/workflows/run_tests_in_docker.yml)
 
 # Beremiz #
 
@@ -8,111 +11,196 @@ It relies on open standards to be independent of the targeted device, and let yo
 
 With Beremiz, you conform to standards, avoid vendor lock, and contribute to the better future of Automation. 
 
-Beremiz consists of two components:
+Beremiz provides:
 
-* Integrated Development Environment (IDE), [Beremiz.py](https://bitbucket.org/automforge/beremiz/src/tip/Beremiz.py?at=default). It's running on user's computer and is used to write/compile/debug PLC programs and control PLC runtime.
-* Reference runtime implementation in python, [Beremiz_service.py](https://bitbucket.org/automforge/beremiz/src/tip/Beremiz_service.py?at=default). It's running on target platform, communicates with I/O and executes PLC program.
+* Integrated Development Environment (IDE). GUI to configure, write, build and debug PLC programs and control PLC runtime.
+* Command Line Interface (CLI). Build PLC and control PLC runtime in a terminal or from a script.
+* Runtimes, running on target platform communicates with I/O and executes PLC program.
+    * Python reference runtime implementation.
+    * C runtime for smaller targets.
 
-See official [Beremiz website](http://www.beremiz.org/) for more information.
+See official [Beremiz website](https://beremiz.org/) for more information.
 
-## Build on Linux ##
+[Beremiz company](https://beremiz.fr/) develops and maintains the Beremiz Free Software project while also providing professional support services.
 
-* Prerequisites
+## Licensing ##
 
-		# Ubuntu/Debian :
-		sudo apt-get install build-essential bison flex autoconf
-		sudo apt-get install python-wxgtk3.0 pyro mercurial
-		sudo apt-get install python-nevow python-matplotlib python-lxml python-zeroconf python-cycler
-		sudo apt-get install python-autobahn python-u-msgpack
+Beremiz IDE source code is licensed under the [GPLv2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) or later, see COPYING_for_IDE.
 
-		sudo apt-get install libpython2.7-dev
-		pip2 install --user sslpsk posix_spawn
+Beremiz Python runtime source code is licensed under the [LPGLv2](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html) or later, see COPYING_for_Python_Runtime.
 
-* Prepare
+Beremiz C++ runtime source code is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html) or later, see COPYING_for_C_Runtime.
 
-		mkdir ~/Beremiz
-		cd ~/Beremiz
+## Install latest release ##
 
-* Get Source Code
+Windows installer and Snap package for Linux are available in [Github releases](https://github.com/beremiz/beremiz/releases) and [Snapcraft's store](https://snapcraft.io/beremiz)
 
-		cd ~/Beremiz
-		hg clone https://bitbucket.org/automforge/beremiz
-		hg clone https://bitbucket.org/automforge/matiec
+## Tutorials and examples ##
 
-* Build MatIEC compiler
+In IDE, find menu "File>Tutorials and examples" to quickly open examples that should run as-is.
 
-		cd ~/Beremiz/matiec
-		autoreconf -i
-		./configure
-		make
+There are more examples in `tests/projects` and `exemples` directories.
 
-* Build CanFestival (optional)  
-  Only needed for CANopen support. Please read CanFestival manual to choose CAN interface other than 'virtual'.
+Some example and test are shown on [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA).
 
-		cd ~/Beremiz
-		hg clone http://dev.automforge.net/CanFestival-3
-		cd ~/Beremiz/CanFestival-3
-		./configure --can=virtual
-		make
+## Development with Beremiz ##
 
-* Build Modbus library (optional)
-  Only needed for Modbus support.
+Please use [GitHub's issues](https://github.com/beremiz/beremiz/issues) and [Pull Requests](https://github.com/beremiz/beremiz/pulls) to contribute.
 
-		cd ~/Beremiz
-		hg clone https://bitbucket.org/mjsousa/modbus Modbus
-		cd ~/Beremiz/Modbus
-		make
+## Build on Linux (developer setup) ##
 
-* Build BACnet (optional)
-  Only needed for BACnet support.
+### System prerequisites (Ubuntu 22.04) :
+```
+# install required system packages as root
+sudo apt-get install \
+  build-essential automake flex bison \
+  libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
+  libpython3.10-dev libssl-dev \
+  python3.10 virtualenv cmake git
+```
 
-		cd ~/Beremiz
-		svn checkout https://svn.code.sf.net/p/bacnet/code/trunk/bacnet-stack/ BACnet
-		cd BACnet
-		make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBACFILE -DINTRINSIC_REPORTING -DBACNET_TIME_MASTER -DBACNET_PROPERTY_LISTS=1 -DBACNET_PROTOCOL_REVISION=16' library
+### Prepare build directory
 
+All commands hereafter assume that selected directory to contain all downloaded source code and build results is `~/Beremiz`
 
-* Launch Beremiz IDE
+```
+mkdir ~/Beremiz
+cd ~/Beremiz
+```
 
-		cd ~/Beremiz/beremiz
-		python Beremiz.py
+### Get Source Code (Git)
+
+```
+cd ~/Beremiz
+git clone https://github.com/beremiz/beremiz
+git clone https://github.com/beremiz/matiec
+```
+
+### Python prerequisites (virtualenv) :
+```
+# setup isolated python environment
+virtualenv ~/Beremiz/venv
+
+# install required python packages
+~/Beremiz/venv/bin/pip install -r ~/Beremiz/beremiz/requirements.txt
+
+```
+
+### Build MatIEC compiler
+
+```
+cd ~/Beremiz/matiec
+autoreconf -i
+./configure
+make
+```
+
+### Build CanFestival (optional)
+
+Only needed for CANopen support. Please read CanFestival manual to choose CAN interface other than `virtual`.
+
+```
+cd ~/Beremiz
+
+git clone https://github.com/beremiz/canfestival
+
+cd ~/Beremiz/canfestival
+./configure --can=virtual
+make
+```
+
+### Build Modbus library (optional)
+
+Only needed for Modbus support.
+
+```
+cd ~/Beremiz
+
+git clone https://github.com/beremiz/Modbus
+
+cd ~/Beremiz/Modbus
+make
+```
+
+### Build BACnet (optional)
+
+Only needed for BACnet support.
+
+```
+cd ~/Beremiz
+svn checkout https://svn.code.sf.net/p/bacnet/code/trunk/bacnet-stack/ BACnet
+cd BACnet
+make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBACFILE -DINTRINSIC_REPORTING -DBACNET_TIME_MASTER -DBACNET_PROPERTY_LISTS=1 -DBACNET_PROTOCOL_REVISION=16' library
+```
+
+### Launch Beremiz IDE
+
+```
+~/Beremiz/venv/bin/python ~/Beremiz/beremiz/Beremiz.py
+```
 
 ## Run standalone Beremiz runtime ##
 
-Runtime implementation can be different on different platforms.
-For example, PLC used Cortex-M most likely would have C-based runtime. Beremiz project contains reference implementation in python, that can be easily run on GNU/Linux, Windows and Mac OS X.
-This section will describe how to run it.
-
-If project's URL is 'LOCAL://', then IDE launches temprorary instance of Beremiz python runtime (Beremiz_service.py) localy as user tries to connect to PLC. This allows to debug programs localy without PLC.
-
-If you want to run Beremiz_service.py as standalone service, then follow these instructions:
-
 * Start standalone Beremiz service
 
-		cd ~/Beremiz
-		mkdir beremiz_workdir
-		cd ~/beremiz
-		python Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/Beremiz/beremiz_workdir
+```
+mkdir ~/beremiz_runtime_workdir
+~/Beremiz/venv/bin/python ~/Beremiz/beremiz/Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/beremiz_runtime_workdir
+```
 
-* Launch Beremiz IDE
+To connect IDE with runtime, enter target location URI in project's settings (project->Config->BeremizRoot/URI_location) pointed to your running Beremiz service in this case :
 
-		cd ~/Beremiz/beremiz
-		python Beremiz.py
+```
+ERPC://127.0.0.1:61194
+```
 
-* Open/Create PLC project in Beremiz IDE.  
-  Enter target location URI in project's settings (project->Config->BeremizRoot/URI_location) pointed to your running Beremiz service (For example, PYRO://127.0.0.1:61194).
-  Save project and connect to running Beremiz service.
+If project's URL is 'LOCAL://', then IDE launches on demand a local instance of Beremiz python runtime working on a temporary directory.
 
-## Examples ##
+## Build documentation
 
-Almost for all functionality exists example in ['tests'](https://bitbucket.org/automforge/beremiz/src/tip/tests/?at=default) directory.
-Most of examples are shown on [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA).
+Source code for documentation is stored in `doc` directory in project's source tree.
+It's written in reStructuredText (ReST) and uses Sphinx to generate documentation in different formats.
+
+To build documentation you need following packages on Ubuntu/Debian:
+
+```
+sudo apt-get install build-essential python-sphynx
+```
+
+### Documentation in HTML
+
+Build documentation
+
+```
+cd ~/Beremiz/doc
+make all
+```
+
+Result documentation is stored in directories `doc/_build/dirhtml*`.
+
+### Documentation in PDF
+
+To build pdf documentation you have to install additional packages on Ubuntu/Debian:
+
+```
+sudo apt-get install textlive-latex-base texlive-latex-recommended \
+     texlive-fonts-recommended texlive-latex-extra
+```
+
+Build documentation
+
+```
+cd ~/Beremiz/doc
+make latexpdf
+```
+
+Result documentation is stored in `doc/_build/latex/Beremiz.pdf`.
 
 ## Documentation ##
 
  * See [Beremiz youtube channel](https://www.youtube.com/channel/UCcE4KYI0p1f6CmSwtzyg-ZA) to get quick information how to use Beremiz IDE.
- 
- * [Official user manual](http://beremiz.readthedocs.io/) is built from sources in doc directory.
+
+ * [Official documentation](http://beremiz.readthedocs.io/) is built from sources in doc directory.
    Documentation does not cover all aspects of Beremiz use yet.
    Contribution are very welcome!
    
@@ -126,12 +214,3 @@ Most of examples are shown on [Beremiz youtube channel](https://www.youtube.com/
 
  * See official [Beremiz website](http://www.beremiz.org/) for more information.
 
-## Support and development ##
-
-Main community support channel is [mailing list](https://sourceforge.net/p/beremiz/mailman/beremiz-devel/) (beremiz-devel@lists.sourceforge.net).
-
-The list is moderated and requires subscription for posting to it.
-
-To subscribe to the mailing list go [here](https://sourceforge.net/p/beremiz/mailman/beremiz-devel/).
-
-Searchable archive using search engine of your choice is available [here](http://beremiz-devel.2374573.n4.nabble.com/).

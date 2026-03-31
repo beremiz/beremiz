@@ -1,6 +1,52 @@
+body {
+	background-color: #f5faff;
+}
+
+* {
+    font-family: Tahoma, Verdana, sans-serif;
+}
+
+h1, h2 {
+	color: darkslateblue;
+}
+
+fieldset {
+	color: #424242;
+	border: 1px solid gray;
+	border-radius: 4px;
+}
+
+input, select, button, a {
+	font-size: 14px;
+}
+
+button,
+input,
+select,
+textarea {
+    color: inherit;
+}
+
+legend, .freeform-form-label {
+	color: darkslateblue;
+}
 
 .freeform-label {
     float: left;
     width: 30%;
 }
 
+a {
+    background-color: #e9e9ed;
+    color: #424242;
+    padding: 2px 6px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: 1px solid gray;
+    border-radius: 4px;
+}
+
+a:hover, a:active {
+    background-color: silver;
+}

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # This file is part of Beremiz, a Integrated Development Environment for
@@ -23,18 +23,23 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import print_function
 import os
 import sys
 import getopt
-from past.builtins import execfile
+
+from util import SuppressGTKDiagnostics, SetDeveloperMode, SetSDKPath
+SuppressGTKDiagnostics()
 
 import wx
 from wx.lib.agw.advancedsplash import AdvancedSplash, AS_NOTIMEOUT, AS_CENTER_ON_SCREEN
 
 import util.paths as paths
+from dialogs.SDKManager import SDKManagerDialog
 
+from util.ProcessLogger import SetDefaultEnv
+# BEremiz console doesn't support colors yet.
+SetDefaultEnv({"NO_COLOR":"1",
+               "GCC_COLORS":""})
 
 class BeremizIDELauncher(object):
     def __init__(self):
@@ -48,8 +53,10 @@ class BeremizIDELauncher(object):
         self.splash = None
         self.splashPath = self.Bpath("images", "splash.png")
         self.modules = ["BeremizIDE"]
-        self.debug = os.path.exists("BEREMIZ_DEBUG")
         self.handle_exception = None
+        self.logf = None
+        self.devmode = False
+        self.sdk_selector = False
 
     def Bpath(self, *args):
         return os.path.join(self.app_dir, *args)
@@ -60,23 +67,41 @@ class BeremizIDELauncher(object):
         print("")
         print("Supported options:")
         print("-h --help                    Print this help")
+        print("-d --devmode                 Run in development mode")
+        print("-p --plcsdkselector          Show SDK location selector dialog at startup")
+        print("-s --sdkpath PATH            Use PATH as SDK location")
         print("-u --updatecheck URL         Retrieve update information by checking URL")
         print("-e --extend PathToExtension  Extend IDE functionality by loading at start additional extensions")
+        print("-l --log path                write content of console tab to given file")
         print("")
         print("")
 
     def SetCmdOptions(self):
-        self.shortCmdOpts = "hu:e:"
-        self.longCmdOpts = ["help", "updatecheck=", "extend="]
+        self.shortCmdOpts = "hdpsu:e:l:"
+        self.longCmdOpts = ["help", "devmode", "plcsdkselector", "sdkpath=", "updatecheck=", "extend=", "log="]
 
     def ProcessOption(self, o, a):
         if o in ("-h", "--help"):
             self.Usage()
             sys.exit()
+        if o in ("-d", "--devmode"):
+            self.devmode = True
+            SetDeveloperMode()
+        if o in ("-p", "--plcsdkselector"):
+            self.sdk_selector = True            
+        if o in ("-s", "--sdkpath"):
+            if a is not None and os.path.isdir(a):
+                SetSDKPath(a)
+            else:
+                print("Invalid SDK path: %s" % a)
+                self.Usage()
+                sys.exit(2)
         if o in ("-u", "--updatecheck"):
             self.updateinfo_url = a
         if o in ("-e", "--extend"):
             self.extensions.append(a)
+        if o in ("-l", "--log"):
+            self.logf = open(a, 'a')
 
     def ProcessCommandLineArgs(self):
         self.SetCmdOptions()
@@ -103,17 +128,28 @@ class BeremizIDELauncher(object):
 
     def CreateApplication(self):
 
-        BeremizAppType = wx.App if wx.VERSION >= (3, 0, 0) else wx.PySimpleApp
+        BeremizAppType = wx.App
 
         class BeremizApp(BeremizAppType):
             def OnInit(_self):  # pylint: disable=no-self-argument
+                if self.sdk_selector:                
+                    dlg = SDKManagerDialog(None, paths.AppDataPath("sdks"))
+                    dlg_result = dlg.ShowModal() == wx.ID_OK
+                    dlg.Destroy()
+                    if dlg_result:
+                        sdk_path = dlg.GetSelectedSDKPath()
+                        if sdk_path:
+                            SetSDKPath(sdk_path)
+                    else:
+                        return False
                 self.ShowSplashScreen()
                 return True
 
-        self.app = BeremizApp(redirect=self.debug)
+        self.app = BeremizApp(
+            # on windows, this makes stdout and stderr visible in separate windows
+            # on other platforms better to use the normal stdout and stderr
+            redirect=self.devmode and sys.platform.startswith('win'))
         self.app.SetAppName('beremiz')
-        if wx.VERSION < (3, 0, 0):
-            wx.InitAllImageHandlers()
 
     def ShowSplashScreen(self):
         class Splash(AdvancedSplash):
@@ -154,7 +190,7 @@ class BeremizIDELauncher(object):
             sys.path.append(extension_folder)
             AddCatalog(os.path.join(extension_folder, "locale"))
             AddBitmapFolder(os.path.join(extension_folder, "images"))
-            execfile(extfilename, self.globals())
+            exec(compile(open(extfilename, "rb").read(), extfilename, 'exec'), self.globals())
 
     def CheckUpdates(self):
         if self.updateinfo_url is not None:
@@ -162,8 +198,8 @@ class BeremizIDELauncher(object):
 
             def updateinfoproc():
                 try:
-                    import urllib2
-                    self.updateinfo = urllib2.urlopen(self.updateinfo_url, None).read()
+                    import urllib.request, urllib.error, urllib.parse
+                    self.updateinfo = urllib.request.urlopen(self.updateinfo_url, None).read()
                 except Exception:
                     self.updateinfo = _("update info unavailable.")
 
@@ -182,10 +218,10 @@ class BeremizIDELauncher(object):
     def InstallExceptionHandler(self):
         import version
         import util.ExceptionHandler
-        self.handle_exception = util.ExceptionHandler.AddExceptHook(version.app_version)
+        self.handle_exception = util.ExceptionHandler.AddExceptHook(version.app_version, logf=self.logf)
 
     def CreateUI(self):
-        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath)
+        self.frame = self.BeremizIDE.Beremiz(None, self.projectOpen, self.buildpath, logf=self.logf, devmode=self.devmode)
 
     def CloseSplash(self):
         if self.splash:
@@ -217,8 +253,16 @@ class BeremizIDELauncher(object):
 
     def Start(self):
         self.PreStart()
-        self.InstallExceptionHandler()
+        if not self.devmode:
+            # if in devmode mode, we don't want to install the exception handler
+            # because we want to see the exception in the console
+            # and not in a popup window
+            self.InstallExceptionHandler()
         self.MainLoop()
+        # Skip Python finalization to avoid SIP double-free crash
+        # in sipOMFinalise: GTK destroys child C++ widgets during frame
+        # destruction, but SIP's object map retains stale pointers.
+        os._exit(0)
 
 
 if __name__ == '__main__':

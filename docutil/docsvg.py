@@ -23,16 +23,19 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
+import os
+import sys
 import wx
 import subprocess
+from dialogs.MessageBoxOnce import MessageBoxOnce
 
 
 def _get_inkscape_path():
     """ Return the Inkscape binary path """
 
-    if wx.Platform == '__WXMSW__':
-        from six.moves import winreg
+    if sys.platform.startswith('win32'):
+        import winreg
         inkcmd = None
         tries = [(winreg.HKEY_LOCAL_MACHINE, 'Software\\Classes\\svgfile\\shell\\Inkscape\\command'),
                  (winreg.HKEY_LOCAL_MACHINE, 'Software\\Classes\\inkscape.svg\\shell\\open\\command'),
@@ -48,7 +51,7 @@ def _get_inkscape_path():
         if inkcmd is None:
             return None
 
-        return inkcmd.replace('"%1"', '').strip().replace('"', '')
+        return inkcmd.replace('"%1"', '').strip().replace('"', '').encode()
 
     else:
         try:
@@ -73,8 +76,12 @@ def _get_inkscape_version():
     inkpath = get_inkscape_path()
     if inkpath is None:
         return None
-    return map(int, 
-        subprocess.check_output([inkpath,"--version"]).split()[1].split('.'))
+    version_string = subprocess.check_output(
+            [inkpath,"--version"], 
+            stderr=subprocess.STDOUT)
+    if version_string:
+        return list(map(int,version_string.split()[1].split(b'.')))
+    return [0,0]
 
 _inkscape_version = None
 def get_inkscape_version():
@@ -86,11 +93,23 @@ def get_inkscape_version():
     _inkscape_version = _get_inkscape_version()
     return _inkscape_version
 
-def open_svg(svgfile):
-    """ Generic function to open SVG file """
-    
-    inkpath = get_inkscape_path()
-    if inkpath is None:
-        wx.MessageBox("Inkscape is not found or installed !")
-    else:
-        subprocess.Popen([inkpath,svgfile])
+if "SNAP" in os.environ:
+    def open_svg(svgfile):
+        MessageBoxOnce("Launching Inkscape with xdg-open",
+                "Confined app can't launch Inkscape directly.\n"+
+                    "Instead, SVG file is passed to xdg-open.\n"+
+                    "Please select Inskape when proposed.\n\n"+
+                    "Notes: \n"+
+                    " - Inkscape must be installed on you system.\n"+
+                    " - If no choice is proposed, use file manager to change SVG file properties.\n",
+                "DocSVGSnapWarning")
+
+        subprocess.Popen(["xdg-open",svgfile])
+else:
+    def open_svg(svgfile):
+        """ Generic function to open SVG file """
+        inkpath = get_inkscape_path()
+        if inkpath is None:
+            wx.MessageBox("Inkscape is not found or installed !")
+        else:
+            subprocess.Popen([inkpath,svgfile])

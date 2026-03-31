@@ -1,0 +1,2 @@
+<?xml version='1.0' encoding='utf-8'?>
+<BaseParams xmlns:xsd="http://www.w3.org/2001/XMLSchema" IEC_Channel="4" Name="EthercatSlave_0" RxPDO=" 0x1600 0x1601"/>

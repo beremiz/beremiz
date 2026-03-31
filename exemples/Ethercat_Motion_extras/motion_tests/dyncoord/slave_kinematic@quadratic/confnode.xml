@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<KinematicNode>
+  <KinematicType>
+    <quadratic Theta="90" Psi="90"/>
+  </KinematicType>
+</KinematicNode>

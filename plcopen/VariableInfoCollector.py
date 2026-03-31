@@ -3,8 +3,8 @@
 # This file is part of Beremiz.
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
-from plcopen.XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+
+from . XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
 
 # -------------------------------------------------------------------------------
 #                 Helpers object for generating pou var list

@@ -23,8 +23,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-from __future__ import absolute_import
-from __future__ import division
+
+
 import os
 import sys
 import shutil
@@ -36,9 +36,7 @@ import util.paths as paths
 
 from util.TranslationCatalogs import AddCatalog
 from ConfigTreeNode import ConfigTreeNode
-from PLCControler import \
-    LOCATION_CONFNODE, \
-    LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 
 CanFestivalPath = paths.ThirdPartyPath("CanFestival-3")  # noqa
 sys.path.append(os.path.join(CanFestivalPath, "objdictgen"))  # noqa
@@ -352,7 +350,7 @@ class _NodeListCTN(NodeList):
 
     def GetVariableLocationTree(self):
         current_location = self.GetCurrentLocation()
-        nodeindexes = self.SlaveNodes.keys()
+        nodeindexes = list(self.SlaveNodes.keys())
         nodeindexes.sort()
         children = []
         children += [GetSlaveLocationTree(self.Manager.GetCurrentNodeCopy(),

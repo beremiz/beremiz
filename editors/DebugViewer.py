@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 from threading import Lock, Timer
 from time import time as gettime
 
@@ -79,24 +79,6 @@ class DebugViewer(object):
         # Set DataProducer and subscribe tick if needed
         self.SetDataProducer(producer)
 
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Unsubscribe all data consumers
-        self.UnsubscribeAllDataConsumers()
-
-        # Delete reference to DataProducer
-        self.DataProducer = None
-
-        # Stop last refresh timer
-        if self.LastRefreshTimer is not None:
-            self.LastRefreshTimer.cancel()
-
-        # Release Common debug lock if DebugViewer has acquired it
-        if self.HasAcquiredLock:
-            DEBUG_REFRESH_LOCK.release()
-
     def SetDataProducer(self, producer):
         """
         Set Data Producer
@@ -130,7 +112,7 @@ class DebugViewer(object):
         @param inhibit: Inhibit flag
         """
         # Inhibit every data consumers in list
-        for consumer, _iec_path in self.DataConsumers.iteritems():
+        for consumer, _iec_path in self.DataConsumers.items():
             consumer.Inhibit(inhibit)
 
         # Save inhibit flag
@@ -192,7 +174,7 @@ class DebugViewer(object):
                 self.DataProducer.UnsubscribeDebugIECVariable("__tick__", self)
 
             # Unsubscribe all data consumers in list
-            for consumer, iec_path in self.DataConsumers.iteritems():
+            for consumer, iec_path in self.DataConsumers.items():
                 self.DataProducer.UnsubscribeDebugIECVariable(iec_path, consumer)
 
         self.DataConsumers = {}

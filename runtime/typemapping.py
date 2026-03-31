@@ -4,19 +4,14 @@
 # See COPYING.Runtime file for copyrights details.
 #
 
-from __future__ import absolute_import
-import ctypes
 from ctypes import *
 from datetime import timedelta as td
-
-ctypes.pythonapi.PyString_AsString.argtypes = (ctypes.c_void_p,)
-ctypes.pythonapi.PyString_AsString.restype = ctypes.POINTER(ctypes.c_char)
-
 
 class IEC_STRING(Structure):
     """
     Must be changed according to changes in iec_types.h
     """
+    _pack_ = 1
     _fields_ = [("len", c_uint8),
                 ("body", c_char * 126)]
 
@@ -25,8 +20,9 @@ class IEC_TIME(Structure):
     """
     Must be changed according to changes in iec_types.h
     """
-    _fields_ = [("s", c_long),   # tv_sec
-                ("ns", c_long)]  # tv_nsec
+    _pack_ = 1
+    _fields_ = [("s", c_int64),   # tv_sec
+                ("ns", c_int32)]  # tv_nsec
 
 
 def _t(t, u=lambda x: x.value, p=lambda t, x: t(x)):
@@ -40,7 +36,7 @@ def _ttime():
 
 
 SameEndianessTypeTranslator = {
-    "BOOL":       _t(c_uint8, lambda x: x.value != 0),
+    "BOOL":       _t(c_uint8, lambda x: bool(x.value)),
     "STEP":       _t(c_uint8),
     "TRANSITION": _t(c_uint8),
     "ACTION":     _t(c_uint8),
@@ -48,8 +44,8 @@ SameEndianessTypeTranslator = {
     "USINT":      _t(c_uint8),
     "BYTE":       _t(c_uint8),
     "STRING":     (IEC_STRING,
-                   lambda x: x.body[:x.len],
-                   lambda t, x: t(len(x), x)),
+                   lambda x: x.body[:x.len].decode(),
+                   lambda t, x: t(len(x), x.encode() if type(x)==str else x)),
     "INT":        _t(c_int16),
     "UINT":       _t(c_uint16),
     "WORD":       _t(c_uint16),
@@ -74,17 +70,17 @@ SwapedEndianessTypeTranslator = {
 TypeTranslator = SameEndianessTypeTranslator
 
 # Construct debugger natively supported types
-DebugTypesSize = dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.iteritems() if t is not None])
+DebugTypesSize = dict([(key, sizeof(t)) for key, (t, p, u) in SameEndianessTypeTranslator.items() if t is not None])
 
 
 def UnpackDebugBuffer(buff, indexes):
     res = []
     buffoffset = 0
     buffsize = len(buff)
-    buffptr = cast(ctypes.pythonapi.PyString_AsString(id(buff)), c_void_p).value
+    buffptr = cast(cast(buff, c_char_p), c_void_p).value
     for iectype in indexes:
-        c_type, unpack_func, _pack_func = \
-            TypeTranslator.get(iectype, (None, None, None))
+        c_type, unpack_func, _pack_func = TypeTranslator.get(iectype,
+                                                             (None, None, None))
 
         cursor = c_void_p(buffptr + buffoffset)
         if iectype == "STRING":
@@ -98,8 +94,8 @@ def UnpackDebugBuffer(buff, indexes):
             size = sizeof(c_type)
 
         if c_type is not None and (buffoffset + size) <= buffsize:
-            value = unpack_func(cast(cursor,
-                                     POINTER(c_type)).contents)
+            ptr = cast(cursor, POINTER(c_type))
+            value = unpack_func(ptr.contents)
             buffoffset += size
             res.append(value)
         else:
@@ -107,3 +103,9 @@ def UnpackDebugBuffer(buff, indexes):
     if buffoffset and buffoffset == buffsize:
         return res
     return None
+
+def ValueToIECBytes(iectype, value):
+    if value is None:
+        return None
+    c_type, _unpack_func, pack_func = TypeTranslator[iectype]
+    return bytes(pack_func(c_type, value))

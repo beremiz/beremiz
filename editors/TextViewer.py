@@ -23,14 +23,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
-from __future__ import division
 import re
 from functools import reduce
 
 import wx
 import wx.stc
-from six.moves import xrange
 
 from graphics.GraphicCommons import ERROR_HIGHLIGHT, SEARCH_RESULT_HIGHLIGHT, REFRESH_HIGHLIGHT_PERIOD
 from plcopen.structures import ST_BLOCK_START_KEYWORDS, IEC_BLOCK_START_KEYWORDS, LOCATIONDATATYPES
@@ -43,17 +40,17 @@ from controls.CustomStyledTextCtrl import CustomStyledTextCtrl, faces, GetCursor
 
 
 NEWLINE = "\n"
-NUMBERS = [str(i) for i in xrange(10)]
+NUMBERS = [str(i) for i in range(10)]
 LETTERS = ['_']
-for i in xrange(26):
+for i in range(26):
     LETTERS.append(chr(ord('a') + i))
     LETTERS.append(chr(ord('A') + i))
 
 [STC_PLC_WORD, STC_PLC_COMMENT, STC_PLC_NUMBER, STC_PLC_STRING,
  STC_PLC_VARIABLE, STC_PLC_PARAMETER, STC_PLC_FUNCTION, STC_PLC_JUMP,
  STC_PLC_ERROR, STC_PLC_SEARCH_RESULT,
- STC_PLC_EMPTY] = range(11)
-[SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = range(8)
+ STC_PLC_EMPTY] = list(range(11))
+[SPACE, WORD, NUMBER, STRING, WSTRING, COMMENT, PRAGMA, DPRAGMA] = list(range(8))
 
 re_texts = {}
 re_texts["letter"] = "[A-Za-z]"
@@ -70,7 +67,7 @@ HIGHLIGHT_TYPES = {
 
 
 def LineStartswith(line, symbols):
-    return reduce(lambda x, y: x or y, map(line.startswith, symbols), False)
+    return reduce(lambda x, y: x or y, list(map(line.startswith, symbols)), False)
 
 
 class TextViewer(EditorPanel):
@@ -166,9 +163,6 @@ class TextViewer(EditorPanel):
         self.RefreshHighlightsTimer = wx.Timer(self, -1)
         self.Bind(wx.EVT_TIMER, self.OnRefreshHighlightsTimer, self.RefreshHighlightsTimer)
 
-    def __del__(self):
-        self.RefreshHighlightsTimer.Stop()
-
     def GetTitle(self):
         if self.Debug or self.TagName == "":
             if len(self.InstancePath) > 15:
@@ -197,11 +191,19 @@ class TextViewer(EditorPanel):
     def Colourise(self, start, end):
         self.Editor.Colourise(start, end)
 
-    def StartStyling(self, pos, mask):
-        self.Editor.StartStyling(pos, mask)
+    def StartStyling(self, *a, **k):
+        self.Editor.StartStyling(*a, **k)
+
+    INDIC0 = 0
+    INDIC1 = 1
+    INDIC2 = 2
 
     def SetStyling(self, length, style):
         self.Editor.SetStyling(length, style)
+
+    def SetIndicatorCurrentFillRange(self, start, length, indic):
+        self.Editor.SetIndicatorCurrent(indic)
+        self.Editor.IndicatorFillRange(start, length)
 
     def GetCurrentPos(self):
         return self.Editor.GetCurrentPos()
@@ -488,7 +490,7 @@ class TextViewer(EditorPanel):
             for category in self.Controler.GetBlockTypes(self.TagName, self.Debug):
                 for blocktype in category["list"]:
                     blockname = blocktype["name"].upper()
-                    if blocktype["type"] == "function" and blockname not in self.Keywords and blockname not in self.Variables.keys():
+                    if blocktype["type"] == "function" and blockname not in self.Keywords and blockname not in list(self.Variables.keys()):
                         interface = dict([(name, {}) for name, _type, _modifier in blocktype["inputs"] + blocktype["outputs"] if name != ''])
                         for param in ["EN", "ENO"]:
                             if param not in interface:
@@ -562,7 +564,7 @@ class TextViewer(EditorPanel):
             start_pos = last_styled_pos = self.Editor.GetLineEndPosition(line_number - 1) + 1
         self.RefreshLineFolding(line_number)
         end_pos = event.GetPosition()
-        self.StartStyling(start_pos, 0xff)
+        self.StartStyling(start_pos)
 
         current_context = self.Variables
         current_call = None
@@ -597,9 +599,8 @@ class TextViewer(EditorPanel):
                     else:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                         if word not in ["]", ")"] and (self.GetCurrentPos() < last_styled_pos or self.GetCurrentPos() > current_pos):
-                            self.StartStyling(last_styled_pos, wx.stc.STC_INDICS_MASK)
-                            self.SetStyling(current_pos - last_styled_pos, wx.stc.STC_INDIC0_MASK)
-                            self.StartStyling(current_pos, 0xff)
+                            self.SetIndicatorCurrentFillRange(last_styled_pos, current_pos - last_styled_pos, self.INDIC0)
+                            self.StartStyling(current_pos)
                 else:
                     self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                 last_styled_pos = current_pos
@@ -700,9 +701,8 @@ class TextViewer(EditorPanel):
                     else:
                         self.SetStyling(current_pos - last_styled_pos, STC_PLC_EMPTY)
                         if word not in ["]", ")"] and (self.GetCurrentPos() < last_styled_pos or self.GetCurrentPos() > current_pos):
-                            self.StartStyling(last_styled_pos, wx.stc.STC_INDICS_MASK)
-                            self.SetStyling(current_pos - last_styled_pos, wx.stc.STC_INDIC0_MASK)
-                            self.StartStyling(current_pos, 0xff)
+                            self.SetIndicatorCurrentFillRange(last_styled_pos, current_pos - last_styled_pos, self.INDIC0)
+                            self.StartStyling(current_pos)
                     if char == '.':
                         if word != "]":
                             if current_context is not None:
@@ -877,12 +877,14 @@ class TextViewer(EditorPanel):
             lineText = self.Editor.GetTextRange(start_pos, end_pos).replace("\t", " ")
 
             # Code completion
-            if key == wx.WXK_SPACE and event.ControlDown():
+            if key == wx.WXK_SPACE and event.RawControlDown():
 
                 words = lineText.split(" ")
                 words = [word for i, word in enumerate(words) if word != '' or i == len(words) - 1]
 
                 kw = []
+
+                self.RefreshVariableTree()
 
                 if self.TextSyntax == "IL":
                     if len(words) == 1:
@@ -893,18 +895,22 @@ class TextViewer(EditorPanel):
                         elif words[0].upper() in ["JMP", "JMPC", "JMPNC"]:
                             kw = self.Jumps
                         else:
-                            kw = self.Variables.keys()
+                            kw = list(self.Variables.keys())
                 else:
-                    kw = self.Keywords + self.Variables.keys() + self.Functions.keys()
+                    kw = self.Keywords + list(self.Variables.keys()) + list(self.Functions.keys())
                 if len(kw) > 0:
                     if len(words[-1]) > 0:
-                        kw = [keyword for keyword in kw if keyword.startswith(words[-1])]
+                        kw = [keyword for keyword in kw if keyword.startswith(words[-1].upper())]
+                if len(kw) > 0:
                     kw.sort()
                     self.Editor.AutoCompSetIgnoreCase(True)
                     self.Editor.AutoCompShow(len(words[-1]), " ".join(kw))
                 key_handled = True
             elif key == wx.WXK_RETURN or key == wx.WXK_NUMPAD_ENTER:
-                if self.TextSyntax in ["ST", "ALL"]:
+                if self.Editor.AutoCompActive():
+                    self.Editor.AutoCompComplete()
+                    key_handled = True
+                elif self.TextSyntax in ["ST", "ALL"]:
                     indent = self.Editor.GetLineIndentation(line)
                     if LineStartswith(lineText.strip(), self.BlockStartKeywords):
                         indent = (indent // 2 + 1) * 2
@@ -975,8 +981,8 @@ class TextViewer(EditorPanel):
             else:
                 highlight_end_pos = self.Editor.GetLineEndPosition(end[0] - 1) + end[1] - indent + 2
             if highlight_start_pos < end_pos and highlight_end_pos > start_pos:
-                self.StartStyling(highlight_start_pos, 0xff)
+                self.StartStyling(highlight_start_pos)
                 self.SetStyling(highlight_end_pos - highlight_start_pos, highlight_type)
-                self.StartStyling(highlight_start_pos, 0x00)
+                self.StartStyling(highlight_end_pos, 0x00)
                 until_end = max(0, len(self.Editor.GetText()) - highlight_end_pos)
                 self.SetStyling(until_end, wx.stc.STC_STYLE_DEFAULT)

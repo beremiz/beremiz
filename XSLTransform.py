@@ -3,7 +3,7 @@
 # This file is part of Beremiz.
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 from lxml import etree
 
 class XSLTransform(object):
@@ -18,7 +18,7 @@ class XSLTransform(object):
             extensions={("beremiz", name): call for name, call in xsltext})
 
     def transform(self, root, profile_run=False, **kwargs):
-        res = self.xslt(root, profile_run=profile_run, **{k: etree.XSLT.strparam(v) for k, v in kwargs.iteritems()})
+        res = self.xslt(root, profile_run=profile_run, **{k: etree.XSLT.strparam(v) for k, v in kwargs.items()})
         # print(self.xslt.error_log)
         return res
 

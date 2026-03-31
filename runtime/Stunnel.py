@@ -1,7 +1,7 @@
-from __future__ import absolute_import
-from __future__ import print_function
+
+
 import os
-from binascii import b2a_hqx
+from binascii import b2a_base64
 try:
     from runtime.spawn_subprocess import call
 except ImportError:
@@ -25,11 +25,12 @@ def restartStunnel():
 
 def PSKgen(ID, PSKpath):
 
-    # b2a_hqx output len is 4/3 input len
+    # secret string length is 256
+    # b2a_base64 output len is 4/3 input len
     secret = os.urandom(192)  # int(256/1.3333)
-    secretstring = b2a_hqx(secret)
+    secretstring = b2a_base64(secret)
 
-    PSKstring = ID+":"+secretstring
+    PSKstring = ID+":"+secretstring.decode()
     with open(PSKpath, 'w') as f:
         f.write(PSKstring)
     restartStunnel()
@@ -44,13 +45,12 @@ def ensurePSK(ID, PSKpath):
         PSKgen(ID, PSKpath)
 
 
-def getPSKID(errorlog):
+def getPSKID():
     if _PSKpath is not None:
         if not os.path.exists(_PSKpath):
-            errorlog(
+            raise Exception(
                 'Error: Pre-Shared-Key Secret in %s is missing!\n' % _PSKpath)
-            return None
         ID, _sep, PSK = open(_PSKpath).read().partition(':')
         PSK = PSK.rstrip('\n\r')
         return (ID, PSK)
-    return None
+    return ("","")

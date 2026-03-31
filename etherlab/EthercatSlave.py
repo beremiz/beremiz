@@ -9,9 +9,9 @@
 #
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
 
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
+
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT, LOCATION_VAR_OUTPUT, LOCATION_VAR_MEMORY
 from ConfigTreeNode import ConfigTreeNode
 
 from etherlab.ConfigEditor import NodeEditor
@@ -105,7 +105,8 @@ class _EthercatSlaveCTN(object):
                     'type': 'element',
                     'name': 'SlaveParams',
                     'value': None,
-                    'children': []
+                    'children': [],
+                    'doc': [{"documentation": "Nodo principal SlaveParams"}]  # por el error
                 })
 
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
@@ -115,7 +116,8 @@ class _EthercatSlaveCTN(object):
                     'use': 'optional',
                     'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE),
                     'name': 'Type',
-                    'value': (slave_type["device_type"], slave_type)
+                    'value': (slave_type["device_type"], slave_type),
+                    'doc': [{"documentation": "Tipo de slave EtherCAT"}]  # por el error
                 })
             params[0]['children'].insert(
                 1,
@@ -123,7 +125,8 @@ class _EthercatSlaveCTN(object):
                     'use': 'optional',
                     'type': 'unsignedLong',
                     'name': 'Alias',
-                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())
+                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos()),
+                    'doc': [{"documentation": "Alias del slave"}]  # por el error
                 })
             return params
 
@@ -135,11 +138,6 @@ class _EthercatSlaveCTN(object):
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             value = (slave_type["device_type"], slave_type)
-            # if self._View is not None:
-            #     wx.CallAfter(self._View.EtherCATManagementTreebook.SlaveStatePanel.RefreshSlaveInfos())
-            #     self._View.EtherCATManagementTreebook.SlaveStatePanel.RefreshSlaveInfos()
-            #     self._View.EtherCATManagementTreebook.PDOMonitoringPanel.PDOInfoUpdate()
-            #     self._View.EtherCATManagementTreebook.SmartView.Create_SmartView()
             return value, True
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)

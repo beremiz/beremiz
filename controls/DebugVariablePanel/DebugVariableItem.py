@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 from datetime import timedelta
 import binascii
 import numpy as np
@@ -62,13 +62,6 @@ class DebugVariableItem(DebugDataConsumer):
 
         # Get Variable data type
         self.RefreshVariableType()
-
-    def __del__(self):
-        """
-        Destructor
-        """
-        # Reset reference to debug variable panel
-        self.Parent = None
 
     def SetVariable(self, variable):
         """
@@ -262,7 +255,7 @@ class DebugVariableItem(DebugDataConsumer):
 
                 if self.VariableType in ["STRING", "WSTRING"]:
                     # String data value is CRC
-                    num_value = (binascii.crc32(value) & STRING_CRC_MASK)
+                    num_value = (binascii.crc32(value.encode()) & STRING_CRC_MASK)
                 elif self.VariableType in ["TIME", "TOD", "DT", "DATE"]:
                     # Numeric value of time type variables
                     # is represented in seconds

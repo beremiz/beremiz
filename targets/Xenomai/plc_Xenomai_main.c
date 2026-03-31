@@ -9,6 +9,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <math.h>
+#include <stdarg.h>
 #include <sys/mman.h>
 #include <sys/fcntl.h>
 
@@ -16,6 +18,16 @@
 #include <alchemy/timer.h>
 #include <alchemy/sem.h>
 #include <alchemy/pipe.h>
+
+#define _Log(level,text,...) \
+    {\
+        char mstr[256];\
+        snprintf(mstr, 255, text, ##__VA_ARGS__);\
+        LogMessage(level, mstr, strlen(mstr));\
+    }
+
+#define _LogError(text,...) _Log(LOG_CRITICAL, text, ##__VA_ARGS__)
+#define _LogWarning(text,...) _Log(LOG_WARNING, text, ##__VA_ARGS__)
 
 unsigned int PLC_state = 0;
 #define PLC_STATE_TASK_CREATED                 1
@@ -36,11 +48,7 @@ unsigned int PLC_state = 0;
 #define DEBUG_PENDING_DATA 1
 #define DEBUG_UNLOCK 1
 
-long AtomicCompareExchange(long* atomicvar,long compared, long exchange)
-{
-    return __sync_val_compare_and_swap(atomicvar, compared, exchange);
-}
-long long AtomicCompareExchange64(long long* atomicvar, long long compared, long long exchange)
+uint32_t AtomicCompareExchange(uint32_t* atomicvar,uint32_t compared, uint32_t exchange)
 {
     return __sync_val_compare_and_swap(atomicvar, compared, exchange);
 }
@@ -51,6 +59,28 @@ void PLC_GetTime(IEC_TIME *CURRENT_TIME)
     CURRENT_TIME->tv_sec = current_time / 1000000000;
     CURRENT_TIME->tv_nsec = current_time % 1000000000;
 }
+
+int iec_lib_snprintf(char *__s, size_t __maxlen, const char *__format, ...)
+{
+	va_list args;
+	va_start(args, __format);
+	int ret = vsnprintf(__s, __maxlen, __format, args);
+	va_end(args);
+	return ret;
+}
+
+double iec_lib_acos(double x) { return acos(x); }
+double iec_lib_asin(double x) { return asin(x); }
+double iec_lib_atan(double x) { return atan(x); }
+double iec_lib_cos(double x) { return cos(x); }
+double iec_lib_exp(double x) { return exp(x); }
+double iec_lib_fmod(double x, double y) { return fmod(x, y); }
+double iec_lib_log(double x) { return log(x); }
+double iec_lib_log10(double x) { return log10(x); }
+double iec_lib_pow(double x, double y) { return pow(x, y); }
+double iec_lib_sin(double x) { return sin(x); }
+double iec_lib_sqrt(double x) { return sqrt(x); }
+double iec_lib_tan(double x) { return tan(x); }
 
 RT_TASK PLC_task;
 void *WaitDebug_handle;
@@ -86,6 +116,16 @@ int send_RT_to_nRT_signal(void* handle, char payload){
 
 int PLC_shutdown = 0;
 
+void record_run_time_ns_avg(struct timespec *start, struct timespec *end);
+
+int ForceSaveRetainReq(void) {
+    return PLC_shutdown;
+}
+
+unsigned long long GetCommonTickTime(){
+	return common_ticktime__;
+}
+
 void PLC_SetTimer(unsigned long long next, unsigned long long period)
 {
   RTIME current_time = rt_timer_read();
@@ -94,13 +134,28 @@ void PLC_SetTimer(unsigned long long next, unsigned long long period)
 
 void PLC_task_proc(void *arg)
 {
+    unsigned long overruns = 0;
+    int periods_passed = 0;
+
     PLC_SetTimer(common_ticktime__, common_ticktime__);
 
     while (!PLC_shutdown) {
-        PLC_GetTime(&__CURRENT_TIME);
-        __run();
+        if(overruns == 0){
+            struct timespec plc_start_time, plc_end_time;
+            clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
+            __run(periods_passed);
+            clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
+            record_run_time_ns_avg(&plc_start_time, &plc_end_time);
+            periods_passed = 1;
+        } else {
+            // in case of overrun, don't run PLC on next cycle, to prevent CPU hogging.
+            _LogWarning("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", overruns);
+            // rt_printf("PLC execution time is longer than requested PLC cyclic task interval. %d cycles skipped\n", overruns);
+            // increment tick count anyhow, so that task scheduling keeps consistent
+            periods_passed = overruns + 1;
+        }
         if (PLC_shutdown) break;
-        rt_task_wait_period(NULL);
+        rt_task_wait_period(&overruns);
     }
     /* since xenomai 3 it is not enough to close()
        file descriptor to unblock read()... */
@@ -117,13 +172,6 @@ void PLC_task_proc(void *arg)
 }
 
 static unsigned long __debug_tick;
-
-#define _Log(text, err) \
-    {\
-        char mstr[256];\
-        snprintf(mstr, 255, text " for %s (%d)", name, err);\
-        LogMessage(LOG_CRITICAL, mstr, strlen(mstr));\
-    }
 
 void *create_RT_to_nRT_signal(char* name){
     int new_index = -1;
@@ -142,13 +190,13 @@ void *create_RT_to_nRT_signal(char* name){
 
     /* fail if none found */
     if(new_index == -1) {
-    	_Log("Maximum count of RT-PIPE reached while creating pipe", max_RT_to_nRT_signals);
+    	_LogError("Maximum count of RT-PIPE reached while creating pipe for %s (%d)", name, max_RT_to_nRT_signals);
         return NULL;
     }
 
     /* create rt pipe */
     if(ret = rt_pipe_create(&sig->pipe, name, new_index, PIPE_SIZE) < 0){
-    	_Log("Failed opening real-time end of RT-PIPE", ret);
+    	_LogError("Failed opening real-time end of RT-PIPE for %s (%d)", name, ret);
         return NULL;
     }
 
@@ -156,7 +204,7 @@ void *create_RT_to_nRT_signal(char* name){
     snprintf(pipe_dev, 63, "/dev/rtp%d", new_index);
     if((sig->pipe_fd = open(pipe_dev, O_RDWR)) == -1){
         rt_pipe_delete(&sig->pipe);
-    	_Log("Failed opening non-real-time end of RT-PIPE", errno);
+    	_LogError("Failed opening non-real-time end of RT-PIPE for %s (%d)", name, errno);
         return NULL;
     }
 
@@ -174,11 +222,11 @@ void delete_RT_to_nRT_signal(void* handle){
     if(!sig->used) return;
 
     if(ret = rt_pipe_delete(&sig->pipe) != 0){
-    	_Log("Failed closing real-time end of RT-PIPE", ret);
+    	_LogError("Failed closing real-time end of RT-PIPE for %s (%d)", name, ret);
     }
 
     if(close(sig->pipe_fd) != 0){
-    	_Log("Failed closing non-real-time end of RT-PIPE", errno);
+    	_LogError("Failed closing non-real-time end of RT-PIPE for %s (%d)", name, errno);
     }
 
     sig->used = 0;
@@ -311,6 +359,7 @@ error:
 #define DEBUG_FREE 0
 #define DEBUG_BUSY 1
 static long debug_state = DEBUG_FREE;
+IEC_BOOL __DEBUG = 0;
 
 int TryEnterDebugSection(void)
 {
@@ -336,9 +385,7 @@ void LeaveDebugSection(void)
     }
 }
 
-extern unsigned long __tick;
-
-int WaitDebugData(unsigned long *tick)
+int WaitDebugData(unsigned int *tick)
 {
     char cmd;
     int res;
@@ -354,11 +401,11 @@ int WaitDebugData(unsigned long *tick)
 
 /* Called by PLC thread when debug_publish finished
  * This is supposed to unlock debugger thread in WaitDebugData*/
-void InitiateDebugTransfer()
+void InitiateDebugTransfer(int tick)
 {
     char msg = DEBUG_PENDING_DATA;
     /* remember tick */
-    __debug_tick = __tick;
+    __debug_tick = tick;
     /* signal debugger thread it can read data */
     send_RT_to_nRT_signal(WaitDebug_handle, msg);
 }
@@ -471,7 +518,8 @@ void CleanupRetain(void)
 {
 }
 
-void InitRetain(void)
+int InitRetain(size_t buffer_size)
 {
+    return 0;
 }
 #endif // !HAVE_RETAIN

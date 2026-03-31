@@ -22,19 +22,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
-from __future__ import absolute_import
 from threading import Thread, Lock, Event, Condition
 import ctypes
 import os
 import sys
 import traceback
 import shutil
+import platform as platform_module
 from time import time
 import hashlib
 from tempfile import mkstemp
 from functools import wraps, partial
-from six.moves import xrange
-from past.builtins import execfile
 import _ctypes
 
 from runtime.typemapping import TypeTranslator
@@ -59,14 +57,15 @@ def get_last_traceback(tb):
 
 
 lib_ext = {
-    "linux2": ".so",
+    "linux": ".so",
     "win32":  ".dll",
 }.get(sys.platform, "")
 
 
 def PLCprint(message):
-    sys.stdout.write("PLCobject : "+message+"\n")
-    sys.stdout.flush()
+    if sys.stdout:
+        sys.stdout.write("PLCobject : "+message+"\n")
+        sys.stdout.flush()
 
 
 def RunInMain(func):
@@ -83,8 +82,7 @@ class PLCObject(object):
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         os.mkdir(self.tmpdir)
-        # FIXME : is argv of any use nowadays ?
-        self.argv = [WorkingDir] + argv  # force argv[0] to be "path" to exec...
+        self.argv = []
         self.statuschange = statuschange
         self.evaluator = evaluator
         self.pyruntimevars = pyruntimevars
@@ -100,7 +98,14 @@ class PLCObject(object):
         self.Traces = []
         self.DebugToken = 0
 
+        # Event to signal when PLC is stopped.
+        self.PlcStopped = Event()
+        self.PlcStopped.set()
+
         self._init_blobs()
+        
+        # initialize extended calls with GetVersions call, ignoring arguments
+        self.extended_calls = {"GetVersions":lambda *_args:self.GetVersions().encode()}
 
     # First task of worker -> no @RunInMain
     def AutoLoad(self, autostart):
@@ -135,7 +140,8 @@ class PLCObject(object):
             msg, = args
         PLCprint(msg)
         if self._LogMessage is not None:
-            return self._LogMessage(level, msg, len(msg))
+            bmsg = msg.encode()
+            return self._LogMessage(level, bmsg, len(bmsg))
         return None
 
     @RunInMain
@@ -149,6 +155,7 @@ class PLCObject(object):
             return int(self._GetLogCount(level))
         elif self._loading_error is not None and level == 0:
             return 1
+        return 0
 
     @RunInMain
     def GetLogMessage(self, level, msgid):
@@ -162,12 +169,11 @@ class PLCObject(object):
                                      ctypes.byref(tick),
                                      ctypes.byref(tv_sec),
                                      ctypes.byref(tv_nsec))
-            if sz and sz <= maxsz:
-                self._log_read_buffer[sz] = '\x00'
-                return self._log_read_buffer.value, tick.value, tv_sec.value, tv_nsec.value
+            return ("<empty>" if sz==0 else "<overflow>" if sz > maxsz else self._log_read_buffer[:sz].decode(),
+                    tick.value, tv_sec.value, tv_nsec.value)
         elif self._loading_error is not None and level == 0:
             return self._loading_error, 0, 0, 0
-        return None
+        return "", 0, 0, 0
 
     def _GetMD5FileName(self):
         return os.path.join(self.workingdir, "lasttransferedPLC.md5")
@@ -188,7 +194,7 @@ class PLCObject(object):
 
             self.PLC_ID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLC_ID")
             if len(md5) == 32:
-                self.PLC_ID.value = md5
+                self.PLC_ID.value = md5.encode()
 
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int
@@ -200,7 +206,7 @@ class PLCObject(object):
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
             if self._PythonIterator is not None:
                 self._PythonIterator.restype = ctypes.c_char_p
-                self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p)]
+                self._PythonIterator.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_int)]
 
                 self._stopPLC = self._stopPLC_real
             else:
@@ -208,7 +214,7 @@ class PLCObject(object):
                 # as a call that block pythonthread until StopPLC
                 self.PlcStopping = Event()
 
-                def PythonIterator(res, blkid):
+                def PythonIterator(res, blkid, is_last):
                     self.PlcStopping.clear()
                     self.PlcStopping.wait()
                     return None
@@ -300,7 +306,7 @@ class PLCObject(object):
         self._GetDebugData = lambda: -1
         self._suspendDebug = lambda x: -1
         self._resumeDebug = lambda: None
-        self._PythonIterator = lambda: ""
+        self._PythonIterator = lambda *a: ""
         self._GetLogCount = None
         self._LogMessage = None
         self._GetLogMessage = None
@@ -382,7 +388,8 @@ class PLCObject(object):
             "WorkingDir":     self.workingdir,
             "PLCObject":      self,
             "PLCBinary":      self.PLClibraryHandle,
-            "PLCGlobalsDesc": []})
+            "PLCGlobalsDesc": [],
+            "OnIdle":         []})
 
         for methodname in MethodNames:
             self.python_runtime_vars["_runtime_%s" % methodname] = []
@@ -393,7 +400,7 @@ class PLCObject(object):
             for filename in filenames:
                 name, ext = os.path.splitext(filename)
                 if name.upper().startswith("RUNTIME") and ext.upper() == ".PY":
-                    execfile(os.path.join(self.workingdir, filename), self.python_runtime_vars)
+                    exec(compile(open(os.path.join(self.workingdir, filename), "rb").read(), os.path.join(self.workingdir, filename), 'exec'), self.python_runtime_vars)
                     for methodname in MethodNames:
                         method = self.python_runtime_vars.get("_%s_%s" % (name, methodname), None)
                         if method is not None:
@@ -422,13 +429,15 @@ class PLCObject(object):
         self.python_runtime_vars = None
 
     def PythonThreadLoop(self):
-        res, cmd, blkid = "None", "None", ctypes.c_void_p()
+        res, cmd, blkid, is_last = "None", "None", ctypes.c_void_p(), ctypes.c_int()
         compile_cache = {}
         while True:
-            cmd = self._PythonIterator(res, blkid)
+            cmd = self._PythonIterator(res.encode(), blkid, ctypes.byref(is_last))
             FBID = blkid.value
+            GOING_IDLE = is_last.value != 0
             if cmd is None:
                 break
+            cmd = cmd.decode()
             try:
                 self.python_runtime_vars["FBID"] = FBID
                 ccmd, AST = compile_cache.get(FBID, (None, None))
@@ -446,6 +455,11 @@ class PLCObject(object):
             except Exception as e:
                 res = "#EXCEPTION : "+str(e)
                 self.LogMessage(1, ('PyEval@0x%x(Code="%s") Exception "%s"') % (FBID, cmd, str(e)))
+
+            if GOING_IDLE:
+                todo = self.python_runtime_vars["OnIdle"]
+                while todo:
+                    todo.pop(0)()
 
     def PythonThreadProc(self):
         while True:
@@ -469,6 +483,10 @@ class PLCObject(object):
                 self._PostStartPLC()
                 self.PythonThreadLoop()
                 self.PythonRuntimeCall("stop", reverse_order=True)
+                
+                # Signal that python runtime has stopped
+                self.PlcStopped.set()
+
             elif cmd == "Finish":
                 self.PythonThreadAcknowledge(cmd)
                 break
@@ -524,6 +542,11 @@ class PLCObject(object):
     @RunInMain
     def StartPLC(self):
 
+        # Prevent accidental call to StartPLC when already Started
+        if self.PLCStatus != PlcStatus.Stopped:
+            self.LogMessage(0,_("Problem starting PLC : PLC is not Stopped"))
+            return
+
         if self.PLClibraryHandle is None:
             if not self.LoadPLC():
                 self._fail(_("Problem starting PLC : can't load PLC"))
@@ -537,41 +560,73 @@ class PLCObject(object):
                 self.PLCStatus = PlcStatus.Started
                 self.StatusChange()
                 self.PythonThreadCommand("Start")
+                self.PlcStopped.clear()
             else:
                 self._fail(_("Problem starting PLC : error %d" % res))
 
     @RunInMain
-    def StopPLC(self):
+    def StopPLCLoop(self):
         if self.PLCStatus == PlcStatus.Started:
             self.LogMessage("PLC stopped")
             self._stopPLC()
-            self.PLCStatus = PlcStatus.Stopped
-            self.StatusChange()
             if self.TraceThread is not None:
                 self.TraceThread.join()
                 self.TraceThread = None
             return True
         return False
 
+    # Does not @RunInMain since python runtime Stop call must run in 
+    # main thread, and StopPLC waits for it to complete
+    def StopPLC(self):
+        if self.StopPLCLoop():
+            # Wait for python runtime stop to complete
+            if self.PlcStopped.wait(timeout=5):
+                self.PLCStatus = PlcStatus.Stopped
+                self.StatusChange()
+            else:
+                self._fail(_("PLC timed out while stopping"))
+                
+        return self.PLCStatus == PlcStatus.Stopped
+
     def GetPLCstatus(self):
         try:
             return self._GetPLCstatus()
         except EOFError:
-            return (PlcStatus.Disconnected, None)
+            return (PlcStatus.Disconnected, [0]*LogLevelsCount)
 
     @RunInMain
     def _GetPLCstatus(self):
-        return self.PLCStatus, map(self.GetLogCount, xrange(LogLevelsCount))
+        return self.PLCStatus, list(map(self.GetLogCount, range(LogLevelsCount)))
 
     @RunInMain
     def GetPLCID(self):
-        return getPSKID(partial(self.LogMessage, 0))
+        try:
+            res = getPSKID()
+        except Exception as e:
+            self.LogMessage(0, str(e))
+            return ("","")
+        return res
 
     def _init_blobs(self):
-        self.blobs = {}
+        self.blobs = {}  # dict of list
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
         os.mkdir(self.tmpdir)
+
+    def _append_blob(self, blob, newBlobID):
+        self.blobs.setdefault(newBlobID,[]).append(blob)
+
+    def _pop_blob(self, blobID):
+        blobs = self.blobs.pop(blobID, None)
+
+        if blobs is None:
+            return None
+
+        blob = blobs.pop()
+        if blobs:
+            # insert same blob list back if not empty
+            blobs = self.blobs[blobID] = blobs
+        return blob
 
     @RunInMain
     def SeedBlob(self, seed):
@@ -579,34 +634,33 @@ class PLCObject(object):
         _fd, _path, md5sum = blob
         md5sum.update(seed)
         newBlobID = md5sum.digest()
-        self.blobs[newBlobID] = blob
+        self._append_blob(blob, newBlobID)
         return newBlobID
 
     @RunInMain
     def AppendChunkToBlob(self, data, blobID):
-        blob = self.blobs.pop(blobID, None)
-
-        if blob is None:
-            return None
+        blob = self._pop_blob(blobID)
 
         fd, _path, md5sum = blob
         md5sum.update(data)
         newBlobID = md5sum.digest()
         os.write(fd, data)
-        self.blobs[newBlobID] = blob
+        self._append_blob(blob, newBlobID)
         return newBlobID
 
     @RunInMain
     def PurgeBlobs(self):
-        for fd, _path, _md5sum in self.blobs.values():
-            os.close(fd)
+        for blobs in list(self.blobs.values()):
+            for fd, _path, _md5sum in blobs:
+                os.close(fd)
         self._init_blobs()
 
     def BlobAsFile(self, blobID, newpath):
-        blob = self.blobs.pop(blobID, None)
+        blob = self._pop_blob(blobID)
 
         if blob is None:
-            raise Exception(_("Missing data to create file: {}").format(newpath))
+            raise Exception(
+                _(f"Missing data to create file: {newpath}"))
 
         self._BlobAsFile(blob, newpath)
 
@@ -623,7 +677,7 @@ class PLCObject(object):
 
     def RepairPLC(self):
         self.PurgePLC()
-        MainWorker.quit()
+        MainWorker.finish()
 
     @RunInMain
     def PurgePLC(self):
@@ -721,13 +775,8 @@ class PLCObject(object):
             if self._suspendDebug(False) == 0:
                 # keep a copy of requested idx
                 self._ResetDebugVariables()
-                for idx, iectype, force in idxs:
-                    if force is not None:
-                        c_type, _unpack_func, pack_func = \
-                            TypeTranslator.get(iectype,
-                                               (None, None, None))
-                        force = ctypes.byref(pack_func(c_type, force))
-                    res = self._RegisterDebugVariable(idx, force)
+                for idx, force in idxs:
+                    res = self._RegisterDebugVariable(idx, force, 0 if force is None else len(force))
                     if res != 0:
                         self._resumeDebug()
                         self._suspendDebug(True)
@@ -737,7 +786,7 @@ class PLCObject(object):
                 return self.DebugToken
         else:
             self._suspendDebug(True)
-        return 4 # DEBUG_SUSPENDED
+        return -5 # DEBUG_SUSPENDED
 
     def _TracesSwap(self):
         self.LastSwapTrace = time()
@@ -802,12 +851,17 @@ class PLCObject(object):
 
         self.TraceThread = None
 
-    def RemoteExec(self, script, *kwargs):
-        try:
-            exec(script, kwargs)
-        except Exception:
-            _e_type, e_value, e_traceback = sys.exc_info()
-            line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
-            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" %
-                    (line_no, e_value, script.splitlines()[line_no - 1]))
-        return (0, kwargs.get("returnVal", None))
+    def GetVersions(self):
+        return platform_module.system() + " " + platform_module.release()
+
+    @RunInMain
+    def ExtendedCall(self, method, argument):
+        """ Dispatch argument to registered service """
+        return self.extended_calls[method](argument)
+
+    def RegisterExtendedCall(self, method, callback):
+        self.extended_calls[method] = callback
+
+    def UnregisterExtendedCall(self, method):
+        del self.extended_calls[method]
+

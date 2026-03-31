@@ -24,10 +24,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
 import os
 import re
-from builtins import str as text
 
 import util.paths as paths
 from xmlclass import GenerateParserFromXSD
@@ -77,7 +75,7 @@ class PythonFileCTNMixin(CodeFile):
                     self.CreateCodeFileBuffer(False)
                     self.OnCTNSave()
             except Exception as exc:
-                error = text(exc)
+                error = str(exc)
 
             if error is not None:
                 self.GetCTRoot().logger.write_error(
@@ -115,6 +113,9 @@ class PythonFileCTNMixin(CodeFile):
         """
         return var.getonchange()
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
+
     def CTNGenerate_C(self, buildpath, locations):
         # location string for that CTN
         location_str = "_".join(map(str, self.GetCurrentLocation()))
@@ -134,8 +135,7 @@ class PythonFileCTNMixin(CodeFile):
             return repr(content) if content else None
 
         pyextname = self.CTNName()
-        varinfos = map(
-            lambda variable: {
+        varinfos = [{
                 "name": variable.getname(),
                 "desc": repr(variable.getdesc()),
                 "onchangecode": _onchangecode(variable),
@@ -146,8 +146,7 @@ class PythonFileCTNMixin(CodeFile):
                 "IECtype": self.GetCTRoot().GetBaseType(variable.gettype()),
                 "initial": repr(variable.getinitial()),
                 "pyextname": pyextname
-            },
-            self.CodeFile.variables.variable)
+            } for variable in self.CodeFile.variables.variable]
 
         onchange_var_count = len([None for varinfo in varinfos if varinfo["onchange"]])
 
@@ -247,7 +246,7 @@ del __ext_name__
         # write generated content to python file
         runtimefile_path = os.path.join(buildpath,
                                         "runtime_%s.py" % location_str)
-        runtimefile = open(runtimefile_path, 'w')
+        runtimefile = open(runtimefile_path, 'wb')
         runtimefile.write(PyFileContent.encode('utf-8'))
         runtimefile.close()
 
@@ -257,19 +256,19 @@ del __ext_name__
 extern  __IEC_%(IECtype)s_t %(configname)s__%(uppername)s;
 IEC_%(IECtype)s __%(name)s_rbuffer = __INIT_%(IECtype)s;
 IEC_%(IECtype)s __%(name)s_wbuffer;
-long __%(name)s_rlock = 0;
-long __%(name)s_wlock = 0;
+uint32_t __%(name)s_rlock = 0;
+uint32_t __%(name)s_wlock = 0;
 int __%(name)s_wbuffer_written = 0;
 void __SafeGetPLCGlob_%(name)s(IEC_%(IECtype)s *pvalue){
     while(AtomicCompareExchange(&__%(name)s_rlock, 0, 1));
     *pvalue = __%(name)s_rbuffer;
-    AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+    AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
 }
 void __SafeSetPLCGlob_%(name)s(IEC_%(IECtype)s *value){
     while(AtomicCompareExchange(&__%(name)s_wlock, 0, 1));
     __%(name)s_wbuffer = *value;
     __%(name)s_wbuffer_written = 1;
-    AtomicCompareExchange((long*)&__%(name)s_wlock, 1, 0);
+    AtomicCompareExchange((uint32_t*)&__%(name)s_wlock, 1, 0);
 }
 
 """
@@ -289,20 +288,20 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
             %(configname)s__%(uppername)s.value = __%(name)s_wbuffer;
             __%(name)s_wbuffer_written = 0;
         }
-        AtomicCompareExchange((long*)&__%(name)s_wlock, 1, 0);
+        AtomicCompareExchange((uint32_t*)&__%(name)s_wlock, 1, 0);
     }
 """
         varpubfmt = """\
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
         __%(name)s_rbuffer = __GET_VAR(%(configname)s__%(uppername)s);
-        AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+        AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
     }
 """
 
         varpubonchangefmt = """\
     if(!AtomicCompareExchange(&__%(name)s_rlock, 0, 1)){
         IEC_%(IECtype)s tmp = __GET_VAR(%(configname)s__%(uppername)s);
-        if(NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
+        if(___NE_%(IECtype)s(1, NULL, __%(name)s_rbuffer, tmp)){
             if(__%(name)s_rbuffer_written == 0);
                 __%(name)s_rbuffer_firstval = __%(name)s_rbuffer;
             __%(name)s_rbuffer_lastval = tmp;
@@ -311,7 +310,7 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
             __%(name)s_rbuffer_written += 1;
             some_change_found = 1;
         }
-        AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+        AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
     }
 """
 
@@ -322,7 +321,7 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
     __%(name)s_onchange_lastval = __%(name)s_rbuffer_lastval;
     /* mark variable as unchanged */
     __%(name)s_rbuffer_written = 0;
-    AtomicCompareExchange((long*)&__%(name)s_rlock, 1, 0);
+    AtomicCompareExchange((uint32_t*)&__%(name)s_rlock, 1, 0);
 
 """
         vardec = "\n".join([(vardecfmt + vardeconchangefmt
@@ -361,13 +360,13 @@ IEC_%(IECtype)s __%(name)s_onchange_lastval;
 #include "config.h"
 #include "beremiz.h"
 
-PYTHON_POLL* __%(location_str)s_notifier;
+PYTHON_POLL_data__* __%(location_str)s_notifier;
 
 /* User variables reference */
 %(vardec)s
 
 /* Beremiz confnode functions */
-int __init_%(location_str)s(int argc,char **argv){
+int __init_%(location_str)s(int argc,void **argv){
     __%(location_str)s_notifier = __GET_GLOBAL_ON_%(location_str)s_CHANGE();
     __SET_VAR(__%(location_str)s_notifier->,TRIG,,__BOOL_LITERAL(TRUE));
     __SET_VAR(__%(location_str)s_notifier->,CODE,,__STRING_LITERAL(%(pysafe_pypoll_code_len)d,%(pysafe_pypoll_code)s));

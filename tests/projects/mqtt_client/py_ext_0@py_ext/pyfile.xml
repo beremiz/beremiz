@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <variables/>
+  <globals>
+    <xhtml:p><![CDATA[
+import sys
+last_payload = None
+
+def topic_callback(topic, payload):
+    global last_payload
+    last_payload = payload
+
+# called from PLC
+def publish_example(data):
+    global last_payload
+    MQTT_publish("mqtt_0", "py_test", data)
+    return last_payload
+
+]]></xhtml:p>
+  </globals>
+  <init>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </init>
+  <cleanup>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </cleanup>
+  <start>
+    <xhtml:p><![CDATA[
+MQTT_subscribe("mqtt_0", "py_test", topic_callback)
+]]></xhtml:p>
+  </start>
+  <stop>
+    <xhtml:p><![CDATA[
+]]></xhtml:p>
+  </stop>
+</PyFile>

@@ -27,10 +27,10 @@ Misc definitions
 """
 
 
-from __future__ import absolute_import
+
 import os,sys
 import random
-from functools import reduce
+from importlib import import_module
 
 from util.BitmapLibrary import AddBitmapFolder
 from util.TranslationCatalogs import AddCatalog
@@ -70,8 +70,9 @@ def GetClassImporter(param):
     if isinstance(param, str):
         def factory():
             # on-demand import, only when using class
-            mod = __import__(param.rsplit('.', 1)[0])
-            return reduce(getattr, param.split('.')[1:], mod)
+            modname,member  = param.rsplit('.', 1)
+            mod = import_module(modname)
+            return getattr(mod, member)
         return factory
     else:
         return lambda: param
@@ -83,3 +84,4 @@ def InstallLocalRessources(CWD):
 
     # Internationalization
     AddCatalog(os.path.join(CWD, "locale"))
+

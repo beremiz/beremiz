@@ -3,16 +3,22 @@
 
 # See COPYING file for copyrights details.
 
-from __future__ import absolute_import
+
 import os
 import time
 import json
+import shutil
 from zipfile import ZipFile
+from binascii import b2a_base64
+
+from util.paths import AppDataPath
+
+### Controllers Identities ###
 
 # PSK Management Data model :
 # [[ID,Desc, LastKnownURI, LastConnect]]
-COL_ID, COL_URI, COL_DESC, COL_LAST = range(4)
-REPLACE, REPLACE_ALL, KEEP, KEEP_ALL, CANCEL = range(5)
+COL_ID, COL_URI, COL_DESC, COL_LAST = list(range(4))
+REPLACE, REPLACE_ALL, KEEP, KEEP_ALL, CANCEL = list(range(5))
 
 
 def _pskpath(project_path):
@@ -104,13 +110,21 @@ def UpdateID(project_path, ID, secret, URI):
     dataForID[COL_URI] = URI
     # FIXME : could store time instead os a string and use DVC model's cmp
     # then date display could be smarter, etc - sortable sting hack for now
-    dataForID[COL_LAST] = time.strftime('%y/%M/%d-%H:%M:%S')
+    dataForID[COL_LAST] = time.strftime('%y/%m/%d-%H:%M:%S')
 
     if _is_new_ID:
         data.append(dataForID)
 
     SaveData(project_path, data)
 
+def GetSecret(project_path, ID):
+    # load PSK from project
+    secpath = os.path.join(project_path, 'psk', ID + '.secret')
+    if not os.path.exists(secpath):
+        raise ValueError(
+            'Error: Pre-Shared-Key Secret in %s is missing!\n' % secpath)
+    secret = open(secpath).read().partition(':')[2].rstrip('\n\r')
+    return secret
 
 def ExportIDs(project_path, export_zip):
     with ZipFile(export_zip, 'w') as zf:
@@ -158,3 +172,46 @@ def ImportIDs(project_path, import_zip, should_I_replace_callback):
     SaveData(project_path, data)
 
     return data
+
+
+### IDE Identity ###
+
+def _own_psk_path():
+    own_keystore = AppDataPath("keystore", "own")
+    if not os.path.exists(own_keystore):
+        os.makedirs(own_keystore)
+
+    return os.path.join(own_keystore, "default.psk")
+
+
+def GetIDEIdentity():
+    own_identity = _own_psk_path()
+    if os.path.exists(own_identity):
+        ID, _sep, PSK = open(own_identity).read().partition(':')
+        secretstring = PSK.rstrip('\n\r')
+    else:
+        ID = os.urandom(8).hex()
+        # secret string length is 256
+        # b2a_base64 output len is 4/3 input len
+        secret = os.urandom(192)  # int(256/1.3333)
+        secretstring = b2a_base64(secret).decode()
+
+        PSKstring = ID+":"+secretstring
+        with open(own_identity, 'w') as f:
+            f.write(PSKstring)
+
+    return ID, secretstring
+
+
+def ExportIDEIdentity(filepath):
+    own_identity = _own_psk_path()
+    shutil.copyfile(own_identity, filepath)
+
+def ImportIDEIdentity(filepath):
+    own_identity = _own_psk_path()
+    shutil.copyfile(filepath, own_identity)
+
+def RemoveIDEIdentity():
+    own_identity = _own_psk_path()
+    if os.path.exists(own_identity):
+        os.remove(own_identity)

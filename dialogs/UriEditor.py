@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+
 
 import wx
 from connectors import ConnectorSchemes, EditorClassFromScheme
@@ -40,6 +40,10 @@ class UriEditor(wx.Dialog):
         self.scheme_editor = None
         self.SetURI(uri)
         self.CenterOnParent()
+
+    def Destroy(self):
+        self.scheme_editor.Destroy()
+        wx.Dialog.Destroy(self)
 
     def OnTypeChoice(self, event):
         index = event.GetSelection()

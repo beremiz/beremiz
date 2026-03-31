@@ -1,46 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# This file is part of Beremiz, a Integrated Development Environment for
-# programming IEC 61131-3 automates supporting plcopen standard and CanFestival.
-# This file is based on code written for Whyteboard project.
-#
 # Copyright (c) 2009, 2010 by Steven Sproat
 # Copyright (c) 2016 by Andrey Skvortsov <andrej.skvortzov@gmail.com>
-#
+# Copyright (c) 2024 by Edouard Tisserant
+
 # See COPYING file for copyrights details.
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 
-
-"""
-This module contains classes extended from wx.Dialog used by the GUI.
-"""
-
-
-from __future__ import absolute_import
 import os
 import wx
+import wx.adv
 from wx.lib.agw.hyperlink import HyperLinkCtrl
 
 
 class AboutDialog(wx.Dialog):
     """
-    A replacement About Dialog for Windows, as it uses a generic frame that
-    well...sucks.
+    Simpler replacement of About Dialog that shows LongVersion
     """
     def __init__(self, parent, info):
         title = _("About") + " " + info.Name
@@ -52,7 +27,8 @@ class AboutDialog(wx.Dialog):
 
         image = None
         if self.info.Icon:
-            bitmap = wx.BitmapFromIcon(self.info.Icon)
+            bitmap = wx.Bitmap()
+            bitmap.CopyFromIcon(self.info.Icon)
             image = wx.StaticBitmap(self, bitmap=bitmap)
 
         name = wx.StaticText(self, label="%s %s" % (info.Name, info.Version))
@@ -60,6 +36,7 @@ class AboutDialog(wx.Dialog):
         description.Wrap(400)
         copyright = wx.StaticText(self, label=info.Copyright)
         url = HyperLinkCtrl(self, label=info.WebSite[0], URL=info.WebSite[1])
+        long_version = wx.StaticText(self, label=info.GetLongVersion())
 
         font = name.GetClassDefaultAttributes().font
         font.SetWeight(wx.FONTWEIGHT_BOLD)
@@ -82,6 +59,7 @@ class AboutDialog(wx.Dialog):
         sizer.Add(description, flag=wx.CENTER | wx.BOTTOM, border=10)
         sizer.Add(copyright, flag=wx.CENTER | wx.BOTTOM, border=10)
         sizer.Add(url, flag=wx.CENTER | wx.BOTTOM, border=15)
+        sizer.Add(long_version, flag=wx.CENTER | wx.BOTTOM, border=10)
         sizer.Add(btnSizer, flag=wx.CENTER | wx.BOTTOM, border=5)
 
         container = wx.BoxSizer(wx.VERTICAL)
@@ -120,8 +98,8 @@ class CreditsDialog(wx.Dialog):
         developer = wx.TextCtrl(notebook, style=wx.TE_READONLY | wx.TE_MULTILINE)
         translators = wx.TextCtrl(notebook, style=wx.TE_READONLY | wx.TE_MULTILINE)
 
-        developer.SetValue(u'\n'.join(info.Developers))
-        translators.SetValue(u'\n'.join(info.Translators))
+        developer.SetValue('\n'.join(info.Developers))
+        translators.SetValue('\n'.join(info.Translators))
 
         notebook.AddPage(developer, text=_("Written by"))
         notebook.AddPage(translators, text=_("Translated by"))
@@ -169,7 +147,4 @@ class LicenseDialog(wx.Dialog):
 
 
 def ShowAboutDialog(parent, info):
-    if os.name == "nt":
-        AboutDialog(parent, info)
-    else:
-        wx.AboutBox(info)
+    AboutDialog(parent, info)

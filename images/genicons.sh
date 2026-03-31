@@ -10,14 +10,14 @@ for fname in `ls *.svg`; do
         else
 	    rm  -f $i.png
 	    echo "$INKSCAPE" $fname -z -e $i.png -i $i
-	    "$INKSCAPE" $fname -z -e $i.png -i $i
+	    "$INKSCAPE" $fname -o $i.png -i $i
         fi
     done
 done
 
 cp ico024.png brz.png
-convert -compress none ico*.png brz.ico
-rm -f ico*.png
+convert -compress none ico???.png brz.ico
+rm -f ico???.png
 
 
 convert -compress none poeico*.png poe.ico

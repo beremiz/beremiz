@@ -1,0 +1,300 @@
+<?xml version='1.0' encoding='utf-8'?>
+<PyFile xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <variables/>
+  <globals>
+    <xhtml:p><![CDATA[import wx
+from wx import glcanvas
+
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+import time
+
+angleA, angleB, angleC = 0.0,0.0,0.0
+linrat=2.0
+
+############################################################################
+############################################################################
+##################### FROM PYOPENGL GEARS DEMO #############################
+############################################################################
+############################################################################
+
+import OpenGL 
+OpenGL.ERROR_ON_COPY = True 
+import sys
+from math import sin,cos,sqrt,pi
+from OpenGL.constants import GLfloat
+vec4 = GLfloat_4
+grey = vec4(0.2, 0.2, 0.2, 1.0)
+
+def gear(inner_radius, outer_radius, width, teeth, tooth_depth, mat):
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat)
+
+    r0 = inner_radius
+    r1 = outer_radius - tooth_depth/2.0
+    r2 = outer_radius + tooth_depth/2.0    
+    da = 2.0*pi / teeth / 4.0
+    
+    glShadeModel(GL_FLAT)  
+    glNormal3f(0.0, 0.0, 1.0)
+
+    # draw front face
+    glBegin(GL_QUAD_STRIP)
+    for i in range(teeth + 1):
+        angle = i * 2.0 * pi / teeth
+        glVertex3f(r0*cos(angle), r0*sin(angle), width*0.5)
+        glVertex3f(r1*cos(angle), r1*sin(angle), width*0.5)
+        glVertex3f(r0*cos(angle), r0*sin(angle), width*0.5)
+        glVertex3f(r1*cos(angle+3*da), r1*sin(angle+3*da), width*0.5)
+    glEnd()
+
+    # draw front sides of teeth
+    glBegin(GL_QUADS)
+    da = 2.0*pi / teeth / 4.0
+    for i in range(teeth):
+        if i == 0:
+            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, grey)
+        elif i == 1:
+            glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, mat)
+        angle = i * 2.0*pi / teeth
+        glVertex3f(r1*cos(angle),      r1*sin(angle),      width*0.5)
+        glVertex3f(r2*cos(angle+da),   r2*sin(angle+da),   width*0.5)
+        glVertex3f(r2*cos(angle+2*da), r2*sin(angle+2*da), width*0.5)
+        glVertex3f(r1*cos(angle+3*da), r1*sin(angle+3*da), width*0.5)
+    glEnd()
+
+    glNormal3f(0.0, 0.0, -1.0)
+
+    # draw back face
+    glBegin(GL_QUAD_STRIP)
+    for i in range(teeth + 1):
+        angle = i * 2.0*pi / teeth
+        glVertex3f(r1*cos(angle), r1*sin(angle), -width*0.5)
+        glVertex3f(r0*cos(angle), r0*sin(angle), -width*0.5)
+        glVertex3f(r1*cos(angle+3*da), r1*sin(angle+3*da),-width*0.5)
+        glVertex3f(r0*cos(angle), r0*sin(angle), -width*0.5)
+    glEnd()
+
+    # draw back sides of teeth
+    glBegin(GL_QUADS)
+    da = 2.0*pi / teeth / 4.0
+    for i in range(teeth):
+        angle = i * 2.0*pi / teeth        
+        glVertex3f(r1*cos(angle+3*da), r1*sin(angle+3*da),-width*0.5)
+        glVertex3f(r2*cos(angle+2*da), r2*sin(angle+2*da),-width*0.5)
+        glVertex3f(r2*cos(angle+da),   r2*sin(angle+da),  -width*0.5)
+        glVertex3f(r1*cos(angle),      r1*sin(angle),     -width*0.5)
+    glEnd()
+
+    # draw outward faces of teeth
+    glBegin(GL_QUAD_STRIP);
+    for i in range(teeth):
+        angle = i * 2.0*pi / teeth        
+        glVertex3f(r1*cos(angle), r1*sin(angle),  width*0.5)
+        glVertex3f(r1*cos(angle), r1*sin(angle), -width*0.5)
+        u = r2*cos(angle+da) - r1*cos(angle)
+        v = r2*sin(angle+da) - r1*sin(angle)
+        len = sqrt(u*u + v*v)
+        u = u / len
+        v = v / len
+        glNormal3f(v, -u, 0.0)
+        glVertex3f(r2*cos(angle+da),   r2*sin(angle+da),   width*0.5)
+        glVertex3f(r2*cos(angle+da),   r2*sin(angle+da),  -width*0.5)
+        glNormal3f(cos(angle), sin(angle), 0.0)
+        glVertex3f(r2*cos(angle+2*da), r2*sin(angle+2*da), width*0.5)
+        glVertex3f(r2*cos(angle+2*da), r2*sin(angle+2*da),-width*0.5)
+        u = r1*cos(angle+3*da) - r2*cos(angle+2*da)
+        v = r1*sin(angle+3*da) - r2*sin(angle+2*da)
+        glNormal3f(v, -u, 0.0)
+        glVertex3f(r1*cos(angle+3*da), r1*sin(angle+3*da), width*0.5)
+        glVertex3f(r1*cos(angle+3*da), r1*sin(angle+3*da),-width*0.5)
+        glNormal3f(cos(angle), sin(angle), 0.0)
+
+
+    glVertex3f(r1*cos(0), r1*sin(0), width*0.5)
+    glVertex3f(r1*cos(0), r1*sin(0), -width*0.5)
+
+    glEnd()
+
+    glShadeModel(GL_SMOOTH)
+
+    # draw inside radius cylinder
+    glBegin(GL_QUAD_STRIP)
+    for i in range(teeth + 1):
+        angle = i * 2.0*pi / teeth;
+        glNormal3f(-cos(angle), -sin(angle), 0.0)
+        glVertex3f(r0*cos(angle), r0*sin(angle), -width*0.5)
+        glVertex3f(r0*cos(angle), r0*sin(angle), width*0.5)
+    glEnd()
+
+
+(view_rotx,view_roty,view_rotz)=(20.0, 30.0, 0.0)
+(gear1, gear2, gear3) = (0,0,0)
+
+def draw():
+    global angleA,angleB,angleC
+    glClearColor(.8,.8,.8, 1.)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glPushMatrix()
+    glRotatef(view_rotx, 1.0, 0.0, 0.0)
+    glRotatef(view_roty, 0.0, 1.0, 0.0)
+    glRotatef(view_rotz, 0.0, 0.0, 1.0)
+
+    glPushMatrix()
+    glTranslatef(1.0, 1.0, 0.0)
+    glRotatef(angleA, 0.0, 0.0, 1.0)
+    glCallList(gear1)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslatef(linrat*2.0*pi*angleB/360.0, -5.0, 0.5)
+    glRotatef(angleB, 0.0, 0.0, 1.0)
+    glCallList(gear2)
+    glPopMatrix()
+
+    glPushMatrix()
+    glTranslatef(-5.0, linrat*2.0*pi*angleC/360.0, -0.5)
+    glRotatef(-angleC, 0.0, 0.0, 1.0)
+    glCallList(gear3)
+    glPopMatrix()
+
+    glPopMatrix()
+
+# new window size or exposure
+def reshape(width, height):
+    h = float(height) / float(width);
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
+    glTranslatef(0.0, 0.0, -40.0)
+
+def init():
+    global gear1, gear2, gear3
+    
+    
+    pos = vec4(5.0, 5.0, 10.0, 0.0)
+    red = vec4(0.8, 0.1, 0.0, 1.0)
+    green = vec4(0.0, 0.8, 0.2, 1.0)
+    blue = vec4(0.2, 0.2, 1.0, 1.0)
+
+    glLightfv(GL_LIGHT0, GL_POSITION, pos)
+    glEnable(GL_CULL_FACE)
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glEnable(GL_DEPTH_TEST)
+
+    # make the gears
+    gear1 = glGenLists(1)
+    glNewList(gear1, GL_COMPILE)
+    gear(1.0, 3.0, 1.0, 10, 0.7, red)
+    glEndList()
+    
+    gear2 = glGenLists(1)
+    glNewList(gear2, GL_COMPILE)
+    gear(0.5, linrat, 1.0, 10, 0.7, green)
+    glEndList()
+
+    gear3 = glGenLists(1)
+    glNewList(gear3, GL_COMPILE)
+    gear(0.5, linrat, 1.0, 10, 0.7, blue)
+    glEndList()
+
+    glEnable(GL_NORMALIZE)
+
+############################################################################
+############################################################################
+############################################################################
+############################################################################
+
+def SetAngle(A, B, C):
+    global angleA, angleB, angleC
+    angleA, angleB, angleC = A,B,C
+    wxglade_hmi.window_1.Refresh(False)
+    wxglade_hmi.master.SetLabel(str(angleA))
+    wxglade_hmi.slaveX.SetLabel(str(angleB))
+    wxglade_hmi.slaveY.SetLabel(str(angleC))
+
+class ThreeDee(glcanvas.GLCanvas):
+    def __init__(self, *args, **kwargs):
+        self.initialized = False
+        glcanvas.GLCanvas.__init__(self, *args, **kwargs)
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_SIZE, self.processSizeEvent)
+        #glutInit()
+    
+    def InitGL(self):
+        init()
+        size = self.GetClientSize()
+        reshape(size.width, size.height)
+
+    def OnPaint(self, event):
+        dc = wx.PaintDC(self)
+        self.SetCurrent()
+        if not self.initialized:
+            self.InitGL()
+            self.initialized = True
+        draw()
+        self.SwapBuffers()
+
+    def processSizeEvent(self, event):
+        """Process the resize event."""
+        if self.GetContext():
+            self.SetCurrent()
+            size = self.GetClientSize()
+            reshape(size.width, size.height)
+            self.Refresh(False)
+        event.Skip()
+
+
+Cycle = False
+SetPos = False
+
+def StartButton(self, event):
+    global Cycle
+    Cycle = True
+Class_wxglade_hmi.StartButton = StartButton
+
+def StopButton(self, event):
+    global Cycle
+    Cycle = False
+Class_wxglade_hmi.StopButton = StopButton
+
+def SetPosButtonDown(self, event):
+    global SetPos
+    SetPos = True
+    event.Skip()
+Class_wxglade_hmi.SetPosButtonDown = SetPosButtonDown
+
+def SetPosButtonUp(self, event):
+    global SetPos
+    SetPos = False
+    event.Skip()
+Class_wxglade_hmi.SetPosButtonUp = SetPosButtonUp
+
+initorig = Class_wxglade_hmi.__init__
+def Init(self,*args,**kargs):
+    initorig(self,*args,**kargs)
+    self.ShowFullScreen(True,wx.FULLSCREEN_ALL)
+    self.button_4.Bind(wx.EVT_LEFT_DOWN, self.SetPosButtonDown)
+    self.button_4.Bind(wx.EVT_LEFT_UP, self.SetPosButtonUp)
+Class_wxglade_hmi.__init__ = Init
+]]></xhtml:p>
+  </globals>
+  <init>
+    <xhtml:p><![CDATA[]]></xhtml:p>
+  </init>
+  <cleanup>
+    <xhtml:p><![CDATA[]]></xhtml:p>
+  </cleanup>
+  <start>
+    <xhtml:p><![CDATA[]]></xhtml:p>
+  </start>
+  <stop>
+    <xhtml:p><![CDATA[]]></xhtml:p>
+  </stop>
+</PyFile>

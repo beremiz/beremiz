@@ -23,7 +23,7 @@
 # This code is made available on the understanding that it will not be
 # used in safety-critical situations without a full and competent review.
 
-from __future__ import absolute_import
+
 
 import os
 from collections import Counter
@@ -34,7 +34,7 @@ import wx
 
 from bacnet.BacnetSlaveEditor import *
 from bacnet.BacnetSlaveEditor import ObjectProperties
-from PLCControler import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
+from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_MEMORY
 from ConfigTreeNode import ConfigTreeNode
 import util.paths as paths
 
@@ -153,12 +153,12 @@ class RootClass(object):
     #
     #  Logic:
     #    - The xx_VarEditor classes inherit from wx.grid.Grid
-    #    - The xx_ObjTable  classes inherit from wx.grid.PyGridTableBase
+    #    - The xx_ObjTable  classes inherit from wx.grid.GridTableBase
     #  To be more precise, the inheritance tree is actually:
     #    xx_VarEditor -> ObjectGrid -> CustomGrid   -> wx.grid.Grid
-    #    xx_ObjTable  -> ObjectTable -> CustomTable -> wx.grid.PyGridTableBase)
+    #    xx_ObjTable  -> ObjectTable -> CustomTable -> wx.grid.GridTableBase)
     #
-    #  Note that wx.grid.Grid is prepared to work with wx.grid.PyGridTableBase as the container of
+    #  Note that wx.grid.Grid is prepared to work with wx.grid.GridTableBase as the container of
     #  data that is displayed and edited in the Grid.
 
     ConfNodeMethods = [
@@ -409,7 +409,7 @@ class RootClass(object):
         # contains more stuff we do not need to store. Actually it is a bad idea to store
         # this extra stuff (as we would make the files we generate dependent on the actual
         # version of the wx library we are using!!! Remember that ObjTables evetually
-        # derives/inherits from wx.grid.PyGridTableBase). Another reason not to store the whole
+        # derives/inherits from wx.grid.GridTableBase). Another reason not to store the whole
         # object is because it is not pickable (i.e. pickle.dump() cannot handle it)!!
         try:
             fd = open(filepath,   "w")
@@ -564,6 +564,8 @@ class RootClass(object):
             generate_file_handle  .close()
 
 
+    def SupportsTarget(self, target):
+        return target.GetTargetName() != "Zephyr"
 
     #
     # Generate the C source code files

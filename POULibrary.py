@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 from weakref import ref
 
 # Exception type for problems that user has to take action in order to fix
@@ -36,15 +36,22 @@ class POULibrary(object):
         from PLCControler import PLCControler
         self.CTR = ref(CTR)
         self.LibName = LibName
-        self.LibraryControler = PLCControler()
-        self.LibraryControler.OpenXMLFile(self.GetLibraryPath())
-        self.LibraryControler.ClearConfNodeTypes()
-        self.LibraryControler.AddConfNodeTypesList(TypeStack)
+        libpath = self.GetLibraryPath()
+        if libpath is not None:            
+            self.LibraryControler = PLCControler()
+            self.LibraryControler.OpenXMLFile(libpath)
+            self.LibraryControler.ClearConfNodeTypes()
+            self.LibraryControler.AddConfNodeTypesList(TypeStack)
+        else:
+            self.LibraryControler = None
         self.program = None
 
     def GetSTCode(self):
-        if not self.program:
-            self.program = self.LibraryControler.GenerateProgram(noconfig=True)[0]+"\n"
+        if self.program is None:
+            if self.LibraryControler is not None:
+                self.program = self.LibraryControler.GenerateProgram(noconfig=True)[0]+"\n"
+            else:
+                self.program = f"(* Library {self.LibName} produced no ST code *)"
         return self.program
 
     def GetName(self):
@@ -54,12 +61,26 @@ class POULibrary(object):
         return self.CTR()
 
     def GetTypes(self):
-        return {"name": self.GetName(), "types": self.LibraryControler.Project}
+        return {"name": self.GetName(),
+                "types": self.LibraryControler.Project
+                         if self.LibraryControler else None}
 
     def GetLibraryPath(self):
         raise Exception("Not implemented")
 
     def Generate_C(self, buildpath, varlist, IECCFLAGS):
+        """
+        Generate C code for Libraries
+        
+        Generate_C returns a tuple :
+          (["library_name"],[(Cfiles, CFLAGS)], DoCalls), LDFLAGS, *extra_files
+
+        extra_files is:
+          [(fname,fobject), ...]
+          
+        DoCalls is either a Boolean, a dictionary, or a string,
+        see definitions in ConfigTreeNode.CTNGenerate_C
+        """
         # Pure python or IEC libs doesn't produce C code
         return ((""), [], False), ""
 
@@ -68,10 +89,11 @@ class POULibrary(object):
         @return: [varlist_object, ...]
         """
         varlists = []
-        for configuration in self.LibraryControler.Project.getconfigurations():
-            varlist = configuration.getglobalVars()
-            if len(varlist)>0 :
-                varlists += varlist
+        if self.LibraryControler:
+            for configuration in self.LibraryControler.Project.getconfigurations():
+                varlist = configuration.getglobalVars()
+                if len(varlist)>0 :
+                    varlists += varlist
         return varlists
 
     def FatalError(self, message):
@@ -79,6 +101,9 @@ class POULibrary(object):
             the user, but without backtrace since it is not a software error """
 
         raise UserAddressedException(message)
+
+    def SupportsTarget(self, target):
+        return True
 
 def SimplePOULibraryFactory(path):
     class SimplePOULibrary(POULibrary):

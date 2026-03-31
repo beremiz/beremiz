@@ -23,7 +23,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-from __future__ import absolute_import
+
 import wx
 
 from controls.CustomToolTip import CustomToolTip, TOOLTIP_WAIT_PERIOD
@@ -54,12 +54,6 @@ class ToolTipProducer(object):
         self.Parent.Bind(wx.EVT_TIMER,
                          self.OnToolTipTimer,
                          self.ToolTipTimer)
-
-    def __del__(self):
-        """
-        Destructor
-        """
-        self.DestroyToolTip()
 
     def OnToolTipTimer(self, event):
         """

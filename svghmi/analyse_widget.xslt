@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exsl="http://exslt.org/common" xmlns:regexp="http://exslt.org/regular-expressions" xmlns:str="http://exslt.org/strings" xmlns:func="http://exslt.org/functions" xmlns:svg="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.0" extension-element-prefixes="ns func exsl regexp str dyn" exclude-result-prefixes="ns func exsl regexp str dyn svg inkscape">
   <xsl:output method="xml"/>
   <xsl:variable name="indexed_hmitree" select="/.."/>
-  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\d,]*)$'"/>
+  <xsl:variable name="pathregex" select="'^(\w+=)?([^,=]+)([-.\w,]*)$'"/>
   <xsl:variable name="newline">
     <xsl:text>
 </xsl:text>
@@ -245,23 +245,6 @@
     <xsl:apply-templates mode="genlabel" select="path"/>
   </xsl:template>
   <xsl:variable name="hmi_elements" select="//svg:*[starts-with(@inkscape:label, 'HMI:')]"/>
-  <xsl:template match="widget[@type='AnimateRotation']" mode="widget_desc">
-    <type>
-      <xsl:value-of select="@type"/>
-    </type>
-    <longdesc>
-      <xsl:text>AnimateRotation - DEPRECATED, do not use.
-</xsl:text>
-      <xsl:text>Doesn't follow WYSIWYG principle, and forces user to add animateTransform tag in SVG (using inkscape XML editor for exemple)
-</xsl:text>
-    </longdesc>
-    <shortdesc>
-      <xsl:text>AnimateRotation - DEPRECATED</xsl:text>
-    </shortdesc>
-    <path name="speed" accepts="HMI_INT,HMI_REAL">
-      <xsl:text>speed</xsl:text>
-    </path>
-  </xsl:template>
   <xsl:template match="widget[@type='Assign']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
@@ -304,6 +287,12 @@
     </type>
     <longdesc>
       <xsl:text>Back widget brings focus back to previous page in history when clicked.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>"active" + "inactive" labeled elements can be provided and reflect whether
+</xsl:text>
+      <xsl:text>widget is pressed or not.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -405,47 +394,6 @@
       <xsl:text>Value to display</xsl:text>
     </path>
   </xsl:template>
-  <xsl:template match="widget[@type='CircularSlider']" mode="widget_desc">
-    <type>
-      <xsl:value-of select="@type"/>
-    </type>
-    <longdesc>
-      <xsl:text>CircularSlider - DEPRECATED, to be replaced by PathSlider
-</xsl:text>
-      <xsl:text>This widget moves "handle" labeled group along "range" labeled
-</xsl:text>
-      <xsl:text>arc, according to value of the single accepted variable.
-</xsl:text>
-      <xsl:text>
-</xsl:text>
-      <xsl:text>If "min" a "max" labeled texts are provided, or if first and second
-</xsl:text>
-      <xsl:text>argument are given, then they are used as respective minimum and maximum
-</xsl:text>
-      <xsl:text>value. Otherwise, value is expected to be in between 0 and 100.
-</xsl:text>
-      <xsl:text>
-</xsl:text>
-      <xsl:text>If "value" labeled text is found, then its content is replaced by value.
-</xsl:text>
-      <xsl:text>During drag, "setpoint" labeled group is moved to position defined by user
-</xsl:text>
-      <xsl:text>while "handle" reflects current value from variable.
-</xsl:text>
-    </longdesc>
-    <shortdesc>
-      <xsl:text>CircularSlider - DEPRECATED</xsl:text>
-    </shortdesc>
-    <arg name="min" count="optional" accepts="int,real">
-      <xsl:text>minimum value</xsl:text>
-    </arg>
-    <arg name="min" count="optional" accepts="int,real">
-      <xsl:text>maximum value</xsl:text>
-    </arg>
-    <path name="value" accepts="HMI_INT,HMI_REAL">
-      <xsl:text>Value to display</xsl:text>
-    </path>
-  </xsl:template>
   <xsl:template match="widget[@type='CustomHtml']" mode="widget_desc">
     <type>
       <xsl:value-of select="@type"/>
@@ -505,9 +453,7 @@
       <xsl:value-of select="@type"/>
     </type>
     <longdesc>
-      <xsl:text>DropDown widget let user select an entry in a list of texts, given as
-</xsl:text>
-      <xsl:text>arguments. Single variable path is index of selection.
+      <xsl:text>DropDown widget can have one, two or three path variables.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -519,7 +465,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>When user clicks on "button", "text" is duplicated to display enties in the
+      <xsl:text>When user clicks on "button", "text" is duplicated to display entries in the
 </xsl:text>
       <xsl:text>limit of available space in page, and "box" is extended to contain all
 </xsl:text>
@@ -527,19 +473,47 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>When only one argument is given and argment contains "#langs" then list of
-</xsl:text>
-      <xsl:text>texts is automatically set to the human-readable list of supported
-</xsl:text>
-      <xsl:text>languages by this HMI. 
+      <xsl:text>The first variable path is index of selection, and the second is value of selection.
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>If "text" labeled element is of type svg:use and refers to a svg:text 
+      <xsl:text>In case there are one or two path variables, a list of texts is defined via
 </xsl:text>
-      <xsl:text>element part of a TextList widget, no argument is expected. In that case
+      <xsl:text>arguments.
 </xsl:text>
-      <xsl:text>list of texts is set to TextList content.
+      <xsl:text>
+</xsl:text>
+      <xsl:text>If there are no arguments, it is expected that "text" labeled element is of
+</xsl:text>
+      <xsl:text>type svg:use and refers to a svg:text element part of a TextList widget.
+</xsl:text>
+      <xsl:text>In that case list of texts is set to TextList content.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>When only one argument is given and its value is "#langs" then list of
+</xsl:text>
+      <xsl:text>texts is automatically set to the human-readable list of supported
+</xsl:text>
+      <xsl:text>languages by this HMI.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Otherwise, arguments are used as dropdown options.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In case there are three path variables, arguments are not expected and ignored.
+</xsl:text>
+      <xsl:text>The third path variable is a string containing the list of entries.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>Examples:
+</xsl:text>
+      <xsl:text>HMI:DropDown:Red:Green:Blue:Other@/SELECTED_INDEX@/SELECTED_VALUE
+</xsl:text>
+      <xsl:text>HMI:DropDown@/SELECTED_INDEX@/SELECTED_VALUE@/OPTIONS
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -548,8 +522,14 @@
     <arg name="entries" count="many" accepts="string">
       <xsl:text>drop-down menu entries</xsl:text>
     </arg>
-    <path name="selection" accepts="HMI_INT">
+    <path name="selected_inex" accepts="HMI_INT">
       <xsl:text>selection index</xsl:text>
+    </path>
+    <path name="selected_value" accepts="HMI_STRING">
+      <xsl:text>selection value</xsl:text>
+    </path>
+    <path name="options" accepts="HMI_STRING">
+      <xsl:text>drop-down menu entries</xsl:text>
     </path>
   </xsl:template>
   <xsl:template match="widget[@type='ForEach']" mode="widget_desc">
@@ -559,7 +539,7 @@
     <longdesc>
       <xsl:text>ForEach widget is used to span a small set of widget over a larger set of
 </xsl:text>
-      <xsl:text>repeated HMI_NODEs. 
+      <xsl:text>repeated HMI_NODEs.
 </xsl:text>
       <xsl:text>
 </xsl:text>
@@ -587,6 +567,12 @@
 </xsl:text>
       <xsl:text>"ClassName:+/-number".
 </xsl:text>
+      <xsl:text>
+</xsl:text>
+      <xsl:text>In case of "ClassName:offset", offset for first element is 1.
+</xsl:text>
+      <xsl:text>
+</xsl:text>
     </longdesc>
     <shortdesc>
       <xsl:text>span widgets over a set of repeated HMI_NODEs</xsl:text>
@@ -597,6 +583,29 @@
     <path name="root" accepts="HMI_NODE">
       <xsl:text> where to find HMI_NODEs whose HMI_CLASS is class_name</xsl:text>
     </path>
+    <path name="position" accepts="HMI_INT">
+      <xsl:text>position of HMI_NODE mapped to first item, among similar siblings</xsl:text>
+    </path>
+    <path name="range" accepts="HMI_INT" count="optional">
+      <xsl:text> count of HMI_NODE siblings</xsl:text>
+    </path>
+    <path name="size" accepts="HMI_INT" count="optional">
+      <xsl:text> count of visible items</xsl:text>
+    </path>
+  </xsl:template>
+  <xsl:template match="widget[@type='Image']" mode="widget_desc">
+    <type>
+      <xsl:value-of select="@type"/>
+    </type>
+    <longdesc>
+      <xsl:text>If Image widget is a svg:image element, then href content is replaced by
+</xsl:text>
+      <xsl:text>value of given variable.
+</xsl:text>
+    </longdesc>
+    <shortdesc>
+      <xsl:text>Image display</xsl:text>
+    </shortdesc>
   </xsl:template>
   <xsl:template match="widget[@type='Input']" mode="widget_desc">
     <type>
@@ -641,7 +650,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>Documentation to be written. see svghmi exemple.
+      <xsl:text>Documentation to be written. see svghmi example.
 </xsl:text>
     </longdesc>
     <shortdesc>
@@ -665,7 +674,7 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>If first path is pointint to HMI_NODE variable is used as new reference
+      <xsl:text>If first path is pointing to HMI_NODE variable is used as new reference
 </xsl:text>
       <xsl:text>when jumping to a relative page.
 </xsl:text>
@@ -875,10 +884,6 @@
 </xsl:text>
       <xsl:text>
 </xsl:text>
-      <xsl:text>"active"+"inactive" labeled elements can be provided to show feedback when pressed
-</xsl:text>
-      <xsl:text>
-</xsl:text>
       <xsl:text>Exemples:
 </xsl:text>
       <xsl:text>
@@ -931,27 +936,6 @@
     </longdesc>
     <shortdesc>
       <xsl:text>ScrollBar</xsl:text>
-    </shortdesc>
-    <path name="value" accepts="HMI_INT">
-      <xsl:text>value</xsl:text>
-    </path>
-    <path name="range" accepts="HMI_INT">
-      <xsl:text>range</xsl:text>
-    </path>
-    <path name="visible" accepts="HMI_INT">
-      <xsl:text>visible</xsl:text>
-    </path>
-  </xsl:template>
-  <xsl:template match="widget[@type='Slider']" mode="widget_desc">
-    <type>
-      <xsl:value-of select="@type"/>
-    </type>
-    <longdesc>
-      <xsl:text>Slider - DEPRECATED - use ScrollBar or PathSlider instead
-</xsl:text>
-    </longdesc>
-    <shortdesc>
-      <xsl:text>Slider - DEPRECATED - use ScrollBar instead</xsl:text>
     </shortdesc>
     <path name="value" accepts="HMI_INT">
       <xsl:text>value</xsl:text>

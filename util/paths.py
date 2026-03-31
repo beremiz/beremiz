@@ -23,19 +23,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 
-from __future__ import absolute_import
 import os
 import sys
-from builtins import str as text
 
 def AbsFile(file):
     if isinstance(file, str):
-        file = text(file, sys.getfilesystemencoding())
+        file = str(file, sys.getfilesystemencoding())
     return file
 
 
 def AbsDir(file):
-    file = AbsFile(file)
     return os.path.dirname(os.path.realpath(file))
 
 
@@ -49,9 +46,30 @@ def AbsParentDir(file, level=1):
         path = os.path.dirname(path)
     return path
 
-def ThirdPartyPath(name):
+def ThirdPartyPath(name, *suffixes):
     """
     Return folder where to find sibling projects like Modbus, CanFestival, BACnet
     """
-    return os.path.join(AbsParentDir(__file__, 2), name)
+    env_name = name.upper() + "_PATH"
+    if env_name in os.environ:
+        return os.path.join(os.environ[env_name], *suffixes)
+    
+    return os.path.join(AbsParentDir(__file__, 2), name, *suffixes)
 
+def Bpath(*names):
+    """
+    Return path of files in Beremiz project
+    """
+    return os.path.join(AbsParentDir(__file__, 1), *names)
+
+def AppDataPath(*names):
+    """
+    Return path of files in Beremiz project
+    """
+    if "BEREMIZ_APPDATA" in os.environ:
+        return os.path.join(os.environ["BEREMIZ_APPDATA"], *names)
+
+    if os.name == "posix":
+        return os.path.join(os.environ["HOME"], ".local", "share", "beremiz", *names)
+    
+    return os.path.join(os.environ["APPDATA"], "Beremiz", *names)
