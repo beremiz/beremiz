@@ -13,6 +13,7 @@ from __future__ import absolute_import
 from __future__ import division
 from functools import cmp_to_key
 import os
+import re
 
 from etherlab.EthercatSlave import ExtractHexDecValue, DATATYPECONVERSION, ExtractName
 
@@ -104,10 +105,37 @@ CONFIG_DC = """
 
 
 def ConfigureVariable(entry_infos, str_completion):
+    # a same entry can be reached from several PDO sets, generate it only once
+    var_name = entry_infos.get(
+        "var_name",
+        f"auto_{entry_infos['index']}_{entry_infos['subindex']}"
+    )
+    entry_key = (entry_infos["slave"], entry_infos["index"],
+                 entry_infos["subindex"], var_name)
+
+    seen_vars = str_completion.setdefault("_seen_vars", {})
+    if entry_key in seen_vars:
+        return
+    seen_vars[entry_key] = dict(entry_infos)
+
+    # the completions are collected as lists, and joined once everything is
+    # generated
+    for key in ["located_variables_declaration",
+                "used_pdo_entry_offset_variables_declaration",
+                "used_pdo_entry_configuration",
+                "retrieve_variables",
+                "publish_variables"]:
+        if not isinstance(str_completion.get(key, None), list):
+            str_completion[key] = []
+
     entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if entry_infos["data_type"] is None:
-        msg = _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
+        msg = _("Type of location \"%s\" not yet supported!") % var_name
         raise ValueError(msg)
+
+    # located variables are always declared
+    if entry_infos.get("dir") in ["I", "Q"]:
+        entry_infos["no_decl"] = False
 
     if not entry_infos.get("no_decl", False):
         if "real_var" in entry_infos:
@@ -163,12 +191,13 @@ def ConfigureVariable(entry_infos, str_completion):
 
 def ExclusionSortFunction(x, y):
     if x["matching"] == y["matching"]:
+        # same matching, the PDOs already assigned come first
         if x["assigned"] and not y["assigned"]:
             return -1
         elif not x["assigned"] and y["assigned"]:
             return 1
-        return cmp(x["count"], y["count"])
-    return -cmp(x["matching"], y["matching"])
+        return (x["count"] > y["count"]) - (x["count"] < y["count"])
+    return (y["matching"] > x["matching"]) - (y["matching"] < x["matching"])
 
 
 class _EthercatCFileGenerator(object):
@@ -248,6 +277,18 @@ class _EthercatCFileGenerator(object):
         # add jblee
         slotNumber = 1
         
+        # ConfigureVariable collects the completions as lists, the templates
+        # expect strings
+        for key in [
+            "located_variables_declaration",
+            "used_pdo_entry_offset_variables_declaration",
+            "used_pdo_entry_configuration",
+            "retrieve_variables",
+            "publish_variables"
+        ]:
+            if isinstance(str_completion[key], list):
+                str_completion[key] = "\n".join(str_completion[key])
+
         # Generating code for each slave
         for (slave_idx, slave_alias, slave) in self.Slaves:
             type_infos = slave.getType()
@@ -262,9 +303,10 @@ class _EthercatCFileGenerator(object):
             # Extract slave device informations
             device, module_extra_params = self.Controler.GetModuleInfos(type_infos)
             if device is None:
-                msg = _("No informations found for device %s!") \
-                      % (type_infos["device_type"])
-                raise ValueError(msg)
+                self.Controler.GetCTRoot().logger.write_warning(
+                    _("Warning: no information found for device %s, skipping it\n")
+                    % type_infos.get("device_type", "undefined"))
+                continue
 
             # Extract slaves variables to be mapped
             slave_variables = self.UsedVariables.get(slave_idx, {})
@@ -289,7 +331,6 @@ class _EthercatCFileGenerator(object):
                     initCmds.append({
                         "Index": ExtractHexDecValue(initCmd.getIndex()),
                         "Subindex": ExtractHexDecValue(initCmd.getSubIndex()),
-                        #"Value": initCmd.getData().getcontent()})
                         "Value": int(initCmd.getData().text, 16)})
                 
                 initCmds.extend(slave.getStartupCommands())
@@ -313,8 +354,12 @@ class _EthercatCFileGenerator(object):
                 # Extract slave device PDO configuration capabilities
                 PdoAssign = device_coe.getPdoAssign()
                 PdoConfig = device_coe.getPdoConfig()
+
             else:
                 PdoAssign = PdoConfig = False
+                if slave_idx == 1:
+                    PdoAssign = True
+                    PdoConfig = True
 
             # Test if slave has a configuration or need one
             if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 and PdoConfig and PdoAssign:
@@ -371,50 +416,110 @@ class _EthercatCFileGenerator(object):
                         PdoData.append((pdo, "Outputs"))               
 
                 # mod jblee
-                #for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                #                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                #for pdo, pdo_type in (TxPdoData + RxPdoData):
                 data_files = os.listdir(self.Controler.CTNPath())
                 PDODataList = []
                 MDPData = []
-                RxPDOData = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getRxPDO()
-                TxPDOData = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getTxPDO()
+
+                node = self.Controler.GetChildByIECLocation((slave_idx,))
+                ethercat_params = getattr(node, "EthercatSlaveParams", None)
+
+                RxPDOData = ""
+                TxPDOData = ""
+
+                if ethercat_params is not None:
+                    RxPDOData = ethercat_params.getRxPDO()
+                    TxPDOData = ethercat_params.getTxPDO()
+                    if RxPDOData == "None":
+                        RxPDOData = ""
+                    if TxPDOData == "None":
+                        TxPDOData = ""
+
                 PDOList = RxPDOData.split() + TxPDOData.split()
+
                 for PDOIndex in PDOList:
                     if PDOIndex in ["RxPDO", "TxPDO", "None"]:
                         continue
-                    PDODataList.append(int(PDOIndex, 0))
+                    try:
+                        PDODataList.append(int(PDOIndex, 0))
+                    except ValueError:
+                        pass
 
                 # add jblee for DC Configuration
-                dc_enable = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Enable()
+                dc_config_data = None
+
                 sync0_cycle_time = 0
                 sync0_shift_time = 0
                 sync1_cycle_time = 0
                 sync1_shift_time = 0
-                if dc_enable :
-                    sync0_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Cycle_Time()
+
+                dc_enable = (ethercat_params is not None
+                             and len(ethercat_params) > 0
+                             and ethercat_params.getDC_Enable())
+
+                if dc_enable:
+
+                    # ---- Sync0 Cycle ----
+                    sync0_cycle_token = ethercat_params.getDC_Sync0_Cycle_Time()
                     if sync0_cycle_token != "None":
-                        sync0_cycle_time = int(sync0_cycle_token.split("_")[1]) * 1000
-                    sync0_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Shift_Time()
+                        try:
+                            parts = str(sync0_cycle_token).split("_")
+                            if len(parts) > 1:
+                                sync0_cycle_time = int(parts[1]) * 1000
+                        except Exception:
+                            sync0_cycle_time = 0
+
+                    # ---- Sync0 Shift ----
+                    sync0_shift_token = ethercat_params.getDC_Sync0_Shift_Time()
                     if sync0_shift_token != "None":
-                        sync0_shift_time = int(sync0_shift_token) * 1000
-                    sync1_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Cycle_Time()
+                        try:
+                            sync0_shift_time = int(sync0_shift_token) * 1000
+                        except Exception:
+                            sync0_shift_time = 0
+
+                    # ---- Sync1 Cycle ----
+                    sync1_cycle_token = ethercat_params.getDC_Sync1_Cycle_Time()
                     if sync1_cycle_token != "None":
-                        sync1_cycle_time = int(sync1_cycle_token.split("_")[1]) * 1000
-                    sync1_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Shift_Time()
+                        try:
+                            parts = str(sync1_cycle_token).split("_")
+                            if len(parts) > 1:
+                                sync1_cycle_time = int(parts[1]) * 1000
+                        except Exception:
+                            sync1_cycle_time = 0
+
+                    # ---- Sync1 Shift ----
+                    sync1_shift_token = ethercat_params.getDC_Sync1_Shift_Time()
                     if sync1_shift_token != "None":
-                        sync1_shift_time = int(sync1_shift_token) * 1000
-                    
+                        try:
+                            sync1_shift_time = int(sync1_shift_token) * 1000
+                        except Exception:
+                            sync1_shift_time = 0
+
+                    # ---- Assign Activate ----
+                    assign_activate = 0
+                    assign_token = ethercat_params.getDC_Assign_Activate()
+                    if assign_token != "None":
+                        try:
+                            assign_activate = int(assign_token)
+                        except Exception:
+                            assign_activate = 0
+
+                    if assign_token != "None":
+                        try:
+                            assign_activate = int(assign_token)
+                        except Exception:
+                            assign_activate = 0
+
+                    # ---- Final dict ----
                     dc_config_data = {
-                        "slave" : slave_idx,
-                        "assign_activate" : int(self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Assign_Activate()),
-                        "sync0_cycle_time" : sync0_cycle_time,
-                        "sync0_shift_time" : sync0_shift_time,
-                        "sync1_cycle_time" : sync1_cycle_time,
-                        "sync1_shift_time" : sync1_shift_time,
+                        "slave": slave_idx,
+                        "assign_activate": assign_activate,
+                        "sync0_cycle_time": sync0_cycle_time,
+                        "sync0_shift_time": sync0_shift_time,
+                        "sync1_cycle_time": sync1_cycle_time,
+                        "sync1_shift_time": sync1_shift_time,
                     }
 
-                    if dc_enable and not str_completion["dc_variable"] :
+                    if not str_completion["dc_variable"]:
                         str_completion["dc_variable"] += DC_VARIABLE % {"dc_flag" : dc_enable}
                     str_completion["config_dc"] += CONFIG_DC % dc_config_data
 
@@ -504,9 +609,6 @@ class _EthercatCFileGenerator(object):
                         if PdoAssign or not pdo["assigned"]])
 
                 # mod jblee
-                #for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                #                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                #for pdo, pdo_type in (TxPdoData + RxPdoData):
                 entry_check_list = []
                 index_padding = 1
                 for pdo, pdo_type in PdoData:
@@ -544,7 +646,6 @@ class _EthercatCFileGenerator(object):
                         }
 
                         entry_infos.update(type_infos)
-                        #temp_data = "    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos
                         check_data = "{0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}" % entry_infos
                         if entry_check_list and check_data in entry_check_list:
                             if (entry_infos["index"] == 0) or (entry_infos["name"] == None):
@@ -654,9 +755,12 @@ class _EthercatCFileGenerator(object):
                         if not entry_declaration["mapped"]:
                             entry = device_entries.get((index, subindex), None)
                             if entry is None:
-                                msg = _("Unknown entry index 0x{a1:.4x}, subindex 0x{a2:.2x} for device {a3}").\
-                                      format(a1=index, a2=subindex, a3=type_infos["device_type"])
-                                raise ValueError(msg)
+                                # the entry does not belong to this device,
+                                # leave it to the slave that declares it
+                                self.Controler.GetCTRoot().logger.write_warning(
+                                    _("Warning: slave {a1} ignores unknown entry index 0x{a2:04x}, subindex 0x{a3:02x}\n").
+                                    format(a1=slave_idx, a2=index, a3=subindex))
+                                continue
 
                             entry_infos = {
                                 "index": index,
@@ -666,8 +770,10 @@ class _EthercatCFileGenerator(object):
                             }
                             entry_infos.update(type_infos)
 
-                            entry_infos.update(dict(zip(["var_type", "dir", "var_name", "no_decl", "extra_declarations"],
-                                                        entry_declaration["infos"])))
+                            entry_infos.update(dict(zip(
+                                ["var_type", "dir", "var_name", "no_decl", "extra_declarations"],
+                                entry_declaration["infos"])))
+
                             entry_declaration["mapped"] = True
 
                             if entry_infos["var_type"] != entry["Type"]:
@@ -750,12 +856,6 @@ class _EthercatCFileGenerator(object):
                     pdos_infos[element] = "\n".join(pdos_infos[element])
 
                 str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
-            
-            #for (index, subindex), entry_declaration in slave_variables.items():
-            #    if not entry_declaration["mapped"]:
-            #        message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
-            #                        (index, subindex, type_infos["device_type"])
-            #        self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
                     
         for element in ["used_pdo_entry_offset_variables_declaration", 
                         "used_pdo_entry_configuration", 
@@ -764,6 +864,15 @@ class _EthercatCFileGenerator(object):
                         "publish_variables"]:
             str_completion[element] = "\n".join(str_completion[element])
 
-        etherlabfile = open(filepath, 'w')
-        etherlabfile.write(plc_etherlab_code % str_completion)
+        # a template placeholder that was never filled in would raise a
+        # KeyError, default them to an empty string
+        placeholders = re.findall(r'%\(([^)]+)\)s', plc_etherlab_code)
+        for placeholder in placeholders:
+            str_completion.setdefault(placeholder, "")
+
+        # escape the % of the C code itself (printf formats, modulo, ...)
+        plc_etherlab_code = re.sub(r'%(?!\()', '%%', plc_etherlab_code)
+
+        etherlabfile = open(filepath, 'wb')
+        etherlabfile.write((plc_etherlab_code % str_completion).encode("utf-8"))
         etherlabfile.close()

@@ -70,6 +70,29 @@ class _EthercatSlaveCTN(object):
     NODE_PROFILE = None
     EditorType = NodeEditor
 
+    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+      <xsd:element name="EthercatSlaveParams">
+        <xsd:complexType>
+          <xsd:attribute name="RxPDO" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="TxPDO" type="xsd:string" use="optional" default="None"/>
+
+          <xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
+          <xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
+
+          <xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
+
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+    """
+
     def __init__(self):
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
@@ -105,7 +128,8 @@ class _EthercatSlaveCTN(object):
                     'type': 'element',
                     'name': 'SlaveParams',
                     'value': None,
-                    'children': []
+                    'children': [],
+                    'doc': [{"documentation": "EtherCAT slave parameters"}]
                 })
 
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
@@ -115,7 +139,8 @@ class _EthercatSlaveCTN(object):
                     'use': 'optional',
                     'type': self.CTNParent.GetSlaveTypesLibrary(self.NODE_PROFILE),
                     'name': 'Type',
-                    'value': (slave_type["device_type"], slave_type)
+                    'value': (slave_type["device_type"], slave_type),
+                    'doc': [{"documentation": "EtherCAT slave type"}]
                 })
             params[0]['children'].insert(
                 1,
@@ -123,7 +148,8 @@ class _EthercatSlaveCTN(object):
                     'use': 'optional',
                     'type': 'unsignedLong',
                     'name': 'Alias',
-                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos())
+                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos()),
+                    'doc': [{"documentation": "EtherCAT slave alias"}]
                 })
             return params
 
@@ -135,11 +161,6 @@ class _EthercatSlaveCTN(object):
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             value = (slave_type["device_type"], slave_type)
-            # if self._View is not None:
-            #     wx.CallAfter(self._View.EtherCATManagementTreebook.SlaveStatePanel.RefreshSlaveInfos())
-            #     self._View.EtherCATManagementTreebook.SlaveStatePanel.RefreshSlaveInfos()
-            #     self._View.EtherCATManagementTreebook.PDOMonitoringPanel.PDOInfoUpdate()
-            #     self._View.EtherCATManagementTreebook.SmartView.Create_SmartView()
             return value, True
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)

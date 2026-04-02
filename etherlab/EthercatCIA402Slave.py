@@ -16,7 +16,7 @@ import wx
 
 from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
-from MotionLibrary import AxisXSD
+from MotionLibrary import Headers, AxisXSD
 from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave
 from etherlab.ConfigEditor import CIA402NodeEditor
 
@@ -36,6 +36,20 @@ NODE_VARIABLES = [
     ("ActualTorque",            0x6077, 0x00, "INT",  "I"),
 ]
 
+# ------------------- restored from the previous version ----------------
+#HSAHN 2015.07.26
+#reference variable
+ADD_NODE_VARIABLES = ({'name':"TargetPosition"   , 'index':0x607a, 'sub-index':0x00, 'type':"DINT", 'direction':"Q"},
+                      {'name':"TargetVelocity"   , 'index':0x60ff, 'sub-index':0x00, 'type':"DINT", 'direction':"Q"},
+                      {'name':"TargetTorque"     , 'index':0x6071, 'sub-index':0x00, 'type':"INT",  'direction':"Q"},
+                      {'name':"ActualPosition"   , 'index':0x6064, 'sub-index':0x00, 'type':"DINT", 'direction':"I"},
+                      {'name':"ActualVelocity"   , 'index':0x606c, 'sub-index':0x00, 'type':"DINT", 'direction':"I"},
+                      {'name':"ActualTorque"     , 'index':0x6077, 'sub-index':0x00, 'type':"INT",  'direction':"I"})
+
+DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"
+DEFAULT_PUBLISH = "    *(__CIA402Node_%(location)s.%(name)s) = __CIA402Node_%(location)s.axis->%(name)s;"
+
+# -----------------------------------------------------------------------
 # Definition of optional node variables that can be added to PDO mapping.
 # A checkbox will be displayed for each section in node configuration panel to
 # enable them
@@ -78,6 +92,25 @@ EXTRA_NODE_VARIABLES_DICT = {
     "Enable" + name: params
     for name, params in EXTRA_NODE_VARIABLES}
 
+# ------------------- restored from the previous version ------------------
+BLOCK_INPUT_TEMPLATE = "    __SET_VAR(%(blockname)s->,%(input_name)s,, %(input_value)s);"
+BLOCK_OUTPUT_TEMPLATE = "    __SET_VAR(data__->,%(output_name)s,, __GET_VAR(%(blockname)s->%(output_name)s));"
+
+BLOCK_FUNCTION_TEMPLATE = """
+extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s_data__* data__);
+void __%(blocktype)s_%(location)s(MC_%(ucase_blocktype)s_data__ *data__) {
+__DECLARE_GLOBAL_PROTOTYPE(ETHERLAB%(ucase_blocktype)s_data__, %(blockname)s);
+ETHERLAB%(ucase_blocktype)s_data__* %(blockname)s = __GET_GLOBAL_%(blockname)s();
+__SET_VAR(%(blockname)s->, POS,, AxsPub.axis->NetworkPosition);
+%(extract_inputs)s
+ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
+%(return_outputs)s
+}
+"""
+
+BLOCK_FUNTION_DEFINITION_TEMPLATE = "        __CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location)s;"
+# -------------------------------------------------------------------------
+
 # List of block to define to interface MCL to fieldbus for specific functions
 FIELDBUS_INTERFACE_GLOBAL_INSTANCES = [
     {"blocktype": "GetTorqueLimit",
@@ -89,6 +122,47 @@ FIELDBUS_INTERFACE_GLOBAL_INSTANCES = [
                 {"name": "TorqueLimitNeg", "type": "UINT"}],
      "outputs": []},
 ]
+
+# ------------------- restored from the previous version ------------------
+# add jblee
+MODEOFOP_HOMING_METHOD_TEMPLATE = """
+	if(*(AxsPub.ModesOfOperation) == 0x06){
+		IEC_BOOL homing = AxsPub.axis->HomingOperationStart;
+		if(power){
+			if (homing)
+				CW |= Homing_OperationStart_Origin;
+			else
+				CW &= ~(Homing_OperationStart_Origin);
+		}
+		else{
+			if (homing)
+				CW |= Homing_OperationStart_Edit;
+			else
+				CW &= ~(EnableOperation);
+		}
+
+	}
+"""
+
+MODEOFOP_COMPUTATION_MODE_TEMPLATE = """
+	switch (AxsPub.axis->AxisMotionMode) {
+		//ssh_add
+		case mc_mode_hm:
+			*(AxsPub.ModesOfOperation) = 0x06;
+			break;
+		case mc_mode_cst:
+			*(AxsPub.ModesOfOperation) = 0x0a;
+			break;
+		case mc_mode_csv:
+			*(AxsPub.ModesOfOperation) = 0x09;
+			break;
+		default:
+			*(AxsPub.ModesOfOperation) = 0x08;
+			break;
+	}
+"""
+
+# -------------------------------------------------------------------------
 
 # --------------------------------------------------
 #                 Ethercat CIA402 Node
@@ -225,21 +299,34 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     """
 
     def LoadPDOSelectData(self):
-        RxPDOData = self.BaseParams.getRxPDO()
-        RxPDOs = []
-        if RxPDOData != "None":
-            RxPDOs = RxPDOData.split()
-        if RxPDOs :
-            for RxPDO in RxPDOs :
-                self.SelectedRxPDOIndex.append(int(RxPDO, 0))
+        try:
+            # always start from empty selections
+            self.SelectedRxPDOIndex = []
+            self.SelectedTxPDOIndex = []
 
-        TxPDOData = self.BaseParams.getTxPDO()
-        TxPDOs = []
-        if TxPDOData != "None":
-            TxPDOs = TxPDOData.split()
-        if TxPDOs :
-            for TxPDO in TxPDOs :
-                self.SelectedTxPDOIndex.append(int(TxPDO, 0))
+            # -------- Rx --------
+            RxPDOData = self.EthercatSlaveParams.getRxPDO()
+
+            if RxPDOData and RxPDOData != "None":
+                RxPDOs = RxPDOData.replace(",", " ").split()
+
+                self.SelectedRxPDOIndex = list({
+                    int(RxPDO, 0) for RxPDO in RxPDOs if RxPDO
+                })
+
+            # -------- Tx --------
+            TxPDOData = self.EthercatSlaveParams.getTxPDO()
+
+            if TxPDOData and TxPDOData != "None":
+                TxPDOs = TxPDOData.replace(",", " ").split()
+
+                self.SelectedTxPDOIndex = list({
+                    int(TxPDO, 0) for TxPDO in TxPDOs if TxPDO
+                })
+
+        except Exception as e:
+            self.GetCTRoot().logger.write_warning(
+                _("Warning: could not load PDO selection: %s\n") % str(e))
 
     def LoadDefaultPDOSet(self):
         ReturnData = []
@@ -326,12 +413,11 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             str_completion["fieldbus_interface_definition"].append(
                     BLOCK_FUNTION_DEFINITION_TEMPLATE % texts)
 
-        variables = NODE_VARIABLES[:]
-
 #HSAHN
 #2015. 7. 24 PDO Variable
         #if PDO is not selected, use 1st PDO set
         self.LoadPDOSelectData()
+
         if not self.SelectedRxPDOIndex and not self.SelectedTxPDOIndex :
             self.SelectedPDOIndex = self.LoadDefaultPDOSet()
         else :
@@ -351,6 +437,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             #if pdo_index is in the SelectedPDOIndex: put the PDO mapping information intto the "used" object
             if pdo_info[i]['pdo_index'] in self.SelectedPDOIndex:
                 used = pdo_entry[list_index:list_index + pdo_info[i]['number_of_entry']]
+
                 for used_data in used:
                     # 24672 -> 0x6060, Mode of Operation
                     if used_data['entry_index'] == 24672:
@@ -418,13 +505,25 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 str_completion["init_axis_params"].append(
                     "        __CIA402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
         
-        check_variable = []
+        seen_indexes = set()
+        str_completion["entry_variables"] = []
+        str_completion["extern_located_variables_declaration"] = []
+        str_completion["init_entry_variables"] = []
+
         for variable in variables:
+            var_infos = dict(list(zip(["name", "index", "subindex", "var_type", "dir"], variable)))
+
             # add jblee
-            if variable in check_variable:
+            if var_infos["index"] in [24672, 24673] and (not ModeOfOpFlag or not ModeOfOpDisplayFlag):
                 continue
 
-            var_infos = dict(list(zip(["name", "index", "subindex", "var_type", "dir"], variable)))
+            # a same entry may be described both in NODE_VARIABLES and in the
+            # PDO mapping, declare it only once
+            key = (var_infos["index"], var_infos["subindex"])
+            if key in seen_indexes:
+                continue
+            seen_indexes.add(key)
+
             var_infos["location"] = location_str
             var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
             var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
@@ -434,24 +533,13 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 str_completion["modeofop_homing_method"].append(MODEOFOP_HOMING_METHOD_TEMPLATE)
                 str_completion["modeofop_computation_mode"].append(MODEOFOP_COMPUTATION_MODE_TEMPLATE)
 
-            # add jblee
-            if var_infos["index"] in [24672, 24673] and (not ModeOfOpFlag or not ModeOfOpDisplayFlag):
-                continue
-
             str_completion["extern_located_variables_declaration"].append(
-                    "IEC_%(var_type)s *%(var_name)s;" % var_infos)
+                    "extern IEC_%(var_type)s *%(var_name)s;" % var_infos)
             str_completion["entry_variables"].append(
                     "    IEC_%(var_type)s *%(name)s;" % var_infos)
             str_completion["init_entry_variables"].append(
                     "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
-            
-            self.CTNParent.FileGenerator.DeclareVariable(
-                    self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
-                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
 
-            # add jblee
-            check_variable.append(variable)
-        
         for element in ["extern_located_variables_declaration", 
                         "fieldbus_interface_declaration",
                         "fieldbus_interface_definition",

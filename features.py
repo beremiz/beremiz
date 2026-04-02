@@ -11,7 +11,7 @@
 libraries = [
     ('Native', 'NativeLib.NativeLibrary', True),
     ('Python', 'py_ext.PythonLibrary', True),
-    # FIXME ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
+    ('Etherlab', 'etherlab.EthercatMaster.EtherlabLibrary', False),
     ('SVGHMI', 'svghmi.SVGHMILibrary', 'svghmi'),
     ('MQTT', 'mqtt.MQTTLibrary', False),
     ('CanFestival_Lib', 'canfestival.canfestival.CanFestival_Lib','canfestival')]
