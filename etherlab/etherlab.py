@@ -201,8 +201,10 @@ if cls:
                                 "Index": object_index,
                                 "SubIndex": subIdx,
                                 "Name": "%s - %s" % 
-                                    (object_name.decode("utf-8"),
-                                     subItemName.decode("utf-8")),
+#                                    (object_name.decode("utf-8"),
+#                                     subItemName.decode("utf-8")),
+                                    (object_name,
+                                     subItemName),
                                 "Type": subType,
                                 "BitSize": subBitSize,
                                 "Access": subAccess, 
@@ -253,25 +255,6 @@ if cls:
         
         return entries
     setattr(cls, "GetEntriesList", GetEntriesList)
-
-#    def GetEntriesList(self, limits=None):
-#        entries = {}
-        
-#        factory = EntryListFactory(entries)
-        
-#        entries_list_xslt_tree = etree.XSLT(
-#            entries_list_xslt, extensions = {
-#                ("entries_list_ns", "AddEntry"): factory.AddEntry,
-#                ("entries_list_ns", "HexDecValue"): HexDecValue,
-#                ("entries_list_ns", "EntryName"): EntryName})
-#        entries_list_xslt_tree(self, **dict(zip(
-#            ["min_index", "max_index"], 
-#            map(lambda x: etree.XSLT.strparam(str(x)),
-#                limits if limits is not None else [0x0000, 0xFFFF])
-#            )))
-#        
-#        return entries
-#    setattr(cls, "GetEntriesList", GetEntriesList)
 
     def GetSyncManagers(self):
         sync_managers = []
@@ -520,14 +503,6 @@ for mapping needed location variables
                         if LocalMDPList:
                             vendor_category["groups"][device_group]["modules"].append(
                                 (device.getType().getcontent(), LocalMDPList, self.idxIncrement, self.slotIncrement))
-                            #self.MDPList.append([device.getType().getcontent(), LocalMDPList,
-                            #                     self.idxIncrement, self.slotIncrement])
-
-                    # --------------------------------------------------------------------- #
-
-                # else:
-                #     self.GetCTRoot().logger.write_error(
-                #         _("Couldn't load {a1} XML file:\n{a2}").format(a1=filepath, a2=error))
 
         return self.Library
 
@@ -641,7 +616,7 @@ for mapping needed location variables
 
         csvfile_path = self.GetModulesExtraParamsFilePath()
         if os.path.exists(csvfile_path):
-            csvfile = open(csvfile_path, "rb")
+            csvfile = open(csvfile_path, "r", newline='')
             sample = csvfile.read(1024)
             csvfile.seek(0)
             dialect = csv.Sniffer().sniff(sample)

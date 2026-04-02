@@ -53,6 +53,15 @@ _BaseParamsParser = GenerateParserFromXSDstring("""<?xml version="1.0" encoding=
               <xsd:attribute name="Name" type="xsd:string" use="optional" default="__unnamed__"/>
               <xsd:attribute name="IEC_Channel" type="xsd:integer" use="required"/>
               <xsd:attribute name="Enabled" type="xsd:boolean" use="optional" default="true"/>
+              <xsd:attribute name="RxPDO" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="TxPDO" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
+              <xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+              <xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
             </xsd:complexType>
           </xsd:element>
         </xsd:schema>""")

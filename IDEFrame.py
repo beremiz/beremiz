@@ -2016,7 +2016,9 @@ class IDEFrame(wx.Frame):
                         self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "functionBlock"), new_item)
                     new_item = AppendMenu(change_menu, help='', kind=wx.ITEM_NORMAL, text=_("Program"))
                     self.Bind(wx.EVT_MENU, self.GenerateChangePouTypeFunction(name, "program"), new_item)
-                    menu.Append(wx.ID_ANY, _("Duplicate as..."), change_menu)
+                    menu.AppendMenu(wx.ID_ANY, _("Duplicate as..."), change_menu)
+                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Rename"))
+                self.Bind(wx.EVT_MENU, self.OnRenamePouMenu, new_item)
 
             elif item_infos["type"] == ITEM_CONFIGURATION:
                 menu = wx.Menu(title='')
@@ -2027,8 +2029,6 @@ class IDEFrame(wx.Frame):
                 menu = wx.Menu(title='')
 
             if menu is not None:
-                new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Rename"))
-                self.Bind(wx.EVT_MENU, self.OnRenameItemMenu, new_item)
                 new_item = AppendMenu(menu, help='', kind=wx.ITEM_NORMAL, text=_("Delete"))
                 self.Bind(wx.EVT_MENU, self.OnDeleteMenu, new_item)
 
@@ -2500,9 +2500,9 @@ class IDEFrame(wx.Frame):
                     self.TabsOpened.DeletePage(idx)
                 self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU, PROJECTTREE)
 
-    def OnRenameItemMenu(self, event):
+    def OnRenamePouMenu(self, event):
         selected = self.ProjectTree.GetSelection()
-        if self.ProjectTree.GetItemData(selected)["type"] not in ITEMS_UNEDITABLE:
+        if self.ProjectTree.GetItemData(selected)["type"] == ITEM_POU:
             wx.CallAfter(self.ProjectTree.EditLabel, selected)
 
     def OnRemovePouMenu(self, event):

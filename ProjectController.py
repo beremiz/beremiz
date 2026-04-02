@@ -192,6 +192,7 @@ class Iec2CSettings(object):
 def GetProjectControllerXSD():
     target_choices = targets.GetTargetChoices()
     xsd_tag = "choice" if len(target_choices) > 1 else "sequence"
+    targets_xml = "\n".join(target_choices)
     XSD = f"""<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="BeremizRoot">
@@ -200,7 +201,7 @@ def GetProjectControllerXSD():
             <xsd:element name="TargetType" minOccurs="0" maxOccurs="1">
               <xsd:complexType>
                 <xsd:{xsd_tag} minOccurs="1" maxOccurs="1">
-                   {"\n".join(target_choices)}
+                   {targets_xml}
                 </xsd:{xsd_tag}>
               </xsd:complexType>
             </xsd:element>""" + (("""
@@ -1423,6 +1424,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         for fname, fobject in ExtraFiles:
             fpath = os.path.join(extrafilespath, fname)
             open(fpath, "wb").write(fobject.read())
+            fobject.close()
         # Now we can forget ExtraFiles (will close files object)
         del ExtraFiles
 

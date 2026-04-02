@@ -598,14 +598,14 @@ class _CommonSlave(object):
             raw_value_bit = list(hex(raw_value).split("0x")[1])
              
             datatype = self.GetValidDataType(self.entries[(index, subidx)]["Type"])
-            if datatype is "string" or datatype is "octet_string":
+            if datatype == "string" or datatype == "octet_string":
 
                 if "L" in raw_value_bit:
                     raw_value_bit.remove("L")
 
                 default_value = "".join(raw_value_bit).decode("hex")
            
-            elif datatype is "unicode_string":
+            elif datatype == "unicode_string":
                 default_value = "".join(raw_value_bit).decode("hex").\
                                                            decode("utf-8")
             
@@ -869,12 +869,19 @@ class _CommonSlave(object):
                         smartview_infos[cfg] = str(int(bootstrap_data[4*iter+2:4*(iter+1)]+bootstrap_data[4*iter:4*iter+2], 16))
 
             # get protocol (profile) types supported by mailbox; <Device>-<Mailbox>
-            with device.getMailbox() as mb:
-                if mb is not None:
-                    for mailbox_protocol in mailbox_protocols:
-                        if getattr(mb, "get%s" % mailbox_protocol)() is not None:
-                            smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
+#            with device.getMailbox() as mb:
+#                if mb is not None:
+#                    for mailbox_protocol in mailbox_protocols:
+#                        if getattr(mb, "get%s" % mailbox_protocol)() is not None:
+#                            smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
+#            smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(", ")
+            mb = device.getMailbox()
+            if mb is not None:
+                for mailbox_protocol in mailbox_protocols:
+                    if getattr(mb, "get%s" % mailbox_protocol)() is not None:
+                        smartview_infos["supported_mailbox"] += "%s,  " % mailbox_protocol
             smartview_infos["supported_mailbox"] = smartview_infos["supported_mailbox"].strip(", ")
+
 
             # get standard configuration of mailbox; <Device>-<Sm>
             for sm_element in device.getSm():
@@ -890,10 +897,19 @@ class _CommonSlave(object):
             # get device identity from <Device>-<Type>
             # vendor ID; by default, pre-defined value in self.ModulesLibrary
             # if device type in 'vendor' item equals to actual slave device type, set 'vendor_id' to vendor ID.
+#            for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
+#                for available_device in vendor["groups"][vendor["groups"].keys()[0]]["devices"]:
+#                    if available_device[0] == type_infos["device_type"]:
+#                        smartview_infos["vendor_id"] = "0x" + "{:0>8x}".format(vendor_id)
+            import builtins
+
             for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
-                for available_device in vendor["groups"][vendor["groups"].keys()[0]]["devices"]:
+                first_group_key = next(builtins.iter(vendor["groups"]))
+                for available_device in vendor["groups"][first_group_key]["devices"]:
                     if available_device[0] == type_infos["device_type"]:
                         smartview_infos["vendor_id"] = "0x" + "{:0>8x}".format(vendor_id)
+
+
 
             # product code;
             if device.getType().getProductCode() is not None:
@@ -977,40 +993,39 @@ class _CommonSlave(object):
         @return hexCode : hexadecimal digits
         @return hexview_table_row, hexview_table_col : Grid size for "Hex View" UI
         """
+        if binary is None:
+            # Evita crash y devuelve tablas vacías
+            return [], 0, 17
+
         row_code = []
         row_text = ""
         row = 0
         hex_code = []
-
         hexview_table_col = 17
 
-        for index in range(0, len(binary)):
-            if len(binary[index]) != 1:
-                break
+        for index in range(len(binary)):
+            value = binary[index]
+
+            tempvar2 = "{:02x}".format(value)
+            row_code.append(tempvar2)
+
+            if 32 <= value <= 126:
+                row_text += chr(value)
             else:
-                digithexstr = hex(ord(binary[index]))
+                row_text += "."
 
-                tempvar2 = digithexstr[2:4]
-                if len(tempvar2) == 1:
-                    tempvar2 = "0" + tempvar2
-                row_code.append(tempvar2)
+            if len(row_code) == (hexview_table_col - 1):
+                row_code.append(row_text)
+                hex_code.append(row_code)
+                row_text = ""
+                row_code = []
+                row += 1
 
-                if int(digithexstr, 16) >= 32 and int(digithexstr, 16) <= 126:
-                    row_text = row_text + chr(int(digithexstr, 16))
-                else:
-                    row_text = row_text + "."
-
-                if index != 0:
-                    if len(row_code) == (hexview_table_col - 1):
-                        row_code.append(row_text)
-                        hex_code.append(row_code)
-                        row_text = ""
-                        row_code = []
-                        row = row + 1
 
         hexview_table_row = row
 
         return hex_code, hexview_table_row, hexview_table_col
+
 
     def GenerateEEPROMList(self, data, direction, length):
         """
@@ -1024,7 +1039,7 @@ class _CommonSlave(object):
         """
         eeprom_list = []
 
-        if direction is 0 or 1:
+        if direction in (0, 1):
             for dummy in range(length//2):
                 if data == "":
                     eeprom_list.append("00")
@@ -1049,7 +1064,8 @@ class _CommonSlave(object):
         eeprom = []
         data = ""
         eeprom_size = 0
-        eeprom_binary = ""
+#        eeprom_binary = ""
+        eeprom_binary = b""
 
         # 'device' is the slave device of the current EtherCAT slave plugin
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
@@ -1082,9 +1098,11 @@ class _CommonSlave(object):
             # get VendorID for EEPROM offset 0x0010-0x0013;
             data = ""
             for vendor_id, vendor in self.Controler.CTNParent.CTNParent.ModulesLibrary.Library.items():
-                for available_device in vendor["groups"][vendor["groups"].keys()[0]]["devices"]:
+                group_key = next(iter(vendor["groups"]))
+                for available_device in vendor["groups"][group_key]["devices"]:
                     if available_device[0] == type_infos["device_type"]:
                         data = "{:0>8x}".format(vendor_id)
+
             eeprom += self.GenerateEEPROMList(data, 1, 8)
 
             # get Product Code for EEPROM offset 0x0014-0x0017;
@@ -1164,14 +1182,14 @@ class _CommonSlave(object):
             else:
                 eeprom.append(standard_send_mailbox_size[2:4])
                 eeprom.append(standard_send_mailbox_size[0:2])
-
-            # get supported mailbox protocols for EEPROM offset 0x0038-0x0039;
+                
             data = 0
-            with device.getMailbox() as mb:
-                if mb is not None:
-                    for bit, mbprot in enumerate(mailbox_protocols):
-                        if getattr(mb, "get%s" % mbprot)() is not None:
-                            data += 1 << bit
+            mb = device.getMailbox()
+            if mb is not None:
+                for bit, mbprot in enumerate(mailbox_protocols):
+                    if getattr(mb, "get%s" % mbprot)() is not None:
+                        data += 1 << bit
+
             data = "{:0>4x}".format(data)
             eeprom.append(data[2:4])
             eeprom.append(data[0:2])
@@ -1185,8 +1203,8 @@ class _CommonSlave(object):
             data = ""
             for eeprom_element in device.getEeprom().getchildren():
                 if eeprom_element.tag == "ByteSize":
-                    eeprom_size = int(objectify.fromstring(eeprom_element.tostring()).text)
-                    data = "{:0>4x}".format(eeprom_size/1024*8-1)
+                    eeprom_size = int(eeprom_element.text)
+                    data = "{:0>4x}".format(eeprom_size//1024*8-1) # Division Entera
 
             if data == "":
                 eeprom.append("00")
@@ -1264,9 +1282,6 @@ class _CommonSlave(object):
         devnameflag = False
         imageflag = False
 
-        # vendor specific data
-        #   element1; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Type>
-        #   vendor_specific_data : vendor specific data (binary type)
         vendor_specific_data = ""
         #   vendor_spec_strings : list of vendor specific "strings" for preventing duplicated strings
         vendor_spec_strings = []
@@ -1419,20 +1434,25 @@ class _CommonSlave(object):
                         for character in range(len(data)):
                             vendor_specific_data += "{:0>2x}".format(ord(data[character]))
         data = ""
-
-        # DC related elements
-        #  <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Dc>-<OpMode>-<Name>
         dc_related_elements = ""
-        if device.getDc() is not None:
-            for element in device.getDc().getOpMode():
-                data = element.getName()
-                if data != "":
-                    count += 1
-                    self.Strings.append(data)
-                    dc_related_elements += "{:0>2x}".format(len(data))
-                    for character in range(len(data)):
-                        dc_related_elements += "{:0>2x}".format(ord(data[character]))
-                    data = ""
+
+        # Asegúrate de que device no sea None
+        if device is not None:
+            dc = getattr(device, "getDc", lambda: None)()
+            if dc is not None:
+                for element in getattr(dc, "getOpMode", lambda: [])() or []:
+                    data = getattr(element, "getName", lambda: "")()
+                    if data:
+                        count += 1
+                        self.Strings.append(data)
+                        dc_related_elements += "{:0>2x}".format(len(data))
+                        for character in range(len(data)):
+                            dc_related_elements += "{:0>2x}".format(ord(data[character]))
+                        data = ""
+
+
+
+
 
         # Input elements(TxPDO)
         #  <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<TxPdo>; Name
@@ -1557,42 +1577,44 @@ class _CommonSlave(object):
 
         # word 3 : Physical Layer Port info. and CoE Details
         eeprom.append("01")  # Physical Layer Port info - assume 01
-        #  CoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>
         coe_details = 1  # sdo enabled
-        with device.getMailbox() as mb:
-            if mb is not None:
-                coe = mb.getCoE()
-                if coe is not None:
-                    for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
-                                                "PdoUpload", "CompleteAccess"]):
-                        if getattr(coe, "get%s" % flag)() is not None:
-                            coe_details += 1 << bit
-            eeprom.append("{:0>2x}".format(coe_details))
+        mb = device.getMailbox()
 
-            # word 4 : FoE Details and EoE Details
-            #  FoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<FoE>
-            if mb is not None and mb.getFoE() is not None:
-                eeprom.append("01")
-            else:
-                eeprom.append("00")
-            #  EoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<EoE>
-            if mb is not None and mb.getEoE() is not None:
-                eeprom.append("01")
-            else:
-                eeprom.append("00")
+        if mb is not None:
+            coe = mb.getCoE()
+            if coe is not None:
+                for bit, flag in enumerate(["SdoInfo", "PdoAssign", "PdoConfig",
+                                            "PdoUpload", "CompleteAccess"]):
+                    if getattr(coe, "get%s" % flag)() is not None:
+                        coe_details += 1 << bit
 
-            # word 5 : SoE Channels(reserved) and DS402 Channels
-            #  SoE Details; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<SoE>
-            if mb is not None and mb.getSoE() is not None:
-                eeprom.append("01")
-            else:
-                eeprom.append("00")
-            #  DS402Channels; <EtherCATInfo>-<Descriptions>-<Devices>-<Device>-<Mailbox>-<CoE>: DS402Channels
-            ds402ch = False
-            if mb is not None:
-                coe = mb.getCoE()
-                if coe is not None:
-                    ds402ch = coe.getDS402Channels()
+        eeprom.append("{:0>2x}".format(coe_details))
+
+
+        # word 4 : FoE Details and EoE Details
+        if mb is not None and mb.getFoE() is not None:
+            eeprom.append("01")
+        else:
+            eeprom.append("00")
+
+        if mb is not None and mb.getEoE() is not None:
+            eeprom.append("01")
+        else:
+            eeprom.append("00")
+
+
+        # word 5 : SoE Channels(reserved) and DS402 Channels
+        if mb is not None and mb.getSoE() is not None:
+            eeprom.append("01")
+        else:
+            eeprom.append("00")
+
+        ds402ch = False
+        if mb is not None:
+            coe = mb.getCoE()
+            if coe is not None:
+                ds402ch = coe.getDS402Channels()
+
         eeprom.append("01" if ds402ch in [True, 1] else "00")
 
         # word 6 : SysmanClass(reserved) and Flags
@@ -1966,29 +1988,32 @@ class _CommonSlave(object):
         slave = self.Controler.CTNParent.GetSlave(self.Controler.GetSlavePos())
         type_infos = slave.getType()
         device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
-        if device.getDc() is not None:
-            for OpMode in device.getDc().getOpMode():
-                temp_data = {
-                    "desc" : OpMode.getDesc() if OpMode.getDesc() is not None else "Unused",
-                    "assign_activate" : OpMode.getAssignActivate() \
-                        if OpMode.getAssignActivate() is not None else "#x0000",
-                    "cycletime_sync0" : OpMode.getCycleTimeSync0().getcontent() \
-                        if OpMode.getCycleTimeSync0() is not None else None,
-                    "shifttime_sync0" : OpMode.getShiftTimeSync0().getcontent() \
-                        if OpMode.getShiftTimeSync0() is not None else None,
-                    "cycletime_sync1" : OpMode.getShiftTimeSync1().getcontent() \
-                        if OpMode.getShiftTimeSync1() is not None else None,
-                    "shifttime_sync1" : OpMode.getShiftTimeSync1().getcontent() \
-                        if OpMode.getShiftTimeSync1() is not None else None
-                }
+        
+        if device is not None:
+            dc = getattr(device, "getDc", lambda: None)()
+            if dc is not None:
+                for OpMode in device.getDc().getOpMode():
+                    temp_data = {
+                        "desc" : OpMode.getDesc() if OpMode.getDesc() is not None else "Unused",
+                        "assign_activate" : OpMode.getAssignActivate() \
+                            if OpMode.getAssignActivate() is not None else "#x0000",
+                        "cycletime_sync0" : OpMode.getCycleTimeSync0().getcontent() \
+                            if OpMode.getCycleTimeSync0() is not None else None,
+                        "shifttime_sync0" : OpMode.getShiftTimeSync0().getcontent() \
+                            if OpMode.getShiftTimeSync0() is not None else None,
+                        "cycletime_sync1" : OpMode.getShiftTimeSync1().getcontent() \
+                            if OpMode.getShiftTimeSync1() is not None else None,
+                        "shifttime_sync1" : OpMode.getShiftTimeSync1().getcontent() \
+                            if OpMode.getShiftTimeSync1() is not None else None
+                    }
 
-                if OpMode.getCycleTimeSync0() is not None:
-                    temp_data["cycletime_sync0_factor"] = OpMode.getCycleTimeSync0().getFactor()
+                    if OpMode.getCycleTimeSync0() is not None:
+                        temp_data["cycletime_sync0_factor"] = OpMode.getCycleTimeSync0().getFactor()
 
-                if OpMode.getCycleTimeSync1() is not None:
-                    temp_data["cycletime_sync1_factor"] = OpMode.getCycleTimeSync1().getFactor()
+                    if OpMode.getCycleTimeSync1() is not None:
+                        temp_data["cycletime_sync1_factor"] = OpMode.getCycleTimeSync1().getFactor()
 
-                return_data.append(temp_data)
+                    return_data.append(temp_data)
 
         return return_data
     
