@@ -306,7 +306,7 @@ cp certs/clients/${IDE_wamp_ID}.pem $IDE_CLIENT_CERT
 
 # Use CLI to build transfer and start PLC
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
-     --project-home wamp build transfer run &> >(
+     --project-home wamp clean build transfer run &> >(
 echo "Start CLI loop"
 while read line; do 
     # Wait for PLC runtime to output expected value on stdout

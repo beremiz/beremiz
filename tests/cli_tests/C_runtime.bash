@@ -19,7 +19,7 @@ PLC_PID=$!
 
 # Start PLC with C runtime test
 setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
-     --project-home $BEREMIZPATH/tests/projects/c_runtime build transfer run > >(
+     --project-home $BEREMIZPATH/tests/projects/c_runtime clean build transfer run > >(
 echo "Start CLI loop"
 while read line; do 
     # Wait for CLI to output expected PLC log message on stdout

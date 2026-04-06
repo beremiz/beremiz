@@ -78,12 +78,12 @@ cp my_cert.der my_private_key.pem $PROJECT_FILES_DIR
 
 # Start PLC with opcua test
 setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k \
-     --project-home $BEREMIZPATH/tests/projects/opcua_client_encrypted build transfer run > >(
+     --project-home $BEREMIZPATH/tests/projects/opcua_client_encrypted clean build transfer run > >(
 echo "Start PLC loop"
 while read line; do 
     # Wait for PLC runtime to output expected value on stdout
     echo "PLC>> $line"
-    if [[ "$line" == 1.2 ]]; then
+    if [[ "$line" == *1.2* ]]; then
         echo "PLC could read value"
         touch ./PLCOK
     fi

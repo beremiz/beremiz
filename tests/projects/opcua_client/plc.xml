@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2022-07-16T10:46:25"/>
-  <contentHeader name="Unnamed" modificationDateTime="2022-07-16T22:47:46">
+  <contentHeader name="Unnamed" modificationDateTime="2026-03-29T15:19:49">
     <coordinateInfo>
       <fbd>
         <scaling x="5" y="5"/>
@@ -25,6 +25,15 @@
                 <LREAL/>
               </type>
             </variable>
+          </localVars>
+          <localVars>
+            <variable name="trig">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </localVars>
+          <localVars>
             <variable name="LocalVar1" address="%QL0.0">
               <type>
                 <LREAL/>
@@ -32,9 +41,9 @@
             </variable>
           </localVars>
           <localVars>
-            <variable name="python_poll0">
+            <variable name="LOGGER0">
               <type>
-                <derived name="python_poll"/>
+                <derived name="LOGGER"/>
               </type>
             </variable>
           </localVars>
@@ -59,42 +68,6 @@
               </connectionPointIn>
               <expression>LocalVar1</expression>
             </outVariable>
-            <block localId="4" typeName="python_poll" instanceName="python_poll0" executionOrderId="0" height="60" width="98">
-              <position x="658" y="101"/>
-              <inputVariables>
-                <variable formalParameter="TRIG">
-                  <connectionPointIn>
-                    <relPosition x="0" y="29"/>
-                    <connection refLocalId="7">
-                      <position x="658" y="130"/>
-                      <position x="623" y="130"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-                <variable formalParameter="CODE">
-                  <connectionPointIn>
-                    <relPosition x="0" y="49"/>
-                    <connection refLocalId="6" formalParameter="OUT">
-                      <position x="658" y="150"/>
-                      <position x="560" y="150"/>
-                    </connection>
-                  </connectionPointIn>
-                </variable>
-              </inputVariables>
-              <inOutVariables/>
-              <outputVariables>
-                <variable formalParameter="ACK">
-                  <connectionPointOut>
-                    <relPosition x="98" y="29"/>
-                  </connectionPointOut>
-                </variable>
-                <variable formalParameter="RESULT">
-                  <connectionPointOut>
-                    <relPosition x="98" y="49"/>
-                  </connectionPointOut>
-                </variable>
-              </outputVariables>
-            </block>
             <block localId="5" typeName="LREAL_TO_STRING" executionOrderId="0" height="40" width="130">
               <position x="280" y="170"/>
               <inputVariables>
@@ -103,10 +76,6 @@
                     <relPosition x="0" y="30"/>
                     <connection refLocalId="1">
                       <position x="280" y="200"/>
-                      <position x="255" y="200"/>
-                      <position x="255" y="200"/>
-                      <position x="300" y="200"/>
-                      <position x="300" y="200"/>
                       <position x="245" y="200"/>
                     </connection>
                   </connectionPointIn>
@@ -121,33 +90,72 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="6" typeName="CONCAT" executionOrderId="0" height="165" width="63">
-              <position x="497" y="108"/>
+            <inVariable localId="9" executionOrderId="0" height="29" width="45" negated="false">
+              <position x="159" y="47"/>
+              <connectionPointOut>
+                <relPosition x="45" y="13"/>
+              </connectionPointOut>
+              <expression>3.4</expression>
+            </inVariable>
+            <block localId="10" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0" width="50" height="80">
+              <position x="510" y="150"/>
               <inputVariables>
-                <variable formalParameter="IN1">
+                <variable formalParameter="TRIG">
                   <connectionPointIn>
-                    <relPosition x="0" y="42"/>
-                    <connection refLocalId="3">
-                      <position x="497" y="150"/>
-                      <position x="330" y="150"/>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="12" formalParameter="OUT">
+                      <position x="510" y="180"/>
+                      <position x="492" y="180"/>
+                      <position x="492" y="135"/>
+                      <position x="475" y="135"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
-                <variable formalParameter="IN2">
+                <variable formalParameter="MSG">
                   <connectionPointIn>
-                    <relPosition x="0" y="92"/>
+                    <relPosition x="0" y="50"/>
                     <connection refLocalId="5" formalParameter="OUT">
-                      <position x="497" y="200"/>
+                      <position x="510" y="200"/>
                       <position x="410" y="200"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
-                <variable formalParameter="IN3">
+                <variable formalParameter="LEVEL">
                   <connectionPointIn>
-                    <relPosition x="0" y="142"/>
-                    <connection refLocalId="8">
-                      <position x="497" y="250"/>
-                      <position x="225" y="250"/>
+                    <relPosition x="0" y="70"/>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables/>
+            </block>
+            <inOutVariable localId="11" executionOrderId="0" width="35" height="25" negatedOut="false" negatedIn="false">
+              <position x="340" y="125"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="12" formalParameter="OUT">
+                  <position x="340" y="135"/>
+                  <position x="330" y="135"/>
+                  <position x="330" y="95"/>
+                  <position x="485" y="95"/>
+                  <position x="485" y="135"/>
+                  <position x="475" y="135"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="35" y="10"/>
+              </connectionPointOut>
+              <expression>trig</expression>
+            </inOutVariable>
+            <block localId="12" typeName="NOT" executionOrderId="0" width="50" height="40">
+              <position x="425" y="105"/>
+              <inputVariables>
+                <variable formalParameter="IN">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="11">
+                      <position x="425" y="135"/>
+                      <position x="375" y="135"/>
                     </connection>
                   </connectionPointIn>
                 </variable>
@@ -156,39 +164,11 @@
               <outputVariables>
                 <variable formalParameter="OUT">
                   <connectionPointOut>
-                    <relPosition x="63" y="42"/>
+                    <relPosition x="50" y="30"/>
                   </connectionPointOut>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="7" executionOrderId="0" height="24" width="44" negated="false">
-              <position x="579" y="116"/>
-              <connectionPointOut>
-                <relPosition x="44" y="14"/>
-              </connectionPointOut>
-              <expression>TRUE</expression>
-            </inVariable>
-            <inVariable localId="3" executionOrderId="0" height="25" width="180" negated="false">
-              <position x="160" y="140"/>
-              <connectionPointOut>
-                <relPosition x="180" y="10"/>
-              </connectionPointOut>
-              <expression>'pfunc("'</expression>
-            </inVariable>
-            <inVariable localId="8" executionOrderId="0" height="25" width="230" negated="false">
-              <position x="165" y="240"/>
-              <connectionPointOut>
-                <relPosition x="230" y="10"/>
-              </connectionPointOut>
-              <expression>'\n")'</expression>
-            </inVariable>
-            <inVariable localId="9" executionOrderId="0" height="29" width="45" negated="false">
-              <position x="159" y="47"/>
-              <connectionPointOut>
-                <relPosition x="45" y="13"/>
-              </connectionPointOut>
-              <expression>3.4</expression>
-            </inVariable>
           </FBD>
         </body>
       </pou>

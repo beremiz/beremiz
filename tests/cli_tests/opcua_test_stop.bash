@@ -55,23 +55,22 @@ EOF
 SERVER_PID=$!
 
 : ${BEREMIZ_LOCAL_HOST:=127.0.0.1}
-$BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -i $BEREMIZ_LOCAL_HOST -p 1500 -x 0 > >(
-    echo "Start PLC loop"
-    while read line; do
-        # Wait for PLC runtime to output expected value on stdout
-        echo "PLC>> $line"
-        if [[ "$line" == 1.2 ]]; then
-            echo "PLC could read value"
-            touch ./PLCOK
-        fi
-    done
-    echo "End PLC loop"
-)&
+$BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_service.py -i $BEREMIZ_LOCAL_HOST -p 1500 -x 0 &
 RUNTIME_PID=$!
 
 # Start PLC with opcua test
 $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py  \
-     --project-home $BEREMIZPATH/tests/projects/opcua_client_erpc build transfer run  &
+     --project-home $BEREMIZPATH/tests/projects/opcua_client_erpc -k clean build transfer run > >(
+    while read line; do
+        # Wait for PLC runtime to output expected value on stdout
+        echo "CLI>> $line"
+        if [[ "$line" == *1.2* || -a ./PLCOK ]]; then
+            echo "PLC could read value"
+            touch ./PLCOK
+            break
+        fi
+    done
+)&
 PLC_PID=$!
 
 echo all subprocess started, start polling results

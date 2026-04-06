@@ -2,7 +2,7 @@
 
 # Run python example throug command line, and check usual output
 
-coproc setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k --project-home $BEREMIZPATH/tests/projects/modbus_test_tcp build transfer run;
+coproc setsid $BEREMIZPYTHONPATH $BEREMIZPATH/Beremiz_cli.py -k --project-home $BEREMIZPATH/tests/projects/modbus_test_tcp clean build transfer run;
 
 while read -u ${COPROC[0]} line; do 
     echo RRR "$line"
