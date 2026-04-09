@@ -19,6 +19,7 @@ from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 from MotionLibrary import Headers, AxisXSD
 from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave
 from etherlab.ConfigEditor import CIA402NodeEditor
+from xmlclass import GenerateParserFromXSDstring
 
 # Definition of node variables that have to be mapped in PDO
 # [(name, index, subindex, type,
@@ -167,8 +168,7 @@ MODEOFOP_COMPUTATION_MODE_TEMPLATE = """
 # --------------------------------------------------
 #                 Ethercat CIA402 Node
 # --------------------------------------------------
-
-
+XSD_PDO_DC = _EthercatSlaveCTN.XSD
 class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -182,7 +182,8 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
           <xsd:attribute name="Enable%s" type="xsd:boolean"
                          use="optional" default="false"/>""" % category
                       for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
-
+                      
+                      
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor
 
@@ -209,9 +210,14 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 
     def __init__(self):
         _EthercatSlaveCTN.__init__(self)
+        
+        self.EthercatSlaveParams = GenerateParserFromXSDstring(XSD_PDO_DC) 
+        root_obj =   self.EthercatSlaveParams.CreateRoot() 
+        setattr(self, root_obj.getLocalTag(), root_obj)
 
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
+
 
     def GetIconName(self):
         return "CIA402Slave"
@@ -305,7 +311,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             self.SelectedTxPDOIndex = []
 
             # -------- Rx --------
-            RxPDOData = self.BaseParams.getRxPDO()
+            RxPDOData = self.EthercatSlaveParams.getRxPDO()
 
             if RxPDOData and RxPDOData != "None":
                 RxPDOs = RxPDOData.replace(",", " ").split()
@@ -315,7 +321,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 })
 
             # -------- Tx --------
-            TxPDOData = self.BaseParams.getTxPDO()
+            TxPDOData = self.EthercatSlaveParams.getTxPDO()
 
             if TxPDOData and TxPDOData != "None":
                 TxPDOs = TxPDOData.replace(",", " ").split()

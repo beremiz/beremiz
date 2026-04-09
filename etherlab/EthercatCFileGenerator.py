@@ -449,55 +449,111 @@ class _EthercatCFileGenerator(object):
                 data_files = os.listdir(self.Controler.CTNPath())
                 PDODataList = []
                 MDPData = []
-                base = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams
-                get_rx = getattr(base, "getRxPDO", None)
-                RxPDOData = get_rx() if get_rx else None
-
-                base = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams
-                get_tx = getattr(base, "getTxPDO", None)
-                TxPDOData = get_tx() if get_tx else None
-                if RxPDOData is None:
-                    RxPDOData = ""
-                if TxPDOData is None:
-                    TxPDOData = ""
+                
+                data_files = os.listdir(self.Controler.CTNPath())
+                PDODataList = []
+                MDPData = []
+                
+                node = self.Controler.GetChildByIECLocation((slave_idx,))
+                ethercat_params = getattr(node, "EthercatSlaveParams", None)
+                
+                RxPDOData = ""
+                TxPDOData = ""
+                
+                if ethercat_params is not None:
+                    RxPDOData = ethercat_params.getRxPDO()
+                    TxPDOData = ethercat_params.getTxPDO()
+                    if RxPDOData == "None":
+                        RxPDOData = ""
+                    if TxPDOData == "None":
+                        TxPDOData = ""
+                        
                 PDOList = RxPDOData.split() + TxPDOData.split()
+                
                 for PDOIndex in PDOList:
                     if PDOIndex in ["RxPDO", "TxPDO", "None"]:
                         continue
-                    PDODataList.append(int(PDOIndex, 0))
+                    try:
+                        PDODataList.append(int(PDOIndex, 0))
+                    except ValueError:
+                        pass
 
                 # add jblee for DC Configuration
-                dc_enable = getattr(self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams, "getDC_Enable", lambda: False)()
+                
+                dc_config_data = None
+                
                 sync0_cycle_time = 0
                 sync0_shift_time = 0
                 sync1_cycle_time = 0
                 sync1_shift_time = 0
-                if dc_enable :
-                    sync0_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Cycle_Time()
+                
+                if ethercat_params is not None and len(ethercat_params) > 0 and ethercat_params.getDC_Enable():
+
+                    # ---- Sync0 Cycle ----
+                    sync0_cycle_token = ethercat_params.getDC_Sync0_Cycle_Time()
                     if sync0_cycle_token != "None":
-                        sync0_cycle_time = int(sync0_cycle_token.split("_")[1]) * 1000
-                    sync0_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Shift_Time()
+                        try:
+                            parts = str(sync0_cycle_token).split("_")
+                            if len(parts) > 1:
+                                sync0_cycle_time = int(parts[1]) * 1000
+                        except Exception:
+                            sync0_cycle_time = 0
+
+                    # ---- Sync0 Shift ----
+                    sync0_shift_token = ethercat_params.getDC_Sync0_Shift_Time()
                     if sync0_shift_token != "None":
-                        sync0_shift_time = int(sync0_shift_token) * 1000
-                    sync1_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Cycle_Time()
+                        try:
+                            sync0_shift_time = int(sync0_shift_token) * 1000
+                        except Exception:
+                            sync0_shift_time = 0
+
+                    # ---- Sync1 Cycle ----
+                    sync1_cycle_token = ethercat_params.getDC_Sync1_Cycle_Time()
                     if sync1_cycle_token != "None":
-                        sync1_cycle_time = int(sync1_cycle_token.split("_")[1]) * 1000
-                    sync1_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Shift_Time()
+                        try:
+                            parts = str(sync1_cycle_token).split("_")
+                            if len(parts) > 1:
+                                sync1_cycle_time = int(parts[1]) * 1000
+                        except Exception:
+                            sync1_cycle_time = 0
+
+                    # ---- Sync1 Shift ----
+                    sync1_shift_token = ethercat_params.getDC_Sync1_Shift_Time()
                     if sync1_shift_token != "None":
-                        sync1_shift_time = int(sync1_shift_token) * 1000
-                    
+                        try:
+                            sync1_shift_time = int(sync1_shift_token) * 1000
+                        except Exception:
+                            sync1_shift_time = 0
+
+                    # ---- Assign Activate ----
+                    assign_activate = 0
+                    assign_token = ethercat_params.getDC_Assign_Activate()
+                    if assign_token != "None":
+                        try:
+                            assign_activate = int(assign_token)
+                        except Exception:
+                            assign_activate = 0
+
+                    if assign_token != "None":
+                        try:
+                            assign_activate = int(assign_token)
+                        except Exception:
+                            assign_activate = 0
+
+                    # ---- Final dict ----
                     dc_config_data = {
-                        "slave" : slave_idx,
-                        "assign_activate" : int(self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Assign_Activate()),
-                        "sync0_cycle_time" : sync0_cycle_time,
-                        "sync0_shift_time" : sync0_shift_time,
-                        "sync1_cycle_time" : sync1_cycle_time,
-                        "sync1_shift_time" : sync1_shift_time,
+                        "slave": slave_idx,
+                        "assign_activate": assign_activate,
+                        "sync0_cycle_time": sync0_cycle_time,
+                        "sync0_shift_time": sync0_shift_time,
+                        "sync1_cycle_time": sync1_cycle_time,
+                        "sync1_shift_time": sync1_shift_time,
                     }
 
                     if dc_enable and not str_completion["dc_variable"] :
                         str_completion["dc_variable"] += DC_VARIABLE % {"dc_flag" : dc_enable}
                     str_completion["config_dc"] += CONFIG_DC % dc_config_data
+                    
 
                 for data_file in data_files:
                     slave_path = os.path.join(self.Controler.CTNPath(), data_file)

@@ -18,7 +18,6 @@ import wx.grid as gridlib
 import wx.adv
 import wx.lib.buttons
 from lxml import etree
-#from xmlclass import GenerateParserFromXSDstring
 
 # --------------------------------------------------------------------
 from controls.CustomGrid import CustomGrid
@@ -67,8 +66,7 @@ class EtherCATManagementTreebook(wx.Treebook):
         wx.Treebook.__init__(self, parent, -1, size=(800, 600), style=wx.BK_DEFAULT)
         self.parent = parent
         self.Controler = controler
-        self.NodeEditor = node_editor
-        
+        self.NodeEditor = node_editor       
 
         self.EtherCATManagementClassObject = {}
        
@@ -982,93 +980,6 @@ class PDOPanelClass(wx.Panel):
 
 
 class RxPDOPanelClass(wx.Panel):
-#    def __init__(self, parent, controler):
-#        """
-#        Constructor
-#        @param parent: Reference to the parent EtherCATManagementTreebook class
-#        @param controler: _EthercatSlaveCTN class in EthercatSlave.py
-#        """
-#        wx.Panel.__init__(self, parent, -1)
-#        self.Controler = controler
-#        slave = self.Controler
-#        slave.Name = f"slave {self.Controler.GetSlavePos()}" 
-
-#        if not hasattr(slave, "SelectedRxPDOIndex"):
-#            slave.SelectedRxPDOIndex = []
-
-#        if not hasattr(slave, "SelectedTxPDOIndex"):
-#            slave.SelectedTxPDOIndex = []        
-
-#        # add jblee
-#        #self.PDOIndexList = ["RxPDO"]
-#        self.PDOIndexList = []
-#        self.LoadPDOSelectData()
-
-#        #HSAHN ADD. 2015.7.26 PDO Select Function ADD
-#        self.Controler.CommonMethod.RequestPDOInfo()
-#        self.PDOcheckBox = []
-#        self.rx_pdo_entries = self.Controler.CommonMethod.GetRxPDOCategory()
-
-#        if self.rx_pdo_entries:
-#            for entry in self.rx_pdo_entries:
-#                cb = wx.CheckBox(self, label=str(hex(entry['pdo_index'])), size=(120, 15))
-#                self.PDOcheckBox.append(cb)
-
-#                # Seleccionar por defecto si no hay índices seleccionados
-#                if not self.Controler.SelectedRxPDOIndex and entry['sm'] is not None:
-#                    cb.SetValue(True)
-#                    self.Controler.SelectedRxPDOIndex.append(int(cb.GetLabel(), 0))
-#                    self.InitSavePDO()  # usa self.Controler internamente
-#                elif entry['pdo_index'] in self.Controler.SelectedRxPDOIndex:
-#                    self.PDOIndexList.append(str(hex(entry['pdo_index'])))
-#                    cb.SetValue(True)
-
-#            # Bind para todos los checkboxes
-#            for cb in self.PDOcheckBox:
-#                self.Bind(wx.EVT_CHECKBOX, self.PDOSelectCheck, cb)
-
-#            self.PDOListBox = wx.StaticBox(self, label=_("PDO Mapping Select"))
-#            self.PDOListBoxSizer = wx.StaticBoxSizer(self.PDOListBox, orient=wx.HORIZONTAL)
-#            self.RxPDOListBox = wx.StaticBox(self, label=_("RxPDO"))
-#            self.RxPDOListBoxSizer = wx.StaticBoxSizer(self.RxPDOListBox, orient=wx.VERTICAL)
-#            self.RxPDOListBoxInnerSizer = wx.FlexGridSizer(cols=3, hgap=5, rows=10, vgap=5)
-#            # Solo agregar check box si hay alguno
-#            if self.PDOcheckBox:
-#                self.RxPDOListBoxInnerSizer.AddMany(self.PDOcheckBox)
-
-#            self.RxPDOListBoxSizer.Add(self.RxPDOListBoxInnerSizer)
-#            self.RxPDOListBoxSizer.SetMinSize((1,1)) # Forzar tamaño minimo
-#            self.PDOListBoxSizer.Add(self.RxPDOListBoxSizer)
-#            self.PDOWarningText = wx.StaticText(self, -1,
-#                       "  *Warning*\n\n By default configuration, \n\n first mapping set is selected. \n\n Choose the PDO mapping!",
-#                       size=(220, -1))
-#            self.PDOListBoxSizer.Add(self.PDOWarningText)
-
-#            self.PDOMonitoringEditorMainSizer = wx.BoxSizer(wx.VERTICAL)
-#            self.PDOMonitoringEditorInnerMainSizer = wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=10)
-
-#            self.CallPDOChoicebook = PDONoteBook(self, controler=self.Controler, name="Rx")
-#            self.PDOMonitoringEditorInnerMainSizer.Add(self.CallPDOChoicebook, wx.ALL)
-
-#            self.PDOInformationBox = wx.StaticBox(self, label=_("RxPDO Mapping List"))
-#            self.PDOInformationBoxSizer = wx.StaticBoxSizer(self.PDOInformationBox, orient=wx.VERTICAL)
-#            self.PDOInformationBoxSizer.Add(self.PDOMonitoringEditorInnerMainSizer)
-
-#            self.PDOMonitoringEditorMainSizer.Add(self.PDOListBoxSizer)
-#            self.PDOMonitoringEditorMainSizer.Add(self.PDOInformationBoxSizer)
-#            self.SetSizer(self.PDOMonitoringEditorMainSizer)
-
-#            # add jblee
-##            self.PDOExcludeCheck()
-
-#        else:
-#            sizer = wx.FlexGridSizer(cols=1, hgap=20,rows=3, vgap=20)
-#            line = wx.StaticText(self, -1, "\n  This device does not support RxPDO.")
-#        
-#            sizer.Add(line)
-#            self.SetSizer(sizer)
-#        self.Layout()
-#        self.Fit()
     def __init__(self, parent, controler):
             wx.Panel.__init__(self, parent, -1)
             self.Controler = controler
@@ -1128,31 +1039,14 @@ class RxPDOPanelClass(wx.Panel):
             self.Fit()
 
     def LoadPDOSelectData(self):
-            RxPDOData = self.Controler.BaseParams.getRxPDO()
+            RxPDOData = self.Controler.EthercatSlaveParams.getRxPDO()
+            
             RxPDOs = []
             if RxPDOData != "None":
                 RxPDOs = RxPDOData.split()
             if RxPDOs :
                 for RxPDO in RxPDOs :
                     self.Controler.SelectedRxPDOIndex.append(int(RxPDO, 0))
-
-#    def PDOSelectCheck(self, event):
-#        # add jblee for Save User Select
-#        cb = event.GetEventObject()
-#                         # prevent duplicated check
-#        if cb.GetValue() and int(cb.GetLabel(), 0) not in self.Controler.SelectedRxPDOIndex:
-#            self.Controler.SelectedRxPDOIndex.append(int(cb.GetLabel(), 0))
-#            self.PDOIndexList.append(cb.GetLabel())
-#        else:
-#            self.Controler.SelectedRxPDOIndex.remove(int(cb.GetLabel(), 0))
-#            self.PDOIndexList.remove(cb.GetLabel())
-
-#        data = ""
-#        for PDOIndex in self.PDOIndexList:            
-#            data = data + " " + PDOIndex
-
-#        self.Controler.BaseParams.setRxPDO(data)
-#        self.Controler.GetCTRoot().CTNRequestSave()
 
 #        self.PDOExcludeCheck()
     def PDOSelectCheck(self, event):
@@ -1178,7 +1072,7 @@ class RxPDOPanelClass(wx.Panel):
 
         # Guardar datos
         data = " ".join(self.PDOIndexList)
-        self.Controler.BaseParams.setRxPDO(data)
+        self.Controler.EthercatSlaveParams.setRxPDO(data)
         self.Controler.GetCTRoot().CTNRequestSave()
 
 
@@ -1191,7 +1085,7 @@ class RxPDOPanelClass(wx.Panel):
         for PDOIndex in self.PDOIndexList:            
             data = data + " " + PDOIndex
 
-        self.Controler.BaseParams.setRxPDO(data)
+        self.Controler.EthercatSlaveParams.setRxPDO(data)
 
     # 2016.06.21
     # add jblee for check exclude pdo list
@@ -1261,94 +1155,6 @@ class RxPDOPanelClass(wx.Panel):
         self.Refresh()
 
 class TxPDOPanelClass(wx.Panel):
-#    def __init__(self, parent, controler):
-#        """
-#        Constructor
-#        @param parent: Reference to the parent EtherCATManagementTreebook class
-#        @param controler: _EthercatSlaveCTN class in EthercatSlave.py
-#        """
-#        wx.Panel.__init__(self, parent, -1)
-#        self.Controler = controler
-#        
-#        slave = self.Controler
-#        slave.Name = f"slave {self.Controler.GetSlavePos()}" 
-
-#        if not hasattr(slave, "SelectedRxPDOIndex"):
-#            slave.SelectedRxPDOIndex = []
-
-#        if not hasattr(slave, "SelectedTxPDOIndex"):
-#            slave.SelectedTxPDOIndex = []        
-
-#        # add jblee
-#        self.PDOIndexList = []
-#        self.LoadPDOSelectData()
-#        
-#        #HSAHN ADD. 2015.7.26 PDO Select Function ADD
-#        self.Controler.CommonMethod.RequestPDOInfo()
-#        self.PDOcheckBox = []
-#        self.tx_pdo_entries = self.Controler.CommonMethod.GetTxPDOCategory()
-
-#        if self.tx_pdo_entries:
-#            for entry in self.tx_pdo_entries:
-#                cb = wx.CheckBox(self, label=str(hex(entry['pdo_index'])), size=(120, 15))
-#                self.PDOcheckBox.append(cb)
-
-#                # Seleccionar por defecto si no hay índices seleccionados
-#                if not self.Controler.SelectedTxPDOIndex and entry['sm'] is not None:
-#                    cb.SetValue(True)
-#                    self.Controler.SelectedTxPDOIndex.append(int(cb.GetLabel(), 0))
-#                    self.InitSavePDO()  # usa self.Controler internamente
-#                elif entry['pdo_index'] in self.Controler.SelectedTxPDOIndex:
-#                    self.PDOIndexList.append(str(hex(entry['pdo_index'])))
-#                    cb.SetValue(True)
-
-#            # Bind para todos los checkboxes
-#            for cb in self.PDOcheckBox:
-#                self.Bind(wx.EVT_CHECKBOX, self.PDOSelectCheck, cb)
-
-#            self.PDOListBox = wx.StaticBox(self, label=_("PDO Mapping Select"))
-#            self.PDOListBoxSizer = wx.StaticBoxSizer(self.PDOListBox, orient=wx.HORIZONTAL)
-#            self.TxPDOListBox = wx.StaticBox(self, label=_("TxPDO"))
-#            self.TxPDOListBoxSizer = wx.StaticBoxSizer(self.TxPDOListBox, orient=wx.VERTICAL)
-#            self.TxPDOListBoxInnerSizer = wx.FlexGridSizer(cols=3, hgap=5, rows=10, vgap=5)
-#            # Solo agregar checboxes si hay alguno
-#            if self.PDOcheckBox:
-#                self.TxPDOListBoxInnerSizer.AddMany(self.PDOcheckBox)
-
-#            self.TxPDOListBoxSizer.Add(self.TxPDOListBoxInnerSizer)
-#            self.TxPDOListBoxSizer.SetMinSize((1,1)) # Forzar tamaño minimo
-#            
-#            self.PDOListBoxSizer.Add(self.TxPDOListBoxSizer)
-#            self.PDOWarningText = wx.StaticText(self, -1,
-#                       "  *Warning*\n\n By default configuration, \n\n first mapping set is selected. \n\n Choose the PDO mapping!",
-#                       size=(220, -1))
-#            self.PDOListBoxSizer.Add(self.PDOWarningText)
-
-#            self.PDOMonitoringEditorMainSizer = wx.BoxSizer(wx.VERTICAL)
-#            self.PDOMonitoringEditorInnerMainSizer = wx.FlexGridSizer(cols=1, hgap=10, rows=2, vgap=10)
-
-#            self.CallPDOChoicebook = PDONoteBook(self, controler=self.Controler, name="Tx")
-#            self.PDOMonitoringEditorInnerMainSizer.Add(self.CallPDOChoicebook, wx.ALL)
-
-#            self.PDOInformationBox = wx.StaticBox(self, label=_("TxPDO Mapping List"))
-#            self.PDOInformationBoxSizer = wx.StaticBoxSizer(self.PDOInformationBox, orient=wx.VERTICAL)
-#            self.PDOInformationBoxSizer.Add(self.PDOMonitoringEditorInnerMainSizer)
-
-#            self.PDOMonitoringEditorMainSizer.Add(self.PDOListBoxSizer)
-#            self.PDOMonitoringEditorMainSizer.Add(self.PDOInformationBoxSizer)
-#            self.SetSizer(self.PDOMonitoringEditorMainSizer)
-
-#            # add jblee
-##            self.PDOExcludeCheck()
-
-#        else:
-#            sizer = wx.FlexGridSizer(cols=1, hgap=20,rows=3, vgap=20)
-#            line = wx.StaticText(self, -1, "\n  This device does not support TxPDO.")
-#            sizer.Add(line)
-#            self.SetSizer(sizer)
-
-#        self.Layout()
-#        self.Fit()
     def __init__(self, parent, controler):
             wx.Panel.__init__(self, parent, -1)
             self.Controler = controler
@@ -1408,7 +1214,7 @@ class TxPDOPanelClass(wx.Panel):
             self.Fit()
         
     def LoadPDOSelectData(self):
-            TxPDOData = self.Controler.BaseParams.getTxPDO()
+            TxPDOData = self.Controler.EthercatSlaveParams.getTxPDO()
             TxPDOs = []
             if TxPDOData != "None":
                 TxPDOs = TxPDOData.split()
@@ -1458,7 +1264,7 @@ class TxPDOPanelClass(wx.Panel):
 
         # Guardar datos
         data = " ".join(self.PDOIndexList)
-        self.Controler.BaseParams.setTxPDO(data)
+        self.Controler.EthercatSlaveParams.setTxPDO(data)
         self.Controler.GetCTRoot().CTNRequestSave()
 
 
@@ -1470,7 +1276,7 @@ class TxPDOPanelClass(wx.Panel):
         for PDOIndex in self.PDOIndexList:            
             data = data + " " + PDOIndex
 
-        self.Controler.BaseParams.setTxPDO(data)
+        self.Controler.EthercatSlaveParams.setTxPDO(data)
 
     # 2016.06.21
     # add jblee for check exclude pdo list
@@ -1573,10 +1379,10 @@ class PDONoteBook(wx.Choicebook):
             # AVANZAR índice
             current_index += num_entries
 
-            # DEBUG
-            print("PDO:", hex(pdo_index),
-                  "entries:", len(entries),
-                  "expected:", num_entries)
+#            # DEBUG
+#            print("PDO:", hex(pdo_index),
+#                  "entries:", len(entries),
+#                  "expected:", num_entries)
 
             # CORREGIDO AQUÍ
             page = PDOEntryTable(self, pdo, entries, i)
@@ -3973,18 +3779,18 @@ class DCConfigPanel(wx.Panel):
         dc_sync0_shift = self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].GetValue()
         dc_sync1_shift = self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"].GetValue()
 
-        # Guardar valores
-        self.Controler.BaseParams.setDC_Enable(dc_enable)
-        self.Controler.BaseParams.setDC_Desc(dc_desc)
-        self.Controler.BaseParams.setDC_Assign_Activate(dc_assign_activate_mod)
+        # Guardar valores       
+        self.Controler.EthercatSlaveParams.setDC_Enable(dc_enable)
+        self.Controler.EthercatSlaveParams.setDC_Desc(dc_desc)
+        self.Controler.EthercatSlaveParams.setDC_Assign_Activate(dc_assign_activate_mod)
         if dc_sync0_cycle:
-            self.Controler.BaseParams.setDC_Sync0_Cycle_Time(dc_sync0_cycle)
+            self.Controler.EthercatSlaveParams.setDC_Sync0_Cycle_Time(dc_sync0_cycle)
         if dc_sync0_shift:
-            self.Controler.BaseParams.setDC_Sync0_Shift_Time(dc_sync0_shift)
+            self.Controler.EthercatSlaveParams.setDC_Sync0_Shift_Time(dc_sync0_shift)
         if dc_sync1_cycle:
-            self.Controler.BaseParams.setDC_Sync1_Cycle_Time(dc_sync1_cycle)
+            self.Controler.EthercatSlaveParams.setDC_Sync1_Cycle_Time(dc_sync1_cycle)
         if dc_sync1_shift:
-            self.Controler.BaseParams.setDC_Sync1_Shift_Time(dc_sync1_shift)
+            self.Controler.EthercatSlaveParams.setDC_Sync1_Shift_Time(dc_sync1_shift)
 
         # Guardar proyecto
         project_infos = self.Controler.GetCTRoot().CTNRequestSave()
@@ -4006,6 +3812,11 @@ class DCConfigPanel(wx.Panel):
         return result
 
     def SetSyncCycle(self, period, sync0_cycle, sync1_cycle):
+        if isinstance(sync0_cycle, int):
+            sync0_cycle = "None" if sync0_cycle == 0 else f"0_{sync0_cycle}"
+        if isinstance(sync1_cycle, int):
+            sync1_cycle = "None" if sync1_cycle == 0 else f"0_{sync1_cycle}"
+            
         if sync0_cycle != "None":
             self.CheckBoxDic["Sync0Enable"].SetValue(True)               
             temp = sync0_cycle.split("_")
@@ -4036,26 +3847,39 @@ class DCConfigPanel(wx.Panel):
         ns_mode = 1
         task_cycle_ns = self.GetInterval(ns_mode)
         task_cycle_to_us = int(task_cycle_ns) / 1000
-        dc_enable = getattr(self.Controler.BaseParams, "getDC_Enable", lambda: False)()
-        dc_desc = getattr(self.Controler.BaseParams, "getDC_Desc", lambda: "")()
-        dc_assign_activate = getattr(self.Controler.BaseParams, "getDC_Assign_Activate", lambda: False)()
-        dc_sync0_cycle = getattr(self.Controler.BaseParams, "getDC_Sync0_Cycle_Time", lambda: 0)()
-        dc_sync0_shift = getattr(self.Controler.BaseParams, "getDC_Sync0_Shift_Time", lambda: 0)()
-        dc_sync1_cycle = getattr(self.Controler.BaseParams, "getDC_Sync1_Cycle_Time", lambda: 0)()
-        dc_sync1_shift = getattr(self.Controler.BaseParams, "getDC_Sync1_Shift_Time", lambda: 0)()
+        
+        params = getattr(self.Controler, "EthercatSlaveParams", None)
+        
+        if params is not None:
+            dc_enable = getattr(params, "getDC_Enable", lambda: False)()
+            dc_desc = getattr(params, "getDC_Desc", lambda: "")()
+            dc_assign_activate = getattr(params, "getDC_Assign_Activate", lambda: 0)()
+            dc_sync0_cycle = getattr(params, "getDC_Sync0_Cycle_Time", lambda: 0)()
+            dc_sync0_shift = getattr(params, "getDC_Sync0_Shift_Time", lambda: 0)()
+            dc_sync1_cycle = getattr(params, "getDC_Sync1_Cycle_Time", lambda: 0)()
+            dc_sync1_shift = getattr(params, "getDC_Sync1_Shift_Time", lambda: 0)()
+        else:
+            # valores por defecto seguros
+            dc_enable = False
+            dc_desc = ""
+            dc_assign_activate = 0
+            dc_sync0_cycle = 0
+            dc_sync0_shift = 0
+            dc_sync1_cycle = 0
+            dc_sync1_shift = 0
 
 
         self.UIOnOffSet(dc_enable)
 
-        if dc_enable:
+        if dc_enable is not None:
             self.CheckBoxDic["DCEnable"].SetValue(dc_enable)
             self.ComboBoxDic["OperationModeChoice"].SetStringSelection(dc_desc)
             self.TextCtrlDic["SyncUnitCycle_Ctl"].SetValue(str(task_cycle_to_us))
             self.SetSyncCycle(str(task_cycle_to_us), dc_sync0_cycle, dc_sync1_cycle)
             if dc_sync0_shift != "None":
-                self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].SetValue(dc_sync0_shift)
+                self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].SetValue(str(dc_sync0_shift))
             if dc_sync1_shift != "None":
-                self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"].SetValue(dc_sync1_shift)
+                self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"].SetValue(str(dc_sync1_shift))
 
             if dc_assign_activate == "300":
                 self.CheckBoxDic["Sync1Enable"].SetValue(False)

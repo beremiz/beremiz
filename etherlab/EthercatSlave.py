@@ -69,6 +69,29 @@ def ExtractName(names, default=None):
 class _EthercatSlaveCTN(object):
     NODE_PROFILE = None
     EditorType = NodeEditor
+                      
+    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+      <xsd:element name="EthercatSlaveParams">
+        <xsd:complexType>
+          <xsd:attribute name="RxPDO" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="TxPDO" type="xsd:string" use="optional" default="None"/>
+
+          <xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
+          <xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
+
+          <xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
+
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+    """
 
     def __init__(self):
         # ----------- call ethercat mng. function --------------
