@@ -22,30 +22,15 @@
 # This code is made available on the understanding that it will not be
 # used in safety-critical situations without a full and competent review.
 
+#
+# C code generation utilities for the original (non-Zephyr) Modbus backend.
+# Generates C struct initializers for flat-array data structures used by libmb.a.
+#
 
-# dictionary implementing:
-# key   - string with the description we want in the request plugin GUI
-# tuple - (modbus function number, request type, max count value,
-# data_type, bit_size)
-modbus_function_dict = {
-    "01 - Read Coils":                ('1',  'req_input', 2000, "BOOL",  1, "Q", "X", "Coil"),
-    "02 - Read Input Discretes":      ('2',  'req_input', 2000, "BOOL",  1, "I", "X", "Input Discrete"),
-    "03 - Read Holding Registers":    ('3',  'req_input',  125, "WORD", 16, "Q", "W", "Holding Register"),
-    "04 - Read Input Registers":      ('4',  'req_input',  125, "WORD", 16, "I", "W", "Input Register"),
-    "05 - Write Single coil":         ('5', 'req_output',    1, "BOOL",  1, "Q", "X", "Coil"),
-    "06 - Write Single Register":     ('6', 'req_output',    1, "WORD", 16, "Q", "W", "Holding Register"),
-    "15 - Write Multiple Coils":     ('15', 'req_output', 1968, "BOOL",  1, "Q", "X", "Coil"),
-    "16 - Write Multiple Registers": ('16', 'req_output',  123, "WORD", 16, "Q", "W", "Holding Register")}
-
-
-# Configuration tree value acces helper
-def GetCTVal(child, index):
-    return child.GetParamsAttributes()[0]["children"][index]["value"]
-
-
-# Configuration tree value acces helper, for multiple values
-def GetCTVals(child, indexes):
-    return [GetCTVal(child, index) for index in indexes]
+from modbus.modbus_base import (
+    modbus_function_dict, modbus_serial_parity_dict,
+    GetCTVal, GetCTVals,
+)
 
 
 def GetTCPServerNodePrinted(self, child):
@@ -60,10 +45,6 @@ def GetTCPServerNodePrinted(self, child):
     config_name, host, port, slaveid = GetCTVals(child, list(range(4)))
     if host == "#ANY#":
         host = ''
-    # slaveid = GetCTVal(child, 2)
-    # if int(slaveid) not in xrange(256):
-        # self.GetCTRoot().logger.write_error("Error: Wrong slave ID in %s server node\nModbus Plugin C code returns empty\n"%location)
-        # return None
 
     node_dict = {"locnodestr": location,
                  "config_name": config_name,
@@ -102,12 +83,6 @@ def GetTCPServerMemAreaPrinted(self, child, nodeid):
         return None
 
     return ""
-
-
-modbus_serial_baudrate_list = [
-    "110", "300", "600", "1200", "2400", "4800", "9600", "19200", "38400", "57600", "115200"]
-modbus_serial_stopbits_list = ["1", "2"]
-modbus_serial_parity_dict = {"none": 0, "odd": 1, "even": 2}
 
 
 def GetRTUSlaveNodePrinted(self, child):
@@ -185,7 +160,7 @@ def GetClientRequestPrinted(self, child, nodeid):
 
     req_init_template = '''/*request %(locreqstr)s*/
 {"%(locreqstr)s", %(nodeid)s, %(slaveid)s, %(iotype)s, %(func_nr)s, %(address)s , %(count)s,
-DEF_REQ_SEND_RETRIES, 0 /* mb_error_code */, 0 /* tn_error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */, 
+DEF_REQ_SEND_RETRIES, 0 /* mb_error_code */, 0 /* tn_error_code */, 0 /* prev_code */, {%(timeout_s)d, %(timeout_ns)d} /* timeout */, %(write_on_change)d /* write_on_change */,
 {%(buffer)s}, {%(buffer)s}}'''
 
     timeout = int(GetCTVal(child, 4))
@@ -227,8 +202,5 @@ DEF_REQ_SEND_RETRIES, 0 /* mb_error_code */, 0 /* tn_error_code */, 0 /* prev_co
     if (request_dict["write_on_change"] and (request_dict["iotype"] == 'req_input')):
         self.GetCTRoot().logger.write_error(
             "Modbus plugin: (warning) MB client request node %(locreqstr)s has option 'write_on_change' enabled.\nModbus plugin: This option will be ignored by the Modbus read function.\n" % request_dict)
-        # NOTE: this is only a warning (we don't wish to abort code generation) so following line must be left commented out!
-        # return None
-    
 
     return req_init_template % request_dict
