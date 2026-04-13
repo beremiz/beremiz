@@ -4519,8 +4519,8 @@ msgstr "Local_IP_Address"
 msgid "Local_Port_Number"
 msgstr "Local_Port_Number"
 
-msgid "ModbusRTUclient"
-msgstr "ModbusRTUclient"
+msgid "ModbusRTUmaster"
+msgstr "ModbusRTUmaster"
 
 msgid "Serial_Port"
 msgstr "Seri port"

@@ -4418,7 +4418,7 @@ msgstr ""
 msgid "Local_Port_Number"
 msgstr ""
 
-msgid "ModbusRTUclient"
+msgid "ModbusRTUmaster"
 msgstr ""
 
 msgid "Serial_Port"

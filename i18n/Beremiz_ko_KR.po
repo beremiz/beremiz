@@ -4485,7 +4485,7 @@ msgstr "로컬 IP 주소"
 msgid "Local_Port_Number"
 msgstr "로컬 Port 번호"
 
-msgid "ModbusRTUclient"
+msgid "ModbusRTUmaster"
 msgstr "ModbusRTU 클라이언트"
 
 msgid "Serial_Port"

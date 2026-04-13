@@ -28,7 +28,7 @@ import os
 from modbus.modbus_base import (
     _RequestPlugBase, _MemoryAreaPlugBase,
     _ModbusTCPclientPlugBase, _ModbusTCPserverPlugBase,
-    _ModbusRTUclientPlugBase, _ModbusRTUslavePlugBase,
+    _ModbusRTUmasterPlugBase, _ModbusRTUslavePlugBase,
     RootClassBase,
     modbus_function_dict, modbus_memtype_dict,
     GetCTVal, _lt_to_str,
@@ -59,7 +59,7 @@ class _ModbusTCPserverPlug(_ModbusTCPserverPlugBase):
     CTNChildrenTypes = [("MemoryArea", _MemoryAreaPlug, "Memory Area")]
 
 
-class _ModbusRTUclientPlug(_ModbusRTUclientPlugBase):
+class _ModbusRTUmasterPlug(_ModbusRTUmasterPlugBase):
     CTNChildrenTypes = [("ModbusRequest", _RequestPlug, "Request")]
 
 
@@ -70,7 +70,7 @@ class _ModbusRTUslavePlug(_ModbusRTUslavePlugBase):
 class RootClass(RootClassBase):
     CTNChildrenTypes = [("ModbusTCPclient", _ModbusTCPclientPlug, "Modbus TCP Client"),
                         ("ModbusTCPserver", _ModbusTCPserverPlug, "Modbus TCP Server"),
-                        ("ModbusRTUclient", _ModbusRTUclientPlug, "Modbus RTU Client"),
+                        ("ModbusRTUmaster", _ModbusRTUmasterPlug, "Modbus RTU Client"),
                         ("ModbusRTUslave", _ModbusRTUslavePlug,  "Modbus RTU Slave")]
 
     def SupportsTarget(self, target):
@@ -270,7 +270,7 @@ class RootClass(RootClassBase):
                 tcpclient_node_count += 1
                 client_nodeid += 1
             #
-            if child.PlugType == "ModbusRTUclient":
+            if child.PlugType == "ModbusRTUmaster":
                 rtuclient_reqs_count += len(child.IECSortedChildren())
                 new_node = GetRTUClientNodePrinted(self, child)
                 if new_node is None:

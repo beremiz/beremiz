@@ -4485,7 +4485,7 @@ msgstr "本地IP地址"
 msgid "Local_Port_Number"
 msgstr "本地端口号"
 
-msgid "ModbusRTUclient"
+msgid "ModbusRTUmaster"
 msgstr "ModbusRTC客户端"
 
 msgid "Serial_Port"

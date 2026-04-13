@@ -496,10 +496,10 @@ class _ModbusTCPserverPlugBase(object):
 #
 #
 
-class _ModbusRTUclientPlugBase(object):
+class _ModbusRTUmasterPlugBase(object):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="ModbusRTUclient">
+      <xsd:element name="ModbusRTUmaster">
         <xsd:complexType>
           <xsd:attribute name="Configuration_Name" type="xsd:string" use="optional" default=""/>
           <xsd:attribute name="Serial_Port" type="xsd:string"  use="optional" default="/dev/ttyS0"/>
@@ -528,16 +528,16 @@ class _ModbusRTUclientPlugBase(object):
     """
 
     # CTNChildrenTypes must be set by subclass to reference local _RequestPlug
-    PlugType = "ModbusRTUclient"
+    PlugType = "ModbusRTUmaster"
 
     def __init__(self):
         loc_str = ".".join(map(str, self.GetCurrentLocation()))
-        self.ModbusRTUclient.setConfiguration_Name("Modbus RTU Client " + loc_str)
+        self.ModbusRTUmaster.setConfiguration_Name("Modbus RTU Client " + loc_str)
 
     def GetParamsAttributes(self, path=None):
         infos = ConfigTreeNode.GetParamsAttributes(self, path=path)
         for element in infos:
-            if element["name"] == "ModbusRTUclient":
+            if element["name"] == "ModbusRTUmaster":
                 for child in element["children"]:
                     if child["name"] == "Baud_Rate":
                         child["type"] = modbus_serial_baudrate_list
@@ -551,7 +551,7 @@ class _ModbusRTUclientPlugBase(object):
         return (0, 1, 0)
 
     def GetConfigName(self):
-        return self.ModbusRTUclient.getConfiguration_Name()
+        return self.ModbusRTUmaster.getConfiguration_Name()
 
     def CTNGenerate_C(self, buildpath, locations):
         return [], "", False

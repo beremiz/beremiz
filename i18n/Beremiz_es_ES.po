@@ -4530,7 +4530,7 @@ msgstr "Direccion_IP_Local"
 msgid "Local_Port_Number"
 msgstr "Numero_Puerto_Local"
 
-msgid "ModbusRTUclient"
+msgid "ModbusRTUmaster"
 msgstr "ClienteModbusRTU"
 
 msgid "Serial_Port"

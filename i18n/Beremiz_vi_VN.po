@@ -4476,7 +4476,7 @@ msgstr "Địa chỉ IP cục bộ"
 msgid "Local_Port_Number"
 msgstr "Số cổng cục bộ"
 
-msgid "ModbusRTUclient"
+msgid "ModbusRTUmaster"
 msgstr ""
 
 msgid "Serial_Port"

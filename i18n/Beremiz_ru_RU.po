@@ -4532,7 +4532,7 @@ msgstr "IP адрес"
 msgid "Local_Port_Number"
 msgstr "TCP порт"
 
-msgid "ModbusRTUclient"
+msgid "ModbusRTUmaster"
 msgstr "Modbus/RTU Master"
 
 msgid "Serial_Port"
