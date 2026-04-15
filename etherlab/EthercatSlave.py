@@ -154,14 +154,18 @@ class _EthercatSlaveCTN(object):
             return params
 
     def SetParamsAttribute(self, path, value):
+        if path == "EthercatSlaveParams.Type":
+            path = "SlaveParams.Type"
+        elif path == "EthercatSlaveParams.Alias":
+            path = "SlaveParams.Alias"
+
         self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
 
         if path == "SlaveParams.Type":
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
-            value = (slave_type["device_type"], slave_type)
-            return value, True
+            return slave_type["device_type"], True
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)
             return value, True

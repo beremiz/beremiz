@@ -247,6 +247,29 @@ class _EthercatCTN(object):
         self.Config = None
         if self.Config is None:
             self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
+            # set up the master description
+            config = self.Config.getConfig()
+
+            # set up the master description
+            config = self.Config.getConfig()
+
+            if config.getMaster() is None:
+                master = EtherCATConfigParser.CreateElement("Master", "Config")
+                config.appendMaster(master)
+            else:
+                master = config.getMaster()
+
+            if master.getInfo() is None:
+                master.addInfo()
+
+            info = master.getInfo()
+
+            # source and destination are integers, not strings
+            info.setSource(0x10)
+            info.setDestination(0x10)
+
+            if not info.getName():
+                info.setName("Master0")
 
         process_filepath = self.ProcessVariablesFileName()
         process_is_saved = False
@@ -310,7 +333,6 @@ class _EthercatCTN(object):
             node.setdefault("doc", None)
             if isinstance(node.get("children"), list):
                 self.ensure_doc_recursive(node["children"])
-
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
         dialog = BrowseValuesLibraryDialog(app_frame,
@@ -325,7 +347,7 @@ class _EthercatCTN(object):
                 else:
                     ConfNodeType = "EthercatSlave"
                 new_child = self.CTNAddChild("%s_0" % ConfNodeType, ConfNodeType)
-                new_child.SetParamsAttribute("SlaveParams.Type", type_infos)
+                new_child.SetParamsAttribute("EthercatSlaveParams.Type", type_infos)
                 self.CTNRequestSave()
                 self.ensure_doc_recursive(getattr(new_child, "ConfNodeParams", []))
                 new_child._OpenView()
