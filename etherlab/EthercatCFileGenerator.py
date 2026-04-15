@@ -467,6 +467,10 @@ class _EthercatCFileGenerator(object):
                         RxPDOData = ""
                     if TxPDOData == "None":
                         TxPDOData = ""
+                    if not RxPDOData:
+                        RxPDOData = ""
+                    if not TxPDOData:
+                        TxPDOData = ""
                         
                 PDOList = RxPDOData.split() + TxPDOData.split()
                 

@@ -64,14 +64,18 @@ class BrowseValuesLibraryDialog(wx.Dialog):
 
         self.SetSizer(self.flexGridSizer1)
         self.Fit()
+        self._item_data_map = {}
 
         root = self.ValuesLibrary.AddRoot("")
         self.GenerateValuesLibraryBranch(root, library, default)
+        
 
     def GenerateValuesLibraryBranch(self, root, children, default):
         for infos in children:
             item = self.ValuesLibrary.AppendItem(root, infos["name"])
-            self.ValuesLibrary.SetPyData(item, infos["infos"])
+            data_id = id(infos["infos"])
+            self.ValuesLibrary.SetItemData(item, data_id)
+            self._item_data_map[data_id] = infos["infos"]
             if infos["infos"] is not None and infos["infos"] == default:
                 self.ValuesLibrary.SelectItem(item)
                 self.ValuesLibrary.EnsureVisible(item)
@@ -79,7 +83,8 @@ class BrowseValuesLibraryDialog(wx.Dialog):
 
     def GetValueInfos(self):
         selected = self.ValuesLibrary.GetSelection()
-        return self.ValuesLibrary.GetItemData(selected)
+        data_id = self.ValuesLibrary.GetItemData(selected)
+        return self._item_data_map.get(data_id)
 
     def OnOK(self, event):
         selected = self.ValuesLibrary.GetSelection()

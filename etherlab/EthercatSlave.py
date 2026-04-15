@@ -75,17 +75,8 @@ class _EthercatSlaveCTN(object):
 
       <xsd:element name="EthercatSlaveParams">
         <xsd:complexType>
-          <xsd:attribute name="RxPDO" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="TxPDO" type="xsd:string" use="optional" default="None"/>
-
-          <xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
-          <xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
-
-          <xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
+          <xsd:sequence/>
+          __XSD_DEVICE__
 
         </xsd:complexType>
       </xsd:element>
@@ -98,6 +89,45 @@ class _EthercatSlaveCTN(object):
         self.CommonMethod = _CommonSlave(self)
         self.SelectedRxPDOIndex = []
         self.SelectedTxPDOIndex = []
+    
+    def BuildPendingXSDFromXML(self, CTNName, CTNType):
+        from lxml import etree
+        import os
+        import ast
+
+        base_path = os.path.join(
+            self.CTNParent.CTNPath(),
+            f"{self.CTNParent._CTNName}@{self.CTNType}",
+            f"{CTNName}@{CTNType}", "baseconfnode.xml"
+        )
+
+        tree = etree.parse(base_path)
+        pos = int(tree.getroot().get("IEC_Channel"))
+        config_file = os.path.join(self.CTNParent.CTNPath(),
+                                    f"{self.CTNParent._CTNName}@{self.CTNType}", "config.xml")
+        tree = etree.parse(config_file)
+        root = tree.getroot()
+
+        for slave in root.iter("Slave"):
+            info = slave.find("Info")
+
+            if int(info.findtext("PhysAddr")) != pos:
+                continue
+
+            type_info = {
+                "device_type": info.findtext("Name"),
+                "vendor": info.findtext("VendorId"),
+                "product_code": info.findtext("ProductCode"),
+                "revision_number": info.findtext("RevisionNo"),
+            }
+
+            device, _ = self.CTNParent.GetModuleInfos(type_info)
+
+            if device is not None:
+                xsd = self.BuildXSDFromDevice(device)
+
+                return xsd
+        return ""
 
     def GetIconName(self):
         return "Slave"
@@ -154,14 +184,20 @@ class _EthercatSlaveCTN(object):
             return params
 
     def SetParamsAttribute(self, path, value):
+        if path == "EthercatSlaveParams.Type":
+            path = "SlaveParams.Type"
+        elif path == "EthercatSlaveParams.Alias":
+            path = "SlaveParams.Alias"
+            
         self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
 
         if path == "SlaveParams.Type":
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
-            value = (slave_type["device_type"], slave_type)
-            return value, True
+#            value = (slave_type["device_type"], slave_type)
+#            return value, True
+            return slave_type["device_type"], True
         elif path == "SlaveParams.Alias":
             self.CTNParent.SetSlaveAlias(position, value)
             return value, True

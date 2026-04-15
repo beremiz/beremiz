@@ -43,7 +43,7 @@ try:
 except Exception as e:
     print("CIA402 import error", e)
     HAS_MCL = False
-
+from beremiz_trace import BeremizTracer as BT
 # --------------------------------------------------
 #         Remote Exec Etherlab Commands
 # --------------------------------------------------
@@ -251,6 +251,29 @@ class _EthercatCTN(object):
         self.Config = None
         if self.Config is None:
             self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
+            # inicializar Master
+            config = self.Config.getConfig()
+
+            # inicializar Master
+            config = self.Config.getConfig()
+
+            if config.getMaster() is None:
+                master = EtherCATConfigParser.CreateElement("Master", "Config")
+                config.appendMaster(master)
+            else:
+                master = config.getMaster()
+
+            if master.getInfo() is None:
+                master.addInfo()
+
+            info = master.getInfo()
+
+            # USAR ENTEROS, NO STRINGS
+            info.setSource(0x10)
+            info.setDestination(0x10)
+
+            if not info.getName():
+                info.setName("Master0")
 
         process_filepath = self.ProcessVariablesFileName()
         process_is_saved = False
@@ -279,7 +302,7 @@ class _EthercatCTN(object):
         else:
             self.CreateBuffer(False)
             self.OnCTNSave()
-
+        
         if os.path.isfile(config_filepath):
             config_xmlfile = open(config_filepath, 'r')
             try:
@@ -317,6 +340,47 @@ class _EthercatCTN(object):
                 print("  " * depth + f"Node type: {type(node)} (no dict) -> {repr(node)}")
             if isinstance(node, dict) and "children" in node and isinstance(node["children"], list):
                 self.ensure_doc_recursive(node["children"], depth+1)
+    def BuildXSDFromDevice(self, device):
+        xsd_parts = []
+
+        xsd_parts.append('<xsd:attribute name="RxPDO" type="xsd:string" use="optional"/>')
+        xsd_parts.append('<xsd:attribute name="TxPDO" type="xsd:string" use="optional"/>')
+        # -------------------------
+        # DC (POR ATRIBUTO INDIVIDUAL)
+        # -------------------------
+        try:
+            dc = device.getDc()
+            if dc is not None:
+
+                if dc.getOpMode() is not None:
+                    xsd_parts.append('<xsd:attribute name="DC_OpMode" type="xsd:string" use="optional"/>')
+
+                # Si existen métodos separados en tu ESI
+                if hasattr(dc, "getEnable") and dc.getEnable():
+                    xsd_parts.append('<xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>')
+
+                if hasattr(dc, "getDesc") and dc.getDesc():
+                    xsd_parts.append('<xsd:attribute name="DC_Desc" type="xsd:string" use="optional"/>')
+
+                if hasattr(dc, "getAssignActivate") and dc.getAssignActivate():
+                    xsd_parts.append('<xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional"/>')
+
+                if hasattr(dc, "getSync0CycleTime") and dc.getSync0CycleTime():
+                    xsd_parts.append('<xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional"/>')
+
+                if hasattr(dc, "getSync0ShiftTime") and dc.getSync0ShiftTime():
+                    xsd_parts.append('<xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional"/>')
+
+                if hasattr(dc, "getSync1CycleTime") and dc.getSync1CycleTime():
+                    xsd_parts.append('<xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional"/>')
+
+                if hasattr(dc, "getSync1ShiftTime") and dc.getSync1ShiftTime():
+                    xsd_parts.append('<xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional"/>')
+
+        except:
+            pass
+
+        return "\n".join(xsd_parts)
 
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
@@ -325,14 +389,15 @@ class _EthercatCTN(object):
                                            self.GetSlaveTypesLibrary())
         if dialog.ShowModal() == wx.ID_OK:
             type_infos = dialog.GetValueInfos()
-            device, _module_extra_params = self.GetModuleInfos(type_infos)
+            device, _module_extra_params = self.GetModuleInfos(type_infos)             
+            self._PendingXSD = self.BuildXSDFromDevice(device)
             if device is not None:
                 if HAS_MCL and str(_EthercatCIA402SlaveCTN.NODE_PROFILE) in device.GetProfileNumbers():
                     ConfNodeType = "EthercatCIA402Slave"
                 else:
                     ConfNodeType = "EthercatSlave"
                 new_child = self.CTNAddChild("%s_0" % ConfNodeType, ConfNodeType)
-                new_child.SetParamsAttribute("SlaveParams.Type", type_infos)
+                new_child.SetParamsAttribute("EthercatSlaveParams.Type", type_infos)
                 self.CTNRequestSave()
                 self.ensure_doc_recursive(getattr(new_child, "ConfNodeParams", []))
                 new_child._OpenView()
@@ -341,7 +406,43 @@ class _EthercatCTN(object):
 
                 app_frame._Refresh(TITLE, FILEMENU, PROJECTTREE)
         dialog.Destroy()
+    
+    def LoadDeviceInfoFromXML(self, parent):
+        """
+        Reads EthercatSlaveParams from confnode.xml
+        and returns a dict usable as type_infos base.
+        """
 
+        import os
+        from lxml import etree
+
+        base_path = parent.CTNPath()
+        conf_file = os.path.join(
+            base_path,
+            f"{parent._CTNName}@{self.CTNType}",
+            "confnode.xml"
+        )
+
+        if not os.path.exists(conf_file):
+            print("confnode.xml does not exist")
+            return {}
+
+        try:
+            tree = etree.parse(conf_file)
+            root = tree.getroot()
+
+            if root.tag != "EthercatSlaveParams":
+                print("Invalid root tag:", root.tag)
+                return {}
+
+            device_info = dict(root.attrib)
+
+            return device_info
+
+        except Exception as e:
+            print("LoadDeviceInfoFromXML ERROR:", e)
+            return {}
+            
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
 

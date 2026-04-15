@@ -168,22 +168,28 @@ MODEOFOP_COMPUTATION_MODE_TEMPLATE = """
 # --------------------------------------------------
 #                 Ethercat CIA402 Node
 # --------------------------------------------------
-XSD_PDO_DC = _EthercatSlaveCTN.XSD
+
 class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="CIA402SlaveParams">
+     <xsd:element name="EthercatSlaveParams">
         <xsd:complexType>
-          %s
+          <xsd:sequence/>
+          __XSD_DEVICE__
+          __XSD_CIA402_STATIC__
         </xsd:complexType>
       </xsd:element>
     </xsd:schema>
-    """ % ("\n".join(["""\
-          <xsd:attribute name="Enable%s" type="xsd:boolean"
-                         use="optional" default="false"/>""" % category
-                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
+    """ 
                       
-                      
+    CIA402_STATIC = "\n".join([
+            f"""
+            <xsd:attribute name="Enable{category}" type="xsd:boolean"
+                           use="optional" default="false"/>
+            """
+            for category, variables in EXTRA_NODE_VARIABLES
+        ]) + AxisXSD
+
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor
 
@@ -211,21 +217,56 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     def __init__(self):
         _EthercatSlaveCTN.__init__(self)
         
-        self.EthercatSlaveParams = GenerateParserFromXSDstring(XSD_PDO_DC) 
-        root_obj =   self.EthercatSlaveParams.CreateRoot() 
-        setattr(self, root_obj.getLocalTag(), root_obj)
-
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
+    
+    def BuildPendingXSDFromXML(self, CTNName, CTNType):
+        from lxml import etree
+        import os
+        import ast
 
+        base_path = os.path.join(
+            self.CTNParent.CTNPath(),
+            f"{self.CTNParent._CTNName}@{self.CTNType}",
+            f"{CTNName}@{CTNType}","baseconfnode.xml"
+        )
+
+        tree = etree.parse(base_path)
+        pos = int(tree.getroot().get("IEC_Channel"))
+        config_file = os.path.join(self.CTNParent.CTNPath(),
+                                    f"{self.CTNParent._CTNName}@{self.CTNType}", "config.xml")
+        tree = etree.parse(config_file)
+        root = tree.getroot()
+
+        for slave in root.iter("Slave"):
+            info = slave.find("Info")
+
+            if int(info.findtext("PhysAddr")) != pos:
+                continue
+
+            type_info = {
+                "device_type": info.findtext("Name"),
+                "vendor": info.findtext("VendorId"),
+                "product_code": info.findtext("ProductCode"),
+                "revision_number": info.findtext("RevisionNo"),
+            }
+
+            device, _ = self.CTNParent.GetModuleInfos(type_info)
+
+            if device is not None:
+                xsd = self.BuildXSDFromDevice(device)
+
+                return xsd
+
+        return ""
 
     def GetIconName(self):
         return "CIA402Slave"
 
     def SetParamsAttribute(self, path, value):
-        if path == "CIA402SlaveParams.Type":
+        if path == "EthercatSlaveParams.Type":
             path = "SlaveParams.Type"
-        elif path == "CIA402SlaveParams.Alias":
+        elif path == "EthercatSlaveParams.Alias":
             path = "SlaveParams.Alias"
         return _EthercatSlaveCTN.SetParamsAttribute(self, path, value)
 
@@ -472,9 +513,17 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                                 str_completion["default_variables_retrieve"].append(check_i_data)
             list_index += pdo_info[i]['number_of_entry']
 #HSAHN END
+        DEVICE_PARAMS_NO_C = {
+            "RxPDO",
+            "TxPDO",
+            "DC_Desc"
+        }
 
         params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
         for param in params["children"]:
+            name = param["name"]
+            if name in DEVICE_PARAMS_NO_C:
+                continue
             if param["name"] in EXTRA_NODE_VARIABLES_DICT:
                 if param["value"]:
                     extra_variables = EXTRA_NODE_VARIABLES_DICT.get(param["name"])
