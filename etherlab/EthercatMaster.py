@@ -43,7 +43,6 @@ try:
 except Exception as e:
     print("CIA402 import error", e)
     HAS_MCL = False
-from beremiz_trace import BeremizTracer as BT
 # --------------------------------------------------
 #         Remote Exec Etherlab Commands
 # --------------------------------------------------
