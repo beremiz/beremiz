@@ -17,7 +17,7 @@ import wx
 from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
 from MotionLibrary import Headers, AxisXSD
-from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave
+from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave, PDO
 from etherlab.ConfigEditor import CIA402NodeEditor
 
 # Definition of node variables that have to be mapped in PDO
@@ -33,7 +33,7 @@ NODE_VARIABLES = [
     ("ModesOfOperationDisplay", 0x6061, 0x00, "SINT", "I"),
     ("ActualPosition",          0x6064, 0x00, "DINT", "I"),
     ("ActualVelocity",          0x606c, 0x00, "DINT", "I"),
-    ("ActualTorque",            0x6077, 0x00, "INT",  "I"),
+    ("ActualTorque",            0x6077, 0x00, "INT",  "I")
 ]
 
 # ------------------- restored from the previous version ----------------
@@ -44,7 +44,8 @@ ADD_NODE_VARIABLES = ({'name':"TargetPosition"   , 'index':0x607a, 'sub-index':0
                       {'name':"TargetTorque"     , 'index':0x6071, 'sub-index':0x00, 'type':"INT",  'direction':"Q"},
                       {'name':"ActualPosition"   , 'index':0x6064, 'sub-index':0x00, 'type':"DINT", 'direction':"I"},
                       {'name':"ActualVelocity"   , 'index':0x606c, 'sub-index':0x00, 'type':"DINT", 'direction':"I"},
-                      {'name':"ActualTorque"     , 'index':0x6077, 'sub-index':0x00, 'type':"INT",  'direction':"I"})
+                      {'name':"ActualTorque"     , 'index':0x6077, 'sub-index':0x00, 'type':"INT",  'direction':"I"}
+                     )
 
 DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"
 DEFAULT_PUBLISH = "    *(__CIA402Node_%(location)s.%(name)s) = __CIA402Node_%(location)s.axis->%(name)s;"
@@ -162,6 +163,16 @@ MODEOFOP_COMPUTATION_MODE_TEMPLATE = """
 	}
 """
 
+DC ="""<xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
+<xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
+"""
+
+
 # -------------------------------------------------------------------------
 
 # --------------------------------------------------
@@ -172,7 +183,7 @@ MODEOFOP_COMPUTATION_MODE_TEMPLATE = """
 class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-     <xsd:element name="EthercatSlaveParams">
+      <xsd:element name="EthercatSlaveParams">
         <xsd:complexType>
           %s
         </xsd:complexType>
@@ -181,7 +192,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     """ % ("\n".join(["""\
           <xsd:attribute name="Enable%s" type="xsd:boolean"
                          use="optional" default="false"/>""" % category
-                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
+                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD + PDO + DC)
 
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor
@@ -213,45 +224,24 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
 
-    def BuildPendingXSDFromXML(self, CTNName, CTNType):
-        from lxml import etree
-        import os
-        import ast
+    def FilterNodeVariablesFromESI(self, device_entries):
+        """
+        Split ADD_NODE_VARIABLES between the variables the ESI file of the
+        device does declare, and the ones it does not.
+        @param device_entries : entries declared by the ESI file
+        @return (kept, removed) : two lists of node variable descriptions
+        """
+        valid_indices = set(idx for (idx, _subidx) in device_entries.keys())
 
-        base_path = os.path.join(
-            self.CTNParent.CTNPath(),
-            f"{self.CTNParent._CTNName}@{self.CTNType}",
-            f"{CTNName}@{CTNType}","baseconfnode.xml"
-        )
+        kept = []
+        removed = []
+        for var in ADD_NODE_VARIABLES:
+            if var['index'] in valid_indices:
+                kept.append(var)
+            else:
+                removed.append(var)
 
-        tree = etree.parse(base_path)
-        pos = int(tree.getroot().get("IEC_Channel"))
-        config_file = os.path.join(self.CTNParent.CTNPath(),
-                                    f"{self.CTNParent._CTNName}@{self.CTNType}", "config.xml")
-        tree = etree.parse(config_file)
-        root = tree.getroot()
-
-        for slave in root.iter("Slave"):
-            info = slave.find("Info")
-
-            if int(info.findtext("PhysAddr")) != pos:
-                continue
-
-            type_info = {
-                "device_type": info.findtext("Name"),
-                "vendor": info.findtext("VendorId"),
-                "product_code": info.findtext("ProductCode"),
-                "revision_number": info.findtext("RevisionNo"),
-            }
-
-            device, _ = self.CTNParent.GetModuleInfos(type_info)
-
-            if device is not None:
-                xsd = self.BuildXSDFromDevice(device)
-
-                return xsd
-
-        return ""
+        return kept, removed
 
     def GetIconName(self):
         return "CIA402Slave"
@@ -462,8 +452,17 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             self.SelectedPDOIndex = self.LoadDefaultPDOSet()
         else :
             self.SelectedPDOIndex = self.SelectedRxPDOIndex + self.SelectedTxPDOIndex
-
         add_idx = []
+        # only keep the variables the ESI file of the device knows about
+        device_entries = self.CommonMethod.GetAllEntriesList()
+        ADD_NODE_VARIABLES, removed = self.FilterNodeVariablesFromESI(device_entries)
+        removed_indices = {v["index"] for v in removed}
+
+        variables = [
+            v for v in NODE_VARIABLES
+            if v[1] not in removed_indices
+        ]
+
         for i in range(len(ADD_NODE_VARIABLES)):
             add_idx.append(ADD_NODE_VARIABLES[i]['index'])
 
@@ -509,18 +508,46 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
         DEVICE_PARAMS_NO_C = {
             "RxPDO",
             "TxPDO",
-            "DC_Desc"
+            "DC_Enabled",
+            "DC_Desc",
+            "DC_Assign_Activate",
+            "DC_Sync0_Cycle_Time",
+            "DC_Sync0_Shift_Time",
+            "DC_Sync1_Cycle_Time",
+            "DC_Sync1_Shift_Time",
+            "LimitPosEnabled",
+            "LimitNegEnabled",
+            "PosLagMonitoringEnabled",
+            "SimulationEnabled",
+            "LimitSwitchNCEnabled",
+            "ActualVelocity",
+            "EnableDigitalOutputs",
+            "EnableTouchProbe",
+            "TouchProbePos1NegValue",
+            "DigitalOutputs",
+            "DigitalOutputsEnable"
         }
 
         params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
         for param in params["children"]:
-            name = param["name"]
-            if name in DEVICE_PARAMS_NO_C:
+
+            if param["type"] == "boolean":
+                cname = param["name"].replace("Enable", "") + "Enabled"
+            else:
+                cname = param["name"]
+
+            if cname in DEVICE_PARAMS_NO_C:
                 continue
             if param["name"] in EXTRA_NODE_VARIABLES_DICT:
                 if param["value"]:
                     extra_variables = EXTRA_NODE_VARIABLES_DICT.get(param["name"])
+                    # skip the extra variables missing from the ESI file
+                    device_entries = self.CommonMethod.GetAllEntriesList()
+                    valid_indices = {idx for (idx, _subidx) in device_entries.keys()}
                     for variable_infos in extra_variables:
+                        if variable_infos["description"][1] not in valid_indices:
+                            continue
+
                         var_infos = {
                             "location": location_str,
                             "name": variable_infos["description"][0]

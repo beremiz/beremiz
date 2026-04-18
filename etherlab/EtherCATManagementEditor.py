@@ -3213,6 +3213,7 @@ class DCConfigPanel(wx.Panel):
         self.RadioButtonDic = {}
         OperationModeComboList = []
         Sync1CycleComboList = []
+        self.task_cycle_ns = 0
         
         for ESI_Data in self.ESI_DC_Data:
             OperationModeComboList.append(ESI_Data["desc"])
@@ -3502,12 +3503,21 @@ class DCConfigPanel(wx.Panel):
 
     def CheckDCEnable(self, evt):
         ns_mode = 1
-        task_cycle_ns = self.GetInterval(ns_mode)
+        self.task_cycle_ns = self.GetInterval(ns_mode)
+
+        if not self.task_cycle_ns:
+            # fallback manual
+            tasks, instances = self.Controler.GetCTRoot().GetEditedResourceInfos(token)
+            for task in tasks:
+                if task.get("Interval"):
+                    self.task_cycle_ns = self.ParseTime(task["Interval"])
+                    break
+
         sync0_cycle_factor = None
         sync1_cycle_factor = None
 
         #task_cycle_ns = self.Controler.GetCTRoot()._Ticktime
-        if (task_cycle_ns > 0):
+        if (self.task_cycle_ns > 0):
             self.UIOnOffSet(evt.GetInt())
 
             if evt.GetInt():
@@ -3525,12 +3535,14 @@ class DCConfigPanel(wx.Panel):
                 sync1_shift_time_ns = self.ESI_DC_Data[default_list_num]["shifttime_sync1"]
 
                 cal_assign_act = self.Controler.ExtractHexDecValue(assign_act)
-                sync0_cycle_time_us = str(int(sync0_cycle_time_ns) / 1000)
-                sync0_shift_time_us = str(int(sync0_shift_time_ns) / 1000)
-                sync1_cycle_time_us = str(int(sync1_cycle_time_ns) / 1000)
-                sync1_shift_time_us = str(int(sync1_shift_time_ns) / 1000)
+                def ns_to_us(value):
+                    return str(int(value) / 1000) if value is not None else "0"
+                sync0_cycle_time_us = ns_to_us(sync0_cycle_time_ns)
+                sync1_cycle_time_us = ns_to_us(sync1_cycle_time_ns)
+                sync0_shift_time_us = ns_to_us(sync0_shift_time_ns)
+                sync1_shift_time_us = ns_to_us(sync1_shift_time_ns)
 
-                task_cycle_to_us = str(int(task_cycle_ns) / 1000)
+                task_cycle_to_us = int(self.task_cycle_ns) // 1000
 
                 # DC sync0 mode
                 if cal_assign_act == 768:
@@ -3575,7 +3587,7 @@ class DCConfigPanel(wx.Panel):
                 self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].SetValue(sync0_shift_time_us)
 
                 self.ComboBoxDic["OperationModeChoice"].SetStringSelection(config_name)
-                self.TextCtrlDic["SyncUnitCycle_Ctl"].SetValue(task_cycle_to_us)
+                self.TextCtrlDic["SyncUnitCycle_Ctl"].SetValue(str(task_cycle_to_us))
             else :
                 self.CheckBoxDic["Sync0Enable"].SetValue(False)
                 self.CheckBoxDic["Sync1Enable"].SetValue(False)
@@ -3624,11 +3636,13 @@ class DCConfigPanel(wx.Panel):
                 token = project_info_list["values"][0]["tagname"]
        
         tasks, instances = self.Controler.GetCTRoot().GetEditedResourceInfos(token)
+        self.task_cycle_ns = getattr(self.Controler.GetCTRoot(), "_Ticktime", 0)
         try:
             task_cycle_ns = self.ParseTime(tasks[0]["Interval"])
+
         except :
             task_cycle_ns = 0
-        task_cycle_us = int(task_cycle_ns) / 1000
+        task_cycle_us = int(task_cycle_ns) // 1000
 
         # mode == 1 ==> return ns
         # mode == 2 ==> return us
@@ -3636,7 +3650,7 @@ class DCConfigPanel(wx.Panel):
         if mode == 1:
             return task_cycle_ns
         if mode == 2:
-            return str(task_cycle_us)
+            return task_cycle_us
 
     def ParseTime(self, input):
         # input example : 't#1ms'
@@ -3648,11 +3662,11 @@ class DCConfigPanel(wx.Panel):
         # temp[:-2] : '1'
         if temp[1][-2:] == "ms":
            # convert nanosecond unit
-           result = int(temp[1][:-2]) * 1000000
+           result = float(temp[1][:-2]) * 1000000
         elif temp[1][-2:] == "us":
-           result = int(temp[1][:-2]) * 1000
+           result = float(temp[1][:-2]) * 1000
 
-        return str(result)
+        return int(result)
 
     def SelectSync0CycleTime(self, evt):
         selected_object = evt.GetEventObject()
@@ -3682,9 +3696,9 @@ class DCConfigPanel(wx.Panel):
         temp = section.split(" ")
 
         if temp[0] == "x":
-            result = int(period) * int(temp[1])
+            result = str(period * int(temp[1]))
         elif temp[0] == "/" :
-            result = int(period) / int(temp[1])
+            result = str(period / int(temp[1]))
         else :
             result = ""
 
@@ -3742,13 +3756,20 @@ class DCConfigPanel(wx.Panel):
         project_infos = self.Controler.GetCTRoot().CTNRequestSave()
 
     def GetSymbol(self, period, cycle):
-        cmp1 = int(period)
-        cmp2 = int(cycle)
+
+        try:
+            cmp1 = int(float(period))
+        except (ValueError, TypeError):
+            return ""
+        try:
+            cmp2 = int(float(cycle))
+        except (ValueError, TypeError):
+            return ""
 
         if cmp1 == cmp2 :
             return "x 1"
         elif cmp2 > cmp1 :
-            temp = cmp2 / cmp1
+            temp = int(cmp2 / cmp1)
             result = "x " + str(temp)
         else :
             temp = cmp1 / cmp2
@@ -3780,7 +3801,7 @@ class DCConfigPanel(wx.Panel):
             temp = sync1_cycle.split("_")
             if temp[0] == "1":
                 symbol = self.GetSymbol(period, temp[1])
-                self.ComboBoxDic["Sync1UnitChoice"].SetStringSelection(symbol)
+                self.ComboBoxDic["Sync1UnitCycleChoice"].SetStringSelection(symbol)
                 self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].Disable()
                 self.RadioButtonDic["Sync1CycleTimeUnitRadioButton"].SetValue(True)
             else :

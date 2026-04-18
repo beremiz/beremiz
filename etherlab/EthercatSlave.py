@@ -61,6 +61,9 @@ def ExtractName(names, default=None):
                 return name.getcontent()
     return default
 
+PDO ="""<xsd:attribute name="RxPDO" type="xsd:string" use="optional" default=""/>
+<xsd:attribute name="TxPDO" type="xsd:string" use="optional" default=""/>
+"""
 
 # --------------------------------------------------
 #                    Ethercat Node
@@ -75,23 +78,13 @@ class _EthercatSlaveCTN(object):
 
       <xsd:element name="EthercatSlaveParams">
         <xsd:complexType>
-          <xsd:attribute name="RxPDO" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="TxPDO" type="xsd:string" use="optional" default="None"/>
-
-          <xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
-          <xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
-
-          <xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
-          <xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
-
+          <xsd:sequence/>
+          %s
         </xsd:complexType>
       </xsd:element>
 
     </xsd:schema>
-    """
+    """ % PDO
 
     def __init__(self):
         # ----------- call ethercat mng. function --------------

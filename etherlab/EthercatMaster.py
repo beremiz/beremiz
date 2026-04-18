@@ -333,6 +333,7 @@ class _EthercatCTN(object):
             node.setdefault("doc", None)
             if isinstance(node.get("children"), list):
                 self.ensure_doc_recursive(node["children"])
+
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
         dialog = BrowseValuesLibraryDialog(app_frame,

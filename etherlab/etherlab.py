@@ -138,7 +138,7 @@ if cls:
         # get Profile Field
         for profile in self.getProfile():
             # get each (ProfileNo, Dictionary) Field as child
-            for child in profile.getchildren():
+            for child in list(profile):
                 # child.text is not None -> ProfileNo, is None -> Dictionary
                 if child.text is None:
                     # get each (DataTypes, Objects) Field 
@@ -175,7 +175,15 @@ if cls:
                 object_PDOMapping_data = ""
 
                 object_type_infos = DataTypes.get(object_type, None)
-                subItem_infos = object_type_infos.getchildren()
+                if object_type_infos is None:
+                    subItem_infos = []
+                else:
+                    get_subitem = getattr(object_type_infos, "getSubItem", None)
+                    if callable(get_subitem):
+                        subItem_infos = get_subitem() or []
+                    else:
+                        subItem_infos = []
+
                 countSubIndex = 0
                 if len(subItem_infos) > 2:
                     for subItem_info in subItem_infos:
@@ -214,11 +222,14 @@ if cls:
                     # subItemTest : check subItem 
                     countSubIndex = 0
                     if info is not None:
-                        subItems = info.getchildren()
+                        subItems = list(info)
                         if len(subItems) > 1:
                             for subItem in subItems:
                                 defaultdata_subidx = ExtractHexDecValue(countSubIndex)
-                                defaultData = subItem.getchildren()[1].findtext("DefaultData")
+                                children = list(subItem)
+                                if len(children) > 1:
+                                    defaultData = children[1].findtext("DefaultData")
+
                                 entry = entries.get((index, defaultdata_subidx), None)
                                 if entry is not None:
                                     entry["DefaultData"] = defaultData
@@ -227,15 +238,24 @@ if cls:
                 else :
                     info = object.getInfo()
                     if info is not None:
-                        subItems = info.getchildren()
+                        subItems = list(info)
                         if len(subItems) <= 1:
                             defaultData = subItems[0].text
                                 
                     object_flag = object.getFlags()
-                    object_access = object_flag.getAccess().getcontent()
-                    object_PDOMapping = object_flag.getPdoMapping()
-                    if object_PDOMapping is not None:
-                        object_PDOMapping_data = object_flag.getPdoMapping().upper()
+                    if object_flag is not None:
+                        access_obj = object_flag.getAccess()
+                        object_access = access_obj.getcontent() if access_obj is not None else ""
+
+                        object_PDOMapping = object_flag.getPdoMapping()
+                        if object_PDOMapping is not None:
+                            object_PDOMapping_data = object_PDOMapping.upper()
+                        else:
+                            object_PDOMapping_data = ""
+                    else:
+                        object_access = ""
+                        object_PDOMapping_data = ""
+
                     entries[(index, 0)] = {
                         "Index": object_index,
                         "SubIndex": "0",
@@ -420,8 +440,10 @@ for mapping needed location variables
                     for group in self.groups_xpath(self.modules_infos):
                         group_type = group.getType()
                         # add for XmlToEeprom Func by jblee.
-                        self.LcId_data = group.getchildren()[1]
-                        self.Image16x14_data = group.getchildren()[2]
+                        children = list(group)
+                        if len(children) > 2:
+                            self.LcId_data = children[1]
+                            self.Image16x14_data = children[2]
 
                         vendor_category["groups"].setdefault(
                             group_type,
@@ -446,7 +468,7 @@ for mapping needed location variables
                             for slot in slots.getSlot():
                                 self.idxIncrement = slot.getSlotIndexIncrement()
                                 self.slotIncrement = slot.getSlotPdoIncrement()
-                                for child in slot.getchildren():
+                                for child in list(slot):
                                     if child.tag == "ModuleClass":
                                         child_class = child.getClass()
                                         child_name = child.getName()
