@@ -791,6 +791,8 @@ class _EthercatCFileGenerator(object):
                         if not entry_declaration["mapped"]:
                             entry = device_entries.get((index, subindex), None)
                             if entry is None:
+                                print("entry_declaration: ", entry_declaration)
+                                print("entry: ", entry)
                                 print(f"[WARNING] SLAVE {slave_idx} ignorando index 0x{index:04x} (no pertenece a este device)")
                                 continue   # no valida entradas que no son suyas
                                 msg = _("Unknown entry index 0x{a1:04x}, subindex 0x{a2:02x} for device {a3}").\

@@ -1814,9 +1814,15 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
         element_class = self.GetElementClass(
             element.tag, parent.tag if parent is not None else None)
         if isinstance(element_class, list):
+#            children = "".join([
+#                "%s " % etree.QName(child.tag).localname
+#                for child in element])
             children = "".join([
                 "%s " % etree.QName(child.tag).localname
-                for child in element])
+                for child in element
+                if isinstance(child.tag, str)
+            ])
+
             for possible_class in element_class:
                 if isinstance(possible_class, str):
                     possible_class = self.GetElementClass(possible_class)

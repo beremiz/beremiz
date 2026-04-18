@@ -61,6 +61,9 @@ def ExtractName(names, default=None):
                 return name.getcontent()
     return default
 
+PDO ="""<xsd:attribute name="RxPDO" type="xsd:string" use="optional" default=""/>
+<xsd:attribute name="TxPDO" type="xsd:string" use="optional" default=""/>
+"""
 
 # --------------------------------------------------
 #                    Ethercat Node
@@ -76,13 +79,12 @@ class _EthercatSlaveCTN(object):
       <xsd:element name="EthercatSlaveParams">
         <xsd:complexType>
           <xsd:sequence/>
-          __XSD_DEVICE__
-
+          %s
         </xsd:complexType>
       </xsd:element>
 
     </xsd:schema>
-    """
+    """ % PDO
 
     def __init__(self):
         # ----------- call ethercat mng. function --------------

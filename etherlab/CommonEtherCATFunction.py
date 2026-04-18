@@ -241,7 +241,7 @@ class _CommonSlave(object):
         self.Controler = controler
         self.HexDecode = codecs.getdecoder("hex_codec")
         self.ClearSDODataSet()
-
+                   
     # -------------------------------------------------------------------------------
     #                        Used Master State
     # -------------------------------------------------------------------------------
@@ -390,12 +390,33 @@ class _CommonSlave(object):
         type_infos = slave.getType()
         device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
          
-        if device is not None :
-            for dictionary in device.GetProfileDictionaries():
-                dictionary.load()
-                for object in dictionary.getObjects().getObject():
-                    object_index = ExtractHexDecValue(object.getIndex().getcontent())
-                    objects[(object_index)] = object
+#        if device is not None :
+#            for dictionary in device.GetProfileDictionaries():
+#                dictionary.load()
+#                for object in dictionary.getObjects().getObject():
+#                    object_index = ExtractHexDecValue(object.getIndex().getcontent())
+#                    objects[(object_index)] = object
+        if device is None:
+            return objects
+            
+        # fallback nuevo sistema
+        if hasattr(device, "getTxPdo"):
+
+            for pdo in device.getTxPdo():
+                for entry in pdo.getEntry():
+                    try:
+                        idx = ExtractHexDecValue(entry.getIndex().getcontent())
+                        objects[idx] = entry
+                    except:
+                        pass
+
+            for pdo in device.getRxPdo():
+                for entry in pdo.getEntry():
+                    try:
+                        idx = ExtractHexDecValue(entry.getIndex().getcontent())
+                        objects[idx] = entry
+                    except:
+                        pass
         
         return objects
 
@@ -410,14 +431,30 @@ class _CommonSlave(object):
         type_infos = slave.getType()
         device, alignment = self.Controler.CTNParent.GetModuleInfos(type_infos)
 
-        for dictionary in device.GetProfileDictionaries():
-            dictionary.load()
-        
-            datatypes = dictionary.getDataTypes()
-            if datatypes is not None:
+#        for dictionary in device.GetProfileDictionaries():
+#            dictionary.load()
+#        
+#            datatypes = dictionary.getDataTypes()
+#            if datatypes is not None:
 
-                for datatype in datatypes.getDataType():
-                    dataTypes[datatype.getName()] = datatype
+#                for datatype in datatypes.getDataType():
+#                    dataTypes[datatype.getName()] = datatype
+        if device is None:
+                return dataTypes
+
+        # NUEVO: usar DataTypes directo del device si existe
+        datatypes_container = getattr(device, "getDataTypes", None)
+
+        if datatypes_container is None:
+            return dataTypes
+
+        datatypes = datatypes_container()
+
+        if datatypes is None:
+            return dataTypes
+
+        for datatype in datatypes.getDataType():
+            dataTypes[datatype.getName()] = datatype
         return dataTypes
     
     def IsBaseDataType(self, datatype):
@@ -478,7 +515,9 @@ class _CommonSlave(object):
         datatypes = self.ExtractAllDataTypes()
         objects = self.ExtractObjects()
         entries_list = self.entries.items()
-        entries_list.sort()
+#        entries_list.sort()
+        entries_list = sorted(self.entries.items())
+
 
         # append sub entries
         for (index, subidx), entry in entries_list:
@@ -1784,10 +1823,16 @@ class _CommonSlave(object):
                 data += "{:0>2x}".format(count)
             count = 0
             #  Flags; by Fixed, Mandatory, Virtual attributes ?
-            if element.getFixed() is True or 1:
+#            if element.getFixed() is True or 1:
+#                en_fixed = True
+#            if element.getMandatory() is True or 1:
+#                en_mandatory = True
+            if element.getFixed() is True or element.getFixed() == 1:
                 en_fixed = True
-            if element.getMandatory() is True or 1:
+
+            if element.getMandatory() is True or element.getMandatory() == 1:
                 en_mandatory = True
+
             if element.getVirtual() is True or element.getVirtual():
                 en_virtual = True
             data += str(int(en_fixed)) + str(int(en_mandatory)) + str(int(en_virtual)) + "0"
@@ -1797,7 +1842,9 @@ class _CommonSlave(object):
                 data += "{:0>4x}".format(ExtractHexDecValue(entry.getIndex().getcontent()))[2:4]
                 data += "{:0>4x}".format(ExtractHexDecValue(entry.getIndex().getcontent()))[0:2]
                 #   Subindex
-                data += "{:0>2x}".format(int(entry.getSubIndex()))
+#                data += "{:0>2x}".format(int(entry.getSubIndex()))
+                data += "{:0>2x}".format(ExtractHexDecValue(entry.getSubIndex()))
+
                 #   Entry Name Index
                 objname = ""
                 for name in entry.getName():

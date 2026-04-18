@@ -637,23 +637,23 @@ class ConfigTreeNode(object):
                 self.CTNType = CTNType
                 # remind the help string, for more fancy display
                 self.CTNHelp = CTNHelp
-                pending = ""
-                pending = getattr(parent, "_PendingXSD", None)
-                if not pending and hasattr(CTNClass, "BuildPendingXSDFromXML"):
-                    try:
-                        pending = CTNClass.BuildPendingXSDFromXML(parent, CTNName, CTNType)
-                    except Exception as e:
-                        print("Error BuildPendingXSDFromXML:", e)
-                        pending = ""
-               
-                base_xsd = getattr(CTNClass, "XSD", "")
-                cia402_static = getattr(CTNClass, "CIA402_STATIC", "")
-                pending = (pending or "").strip()
-                cia402_static = (cia402_static or "").strip()
-                self.XSD =  base_xsd
-                self.XSD = self.XSD.replace("__XSD_DEVICE__", pending)
-                self.XSD = self.XSD.replace("__XSD_CIA402_STATIC__", cia402_static)               
-                # Call the base confnode template init - change XSD into class members
+#                pending = ""
+#                pending = getattr(parent, "_PendingXSD", None)
+#                if not pending and hasattr(CTNClass, "BuildPendingXSDFromXML"):
+#                    try:
+#                        pending = CTNClass.BuildPendingXSDFromXML(parent, CTNName, CTNType)
+#                    except Exception as e:
+#                        print("Error BuildPendingXSDFromXML:", e)
+#                        pending = ""
+#               
+#                base_xsd = getattr(CTNClass, "XSD", "")
+#                cia402_static = getattr(CTNClass, "CIA402_STATIC", "")
+#                pending = (pending or "").strip()
+#                cia402_static = (cia402_static or "").strip()
+#                self.XSD =  base_xsd
+#                self.XSD = self.XSD.replace("__XSD_DEVICE__", pending)
+#                self.XSD = self.XSD.replace("__XSD_CIA402_STATIC__", cia402_static)               
+#                # Call the base confnode template init - change XSD into class members
                 ConfigTreeNode.__init__(self)
 
                 # check name is unique
