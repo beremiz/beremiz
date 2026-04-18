@@ -597,7 +597,6 @@ class ConfigTreeNode(object):
         @param CTNType: string desining the confnode class name (get name from CTNChildrenTypes)
         @param CTNName: string for the name of the confnode instance
         """
-        self._CTNName = CTNName
         # reorganize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
         # to ( name, (CTNClass, Help)), an make a dict
         transpose = list(zip(*self.CTNChildrenTypes))
@@ -636,23 +635,7 @@ class ConfigTreeNode(object):
                 # Keep track of the confnode type name
                 self.CTNType = CTNType
                 # remind the help string, for more fancy display
-                self.CTNHelp = CTNHelp
-#                pending = ""
-#                pending = getattr(parent, "_PendingXSD", None)
-#                if not pending and hasattr(CTNClass, "BuildPendingXSDFromXML"):
-#                    try:
-#                        pending = CTNClass.BuildPendingXSDFromXML(parent, CTNName, CTNType)
-#                    except Exception as e:
-#                        print("Error BuildPendingXSDFromXML:", e)
-#                        pending = ""
-#               
-#                base_xsd = getattr(CTNClass, "XSD", "")
-#                cia402_static = getattr(CTNClass, "CIA402_STATIC", "")
-#                pending = (pending or "").strip()
-#                cia402_static = (cia402_static or "").strip()
-#                self.XSD =  base_xsd
-#                self.XSD = self.XSD.replace("__XSD_DEVICE__", pending)
-#                self.XSD = self.XSD.replace("__XSD_CIA402_STATIC__", cia402_static)               
+                self.CTNHelp = CTNHelp              
 #                # Call the base confnode template init - change XSD into class members
                 ConfigTreeNode.__init__(self)
 
