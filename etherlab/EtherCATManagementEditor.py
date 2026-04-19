@@ -3285,13 +3285,13 @@ class DCConfigPanel(wx.Panel):
         for ESI_Data in self.ESI_DC_Data:
             OperationModeComboList.append(ESI_Data["desc"])
 
-        UnitComboList = [ "/100", "/ 50", "/ 40", "/ 30", "/ 25", "/ 20", "/16",
+        UnitComboList = [ "/ 100", "/ 50", "/ 40", "/ 30", "/ 25", "/ 20", "/16",
             "/ 10", "/ 8", "/ 5", "/ 4", "/ 3", "/ 2", "x 1", "x 2", "x 3", "x 4", 
             "x 5", "x 8", "x 10", "x 16", "x 20", "x 25", "x 30", "x 40", "x 50", 
             "x 100"
         ]
 
-        UnitComboListPlus = [ "/100", "/ 50", "/ 40", "/ 30", "/ 25", "/ 20", "/16",
+        UnitComboListPlus = [ "/ 100", "/ 50", "/ 40", "/ 30", "/ 25", "/ 20", "/16",
             "/ 10", "/ 8", "/ 5", "/ 4", "/ 3", "/ 2", "x 0", "x 1", "x 2", "x 3", 
             "x 4", "x 5", "x 8", "x 10", "x 16", "x 20", "x 25", "x 30", "x 40", 
             "x 50", "x 100"
@@ -3340,15 +3340,25 @@ class DCConfigPanel(wx.Panel):
             ]:
             self.StaticTextDic[statictext_name] = wx.StaticText(self, label=_(statictext_label))
 
-        for textctl_name in [
-                ("SyncUnitCycle_Ctl"),
-                ("Sync0CycleTimeUserDefined_Ctl"),
-                ("Sync0ShiftTimeUserDefined_Ctl"),
-                ("Sync1CycleTimeUserDefined_Ctl"),
-                ("Sync1ShiftTimeUserDefined_Ctl"),
-            ]:
-            self.TextCtrlDic[textctl_name] = wx.TextCtrl(
-                self, size=wx.Size(130, 24), style=wx.TE_READONLY)
+        # -------- TextCtrls --------
+
+        # read only
+        self.TextCtrlDic["SyncUnitCycle_Ctl"] = wx.TextCtrl(
+            self, size=wx.Size(130, 24), style=wx.TE_READONLY)
+
+        # CycleTime, driven by the radio buttons
+        self.TextCtrlDic["Sync0CycleTimeUserDefined_Ctl"] = wx.TextCtrl(
+            self, size=wx.Size(130, 24))
+
+        self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"] = wx.TextCtrl(
+            self, size=wx.Size(130, 24))
+
+        # ShiftTime, always editable
+        self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"] = wx.TextCtrl(
+            self, size=wx.Size(130, 24))
+
+        self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"] = wx.TextCtrl(
+            self, size=wx.Size(130, 24))
 
         for checkbox_name, checkbox_label in [
                 ("DCEnable", "Enable"),
@@ -3741,10 +3751,12 @@ class DCConfigPanel(wx.Panel):
         if selected_object.GetLabel() == "User Defined" :
             self.RadioButtonDic["Sync0CycleTimeUnitRadioButton"].SetValue(False)
             self.TextCtrlDic["Sync0CycleTimeUserDefined_Ctl"].Enable()
+            self.TextCtrlDic["Sync0CycleTimeUserDefined_Ctl"].SetEditable(True)
             self.ComboBoxDic["Sync0UnitCycleChoice"].Disable()
         elif selected_object.GetLabel() == "Sync Unit Cycle" :
             self.RadioButtonDic["Sync0CycleTimeUserDefinedRadioButton"].SetValue(False)
             self.ComboBoxDic["Sync0UnitCycleChoice"].Enable()
+            self.TextCtrlDic["Sync0CycleTimeUserDefined_Ctl"].SetEditable(False)
             self.TextCtrlDic["Sync0CycleTimeUserDefined_Ctl"].Disable()
 
     def SelectSync1CycleTime(self, evt):
@@ -3753,23 +3765,36 @@ class DCConfigPanel(wx.Panel):
         if selected_object.GetLabel() == "User Defined" :
             self.RadioButtonDic["Sync1CycleTimeUnitRadioButton"].SetValue(False)
             self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].Enable()
+            self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].SetEditable(True)
             self.ComboBoxDic["Sync1UnitCycleChoice"].Disable()
         elif selected_object.GetLabel() == "Sync Unit Cycle" :
             self.RadioButtonDic["Sync1CycleTimeUserDefinedRadioButton"].SetValue(False)
             self.ComboBoxDic["Sync1UnitCycleChoice"].Enable()
+            self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].SetEditable(False)
             self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].Disable()
 
     def GetCycle(self, period, section):
         temp = section.split(" ")
 
-        if temp[0] == "x":
-            result = str(period * int(temp[1]))
-        elif temp[0] == "/" :
-            result = str(period / int(temp[1]))
-        else :
-            result = ""
+        try:
+            period = int(float(period))
+            factor = int(temp[1])
+        except:
+            return ""
 
-        return result
+        if temp[0] == "x":
+            return str(period * factor)
+
+        elif temp[0] == "/":
+            value = period // factor
+
+            # reject 0 and invalid values
+            if value <= 0:
+                return ""
+
+            return str(value)
+
+        return ""
 
     def OnClickApplyButton(self, evt):
         us_mode = 2
@@ -3803,8 +3828,19 @@ class DCConfigPanel(wx.Panel):
         else:
             dc_sync1_cycle = ""
 
-        dc_sync0_shift = self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].GetValue()
-        dc_sync1_shift = self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"].GetValue()
+        def safe_int(value):
+            try:
+                return str(int(float(value)))
+            except:
+                return ""
+
+        dc_sync0_shift = safe_int(
+            self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].GetValue()
+        )
+
+        dc_sync1_shift = safe_int(
+            self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"].GetValue()
+        )
 
         # store the values
         self.Controler.EthercatSlaveParams.setDC_Enable(dc_enable)
@@ -3873,7 +3909,7 @@ class DCConfigPanel(wx.Panel):
                 self.RadioButtonDic["Sync1CycleTimeUnitRadioButton"].SetValue(True)
             else :
                 self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].SetValue(temp[1])
-                self.ComboBoxDic["Sync1UnitChoice"].Disable()
+                self.ComboBoxDic["Sync1UnitCycleChoice"].Disable()
                 self.RadioButtonDic["Sync1CycleTimeUserDefinedRadioButton"].SetValue(True)
 
     def LoadProjectDCData(self):
