@@ -996,6 +996,7 @@ class RxPDOPanelClass(wx.Panel):
             # Obtener PDOs
             self.Controler.CommonMethod.RequestPDOInfo()
             self.rx_pdo_entries = self.Controler.CommonMethod.GetRxPDOCategory()
+            self._loading = True
 
             main_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -1029,6 +1030,7 @@ class RxPDOPanelClass(wx.Panel):
                 # Sizer principal
                 main_sizer.Add(self.RxPDOListBoxSizer, 0, wx.EXPAND | wx.ALL, 5)
                 main_sizer.Add(self.CallPDOChoicebook, 1, wx.EXPAND | wx.ALL, 5)
+                self.LoadProjectPDOData()
 
             else:
                 info = wx.StaticText(self, -1, "This device does not support RxPDO.")
@@ -1037,8 +1039,39 @@ class RxPDOPanelClass(wx.Panel):
             self.SetSizer(main_sizer)
             self.Layout()
             self.Fit()
+    def LoadProjectPDOData(self):
+        params = getattr(self.Controler, "EthercatSlaveParams", None)
+
+        if params is None:
+            return
+
+        data = params.getRxPDO()
+
+        if not data or data == "None":
+            return
+
+        self._loading = True  # bloquear eventos
+
+        saved_pdos = [int(x, 0) for x in data.split()]
+
+        self.Controler.SelectedRxPDOIndex = saved_pdos.copy()
+        self.PDOIndexList = []
+
+        for cb in self.PDOcheckBox:
+            val = int(cb.GetLabel(), 0)
+
+            if val in saved_pdos:
+                cb.SetValue(True)
+                self.PDOIndexList.append(cb.GetLabel())
+            else:
+                cb.SetValue(False)
+
+        self._loading = False  # desbloquear
 
     def LoadPDOSelectData(self):
+            if getattr(self, "_loading", False):
+                return  # NO hacer nada mientras carga
+                
             RxPDOData = self.Controler.EthercatSlaveParams.getRxPDO()
             
             RxPDOs = []
@@ -1171,6 +1204,7 @@ class TxPDOPanelClass(wx.Panel):
             # Obtener PDOs
             self.Controler.CommonMethod.RequestPDOInfo()
             self.tx_pdo_entries = self.Controler.CommonMethod.GetTxPDOCategory()
+            self._loading = True
 
             main_sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -1204,6 +1238,7 @@ class TxPDOPanelClass(wx.Panel):
                 # Sizer principal
                 main_sizer.Add(self.TxPDOListBoxSizer, 0, wx.EXPAND | wx.ALL, 5)
                 main_sizer.Add(self.CallPDOChoicebook, 1, wx.EXPAND | wx.ALL, 5)
+                self.LoadProjectPDOData()
 
             else:
                 info = wx.StaticText(self, -1, "This device does not support TxPDO.")
@@ -1212,8 +1247,40 @@ class TxPDOPanelClass(wx.Panel):
             self.SetSizer(main_sizer)
             self.Layout()
             self.Fit()
+    
+    def LoadProjectPDOData(self):
+        params = getattr(self.Controler, "EthercatSlaveParams", None)
+
+        if params is None:
+            return
+
+        data = params.getTxPDO()
+
+        if not data or data == "None":
+            return
+
+        self._loading = True  # bloquear eventos
+
+        saved_pdos = [int(x, 0) for x in data.split()]
+
+        self.Controler.SelectedTxPDOIndex = saved_pdos.copy()
+        self.PDOIndexList = []
+
+        for cb in self.PDOcheckBox:
+            val = int(cb.GetLabel(), 0)
+
+            if val in saved_pdos:
+                cb.SetValue(True)
+                self.PDOIndexList.append(cb.GetLabel())
+            else:
+                cb.SetValue(False)
+
+        self._loading = False  # desbloquear
         
     def LoadPDOSelectData(self):
+            if getattr(self, "_loading", False):
+                return  # NO hacer nada mientras carga
+                
             TxPDOData = self.Controler.EthercatSlaveParams.getTxPDO()
             TxPDOs = []
             if TxPDOData != "None":
@@ -1221,24 +1288,6 @@ class TxPDOPanelClass(wx.Panel):
             if TxPDOs :
                 for TxPDO in TxPDOs :
                     self.Controler.SelectedTxPDOIndex.append(int(TxPDO, 0))
-
-#    def PDOSelectCheck(self, event):
-#        # add jblee for Save User Select
-#        cb = event.GetEventObject()
-#                         # prevent duplicated check
-#        if cb.GetValue() and int(cb.GetLabel(), 0) not in self.Controler.SelectedTxPDOIndex:
-#            self.Controler.SelectedTxPDOIndex.append(int(cb.GetLabel(), 0))
-#            self.PDOIndexList.append(cb.GetLabel())
-#        else:
-#            self.Controler.SelectedTxPDOIndex.remove(int(cb.GetLabel(), 0))
-#            self.PDOIndexList.remove(cb.GetLabel())
-
-#        data = ""
-#        for PDOIndex in self.PDOIndexList:            
-#            data = data + " " + PDOIndex
-
-#        self.Controler.BaseParams.setTxPDO(data)
-#        self.Controler.GetCTRoot().CTNRequestSave()
 
 #        self.PDOExcludeCheck()
     def PDOSelectCheck(self, event):
