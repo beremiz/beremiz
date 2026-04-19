@@ -188,7 +188,7 @@ class CodeFile(object):
     def OnCTNSave(self, from_project_path=None):
         filepath = self.CodeFileName()
 
-        xmlfile = open(filepath, "w")
+        xmlfile = open(filepath, "w", newline='\n')
         xmlfile.write(etree.tostring(
             self.CodeFile,
             pretty_print=True,

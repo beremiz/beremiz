@@ -400,7 +400,7 @@ void* PySafeGetChanges_%(location_str)s(void){
 """ % loc_dict
 
         Gen_PyCfile_path = os.path.join(buildpath, "PyCFile_%s.c" % location_str)
-        pycfile = open(Gen_PyCfile_path, 'w')
+        pycfile = open(Gen_PyCfile_path, 'w', newline='\n')
         pycfile.write(PyCFileContent)
         pycfile.close()
 

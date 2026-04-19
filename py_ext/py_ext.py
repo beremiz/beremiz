@@ -43,12 +43,12 @@ class PythonLibrary(POULibrary):
             "python_eval_fb_count": python_eval_fb_count}
 
         Gen_Pythonfile_path = os.path.join(buildpath, "py_ext.c")
-        pythonfile = open(Gen_Pythonfile_path, 'w')
+        pythonfile = open(Gen_Pythonfile_path, 'w', newline='\n')
         pythonfile.write(plc_python_code)
         pythonfile.close()
 
         runtimefile_path = os.path.join(buildpath, "runtime_00_pyext.py")
-        runtimefile = open(runtimefile_path, 'w')
+        runtimefile = open(runtimefile_path, 'w', newline='\n')
         runtimefile.write(pyext_python_lib_code)
         runtimefile.close()
         return ((["py_ext"], [(Gen_Pythonfile_path, IECCFLAGS)], True), "",

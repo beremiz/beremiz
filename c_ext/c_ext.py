@@ -120,7 +120,7 @@ class CFile(CodeFile):
         text += "\n}\n\n"
 
         Gen_Cfile_path = os.path.join(buildpath, "CFile_%s.c" % location_str)
-        cfile = open(Gen_Cfile_path, 'w')
+        cfile = open(Gen_Cfile_path, 'w', newline='\n')
         cfile.write(text)
         cfile.close()
 
