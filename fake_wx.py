@@ -99,7 +99,9 @@ for name, classes in [
     ('matplotlib.backends.backend_agg',[]),
     ('wx.aui',[]),
     ('wx.html',['HtmlWindow']),
-    ('mpl_toolkits.mplot3d',[])]:
+    ('mpl_toolkits.mplot3d',[]),
+    ('numpy',[]),
+    ('cycler',[])]:
     modpath = None
     parentmod = None
     for identifier in name.split("."):

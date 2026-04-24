@@ -26,7 +26,7 @@
 
 import wx
 import wx.lib.mixins.listctrl as listmix
-from connectors.ZeroConfListener import ZeroConfListenerClass
+from connectors.ZeroConfListener import ZeroConfListenerClass, ZEROCONF_AVAILABLE
 
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, name, pos=wx.DefaultPosition,
@@ -128,6 +128,11 @@ class DiscoveryPanel(wx.Panel, listmix.ColumnSorterMixin):
 
     def RefreshList(self):
         self.ServicesList.DeleteAllItems()
+        if not ZEROCONF_AVAILABLE:
+            self.staticText1.SetLabel(
+                _('Zeroconf module not available - service discovery disabled'))
+            self.RefreshButton.Disable()
+            return
         self.ZeroConfListener = ZeroConfListenerClass(self)
 
     def OnRefreshButton(self, event):

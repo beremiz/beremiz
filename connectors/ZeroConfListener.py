@@ -4,8 +4,13 @@
 # See COPYING file for copyrights details.
 
 import weakref
-from zeroconf import ServiceBrowser, Zeroconf, get_all_addresses
 import threading
+
+try:
+    from zeroconf import ServiceBrowser, Zeroconf, get_all_addresses
+    ZEROCONF_AVAILABLE = True
+except ImportError:
+    ZEROCONF_AVAILABLE = False
 
 service_type = '_Beremiz._tcp.local.'
 

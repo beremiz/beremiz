@@ -10,11 +10,19 @@ import time
 import json
 from zipfile import ZipFile
 from cryptography import x509
-from twisted.internet.ssl import PrivateCertificate
+try:
+    from twisted.internet.ssl import PrivateCertificate
+    TWISTED_AVAILABLE = True
+except ImportError:
+    TWISTED_AVAILABLE = False
 from cryptography.x509.oid import ExtensionOID
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
-import OpenSSL
+try:
+    import OpenSSL
+    OPENSSL_AVAILABLE = True
+except ImportError:
+    OPENSSL_AVAILABLE = False
 
 from util.paths import AppDataPath
 
@@ -172,6 +180,10 @@ def GetClientCert():
     return os.path.join(own_keystore, "client.crt")
 
 def GetClientCertificateInfo():
+    if not TWISTED_AVAILABLE:
+        return "Twisted module not available - client certificate info disabled"
+    if not OPENSSL_AVAILABLE:
+        return "pyOpenSSL module not available - client certificate info disabled"
     file_path = GetClientCert()
     if os.path.exists(file_path):
         info = ""
