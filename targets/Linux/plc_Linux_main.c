@@ -343,6 +343,10 @@ int stopPLC()
     pthread_kill(PLC_thread, SIGUSR2);
     pthread_join(PLC_thread, NULL);
     __cleanup();
+
+    pthread_mutex_unlock(&debug_wait_mutex);
+    pthread_mutex_unlock(&python_wait_mutex);
+
     pthread_mutex_destroy(&debug_wait_mutex);
     pthread_mutex_destroy(&debug_mutex);
     pthread_mutex_destroy(&python_wait_mutex);
@@ -392,7 +396,7 @@ void resumeDebug(void)
 int WaitPythonCommands(void)
 {
     /* Wait signal from PLC thread */
-    return pthread_mutex_lock(&python_wait_mutex);
+    return PLC_shutdown || pthread_mutex_lock(&python_wait_mutex) || PLC_shutdown;
 }
 
 /* Called by PLC thread on each new python command*/
