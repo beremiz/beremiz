@@ -179,6 +179,8 @@ uint32_t GetLogMessage(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_s
 
     if(level == 0xFF){ // Get stats
         uint64_t period_ns = GetCommonTickTime();
+        if (period_ns == 0)
+            return snprintf(buf, max_size, "PLC not running");
 		if(run_time_ns_avg_valid){
             IEC_TIME now;
             _sfx(PLC_GetTime)(&now);
