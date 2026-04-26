@@ -1805,6 +1805,10 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self._connector.SetTraceVariablesList([])
                 self.DebugToken = None
             self.debug_status, _debug_ticks, _buffers = self.SnapshotAndResetDebugValuesBuffers()
+            if GetDeveloperMode():
+                print("Monitored variables:")
+                for p in list(self.TracedIECPath):
+                    print("  " + p)
         self.DebugUpdatePending = False
 
     def IsPLCStarted(self):
