@@ -29,7 +29,10 @@ from runtime import PlcStatus
 
 from util.TranslationCatalogs import NoTranslate
 # -------------------------------------------------------------
-
+from erpc_interface.erpc_PLCObject.common import SDOEntry
+from threading import Thread
+import time
+import re
 
 # ----------------------------- For Sync Manager Table -----------------------------------
 def GetSyncManagersTableColnames():
@@ -185,11 +188,15 @@ class SlaveStatePanelClass(wx.Panel):
         self.SetSizer(self.SizerDic["SlaveState_main_sizer"])
 
         # register a timer for periodic exectuion of slave state update (period: 1000 ms)
-        self.Bind(wx.EVT_TIMER, self.GetCurrentState)
+#        self.Bind(wx.EVT_TIMER, self.GetCurrentState)
 
         self.CreateSyncManagerTable()
 
         self.Centre()
+        self.state_transitioning = False
+        self.SlaveStateThread = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.GetCurrentState, self.SlaveStateThread)
+
 
     def CreateSyncManagerTable(self):
         """
@@ -231,93 +238,138 @@ class SlaveStatePanelClass(wx.Panel):
             self.SyncManagersTable.SetData([])
             self.SyncManagersTable.ResetView(self.SyncManagersGrid)
 
+    def _update_current_state(self):
+        raw = self.Controler.CommonMethod.GetSlaveStateFromSlave()
+        if raw:
+            lines = raw.split("\n")
+            alias = self.Controler.GetSlavePos()
+            pos = self.Controler.CommonMethod.AliasToPosition(alias)
+
+            if pos is not None and pos < len(lines):
+                self.SetCurrentState(lines[pos])
+
     def OnButtonClick(self, event):
-        """
-        Event handler for slave state transition button click (Init, PreOP, SafeOP, OP button)
-        @param event : wx.EVT_BUTTON object
-        """
-        # Check whether beremiz connected or not.
-        # If this method is called cyclically, set the cyclic flag true
-        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = False)
-        if check_connect_flag:
-            state_dic = ["INIT", "PREOP", "SAFEOP", "OP"]
+#        print("RAW STATE:", self.Controler.CommonMethod.GetSlaveStateFromSlave())
+#        print("===================================")
+#        print("[DEBUG] event object:", event)
+#        print("[DEBUG] event type:", type(event))
+#        print("[DEBUG] event id:", event.GetId())
+#        print("[DEBUG] event source:", event.GetEventObject())
+#        print("===================================")
+#        print("[DEBUG] BUTTON CLICKED:", event.GetId())
 
-            # If target state is one of {INIT, PREOP, SAFEOP}, request slave state transition immediately.
+        state_dic = ["INIT", "PREOP", "SAFEOP", "OP"]
+
+        # NO bloquear por CheckConnect en transición EtherCAT
+        self.state_transitioning = True
+
+        try:
+
             if event.GetId() < 3:
-                self.Controler.CommonMethod.RequestSlaveState(state_dic[event.GetId()])
-                self.TextCtrlDic["TargetState"].SetValue(state_dic[event.GetId()])
+                state = state_dic[event.GetId()]
+                self.Controler.CommonMethod.RequestSlaveState(state)
+                wx.CallLater(300, self._update_current_state)
+                self.TextCtrlDic["TargetState"].SetValue(state)
+#                print("[DEBUG] slave state:", self.Controler.CommonMethod.GetSlaveStateFromSlave())
+#                print(self.Controler.CommonMethod.GetSlaveStateFromSlave())
 
-            # If target state is OP, first check "PLC status".
-            #  (1) If current PLC status is "Started", then request slave state transition
-            #  (2) Otherwise, show error message and return
             else:
                 status, _log_count = self.Controler.GetCTRoot()._connector.GetPLCstatus()
+
                 if status == PlcStatus.Started:
                     self.Controler.CommonMethod.RequestSlaveState("OP")
                     self.TextCtrlDic["TargetState"].SetValue("OP")
                 else:
-                    self.Controler.CommonMethod.CreateErrorDialog(_("PLC is Not Started"))
+                    self.Controler.CommonMethod.CreateErrorDialog(
+                        _("PLC is Not Started")
+                    )
+                    self.state_transitioning = False
+                    return
+
+            wx.CallLater(800, self._end_state_transition)
+
+        except Exception as e:
+            print("[DEBUG] EXCEPTION:", e)
+            self.state_transitioning = False
+
+
+
+    def _end_state_transition(self):
+        self.state_transitioning = False
 
     def GetCurrentState(self, event):
-        """
-        Timer event handler for periodic slave state monitoring (Default period: 1 sec = 1000 msec).
-        @param event : wx.TIMER object
-        """
-        if self.IsShownOnScreen() is False:
-            return
 
-        # Check whether beremiz connected or not.
-        # If this method is called cyclically, set the cyclic flag true
-        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = True)
-        if check_connect_flag:
-            returnVal = self.Controler.CommonMethod.GetSlaveStateFromSlave()
-            line = returnVal.split("\n")
-            try:
-                self.SetCurrentState(line[self.Controler.GetSlavePos()])
-            except Exception:
-                pass
+        try:
+            raw = self.Controler.CommonMethod.GetSlaveStateFromSlave()
+
+            if not raw:
+                return
+
+            lines = raw.split("\n")
+
+            alias = self.Controler.GetSlavePos()
+            pos = self.Controler.CommonMethod.AliasToPosition(alias)
+
+            if pos is not None and pos < len(lines):
+                self.SetCurrentState(lines[pos])
+
+                # indicador visual (latido)
+                if not hasattr(self, "_blink"):
+                    self._blink = False
+
+                self._blink = not self._blink
+
+                if self._blink:
+                    self.TextCtrlDic["CurrentState"].SetBackgroundColour("LIGHT GREEN")
+                else:
+                    self.TextCtrlDic["CurrentState"].SetBackgroundColour("WHITE")
+
+                self.TextCtrlDic["CurrentState"].Refresh()
+
+        except Exception as e:
+            print("[DEBUG] EXCEPTION:", e)
 
     def SetCurrentState(self, line):
-        """
-        Show current slave state using the executiob result of "ethercat slaves" command.
-        @param line : result of "ethercat slaves" command
-        """
+
         state_array = ["INIT", "PREOP", "SAFEOP", "OP"]
+
         try:
-            # parse the execution result of  "ethercat slaves" command
-            # Result example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
+            if not line:
+                return
+
             token = line.split("  ")
-            if token[2] in state_array:
-                self.TextCtrlDic["CurrentState"].SetValue(token[2])
+
+            if len(token) < 3:
+                return
+
+            state = token[2].strip()
+
+            if state in state_array:
+                self.TextCtrlDic["CurrentState"].SetValue(state)
+
         except Exception:
             pass
 
     def StartTimer(self, event):
-        """
-        Event handler for "Start State Monitoring" button.
-          - start slave state monitoring thread
-        @param event : wx.EVT_BUTTON object
-        """
-        # Check whether beremiz connected or not.
-        # If this method is called cyclically, set the cyclic flag true
-        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = False)
-        if check_connect_flag:
-            self.SlaveStateThread = wx.Timer(self)
-            # set timer period (2000 ms)
+
+        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag=False)
+
+        if not check_connect_flag:
+            print("[DEBUG] NOT CONNECTED → timer not started")
+            return
+
+        if not self.SlaveStateThread.IsRunning():
+#            print("[DEBUG] STARTING TIMER")
             self.SlaveStateThread.Start(2000)
         else:
-            pass
+            print("[DEBUG] TIMER YA CORRIENDO")
 
     def CurrentStateThreadStop(self, event):
-        """
-        Event handler for "Stop State Monitoring" button.
-          - stop slave state monitoring thread
-        @param event : wx.EVT_BUTTON object
-        """
-        try:
+
+        if self.SlaveStateThread.IsRunning():
+#            print("[DEBUG] STOPPING TIMER")
             self.SlaveStateThread.Stop()
-        except Exception:
-            pass
+
 
 
 # -------------------------------------------------------------------------------
@@ -397,16 +449,55 @@ class SDOPanelClass(wx.Panel):
         self._is_closing = False  # indica si el panel está cerrándose
     
     def OnClose(self, event):
-        # Marcar como cerrando
+        if getattr(self, "_is_closing", False):
+            return
+
         self._is_closing = True
 
-        # Limpiar referencias internas
-        if hasattr(self, "SDONoteBook"):
-            self.SDONoteBook = None
+#        print("[SDO] Cerrando panel...")
+
+        # -----------------------------------------
+        # DETENER THREAD DE MONITOREO
+        # -----------------------------------------
+        try:
+            self.SDOMonitoringFlag = False
+
+            if self.SDOTraceThread is not None:
+                print("[SDO] Esperando thread...")
+                self.SDOTraceThread.join(timeout=2)
+                self.SDOTraceThread = None
+
+            ctr = self.Controler.GetCTRoot()
+            if hasattr(ctr, "_connector") and ctr._connector is not None:
+                ctr._connector.StopSDOThread()
+
+        except Exception as e:
+            print("[SDO] Error deteniendo thread:", e)
+
+        # -----------------------------------------
+        # LIMPIAR REFERENCIAS
+        # -----------------------------------------
+        self.SDOMonitorEntries = {}
+        self.SDOValuesList = []
         self.entries = []
 
-        # Destruir la ventana
+        # -----------------------------------------
+        # DESTRUIR NOTEBOOK
+        # -----------------------------------------
+        if hasattr(self, "SDONoteBook") and self.SDONoteBook:
+            try:
+                self.SDONoteBook.Destroy()
+            except:
+                pass
+            self.SDONoteBook = None
+
+        # -----------------------------------------
+        # DESTRUIR PANEL
+        # -----------------------------------------
         self.Destroy()
+
+#        print("[SDO] Panel cerrado correctamente")
+
 
     def safe_refresh(widget):
         if widget:
@@ -465,7 +556,8 @@ class SDOPanelClass(wx.Panel):
                     "Error", wx.OK | wx.ICON_ERROR,
                 )
                 return
-            self.entries = device.GetEntriesList() or []
+                
+            self.entries = device.GetEntriesList()
             if self.entries is None:
 #                wx.MessageBox("No module entries available. Skipping SDO Notebook creation.",
 #                              "Warning", wx.OK | wx.ICON_WARNING)
@@ -478,37 +570,276 @@ class SDOPanelClass(wx.Panel):
 
         except Exception as e:
             wx.MessageBox(f"Error loading module entries: {e}", "Error", wx.OK | wx.ICON_ERROR)
-
+  
     def OnSDOUpdate(self, event):
-        SlavePos = self.Controler.GetSlavePos()
-        num = self.SDOPageNum - 1
+        Thread(target=self._SDOUpdateWorker, daemon=True).start()
+        
+    def _SDOUpdateWorker(self):
+        try:
+            alias = self.Controler.GetSlavePos()
+            SlavePos = self.Controler.CommonMethod.AliasToPosition(alias)
 
-        # Verificar que existe el conector
-        ctr = self.Controler.GetCTRoot()
-        if not hasattr(ctr, "_connector") or ctr._connector is None:
-            wx.MessageBox("No hay conexión activa al Slave. Conecta el Master primero.", 
-                          "Error SDO", wx.ICON_ERROR)
-            return
+            if SlavePos is None:
+                wx.MessageBox(
+                    f"No se encontró posición EtherCAT para alias {alias}",
+                    "Error SDO",
+                    wx.ICON_ERROR
+                )
+                return
 
-        # Obtener lista de SDOs
-        if hasattr(self.Controler.CommonMethod, "SDOVariables"):
-            sdo_list = self.Controler.CommonMethod.SDOVariables
-        elif hasattr(self.Controler.CommonMethod, "GetSDOVariables"):
-            sdo_list = self.Controler.CommonMethod.GetSDOVariables()
-        else:
-            wx.MessageBox("CommonMethod no tiene SDOVariables.", "Error SDO", wx.ICON_ERROR)
-            return
+            num = self.SDOPageNum - 1
 
-        # Actualizar SDOs
-        if num < 0:
-            for i in range(len(sdo_list)):
-                sdo_list[i] = ctr._connector.GetSDOEntriesData(sdo_list[i], SlavePos)
-        else:
-            sdo_list[num] = ctr._connector.GetSDOEntriesData(sdo_list[num], SlavePos)
+            # ----------------- Verificar conexión ----------------- #
+            ctr = self.Controler.GetCTRoot()
+            if not hasattr(ctr, "_connector") or ctr._connector is None:
+                wx.MessageBox(
+                    "No hay conexión activa al Slave. Conecta el Master primero.",
+                    "Error SDO",
+                    wx.ICON_ERROR
+                )
+                return
 
-        if hasattr(self, "SDONoteBook") and self.SDONoteBook.GetPageCount() > 0:
-            safe_refresh(self.SDONoteBook)
-            self.SDONoteBook.CreateNoteBook()      
+            # ----------------- Obtener lista base (XML) ----------------- #
+            if hasattr(self.Controler.CommonMethod, "SDOVariables"):
+                sdo_list = self.Controler.CommonMethod.SDOVariables
+            elif hasattr(self.Controler.CommonMethod, "GetSDOVariables"):
+                sdo_list = self.Controler.CommonMethod.GetSDOVariables()
+            else:
+                wx.MessageBox("CommonMethod no tiene SDOVariables.", "Error SDO", wx.ICON_ERROR)
+                return
+
+    #        print("SDO LIST:", sdo_list)
+
+            # ----------------- Normalizar ----------------- #
+            def normalize(entries):
+                return [
+                    SDOEntry(
+                        idx=d["idx"] if isinstance(d, dict) else d.idx,
+                        subIdx=d["subIdx"] if isinstance(d, dict) else d.subIdx,
+                        datatype=(
+                            d.get("datatype") or d.get("type", "")
+                            if isinstance(d, dict)
+                            else getattr(d, "datatype", "") or getattr(d, "type", "")
+                        ),
+                        size=d["size"] if isinstance(d, dict) else d.size,
+                        value=d.get("value", "") if isinstance(d, dict) else d.value,
+                    )
+                    for d in entries
+                ]
+            # ----------------- Leer valores reales ----------------- #
+            result_list = []
+            
+            try:
+                if num < 0:
+                    for i in range(len(sdo_list)):
+
+    #                    print("\n============================")
+    #                    print("GROUP:", i)
+    #                    print("============================")
+
+                        entries = normalize(sdo_list[i])
+
+    #                    print("ENTRIES NORMALIZED:")
+    #                    for e in entries:
+    #                        print(e.idx, e.subIdx, e.datatype, e.value)
+
+                        res = ctr._connector.GetSDOEntriesData(entries, SlavePos)
+
+    #                    print("\nRAW DRIVER OUTPUT:")
+
+                        # ================================
+                        # EXPANSIÓN DE ESTRUCTURAS DTxxxx
+                        # ================================
+                        expanded = []
+
+                        for item in res:
+
+                            expanded.append(item)
+
+                            dt = item.datatype.upper()
+
+                            if dt.startswith("DT"):
+
+                                try:
+                                    subcount = int(item.value)
+                                except:
+                                    continue
+
+    #                            print(f"[EXPAND] {item.idx} tiene {subcount} subentries")
+
+                                sub_entries = []
+
+                                for sub in range(1, subcount + 1):
+                                    sub_entries.append(SDOEntry(
+                                        idx=item.idx,
+                                        subIdx=f"0x{sub}",
+                                        datatype="AUTO",
+                                        size="32",
+                                        value=""
+                                    ))
+
+                                try:
+                                    sub_res = ctr._connector.GetSDOEntriesData(sub_entries, SlavePos)
+
+                                    for s in sub_res:
+                                        if "abort_code" in str(s.value):
+                                            continue
+
+    #                                    print(f"   ↳ SUB {s.subIdx} = {s.value}")
+                                        expanded.append(s)
+
+                                except Exception as e:
+                                    print("ERROR expanding:", e)
+
+                        # reemplazar res original
+                        res = expanded
+
+                        result_list.append(res)
+
+                else:
+
+    #                print("\n============================")
+    #                print("SINGLE GROUP:", num)
+    #                print("============================")
+
+                    entries = normalize(sdo_list[num])
+
+    #                print("ENTRIES NORMALIZED:")
+    #                for e in entries:
+    #                    print(e.idx, e.subIdx, e.datatype, e.value)
+
+                    res = ctr._connector.GetSDOEntriesData(entries, SlavePos)
+
+                    # ================================
+                    # EXPANSIÓN DE ESTRUCTURAS DTxxxx
+                    # ================================
+                    expanded = []
+
+                    for item in res:
+
+                        expanded.append(item)
+
+                        dt = item.datatype.upper()
+
+                        if dt.startswith("DT"):
+
+                            try:
+                                subcount = int(item.value)
+                            except:
+                                continue
+
+    #                        print(f"[EXPAND] {item.idx} tiene {subcount} subentries")
+
+                            sub_entries = []
+                            
+                            for sub in range(1, subcount + 1):
+                                sub_entries.append(SDOEntry(
+                                    idx=item.idx,
+                                    subIdx=f"0x{sub}",
+                                    datatype="AUTO",
+                                    size="32",
+                                    value=""
+                                ))
+
+                            try:
+                                sub_res = ctr._connector.GetSDOEntriesData(sub_entries, SlavePos)
+
+                                for s in sub_res:
+                                    if "abort_code" in str(s.value):
+                                        continue
+
+    #                                print(f"   ↳ SUB {s.subIdx} = {s.value}")
+                                    expanded.append(s)
+
+                            except Exception as e:
+                                print("ERROR expanding:", e)
+
+                    # reemplazar res original
+                    res = expanded
+
+                    result_list.append(res)
+
+            except Exception as e:
+                print("SDO ERROR:", e)
+                return
+
+
+            # ----------------- REFRESCAR NOTEBOOK ----------------- #
+            if hasattr(self, "SDONoteBook") and self.SDONoteBook is not None:
+                try:
+                    if self.SDONoteBook.GetPageCount() > 0:
+                        safe_refresh(self.SDONoteBook)
+                        self.SDONoteBook.CreateNoteBook()
+                except Exception as e:
+                    print("SDO refresh error:", e)
+
+            # =========================================================
+            # MERGE XML + VALORES REALES
+            # =========================================================
+
+            base_map = {}
+            for group in sdo_list:
+                for e in group:
+                    key = (e["idx"], e["subIdx"])
+                    base_map[key] = e
+
+            # =========================================================
+            # CONSTRUIR LISTA FINAL (SIN INTERPRETACIÓN)
+            # =========================================================
+
+            all_entries = []
+
+            for group in result_list:
+                for e in group:
+
+    #                base = base_map.get((e.idx, e.subIdx), {})
+                    base = base_map.get((e.idx, e.subIdx))
+
+                    if not base:
+                        base = {
+                            "access": "",
+                            "type": e.datatype,
+                            "size": e.size,
+                            "name": f"SubIndex {e.subIdx}"
+                        }
+
+                    all_entries.append({
+                        "idx": e.idx,
+                        "subIdx": e.subIdx,
+                        "access": base.get("access", ""),
+                        "type": base.get("type", ""),
+                        "size": base.get("size", ""),
+                        "name": base.get("name", ""),
+                        "value": e.value
+                    })
+
+            wx.CallAfter(self._UpdateGridUI, all_entries)
+
+        except Exception as e:
+            print("SDO worker error:", e)
+    
+    def _UpdateGridUI(self, all_entries):
+        grid = self.SDOMonitorGrid
+
+        if grid.GetNumberRows() > 0:
+            grid.DeleteRows(0, grid.GetNumberRows())
+
+        grid.AppendRows(len(all_entries))
+
+        for row, e in enumerate(all_entries):
+
+            grid.SetCellValue(row, 0, str(e["idx"]))
+            grid.SetCellValue(row, 1, str(e["subIdx"]))
+            grid.SetCellValue(row, 2, str(e["access"]))
+            grid.SetCellValue(row, 3, str(e["type"]))
+            grid.SetCellValue(row, 4, str(e["size"]))
+            grid.SetCellValue(row, 5, str(e["name"]))
+            grid.SetCellValue(row, 6, str(e["value"]))
+
+        grid.AutoSizeColumns()
+        grid.ForceRefresh()
+
+        
 
 
     def OnRadioBox(self, event):
@@ -521,50 +852,158 @@ class SDOPanelClass(wx.Panel):
         on, off = list(range(2))
 
         if event.GetInt() == on:
-            CheckThreadFlag = self.SDOMonitoringThreadOn()
-            if not CheckThreadFlag:
-                self.SDOMonitorRB.SetSelection(off)
+            Thread(target=self._StartMonitoringSafe, daemon=True).start()
+
         elif event.GetInt() == off:
+            Thread(target=self._StopMonitoringSafe, daemon=True).start()
+            
+    def _StartMonitoringSafe(self):
+        try:
+            ok = self.SDOMonitoringThreadOn()
+
+            if not ok:
+                wx.CallAfter(self.SDOMonitorRB.SetSelection, 1)  # OFF
+
+        except Exception as e:
+            print("Error start monitoring:", e)
+            
+    def _StopMonitoringSafe(self):
+        try:
             self.SDOMonitoringThreadOff()
+        except Exception as e:
+            print("Error stop monitoring:", e)
 
     def SDOMonitoringThreadOn(self):
-        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = False)
-        if check_connect_flag:
-            self.SetSDOTraceValues(self.SDOMonitorEntries)
-            self.Controler.GetCTRoot()._connector.GetSDOData()
-            self.SDOTraceThread = Thread(target=self.SDOMonitorThreadProc)
-            self.SDOMonitoringFlag = True
-            self.SDOTraceThread.start()
-        return check_connect_flag
+
+        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag=False)
+
+        if not check_connect_flag:
+            return False
+
+        ctr = self.Controler.GetCTRoot()
+
+        if not hasattr(ctr, "_connector") or ctr._connector is None:
+            print("[SDO] No connector")
+            return False
+
+        try:
+            status = ctr._connector.GetPLCstatus()
+        except:
+            print("[SDO] PLC status no disponible")
+            return False
+            
+        state = status[0] if isinstance(status, tuple) else status
+
+        if state != "Started":
+            print("[SDO] PLC NO está en RUN → no iniciar thread")
+            return False
+
+        # SOLO SI TODO ESTA BIEN:
+        self.SetSDOTraceValues(self.SDOMonitorEntries)
+        ctr._connector.GetSDOData()
+
+        self.SDOMonitoringFlag = True
+        self.SDOTraceThread = Thread(target=self.SDOMonitorThreadProc, daemon=True)
+        self.SDOTraceThread.start()
+
+        return True
 
     def SDOMonitoringThreadOff(self):
-        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = False)
-        if check_connect_flag:
+        try:
+            # Señal de parada para el loop del thread
             self.SDOMonitoringFlag = False
-            if self.SDOTraceThread is not None:
-                self.SDOTraceThread.join()
+
+            # Evitar usar join() no bloquear UI
             self.SDOTraceThread = None
-            self.Controler.GetCTRoot()._connector.StopSDOThread()
+
+            # Detener thread del driver de forma segura
+            ctr = self.Controler.GetCTRoot()
+            if ctr and hasattr(ctr, "_connector") and ctr._connector:
+                try:
+                    ctr._connector.StopSDOThread()
+                except Exception as e:
+                    print("[SDO] Error al detener connector:", e)
+
+        except Exception as e:
+            print("[SDO] Error en SDOMonitoringThreadOff:", e)
 
     def SetSDOTraceValues(self, SDOMonitorEntries):
         SlavePos = self.Controler.GetSlavePos()
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = True)
         if check_connect_flag:
             self.Controler.GetCTRoot()._connector.SetSDOTraceValues(SDOMonitorEntries, SlavePos)
-
+            
     def SDOMonitorThreadProc(self):
-        while self.SDOMonitoringFlag and self.Controler.GetCTRoot()._connector.PLCStatus != "Started":
-            self.SDOValuesList = self.Controler.GetCTRoot()._connector.GetSDOData()
-            LocalData = list(self.SDOValuesList[0].items())
-            LocalData.sort()
-            if self.SDOValuesList[1] != self.Controler.GetSlavePos():
-                continue
-            row = 0
-            for (idx, subidx), data in LocalData:
-#                self.SDOMonitorGrid.SetCellValue(row, 6, str(data["value"]))
-                wx.CallAfter(self.SDOMonitorGrid.SetCellValue, row, 6, str(data["value"]))
-                row += 1
-            time.sleep(0.5)
+
+        while self.SDOMonitoringFlag:
+
+            try:
+                # si ya se está cerrando → salir
+                if getattr(self, "_is_closing", False):
+                    break
+
+                ctr = self.Controler.GetCTRoot()
+
+                # si ya no hay connector → salir limpio
+                if not ctr or not hasattr(ctr, "_connector") or ctr._connector is None:
+                    print("[SDO THREAD] connector muerto → saliendo")
+                    break
+
+                connector = ctr._connector
+
+                # Obtener estado PLC
+                status = connector.GetPLCstatus()
+
+                if status != PlcStatus.Started:
+                    time.sleep(0.5)
+                    continue
+
+                # Obtener datos
+                data = connector.GetSDOData()
+
+                if not data:
+                    time.sleep(0.5)
+                    continue
+
+                if isinstance(data, tuple) and len(data) == 2:
+                    entries, slave_pos = data
+                else:
+                    continue
+
+                if slave_pos != self.Controler.GetSlavePos():
+                    continue
+
+                # -------------------------
+                # actualizar grid
+                # -------------------------
+                if isinstance(entries, dict):
+                    LocalData = list(entries.items())
+                    LocalData.sort()
+
+                    row = 0
+                    for (idx, subidx), d in LocalData:
+                        wx.CallAfter(self.SDOMonitorGrid.SetCellValue, row, 6, str(d["value"]))
+                        row += 1
+
+                elif isinstance(entries, list):
+                    row = 0
+                    for e in entries:
+                        wx.CallAfter(self.SDOMonitorGrid.SetCellValue, row, 6, str(e.value))
+                        row += 1
+
+                time.sleep(0.5)
+
+            except Exception as e:
+                print("[SDO THREAD ERROR]", e)
+
+                # SI YA NO HAY CONEXIÓN → SALIR
+                if "NoneType" in str(e):
+                    break
+
+                time.sleep(1)
+
+#        print("[SDO THREAD] terminado correctamente")
+
 
     def CreateSDOMonitorGrid(self):
         """
@@ -1424,7 +1863,6 @@ class PDONoteBook(wx.Choicebook):
                     f"offset {current_index}"
                 )
 
-
             # AVANZAR índice
             current_index += num_entries
 
@@ -1433,7 +1871,6 @@ class PDONoteBook(wx.Choicebook):
 #                  "entries:", len(entries),
 #                  "expected:", num_entries)
 
-            # CORREGIDO AQUÍ
             page = PDOEntryTable(self, pdo, entries, i)
             self.AddPage(page, hex(pdo_index))
 
@@ -1540,19 +1977,15 @@ class MDPPanel(wx.Panel):
             mdp_infos = self.Controler.CTNParent.CTNParent.GetMDPInfos(type_infos)
             if mdp_infos:
                 MDPArray = mdp_infos
-        
-#        type_infos = slave.getType()
-#        MDPArray = self.Controler.CTNParent.CTNParent.GetMDPInfos(type_infos)
 
         NameSet = []
-#        if MDPArray:
+
         if MDPArray is not None and len(MDPArray) > 0 and len(MDPArray[0]) > 1 and MDPArray[0][1]:
             for info in MDPArray[0][1]:
                 NameSet.append(info[0])
 
         # Module ListBox
         self.ModuleLabel = wx.StaticText(self, -1, "Module")
-#        self.ModuleListBox = wx.ListBox(self, size = (150, 200), choices = NameSet)
         self.ModuleListBox = wx.ListBox(self, size=(150,200), choices=NameSet or [])
         #self.ModuleListBox = wx.ListBox(self, size = (150, 200), choices = [])
         self.Bind(wx.EVT_LISTBOX_DCLICK, self.OnModuleListBoxDCClick, self.ModuleListBox)
@@ -1820,7 +2253,7 @@ class SlaveSiiSmartView(wx.Panel):
             self.SetEEPROMData()
             dialog = wx.FileDialog(self, _("Save as..."), os.getcwd(),
                                    "slave0.bin",  _("bin files (*.bin)|*.bin|All files|*.*"),
-                                   wx.SAVE | wx.OVERWRITE_PROMPT)
+                                   wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 
             if dialog.ShowModal() == wx.ID_OK:
                 filepath = dialog.GetPath()
@@ -1917,7 +2350,7 @@ class SlaveSiiSmartView(wx.Panel):
         for treelist, data in [("EEPROM Size (Bytes)", eeprom_size),
                                ("PDI Type", cnt_pdi_type),
                                ("Device Emulation", device_emulation)]:
-            self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.ConfigData[treelist], data, 1)
+            self.TreeListCtrl.SetNodeValue(self.TreeListCtrl.ConfigData[treelist], 1, data)
 
         # Device Identity: Vendor ID, Product Code, Revision No., Serial No.
         #  Set Device Identity
@@ -1926,7 +2359,7 @@ class SlaveSiiSmartView(wx.Panel):
                 ("Product Code", self.GetWordAddressData(sii_dict.get('ProductCode'), 16)),
                 ("Revision No.", self.GetWordAddressData(sii_dict.get('RevisionNumber'), 16)),
                 ("Serial No.", self.GetWordAddressData(sii_dict.get('SerialNumber'), 16))]:
-            self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.DeviceIdentity[treelist], data, 1)
+            self.TreeListCtrl.SetNodeValue(self.TreeListCtrl.DeviceIdentity[treelist], 1, data)
 
         # Mailbox
         # EEORPOM's word address '1c' indicates supported mailbox protocol.
@@ -1943,21 +2376,21 @@ class SlaveSiiSmartView(wx.Panel):
         for treelist, data in [("Supported Mailbox", supported_mailbox),
                                ("Bootstrap Configuration", ""),
                                ("Standard Configuration", "")]:
-            self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.Mailbox[treelist], data, 1)
+            self.TreeListCtrl.SetNodeValue(self.TreeListCtrl.Mailbox[treelist], 1, data)
         #  Set Bootstrap Configuration: Receive Offset, Receive Size, Send Offset, Send Size
         for treelist, data in [
                 ("Receive Offset", self.GetWordAddressData(sii_dict.get('BootstrapReceiveMailboxOffset'), 10)),
                 ("Receive Size", self.GetWordAddressData(sii_dict.get('BootstrapReceiveMailboxSize'), 10)),
                 ("Send Offset", self.GetWordAddressData(sii_dict.get('BootstrapSendMailboxOffset'), 10)),
                 ("Send Size", self.GetWordAddressData(sii_dict.get('BootstrapSendMailboxSize'), 10))]:
-            self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.BootstrapConfig[treelist], data, 1)
+            self.TreeListCtrl.SetNodeValue(self.TreeListCtrl.BootstrapConfig[treelist], 1, data)
         #  Set Standard Configuration: Receive Offset, Receive Size, Send Offset, Send Size
         for treelist, data in [
                 ("Receive Offset", self.GetWordAddressData(sii_dict.get('StandardReceiveMailboxOffset'), 10)),
                 ("Receive Size", self.GetWordAddressData(sii_dict.get('StandardReceiveMailboxSize'), 10)),
                 ("Send Offset", self.GetWordAddressData(sii_dict.get('StandardSendMailboxOffset'), 10)),
                 ("Send Size", self.GetWordAddressData(sii_dict.get('StandardSendMailboxSize'), 10))]:
-            self.TreeListCtrl.Tree.SetItemText(self.TreeListCtrl.StandardConfig[treelist], data, 1)
+            self.TreeListCtrl.SetNodeValue(self.TreeListCtrl.StandardConfig[treelist], 1, data)
 
     def MakeStaticBoxSizer(self, boxlabel):
         """
@@ -1982,7 +2415,8 @@ class SlaveSiiSmartView(wx.Panel):
         list = []
         data = ''
         for index in range(length):
-            hexdata = hex(ord(self.SiiBinary[offset + index]))[2:]
+#            hexdata = hex(ord(self.SiiBinary[offset + index]))[2:]
+            hexdata = hex(self.SiiBinary[offset + index])[2:]
             list.append(hexdata.zfill(2))
 
         list.reverse()
@@ -2421,9 +2855,9 @@ class RegisterAccessPanel(wx.Panel):
 
         # ./EthercatMaster/register_information.xml contains register description.
         if wx.Platform == '__WXMSW__':
-            reg_info_file = open("../../EthercatMaster/register_information.xml", 'r')
+            reg_info_file = open("./etherlab/register_information.xml", 'r')
         else:
-            reg_info_file = open("./EthercatMaster/register_information.xml", 'r')
+            reg_info_file = open("./etherlab/register_information.xml", 'r')
         reg_info_tree = minidom.parse(reg_info_file)
         reg_info_file.close()
 
@@ -2832,10 +3266,19 @@ class RegisterMainTable(wx.grid.Grid):
         # set data into UI
         row = col = 0
         for row_index in reg_monitor_data[low_index:high_index]:
+            if row >= self.GetNumberRows():
+                    break
             col = 0
             self.SetRowLabelValue(row, row_index[0])
+#            for data_index in range(4):
+#                self.SetCellValue(row, col, row_index[data_index+1])
             for data_index in range(4):
-                self.SetCellValue(row, col, row_index[data_index+1])
+                if (data_index + 1) < len(row_index):
+                    value = row_index[data_index+1]
+                else:
+                    value = ""
+
+                self.SetCellValue(row, col, value)
                 self.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTER)
                 self.SetReadOnly(row, col, True)
                 col = col + 1
@@ -3099,7 +3542,10 @@ class MasterStatePanelClass(wx.Panel):
                         for index in self.TextCtrl[key]:
                             self.TextCtrl[key][index].SetValue(self.MasterState[key][int(index)])
                     else:
-                        self.TextCtrl[key].SetValue(self.MasterState[key][0])
+#                        self.TextCtrl[key].SetValue(self.MasterState[key][0])
+                        value = self.MasterState.get(key, [""])
+                        self.TextCtrl[key].SetValue(value[0] if value else "")
+
         else:
             self.Controler.CommonMethod.CreateErrorDialog(_('PLC not connected!'))
 
@@ -3141,74 +3587,95 @@ class SITreeListCtrl(wx.Panel):
         self.Tree.AppendColumn("Name", width=400)
         self.Tree.AppendColumn("Position", width=100)
         self.Tree.AppendColumn("State", width=100)
-        self.Tree.AppendColumn("Error", width=100)
+        self.Tree.AppendColumn("Error", width=100) 
         self.Root = self.Tree.GetRootItem()
         if not self.Root.IsOk():
-            self.Root = self.Tree.AppendItem(self.Tree.GetRootItem(), "")  
+            self.Root = self.Tree.AppendItem(wx.dataview.TLI_ROOT, "")
+
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.Tree, 1, wx.EXPAND)
         self.SetSizer(sizer)                                                
-        
+
     def UpdateSI(self):
         """
         Update the data of the slave information.
         """
-        position, not_used, state, not_used, name = list(range(5))
-        
-        slave_node = []
+
+        position, _, state, __, name = list(range(5))
+
         slave_info_list = []
-        error_counter= []
-        
-        # get slave informations (name, position, state)
+        error_counter = {}
+
+        # ----------------------------
+        # Get slave information
+        # ----------------------------
         slaves_infos = self.Controler.CommonMethod.GetSlaveStateFromSlave()
         slave_info_lines = slaves_infos.splitlines()
-        
-        for line in slave_info_lines:
-            slave_info_list.append(line.split(None,4))
 
-        slave_num = len(slave_info_lines)
-        
-        reg_info = []
-        for ec in self.EC_Addrs:
-            reg_info.append(ec + ",0x001")
-        
-        # get error counts of slaves
+        for line in slave_info_lines:
+            slave_info_list.append(line.split(None, 4))
+
+        slave_num = len(slave_info_list)
+
+        # ----------------------------
+        # Read error registers
+        # ----------------------------
+        reg_info = [ec + ",0x001" for ec in self.EC_Addrs]
         err_count_list = self.Controler.CommonMethod.MultiRegRead(slave_num, reg_info)
-                
+
+        # ----------------------------
+        # Reset tree
+        # ----------------------------
         self.Tree.DeleteAllItems()
-        
-        root = self.Tree.AddRoot("") 
+
+        root = self.Tree.GetRootItem()
+        if not root.IsOk():
+            root = self.Tree.AddRoot("Slaves")
+
         ec_list_idx = 0
 
+        # ============================
+        # SLAVE LOOP
+        # ============================
         for slave_idx in range(slave_num):
+
             slave_node = self.Tree.AppendItem(root, "")
-            
-            # set name, postion, state 
-            col_num = 0 
+
+            # ----------------------------
+            # Name / Position / State
+            # ----------------------------
+            col_num = 0
             for info_idx in [name, position, state]:
-                self.Tree.SetItemText(slave_node, 
-                                      slave_info_list[slave_idx][info_idx], col_num)
+                self.Tree.SetItemText(
+                    slave_node,
+                    col_num,
+                    slave_info_list[slave_idx][info_idx]
+                )
                 col_num += 1
 
-            error_counter = {}
+            # ----------------------------
+            # ERROR TREE
+            # ----------------------------
             ec_idx = 0
-            
-            # set error counter's name and default value 
-            for ec, sub_ecs in [("Port Error Counters 0/1/2/3",[
-                                    "Invaild Frame Counter 0/1/2/3",
-                                    "RX Error Counter 0/1/2/3"]),
-                                ("Forward RX Error Counter 0/1/2/3", []),       
-                                ("ECAT Processing Unit Error Counter", []),
-                                ("PDI Error Counter", []),
-                                ("Lost Link Counter 0/1/2/3", []),
-                                ("Watchdog Counter Process Data", []),
-                                ("Watchdog Counter PDI", [])]:
+            error_counter = {}
+
+            for ec, sub_ecs in [
+                ("Port Error Counters 0/1/2/3", ["Invaild Frame Counter 0/1/2/3",
+                                                  "RX Error Counter 0/1/2/3"]),
+                ("Forward RX Error Counter 0/1/2/3", []),
+                ("ECAT Processing Unit Error Counter", []),
+                ("PDI Error Counter", []),
+                ("Lost Link Counter 0/1/2/3", []),
+                ("Watchdog Counter Process Data", []),
+                ("Watchdog Counter PDI", [])
+            ]:
+
                 ec_sub_idx = 0
-                ec_name = ec
-                tree_node = self.Tree.AppendItem(slave_node, "%s" % ec)
-                
-                if ec_name.find("0/1/2/3") > 0:
+
+                parent_node = self.Tree.AppendItem(slave_node, ec)
+
+                if "0/1/2/3" in ec:
                     num_ports = 4
                     err_count = [0, 0, 0, 0]
                 else:
@@ -3216,19 +3683,20 @@ class SITreeListCtrl(wx.Panel):
                     err_count = [0]
 
                 error_counter[(ec_idx, ec_sub_idx)] = {
-                        "name": ec_name,
-                        "tree_node": tree_node,
-                        "num_ports": num_ports,
-                        "err_count": err_count}
+                    "tree_node": parent_node,
+                    "num_ports": num_ports,
+                    "err_count": err_count
+                }
 
+                # ----------------------------
+                # Sub errors
+                # ----------------------------
                 for sub_ec in sub_ecs:
                     ec_sub_idx += 1
-                    ec_name = sub_ec
-                    tree_node = self.Tree.AppendItem(\
-                        error_counter[(ec_idx, 0)]["tree_node"], 
-                            "%s" % sub_ec)
-                    
-                    if ec_name.find("0/1/2/3") > 0:
+
+                    child_node = self.Tree.AppendItem(parent_node, sub_ec)
+
+                    if "0/1/2/3" in sub_ec:
                         num_ports = 4
                         err_count = [0, 0, 0, 0]
                     else:
@@ -3236,61 +3704,60 @@ class SITreeListCtrl(wx.Panel):
                         err_count = [0]
 
                     error_counter[(ec_idx, ec_sub_idx)] = {
-                            "name": ec_name,
-                            "tree_node": tree_node, 
-                            "num_ports": num_ports,
-                            "err_count": err_count}
+                        "tree_node": child_node,
+                        "num_ports": num_ports,
+                        "err_count": err_count
+                    }
 
                     for port_num in range(num_ports):
                         try:
                             error_counter[(ec_idx, ec_sub_idx)]["err_count"][port_num] += \
-                                    int(err_count_list[ec_list_idx].split(",")[2], 16)
+                                int(err_count_list[ec_list_idx].split(",")[2], 16)
                         except:
                             error_counter[(ec_idx, ec_sub_idx)]["err_count"][port_num] = -1
 
-                        ec_list_idx += 1
-                
-                if ec_sub_idx > 0:
-                    for port_num in range(num_ports):
-                        err_sum = 0
-                        for sub_idx in range(1, ec_sub_idx+1):
-                            err_sum += error_counter[(ec_idx, sub_idx)]\
-                                                ["err_count"][port_num]
-                        error_counter[(ec_idx, 0)]["err_count"][port_num] = err_sum
-                        
-                else:
-                    for port_num in range(num_ports):
-                        try:
-                            error_counter[(ec_idx, ec_sub_idx)]["err_count"][port_num] += \
-                                    int(err_count_list[ec_list_idx].split(",")[2], 16)
-                        except:
-                            error_counter[(ec_idx, ec_sub_idx)]["err_count"][port_num] = -1
                         ec_list_idx += 1
 
                 ec_idx += 1
-            
-            # set texts in "error" column. 
+
+            # ----------------------------
+            # WRITE ERROR COLUMN
+            # ----------------------------
+            col_num = 3  # ERROR column
+
             ec_info_list = list(error_counter.items())
             ec_info_list.sort()
-            
+
             err_checker = "none"
-           
-            for (idx, sub_idx), ec_info in ec_info_list:
+
+            for (_, _), ec_info in ec_info_list:
+
                 ec_text = ""
+
                 for port_num in range(ec_info["num_ports"]):
+
                     if ec_info["err_count"][port_num] != 0:
                         err_checker = "occurred"
 
                     if ec_info["err_count"][port_num] < 0:
                         ec_text = "reg I/O error"
                     else:
-                        ec_text = ec_text + "%d/" % ec_info["err_count"][port_num]
+                        ec_text += "%d/" % ec_info["err_count"][port_num]
 
                 ec_text = ec_text.strip("/")
-                
-                self.Tree.SetItemText(ec_info["tree_node"], ec_text, col_num)
-            
-            self.Tree.SetItemText(slave_node, err_checker, col_num)
+
+                self.Tree.SetItemText(
+                    ec_info["tree_node"],
+                    col_num,
+                    ec_text
+                )
+
+            # slave status (error column)
+            self.Tree.SetItemText(
+                slave_node,
+                col_num,
+                err_checker
+            )
 
 class DCConfigPanel(wx.Panel):
     def __init__(self, parent, controler):
@@ -3376,15 +3843,6 @@ class DCConfigPanel(wx.Panel):
             ]:
             self.StaticTextDic[statictext_name] = wx.StaticText(self, label=_(statictext_label))
 
-#        for textctl_name in [
-#                ("SyncUnitCycle_Ctl"),
-#                ("Sync0CycleTimeUserDefined_Ctl"),
-#                ("Sync0ShiftTimeUserDefined_Ctl"),
-#                ("Sync1CycleTimeUserDefined_Ctl"),
-#                ("Sync1ShiftTimeUserDefined_Ctl"),
-#            ]:
-#            self.TextCtrlDic[textctl_name] = wx.TextCtrl(
-#                self, size=wx.Size(130, 24), style=wx.TE_READONLY)
         # -------- TextCtrls --------
 
         # Solo lectura (correcto así)
@@ -3665,11 +4123,6 @@ class DCConfigPanel(wx.Panel):
                 sync0_shift_time_us = ns_to_us(sync0_shift_time_ns)
                 sync1_shift_time_us = ns_to_us(sync1_shift_time_ns)
 
-#                sync0_cycle_time_us = str(ns(sync0_cycle_time_ns) / 1000)
-#                sync0_shift_time_us = str(int(sync0_shift_time_ns) / 1000)
-#                sync1_cycle_time_us = str(int(sync1_cycle_time_ns) / 1000)
-#                sync1_shift_time_us = str(int(sync1_shift_time_ns) / 1000)
-
                 task_cycle_to_us = int(self.task_cycle_ns) // 1000
 
                 # DC sync0 mode
@@ -3781,8 +4234,6 @@ class DCConfigPanel(wx.Panel):
             return task_cycle_us
 
     def ParseTime(self, input):
-        # input example : 't#1ms'
-        # temp.split('#') -> ['t', '1ms']
         temp = input.split('#')
          
         # temp[1] : '1ms'
@@ -3824,16 +4275,6 @@ class DCConfigPanel(wx.Panel):
             self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].SetEditable(False)
             self.TextCtrlDic["Sync1CycleTimeUserDefined_Ctl"].Disable()
 
-#    def GetCycle(self, period, section):
-#        temp = section.split(" ")
-#        if temp[0] == "x":
-#            result = str(period * int(temp[1]))
-#        elif temp[0] == "/" :
-#            result = str(period / int(temp[1]))
-#        else :
-#            result = ""
-
-#        return result
     def GetCycle(self, period, section):
         temp = section.split(" ")
 
@@ -3890,8 +4331,6 @@ class DCConfigPanel(wx.Panel):
         else:
             dc_sync1_cycle = ""
 
-#        dc_sync0_shift = self.TextCtrlDic["Sync0ShiftTimeUserDefined_Ctl"].GetValue()
-#        dc_sync1_shift = self.TextCtrlDic["Sync1ShiftTimeUserDefined_Ctl"].GetValue()
         def safe_int(value):
             try:
                 return str(int(float(value)))

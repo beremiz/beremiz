@@ -29,7 +29,7 @@ import sys
 import traceback
 import shutil
 import platform as platform_module
-from time import time
+#from time import time
 import hashlib
 from tempfile import mkstemp
 from functools import wraps, partial
@@ -41,6 +41,15 @@ from runtime.Stunnel import getPSKID
 from runtime import PlcStatus
 from runtime import MainWorker
 from runtime import default_evaluator
+# Para etherlab
+import threading
+import struct
+import re
+import subprocess
+import time
+from erpc_interface.erpc_PLCObject.common import SDOEntry
+from erpc_interface.erpc_PLCObject.common import SDODataPack
+#<----------
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -74,9 +83,15 @@ def RunInMain(func):
         return MainWorker.call(func, *args, **kwargs)
     return func_wrapper
 
+class binary_t(ctypes.Structure):# para ethercat
+    _fields_ = [
+        ("data", ctypes.POINTER(ctypes.c_uint8)),
+        ("dataLength", ctypes.c_uint32)
+    ]
 
 class PLCObject(object):
-    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars):
+    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars, controller=None):
+        self.Controler = controller
         self.workingdir = WorkingDir  # must exits already
         self.tmpdir = os.path.join(WorkingDir, 'tmp')
         if os.path.exists(self.tmpdir):
@@ -96,6 +111,21 @@ class PLCObject(object):
         self.TraceThread = None
         self.TraceLock = Lock()
         self.Traces = []
+        # --------- Para etherlab------------
+        self.SDOTraceThread = None
+        self.SDOLock = Lock()
+        self.SDOTraceValues = []
+        self.SDOMonitorEntries = {}
+        self.SDOMonitorSlavePos = 0
+        self.SDOThreadFlag = False
+        self._sdo_thread = None
+        self._sdo_lock = threading.Lock()
+        self._sdo_request_event = threading.Event()
+
+        self._sdo_busy = False
+        self._sdo_scan_id = 0
+        self._sdo_scans = {} 
+        # <----------------------------------
         self.DebugToken = 0
 
         # Event to signal when PLC is stopped.
@@ -106,7 +136,7 @@ class PLCObject(object):
         
         # initialize extended calls with GetVersions call, ignoring arguments
         self.extended_calls = {"GetVersions":lambda *_args:self.GetVersions().encode()}
-
+    
     # First task of worker -> no @RunInMain
     def AutoLoad(self, autostart):
         # Get the last transfered PLC
@@ -261,6 +291,30 @@ class PLCObject(object):
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
             self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+            # Para etherlab ------------
+            self._GetSDOData = getattr(self.PLClibraryHandle, "GetSDOData", None)
+
+            if self._GetSDOData is not None:
+                self._GetSDOData.restype = ctypes.c_uint32
+                self._GetSDOData.argtypes = [
+                    ctypes.c_uint16,   # slave
+                    ctypes.c_uint16,   # idx
+                    ctypes.c_uint8,    # subidx
+                    ctypes.POINTER(ctypes.c_uint8),  # buffer
+                    ctypes.c_uint32    # size
+                ]
+
+            self._GetMasterData = getattr(self.PLClibraryHandle, "GetMasterData", None)
+            if self._GetMasterData is not None:
+                self._GetMasterData.restype = ctypes.c_int
+
+            self._ReleaseMasterData = getattr(self.PLClibraryHandle, "ReleaseMasterData", None)
+            if self._ReleaseMasterData is not None:
+                self._ReleaseMasterData.restype = None
+
+            print("SDO:", self._GetSDOData)
+
+            # <-------------------------
 
             self._loading_error = None
 
@@ -789,7 +843,7 @@ class PLCObject(object):
         return -5 # DEBUG_SUSPENDED
 
     def _TracesSwap(self):
-        self.LastSwapTrace = time()
+        self.LastSwapTrace = time.time()
         if self.TraceThread is None and self.PLCStatus == PlcStatus.Started:
             self.TraceThread = Thread(target=self.TraceThreadProc, name="PLCTrace")
             self.TraceThread.start()
@@ -841,7 +895,7 @@ class PLCObject(object):
                 self.TraceLock.release()
 
             # TraceProc stops here if Traces not polled for 3 seconds
-            traces_age = time() - self.LastSwapTrace
+            traces_age = time.time() - self.LastSwapTrace
             if traces_age > 3:
                 self.TraceLock.acquire()
                 self.Traces = []
@@ -850,6 +904,412 @@ class PLCObject(object):
                 break
 
         self.TraceThread = None
+    
+    # Para etherlab
+    
+    def RemoteExec(self, script, **kwargs):
+        try:
+            exec(script, kwargs)
+        except:
+            e_type, e_value, e_traceback = sys.exc_info()
+            line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
+            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" % 
+                        (line_no, e_value, script.splitlines()[line_no - 1]))
+        return (0, kwargs.get("returnVal", None))
+        
+    # SDO base data type for Ethercatmaster
+    BaseDataTypes = {
+            "bool": ["BOOLEAN", "BOOL", "BIT"],
+            "uint8": ["BYTE", "USINT", "BIT1", "BIT2", "BIT3", "BIT4", "BIT5", "BIT6",
+                      "BIT7", "BIT8", "BITARR8", "UNSIGNED8"],
+            "uint16": ["BITARR16", "UNSIGNED16", "UINT"],
+            "uint32": ["BITARR32", "UNSIGNED24", "UINT24", "UNSIGNED32", "UDINT"],
+            "uint64": ["UNSINED40", "UINT40", "UNSIGNED48", "UINT48", "UNSIGNED56", 
+                       "UINT56", "UNSIGNED64", "ULINT"],
+            "int8": ["INTEGER8", "SINT"],
+            "int16": ["INTEGER16", "INT"],
+            "int32": ["INTEGER24", "INT24", "INTEGER32", "DINT"],
+            "int64": ["INTEGER40", "INT40", "INTEGER48", "INT48", "INTEGER56", "INT56",
+                      "INTEGER64", "LINT"],
+            "float": ["REAL", "REAL32"],
+            "double": ["LREAL", "REAL64"],
+            "string": ["VISIBLE_STRING", "STRING(n)"],
+            "octet_string": ["OCTET_STRING"],
+            "unicode_string": ["UNICODE_STRING"]
+            }
+
+    def IsBaseDataType(self, datatype):
+        """
+        Check if the datatype is a base data type.
+        @return baseTypeFlag: true if datatype is a base data type, unless false
+        """
+        baseTypeFlag = False
+        for baseDataTypeList in self.BaseDataTypes.values():
+            if datatype in baseDataTypeList:
+                baseTypeFlag = True
+                break
+        return baseTypeFlag
+
+    def GetBaseDataType(self, datatype):
+        """
+        Get a base data type corresponding the datatype.
+        @param datatype: Some data type (string format)
+        @return base data type
+        """
+        if self.IsBaseDataType(datatype):
+            return datatype
+        elif not datatype.find("STRING") == -1:
+            return datatype
+        else:
+            datatypes = self.ExtractAllDataTypes()
+            base_datatype = datatypes[datatype].getBaseType()
+            return self.GetBaseDataType(base_datatype)
+
+    def GetBaseDataType(self, datatype):
+        if self.IsBaseDataType(datatype):
+            return datatype
+        elif "STRING" in datatype:
+            return datatype
+        else:
+            if self.Controler is None:
+                raise Exception("Controler not set")
+
+            datatypes = self.Controler.ExtractAllDataTypes()
+            base_datatype = datatypes[datatype].getBaseType()
+            return self.GetBaseDataType(base_datatype)
+            
+    def SetSDOTraceValues(self, SDOMonitorEntries, SlavePos, result):
+
+        print("SDO TRACE RECIBIDO:", SDOMonitorEntries, SlavePos)
+
+        entries_dict = {}
+
+        for e in SDOMonitorEntries:
+            try:
+                # idx y subidx pueden venir como string tipo "0x1000"
+                idx = int(e.idx, 16) if isinstance(e.idx, str) else int(e.idx)
+                subidx = int(e.subIdx, 16) if isinstance(e.subIdx, str) else int(e.subIdx)
+
+                entries_dict[(idx, subidx)] = e
+
+            except Exception as ex:
+                print("[DEBUG] ERROR parsing SDO entry:", e, ex)
+
+        self.SDOMonitorEntries = entries_dict
+        self.SDOMonitorSlavePos = SlavePos
+
+        result.value = 0
+
+    def GetSDOData(self, result):
+        self.SDOLastSwapTrace = time.time()
+        if self.SDOTraceThread is None:
+            self.SDOTraceThread = Thread(target=self.SDOThreadProc)
+            self.SDOThreadFlag = True
+            self.SDOTraceThread.start()
+
+        with self.SDOLock:
+            entries_dict = self.SDOMonitorEntries or {}
+            slave_pos = getattr(self, "SDOMonitorSlavePos", 0)
+
+        entries_list = list(entries_dict.values()) if isinstance(entries_dict, dict) else entries_dict
+        # Construir estructura correcta
+        pack = SDODataPack()
+        pack.entries = entries_list
+        pack.slavePos = slave_pos
+
+        # eRPC usa esto
+        result.value = pack
+    
+    def StopSDOThread(self):
+        self.SDOThreadFlag = False
+        if self.SDOTraceThread is not None:
+            self.SDOTraceThread.join()
+        self.SDOTraceThread = None
+        return 0
+    
+    def GetSDOEntryData(self, SDOUploadEntry, SlavePos):
+        if self.PLCStatus != PlcStatus.Started : 
+            res = self._GetMasterData()
+        idx = SDOUploadEntry["idx"]
+        subidx = SDOUploadEntry["subIdx"]
+        size = int(SDOUploadEntry["size"]) // 8
+        LocalTraceValues = self._GetSDOData(SlavePos, int(idx, 16), int(subidx, 16), size)
+
+        if self.PLCStatus != PlcStatus.Started :
+            self._ReleaseMasterData()
+
+        return LocalTraceValues
+
+    def GetSDOEntriesData(self, SDOUploadEntries, SlavePos, result):
+
+        if not SDOUploadEntries:
+            result.value = []
+            return 0
+
+        # RESET SOLO SI ES NUEVO O CAMBIO DE TAMAÑO
+        if (not self._sdo_busy or
+            len(self._sdo_snapshot) != len(SDOUploadEntries)):
+
+            self._sdo_snapshot = list(SDOUploadEntries or [])
+            self._sdo_index = 0
+            self._sdo_busy = True
+
+        snapshot = self._sdo_snapshot or []
+
+        if len(snapshot) == 0:
+            self._sdo_busy = False
+            result.value = []
+            return 0
+
+        CHUNK_SIZE = 14
+        output = []
+
+        start = self._sdo_index
+        end = min(start + CHUNK_SIZE, len(snapshot))
+
+        print(f"SDO chunk {start} → {end}")
+
+        for i in range(start, end):
+
+            data = snapshot[i]
+
+            if data is None:
+                continue
+
+            try:
+                idx = int(str(data.idx), 16)
+                sub = int(str(data.subIdx), 16)
+
+                size_bits = int(data.size)
+                size = max(1, size_bits // 8)
+
+                buffer = (ctypes.c_uint8 * size)()
+
+                ret = self._GetSDOData(
+                    SlavePos,
+                    idx,
+                    sub,
+                    buffer,
+                    size
+                )
+
+                value = self._decode_sdo(
+                    ret,
+                    buffer,
+                    getattr(data, "datatype", "").upper()
+                )
+
+                output.append(
+                    SDOEntry(
+                        idx=str(data.idx),
+                        subIdx=str(data.subIdx),
+                        datatype=getattr(data, "datatype", ""),
+                        size=str(size_bits),
+                        value=str(value)
+                    )
+                )
+
+            except Exception as e:
+                print("SDO ITEM ERROR:", e)
+                continue
+
+            time.sleep(0.01)
+
+        # avanzar índice
+        self._sdo_index = end
+
+        # terminar
+        if self._sdo_index >= len(snapshot):
+            self._sdo_busy = False
+            self._sdo_index = 0
+
+        result.value = output
+        return 0
+    def _SDOThreadWorker(self):
+
+        try:
+            snapshot = self._sdo_snapshot or []
+
+            if len(snapshot) == 0:
+                print("SDO THREAD: empty snapshot")
+                return
+
+            CHUNK_SIZE = 5
+            output = []
+
+            total = len(snapshot)
+
+            for i in range(0, total, CHUNK_SIZE):
+
+                start = i
+                end = min(i + CHUNK_SIZE, total)
+
+                print(f"SDO chunk {start} → {end}")
+
+                for data in snapshot[start:end]:
+
+                    if data is None:
+                        continue
+
+                    try:
+                        idx = int(str(data.idx), 16)
+                        sub = int(str(data.subIdx), 16)
+
+                        size_bits = int(data.size)
+                        size = max(1, size_bits // 8)
+
+                        buffer = (ctypes.c_uint8 * size)()
+
+                        ret = self._GetSDOData(
+                            self._sdo_slave_pos,
+                            idx,
+                            sub,
+                            buffer,
+                            size
+                        )
+
+                        value = self._decode_sdo(
+                            ret,
+                            buffer,
+                            getattr(data, "datatype", "").upper()
+                        )
+
+                        output.append(
+                            SDOEntry(
+                                idx=str(data.idx),
+                                subIdx=str(data.subIdx),
+                                datatype=getattr(data, "datatype", ""),
+                                size=str(size_bits),
+                                value=str(value)
+                            )
+                        )
+
+                    except Exception as e:
+                        print("SDO item error:", e)
+                        continue
+
+                    time.sleep(0.01)
+
+            # RESULTADO FINAL
+            self._sdo_result_ref.value = output
+
+            print("SDO SCAN DONE:", len(output))
+
+        except Exception as e:
+            print("SDO THREAD FATAL:", e)
+
+        finally:
+            self._sdo_busy = False
+            self._sdo_snapshot = None 
+
+    def _decode_sdo(self, ret, buffer, dt):
+
+        if ret < 0:
+            return f"abort(0x{-ret:X})"
+
+        if ret == 0:
+            return "empty"
+
+        raw = bytes(buffer[:ret])
+
+        try:
+            if "STRING" in dt:
+                return raw.decode("utf-8", errors="ignore").rstrip("\x00")
+
+            if "USINT" in dt or "UNSIGNED8" in dt:
+                return raw[0]
+
+            if "UINT" in dt or "UNSIGNED16" in dt:
+                return int.from_bytes(raw, "little")
+
+            if "UDINT" in dt or "UNSIGNED32" in dt:
+                return int.from_bytes(raw, "little")
+
+            if "INT" in dt:
+                return int.from_bytes(raw, "little", signed=True)
+
+            if "DINT" in dt:
+                return int.from_bytes(raw, "little", signed=True)
+
+            if "REAL" in dt:
+                return struct.unpack("<f", raw[:4])[0]
+
+            if "LREAL" in dt:
+                return struct.unpack("<d", raw[:8])[0]
+
+            return raw.hex()
+
+        except Exception as e:
+            return f"decode_error: {e}"  
+        
+    
+    def SDOTracesAutoSuspend(self):
+        # SDOThreadProc stops here if Traces not polled for 3 seconds ??
+        traces_age = time() - self.LastSwapTrace
+        if traces_age > 3:
+            self.SDOLock.acquire()
+            self.SDOTraceValues = []
+            self.SDOLock.release()
+
+    def SDOThreadProc(self):
+        print("SDOThreadProc")
+
+        while self.SDOThreadFlag:
+
+            try:
+                # Obtener estado del PLC (eRPC)
+                status, _ = self.GetPLCstatus()
+
+            except Exception as e:
+                print("[SDOThread] PLC status error:", e)
+                time.sleep(1)
+                continue
+            
+            with self.SDOLock:
+                snapshot = list(self.SDOMonitorEntries.values())
+
+#            for entry in self.SDOMonitorEntries:
+            for entry in snapshot:
+
+                try:
+                    # idx y subidx vienen como string tipo "0x6040"
+                    idx = int(entry.idx, 16) if isinstance(entry.idx, str) else int(entry.idx)
+                    subidx = int(entry.subIdx, 16) if isinstance(entry.subIdx, str) else int(entry.subIdx)
+
+                    size = int(entry.size) // 8 if entry.size else 1
+
+                    # CASO 1: PLC corriendo (usar API interna)
+                    if status == PlcStatus.Started:
+
+                        val = self._GetSDOData(
+                            self.SDOMonitorSlavePos,
+                            idx,
+                            subidx,
+                            size
+                        )
+
+                    # CASO 2: PLC detenido (usar ethercat CLI)
+                    else:
+                        valid_type = self.GetValidDataType(entry.datatype)
+                        print("[SDO CLI]", cmd)
+
+                        cmd = f"ethercat upload -p {self.SDOMonitorSlavePos} -t {valid_type} {hex(idx)} {hex(subidx)}"
+
+                        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+                        out = proc.communicate()[0].split()
+
+                        val = out[1] if len(out) > 1 else b"0"
+
+                    # Guardar valor en el objeto
+                    entry.value = val
+
+                except Exception as e:
+                    entry.value = str(e)
+
+            time.sleep(1)
+
+
+    # <------------------
 
     def GetVersions(self):
         return platform_module.system() + " " + platform_module.release()

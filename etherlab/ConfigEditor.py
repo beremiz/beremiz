@@ -87,13 +87,6 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         self.VariablesFilter.Bind(wx.EVT_TEXT_ENTER, self.OnVariablesFilterChanged)
         self.VariablesFilter.Bind(wx.EVT_CHAR, self.OnVariablesFilterKeyDown)
         self.Add(self.VariablesFilter, flag=wx.GROW)
-
-#        self.VariablesGrid = wx.dataview.TreeListCtrl(parent,
-#                                                    style=wx.dataview.TL_DEFAULT_STYLE |
-#                                                    wx.dataview.TL_HIDDEN_ROOT |
-#                                                    wx.dataview.TL_FULL_ROW_HIGHLIGHT)
-#        self.VariablesGrid.GetMainWindow().Bind(wx.EVT_LEFT_DOWN,
-#                                                self.OnVariablesGridLeftClick)
         self.VariablesGrid = wx.dataview.TreeListCtrl(parent, style=wx.dataview.TL_DEFAULT_STYLE)
         self.VariablesGrid.Bind(wx.EVT_LEFT_DOWN, self.OnVariablesGridLeftClick)
         self.Add(self.VariablesGrid, flag=wx.GROW)
@@ -337,8 +330,6 @@ class NodeEditor(ConfTreeNodeEditor):
         self.EtherCATManagermentEditor_Main_Sizer.AddGrowableRow(0)
 
         self.EtherCATManagementTreebook = EtherCATManagementTreebook(self.EtherCATManagementEditor, self.Controler, self)
-#        self.EtherCATManagementEditor.Bind(wx.EVT_CLOSE, self.OnEtherCATManagementEditorClose)  # Para destruir de forma segura
-
 
         self.EtherCATManagermentEditor_Main_Sizer.Add(self.EtherCATManagementTreebook, border=10, flag=wx.GROW)
 
@@ -370,7 +361,6 @@ def GetProcessVariablesTableColnames():
             _("Read from (nodeid, index, subindex)"),
             _("Write to (nodeid, index, subindex)"),
             _("Description")]
-
 
 class ProcessVariablesTable(CustomTable):
 

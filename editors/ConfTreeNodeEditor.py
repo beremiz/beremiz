@@ -703,6 +703,7 @@ class ConfTreeNodeEditor(EditorPanel):
         def OnBrowseButton(event):
             dialog = BrowseValuesLibraryDialog(self, name, library, infos[0])
             if dialog.ShowModal() == wx.ID_OK:
+                print("DEBUG RETURN:", self.SetConfNodeParamsAttribute(path, dialog.GetValueInfos()))
                 value, value_infos = self.SetConfNodeParamsAttribute(path, dialog.GetValueInfos())
                 textctrl.ChangeValue(value)
                 infos[0] = value_infos

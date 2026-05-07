@@ -1945,10 +1945,17 @@ class ProjectController(ConfigTreeNode, PLCControler):
     def GetTicktime(self):
         return self._Ticktime
 
+#    def RemoteExec(self, script, **kwargs):
+#        if self._connector is None:
+#            return -1, "No runtime connected!"
+#        return self._connector.RemoteExec(script, **kwargs)
     def RemoteExec(self, script, **kwargs):
-        if self._connector is None:
-            return -1, "No runtime connected!"
-        return self._connector.RemoteExec(script, **kwargs)
+        try:
+            loc = {}
+            exec(script, loc)
+            return (0, loc.get("returnVal", None))
+        except Exception as e:
+            return (-1, str(e))
 
     def DispatchDebugValuesProc(self, event):
         event.Skip()

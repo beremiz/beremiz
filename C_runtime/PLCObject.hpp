@@ -11,6 +11,7 @@
 #include <mutex>
 #include <thread>
 #include <array>
+
 #include "Blob.hpp"
 
 #include "erpc_PLCObject_interface.hpp"
@@ -53,6 +54,7 @@ extern "C" {
         int (*LogMessage)(uint8_t level, char* buf, uint32_t size);
         uint32_t (*GetLogMessage)(uint8_t level, uint32_t msgidx, char* buf, uint32_t max_size, uint32_t* tick, uint32_t* tv_sec, uint32_t* tv_nsec);
         void (*PLC_GetTime)(IEC_TIME *CURRENT_TIME);
+        
     } PLCSyms;
 }
 class PLCObject : public BeremizPLCObjectService_interface

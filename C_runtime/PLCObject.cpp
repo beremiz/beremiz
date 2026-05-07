@@ -463,6 +463,16 @@ uint32_t PLCObject::StartPLC(void)
         return res;
     }
     m_status.PLCstatus = Started;
+    
+    // =========================
+    // INICIAR WORKER THREAD para ehtercat
+    // =========================
+    workerRunning = true;
+
+    if(!workerThread.joinable()) // evita duplicar threads
+    {
+        workerThread = std::thread(&PLCObject::RemoteExecWorker, this);
+    }
 
     return 0;
 }
@@ -479,7 +489,15 @@ uint32_t PLCObject::StopPLC(bool *success)
         m_status.PLCstatus = Broken;
         *success = false;
     }
+    
+    // =========================
+    // DETENER WORKER THREAD para el hilo de ethercat
+    // =========================
+    StopWorker();
 
+    if(workerThread.joinable())
+        workerThread.join();
+    // <--------------
     // Stop debug thread
     StopDebugThread();
 
@@ -600,10 +618,9 @@ void PLCObject::TraceThreadProc(void)
 
 uint32_t PLCObject::ExtendedCall(const char * method, const binary_t * argument, binary_t * answer)
 {
-    // TODO
+     TODO
     answer->data = (uint8_t *)erpc_malloc(0);
     answer->dataLength = 0;
-
     return 0;
 }
 

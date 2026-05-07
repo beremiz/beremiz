@@ -17,7 +17,7 @@ import erpc
 # eRPC service code
 from erpc_interface.erpc_PLCObject.interface import IBeremizPLCObjectService
 from erpc_interface.erpc_PLCObject.client import BeremizPLCObjectServiceClient
-from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum
+from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum, SDOEntry
 
 import PSKManagement as PSK
 from connectors.ERPC.PSK_Adapter import SSLPSKClientTransport
@@ -45,7 +45,15 @@ def TranslatedReturnAsLastOutput(translator):
         res = ReturnAsLastOutput(client_method, obj, args_wrapper, *args)
         return translator(res)
     return wrapper
-
+    
+def NoReturnWrapper(client_method, obj, args_wrapper, *args):
+    result = erpc.Reference()
+    client_method(obj, *args_wrapper(*args), result)
+    return result.value
+    
+def NoArgsNoReturnWrapper(client_method, obj, args_wrapper, *args):
+    return client_method(obj)
+    
 ReturnWrappers = {
     "AppendChunkToBlob":ReturnAsLastOutput,
     "GetLogMessage":TranslatedReturnAsLastOutput(
@@ -63,6 +71,17 @@ ReturnWrappers = {
     "SetTraceVariablesList": ReturnAsLastOutput,
     "StopPLC":ReturnAsLastOutput,
     "ExtendedCall":ReturnAsLastOutput,
+    "GetSDOEntriesData": TranslatedReturnAsLastOutput(
+        lambda res: [
+            SDOEntry(**e) if isinstance(e, dict) else e
+            for e in res
+        ]
+    ),
+    "SetSDOTraceValues": NoReturnWrapper,
+    "GetSDOData": TranslatedReturnAsLastOutput(
+        lambda res: (res.entries, res.slavePos)
+    ),
+    "StopSDOThread": NoArgsNoReturnWrapper,
 }
 
 ArgsWrappers = {
@@ -72,7 +91,12 @@ ArgsWrappers = {
     "SetTraceVariablesList":
         lambda orders : ([
             trace_order(idx, b"" if force is None else force) 
-            for idx, force in orders],)
+            for idx, force in orders],),
+    "SetSDOTraceValues":
+        lambda entries, slavePos: (
+            [SDOEntry(**e) if isinstance(e, dict) else e for e in entries],
+            slavePos
+        )   
 }
 
 def rpc_wrapper(method_name, confnodesroot):
