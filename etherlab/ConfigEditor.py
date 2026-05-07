@@ -87,7 +87,6 @@ class NodeVariablesSizer(wx.FlexGridSizer):
         self.VariablesFilter.Bind(wx.EVT_TEXT_ENTER, self.OnVariablesFilterChanged)
         self.VariablesFilter.Bind(wx.EVT_CHAR, self.OnVariablesFilterKeyDown)
         self.Add(self.VariablesFilter, flag=wx.GROW)
-
         self.VariablesGrid = wx.dataview.TreeListCtrl(parent, style=wx.dataview.TL_DEFAULT_STYLE)
         self.VariablesGrid.Bind(wx.EVT_LEFT_DOWN, self.OnVariablesGridLeftClick)
         self.Add(self.VariablesGrid, flag=wx.GROW)

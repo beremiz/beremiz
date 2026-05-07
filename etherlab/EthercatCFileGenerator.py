@@ -39,16 +39,38 @@ ec_sync_info_t slave_%(slave)d_syncs[] = {
 """
 
 SLAVE_CONFIGURATION_TEMPLATE = """
-    if (!(slave%(slave)d = ecrt_master_slave_config(master, %(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x))) {
-        SLOGF(LOG_CRITICAL, "EtherCAT failed to get slave %(device_type)s configuration at alias %(alias)d and position %(position)d.");
+    SLOGF(LOG_INFO,
+          "CONFIG SLAVE START: slave=%(slave)d alias=%(alias)d position=%(position)d vendor=0x%(vendor).8x product=0x%(product_code).8x");
+
+    slave%(slave)d = ecrt_master_slave_config(master,
+                                              %(alias)d,
+                                              %(position)d,
+                                              0x%(vendor).8x,
+                                              0x%(product_code).8x);
+
+    if (!slave%(slave)d) {
+        SLOGF(LOG_CRITICAL,
+              "FAILED slave config: alias=%(alias)d position=%(position)d device=%(device_type)s");
         goto ecat_failed;
     }
 
+    SLOGF(LOG_INFO,
+          "Slave config OK: slave=%(slave)d (%(device_type)s)");
+
+    SLOGF(LOG_INFO,
+          "PDO CONFIG START: slave=%(slave)d syncs_ptr=%%p",
+          slave_%(slave)d_syncs);
+
     if (ecrt_slave_config_pdos(slave%(slave)d, EC_END, slave_%(slave)d_syncs)) {
-        SLOGF(LOG_CRITICAL, "EtherCAT failed to configure PDOs for slave %(device_type)s at alias %(alias)d and position %(position)d.");
+        SLOGF(LOG_CRITICAL,
+              "PDO CONFIG FAILED: slave=%(slave)d device=%(device_type)s");
         goto ecat_failed;
     }
+
+    SLOGF(LOG_INFO,
+          "PDO CONFIG OK: slave=%(slave)d device=%(device_type)s");
 """
+
 
 SLAVE_INITIALIZATION_TEMPLATE = """
     {
@@ -362,6 +384,7 @@ class _EthercatCFileGenerator(object):
                     PdoConfig = True
 
             # Test if slave has a configuration or need one
+
             if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 and PdoConfig and PdoAssign:
 
                 str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
@@ -501,11 +524,6 @@ class _EthercatCFileGenerator(object):
                     # ---- Assign Activate ----
                     assign_activate = 0
                     assign_token = ethercat_params.getDC_Assign_Activate()
-                    if assign_token != "None":
-                        try:
-                            assign_activate = int(assign_token)
-                        except Exception:
-                            assign_activate = 0
 
                     if assign_token != "None":
                         try:

@@ -130,14 +130,11 @@ if cls:
 
     # Modify by jblee
     def ExtractDataTypes(self):
-        #self.DataTypes = {}
-        #self.DT = {}
         DT = {}
         objects = []
 
         # get Profile Field
         for profile in self.getProfile():
-            # get each (ProfileNo, Dictionary) Field as child
             for child in list(profile):
                 # child.text is not None -> ProfileNo, is None -> Dictionary
                 if child.text is None:

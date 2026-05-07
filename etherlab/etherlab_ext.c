@@ -13,6 +13,10 @@ See COPYING file for copyrights details.
 */
 
 #include "iec_types_all.h"
+/* needed by the EtherCAT master API headers */
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #define FREE 0
 #define ACQUIRED 1

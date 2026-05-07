@@ -13,7 +13,8 @@ from __future__ import division
 from builtins import str as text
 import codecs
 import wx
-
+import subprocess
+import re
 
 mailbox_protocols = ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
 
@@ -56,36 +57,36 @@ def ExtractName(names, default=None):
 
 # --------------------- for master ---------------------------
 MASTER_STATE = """
-import commands
-result = commands.getoutput("ethercat master")
+import subprocess
+result = subprocess.getoutput("ethercat master")
 returnVal =result
 """
 
 # --------------------- for slave ----------------------------
 # ethercat state -p (slave position) (state (INIT, PREOP, SAFEOP, OP))
 SLAVE_STATE = """
-import commands
-result = commands.getoutput("ethercat state -p %d %s")
+import subprocess
+result = subprocess.getoutput("ethercat states -p %d %s")
 returnVal = result
 """
 
 # ethercat slave
 GET_SLAVE = """
-import commands
-result = commands.getoutput("ethercat slaves")
+import subprocess
+result = subprocess.getoutput("ethercat slaves")
 returnVal =result
 """
 
 # ethercat xml -p (slave position)
 SLAVE_XML = """
-import commands
-result = commands.getoutput("ethercat xml -p %d")
+import subprocess
+result = subprocess.getoutput("ethercat xml -p %d")
 returnVal = result
 """
 
 # ethercat upload -p (slave position) -t (type) (index) (sub index)
 SDO_UPLOAD = """
-import commands
+import subprocess
 sdo_data = []
 input_data = "%s"
 slave_pos = %d
@@ -95,35 +96,35 @@ for sdo_token in input_data.split(","):
         sdo_token = sdo_token.strip()
         type, idx, subidx = sdo_token.split(" ")
         command_string = "ethercat upload -p " + str(slave_pos) + " -t " + type + " " + idx + " " + subidx
-        result = commands.getoutput(command_string)
+        result = subprocess.getoutput(command_string)
         sdo_data.append(result)
 returnVal =sdo_data
 """
 
 # ethercat download -p (slave position) (main index) (sub index) (value)
 SDO_DOWNLOAD = """
-import commands
-result = commands.getoutput("ethercat download --type %s -p %d %s %s %s")
+import subprocess
+result = subprocess.getoutput("ethercat download --type %s -p %d %s %s %s")
 returnVal =result
 """
 
 # ethercat sii_read -p (slave position)
 SII_READ = """
-import commands
-result = commands.getoutput("ethercat sii_read -p %d")
+import subprocess
+result = subprocess.check_output("ethercat sii_read -a %d", shell=True)
 returnVal =result
 """
 
 # ethercat reg_read -p (slave position) (address) (size)
 REG_READ = """
-import commands
-result = commands.getoutput("ethercat reg_read -p %d %s %s")
+import subprocess
+result = subprocess.getoutput("ethercat reg_read -a %d %s %s")
 returnVal =result
 """
 
 # ethercat reg_read -p (slave position) (address) (size)
 MULTI_REG_READ = """ 
-import commands
+import subprocess
 output = []
 addr, size = range(2)
 slave_num = %d 
@@ -132,7 +133,7 @@ reg_info_list = reg_info_str.split("|")
 for slave_idx in range(slave_num):
     for reg_info in reg_info_list:
         param = reg_info.split(",")
-        result = commands.getoutput("ethercat reg_read -p "
+        result = subprocess.getoutput("ethercat reg_read -p "
                                     + str(slave_idx) + " "
                                     + param[addr] + " "
                                     + param[size])
@@ -152,22 +153,22 @@ returnVal = process.returncode
 
 # ethercat reg_write -p (slave position) -t (uinit16) (address) (data)
 REG_WRITE = """
-import commands
-result = commands.getoutput("ethercat reg_write -p %d -t uint16 %s %s")
+import subprocess
+result = subprocess.getoutput("ethercat reg_write -p %d -t uint16 %s %s")
 returnVal =result
 """
 
 # ethercat rescan -p (slave position)
 RESCAN = """
-import commands
-result = commands.getoutput("ethercat rescan -p %d")
+import subprocess
+result = subprocess.getoutput("ethercat rescan -p %d")
 returnVal =result
 """
 
 # ethercat pdos
 PDOS = """
-import commands
-result = commands.getoutput("ethercat pdos -p 0")
+import subprocess
+result = subprocess.getoutput("ethercat pdos -p 0")
 returnVal =result  
 """
 
@@ -271,15 +272,44 @@ class _CommonSlave(object):
     # -------------------------------------------------------------------------------
     #                        Used Slave State
     # -------------------------------------------------------------------------------
+    def AliasToPosition(self, alias):
+        """
+        Translate an EtherCAT alias into the real ring position, using the
+        "ethercat slaves" command.
+        @param alias : alias of the slave to look for
+        @return position : ring position of the slave, None when not found
+        """
+        output = subprocess.getoutput("ethercat slaves")
+
+        for line in output.splitlines():
+            # line format : 0  3:0  PREOP  +  CL3-E57H
+            match = re.match(r"(\d+)\s+(\d+):(\d+)", line)
+            if match:
+                position = int(match.group(1))
+                found_alias = int(match.group(2))
+                if found_alias == alias:
+                    return position
+
+        self.Controler.GetCTRoot().logger.write_warning(
+            _("No EtherCAT slave found for alias %d\n") % alias)
+        return None
+
     def RequestSlaveState(self, command):
         """
         Set slave state to the specified one using "ethercat states -p %d %s" command.
         Command example : "ethercat states -p 0 PREOP" (target slave position and target state are given.)
         @param command : target slave state
+        @return state : slave list as reported by "ethercat slaves"
         """
+        alias = self.Controler.GetSlavePos()
+        pos = self.AliasToPosition(alias)
+        if pos is None:
+            return
+
         _error, _return_val = self.Controler.RemoteExec(
-            SLAVE_STATE % (self.Controler.GetSlavePos(), command),
-            return_val=None)
+            SLAVE_STATE % (pos, command), return_val=True)
+        _err, state = self.Controler.RemoteExec(GET_SLAVE, return_val=True)
+        return state
 
     def GetSlaveStateFromSlave(self):
         """
@@ -348,7 +378,7 @@ class _CommonSlave(object):
                 continue
             
             for entry in category:
-                valid_type = self.GetValidDataType(entry["type"])
+                valid_type = self.GetValidDataType(entry["datatype"])
                 for_command_string = "%s %s %s ," % \
                         (valid_type, entry["idx"], entry["subIdx"])
                 entry_infos += for_command_string
@@ -369,7 +399,7 @@ class _CommonSlave(object):
         entries_info_list.sort()
         
         for (idx, subIdx), entry in entries_info_list:
-            valid_type = self.GetValidDataType(entry["type"])
+            valid_type = self.GetValidDataType(entry["datatype"])
             for_command_string = "%s %s %s ," % \
                         (valid_type, str(idx), str(subIdx))
             entry_infos += for_command_string
@@ -962,7 +992,8 @@ class _CommonSlave(object):
         Command example : "ethercat sii_read -p 0"
         @return return_val : result of "ethercat sii_read" (binary data)
         """
-        _error, return_val = self.Controler.RemoteExec(SII_READ % (self.Controler.GetSlavePos()), return_val=None)
+        alias = self.Controler.GetSlavePos()
+        _error, return_val = self.Controler.RemoteExec(SII_READ % (alias), return_val=None)
         self.SiiData = return_val
         return return_val
 
@@ -1001,8 +1032,16 @@ class _CommonSlave(object):
         @return hexCode : hexadecimal digits
         @return hexview_table_row, hexview_table_col : Grid size for "Hex View" UI
         """
+
         if binary is None:
             return [], 0, 17
+
+        # accept both a hex string and a bytes object
+        if isinstance(binary, str):
+            try:
+                binary = bytes.fromhex(binary)
+            except ValueError:
+                binary = binary.encode(errors="ignore")
 
         row_code = []
         row_text = ""
@@ -1011,23 +1050,47 @@ class _CommonSlave(object):
 
         hexview_table_col = 17
 
-        for index in range(len(binary)):
-            value = binary[index]
+        for value in binary:
 
+            # normalise each item to an integer
+            if not isinstance(value, int):
+                try:
+                    value = int(value, 16)
+                except:
+                    try:
+                        value = int(value)
+                    except:
+                        continue  # not a byte value, skip it
+
+            # keep byte range only
+            if value < 0 or value > 255:
+                continue
+
+            # hexadecimal digits
             tempvar2 = "{:02x}".format(value)
             row_code.append(tempvar2)
 
+            # printable representation
             if 32 <= value <= 126:
                 row_text += chr(value)
             else:
                 row_text += "."
 
+            # row completed
             if len(row_code) == (hexview_table_col - 1):
                 row_code.append(row_text)
                 hex_code.append(row_code)
                 row_text = ""
                 row_code = []
                 row += 1
+
+        # append the last, incomplete, row
+        if row_code:
+            while len(row_code) < (hexview_table_col - 1):
+                row_code.append("  ")
+            row_code.append(row_text)
+            hex_code.append(row_code)
+            row += 1
 
         hexview_table_row = row
 
@@ -1808,7 +1871,6 @@ class _CommonSlave(object):
                 data += "{:0>4x}".format(ExtractHexDecValue(entry.getIndex().getcontent()))[0:2]
                 #   Subindex
                 data += "{:0>2x}".format(ExtractHexDecValue(entry.getSubIndex()))
-
                 #   Entry Name Index
                 objname = ""
                 for name in entry.getName():
@@ -2040,7 +2102,16 @@ class _CommonSlave(object):
         if self.Controler.GetCTRoot()._connector is not None:
             # Check connection between the master and the slave.
             # Command example : "ethercat xml -p 0"
-            _error, return_val = self.Controler.RemoteExec(SLAVE_XML % (self.Controler.GetSlavePos()), return_val=None)
+            alias = self.Controler.GetSlavePos()
+            pos = self.AliasToPosition(alias)
+
+            if pos is None:
+                if not cyclic_flag:
+                    self.CreateErrorDialog(_('Alias not found'))
+                return False
+
+            _error, return_val = self.Controler.RemoteExec(SLAVE_XML % pos, return_val=None)
+
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2:  # No slave connected to the master controller
                 if not cyclic_flag:

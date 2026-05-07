@@ -273,21 +273,19 @@ void ReleaseMasterData(void)
     ecrt_release_master(master);
 }
 
-uint32_t GetSDOData(uint16_t slave_pos, uint16_t idx, uint8_t subidx, int size)
+uint32_t GetSDOData(uint16_t slave_pos, uint16_t idx, uint8_t subidx, uint8_t *buffer, uint32_t size)
 {
-    uint32_t abort_code, return_value;
-    size_t result_size;
-    uint8_t value[size];
+    uint32_t abort_code = 0;
+    size_t result_size = 0;
 
-    abort_code = 0;
-    result_size = 0;
+    if (ecrt_master_sdo_upload(master, slave_pos, idx, subidx, buffer, size, &result_size, &abort_code))
+    {
+        SLOGF(LOG_CRITICAL, "EtherCAT failed to get SDO Value %x %x (abort: %x)", idx, subidx, abort_code);
 
-    if (ecrt_master_sdo_upload(master, slave_pos, idx, subidx, value, size, &result_size, &abort_code)) {
-        SLOGF(LOG_CRITICAL, "EtherCAT failed to get SDO Value %d %d", idx, subidx);
+        return abort_code;
     }
 
-    return_value = EC_READ_S32(value);
-    return return_value;
+    return (uint32_t)result_size;
 }
 
 /* ---------------------- */
