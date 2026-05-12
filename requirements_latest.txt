@@ -7,7 +7,7 @@ erpc @ git+https://git@github.com/beremiz/erpc.git@d8fff72b15274b5f2a8f7895d9bc5
 lxml
 matplotlib
 msgpack
-Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@fe14898bc3e8aaa2ff982b6fb07c76c3b0bec77d
+Nevow @ git+https://git@github.com/beremiz/nevow-py3.git@45d995ce0a8c4231187b76e5e7a8b3163e1fb571
 pyOpenSSL
 pycountry
 # pyserial
