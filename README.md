@@ -13,11 +13,11 @@ With Beremiz, you conform to standards, avoid vendor lock, and contribute to the
 
 Beremiz provides:
 
-* Integrated Development Environment (IDE). GUI to configure, write, build and debug PLC programs and control PLC runtime.
-* Command Line Interface (CLI). Build PLC and control PLC runtime in a terminal or from a script.
+* Integrated Development Environment (IDE, GPLv2). GUI to configure, write, build and debug PLC programs and control PLC runtime.
+* Command Line Interface (CLI, GPLv2). Build PLC and control PLC runtime in a terminal or from a script.
 * Runtimes, running on target platform communicates with I/O and executes PLC program.
-    * Python reference runtime implementation.
-    * C runtime for smaller targets.
+    * Python reference runtime implementation (LGPLv2).
+    * C++ runtime for smaller targets (GPLv3).
 
 See official [Beremiz website](https://beremiz.org/) for more information.
 
@@ -47,154 +47,7 @@ Some example and test are shown on [Beremiz youtube channel](https://www.youtube
 
 Please use [GitHub's issues](https://github.com/beremiz/beremiz/issues) and [Pull Requests](https://github.com/beremiz/beremiz/pulls) to contribute.
 
-## Build on Linux (developer setup) ##
-
-### System prerequisites (Ubuntu 22.04) :
-```
-# install required system packages as root
-sudo apt-get install \
-  build-essential automake flex bison \
-  libgtk-3-dev libgl1-mesa-dev libglu1-mesa-dev \
-  libpython3.10-dev libssl-dev \
-  python3.10 virtualenv cmake git
-```
-
-### Prepare build directory
-
-All commands hereafter assume that selected directory to contain all downloaded source code and build results is `~/Beremiz`
-
-```
-mkdir ~/Beremiz
-cd ~/Beremiz
-```
-
-### Get Source Code (Git)
-
-```
-cd ~/Beremiz
-git clone https://github.com/beremiz/beremiz
-git clone https://github.com/beremiz/matiec
-```
-
-### Python prerequisites (virtualenv) :
-```
-# setup isolated python environment
-virtualenv ~/Beremiz/venv
-
-# install required python packages
-~/Beremiz/venv/bin/pip install -r ~/Beremiz/beremiz/requirements.txt
-
-```
-
-### Build MatIEC compiler
-
-```
-cd ~/Beremiz/matiec
-autoreconf -i
-./configure
-make
-```
-
-### Build CanFestival (optional)
-
-Only needed for CANopen support. Please read CanFestival manual to choose CAN interface other than `virtual`.
-
-```
-cd ~/Beremiz
-
-git clone https://github.com/beremiz/canfestival
-
-cd ~/Beremiz/canfestival
-./configure --can=virtual
-make
-```
-
-### Build Modbus library (optional)
-
-Only needed for Modbus support.
-
-```
-cd ~/Beremiz
-
-git clone https://github.com/beremiz/Modbus
-
-cd ~/Beremiz/Modbus
-make
-```
-
-### Build BACnet (optional)
-
-Only needed for BACnet support.
-
-```
-cd ~/Beremiz
-svn checkout https://svn.code.sf.net/p/bacnet/code/trunk/bacnet-stack/ BACnet
-cd BACnet
-make MAKE_DEFINE='-fPIC' MY_BACNET_DEFINES='-DPRINT_ENABLED=1 -DBACAPP_ALL -DBACFILE -DINTRINSIC_REPORTING -DBACNET_TIME_MASTER -DBACNET_PROPERTY_LISTS=1 -DBACNET_PROTOCOL_REVISION=16' library
-```
-
-### Launch Beremiz IDE
-
-```
-~/Beremiz/venv/bin/python ~/Beremiz/beremiz/Beremiz.py
-```
-
-## Run standalone Beremiz runtime ##
-
-* Start standalone Beremiz service
-
-```
-mkdir ~/beremiz_runtime_workdir
-~/Beremiz/venv/bin/python ~/Beremiz/beremiz/Beremiz_service.py -p 61194 -i localhost -x 0 -a 1 ~/beremiz_runtime_workdir
-```
-
-To connect IDE with runtime, enter target location URI in project's settings (project->Config->BeremizRoot/URI_location) pointed to your running Beremiz service in this case :
-
-```
-ERPC://127.0.0.1:61194
-```
-
-If project's URL is 'LOCAL://', then IDE launches on demand a local instance of Beremiz python runtime working on a temporary directory.
-
-## Build documentation
-
-Source code for documentation is stored in `doc` directory in project's source tree.
-It's written in reStructuredText (ReST) and uses Sphinx to generate documentation in different formats.
-
-To build documentation you need following packages on Ubuntu/Debian:
-
-```
-sudo apt-get install build-essential python-sphynx
-```
-
-### Documentation in HTML
-
-Build documentation
-
-```
-cd ~/Beremiz/doc
-make all
-```
-
-Result documentation is stored in directories `doc/_build/dirhtml*`.
-
-### Documentation in PDF
-
-To build pdf documentation you have to install additional packages on Ubuntu/Debian:
-
-```
-sudo apt-get install textlive-latex-base texlive-latex-recommended \
-     texlive-fonts-recommended texlive-latex-extra
-```
-
-Build documentation
-
-```
-cd ~/Beremiz/doc
-make latexpdf
-```
-
-Result documentation is stored in `doc/_build/latex/Beremiz.pdf`.
+See [doc/install.rst](doc/install.rst) for developer setup instructions (building Beremiz from source on Linux, MatIEC, optional Modbus/CanFestival/BACnet libraries, and running a standalone runtime).
 
 ## Documentation ##
 
