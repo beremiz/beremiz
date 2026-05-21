@@ -116,10 +116,9 @@ elif sys.platform.startswith('darwin') and _machine64 == ('x86_64', True):
         try:
             yield
         finally:
-            if int(_macho.deallocate(task, port)) == 0:
-                return
-            errno_ = ctypes.get_errno()
-            raise OSError(errno_, os.strerror(errno_))
+            if int(_macho.deallocate(task, port)) != 0:
+                errno_ = ctypes.get_errno()
+                raise OSError(errno_, os.strerror(errno_))
 
     def monotonic():
         task = ctypes.c_uint.in_dll(_libmacho, 'mach_task_self_')

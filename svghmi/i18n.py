@@ -197,7 +197,7 @@ escapes = []
 
 def make_escapes():
     global escapes
-    escapes = [b"\%03o" % i for i in range(128)]
+    escapes = [rb"\%03o" % i for i in range(128)]
     for i in range(32, 127):
         escapes[i] = bytes([i])
     escapes[ord('\\')] = b'\\\\'
