@@ -42,13 +42,23 @@ from runtime import PlcStatus
 from runtime import MainWorker
 from runtime import default_evaluator
 # Para etherlab
+import pickle
 import threading
 import struct
 import re
 import subprocess
 import time
-from erpc_interface.erpc_PLCObject.common import SDOEntry
-from erpc_interface.erpc_PLCObject.common import SDODataPack
+class SDOEntry(object):
+    def __init__(self, idx="", subIdx="", datatype="", size="", value=""):
+        self.idx = idx
+        self.subIdx = subIdx
+        self.datatype = datatype
+        self.size = size
+        self.value = value
+class SDODataPack(object):
+    def __init__(self):
+        self.entries = []
+        self.slavePos = 0
 #<----------
 
 if os.name in ("nt", "ce"):
@@ -136,6 +146,13 @@ class PLCObject(object):
         
         # initialize extended calls with GetVersions call, ignoring arguments
         self.extended_calls = {"GetVersions":lambda *_args:self.GetVersions().encode()}
+        # ------------- Para etherlab registrar--------
+        self.extended_calls["GetSDOEntriesData"] = self.ExtendedGetSDOEntriesData
+        self.extended_calls["SetSDOTraceValues"] = self.ExtendedSetSDOTraceValues
+        self.extended_calls["GetSDOData"] = self.ExtendedGetSDOData
+        self.extended_calls["StopSDOThread"] = self.ExtendedStopSDOThread
+        
+        # ---------------------------------------------
     
     # First task of worker -> no @RunInMain
     def AutoLoad(self, autostart):
@@ -1291,9 +1308,10 @@ class PLCObject(object):
                     # CASO 2: PLC detenido (usar ethercat CLI)
                     else:
                         valid_type = self.GetValidDataType(entry.datatype)
-                        print("[SDO CLI]", cmd)
+                        
 
                         cmd = f"ethercat upload -p {self.SDOMonitorSlavePos} -t {valid_type} {hex(idx)} {hex(subidx)}"
+                        print("[SDO CLI]", cmd)
 
                         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
                         out = proc.communicate()[0].split()
@@ -1308,6 +1326,26 @@ class PLCObject(object):
 
             time.sleep(1)
 
+    def ExtendedGetSDOData(self, argument):
+        result = type("obj", (), {})()
+        self.GetSDOData(result)
+        return pickle.dumps(result.value)
+
+    def ExtendedSetSDOTraceValues(self, argument):
+        entries, slavePos = pickle.loads(argument)
+        result = type("obj", (), {})()
+        self.SetSDOTraceValues(entries, slavePos, result)
+        return pickle.dumps(result.value)
+
+    def ExtendedStopSDOThread(self, argument):
+        res = self.StopSDOThread()
+        return pickle.dumps(res)
+        
+    def ExtendedGetSDOEntriesData(self, argument):
+        entries, slavePos = pickle.loads(argument)
+        result = type("obj", (), {})()
+        self.GetSDOEntriesData(entries, slavePos, result)
+        return pickle.dumps(result.value)
 
     # <------------------
 

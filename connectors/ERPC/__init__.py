@@ -17,7 +17,7 @@ import erpc
 # eRPC service code
 from erpc_interface.erpc_PLCObject.interface import IBeremizPLCObjectService
 from erpc_interface.erpc_PLCObject.client import BeremizPLCObjectServiceClient
-from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum, SDOEntry
+from erpc_interface.erpc_PLCObject.common import trace_order, extra_file, PLCstatus_enum
 
 import PSKManagement as PSK
 from connectors.ERPC.PSK_Adapter import SSLPSKClientTransport
@@ -71,17 +71,6 @@ ReturnWrappers = {
     "SetTraceVariablesList": ReturnAsLastOutput,
     "StopPLC":ReturnAsLastOutput,
     "ExtendedCall":ReturnAsLastOutput,
-    "GetSDOEntriesData": TranslatedReturnAsLastOutput(
-        lambda res: [
-            SDOEntry(**e) if isinstance(e, dict) else e
-            for e in res
-        ]
-    ),
-    "SetSDOTraceValues": NoReturnWrapper,
-    "GetSDOData": TranslatedReturnAsLastOutput(
-        lambda res: (res.entries, res.slavePos)
-    ),
-    "StopSDOThread": NoArgsNoReturnWrapper,
 }
 
 ArgsWrappers = {
@@ -91,12 +80,7 @@ ArgsWrappers = {
     "SetTraceVariablesList":
         lambda orders : ([
             trace_order(idx, b"" if force is None else force) 
-            for idx, force in orders],),
-    "SetSDOTraceValues":
-        lambda entries, slavePos: (
-            [SDOEntry(**e) if isinstance(e, dict) else e for e in entries],
-            slavePos
-        )   
+            for idx, force in orders],)
 }
 
 def rpc_wrapper(method_name, confnodesroot):

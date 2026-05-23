@@ -51,19 +51,6 @@ struct log_message {
     uint32 nsec;
 };
 
-struct SDOEntry {
-    string idx;
-    string subIdx;
-    string datatype;
-    string size;
-    string value;
-};
-
-struct SDODataPack {
-    list<SDOEntry> entries;
-    uint16 slavePos;
-};
-
 interface BeremizPLCObjectService {
     AppendChunkToBlob(in binary data, in binary blobID, out binary newBlobID) -> uint32
     GetLogMessage(in uint8 level, in uint32 msgID, out log_message message) -> uint32
@@ -80,8 +67,4 @@ interface BeremizPLCObjectService {
     StartPLC() -> uint32
     StopPLC(out bool success) -> uint32
     ExtendedCall(in string method, in binary argument, out binary answer ) -> uint32
-    GetSDOEntriesData(in list<SDOEntry> entries, in uint16 slavePos, out list<SDOEntry> result) -> uint32
-    SetSDOTraceValues(in list<SDOEntry> entries, in uint16 slavePos, out uint32 result) -> uint32
-    GetSDOData(out SDODataPack result) -> uint32
-    StopSDOThread() -> uint32
 }

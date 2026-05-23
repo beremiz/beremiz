@@ -29,11 +29,18 @@ from runtime import PlcStatus
 
 from util.TranslationCatalogs import NoTranslate
 # -------------------------------------------------------------
-from erpc_interface.erpc_PLCObject.common import SDOEntry
+#from erpc_interface.erpc_PLCObject.common import SDOEntry
 from threading import Thread
 import time
 import re
-
+import pickle
+class SDOEntry(object):
+    def __init__(self, idx="", subIdx="", datatype="", size="", value=""):
+        self.idx = idx
+        self.subIdx = subIdx
+        self.datatype = datatype
+        self.size = size
+        self.value = value
 # ----------------------------- For Sync Manager Table -----------------------------------
 def GetSyncManagersTableColnames():
     """
@@ -643,7 +650,14 @@ class SDOPanelClass(wx.Panel):
     #                    for e in entries:
     #                        print(e.idx, e.subIdx, e.datatype, e.value)
 
-                        res = ctr._connector.GetSDOEntriesData(entries, SlavePos)
+                        payload = pickle.dumps((entries, SlavePos))
+
+                        answer = ctr._connector.ExtendedCall(
+                            "GetSDOEntriesData",
+                            payload
+                        )
+
+                        res = pickle.loads(answer)
 
     #                    print("\nRAW DRIVER OUTPUT:")
 
@@ -679,7 +693,14 @@ class SDOPanelClass(wx.Panel):
                                     ))
 
                                 try:
-                                    sub_res = ctr._connector.GetSDOEntriesData(sub_entries, SlavePos)
+                                    payload = pickle.dumps((sub_entries, SlavePos))
+                                    
+                                    answer = ctr._connector.ExtendedCall(
+                                        "GetSDOEntriesData",
+                                        payload
+                                    )
+
+                                    sub_res = pickle.loads(answer)
 
                                     for s in sub_res:
                                         if "abort_code" in str(s.value):
@@ -708,7 +729,14 @@ class SDOPanelClass(wx.Panel):
     #                for e in entries:
     #                    print(e.idx, e.subIdx, e.datatype, e.value)
 
-                    res = ctr._connector.GetSDOEntriesData(entries, SlavePos)
+                    payload = pickle.dumps((entries, SlavePos))
+
+                    answer = ctr._connector.ExtendedCall(
+                        "GetSDOEntriesData",
+                        payload
+                    )
+
+                    res = pickle.loads(answer)
 
                     # ================================
                     # EXPANSIÓN DE ESTRUCTURAS DTxxxx
@@ -742,7 +770,14 @@ class SDOPanelClass(wx.Panel):
                                 ))
 
                             try:
-                                sub_res = ctr._connector.GetSDOEntriesData(sub_entries, SlavePos)
+                                payload = pickle.dumps((sub_entries, SlavePos))
+
+                                answer = ctr._connector.ExtendedCall(
+                                    "GetSDOEntriesData",
+                                    payload
+                                )
+
+                                sub_res = pickle.loads(answer)
 
                                 for s in sub_res:
                                     if "abort_code" in str(s.value):
@@ -900,7 +935,10 @@ class SDOPanelClass(wx.Panel):
 
         # SOLO SI TODO ESTA BIEN:
         self.SetSDOTraceValues(self.SDOMonitorEntries)
-        ctr._connector.GetSDOData()
+        ctr._connector.ExtendedCall(
+            "GetSDOData",
+            bytes()
+        )
 
         self.SDOMonitoringFlag = True
         self.SDOTraceThread = Thread(target=self.SDOMonitorThreadProc, daemon=True)
@@ -920,18 +958,41 @@ class SDOPanelClass(wx.Panel):
             ctr = self.Controler.GetCTRoot()
             if ctr and hasattr(ctr, "_connector") and ctr._connector:
                 try:
-                    ctr._connector.StopSDOThread()
+                    ctr._connector.ExtendedCall(
+                        "StopSDOThread",
+                        bytes()
+                    )
                 except Exception as e:
                     print("[SDO] Error al detener connector:", e)
 
         except Exception as e:
             print("[SDO] Error en SDOMonitoringThreadOff:", e)
 
+#    def SetSDOTraceValues(self, SDOMonitorEntries):
+#        SlavePos = self.Controler.GetSlavePos()
+#        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = True)
+#        if check_connect_flag:
+#            self.Controler.GetCTRoot()._connector.SetSDOTraceValues(SDOMonitorEntries, SlavePos)
+            
     def SetSDOTraceValues(self, SDOMonitorEntries):
+        import pickle
+
         SlavePos = self.Controler.GetSlavePos()
-        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag = True)
-        if check_connect_flag:
-            self.Controler.GetCTRoot()._connector.SetSDOTraceValues(SDOMonitorEntries, SlavePos)
+        check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag=True)
+
+        if not check_connect_flag:
+            return
+
+        payload = pickle.dumps((SDOMonitorEntries, SlavePos))
+
+        answer = self.Controler.GetCTRoot()._connector.ExtendedCall(
+            "SetSDOTraceValues",
+            payload
+        )
+
+        result = pickle.loads(answer)
+
+        return result
             
     def SDOMonitorThreadProc(self):
 
