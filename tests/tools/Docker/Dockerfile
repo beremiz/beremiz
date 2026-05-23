@@ -94,19 +94,18 @@ RUN python3 -m venv --system-site-packages ~/beremizenv
 # beremiz python requirements
 # file is placed here by build_docker_image.sh
 COPY requirements.txt /home/$UNAME
-RUN ~/beremizenv/bin/pip install --upgrade --no-deps -r /home/$UNAME/requirements.txt
+RUN ~/beremizenv/bin/pip install --upgrade --no-deps -r /home/$UNAME/requirements_pinned.txt
 
 # tests specific python requirements : pytest pytest-timeout ddt crossbar
 
 ## How to upgrade requirements and test requirements together:
-# pip install -r beremiz/requirements_latest.txt
-# pip freeze > beremiz/requirements.txt
-# pip install pytest pytest-timeout ddt crossbar
-# pip freeze > requirements_all.txt
-# sort requirements_all.txt -o requirements_all_sorted.txt 
-# sort beremiz/requirements.txt -o requirements_sorted.txt
-# comm -13 requirements_sorted.txt requirements_all_sorted.txt > beremiz/tests/tools/Docker/test_requirements.txt
-# rm requirements_all.txt requirements_sorted.txt requirements_all_sorted.txt
+# pip install --no-deps -r requirements_pinned.txt 
+# pip freeze > requirements_pinned_freezed.txt 
+# pip install --no-deps -r requirements_test.txt 
+# pip freeze > requirements_test_freezed.txt 
+# sort requirements_pinned_freezed.txt -o requirements_pinned_freezed_sorted.txt 
+# sort requirements_test_freezed.txt -o requirements_test_freezed_sorted.txt
+# comm -13 requirements_pinned_freezed_sorted.txt requirements_test_freezed_sorted.txt > test_requirements.txt
 
 COPY test_requirements.txt /home/$UNAME
 RUN ~/beremizenv/bin/pip install -r /home/$UNAME/test_requirements.txt --no-deps
