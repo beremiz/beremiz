@@ -27,7 +27,7 @@ from XSLTransform import XSLTransform
 
 import util.paths as paths
 from IDEFrame import EncodeFileSystemPath, DecodeFileSystemPath
-from docutil import get_inkscape_path, get_inkscape_version
+from docutil import get_inkscape_path, get_inkscape_version, get_inkscape_env
 
 from util.ProcessLogger import ProcessLogger
 
@@ -493,7 +493,8 @@ class WidgetLibBrowser(wx.SplitterWindow):
         status, result, _err_result = ProcessLogger(
             #self.Controler.GetCTRoot().logger,
             None,
-            [ inkpath, svgpath, export_opt, thumbpath, "-D", "-h", str(_preview_height)]).spin()
+            [ inkpath, svgpath, export_opt, thumbpath, "-D", "-h", str(_preview_height)],
+            env=get_inkscape_env()).spin()
         if status != 0:
             self.msg = _("Inkscape couldn't generate thumbnail.")
             return False

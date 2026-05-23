@@ -21,7 +21,7 @@ from lxml.etree import XSLTApplyError
 
 import util.paths as paths
 from POULibrary import POULibrary
-from docutil import open_svg, get_inkscape_path
+from docutil import open_svg, get_inkscape_path, get_inkscape_env
 
 from util.ProcessLogger import ProcessLogger
 from runtime.typemapping import DebugTypesSize
@@ -455,7 +455,8 @@ class SVGHMI(object):
         status, result, _err_result = ProcessLogger(self.GetCTRoot().logger,
                                                      [inkpath, '-S', svgpath],
                                                      no_stdout=True,
-                                                     no_stderr=True).spin()
+                                                     no_stderr=True,
+                                                     env=get_inkscape_env()).spin()
         if status != 0:
             self.FatalError("SVGHMI: inkscape couldn't extract geometry from given SVG.")
 

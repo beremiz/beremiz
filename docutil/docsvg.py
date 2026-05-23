@@ -72,6 +72,21 @@ def get_inkscape_path():
     return _inkscape_path
 
 
+def get_inkscape_env():
+    """ Environment for running Inkscape on the command line.
+
+    Under strict snap confinement Inkscape's GApplication can't own its
+    single-instance D-Bus name (denied by AppArmor), so command-line
+    query/export invocations fail to register and abort. Dropping
+    DBUS_SESSION_BUS_ADDRESS makes GApplication register locally, without
+    the session bus.
+    """
+    env = os.environ.copy()
+    if "SNAP" in os.environ:
+        env.pop("DBUS_SESSION_BUS_ADDRESS", None)
+    return env
+
+
 def _get_inkscape_version():
     inkpath = get_inkscape_path()
     if inkpath is None:
