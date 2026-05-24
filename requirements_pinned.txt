@@ -62,7 +62,7 @@ msgpack==1.1.2
     # via
     #   -r requirements.txt
     #   autobahn
-nevow @ git+https://git@github.com/beremiz/nevow-py3.git@7cc719221eb25c013eebafd197bed6a140951f88
+nevow @ git+https://git@github.com/beremiz/nevow-py3.git@0af72850e192cf1ccdd4302016393d606136c7f3
     # via -r requirements.txt
 numpy==2.4.6
     # via

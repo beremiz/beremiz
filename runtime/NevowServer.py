@@ -29,8 +29,7 @@ import os
 import collections
 import shutil
 from zope.interface import implementer
-from nevow import appserver, inevow, tags, loaders, athena, url, rend
-from nevow.page import renderer
+from nevow import appserver, inevow, tags, loaders, url, rend
 from nevow.static import File
 from formless import annotate
 from formless import webform
