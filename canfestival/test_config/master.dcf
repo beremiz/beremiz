@@ -1,0 +1,320 @@
+[FileInfo]
+FileName=master.dcf
+FileVersion=1
+FileRevision=1
+EDSVersion=4.0
+Description=
+CreationTime=11:41PM
+CreationDate=05-27-2026
+CreatedBy=CANFestival
+ModificationTime=11:41PM
+ModificationDate=05-27-2026
+ModifiedBy=CANFestival
+
+[DeviceInfo]
+VendorName=CANFestival
+VendorNumber=0x00000000
+ProductName=TestMaster
+ProductNumber=0x00000000
+RevisionNumber=0x00000000
+BaudRate_10=1
+BaudRate_20=1
+BaudRate_50=1
+BaudRate_125=1
+BaudRate_250=1
+BaudRate_500=1
+BaudRate_800=1
+BaudRate_1000=1
+SimpleBootUpMaster=1
+SimpleBootUpSlave=0
+Granularity=8
+DynamicChannelsSupported=0
+CompactPDO=0
+GroupMessaging=0
+NrOfRXPDO=1
+NrOfTXPDO=1
+LSS_Supported=0
+
+[DummyUsage]
+Dummy0001=0
+Dummy0002=1
+Dummy0003=1
+Dummy0004=1
+Dummy0005=1
+Dummy0006=1
+Dummy0007=1
+
+[Comments]
+Lines=0
+
+[MandatoryObjects]
+SupportedObjects=3
+1=0x1000
+2=0x1001
+3=0x1018
+
+[1000]
+ParameterName=Device Type
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=302
+PDOMapping=0
+
+[1001]
+ParameterName=Error Register
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=0
+PDOMapping=1
+
+[1018]
+ParameterName=Identity
+ObjectType=0x9
+SubNumber=5
+
+[1018sub0]
+ParameterName=Number of Entries
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=4
+PDOMapping=0
+
+[1018sub1]
+ParameterName=Vendor ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1018sub2]
+ParameterName=Product Code
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1018sub3]
+ParameterName=Revision Number
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[1018sub4]
+ParameterName=Serial Number
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+DefaultValue=0
+PDOMapping=0
+
+[OptionalObjects]
+SupportedObjects=7
+1=0x1005
+2=0x1006
+3=0x1016
+4=0x1400
+5=0x1600
+6=0x1800
+7=0x1A00
+
+[1005]
+ParameterName=SYNC COB ID
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=1073741952
+PDOMapping=0
+
+[1006]
+ParameterName=Communication Cycle Period
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=50000
+PDOMapping=0
+
+[1016]
+ParameterName=Consumer Heartbeat Time
+ObjectType=0x8
+SubNumber=2
+
+[1016sub0]
+ParameterName=Number of Entries
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=1
+PDOMapping=0
+
+[1016sub1]
+ParameterName=Consumer Heartbeat Time
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=4195804
+PDOMapping=0
+
+[1400]
+ParameterName=Receive PDO 1 Parameter
+ObjectType=0x9
+SubNumber=5
+
+[1400sub0]
+ParameterName=Highest SubIndex Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=5
+PDOMapping=0
+
+[1400sub1]
+ParameterName=COB ID used by PDO
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=448
+PDOMapping=0
+
+[1400sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=1
+PDOMapping=0
+
+[1400sub3]
+ParameterName=Inhibit Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1400sub5]
+ParameterName=Event Timer
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1600]
+ParameterName=Receive PDO 1 Mapping
+ObjectType=0x8
+SubNumber=2
+
+[1600sub0]
+ParameterName=Number of Entries
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=1
+PDOMapping=0
+
+[1600sub1]
+ParameterName=PDO 1 Mapping for an application object 1
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=536870920
+PDOMapping=0
+
+[1800]
+ParameterName=Transmit PDO 1 Parameter
+ObjectType=0x9
+SubNumber=5
+
+[1800sub0]
+ParameterName=Highest SubIndex Supported
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+DefaultValue=5
+PDOMapping=0
+
+[1800sub1]
+ParameterName=COB ID used by PDO
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=$NODEID+0x180
+PDOMapping=0
+
+[1800sub2]
+ParameterName=Transmission Type
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1800sub3]
+ParameterName=Inhibit Time
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1800sub5]
+ParameterName=Event Timer
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+DefaultValue=0
+PDOMapping=0
+
+[1A00]
+ParameterName=Transmit PDO 1 Mapping
+ObjectType=0x8
+SubNumber=2
+
+[1A00sub0]
+ParameterName=Number of Entries
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=1
+PDOMapping=0
+
+[1A00sub1]
+ParameterName=PDO 1 Mapping for a process data variable 1
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+DefaultValue=268501000
+PDOMapping=0
+
+[ManufacturerObjects]
+SupportedObjects=1
+1=0x2000
+
+[2000]
+ParameterName=Read Inputs
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+DefaultValue=0
+PDOMapping=1
+
+[CanFestivalNode]
+NodeName=TestMaster
+NodeType=master
+NodeID=0x00
+Description=
+ProfileName=None
+DefaultStringSize=10
+
+[CanFestivalUserMapping]
+UserMapping={"0x2000": {"need": false, "values": [{"access": "rw", "pdo": true, "type": 5, "name": "Read Inputs"}], "name": "Read Inputs", "struct": 1}}
+
+[CanFestivalDS302]
+Enabled=1

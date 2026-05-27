@@ -23,9 +23,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
-import os
-import sys
-import getopt
 from functools import reduce
 
 # Translation between IEC types and Can Open types
@@ -704,6 +701,10 @@ def LocalODPointers(locations, current_location, slave):
 
 
 if __name__ == "__main__":  # pylint: disable=all
+    import os
+    import sys
+    import getopt
+    
     def usage():
         print("""
 Usage of config_utils.py test :
@@ -739,12 +740,16 @@ Options:
         elif o in ("-r", "--reset"):
             reset = True
 
-    # Extract workspace base folder
-    base_folder = sys.path[0]
-    for i in range(3):
-        base_folder = os.path.split(base_folder)[0]
-    # Add CanFestival folder to search pathes
-    sys.path.append(os.path.join(base_folder, "CanFestival-3", "objdictgen"))
+    # The objdictgen modules use _() at runtime; install a no-op gettext
+    # builtin that Beremiz normally provides globally.
+    import builtins
+    builtins.__dict__.setdefault('_', lambda x: x)
+
+    # Make the beremiz checkout importable so we can reuse ThirdPartyPath,
+    # then add the sibling canfestival objdictgen folder to the search path.
+    sys.path.append(os.path.split(sys.path[0])[0])
+    import util.paths as paths
+    sys.path.append(paths.ThirdPartyPath("canfestival", "objdictgen"))
 
     from nodemanager import *
     from nodelist import *
@@ -754,18 +759,18 @@ Options:
     nodelist = NodeList(manager)
     result = nodelist.LoadProject("test_config")
 
-    # List of locations, we try to map for test
+    # List of locations to map for test. Limited to objects that PEAK MicroMod
+    # actually pre-maps in its PDOs (NrOfRXPDO=NrOfTXPDO=4, with 0x1A03/0x1603
+    # declaring zero sub-entries): the old result.txt assumed extra PDOs at
+    # 0x1A04+ could be created, which PEAK doesn't support. The kept locations
+    # exercise the "already mapped" DCF path (transmit-type rewrite + master
+    # mapping aggregation), which is what the Python 3 bytes changes touch.
     locations = [
         {"IEC_TYPE": "BYTE",  "NAME": "__IB0_1_64_24576_1", "DIR": "I", "SIZE": "B", "LOC": (0, 1, 64, 24576, 1)},
         {"IEC_TYPE": "INT",   "NAME": "__IW0_1_64_25601_2", "DIR": "I", "SIZE": "W", "LOC": (0, 1, 64, 25601, 2)},
         {"IEC_TYPE": "INT",   "NAME": "__IW0_1_64_25601_3", "DIR": "I", "SIZE": "W", "LOC": (0, 1, 64, 25601, 3)},
-        {"IEC_TYPE": "INT",   "NAME": "__QW0_1_64_25617_2", "DIR": "Q", "SIZE": "W", "LOC": (0, 1, 64, 25617, 1)},
-        {"IEC_TYPE": "BYTE",  "NAME": "__IB0_1_64_24578_1", "DIR": "I", "SIZE": "B", "LOC": (0, 1, 64, 24578, 1)},
-        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_1", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 1)},
-        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_2", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 2)},
-        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_3", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 3)},
-        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_64_25638_4", "DIR": "I", "SIZE": "D", "LOC": (0, 1, 64, 25638, 4)},
-        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_4096_0",     "DIR": "I", "SIZE": "D", "LOC": (0, 1, 4096, 0)}
+        {"IEC_TYPE": "INT",   "NAME": "__QW0_1_64_25617_1", "DIR": "Q", "SIZE": "W", "LOC": (0, 1, 64, 25617, 1)},
+        {"IEC_TYPE": "UDINT", "NAME": "__ID0_1_4096_0",     "DIR": "I", "SIZE": "D", "LOC": (0, 1, 4096, 0)},
     ]
 
     # Generate MasterNode configuration

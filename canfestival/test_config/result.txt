@@ -25,24 +25,7 @@
 1401 03 (Inhibit Time): 0
 1401 04 (Compatibility Entry): 0
 1401 05 (Event Timer): 0
-1402 (Receive PDO 3 Parameter):
-1402 01 (COB ID used by PDO): 182
-1402 02 (Transmission Type): 1
-1402 03 (Inhibit Time): 0
-1402 04 (Compatibility Entry): 0
-1402 05 (Event Timer): 0
-1403 (Receive PDO 4 Parameter):
-1403 01 (COB ID used by PDO): 183
-1403 02 (Transmission Type): 1
-1403 03 (Inhibit Time): 0
-1403 04 (Compatibility Entry): 0
-1403 05 (Event Timer): 0
-1404 (Receive PDO 5 Parameter):
-1404 01 (COB ID used by PDO): 181
-1404 02 (Transmission Type): 1
-1404 03 (Inhibit Time): 0
-1404 04 (Compatibility Entry): 0
-1404 05 (Event Timer): 0
+1401 06 (SYNC start value): 0
 1600 (Receive PDO 1 Mapping):
 1600 01 (PDO 1 Mapping for an application object 1): 22400108
 1600 02 (PDO 1 Mapping for an application object 2): 0
@@ -51,16 +34,8 @@
 1601 02 (PDO 2 Mapping for an application object 2): 23400110
 1601 03 (PDO 2 Mapping for an application object 3): 23400210
 1601 04 (PDO 2 Mapping for an application object 4): 20000310
-1602 (Receive PDO 3 Mapping):
-1602 01 (PDO 3 Mapping for an application object 1): 24400120
-1602 02 (PDO 3 Mapping for an application object 2): 24400220
-1603 (Receive PDO 4 Mapping):
-1603 01 (PDO 4 Mapping for an application object 1): 24400320
-1604 (Receive PDO 5 Mapping):
-1604 01 (PDO 5 Mapping for an application object 1): 22400208
-1604 02 (PDO 5 Mapping for an application object 2): 24400420
 1800 (Transmit PDO 1 Parameter):
-1800 01 (COB ID used by PDO): {True:"$NODEID+0x%X80"%(base+1),False:0x80000000}[base<4]
+1800 01 (COB ID used by PDO): "$NODEID+0x180"
 1800 02 (Transmission Type): 0
 1800 03 (Inhibit Time): 0
 1800 04 (Compatibility Entry): 0
@@ -71,6 +46,7 @@
 1801 03 (Inhibit Time): 0
 1801 04 (Compatibility Entry): 0
 1801 05 (Event Timer): 0
+1801 06 (SYNC start value): 0
 1A00 (Transmit PDO 1 Mapping):
 1A00 01 (PDO 1 Mapping for a process data variable 1): 10010008
 1A01 (Transmit PDO 2 Mapping):
@@ -79,7 +55,7 @@
 1A01 03 (PDO 2 Mapping for a process data variable 3): 20000310
 1A01 04 (PDO 2 Mapping for a process data variable 4): 20000310
 1F22 (Concise DCF):
-1F22 01 (Concise DCF for Node 1): 
+1F22 01 (Concise DCF for Node 1): b''
 1F22 02 (Concise DCF for Node 2): 
 1F22 03 (Concise DCF for Node 3): 
 1F22 04 (Concise DCF for Node 4): 
@@ -142,7 +118,7 @@
 1F22 3D (Concise DCF for Node 61): 
 1F22 3E (Concise DCF for Node 62): 
 1F22 3F (Concise DCF for Node 63): 
-1F22 40 (Concise DCF for Node 64): 23 arg defined
+1F22 40 (Concise DCF for Node 64): 9 arg defined
 1F22 40, arg 1: 1800 01 00000004 800001C0
 1F22 40, arg 2: 1800 02 00000001 01
 1F22 40, arg 3: 1800 01 00000004 000001C0
@@ -152,20 +128,6 @@
 1F22 40, arg 7: 1401 01 00000004 80000340
 1F22 40, arg 8: 1401 02 00000001 01
 1F22 40, arg 9: 1401 01 00000004 00000340
-1F22 40, arg 10: 1804 01 00000004 80000181
-1F22 40, arg 11: 1804 02 00000001 01
-1F22 40, arg 12: 1804 01 00000004 00000181
-1F22 40, arg 13: 1A04 01 00000004 60020108
-1F22 40, arg 14: 1A04 02 00000004 64260120
-1F22 40, arg 15: 1805 01 00000004 80000182
-1F22 40, arg 16: 1805 02 00000001 01
-1F22 40, arg 17: 1805 01 00000004 00000182
-1F22 40, arg 18: 1A05 01 00000004 64260220
-1F22 40, arg 19: 1A05 02 00000004 64260320
-1F22 40, arg 20: 1806 01 00000004 80000183
-1F22 40, arg 21: 1806 02 00000001 01
-1F22 40, arg 22: 1806 01 00000004 00000183
-1F22 40, arg 23: 1A06 01 00000004 64260420
 1F22 41 (Concise DCF for Node 65): 
 1F22 42 (Concise DCF for Node 66): 
 1F22 43 (Concise DCF for Node 67): 
@@ -232,26 +194,15 @@
 2000 (Read Inputs): 0
 2240 (beremiz__IB0_1_64):
 2240 01 (24576_1): 0
-2240 02 (24578_1): 0
 2340 (beremiz__IW0_1_64):
 2340 01 (25601_2): 0
 2340 02 (25601_3): 0
-2440 (beremiz__ID0_1_64):
-2440 01 (25638_2): 0
-2440 02 (25638_3): 0
-2440 03 (25638_4): 0
-2440 04 (25638_1): 0
 4340 (beremiz__QW0_1_64):
 4340 01 (25617_1): 0
 
 ********POINTERS*********
 {(4096, 0): '__ID0_1_4096_0',
  (8768, 1): '__IB0_1_64_24576_1',
- (8768, 2): '__IB0_1_64_24578_1',
  (9024, 1): '__IW0_1_64_25601_2',
  (9024, 2): '__IW0_1_64_25601_3',
- (9280, 1): '__ID0_1_64_25638_2',
- (9280, 2): '__ID0_1_64_25638_3',
- (9280, 3): '__ID0_1_64_25638_4',
- (9280, 4): '__ID0_1_64_25638_1',
  (17216, 1): '__QW0_1_64_25617_1'}
