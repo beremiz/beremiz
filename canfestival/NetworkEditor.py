@@ -28,38 +28,14 @@ import wx
 from networkeditortemplate import NetworkEditorTemplate
 from editors.ConfTreeNodeEditor import ConfTreeNodeEditor
 
-[
-    ID_NETWORKEDITOR,
-] = [wx.NewId() for _init_ctrls in range(1)]
-
-[
-    ID_NETWORKEDITORCONFNODEMENUADDSLAVE,
-    ID_NETWORKEDITORCONFNODEMENUREMOVESLAVE,
-    ID_NETWORKEDITORCONFNODEMENUMASTER,
-] = [wx.NewId() for _init_coll_ConfNodeMenu_Items in range(3)]
-
-[
-    ID_NETWORKEDITORMASTERMENUNODEINFOS, ID_NETWORKEDITORMASTERMENUDS301PROFILE,
-    ID_NETWORKEDITORMASTERMENUDS302PROFILE, ID_NETWORKEDITORMASTERMENUDSOTHERPROFILE,
-    ID_NETWORKEDITORMASTERMENUADD,
-] = [wx.NewId() for _init_coll_MasterMenu_Items in range(5)]
-
-[
-    ID_NETWORKEDITORADDMENUSDOSERVER, ID_NETWORKEDITORADDMENUSDOCLIENT,
-    ID_NETWORKEDITORADDMENUPDOTRANSMIT, ID_NETWORKEDITORADDMENUPDORECEIVE,
-    ID_NETWORKEDITORADDMENUMAPVARIABLE, ID_NETWORKEDITORADDMENUUSERTYPE,
-] = [wx.NewId() for _init_coll_AddMenu_Items in range(6)]
-
-
 class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
 
-    ID = ID_NETWORKEDITOR
     CONFNODEEDITOR_TABS = [
         (_("CANOpen network"), "_create_NetworkEditor")]
 
     def _create_NetworkEditor(self, prnt):
         self.NetworkEditor = wx.Panel(
-            id=-1, parent=prnt, pos=wx.Point(0, 0),
+            id=wx.ID_ANY, parent=prnt, pos=wx.Point(0, 0),
             size=wx.Size(0, 0), style=wx.TAB_TRAVERSAL)
 
         NetworkEditorTemplate._init_ctrls(self, self.NetworkEditor)
@@ -84,39 +60,42 @@ class NetworkEditor(ConfTreeNodeEditor, NetworkEditorTemplate):
     def __del__(self):
         self.Controler.OnCloseEditor(self)
 
+    menu_refs = {}
     def GetConfNodeMenuItems(self):
-        add_menu = [(wx.ITEM_NORMAL, (_('SDO Server'), ID_NETWORKEDITORADDMENUSDOSERVER, '', self.OnAddSDOServerMenu)),
-                    (wx.ITEM_NORMAL, (_('SDO Client'), ID_NETWORKEDITORADDMENUSDOCLIENT, '', self.OnAddSDOClientMenu)),
-                    (wx.ITEM_NORMAL, (_('PDO Transmit'), ID_NETWORKEDITORADDMENUPDOTRANSMIT, '', self.OnAddPDOTransmitMenu)),
-                    (wx.ITEM_NORMAL, (_('PDO Receive'), ID_NETWORKEDITORADDMENUPDORECEIVE, '', self.OnAddPDOReceiveMenu)),
-                    (wx.ITEM_NORMAL, (_('Map Variable'), ID_NETWORKEDITORADDMENUMAPVARIABLE, '', self.OnAddMapVariableMenu)),
-                    (wx.ITEM_NORMAL, (_('User Type'), ID_NETWORKEDITORADDMENUUSERTYPE, '', self.OnAddUserTypeMenu))]
+        add_menu = [(wx.ITEM_NORMAL, (_('SDO Server'), '', self.OnAddSDOServerMenu)),
+                    (wx.ITEM_NORMAL, (_('SDO Client'), '', self.OnAddSDOClientMenu)),
+                    (wx.ITEM_NORMAL, (_('PDO Transmit'), '', self.OnAddPDOTransmitMenu)),
+                    (wx.ITEM_NORMAL, (_('PDO Receive'), '', self.OnAddPDOReceiveMenu)),
+                    (wx.ITEM_NORMAL, (_('Map Variable'), '', self.OnAddMapVariableMenu)),
+                    (wx.ITEM_NORMAL, (_('User Type'), '', self.OnAddUserTypeMenu))]
 
         profile = self.Manager.GetCurrentProfileName()
         if profile not in ("None", "DS-301"):
             other_profile_text = _("%s Profile") % profile
             add_menu.append((wx.ITEM_SEPARATOR, None))
             for text, _indexes in self.Manager.GetCurrentSpecificMenu():
-                add_menu.append((wx.ITEM_NORMAL, (text, wx.NewId(), '', self.GetProfileCallBack(text))))
+                add_menu.append((wx.ITEM_NORMAL, (text, '', self.GetProfileCallBack(text))))
         else:
             other_profile_text = _('Other Profile')
 
-        master_menu = [(wx.ITEM_NORMAL, (_('DS-301 Profile'), ID_NETWORKEDITORMASTERMENUDS301PROFILE, '', self.OnCommunicationMenu)),
-                       (wx.ITEM_NORMAL, (_('DS-302 Profile'), ID_NETWORKEDITORMASTERMENUDS302PROFILE, '', self.OnOtherCommunicationMenu)),
-                       (wx.ITEM_NORMAL, (other_profile_text, ID_NETWORKEDITORMASTERMENUDSOTHERPROFILE, '', self.OnEditProfileMenu)),
+        master_menu = [(wx.ITEM_NORMAL, (_('DS-301 Profile'), '', self.OnCommunicationMenu)),
+                       (wx.ITEM_NORMAL, (_('DS-302 Profile'), '', self.OnOtherCommunicationMenu)),
+                       (wx.ITEM_NORMAL, (other_profile_text, '', self.OnEditProfileMenu)),
                        (wx.ITEM_SEPARATOR, None),
-                       (add_menu, (_('Add'), ID_NETWORKEDITORMASTERMENUADD))]
+                       (add_menu, (_('Add')))]
 
-        return [(wx.ITEM_NORMAL, (_('Add slave'), ID_NETWORKEDITORCONFNODEMENUADDSLAVE, '', self.OnAddSlaveMenu)),
-                (wx.ITEM_NORMAL, (_('Remove slave'), ID_NETWORKEDITORCONFNODEMENUREMOVESLAVE, '', self.OnRemoveSlaveMenu)),
+        return [(wx.ITEM_NORMAL, (_('Add slave'), '', self.OnAddSlaveMenu)),
+                (wx.ITEM_NORMAL, (_('Remove slave'), '', self.OnRemoveSlaveMenu)),
                 (wx.ITEM_SEPARATOR, None),
-                (master_menu, (_('Master'), ID_NETWORKEDITORCONFNODEMENUMASTER))]
+                (master_menu, (_('Master')), self.menu_refs, "master")]
 
     def RefreshMainMenu(self):
         pass
 
     def RefreshConfNodeMenu(self, confnode_menu):
-        confnode_menu.Enable(ID_NETWORKEDITORCONFNODEMENUMASTER, self.NetworkNodes.GetSelection() == 0)
+        master_item = self.menu_refs.get("master")
+        if master_item:
+            master_item.Enable(self.NetworkNodes.GetSelection() == 0)
 
     def RefreshView(self):
         ConfTreeNodeEditor.RefreshView(self)

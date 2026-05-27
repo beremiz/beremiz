@@ -80,21 +80,34 @@ Only needed for Modbus support.
     cd ~/Beremiz/Modbus
     make
 
-.. Build CanFestival (optional)
-.. ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Build CanFestival (optional)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. Only needed for CANopen support. Please read CanFestival manual to choose CAN
-.. interface other than ``virtual``.
+Only needed for CANopen support. Please read the CanFestival manual to choose a
+CAN driver other than ``virtual``.
 
-.. .. code-block:: bash
+The static libraries are linked into the PLC's shared object, so the build must
+be position-independent (``-DCMAKE_POSITION_INDEPENDENT_CODE=ON``).
 
-..     cd ~/Beremiz
+.. code-block:: bash
 
-..     git clone https://github.com/beremiz/canfestival
+    cd ~/Beremiz
 
-..     cd ~/Beremiz/canfestival
-..     ./configure --can=virtual
-..     make
+    git clone https://github.com/beremiz/canfestival
+
+    cd ~/Beremiz/canfestival
+    mkdir build && cd build
+    cmake .. -DCF_TARGET=unix \
+             -DCF_CAN_DRIVER=virtual \
+             -DCF_TIMERS_DRIVER=unix \
+             -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    make
+
+The Beremiz CANopen extension picks up ``CF_TARGET`` / ``CF_CAN_DRIVER`` /
+``CF_TIMERS_DRIVER`` from the resulting ``build/CMakeCache.txt`` and links
+against ``build/src/libcanfestival.a`` and ``build/drivers/libcanfestival_<target>.a``,
+so rebuilding with a different ``-DCF_CAN_DRIVER`` is enough to switch driver
+(no Beremiz changes required).
 
 Build BACnet (optional)
 ~~~~~~~~~~~~~~~~~~~~~~~

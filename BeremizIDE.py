@@ -707,19 +707,22 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         return OpenRecentProject
 
     def GenerateMenuRecursive(self, items, menu):
-        for kind, infos in items:
+        for kind, infos, *ref in items:
             if isinstance(kind, list):
-                text, id = infos
                 submenu = wx.Menu('')
                 self.GenerateMenuRecursive(kind, submenu)
-                menu.Append(id, text, submenu)
+                new_item = menu.AppendSubMenu(submenu, infos)
             elif kind == wx.ITEM_SEPARATOR:
                 menu.AppendSeparator()
+                continue
             else:
-                text, id, _help, callback = infos
-                AppendMenu(menu, help='', id=id, kind=kind, text=text)
+                text, help, callback = infos
+                new_item = AppendMenu(menu, help=help, id=wx.ID_ANY, kind=kind, text=text)
                 if callback is not None:
-                    self.Bind(wx.EVT_MENU, callback, id=id)
+                    self.Bind(wx.EVT_MENU, callback, new_item)
+            if ref:
+                store, name = ref
+                store[name] = new_item
 
     def RefreshEditorToolBar(self):
         IDEFrame.RefreshEditorToolBar(self)

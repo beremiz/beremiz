@@ -79,13 +79,16 @@ def LE_to_BE(value, size):
     Convert Little Endian to Big Endian
     @param value: value expressed in integer
     @param size: number of bytes generated
-    @return: a string containing the value converted
+    @return: a bytes object containing the value converted
+
+    Matches objdictgen/node.py:LE_to_BE so concise-DCF blobs are stored as
+    bytes, consistent with the rest of the (Python 3) CanFestival stack.
     """
 
     data = ("%" + str(size * 2) + "." + str(size * 2) + "X") % value
     list_car = [data[i:i+2] for i in range(0, len(data), 2)]
     list_car.reverse()
-    return "".join([chr(int(car, 16)) for car in list_car])
+    return bytes([int(car, 16) for car in list_car])
 
 
 def GetNodePDOIndexes(node, type, parameters=False):
@@ -155,7 +158,7 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
         dcfdata += [LE_to_BE(idx + 0x200, 2) + LE_to_BE(0x00, 1) + LE_to_BE(0x01, 4) + LE_to_BE(len(pdomapping), 1)]
     # Re-Enable PDO
     dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(cobid, 4)]
-    return "".join(dcfdata), len(dcfdata)
+    return b"".join(dcfdata), len(dcfdata)
 
 
 class ConciseDCFGenerator(object):
@@ -213,7 +216,7 @@ class ConciseDCFGenerator(object):
 
         # Adding DCF entry into Master node
         if not self.MasterNode.IsEntry(0x1F22):
-            self.MasterNode.AddEntry(0x1F22, 1, "")
+            self.MasterNode.AddEntry(0x1F22, 1, b"")
         self.Manager.AddSubentriesToCurrent(0x1F22, 127, self.MasterNode)
 
         # Adding trash mappable variables for unused mapped datas
@@ -269,11 +272,16 @@ class ConciseDCFGenerator(object):
         # Get current DCF for slave
         nodeDCF = self.MasterNode.GetEntry(0x1F22, nodeid)
 
+        # Concise DCF is binary data: normalize the (possibly empty/default)
+        # current value to bytes before appending.
+        if isinstance(nodeDCF, str):
+            nodeDCF = nodeDCF.encode("latin-1")
+
         # Extract data and number of params in current DCF
-        if nodeDCF is not None and nodeDCF != '':
-            tmpnbparams = [i for i in nodeDCF[:4]]
+        if nodeDCF:
+            tmpnbparams = list(nodeDCF[:4])
             tmpnbparams.reverse()
-            nbparams += int(''.join(["%2.2x" % ord(i) for i in tmpnbparams]), 16)
+            nbparams += int(''.join(["%2.2x" % b for b in tmpnbparams]), 16)
             data = nodeDCF[4:] + data
 
         # Build new DCF
@@ -485,7 +493,7 @@ class ConciseDCFGenerator(object):
 
             # Initialize number of params and data to add to node DCF
             nbparams = 0
-            dataparams = ""
+            dataparams = b""
 
             # Generate the best PDO mapping for each type of PDO
             for pdotype in (TPDO, RPDO):
