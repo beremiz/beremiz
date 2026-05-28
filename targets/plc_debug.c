@@ -444,7 +444,6 @@ int RegisterDebugVariable(uint32_t idx, void* force, size_t force_size)
 
 error_cleanup:
     ResetDebugVariables();
-    trace_buffer_state = BUFFER_EMPTY;
     return error_code;
     
 }
@@ -490,6 +489,8 @@ void ResetDebugVariables(void)
     force_list_addvar_cursor = force_list;
     /* Reset force buffer */
     force_buffer_cursor = force_buffer;
+
+    trace_buffer_state = BUFFER_EMPTY;
 }
 
 void FreeDebugData(void)
