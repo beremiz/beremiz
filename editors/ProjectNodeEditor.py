@@ -66,6 +66,11 @@ class ProjectNodeEditor(ConfTreeNodeEditor):
 
         self.VariableEditor = self.VariableEditorPanel
 
+    def ShowProjectProperties(self):
+        if self.ConfNodeNoteBook is not None:
+            self.ConfNodeNoteBook.SetSelection(
+                self.ConfNodeNoteBook.FindPage(self.ProjectProperties))
+
     def GetTagName(self):
         return self.Controler.CTNName()
 

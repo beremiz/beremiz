@@ -81,7 +81,7 @@ class ProjectPropertiesPanel(wx.Notebook):
         self.ProjectPanel.SetAutoLayout(1)
         if scrolling:
             self.ProjectPanel.SetupScrolling()
-        projectpanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=5, vgap=15)
+        projectpanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=7, vgap=15)
         projectpanel_sizer.AddGrowableCol(1)
         self.ProjectPanel.SetSizer(projectpanel_sizer)
 
@@ -91,6 +91,32 @@ class ProjectPropertiesPanel(wx.Notebook):
                              ("productName",    _('Product Name (required):')),
                              ("productVersion", _('Product Version (required):')),
                              ("productRelease", _('Product Release (optional):'))])
+
+        language_label = wx.StaticText(self.ProjectPanel,
+                                       label=_('Language (optional):'))
+        projectpanel_sizer.Add(language_label, border=10,
+                                           flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP | wx.LEFT)
+
+        self.Language = wx.ComboBox(self.ProjectPanel,
+                                    style=wx.CB_READONLY)
+        self.Bind(wx.EVT_COMBOBOX, self.OnLanguageChanged, self.Language)
+        projectpanel_sizer.Add(self.Language, border=10,
+                                           flag=wx.GROW | wx.TOP | wx.RIGHT)
+
+        description_label = wx.StaticText(
+            self.ProjectPanel, label=_('Content Description (optional):'))
+        projectpanel_sizer.Add(description_label, border=10,
+                                           flag=wx.BOTTOM | wx.LEFT)
+
+        self.ContentDescription = wx.TextCtrl(
+            self.ProjectPanel, size=wx.Size(240, 150),
+            style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
+        self.ContentDescription.Bind(wx.EVT_TEXT_ENTER, self.OnContentDescriptionChanged)
+        self.ContentDescription.Bind(wx.EVT_TEXT, self.OnContentDescriptionChanged)
+        self.ContentDescription.Bind(wx.EVT_KILL_FOCUS, self.OnContentDescriptionChanged)
+        projectpanel_sizer.Add(self.ContentDescription, border=10,
+                                           flag=wx.GROW | wx.BOTTOM | wx.RIGHT)
+
 
         self.AddPage(self.ProjectPanel, _("Project"))
 
@@ -190,47 +216,6 @@ class ProjectPropertiesPanel(wx.Notebook):
             scaling_nb.AddPage(scaling_panel, translation)
 
         self.AddPage(self.GraphicsPanel, _("Graphics"))
-
-        # Miscellaneous Panel elements
-
-        self.MiscellaneousPanel = ScrolledPanel(parent=self,
-                                                name='MiscellaneousPanel',
-                                                style=wx.TAB_TRAVERSAL)
-        self.MiscellaneousPanel.SetAutoLayout(1)
-        if scrolling:
-            self.MiscellaneousPanel.SetupScrolling()
-        miscellaneouspanel_sizer = wx.FlexGridSizer(cols=2, hgap=5, rows=2, vgap=15)
-        miscellaneouspanel_sizer.AddGrowableCol(1)
-        miscellaneouspanel_sizer.AddGrowableRow(1)
-        self.MiscellaneousPanel.SetSizer(miscellaneouspanel_sizer)
-
-        language_label = wx.StaticText(self.MiscellaneousPanel,
-                                       label=_('Language (optional):'))
-        miscellaneouspanel_sizer.Add(language_label, border=10,
-                                           flag=wx.ALIGN_CENTER_VERTICAL | wx.TOP | wx.LEFT)
-
-        self.Language = wx.ComboBox(self.MiscellaneousPanel,
-                                    style=wx.CB_READONLY)
-        self.Bind(wx.EVT_COMBOBOX, self.OnLanguageChanged, self.Language)
-        miscellaneouspanel_sizer.Add(self.Language, border=10,
-                                           flag=wx.GROW | wx.TOP | wx.RIGHT)
-
-        description_label = wx.StaticText(
-            self.MiscellaneousPanel, label=_('Content Description (optional):'))
-        miscellaneouspanel_sizer.Add(description_label, border=10,
-                                           flag=wx.BOTTOM | wx.LEFT)
-
-        self.ContentDescription = wx.TextCtrl(
-            self.MiscellaneousPanel, size=wx.Size(240, 150),
-            style=wx.TE_MULTILINE | wx.TE_PROCESS_ENTER)
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnContentDescriptionChanged,
-                  self.ContentDescription)
-        self.ContentDescription.Bind(wx.EVT_KILL_FOCUS,
-                                     self.OnContentDescriptionChanged)
-        miscellaneouspanel_sizer.Add(self.ContentDescription, border=10,
-                                           flag=wx.GROW | wx.BOTTOM | wx.RIGHT)
-
-        self.AddPage(self.MiscellaneousPanel, _("Miscellaneous"))
 
         for param in REQUIRED_PARAMS:
             getattr(self, param).Enable(enable_required)
@@ -377,10 +362,8 @@ class ProjectPropertiesPanel(wx.Notebook):
             else:
                 old_value = None
             new_value = self.ContentDescription.GetValue()
-            if new_value == "":
-                new_value = None
             if old_value != new_value:
                 self.Controller.SetProjectProperties(properties={"contentDescription": new_value})
                 self.ParentWindow._Refresh(TITLE, FILEMENU, EDITMENU, PAGETITLES)
-                wx.CallAfter(self.RefreshView)
+                #wx.CallAfter(self.RefreshView)
         event.Skip()
