@@ -60,7 +60,8 @@ AddCatalog(os.path.join(CanFestivalPath, "objdictgen", "locale"))
 # CanFestival is built out-of-tree with CMake. The static libs are linked
 # into the PLC shared object, so the build must be position-independent:
 #   mkdir build && cd build
-#   cmake .. -DCF_TARGET=unix -DCF_CAN_DRIVER=virtual -DCF_TIMERS_DRIVER=unix \
+#   cmake .. -DCF_TARGET=unix -DCF_CAN_DRIVER="virtual;socket" \
+#            -DCF_TIMERS_DRIVER=unix \
 #            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 #   make
 # These helpers replace the objdictgen/canfestival_config.py module that used
@@ -98,13 +99,14 @@ _CMakeCache = _ReadCMakeCache()
 # Defaults match CMakeLists.txt for the case where the cache isn't available yet.
 CanFestivalTarget = _CMakeCache.get("CF_TARGET", "unix")
 CanFestivalTimers = _CMakeCache.get("CF_TIMERS_DRIVER", "unix")
-CanFestivalCANDriver = _CMakeCache.get("CF_CAN_DRIVER", "virtual")
 
-# A CMake build produces exactly one CAN driver shared library, matching the
-# single-driver behaviour of the old configure script. The CAN_Driver dropdown
-# offers that one entry; rebuild CanFestival with a different -DCF_CAN_DRIVER
-# to switch drivers.
-DLL_LIST = ["can_%s" % CanFestivalCANDriver] if CanFestivalCANDriver else []
+# CF_CAN_DRIVER may list several drivers (CMake stores lists semicolon-separated,
+# e.g. "virtual;socket"); CanFestival builds one shared driver library per entry.
+# The CAN_Driver dropdown offers every built driver; rebuild CanFestival with a
+# different -DCF_CAN_DRIVER list to add or remove drivers.
+CanFestivalCANDrivers = [
+    drv for drv in _CMakeCache.get("CF_CAN_DRIVER", "virtual").split(";") if drv]
+DLL_LIST = ["can_%s" % drv for drv in CanFestivalCANDrivers]
 
 
 def getCFLAGS(Cpth):
