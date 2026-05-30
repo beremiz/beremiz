@@ -172,6 +172,7 @@ class CustomToolTip(wx.PopupWindow):
         # Set DC drawing style
         dc.SetPen(wx.BLACK_PEN)
         dc.SetBrush(wx.Brush(wx.Colour(255, 238, 170)))
+        dc.SetTextForeground(wx.BLACK)
         dc.SetFont(self.Font)
 
         # Draw Tool tip
