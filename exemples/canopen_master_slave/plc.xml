@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xsi:schemaLocation="http://www.plcopen.org/xml/tc6_0201">
-  <fileHeader companyName="beremiz" productName="beremiz" productVersion="1" creationDateTime="2008-06-24T18:44:00"/>
-  <contentHeader name="canopen_master" modificationDateTime="2026-05-28T18:18:56" language="en-US">
+  <fileHeader companyName="beremiz" productName="beremiz" productVersion="1" creationDateTime="2008-06-24T18:44:00" contentDescription="This example demonstrates PDO communication between a master and a slave CANopen nodes, living in the same PLC.&#10;&#10;CanFestival CANopen stack's &quot;Virtual&quot; CAN driver is used by default. No real CAN interface and no further configuration are needed, virtual traffic will appear in console.&#10;&#10;On Linux, SocketCAN driver can be selected instead, implying CAN network configuration such as:&#10;&#10;ip link set can0 up type can bitrate 125000&#10;ip link set can1 up type can bitrate 125000&#10;&#10;Please have a look to https://docs.kernel.org/networking/can.html for more details about Linux SocketCAN support."/>
+  <contentHeader name="canopen_master_slave" modificationDateTime="2026-06-01T10:44:41" language="en-US">
     <coordinateInfo>
       <fbd>
         <scaling x="0" y="0"/>
