@@ -512,7 +512,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             answer = dialog.ShowModal()
             dialog.Destroy()
             if answer == wx.ID_YES:
-                if self.SaveProjectAs():
+                if self.SaveProjectAs(from_project_copy=True):
+                    self.AppFrame.RefreshConfigRecentProjects(self.ProjectPath)
                     self.AppFrame.RefreshTitle()
                     self.AppFrame.RefreshFileMenu()
                     self.AppFrame.RefreshPageTitles()
@@ -694,24 +695,52 @@ class ProjectController(ConfigTreeNode, PLCControler):
             if result:
                 self.logger.write_error(result)
 
-    def SaveProjectAs(self):
+    def SaveProjectAs(self, from_project_copy=False):
         # Ask user to choose a path with write permissions
         if wx.Platform == '__WXMSW__':
             path = os.getenv("USERPROFILE")
         else:
             path = os.getenv("HOME")
+        if from_project_copy:
+            message = _("Choose a directory to copy project into")
+        else:
+            message = _("Create or choose an empty directory to save project")
         dirdialog = wx.DirDialog(
-            self.AppFrame, _("Create or choose an empty directory to save project"), path, wx.DD_NEW_DIR_BUTTON)
+            self.AppFrame, message, path, wx.DD_NEW_DIR_BUTTON)
         answer = dirdialog.ShowModal()
         newprojectpath = dirdialog.GetPath()
         dirdialog.Destroy()
         if answer == wx.ID_OK:
             if os.path.isdir(newprojectpath):
+                if from_project_copy:
+                    # When copying a read-only project, recreate a directory
+                    # with the same name as the original project inside the
+                    # selected directory, instead of relying on the user to
+                    # have created an empty one.
+                    newprojectpath = os.path.join(
+                        newprojectpath,
+                        os.path.basename(os.path.normpath(self.ProjectPath)))
+                    if not os.path.isdir(newprojectpath):
+                        os.mkdir(newprojectpath)
                 if self.CheckNewProjectPath(self.ProjectPath, newprojectpath):
                     self.ProjectPath, old_project_path = newprojectpath, self.ProjectPath
                     self.SaveProject(old_project_path)
                     self._setBuildPath(self.BuildPath)
-                return True
+                    return True
+                else:
+                    dialog = wx.MessageDialog(
+                        self.AppFrame,
+                        _('New project directory is not valid. Save-as operation cancelled.\n'),
+                        _("Error"), wx.OK | wx.ICON_ERROR)
+                    dialog.ShowModal()
+                    dialog.Destroy()
+            else:
+                dialog = wx.MessageDialog(
+                    self.AppFrame,
+                    _('Selected path is not a valid directory! \n'),
+                    _("Error"), wx.OK | wx.ICON_ERROR)
+                dialog.ShowModal()
+                dialog.Destroy()
         return False
 
     def GetLibrariesTypes(self):

@@ -692,9 +692,6 @@ class ConfigTreeNode(object):
             child.ClearChildren()
         self.Children = {}
 
-    LoadErrorImpliesUserCheck = \
-        _("Note: loading errors are expected when opening projects written for different targets. Check config.\n")
-        
     def LoadXMLParams(self, CTNName=None):
         methode_name = os.path.join(self.CTNPath(CTNName), "methods.py")
         if os.path.isfile(methode_name):
@@ -711,7 +708,6 @@ class ConfigTreeNode(object):
                     (fname, lnum, src) = ((ConfNodeName + " BaseParams",) + error)
                     logger = self.GetCTRoot().logger
                     logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
-                    logger.write_warning(self.LoadErrorImpliesUserCheck)
                 self.MandatoryParams = ("BaseParams", self.BaseParams)
                 basexmlfile.close()
             except Exception as exc:
@@ -728,7 +724,8 @@ class ConfigTreeNode(object):
                     (fname, lnum, src) = ((ConfNodeName,) + error)
                     logger = self.GetCTRoot().logger
                     logger.write_warning(XSDSchemaErrorMessage.format(a1=fname, a2=lnum, a3=src))
-                    logger.write_warning(self.LoadErrorImpliesUserCheck)
+                    if(fname == "Project" and "TargetType" in src):
+                        logger.write(_("Note: Examples intentionally do not define target type in order to work as-is on all platforms.\nWarning about missing TargetType is then perfectly fine, please ignore it.\nTarget matching your platform have been implicitly selected.\n"))
                 name = obj.getLocalTag()
                 setattr(self, name, obj)
                 self.CTNParams = (name, obj)

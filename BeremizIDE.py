@@ -265,7 +265,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 if self.CTR is not None and not self.CheckSaveBeforeClosing():
                     return
 
-                self.OpenProject(projectpath)
+                self.OpenProject(projectpath, add_to_recent=False)
                 if not self.CTR.CheckProjectPathPerm():
                     self.ResetView()
 
@@ -907,7 +907,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             self.OpenProject(dialog.GetPath())
         dialog.Destroy()
 
-    def OpenProject(self, projectpath):
+    def OpenProject(self, projectpath, add_to_recent=True):
         if os.path.isdir(projectpath):
             self.Config.Write("lastopenedfolder",
                               EncodeFileSystemPath(os.path.dirname(projectpath)))
@@ -933,7 +933,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
         else:
             self.ShowErrorMessage(_("\"%s\" folder is not a valid Beremiz project\n") % projectpath)
             err = True
-        self.RefreshConfigRecentProjects(projectpath, err)
+        if add_to_recent:
+            self.RefreshConfigRecentProjects(projectpath, err)
         self._Refresh(TITLE, EDITORTOOLBAR, FILEMENU, EDITMENU)
 
     def OnCloseProjectMenu(self, event):
