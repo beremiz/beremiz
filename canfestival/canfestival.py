@@ -177,8 +177,8 @@ class _SlaveCTN(NodeManager):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalSlaveNode">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Device" type="xsd:string" use="optional"/>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional"/>
+          <xsd:attribute name="CAN_Device" type="xsd:string" use="optional" default="0"/>
+          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="125K"/>
           <xsd:attribute name="NodeId" type="xsd:integer" use="optional" default="2"/>
           <xsd:attribute name="Sync_Align" type="xsd:integer" use="optional" default="0"/>
           <xsd:attribute name="Sync_Align_Ratio" use="optional" default="50">
@@ -383,8 +383,8 @@ class _NodeListCTN(NodeList):
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="CanFestivalNode">
         <xsd:complexType>
-          <xsd:attribute name="CAN_Device" type="xsd:string" use="optional"/>
-          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional"/>
+          <xsd:attribute name="CAN_Device" type="xsd:string" use="optional" default="0"/>
+          <xsd:attribute name="CAN_Baudrate" type="xsd:string" use="optional" default="125K"/>
           <xsd:attribute name="NodeId" type="xsd:integer" use="optional" default="1"/>
           <xsd:attribute name="Sync_TPDOs" type="xsd:boolean" use="optional" default="true"/>
         </xsd:complexType>
