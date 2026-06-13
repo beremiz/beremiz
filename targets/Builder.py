@@ -12,6 +12,8 @@ import os
 import hashlib
 from os.path import join
 
+from util.paths import ThirdPartyPath
+
 class Builder:
     def __init__(self, CTRInstance):
         self.CTRInstance = CTRInstance
@@ -77,7 +79,22 @@ class Builder:
 
     def GetReservedIECChannels(self):
         return []
-    
+
+    def GetModuleSourceDir(self, name):
+        """Source directory of a third-party module for this target.
+
+        Default: the module is a sibling pre-built project under ThirdPartyPath.
+        Targets that fetch modules elsewhere override this.
+        """
+        return ThirdPartyPath(name)
+
+    def GetModuleBuildDir(self, name):
+        """Build directory of a third-party module (generated headers/libs).
+
+        Default: an out-of-tree "build" subdirectory of the module sources.
+        """
+        return join(self.GetModuleSourceDir(name), "build")
+
     def GetLibraries(self, ctr, typestack):
         return []
 
