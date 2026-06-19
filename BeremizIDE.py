@@ -772,7 +772,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                     item = self.EditMenu.FindItemByPosition(self.EditMenuSize)
                     if item is not None:
                         if item.IsSeparator():
-                            self.EditMenu.RemoveItem(item)
+                            self.EditMenu.Remove(item)
                         else:
                             self.EditMenu.Delete(item.GetId())
                 self.LastPanelSelected = panel
@@ -790,7 +790,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
                 item = self.EditMenu.FindItemByPosition(i)
                 if item is not None:
                     if item.IsSeparator():
-                        self.EditMenu.RemoveItem(item)
+                        self.EditMenu.Remove(item)
                     else:
                         self.EditMenu.Delete(item.GetId())
             self.LastPanelSelected = None
