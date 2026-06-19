@@ -83,6 +83,9 @@ def ensure_controller(func):
             session.module = import_module("CLIController")
             session.controller = session.module.CLIController(session)
         ret = func(session, *args, **kwargs)
+        if callable(ret):
+            ret.__doc__ = func.__doc__
+            ret.__name__ = func.__name__
         return ret
 
     return func_wrapper
@@ -171,6 +174,8 @@ def flush(session):
 def process_pipeline(ctx, session, processors, **kwargs):
     ret = 0
     for processor in processors:
+        if processor.__doc__:
+            click.echo(processor.__name__ + ": " + processor.__doc__)
         ret = processor()
         if ret != 0:
             if len(processors) > 1 :
