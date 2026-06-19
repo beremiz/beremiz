@@ -125,9 +125,10 @@ def GetDLLList(ctroot):
 def getCFLAGS(ctroot):
     """Include flags to compile generated OD/runtime C against CanFestival."""
     include = os.path.join(GetCanFestivalPath(ctroot), "include")
-    return ' -I"%s" -I"%s" -I"%s"' % (
+    return ' -I"%s" -I"%s" -I"%s" -I"%s"' % (
         include,
         os.path.join(include, GetCanFestivalTarget(ctroot)),
+        paths.AbsNeighbourFile(__file__, GetCanFestivalTarget(ctroot)),
         # CMake writes the generated config.h into the build tree.
         os.path.join(GetCanFestivalBuildPath(ctroot), "include"))
 
