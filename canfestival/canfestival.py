@@ -147,8 +147,44 @@ def getLDFLAGS(ctroot):
 # --------------------------------------------------
 
 
-def GetSlaveLocationTree(slave_node, current_location, name):
+def GetSlaveLocationTree(slave_node, current_location, name, controller=False):
     entries = []
+    # When this node owns a local CAN controller (a CanOpen master or a
+    # standalone slave, not a remote slave managed by a master), expose its
+    # controller state and bus error counters as diagnostic located variables,
+    # using CANopen index 0 (never a valid PDO mapping) as the sub-location so
+    # they don't collide with mapped process data. Mirrors how the Modbus
+    # plugin exposes per-request status bytes at .0.0/.0.1/.0.2.
+    if controller:
+        locstr = ".".join(map(str, current_location))
+        entries.append({
+            "name": "CAN controller state",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,
+            "IEC_type": "BYTE",
+            "var_name": "can_state",
+            "location": "B" + locstr + ".0.0",
+            "description": "CAN controller state (0 -> Error-active, 1 -> Error-warning, "
+                           "2 -> Error-passive, 3 -> Bus-off, 4 -> Stopped). ",
+            "children": []})
+        entries.append({
+            "name": "CAN TX error counter",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,
+            "IEC_type": "BYTE",
+            "var_name": "can_tx_errors",
+            "location": "B" + locstr + ".0.1",
+            "description": "CAN controller transmit error counter. ",
+            "children": []})
+        entries.append({
+            "name": "CAN RX error counter",
+            "type": LOCATION_VAR_MEMORY,
+            "size": 8,
+            "IEC_type": "BYTE",
+            "var_name": "can_rx_errors",
+            "location": "B" + locstr + ".0.2",
+            "description": "CAN controller receive error counter. ",
+            "children": []})
     for index, subindex, size, entry_name in slave_node.GetMapVariableList():
         subentry_infos = slave_node.GetSubentryInfos(index, subindex)
         typeinfos = slave_node.GetEntryInfos(subentry_infos["type"])
@@ -289,7 +325,8 @@ class _SlaveCTN(NodeManager):
     def GetVariableLocationTree(self):
         return GetSlaveLocationTree(self.CurrentNode,
                                     self.GetCurrentLocation(),
-                                    self.BaseParams.getName())
+                                    self.BaseParams.getName(),
+                                    controller=True)
 
     def CTNGenerate_C(self, buildpath, locations):
         """
@@ -439,7 +476,8 @@ class _NodeListCTN(NodeList):
         children = []
         children += [GetSlaveLocationTree(self.Manager.GetCurrentNodeCopy(),
                                           current_location,
-                                          _("Local entries"))]
+                                          _("Local entries"),
+                                          controller=True)]
         children += [GetSlaveLocationTree(self.SlaveNodes[nodeid]["Node"],
                                           current_location + (nodeid,),
                                           self.SlaveNodes[nodeid]["Name"]) for nodeid in nodeindexes]
@@ -622,6 +660,8 @@ class RootClass(object):
             "nodes_close": "",
             "nodes_send_sync": "",
             "nodes_proceed_sync": "",
+            "canstate_decls": "",
+            "nodes_read_can_state": "",
             "slavebootups": "",
             "slavebootup_register": "",
             "post_sync": "",
@@ -697,6 +737,32 @@ class RootClass(object):
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    ' % (nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    ' % (nodename)
             format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    ' % (nodename)
+
+            # Per-node CAN controller diagnostic located variables (state /
+            # tx err / rx err), exposed by GetSlaveLocationTree at CANopen
+            # index 0, sub 0/1/2 under this node's location. They are not OD
+            # entries: declare their storage and the PLC located-variable
+            # pointers here, and (on Zephyr) refresh them each cycle from the
+            # CAN driver in __retrieve_.
+            childloc = child.GetCurrentLocation()
+            canstate_fields = {0: "can_state", 1: "can_txerr", 2: "can_rxerr"}
+            canstate_vars = {}
+            for loc in locations:
+                L = loc["LOC"]
+                if (L[:len(childloc)] == childloc
+                        and len(L) == len(childloc) + 2
+                        and L[len(childloc)] == 0
+                        and L[len(childloc) + 1] in canstate_fields):
+                    canstate_vars[L[len(childloc) + 1]] = loc["NAME"]
+            if canstate_vars:
+                format_dict["canstate_decls"] += (
+                    "static UNS8 %s_can_state, %s_can_txerr, %s_can_rxerr;\n" % (
+                        nodename, nodename, nodename))
+                for sub, field in sorted(canstate_fields.items()):
+                    if sub in canstate_vars:
+                        format_dict["canstate_decls"] += "UNS8 *%s = &%s_%s;\n" % (
+                            canstate_vars[sub], nodename, field)
+                format_dict["nodes_read_can_state"] += 'NODE_READ_CAN_STATE(%s)\n    ' % (nodename)
 
         filename = paths.AbsNeighbourFile(__file__, "cf_runtime.c")
         with open(filename) as cf_template:

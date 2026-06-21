@@ -679,6 +679,12 @@ def LocalODPointers(locations, current_location, slave):
             # Extract and check nodeid
             index, subindex = loc[:2]
 
+            # Index 0 is reserved for the per-node diagnostic located variables
+            # (CAN controller state / error counters), which are not OD entries
+            # and are handled by the generated glue, not the OD pointer table.
+            if index == 0:
+                continue
+
             # Extract and check index and subindex
             if not slave.IsEntry(index, subindex):
                 raise PDOmappingException(

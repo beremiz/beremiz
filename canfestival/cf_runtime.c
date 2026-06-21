@@ -11,6 +11,12 @@
 /* CAN channels declaration */
 %(board_decls)s
 
+/* Per-node CAN controller diagnostic located variables (state / tx err / rx err).
+ * Storage and PLC pointers only; not updated on this target.
+ * TODO: implement __retrieve_ code to update this values.
+ */
+%(canstate_decls)s
+
 /* Keep track of init level to cleanup correctly */
 static int init_level=0;
 /* Retrieve PLC cycle time */
@@ -130,6 +136,9 @@ int __init_%(locstr)s(int argc,void **argv)
         sendSYNCMessage(&nodename##_Data);\
     }
 
+#define NODE_READ_CAN_STATE(nodename)\
+    /* TODO canGetState(&nodename##_Data, &nodename##_can_state, &nodename##_can_txerr, &nodename##_can_rxerr);*/
+
 void __retrieve_%(locstr)s(void)
 {
     /* Locks the stack, so that no changes occurs while PLC access variables
@@ -138,6 +147,8 @@ void __retrieve_%(locstr)s(void)
     EnterMutex();
     /* Send Sync */
     %(nodes_send_sync)s
+    /* Refresh per-node CAN controller state and bus error counters */
+    %(nodes_read_can_state)s
 }
 
 #define NODE_PROCEED_SYNC(nodename)\
