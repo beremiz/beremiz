@@ -89,7 +89,7 @@ void __cleanup_%(locstr)s(void)
 {
     // Stop timer thread
     if(init_level-- > 0){
-    int init_level_c = init_level;
+    __attribute__((unused)) int init_level_c = init_level;
         StopTimerLoop(&Exit);
         %(nodes_close)s
     }
