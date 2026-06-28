@@ -140,7 +140,7 @@ class ConfTreeNodeEditor(EditorPanel):
 
     def _init_Editor(self, parent):
         tabs_num = len(self.CONFNODEEDITOR_TABS)
-        if self.SHOW_PARAMS and self.has_attributes:
+        if self.has_attributes:
             tabs_num += 1
 
         if tabs_num > 1 or self.SHOW_BASE_PARAMS:
@@ -219,7 +219,7 @@ class ConfTreeNodeEditor(EditorPanel):
             else:
                 self.Editor = editor
 
-        if self.SHOW_PARAMS and self.has_attributes:
+        if self.has_attributes:
 
             panel_style = wx.TAB_TRAVERSAL | wx.HSCROLL | wx.VSCROLL
             if self.ConfNodeNoteBook is None and parent != self.Editor:
@@ -250,7 +250,7 @@ class ConfTreeNodeEditor(EditorPanel):
             self.ParamsEditor = None
 
     def __init__(self, parent, controler, window, tagname=""):
-        self.has_attributes = len(controler.GetParamsAttributes()) > 0
+        self.has_attributes = self.SHOW_PARAMS and len(controler.GetParamsAttributes()) > 0
         EditorPanel.__init__(self, parent, tagname, window, controler)
 
         icon_name = self.Controler.GetIconName()
