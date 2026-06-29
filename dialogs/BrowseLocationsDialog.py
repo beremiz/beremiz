@@ -71,7 +71,7 @@ class BrowseLocationsDialog(wx.Dialog):
 
         self.DIRFILTERCHOICE_OPTIONS = dict(
             [(_(option), filter) for option, filter in GetDirFilterChoiceOptions()])
-        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=4, vgap=10)
+        main_sizer = wx.FlexGridSizer(cols=1, hgap=0, rows=5, vgap=10)
         main_sizer.AddGrowableCol(0)
         main_sizer.AddGrowableRow(1)
 
@@ -91,13 +91,22 @@ class BrowseLocationsDialog(wx.Dialog):
         main_sizer.Add(self.LocationsTree, border=20,
                              flag=wx.LEFT | wx.RIGHT | wx.GROW)
 
-        self.RenameCheckBox = wx.CheckBox(self, label=_("Rename variable to signal name"))
         self.Config = wx.ConfigBase.Get()
-        default_checked = self.Config.Read("RenameVariableOnLocationChange") == "True"
+
+        self.RenameCheckBox = wx.CheckBox(self, label=_("Rename variable to signal name"))
+        default_checked = self.Config.Read("RenameVariableOnLocationChange", "True") == "True"
         self.RenameCheckBox.SetValue(default_checked)
         self.do_rename = default_checked
 
         main_sizer.Add(self.RenameCheckBox, border=20,
+                             flag=wx.LEFT | wx.RIGHT | wx.GROW)
+
+        self.DescriptionCheckBox = wx.CheckBox(self, label=_("Set variable description from location"))
+        default_checked = self.Config.Read("DescribeVariableOnLocationChange", "True") == "True"
+        self.DescriptionCheckBox.SetValue(default_checked)
+        self.do_describe = default_checked
+
+        main_sizer.Add(self.DescriptionCheckBox, border=20,
                              flag=wx.LEFT | wx.RIGHT | wx.GROW)
 
         button_gridsizer = wx.FlexGridSizer(cols=5, hgap=5, rows=1, vgap=0)
@@ -224,16 +233,38 @@ class BrowseLocationsDialog(wx.Dialog):
         self.RefreshFilters()
         self.RefreshLocationsTree()
 
+    def GetLocationPath(self, item):
+        """Build the CTN path leading to item out of its ancestors' names."""
+        root = self.LocationsTree.GetRootItem()
+        path = []
+        parent = self.LocationsTree.GetItemParent(item)
+        while parent.IsOk() and parent != root:
+            parent_infos = self.LocationsTree.GetItemData(parent)
+            path.insert(0, parent_infos["name"])
+            parent = self.LocationsTree.GetItemParent(parent)
+        return path
+
     def GetValues(self):
         selected = self.LocationsTree.GetSelection()
         infos = self.LocationsTree.GetItemData(selected)
         if not self.do_rename:
             infos["var_name"] = None
+        if self.do_describe:
+            # rewrite the description out of every information available:
+            # the CTN path leading to the variable and its visible description
+            description = "/".join(self.GetLocationPath(selected) + [infos["name"]])
+            if infos.get("description"):
+                description += ": " + infos["description"]
+            infos["description"] = description
+        else:
+            infos["description"] = None
         return infos
 
     def OnOK(self, event):
         self.do_rename = self.RenameCheckBox.IsChecked()
         self.Config.Write("RenameVariableOnLocationChange", str(self.do_rename))
+        self.do_describe = self.DescriptionCheckBox.IsChecked()
+        self.Config.Write("DescribeVariableOnLocationChange", str(self.do_describe))
         selected = self.LocationsTree.GetSelection()
         var_infos = None
         if selected.IsOk():

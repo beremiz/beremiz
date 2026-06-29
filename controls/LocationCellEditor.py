@@ -61,6 +61,7 @@ class LocationCellControl(wx.Control):
         self.VarType = None
         self.Default = False
         self.VariableName = None
+        self.VariableDescription = None
 
     def SetController(self, controller):
         self.Controller = controller
@@ -74,6 +75,7 @@ class LocationCellControl(wx.Control):
     def SetValue(self, value):
         self.Default = value
         self.VariableName = None
+        self.VariableDescription = None
         self.VarType = None
         self.Location.SetValue(value)
 
@@ -82,6 +84,9 @@ class LocationCellControl(wx.Control):
 
     def GetName(self):
         return self.VariableName
+
+    def GetDescription(self):
+        return self.VariableDescription
 
     def OnSize(self, event):
         self.Layout()
@@ -122,6 +127,7 @@ class LocationCellControl(wx.Control):
 
             self.Location.SetValue(location)
             self.VariableName = infos["var_name"]
+            self.VariableDescription = infos["description"]
             self.VarType = infos["IEC_type"]
 
             # when user selected something, end editing immediately
@@ -188,6 +194,9 @@ class LocationCellEditor(wx.grid.GridCellEditor):
             var_type = self.CellControl.GetVarType()
             if var_type is not None:
                 self.Table.SetValueByName(row, 'Type', var_type)
+            description = self.CellControl.GetDescription()
+            if description is not None:
+                self.Table.SetValueByName(row, 'Documentation', description)
 
         self.CellControl.Disable()
         return changed
