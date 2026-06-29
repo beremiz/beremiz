@@ -100,6 +100,23 @@ else:
 ZOOM_FACTORS = [math.sqrt(2) ** x for x in range(-6, MAX_ZOOMIN)]
 
 
+def GetZoomFactors(scaling):
+    """Return the list of (x, y) zoom factors for the given grid scaling.
+
+    When a grid is active, each factor of the base sqrt(2) progression is
+    snapped so the grid spacing maps to a whole number of pixels on each axis;
+    this keeps the tiled grid brush (whose tile size is rounded to whole pixels)
+    aligned with elements at every zoom level. Without a grid (scaling None),
+    the plain progression is used.
+    """
+    if scaling is None:
+        return [(factor, factor) for factor in ZOOM_FACTORS]
+    
+    return [(int(scaling[0] * factor) / scaling[0],
+             int(scaling[1] * factor) / scaling[1])
+            for factor in ZOOM_FACTORS]
+
+
 WX_NO_LOGICAL = "gtk3" in wx.PlatformInfo
 
 def GetVariableCreationFunction(variable_type):
@@ -676,7 +693,6 @@ class Viewer(EditorPanel, DebugViewer):
         self.ResetView()
         self.LastClientSize = None
         self.Scaling = None
-        self.DrawGrid = True
         self.GridBrush = wx.TRANSPARENT_BRUSH
         self.PageSize = None
         self.PagePen = wx.TRANSPARENT_PEN
@@ -803,7 +819,7 @@ class Viewer(EditorPanel, DebugViewer):
             if refresh:
                 dc = self.GetLogicalDC()
             self.CurrentScale = new_scale
-            self.ViewScale = (ZOOM_FACTORS[self.CurrentScale], ZOOM_FACTORS[self.CurrentScale])
+            self.ViewScale = GetZoomFactors(self.Scaling)[self.CurrentScale]
             if refresh:
                 self.Editor.Freeze()
                 if mouse_event is None:
@@ -1123,20 +1139,17 @@ class Viewer(EditorPanel, DebugViewer):
     def RefreshScaling(self, refresh=True):
         properties = self.Controler.GetProjectProperties(self.Debug)
         scaling = properties["scaling"][self.CurrentLanguage]
-        if scaling[0] != 0 and scaling[1] != 0:
+        if scaling[0] * self.ViewScale[0] > 2 and scaling[1] * self.ViewScale[1] > 2:
             self.Scaling = scaling
-            if self.DrawGrid:
-                width = max(2, int(scaling[0] * self.ViewScale[0]))
-                height = max(2, int(scaling[1] * self.ViewScale[1]))
-                bitmap = wx.Bitmap(width, height)
-                dc = wx.MemoryDC(bitmap)
-                dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
-                dc.Clear()
-                dc.SetPen(MiterPen(wx.Colour(180, 180, 180)))
-                dc.DrawPoint(0, 0)
-                self.GridBrush = wx.Brush(bitmap)
-            else:
-                self.GridBrush = wx.TRANSPARENT_BRUSH
+            width = int(scaling[0])
+            height = int(scaling[1])
+            bitmap = wx.Bitmap(width, height)
+            dc = wx.MemoryDC(bitmap)
+            dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
+            dc.Clear()
+            dc.SetPen(MiterPen(wx.Colour(180, 180, 180)))
+            dc.DrawPoint(0, 0)
+            self.GridBrush = wx.Brush(bitmap)
         else:
             self.Scaling = None
             self.GridBrush = wx.TRANSPARENT_BRUSH
@@ -3690,7 +3703,7 @@ class Viewer(EditorPanel, DebugViewer):
         else:
             dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
             dc.Clear()
-        if self.Scaling is not None and self.DrawGrid and not printing:
+        if self.Scaling is not None and not printing:
             dc.SetPen(wx.TRANSPARENT_PEN)
             dc.SetBrush(self.GridBrush)
             xstart, ystart = self.GetViewStart()
