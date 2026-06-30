@@ -100,8 +100,8 @@ else:
 ZOOM_FACTORS = [math.sqrt(2) ** x for x in range(-6, MAX_ZOOMIN)]
 
 
-def GetZoomFactors(scaling):
-    """Return the list of (x, y) zoom factors for the given grid scaling.
+def GetZoomFactor(scaling, level):
+    """Return the (x, y) zoom factors for the given grid scaling and zoom level.
 
     When a grid is active, each factor of the base sqrt(2) progression is
     snapped so the grid spacing maps to a whole number of pixels on each axis;
@@ -109,12 +109,13 @@ def GetZoomFactors(scaling):
     aligned with elements at every zoom level. Without a grid (scaling None),
     the plain progression is used.
     """
-    if scaling is None:
-        return [(factor, factor) for factor in ZOOM_FACTORS]
+    factor = ZOOM_FACTORS[level]
     
-    return [(int(scaling[0] * factor) / scaling[0],
-             int(scaling[1] * factor) / scaling[1])
-            for factor in ZOOM_FACTORS]
+    # adjust only on zoom greater than 100% when no grid is displayed
+    if scaling is not None and factor > 1:
+        factor = max(int(scaling[0] * factor) / scaling[0],
+                     int(scaling[1] * factor) / scaling[1])
+    return (factor, factor)
 
 
 WX_NO_LOGICAL = "gtk3" in wx.PlatformInfo
@@ -693,7 +694,7 @@ class Viewer(EditorPanel, DebugViewer):
         self.ResetView()
         self.LastClientSize = None
         self.Scaling = None
-        self.GridBrush = wx.TRANSPARENT_BRUSH
+        self.GridBrush = None
         self.PageSize = None
         self.PagePen = wx.TRANSPARENT_PEN
         self.DrawingWire = False
@@ -819,7 +820,7 @@ class Viewer(EditorPanel, DebugViewer):
             if refresh:
                 dc = self.GetLogicalDC()
             self.CurrentScale = new_scale
-            self.ViewScale = GetZoomFactors(self.Scaling)[self.CurrentScale]
+            self.ViewScale = GetZoomFactor(self.Scaling, new_scale)
             if refresh:
                 self.Editor.Freeze()
                 if mouse_event is None:
@@ -1139,8 +1140,11 @@ class Viewer(EditorPanel, DebugViewer):
     def RefreshScaling(self, refresh=True):
         properties = self.Controler.GetProjectProperties(self.Debug)
         scaling = properties["scaling"][self.CurrentLanguage]
-        if scaling[0] * self.ViewScale[0] > 2 and scaling[1] * self.ViewScale[1] > 2:
-            self.Scaling = scaling
+        self.Scaling = scaling if scaling[0]>0 and scaling[1]>0 else None
+        # filling rectangle with downscaled brush seems to be 
+        # extremely CPU hungry (at least on gtk)
+        # so we don't display grid on zoom smaller than 100%
+        if self.Scaling and self.ViewScale[0] >= 1 and self.ViewScale[1] >= 1:
             width = int(scaling[0])
             height = int(scaling[1])
             bitmap = wx.Bitmap(width, height)
@@ -1151,8 +1155,7 @@ class Viewer(EditorPanel, DebugViewer):
             dc.DrawPoint(0, 0)
             self.GridBrush = wx.Brush(bitmap)
         else:
-            self.Scaling = None
-            self.GridBrush = wx.TRANSPARENT_BRUSH
+            self.GridBrush = None
         page_size = properties["pageSize"]
         if page_size != (0, 0):
             self.PageSize = list(map(int, page_size))
@@ -3703,7 +3706,7 @@ class Viewer(EditorPanel, DebugViewer):
         else:
             dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
             dc.Clear()
-        if self.Scaling is not None and not printing:
+        if self.GridBrush is not None and not printing:
             dc.SetPen(wx.TRANSPARENT_PEN)
             dc.SetBrush(self.GridBrush)
             xstart, ystart = self.GetViewStart()
