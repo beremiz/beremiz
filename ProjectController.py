@@ -1642,9 +1642,14 @@ class ProjectController(ConfigTreeNode, PLCControler):
         self.UpdateButtons()
 
     def _UpdateButtons(self):
-        self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
-        self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
+        # Filesystem-driven buttons: availability depends on build artefacts,
+        # not on PLC connection state, so they must be refreshed independently.
+        changed = self.EnableMethod("_Clean", os.path.exists(self._getBuildPath()))
+        changed |= self.ShowMethod("_showIECcode", os.path.isfile(self._getIECcodepath()))
+        # Connection-driven buttons refresh themselves on state change.
         self.UpdateMethodsFromPLCStatus()
+        if changed and self.AppFrame is not None:
+            self.AppFrame.RefreshStatusToolBar()
 
     def UpdateButtons(self):
         wx.CallAfter(self._UpdateButtons)
@@ -1710,11 +1715,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
             allmethods = self.DefaultMethods.copy()
             allmethods.update(
                 self.MethodsFromStatus.get(status, {}))
+            changed = False
             for method, active in list(allmethods.items()):
-                self.ShowMethod(method, active)
+                changed |= self.ShowMethod(method, active)
             self.previous_plcstate = status
             if self.AppFrame is not None:
-                self.AppFrame.RefreshStatusToolBar()
+                if changed:
+                    self.AppFrame.RefreshStatusToolBar()
                 texts = [_(PlcStatus.Disconnected), ''] \
                         if status == PlcStatus.Disconnected or self._connector is None else \
                         [_("Connected to URI: %s") % self.BeremizRoot.getURI_location().strip(), _(status)]
@@ -2310,17 +2317,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
     ]
 
     def EnableMethod(self, method, value):
+        """Set a method's 'enabled' flag. Returns True if the value changed."""
         for d in self.StatusMethods:
             if d["method"] == method:
+                changed = d.get("enabled", True) != value
                 d["enabled"] = value
-                return True
+                return changed
         return False
 
     def ShowMethod(self, method, value):
+        """Set a method's 'shown' flag. Returns True if the value changed."""
         for d in self.StatusMethods:
             if d["method"] == method:
+                changed = d.get("shown", True) != value
                 d["shown"] = value
-                return True
+                return changed
         return False
 
     def CallMethod(self, method):
