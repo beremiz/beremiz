@@ -947,7 +947,7 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def RefreshAfterLoad(self):
         self._Refresh(PROJECTTREE, POUINSTANCEVARIABLESPANEL, LIBRARYTREE)
-        if self.CTR is not None:
+        if self.CTR is not None and not self.devmode:
             view = self.CTR._OpenView()
             if view is not None:
                 view.ShowProjectProperties()

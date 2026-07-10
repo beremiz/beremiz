@@ -58,18 +58,39 @@ def test(app):
     # Focus on Variable grid
     app.type(Key.TAB*4)
     
-    # Add 2 variables
-    app.type(Key.ADD*2)
+    # Add 1 variables
+    app.type(Key.ADD)
+
+    app.click("DINT")
+    app.type(Key.SPACE)
+    
+    app.click("Base Types")
+    
+    app.click("BOOL")
+
+    # Duplicate this variable
+    app.type(Key.ADD, Key.CTRL)
+
+    # 3rd veriable ia a logger FB
+    app.type(Key.ADD)
+
+    app.click("DINT")
+    app.type(Key.SPACE)
+    
+    app.click("Function Block Types")
+    
+    app.click("LOGGER")
     
     # Focus on ST text
     app.WaitIdleUI()
     
-    app.type(Key.TAB*8)
+    app.type(Key.TAB*6)
     
     app.type("""\
-    LocalVar0 := LocalVar1;
-    {printf("Test OK\\n");fflush(stdout);}
-    """)
+LocalVar0 := NOT(LocalVar1);
+LocalVar2(TRIG := LocalVar1, MSG := 'Test OK', LEVEL := LOGLEVEL#INFO);
+LocalVar1 := LocalVar0;
+""")
     
     app.k.Save()
     

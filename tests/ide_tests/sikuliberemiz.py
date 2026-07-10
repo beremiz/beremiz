@@ -234,7 +234,7 @@ class BeremizApp(IDEIdleObserver, stdoutIdleObserver):
   <body>
 """)
 
-        command = ["setsid", python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout"]
+        command = ["setsid", python_bin, opj(beremiz_path,"Beremiz.py"), "--log=/dev/stdout", "--devmode"]
 
         if exemple is not None:
             command.append(opj(beremiz_path,"exemples",exemple))
