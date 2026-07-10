@@ -66,6 +66,7 @@ from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
 from runtime.typemapping import DebugTypesSize, UnpackDebugBuffer, ValueToIECBytes
 from runtime import PlcStatus
+from runtime.loglevels import LogLevelsCount, LogLevels
 from ConfigTreeNode import ConfigTreeNode, XSDSchemaErrorMessage
 from POULibrary import UserAddressedException
 
@@ -1672,6 +1673,30 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if log_count:
             if self.AppFrame is not None:
                 self.AppFrame.LogViewer.SetLogCounters(log_count)
+            logf = getattr(self.logger, 'logf', None) if self.logger else None
+            if logf is not None and self._connector is not None:
+                new_messages = []
+                for level, count, prev in zip(
+                    range(LogLevelsCount), log_count, self.previous_log_count):
+                    if count is not None and prev != count:
+                        if prev is None:
+                            dump_end = max(-1, count - 10)
+                        else:
+                            dump_end = prev - 1
+                        for msgidx in range(count-1, dump_end, -1):
+                            message = self._connector.GetLogMessage(level, msgidx)
+                            if message is not None:
+                                msg, _tick, tv_sec, tv_nsec = message
+                                date = datetime.fromtimestamp(tv_sec + tv_nsec * 1e-9, tz=timezone.utc)
+                                txt = "%s : %s[%s]\n" % (date.isoformat(' '), LogLevels[level], msg)
+                                new_messages.append((date, txt))
+                            else:
+                                break
+                    self.previous_log_count[level] = count
+                new_messages.sort()
+                for _date, txt in new_messages:
+                    logf.write(txt)
+                    logf.flush()
 
     DefaultMethods = {
         "_Run": False,
@@ -2031,6 +2056,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
     def _SetConnector(self, connector, update_status=True):
         self._connector = connector
+        self.previous_log_count = [None]*LogLevelsCount
         if self.AppFrame is not None:
             self.AppFrame.LogViewer.SetLogSource(connector)
         if connector is not None:
@@ -2210,6 +2236,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
                         self.AppFrame.CloseObsoleteDebugTabs()
                         self.AppFrame.RefreshPouInstanceVariablesPanel()
                         self.AppFrame.LogViewer.ResetLogCounters()
+                    self.previous_log_count = [None]*LogLevelsCount
                     self.logger.write(_("PLC installed successfully.\n"))
                     success = True
                 else:
