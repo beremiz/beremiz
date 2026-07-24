@@ -93,7 +93,7 @@ RUN python3 -m venv --system-site-packages ~/beremizenv
 
 # beremiz python requirements
 # file is placed here by build_docker_image.sh
-COPY requirements.txt /home/$UNAME
+COPY requirements_pinned.txt /home/$UNAME
 RUN ~/beremizenv/bin/pip install --upgrade --no-deps -r /home/$UNAME/requirements_pinned.txt
 
 # tests specific python requirements : pytest pytest-timeout ddt crossbar

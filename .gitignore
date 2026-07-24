@@ -6,7 +6,7 @@
 **/.svghmithumbs/**
 **/my_*.der
 **/my_*.pem
-tests/tools/Docker/requirements.txt
+tests/tools/Docker/requirements_pinned.txt
 **/management.json
 **/.secret
 
