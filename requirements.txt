@@ -2,7 +2,7 @@ asyncua @ git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d17165335
 autobahn @ git+https://github.com/crossbario/autobahn-python.git@7bc85b34e200640ab98a41cfddb38267f39bc92e
 Brotli
 click
-erpc @ git+https://git@github.com/beremiz/erpc.git@d8fff72b15274b5f2a8f7895d9bc5c91eef584ec#subdirectory=erpc_python
+erpc @ git+https://git@github.com/beremiz/erpc.git@ac8021af075729b036ead26bd500f62529fe4e04#subdirectory=erpc_python
 # gattrdict
 lxml
 matplotlib

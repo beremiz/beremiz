@@ -38,7 +38,7 @@ cryptography==48.0.0
     #   service-identity
 cycler==0.12.1
     # via matplotlib
-erpc @ git+https://git@github.com/beremiz/erpc.git@d8fff72b15274b5f2a8f7895d9bc5c91eef584ec#subdirectory=erpc_python
+erpc @ git+https://git@github.com/beremiz/erpc.git@ac8021af075729b036ead26bd500f62529fe4e04#subdirectory=erpc_python
     # via -r requirements.txt
 fonttools==4.63.0
     # via matplotlib
