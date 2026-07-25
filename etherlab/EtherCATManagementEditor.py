@@ -582,6 +582,7 @@ class SDOPanelClass(wx.Panel):
         Thread(target=self._SDOUpdateWorker, daemon=True).start()
         
     def _SDOUpdateWorker(self):
+#        print("******** ENTRO A _SDOUpdateWorker ********")
         try:
             alias = self.Controler.GetSlavePos()
             SlavePos = self.Controler.CommonMethod.AliasToPosition(alias)
@@ -934,7 +935,14 @@ class SDOPanelClass(wx.Panel):
             return False
 
         # SOLO SI TODO ESTA BIEN:
+#        print("================================")
+#        print("SDOMonitorEntries =", self.SDOMonitorEntries)
+#        print("TIPO =", type(self.SDOMonitorEntries))
+#        print("LEN =", len(self.SDOMonitorEntries))
+#        print("================================")
+        
         self.SetSDOTraceValues(self.SDOMonitorEntries)
+#        print("LLAMANDO GetSDOData")
         ctr._connector.ExtendedCall(
             "GetSDOData",
             bytes()
@@ -1020,7 +1028,13 @@ class SDOPanelClass(wx.Panel):
                     continue
 
                 # Obtener datos
-                data = connector.GetSDOData()
+#                data = connector.GetSDOData()
+                answer = connector.ExtendedCall(
+                    "GetSDOData",
+                    pickle.dumps(None)
+                )
+
+                data = pickle.loads(answer)
 
                 if not data:
                     time.sleep(0.5)
@@ -1098,8 +1112,15 @@ class SDOPanelClass(wx.Panel):
         idx = self.SDOMonitorGrid.GetCellValue(row, 0)
         subIdx = self.SDOMonitorGrid.GetCellValue(row, 1)
         
+#        print("DOUBLE CLICK:")
+#        print("idx =", idx)
+#        print("subIdx =", subIdx)
+#        print("KEYS =", list(self.SDOMonitorEntries.keys()))
+        
 #        del self.SDOMonitorEntries[(idx, subIdx)]
-        del self.SDOMonitorEntries[(idx, subIdx), None]
+#        del self.SDOMonitorEntries[(idx, subIdx), None]
+        if (idx, subIdx) in self.SDOMonitorEntries:
+            del self.SDOMonitorEntries[(idx, subIdx)]
         self.SDOMonitorGrid.DeleteRows(row, 1)
         # add jblee
         self.SetSDOTraceValues(self.SDOMonitorEntries)
@@ -1351,6 +1372,12 @@ class SlaveSDOTable(wx.grid.Grid):
         if user enter data, perform command "ethercat download"  
         @param event : gridlib.EVT_GRID_CELL_LEFT_DCLICK object
         """
+#        print("################################")
+#        print("ENTRO A onGridDoubleClick")
+#        print("ROW =", event.GetRow())
+#        print("COL =", event.GetCol())
+#        print("################################")
+        
         self.ClearStateFlag()
         
         # CheckSDODataAccess is checking that OD(Object Dictionary) has "w" 
@@ -1381,8 +1408,19 @@ class SlaveSDOTable(wx.grid.Grid):
                                               "subIdx" : self.SDOs[event.GetRow()]["subIdx"],
                                               "size" : self.SDOs[event.GetRow()]["size"]
                                              }
-                            data = self.Controler.GetCTRoot()._connector.GetSDOEntryData(
-                                SDOUploadEntry, self.Controler.GetSlavePos())
+#                            data = self.Controler.GetCTRoot()._connector.GetSDOEntryData(
+#                                SDOUploadEntry, self.Controler.GetSlavePos())
+                            payload = pickle.dumps(
+                                (SDOUploadEntry, self.Controler.GetSlavePos())
+                            )
+
+                            data = self.Controler.GetCTRoot()._connector.ExtendedCall(
+                                "GetSDOEntryData",
+                                payload
+                            )
+                            
+                            data = pickle.loads(data)
+
                             hex_val = hex(data)[:-1]                           
 
                             # download data check
@@ -1402,11 +1440,15 @@ class SlaveSDOTable(wx.grid.Grid):
                         self.Controler.CommonMethod.CreateErrorDialog(\
                                             'You can input only hex, dec value')    
         else:
+            print("******** DOBLE CLICK SDO ********")
             SDOPanel = self.parent.parent
             row = event.GetRow() 
             
             idx = self.SDOs[row]["idx"]
             subIdx = self.SDOs[row]["subIdx"]
+            print("IDX =", idx)
+            print("SUBIDX =", subIdx)
+
             SDOPanel.SDOMonitorEntries[(idx, subIdx)] = {
                                                 "access": self.SDOs[row]["access"],
                                                 "type": self.SDOs[row]["type"],
@@ -1414,6 +1456,15 @@ class SlaveSDOTable(wx.grid.Grid):
                                                 "name": self.SDOs[row]["name"],
                                                 # add jblee
                                                 "value": ""}
+            
+            print("DICT DESPUES =", SDOPanel.SDOMonitorEntries)
+            print("================================")
+            print("AGREGANDO SDO AL MONITOR")
+            print("IDX =", idx)
+            print("SUBIDX =", subIdx)
+            print("DICT =", SDOPanel.SDOMonitorEntries)
+            print("LEN =", len(SDOPanel.SDOMonitorEntries))
+            print("================================")
             
             del_rows = SDOPanel.SDOMonitorGrid.GetNumberRows()
             

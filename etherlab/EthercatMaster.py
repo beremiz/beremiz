@@ -662,7 +662,7 @@ class _EthercatCTN(object):
             slave_infos = slave.getInfo()
             slave_infos.setName("undefined")
             slave_infos.setPhysAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
-            slave_infos.setAutoIncAddr(0)
+            slave_infos.setAutoIncAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
             self.BufferModel()
             self.OnCTNSave()
 
