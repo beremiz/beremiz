@@ -24,7 +24,6 @@
 
 
 from functools import cmp_to_key
-from operator import eq
 import wx
 
 from graphics.GraphicCommons import *
@@ -1241,8 +1240,8 @@ class SFC_Divergence(Graphic_Element):
             for output in self.Outputs:
                 output_pos = output.GetRelPosition()
                 output.SetPosition(wx.Point(output_pos.x - minx, output_pos.y))
-        self.Inputs.sort(key=cmp_to_key(lambda x, y: eq(x.Pos.y, y.Pos.y)))
-        self.Outputs.sort(key=cmp_to_key(lambda x, y: eq(x.Pos.y, y.Pos.y)))
+        self.Inputs.sort(key=cmp_to_key(lambda x, y: (x.Pos.x > y.Pos.x) - (x.Pos.x < y.Pos.x)))
+        self.Outputs.sort(key=cmp_to_key(lambda x, y: (x.Pos.x > y.Pos.x) - (x.Pos.x < y.Pos.x)))
         self.Pos.x += minx
         self.Size[0] = maxx - minx
         connector.MoveConnected()
