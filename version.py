@@ -189,7 +189,7 @@ def GetAboutDialogInfo(info):
     return info
 
 
-app_version = "1.5"
+app_version = "1.5.1"
 
 if __name__ == "__main__":
     print(app_version)
