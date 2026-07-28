@@ -13,6 +13,9 @@ See COPYING file for copyrights details.
 */
 
 #include "iec_types_all.h"
+#include <stddef.h> // Para ethercat
+#include <stdint.h> // Para ethercat
+#include <stdio.h>  // Para ethercat
 
 #define FREE 0
 #define ACQUIRED 1

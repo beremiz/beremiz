@@ -130,15 +130,12 @@ if cls:
 
     # Modify by jblee
     def ExtractDataTypes(self):
-        #self.DataTypes = {}
-        #self.DT = {}
         DT = {}
         objects = []
 
         # get Profile Field
-        for profile in self.getProfile():
-            # get each (ProfileNo, Dictionary) Field as child
-            for child in profile.getchildren():
+        for profile in self.getProfile():    
+            for child in list(profile):
                 # child.text is not None -> ProfileNo, is None -> Dictionary
                 if child.text is None:
                     # get each (DataTypes, Objects) Field 
@@ -175,7 +172,15 @@ if cls:
                 object_PDOMapping_data = ""
 
                 object_type_infos = DataTypes.get(object_type, None)
-                subItem_infos = object_type_infos.getchildren()
+                if object_type_infos is None:
+                    subItem_infos = []
+                else:
+                    get_subitem = getattr(object_type_infos, "getSubItem", None)
+                    if callable(get_subitem):
+                        subItem_infos = get_subitem() or []
+                    else:
+                        subItem_infos = []
+
                 countSubIndex = 0
                 if len(subItem_infos) > 2:
                     for subItem_info in subItem_infos:
@@ -193,7 +198,7 @@ if cls:
                             subPDOMapping_data = ""
                             if subFlags is not None:
                                 subAccess = subFlags.getAccess().getcontent()
-                                subPDOMapping = subFlags.getPdoMapping()                                                        
+                                subPDOMapping = subFlags.getPdoMapping()               
                                 if subPDOMapping is not None:
                                     subPDOMapping_data = subFlags.getPdoMapping().upper()
 
@@ -201,8 +206,8 @@ if cls:
                                 "Index": object_index,
                                 "SubIndex": subIdx,
                                 "Name": "%s - %s" % 
-                                    (object_name.decode("utf-8"),
-                                     subItemName.decode("utf-8")),
+                                    (object_name,
+                                     subItemName),
                                 "Type": subType,
                                 "BitSize": subBitSize,
                                 "Access": subAccess, 
@@ -214,11 +219,14 @@ if cls:
                     # subItemTest : check subItem 
                     countSubIndex = 0
                     if info is not None:
-                        subItems = info.getchildren()
+                        subItems = list(info)
                         if len(subItems) > 1:
                             for subItem in subItems:
                                 defaultdata_subidx = ExtractHexDecValue(countSubIndex)
-                                defaultData = subItem.getchildren()[1].findtext("DefaultData")
+                                children = list(subItem)
+                                if len(children) > 1:
+                                    defaultData = children[1].findtext("DefaultData")
+
                                 entry = entries.get((index, defaultdata_subidx), None)
                                 if entry is not None:
                                     entry["DefaultData"] = defaultData
@@ -227,15 +235,24 @@ if cls:
                 else :
                     info = object.getInfo()
                     if info is not None:
-                        subItems = info.getchildren()
+                        subItems = list(info)
                         if len(subItems) <= 1:
                             defaultData = subItems[0].text
                                 
                     object_flag = object.getFlags()
-                    object_access = object_flag.getAccess().getcontent()
-                    object_PDOMapping = object_flag.getPdoMapping()
-                    if object_PDOMapping is not None:
-                        object_PDOMapping_data = object_flag.getPdoMapping().upper()
+                    if object_flag is not None:
+                        access_obj = object_flag.getAccess()
+                        object_access = access_obj.getcontent() if access_obj is not None else ""
+
+                        object_PDOMapping = object_flag.getPdoMapping()
+                        if object_PDOMapping is not None:
+                            object_PDOMapping_data = object_PDOMapping.upper()
+                        else:
+                            object_PDOMapping_data = ""
+                    else:
+                        object_access = ""
+                        object_PDOMapping_data = ""
+
                     entries[(index, 0)] = {
                         "Index": object_index,
                         "SubIndex": "0",
@@ -253,25 +270,6 @@ if cls:
         
         return entries
     setattr(cls, "GetEntriesList", GetEntriesList)
-
-#    def GetEntriesList(self, limits=None):
-#        entries = {}
-        
-#        factory = EntryListFactory(entries)
-        
-#        entries_list_xslt_tree = etree.XSLT(
-#            entries_list_xslt, extensions = {
-#                ("entries_list_ns", "AddEntry"): factory.AddEntry,
-#                ("entries_list_ns", "HexDecValue"): HexDecValue,
-#                ("entries_list_ns", "EntryName"): EntryName})
-#        entries_list_xslt_tree(self, **dict(zip(
-#            ["min_index", "max_index"], 
-#            map(lambda x: etree.XSLT.strparam(str(x)),
-#                limits if limits is not None else [0x0000, 0xFFFF])
-#            )))
-#        
-#        return entries
-#    setattr(cls, "GetEntriesList", GetEntriesList)
 
     def GetSyncManagers(self):
         sync_managers = []
@@ -439,8 +437,10 @@ for mapping needed location variables
                     for group in self.groups_xpath(self.modules_infos):
                         group_type = group.getType()
                         # add for XmlToEeprom Func by jblee.
-                        self.LcId_data = group.getchildren()[1]
-                        self.Image16x14_data = group.getchildren()[2]
+                        children = list(group)
+                        if len(children) > 2:
+                            self.LcId_data = children[1]
+                            self.Image16x14_data = children[2]
 
                         vendor_category["groups"].setdefault(
                             group_type,
@@ -465,7 +465,7 @@ for mapping needed location variables
                             for slot in slots.getSlot():
                                 self.idxIncrement = slot.getSlotIndexIncrement()
                                 self.slotIncrement = slot.getSlotPdoIncrement()
-                                for child in slot.getchildren():
+                                for child in lis(slot):
                                     if child.tag == "ModuleClass":
                                         child_class = child.getClass()
                                         child_name = child.getName()
@@ -520,14 +520,6 @@ for mapping needed location variables
                         if LocalMDPList:
                             vendor_category["groups"][device_group]["modules"].append(
                                 (device.getType().getcontent(), LocalMDPList, self.idxIncrement, self.slotIncrement))
-                            #self.MDPList.append([device.getType().getcontent(), LocalMDPList,
-                            #                     self.idxIncrement, self.slotIncrement])
-
-                    # --------------------------------------------------------------------- #
-
-                # else:
-                #     self.GetCTRoot().logger.write_error(
-                #         _("Couldn't load {a1} XML file:\n{a2}").format(a1=filepath, a2=error))
 
         return self.Library
 
@@ -641,7 +633,7 @@ for mapping needed location variables
 
         csvfile_path = self.GetModulesExtraParamsFilePath()
         if os.path.exists(csvfile_path):
-            csvfile = open(csvfile_path, "rb")
+            csvfile = open(csvfile_path, "r", newline='')
             sample = csvfile.read(1024)
             csvfile.seek(0)
             dialect = csv.Sniffer().sniff(sample)

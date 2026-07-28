@@ -51,7 +51,6 @@ struct log_message {
     uint32 nsec;
 };
 
-
 interface BeremizPLCObjectService {
     AppendChunkToBlob(in binary data, in binary blobID, out binary newBlobID) -> uint32
     GetLogMessage(in uint8 level, in uint32 msgID, out log_message message) -> uint32

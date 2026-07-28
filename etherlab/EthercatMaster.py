@@ -36,39 +36,118 @@ from etherlab.EthercatSlave import \
     VARCLASSCONVERSION, \
     _CommonSlave
 
+from functools import cmp_to_key
 try:
     from etherlab.EthercatCIA402Slave import _EthercatCIA402SlaveCTN
     HAS_MCL = True
 except Exception as e:
+    print("CIA402 import error", e)
     HAS_MCL = False
+
+from erpc_interface.erpc_PLCObject.client import BeremizPLCObjectServiceClient
 
 # --------------------------------------------------
 #         Remote Exec Etherlab Commands
 # --------------------------------------------------
 
 SCAN_COMMAND = """
-import commands
-result = commands.getoutput("ethercat slaves")
+import subprocess
+
+def safe_run(cmd):
+    try:
+        return subprocess.check_output(
+            cmd,
+            text=True,
+            stderr=subprocess.STDOUT
+        )
+    except Exception as e:
+        print("EtherCAT error:", e)
+        return ""
+
+# -------------------------------
+# Obtener lista de slaves
+# -------------------------------
+result = safe_run(["ethercat", "slaves"])
+#print("RESULT RAW:", repr(result))
+
 slaves = []
+
 for slave_line in result.splitlines():
-    chunks = slave_line.split()
-    idx, pos, state, flag = chunks[:4]
-    name = " ".join(chunks[4:])
-    alias, position = pos.split(":")
-    slave = {"idx": int(idx),
-             "alias": int(alias),
-             "position": int(position),
-             "name": name}
-    details = commands.getoutput("ethercat slaves -p %d -v" % slave["idx"])
-    for details_line in details.splitlines():
-        details_line = details_line.strip()
-        for header, param in [("Vendor Id:", "vendor_id"),
-                              ("Product code:", "product_code"),
-                              ("Revision number:", "revision_number")]:
-            if details_line.startswith(header):
-                slave[param] = details_line.split()[-1]
-                break
-    slaves.append(slave)
+
+    if not slave_line.strip():
+        continue
+
+    chunks = slave_line.strip().split()
+
+    # Validación mínima
+    if len(chunks) < 5:
+        continue
+
+    try:
+        idx = int(chunks[0])
+        pos = chunks[1]
+        state = chunks[2]
+        flag = chunks[3]
+        name = " ".join(chunks[4:])
+
+        # validar formato alias:position
+        if ":" not in pos:
+            continue
+
+        parts = pos.split(":")
+        if len(parts) != 2:
+            continue
+
+        alias = int(parts[0])
+        position = int(parts[1])
+
+        # Inicializar con valores seguros
+        slave = {
+            "idx": idx,
+            "alias": alias,
+            "position": position,
+            "state": state,
+            "flag": flag,
+            "name": name,
+            "vendor_id": None,
+            "product_code": None,
+            "revision_number": None
+        }
+
+        # -------------------------------
+        # Obtener detalles extendidos
+        # -------------------------------
+        details = safe_run(["ethercat", "slaves", "-p", str(idx), "-v"])
+
+        for line in details.splitlines():
+            line = line.strip()
+
+            if "Vendor Id:" in line:
+                slave["vendor_id"] = line.split("Vendor Id:")[-1].strip()
+
+            elif "Product code:" in line:
+                slave["product_code"] = line.split("Product code:")[-1].strip()
+
+            elif "Revision number:" in line:
+                slave["revision_number"] = line.split("Revision number:")[-1].strip()
+
+        # -------------------------------
+        # Validación fuerte
+        # -------------------------------
+#        if not slave["vendor_id"] or not slave["product_code"]:
+#            print("WARNING: Datos incompletos del slave:", slave)
+#        else:
+#            print("✔ Slave completo:", slave)
+
+        slaves.append(slave)
+
+    except Exception as e:
+        print("Parse error:", slave_line, e)
+        continue
+
+# -------------------------------
+# Resultado final
+# -------------------------------
 returnVal = slaves
 """
 
@@ -96,7 +175,8 @@ class EtherlabLibrary(POULibrary):
         ethelabfile.close()
 
         return ((["etherlab_ext"], [(Gen_etherlabfile_path, IECCFLAGS)], True), "",
-                ("runtime_etherlab.py", open(GetLocalPath("runtime_etherlab.py"))))
+                ("runtime_etherlab.py", open(GetLocalPath("runtime_etherlab.py"), "rb")))
+#                ("runtime_etherlab.py", open(GetLocalPath("runtime_etherlab.py"))))
 
                 # TODO : rename to match runtime_{location}_extname.py format
 
@@ -111,8 +191,8 @@ EtherCATConfigParser = GenerateParserFromXSD(os.path.join(os.path.dirname(__file
 def sort_commands(x, y):
     if x["Index"] == y["Index"]:
         return cmp(x["Subindex"], y["Subindex"])
-    return cmp(x["Index"], y["Index"])
-
+#    return cmp(x["Index"], y["Index"])
+    return (x["Index"] > y["Index"]) - (x["Index"] < y["Index"])
 
 cls = EtherCATConfigParser.GetElementClass("Slave", "Config")
 if cls:
@@ -246,23 +326,28 @@ class _EthercatCTN(object):
         config_filepath = self.ConfigFileName()
         config_is_saved = False
         self.Config = None
-        # if os.path.isfile(config_filepath):
-        #     config_xmlfile = open(config_filepath, 'r')
-        #     try:
-        #         self.Config, error = \
-        #             EtherCATConfigParser.LoadXMLString(config_xmlfile.read())
-        #         if error is None:
-        #             config_is_saved = True
-        #     except Exception as e:
-        #         error = str(e)
-        #     config_xmlfile.close()
-
-        #     if error is not None:
-        #         self.GetCTRoot().logger.write_error(
-        #             _("Couldn't load %s network configuration file.") % self.CTNName())
-
         if self.Config is None:
             self.Config = EtherCATConfigParser.CreateElement("EtherCATConfig")
+            # inicializar Master
+            config = self.Config.getConfig()
+
+            if config.getMaster() is None:
+                master = EtherCATConfigParser.CreateElement("Master", "Config")
+                config.appendMaster(master)
+            else:
+                master = config.getMaster()
+
+            if master.getInfo() is None:
+                master.addInfo()
+
+            info = master.getInfo()
+
+            # USAR ENTEROS, NO STRINGS
+            info.setSource(0x10)
+            info.setDestination(0x10)
+
+            if not info.getName():
+                info.setName("Master0")
 
         process_filepath = self.ProcessVariablesFileName()
         process_is_saved = False
@@ -291,7 +376,7 @@ class _EthercatCTN(object):
         else:
             self.CreateBuffer(False)
             self.OnCTNSave()
-
+        
         if os.path.isfile(config_filepath):
             config_xmlfile = open(config_filepath, 'r')
             try:
@@ -300,12 +385,12 @@ class _EthercatCTN(object):
                 if error is None:
                     config_is_saved = True
             except Exception as e:
-                error = e.message
+                error = str(e)
             config_xmlfile.close()
             
             if error is not None:
                 self.GetCTRoot().logger.write_error(
-                    _("Couldn't load %s network configuration file.") % CTNName)
+                    _("Couldn't load %s network configuration file.") % self.CTNName())
 
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
@@ -316,6 +401,20 @@ class _EthercatCTN(object):
     def GetContextualMenuItems(self):
         return [(_("Add Ethercat Slave"), _("Add Ethercat Slave to Master"), self.OnAddEthercatSlave)]
 
+#    # Función segura para imprimir nodos y asegurar 'doc'
+    def ensure_doc_recursive(self, node_list, depth=0):
+        if not node_list:
+            return
+        for i, node in enumerate(node_list):
+            if isinstance(node, dict):
+                print("  " * depth + f"Dict node keys: {list(node.keys())}")
+                if "doc" not in node:
+                    node["doc"] = None
+            else:
+                print("  " * depth + f"Node type: {type(node)} (no dict) -> {repr(node)}")
+            if isinstance(node, dict) and "children" in node and isinstance(node["children"], list):
+                self.ensure_doc_recursive(node["children"], depth+1)
+
     def OnAddEthercatSlave(self, event):
         app_frame = self.GetCTRoot().AppFrame
         dialog = BrowseValuesLibraryDialog(app_frame,
@@ -323,19 +422,23 @@ class _EthercatCTN(object):
                                            self.GetSlaveTypesLibrary())
         if dialog.ShowModal() == wx.ID_OK:
             type_infos = dialog.GetValueInfos()
-            device, _module_extra_params = self.GetModuleInfos(type_infos)
+            device, _module_extra_params = self.GetModuleInfos(type_infos)             
             if device is not None:
                 if HAS_MCL and str(_EthercatCIA402SlaveCTN.NODE_PROFILE) in device.GetProfileNumbers():
                     ConfNodeType = "EthercatCIA402Slave"
                 else:
                     ConfNodeType = "EthercatSlave"
                 new_child = self.CTNAddChild("%s_0" % ConfNodeType, ConfNodeType)
-                new_child.SetParamsAttribute("SlaveParams.Type", type_infos)
+                new_child.SetParamsAttribute("EthercatSlaveParams.Type", type_infos)
                 self.CTNRequestSave()
+                self.ensure_doc_recursive(getattr(new_child, "ConfNodeParams", []))
                 new_child._OpenView()
+                self.ensure_doc_recursive(getattr(new_child, "ConfNodeParams", []))
+                
+
                 app_frame._Refresh(TITLE, FILEMENU, PROJECTTREE)
         dialog.Destroy()
-
+            
     def ExtractHexDecValue(self, value):
         return ExtractHexDecValue(value)
 
@@ -464,48 +567,85 @@ class _EthercatCTN(object):
             idx += 1
         return variables
 
+    def GetTreeItemByIEC(self, tree, iec):
+        root = tree.GetRootItem()
+        master_item = None
+        item, cookie = tree.GetFirstChild(root)
+
+        while item and item.IsOk():
+            text = tree.GetItemText(item)
+
+            if "etherlab" in text.lower():
+                master_item = item
+                break
+
+            item = tree.GetNextSibling(item)
+
+        if not master_item:
+            return None
+
+        node_item, cookie = tree.GetFirstChild(master_item)
+
+        if not node_item or not node_item.IsOk():
+            return None
+
+        item, cookie = tree.GetFirstChild(node_item)
+
+        i = 0
+        while item and item.IsOk():
+            text = tree.GetItemText(item)
+
+            if i == iec:
+                return item
+
+            item = tree.GetNextSibling(item)
+            i += 1
+
+        return None
+
+
     def _ScanNetwork(self):
         app_frame = self.GetCTRoot().AppFrame
 
-        execute = True
-        if len(self.Children) > 0:
-            dialog = wx.MessageDialog(
-                app_frame,
-                _("The current network configuration will be deleted.\nDo you want to continue?"),
-                _("Scan Network"),
-                wx.YES_NO | wx.ICON_QUESTION)
-            execute = dialog.ShowModal() == wx.ID_YES
-            dialog.Destroy()
+        error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
 
-        if execute:
-            error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
-            if error != 0:
-                dialog = wx.MessageDialog(app_frame, returnVal, _("Error"), wx.OK | wx.ICON_ERROR)
-                dialog.ShowModal()
-                dialog.Destroy()
-            elif returnVal is not None:
-                for child in self.IECSortedChildren():
-                    self._doRemoveChild(child)
+        if error != 0 or not returnVal:
+            return
 
-                for slave in returnVal:
-                    type_infos = {
-                        "vendor": slave["vendor_id"],
-                        "product_code": slave["product_code"],
-                        "revision_number": slave["revision_number"],
-                    }
-                    device, _module_extra_params = self.GetModuleInfos(type_infos)
-                    if device is not None:
-                        if HAS_MCL and _EthercatCIA402SlaveCTN.NODE_PROFILE in device.GetProfileNumbers():
-                            CTNType = "EthercatCIA402Slave"
-                        else:
-                            CTNType = "EthercatSlave"
-                        self.CTNAddChild("slave%s" % slave["idx"], CTNType, slave["idx"])
-                        self.SetSlaveAlias(slave["idx"], slave["alias"])
-                        type_infos["device_type"] = device.getType().getcontent()
-                        self.SetSlaveType(slave["idx"], type_infos)
+        # -------------------------------------------------
+        # HARDWARE DETECTADO (alias reales)
+        # -------------------------------------------------
+        detected_aliases = {slave["alias"] for slave in returnVal}
 
-                if app_frame:
-                    app_frame.RefreshProjectTree()
+#        print("Detectados alias físicos:", detected_aliases)
+
+        # -------------------------------------------------
+        # ÁRBOL = REFERENCIA LÓGICA (IEC)
+        # -------------------------------------------------
+        tree = app_frame.ProjectTree
+        for child in self.IECSortedChildren():
+
+            iec = child.GetSlavePos()   # 0,1,2,3
+
+            if not hasattr(child, "_online"):
+                child._online = False
+            
+            item = self.GetTreeItemByIEC(tree, iec)
+
+            # comparación directa IEC vs hardware alias
+            if iec in detected_aliases:
+                child._online = True
+                if item:
+                    tree.SetItemTextColour(item, wx.Colour(0, 150, 0))
+
+            else:
+                child._online = False
+                if item:
+                    tree.SetItemTextColour(item, wx.Colour(150, 150, 150))
+                    
+        tree.Refresh()
+        tree.Update()
+       
 
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """
@@ -522,7 +662,7 @@ class _EthercatCTN(object):
             slave_infos = slave.getInfo()
             slave_infos.setName("undefined")
             slave_infos.setPhysAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
-            slave_infos.setAutoIncAddr(0)
+            slave_infos.setAutoIncAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
             self.BufferModel()
             self.OnCTNSave()
 
@@ -553,9 +693,24 @@ class _EthercatCTN(object):
                     write_to.setPosition(new_pos)
             self.CreateBuffer(True)
             self.CTNRequestSave()
-            if self._View is not None:
-                self._View.RefreshView()
-                self._View.RefreshBuffer()
+            if hasattr(self, "_View") and self._View:
+                # Revisar si el view está siendo destruido o si ConfNodeName ya no existe
+                safe_to_refresh = True
+                if getattr(self._View, "_is_closing", False):
+                    safe_to_refresh = False
+                elif not hasattr(self._View, "ConfNodeName"):
+                    safe_to_refresh = False
+                elif self._View.ConfNodeName is None:
+                    safe_to_refresh = False
+
+                if safe_to_refresh:
+                    try:
+                        self._View.RefreshView()
+                        self._View.RefreshBuffer()
+                    except RuntimeError:
+                        # widget destruido de manera inesperada, ignorar
+                        pass
+
 
     def GetSlaveAlias(self, slave_pos):
         slave = self.GetSlave(slave_pos)
@@ -618,11 +773,6 @@ class _EthercatCTN(object):
                     confNodeFile.close()
 
                     module_info = self.GetModuleEntryList()
-                    # checklines(ex) : <BaseParams xmlns:xsd="http://www.w3.org/2001/XMLSchema" IEC_Channel="0" Name="EthercatSlave_0"/>
-                    # checklines[1].split() : [<BaseParams, xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                    #                           IEC_Channel="0", Name="EthercatSlave_0"/>]
-                    # checklines[1].split()[2] : IEC_Channel="0"
-                    # checklines[1].split()[2].split("\"") = [IEC_Channel=, 0, ]
                     pos_check = int(checklines[1].split()[2].split("\"")[1])
 
                     if slave_pos != pos_check:
@@ -887,7 +1037,7 @@ class _EthercatCTN(object):
             self.Config,
             pretty_print=True,
             xml_declaration=True,
-            encoding='utf-8'))
+            encoding='utf-8').decode("utf-8"))
         config_xmlfile.close()
 
         process_filepath = self.ProcessVariablesFileName()
@@ -897,7 +1047,7 @@ class _EthercatCTN(object):
             self.ProcessVariables,
             pretty_print=True,
             xml_declaration=True,
-            encoding='utf-8'))
+            encoding='utf-8').decode("utf-8"))
         process_xmlfile.close()
 
         self.Buffer.CurrentSaved()
@@ -916,7 +1066,7 @@ class _EthercatCTN(object):
         self.FileGenerator = _EthercatCFileGenerator(self)
 
         LocationCFilesAndCFLAGS, LDFLAGS, extra_files = ConfigTreeNode._Generate_C(self, buildpath, locations)
-
+        
         for idx, variable in enumerate(self.ProcessVariables.getvariable()):
             name = None
             var_type = None
@@ -946,9 +1096,11 @@ class _EthercatCTN(object):
         LocationCFilesAndCFLAGS.insert(
             0,
             (current_location,
-             [(Gen_Ethercatfile_path, '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
+             [(Gen_Ethercatfile_path, "-I%s -I/usr/local/include" % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
              True))
-        LDFLAGS.append("-lethercat_rtdm -lrtdm")
+        LDFLAGS.append("-L/usr/local/lib")
+#        LDFLAGS.append("-lethercat_rtdm -lrtdm")
+        LDFLAGS.append("-lethercat -lm")
 
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
 
@@ -972,10 +1124,12 @@ class _EthercatCTN(object):
 
         for location in locations:
             loc = location["LOC"][len(current_location):]
-            slave_pos = loc[0]
+            slave_pos = loc[0]           
             if slave_pos in slaves and len(loc) == 3 and location["DIR"] != "M":
                 self.FileGenerator.DeclareVariable(
                     slave_pos, loc[1], loc[2], location["IEC_TYPE"], location["DIR"], location["NAME"])
+            else:
+                pass
 
         return [], "", False
 

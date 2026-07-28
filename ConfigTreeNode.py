@@ -635,11 +635,13 @@ class ConfigTreeNode(object):
                 # Keep track of the confnode type name
                 self.CTNType = CTNType
                 # remind the help string, for more fancy display
-                self.CTNHelp = CTNHelp
-                # Call the base confnode template init - change XSD into class members
+                self.CTNHelp = CTNHelp              
+#                # Call the base confnode template init - change XSD into class members
                 ConfigTreeNode.__init__(self)
+
                 # check name is unique
                 NewCTNName = self.FindNewName(CTNName)
+                
                 # If dir have already be made, and file exist
                 if os.path.isdir(self.CTNPath(NewCTNName)):  # and os.path.isfile(self.ConfNodeXmlFilePath(CTNName)):
                     # Make CTN aware that this configuration was loaded
@@ -686,7 +688,7 @@ class ConfigTreeNode(object):
         ChildrenWithSameClass.append(newConfNodeOpj)
 
         return newConfNodeOpj
-
+        
     def ClearChildren(self):
         for child in self.IterChildren():
             child.ClearChildren()

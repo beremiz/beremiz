@@ -29,7 +29,7 @@ import sys
 import traceback
 import shutil
 import platform as platform_module
-from time import time
+#from time import time
 import hashlib
 from tempfile import mkstemp
 from functools import wraps, partial
@@ -41,6 +41,8 @@ from runtime.Stunnel import getPSKID
 from runtime import PlcStatus
 from runtime import MainWorker
 from runtime import default_evaluator
+
+import time
 
 if os.name in ("nt", "ce"):
     dlopen = _ctypes.LoadLibrary
@@ -74,9 +76,15 @@ def RunInMain(func):
         return MainWorker.call(func, *args, **kwargs)
     return func_wrapper
 
+class binary_t(ctypes.Structure):# para ethercat
+    _fields_ = [
+        ("data", ctypes.POINTER(ctypes.c_uint8)),
+        ("dataLength", ctypes.c_uint32)
+    ]
 
 class PLCObject(object):
-    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars):
+    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars, controller=None):
+        self.Controler = controller
         self.workingdir = WorkingDir  # must exits already
         self.tmpdir = os.path.join(WorkingDir, 'tmp')
         if os.path.exists(self.tmpdir):
@@ -106,7 +114,7 @@ class PLCObject(object):
         
         # initialize extended calls with GetVersions call, ignoring arguments
         self.extended_calls = {"GetVersions":lambda *_args:self.GetVersions().encode()}
-
+    
     # First task of worker -> no @RunInMain
     def AutoLoad(self, autostart):
         # Get the last transfered PLC
@@ -261,6 +269,30 @@ class PLCObject(object):
             self._GetLogMessage = self.PLClibraryHandle.GetLogMessage
             self._GetLogMessage.restype = ctypes.c_uint32
             self._GetLogMessage.argtypes = [ctypes.c_uint8, ctypes.c_uint32, ctypes.c_char_p, ctypes.c_uint32, ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+            # Para etherlab ------------
+            self._GetSDOData = getattr(self.PLClibraryHandle, "GetSDOData", None)
+
+            if self._GetSDOData is not None:
+                self._GetSDOData.restype = ctypes.c_uint32
+                self._GetSDOData.argtypes = [
+                    ctypes.c_uint16,   # slave
+                    ctypes.c_uint16,   # idx
+                    ctypes.c_uint8,    # subidx
+                    ctypes.POINTER(ctypes.c_uint8),  # buffer
+                    ctypes.c_uint32    # size
+                ]
+
+            self._GetMasterData = getattr(self.PLClibraryHandle, "GetMasterData", None)
+            if self._GetMasterData is not None:
+                self._GetMasterData.restype = ctypes.c_int
+
+            self._ReleaseMasterData = getattr(self.PLClibraryHandle, "ReleaseMasterData", None)
+            if self._ReleaseMasterData is not None:
+                self._ReleaseMasterData.restype = None
+
+            print("SDO:", self._GetSDOData)
+
+            # <-------------------------
 
             self._loading_error = None
 
@@ -789,7 +821,7 @@ class PLCObject(object):
         return -5 # DEBUG_SUSPENDED
 
     def _TracesSwap(self):
-        self.LastSwapTrace = time()
+        self.LastSwapTrace = time.time()
         if self.TraceThread is None and self.PLCStatus == PlcStatus.Started:
             self.TraceThread = Thread(target=self.TraceThreadProc, name="PLCTrace")
             self.TraceThread.start()
@@ -841,7 +873,7 @@ class PLCObject(object):
                 self.TraceLock.release()
 
             # TraceProc stops here if Traces not polled for 3 seconds
-            traces_age = time() - self.LastSwapTrace
+            traces_age = time.time() - self.LastSwapTrace
             if traces_age > 3:
                 self.TraceLock.acquire()
                 self.Traces = []
@@ -850,6 +882,18 @@ class PLCObject(object):
                 break
 
         self.TraceThread = None
+    
+    # Para etherlab
+    
+    def RemoteExec(self, script, **kwargs):
+        try:
+            exec(script, kwargs)
+        except:
+            e_type, e_value, e_traceback = sys.exc_info()
+            line_no = traceback.tb_lineno(get_last_traceback(e_traceback))
+            return (-1, "RemoteExec script failed!\n\nLine %d: %s\n\t%s" % 
+                        (line_no, e_value, script.splitlines()[line_no - 1]))
+        return (0, kwargs.get("returnVal", None))
 
     def GetVersions(self):
         return platform_module.system() + " " + platform_module.release()

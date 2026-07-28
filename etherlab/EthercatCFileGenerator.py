@@ -38,16 +38,38 @@ ec_sync_info_t slave_%(slave)d_syncs[] = {
 """
 
 SLAVE_CONFIGURATION_TEMPLATE = """
-    if (!(slave%(slave)d = ecrt_master_slave_config(master, %(alias)d, %(position)d, 0x%(vendor).8x, 0x%(product_code).8x))) {
-        SLOGF(LOG_CRITICAL, "EtherCAT failed to get slave %(device_type)s configuration at alias %(alias)d and position %(position)d.");
+    SLOGF(LOG_INFO,
+          "CONFIG SLAVE START: slave=%(slave)d alias=%(alias)d position=%(position)d vendor=0x%(vendor).8x product=0x%(product_code).8x");
+
+    slave%(slave)d = ecrt_master_slave_config(master,
+                                              %(alias)d,
+                                              %(position)d,
+                                              0x%(vendor).8x,
+                                              0x%(product_code).8x);
+
+    if (!slave%(slave)d) {
+        SLOGF(LOG_CRITICAL,
+              "FAILED slave config: alias=%(alias)d position=%(position)d device=%(device_type)s");
         goto ecat_failed;
     }
 
+    SLOGF(LOG_INFO,
+          "Slave config OK: slave=%(slave)d (%(device_type)s)");
+
+    SLOGF(LOG_INFO,
+          "PDO CONFIG START: slave=%(slave)d syncs_ptr=%%p",
+          slave_%(slave)d_syncs);
+
     if (ecrt_slave_config_pdos(slave%(slave)d, EC_END, slave_%(slave)d_syncs)) {
-        SLOGF(LOG_CRITICAL, "EtherCAT failed to configure PDOs for slave %(device_type)s at alias %(alias)d and position %(position)d.");
+        SLOGF(LOG_CRITICAL,
+              "PDO CONFIG FAILED: slave=%(slave)d device=%(device_type)s");
         goto ecat_failed;
     }
+
+    SLOGF(LOG_INFO,
+          "PDO CONFIG OK: slave=%(slave)d device=%(device_type)s");
 """
+
 
 SLAVE_INITIALIZATION_TEMPLATE = """
     {
@@ -104,10 +126,54 @@ CONFIG_DC = """
 
 
 def ConfigureVariable(entry_infos, str_completion):
+    # ============== Evitar Duplicados =====================
+    var_name = entry_infos.get(
+        "var_name",
+        f"auto_{entry_infos['index']}_{entry_infos['subindex']}"
+    )
+    key = (entry_infos["slave"], entry_infos["index"], entry_infos["subindex"], var_name)
+
+
+    if "_seen_vars" not in str_completion:
+        str_completion["_seen_vars"] = {}
+
+    if "_duplicates" not in str_completion:
+        str_completion["_duplicates"] = []
+
+    if key in str_completion["_seen_vars"]:
+        prev = str_completion["_seen_vars"][key]
+
+        duplicate_info = {
+            "name": var_name, #entry_infos["var_name"],
+            "index": entry_infos["index"],
+            "subindex": entry_infos["subindex"],
+            "slave": entry_infos["subindex"], # Agregamos esclavo para diferenciar
+            "first": prev,
+            "duplicate": entry_infos
+        }
+
+        str_completion["_duplicates"].append(duplicate_info)
+        return  # NO se genera
+    # Registrar variable
+    str_completion["_seen_vars"][key] = dict(entry_infos)
+    
+    # Forzar que las claves sean listas, aunque ya existan
+    for key in ["located_variables_declaration",
+                "used_pdo_entry_offset_variables_declaration",
+                "used_pdo_entry_configuration",
+                "retrieve_variables",
+                "publish_variables"]:
+        if not isinstance(str_completion.get(key, None), list):
+            str_completion[key] = []
+    # Tipo de dato        
     entry_infos["data_type"] = DATATYPECONVERSION.get(entry_infos["var_type"], None)
     if entry_infos["data_type"] is None:
-        msg = _("Type of location \"%s\" not yet supported!") % entry_infos["var_name"]
+        msg = _("Type of location \"%s\" not yet supported!") % var_name #entry_infos["var_name"]
         raise ValueError(msg)
+    
+    # Declaracion de variables
+    if entry_infos.get("dir") in ["I", "Q"]:
+        entry_infos["no_decl"] = False
 
     if not entry_infos.get("no_decl", False):
         if "real_var" in entry_infos:
@@ -160,16 +226,28 @@ def ConfigureVariable(entry_infos, str_completion):
                 ("    EC_WRITE_%(data_type)s(domain1_pd + slave%(slave)d_%(index).4x_%(subindex).2x, " +
                  "%(real_var)s);") % entry_infos)
 
-
 def ExclusionSortFunction(x, y):
+    # Primero comparar matching
     if x["matching"] == y["matching"]:
+        # Si matching igual, priorizamos los que están asignados
         if x["assigned"] and not y["assigned"]:
             return -1
         elif not x["assigned"] and y["assigned"]:
             return 1
-        return cmp(x["count"], y["count"])
-    return -cmp(x["matching"], y["matching"])
+        # Comparar count (antes era cmp)
+        return (x["count"] > y["count"]) - (x["count"] < y["count"])
+    # Comparar matching invertido (antes era -cmp)
+    return (y["matching"] > x["matching"]) - (y["matching"] < x["matching"])
 
+
+class _BytesFileWrapper:
+    def __init__(self, data):
+        if isinstance(data, str):
+            data = data.encode("utf-8")
+        self._data = data
+
+    def read(self):
+        return self._data
 
 class _EthercatCFileGenerator(object):
 
@@ -248,6 +326,21 @@ class _EthercatCFileGenerator(object):
         # add jblee
         slotNumber = 1
         
+        # -----------------------------
+        # CONVERTIR LISTAS A STRING
+        # (esto evita el TypeError)
+        # -----------------------------
+        for key in [
+            "located_variables_declaration",
+            "used_pdo_entry_offset_variables_declaration",
+            "used_pdo_entry_configuration",
+            "retrieve_variables",
+            "publish_variables"
+        ]:
+            if isinstance(str_completion[key], list):
+                str_completion[key] = "\n".join(str_completion[key])
+        # --------------------------------------------------------------
+        
         # Generating code for each slave
         for (slave_idx, slave_alias, slave) in self.Slaves:
             type_infos = slave.getType()
@@ -261,10 +354,11 @@ class _EthercatCFileGenerator(object):
 
             # Extract slave device informations
             device, module_extra_params = self.Controler.GetModuleInfos(type_infos)
+            device, module_extra_params = self.Controler.GetModuleInfos(type_infos)
             if device is None:
-                msg = _("No informations found for device %s!") \
-                      % (type_infos["device_type"])
-                raise ValueError(msg)
+                print(f"Warning: No information found for device {type_infos.get('device_type', 'undefined')}, skipping...")
+                continue  # Salta este slave y sigue con el siguiente
+
 
             # Extract slaves variables to be mapped
             slave_variables = self.UsedVariables.get(slave_idx, {})
@@ -289,7 +383,6 @@ class _EthercatCFileGenerator(object):
                     initCmds.append({
                         "Index": ExtractHexDecValue(initCmd.getIndex()),
                         "Subindex": ExtractHexDecValue(initCmd.getSubIndex()),
-                        #"Value": initCmd.getData().getcontent()})
                         "Value": int(initCmd.getData().text, 16)})
                 
                 initCmds.extend(slave.getStartupCommands())
@@ -313,10 +406,25 @@ class _EthercatCFileGenerator(object):
                 # Extract slave device PDO configuration capabilities
                 PdoAssign = device_coe.getPdoAssign()
                 PdoConfig = device_coe.getPdoConfig()
+                              
             else:
                 PdoAssign = PdoConfig = False
+                if slave_idx == 1:
+                    PdoAssign = True
+                    PdoConfig = True  
 
             # Test if slave has a configuration or need one
+#            print("=== SLAVE DEBUG START ===")
+#            print("slave_idx:", slave_idx)
+#            print("slave_alias:", slave_alias)
+#            print("type_infos:", type_infos)
+#            print("keys:", list(type_infos.keys()))
+#            required_keys = ["slave", "alias", "position", "vendor", "product_code", "device_type"]
+
+#            for k in required_keys:
+#                if k not in type_infos:
+#                    print("FALTA EN type_infos:", k)
+
             if len(device.getTxPdo() + device.getRxPdo()) > 0 or len(slave_variables) > 0 and PdoConfig and PdoAssign:
 
                 str_completion["slaves_declaration"] += "static ec_slave_config_t *slave%(slave)d = NULL;\n" % type_infos
@@ -371,52 +479,113 @@ class _EthercatCFileGenerator(object):
                         PdoData.append((pdo, "Outputs"))               
 
                 # mod jblee
-                #for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                #                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                #for pdo, pdo_type in (TxPdoData + RxPdoData):
                 data_files = os.listdir(self.Controler.CTNPath())
                 PDODataList = []
                 MDPData = []
-                RxPDOData = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getRxPDO()
-                TxPDOData = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getTxPDO()
+                
+                data_files = os.listdir(self.Controler.CTNPath())
+                PDODataList = []
+                MDPData = []
+                
+                node = self.Controler.GetChildByIECLocation((slave_idx,))
+                ethercat_params = getattr(node, "EthercatSlaveParams", None)
+                
+                RxPDOData = ""
+                TxPDOData = ""
+                
+                if ethercat_params is not None:
+                    RxPDOData = ethercat_params.getRxPDO()
+                    TxPDOData = ethercat_params.getTxPDO()
+                    if RxPDOData == "None":
+                        RxPDOData = ""
+                    if TxPDOData == "None":
+                        TxPDOData = ""
+                    if not RxPDOData:
+                        RxPDOData = ""
+                    if not TxPDOData:
+                        TxPDOData = ""
+                        
                 PDOList = RxPDOData.split() + TxPDOData.split()
+                
                 for PDOIndex in PDOList:
                     if PDOIndex in ["RxPDO", "TxPDO", "None"]:
                         continue
-                    PDODataList.append(int(PDOIndex, 0))
+                    try:
+                        PDODataList.append(int(PDOIndex, 0))
+                    except ValueError:
+                        pass
 
                 # add jblee for DC Configuration
-                dc_enable = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Enable()
+                
+                dc_config_data = None
+                
                 sync0_cycle_time = 0
                 sync0_shift_time = 0
                 sync1_cycle_time = 0
                 sync1_shift_time = 0
-                if dc_enable :
-                    sync0_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Cycle_Time()
+                
+                if ethercat_params is not None and len(ethercat_params) > 0 and ethercat_params.getDC_Enable():
+
+                    # ---- Sync0 Cycle ----
+                    sync0_cycle_token = ethercat_params.getDC_Sync0_Cycle_Time()
                     if sync0_cycle_token != "None":
-                        sync0_cycle_time = int(sync0_cycle_token.split("_")[1]) * 1000
-                    sync0_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync0_Shift_Time()
+                        try:
+                            parts = str(sync0_cycle_token).split("_")
+                            if len(parts) > 1:
+                                sync0_cycle_time = int(parts[1]) * 1000
+                        except Exception:
+                            sync0_cycle_time = 0
+
+                    # ---- Sync0 Shift ----
+                    sync0_shift_token = ethercat_params.getDC_Sync0_Shift_Time()
                     if sync0_shift_token != "None":
-                        sync0_shift_time = int(sync0_shift_token) * 1000
-                    sync1_cycle_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Cycle_Time()
+                        try:
+                            sync0_shift_time = int(sync0_shift_token) * 1000
+                        except Exception:
+                            sync0_shift_time = 0
+
+                    # ---- Sync1 Cycle ----
+                    sync1_cycle_token = ethercat_params.getDC_Sync1_Cycle_Time()
                     if sync1_cycle_token != "None":
-                        sync1_cycle_time = int(sync1_cycle_token.split("_")[1]) * 1000
-                    sync1_shift_token = self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Sync1_Shift_Time()
+                        try:
+                            parts = str(sync1_cycle_token).split("_")
+                            if len(parts) > 1:
+                                sync1_cycle_time = int(parts[1]) * 1000
+                        except Exception:
+                            sync1_cycle_time = 0
+
+                    # ---- Sync1 Shift ----
+                    sync1_shift_token = ethercat_params.getDC_Sync1_Shift_Time()
                     if sync1_shift_token != "None":
-                        sync1_shift_time = int(sync1_shift_token) * 1000
-                    
+                        try:
+                            sync1_shift_time = int(sync1_shift_token) * 1000
+                        except Exception:
+                            sync1_shift_time = 0
+
+                    # ---- Assign Activate ----
+                    assign_activate = 0
+                    assign_token = ethercat_params.getDC_Assign_Activate()
+
+                    if assign_token != "None":
+                        try:
+                            assign_activate = int(assign_token)
+                        except Exception:
+                            assign_activate = 0
+
+                    # ---- Final dict ----
                     dc_config_data = {
-                        "slave" : slave_idx,
-                        "assign_activate" : int(self.Controler.GetChildByIECLocation((slave_idx,)).BaseParams.getDC_Assign_Activate()),
-                        "sync0_cycle_time" : sync0_cycle_time,
-                        "sync0_shift_time" : sync0_shift_time,
-                        "sync1_cycle_time" : sync1_cycle_time,
-                        "sync1_shift_time" : sync1_shift_time,
+                        "slave": slave_idx,
+                        "assign_activate": assign_activate,
+                        "sync0_cycle_time": sync0_cycle_time,
+                        "sync0_shift_time": sync0_shift_time,
+                        "sync1_cycle_time": sync1_cycle_time,
+                        "sync1_shift_time": sync1_shift_time,
                     }
 
                     if dc_enable and not str_completion["dc_variable"] :
                         str_completion["dc_variable"] += DC_VARIABLE % {"dc_flag" : dc_enable}
                     str_completion["config_dc"] += CONFIG_DC % dc_config_data
+                    
 
                 for data_file in data_files:
                     slave_path = os.path.join(self.Controler.CTNPath(), data_file)
@@ -504,9 +673,6 @@ class _EthercatCFileGenerator(object):
                         if PdoAssign or not pdo["assigned"]])
 
                 # mod jblee
-                #for pdo, pdo_type in ([(pdo, "Inputs") for pdo in device.getTxPdo()] +
-                #                      [(pdo, "Outputs") for pdo in device.getRxPdo()]):
-                #for pdo, pdo_type in (TxPdoData + RxPdoData):
                 entry_check_list = []
                 index_padding = 1
                 for pdo, pdo_type in PdoData:
@@ -544,7 +710,6 @@ class _EthercatCFileGenerator(object):
                         }
 
                         entry_infos.update(type_infos)
-                        #temp_data = "    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos
                         check_data = "{0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}" % entry_infos
                         if entry_check_list and check_data in entry_check_list:
                             if (entry_infos["index"] == 0) or (entry_infos["name"] == None):
@@ -554,7 +719,7 @@ class _EthercatCFileGenerator(object):
                         entries_infos.append("    {0x%(index).4x, 0x%(subindex).2x, %(bitlen)d}, /* %(name)s */" % entry_infos)
                         entry_check_list.append(check_data)
                         
-                        entry_declaration = slave_variables.get((index, subindex), None)
+                        entry_declaration = slave_variables.get((index, subindex), None)                        
                         if entry_declaration is not None and not entry_declaration["mapped"]:
                             pdo_needed = True
 
@@ -601,7 +766,7 @@ class _EthercatCFileGenerator(object):
                             entry_infos["data_type"] = DATATYPECONVERSION.get(data_type)
                             entry_infos["var_type"] = data_type
                             entry_infos["real_var"] = "slave%(slave)d_%(index).4x_%(subindex).2x_default" % entry_infos
-                            
+
                             ConfigureVariable(entry_infos, str_completion)
                             
                             str_completion["slaves_input_pdos_default_values_extraction"] += \
@@ -654,8 +819,13 @@ class _EthercatCFileGenerator(object):
                         if not entry_declaration["mapped"]:
                             entry = device_entries.get((index, subindex), None)
                             if entry is None:
-                                msg = _("Unknown entry index 0x{a1:.4x}, subindex 0x{a2:.2x} for device {a3}").\
+                                print("entry_declaration: ", entry_declaration)
+                                print("entry: ", entry)
+                                print(f"[WARNING] SLAVE {slave_idx} ignorando index 0x{index:04x} (no pertenece a este device)")
+                                continue   # no valida entradas que no son suyas
+                                msg = _("Unknown entry index 0x{a1:04x}, subindex 0x{a2:02x} for device {a3}").\
                                       format(a1=index, a2=subindex, a3=type_infos["device_type"])
+                                print(f"SLAVE {slave_idx} intenta index 0x{index:04x}")
                                 raise ValueError(msg)
 
                             entry_infos = {
@@ -666,8 +836,10 @@ class _EthercatCFileGenerator(object):
                             }
                             entry_infos.update(type_infos)
 
-                            entry_infos.update(dict(zip(["var_type", "dir", "var_name", "no_decl", "extra_declarations"],
-                                                        entry_declaration["infos"])))
+                            entry_infos.update(dict(zip(
+                                ["var_type", "dir", "var_name", "no_decl", "extra_declarations"],
+                                entry_declaration["infos"])))
+                                                            
                             entry_declaration["mapped"] = True
 
                             if entry_infos["var_type"] != entry["Type"]:
@@ -750,12 +922,6 @@ class _EthercatCFileGenerator(object):
                     pdos_infos[element] = "\n".join(pdos_infos[element])
 
                 str_completion["pdos_configuration_declaration"] += SLAVE_PDOS_CONFIGURATION_DECLARATION % pdos_infos
-            
-            #for (index, subindex), entry_declaration in slave_variables.items():
-            #    if not entry_declaration["mapped"]:
-            #        message = _("Entry index 0x%4.4x, subindex 0x%2.2x not mapped for device %s") % \
-            #                        (index, subindex, type_infos["device_type"])
-            #        self.Controler.GetCTRoot().logger.write_warning(_("Warning: ") + message + "\n")
                     
         for element in ["used_pdo_entry_offset_variables_declaration", 
                         "used_pdo_entry_configuration", 
@@ -763,7 +929,19 @@ class _EthercatCFileGenerator(object):
                         "retrieve_variables", 
                         "publish_variables"]:
             str_completion[element] = "\n".join(str_completion[element])
+            
+        import re
 
-        etherlabfile = open(filepath, 'w')
-        etherlabfile.write(plc_etherlab_code % str_completion)
+        placeholders = re.findall(r'%\(([^)]+)\)s', plc_etherlab_code)
+
+        faltantes = [ph for ph in placeholders if ph not in str_completion]
+
+        for ph in faltantes:
+            str_completion[ph] = ""
+
+        # ESCAPAR % de C (printf, etc)
+        plc_etherlab_code = re.sub(r'%(?!\()', '%%', plc_etherlab_code)                       
+
+        etherlabfile = open(filepath, 'wb')
+        etherlabfile.write((plc_etherlab_code % str_completion).encode("utf-8"))
         etherlabfile.close()

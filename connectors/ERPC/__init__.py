@@ -45,7 +45,15 @@ def TranslatedReturnAsLastOutput(translator):
         res = ReturnAsLastOutput(client_method, obj, args_wrapper, *args)
         return translator(res)
     return wrapper
-
+    
+def NoReturnWrapper(client_method, obj, args_wrapper, *args):
+    result = erpc.Reference()
+    client_method(obj, *args_wrapper(*args), result)
+    return result.value
+    
+def NoArgsNoReturnWrapper(client_method, obj, args_wrapper, *args):
+    return client_method(obj)
+    
 ReturnWrappers = {
     "AppendChunkToBlob":ReturnAsLastOutput,
     "GetLogMessage":TranslatedReturnAsLastOutput(

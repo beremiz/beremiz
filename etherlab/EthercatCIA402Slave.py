@@ -16,9 +16,10 @@ import wx
 
 from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
-from MotionLibrary import AxisXSD
-from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave
+from MotionLibrary import Headers, AxisXSD
+from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave, PDO
 from etherlab.ConfigEditor import CIA402NodeEditor
+from xmlclass import GenerateParserFromXSDstring
 
 # Definition of node variables that have to be mapped in PDO
 # [(name, index, subindex, type,
@@ -33,9 +34,24 @@ NODE_VARIABLES = [
     ("ModesOfOperationDisplay", 0x6061, 0x00, "SINT", "I"),
     ("ActualPosition",          0x6064, 0x00, "DINT", "I"),
     ("ActualVelocity",          0x606c, 0x00, "DINT", "I"),
-    ("ActualTorque",            0x6077, 0x00, "INT",  "I"),
+    ("ActualTorque",            0x6077, 0x00, "INT",  "I")
 ]
 
+# --------------------------- Falta -------------------------------------
+#HSAHN 2015.07.26
+#reference variable
+ADD_NODE_VARIABLES = ({'name':"TargetPosition"   , 'index':0x607a, 'sub-index':0x00, 'type':"DINT", 'direction':"Q"},
+                      {'name':"TargetVelocity"   , 'index':0x60ff, 'sub-index':0x00, 'type':"DINT", 'direction':"Q"},
+                      {'name':"TargetTorque"     , 'index':0x6071, 'sub-index':0x00, 'type':"INT",  'direction':"Q"},
+                      {'name':"ActualPosition"   , 'index':0x6064, 'sub-index':0x00, 'type':"DINT", 'direction':"I"},
+                      {'name':"ActualVelocity"   , 'index':0x606c, 'sub-index':0x00, 'type':"DINT", 'direction':"I"},
+                      {'name':"ActualTorque"     , 'index':0x6077, 'sub-index':0x00, 'type':"INT",  'direction':"I"}
+                     )
+
+DEFAULT_RETRIEVE = "    __CIA402Node_%(location)s.axis->%(name)s = *(__CIA402Node_%(location)s.%(name)s);"
+DEFAULT_PUBLISH = "    *(__CIA402Node_%(location)s.%(name)s) = __CIA402Node_%(location)s.axis->%(name)s;"
+
+# -----------------------------------------------------------------------
 # Definition of optional node variables that can be added to PDO mapping.
 # A checkbox will be displayed for each section in node configuration panel to
 # enable them
@@ -77,6 +93,25 @@ EXTRA_NODE_VARIABLES = [
 EXTRA_NODE_VARIABLES_DICT = {
     "Enable" + name: params
     for name, params in EXTRA_NODE_VARIABLES}
+    
+# -------------------------------- Faltan ---------------------------------
+BLOCK_INPUT_TEMPLATE = "    __SET_VAR(%(blockname)s->,%(input_name)s,, %(input_value)s);"
+BLOCK_OUTPUT_TEMPLATE = "    __SET_VAR(data__->,%(output_name)s,, __GET_VAR(%(blockname)s->%(output_name)s));"
+
+BLOCK_FUNCTION_TEMPLATE = """
+extern void ETHERLAB%(ucase_blocktype)s_body__(ETHERLAB%(ucase_blocktype)s_data__* data__);
+void __%(blocktype)s_%(location)s(MC_%(ucase_blocktype)s_data__ *data__) {
+__DECLARE_GLOBAL_PROTOTYPE(ETHERLAB%(ucase_blocktype)s_data__, %(blockname)s);
+ETHERLAB%(ucase_blocktype)s_data__* %(blockname)s = __GET_GLOBAL_%(blockname)s();
+__SET_VAR(%(blockname)s->, POS,, AxsPub.axis->NetworkPosition);
+%(extract_inputs)s
+ETHERLAB%(ucase_blocktype)s_body__(%(blockname)s);
+%(return_outputs)s
+}
+"""
+
+BLOCK_FUNTION_DEFINITION_TEMPLATE = "        __CIA402Node_%(location)s.axis->__mcl_func_MC_%(blocktype)s = __%(blocktype)s_%(location)s;"
+# -------------------------------------------------------------------------
 
 # List of block to define to interface MCL to fieldbus for specific functions
 FIELDBUS_INTERFACE_GLOBAL_INSTANCES = [
@@ -90,15 +125,65 @@ FIELDBUS_INTERFACE_GLOBAL_INSTANCES = [
      "outputs": []},
 ]
 
+# -------------------------------- Faltan ---------------------------------
+# add jblee
+MODEOFOP_HOMING_METHOD_TEMPLATE = """
+	if(*(AxsPub.ModesOfOperation) == 0x06){
+		IEC_BOOL homing = AxsPub.axis->HomingOperationStart;
+		if(power){
+			if (homing)
+				CW |= Homing_OperationStart_Origin;
+			else
+				CW &= ~(Homing_OperationStart_Origin);
+		}
+		else{
+			if (homing)
+				CW |= Homing_OperationStart_Edit;
+			else
+				CW &= ~(EnableOperation);
+		}
+
+	}
+"""
+
+MODEOFOP_COMPUTATION_MODE_TEMPLATE = """
+	switch (AxsPub.axis->AxisMotionMode) {
+		//ssh_add
+		case mc_mode_hm:
+			*(AxsPub.ModesOfOperation) = 0x06;
+			break;
+		case mc_mode_cst:
+			*(AxsPub.ModesOfOperation) = 0x0a;
+			break;
+		case mc_mode_csv:
+			*(AxsPub.ModesOfOperation) = 0x09;
+			break;
+		default:
+			*(AxsPub.ModesOfOperation) = 0x08;
+			break;
+	}
+"""
+
+DC ="""<xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default="false"/>
+<xsd:attribute name="DC_Desc" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Assign_Activate" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync0_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync0_Shift_Time" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync1_Cycle_Time" type="xsd:string" use="optional" default="None"/>
+<xsd:attribute name="DC_Sync1_Shift_Time" type="xsd:string" use="optional" default="None"/>
+"""
+          
+
+# -------------------------------------------------------------------------
+
 # --------------------------------------------------
 #                 Ethercat CIA402 Node
 # --------------------------------------------------
 
-
 class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="CIA402SlaveParams">
+      <xsd:element name="EthercatSlaveParams">
         <xsd:complexType>
           %s
         </xsd:complexType>
@@ -107,7 +192,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     """ % ("\n".join(["""\
           <xsd:attribute name="Enable%s" type="xsd:boolean"
                          use="optional" default="false"/>""" % category
-                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD)
+                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD + PDO + DC)
 
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor
@@ -135,17 +220,36 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 
     def __init__(self):
         _EthercatSlaveCTN.__init__(self)
-
+        
         # ----------- call ethercat mng. function --------------
         self.CommonMethod = _CommonSlave(self)
+        
+    def _FiltroESI(self, device_entries):
+        valid_indices = set()
 
+        for (idx, subidx) in device_entries.keys():
+            valid_indices.add(idx)
+
+        filtered = []
+        removed = []
+        
+        for var in ADD_NODE_VARIABLES:
+            if var['index'] in valid_indices:
+                filtered.append(var)
+            else:
+                removed.append(var)
+#                print(f"[ESI FILTER] Removed {hex(var['index'])} {var['name']} (not in ESI)")
+
+        return filtered, removed
+
+    
     def GetIconName(self):
         return "CIA402Slave"
 
     def SetParamsAttribute(self, path, value):
-        if path == "CIA402SlaveParams.Type":
+        if path == "EthercatSlaveParams.Type":
             path = "SlaveParams.Type"
-        elif path == "CIA402SlaveParams.Alias":
+        elif path == "EthercatSlaveParams.Alias":
             path = "SlaveParams.Alias"
         return _EthercatSlaveCTN.SetParamsAttribute(self, path, value)
 
@@ -225,21 +329,33 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     """
 
     def LoadPDOSelectData(self):
-        RxPDOData = self.BaseParams.getRxPDO()
-        RxPDOs = []
-        if RxPDOData != "None":
-            RxPDOs = RxPDOData.split()
-        if RxPDOs :
-            for RxPDO in RxPDOs :
-                self.SelectedRxPDOIndex.append(int(RxPDO, 0))
+        try:
+            # SIEMPRE reiniciar listas
+            self.SelectedRxPDOIndex = []
+            self.SelectedTxPDOIndex = []
 
-        TxPDOData = self.BaseParams.getTxPDO()
-        TxPDOs = []
-        if TxPDOData != "None":
-            TxPDOs = TxPDOData.split()
-        if TxPDOs :
-            for TxPDO in TxPDOs :
-                self.SelectedTxPDOIndex.append(int(TxPDO, 0))
+            # -------- Rx --------
+            RxPDOData = self.EthercatSlaveParams.getRxPDO()
+
+            if RxPDOData and RxPDOData != "None":
+                RxPDOs = RxPDOData.replace(",", " ").split()
+
+                self.SelectedRxPDOIndex = list({
+                    int(RxPDO, 0) for RxPDO in RxPDOs if RxPDO
+                })
+
+            # -------- Tx --------
+            TxPDOData = self.EthercatSlaveParams.getTxPDO()
+
+            if TxPDOData and TxPDOData != "None":
+                TxPDOs = TxPDOData.replace(",", " ").split()
+
+                self.SelectedTxPDOIndex = list({
+                    int(TxPDO, 0) for TxPDO in TxPDOs if TxPDO
+                })
+
+        except Exception as e:
+            print(f"Warning: Error loading PDO data: {e}")
 
     def LoadDefaultPDOSet(self):
         ReturnData = []
@@ -259,7 +375,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             return ReturnData
         else :
             return [5632, 6656]
-        
+                    
     def CTNGenerate_C(self, buildpath, locations):
         current_location = self.GetCurrentLocation()
 
@@ -332,12 +448,24 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 #2015. 7. 24 PDO Variable
         #if PDO is not selected, use 1st PDO set
         self.LoadPDOSelectData()
+
         if not self.SelectedRxPDOIndex and not self.SelectedTxPDOIndex :
             self.SelectedPDOIndex = self.LoadDefaultPDOSet()
         else :
             self.SelectedPDOIndex = self.SelectedRxPDOIndex + self.SelectedTxPDOIndex
-
         add_idx = []
+        # Para filtrar
+        device_entries = self.CommonMethod.GetAllEntriesList()
+        ADD_NODE_VARIABLES, REMOVED = self._FiltroESI(device_entries)
+        removed_indices = {v["index"] for v in REMOVED}
+        
+        variables = [
+            v for v in NODE_VARIABLES
+            if v[1] not in removed_indices
+        ]
+
+        #<---------------
+
         for i in range(len(ADD_NODE_VARIABLES)):
             add_idx.append(ADD_NODE_VARIABLES[i]['index'])
 
@@ -351,6 +479,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             #if pdo_index is in the SelectedPDOIndex: put the PDO mapping information intto the "used" object
             if pdo_info[i]['pdo_index'] in self.SelectedPDOIndex:
                 used = pdo_entry[list_index:list_index + pdo_info[i]['number_of_entry']]
+                
                 for used_data in used:
                     # 24672 -> 0x6060, Mode of Operation
                     if used_data['entry_index'] == 24672:
@@ -358,7 +487,6 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                     # 24673 -> 0x6061, Mode of Operation Display
                     elif used_data["entry_index"] == 24673:
                         ModeOfOpDisplayFlag = True
-
                     if used_data['entry_index'] in add_idx:
                         idx = add_idx.index(used_data['entry_index'])
                         adder = list([ADD_NODE_VARIABLES[idx]['name'], ADD_NODE_VARIABLES[idx]['index'], \
@@ -379,13 +507,55 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                                 str_completion["default_variables_retrieve"].append(check_i_data)
             list_index += pdo_info[i]['number_of_entry']
 #HSAHN END
+        DEVICE_PARAMS_NO_C = {
+            "RxPDO",
+            "TxPDO",
+            "DC_Enabled",
+            "DC_Desc",
+            "DC_Assign_Activate",
+            "DC_Sync0_Cycle_Time",
+            "DC_Sync0_Shift_Time",
+            "DC_Sync1_Cycle_Time",
+            "DC_Sync1_Shift_Time",
+            "LimitPosEnabled",
+            "LimitNegEnabled",
+            "PosLagMonitoringEnabled",
+            "SimulationEnabled",
+            "LimitSwitchNCEnabled",
+            "ActualVelocity",
+            "EnableDigitalOutputs",
+            "EnableTouchProbe",
+            "TouchProbePos1NegValue",
+            "DigitalOutputs",
+            "DigitalOutputsEnable"
+        }
 
         params = self.CTNParams[1].getElementInfos(self.CTNParams[0])
         for param in params["children"]:
+            
+            if param["type"] == "boolean":
+                cname = param["name"].replace("Enable", "") + "Enabled"
+            else:
+                cname = param["name"]
+
+            if cname in DEVICE_PARAMS_NO_C:
+                continue
+#            name = param["name"]
+#            if name in DEVICE_PARAMS_NO_C:
+#                continue
             if param["name"] in EXTRA_NODE_VARIABLES_DICT:
                 if param["value"]:
                     extra_variables = EXTRA_NODE_VARIABLES_DICT.get(param["name"])
+                    device_entries = self.CommonMethod.GetAllEntriesList() # Para filtrar
+                    valid_indices = {idx for (idx, subidx) in device_entries.keys()} # Para filtrar
                     for variable_infos in extra_variables:
+                        # Para filtrar
+                        index = variable_infos["description"][1]
+
+                        if index not in valid_indices:
+                            continue
+                        # < --------
+
                         var_infos = {
                             "location": location_str,
                             "name": variable_infos["description"][0]
@@ -418,39 +588,55 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 str_completion["init_axis_params"].append(
                     "        __CIA402Node_%(location)s.axis->%(param_name)s = %(param_value)s;" % param_infos)
         
-        check_variable = []
-        for variable in variables:
-            # add jblee
-            if variable in check_variable:
-                continue
+#        check_variable = []
+#        for variable in variables:
+#            # add jblee
+#            if variable in check_variable:
+#                continue
+            seen_indexes = set()
+            str_completion["entry_variables"] = []
+            str_completion["extern_located_variables_declaration"] = []
+            str_completion["init_entry_variables"] = []
 
-            var_infos = dict(list(zip(["name", "index", "subindex", "var_type", "dir"], variable)))
-            var_infos["location"] = location_str
-            var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
-            var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
 
-            # add jblee
-            if var_infos["index"] in [24672] and ModeOfOpFlag:
-                str_completion["modeofop_homing_method"].append(MODEOFOP_HOMING_METHOD_TEMPLATE)
-                str_completion["modeofop_computation_mode"].append(MODEOFOP_COMPUTATION_MODE_TEMPLATE)
+            for variable in variables:
 
-            # add jblee
-            if var_infos["index"] in [24672, 24673] and (not ModeOfOpFlag or not ModeOfOpDisplayFlag):
-                continue
+                var_infos = dict(list(zip(["name", "index", "subindex", "var_type", "dir"], variable)))
+                
+                # add jblee Filtro
+                if var_infos["index"] in [24672, 24673] and (not ModeOfOpFlag or not ModeOfOpDisplayFlag):
+                    continue
 
-            str_completion["extern_located_variables_declaration"].append(
-                    "IEC_%(var_type)s *%(var_name)s;" % var_infos)
-            str_completion["entry_variables"].append(
-                    "    IEC_%(var_type)s *%(name)s;" % var_infos)
-            str_completion["init_entry_variables"].append(
-                    "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+                key = (var_infos["index"], var_infos["subindex"])
+                # Detectar duplicados por index/subindex
+                if key in seen_indexes:
+                    continue
+
+                seen_indexes.add(key)
+
             
-            self.CTNParent.FileGenerator.DeclareVariable(
-                    self.GetSlavePos(), var_infos["index"], var_infos["subindex"], 
-                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
+            
 
-            # add jblee
-            check_variable.append(variable)
+                var_infos["location"] = location_str
+                var_infos["var_size"] = self.GetSizeOfType(var_infos["var_type"])
+                var_infos["var_name"] = "__%(dir)s%(var_size)s%(location)s_%(index)d_%(subindex)d" % var_infos
+
+
+                # add jblee
+                if var_infos["index"] in [24672] and ModeOfOpFlag:
+                    str_completion["modeofop_homing_method"].append(MODEOFOP_HOMING_METHOD_TEMPLATE)
+                    str_completion["modeofop_computation_mode"].append(MODEOFOP_COMPUTATION_MODE_TEMPLATE)
+
+                str_completion["extern_located_variables_declaration"].append(
+                        "extern IEC_%(var_type)s *%(var_name)s;" % var_infos)
+
+                str_completion["entry_variables"].append(
+                        "    IEC_%(var_type)s *%(name)s;" % var_infos)
+                str_completion["init_entry_variables"].append(
+                        "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+
+                # add jblee
+#                check_variable.append(variable)
         
         for element in ["extern_located_variables_declaration", 
                         "fieldbus_interface_declaration",

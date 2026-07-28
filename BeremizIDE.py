@@ -603,10 +603,6 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
     def TryCloseFrame(self):
         global ToDoBeforeQuit
         if self.CTR is None or self.CheckSaveBeforeClosing(_("Close Application")):
-            # set _closing early so that deferred callbacks posted during
-            # cleanup (_Disconnect, KillLocalRuntime) won't reach AUIManager
-            # after UnInit() — prevents SIGSEGV in AUIManager.Update().
-            self._closing = True
             if self.CTR is not None:
                 self.CTR.KillDebugThread()
                 self.CTR._Disconnect()
@@ -623,6 +619,8 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
 
     def OnCloseFrame(self, event):
         if self.TryCloseFrame():
+            # prevent deferred callbacks from calling AUIManager.Update()
+            self._closing = True
             self.LogConsole.Disconnect(-1, -1, wx.wxEVT_KILL_FOCUS)
             self.AUIManager.UnInit()
             event.Skip()
@@ -681,19 +679,20 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             MenuToolBar.EnableTool(wx.ID_SAVEAS, False)
             self.FileMenu.Enable(wx.ID_CLOSE_ALL, False)
 
-    def RefreshRecentProjectsMenu(self):
-        
-        if self.RecentProjectsMenu.GetMenuItemCount() > 0:
-            return
+    def RefreshRecentProjectsMenu(self):      
         try:
             recent_projects = list(map(DecodeFileSystemPath,
                                   self.GetConfigEntry("RecentProjects", [])))
         except Exception:
             recent_projects = []
+        
+        while self.RecentProjectsMenu.GetMenuItemCount() > 0:
+            item = self.RecentProjectsMenu.FindItemByPosition(0)
+            self.RecentProjectsMenu.Remove(item)
 
         self.RecentProjectsMenuItem.Enable(len(recent_projects) > 0)
         for idx, projectpath in enumerate(recent_projects):
-            text = '&%d: %s' % (idx + 1, os.path.basename(projectpath))
+            text = '&%d: %s' % (idx + 1, projectpath)
 
             item = self.RecentProjectsMenu.Append(wx.ID_ANY, text, '')
             self.Bind(wx.EVT_MENU, self.GenerateOpenRecentProjectFunction(projectpath), item)
@@ -711,7 +710,9 @@ class Beremiz(IDEFrame, LocalRuntimeMixin):
             if isinstance(kind, list):
                 submenu = wx.Menu('')
                 self.GenerateMenuRecursive(kind, submenu)
+
                 new_item = menu.AppendSubMenu(submenu, infos)
+
             elif kind == wx.ITEM_SEPARATOR:
                 menu.AppendSeparator()
                 continue
