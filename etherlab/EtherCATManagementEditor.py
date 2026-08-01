@@ -31,9 +31,24 @@ from util.TranslationCatalogs import NoTranslate
 from threading import Thread
 import time
 import re
-import pickle
 
 from etherlab.sdo import SDOEntry
+from etherlab.rpc import CallEtherCAT
+
+
+def ReadSDOEntries(connector, entries, slave_pos):
+    """
+    Ask the runtime for the value of the given SDO entries.
+    @param connector: connector to the runtime
+    @param entries: list of SDOEntry to read
+    @param slave_pos: ring position of the slave to read from
+    @return the entries the runtime could read, values included
+    """
+    answer = CallEtherCAT(connector, "get_sdo_entries_data",
+                          [entry.to_dict() for entry in entries], slave_pos)
+    return [SDOEntry.from_dict(description) for description in answer]
+
+
 # ----------------------------- For Sync Manager Table -----------------------------------
 def GetSyncManagersTableColnames():
     """
@@ -609,14 +624,7 @@ class SDOPanelClass(wx.Panel):
 
                         entries = normalize(sdo_list[i])
 
-                        payload = pickle.dumps((entries, SlavePos))
-
-                        answer = ctr._connector.ExtendedCall(
-                            "GetSDOEntriesData",
-                            payload
-                        )
-
-                        res = pickle.loads(answer)
+                        res = ReadSDOEntries(ctr._connector, entries, SlavePos)
 
                         # ================================
                         # expand the DTxxxx structures
@@ -648,14 +656,8 @@ class SDOPanelClass(wx.Panel):
                                     ))
 
                                 try:
-                                    payload = pickle.dumps((sub_entries, SlavePos))
-
-                                    answer = ctr._connector.ExtendedCall(
-                                        "GetSDOEntriesData",
-                                        payload
-                                    )
-
-                                    sub_res = pickle.loads(answer)
+                                    sub_res = ReadSDOEntries(
+                                        ctr._connector, sub_entries, SlavePos)
 
                                     for s in sub_res:
                                         if "abort_code" in str(s.value):
@@ -676,14 +678,7 @@ class SDOPanelClass(wx.Panel):
 
                     entries = normalize(sdo_list[num])
 
-                    payload = pickle.dumps((entries, SlavePos))
-
-                    answer = ctr._connector.ExtendedCall(
-                        "GetSDOEntriesData",
-                        payload
-                    )
-
-                    res = pickle.loads(answer)
+                    res = ReadSDOEntries(ctr._connector, entries, SlavePos)
 
                     # ================================
                     # expand the DTxxxx structures
@@ -715,14 +710,8 @@ class SDOPanelClass(wx.Panel):
                                 ))
 
                             try:
-                                payload = pickle.dumps((sub_entries, SlavePos))
-
-                                answer = ctr._connector.ExtendedCall(
-                                    "GetSDOEntriesData",
-                                    payload
-                                )
-
-                                sub_res = pickle.loads(answer)
+                                sub_res = ReadSDOEntries(
+                                    ctr._connector, sub_entries, SlavePos)
 
                                 for s in sub_res:
                                     if "abort_code" in str(s.value):
@@ -884,10 +873,7 @@ class SDOPanelClass(wx.Panel):
         # everything checked, the thread can be started
 
         self.SetSDOTraceValues(self.SDOMonitorEntries)
-        ctr._connector.ExtendedCall(
-            "GetSDOData",
-            bytes()
-        )
+        CallEtherCAT(ctr._connector, "get_sdo_data")
 
         self.SDOMonitoringFlag = True
         self.SDOTraceThread = Thread(target=self.SDOMonitorThreadProc, daemon=True)
@@ -907,10 +893,7 @@ class SDOPanelClass(wx.Panel):
             ctr = self.Controler.GetCTRoot()
             if ctr and hasattr(ctr, "_connector") and ctr._connector:
                 try:
-                    ctr._connector.ExtendedCall(
-                        "StopSDOThread",
-                        bytes()
-                    )
+                    CallEtherCAT(ctr._connector, "stop_sdo_thread")
                 except Exception as e:
                     self.Controler.GetCTRoot().logger.write_warning(
                         _("Could not stop the SDO thread: %s\n") % str(e))
@@ -920,24 +903,26 @@ class SDOPanelClass(wx.Panel):
                 _("Could not stop SDO monitoring: %s\n") % str(e))
 
     def SetSDOTraceValues(self, SDOMonitorEntries):
-        import pickle
-
+        """
+        Tell the runtime which SDO entries the monitoring thread has to poll.
+        @param SDOMonitorEntries: {(index, subindex): entry description}
+        """
         SlavePos = self.Controler.GetSlavePos()
         check_connect_flag = self.Controler.CommonMethod.CheckConnect(cyclic_flag=True)
 
         if not check_connect_flag:
             return
 
-        payload = pickle.dumps((SDOMonitorEntries, SlavePos))
+        entries = [
+            SDOEntry(idx=idx,
+                     subIdx=subIdx,
+                     datatype=infos.get("type", ""),
+                     size=infos.get("size", ""),
+                     value=infos.get("value", "")).to_dict()
+            for (idx, subIdx), infos in SDOMonitorEntries.items()]
 
-        answer = self.Controler.GetCTRoot()._connector.ExtendedCall(
-            "SetSDOTraceValues",
-            payload
-        )
-
-        result = pickle.loads(answer)
-
-        return result
+        return CallEtherCAT(self.Controler.GetCTRoot()._connector,
+                            "set_sdo_trace_values", entries, SlavePos)
 
     def SDOMonitorThreadProc(self):
 
@@ -965,40 +950,19 @@ class SDOPanelClass(wx.Panel):
                     continue
 
                 # read the data
-                answer = connector.ExtendedCall(
-                    "GetSDOData",
-                    pickle.dumps(None)
-                )
-
-                data = pickle.loads(answer)
+                data = CallEtherCAT(connector, "get_sdo_data")
 
                 if not data:
                     time.sleep(0.5)
                     continue
 
-                if isinstance(data, tuple) and len(data) == 2:
-                    entries, slave_pos = data
-                else:
-                    continue
-
-                if slave_pos != self.Controler.GetSlavePos():
+                if data["slavePos"] != self.Controler.GetSlavePos():
                     continue
 
                 # refresh the value column of the monitor grid
-                if isinstance(entries, dict):
-                    LocalData = list(entries.items())
-                    LocalData.sort()
-
-                    row = 0
-                    for (idx, subidx), d in LocalData:
-                        wx.CallAfter(self.SDOMonitorGrid.SetCellValue, row, 6, str(d["value"]))
-                        row += 1
-
-                elif isinstance(entries, list):
-                    row = 0
-                    for e in entries:
-                        wx.CallAfter(self.SDOMonitorGrid.SetCellValue, row, 6, str(e.value))
-                        row += 1
+                for row, entry in enumerate(data["entries"]):
+                    wx.CallAfter(self.SDOMonitorGrid.SetCellValue,
+                                 row, 6, str(entry["value"]))
 
                 time.sleep(0.5)
 
@@ -1323,31 +1287,31 @@ class SlaveSDOTable(wx.grid.Grid):
                                                 self.SDOs[event.GetRow()]["subIdx"], 
                                                 dlg.GetValue())
                         if return_val == "":
-                            SDOUploadEntry = {"idx" : self.SDOs[event.GetRow()]["idx"],
-                                              "subIdx" : self.SDOs[event.GetRow()]["subIdx"],
-                                              "size" : self.SDOs[event.GetRow()]["size"]
-                                             }
-                            payload = pickle.dumps(
-                                (SDOUploadEntry, self.Controler.GetSlavePos())
-                            )
+                            SDOUploadEntry = {
+                                "idx": self.SDOs[event.GetRow()]["idx"],
+                                "subIdx": self.SDOs[event.GetRow()]["subIdx"],
+                                "size": self.SDOs[event.GetRow()]["size"],
+                                "datatype": self.SDOs[event.GetRow()]["type"]}
 
-                            data = self.Controler.GetCTRoot()._connector.ExtendedCall(
-                                "GetSDOEntryData",
-                                payload
-                            )
+                            data = CallEtherCAT(
+                                self.Controler.GetCTRoot()._connector,
+                                "get_sdo_entry_data",
+                                SDOUploadEntry,
+                                self.Controler.GetSlavePos())
 
-                            data = pickle.loads(data)
+                            # read the entry back to check what was written
+                            try:
+                                read_val = int(data)
+                            except (TypeError, ValueError):
+                                read_val = None
 
-                            hex_val = hex(data)[:-1]                           
-
-                            # download data check
-                            if input_val == hex_val:
-                                display_val = "%s(%d)" % (hex_val, data) 
-                                self.SetCellValue(event.GetRow(), event.GetCol(), 
+                            if read_val is not None and hex(read_val) == input_val:
+                                display_val = "%s(%d)" % (hex(read_val), read_val)
+                                self.SetCellValue(event.GetRow(), event.GetCol(),
                                                   display_val)
                             else :
                                 self.Controler.CommonMethod.CreateErrorDialog(\
-                                            'SDO Value not completely download, please try again')    
+                                            'SDO Value not completely download, please try again')
                         else:
                             self.Controler.GetCTRoot().logger.write_error(return_val)
                             

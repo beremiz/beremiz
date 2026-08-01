@@ -35,100 +35,13 @@ from etherlab.EthercatSlave import \
     TYPECONVERSION, \
     VARCLASSCONVERSION, \
     _CommonSlave
+from etherlab.rpc import CallEtherCAT, EtherCATError
 
 try:
     from etherlab.EthercatCIA402Slave import _EthercatCIA402SlaveCTN
     HAS_MCL = True
 except Exception:
     HAS_MCL = False
-
-# --------------------------------------------------
-#         Remote Exec Etherlab Commands
-# --------------------------------------------------
-
-SCAN_COMMAND = """
-import subprocess
-
-def safe_run(cmd):
-    try:
-        return subprocess.check_output(
-            cmd,
-            text=True,
-            stderr=subprocess.STDOUT
-        )
-    except Exception as e:
-        print("EtherCAT error:", e)
-        return ""
-
-# list the slaves found on the bus
-result = safe_run(["ethercat", "slaves"])
-
-slaves = []
-
-for slave_line in result.splitlines():
-
-    if not slave_line.strip():
-        continue
-
-    chunks = slave_line.strip().split()
-
-    # a slave line has at least 5 fields
-    if len(chunks) < 5:
-        continue
-
-    try:
-        idx = int(chunks[0])
-        pos = chunks[1]
-        state = chunks[2]
-        flag = chunks[3]
-        name = " ".join(chunks[4:])
-
-        # second field is alias:position
-        if ":" not in pos:
-            continue
-
-        parts = pos.split(":")
-        if len(parts) != 2:
-            continue
-
-        alias = int(parts[0])
-        position = int(parts[1])
-
-        slave = {
-            "idx": idx,
-            "alias": alias,
-            "position": position,
-            "state": state,
-            "flag": flag,
-            "name": name,
-            "vendor_id": None,
-            "product_code": None,
-            "revision_number": None
-        }
-
-        # complete with the identity reported by the slave itself
-        details = safe_run(["ethercat", "slaves", "-p", str(idx), "-v"])
-
-        for line in details.splitlines():
-            line = line.strip()
-
-            if "Vendor Id:" in line:
-                slave["vendor_id"] = line.split("Vendor Id:")[-1].strip()
-
-            elif "Product code:" in line:
-                slave["product_code"] = line.split("Product code:")[-1].strip()
-
-            elif "Revision number:" in line:
-                slave["revision_number"] = line.split("Revision number:")[-1].strip()
-
-        slaves.append(slave)
-
-    except Exception as e:
-        print("Parse error:", slave_line, e)
-        continue
-
-returnVal = slaves
-"""
 
 # --------------------------------------------------
 #      Etherlab Specific Blocks Library
@@ -578,13 +491,18 @@ class _EthercatCTN(object):
     def _ScanNetwork(self):
         app_frame = self.GetCTRoot().AppFrame
 
-        error, returnVal = self.RemoteExec(SCAN_COMMAND, returnVal=None)
+        try:
+            slaves = CallEtherCAT(self.GetCTRoot()._connector, "scan")
+        except EtherCATError as e:
+            self.GetCTRoot().logger.write_warning(
+                _("Could not scan the EtherCAT network: %s\n") % str(e))
+            return
 
-        if error != 0 or not returnVal:
+        if not slaves:
             return
 
         # aliases really present on the bus
-        detected_aliases = {slave["alias"] for slave in returnVal}
+        detected_aliases = {slave["alias"] for slave in slaves}
 
         # the project tree holds the logical (IEC) reference
         tree = app_frame.ProjectTree

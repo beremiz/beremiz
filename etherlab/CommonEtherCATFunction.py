@@ -13,8 +13,9 @@ from __future__ import division
 from builtins import str as text
 import codecs
 import wx
-import subprocess
 import re
+
+from etherlab.rpc import CallEtherCAT, DecodeBinary, EncodeBinary, EtherCATError
 
 mailbox_protocols = ["AoE", "EoE", "CoE", "FoE", "SoE", "VoE"]
 
@@ -50,127 +51,6 @@ def ExtractName(names, default=None):
             if name.getLcId() == 1033:
                 return name.getcontent()
     return default
-
-#--------------------------------------------------
-#         Remote Exec Etherlab Commands
-#--------------------------------------------------
-
-# --------------------- for master ---------------------------
-MASTER_STATE = """
-import subprocess
-result = subprocess.getoutput("ethercat master")
-returnVal =result
-"""
-
-# --------------------- for slave ----------------------------
-# ethercat state -p (slave position) (state (INIT, PREOP, SAFEOP, OP))
-SLAVE_STATE = """
-import subprocess
-result = subprocess.getoutput("ethercat states -p %d %s")
-returnVal = result
-"""
-
-# ethercat slave
-GET_SLAVE = """
-import subprocess
-result = subprocess.getoutput("ethercat slaves")
-returnVal =result
-"""
-
-# ethercat xml -p (slave position)
-SLAVE_XML = """
-import subprocess
-result = subprocess.getoutput("ethercat xml -p %d")
-returnVal = result
-"""
-
-# ethercat upload -p (slave position) -t (type) (index) (sub index)
-SDO_UPLOAD = """
-import subprocess
-sdo_data = []
-input_data = "%s"
-slave_pos = %d
-command_string = ""
-for sdo_token in input_data.split(","):  
-    if len(sdo_token) > 1:
-        sdo_token = sdo_token.strip()
-        type, idx, subidx = sdo_token.split(" ")
-        command_string = "ethercat upload -p " + str(slave_pos) + " -t " + type + " " + idx + " " + subidx
-        result = subprocess.getoutput(command_string)
-        sdo_data.append(result)
-returnVal =sdo_data
-"""
-
-# ethercat download -p (slave position) (main index) (sub index) (value)
-SDO_DOWNLOAD = """
-import subprocess
-result = subprocess.getoutput("ethercat download --type %s -p %d %s %s %s")
-returnVal =result
-"""
-
-# ethercat sii_read -p (slave position)
-SII_READ = """
-import subprocess
-result = subprocess.check_output("ethercat sii_read -a %d", shell=True)
-returnVal =result
-"""
-
-# ethercat reg_read -p (slave position) (address) (size)
-REG_READ = """
-import subprocess
-result = subprocess.getoutput("ethercat reg_read -a %d %s %s")
-returnVal =result
-"""
-
-# ethercat reg_read -p (slave position) (address) (size)
-MULTI_REG_READ = """ 
-import subprocess
-output = []
-addr, size = range(2)
-slave_num = %d 
-reg_info_str = "%s"
-reg_info_list = reg_info_str.split("|")
-for slave_idx in range(slave_num):
-    for reg_info in reg_info_list:
-        param = reg_info.split(",")
-        result = subprocess.getoutput("ethercat reg_read -p "
-                                    + str(slave_idx) + " "
-                                    + param[addr] + " "
-                                    + param[size])
-        output.append(str(slave_idx) + "," + param[addr] + "," + result)
-returnVal = output
-"""
-
-# ethercat sii_write -p (slave position) - (contents)
-SII_WRITE = """
-import subprocess
-process = subprocess.Popen(
-    ["ethercat", "-f", "sii_write", "-p", "%d", "-"],
-    stdin=subprocess.PIPE)
-process.communicate(sii_data)
-returnVal = process.returncode
-"""
-
-# ethercat reg_write -p (slave position) -t (uinit16) (address) (data)
-REG_WRITE = """
-import subprocess
-result = subprocess.getoutput("ethercat reg_write -p %d -t uint16 %s %s")
-returnVal =result
-"""
-
-# ethercat rescan -p (slave position)
-RESCAN = """
-import subprocess
-result = subprocess.getoutput("ethercat rescan -p %d")
-returnVal =result
-"""
-
-# ethercat pdos
-PDOS = """
-import subprocess
-result = subprocess.getoutput("ethercat pdos -p 0")
-returnVal =result  
-"""
 
 # --------------------------------------------------
 #    Common Method For EtherCAT Management
@@ -244,6 +124,27 @@ class _CommonSlave(object):
         self.ClearSDODataSet()
 
     # -------------------------------------------------------------------------------
+    #                        Runtime EtherCAT service
+    # -------------------------------------------------------------------------------
+    def EtherCATCall(self, command, *args, **kwargs):
+        """
+        Run an EtherCAT command on the runtime, see ETHERCAT_COMMANDS in
+        etherlab/runtime_etherlab.py.
+        @param command : name of the command to run
+        @param args : arguments of the command
+        @param default : value returned when the runtime cannot be reached
+        @return result of the command
+        """
+        default = kwargs.pop("default", None)
+        try:
+            return CallEtherCAT(self.Controler.GetCTRoot()._connector,
+                                command, *args)
+        except EtherCATError as e:
+            self.Controler.GetCTRoot().logger.write_warning(
+                _("EtherCAT %s failed: %s\n") % (command, str(e)))
+            return default
+
+    # -------------------------------------------------------------------------------
     #                        Used Master State
     # -------------------------------------------------------------------------------
     def GetMasterState(self):
@@ -253,7 +154,7 @@ class _CommonSlave(object):
         """
 
         # exectute "ethercat master" command
-        _error, return_val = self.Controler.RemoteExec(MASTER_STATE, return_val=None)
+        return_val = self.EtherCATCall("master_state", default="")
         master_state = {}
         # parse the reslut
         for each_line in return_val.splitlines():
@@ -279,7 +180,7 @@ class _CommonSlave(object):
         @param alias : alias of the slave to look for
         @return position : ring position of the slave, None when not found
         """
-        output = subprocess.getoutput("ethercat slaves")
+        output = self.EtherCATCall("slaves", default="")
 
         for line in output.splitlines():
             # line format : 0  3:0  PREOP  +  CL3-E57H
@@ -306,10 +207,8 @@ class _CommonSlave(object):
         if pos is None:
             return
 
-        _error, _return_val = self.Controler.RemoteExec(
-            SLAVE_STATE % (pos, command), return_val=True)
-        _err, state = self.Controler.RemoteExec(GET_SLAVE, return_val=True)
-        return state
+        self.EtherCATCall("slave_state", pos, command)
+        return self.EtherCATCall("slaves", default="")
 
     def GetSlaveStateFromSlave(self):
         """
@@ -317,7 +216,7 @@ class _CommonSlave(object):
         (self.SlaveState) for "Slave State"
         return_val example : 0  0:0  PREOP  +  EL9800 (V4.30) (PIC24, SPI, ET1100)
         """
-        _error, return_val = self.Controler.RemoteExec(GET_SLAVE, return_val=None)
+        return_val = self.EtherCATCall("slaves", default="")
         self.SlaveState = return_val
         return return_val
 
@@ -334,11 +233,8 @@ class _CommonSlave(object):
         @param value : value of SDO entry
         """ 
         valid_type = self.GetValidDataType(data_type)
-        _error, return_val = self.Controler.RemoteExec(
-            SDO_DOWNLOAD%(valid_type, self.Controler.GetSlavePos(),
-                idx, sub_idx, value), return_val = None)
-        
-        return return_val
+        return self.EtherCATCall("sdo_download", self.Controler.GetSlavePos(),
+                                 valid_type, idx, sub_idx, value, default="")
     
     def BackupSDODataSet(self):
         """
@@ -366,47 +262,39 @@ class _CommonSlave(object):
     def GetAllSDOValuesFromSlave(self):
         """
         Get SDO values of All SDO entries.
-        @return return_val: list of result of "SDO_UPLOAD"
+        @return return_val: one "ethercat upload" output line per entry
         """
-        entry_infos = ""
+        entry_infos = []
         alldata_idx = len(self.SDOVariables)
         counter = 0
         for category in self.SDOVariables:
             counter +=1
-            # for avoid redundant repetition 
+            # for avoid redundant repetition
             if counter == alldata_idx:
                 continue
-            
+
             for entry in category:
                 valid_type = self.GetValidDataType(entry["datatype"])
-                for_command_string = "%s %s %s ," % \
-                        (valid_type, entry["idx"], entry["subIdx"])
-                entry_infos += for_command_string
-             
-        error, return_val = self.Controler.RemoteExec(SDO_UPLOAD%(entry_infos, self.Controler.GetSlavePos()), return_val = None)
-        
-        return return_val
+                entry_infos.append(
+                    [valid_type, str(entry["idx"]), str(entry["subIdx"])])
+
+        return self.EtherCATCall("sdo_upload", self.Controler.GetSlavePos(),
+                                 entry_infos, default=[])
 
     def GetSDOValuesFromSlave(self, entries_info):
         """
         Get SDO values of some SDO entries.
         @param entries_info: dictionary of SDO entries that is wanted to know the value. 
-        @return return_val: list of result of "SDO_UPLOAD"
+        @return return_val: one "ethercat upload" output line per entry
         """
-        entry_infos = ""
+        entry_infos = []
 
-        entries_info_list = entries_info.items()
-        entries_info_list.sort()
-        
-        for (idx, subIdx), entry in entries_info_list:
+        for (idx, subIdx), entry in sorted(entries_info.items()):
             valid_type = self.GetValidDataType(entry["datatype"])
-            for_command_string = "%s %s %s ," % \
-                        (valid_type, str(idx), str(subIdx))
-            entry_infos += for_command_string
+            entry_infos.append([valid_type, str(idx), str(subIdx)])
 
-        error, return_val = self.Controler.RemoteExec(SDO_UPLOAD%(entry_infos, self.Controler.GetSlavePos()), return_val = None)
-        
-        return return_val
+        return self.EtherCATCall("sdo_upload", self.Controler.GetSlavePos(),
+                                 entry_infos, default=[])
 
     def ExtractObjects(self):
         """
@@ -993,7 +881,8 @@ class _CommonSlave(object):
         @return return_val : result of "ethercat sii_read" (binary data)
         """
         alias = self.Controler.GetSlavePos()
-        _error, return_val = self.Controler.RemoteExec(SII_READ % (alias), return_val=None)
+        return_val = self.EtherCATCall("sii_read", alias)
+        return_val = b"" if return_val is None else DecodeBinary(return_val)
         self.SiiData = return_val
         return return_val
 
@@ -1004,11 +893,8 @@ class _CommonSlave(object):
         @param binary : EEPROM contents in binary data format
         @return return_val : result of "ethercat sii_write" (If it succeeds, the return value is NULL.)
         """
-        _error, return_val = self.Controler.RemoteExec(
-            SII_WRITE % (self.Controler.GetSlavePos()),
-            return_val=None,
-            sii_data=binary)
-        return return_val
+        return self.EtherCATCall("sii_write", self.Controler.GetSlavePos(),
+                                 EncodeBinary(binary))
 
     def LoadData(self):
         """
@@ -2010,29 +1896,22 @@ class _CommonSlave(object):
         @param length : register length
         @return return_val : register data
         """
-        _error, return_val = self.Controler.RemoteExec(
-            REG_READ % (self.Controler.GetSlavePos(), offset, length),
-            return_val=None)
-        return return_val
+        return self.EtherCATCall("reg_read", self.Controler.GetSlavePos(),
+                                 offset, length, default="")
 
     def MultiRegRead(self, slave_num, reg_infos):
         """
-        
-        @slave_num:
-        @param addr_info:
-        @return return_val: 
+        Read the same registers on every slave of the network.
+        @param slave_num: number of slaves on the network
+        @param reg_infos: list of "address,size" registers to read
+        @return return_val: one "position,address,content" line per read
         """
-        reg_info_str = ""
-        for reg_info in reg_infos:
-            reg_info_str = reg_info_str + "%s|" % reg_info
-        reg_info_str = reg_info_str.strip("|")
+        registers = [reg_info.split(",") for reg_info in reg_infos]
 
-        _error, return_val = self.Controler.RemoteExec(\
-            MULTI_REG_READ%(slave_num, reg_info_str),
-            return_val = None)
-        
-        return return_val
-    
+        return self.EtherCATCall("multi_reg_read", slave_num, registers,
+                                 default=[])
+
+
     def RegWrite(self, address, data):
         """
         Write data to slave ESC register using "ethercat reg_write -p %d %s %s" command.
@@ -2041,17 +1920,15 @@ class _CommonSlave(object):
         @param data : data to write
         @return return_val : the execution result of "ethercat reg_write" (for error check)
         """
-        _error, return_val = self.Controler.RemoteExec(
-            REG_WRITE % (self.Controler.GetSlavePos(), address, data),
-            return_val=None)
-        return return_val
+        return self.EtherCATCall("reg_write", self.Controler.GetSlavePos(),
+                                 address, data, default="")
 
     def Rescan(self):
         """
         Synchronize EEPROM data in master controller with the data in slave device after EEPROM write.
         Command example : "ethercat rescan -p 0"
         """
-        _error, _return_val = self.Controler.RemoteExec(RESCAN % (self.Controler.GetSlavePos()), return_val=None)
+        self.EtherCATCall("rescan", self.Controler.GetSlavePos())
 
     # -------------------------------------------------------------------------------
     #                        Used DC Configuration
@@ -2110,7 +1987,7 @@ class _CommonSlave(object):
                     self.CreateErrorDialog(_('Alias not found'))
                 return False
 
-            _error, return_val = self.Controler.RemoteExec(SLAVE_XML % pos, return_val=None)
+            return_val = self.EtherCATCall("slave_xml", pos, default="")
 
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2:  # No slave connected to the master controller
