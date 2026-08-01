@@ -65,6 +65,20 @@ PDO ="""<xsd:attribute name="RxPDO" type="xsd:string" use="optional" default=""/
 <xsd:attribute name="TxPDO" type="xsd:string" use="optional" default=""/>
 """
 
+# Whether the PDOs of the slave can be reassigned and remapped is normally read
+# from the CoE section of its ESI file. These let the user overrule an ESI file
+# that does not describe the device faithfully.
+PDO_CAPABILITIES = "\n".join(["""\
+<xsd:attribute name="%s" use="optional" default="Auto">
+  <xsd:simpleType>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Auto"/>
+      <xsd:enumeration value="Enabled"/>
+      <xsd:enumeration value="Disabled"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:attribute>""" % name for name in ["PdoAssign", "PdoConfig"]]) + "\n"
+
 # --------------------------------------------------
 #                    Ethercat Node
 # --------------------------------------------------
@@ -84,7 +98,7 @@ class _EthercatSlaveCTN(object):
       </xsd:element>
 
     </xsd:schema>
-    """ % PDO
+    """ % (PDO + PDO_CAPABILITIES)
 
     def __init__(self):
         # ----------- call ethercat mng. function --------------

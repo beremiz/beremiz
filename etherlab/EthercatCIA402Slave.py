@@ -17,7 +17,7 @@ import wx
 from plcopen.types_enums import LOCATION_CONFNODE, LOCATION_VAR_INPUT
 
 from MotionLibrary import Headers, AxisXSD
-from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave, PDO
+from etherlab.EthercatSlave import _EthercatSlaveCTN, _CommonSlave, PDO, PDO_CAPABILITIES
 from etherlab.ConfigEditor import CIA402NodeEditor
 
 # Definition of node variables that have to be mapped in PDO
@@ -192,7 +192,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     """ % ("\n".join(["""\
           <xsd:attribute name="Enable%s" type="xsd:boolean"
                          use="optional" default="false"/>""" % category
-                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD + PDO + DC)
+                      for category, variables in EXTRA_NODE_VARIABLES]) + AxisXSD + PDO + PDO_CAPABILITIES + DC)
 
     NODE_PROFILE = 402
     EditorType = CIA402NodeEditor

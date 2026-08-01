@@ -236,6 +236,30 @@ class _EthercatCFileGenerator(object):
     def DeclareSlave(self, slave_index, slave):
         self.Slaves.append((slave_index, slave))
 
+    def OverridePdoCapability(self, slave_index, ethercat_params, name, value):
+        """
+        Let a slave parameter overrule what its ESI file says about the PDO
+        assignment and configuration capabilities.
+        @param slave_index: ring position of the slave, for the log message
+        @param ethercat_params: confnode parameters of the slave, may be None
+        @param name: "PdoAssign" or "PdoConfig"
+        @param value: what the ESI file declares
+        @return the capability to use
+        """
+        getter = getattr(ethercat_params, "get%s" % name, None)
+        setting = getter() if getter is not None else "Auto"
+
+        if setting not in ("Enabled", "Disabled"):
+            return value
+
+        forced = setting == "Enabled"
+        if forced != value:
+            self.Controler.GetCTRoot().logger.write_warning(
+                _("Warning: slave {a1} forces {a2} to {a3}, "
+                  "against what its ESI file declares\n").
+                format(a1=slave_index, a2=name, a3=setting))
+        return forced
+
     def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name, no_decl=False):
         slave_variables = self.UsedVariables.setdefault(slave_index, {})
 
@@ -324,6 +348,11 @@ class _EthercatCFileGenerator(object):
             # Extract slaves variables to be mapped
             slave_variables = self.UsedVariables.get(slave_idx, {})
 
+            # Confnode parameters of that slave : PDO selection, PDO
+            # capabilities override and DC configuration
+            node = self.Controler.GetChildByIECLocation((slave_idx,))
+            ethercat_params = node.GetSlaveParams() if node is not None else None
+
             # Extract slave device object dictionary entries
             device_entries = device.GetEntriesList()
 
@@ -372,10 +401,15 @@ class _EthercatCFileGenerator(object):
                 PdoConfig = device_coe.getPdoConfig()
 
             else:
+                # a device declaring no CoE mailbox cannot have its PDOs
+                # reassigned, its ESI description is used as is
                 PdoAssign = PdoConfig = False
-                if slave_idx == 1:
-                    PdoAssign = True
-                    PdoConfig = True
+
+            # the ESI file is not always right about that, let the user say so
+            PdoAssign = self.OverridePdoCapability(
+                slave_idx, ethercat_params, "PdoAssign", PdoAssign)
+            PdoConfig = self.OverridePdoCapability(
+                slave_idx, ethercat_params, "PdoConfig", PdoConfig)
 
             # Test if slave has a configuration or need one
 
@@ -436,9 +470,6 @@ class _EthercatCFileGenerator(object):
                 data_files = os.listdir(self.Controler.CTNPath())
                 PDODataList = []
                 MDPData = []
-
-                node = self.Controler.GetChildByIECLocation((slave_idx,))
-                ethercat_params = node.GetSlaveParams() if node is not None else None
 
                 RxPDOData = ""
                 TxPDOData = ""
