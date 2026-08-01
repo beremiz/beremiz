@@ -603,12 +603,18 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 str_completion["modeofop_homing_method"].append(MODEOFOP_HOMING_METHOD_TEMPLATE)
                 str_completion["modeofop_computation_mode"].append(MODEOFOP_COMPUTATION_MODE_TEMPLATE)
 
+            # the master generated file holds the definition, this one only
+            # refers to it, so that the symbol is defined exactly once
             str_completion["extern_located_variables_declaration"].append(
                     "extern IEC_%(var_type)s *%(var_name)s;" % var_infos)
             str_completion["entry_variables"].append(
                     "    IEC_%(var_type)s *%(name)s;" % var_infos)
             str_completion["init_entry_variables"].append(
                     "    __CIA402Node_%(location)s.%(name)s = %(var_name)s;" % var_infos)
+
+            self.CTNParent.FileGenerator.DeclareVariable(
+                    self.GetSlavePos(), var_infos["index"], var_infos["subindex"],
+                    var_infos["var_type"], var_infos["dir"], var_infos["var_name"])
 
         for element in ["extern_located_variables_declaration", 
                         "fieldbus_interface_declaration",
