@@ -207,6 +207,30 @@ ProcessVariablesParser = GenerateParserFromXSDstring(ProcessVariablesXSD)
 
 class _EthercatCTN(object):
 
+    XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="EtherCATParams">
+        <xsd:complexType>
+          <!-- Where the IgH EtherCAT master is installed, when it is not in
+               the compiler default search paths -->
+          <xsd:attribute name="Prefix" type="xsd:string" use="optional" default=""/>
+          <!-- Which flavour of the master library to link against. Default
+               follows the target of the project : RTDM on Xenomai, the
+               generic one everywhere else -->
+          <xsd:attribute name="RealTimeDriver" use="optional" default="Default">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:string">
+                <xsd:enumeration value="Default"/>
+                <xsd:enumeration value="Generic"/>
+                <xsd:enumeration value="RTDM"/>
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+    """
+
     CTNChildrenTypes = [("EthercatSlave", _EthercatSlaveCTN, "Ethercat Slave")]
     if HAS_MCL:
         CTNChildrenTypes.append(("EthercatCIA402Slave", _EthercatCIA402SlaveCTN, "Ethercat CIA402 Slave"))
@@ -1033,15 +1057,56 @@ class _EthercatCTN(object):
 
         self.FileGenerator.GenerateCFile(Gen_Ethercatfile_path, location_str, self.BaseParams.getIEC_Channel())
 
+        CFLAGS, master_LDFLAGS = self.GetEtherCATBuildFlags()
+
         LocationCFilesAndCFLAGS.insert(
             0,
             (current_location,
-             [(Gen_Ethercatfile_path, "-I%s -I/usr/local/include" % os.path.abspath(self.GetCTRoot().GetIECLibPath()))],
+             [(Gen_Ethercatfile_path,
+               '"-I%s"' % os.path.abspath(self.GetCTRoot().GetIECLibPath()) + CFLAGS)],
              True))
-        LDFLAGS.append("-L/usr/local/lib")
-        LDFLAGS.append("-lethercat -lm")
+        LDFLAGS.extend(master_LDFLAGS)
 
         return LocationCFilesAndCFLAGS, LDFLAGS, extra_files
+
+    def UseRTDM(self):
+        """
+        Whether the realtime flavour of the master library is wanted. The
+        project target decides, unless the master says otherwise.
+        @return True when linking against libethercat_rtdm
+        """
+        driver = self.EtherCATParams.getRealTimeDriver()
+        if driver == "RTDM":
+            return True
+        if driver == "Generic":
+            return False
+        builder = self.GetCTRoot().GetBuilder()
+        return builder is not None and builder.GetTargetName() == "Xenomai"
+
+    def GetEtherCATBuildFlags(self):
+        """
+        Compiler and linker flags needed to build against the IgH EtherCAT
+        master library.
+        @return (CFLAGS string, LDFLAGS list)
+        """
+        CFLAGS = ""
+        LDFLAGS = []
+
+        prefix = self.EtherCATParams.getPrefix()
+        if prefix:
+            CFLAGS += ' "-I%s"' % os.path.join(prefix, "include")
+            LDFLAGS.append('"-L%s"' % os.path.join(prefix, "lib"))
+
+        if self.UseRTDM():
+            # plc_etherlab.c switches to the Xenomai timers and to LogMessage
+            CFLAGS += " -DUSE_XENOMAI"
+            LDFLAGS.append("-lethercat_rtdm -lrtdm")
+        else:
+            LDFLAGS.append("-lethercat")
+
+        LDFLAGS.append("-lm")
+
+        return CFLAGS, LDFLAGS
 
     ConfNodeMethods = [
         {

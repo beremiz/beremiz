@@ -28,8 +28,10 @@ See COPYING file for copyrights details.
 
 #ifdef USE_XENOMAI
 #include <rtdm/rtdm.h>
-#include <native/task.h>
-#include <native/timer.h>
+/* same skin as targets/Xenomai/plc_Xenomai_main.c, rt_timer_read() and
+   rt_timer_ns2ticks() come from there */
+#include <alchemy/task.h>
+#include <alchemy/timer.h>
 typedef RTIME RTIME_TYPE;
 #else
 typedef uint64_t RTIME_TYPE;
