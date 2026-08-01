@@ -316,7 +316,7 @@ class _EthercatCTN(object):
                 else:
                     ConfNodeType = "EthercatSlave"
                 new_child = self.CTNAddChild("%s_0" % ConfNodeType, ConfNodeType)
-                new_child.SetParamsAttribute("EthercatSlaveParams.Type", type_infos)
+                new_child.SetParamsAttribute("SlaveParams.Type", type_infos)
                 self.CTNRequestSave()
                 self.ensure_doc_recursive(getattr(new_child, "ConfNodeParams", []))
                 new_child._OpenView()

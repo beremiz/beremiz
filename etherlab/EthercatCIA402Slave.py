@@ -183,7 +183,7 @@ DC ="""<xsd:attribute name="DC_Enable" type="xsd:boolean" use="optional" default
 class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
     <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-      <xsd:element name="EthercatSlaveParams">
+      <xsd:element name="CIA402SlaveParams">
         <xsd:complexType>
           %s
         </xsd:complexType>
@@ -245,13 +245,6 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
 
     def GetIconName(self):
         return "CIA402Slave"
-
-    def SetParamsAttribute(self, path, value):
-        if path == "EthercatSlaveParams.Type":
-            path = "SlaveParams.Type"
-        elif path == "EthercatSlaveParams.Alias":
-            path = "SlaveParams.Alias"
-        return _EthercatSlaveCTN.SetParamsAttribute(self, path, value)
 
     def GetVariableLocationTree(self):
         axis_name = self.CTNName()
@@ -334,8 +327,10 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
             self.SelectedRxPDOIndex = []
             self.SelectedTxPDOIndex = []
 
+            params = self.GetSlaveParams()
+
             # -------- Rx --------
-            RxPDOData = self.EthercatSlaveParams.getRxPDO()
+            RxPDOData = params.getRxPDO()
 
             if RxPDOData and RxPDOData != "None":
                 RxPDOs = RxPDOData.replace(",", " ").split()
@@ -345,7 +340,7 @@ class _EthercatCIA402SlaveCTN(_EthercatSlaveCTN):
                 })
 
             # -------- Tx --------
-            TxPDOData = self.EthercatSlaveParams.getTxPDO()
+            TxPDOData = params.getTxPDO()
 
             if TxPDOData and TxPDOData != "None":
                 TxPDOs = TxPDOData.replace(",", " ").split()

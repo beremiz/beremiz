@@ -92,6 +92,15 @@ class _EthercatSlaveCTN(object):
         self.SelectedRxPDOIndex = []
         self.SelectedTxPDOIndex = []
 
+    def GetSlaveParams(self):
+        """
+        PDO and DC parameters of this slave, whatever the XSD root element is
+        called : plain slaves store them in EthercatSlaveParams, CiA402 slaves
+        in CIA402SlaveParams.
+        @return the confnode parameters object, None when there is none
+        """
+        return self.CTNParams[1] if self.CTNParams else None
+
     def GetIconName(self):
         return "Slave"
 
@@ -147,19 +156,20 @@ class _EthercatSlaveCTN(object):
             return params
 
     def SetParamsAttribute(self, path, value):
-        if path == "EthercatSlaveParams.Type":
-            path = "SlaveParams.Type"
-        elif path == "EthercatSlaveParams.Alias":
-            path = "SlaveParams.Alias"
-
         self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
 
-        if path == "SlaveParams.Type":
+        # "Type" and "Alias" are shown among the confnode parameters but stored
+        # in the master network configuration, so they are handled here rather
+        # than by ConfigTreeNode. The parameters editor prefixes them with the
+        # XSD root element name, the master calls them by their bare name.
+        root = self.CTNParams[0] if self.CTNParams else "SlaveParams"
+
+        if path in ("SlaveParams.Type", "%s.Type" % root):
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             return slave_type["device_type"], True
-        elif path == "SlaveParams.Alias":
+        elif path in ("SlaveParams.Alias", "%s.Alias" % root):
             self.CTNParent.SetSlaveAlias(position, value)
             return value, True
 

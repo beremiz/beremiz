@@ -444,7 +444,7 @@ class _EthercatCFileGenerator(object):
                 MDPData = []
 
                 node = self.Controler.GetChildByIECLocation((slave_idx,))
-                ethercat_params = getattr(node, "EthercatSlaveParams", None)
+                ethercat_params = node.GetSlaveParams() if node is not None else None
 
                 RxPDOData = ""
                 TxPDOData = ""

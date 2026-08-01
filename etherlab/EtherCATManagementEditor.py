@@ -1460,7 +1460,7 @@ class RxPDOPanelClass(wx.Panel):
             self.Layout()
             self.Fit()
     def LoadProjectPDOData(self):
-        params = getattr(self.Controler, "EthercatSlaveParams", None)
+        params = self.Controler.GetSlaveParams()
 
         if params is None:
             return
@@ -1492,7 +1492,7 @@ class RxPDOPanelClass(wx.Panel):
             if getattr(self, "_loading", False):
                 return  # nothing to do while loading
 
-            RxPDOData = self.Controler.EthercatSlaveParams.getRxPDO()
+            RxPDOData = self.Controler.GetSlaveParams().getRxPDO()
 
             RxPDOs = []
             if RxPDOData != "None":
@@ -1524,7 +1524,7 @@ class RxPDOPanelClass(wx.Panel):
 
         # store the selection
         data = " ".join(self.PDOIndexList)
-        self.Controler.EthercatSlaveParams.setRxPDO(data)
+        self.Controler.GetSlaveParams().setRxPDO(data)
         self.Controler.GetCTRoot().CTNRequestSave()
 
     def InitSavePDO(self):
@@ -1535,7 +1535,7 @@ class RxPDOPanelClass(wx.Panel):
         for PDOIndex in self.PDOIndexList:            
             data = data + " " + PDOIndex
 
-        self.Controler.EthercatSlaveParams.setRxPDO(data)
+        self.Controler.GetSlaveParams().setRxPDO(data)
 
     # 2016.06.21
     # add jblee for check exclude pdo list
@@ -1666,7 +1666,7 @@ class TxPDOPanelClass(wx.Panel):
             self.Fit()
 
     def LoadProjectPDOData(self):
-        params = getattr(self.Controler, "EthercatSlaveParams", None)
+        params = self.Controler.GetSlaveParams()
 
         if params is None:
             return
@@ -1698,7 +1698,7 @@ class TxPDOPanelClass(wx.Panel):
             if getattr(self, "_loading", False):
                 return  # nothing to do while loading
 
-            TxPDOData = self.Controler.EthercatSlaveParams.getTxPDO()
+            TxPDOData = self.Controler.GetSlaveParams().getTxPDO()
             TxPDOs = []
             if TxPDOData != "None":
                 TxPDOs = TxPDOData.split()
@@ -1729,7 +1729,7 @@ class TxPDOPanelClass(wx.Panel):
 
         # store the selection
         data = " ".join(self.PDOIndexList)
-        self.Controler.EthercatSlaveParams.setTxPDO(data)
+        self.Controler.GetSlaveParams().setTxPDO(data)
         self.Controler.GetCTRoot().CTNRequestSave()
 
     def InitSavePDO(self):
@@ -1740,7 +1740,7 @@ class TxPDOPanelClass(wx.Panel):
         for PDOIndex in self.PDOIndexList:            
             data = data + " " + PDOIndex
 
-        self.Controler.EthercatSlaveParams.setTxPDO(data)
+        self.Controler.GetSlaveParams().setTxPDO(data)
 
     # 2016.06.21
     # add jblee for check exclude pdo list
@@ -4299,17 +4299,18 @@ class DCConfigPanel(wx.Panel):
         )
 
         # store the values
-        self.Controler.EthercatSlaveParams.setDC_Enable(dc_enable)
-        self.Controler.EthercatSlaveParams.setDC_Desc(dc_desc)
-        self.Controler.EthercatSlaveParams.setDC_Assign_Activate(dc_assign_activate_mod)
+        params = self.Controler.GetSlaveParams()
+        params.setDC_Enable(dc_enable)
+        params.setDC_Desc(dc_desc)
+        params.setDC_Assign_Activate(dc_assign_activate_mod)
         if dc_sync0_cycle:
-            self.Controler.EthercatSlaveParams.setDC_Sync0_Cycle_Time(dc_sync0_cycle)
+            params.setDC_Sync0_Cycle_Time(dc_sync0_cycle)
         if dc_sync0_shift:
-            self.Controler.EthercatSlaveParams.setDC_Sync0_Shift_Time(dc_sync0_shift)
+            params.setDC_Sync0_Shift_Time(dc_sync0_shift)
         if dc_sync1_cycle:
-            self.Controler.EthercatSlaveParams.setDC_Sync1_Cycle_Time(dc_sync1_cycle)
+            params.setDC_Sync1_Cycle_Time(dc_sync1_cycle)
         if dc_sync1_shift:
-            self.Controler.EthercatSlaveParams.setDC_Sync1_Shift_Time(dc_sync1_shift)
+            params.setDC_Sync1_Shift_Time(dc_sync1_shift)
 
         # save the project
         project_infos = self.Controler.GetCTRoot().CTNRequestSave()
@@ -4373,7 +4374,7 @@ class DCConfigPanel(wx.Panel):
         task_cycle_ns = self.GetInterval(ns_mode)
         task_cycle_to_us = int(task_cycle_ns) / 1000
 
-        params = getattr(self.Controler, "EthercatSlaveParams", None)
+        params = self.Controler.GetSlaveParams()
 
         if params is not None:
             dc_enable = getattr(params, "getDC_Enable", lambda: False)()
