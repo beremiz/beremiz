@@ -155,9 +155,6 @@ class ConfigTreeNode(object):
 
         return False
 
-    def RemoteExec(self, script, **kwargs):
-        return self.CTNParent.RemoteExec(script, **kwargs)
-
     def OnCTNSave(self, from_project_path=None):
         """Default, do nothing and return success"""
         return True

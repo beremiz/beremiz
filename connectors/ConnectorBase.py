@@ -16,7 +16,6 @@ class ConnectorBase(object):
         "StartPLC": False,
         "GetTraceVariables": (PlcStatus.Broken, None),
         "GetPLCstatus": (PlcStatus.Broken, None),
-        "RemoteExec": (-1, "RemoteExec script failed!"),
         "GetVersions": "*** Unknown ***"
     }
 
