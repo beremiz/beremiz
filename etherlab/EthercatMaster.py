@@ -452,82 +452,151 @@ class _EthercatCTN(object):
             idx += 1
         return variables
 
-    def GetTreeItemByIEC(self, tree, iec):
-        root = tree.GetRootItem()
-        master_item = None
-        item, cookie = tree.GetFirstChild(root)
+    def ScannedSlaveType(self, slave):
+        """
+        Identity of a scanned slave, in the form GetModuleInfos expects.
+        @param slave: one entry of what the "scan" command returned
+        @return type_infos, None when no ESI file describes that device
+        """
+        type_infos = {"vendor": slave["vendor_id"],
+                      "product_code": slave["product_code"],
+                      "revision_number": slave["revision_number"]}
+        device, _module_extra_params = self.GetModuleInfos(type_infos)
+        if device is None:
+            return None, None
+        type_infos["device_type"] = device.getType().getcontent()
+        return type_infos, device
 
-        while item and item.IsOk():
-            text = tree.GetItemText(item)
-
-            if "etherlab" in text.lower():
-                master_item = item
-                break
-
-            item = tree.GetNextSibling(item)
-
-        if not master_item:
-            return None
-
-        node_item, cookie = tree.GetFirstChild(master_item)
-
-        if not node_item or not node_item.IsOk():
-            return None
-
-        item, cookie = tree.GetFirstChild(node_item)
-
-        i = 0
-        while item and item.IsOk():
-            text = tree.GetItemText(item)
-
-            if i == iec:
-                return item
-
-            item = tree.GetNextSibling(item)
-            i += 1
-
-        return None
+    def SameSlaveType(self, first, second):
+        """Compare two slave identities, whatever their number format."""
+        if first is None or second is None:
+            return False
+        for key in ["vendor", "product_code", "revision_number"]:
+            try:
+                if ExtractHexDecValue(first[key]) != ExtractHexDecValue(second[key]):
+                    return False
+            except (KeyError, ValueError):
+                return False
+        return True
 
     def _ScanNetwork(self):
+        """
+        Confront the configuration with what is really on the bus, and complete
+        it with the slaves it does not know yet.  Slaves already configured are
+        left untouched, so that their PDO selection, DC settings and startup
+        commands survive a scan.
+        """
         app_frame = self.GetCTRoot().AppFrame
+        logger = self.GetCTRoot().logger
 
         try:
-            slaves = CallEtherCAT(self.GetCTRoot()._connector, "scan")
+            scanned = CallEtherCAT(self.GetCTRoot()._connector, "scan")
         except EtherCATError as e:
-            self.GetCTRoot().logger.write_warning(
+            logger.write_error(
                 _("Could not scan the EtherCAT network: %s\n") % str(e))
             return
 
-        if not slaves:
+        if not scanned:
+            logger.write_warning(_("No EtherCAT slave found on the network\n"))
             return
 
-        # aliases really present on the bus
-        detected_aliases = {slave["alias"] for slave in slaves}
+        added = []
+        unchanged = []
+        unknown = []
+        mismatched = []
 
-        # the project tree holds the logical (IEC) reference
-        tree = app_frame.ProjectTree
-        for child in self.IECSortedChildren():
+        for slave in scanned:
+            position = slave["idx"]
+            type_infos, device = self.ScannedSlaveType(slave)
 
-            iec = child.GetSlavePos()   # 0,1,2,3
+            if type_infos is None:
+                unknown.append(slave)
+                continue
 
-            if not hasattr(child, "_online"):
-                child._online = False
-
-            item = self.GetTreeItemByIEC(tree, iec)
-
-            # the IEC channel is compared to the hardware alias
-            if iec in detected_aliases:
-                child._online = True
-                if item:
-                    tree.SetItemTextColour(item, wx.Colour(0, 150, 0))
-
+            if HAS_MCL and str(_EthercatCIA402SlaveCTN.NODE_PROFILE) in device.GetProfileNumbers():
+                CTNType = "EthercatCIA402Slave"
             else:
-                child._online = False
-                if item:
-                    tree.SetItemTextColour(item, wx.Colour(150, 150, 150))
+                CTNType = "EthercatSlave"
 
-        tree.Refresh()
-        tree.Update()
+            child = self.GetChildByIECLocation((position, ))
+            if child is None:
+                self.CTNAddChild("slave%d" % position, CTNType, position)
+                self.SetSlaveType(position, type_infos)
+                added.append((position, type_infos["device_type"]))
+            elif self.SameSlaveType(self.GetSlaveType(position), type_infos):
+                unchanged.append((position, type_infos["device_type"]))
+            else:
+                mismatched.append((position, child, CTNType, type_infos))
+
+        scanned_positions = [slave["idx"] for slave in scanned]
+        missing = [(child.GetSlavePos(), child.CTNName())
+                   for child in self.IECSortedChildren()
+                   if child.GetSlavePos() not in scanned_positions]
+
+        for position, slave in [(slave["idx"], slave) for slave in unknown]:
+            logger.write_warning(
+                _("Scan: no ESI file for the device at position {a1} "
+                  "(vendor {a2}, product code {a3}, revision {a4}), left alone\n").
+                format(a1=position, a2=slave["vendor_id"],
+                       a3=slave["product_code"], a4=slave["revision_number"]))
+        for position, name in added:
+            logger.write(_("Scan: added slave {a1}, {a2}\n").
+                         format(a1=position, a2=name))
+        for position, name in unchanged:
+            logger.write(_("Scan: slave {a1} already configured as {a2}\n").
+                         format(a1=position, a2=name))
+        for position, name in missing:
+            logger.write_warning(
+                _("Scan: configured slave {a1} ({a2}) is not on the network, "
+                  "left in the configuration\n").format(a1=position, a2=name))
+
+        if mismatched:
+            self.ReplaceMismatchedSlaves(app_frame, mismatched)
+
+        if added or mismatched:
+            self.CTNRequestSave()
+            if app_frame:
+                app_frame.RefreshProjectTree()
+
+    def ReplaceMismatchedSlaves(self, app_frame, mismatched):
+        """
+        Ask before touching slaves that are configured as another device than
+        the one found at their position, then update the ones the user accepts.
+        @param mismatched: [(position, child, CTNType, type_infos), ...]
+        """
+        details = "\n".join(
+            [_("  position {a1}: configured as {a2}, found {a3}").format(
+                a1=position,
+                a2=(self.GetSlaveType(position) or {}).get("device_type", _("unknown")),
+                a3=type_infos["device_type"])
+             for position, _child, _CTNType, type_infos in mismatched])
+
+        dialog = wx.MessageDialog(
+            app_frame,
+            _("The following slaves are not the ones described in the "
+              "configuration:\n\n%s\n\nUpdate them? Their PDO selection will "
+              "be reset, since PDO indexes belong to the device.") % details,
+            _("Scan Network"),
+            wx.YES_NO | wx.ICON_QUESTION)
+        update = dialog.ShowModal() == wx.ID_YES
+        dialog.Destroy()
+
+        if not update:
+            return
+
+        for position, child, CTNType, type_infos in mismatched:
+            if child.CTNType != CTNType:
+                # plain slave and CiA402 slave are different confnode classes,
+                # the node has to be created again
+                name = child.CTNName()
+                self._doRemoveChild(child)
+                self.CTNAddChild(name, CTNType, position)
+            else:
+                params = child.GetSlaveParams()
+                if params is not None:
+                    params.setRxPDO("")
+                    params.setTxPDO("")
+            self.SetSlaveType(position, type_infos)
 
     def CTNAddChild(self, CTNName, CTNType, IEC_Channel=0):
         """
