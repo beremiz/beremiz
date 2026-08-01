@@ -234,7 +234,7 @@ class _EthercatCFileGenerator(object):
         self.Controler = None
 
     def DeclareSlave(self, slave_index, slave):
-        self.Slaves.append((slave_index, slave.getInfo().getAutoIncAddr(), slave))
+        self.Slaves.append((slave_index, slave))
 
     def DeclareVariable(self, slave_index, index, subindex, iec_type, dir, name, no_decl=False):
         slave_variables = self.UsedVariables.setdefault(slave_index, {})
@@ -293,8 +293,6 @@ class _EthercatCFileGenerator(object):
 
         # Sort slaves by position (IEC_Channel)
         self.Slaves.sort()
-        # Initialize dictionary storing alias auto-increment position values
-        alias = {}
 
         # add jblee
         slotNumber = 1
@@ -312,15 +310,8 @@ class _EthercatCFileGenerator(object):
                 str_completion[key] = "\n".join(str_completion[key])
 
         # Generating code for each slave
-        for (slave_idx, slave_alias, slave) in self.Slaves:
+        for (slave_idx, slave) in self.Slaves:
             type_infos = slave.getType()
-
-            # Defining slave alias and auto-increment position
-            if alias.get(slave_alias) is not None:
-                alias[slave_alias] += 1
-            else:
-                alias[slave_alias] = 0
-            slave_pos = (slave_alias, alias[slave_alias])
 
             # Extract slave device informations
             device, module_extra_params = self.Controler.GetModuleInfos(type_infos)
@@ -339,7 +330,10 @@ class _EthercatCFileGenerator(object):
             # Adding code for declaring slave in master code template strings
             for element in ["vendor", "product_code", "revision_number"]:
                 type_infos[element] = ExtractHexDecValue(type_infos[element])
-            type_infos.update(dict(zip(["slave", "alias", "position"], (slave_idx,) + slave_pos)))
+            # slaves are addressed by their ring position, alias 0 tells
+            # the master that the position is an absolute one
+            type_infos.update({"slave": slave_idx, "alias": 0,
+                               "position": slave_idx})
 
             # Extract slave device CoE informations
             device_coe = device.getCoE()

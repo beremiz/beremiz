@@ -544,7 +544,6 @@ class _EthercatCTN(object):
             slave_infos = slave.getInfo()
             slave_infos.setName("undefined")
             slave_infos.setPhysAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
-            slave_infos.setAutoIncAddr(newConfNodeOpj.BaseParams.getIEC_Channel())
             self.BufferModel()
             self.OnCTNSave()
 
@@ -592,20 +591,6 @@ class _EthercatCTN(object):
                     except RuntimeError:
                         # widget unexpectedly destroyed, nothing to refresh
                         pass
-
-    def GetSlaveAlias(self, slave_pos):
-        slave = self.GetSlave(slave_pos)
-        if slave is not None:
-            slave_info = slave.getInfo()
-            return slave_info.getAutoIncAddr()
-        return None
-
-    def SetSlaveAlias(self, slave_pos, alias):
-        slave = self.GetSlave(slave_pos)
-        if slave is not None:
-            slave_info = slave.getInfo()
-            slave_info.setAutoIncAddr(alias)
-            self.BufferModel()
 
     def GetSlaveType(self, slave_pos):
         slave = self.GetSlave(slave_pos)

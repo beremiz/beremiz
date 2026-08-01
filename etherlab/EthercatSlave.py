@@ -144,38 +144,27 @@ class _EthercatSlaveCTN(object):
                     'value': (slave_type["device_type"], slave_type),
                     'doc': [{"documentation": "EtherCAT slave type"}]
                 })
-            params[0]['children'].insert(
-                1,
-                {
-                    'use': 'optional',
-                    'type': 'unsignedLong',
-                    'name': 'Alias',
-                    'value': self.CTNParent.GetSlaveAlias(self.GetSlavePos()),
-                    'doc': [{"documentation": "EtherCAT slave alias"}]
-                })
             return params
 
     def SetParamsAttribute(self, path, value):
         self.GetSlaveInfos()
         position = self.BaseParams.getIEC_Channel()
 
-        # "Type" and "Alias" are shown among the confnode parameters but stored
-        # in the master network configuration, so they are handled here rather
-        # than by ConfigTreeNode. The parameters editor prefixes them with the
-        # XSD root element name, the master calls them by their bare name.
+        # "Type" is shown among the confnode parameters but stored in the
+        # master network configuration, so it is handled here rather than by
+        # ConfigTreeNode. The parameters editor prefixes it with the XSD root
+        # element name, the master calls it by its bare name.
         root = self.CTNParams[0] if self.CTNParams else "SlaveParams"
 
         if path in ("SlaveParams.Type", "%s.Type" % root):
             self.CTNParent.SetSlaveType(position, value)
             slave_type = self.CTNParent.GetSlaveType(self.GetSlavePos())
             return slave_type["device_type"], True
-        elif path in ("SlaveParams.Alias", "%s.Alias" % root):
-            self.CTNParent.SetSlaveAlias(position, value)
-            return value, True
 
         value, refresh = ConfigTreeNode.SetParamsAttribute(self, path, value)
 
-        # Filter IEC_Channel, Slave_Type and Alias that have specific behavior
+        # IEC_Channel is the ring position of the slave, keep the network
+        # configuration in sync when it changes
         if path == "BaseParams.IEC_Channel" and value != position:
             self.CTNParent.SetSlavePosition(position, value)
 

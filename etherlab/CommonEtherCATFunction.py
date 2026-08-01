@@ -173,28 +173,6 @@ class _CommonSlave(object):
     # -------------------------------------------------------------------------------
     #                        Used Slave State
     # -------------------------------------------------------------------------------
-    def AliasToPosition(self, alias):
-        """
-        Translate an EtherCAT alias into the real ring position, using the
-        "ethercat slaves" command.
-        @param alias : alias of the slave to look for
-        @return position : ring position of the slave, None when not found
-        """
-        output = self.EtherCATCall("slaves", default="")
-
-        for line in output.splitlines():
-            # line format : 0  3:0  PREOP  +  CL3-E57H
-            match = re.match(r"(\d+)\s+(\d+):(\d+)", line)
-            if match:
-                position = int(match.group(1))
-                found_alias = int(match.group(2))
-                if found_alias == alias:
-                    return position
-
-        self.Controler.GetCTRoot().logger.write_warning(
-            _("No EtherCAT slave found for alias %d\n") % alias)
-        return None
-
     def RequestSlaveState(self, command):
         """
         Set slave state to the specified one using "ethercat states -p %d %s" command.
@@ -202,12 +180,7 @@ class _CommonSlave(object):
         @param command : target slave state
         @return state : slave list as reported by "ethercat slaves"
         """
-        alias = self.Controler.GetSlavePos()
-        pos = self.AliasToPosition(alias)
-        if pos is None:
-            return
-
-        self.EtherCATCall("slave_state", pos, command)
+        self.EtherCATCall("slave_state", self.Controler.GetSlavePos(), command)
         return self.EtherCATCall("slaves", default="")
 
     def GetSlaveStateFromSlave(self):
@@ -880,8 +853,7 @@ class _CommonSlave(object):
         Command example : "ethercat sii_read -p 0"
         @return return_val : result of "ethercat sii_read" (binary data)
         """
-        alias = self.Controler.GetSlavePos()
-        return_val = self.EtherCATCall("sii_read", alias)
+        return_val = self.EtherCATCall("sii_read", self.Controler.GetSlavePos())
         return_val = b"" if return_val is None else DecodeBinary(return_val)
         self.SiiData = return_val
         return return_val
@@ -1979,15 +1951,8 @@ class _CommonSlave(object):
         if self.Controler.GetCTRoot()._connector is not None:
             # Check connection between the master and the slave.
             # Command example : "ethercat xml -p 0"
-            alias = self.Controler.GetSlavePos()
-            pos = self.AliasToPosition(alias)
-
-            if pos is None:
-                if not cyclic_flag:
-                    self.CreateErrorDialog(_('Alias not found'))
-                return False
-
-            return_val = self.EtherCATCall("slave_xml", pos, default="")
+            return_val = self.EtherCATCall(
+                "slave_xml", self.Controler.GetSlavePos(), default="")
 
             number_of_lines = return_val.split("\n")
             if len(number_of_lines) <= 2:  # No slave connected to the master controller

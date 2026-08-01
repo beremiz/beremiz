@@ -255,10 +255,9 @@ class SlaveStatePanelClass(wx.Panel):
         raw = self.Controler.CommonMethod.GetSlaveStateFromSlave()
         if raw:
             lines = raw.split("\n")
-            alias = self.Controler.GetSlavePos()
-            pos = self.Controler.CommonMethod.AliasToPosition(alias)
+            pos = self.Controler.GetSlavePos()
 
-            if pos is not None and pos < len(lines):
+            if pos < len(lines):
                 self.SetCurrentState(lines[pos])
 
     def OnButtonClick(self, event):
@@ -309,13 +308,12 @@ class SlaveStatePanelClass(wx.Panel):
 
             lines = raw.split("\n")
 
-            alias = self.Controler.GetSlavePos()
-            pos = self.Controler.CommonMethod.AliasToPosition(alias)
+            pos = self.Controler.GetSlavePos()
 
-            if pos is not None and pos < len(lines):
+            if pos < len(lines):
                 self.SetCurrentState(lines[pos])
 
-                # indicador visual (latido)
+                # blink, to show the state is being refreshed
                 if not hasattr(self, "_blink"):
                     self._blink = False
 
@@ -566,16 +564,7 @@ class SDOPanelClass(wx.Panel):
 
     def _SDOUpdateWorker(self):
         try:
-            alias = self.Controler.GetSlavePos()
-            SlavePos = self.Controler.CommonMethod.AliasToPosition(alias)
-
-            if SlavePos is None:
-                wx.MessageBox(
-                    _("No EtherCAT slave found for alias %d") % alias,
-                    _("SDO Error"),
-                    wx.ICON_ERROR
-                )
-                return
+            SlavePos = self.Controler.GetSlavePos()
 
             num = self.SDOPageNum - 1
 

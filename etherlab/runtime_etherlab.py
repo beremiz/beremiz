@@ -241,9 +241,9 @@ def EthercatSDODownload(position, datatype, index, subindex, value):
                     index, subindex, value)
 
 
-def EthercatSiiRead(alias):
+def EthercatSiiRead(position):
     """@return EEPROM content of the slave, base64 encoded"""
-    return EncodeBinary(ethercat("sii_read", "-a", alias, binary=True))
+    return EncodeBinary(ethercat("sii_read", "-p", position, binary=True))
 
 
 def EthercatSiiWrite(position, data):
@@ -258,8 +258,8 @@ def EthercatSiiWrite(position, data):
     return process.returncode
 
 
-def EthercatRegRead(alias, address, size):
-    return ethercat("reg_read", "-a", alias, address, size)
+def EthercatRegRead(position, address, size):
+    return ethercat("reg_read", "-p", position, address, size)
 
 
 def EthercatMultiRegRead(slave_count, registers):
