@@ -55,6 +55,11 @@ InvertPDOType = {RPDO: TPDO, TPDO: RPDO}
 PDOTypeBaseIndex = {RPDO: 0x1400, TPDO: 0x1800}
 PDOTypeBaseCobId = {RPDO: 0x200, TPDO: 0x180}
 
+# Bit 31 of a PDO COB ID entry, set while the PDO does not exist (CiA 301).
+# The other flag bits of that entry (RTR forbidden, 29 bit identifier) belong
+# to the PDO itself and have to be left alone.
+PDO_NOT_VALID = 0x80000000
+
 VariableIncrement = 0x100
 VariableStartIndex = {TPDO: 0x2000, RPDO: 0x4000}
 VariableDirText = {TPDO: "__I", RPDO: "__Q"}
@@ -141,7 +146,7 @@ def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     dcfdata = []
     # Create entry for RPDO or TPDO parameters and Disable PDO
     #           ---- INDEX -----   --- SUBINDEX ----   ----- SIZE ------   ------ DATA ------
-    dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(0x80000000 + cobid, 4)]
+    dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x01, 1) + LE_to_BE(0x04, 4) + LE_to_BE(PDO_NOT_VALID | cobid, 4)]
     # Set Transmit type
     dcfdata += [LE_to_BE(idx, 2) + LE_to_BE(0x02, 1) + LE_to_BE(0x01, 4) + LE_to_BE(transmittype, 1)]
     if len(pdomapping) > 0:
@@ -198,8 +203,7 @@ class ConciseDCFGenerator(object):
         for PdoIdx in nodeRpdoIndexes + nodeTpdoIndexes:
             pdo_cobid = node.GetEntry(PdoIdx, 0x01)
             # Extract COB ID, if PDO isn't active
-            if pdo_cobid > 0x600:
-                pdo_cobid -= 0x80000000
+            pdo_cobid &= ~PDO_NOT_VALID
             # Remove COB ID from the list of available COB ID
             if pdo_cobid in self.ListCobIDAvailable:
                 self.ListCobIDAvailable.remove(pdo_cobid)
@@ -288,11 +292,29 @@ class ConciseDCFGenerator(object):
 
     def GetEmptyPDO(self, nodeid, pdotype, start_index=None):
         """
-        Search a not configured PDO for a slave
+        Search a PDO of a slave whose mapping can be defined
         @param node: the slave node object
         @param pdotype: type of PDO to generated (RPDO or TPDO)
         @param start_index: Index where search must start (default: None)
         @return tuple of PDO index, COB ID and number of subindex defined
+
+        A PDO with an empty mapping is used first. Drives usually ship with
+        every PDO already mapped though, so when none is left, a PDO no other
+        variable needs is taken over : the concise DCF rewrites its mapping,
+        which is what a CANopen configuration tool would do.
+        """
+        for reuse_mapped in (False, True):
+            result = self.SearchConfigurablePDO(nodeid, pdotype, start_index,
+                                                reuse_mapped)
+            if result is not None:
+                return result
+        return None
+
+    def SearchConfigurablePDO(self, nodeid, pdotype, start_index, reuse_mapped):
+        """
+        @param reuse_mapped: also accept a PDO that the slave already maps, as
+        long as no variable of this configuration is read from it
+        @return same tuple as GetEmptyPDO, None when no PDO matches
         """
         # If no start_index defined, start with PDOtype base index
         if start_index is None:
@@ -306,18 +328,29 @@ class ConciseDCFGenerator(object):
             values = self.NodeList.GetSlaveNodeEntry(nodeid, index + 0x200)
             if values is not None and values[0] > 0:
                 # Check that all subindex upper than 0 equal 0 => configurable PDO
-                if reduce(lambda x, y: x and y, [x == 0 for x in values[1:]], True):
-                    cobid = self.NodeList.GetSlaveNodeEntry(nodeid, index, 1)
-                    # If no COB ID defined in PDO, generate a new one (not used)
-                    if cobid == 0:
-                        if len(self.ListCobIDAvailable) == 0:
-                            return None
-                        # Calculate COB ID from standard values
-                        if index < PDOTypeBaseIndex[pdotype] + 4:
-                            cobid = PDOTypeBaseCobId[pdotype] + 0x100 * (index - PDOTypeBaseIndex[pdotype]) + nodeid
-                        if cobid not in self.ListCobIDAvailable:
-                            cobid = self.ListCobIDAvailable.pop(0)
-                    return index, cobid, values[0]
+                empty = reduce(lambda x, y: x and y, [x == 0 for x in values[1:]], True)
+                cobid = self.NodeList.GetSlaveNodeEntry(nodeid, index, 1)
+                # A disabled PDO carries the invalid bit in its COB ID. It gets
+                # re-enabled by the concise DCF, keep the COB ID itself.
+                if cobid is not None:
+                    cobid &= ~PDO_NOT_VALID
+                # Taking over a mapped PDO must not steal the process data
+                # another variable is already read from
+                if not empty and not (reuse_mapped and cobid not in self.MasterMapping):
+                    index += 1
+                    continue
+                # If no COB ID defined in PDO, generate a new one (not used)
+                if cobid == 0:
+                    if len(self.ListCobIDAvailable) == 0:
+                        return None
+                    # Calculate COB ID from standard values
+                    if index < PDOTypeBaseIndex[pdotype] + 4:
+                        cobid = PDOTypeBaseCobId[pdotype] + 0x100 * (index - PDOTypeBaseIndex[pdotype]) + nodeid
+                    if cobid not in self.ListCobIDAvailable:
+                        cobid = self.ListCobIDAvailable.pop(0)
+                # values[0] holds how many entries the slave maps, which is not
+                # the room there is when the mapping is being rewritten
+                return index, cobid, values[0] if empty else len(values) - 1
             index += 1
         return None
 
@@ -375,6 +408,13 @@ class ConciseDCFGenerator(object):
 
                 # Extract and check nodeid
                 nodeid, index, subindex = loc[:3]
+
+                # Index 0 is reserved for the located variables a confnode
+                # provides itself rather than through the object dictionary,
+                # such as the network position and the AXIS_REF of a CiA402
+                # axis. Mirrors the same rule in LocalODPointers.
+                if index == 0:
+                    continue
 
                 # Check Id is in slave node list
                 if nodeid not in list(self.NodeList.SlaveNodes.keys()):
