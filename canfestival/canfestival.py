@@ -654,6 +654,7 @@ class RootClass(object):
             "candriver": can_driver_name,
             "nodes_includes": "",
             "board_decls": "",
+            "nodes_register": "",
             "nodes_init": "",
             "nodes_open": "",
             "nodes_stop": "",
@@ -734,6 +735,11 @@ class RootClass(object):
                 nodename,
                 child.GetCanDevice(),
                 child_data.getCAN_Baudrate())
+            # Let the SDO client function blocks address this network by the
+            # IEC channel of its confnode
+            format_dict["nodes_register"] += '__CanOpen_RegisterNetwork(%d, &%s_Data);\n    ' % (
+                child.BaseParams.getIEC_Channel(),
+                nodename)
             format_dict["nodes_open"] += 'NODE_OPEN(%s)\n    ' % (nodename)
             format_dict["nodes_close"] += 'NODE_CLOSE(%s)\n    ' % (nodename)
             format_dict["nodes_stop"] += 'NODE_STOP(%s)\n    ' % (nodename)
@@ -786,8 +792,24 @@ class RootClass(object):
         return res
 
 class CanFestival_Lib(POULibrary):
+    """
+    SDO client function blocks, and the CiA402 field bus interface blocks built
+    on top of them.
+    TODO: complete the POUs and types according to CiA 405 and CiA 314
+    """
 
     def GetLibraryPath(self):
-        # No POUs provided
-        # TODO: add POUs and types according to CiA 405 and CiA 314
-        return None
+        return paths.AbsNeighbourFile(__file__, "pous.xml")
+
+    def Generate_C(self, buildpath, varlist, IECCFLAGS):
+        ctroot = self.GetCTR()
+        cf_sdo_path = paths.AbsNeighbourFile(__file__, "cf_sdo.c")
+        gen_cf_sdo_path = os.path.join(buildpath, "cf_sdo.c")
+        with open(cf_sdo_path) as cf_sdo_file:
+            cf_sdo_code = cf_sdo_file.read()
+        with open(gen_cf_sdo_path, 'w') as gen_cf_sdo_file:
+            gen_cf_sdo_file.write(cf_sdo_code)
+
+        return ((["cf_sdo"],
+                 [(gen_cf_sdo_path, IECCFLAGS + getCFLAGS(ctroot))],
+                 False), "")

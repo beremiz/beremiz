@@ -17,6 +17,9 @@
  */
 %(canstate_decls)s
 
+/* Lets the SDO client function blocks find the CO_Data of a given network */
+extern void __CanOpen_RegisterNetwork(int network, CO_Data* d);
+
 /* Keep track of init level to cleanup correctly */
 static int init_level=0;
 /* Retrieve PLC cycle time */
@@ -130,6 +133,8 @@ int __init_%(locstr)s(int argc,void **argv)
 #endif
 
     TimerInit();
+
+    %(nodes_register)s
 
     %(nodes_open)s
 

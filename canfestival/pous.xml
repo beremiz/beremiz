@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6.xsd"
+         xsi:schemaLocation="http://www.plcopen.org/xml/tc6.xsd"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <fileHeader companyName="CanFestival"
+              productName="CanFestival"
+              productVersion="1"
+              creationDateTime="2026-08-01T00:00:00"/>
+  <contentHeader name="CANopen SDO Blocks"
+                 modificationDateTime="2026-08-01T00:00:00">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="0" y="0"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="CanOpenSDOUpload" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="EXECUTE">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="NETWORK">
+              <type><INT/></type>
+              <documentation>
+                <xhtml:p><![CDATA[IEC channel of the CanOpen node this drive is on]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="NODEID">
+              <type><USINT/></type>
+            </variable>
+            <variable name="INDEX">
+              <type><UINT/></type>
+            </variable>
+            <variable name="SUBINDEX">
+              <type><USINT/></type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="DONE">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="BUSY">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="ERROR">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="ERRORID">
+              <type><DWORD/></type>
+              <documentation>
+                <xhtml:p><![CDATA[CANopen SDO abort code]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="VALUE">
+              <type><DWORD/></type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="STATE">
+              <type><INT/></type>
+              <initialValue><simpleValue value="0"/></initialValue>
+            </variable>
+            <variable name="EXECUTE0">
+              <type><BOOL/></type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[{extern int __CanOpen_SDORead(int, unsigned char, unsigned short, unsigned char);}
+{extern int __CanOpen_SDOResult(int, unsigned char, int, unsigned int*, unsigned int*);}
+CASE STATE OF
+  0:
+    IF EXECUTE AND NOT EXECUTE0 THEN
+      STATE := 1;
+      DONE := FALSE;
+      ERROR := FALSE;
+      ERRORID := 0;
+      VALUE := 0;
+      BUSY := TRUE;
+    END_IF;
+  1:
+    {{
+      if(__CanOpen_SDORead(__GET_VAR(data__->NETWORK),
+                           __GET_VAR(data__->NODEID),
+                           __GET_VAR(data__->INDEX),
+                           __GET_VAR(data__->SUBINDEX)) == 0){
+          __SET_VAR(data__->,STATE,, 2);
+      }else{
+          __SET_VAR(data__->,ERROR,, 1);
+          __SET_VAR(data__->,STATE,, 3);
+      }
+    }}
+  2:
+    {{
+      unsigned int value = 0, abortcode = 0;
+      int res = __CanOpen_SDOResult(__GET_VAR(data__->NETWORK),
+                                    __GET_VAR(data__->NODEID),
+                                    1, &value, &abortcode);
+      if(res > 0){
+          __SET_VAR(data__->,VALUE,, value);
+          __SET_VAR(data__->,DONE,, 1);
+          __SET_VAR(data__->,STATE,, 3);
+      }else if(res < 0){
+          __SET_VAR(data__->,ERRORID,, abortcode);
+          __SET_VAR(data__->,ERROR,, 1);
+          __SET_VAR(data__->,STATE,, 3);
+      }
+    }}
+  3:
+    BUSY := FALSE;
+    IF NOT EXECUTE THEN
+      STATE := 0;
+      DONE := FALSE;
+      ERROR := FALSE;
+    END_IF;
+ELSE
+  STATE := 0;
+END_CASE;
+
+EXECUTE0 := EXECUTE;
+]]>
+          </ST>
+        </body>
+      </pou>
+      <pou name="CanOpenSDODownload" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="EXECUTE">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="NETWORK">
+              <type><INT/></type>
+              <documentation>
+                <xhtml:p><![CDATA[IEC channel of the CanOpen node this drive is on]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="NODEID">
+              <type><USINT/></type>
+            </variable>
+            <variable name="INDEX">
+              <type><UINT/></type>
+            </variable>
+            <variable name="SUBINDEX">
+              <type><USINT/></type>
+            </variable>
+            <variable name="SIZE">
+              <type><USINT/></type>
+              <documentation>
+                <xhtml:p><![CDATA[Size of the object in bytes : 1, 2 or 4]]></xhtml:p>
+              </documentation>
+            </variable>
+            <variable name="VALUE">
+              <type><DWORD/></type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="DONE">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="BUSY">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="ERROR">
+              <type><BOOL/></type>
+            </variable>
+            <variable name="ERRORID">
+              <type><DWORD/></type>
+              <documentation>
+                <xhtml:p><![CDATA[CANopen SDO abort code]]></xhtml:p>
+              </documentation>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="STATE">
+              <type><INT/></type>
+              <initialValue><simpleValue value="0"/></initialValue>
+            </variable>
+            <variable name="EXECUTE0">
+              <type><BOOL/></type>
+            </variable>
+          </localVars>
+        </interface>
+        <body>
+          <ST>
+<![CDATA[{extern int __CanOpen_SDOWrite(int, unsigned char, unsigned short, unsigned char, unsigned char, unsigned int);}
+{extern int __CanOpen_SDOResult(int, unsigned char, int, unsigned int*, unsigned int*);}
+CASE STATE OF
+  0:
+    IF EXECUTE AND NOT EXECUTE0 THEN
+      STATE := 1;
+      DONE := FALSE;
+      ERROR := FALSE;
+      ERRORID := 0;
+      BUSY := TRUE;
+    END_IF;
+  1:
+    {{
+      if(__CanOpen_SDOWrite(__GET_VAR(data__->NETWORK),
+                            __GET_VAR(data__->NODEID),
+                            __GET_VAR(data__->INDEX),
+                            __GET_VAR(data__->SUBINDEX),
+                            __GET_VAR(data__->SIZE),
+                            __GET_VAR(data__->VALUE)) == 0){
+          __SET_VAR(data__->,STATE,, 2);
+      }else{
+          __SET_VAR(data__->,ERROR,, 1);
+          __SET_VAR(data__->,STATE,, 3);
+      }
+    }}
+  2:
+    {{
+      unsigned int value = 0, abortcode = 0;
+      int res = __CanOpen_SDOResult(__GET_VAR(data__->NETWORK),
+                                    __GET_VAR(data__->NODEID),
+                                    0, &value, &abortcode);
+      if(res > 0){
+          __SET_VAR(data__->,DONE,, 1);
+          __SET_VAR(data__->,STATE,, 3);
+      }else if(res < 0){
+          __SET_VAR(data__->,ERRORID,, abortcode);
+          __SET_VAR(data__->,ERROR,, 1);
+          __SET_VAR(data__->,STATE,, 3);
+      }
+    }}
+  3:
+    BUSY := FALSE;
+    IF NOT EXECUTE THEN
+      STATE := 0;
+      DONE := FALSE;
+      ERROR := FALSE;
+    END_IF;
+ELSE
+  STATE := 0;
+END_CASE;
+
+EXECUTE0 := EXECUTE;
+]]>
+          </ST>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations/>
+  </instances>
+</project>
