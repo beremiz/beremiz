@@ -13,6 +13,7 @@ pycountry
 # pyserial
 service_identity
 sslpsk @ git+https://git@github.com/beremiz/sslpsk.git@9cb31986629b382f7427eec29ddc168ad21c7d7c
+wxglade @ git+https://git@github.com/wxGlade/wxGlade.git@e93f2c218bfb471a80d15b6ef0d78758537264cf
 # Forced to version 4.2.4, the one used in latest Ubuntu LTS 26.04, to speed up build/tests
 # python3 -m venv --system-site-packages /where/you/want/beremiz/python3/venv
 wxPython==4.2.4

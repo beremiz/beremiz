@@ -118,6 +118,8 @@ typing-extensions==4.15.0
     #   twisted
 ujson==5.12.1
     # via autobahn
+wxglade @ git+https://git@github.com/wxGlade/wxGlade.git@e93f2c218bfb471a80d15b6ef0d78758537264cf
+    # via -r requirements.txt
 wxpython==4.2.1
     # via -r requirements.txt
 zeroconf==0.149.16
