@@ -94,8 +94,32 @@ VALID_HANDLES = [(1, 1), (1, 2), (1, 3), (2, 3), (3, 3), (3, 2), (3, 1), (2, 1)]
 HIGHLIGHTCOLOR = wx.CYAN
 
 # Define highlight types
-ERROR_HIGHLIGHT = (wx.Colour(255, 255, 0).GetIM(), wx.RED.GetIM())
-SEARCH_RESULT_HIGHLIGHT = (wx.Colour(255, 165, 0).GetIM(), wx.WHITE.GetIM())
+#
+# An highlight type is a function taking the (background, foreground) colours
+# an item would have been drawn with if it wasn't highlighted, and returning
+# the colours to draw it with once highlighted. Deriving the highlight colours
+# from the default ones keeps highlights legible whatever the current theme is,
+# instead of forcing colours only suited to a light theme.
+
+
+def IsDarkColour(colour):
+    """Tell whether a colour is dark enough to need light text over it"""
+    return (0.299 * colour.Red()
+            + 0.587 * colour.Green()
+            + 0.114 * colour.Blue()) < 128
+
+
+def ERROR_HIGHLIGHT(background, foreground):
+    if IsDarkColour(background):
+        return wx.Colour(128, 0, 0), foreground
+    return wx.Colour(255, 255, 0), wx.RED
+
+
+def SEARCH_RESULT_HIGHLIGHT(background, foreground):
+    if IsDarkColour(background):
+        return wx.Colour(160, 96, 0), foreground
+    return wx.Colour(255, 165, 0), wx.WHITE
+
 
 # Define highlight refresh inhibition period in second
 REFRESH_HIGHLIGHT_PERIOD = 0.1
@@ -239,12 +263,14 @@ def DrawHighlightedText(dc, text, highlights, x, y):
     current_pen = dc.GetPen()
     dc.SetPen(wx.TRANSPARENT_PEN)
     for start, end, highlight_type in highlights:
-        dc.SetBrush(wx.Brush(highlight_type[0]))
+        # Graphic viewers draw black text over a white canvas, whatever the theme
+        background, foreground = highlight_type(wx.WHITE, wx.BLACK)
+        dc.SetBrush(wx.Brush(background))
         offset_width, _offset_height = dc.GetTextExtent(text[:start[1]])
         part = text[start[1]:end[1] + 1]
         part_width, part_height = dc.GetTextExtent(part)
         dc.DrawRectangle(x + offset_width, y, part_width, part_height)
-        dc.SetTextForeground(highlight_type[1])
+        dc.SetTextForeground(foreground)
         dc.DrawText(part, x + offset_width, y)
     dc.SetPen(current_pen)
     dc.SetTextForeground(wx.BLACK)

@@ -649,6 +649,8 @@ class VariablesTable(CustomTable):
         Otherwise default to the default renderer.
         """
 
+        default_colours = (grid.GetDefaultCellBackgroundColour(),
+                           grid.GetDefaultCellTextColour())
         for row in range(self.GetNumberRows()):
             row_highlights = self.Highlights.get(row, {})
             for col in range(self.GetNumberCols()):
@@ -663,9 +665,10 @@ class VariablesTable(CustomTable):
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
 
-                highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
-                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
-                grid.SetCellTextColour(row, col, highlight_colours[1])
+                background, foreground = self.GetHighlightColours(
+                    row_highlights, colname, default_colours)
+                grid.SetCellBackgroundColour(row, col, background)
+                grid.SetCellTextColour(row, col, foreground)
             self.ResizeRow(grid, row)
 
 

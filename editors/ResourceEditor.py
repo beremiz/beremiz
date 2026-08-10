@@ -140,6 +140,8 @@ class ResourceTable(CustomTable):
             grid.SetColAttr(col, attr)
             grid.SetColSize(col, self.ColSizes[col])
 
+        default_colours = (grid.GetDefaultCellBackgroundColour(),
+                           grid.GetDefaultCellTextColour())
         for row in range(self.GetNumberRows()):
             row_highlights = self.Highlights.get(row, {})
             for col in range(self.GetNumberCols()):
@@ -180,11 +182,12 @@ class ResourceTable(CustomTable):
                 grid.SetCellRenderer(row, col, renderer)
 
                 if error:
-                    highlight_colours = ERROR_HIGHLIGHT
+                    background, foreground = ERROR_HIGHLIGHT(*default_colours)
                 else:
-                    highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
-                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
-                grid.SetCellTextColour(row, col, highlight_colours[1])
+                    background, foreground = self.GetHighlightColours(
+                        row_highlights, colname, default_colours)
+                grid.SetCellBackgroundColour(row, col, background)
+                grid.SetCellTextColour(row, col, foreground)
             self.ResizeRow(grid, row)
 
     # -------------------------------------------------------------------------------

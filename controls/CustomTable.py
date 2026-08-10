@@ -134,6 +134,8 @@ class CustomTable(wx.grid.GridTableBase):
 
         Otherwise default to the default renderer.
         """
+        default_colours = (grid.GetDefaultCellBackgroundColour(),
+                           grid.GetDefaultCellTextColour())
         for row in range(self.GetNumberRows()):
             row_highlights = self.Highlights.get(row, {})
             for col in range(self.GetNumberCols()):
@@ -143,10 +145,21 @@ class CustomTable(wx.grid.GridTableBase):
                 grid.SetCellEditor(row, col, None)
                 grid.SetCellRenderer(row, col, None)
 
-                highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
-                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
-                grid.SetCellTextColour(row, col, highlight_colours[1])
+                background, foreground = self.GetHighlightColours(
+                    row_highlights, colname, default_colours)
+                grid.SetCellBackgroundColour(row, col, background)
+                grid.SetCellTextColour(row, col, foreground)
             self.ResizeRow(grid, row)
+
+    def GetHighlightColours(self, row_highlights, colname, default_colours):
+        """
+        Return the (background, foreground) colours to draw a cell with, applying
+        the last highlight set on it, if any, to the given default colours.
+        """
+        highlight_type = row_highlights.get(colname.lower(), [None])[-1]
+        if highlight_type is None:
+            return default_colours
+        return highlight_type(*default_colours)
 
     def ResizeRow(self, grid, row):
         if grid.GetRowSize(row) < ROW_HEIGHT:

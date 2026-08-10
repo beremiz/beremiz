@@ -1578,9 +1578,13 @@ class IDEFrame(wx.Frame):
             item_name = _(item_name)
         self.ProjectTree.SetItemText(root, item_name)
         self.ProjectTree.SetPyData(root, infos)
-        highlight_colours = self.Highlights.get(infos.get("tagname", None), (wx.Colour(255, 255, 255, 0), wx.BLACK))
-        self.ProjectTree.SetItemBackgroundColour(root, highlight_colours[0])
-        self.ProjectTree.SetItemTextColour(root, highlight_colours[1])
+        default_colours = (self.ProjectTree.GetBackgroundColour(),
+                           self.ProjectTree.GetForegroundColour())
+        highlight_type = self.Highlights.get(infos.get("tagname", None), None)
+        background, foreground = default_colours if highlight_type is None \
+            else highlight_type(*default_colours)
+        self.ProjectTree.SetItemBackgroundColour(root, background)
+        self.ProjectTree.SetItemTextColour(root, foreground)
         self.ProjectTree.SetItemExtraImage(root, None)
         if infos["type"] == ITEM_POU:
             self.ProjectTree.SetItemImage(

@@ -42,8 +42,6 @@ class CustomGrid(wx.grid.Grid):
 
         self.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Sans'))
         self.SetLabelFont(wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, 'Sans'))
-        self.SetSelectionBackground(wx.WHITE)
-        self.SetSelectionForeground(wx.BLACK)
         self.DisableDragRowSize()
 
         self.Bind(wx.grid.EVT_GRID_SELECT_CELL, self.OnSelectCell)

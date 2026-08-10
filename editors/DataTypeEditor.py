@@ -109,6 +109,8 @@ class ElementsTable(CustomTable):
         Otherwise default to the default renderer.
         """
 
+        default_colours = (grid.GetDefaultCellBackgroundColour(),
+                           grid.GetDefaultCellTextColour())
         for row in range(self.GetNumberRows()):
             row_highlights = self.Highlights.get(row, {})
             for col in range(self.GetNumberCols()):
@@ -131,9 +133,10 @@ class ElementsTable(CustomTable):
                 grid.SetCellEditor(row, col, editor)
                 grid.SetCellRenderer(row, col, renderer)
 
-                highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
-                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
-                grid.SetCellTextColour(row, col, highlight_colours[1])
+                background, foreground = self.GetHighlightColours(
+                    row_highlights, colname, default_colours)
+                grid.SetCellBackgroundColour(row, col, background)
+                grid.SetCellTextColour(row, col, foreground)
             self.ResizeRow(grid, row)
 
     def AddHighlight(self, infos, highlight_type):
@@ -801,19 +804,25 @@ class DataTypeEditor(EditorPanel):
 
     def ShowHighlights(self):
         type_infos = self.Controler.GetDataTypeInfos(self.TagName)
+        # Colours the highlighted controls would use if they weren't highlighted.
+        # Taken from the system rather than from the controls themselves, as those
+        # may already be showing a highlight from a previous call.
+        default_colours = (wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW),
+                           wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
         for infos, start, end, highlight_type in self.Highlights:
             if infos[0] == "struct":
                 self.StructureElementsTable.AddHighlight(infos[1:], highlight_type)
             else:
                 control = self.HighlightControls.get((type_infos["type"], infos[0]), None)
                 if control is not None:
+                    background, foreground = highlight_type(*default_colours)
                     if isinstance(control, (wx.ComboBox, wx.SpinCtrl)):
-                        control.SetBackgroundColour(highlight_type[0])
-                        control.SetForegroundColour(highlight_type[1])
+                        control.SetBackgroundColour(background)
+                        control.SetForegroundColour(foreground)
                     elif isinstance(control, wx.TextCtrl):
-                        control.SetStyle(start[1], end[1] + 1, wx.TextAttr(highlight_type[1], highlight_type[0]))
+                        control.SetStyle(start[1], end[1] + 1, wx.TextAttr(foreground, background))
                     elif isinstance(control, wx.adv.EditableListBox):
                         listctrl = control.GetListCtrl()
-                        listctrl.SetItemBackgroundColour(infos[1], highlight_type[0])
-                        listctrl.SetItemTextColour(infos[1], highlight_type[1])
+                        listctrl.SetItemBackgroundColour(infos[1], background)
+                        listctrl.SetItemTextColour(infos[1], foreground)
                         listctrl.Select(listctrl.FocusedItem, False)

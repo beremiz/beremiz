@@ -580,8 +580,6 @@ class ObjectTable(CustomTable):
                     if "GridCellEditorConstructorArgs" in PropertyConfig else []
                 grid.SetCellEditor(row, col, PropertyConfig["GridCellEditor"](*GridCellEditorConstructorArgs))
                 grid.SetCellRenderer(row, col, PropertyConfig["GridCellRenderer"]())
-                grid.SetCellBackgroundColour(row, col, wx.WHITE)
-                grid.SetCellTextColour(row, col, wx.BLACK)
                 if "GridCellEditorParam" in PropertyConfig:
                     grid.GetCellEditor(row, col).SetParameters(
                         PropertyConfig["GridCellEditorParam"])
@@ -709,6 +707,8 @@ class ObjectGrid(CustomGrid):
             # Less than 2 rows. No duplicates are possible!
             return
         IDsCount = self.Table.GetObjectIDCount()
+        default_colours = (self.GetDefaultCellBackgroundColour(),
+                           self.GetDefaultCellTextColour())
         # check ALL object IDs for duplicates...
         for row in range(self.Table.GetNumberRows()):
             obj_id1 = int(self.Table.GetValueByName(row, "Object Identifier"))
@@ -716,11 +716,11 @@ class ObjectGrid(CustomGrid):
                 # More than 1 BACnet object using this ID! Let us Highlight this row with errors...
                 # TODO: change the hardcoded column number '0' to a number obtained at runtime
                 #       that is guaranteed to match the column titled "Object Identifier"
-                self.SetCellBackgroundColour(row, 0, ERROR_HIGHLIGHT[0])
-                self.SetCellTextColour(row, 0, ERROR_HIGHLIGHT[1])
+                background, foreground = ERROR_HIGHLIGHT(*default_colours)
             else:
-                self.SetCellBackgroundColour(row, 0, wx.WHITE)
-                self.SetCellTextColour(row, 0, wx.BLACK)
+                background, foreground = default_colours
+            self.SetCellBackgroundColour(row, 0, background)
+            self.SetCellTextColour(row, 0, foreground)
         # Refresh the graphical display to take into account any changes we may
         # have made
         self.ForceRefresh()
@@ -741,16 +741,18 @@ class ObjectGrid(CustomGrid):
     # AllObjectNamesFreq: a dictionary using as key the names of all currently configured BACnet
     #                     objects, and value the number of objects using this same name.
     def HighlightDuplicateObjectNames(self, AllObjectNamesFreq):
+        default_colours = (self.GetDefaultCellBackgroundColour(),
+                           self.GetDefaultCellTextColour())
         for row in range(self.Table.GetNumberRows()):
             # TODO: change the hardcoded column number '1' to a number obtained at runtime
             #       that is guaranteed to match the column titled "Object Name"
             if AllObjectNamesFreq[self.Table.GetValueByName(row, "Object Name")] > 1:
                 # This is an error! Highlight it...
-                self.SetCellBackgroundColour(row, 1, ERROR_HIGHLIGHT[0])
-                self.SetCellTextColour(row, 1, ERROR_HIGHLIGHT[1])
+                background, foreground = ERROR_HIGHLIGHT(*default_colours)
             else:
-                self.SetCellBackgroundColour(row, 1, wx.WHITE)
-                self.SetCellTextColour(row, 1, wx.BLACK)
+                background, foreground = default_colours
+            self.SetCellBackgroundColour(row, 1, background)
+            self.SetCellTextColour(row, 1, foreground)
         # Refresh the graphical display to take into account any changes we may
         # have made
         self.ForceRefresh()

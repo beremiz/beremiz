@@ -178,6 +178,8 @@ class VariableTable(CustomTable):
 
         Otherwise default to the default renderer.
         """
+        default_colours = (grid.GetDefaultCellBackgroundColour(),
+                           grid.GetDefaultCellTextColour())
         for row in range(self.GetNumberRows()):
             var_class = self.GetValueByName(row, "Class")
             var_type = self.GetValueByName(row, "Type")
@@ -232,11 +234,12 @@ class VariableTable(CustomTable):
                 grid.SetCellRenderer(row, col, renderer)
 
                 if colname == "Location" and LOCATION_MODEL.match(self.GetValueByName(row, colname)) is None:
-                    highlight_colours = ERROR_HIGHLIGHT
+                    background, foreground = ERROR_HIGHLIGHT(*default_colours)
                 else:
-                    highlight_colours = row_highlights.get(colname.lower(), [(wx.WHITE, wx.BLACK)])[-1]
-                grid.SetCellBackgroundColour(row, col, highlight_colours[0])
-                grid.SetCellTextColour(row, col, highlight_colours[1])
+                    background, foreground = self.GetHighlightColours(
+                        row_highlights, colname, default_colours)
+                grid.SetCellBackgroundColour(row, col, background)
+                grid.SetCellTextColour(row, col, foreground)
             self.ResizeRow(grid, row)
 
 

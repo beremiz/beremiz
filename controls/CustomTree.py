@@ -161,6 +161,9 @@ class CustomTree(CT.CustomTreeCtrl):
             rect = self.GetUpdateRegion().GetBox()
             dc.SetClippingRect(rect)
 
+        # The DC handed over by the erase event carries no background brush, and
+        # Clear() would then fall back to white whatever the theme is
+        dc.SetBackground(wx.Brush(self.GetBackgroundColour()))
         dc.Clear()
 
         bitmap_rect = self.GetBitmapRect()
