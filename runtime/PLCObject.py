@@ -76,8 +76,10 @@ def RunInMain(func):
 
 
 class PLCObject(object):
-    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars):
+    def __init__(self, WorkingDir, argv, statuschange, evaluator, pyruntimevars,
+                 servicename=None):
         self.workingdir = WorkingDir  # must exits already
+        self.servicename = servicename
         self.tmpdir = os.path.join(WorkingDir, 'tmp')
         if os.path.exists(self.tmpdir):
             shutil.rmtree(self.tmpdir)
@@ -195,6 +197,13 @@ class PLCObject(object):
             self.PLC_ID = ctypes.c_char_p.in_dll(self.PLClibraryHandle, "PLC_ID")
             if len(md5) == 32:
                 self.PLC_ID.value = md5.encode()
+
+            # let PLC code identify this runtime instance, extensions such as
+            # MQTT need it to tell apart PLCs running the same binary
+            self.PLC_SERVICE_NAME = ctypes.c_char_p.in_dll(
+                self.PLClibraryHandle, "PLC_SERVICE_NAME")
+            if self.servicename is not None:
+                self.PLC_SERVICE_NAME.value = self.servicename.encode()
 
             self._startPLC = self.PLClibraryHandle.startPLC
             self._startPLC.restype = ctypes.c_int

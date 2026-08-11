@@ -44,6 +44,7 @@ void __init_logging(void);
 IEC_TIME __CURRENT_TIME = {0, 0};
 unsigned int __tick = 0;
 char *PLC_ID = 0;
+char *PLC_SERVICE_NAME = 0;
 
 /*
  *  __tick is the current tick count of the PLC, 

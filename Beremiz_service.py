@@ -544,7 +544,7 @@ if servicename is not None and PSKpath is not None:
     ensurePSK(servicename, PSKpath)
 
 runtime.CreatePLCObjectSingleton(
-    WorkingDir, argv, statuschange, evaluator, pyruntimevars)
+    WorkingDir, argv, statuschange, evaluator, pyruntimevars, servicename)
 
 rpc_server = RPCServer(servicename, interface, port)
 
