@@ -15,6 +15,7 @@
 #include "POUS.h"
 
 extern char *PLC_ID;
+extern char *PLC_SERVICE_NAME;
 
 #define _Log(level, ...)                                                                          \
     {{                                                                                            \
@@ -180,7 +181,7 @@ static MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializ
 static MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 #endif
 
-MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
+static MQTTClient_SSLOptions ssl_opts = MQTTClient_SSLOptions_initializer;
 
 /* condition to quit publish thread */
 static int MQTT_stop_thread = 0;
@@ -512,7 +513,19 @@ int __init_{locstr}(int argc,char **argv)
 {{
     char *uri = "{uri}";
     char *clientID = {clientID};
+    static char default_clientID[128];
     int rc;
+
+    if(clientID == NULL){{
+        /* Brokers disconnect clients sharing an identifier, so default ID has
+           to be unique for each MQTT client ({locstr}) of each PLC (PLC_ID)
+           of each runtime instance (service name, i.e. runtime's -n switch) */
+        snprintf(default_clientID, sizeof(default_clientID), "%.8s_{locstr}%s%s",
+                 PLC_ID ? PLC_ID : "beremiz",
+                 PLC_SERVICE_NAME ? "_" : "",
+                 PLC_SERVICE_NAME ? PLC_SERVICE_NAME : "");
+        clientID = default_clientID;
+    }}
 
     MQTTClient_createOptions createOpts = MQTTClient_createOptions_initializer;
 

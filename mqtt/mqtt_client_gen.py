@@ -380,7 +380,7 @@ class MQTTClientModel(dict):
 
 
         clientID = config["clientID"]
-        formatdict["clientID"] = '"'+clientID+'"' if len(clientID) > 0 else "PLC_ID"
+        formatdict["clientID"] = '"'+clientID+'"' if len(clientID) > 0 else "NULL"
 
 
         # Use Config's "MQTTVersion" to switch between protocol version at build time
