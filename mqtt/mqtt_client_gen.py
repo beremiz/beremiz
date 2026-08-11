@@ -1,9 +1,4 @@
-from __future__ import print_function
-from __future__ import absolute_import
-
 import csv
-import functools
-from threading import Thread
 from collections import OrderedDict as OD
 
 import wx
@@ -40,10 +35,10 @@ MQTT_IEC_types_list =[
     ("REAL" , ("float"   , "D")),
     ("LREAL", ("double"  , "L"))
 ]
-MQTT_IEC_SUPPORTED_types = list(zip(*MQTT_IEC_types_list)[0])
+MQTT_IEC_SUPPORTED_types = list(list(zip(*MQTT_IEC_types_list))[0])
 MQTT_IEC_types = dict(MQTT_IEC_types_list)
 
-MQTT_JSON_SUPPORTED_types = set(MQTT_IEC_types.keys()+["STRING"])
+MQTT_JSON_SUPPORTED_types = set(list(MQTT_IEC_types.keys())+["STRING"])
 
 """
  QoS - Quality of Service
@@ -93,9 +88,9 @@ authParams = {
         ("User", None),
         ("Password", None)]}
 
-class MQTTTopicListModel(dv.PyDataViewIndexListModel):
+class MQTTTopicListModel(dv.DataViewIndexListModel):
     def __init__(self, data, log, direction):
-        dv.PyDataViewIndexListModel.__init__(self, len(data))
+        dv.DataViewIndexListModel.__init__(self, len(data))
         self.data = data
         self.log = log
         self.dsc = lstcoldsc[direction]
@@ -280,7 +275,7 @@ class MQTTClientList(list):
             if len(self) == 0:
                 v["Location"] = 0
             else:
-                iecnums = set(zip(*self)[self.dsc.Location_column])
+                iecnums = set(list(zip(*self))[self.dsc.Location_column])
                 greatest = max(iecnums)
                 holes = set(range(greatest)) - iecnums
                 v["Location"] = min(holes) if holes else greatest+1
@@ -336,8 +331,7 @@ class MQTTClientModel(dict):
     def LoadCSV(self,path):
         with open(path, 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            buf = {direction:[] for direction, _model in self.iteritems()}
-            for direction, model in self.iteritems():
+            for direction, model in self.items():
                 self[direction][:] = []
             for row in reader:
                 direction = row[0]
@@ -363,7 +357,7 @@ class MQTTClientModel(dict):
 
     def GenerateC(self, name, path, locstr, config, datatype_info_getter):
         c_template_filepath = paths.AbsNeighbourFile(__file__, "mqtt_template.c")
-        c_template_file = open(c_template_filepath , 'rb')
+        c_template_file = open(c_template_filepath , 'r')
         c_template = c_template_file.read()
         c_template_file.close()
 
@@ -413,7 +407,7 @@ class MQTTClientModel(dict):
         for row in self["output"]:
             Topic, QoS, _Retained, iec_type, iec_number = row
             Topic = self.SanitizeTopic(config, Topic)
-            Retained = 1 if _Retained=="True" else 0
+            Retained = 1 if _Retained else 0
             if iec_type in MQTT_IEC_types:
                 C_type, iec_size_prefix = MQTT_IEC_types[iec_type]
                 c_loc_name = "__Q" + iec_size_prefix + locstr + "_" + str(iec_number)

@@ -1,7 +1,5 @@
 # mqtt/client.py
 
-from __future__ import absolute_import
-
 import os
 import re
 import wx
@@ -196,7 +194,8 @@ class MQTTClient(object):
 
         LDFLAGS = [' "' + os.path.join(PahoMqttCLibraryPath, static_lib) + '"'] + libs
 
-        CFLAGS = ' '.join(['-I"' + path + '"' for path in MqttCIncludePaths])
+        CFLAGS = ' '.join(['-I"' + path + '"' for path in MqttCIncludePaths]
+                          + [self.GetCTRoot().getPLC_CFLAGS()])
 
         # TODO: add frozen only if using JSON
         frozen_c_path = os.path.join(frozen_path, "frozen.c")
