@@ -2907,5 +2907,5 @@ def _updateStructValueValueClass(cls):
 
 cls = PLCOpenParser.GetElementClass("structValue", "value")
 if cls:
-    structValue_model = re.compile("(.*):=(.*)")
+    structValue_model = re.compile("(.*?):=(.*)")
     _updateStructValueValueClass(cls)
