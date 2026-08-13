@@ -131,6 +131,17 @@ RUN set -xe && \
 
 ENV TESSDATAPATH /home/$UNAME/tessdata
 
+
+# MQTT Eclipse Paho Testing Utilities
+RUN set -xe && \
+    cd  /home/$UNAME && mkdir paho.mqtt.testing && \
+    wget -q https://github.com/eclipse-paho/paho.mqtt.testing/archive/9d7bb80bb8b9d9cfc0b52f8cb4c1916401281103.tar.gz \
+         -O paho.mqtt.testing.tar.gz && \
+    echo 816c4410bfc8ea0901970690763531a0 paho.mqtt.testing.tar.gz | md5sum -c && \
+    tar --strip-components=1 -C paho.mqtt.testing -x -v -z -f paho.mqtt.testing.tar.gz && \
+    rm paho.mqtt.testing.tar.gz
+
+
 # Points to python binary that test will use
 ENV BEREMIZPYTHONPATH /home/$UNAME/beremizenv/bin/python
 # use venv python and installed command by default

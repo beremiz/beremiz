@@ -1,0 +1,4 @@
+input,json_topic_b,1,datatype0,0
+input,dint_topic_b,1,DINT,1
+output,json_topic_a,1,False,outer,0
+output,dint_topic_a,1,False,DINT,1

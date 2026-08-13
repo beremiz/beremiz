@@ -1,4 +1,4 @@
-input,in_topiccc,1,outer,0
-input,in_topic1,1,DINT,1
-output,out_topiccc,1,False,datatype0,0
-output,out_topic1,1,False,DINT,1
+input,json_topic_a,1,outer,0
+input,dint_topic_a,1,DINT,1
+output,json_topic_b,1,False,datatype0,0
+output,dint_topic_b,1,False,DINT,1

@@ -71,7 +71,7 @@ build_dir = $(test_dir)/build
 # SOURCE and BUILD
 #
 
-BUILT_PROJECTS=beremiz matiec open62541 Modbus erpc
+BUILT_PROJECTS=beremiz matiec open62541 Modbus erpc paho.mqtt.c frozen
 
 tar_opts=--absolute-names --exclude=.hg --exclude=.git --exclude=.*.pyc --exclude=.*.swp
 
@@ -109,11 +109,25 @@ $(build_dir)/Modbus/libmb.a: | $(build_dir)/Modbus/$(Modbus_checksum).sha1
 	cd $(build_dir)/Modbus && \
 	make
 
+$(build_dir)/paho.mqtt.c/build/src/libpaho-mqtt3cs.a: $(build_dir)/paho.mqtt.c/$(paho.mqtt.c_checksum).sha1
+	cd $(build_dir)/paho.mqtt.c && \
+	rm -rf build && mkdir build && cd build && \
+	cmake .. -DPAHO_BUILD_STATIC=TRUE -DPAHO_WITH_SSL=TRUE && \
+	make
+
+$(build_dir)/frozen/frozen.stamp: $(build_dir)/frozen/$(frozen_checksum).sha1
+	touch $@
+
 $(build_dir)/beremiz/C_runtime/beremiz_runtime: $(build_dir)/erpc/$(erpc_checksum).sha1
 	cd $(build_dir)/beremiz/C_runtime && \
 	make
 
-built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 $(build_dir)/open62541/build/bin/libopen62541.a $(build_dir)/Modbus/libmb.a $(build_dir)/beremiz/C_runtime/beremiz_runtime
+built_apps: $(build_dir)/matiec/iec2c $(build_dir)/beremiz/$(beremiz_checksum).sha1 \
+			$(build_dir)/open62541/build/bin/libopen62541.a \
+			$(build_dir)/Modbus/libmb.a \
+			$(build_dir)/paho.mqtt.c/build/src/libpaho-mqtt3cs.a \
+			$(build_dir)/frozen/frozen.stamp \
+			$(build_dir)/beremiz/C_runtime/beremiz_runtime
 	touch $@
 
 define log_command
