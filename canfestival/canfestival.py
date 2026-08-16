@@ -701,9 +701,9 @@ class RootClass(object):
                 format_dict["slavebootup_register"] += (
                     "%s_Data.post_SlaveBootup = %s_post_SlaveBootup;\n" % (nodename, nodename))
                 format_dict["pre_op"] += (
-                    "static void %s_preOperational(CO_Data* d){\n    " % (nodename) +
-                    "".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);\n" % NdId for NdId in SlaveIDs]) +
-                    "}\n")
+                    "static void %s_preOperational(CO_Data* d){\n" % (nodename) +
+                    "\n".join(["    masterSendNMTstateChange(d, %d, NMT_Reset_Comunication);" % NdId for NdId in SlaveIDs]) +
+                    "\n}\n")
                 format_dict["pre_op_register"] += (
                     "%s_Data.preOperational = %s_preOperational;\n" % (nodename, nodename))
             else:
