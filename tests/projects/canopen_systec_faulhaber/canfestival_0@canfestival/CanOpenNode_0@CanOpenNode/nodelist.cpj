@@ -1,0 +1,10 @@
+[TOPOLOGY]
+NetName=CanOpenNode_0
+Nodes=0x02
+Node2Present=0x01
+Node2Name=systec_IO_X1
+Node2DCFName=IoX1_16DI_8DO.eds
+Node7Present=0x01
+Node7Name=faulhaber
+Node7DCFName=605.3150.67-D.eds
+EDSBaseName=eds

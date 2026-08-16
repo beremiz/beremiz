@@ -1,0 +1,7 @@
+[TOPOLOGY]
+NetName=CanOpenNode_0
+Nodes=0x01
+Node2Present=0x01
+Node2Name=systec_IO-X1
+Node2DCFName=IoX1_16DI_8DO.eds
+EDSBaseName=eds
