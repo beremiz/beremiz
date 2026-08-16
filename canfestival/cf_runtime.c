@@ -52,11 +52,19 @@ static void DeferedInitAlarm(CO_Data* d, UNS32 id){
     setNodeId(&nodename##_Data, nodeid);\
     SetAlarm(&nodename##_Data,0,&DeferedInitAlarm,MS_TO_TIMEVAL(100),0);
 
+#define NODE_RESET_STATE(nodename) \
+    /* CO_Data is a static, and PLC stop/start cycle in the leaves the previous run's state behind. Go off-network first.*/ \
+    { s_state_communication offline = {0,0,0,0,0,0,0}; \
+      nodename##_Data.nodeState = Unknown_state; \
+      nodename##_Data.CurrentCommunicationState = offline; }
+
 #define NODE_MASTER_INIT(nodename, nodeid) \
+    NODE_RESET_STATE(nodename) \
     NODE_FORCE_SYNC(nodename) \
     NODE_INIT(nodename, nodeid)
 
 #define NODE_SLAVE_INIT(nodename, nodeid) \
+    NODE_RESET_STATE(nodename) \
     NODE_INIT(nodename, nodeid)
 
 static void InitNodes(CO_Data* d, UNS32 id)
