@@ -133,6 +133,45 @@ def SearchNodePDOMapping(loc_infos, node):
     return None
 
 
+def PDOFullyDriven(node, pdoidx, pdotype, driven):
+    """
+    Tell whether the master fills every entry of a PDO the slave already maps
+    @param node: node
+    @param pdoidx: index of the PDO mapping
+    @param pdotype: type of that PDO, seen from the slave
+    @param driven: set of (index, subindex) this configuration reads or writes
+    on that node
+    @return: True when no trash variable is needed to keep the offsets
+
+    An entry the master cannot fill gets a trash variable, so that the entries
+    it does fill keep their offset. A trash variable is zero for ever, which
+    costs nothing in a PDO the master receives, but a PDO it transmits carries
+    it to the slave. CiA402 drives usually ship Controlword mapped along with
+    each setpoint, so the PDOs the setpoints are taken from would clear the
+    Controlword the master writes to the one it took Controlword from.
+    """
+
+    values = node.GetEntry(pdoidx)
+    if values is None:
+        return False
+
+    for value in values[1:]:
+        if value == 0:
+            continue
+        index, subindex = value >> 16, (value >> 8) & 0xFF
+        if (index, subindex) not in driven:
+            return False
+        # only the first PDO mapping an object is read from, the object is a
+        # trash variable in the others
+        result = SearchNodePDOMapping({"index": index,
+                                       "subindex": subindex,
+                                       "pdotype": pdotype}, node)
+        if result is None or result[0] != pdoidx:
+            return False
+
+    return True
+
+
 def GeneratePDOMappingDCF(idx, cobid, transmittype, pdomapping):
     """
     Build concise DCF value for configuring a PDO
@@ -473,11 +512,29 @@ class ConciseDCFGenerator(object):
         #                         Search for locations already mapped
         # -------------------------------------------------------------------------------
 
+        # Objects of each node this configuration drives, to tell a PDO the
+        # master fills entirely from one where it would need trash variables
+        driven = {}
+        for locationinfos in self.IECLocations.values():
+            driven.setdefault(locationinfos["nodeid"], set()).add(
+                (locationinfos["index"], locationinfos["subindex"]))
+
         for name, locationinfos in list(self.IECLocations.items()):
             node = self.NodeList.SlaveNodes[locationinfos["nodeid"]]["Node"]
 
             # Search if slave has a PDO mapping this locations
             result = SearchNodePDOMapping(locationinfos, node)
+
+            # A slave RPDO is transmitted by the master, so it can be kept as
+            # the slave maps it only when the master fills all of it. When it
+            # cannot, the location is left to the mapping generation below,
+            # which takes the PDO over and rewrites its mapping. A slave TPDO
+            # is only read, trash variables in it are harmless.
+            if result is not None and locationinfos["pdotype"] == RPDO and \
+               not PDOFullyDriven(node, result[0], RPDO,
+                                  driven[locationinfos["nodeid"]]):
+                result = None
+
             if result is not None:
                 index, subindex = result
                 # Get COB ID of the PDO

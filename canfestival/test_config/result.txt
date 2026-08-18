@@ -41,7 +41,7 @@
 1800 04 (Compatibility Entry): 0
 1800 05 (Event Timer): 0
 1801 (Transmit PDO 2 Parameter):
-1801 01 (COB ID used by PDO): 340
+1801 01 (COB ID used by PDO): 240
 1801 02 (Transmission Type): 1
 1801 03 (Inhibit Time): 0
 1801 04 (Compatibility Entry): 0
@@ -51,9 +51,6 @@
 1A00 01 (PDO 1 Mapping for a process data variable 1): 10010008
 1A01 (Transmit PDO 2 Mapping):
 1A01 01 (PDO 2 Mapping for a process data variable 1): 43400110
-1A01 02 (PDO 2 Mapping for a process data variable 2): 20000310
-1A01 03 (PDO 2 Mapping for a process data variable 3): 20000310
-1A01 04 (PDO 2 Mapping for a process data variable 4): 20000310
 1F22 (Concise DCF):
 1F22 01 (Concise DCF for Node 1): b''
 1F22 02 (Concise DCF for Node 2): 
@@ -118,16 +115,19 @@
 1F22 3D (Concise DCF for Node 61): 
 1F22 3E (Concise DCF for Node 62): 
 1F22 3F (Concise DCF for Node 63): 
-1F22 40 (Concise DCF for Node 64): 9 arg defined
+1F22 40 (Concise DCF for Node 64): 12 arg defined
 1F22 40, arg 1: 1800 01 00000004 800001C0
 1F22 40, arg 2: 1800 02 00000001 01
 1F22 40, arg 3: 1800 01 00000004 000001C0
 1F22 40, arg 4: 1801 01 00000004 800002C0
 1F22 40, arg 5: 1801 02 00000001 01
 1F22 40, arg 6: 1801 01 00000004 000002C0
-1F22 40, arg 7: 1401 01 00000004 80000340
-1F22 40, arg 8: 1401 02 00000001 01
-1F22 40, arg 9: 1401 01 00000004 00000340
+1F22 40, arg 7: 1400 01 00000004 80000240
+1F22 40, arg 8: 1400 02 00000001 01
+1F22 40, arg 9: 1600 00 00000001 00
+1F22 40, arg 10: 1600 01 00000004 64110110
+1F22 40, arg 11: 1600 00 00000001 01
+1F22 40, arg 12: 1400 01 00000004 00000240
 1F22 41 (Concise DCF for Node 65): 
 1F22 42 (Concise DCF for Node 66): 
 1F22 43 (Concise DCF for Node 67): 
