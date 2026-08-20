@@ -77,6 +77,16 @@ class POULibrary(object):
     def GetLibraryPath(self):
         raise Exception("Not implemented")
 
+    def GetSDKFiles(self):
+        """
+        Generated files a plc-sdk has to carry along this library's POUs, so
+        that a PLC rebuilt from the SDK still resolves the C symbols they call.
+        Only meaningful once Generate_C has run.
+
+        @return: ([(Cfile, CFLAGS), ...], [header, ...])
+        """
+        return [], []
+
     def Generate_C(self, buildpath, pous_data, IECCFLAGS):
         """
         Generate C code for Libraries
