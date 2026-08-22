@@ -87,6 +87,16 @@ class POULibrary(object):
         """
         return [], []
 
+    def GetSDKDoCalls(self):
+        """
+        DoCalls a plc-sdk has to rebuild GetSDKFiles() with, when the library
+        exposes __init_/__cleanup_/__retrieve_/__publish_ and not just plain C
+        functions. See definitions in ConfigTreeNode.CTNGenerate_C.
+
+        @return: same as Generate_C's DoCalls
+        """
+        return False
+
     def Generate_C(self, buildpath, pous_data, IECCFLAGS):
         """
         Generate C code for Libraries
