@@ -87,6 +87,17 @@ class POULibrary(object):
         """
         return [], []
 
+    def GetSDKPythonFiles(self):
+        """
+        Python module a plc-sdk has to carry along this library's POUs, so
+        that the confnodes feeding them still import when the IDE builds from
+        the SDK alone. Files are copied next to the SDK's features.py, which
+        is on sys.path, hence importable by their own name.
+
+        @return: [python_file, ...]
+        """
+        return []
+
     def GetSDKDoCalls(self):
         """
         DoCalls a plc-sdk has to rebuild GetSDKFiles() with, when the library
