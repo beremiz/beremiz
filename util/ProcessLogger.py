@@ -117,6 +117,9 @@ class ProcessLogger(object):
         self.startsem = Semaphore(0)
         self.finishsem = Semaphore(0)
         self.endlock = Lock()
+        self.spinwakeuplock = Lock()
+        self.spinwakeupcond = Condition(self.spinwakeuplock)
+        self.spinwakeuptimer = None
 
         if env is None:
             env = os.environ.copy()
@@ -162,10 +165,6 @@ class ProcessLogger(object):
             self.errors)
         self.errt.start()
         self.startsem.release()
-
-        self.spinwakeuplock = Lock()
-        self.spinwakeupcond = Condition(self.spinwakeuplock)
-        self.spinwakeuptimer = None
 
     def output(self, v):
         if v and self.output_encoding:
