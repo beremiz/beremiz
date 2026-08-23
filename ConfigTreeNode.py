@@ -596,8 +596,8 @@ class ConfigTreeNode(object):
         """
         # reorganize self.CTNChildrenTypes tuples from (name, CTNClass, Help)
         # to ( name, (CTNClass, Help)), an make a dict
-        transpose = list(zip(*self.CTNChildrenTypes))
-        CTNChildrenTypes = dict(list(zip(transpose[0], list(zip(transpose[1], transpose[2])))))
+        CTNChildrenTypes = {name: (CTNClass, CTNHelp)
+                            for name, CTNClass, CTNHelp in self.CTNChildrenTypes}
         # Check that adding this confnode is allowed
         try:
             CTNClass, CTNHelp = CTNChildrenTypes[CTNType]
