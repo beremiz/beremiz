@@ -186,9 +186,9 @@ typedef struct {
 
     GetCommonTickTime_t GetCommonTickTime;
 
-    Run_t __run;
-    Init_t __init;
-    Cleanup_t __cleanup;   
+    Run_t PLC_run;
+    Init_t PLC_init;
+    Cleanup_t PLC_cleanup;   
     
 #ifndef PLC_NO_DEBUG
     GetDebugData_t GetDebugData;

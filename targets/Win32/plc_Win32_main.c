@@ -83,7 +83,7 @@ void PlcLoop()
             break;
         }
         clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
-        __run(1);
+        PLC_run(1);
         clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
 		record_run_time_ns_avg(&plc_start_time, &plc_end_time);
     }
@@ -157,7 +157,7 @@ int startPLC(int argc,char **argv)
         printf("CreateWaitableTimer failed (%d)\n", GetLastError());
         return 1;
     }
-    if( __init(argc,argv) == 0 )
+    if( PLC_init(argc,argv) == 0 )
     {
         PLC_SetTimer(common_ticktime__,common_ticktime__);
         PLC_thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PlcLoop, NULL, 0, &thread_id);
@@ -199,7 +199,7 @@ int stopPLC()
     // wait end of PLC thread
     WaitForSingleObject(PLC_thread, INFINITE);
 
-    __cleanup();
+    PLC_cleanup();
 
     CloseHandle(PLC_timer);
     CloseHandle(debug_wait_sem);

@@ -65,7 +65,7 @@ static int init_level = 0;
 /*
  * Retrieve input variables, run PLC and publish output variables
  **/
-unsigned int __run(unsigned int periods_passed)
+unsigned int PLC_run(unsigned int periods_passed)
 {
 	PLC_GetTime(&__CURRENT_TIME);
 
@@ -104,7 +104,7 @@ extern beremiz_plc_ABI *beremiz_plc_interface_ptr;
 #define EXT_INIT_ARGS(index) 0,NULL
 #endif
 
-int __init(int argc, char **argv)
+int PLC_init(int argc, char **argv)
 {
     int res = 0;
     init_level = 0;
@@ -133,7 +133,7 @@ int __init(int argc, char **argv)
 /*
  * Calls plugin cleanup proc.
  **/
-void __cleanup(void)
+void PLC_cleanup(void)
 {
     %(cleanup_calls)s
 #ifndef PLC_NO_DEBUG

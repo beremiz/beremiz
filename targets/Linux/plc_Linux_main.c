@@ -195,7 +195,7 @@ void PLC_thread_proc(void *arg)
             return;
         }
 #endif
-        __run(periods_passed);
+        PLC_run(periods_passed);
 
 #ifndef BEREMIZ_TEST_CYCLES
         // ensure next PLC cycle occurence is in the future
@@ -296,7 +296,7 @@ int startPLC(int argc,char **argv)
     pthread_mutex_lock(&debug_wait_mutex);
     pthread_mutex_lock(&python_wait_mutex);
 
-    if((ret = __init(argc,argv)) == 0 ){
+    if((ret = PLC_init(argc,argv)) == 0 ){
 
         /* Signal to wakeup PLC thread when period changes */
         signal(SIGUSR1, PLCThreadSignalHandler);
@@ -342,7 +342,7 @@ int stopPLC()
     /* Order PLCThread to exit */
     pthread_kill(PLC_thread, SIGUSR2);
     pthread_join(PLC_thread, NULL);
-    __cleanup();
+    PLC_cleanup();
 
     pthread_mutex_unlock(&debug_wait_mutex);
     pthread_mutex_unlock(&python_wait_mutex);

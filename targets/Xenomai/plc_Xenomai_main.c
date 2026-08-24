@@ -143,7 +143,7 @@ void PLC_task_proc(void *arg)
         if(overruns == 0){
             struct timespec plc_start_time, plc_end_time;
             clock_gettime(CLOCK_MONOTONIC, &plc_start_time);
-            __run(periods_passed);
+            PLC_run(periods_passed);
             clock_gettime(CLOCK_MONOTONIC, &plc_end_time);
             record_run_time_ns_avg(&plc_start_time, &plc_end_time);
             periods_passed = 1;
@@ -284,7 +284,7 @@ int stopPLC()
     rt_task_join(&PLC_task);
 
     PLC_cleanup_all();
-    __cleanup();
+    PLC_cleanup();
     __debug_tick = -1;
     return 0;
 }
@@ -342,7 +342,7 @@ int startPLC(int argc,char **argv)
         _startPLCLog("Failed creating PLC task");
     PLC_state |= PLC_STATE_TASK_CREATED;
 
-    if(__init(argc,argv)) goto error;
+    if(PLC_init(argc,argv)) goto error;
 
     /* start PLC task */
     if(rt_task_start(&PLC_task, &PLC_task_proc, NULL))
