@@ -55,7 +55,13 @@ def CheckPathPerm(path):
                 return False
 
         for name in files:
-            if os.access(os.path.join(root, name), os.W_OK) is not True:
+            filepath = os.path.join(root, name)
+            # symlink write permission is the one of the directory holding it,
+            # already checked above. Testing the link would follow it, and fail
+            # on dangling links
+            if os.path.islink(filepath):
+                continue
+            if os.access(filepath, os.W_OK) is not True:
                 return False
     return True
 
