@@ -1076,7 +1076,7 @@ class PouProgramGenerator(object):
                     uncomputed_index.remove(num)
         for num in uncomputed_index:
             factorized_paths.append(paths[num])
-        factorized_paths.sort()
+        factorized_paths.sort(key=lambda p: (0 if isinstance(p, list) else 1, repr(p)))
         return factorized_paths
 
     def GenerateBlock(self, block, block_infos, body, link, order=False, to_inout=False):
