@@ -3883,7 +3883,122 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
           </FBD>
         </body>
       </pou>
-    </pous>
+          <pou name="LDUnequalBranches" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="A"><type><BOOL/></type></variable>
+            <variable name="B"><type><BOOL/></type></variable>
+            <variable name="C"><type><BOOL/></type></variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Y"><type><BOOL/></type></variable>
+          </outputVars>
+        </interface>
+        <body>
+          <LD>
+            <leftPowerRail localId="1" height="60" width="10">
+              <position x="20" y="20"/>
+              <connectionPointOut formalParameter="none"><relPosition x="10" y="20"/></connectionPointOut>
+            </leftPowerRail>
+            <contact localId="3" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="60" y="30"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="1"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>A</variable>
+            </contact>
+            <contact localId="4" negated="true" storage="none" edge="none" height="15" width="21">
+              <position x="110" y="30"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="3"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>B</variable>
+            </contact>
+            <contact localId="5" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="60" y="70"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="1"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>C</variable>
+            </contact>
+            <coil localId="6" negated="false" storage="none" height="15" width="21">
+              <position x="180" y="30"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="4"/>
+                <connection refLocalId="5"/>
+              </connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>Y</variable>
+            </coil>
+          </LD>
+        </body>
+      </pou>
+      <pou name="LDNestedBranches" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="A"><type><BOOL/></type></variable>
+            <variable name="B"><type><BOOL/></type></variable>
+            <variable name="C"><type><BOOL/></type></variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Y"><type><BOOL/></type></variable>
+          </outputVars>
+        </interface>
+        <body>
+          <LD>
+            <leftPowerRail localId="1" height="100" width="10">
+              <position x="20" y="20"/>
+              <connectionPointOut formalParameter="none"><relPosition x="10" y="20"/></connectionPointOut>
+            </leftPowerRail>
+            <contact localId="3" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="60" y="30"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="1"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>A</variable>
+            </contact>
+            <contact localId="4" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="60" y="60"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="1"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>A</variable>
+            </contact>
+            <contact localId="5" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="110" y="60"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="4"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>B</variable>
+            </contact>
+            <contact localId="6" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="60" y="90"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="1"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>A</variable>
+            </contact>
+            <contact localId="7" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="110" y="90"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="6"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>B</variable>
+            </contact>
+            <contact localId="8" negated="false" storage="none" edge="none" height="15" width="21">
+              <position x="160" y="90"/>
+              <connectionPointIn><relPosition x="0" y="10"/><connection refLocalId="7"/></connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>C</variable>
+            </contact>
+            <coil localId="9" negated="false" storage="none" height="15" width="21">
+              <position x="220" y="30"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="3"/>
+                <connection refLocalId="5"/>
+                <connection refLocalId="8"/>
+              </connectionPointIn>
+              <connectionPointOut><relPosition x="21" y="10"/></connectionPointOut>
+              <variable>Y</variable>
+            </coil>
+          </LD>
+        </body>
+      </pou>
+</pous>
   </types>
   <instances>
     <configurations>
