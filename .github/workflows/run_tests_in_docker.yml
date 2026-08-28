@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
           repository: beremiz/matiec
-          ref: 7949c0bda1787de9c7cacaa4876ede49f85262dd
+          ref: 7680ed8e7ffc1a76fa9f9620d6c6e7a3e75c088d
           path: matiec
 
     - uses: actions/checkout@v3
@@ -40,9 +40,21 @@ jobs:
       with:
           repository: beremiz/erpc
           # v1.13.0 + no CRC on TCP
-          ref: ac8021af075729b036ead26bd500f62529fe4e04
+          ref: 86549891eb35351585381dd42d6337fc5599eadd
           path: erpc
               
+    - uses: actions/checkout@v3
+      with:
+          repository: beremiz/frozen
+          ref: cfff12e9d3f20e9ea670ced1beb27be141fa3254
+          path: frozen
+
+    - uses: actions/checkout@v3
+      with:
+          repository: eclipse-paho/paho.mqtt.c
+          ref: 4a939ddb01eea581a32fd6f0adcfee51b91d2601
+          path: paho.mqtt.c
+
     - name: Restore cached docker image
       id: cache-docker-restore
       uses: actions/cache/restore@v3
