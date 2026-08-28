@@ -94,7 +94,7 @@ jobs:
     - name: Run tests in docker
       run: |
         cd beremiz/tests/tools/Docker
-        ./do_test_in_docker.sh
+        ./do_test_in_docker.sh cli_tests
 
     - name: Prepare test results for artifact upload
       if: ${{ always() }}
