@@ -87,6 +87,17 @@ class POULibrary(object):
         """
         return [], []
 
+    def GetSDKObjectFiles(self):
+        """
+        C files from GetSDKFiles() a plc-sdk ships as the object this build
+        compiled them into, rather than as source. Only sound for a file that
+        doesn't depend on the project it was built with, and only worth it for
+        one too big for every PLC programmer to rebuild.
+
+        @return: [Cfile, ...], a subset of GetSDKFiles()'s C files
+        """
+        return []
+
     def GetSDKPythonFiles(self):
         """
         Python module a plc-sdk has to carry along this library's POUs, so
@@ -107,6 +118,14 @@ class POULibrary(object):
         @return: same as Generate_C's DoCalls
         """
         return False
+
+    def CheckProject(self, pous_data):
+        """
+        Checks this library makes on the project it is about to be built into.
+        Separate from Generate_C because a plc-sdk replaces that one, and a
+        library's constraints outlive the build that produced the SDK.
+        """
+        pass
 
     def Generate_C(self, buildpath, pous_data, IECCFLAGS):
         """

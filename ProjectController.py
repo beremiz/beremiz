@@ -764,6 +764,9 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 self.FatalError(_("Target %s is not compatible with %s library\n") % 
                     (builder.GetTargetName(), lib.GetName()))
 
+            # Apart from Generate_C, which a plc-sdk replaces with its own
+            lib.CheckProject(self._POUSData)
+
             res = lib.Generate_C(buildpath, self._POUSData, self.getPLC_CFLAGS())
             # res[0] is either a single (location, cfiles, docalls) entry or a list
             # of such entries (a library may target both the IOs and logic .so, e.g.
