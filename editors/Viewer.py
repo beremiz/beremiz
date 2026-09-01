@@ -91,6 +91,8 @@ else:
         'other': 'new century schoolbook',
         'size':  10,
     }
+face_size_adjusted = False
+
 
 if wx.Platform == '__WXMSW__':
     MAX_ZOOMIN = 4
@@ -681,6 +683,7 @@ class Viewer(EditorPanel, DebugViewer):
 
     # Create a new Viewer
     def __init__(self, parent, tagname, window, controler, debug=False, instancepath=""):
+        global face, face_size_adjusted
         self.VARIABLE_PANEL_TYPE = controler.GetPouType(tagname.split("::")[1])
 
         EditorPanel.__init__(self, parent, tagname, window, controler, debug)
@@ -735,13 +738,15 @@ class Viewer(EditorPanel, DebugViewer):
 
         dc = wx.ClientDC(self.Editor)
         while True:
-            font = wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
+            font = wx.Font(wx.FontInfo(faces["size"]).FaceName(faces["mono"]))
+            # wx.Font(faces["size"], wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["mono"])
             dc.SetFont(font)
             width, _height = dc.GetTextExtent("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
             # Arbitrary constant. Should become a user setting.
-            if width < 175:
+            if face_size_adjusted or width < 175:
                 break
-            faces["size"] -= 1
+            faces["size"] -= .1
+        face_size_adjusted = True
         self.Editor.SetFont(font)
         self.MiniTextDC = wx.MemoryDC(wx.Bitmap(1, 1))
         self.MiniTextDC.SetFont(wx.Font(round(faces["size"] * 0.75), wx.SWISS, wx.NORMAL, wx.NORMAL, faceName=faces["helv"]))
@@ -1144,9 +1149,13 @@ class Viewer(EditorPanel, DebugViewer):
         # extremely CPU hungry (at least on gtk)
         # so we don't display grid on zoom smaller than 100%
         if self.Scaling and self.ViewScale[0] >= 1 and self.ViewScale[1] >= 1:
-            width = int(scaling[0])
-            height = int(scaling[1])
-            bitmap = wx.Bitmap(width, height)
+            width, height = scaling
+            if wx.Platform == '__WXMSW__':
+                # bug on windows brush filled rectangle ignore DC scale
+                # so brush is extended according to scale
+                width *= self.ViewScale[0]
+                height *= self.ViewScale[1]
+            bitmap = wx.Bitmap(int(width), int(height))
             dc = wx.MemoryDC(bitmap)
             dc.SetBackground(wx.Brush(self.Editor.GetBackgroundColour()))
             dc.Clear()
