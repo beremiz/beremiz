@@ -17,3 +17,4 @@ C_runtime/**/*.d
 C_runtime/**/*.o
 beremiz_runtime
 **/tmp/**
+__builtins__.pyi
