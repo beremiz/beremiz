@@ -194,6 +194,10 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
         # received new value and then table need to be refreshed
         self.HasNewData = False
 
+        # Variable storing flag indicating that viewers have to be refreshed
+        # at next EVT_PAINT
+        self.ViewersNeedRefresh = False
+
         # Variable storing flag indicating that refresh has been forced, and
         # that next time refresh is possible, it will be done even if no new
         # data is available
@@ -522,6 +526,7 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
     def RefreshView(self):
         """Triggers EVT_PAINT event to refresh UI"""
+        self.ViewersNeedRefresh = True
         self.Refresh()
 
     def DrawView(self):
@@ -532,19 +537,25 @@ class DebugVariablePanel(wx.Panel, DebugViewer):
 
         self.RefreshCanvasPosition()
 
-        if not self.Fixed or self.Force:
-            self.Force = False
-            refresh_graphics = True
-        else:
-            refresh_graphics = False
+        # Refreshing viewers at each EVT_PAINT would loop forever when they
+        # aren't native windows (i.e. GTK Broadway or Wayland backends), since
+        # redrawing them then triggers EVT_PAINT again.
+        if self.ViewersNeedRefresh:
+            self.ViewersNeedRefresh = False
 
-        if self.DraggingAxesPanel is not None and self.DraggingAxesPanel not in self.GraphicPanels:
-            self.DraggingAxesPanel.RefreshViewer(refresh_graphics)
-        for panel in self.GraphicPanels:
-            if isinstance(panel, DebugVariableGraphicViewer):
-                panel.RefreshViewer(refresh_graphics)
+            if not self.Fixed or self.Force:
+                self.Force = False
+                refresh_graphics = True
             else:
-                panel.RefreshViewer()
+                refresh_graphics = False
+
+            if self.DraggingAxesPanel is not None and self.DraggingAxesPanel not in self.GraphicPanels:
+                self.DraggingAxesPanel.RefreshViewer(refresh_graphics)
+            for panel in self.GraphicPanels:
+                if isinstance(panel, DebugVariableGraphicViewer):
+                    panel.RefreshViewer(refresh_graphics)
+                else:
+                    panel.RefreshViewer()
 
         if self.CursorTick is not None:
             tick = self.CursorTick
