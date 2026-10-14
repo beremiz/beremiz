@@ -139,9 +139,9 @@ void __cleanup_%(location)s()
 void __retrieve_%(location)s()
 {
 	if (__FirstTick) {
-		*%(axisref_symbol)s = __MK_Alloc_AXIS_REF();
+		*%(axisref_symbol)s = new_AXIS_REF();
 		AxsPub.axis = 
-            __MK_GetPublic_AXIS_REF(*%(axisref_symbol)s);
+            AXIS_REF_interface(*%(axisref_symbol)s);
 %(fieldbus_axis_network_binding)s
 %(init_axis_params)s
 		__FirstTick = 0;
