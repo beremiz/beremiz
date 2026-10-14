@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONTAINER=beremiz_sikuli_current
+CONTAINER=beremiz_playwright_current
 
 docker start $CONTAINER
 docker exec -i -t -u root $CONTAINER bash

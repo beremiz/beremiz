@@ -11,19 +11,13 @@
 #     Use cases :
 #
 #       run given tests
-#           $ make run_python_exemple.sikuli
+#           $ make run_python_exemple.pytest
 #
 #       run tests from particular test classes
 #           $ make ide_tests
 #
-#       run one particular test in a Xnest window
-#           $ make xnest_run_python_exemple.sikuli
-#
-#       run Xnest window with just xterm
-#           $ make xnest_xterm
-#
-#       run Xnest window with sikuli IDE and xterm
-#           $ make xnest_sikuli
+#       run IDE displayed in your browser, to help writing IDE tests
+#           $ make ide_session ide_session_project=exemples/python
 #
 #       build minimal beremiz and matiec to run tests
 #           $ make built_apps
@@ -38,9 +32,8 @@
 #   $(test_dir) defaults to $(HOME)/test and can be overloaded:
 #       $ make test_dir=${HOME}/other_test_dir
 #
-#   Makefile attemps to use xvfb-run to run each test individually with its own
-#   X server instance. This behavior can be overloaded
-#       $ DISPLAY=:42 make xserver_command='echo "Using $DISPLAY X Server !";'
+#   IDE tests run headless, IDE being displayed with GTK Broadway backend in
+#   a browser driven by Playwright. See ide_tests/ide_harness.py
 #
 #   Matiec and Beremiz code are expected to be clean, ready to build
 #   Any change in Matiec directory triggers rebuild of matiec.
@@ -145,66 +138,41 @@ endef
 #
 
 ide_test_dir = $(src)/ide_tests
-sikuli_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.sikuli))
 pytest_ide_tests = $(subst $(ide_test_dir)/,,$(wildcard $(ide_test_dir)/*.pytest))
 
 fluxbox_command ?= echo "session.screen0.toolbar.placement: TopCenter" > fluxbox_init; (fluxbox -rc fluxbox_init >/dev/null 2>&1 &)
-
-define sikuli_idetest_command
-	$(fluxbox_command); BEREMIZPATH=$(build_dir)/beremiz sikulix -r $(src)/ide_tests/$(1)
-endef
-
 
 DELAY=400
 KILL_DELAY=430
 PYTEST=$(dir $(BEREMIZPYTHONPATH))pytest
 define pytest_idetest_command
-	$(fluxbox_command); PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1)
+	BEREMIZPATH=$(build_dir)/beremiz PYTHONPATH=$(ide_test_dir) timeout -k $(KILL_DELAY) $(DELAY) $(PYTEST) --maxfail=1 --timeout=100  $(src)/ide_tests/$(1)
 endef
 
-# Xnest based interactive sessions for tests edit and debug. 
-# Would be nice with something equivalent to xvfb-run, waiting for USR1.
-# Arbitrary "sleep 1" is probably enough for interactive use
-define xnest_run
-	Xnest :42 -geometry 1920x1080+0+0 & export xnestpid=$$!; sleep 1; DISPLAY=:42 $(1); export res=$$?; kill $${xnestpid} 2>/dev/null; exit $${res}
-endef
 
-xserver_command ?= xvfb-run -s '-screen 0 1920x1080x24'
-
-define make_idetest_rule
+define make_pytest_idetest_rule
 $(test_dir)/$(1)_results/.passed: built_apps
-	$(call prep_test,$(1)); $(xserver_command) bash -c '$(call log_command,$(2),$(1))'
+	$(call prep_test,$(1)); bash -c '$(call log_command,$(2),$(1))'
 	touch $$@
 
-# Manually invoked rule {testname}.sikuli
+# Manually invoked rule {testname}.pytest
 $(1): $(test_dir)/$(1)_results/.passed
-
-# Manually invoked rule xnest_{testname}.sikuli
-# runs test in xnest so that one can see what happens
-xnest_$(1): built_apps
-	$(call prep_test,$(1)); $$(call xnest_run, bash -c '$(call log_command,$(2),$(1))')
 
 ide_tests_targets += $(test_dir)/$(1)_results/.passed
 endef
-$(foreach idetest,$(sikuli_ide_tests),$(eval $(call make_idetest_rule,$(idetest),sikuli_idetest_command)))
-$(foreach idetest,$(pytest_ide_tests),$(eval $(call make_idetest_rule,$(idetest),pytest_idetest_command)))
+$(foreach idetest,$(pytest_ide_tests),$(eval $(call make_pytest_idetest_rule,$(idetest),pytest_idetest_command)))
 
 ide_tests : $(ide_tests_targets)
 	echo "$(ide_tests_targets) : Passed"
 
-xnest_xterm: built_apps
-	$(call xnest_run, bash -c '$(fluxbox_command);xterm')
+pytest_ide_tests_targets = $(patsubst %,$(test_dir)/%_results/.passed,$(pytest_ide_tests))
 
-xnest_sikuli: built_apps
-	$(call xnest_run, bash -c '$(fluxbox_command);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm')
+pytest_ide_tests : $(pytest_ide_tests_targets)
+	echo "$(pytest_ide_tests_targets) : Passed"
 
-xvfb_sikuli: built_apps
-	echo "******************************************"
-	echo "On host, run 'xvncviewer 127.0.0.1:5900' to see sikuli X session"
-	echo "Docker container must be created with TESTDEBUG=YES. For example :"
-	echo "./clean_docker_container.sh && ./build_docker_image.sh && TESTDEBUG=YES ./create_docker_container.sh && ./do_test_in_docker.sh xvfb_sikuli"
-	echo "******************************************"
-	$(xserver_command) bash -c '(fluxbox &);(x11vnc &);(BEREMIZPATH=$(build_dir)/beremiz xterm -e sikulix &);xterm'
+# Interactive IDE session, to help writing IDE tests. See ide_tests/ide_session.py
+ide_session: built_apps
+	BEREMIZPATH=$(build_dir)/beremiz PYTHONPATH=$(ide_test_dir) $(BEREMIZPYTHONPATH) $(ide_test_dir)/ide_session.py $(ide_session_project)
 
 #
 # CLI TESTS

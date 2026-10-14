@@ -8,5 +8,5 @@ export BUILDKIT_PROGRESS=plain
 docker build \
     --build-arg UID=$(id -u) \
     --build-arg GID=$(id -g) \
-    -t beremiz_sikuli .
+    -t beremiz_playwright .
 

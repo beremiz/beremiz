@@ -30,6 +30,8 @@ async def main():
     await testvar.set_writable()
 
     await server.start()
+    print("SERVER READY")
+    sys.stdout.flush()
     try:
         while True:
             await asyncio.sleep(1)

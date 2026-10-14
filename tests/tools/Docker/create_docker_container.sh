@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # source directory containing beremiz, matiec, etc..
 SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../../../.. && pwd )"
@@ -15,16 +15,16 @@ UNAME=ubuntu
 UHOME=/home/$UNAME
 
 # define TESTDEBUG in env to enable dev-mode. This enables :
-#   - debug passthrough for Xnest
-#   - VNC port passthrough
-DEBUGARGS="-v /tmp/.X11-unix:/tmp/.X11-unix -v $XAUTHORITY:$XAUTHORITY -e DISPLAY=$DISPLAY -e XAUTHORITY=$XAUTHORITY -p 5900:5900"
+#   - IDE session port (make ide_session) and Chromium remote debugging port
+#     (BEREMIZ_TEST_DEVTOOLS=9222) passthrough
+DEBUGARGS="-p 8080:8080 -p 9222:9222"
 
 echo "Creating docker container"
 docker create \
-       --name beremiz_sikuli_current \
+       --name beremiz_playwright_current \
        -v $SRCDIR:$UHOME/src \
        -v $TESTDIR:$UHOME/test \
        `if [ "$TESTDEBUG" == "YES" ]; then echo $DEBUGARGS; fi` \
        -w $UHOME/test \
-       -i -t beremiz_sikuli /bin/bash
+       -i -t beremiz_playwright /bin/bash
 

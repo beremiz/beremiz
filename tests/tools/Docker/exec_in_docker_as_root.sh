@@ -2,7 +2,7 @@
 
 set -e
 
-CONTAINER=beremiz_sikuli_current
+CONTAINER=beremiz_playwright_current
 
 docker stop $CONTAINER
 docker start $CONTAINER 

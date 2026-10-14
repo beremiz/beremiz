@@ -31,9 +31,21 @@ import time
 import wx
 import conftest
 from controls.CustomIntCtrl import CustomIntCtrl
+from ide_harness import BroadwayDisplay
 
 
 wxApp = None
+display = None
+
+
+def setUpModule():
+    global display
+    display = BroadwayDisplay()
+    display.use()
+
+
+def tearDownModule():
+    display.close()
 
 class TestCustomIntCtrl(unittest.TestCase):
     def setUp(self):
