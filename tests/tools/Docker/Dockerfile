@@ -2,11 +2,11 @@
 # Dockerfile for Beremiz
 # This container is used to run tests for Beremiz
 #
-FROM ubuntu:noble
+FROM ubuntu:resolute
                                         
 ENV TERM xterm-256color
 
-ENV TZ America/Paris
+ENV TZ UTC
 ENV DEBIAN_FRONTEND noninteractive
 
 ENV LANG en_US.UTF-8
@@ -37,8 +37,10 @@ RUN set -xe \
                python3-venv virtualenv cmake ninja-build git
 
 ### Playwright dependencies : libasound2t64 (seems needed by embedded chromium) ###
+RUN apt-get install -qqy --no-install-recommends libasound2t64 python3-gi
+
 ### SVGHMI dependencies : Inkscape ###
-RUN apt-get install -qqy --no-install-recommends libasound2t64 inkscape
+RUN apt-get install -qqy --no-install-recommends inkscape
 
 # easy to remember 'do_tests' alias to invoke main makefile
 RUN echo '#!/bin/bash\nmake -f /home/'$UNAME'/src/beremiz/tests/Makefile $*' > /usr/local/bin/do_tests
@@ -58,16 +60,16 @@ RUN ~/beremizenv/bin/pip install --upgrade --no-deps -r /home/$UNAME/requirement
 # tests specific python requirements : pytest pytest-timeout ddt crossbar
 
 ## How to upgrade requirements and test requirements together:
-# pip install --no-deps -r requirements_pinned.txt 
+# pip install --no-deps -r ../../../requirements_pinned.txt 
 # pip freeze > requirements_pinned_freezed.txt 
-# pip install --no-deps -r requirements_test.txt 
+# pip install -r requirements_tests.txt 
 # pip freeze > requirements_test_freezed.txt 
 # sort requirements_pinned_freezed.txt -o requirements_pinned_freezed_sorted.txt 
 # sort requirements_test_freezed.txt -o requirements_test_freezed_sorted.txt
-# comm -13 requirements_pinned_freezed_sorted.txt requirements_test_freezed_sorted.txt > test_requirements.txt
+# comm -13 requirements_pinned_freezed_sorted.txt requirements_test_freezed_sorted.txt > requirements_tests_pinned.txt
 
-COPY test_requirements.txt /home/$UNAME
-RUN ~/beremizenv/bin/pip install -r /home/$UNAME/test_requirements.txt --no-deps
+COPY requirements_tests_pinned.txt /home/$UNAME
+RUN ~/beremizenv/bin/pip install -r /home/$UNAME/requirements_tests_pinned.txt --no-deps
      
 # Why --no-deps : 
 #    - Mandatory because crossbar's dependencies are expressed with github url,

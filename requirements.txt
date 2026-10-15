@@ -1,5 +1,5 @@
-asyncua @ git+https://github.com/FreeOpcUa/opcua-asyncio.git@98a64897a2d171653353de2f36d33085aef65e82
-autobahn @ git+https://github.com/crossbario/autobahn-python.git@7bc85b34e200640ab98a41cfddb38267f39bc92e
+asyncua
+autobahn
 Brotli
 click
 erpc @ git+https://git@github.com/beremiz/erpc.git@ac8021af075729b036ead26bd500f62529fe4e04#subdirectory=erpc_python
