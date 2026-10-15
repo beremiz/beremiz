@@ -27,7 +27,7 @@ import time
 import asyncio
 
 from asyncua import ua, Server
-from asyncua.server.users import User, UserRole
+from asyncua.crypto.permission_rules import User, UserRole
 
 # Asyncua can't work without (over)simple shared cerificates/privkey.
 # No user is involved in that case, but asyncua needs it.
