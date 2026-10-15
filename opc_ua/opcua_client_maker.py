@@ -599,7 +599,7 @@ class OPCUAClientModel(dict):
                     writer.writerow([direction] + row)
 
     def GenerateC(self, path, locstr, config):
-        c_template_filepath = paths.AbsNeighbourFile(__file__, "opcua_template.c")
+        c_template_filepath = paths.AbsNeighbourFile(__file__, "opcua_client_template.c")
         c_template_file = open(c_template_filepath , 'rb')
         c_template = c_template_file.read()
         c_template = c_template.decode('utf-8')

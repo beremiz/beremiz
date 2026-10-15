@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns:ns1="http://www.plcopen.org/xml/tc6_0201" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.plcopen.org/xml/tc6_0201">
+  <fileHeader companyName="Beremiz" productName="opcua_server" productVersion="1" creationDateTime="2026-10-11T12:00:00"/>
+  <contentHeader name="opcua_server" modificationDateTime="2026-10-11T12:00:00">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="5" y="5"/>
+      </fbd>
+      <ld>
+        <scaling x="0" y="0"/>
+      </ld>
+      <sfc>
+        <scaling x="0" y="0"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes>
+      <dataType name="POINT">
+        <baseType>
+          <struct>
+            <variable name="X">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="Y">
+              <type>
+                <REAL/>
+              </type>
+            </variable>
+          </struct>
+        </baseType>
+      </dataType>
+    </dataTypes>
+    <pous>
+      <pou name="COUNTER_FB" pouType="functionBlock">
+        <interface>
+          <outputVars>
+            <variable name="CNT">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+          </outputVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[CNT := CNT + 1;]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+      <pou name="program0" pouType="program">
+        <interface>
+          <localVars>
+            <variable name="Counter">
+              <type>
+                <derived name="COUNTER_FB"/>
+              </type>
+            </variable>
+            <variable name="Arr">
+              <type>
+                <array>
+                  <dimension lower="0" upper="2"/>
+                  <baseType>
+                    <INT/>
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="Pt">
+              <type>
+                <derived name="POINT"/>
+              </type>
+            </variable>
+            <variable name="Pts">
+              <type>
+                <array>
+                  <dimension lower="1" upper="2"/>
+                  <baseType>
+                    <derived name="POINT"/>
+                  </baseType>
+                </array>
+              </type>
+            </variable>
+            <variable name="Cmd">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="Echo">
+              <type>
+                <INT/>
+              </type>
+            </variable>
+            <variable name="Msg">
+              <type>
+                <string/>
+              </type>
+              <initialValue>
+                <simpleValue value="'hello'"/>
+              </initialValue>
+            </variable>
+            <variable name="Delay">
+              <type>
+                <TIME/>
+              </type>
+              <initialValue>
+                <simpleValue value="T#1500ms"/>
+              </initialValue>
+            </variable>
+            <variable name="LOGGER0">
+              <type>
+                <derived name="LOGGER"/>
+              </type>
+            </variable>
+          </localVars>
+          <externalVars>
+            <variable name="GFlag">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </externalVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml:p><![CDATA[Counter();
+Arr[1] := Arr[0] * 2;
+Pts[2].X := Pt.X + 1;
+IF Cmd <> Echo THEN
+  Echo := Cmd;
+  LOGGER0(TRIG := TRUE, MSG := CONCAT('OPCUA write Cmd=', INT_TO_STRING(Cmd)));
+ELSE
+  LOGGER0(TRIG := FALSE);
+END_IF;]]></xhtml:p>
+          </ST>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="config">
+        <resource name="resource1">
+          <task name="task0" priority="0" interval="T#100ms">
+            <pouInstance name="instance0" typeName="program0"/>
+          </task>
+          <globalVars>
+            <variable name="RVar">
+              <type>
+                <DINT/>
+              </type>
+            </variable>
+          </globalVars>
+        </resource>
+        <globalVars>
+          <variable name="GFlag">
+            <type>
+              <BOOL/>
+            </type>
+          </variable>
+        </globalVars>
+      </configuration>
+    </configurations>
+  </instances>
+</project>

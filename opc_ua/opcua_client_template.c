@@ -62,8 +62,8 @@ static UA_Client *client;
 static UA_ClientConfig *cc;
 
 #define DECL_VAR(iec_type, C_type, c_loc_name)                                                     \
-static UA_Variant c_loc_name##_variant;                                                                 \
-static C_type c_loc_name##_buf = 0;                                                             \
+static UA_Variant c_loc_name##_variant;                                                            \
+static C_type c_loc_name##_buf = 0;                                                                \
 C_type *c_loc_name = &c_loc_name##_buf;
 
 {decl}
@@ -112,7 +112,7 @@ void __cleanup_{locstr}(void)
     LogInfo("OPC-UA Init no auth");                                                                \
     UA_ClientConfig_setDefault(cc);                                                                \
     OPCUA_stop_thread = 0;                                                                         \
-    int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                      \
+    int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                       \
     if (rc != 0) {{                                                                                \
         LogError("OPC-UA Failed to create thread: %d", rc);                                        \
         UA_Client_delete(client);                                                                  \
@@ -163,12 +163,12 @@ void __cleanup_{locstr}(void)
                                                                                                    \
     if(retval == UA_STATUSCODE_GOOD) {{                                                            \
         OPCUA_stop_thread = 0;                                                                     \
-        int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                  \
+        int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                   \
         if (rc != 0) {{                                                                            \
             LogError("OPC-UA Failed to create thread: %d", rc);                                    \
             UA_Client_delete(client);                                                              \
-        }}                                                                                          \
-    }}                                                                                              \
+        }}                                                                                         \
+    }}                                                                                             \
                                                                                                    \
     UA_ByteString_clear(&certificate);                                                             \
     UA_ByteString_clear(&privateKey);
@@ -176,7 +176,15 @@ void __cleanup_{locstr}(void)
 #define INIT_UserPassword(User, Password)                                                          \
     LogInfo("OPC-UA Init UserPassword %s,%s", User, Password);                                     \
     UA_ClientConfig_setDefault(cc);                                                                \
-    retval = UA_Client_connectUsername(client, uri, User, Password);
+    retval = UA_ClientConfig_setAuthenticationUsername(cc, User, Password);                        \
+    if(retval == UA_STATUSCODE_GOOD) {{                                                            \
+        OPCUA_stop_thread = 0;                                                                     \
+        int rc = pthread_create(&OPCUA_thread, NULL, __OPCUA_thread_proc, NULL);                   \
+        if (rc != 0) {{                                                                            \
+            LogError("OPC-UA Failed to create thread: %d", rc);                                    \
+            UA_Client_delete(client);                                                              \
+        }}                                                                                         \
+    }}
 
 #define INIT_READ_VARIANT(ua_type, c_loc_name)                                                     \
     UA_Variant_init(&c_loc_name##_variant);
@@ -237,17 +245,17 @@ int __init_{locstr}(int argc,char **argv)
 }}
 
 #define READ_VALUE(ua_type, ua_type_enum, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)        \
-    {{                                                                                            \
-        if(!OPCUA_is_disconnected && pthread_mutex_trylock(&OPCUA_client_wakeup_mutex) == 0) {{          \
-            UA_StatusCode retval = UA_Client_readValueAttribute(                                  \
-                client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);                           \
-            if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(&c_loc_name##_variant) &&                  \
-                c_loc_name##_variant.type == &UA_TYPES[ua_type_enum]) {{                                         \
-                c_loc_name##_buf = *(ua_type*)c_loc_name##_variant.data;                                        \
-            }}                                                                                      \
-            UA_Variant_clear(&c_loc_name##_variant);                                  \
-            pthread_mutex_unlock(&OPCUA_client_wakeup_mutex);                                             \
-        }}                                                                                          \
+    {{                                                                                             \
+        if(!OPCUA_is_disconnected && pthread_mutex_trylock(&OPCUA_client_wakeup_mutex) == 0) {{    \
+            UA_StatusCode retval = UA_Client_readValueAttribute(                                   \
+                client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);              \
+            if(retval == UA_STATUSCODE_GOOD && UA_Variant_isScalar(&c_loc_name##_variant) &&       \
+                c_loc_name##_variant.type == &UA_TYPES[ua_type_enum]) {{                           \
+                c_loc_name##_buf = *(ua_type*)c_loc_name##_variant.data;                           \
+            }}                                                                                     \
+            UA_Variant_clear(&c_loc_name##_variant);                                               \
+            pthread_mutex_unlock(&OPCUA_client_wakeup_mutex);                                      \
+        }}                                                                                         \
     }}
 
 void __retrieve_{locstr}(void)
@@ -255,12 +263,12 @@ void __retrieve_{locstr}(void)
 {retrieve}
 }}
 
-#define WRITE_VALUE(ua_type, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)                    \
+#define WRITE_VALUE(ua_type, c_loc_name, ua_nodeid_type, ua_nsidx, ua_node_id)                     \
     {{                                                                                             \
         if(!OPCUA_is_disconnected) {{                                                              \
             UA_Client_writeValueAttribute(                                                         \
-                client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);             \
-        }}                                                                                          \
+                client, ua_nodeid_type(ua_nsidx, ua_node_id), &c_loc_name##_variant);              \
+        }}                                                                                         \
     }}
 
 void __publish_{locstr}(void)

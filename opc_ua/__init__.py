@@ -3,6 +3,7 @@
 
 
 from .client import OPCUAClient
+from .server import OPCUAServer
 
 # class RootClass(object):
 #     XSD = """<?xml version="1.0" encoding="ISO-8859-1" ?>
