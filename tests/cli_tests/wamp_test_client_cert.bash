@@ -68,6 +68,13 @@ from twisted.internet.defer import inlineCallbacks
 from autobahn.twisted.wamp import ApplicationSession
 from autobahn.wamp.exception import ApplicationError
 
+from OpenSSL.crypto import X509
+
+# autobahn (26.7.1) extracts client certificate extensions with X509.get_extension(),
+# removed in pyOpenSSL 26.2.0. Extensions aren't used here : pretend there are none.
+if not hasattr(X509, "get_extension"):
+    X509.get_extension_count = lambda self: 0
+
 
 class AutomationAuthenticator(ApplicationSession):
 
