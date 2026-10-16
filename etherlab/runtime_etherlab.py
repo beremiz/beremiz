@@ -69,7 +69,7 @@ SDOAnswered = PLCIOsBinary.SDOAnswered
 SDOAnswered.restype = None
 SDOAnswered.argtypes = []
 
-PLCGetSDOData = PLCBinary.GetSDOData
+PLCGetSDOData = PLCIOsBinary.GetSDOData
 PLCGetSDOData.restype = ctypes.c_uint32
 PLCGetSDOData.argtypes = [
     ctypes.c_uint16,                  # slave position
@@ -79,11 +79,11 @@ PLCGetSDOData.argtypes = [
     ctypes.c_uint32,                  # buffer size
 ]
 
-PLCGetMasterData = PLCBinary.GetMasterData
+PLCGetMasterData = PLCIOsBinary.GetMasterData
 PLCGetMasterData.restype = ctypes.c_int
 PLCGetMasterData.argtypes = []
 
-PLCReleaseMasterData = PLCBinary.ReleaseMasterData
+PLCReleaseMasterData = PLCIOsBinary.ReleaseMasterData
 PLCReleaseMasterData.restype = None
 PLCReleaseMasterData.argtypes = []
 
