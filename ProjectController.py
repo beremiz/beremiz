@@ -1719,8 +1719,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
 
         sdk_path = GetSDKPath()
         if sdk_path:
-            # SDK build: single binary
-            # which appends plc_main_sdk.c from the SDK directory.
+            # Headers shipped in the SDK directory, e.g. for plc_main_sdk.c
+            # that monolithic SDK builds append to plc_main.c
             self.additionalCFLAGS.append('"-I%s"' % sdk_path)
 
         if not self.IsSplitBuild():
@@ -2463,9 +2463,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
             self.logger.write_error(_("Fatal : cannot get builder.\n"))
             return False
 
-        use_abi = self.GetBuilder().getABIEnabled()
-        sdk_path = GetSDKPath()
-        split = not(sdk_path or use_abi)
+        # Ask the builder, an SDK may build split as well (Linux PLC-SDK)
+        split = self.IsSplitBuild()
 
         # Recover MD5s from last build
         IOs_MD5 = builder.GetBinaryMD5()
