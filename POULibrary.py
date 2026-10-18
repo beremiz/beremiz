@@ -61,6 +61,15 @@ class POULibrary(object):
         return self.CTR()
 
     def GetTypes(self):
+        """
+        Types of the library, for the IDE and the libraries loaded after it.
+        Its POUs appear in the library panel under "<name> POUs". A library
+        may sort some of them into categories of their own by adding to the
+        returned dictionary:
+          "categories": [(category name, [POU name, ...]), ...]
+
+        @return: {"name": library name, "types": project of the library}
+        """
         return {"name": self.GetName(),
                 "types": self.LibraryControler.Project
                          if self.LibraryControler else None}

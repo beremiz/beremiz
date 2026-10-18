@@ -1110,10 +1110,19 @@ class PLCControler(object):
     def AddConfNodeTypesList(self, typeslist):
         f_typeslist = [confnodetypes for confnodetypes in typeslist if confnodetypes["types"] is not None]
         self.ConfNodeTypes.extend(f_typeslist)
-        addedcat = [{"name": _("%s POUs") % confnodetypes["name"],
-                     "list": [pou.getblockInfos()
-                              for pou in confnodetypes["types"].getpous()]}
-                    for confnodetypes in f_typeslist]
+        addedcat = []
+        for confnodetypes in f_typeslist:
+            pous = confnodetypes["types"].getpous()
+            # POUs not listed in optional (name, POU names) categories go in
+            # the category named after the library
+            categories = confnodetypes.get("categories", [])
+            others = {pou.getname() for pou in pous}.difference(
+                *[names for _name, names in categories])
+            for name, names in [(confnodetypes["name"], others)] + categories:
+                addedcat.append({"name": _("%s POUs") % name,
+                                 "list": [pou.getblockInfos()
+                                          for pou in pous
+                                          if pou.getname() in names]})
         self.TotalTypes.extend(addedcat)
         for cat in addedcat:
             for desc in cat["list"]:
