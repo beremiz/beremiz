@@ -18,6 +18,9 @@
 #include "accessor.h"
 #include "POUS.h"
 #include <string.h>
+#ifdef BEREMIZ_TEST_CYCLES
+#include <time.h>
+#endif
 
 /* The fifo (fixed size, as number of FB is fixed) */
 static PYTHON_EVAL_data__* EvalFBs[%(python_eval_fb_count)d];
@@ -71,11 +74,24 @@ void __retrieve_py_ext()
 	/* Defensive: an enqueue outside a retrieve/publish window would otherwise
 	 * lose its wakeup here, PythonState being rewritten wholesale below. */
 	int mustwakeup = PythonState & PYTHON_MUSTWAKEUP;
+#ifdef BEREMIZ_TEST_CYCLES
+	/* Emulated time: wait for python thread to answer all requests, as if
+	 * it took no time, so that answers come at the next cycle, always */
+	LockPython();
+	while(EvalFBs[Current_Python_EvalFB] && !(PythonState & PYTHON_FINISHED)){
+		struct timespec delay = {0, 100000};
+		UnLockPython();
+		nanosleep(&delay, NULL);
+		LockPython();
+	}
+	PythonState = PYTHON_LOCKED_BY_PLC;
+#else
 	/* Check Python thread is not being
 	 * modifying internal python_eval data */
 	PythonState = TryLockPython() ?
 	                PYTHON_LOCKED_BY_PLC :
 	                PYTHON_LOCKED_BY_PYTHON;
+#endif
 	/* If python thread _is_ in, then PythonState remains PYTHON_LOCKED_BY_PYTHON
 	 * and python_eval will no do anything */
 	PythonState |= mustwakeup;
