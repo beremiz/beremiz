@@ -124,8 +124,8 @@ class WxGladeHMI(PythonFileCTNMixin):
             self.launch_wxglade(
                 ['-o', wxghmipyfile_path, '-g', 'python', wxgfile_path], wait=True)
 
-            hmipyfile = open(hmipyfile_path, 'r')
-            define_hmi = hmipyfile.read().decode('utf-8')
+            hmipyfile = open(hmipyfile_path, 'r', encoding='utf-8')
+            define_hmi = hmipyfile.read()
             hmipyfile.close()
 
         else:
