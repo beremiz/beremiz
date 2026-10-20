@@ -664,7 +664,7 @@ class RootClass(object):
             if can_driver not in can_drivers:
                 if can_driver:
                     self.GetCTRoot().logger.write_warning(
-                    _("Warning: %s CAN driver found in %s; rebuild CanFestival "
+                    _("Warning: %s CAN driver not found in %s; rebuild CanFestival "
                       "with -DCF_CAN_DRIVER=<name>\n") % (can_driver, GetCanFestivalBuildPath(self.GetCTRoot())))
                 can_driver = can_drivers[0]
             can_drv_ext = self.GetCTRoot().GetBuilder().extension
