@@ -285,47 +285,50 @@ class PLCObject(object):
                 self.PLC_SERVICE_NAME.value = self.servicename.encode()
 
             # --- Load logic .so (resolves externs from RTLD_GLOBAL IOs namespace)
-            self._PLCLogicLibraryHandle = dlopen(self._GetLogicLibFileName())
-            PLCLogicLibrary = ctypes.CDLL(
-                self.CurrentLogicFilename, handle=self._PLCLogicLibraryHandle)
-            self.PLCLogicLibrary = PLCLogicLibrary
+            if os.name == "posix":
+                self._PLCLogicLibraryHandle = dlopen(self._GetLogicLibFileName())
+                PLCLogicLibrary = ctypes.CDLL(
+                    self.CurrentLogicFilename, handle=self._PLCLogicLibraryHandle)
+                self.PLCLogicLibrary = PLCLogicLibrary
 
-            PLC_ID_LOGIC = ctypes.c_char_p.in_dll(PLCLogicLibrary, "PLC_ID_LOGIC")
-            if len(logic_md5) == 32:
-                PLC_ID_LOGIC.value = logic_md5.encode()
+                PLC_ID_LOGIC = ctypes.c_char_p.in_dll(PLCLogicLibrary, "PLC_ID_LOGIC")
+                if len(logic_md5) == 32:
+                    PLC_ID_LOGIC.value = logic_md5.encode()
 
-            # Connect logic to IOs: set plc_logic_run_fn / plc_logic_scan_fn
-            # and update common_ticktime__ / greatest_tick_count__.
-            _loadPLCLogic = self.PLClibraryHandle.loadPLCLogic
-            _loadPLCLogic.restype = ctypes.c_int
-            _loadPLCLogic.argtypes = [ctypes.c_void_p]
-            if _loadPLCLogic(self._PLCLogicLibraryHandle) != 0:
-                raise Exception("loadPLCLogic failed: symbols missing in logic .so")
+                # Connect logic to IOs: set plc_logic_run_fn / plc_logic_scan_fn
+                # and update common_ticktime__ / greatest_tick_count__.
+                _loadPLCLogic = self.PLClibraryHandle.loadPLCLogic
+                _loadPLCLogic.restype = ctypes.c_int
+                _loadPLCLogic.argtypes = [ctypes.c_void_p]
+                if _loadPLCLogic(self._PLCLogicLibraryHandle) != 0:
+                    raise Exception("loadPLCLogic failed: symbols missing in logic .so")
 
-            # Bind logic init/cleanup. init runs once here (load-time); after a
-            # stop it is re-run (with cleanup first) on the next StartPLC.
-            # cleanup is deferred off the stop path to the next start or _FreePLC.
-            # Use subscript to avoid Python name mangling of __ prefix
-            self._initPLCLogicState_fn = PLCLogicLibrary["__init_PLCLogicState"]
-            self._initPLCLogicState_fn.restype = None
-            self._initPLCLogicState_fn.argtypes = []
+                # Bind logic init/cleanup. init runs once here (load-time); after a
+                # stop it is re-run (with cleanup first) on the next StartPLC.
+                # cleanup is deferred off the stop path to the next start or _FreePLC.
+                # Use subscript to avoid Python name mangling of __ prefix
+                self._initPLCLogicState_fn = PLCLogicLibrary["__init_PLCLogicState"]
+                self._initPLCLogicState_fn.restype = None
+                self._initPLCLogicState_fn.argtypes = []
 
-            self._initPLCLogic_fn = PLCLogicLibrary["__init_PLCLogic"]
-            self._initPLCLogic_fn.restype = ctypes.c_int
-            self._initPLCLogic_fn.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
+                self._initPLCLogic_fn = PLCLogicLibrary["__init_PLCLogic"]
+                self._initPLCLogic_fn.restype = ctypes.c_int
+                self._initPLCLogic_fn.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_char_p)]
 
-            self._cleanupPLCLogic_fn = PLCLogicLibrary["__cleanup_PLCLogic"]
-            self._cleanupPLCLogic_fn.restype = None
+                self._cleanupPLCLogic_fn = PLCLogicLibrary["__cleanup_PLCLogic"]
+                self._cleanupPLCLogic_fn.restype = None
 
-            # Initialize PLC logic instance tree (config_init__) and debug state.
-            # Called here (Python main thread) before the PLC thread is spawned.
-            self._PLCLogicInitialized = False
-            self._PLCLogicRestartPending = False
-            self._initPLCLogicState_fn()          # config_init__
-            ret = self._initPLCLogic_fn(0, None)  # load-time init, lock already held
-            if ret != 0:
-                raise Exception("__init_PLCLogic failed with %d" % ret)
-            self._PLCLogicInitialized = True
+                # Initialize PLC logic instance tree (config_init__) and debug state.
+                # Called here (Python main thread) before the PLC thread is spawned.
+                self._PLCLogicInitialized = False
+                self._PLCLogicRestartPending = False
+                self._initPLCLogicState_fn()          # config_init__
+                ret = self._initPLCLogic_fn(0, None)  # load-time init, lock already held
+                if ret != 0:
+                    raise Exception("__init_PLCLogic failed with %d" % ret)
+                self._PLCLogicInitialized = True
+            else:
+                PLCLogicLibrary = self.PLClibraryHandle
 
             # --- Bind IOs .so interface functions ---
             self._startPLC = self.PLClibraryHandle.startPLC
@@ -335,30 +338,31 @@ class PLCObject(object):
             self._stopPLC_real = self.PLClibraryHandle.stopPLC
             self._stopPLC_real.restype = None
 
-            self._plcIECTypeSize = self.PLClibraryHandle.plcIECTypeSize
-            self._plcIECTypeSize.restype = ctypes.c_size_t
-            self._plcIECTypeSize.argtypes = [ctypes.c_int]
+            if os.name == "posix":
+                self._plcIECTypeSize = self.PLClibraryHandle.plcIECTypeSize
+                self._plcIECTypeSize.restype = ctypes.c_size_t
+                self._plcIECTypeSize.argtypes = [ctypes.c_int]
 
-            self._getInitState = self.PLClibraryHandle.getPLCLogicInitState
-            self._getInitState.restype = ctypes.c_int
-            self._getInitState.argtypes = []
+                self._getInitState = self.PLClibraryHandle.getPLCLogicInitState
+                self._getInitState.restype = ctypes.c_int
+                self._getInitState.argtypes = []
 
-            self._cancelInit = self.PLClibraryHandle.cancelPLCLogicInit
-            self._cancelInit.restype = ctypes.c_int
-            self._cancelInit.argtypes = []
+                self._cancelInit = self.PLClibraryHandle.cancelPLCLogicInit
+                self._cancelInit.restype = ctypes.c_int
+                self._cancelInit.argtypes = []
 
-            self._getSwapState = self.PLClibraryHandle.getPLCLogicSwapState
-            self._getSwapState.restype = ctypes.c_int
-            self._getSwapState.argtypes = []
+                self._getSwapState = self.PLClibraryHandle.getPLCLogicSwapState
+                self._getSwapState.restype = ctypes.c_int
+                self._getSwapState.argtypes = []
 
-            self._cancelSwap = self.PLClibraryHandle.cancelPLCLogicSwap
-            self._cancelSwap.restype = ctypes.c_int
-            self._cancelSwap.argtypes = []
+                self._cancelSwap = self.PLClibraryHandle.cancelPLCLogicSwap
+                self._cancelSwap.restype = ctypes.c_int
+                self._cancelSwap.argtypes = []
 
-            self._PythonSetPurge = getattr(self.PLClibraryHandle, "PythonSetPurge", None)
-            if self._PythonSetPurge is not None:
-                self._PythonSetPurge.restype = None
-                self._PythonSetPurge.argtypes = [ctypes.c_int]
+                self._PythonSetPurge = getattr(self.PLClibraryHandle, "PythonSetPurge", None)
+                if self._PythonSetPurge is not None:
+                    self._PythonSetPurge.restype = None
+                    self._PythonSetPurge.argtypes = [ctypes.c_int]
 
             self._PythonIterator = getattr(self.PLClibraryHandle, "PythonIterator", None)
             if self._PythonIterator is not None:

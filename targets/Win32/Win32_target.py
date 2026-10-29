@@ -8,6 +8,7 @@
 # See COPYING file for copyrights details.
 
 from ..toolchain_gcc import toolchain_gcc
+from targets.Builder import PLC_MONOLITHIC
 
 
 class Win32_target(toolchain_gcc):
@@ -20,3 +21,9 @@ class Win32_target(toolchain_gcc):
 
     def getBuilderLDFLAGS(self):
         return toolchain_gcc.getBuilderLDFLAGS(self) + ["-shared", "-lwinmm"]
+
+    def getPLCBuildType(self):
+        """
+        Windows targets do not support hotswapping, so we use the monolithic build type.
+        """
+        return PLC_MONOLITHIC
