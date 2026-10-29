@@ -34,7 +34,6 @@ import time
 from time import localtime
 import shutil
 import re
-import tempfile
 import hashlib
 import shutil
 from datetime import datetime, timezone
@@ -847,16 +846,13 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # BuildPath isn't defined by user but already created by default
         if self.DefaultBuildPath is not None:
             return self.DefaultBuildPath
+
+        self.DefaultBuildPath = os.path.join(self.ProjectPath, "build")
+
         # Create a build path in project folder if user has permissions
         if CheckPathPerm(self.ProjectPath):
-            self.DefaultBuildPath = os.path.join(self.ProjectPath, "build")
-        # Create a build path in temp folder
-        else:
-            self.DefaultBuildPath = os.path.join(
-                tempfile.mkdtemp(), os.path.basename(self.ProjectPath), "build")
-
-        if not os.path.exists(self.DefaultBuildPath):
-            os.makedirs(self.DefaultBuildPath)
+            if not os.path.exists(self.DefaultBuildPath):
+                os.makedirs(self.DefaultBuildPath)
         return self.DefaultBuildPath
 
     def _getExtraFilesPath(self):
@@ -1926,6 +1922,7 @@ class ProjectController(ConfigTreeNode, PLCControler):
         if os.path.isdir(os.path.join(self._getBuildPath())):
             self.logger.write(_("Cleaning the build directory\n"))
             shutil.rmtree(os.path.join(self._getBuildPath()))
+            self.DefaultBuildPath = None
         else:
             self.logger.write_error(_("Build directory already clean\n"))
         self.CompareLocalAndRemotePLC()

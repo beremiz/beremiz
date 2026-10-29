@@ -40,21 +40,22 @@ def CheckPathPerm(path):
     """ Helper func to check path write permission """
     if path is None or not os.path.isdir(path):
         return False
+    
+    if sys.platform.startswith('win'):
+        try:
+            testdirpath = os.path.join(path, "testdir_" + str(random.randint(0, 4294967296)))
+            os.mkdir(testdirpath)
+            os.rmdir(testdirpath)
+        except:
+            return False
+
     for root, dirs, files in os.walk(path):
-        files = [f for f in files if not f[0] == '.']
-        dirs[:] = [d for d in dirs if not d[0] == '.']
-        if sys.platform.startswith('win'):
-            try:
-                testdirpath = os.path.join(root, "testdir_" + str(random.randint(0, 4294967296)))
-                os.mkdir(testdirpath)
-                os.rmdir(testdirpath)
-            except:
-                return False
-        else:
-            if os.access(root, os.W_OK) is not True:
-                return False
+        if os.access(root, os.W_OK) is not True:
+            return False
 
         for name in files:
+            if name.startswith('.'):
+                continue
             filepath = os.path.join(root, name)
             # symlink write permission is the one of the directory holding it,
             # already checked above. Testing the link would follow it, and fail
