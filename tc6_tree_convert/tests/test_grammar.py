@@ -13,6 +13,7 @@ Tests for W3C EBNF model and IEC 61131-3 grammar fixing
 
 import os
 import sys
+import tempfile
 import unittest
 
 TOOL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,10 +21,14 @@ sys.path.insert(0, TOOL_DIR)
 
 import ebnf  # noqa: E402
 import fix_ebnf  # noqa: E402
+import extend_ebnf  # noqa: E402
 from ebnf import Alt, Seq, Rep, Diff, Ref, Lit, CharClass  # noqa: E402
 
 SOURCE = os.path.join(TOOL_DIR, "iec61131-3-3rd.ebnf")
 FIXED = os.path.join(TOOL_DIR, "iec61131-3-3rd_fixed.ebnf")
+EXTENDED = os.path.join(TOOL_DIR, "iec61131-3-3rd_extended.ebnf")
+XSD = os.path.join(TOOL_DIR, "tc6_xml_v201.xsd")
+TEXTMAP = os.path.join(TOOL_DIR, "tc6_textmap.py")
 
 
 class W3CEbnfTest(unittest.TestCase):
@@ -129,6 +134,57 @@ class FixEbnfTest(unittest.TestCase):
     def test_generated_file_up_to_date(self):
         with open(FIXED, encoding="utf-8") as f:
             self.assertEqual(f.read(), self.text, "run 'make -C tc6_tree_convert generate'")
+
+
+@unittest.skipUnless(os.path.isfile(SOURCE), "IEC 61131-3 Annex A grammar is not distributed")
+class ExtendEbnfTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        with open(SOURCE, encoding="utf-8") as f:
+            fixed = fix_ebnf.fix(f.read())
+        cls.grammar, cls.textmap = extend_ebnf.extend(fixed, XSD)
+        cls.grammar.header = extend_ebnf.header(fixed)
+        cls.text = ebnf.format_grammar(cls.grammar)
+
+    def test_valid(self):
+        errors, _warnings = ebnf.validate(self.grammar, extend_ebnf.ROOTS)
+        self.assertEqual(errors, [])
+
+    def test_reparse_is_stable(self):
+        self.assertEqual(ebnf.format_grammar(ebnf.parse(self.text)), self.text)
+
+    def test_pruned(self):
+        for name in ["Library", "Class_Decl", "Method_Decl", "Namespace_Decl", "Using_Directive",
+                     "Stmt_List", "Instruction_List", "SFC", "Step", "Edge_Decl"]:
+            self.assertNotIn(name, self.grammar, name)
+
+    def test_elements(self):
+        for group, _suffix in extend_ebnf.GROUPS:
+            for element in extend_ebnf.Schema(XSD).group(group):
+                name = extend_ebnf.rule_name(element.name)
+                self.assertEqual(name in self.grammar, element.name not in extend_ebnf.EXCLUDED,
+                                 name)
+
+    @unittest.skipUnless(os.path.isfile(EXTENDED), "extended grammar not generated")
+    def test_generated_file_up_to_date(self):
+        with open(EXTENDED, encoding="utf-8") as f:
+            self.assertEqual(f.read(), self.text, "run 'make -C tc6_tree_convert generate'")
+
+
+class TextmapTest(unittest.TestCase):
+    """ Textmap only depends on TC6 schema, it is distributed """
+
+    def test_up_to_date(self):
+        extender = extend_ebnf.Extender(extend_ebnf.Schema(XSD))
+        extender.build()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "tc6_textmap.py")
+            extend_ebnf.write_textmap(path, extender.textmap)
+            with open(path, encoding="utf-8") as generated, \
+                 open(TEXTMAP, encoding="utf-8") as distributed:
+                self.assertEqual(distributed.read(), generated.read(),
+                                 "run 'make -C tc6_tree_convert generate'")
 
 
 if __name__ == "__main__":

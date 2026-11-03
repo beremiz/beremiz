@@ -21,8 +21,9 @@ import sys
 from dataclasses import dataclass
 
 import ebnf
-from ebnf import Alt, Seq, Rep, Diff, Ref, Lit, CharClass, Rule, Grammar
+from ebnf import Alt, Rep, Diff, Ref, Lit, CharClass, Rule, Grammar
 from ebnf import WS_EXPLICIT, WS_IGNORABLE, alt, seq, char_class
+from ebnf import RuleFix, FixError
 
 
 START = "Library"
@@ -37,18 +38,6 @@ TEXT_FIXES = [
     ("F02", "trailing space in literal", "'THIS '", "'THIS'", 1),
     ("F03", "en dash in comments", "–", "-", 4),
 ]
-
-
-@dataclass
-class RuleFix:
-    """ Replace rule expression when old is given, add rule otherwise (after given rule).
-    Remove rule when new is None. Expressions are given in W3C notation. """
-    fid: str
-    name: str
-    reason: str
-    old: str = None
-    new: str = None
-    after: str = None
 
 
 # Reserved words : tokens tagged as "Keyword" in matiec stage1_2/iec_flex.ll, without
@@ -128,6 +117,11 @@ RULE_FIXES = [
         ("Microseconds", "us", "Nanoseconds")]
 ] + [
     RuleFix("F20", "Interface_Name", "unreferenced", old="Identifier"),
+    RuleFix("F23", "Elem_Type_Name", "time of day and date and time are elementary types",
+            old="Numeric_Type_Name | Bit_Str_Type_Name | String_Type_Name | Date_Type_Name"
+                " | Time_Type_Name",
+            new="Numeric_Type_Name | Bit_Str_Type_Name | String_Type_Name | Date_Type_Name"
+                " | Time_Type_Name | Tod_Type_Name | DT_Type_Name"),
     RuleFix("F21", START, "start symbol, programs and configurations were unreachable",
             new="(POU_Decl | Prog_Decl | Config_Decl)*", after="POU_Decl"),
     RuleFix("F22", "Keyword", "reserved words, as in matiec",
@@ -302,10 +296,6 @@ def read_antlr(text):
 
 # Fixing
 
-class FixError(Exception):
-    pass
-
-
 def apply_text_fixes(text):
     for fid, reason, old, new, count in TEXT_FIXES:
         found = text.count(old)
@@ -314,29 +304,6 @@ def apply_text_fixes(text):
                            % (fid, reason, count, old, found))
         text = text.replace(old, new)
     return text
-
-
-def _expr(text):
-    return ebnf.parse("X ::= " + text)["X"].expr
-
-
-def apply_rule_fixes(grammar):
-    for fix in RULE_FIXES:
-        note = "fix %s: %s" % (fix.fid, fix.reason)
-        if fix.old is None:
-            grammar.add(Rule(fix.name, _expr(fix.new), trailing=[note]), after=fix.after)
-            continue
-        if fix.name not in grammar:
-            raise FixError("%s: rule %s not found" % (fix.fid, fix.name))
-        rule = grammar[fix.name]
-        if rule.expr != _expr(fix.old):
-            raise FixError("%s: rule %s is\n    %s\nexpected\n    %s" % (
-                fix.fid, fix.name, ebnf.format_expr(rule.expr), fix.old))
-        if fix.new is None:
-            grammar.remove(fix.name)
-        else:
-            rule.expr = _expr(fix.new)
-            rule.trailing.append(note)
 
 
 def mark_tokens(grammar):
@@ -367,7 +334,7 @@ def fix(text, source="iec61131-3-3rd.ebnf"):
     """ Return fixed W3C EBNF Grammar from original ANTLR like text """
     grammar = read_antlr(apply_text_fixes(text))
     grammar.add(CHAR_RULE, after="Identifier")
-    apply_rule_fixes(grammar)
+    ebnf.apply_rule_fixes(grammar, RULE_FIXES, "fix")
     mark_tokens(grammar)
     grammar.header = header(source) + grammar.header
     return grammar

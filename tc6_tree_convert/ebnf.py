@@ -494,6 +494,49 @@ def format_grammar(grammar, width=100):
     return "\n".join(out) + "\n"
 
 
+# Patching
+
+class FixError(Exception):
+    pass
+
+
+@dataclass
+class RuleFix:
+    """ Replace rule expression when old is given, add rule otherwise (after given rule).
+    Remove rule when new is None. Expressions are given in W3C notation. """
+    fid: str
+    name: str
+    reason: str
+    old: str = None
+    new: str = None
+    after: str = None
+
+
+def parse_expr(text):
+    return parse("X ::= " + text)["X"].expr
+
+
+def apply_rule_fixes(grammar, fixes, prefix):
+    """ Apply fixes in order, noting "<prefix> <fid>: <reason>" after each changed rule.
+    Raise FixError when a rule to change is missing or differs from expected old one. """
+    for fix in fixes:
+        note = "%s %s: %s" % (prefix, fix.fid, fix.reason)
+        if fix.old is None:
+            grammar.add(Rule(fix.name, parse_expr(fix.new), trailing=[note]), after=fix.after)
+            continue
+        if fix.name not in grammar:
+            raise FixError("%s: rule %s not found" % (fix.fid, fix.name))
+        rule = grammar[fix.name]
+        if rule.expr != parse_expr(fix.old):
+            raise FixError("%s: rule %s is\n    %s\nexpected\n    %s" % (
+                fix.fid, fix.name, format_expr(rule.expr), fix.old))
+        if fix.new is None:
+            grammar.remove(fix.name)
+        else:
+            rule.expr = parse_expr(fix.new)
+            rule.trailing.append(note)
+
+
 # Validation
 
 def nullables(grammar):
@@ -666,16 +709,16 @@ def greedy_conflicts(grammar):
 
 
 def validate(grammar, start, conflicts=False):
-    """ Return (errors, warnings) lists of messages """
+    """ Return (errors, warnings) lists of messages, start is a rule name or a list of them """
     errors, warnings = [], []
+    starts = [start] if isinstance(start, str) else list(start)
     for rule in grammar:
         for name in sorted(refs(rule.expr) - set(grammar.rules)):
             errors.append("%s: undefined rule %s" % (rule.name, name))
-    roots = [start] + [r.name for r in grammar if r.annotated(WS_IGNORABLE)]
-    reached = reachable(grammar, roots)
+    reached = reachable(grammar, starts + [r.name for r in grammar if r.annotated(WS_IGNORABLE)])
     for rule in grammar:
         if rule.name not in reached:
-            errors.append("%s: unreachable from %s" % (rule.name, start))
+            errors.append("%s: unreachable from %s" % (rule.name, ", ".join(starts)))
     for cycle in left_recursions(grammar):
         errors.append("left recursion: " + " -> ".join(cycle))
     if conflicts:

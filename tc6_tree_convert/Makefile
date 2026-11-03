@@ -8,10 +8,14 @@ here := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 all: generate
 
-generate: $(here)iec61131-3-3rd_fixed.ebnf
+generate: $(here)iec61131-3-3rd_extended.ebnf
 
 $(here)iec61131-3-3rd_fixed.ebnf: $(here)iec61131-3-3rd.ebnf $(here)fix_ebnf.py $(here)ebnf.py
 	$(PYTHON) $(here)fix_ebnf.py -o $@ $<
+
+$(here)iec61131-3-3rd_extended.ebnf: $(here)iec61131-3-3rd_fixed.ebnf $(here)tc6_xml_v201.xsd \
+		$(here)extend_ebnf.py $(here)ebnf.py
+	$(PYTHON) $(here)extend_ebnf.py -o $@ -t $(here)tc6_textmap.py $< $(here)tc6_xml_v201.xsd
 
 test:
 	cd $(here) && $(PYTHON) -m unittest discover -s tests -v
