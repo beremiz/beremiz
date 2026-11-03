@@ -4,8 +4,6 @@ Converts PLC logic between PLCopen TC6 XML (`plc.xml`) and a tree of IEC 61131-3
 files (a `plc/` directory). Beremiz keeps TC6 XML as its internal model; a project that
 contains a `plc/` directory instead of `plc.xml` is converted when loaded and saved.
 
-*Draft: sections marked (todo) are completed along with the corresponding step.*
-
 ## `plc/` directory
 
 Organization of files and sub-directories is free. File extension gives the content:
@@ -18,8 +16,61 @@ Organization of files and sub-directories is free. File extension gives the cont
 | `.fbd` | POUs written in FBD |
 | `.ld`  | POUs written in LD |
 
-Other files are ignored. ST and IL bodies are kept as is. SFC, FBD and LD bodies use a
-textual form of TC6 graphical elements.
+Other files, and files starting with `.`, are ignored. A `.st` file looks like:
+
+    {TC6 PROJECT(companyName := 'Beremiz', productName := 'demo',
+        productVersion := '1', creationDateTime := '2026-11-03T10:00:00',
+        name := 'demo', fbdScaling := (8, 8), ldScaling := (0, 0), sfcScaling := (0, 0))}
+
+    TYPE
+      Color : (Red, Green, Blue) := Green;
+      Point : STRUCT
+        x : REAL := 1.5;
+        y : REAL;
+      END_STRUCT;
+    END_TYPE
+
+    (* Counts rising edges of Pulse *)
+    FUNCTION_BLOCK Counter
+      VAR_INPUT
+        Pulse : BOOL;
+      END_VAR
+      VAR CONSTANT
+        Limit : DINT := 1000;
+      END_VAR
+      ACTION Clear : Count := 0; END_ACTION
+    IF Pulse THEN Count := Count + 1; END_IF;
+    END_FUNCTION_BLOCK
+
+    CONFIGURATION config
+      RESOURCE resource1 ON PLC
+        TASK fast(INTERVAL := T#10ms, PRIORITY := 0);
+        PROGRAM main0 WITH fast : Main;
+      END_RESOURCE
+    END_CONFIGURATION
+
+`{TC6 PROJECT(...)}` pragma holds the project header (properties of the project in
+Beremiz), it can be in any `.st` file. Without it, the project gets default properties.
+
+ST and IL bodies are kept as is. A body text is what is between the line of what comes
+before it (header, variables, actions) and the line of its END keyword. A nested body,
+of an action or a transition, may also be on a single line, one space after its header
+and one space before END keyword.
+
+Data types are any TC6 data type: elementary, `STRING[n]`, arrays, enumerations, with
+values and base type, structures, subranges and `REF_TO` pointers. Initial values are
+split as Beremiz does: `[...]` is an array value, `n(...)` a repeated value, `(...)` a
+structure value. Variable blocks have `CONSTANT`, `RETAIN` and `NON_RETAIN` qualifiers.
+
+## Comments
+
+A comment right before a declaration, on its own line and with no blank line before the
+declaration, is its documentation: data types, POUs, actions and transitions of POUs,
+variables, configuration, resources, tasks, program instances and graphical elements.
+
+Other comments are kept with the whitespace around them, as XML comments in TC6
+`addData` of the next declaration, or of the container they end. In POU bodies, they are
+part of the body.
 
 ## Graphical languages
 
@@ -37,6 +88,7 @@ are connection points, actions of an action block and condition of a transition:
     BLOCK #4 TON0 : TON AT (328, 115) SIZE (69, 80)
       IN AT (0, 35) := #6 VIA (328, 150), (275, 150);
       PT AT (0, 65) := #3.OUT;
+      IN_OUT X := #2 => AT (69, 50);
       Q => AT (69, 35);
     END_BLOCK
 
@@ -60,17 +112,35 @@ SFC steps and actions use IEC keywords and action associations:
       STOP_CARS(D, T#2s);
     END_ACTION_BLOCK
 
-Nested bodies, of actions and transitions, are ST unless tagged with their language,
-`LD ... END_LD`. Body text is what is between the line of its header and the line of
-its END keyword, or between them separated by one space when it fits on one line.
+A transition condition is an inline ST expression `CONDITION := expr;`, a named
+transition `CONDITION name;`, a wire `CONDITION := #id;`, or a tagged body. Nested bodies
+are ST unless tagged with their language: `LD ... END_LD`.
 
-Comments (todo):
-- a comment right before a declaration is its documentation,
-- other comments are kept, as XML comments in TC6 `addData`.
+## Not supported
 
-File of each declaration is kept in TC6 `addData`, in namespace
-`http://www.beremiz.org/tc6_tree`. Declarations without one go to `<pou>.<ext>`,
-`types.st` and `config.st`.
+Conversion stops with an error on TC6 content Beremiz does not write: vendor elements,
+additional data of other tools, POUs with several bodies, access and configuration
+variables, named and persistent variable blocks, and text that can not be written back
+as such, like documentation holding both `*)` and `*/`.
+
+## Saving
+
+File and position of each declaration are kept in TC6 `addData`, in namespace
+`http://www.beremiz.org/tc6_tree`, so that a declaration is saved where it was.
+Declarations without one go to `<pou>.<ext>`, `types.st` and `config.st`, at `plc/` root.
+
+Declarations unchanged since loading keep their text, formatting included. Only changed
+files are written, files left without declaration are removed. Saving is refused, and
+nothing written, if one of the files changed on disk since loading.
+
+## Command line
+
+    python -m tc6_tree_convert to-tree plc.xml plc      # update plc/ from plc.xml
+    python -m tc6_tree_convert to-xml plc plc.xml       # write plc.xml from plc/
+    python -m tc6_tree_convert check plc.xml plc        # compare two projects
+
+`check` compares canonical forms, that ignore what Beremiz does not use: attribute
+order, default attributes, whitespace between elements, order of data types and POUs.
 
 ## Grammar pipeline
 
@@ -91,6 +161,9 @@ TC6 graphical languages:
 
 `ebnf.py` is the W3C EBNF model they share (reader, printer, validator).
 
+Conversion itself is in `decl.py` (declarations), `graph.py` (graphical elements),
+`comments.py`, `tree.py` (files, loading and saving) and `canon.py` (canonical form).
+
 IEC 61131-3 grammar is IEC copyrighted: `*.ebnf` files are not distributed (see
 `.gitignore`), generated Python modules are. `tc6_textmap.py` only depends on TC6
 schema. Regenerating needs a local copy of `iec61131-3-3rd.ebnf`:
@@ -101,4 +174,5 @@ schema. Regenerating needs a local copy of `iec61131-3-3rd.ebnf`:
 
     make -C tc6_tree_convert test PYTHON=/path/to/python
 
-Tests that need IEC grammar are skipped when it is absent.
+All test projects and examples of Beremiz are converted to text and back. Tests that
+need IEC grammar are skipped when it is absent.

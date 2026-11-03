@@ -180,7 +180,7 @@ class TextmapTest(unittest.TestCase):
         extender.build()
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "tc6_textmap.py")
-            extend_ebnf.write_textmap(path, extender.textmap)
+            extend_ebnf.write_textmap(path, extender.textmap, extend_ebnf.attribute_defaults(XSD))
             with open(path, encoding="utf-8") as generated, \
                  open(TEXTMAP, encoding="utf-8") as distributed:
                 self.assertEqual(distributed.read(), generated.read(),

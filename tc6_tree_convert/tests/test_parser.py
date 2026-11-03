@@ -12,6 +12,7 @@ Tests for generated IEC 61131-3 and TC6 textual forms parser
 """
 
 import os
+import re
 import sys
 import unittest
 
@@ -23,7 +24,8 @@ sys.path.insert(0, os.path.dirname(TOOL_DIR))
 
 from tc6_tree_convert import iec_parser  # noqa: E402
 from tc6_tree_convert.iec_parser import parse, matches, ParseError  # noqa: E402
-from tc6_tree_convert.graph import GraphWriter, tc6, localname  # noqa: E402
+from tc6_tree_convert.common import tc6, localname  # noqa: E402
+from tc6_tree_convert.decl import Writer  # noqa: E402
 from test_graph import corpus  # noqa: E402
 
 EXTENDED = os.path.join(TOOL_DIR, "iec61131-3-3rd_extended.ebnf")
@@ -253,25 +255,28 @@ END_PROGRAM
         parse(text, "TC6_LD_File")
 
     def test_corpus(self):
-        """ All graphical POUs of Beremiz projects, as written by graph.py, parse """
-        writer = GraphWriter()
+        """ All graphical POUs of Beremiz projects, as Writer writes them, parse """
+        writer = Writer()
         for path in corpus():
             with open(path, "rb") as f:
                 root = etree.fromstring(f.read().replace(b"tc6.xsd", b"tc6_0201"))
             for pou in root.iter(tc6("pou")):
-                language = pou.find(tc6("body"))[0]
-                if localname(language) not in ("FBD", "LD", "SFC"):
-                    continue
-                lines = ["PROGRAM " + pou.get("name")]
-                for kind in ("action", "transition"):
-                    for member in pou.iterfind("%ss/%s" % (tc6(kind), tc6(kind))):
-                        head = "%s %s :" % (kind.upper(), member.get("name"))
-                        body = writer.body(member.find(tc6("body")), 0, tag_st=False)
-                        lines += writer.text_body(head, body, "END_" + kind.upper()) \
-                            if isinstance(body, str) else [head] + body + ["END_" + kind.upper()]
-                lines += writer.graphical(language, 0) + ["END_PROGRAM"]
-                with self.subTest(path=path, pou=pou.get("name")):
-                    parse("\n".join(lines), "TC6_%s_File" % localname(language))
+                language = localname(pou.find(tc6("body"))[0])
+                if language in ("FBD", "LD", "SFC"):
+                    with self.subTest(path=path, pou=pou.get("name")):
+                        parse(writer.pou(pou, 0), "TC6_%s_File" % language)
+
+
+class ReadmeTest(unittest.TestCase):
+
+    def test_examples(self):
+        """ Examples of README parse """
+        with open(os.path.join(TOOL_DIR, "README.md"), encoding="utf-8") as f:
+            blocks = re.findall(r"\n\n((?:    .*\n|\n)+)", f.read())
+        examples = ["\n".join(line[4:] for line in b.split("\n")) for b in blocks]
+        parse(examples[0], "TC6_ST_File")
+        parse("PROGRAM p\n%sEND_PROGRAM\n" % examples[2], "TC6_FBD_File")
+        parse("PROGRAM p\n%sEND_PROGRAM\n" % examples[3], "TC6_SFC_File")
 
 
 @unittest.skipUnless(os.path.isfile(EXTENDED), "extended grammar not generated")

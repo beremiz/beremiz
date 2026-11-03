@@ -522,7 +522,9 @@ TC6_Var_Decl ::= Variable_List Located_At? ':' TC6_Type_Spec (':=' TC6_Initial_V
 TC6_Type_Spec ::= Elem_Type_Name | 'ARRAY' '[' Subrange (',' Subrange)* ']' 'OF' TC6_Type_Spec
                 | 'REF_TO' TC6_Type_Spec | Int_Type_Name '(' Subrange ')'
                 | Elem_Type_Name? '(' Enum_Value_Spec (',' Enum_Value_Spec)* ')' | Struct_Decl
-                | Identifier
+                | TC6_Generic_Type | Identifier
+TC6_Generic_Type ::= 'ANY' | 'ANY_DERIVED' | 'ANY_ELEMENTARY' | 'ANY_MAGNITUDE' | 'ANY_NUM'
+                   | 'ANY_REAL' | 'ANY_INT' | 'ANY_BIT' | 'ANY_STRING' | 'ANY_DATE'
 TC6_Initial_Value ::= Array_Init | Struct_Init | Constant_Expr
 
 /* TC6: configuration, several global variable blocks, resources without program */
@@ -594,6 +596,18 @@ OVERRIDES = [
             old="'REF' '(' (Symbolic_Variable | FB_Instance_Name | Class_Instance_Name) ')'",
             new="'REF' '(' Symbolic_Variable ')'"),
 ]
+
+
+def attribute_defaults(xsd_path):
+    """ Default value of attributes, by name, the same everywhere in TC6 schema """
+    defaults = {}
+    for attribute in etree.parse(xsd_path).getroot().iter(XSD + "attribute"):
+        name, default = attribute.get("name"), attribute.get("default")
+        if default is None:
+            continue
+        if defaults.setdefault(name, default) != default:
+            raise FixError("attribute %s has several default values" % name)
+    return dict(sorted(defaults.items()))
 
 
 def header_attributes(xsd_path):
@@ -688,15 +702,17 @@ ELEMENTS maps element path to its textual form :
   end       element may have items and end with END_<keyword>, ; ends it otherwise
   children  XML children in schema order
 LANGUAGES gives XML schema groups of elements allowed in each graphical language.
+ATTRIBUTE_DEFAULTS gives default values of TC6 attributes, the same wherever they are.
 """
 
 '''
 
 
-def write_textmap(path, textmap):
+def write_textmap(path, textmap, defaults):
     content = TEXTMAP_HEADER
     content += "LANGUAGES = %s\n\n" % pprint.pformat(LANGUAGES, width=100, sort_dicts=False)
     content += "EXCLUDED = %s\n\n" % pprint.pformat(EXCLUDED, width=100, sort_dicts=False)
+    content += "ATTRIBUTE_DEFAULTS = %s\n\n" % pprint.pformat(defaults, width=100)
     content += "ELEMENTS = %s\n" % pprint.pformat(textmap, width=100, sort_dicts=False)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
@@ -729,7 +745,7 @@ def main(argv=None):
 
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(ebnf.format_grammar(grammar))
-    write_textmap(args.textmap, textmap)
+    write_textmap(args.textmap, textmap, attribute_defaults(args.xsd))
     print("%s: %d rules, %d warning(s)" % (args.output, len(grammar.rules), len(warnings)))
 
 

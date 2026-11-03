@@ -19,6 +19,7 @@ ELEMENTS maps element path to its textual form :
   end       element may have items and end with END_<keyword>, ; ends it otherwise
   children  XML children in schema order
 LANGUAGES gives XML schema groups of elements allowed in each graphical language.
+ATTRIBUTE_DEFAULTS gives default values of TC6 attributes, the same wherever they are.
 """
 
 LANGUAGES = {'FBD': ['commonObjects', 'fbdObjects'],
@@ -26,6 +27,25 @@ LANGUAGES = {'FBD': ['commonObjects', 'fbdObjects'],
  'SFC': ['commonObjects', 'fbdObjects', 'ldObjects', 'sfcObjects']}
 
 EXCLUDED = {'vendorElement': 'vendor specific element'}
+
+ATTRIBUTE_DEFAULTS = {'constant': 'false',
+ 'edge': 'none',
+ 'edgeIn': 'none',
+ 'edgeOut': 'none',
+ 'hidden': 'false',
+ 'initialStep': 'false',
+ 'negated': 'false',
+ 'negatedIn': 'false',
+ 'negatedOut': 'false',
+ 'nonpersistent': 'false',
+ 'nonretain': 'false',
+ 'persistent': 'false',
+ 'qualifier': 'N',
+ 'repetitionValue': '1',
+ 'retain': 'false',
+ 'storage': 'none',
+ 'storageIn': 'none',
+ 'storageOut': 'none'}
 
 ELEMENTS = {'comment': {'keyword': 'COMMENT',
              'children': ['position', 'content', 'addData', 'documentation'],
