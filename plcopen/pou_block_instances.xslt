@@ -10,14 +10,7 @@
     <xsl:value-of select="ns:AddBlockInstance($type, @localId, ppx:position/@x, ppx:position/@y, @width, @height)"/>
   </xsl:template>
   <xsl:template name="execution_order">
-    <xsl:choose>
-      <xsl:when test="@executionOrderId">
-        <xsl:value-of select="@executionOrderId"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:text>0</xsl:text>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:value-of select="@executionOrderId"/>
   </xsl:template>
   <xsl:template name="ConnectionInfos">
     <xsl:param name="type"/>

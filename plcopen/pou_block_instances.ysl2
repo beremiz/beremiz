@@ -17,10 +17,7 @@ istylesheet xmlns:ppx="http://www.plcopen.org/xml/tc6_0201"
     }
     
     function "execution_order" {
-        choose {
-            when "@executionOrderId" > «@executionOrderId»
-            otherwise > 0
-        }
+        value "@executionOrderId";
     }
     
     function "ConnectionInfos" {

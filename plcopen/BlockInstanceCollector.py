@@ -5,7 +5,8 @@
 
 
 from collections import OrderedDict, namedtuple
-from . XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _translate_args
+from . XSLTModelQuery import XSLTModelQuery, _StringValue, _BoolValue, _ExecutionOrderValue, \
+    _translate_args
 
 # -------------------------------------------------------------------------------
 #           Helpers object for generating pou block instances list
@@ -21,11 +22,11 @@ _BlockInstanceInfos = namedtuple(
 _BlockSpecificValues = (
     namedtuple("BlockSpecificValues",
                ["name", "execution_order"]),
-    [_StringValue, int])
+    [_StringValue, _ExecutionOrderValue])
 _VariableSpecificValues = (
     namedtuple("VariableSpecificValues",
                ["name", "value_type", "execution_order"]),
-    [_StringValue, _StringValue, int])
+    [_StringValue, _StringValue, _ExecutionOrderValue])
 _ConnectionSpecificValues = (
     namedtuple("ConnectionSpecificValues", ["name"]),
     [_StringValue])
@@ -37,7 +38,7 @@ _PowerRailSpecificValues = (
 _LDElementSpecificValues = (
     namedtuple("LDElementSpecificValues",
                ["name", "negated", "edge", "storage", "execution_order"]),
-    [_StringValue, _BoolValue, _StringValue, _StringValue, int])
+    [_StringValue, _BoolValue, _StringValue, _StringValue, _ExecutionOrderValue])
 
 _DivergenceSpecificValues = (
     namedtuple("DivergenceSpecificValues", ["connectors"]),

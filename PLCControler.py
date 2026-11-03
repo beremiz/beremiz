@@ -1998,7 +1998,7 @@ class PLCControler(object):
             for instance in instances:
                 connections.update(instance.updateConnectionsId(translate_id))
                 if getattr(instance, "setexecutionOrderId", None) is not None:
-                    instance.setexecutionOrderId(0)
+                    instance.setexecutionOrderId(None)
                 instance.translate(*diff)
 
             return new_id, connections

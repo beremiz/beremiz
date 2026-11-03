@@ -44,7 +44,7 @@ class FBD_Block(Graphic_Element):
     """
 
     # Create a new block
-    def __init__(self, parent, type, name, id=None, extension=0, inputs=None, connectors=None, executionControl=False, executionOrder=0):
+    def __init__(self, parent, type, name, id=None, extension=0, inputs=None, connectors=None, executionControl=False, executionOrder=None):
         Graphic_Element.__init__(self, parent)
         self.Type = None
         self.Description = None
@@ -141,7 +141,7 @@ class FBD_Block(Graphic_Element):
         if connectors:
             bbx_x -= min(1, len(self.Inputs)) * CONNECTOR_SIZE
             bbx_width += (min(1, len(self.Inputs)) + min(1, len(self.Outputs))) * CONNECTOR_SIZE
-        if self.ExecutionOrder != 0:
+        if self.ExecutionOrder is not None:
             bbx_x = min(bbx_x, self.Pos.x + self.Size[0] - self.ExecutionOrderSize[0])
             bbx_width = max(bbx_width, bbx_width + self.Pos.x + self.ExecutionOrderSize[0] - bbx_x - self.Size[0])
             bbx_height = bbx_height + (self.ExecutionOrderSize[1] + 2)
@@ -488,7 +488,7 @@ class FBD_Block(Graphic_Element):
             input.Draw(dc)
         for output in self.Outputs:
             output.Draw(dc)
-        if self.ExecutionOrder != 0:
+        if self.ExecutionOrder is not None:
             # Draw block execution order
             dc.DrawText(str(self.ExecutionOrder), self.Pos.x + self.Size[0] - executionorder_size[0],
                         self.Pos.y + self.Size[1] + 2)
@@ -509,7 +509,7 @@ class FBD_Variable(Graphic_Element):
     """
 
     # Create a new variable
-    def __init__(self, parent, type, name, value_type, id=None, executionOrder=0):
+    def __init__(self, parent, type, name, value_type, id=None, executionOrder=None):
         Graphic_Element.__init__(self, parent)
         self.Type = None
         self.ValueType = None
@@ -593,7 +593,7 @@ class FBD_Variable(Graphic_Element):
         bbx_x = min(bbx_x, self.Pos.x + (self.Size[0] - self.NameSize[0]) // 2)
         bbx_width = max(bbx_width, self.NameSize[0])
         bbx_height = self.Size[1]
-        if self.ExecutionOrder != 0:
+        if self.ExecutionOrder is not None:
             bbx_x = min(bbx_x, self.Pos.x + self.Size[0] - self.ExecutionOrderSize[0])
             bbx_width = max(bbx_width, bbx_width + self.Pos.x + self.ExecutionOrderSize[0] - bbx_x - self.Size[0])
             bbx_height = bbx_height + (self.ExecutionOrderSize[1] + 2)
@@ -788,7 +788,7 @@ class FBD_Variable(Graphic_Element):
             self.Input.Draw(dc)
         if self.Output:
             self.Output.Draw(dc)
-        if self.ExecutionOrder != 0:
+        if self.ExecutionOrder is not None:
             # Draw variable execution order
             dc.DrawText(str(self.ExecutionOrder), self.Pos.x + self.Size[0] - executionorder_size[0],
                         self.Pos.y + self.Size[1] + 2)

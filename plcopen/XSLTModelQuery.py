@@ -53,6 +53,11 @@ def _BoolValue(x):
     return x in ["true", "0"]
 
 
+def _ExecutionOrderValue(x):
+    """ Execution order, None when unspecified """
+    return int(x) if x else None
+
+
 def _translate_args(translations, args):
     return [translate(arg[0]) if len(arg) > 0 else None
             for translate, arg in

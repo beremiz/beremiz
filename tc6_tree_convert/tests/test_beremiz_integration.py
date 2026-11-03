@@ -26,14 +26,18 @@ sys.path.insert(0, TESTS_DIR)
 
 import fake_wx  # noqa: E402,F401  wx stub, as Beremiz CLI uses
 from ProjectController import ProjectController  # noqa: E402
+from PLCControler import PLCControler  # noqa: E402
+from plcopen.types_enums import ComputePouName  # noqa: E402
 
 from tc6_tree_convert import tree_to_xml  # noqa: E402
 from tc6_tree_convert.canon import difference  # noqa: E402
+from tc6_tree_convert.common import tc6  # noqa: E402
 from test_roundtrip import read_tree, write_tree  # noqa: E402
 
 PROJECTS = os.path.join(BEREMIZ_DIR, "tests", "projects")
 TREE_PROJECT = os.path.join(PROJECTS, "iec61131_lang_test_tree")
 XML_PROJECT = os.path.join(PROJECTS, "iec61131_lang_test")
+LEGACY_PROJECT = os.path.join(PROJECTS, "legacy_execution_order")
 
 
 class Log:
@@ -177,6 +181,50 @@ class TreeProjectTest(unittest.TestCase):
         shutil.copy(os.path.join(XML_PROJECT, "plc.xml"), self.project)
         message, error = self.controller().LoadProject(self.project)
         self.assertTrue(error)
+
+
+def execution_orders(pou):
+    return [e.get("executionOrderId") for e in pou.iter() if e.get("executionOrderId") is not None]
+
+
+class LegacyExecutionOrderTest(unittest.TestCase):
+    """ Beremiz used to write executionOrderId="0" for unspecified execution order.
+    legacy_execution_order project is iec61131_lang_test one, saved that way """
+
+    def test_cleared(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            project = os.path.join(tmp, "project")
+            shutil.copytree(LEGACY_PROJECT, project)
+            controller = ProjectController()
+            controller.logger = Log()
+            self.assertEqual(controller.LoadProject(project), (None, False))
+            controller.SaveProject()
+            self.assertEqual(controller.logger.of("error"), [])
+            saved = xml_of(os.path.join(project, "plc.xml"))
+        self.assertIsNone(difference(xml_of(os.path.join(XML_PROJECT, "plc.xml")), saved))
+        self.assertEqual(execution_orders(saved), [])
+
+    def test_mixed_kept(self):
+        """ POU with other execution orders than 0 keeps all of them """
+        with open(os.path.join(LEGACY_PROJECT, "plc.xml"), encoding="utf-8") as f:
+            xml = f.read().replace('executionOrderId="0"', 'executionOrderId="1"', 1)
+        pous = etree.fromstring(xml.encode()).iter(tc6("pou"))
+        mixed = next(p for p in pous if "1" in execution_orders(p))
+        controller = PLCControler()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "plc.xml")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(xml)
+            self.assertIsNone(controller.OpenXMLFile(path))
+        for pou in controller.Project.iter(tc6("pou")):
+            expected = execution_orders(mixed) if pou.get("name") == mixed.get("name") else []
+            self.assertEqual(execution_orders(pou), expected)
+
+        # as shown in editor, 0 is an execution order, absent one is None
+        for name, expected in [(mixed.get("name"), {0, 1}), ("CounterFBD", {None})]:
+            infos = controller.GetEditedElementInstancesInfos(ComputePouName(name))
+            self.assertEqual({i.specific_values.execution_order for i in infos.values()
+                              if hasattr(i.specific_values, "execution_order")}, expected)
 
 
 if __name__ == "__main__":

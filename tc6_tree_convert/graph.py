@@ -74,12 +74,7 @@ class GraphWriter:
         items = []
         for name, spec in specs.items():
             value = (values or {}).get(name, element.get(name))
-            implied = spec["implied"]
-            if value is None:
-                if implied is not None:
-                    items.append("%s := NULL" % name)
-                continue
-            if value == implied:
+            if value is None or value == spec["implied"]:
                 continue
             default = spec["default"]
             if default is not None and (value == default or spec["kind"] == "boolean" and
@@ -360,8 +355,6 @@ class GraphBuilder:
 
     def value(self, node, spec):
         text = source(self.text, node)
-        if text.upper() == "NULL":
-            return None
         kind = spec["kind"]
         if kind == "boolean":
             return "true" if text.upper() == "TRUE" else "false"

@@ -12,8 +12,8 @@ ELEMENTS maps element path to its textual form :
   at        position child written as AT (x, y)
   size      width and height attributes written as SIZE (w, h)
   attrs     other attributes, written as (name := value, ...) : value kind,
-            default, and implied value (written by Beremiz, implied when
-            attribute is not given, NULL standing for absent attribute)
+            default, and implied value of required attribute, written by
+            Beremiz, implied when attribute is not given
   pins      connection points written as PIN AT (x, y) := sources or PIN => AT (x, y)
   specials  children with a dedicated syntax
   end       element may have items and end with END_<keyword>, ; ends it otherwise
@@ -163,7 +163,7 @@ ELEMENTS = {'comment': {'keyword': 'COMMENT',
            'operand': {'kind': 'block', 'instance': 'instanceName', 'type': 'typeName'},
            'at': 'position',
            'size': ['width', 'height'],
-           'attrs': {'executionOrderId': {'kind': 'unsigned', 'default': None, 'implied': '0'},
+           'attrs': {'executionOrderId': {'kind': 'unsigned', 'default': None, 'implied': None},
                      'globalId': {'kind': 'string', 'default': None, 'implied': None}},
            'pins': {},
            'specials': ['inputVariables', 'inOutVariables', 'outputVariables'],
@@ -179,7 +179,9 @@ ELEMENTS = {'comment': {'keyword': 'COMMENT',
                 'operand': {'kind': 'child', 'name': 'expression', 'syntax': 'expression'},
                 'at': 'position',
                 'size': ['width', 'height'],
-                'attrs': {'executionOrderId': {'kind': 'unsigned', 'default': None, 'implied': '0'},
+                'attrs': {'executionOrderId': {'kind': 'unsigned',
+                                               'default': None,
+                                               'implied': None},
                           'negated': {'kind': 'boolean', 'default': 'false', 'implied': None},
                           'edge': {'kind': 'enum',
                                    'default': 'none',
@@ -212,7 +214,7 @@ ELEMENTS = {'comment': {'keyword': 'COMMENT',
                  'size': ['width', 'height'],
                  'attrs': {'executionOrderId': {'kind': 'unsigned',
                                                 'default': None,
-                                                'implied': '0'},
+                                                'implied': None},
                            'negated': {'kind': 'boolean', 'default': 'false', 'implied': None},
                            'edge': {'kind': 'enum',
                                     'default': 'none',
@@ -246,7 +248,7 @@ ELEMENTS = {'comment': {'keyword': 'COMMENT',
                    'size': ['width', 'height'],
                    'attrs': {'executionOrderId': {'kind': 'unsigned',
                                                   'default': None,
-                                                  'implied': '0'},
+                                                  'implied': None},
                              'negatedIn': {'kind': 'boolean', 'default': 'false', 'implied': None},
                              'edgeIn': {'kind': 'enum',
                                         'default': 'none',

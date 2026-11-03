@@ -80,16 +80,8 @@ class FBDVariableDialog(BlockPreviewDialog):
         self.Bind(wx.EVT_COMBOBOX, self.OnClassChanged, self.Class)
         self.LeftGridSizer.Add(self.Class, flag=wx.GROW)
 
-        # Create label for variable execution order
-        execution_order_label = wx.StaticText(self,
-                                              label=_('Execution Order:'))
-        self.LeftGridSizer.Add(execution_order_label, flag=wx.GROW)
-
-        # Create spin control for defining variable execution order
-        self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
-        self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged,
-                  self.ExecutionOrder)
-        self.LeftGridSizer.Add(self.ExecutionOrder, flag=wx.GROW)
+        # Create controls for defining variable execution order
+        self.AddExecutionOrderControls(self.LeftGridSizer, wx.GROW)
 
         # Create label for variable expression
         name_label = wx.StaticText(self, label=_('Expression:'))
@@ -187,7 +179,7 @@ class FBDVariableDialog(BlockPreviewDialog):
 
             # Parameter is variable execution order
             elif name == "executionOrder":
-                self.ExecutionOrder.SetValue(value)
+                self.SetExecutionOrder(value)
 
         # Refresh preview panel
         self.Refresh()
@@ -204,7 +196,7 @@ class FBDVariableDialog(BlockPreviewDialog):
                 self.Class.GetStringSelection()],
             "expression": expression,
             "var_type": self.VariableList.get(expression, (None, None))[1],
-            "executionOrder": self.ExecutionOrder.GetValue()}
+            "executionOrder": self.GetExecutionOrder()}
         values["width"], values["height"] = self.Element.GetSize()
         return values
 
@@ -287,7 +279,7 @@ class FBDVariableDialog(BlockPreviewDialog):
             self.VARIABLE_CLASSES_DICT_REVERSE[self.Class.GetStringSelection()],
             name,
             self.VariableList.get(name, ("", ""))[1],
-            executionOrder=self.ExecutionOrder.GetValue())
+            executionOrder=self.GetExecutionOrder())
 
         # Call BlockPreviewDialog function
         BlockPreviewDialog.DrawPreview(self)

@@ -106,17 +106,8 @@ class FBDBlockDialog(BlockPreviewDialog):
         self.Bind(wx.EVT_SPINCTRL, self.OnInputsChanged, self.Inputs)
         top_right_gridsizer.Add(self.Inputs, flag=wx.GROW)
 
-        # Create label for block execution order
-        execution_order_label = wx.StaticText(self,
-                                              label=_('Execution Order:'))
-        top_right_gridsizer.Add(execution_order_label,
-                                      flag=wx.ALIGN_CENTER_VERTICAL)
-
-        # Create spin control for defining block execution order
-        self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
-        self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged,
-                  self.ExecutionOrder)
-        top_right_gridsizer.Add(self.ExecutionOrder, flag=wx.GROW)
+        # Create controls for defining block execution order
+        self.AddExecutionOrderControls(top_right_gridsizer, wx.ALIGN_CENTER_VERTICAL)
 
         # Create label for block execution control
         execution_control_label = wx.StaticText(self,
@@ -142,7 +133,6 @@ class FBDBlockDialog(BlockPreviewDialog):
         # control to fill with parameter value
         self.ParamsControl = {
             "extension": self.Inputs,
-            "executionOrder": self.ExecutionOrder,
             "executionControl": self.ExecutionControl
         }
 
@@ -192,6 +182,10 @@ class FBDBlockDialog(BlockPreviewDialog):
 
                 self.BlockName.ChangeValue(value)
 
+            # Parameter is block execution order
+            elif name == "executionOrder":
+                self.SetExecutionOrder(value)
+
             # Set value of other controls
             else:
                 control = self.ParamsControl.get(name, None)
@@ -213,6 +207,7 @@ class FBDBlockDialog(BlockPreviewDialog):
         values.update({
             name: control.GetValue()
             for name, control in self.ParamsControl.items()})
+        values["executionOrder"] = self.GetExecutionOrder()
         return values
 
     def OnOK(self, event):
@@ -348,7 +343,7 @@ class FBDBlockDialog(BlockPreviewDialog):
                 extension=self.Inputs.GetValue(),
                 inputs=values["inputs"],
                 executionControl=self.ExecutionControl.GetValue(),
-                executionOrder=self.ExecutionOrder.GetValue())
+                executionOrder=self.GetExecutionOrder())
 
         # Reset graphic element displayed
         else:

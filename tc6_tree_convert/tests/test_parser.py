@@ -231,7 +231,7 @@ END_FUNCTION_BLOCK
     def test_fbd_ld(self):
         text = """\
 PROGRAM p
-BLOCK #7 (executionOrderId := NULL) TON0 : TON AT (448, 100) SIZE (69, 80)
+BLOCK #7 (executionOrderId := 0) TON0 : TON AT (448, 100) SIZE (69, 80)
   NOT IN AT (0, 30) := #1 VIA (448, 130), (415, 130), #2.Q;
   PT AT (0, 50);
   IN_OUT X AT (0, 70) := #3 => AT (69, 70);

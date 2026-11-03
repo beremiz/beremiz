@@ -983,8 +983,8 @@ class PouProgramGenerator(object):
             orderedInstances = []
             for instance in body.getcontentInstances():
                 if isinstance(instance, (OutVariableClass, InOutVariableClass, BlockClass)):
-                    executionOrderId = instance.getexecutionOrderId() or 0  # 0 if None
-                    if executionOrderId > 0:
+                    executionOrderId = instance.getexecutionOrderId()
+                    if executionOrderId is not None:
                         orderedInstances.append((executionOrderId, instance))
                     elif isinstance(instance, (OutVariableClass, InOutVariableClass)):
                         otherInstances["outVariables&coils"].append(instance)
@@ -1099,7 +1099,7 @@ class PouProgramGenerator(object):
 
         name = block.getinstanceName()
         type = block.gettypeName()
-        executionOrderId = block.getexecutionOrderId() or 0     # 0 if None
+        executionOrderId = block.getexecutionOrderId()
         input_variables = block.inputVariables.getvariable()
         output_variables = block.outputVariables.getvariable()
         inout_variables = {}
@@ -1141,13 +1141,13 @@ class PouProgramGenerator(object):
                             if parameter != "EN":
                                 one_input_connected = True
                             if parameter in inout_variables:
-                                expression = self.ComputeExpression(body, connections, executionOrderId > 0, True)
+                                expression = self.ComputeExpression(body, connections, executionOrderId is not None, True)
                                 if expression is not None:
                                     inout_variables[parameter] = expression
                                 else:
                                     _RaiseUnconnectedInOutError(name, type, parameter, self.Name)
                             else:
-                                expression = self.ComputeExpression(body, connections, executionOrderId > 0)
+                                expression = self.ComputeExpression(body, connections, executionOrderId is not None)
                             if expression is not None:
                                 connected_vars.append(([(parameter, input_info), (" := ", ())],
                                                        self.ExtractModifier(variable, expression, input_info)))
@@ -1205,7 +1205,7 @@ class PouProgramGenerator(object):
                         input_info = (self.TagName, "block", block.getlocalId(), "input", input_idx)
                         connections = variable.connectionPointIn.getconnections()
                         if connections is not None:
-                            expression = self.ComputeExpression(body, connections, executionOrderId > 0, parameter in inout_variables)
+                            expression = self.ComputeExpression(body, connections, executionOrderId is not None, parameter in inout_variables)
                             if expression is not None:
                                 vars.append([(parameter, input_info),
                                              (" := ", ())] + self.ExtractModifier(variable, expression, input_info))
@@ -1252,7 +1252,7 @@ class PouProgramGenerator(object):
                             connections = variable.connectionPointIn.getconnections()
                             if connections is not None:
                                 expression = self.ComputeExpression(
-                                    body, connections, executionOrderId > 0, True)
+                                    body, connections, executionOrderId is not None, True)
                                 output_value = expression
                                 break
                 else:

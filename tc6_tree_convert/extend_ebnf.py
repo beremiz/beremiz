@@ -182,13 +182,8 @@ FLAGS = {"contact": "negated", "coil": "negated", "block/variable": "negated"}
 # Boolean attribute selecting another keyword
 VARIANTS = {"step": ("initialStep", "INITIAL_STEP")}
 
-# Values written by Beremiz, implied when attribute is not given in text.
-# NULL stands for an absent attribute.
+# Values of required attributes written by Beremiz, implied when not given in text
 IMPLIED = {
-    ("block", "executionOrderId"): "0",
-    ("inVariable", "executionOrderId"): "0",
-    ("outVariable", "executionOrderId"): "0",
-    ("inOutVariable", "executionOrderId"): "0",
     ("actionBlock/action", "localId"): "0",
     ("transition/condition/inline", "name"): "",
 }
@@ -264,7 +259,7 @@ class Extender:
 
     # values and attributes
 
-    def value_rule(self, attr, implied):
+    def value_rule(self, attr):
         if attr.values:
             if attr.simple_type:
                 name = rule_name(attr.simple_type)
@@ -274,7 +269,7 @@ class Extender:
         else:
             name = {"boolean": "TC6_Boolean", "decimal": "TC6_Decimal",
                     "unsigned": "TC6_Unsigned", "string": "Char_Str"}[value_kind(attr)]
-        return "(%s | 'NULL')" % name if implied is not None else name
+        return name
 
     def attributes_rule(self, name, attrs, attr_specs):
         """ Return attribute list rule name, None if no attribute """
@@ -283,9 +278,9 @@ class Extender:
         by_name = {a.name: a for a in attrs}
         self.add("%s_Attributes ::= '(' %s_Attribute (',' %s_Attribute)* ')'" % (name, name, name))
         self.add("%s_Attribute ::= %s" % (name, " | ".join(
-            "'%s' ':=' %s" % (a, self.value_rule(by_name[a], spec["implied"]))
+            "'%s' ':=' %s" % (a, self.value_rule(by_name[a]))
             if a in by_name else "'%s' ':=' Char_Str" % a
-            for a, spec in attr_specs.items())))
+            for a in attr_specs)))
         return name + "_Attributes"
 
     # connection points
@@ -695,8 +690,8 @@ ELEMENTS maps element path to its textual form :
   at        position child written as AT (x, y)
   size      width and height attributes written as SIZE (w, h)
   attrs     other attributes, written as (name := value, ...) : value kind,
-            default, and implied value (written by Beremiz, implied when
-            attribute is not given, NULL standing for absent attribute)
+            default, and implied value of required attribute, written by
+            Beremiz, implied when attribute is not given
   pins      connection points written as PIN AT (x, y) := sources or PIN => AT (x, y)
   specials  children with a dedicated syntax
   end       element may have items and end with END_<keyword>, ; ends it otherwise

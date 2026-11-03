@@ -154,6 +154,50 @@ class BlockPreviewDialog(wx.Dialog):
 
         return self.Element.GetMinSize()
 
+    def AddExecutionOrderControls(self, sizer, label_flag):
+        """
+        Add to sizer check box enabling execution order of graphic element, and
+        spin control for its value
+        @param sizer: sizer to add controls to
+        @param label_flag: sizer flag of check box
+        """
+        self.ExecutionOrderEnabled = wx.CheckBox(self, label=_('Execution Order:'))
+        self.Bind(wx.EVT_CHECKBOX, self.OnExecutionOrderEnabled,
+                  self.ExecutionOrderEnabled)
+        sizer.Add(self.ExecutionOrderEnabled, flag=label_flag)
+
+        self.ExecutionOrder = wx.SpinCtrl(self, min=0, style=wx.SP_ARROW_KEYS)
+        self.ExecutionOrder.Enable(False)
+        self.Bind(wx.EVT_SPINCTRL, self.OnExecutionOrderChanged,
+                  self.ExecutionOrder)
+        sizer.Add(self.ExecutionOrder, flag=wx.GROW)
+
+    def SetExecutionOrder(self, execution_order):
+        """
+        Set execution order of graphic element
+        @param execution_order: execution order, None if unspecified
+        """
+        self.ExecutionOrderEnabled.SetValue(execution_order is not None)
+        self.ExecutionOrder.Enable(execution_order is not None)
+        self.ExecutionOrder.SetValue(execution_order or 0)
+
+    def GetExecutionOrder(self):
+        """
+        Return execution order of graphic element
+        @return: execution order, None if unspecified
+        """
+        if self.ExecutionOrderEnabled.GetValue():
+            return self.ExecutionOrder.GetValue()
+        return None
+
+    def OnExecutionOrderEnabled(self, event):
+        """
+        Called when execution order is enabled or disabled
+        @param event: wx.CommandEvent
+        """
+        self.ExecutionOrder.Enable(self.ExecutionOrderEnabled.GetValue())
+        self.OnExecutionOrderChanged(event)
+
     def SetPreviewFont(self, font):
         """
         Set font of Preview panel

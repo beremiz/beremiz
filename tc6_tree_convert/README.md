@@ -94,8 +94,8 @@ are connection points, actions of an action block and condition of a transition:
 
 An input `PIN AT (x, y) := #id[.output] [VIA (x, y), ...]` gives the relative position of
 the connection point, and where it is connected from, with the points of the wire. An
-output is written `PIN => AT (x, y)`. Attributes Beremiz writes by default are implied,
-`(executionOrderId := NULL)` stands for an absent one.
+output is written `PIN => AT (x, y)`. Attributes with their default value are not
+written.
 
 SFC steps and actions use IEC keywords and action associations:
 

@@ -88,7 +88,7 @@ class GraphTest(unittest.TestCase):
                 <variable formalParameter="Q"><connectionPointOut><relPosition x="69" y="30"/></connectionPointOut></variable>
               </outputVariables>
             </block>""", """\
-BLOCK #7 TON0 : TON AT (448, 100) SIZE (69, 80)
+BLOCK #7 (executionOrderId := 0) TON0 : TON AT (448, 100) SIZE (69, 80)
   NOT IN AT (0, 30) := #1 VIA (448, 130), (415, 130);
   PT AT (0, 50);
   IN_OUT X := #2.Q => AT (69, 50);
@@ -108,7 +108,7 @@ END_BLOCK""")
               <expression>x
 y</expression>
             </outVariable>""", """\
-IN_VARIABLE #1 (executionOrderId := NULL) a.b[2] AT (321, 58) SIZE (61, 30)
+IN_VARIABLE #1 a.b[2] AT (321, 58) SIZE (61, 30)
   OUT => AT (61, 15);
 END_IN_VARIABLE
 OUT_VARIABLE #2 (executionOrderId := 3, negated := TRUE, expression := 'x$Ny') AT (1, 2)
