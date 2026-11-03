@@ -1,0 +1,45 @@
+FUNCTION_BLOCK CounterLD
+  VAR_INPUT
+    Reset : BOOL;
+  END_VAR
+  VAR_OUTPUT
+    Out : INT;
+  END_VAR
+  VAR
+    Cnt : INT;
+  END_VAR
+  VAR_EXTERNAL CONSTANT
+    ResetCounterValue : INT;
+  END_VAR
+  OUT_VARIABLE #2 Out AT (527, 87) SIZE (34, 30)
+    IN AT (0, 15) := #3 VIA (527, 102), (443, 102);
+  END_OUT_VARIABLE
+  IN_OUT_VARIABLE #3 Cnt AT (409, 87) SIZE (34, 30)
+    IN AT (0, 15) := #7.OUT VIA (409, 102), (367, 102);
+    OUT => AT (34, 15);
+  END_IN_OUT_VARIABLE
+  BLOCK #4 : ADD AT (180, 87) SIZE (67, 80)
+    IN1 AT (0, 35) := #6 VIA (180, 122), (127, 122);
+    IN2 AT (0, 65) := #3 VIA (180, 152), (169, 152), (169, 185), (453, 185), (453, 102), (443, 102);
+    OUT => AT (67, 35);
+  END_BLOCK
+  IN_VARIABLE #5 ResetCounterValue AT (74, 228) SIZE (158, 30)
+    OUT => AT (158, 15);
+  END_IN_VARIABLE
+  IN_VARIABLE #6 1 AT (106, 107) SIZE (21, 30)
+    OUT => AT (21, 15);
+  END_IN_VARIABLE
+  BLOCK #7 : SEL AT (300, 72) SIZE (67, 80)
+    G AT (0, 30) := #9 VIA (300, 102), (266, 102), (266, 62), (134, 62);
+    IN0 AT (0, 50) := #4.OUT VIA (300, 122), (247, 122);
+    IN1 AT (0, 70) := #5 VIA (300, 142), (266, 142), (266, 243), (232, 243);
+    OUT => AT (67, 30);
+  END_BLOCK
+  LEFT_POWER_RAIL #8 AT (46, 42) SIZE (3, 40)
+    OUT => AT (3, 20);
+  END_LEFT_POWER_RAIL
+  CONTACT #9 Reset AT (113, 54) SIZE (21, 15)
+    IN AT (0, 8) := #8 VIA (113, 62), (49, 62);
+    OUT => AT (21, 8);
+  END_CONTACT
+END_FUNCTION_BLOCK

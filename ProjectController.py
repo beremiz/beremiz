@@ -60,6 +60,7 @@ from dialogs.UriEditor import UriEditor
 from dialogs.IDManager import IDManager
 
 from PLCControler import PLCControler
+import tc6_tree_convert
 from plcopen.structures import IEC_KEYWORDS
 from plcopen.types_enums import ComputeConfigurationResourceName, ITEM_CONFNODE
 import targets
@@ -272,6 +273,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
         # After __init__ root confnode is not valid
         self.Project = None
         self.ProjectPath = None
+        # PLC program is in plc/ directory of IEC 61131-3 text files, or in plc.xml
+        self.PLCTreeFormat = False
         self._setBuildPath(None)
         self.debug_break = False
         self.previous_plcstate = None
@@ -521,6 +524,31 @@ class ProjectController(ConfigTreeNode, PLCControler):
                     return True
         return False
 
+    def _getPLCPath(self, project_path=None, tree_format=None):
+        """ plc/ directory or plc.xml file of PLC program """
+        if tree_format is None:
+            tree_format = self.PLCTreeFormat
+        return os.path.join(project_path or self.ProjectPath, "plc" if tree_format else "plc.xml")
+
+    def SetPLCTreeFormat(self, tree_format):
+        """ Save PLC program as plc/ directory of text files, or as plc.xml, from next save """
+        if tree_format != self.PLCTreeFormat:
+            self.PLCTreeFormat = tree_format
+            self.CTNMarkModified()
+
+    def _RemoveOtherPLCFormat(self):
+        """ Remove PLC program saved in format not used anymore """
+        other = self._getPLCPath(tree_format=not self.PLCTreeFormat)
+        if self.PLCTreeFormat:
+            if os.path.isfile(other):
+                os.remove(other)
+        elif os.path.isdir(other):
+            kept = tc6_tree_convert.remove(other)
+            if kept:
+                self.logger.write_warning(
+                    _("Kept files of {a1} that are not IEC 61131-3 source: {a2}\n").format(
+                        a1=other, a2=", ".join(kept)))
+
     def _getProjectFilesPath(self, project_path=None):
         if project_path is not None:
             return os.path.join(project_path, "project_files")
@@ -588,15 +616,21 @@ class ProjectController(ConfigTreeNode, PLCControler):
         """
         if os.path.basename(ProjectPath) == "":
             ProjectPath = os.path.dirname(ProjectPath)
-        # Verify that project contains a PLCOpen program
-        plc_file = os.path.join(ProjectPath, "plc.xml")
-        if not os.path.isfile(plc_file):
+        # Verify that project contains a PLCOpen program, as plc.xml or plc/ directory
+        plc_file = self._getPLCPath(ProjectPath, False)
+        plc_tree = self._getPLCPath(ProjectPath, True)
+        has_tree = tc6_tree_convert.has_sources(plc_tree)
+        if has_tree and os.path.isfile(plc_file):
+            return _("Chosen folder contains both plc.xml and plc directory, keep only one of them!"), True
+        if not has_tree and not os.path.isfile(plc_file):
             return _("Chosen folder doesn't contain a program. It's not a valid project!"), True
+        self.PLCTreeFormat = has_tree
         # Load PLCOpen file
-        error = self.OpenXMLFile(plc_file)
+        error = self.OpenXMLFile(plc_tree if has_tree else plc_file)
         if error is not None:
             if self.Project is not None:
-                (fname_err, lnum, src) = (("PLC",) + error)
+                # error of plc/ directory gives its file
+                (fname_err, lnum, src) = (("PLC",) + error) if len(error) == 2 else error
                 self.logger.write_warning(
                     XSDSchemaErrorMessage.format(a1=fname_err, a2=lnum, a3=src))
             else:
@@ -672,8 +706,8 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 dialog.ShowModal()
                 return False
             if not os.path.isdir(new_project_path) or len(os.listdir(new_project_path)) > 0:
-                plc_file = os.path.join(new_project_path, "plc.xml")
-                if os.path.isfile(plc_file):
+                if os.path.isfile(self._getPLCPath(new_project_path, False)) or \
+                   tc6_tree_convert.has_sources(self._getPLCPath(new_project_path, True)):
                     message = _("Selected directory already contains another project. Overwrite? \n")
                 else:
                     message = _("Selected directory isn't empty. Continue? \n")
@@ -691,7 +725,20 @@ class ProjectController(ConfigTreeNode, PLCControler):
                 if os.path.isdir(old_projectfiles_path):
                     shutil.copytree(old_projectfiles_path,
                               self._getProjectFilesPath(self.ProjectPath))
-            self.SaveXMLFile(os.path.join(self.ProjectPath, 'plc.xml'))
+                # text files keep their organization and formatting
+                old_plc_tree = self._getPLCPath(from_project_path, True)
+                if self.PLCTreeFormat and os.path.isdir(old_plc_tree) and \
+                   not os.path.exists(self._getPLCPath()):
+                    shutil.copytree(old_plc_tree, self._getPLCPath())
+            plc_path = self._getPLCPath()
+            if self.PLCTreeFormat and not os.path.isdir(plc_path):
+                os.mkdir(plc_path)
+            try:
+                self.SaveXMLFile(plc_path)
+            except tc6_tree_convert.ConversionError as e:
+                self.logger.write_error(_("Couldn't save PLC program: {a1}\n").format(a1=e))
+                return
+            self._RemoveOtherPLCFormat()
             result = self.CTNRequestSave(from_project_path)
             if result:
                 self.logger.write_error(result)

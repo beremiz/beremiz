@@ -24,6 +24,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+import os
 import re
 from collections import OrderedDict
 
@@ -31,6 +32,7 @@ from lxml import etree
 
 from xmlclass import *
 import util.paths as paths
+import tc6_tree_convert
 
 
 #: Dictionary that makes the relation between var names
@@ -301,10 +303,29 @@ def LoadProjectXML(project_xml):
 
 
 def LoadProject(filepath):
+    if os.path.isdir(filepath):
+        return LoadProjectTree(filepath)
     project_file = open(filepath, encoding='utf-8')
     project_xml = project_file.read()
     project_file.close()
     return LoadProjectXML(project_xml)
+
+
+def LoadProjectTree(dirpath):
+    """ Load project from a directory of IEC 61131-3 text files.
+    Validation error is (file, line, message), with file as plc/file.st """
+    try:
+        project_xml = tc6_tree_convert.load(dirpath)
+        # no legacy formats to update, nor CDATA to fix, as in LoadProjectXML
+        tree, error = PLCOpenParser.LoadXMLString(project_xml)
+    except Exception as e:
+        return None, str(e)
+    if error is not None:
+        line, message = error
+        location = tc6_tree_convert.locate(dirpath, line)
+        if location is not None:
+            error = (os.path.join(os.path.basename(dirpath), location[0]), location[1], message)
+    return tree, error
 
 
 project_pou_xpath = PLCOpen_XPath("/ppx:project/ppx:types/ppx:pous/ppx:pou")
@@ -336,6 +357,11 @@ def SaveProject(project, filepath):
 
     assert len(content) != 0
         
+    if os.path.isdir(filepath):
+        # directory of IEC 61131-3 text files, raise tc6_tree_convert.ConversionError
+        tc6_tree_convert.save(content, filepath)
+        return
+
     project_file = open(filepath, 'w', encoding='utf-8')
     project_file.write(content)
     project_file.close()

@@ -21,7 +21,7 @@ from . import iec_parser
 from .common import ConversionError, INDENT, tc6, localname, sub, elements
 from .common import formatted_text, add_formatted_text, iec_string, iec_unquote, is_name, is_true
 from .common import child, children, kids, source, body_text, body_region
-from .comments import Trivia, doc_comment, check_add_data, set_gap, gap
+from .comments import Trivia, doc_comment, check_add_data, set_gap, gap, significant
 from .graph import GraphWriter, GraphBuilder, check_body
 
 POU_KEYWORDS = {"function": "FUNCTION", "functionBlock": "FUNCTION_BLOCK", "program": "PROGRAM"}
@@ -85,7 +85,11 @@ class Writer:
         if self.cache is not None:
             cached = self.cache.take(element)
             if cached is not None:
-                return cached[0] + cached[1]
+                unit_gap, text = cached
+                # unit may not be where it was, as first declaration of a file
+                if not significant(unit_gap) and (unit_gap == "" or default_gap == ""):
+                    unit_gap = default_gap
+                return unit_gap + text
         stored = gap(element, "before")
         text = generate(element, depth)
         documentation = element.find(tc6("documentation"))
@@ -319,6 +323,7 @@ class Builder:
         self.trivia = Trivia(text, trivia)
         self.graph = GraphBuilder(self)
         self.built_units = []   # (element, gap, text start, text end)
+        self.origins = []       # (element, text position)
 
     def error(self, message, node):
         return ConversionError(message, self.path, self.text, node[1])
@@ -332,6 +337,7 @@ class Builder:
         if doc is not None:
             add_formatted_text(element, "documentation", doc)
         set_gap(element, "before", unit_gap)
+        self.origins.append((element, node[1]))
         if cached:
             self.built_units.append((element, unit_gap, doc_start, node[2]))
 

@@ -138,7 +138,7 @@ class CLIController(LocalRuntimeMixin, ProjectController):
             self.session.project_home = os.path.join(os.getcwd(), self.session.project_home)
 
         errmsg, error = self.LoadProject(self.session.project_home, self.session.buildpath)
-        if error:
+        if error or errmsg is not None:
             self.logger.write_error(errmsg)
             return True
 

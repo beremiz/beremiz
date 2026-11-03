@@ -100,6 +100,7 @@ class Session:
         self.directory = os.path.abspath(directory)
         self.files = {}
         self.cache = TextCache()
+        self.lines = []
 
     # loading
 
@@ -139,7 +140,7 @@ class Session:
         data_types = project.find(tc6("types") + "/" + tc6("dataTypes"))
         pous = project.find(tc6("types") + "/" + tc6("pous"))
         configurations = project.find(tc6("instances") + "/" + tc6("configurations"))
-        files, units, header = {}, [], None
+        files, units, origins, header = {}, [], [], None
         for path in self.walk():
             text, files[path] = self.read(path)
             language = EXTENSIONS[os.path.splitext(path)[1].lower()]
@@ -162,13 +163,35 @@ class Session:
                 raise e.locate(path)
             units.extend((element, unit_gap, text[start:end])
                          for element, unit_gap, start, end in builder.built_units)
+            origins.extend((element, path, text.count("\n", 0, position) + 1)
+                           for element, position in builder.origins)
         # units are cached once their XML is complete
         cache = TextCache()
         for element, unit_gap, text in units:
             cache.add(element, unit_gap, text)
         self.files, self.cache = files, cache
-        return etree.tostring(project, pretty_print=True, xml_declaration=True,
-                              encoding="utf-8").decode()
+        xml = etree.tostring(project, pretty_print=True, xml_declaration=True,
+                             encoding="utf-8").decode()
+        self.lines = self.xml_lines(project, xml, origins)
+        return xml
+
+    @staticmethod
+    def xml_lines(project, xml, origins):
+        """ Sorted (XML line, path, line) of declarations """
+        where = {element: (path, line) for element, path, line in origins}
+        lines = [(copy.sourceline,) + where[element]
+                 for element, copy in zip(project.iter(), etree.fromstring(xml.encode()).iter())
+                 if element in where]
+        return sorted(lines)
+
+    def locate(self, xml_line):
+        """ (path, line) of declaration at line of loaded XML, None if unknown """
+        found = None
+        for line, path, source_line in self.lines:
+            if line > xml_line:
+                break
+            found = path, source_line
+        return found
 
     def header(self, builder, project, start, end):
         content = builder.text[start + 1:end - 1]
@@ -201,8 +224,8 @@ class Session:
 
     # saving
 
-    def target(self, element, language=None):
-        """ File of top level declaration """
+    def target(self, element, language=None, types_file=DEFAULT_TYPES_FILE):
+        """ File of top level declaration, types_file being file of new data types """
         path, _index = location(element)
         if path is not None:
             parts = path.split("/")
@@ -221,7 +244,7 @@ class Session:
             elif os.path.splitext(path)[1].lower() != extension:
                 path = os.path.splitext(path)[0] + extension
         elif path is None or not path.lower().endswith(".st"):
-            path = DEFAULT_TYPES_FILE if name == "dataType" else DEFAULT_CONFIGURATION_FILE
+            path = types_file if name == "dataType" else DEFAULT_CONFIGURATION_FILE
         return path
 
     def conflicts(self, paths):
@@ -245,9 +268,14 @@ class Session:
         declarations = elements(root.find(tc6("types") + "/" + tc6("dataTypes")), "dataType") + \
             elements(root.find(tc6("types") + "/" + tc6("pous")), "pou") + \
             elements(root.find(tc6("instances") + "/" + tc6("configurations")), "configuration")
+        # new data types go with last data type that has a file
+        types_file = DEFAULT_TYPES_FILE
+        for element in declarations:
+            if localname(element) == "dataType" and location(element)[0] is not None:
+                types_file = self.target(element)
         for order, element in enumerate(declarations):
             language = Writer.language(element) if localname(element) == "pou" else None
-            path = self.target(element, language)
+            path = self.target(element, language, types_file)
             _path, index = location(element)
             groups.setdefault(path, []).append(
                 (index if index is not None else len(declarations) + order, order, element))
@@ -336,3 +364,16 @@ class Session:
             while directory != self.directory and not os.listdir(directory):
                 os.rmdir(directory)
                 directory = os.path.dirname(directory)
+
+
+def remove_sources(directory):
+    """ Remove IEC files of directory and directories left empty, return other files kept """
+    session = Session(directory)
+    for path in session.walk():
+        os.remove(session.absolute(path))
+    kept = []
+    for root, _dirs, files in os.walk(session.directory, topdown=False):
+        kept.extend(os.path.relpath(os.path.join(root, name), session.directory) for name in files)
+        if not os.listdir(root):
+            os.rmdir(root)
+    return sorted(kept)

@@ -18,6 +18,8 @@ in tc6_tree additional data of declarations, that also hold file path and index
 of top level declarations.
 """
 
+import re
+
 from lxml import etree
 
 from .common import TREE_NS, ConversionError, tc6, localname, sub, elements
@@ -77,10 +79,11 @@ class Trivia:
         if comments:
             comment_start, comment_end, kind = comments[-1]
             between = self.text[comment_end:end]
+            # a // comment ends with its line break
+            line_breaks = between.count("\n") + self.text.count("\n", comment_end - 1, comment_end)
             # documentation starts its line, a comment after previous token is not
             own_line = start == 0 or "\n" in self.text[start:comment_start]
-            if kind == "Comment" and own_line and not between.strip() and \
-               between.count("\n") <= 1:
+            if kind == "Comment" and own_line and not between.strip() and line_breaks <= 1:
                 text = comment_text(self.text[comment_start:comment_end])
                 return self.gap(start, comment_start), comment_start, text
         return self.gap(start, end), end, None
@@ -120,7 +123,8 @@ def check_add_data(element):
 
 
 def _escape(text):
-    return text.replace("\\", "\\\\").replace("-", "\\-")
+    """ No -- in XML comment, and no CDATA marker Beremiz LoadProjectXML would rewrite """
+    return re.sub(r"([\\<>-])", r"\\\1", text)
 
 
 def _unescape(text):

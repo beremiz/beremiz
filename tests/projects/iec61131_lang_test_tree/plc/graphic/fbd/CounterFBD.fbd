@@ -1,0 +1,41 @@
+FUNCTION_BLOCK CounterFBD
+  VAR_INPUT
+    Reset : BOOL;
+  END_VAR
+  VAR_OUTPUT
+    OUT : INT;
+  END_VAR
+  VAR
+    Cnt : INT;
+  END_VAR
+  VAR_EXTERNAL CONSTANT
+    ResetCounterValue : INT;
+  END_VAR
+  IN_VARIABLE #1 Reset AT (321, 58) SIZE (61, 30)
+    OUT => AT (61, 15);
+  END_IN_VARIABLE
+  OUT_VARIABLE #2 OUT AT (675, 137) SIZE (39, 30)
+    IN AT (0, 15) := #3 VIA (675, 152), (589, 152);
+  END_OUT_VARIABLE
+  IN_OUT_VARIABLE #3 Cnt AT (557, 137) SIZE (37, 30)
+    IN AT (0, 15) := #7.OUT VIA (557, 152), (527, 152), (527, 130), (517, 130);
+    OUT => AT (37, 15);
+  END_IN_OUT_VARIABLE
+  BLOCK #4 : ADD AT (328, 115) SIZE (69, 80)
+    IN1 AT (0, 35) := #6 VIA (328, 150), (275, 150);
+    IN2 AT (0, 65) := #3 VIA (328, 180), (317, 180), (317, 213), (604, 213), (604, 152), (594, 152);
+    OUT => AT (69, 35);
+  END_BLOCK
+  IN_VARIABLE #5 ResetCounterValue AT (222, 256) SIZE (163, 30)
+    OUT => AT (163, 15);
+  END_IN_VARIABLE
+  IN_VARIABLE #6 1 AT (254, 135) SIZE (21, 30)
+    OUT => AT (21, 15);
+  END_IN_VARIABLE
+  BLOCK #7 : SEL AT (448, 100) SIZE (69, 80)
+    G AT (0, 30) := #1 VIA (448, 130), (415, 130), (415, 73), (382, 73);
+    IN0 AT (0, 50) := #4.OUT VIA (448, 150), (397, 150);
+    IN1 AT (0, 70) := #5 VIA (448, 170), (414, 170), (414, 271), (385, 271);
+    OUT => AT (69, 30);
+  END_BLOCK
+END_FUNCTION_BLOCK

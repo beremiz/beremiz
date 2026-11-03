@@ -48,7 +48,7 @@
 #       of the Beremiz directory $(src)/beremiz, where we run tests from.
 #   
 
-all: source_check cli_tests ide_tests runtime_tests 
+all: source_check cli_tests ide_tests runtime_tests tc6_tree_convert_tests
 
 # Variable $(src) is directory such that executed 
 # $(src)/Makefile is this file.
@@ -199,6 +199,23 @@ $(foreach clitest,$(cli_tests),$(eval $(call make_clitest_rule,$(clitest),clites
 
 cli_tests: $(cli_tests_targets)
 	echo "$(cli_tests_targets) : Passed"
+
+#
+# TC6 TREE CONVERTER TESTS (plc.xml <-> plc/ directory)
+#
+
+define tc6_tree_convert_command
+	$(PYTEST) $(build_dir)/beremiz/tc6_tree_convert/tests
+endef
+
+define make_tc6_tree_convert_rule
+$(test_dir)/$(1)_results/.passed: $(build_dir)/beremiz/$(beremiz_checksum).sha1
+	$(call prep_test,$(1)); timeout 600 bash -c '$(call log_command,$(2),$(1))'
+	touch $$@
+
+$(1): $(test_dir)/$(1)_results/.passed
+endef
+$(eval $(call make_tc6_tree_convert_rule,tc6_tree_convert_tests,tc6_tree_convert_command))
 
 clean_results:
 	rm -rf $(test_dir)/*_results

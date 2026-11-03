@@ -127,11 +127,20 @@ as such, like documentation holding both `*)` and `*/`.
 
 File and position of each declaration are kept in TC6 `addData`, in namespace
 `http://www.beremiz.org/tc6_tree`, so that a declaration is saved where it was.
-Declarations without one go to `<pou>.<ext>`, `types.st` and `config.st`, at `plc/` root.
+New POUs go to `<pou>.<ext>` and a new configuration to `config.st`, at `plc/` root. New
+data types go with other data types, or to `types.st`.
 
 Declarations unchanged since loading keep their text, formatting included. Only changed
 files are written, files left without declaration are removed. Saving is refused, and
 nothing written, if one of the files changed on disk since loading.
+
+## In Beremiz
+
+Beremiz IDE and CLI open a project with either `plc.xml` or a `plc/` directory holding
+IEC files, not both. "Store PLC as text files (plc/)" in IDE File menu switches project
+from one to the other at next save, removing the former one. Errors in text files are
+reported with their file and line. `tests/projects/iec61131_lang_test_tree` is a test
+project in this form.
 
 ## Command line
 

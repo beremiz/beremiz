@@ -1,0 +1,131 @@
+PROGRAM plc_prg
+  VAR_INPUT
+    Reset : BOOL;
+  END_VAR
+  VAR
+    local_complex : struct_type_1;
+  END_VAR
+  VAR_EXTERNAL
+    ResourceGlobal : DINT;
+    ResourceGlobal0 : derived_dint;
+  END_VAR
+  VAR_OUTPUT
+    Cnt1 : INT;
+    Cnt2 : INT;
+    Cnt3 : INT;
+    Cnt4 : INT;
+    Cnt5 : INT;
+  END_VAR
+  VAR
+    CounterST0 : CounterST;
+    CounterFBD0 : CounterFBD;
+    CounterSFC0 : CounterSFC;
+    CounterIL0 : CounterIL;
+    CounterLD0 : CounterLD;
+    AVCnt : REAL;
+  END_VAR
+  BLOCK #1 CounterST0 : CounterST AT (207, 53) SIZE (125, 60)
+    Reset AT (0, 40) := #2 VIA (207, 93), (114, 93);
+    OUT => AT (125, 40);
+  END_BLOCK
+  IN_VARIABLE #2 Reset AT (35, 78) SIZE (79, 30)
+    OUT => AT (79, 15);
+  END_IN_VARIABLE
+  BLOCK #4 CounterFBD0 : CounterFBD AT (211, 146) SIZE (121, 54)
+    Reset AT (0, 37) := #13 VIA (211, 183), (115, 183);
+    OUT => AT (121, 37);
+  END_BLOCK
+  COMMENT #6 AT (620, 130) SIZE (569, 365)
+    (*In this example function block with the same functionality 
+is created using all five IEC 61131-3 programing languages:
+- IL;
+- FBD;
+- LD;
+- ST;
+- SFC.
+
+
+
+
+Function block is a counter with reset control input.
+If reset is True counter value is reset to the value defined by
+global configuration constant ResetCounterValue. 
+If reset is False, counter is incremented every cycle.
+*)
+  END_COMMENT
+  BLOCK #7 CounterSFC0 : CounterSFC AT (211, 237) SIZE (121, 52)
+    Reset AT (0, 36) := #12 VIA (211, 273), (103, 273);
+    OUT => AT (121, 36);
+  END_BLOCK
+  BLOCK #9 CounterIL0 : CounterIL AT (211, 322) SIZE (121, 62)
+    Reset AT (0, 41) := #10 VIA (211, 363), (101, 363);
+    OUT => AT (121, 41);
+  END_BLOCK
+  IN_VARIABLE #10 Reset AT (34, 348) SIZE (67, 30)
+    OUT => AT (67, 15);
+  END_IN_VARIABLE
+  IN_VARIABLE #12 Reset AT (36, 258) SIZE (67, 30)
+    OUT => AT (67, 15);
+  END_IN_VARIABLE
+  IN_VARIABLE #13 Reset AT (36, 168) SIZE (79, 30)
+    OUT => AT (79, 15);
+  END_IN_VARIABLE
+  BLOCK #14 CounterLD0 : CounterLD AT (210, 412) SIZE (124, 62)
+    Reset AT (0, 41) := #16 VIA (210, 453), (100, 453);
+    Out => AT (124, 41);
+  END_BLOCK
+  IN_VARIABLE #16 Reset AT (36, 438) SIZE (64, 30)
+    OUT => AT (64, 15);
+  END_IN_VARIABLE
+  BLOCK #17 : AverageVal AT (514, 28) SIZE (100, 470)
+    Cnt1 AT (0, 65) := #3 VIA (514, 93), (474, 93);
+    Cnt2 AT (0, 155) := #5 VIA (514, 183), (473, 183);
+    Cnt3 AT (0, 245) := #8 VIA (514, 273), (472, 273);
+    Cnt4 AT (0, 335) := #11 VIA (514, 363), (469, 363);
+    Cnt5 AT (0, 425) := #15 VIA (514, 453), (469, 453);
+    OUT => AT (100, 65);
+  END_BLOCK
+  IN_OUT_VARIABLE #3 Cnt1 AT (368, 78) SIZE (106, 30)
+    IN AT (0, 15) := #1.OUT VIA (368, 93), (332, 93);
+    OUT => AT (106, 15);
+  END_IN_OUT_VARIABLE
+  IN_OUT_VARIABLE #5 Cnt2 AT (370, 168) SIZE (103, 30)
+    IN AT (0, 15) := #4.OUT VIA (370, 183), (332, 183);
+    OUT => AT (103, 15);
+  END_IN_OUT_VARIABLE
+  IN_OUT_VARIABLE #8 Cnt3 AT (375, 258) SIZE (97, 30)
+    IN AT (0, 15) := #7.OUT VIA (375, 273), (332, 273);
+    OUT => AT (97, 15);
+  END_IN_OUT_VARIABLE
+  IN_OUT_VARIABLE #11 Cnt4 AT (378, 348) SIZE (91, 30)
+    IN AT (0, 15) := #9.OUT VIA (378, 363), (332, 363);
+    OUT => AT (91, 15);
+  END_IN_OUT_VARIABLE
+  IN_OUT_VARIABLE #15 Cnt5 AT (381, 438) SIZE (88, 30)
+    IN AT (0, 15) := #14.Out VIA (381, 453), (334, 453);
+    OUT => AT (88, 15);
+  END_IN_OUT_VARIABLE
+  OUT_VARIABLE #19 ResourceGlobal AT (878, 82) SIZE (94, 23)
+    IN AT (0, 11) := #20.OUT VIA (878, 93), (835, 93);
+  END_OUT_VARIABLE
+  BLOCK #20 : REAL_TO_DINT AT (753, 63) SIZE (82, 40)
+    IN AT (0, 30) := #18 VIA (753, 93), (704, 93);
+    OUT => AT (82, 30);
+  END_BLOCK
+  IN_OUT_VARIABLE #18 AVCnt AT (649, 78) SIZE (55, 30)
+    IN AT (0, 15) := #17.OUT VIA (649, 93), (614, 93);
+    OUT => AT (55, 15);
+  END_IN_OUT_VARIABLE
+  IN_VARIABLE #22 local_complex.a_var AT (1052, 35) SIZE (124, 23)
+    OUT => AT (124, 11);
+  END_IN_VARIABLE
+  OUT_VARIABLE #21 local_complex.a_typed_array[1] AT (1247, 38) SIZE (190, 23)
+    IN AT (0, 11) := #22 VIA (1247, 49), (1211, 49), (1211, 46), (1176, 46);
+  END_OUT_VARIABLE
+  IN_VARIABLE #24 local_complex.a_typed_array[2] AT (995, 83) SIZE (190, 23)
+    OUT => AT (190, 11);
+  END_IN_VARIABLE
+  OUT_VARIABLE #23 local_complex.an_array_of_struct[1].a_var AT (1232, 83) SIZE (256, 23)
+    IN AT (0, 11) := #24 VIA (1232, 94), (1185, 94);
+  END_OUT_VARIABLE
+END_PROGRAM

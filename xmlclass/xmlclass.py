@@ -1806,6 +1806,9 @@ class XMLElementClassLookUp(etree.PythonElementClassLookup):
         :return:
             Returns element class corresponding to given element.
         """
+        if not isinstance(element.tag, str):
+            # comments and processing instructions keep lxml default class
+            return None
         element_class = self.GetLookupResult(element)
         if element_class is not None:
             return element_class

@@ -87,6 +87,16 @@ class CommentTest(unittest.TestCase):
         body = self.root.find(".//" + tc6("ST") + "/{%s}p" % XHTML_NS).text
         self.assertEqual(body, "(* in body *)\nx := 1;")
 
+    def test_line_comments(self):
+        """ A // comment is documentation only when no blank line follows it """
+        with tempfile.TemporaryDirectory() as tmp:
+            write_tree(tmp, {"q.st": "// not doc\n\nPROGRAM q\nEND_PROGRAM\n\n"
+                                     "// doc\nPROGRAM r\nEND_PROGRAM\n"})
+            pous = {p.get("name"): p for p in
+                    etree.fromstring(tree_to_xml(tmp).encode()).iter(tc6("pou"))}
+        self.assertIsNone(documentation(pous["q"]))
+        self.assertEqual(documentation(pous["r"]), " doc")
+
     def test_xml_comments(self):
         comments = list(self.root.iter(etree.Comment))
         texts = [c.text for c in comments]

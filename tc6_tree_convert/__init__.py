@@ -14,7 +14,7 @@ Conversion between PLCopen TC6 XML (plc.xml) and a tree of IEC 61131-3 text file
 import os
 
 from .common import ConversionError  # noqa: F401
-from .tree import Session, TreeConflictError  # noqa: F401
+from .tree import Session, TreeConflictError, remove_sources  # noqa: F401
 
 _sessions = {}
 
@@ -51,3 +51,20 @@ def xml_to_tree(xml, plc_dir):
     if os.path.isdir(plc_dir):
         session.load()
     session.save(xml)
+
+
+def locate(plc_dir, xml_line):
+    """ (path in plc_dir, line) of declaration at line of XML last loaded from plc_dir """
+    session = _sessions.get(os.path.abspath(plc_dir))
+    return session.locate(xml_line) if session is not None else None
+
+
+def remove(plc_dir):
+    """ Remove IEC files of plc_dir, and plc_dir if left empty. Return other files kept """
+    _sessions.pop(os.path.abspath(plc_dir), None)
+    return remove_sources(plc_dir)
+
+
+def has_sources(plc_dir):
+    """ True if plc_dir is a directory holding IEC files """
+    return os.path.isdir(plc_dir) and bool(Session(plc_dir).walk())
