@@ -61,14 +61,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" width="80" height="32" negated="false">
+            <inVariable localId="1" width="80" height="32" negated="false">
               <position x="80" y="136"/>
               <connectionPointOut>
                 <relPosition x="80" y="16"/>
               </connectionPointOut>
               <expression>systec_out</expression>
             </inVariable>
-            <block localId="2" typeName="ADD" executionOrderId="0" width="56" height="80">
+            <block localId="2" typeName="ADD" width="56" height="80">
               <position x="232" y="120"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -99,7 +99,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="4" executionOrderId="0" width="80" height="32" negated="false">
+            <outVariable localId="4" width="80" height="32" negated="false">
               <position x="952" y="80"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -110,28 +110,28 @@
               </connectionPointIn>
               <expression>systec_out</expression>
             </outVariable>
-            <inVariable localId="5" executionOrderId="0" width="80" height="32" negated="false">
+            <inVariable localId="5" width="80" height="32" negated="false">
               <position x="80" y="168"/>
               <connectionPointOut>
                 <relPosition x="80" y="16"/>
               </connectionPointOut>
               <expression>systec_in</expression>
             </inVariable>
-            <inVariable localId="6" executionOrderId="0" width="64" height="32" negated="false">
+            <inVariable localId="6" width="64" height="32" negated="false">
               <position x="344" y="112"/>
               <connectionPointOut>
                 <relPosition x="64" y="16"/>
               </connectionPointOut>
               <expression>position</expression>
             </inVariable>
-            <inVariable localId="7" executionOrderId="0" width="64" height="32" negated="false">
+            <inVariable localId="7" width="64" height="32" negated="false">
               <position x="344" y="80"/>
               <connectionPointOut>
                 <relPosition x="64" y="16"/>
               </connectionPointOut>
               <expression>position0</expression>
             </inVariable>
-            <block localId="8" typeName="EQ" executionOrderId="0" width="56" height="80">
+            <block localId="8" typeName="EQ" width="56" height="80">
               <position x="480" y="64"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -162,7 +162,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="9" typeName="SEL" executionOrderId="0" width="56" height="168">
+            <block localId="9" typeName="SEL" width="56" height="168">
               <position x="832" y="56"/>
               <inputVariables>
                 <variable formalParameter="G" negated="true">
@@ -202,14 +202,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="3" executionOrderId="0" width="64" height="32" negated="false">
+            <inVariable localId="3" width="64" height="32" negated="false">
               <position x="576" y="184"/>
               <connectionPointOut>
                 <relPosition x="64" y="16"/>
               </connectionPointOut>
               <expression>position</expression>
             </inVariable>
-            <block localId="11" typeName="DINT_TO_USINT" executionOrderId="0" width="96" height="48">
+            <block localId="11" typeName="DINT_TO_USINT" width="96" height="48">
               <position x="696" y="168"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -231,14 +231,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="10" executionOrderId="0" width="64" height="32" negated="false">
+            <inVariable localId="10" width="64" height="32" negated="false">
               <position x="808" y="272"/>
               <connectionPointOut>
                 <relPosition x="64" y="16"/>
               </connectionPointOut>
               <expression>position</expression>
             </inVariable>
-            <outVariable localId="12" executionOrderId="0" width="64" height="32" negated="false">
+            <outVariable localId="12" width="64" height="32" negated="false">
               <position x="968" y="272"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>

@@ -73,14 +73,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="30" width="114" negated="false">
+            <inVariable localId="1" height="30" width="114" negated="false">
               <position x="299" y="521"/>
               <connectionPointOut>
                 <relPosition x="114" y="15"/>
               </connectionPointOut>
               <expression>EnergyCounter</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="30" width="114" negated="false">
+            <outVariable localId="2" height="30" width="114" negated="false">
               <position x="654" y="521"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -91,7 +91,7 @@
               </connectionPointIn>
               <expression>EnergyCounter</expression>
             </outVariable>
-            <block localId="3" typeName="ADD" executionOrderId="0" height="60" width="67">
+            <block localId="3" typeName="ADD" height="60" width="67">
               <position x="466" y="506"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -124,7 +124,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="4" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="4" height="30" width="105" negated="false">
               <position x="296" y="570"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
@@ -137,7 +137,7 @@
                 <xhtml:p><![CDATA[Always consume some energy]]></xhtml:p>
               </content>
             </comment>
-            <block localId="6" typeName="Simulator" instanceName="TempSimulation" executionOrderId="0" height="128" width="143">
+            <block localId="6" typeName="Simulator" instanceName="TempSimulation" height="128" width="143">
               <position x="188" y="648"/>
               <inputVariables>
                 <variable formalParameter="MinVal">
@@ -177,7 +177,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="7" executionOrderId="0" height="30" width="98" negated="false">
+            <outVariable localId="7" height="30" width="98" negated="false">
               <position x="421" y="671"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -188,28 +188,28 @@
               </connectionPointIn>
               <expression>Temperature</expression>
             </outVariable>
-            <inVariable localId="8" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="8" height="30" width="105" negated="false">
               <position x="33" y="671"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>18.0</expression>
             </inVariable>
-            <inVariable localId="9" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="9" height="30" width="105" negated="false">
               <position x="33" y="707"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>30.0</expression>
             </inVariable>
-            <inVariable localId="10" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="10" height="30" width="105" negated="false">
               <position x="33" y="743"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>120</expression>
             </inVariable>
-            <block localId="11" typeName="Simulator" instanceName="HumiditySimulation" executionOrderId="0" height="137" width="143">
+            <block localId="11" typeName="Simulator" instanceName="HumiditySimulation" height="137" width="143">
               <position x="185" y="803"/>
               <inputVariables>
                 <variable formalParameter="MinVal">
@@ -249,7 +249,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="12" executionOrderId="0" height="30" width="111" negated="false">
+            <outVariable localId="12" height="30" width="111" negated="false">
               <position x="418" y="827"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -260,28 +260,28 @@
               </connectionPointIn>
               <expression>Humidity</expression>
             </outVariable>
-            <inVariable localId="13" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="13" height="30" width="105" negated="false">
               <position x="30" y="827"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>55.0</expression>
             </inVariable>
-            <inVariable localId="14" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="14" height="30" width="105" negated="false">
               <position x="30" y="866"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>78.0</expression>
             </inVariable>
-            <inVariable localId="15" executionOrderId="0" height="30" width="105" negated="false">
+            <inVariable localId="15" height="30" width="105" negated="false">
               <position x="30" y="905"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>58</expression>
             </inVariable>
-            <block localId="16" typeName="GT" executionOrderId="0" height="60" width="67">
+            <block localId="16" typeName="GT" height="60" width="67">
               <position x="231" y="1103"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -314,14 +314,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="18" executionOrderId="0" height="30" width="98" negated="false">
+            <inVariable localId="18" height="30" width="98" negated="false">
               <position x="40" y="1118"/>
               <connectionPointOut>
                 <relPosition x="98" y="15"/>
               </connectionPointOut>
               <expression>Temperature</expression>
             </inVariable>
-            <block localId="19" typeName="AND" executionOrderId="0" height="60" width="67">
+            <block localId="19" typeName="AND" height="60" width="67">
               <position x="347" y="1059"/>
               <inputVariables>
                 <variable formalParameter="IN1" negated="true">
@@ -356,14 +356,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="20" executionOrderId="0" height="30" width="122" negated="false">
+            <inVariable localId="20" height="30" width="122" negated="false">
               <position x="41" y="1059"/>
               <connectionPointOut>
                 <relPosition x="122" y="15"/>
               </connectionPointOut>
               <expression>ControlDisable</expression>
             </inVariable>
-            <outVariable localId="21" executionOrderId="0" height="30" width="92" negated="false">
+            <outVariable localId="21" height="30" width="92" negated="false">
               <position x="468" y="1074"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -374,14 +374,14 @@
               </connectionPointIn>
               <expression>Cooler</expression>
             </outVariable>
-            <inVariable localId="22" executionOrderId="0" height="30" width="162" negated="false">
+            <inVariable localId="22" height="30" width="162" negated="false">
               <position x="39" y="1154"/>
               <connectionPointOut>
                 <relPosition x="162" y="15"/>
               </connectionPointOut>
               <expression>TemperatureSetPoint</expression>
             </inVariable>
-            <block localId="17" typeName="LT" executionOrderId="0" height="60" width="67">
+            <block localId="17" typeName="LT" height="60" width="67">
               <position x="228" y="1278"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -414,14 +414,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="23" executionOrderId="0" height="30" width="98" negated="false">
+            <inVariable localId="23" height="30" width="98" negated="false">
               <position x="37" y="1293"/>
               <connectionPointOut>
                 <relPosition x="98" y="15"/>
               </connectionPointOut>
               <expression>Temperature</expression>
             </inVariable>
-            <block localId="24" typeName="AND" executionOrderId="0" height="60" width="67">
+            <block localId="24" typeName="AND" height="60" width="67">
               <position x="344" y="1234"/>
               <inputVariables>
                 <variable formalParameter="IN1" negated="true">
@@ -456,14 +456,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="25" executionOrderId="0" height="30" width="122" negated="false">
+            <inVariable localId="25" height="30" width="122" negated="false">
               <position x="38" y="1234"/>
               <connectionPointOut>
                 <relPosition x="122" y="15"/>
               </connectionPointOut>
               <expression>ControlDisable</expression>
             </inVariable>
-            <outVariable localId="26" executionOrderId="0" height="30" width="92" negated="false">
+            <outVariable localId="26" height="30" width="92" negated="false">
               <position x="465" y="1249"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -474,7 +474,7 @@
               </connectionPointIn>
               <expression>Heater</expression>
             </outVariable>
-            <inVariable localId="27" executionOrderId="0" height="30" width="162" negated="false">
+            <inVariable localId="27" height="30" width="162" negated="false">
               <position x="36" y="1329"/>
               <connectionPointOut>
                 <relPosition x="162" y="15"/>

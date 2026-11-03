@@ -41,14 +41,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="25" width="85" negated="false">
+            <inVariable localId="1" height="25" width="85" negated="false">
               <position x="160" y="190"/>
               <connectionPointOut>
                 <relPosition x="85" y="10"/>
               </connectionPointOut>
               <expression>LocalVar0</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="24" width="82" negated="false">
+            <outVariable localId="2" height="24" width="82" negated="false">
               <position x="238" y="49"/>
               <connectionPointIn>
                 <relPosition x="0" y="11"/>
@@ -59,7 +59,7 @@
               </connectionPointIn>
               <expression>LocalVar1</expression>
             </outVariable>
-            <block localId="4" typeName="python_poll" instanceName="python_poll0" executionOrderId="0" height="60" width="98">
+            <block localId="4" typeName="python_poll" instanceName="python_poll0" height="60" width="98">
               <position x="658" y="101"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -95,7 +95,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="5" typeName="LREAL_TO_STRING" executionOrderId="0" height="40" width="130">
+            <block localId="5" typeName="LREAL_TO_STRING" height="40" width="130">
               <position x="280" y="170"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -121,7 +121,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="6" typeName="CONCAT" executionOrderId="0" height="165" width="63">
+            <block localId="6" typeName="CONCAT" height="165" width="63">
               <position x="497" y="108"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -161,28 +161,28 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="7" executionOrderId="0" height="24" width="44" negated="false">
+            <inVariable localId="7" height="24" width="44" negated="false">
               <position x="579" y="116"/>
               <connectionPointOut>
                 <relPosition x="44" y="14"/>
               </connectionPointOut>
               <expression>TRUE</expression>
             </inVariable>
-            <inVariable localId="3" executionOrderId="0" height="25" width="180" negated="false">
+            <inVariable localId="3" height="25" width="180" negated="false">
               <position x="160" y="140"/>
               <connectionPointOut>
                 <relPosition x="180" y="10"/>
               </connectionPointOut>
               <expression>'pfunc("'</expression>
             </inVariable>
-            <inVariable localId="8" executionOrderId="0" height="25" width="230" negated="false">
+            <inVariable localId="8" height="25" width="230" negated="false">
               <position x="165" y="240"/>
               <connectionPointOut>
                 <relPosition x="230" y="10"/>
               </connectionPointOut>
               <expression>'\n")'</expression>
             </inVariable>
-            <inVariable localId="9" executionOrderId="0" height="29" width="45" negated="false">
+            <inVariable localId="9" height="29" width="45" negated="false">
               <position x="159" y="47"/>
               <connectionPointOut>
                 <relPosition x="45" y="13"/>

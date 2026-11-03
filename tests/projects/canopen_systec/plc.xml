@@ -32,14 +32,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" width="80" height="32" negated="false">
+            <inVariable localId="1" width="80" height="32" negated="false">
               <position x="320" y="176"/>
               <connectionPointOut>
                 <relPosition x="80" y="16"/>
               </connectionPointOut>
               <expression>systec_out</expression>
             </inVariable>
-            <block localId="2" typeName="ADD" executionOrderId="0" width="56" height="80">
+            <block localId="2" typeName="ADD" width="56" height="80">
               <position x="472" y="160"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -70,14 +70,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="3" executionOrderId="0" width="24" height="32" negated="false">
+            <inVariable localId="3" width="24" height="32" negated="false">
               <position x="408" y="208"/>
               <connectionPointOut>
                 <relPosition x="24" y="16"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <outVariable localId="4" executionOrderId="0" width="80" height="32" negated="false">
+            <outVariable localId="4" width="80" height="32" negated="false">
               <position x="576" y="176"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>

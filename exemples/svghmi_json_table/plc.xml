@@ -34,14 +34,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="18" executionOrderId="0" width="85" height="25" negated="false">
+            <inVariable localId="18" width="85" height="25" negated="false">
               <position x="50" y="40"/>
               <connectionPointOut>
                 <relPosition x="85" y="10"/>
               </connectionPointOut>
               <expression>LocalVar0</expression>
             </inVariable>
-            <outVariable localId="19" executionOrderId="0" width="85" height="25" negated="false">
+            <outVariable localId="19" width="85" height="25" negated="false">
               <position x="215" y="40"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>

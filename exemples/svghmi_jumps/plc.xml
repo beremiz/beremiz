@@ -133,7 +133,7 @@
         </interface>
         <body>
           <FBD>
-            <block localId="1" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0" height="105" width="58">
+            <block localId="1" typeName="LOGGER" instanceName="LOGGER0" height="105" width="58">
               <position x="280" y="275"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -167,21 +167,21 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="2" executionOrderId="0" height="24" width="114" negated="false">
+            <inVariable localId="2" height="24" width="114" negated="false">
               <position x="25" y="550"/>
               <connectionPointOut>
                 <relPosition x="114" y="10"/>
               </connectionPointOut>
               <expression>ENTERING_PAGE</expression>
             </inVariable>
-            <inVariable localId="4" executionOrderId="0" height="25" width="90" negated="false">
+            <inVariable localId="4" height="25" width="90" negated="false">
               <position x="160" y="575"/>
               <connectionPointOut>
                 <relPosition x="90" y="10"/>
               </connectionPointOut>
               <expression>BOOL#FALSE</expression>
             </inVariable>
-            <block localId="6" typeName="MOVE" executionOrderId="0" height="70" width="55">
+            <block localId="6" typeName="MOVE" height="70" width="55">
               <position x="295" y="530"/>
               <inputVariables>
                 <variable formalParameter="EN" edge="falling">
@@ -217,14 +217,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="7" executionOrderId="0" height="24" width="114" negated="false">
+            <inVariable localId="7" height="24" width="114" negated="false">
               <position x="75" y="300"/>
               <connectionPointOut>
                 <relPosition x="114" y="10"/>
               </connectionPointOut>
               <expression>ENTERING_PAGE</expression>
             </inVariable>
-            <inVariable localId="8" executionOrderId="0" height="25" width="50" negated="false">
+            <inVariable localId="8" height="25" width="50" negated="false">
               <position x="140" y="355"/>
               <connectionPointOut>
                 <relPosition x="50" y="10"/>
@@ -237,14 +237,14 @@
                 <xhtml:p><![CDATA[Acknowledge page jump being notified by HMI by setting ENTERING_PAGE to True]]></xhtml:p>
               </content>
             </comment>
-            <inVariable localId="11" executionOrderId="0" height="25" width="122" negated="false">
+            <inVariable localId="11" height="25" width="122" negated="false">
               <position x="90" y="325"/>
               <connectionPointOut>
                 <relPosition x="122" y="10"/>
               </connectionPointOut>
               <expression>CURRENT_PAGE_0</expression>
             </inVariable>
-            <outVariable localId="12" executionOrderId="0" height="25" width="115" negated="false">
+            <outVariable localId="12" height="25" width="115" negated="false">
               <position x="385" y="575"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -255,7 +255,7 @@
               </connectionPointIn>
               <expression>ENTERING_PAGE</expression>
             </outVariable>
-            <block localId="13" typeName="R_TRIG" instanceName="R_TRIG0" executionOrderId="0" height="40" width="60">
+            <block localId="13" typeName="R_TRIG" instanceName="R_TRIG0" height="40" width="60">
               <position x="190" y="530"/>
               <inputVariables>
                 <variable formalParameter="CLK">
@@ -284,7 +284,7 @@
 Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]></xhtml:p>
               </content>
             </comment>
-            <block localId="14" typeName="my_functionBlock" instanceName="FB_ZERO" executionOrderId="0" height="70" width="191">
+            <block localId="14" typeName="my_functionBlock" instanceName="FB_ZERO" height="70" width="191">
               <position x="170" y="16"/>
               <inputVariables>
                 <variable formalParameter="SOME_STRING">
@@ -315,7 +315,7 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="5" typeName="my_functionBlock" instanceName="FB_ONE" executionOrderId="0" height="70" width="191">
+            <block localId="5" typeName="my_functionBlock" instanceName="FB_ONE" height="70" width="191">
               <position x="170" y="110"/>
               <inputVariables>
                 <variable formalParameter="SOME_STRING">
@@ -346,7 +346,7 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="10" typeName="my_functionBlock" instanceName="FB_THREE" executionOrderId="0" height="70" width="191">
+            <block localId="10" typeName="my_functionBlock" instanceName="FB_THREE" height="70" width="191">
               <position x="515" y="110"/>
               <inputVariables>
                 <variable formalParameter="SOME_STRING">
@@ -377,7 +377,7 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="15" typeName="my_functionBlock" instanceName="FB_TWO" executionOrderId="0" height="70" width="191">
+            <block localId="15" typeName="my_functionBlock" instanceName="FB_TWO" height="70" width="191">
               <position x="515" y="16"/>
               <inputVariables>
                 <variable formalParameter="SOME_STRING">
@@ -408,7 +408,7 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="16" typeName="my_functionBlock" instanceName="FB_FIVE" executionOrderId="0" height="75" width="191">
+            <block localId="16" typeName="my_functionBlock" instanceName="FB_FIVE" height="75" width="191">
               <position x="860" y="111"/>
               <inputVariables>
                 <variable formalParameter="SOME_STRING">
@@ -439,7 +439,7 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="17" typeName="my_functionBlock" instanceName="FB_FOUR" executionOrderId="0" height="70" width="191">
+            <block localId="17" typeName="my_functionBlock" instanceName="FB_FOUR" height="70" width="191">
               <position x="860" y="17"/>
               <inputVariables>
                 <variable formalParameter="SOME_STRING">
@@ -470,84 +470,84 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="18" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="18" height="25" width="70" negated="false">
               <position x="55" y="61"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>Enable0</expression>
             </inVariable>
-            <inVariable localId="19" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="19" height="25" width="70" negated="false">
               <position x="55" y="155"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>Enable1</expression>
             </inVariable>
-            <inVariable localId="20" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="20" height="25" width="70" negated="false">
               <position x="405" y="61"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>Enable2</expression>
             </inVariable>
-            <inVariable localId="21" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="21" height="25" width="70" negated="false">
               <position x="405" y="155"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>Enable3</expression>
             </inVariable>
-            <inVariable localId="22" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="22" height="25" width="70" negated="false">
               <position x="745" y="66"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>Enable4</expression>
             </inVariable>
-            <inVariable localId="23" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="23" height="25" width="70" negated="false">
               <position x="745" y="160"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>Enable5</expression>
             </inVariable>
-            <inVariable localId="24" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="24" height="25" width="70" negated="false">
               <position x="55" y="36"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
               </connectionPointOut>
               <expression>'VENUS'</expression>
             </inVariable>
-            <inVariable localId="25" executionOrderId="0" height="25" width="75" negated="false">
+            <inVariable localId="25" height="25" width="75" negated="false">
               <position x="50" y="130"/>
               <connectionPointOut>
                 <relPosition x="75" y="10"/>
               </connectionPointOut>
               <expression>'URANUS'</expression>
             </inVariable>
-            <inVariable localId="26" executionOrderId="0" height="25" width="85" negated="false">
+            <inVariable localId="26" height="25" width="85" negated="false">
               <position x="390" y="36"/>
               <connectionPointOut>
                 <relPosition x="85" y="10"/>
               </connectionPointOut>
               <expression>'JUPITER'</expression>
             </inVariable>
-            <inVariable localId="27" executionOrderId="0" height="25" width="60" negated="false">
+            <inVariable localId="27" height="25" width="60" negated="false">
               <position x="415" y="130"/>
               <connectionPointOut>
                 <relPosition x="60" y="10"/>
               </connectionPointOut>
               <expression>'MARS'</expression>
             </inVariable>
-            <inVariable localId="28" executionOrderId="0" height="25" width="85" negated="false">
+            <inVariable localId="28" height="25" width="85" negated="false">
               <position x="730" y="41"/>
               <connectionPointOut>
                 <relPosition x="85" y="10"/>
               </connectionPointOut>
               <expression>'NEPTUNE'</expression>
             </inVariable>
-            <inVariable localId="29" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="29" height="25" width="70" negated="false">
               <position x="745" y="135"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>
@@ -610,14 +610,14 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="25" width="90" negated="false">
+            <inVariable localId="1" height="25" width="90" negated="false">
               <position x="100" y="70"/>
               <connectionPointOut>
                 <relPosition x="90" y="10"/>
               </connectionPointOut>
               <expression>SOME_INPUT</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="25" width="100" negated="false">
+            <outVariable localId="2" height="25" width="100" negated="false">
               <position x="250" y="70"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -628,7 +628,7 @@ Use EN pin of MOVE to ensure that variable is only assigned when being reset.]]>
               </connectionPointIn>
               <expression>SOME_OUTPUT</expression>
             </outVariable>
-            <outVariable localId="4" executionOrderId="0" height="25" width="85" negated="false">
+            <outVariable localId="4" height="25" width="85" negated="false">
               <position x="250" y="105"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>

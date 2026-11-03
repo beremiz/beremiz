@@ -92,14 +92,14 @@ END_IF;
         </interface>
         <body>
           <FBD>
-            <inVariable localId="2" height="30" width="218" executionOrderId="0" negated="false">
+            <inVariable localId="2" height="30" width="218" negated="false">
               <position x="859" y="365"/>
               <connectionPointOut>
                 <relPosition x="218" y="15"/>
               </connectionPointOut>
               <expression>'C runtime log OK #'</expression>
             </inVariable>
-            <block localId="3" width="59" height="40" typeName="NOT" executionOrderId="0">
+            <block localId="3" width="59" height="40" typeName="NOT">
               <position x="241" y="287"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -121,7 +121,7 @@ END_IF;
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="4" height="30" width="60" executionOrderId="0" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="4" height="30" width="60" negatedOut="false" negatedIn="false">
               <position x="57" y="302"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -139,7 +139,7 @@ END_IF;
               </connectionPointOut>
               <expression>beat</expression>
             </inOutVariable>
-            <block localId="5" width="68" height="98" typeName="ADD" executionOrderId="0">
+            <block localId="5" width="68" height="98" typeName="ADD">
               <position x="463" y="403"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -171,7 +171,7 @@ END_IF;
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="6" height="30" width="103" executionOrderId="0" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="6" height="30" width="103" negatedOut="false" negatedIn="false">
               <position x="335" y="466"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -189,7 +189,7 @@ END_IF;
               </connectionPointOut>
               <expression>count</expression>
             </inOutVariable>
-            <block localId="8" width="67" height="144" typeName="CONCAT" executionOrderId="0">
+            <block localId="8" width="67" height="144" typeName="CONCAT">
               <position x="1127" y="329"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -220,7 +220,7 @@ END_IF;
                 </variable>
               </outputVariables>
             </block>
-            <block localId="9" width="119" height="40" typeName="INT_TO_STRING" executionOrderId="0">
+            <block localId="9" width="119" height="40" typeName="INT_TO_STRING">
               <position x="961" y="412"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -242,7 +242,7 @@ END_IF;
                 </variable>
               </outputVariables>
             </block>
-            <block localId="10" width="106" height="40" typeName="BOOL_TO_INT" executionOrderId="0">
+            <block localId="10" width="106" height="40" typeName="BOOL_TO_INT">
               <position x="333" y="412"/>
               <inputVariables>
                 <variable formalParameter="IN" edge="rising">
@@ -266,7 +266,7 @@ END_IF;
                 </variable>
               </outputVariables>
             </block>
-            <block localId="11" width="65" height="209" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0">
+            <block localId="11" width="65" height="209" typeName="LOGGER" instanceName="LOGGER0">
               <position x="1307" y="266"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -300,14 +300,14 @@ END_IF;
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="12" height="30" width="79" executionOrderId="0" negated="false">
+            <inVariable localId="12" height="30" width="79" negated="false">
               <position x="1201" y="428"/>
               <connectionPointOut>
                 <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>lvl</expression>
             </inVariable>
-            <block localId="14" typeName="TOF" instanceName="Timer" executionOrderId="0" height="98" width="47">
+            <block localId="14" typeName="TOF" instanceName="Timer" height="98" width="47">
               <position x="150" y="278"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -343,14 +343,14 @@ END_IF;
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="1" executionOrderId="0" height="30" width="61" negated="false">
+            <inVariable localId="1" height="30" width="61" negated="false">
               <position x="56" y="341"/>
               <connectionPointOut>
                 <relPosition x="61" y="15"/>
               </connectionPointOut>
               <expression>T#1s</expression>
             </inVariable>
-            <block localId="15" typeName="C_Pragma" instanceName="C_Pragma0" executionOrderId="0" width="74" height="60">
+            <block localId="15" typeName="C_Pragma" instanceName="C_Pragma0" width="74" height="60">
               <position x="594" y="336"/>
               <inputVariables>
                 <variable formalParameter="TRIG">

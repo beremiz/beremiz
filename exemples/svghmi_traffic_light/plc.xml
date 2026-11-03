@@ -352,7 +352,7 @@
           <transition name="STOP">
             <body>
               <FBD>
-                <block localId="42" width="59" height="53" typeName="NOT" executionOrderId="0">
+                <block localId="42" width="59" height="53" typeName="NOT">
                   <position x="237" y="31"/>
                   <inputVariables>
                     <variable formalParameter="IN">
@@ -374,14 +374,14 @@
                     </variable>
                   </outputVariables>
                 </block>
-                <inVariable localId="43" height="39" width="164" executionOrderId="0" negated="false">
+                <inVariable localId="43" height="39" width="164" negated="false">
                   <position x="38" y="48"/>
                   <connectionPointOut>
                     <relPosition x="164" y="19"/>
                   </connectionPointOut>
                   <expression>SWITCH_BUTTON</expression>
                 </inVariable>
-                <outVariable localId="44" height="40" width="46" executionOrderId="0" negated="false">
+                <outVariable localId="44" height="40" width="46" negated="false">
                   <position x="351" y="47"/>
                   <connectionPointIn>
                     <relPosition x="0" y="20"/>
@@ -1258,7 +1258,7 @@ See below examples of all these types.]]></xhtml:p>
         </interface>
         <body>
           <FBD>
-            <block localId="1" width="350" height="836" typeName="traffic_light_sequence" instanceName="trafic_light_sequence0" executionOrderId="0">
+            <block localId="1" width="350" height="836" typeName="traffic_light_sequence" instanceName="trafic_light_sequence0">
               <position x="494" y="462"/>
               <inputVariables>
                 <variable formalParameter="SWITCH_BUTTON">
@@ -1340,21 +1340,21 @@ This is the way how elements in SVG are bound to elements in PLC program.
 You can find out or edit these IDs in Inkscape.]]></xhtml:p>
               </content>
             </comment>
-            <inVariable localId="103" executionOrderId="0" height="24" width="106" negated="false">
+            <inVariable localId="103" height="24" width="106" negated="false">
               <position x="340" y="551"/>
               <connectionPointOut>
                 <relPosition x="106" y="12"/>
               </connectionPointOut>
               <expression>SwitchButton</expression>
             </inVariable>
-            <inVariable localId="104" executionOrderId="0" height="24" width="138" negated="false">
+            <inVariable localId="104" height="24" width="138" negated="false">
               <position x="300" y="714"/>
               <connectionPointOut>
                 <relPosition x="138" y="12"/>
               </connectionPointOut>
               <expression>PedestrianButton</expression>
             </inVariable>
-            <outVariable localId="105" executionOrderId="0" height="24" width="74" negated="false">
+            <outVariable localId="105" height="24" width="74" negated="false">
               <position x="891" y="551"/>
               <connectionPointIn>
                 <relPosition x="0" y="12"/>
@@ -1365,7 +1365,7 @@ You can find out or edit these IDs in Inkscape.]]></xhtml:p>
               </connectionPointIn>
               <expression>RedLight</expression>
             </outVariable>
-            <outVariable localId="106" executionOrderId="0" height="24" width="98" negated="false">
+            <outVariable localId="106" height="24" width="98" negated="false">
               <position x="880" y="714"/>
               <connectionPointIn>
                 <relPosition x="0" y="12"/>
@@ -1376,7 +1376,7 @@ You can find out or edit these IDs in Inkscape.]]></xhtml:p>
               </connectionPointIn>
               <expression>OrangeLight</expression>
             </outVariable>
-            <outVariable localId="107" executionOrderId="0" height="24" width="90" negated="false">
+            <outVariable localId="107" height="24" width="90" negated="false">
               <position x="881" y="877"/>
               <connectionPointIn>
                 <relPosition x="0" y="12"/>
@@ -1387,7 +1387,7 @@ You can find out or edit these IDs in Inkscape.]]></xhtml:p>
               </connectionPointIn>
               <expression>GreenLight</expression>
             </outVariable>
-            <outVariable localId="108" executionOrderId="0" height="24" width="154" negated="false">
+            <outVariable localId="108" height="24" width="154" negated="false">
               <position x="882" y="1040"/>
               <connectionPointIn>
                 <relPosition x="0" y="12"/>
@@ -1398,7 +1398,7 @@ You can find out or edit these IDs in Inkscape.]]></xhtml:p>
               </connectionPointIn>
               <expression>PedestrianRedLight</expression>
             </outVariable>
-            <outVariable localId="109" executionOrderId="0" height="24" width="170" negated="false">
+            <outVariable localId="109" height="24" width="170" negated="false">
               <position x="873" y="1203"/>
               <connectionPointIn>
                 <relPosition x="0" y="12"/>

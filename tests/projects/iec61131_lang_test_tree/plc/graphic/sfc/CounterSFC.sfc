@@ -24,7 +24,7 @@ FUNCTION_BLOCK CounterSFC
     OUT => AT (10, 2);
     CONDITION := Reset;
   END_TRANSITION
-  TRANSITION #4 (executionOrderId := 0) AT (60, 135) SIZE (20, 2)
+  TRANSITION #4 AT (60, 135) SIZE (20, 2)
     IN AT (10, 0) := #2 VIA (70, 135), (70, 87);
     OUT => AT (10, 2);
     CONDITION := NOT Reset;
@@ -39,12 +39,12 @@ FUNCTION_BLOCK CounterSFC
     ACTION (N) Cnt := ResetCounterValue; END_ACTION
     ACTION (N) OUT := Cnt; END_ACTION
   END_ACTION_BLOCK
-  STEP #7 (executionOrderId := 0) Count AT (28, 191) SIZE (85, 30)
+  STEP #7 Count AT (28, 191) SIZE (85, 30)
     IN AT (42, 0) := #4 VIA (70, 191), (70, 137);
     OUT => AT (42, 30);
     OUT_ACTION => AT (85, 15);
   END_STEP
-  ACTION_BLOCK #8 (executionOrderId := 0) AT (154, 191) SIZE (164, 52)
+  ACTION_BLOCK #8 AT (154, 191) SIZE (164, 52)
     IN AT (0, 15) := #7 VIA (154, 206), (113, 206);
     ACTION (N) Cnt := Cnt + 1; END_ACTION
     ACTION (N) OUT := Cnt; END_ACTION
@@ -57,12 +57,12 @@ FUNCTION_BLOCK CounterSFC
   JUMP_STEP #12 Start AT (280, 317) SIZE (12, 13)
     IN AT (6, 0) := #10 VIA (286, 317), (286, 274);
   END_JUMP_STEP
-  TRANSITION #13 (executionOrderId := 0) AT (60, 242) SIZE (20, 2)
+  TRANSITION #13 AT (60, 242) SIZE (20, 2)
     IN AT (10, 0) := #7 VIA (70, 242), (70, 215);
     OUT => AT (10, 2);
     CONDITION := Reset;
   END_TRANSITION
-  TRANSITION #14 (executionOrderId := 0) AT (491, 248) SIZE (20, 2)
+  TRANSITION #14 AT (491, 248) SIZE (20, 2)
     IN AT (10, 0) := #5 VIA (501, 248), (501, 220);
     OUT => AT (10, 2);
     CONDITION := NOT Reset;

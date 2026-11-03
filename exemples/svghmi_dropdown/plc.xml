@@ -84,7 +84,7 @@
         </interface>
         <body>
           <FBD>
-            <block localId="20" typeName="CONCAT" executionOrderId="0" width="67" height="82">
+            <block localId="20" typeName="CONCAT" width="67" height="82">
               <position x="1005" y="310"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -135,7 +135,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="3" executionOrderId="0" width="108" height="29" negated="false">
+            <outVariable localId="3" width="108" height="29" negated="false">
               <position x="1115" y="140"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -148,7 +148,7 @@
               </connectionPointIn>
               <expression>OPTIONS</expression>
             </outVariable>
-            <block localId="4" typeName="CONCAT" executionOrderId="0" width="67" height="82">
+            <block localId="4" typeName="CONCAT" width="67" height="82">
               <position x="840" y="125"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -197,21 +197,21 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="5" executionOrderId="0" width="124" height="29" negated="false">
+            <inVariable localId="5" width="124" height="29" negated="false">
               <position x="660" y="195"/>
               <connectionPointOut>
                 <relPosition x="124" y="15"/>
               </connectionPointOut>
               <expression>OPTIONS</expression>
             </inVariable>
-            <inVariable localId="6" executionOrderId="0" width="126" height="31" negated="false">
+            <inVariable localId="6" width="126" height="31" negated="false">
               <position x="655" y="240"/>
               <connectionPointOut>
                 <relPosition x="126" y="15"/>
               </connectionPointOut>
               <expression>':'</expression>
             </inVariable>
-            <block localId="21" typeName="ADD" executionOrderId="0" width="67" height="82">
+            <block localId="21" typeName="ADD" width="67" height="82">
               <position x="350" y="125"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -260,7 +260,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="22" typeName="INT_TO_STRING" executionOrderId="0" width="117" height="62">
+            <block localId="22" typeName="INT_TO_STRING" width="117" height="62">
               <position x="510" y="125"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -296,21 +296,21 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="1" executionOrderId="0" width="124" height="29" negated="false">
+            <inVariable localId="1" width="124" height="29" negated="false">
               <position x="160" y="160"/>
               <connectionPointOut>
                 <relPosition x="124" y="15"/>
               </connectionPointOut>
               <expression>NEW_VAL</expression>
             </inVariable>
-            <inVariable localId="2" executionOrderId="0" width="128" height="33" negated="false">
+            <inVariable localId="2" width="128" height="33" negated="false">
               <position x="160" y="200"/>
               <connectionPointOut>
                 <relPosition x="128" y="15"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <outVariable localId="7" executionOrderId="0" width="126" height="31" negated="false">
+            <outVariable localId="7" width="126" height="31" negated="false">
               <position x="475" y="205"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -323,14 +323,14 @@
               </connectionPointIn>
               <expression>NEW_VAL</expression>
             </outVariable>
-            <inVariable localId="8" executionOrderId="0" width="124" height="29" negated="false">
+            <inVariable localId="8" width="124" height="29" negated="false">
               <position x="20" y="110"/>
               <connectionPointOut>
                 <relPosition x="124" y="15"/>
               </connectionPointOut>
               <expression>ADD_BTN</expression>
             </inVariable>
-            <block localId="23" typeName="R_TRIG" instanceName="R_TRIG0" executionOrderId="0" width="60" height="40">
+            <block localId="23" typeName="R_TRIG" instanceName="R_TRIG0" width="60" height="40">
               <position x="220" y="95"/>
               <inputVariables>
                 <variable formalParameter="CLK">

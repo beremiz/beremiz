@@ -112,7 +112,7 @@
         </interface>
         <body>
           <FBD>
-            <block localId="1" typeName="csv_read_by_string" instanceName="csv_read_by_string0" executionOrderId="0" height="100" width="154">
+            <block localId="1" typeName="csv_read_by_string" instanceName="csv_read_by_string0" height="100" width="154">
               <position x="450" y="170"/>
               <inputVariables>
                 <variable formalParameter="FILE_NAME">
@@ -157,7 +157,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="2" typeName="csv_read_by_int" instanceName="csv_read_by_int0" executionOrderId="0" height="100" width="155">
+            <block localId="2" typeName="csv_read_by_int" instanceName="csv_read_by_int0" height="100" width="155">
               <position x="450" y="40"/>
               <inputVariables>
                 <variable formalParameter="FILE_NAME">
@@ -202,7 +202,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="3" typeName="csv_reload" instanceName="csv_reload0" executionOrderId="0" height="60" width="135">
+            <block localId="3" typeName="csv_reload" instanceName="csv_reload0" height="60" width="135">
               <position x="470" y="334"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -229,49 +229,49 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="4" executionOrderId="0" height="30" width="110" negated="false">
+            <inVariable localId="4" height="30" width="110" negated="false">
               <position x="280" y="60"/>
               <connectionPointOut>
                 <relPosition x="110" y="15"/>
               </connectionPointOut>
               <expression>CSV_NAME_0</expression>
             </inVariable>
-            <inVariable localId="5" executionOrderId="0" height="25" width="110" negated="false">
+            <inVariable localId="5" height="25" width="110" negated="false">
               <position x="280" y="90"/>
               <connectionPointOut>
                 <relPosition x="110" y="10"/>
               </connectionPointOut>
               <expression>CSV_ROWIDX</expression>
             </inVariable>
-            <inVariable localId="6" executionOrderId="0" height="25" width="110" negated="false">
+            <inVariable localId="6" height="25" width="110" negated="false">
               <position x="280" y="115"/>
               <connectionPointOut>
                 <relPosition x="110" y="10"/>
               </connectionPointOut>
               <expression>CSV_COLIDX</expression>
             </inVariable>
-            <inVariable localId="7" executionOrderId="0" height="30" width="110" negated="false">
+            <inVariable localId="7" height="30" width="110" negated="false">
               <position x="280" y="190"/>
               <connectionPointOut>
                 <relPosition x="110" y="15"/>
               </connectionPointOut>
               <expression>CSV_NAME_1</expression>
             </inVariable>
-            <inVariable localId="8" executionOrderId="0" height="25" width="110" negated="false">
+            <inVariable localId="8" height="25" width="110" negated="false">
               <position x="280" y="220"/>
               <connectionPointOut>
                 <relPosition x="110" y="10"/>
               </connectionPointOut>
               <expression>CSV_ROWSTR</expression>
             </inVariable>
-            <inVariable localId="9" executionOrderId="0" height="25" width="110" negated="false">
+            <inVariable localId="9" height="25" width="110" negated="false">
               <position x="280" y="245"/>
               <connectionPointOut>
                 <relPosition x="110" y="10"/>
               </connectionPointOut>
               <expression>CSV_COLSTR</expression>
             </inVariable>
-            <outVariable localId="10" executionOrderId="0" height="25" width="82" negated="false">
+            <outVariable localId="10" height="25" width="82" negated="false">
               <position x="645" y="90"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -282,7 +282,7 @@
               </connectionPointIn>
               <expression>CSV_RES_0</expression>
             </outVariable>
-            <outVariable localId="11" executionOrderId="0" height="25" width="82" negated="false">
+            <outVariable localId="11" height="25" width="82" negated="false">
               <position x="645" y="65"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -293,7 +293,7 @@
               </connectionPointIn>
               <expression>CSV_ACK_0</expression>
             </outVariable>
-            <outVariable localId="12" executionOrderId="0" height="25" width="82" negated="false">
+            <outVariable localId="12" height="25" width="82" negated="false">
               <position x="645" y="195"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -304,7 +304,7 @@
               </connectionPointIn>
               <expression>CSV_ACK_1</expression>
             </outVariable>
-            <outVariable localId="13" executionOrderId="0" height="25" width="82" negated="false">
+            <outVariable localId="13" height="25" width="82" negated="false">
               <position x="645" y="220"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -315,7 +315,7 @@
               </connectionPointIn>
               <expression>CSV_RES_1</expression>
             </outVariable>
-            <inVariable localId="14" executionOrderId="0" height="25" width="125" negated="false">
+            <inVariable localId="14" height="25" width="125" negated="false">
               <position x="300" y="355"/>
               <connectionPointOut>
                 <relPosition x="125" y="10"/>

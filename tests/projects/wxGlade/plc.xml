@@ -40,7 +40,7 @@
         </interface>
         <body>
           <FBD>
-            <block localId="24" width="125" height="90" typeName="python_poll" instanceName="getCheckBoxState" executionOrderId="0">
+            <block localId="24" width="125" height="90" typeName="python_poll" instanceName="getCheckBoxState">
               <position x="480" y="215"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -76,35 +76,35 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="25" height="30" width="100" executionOrderId="0" negated="false">
+            <inVariable localId="25" height="30" width="100" negated="false">
               <position x="320" y="235"/>
               <connectionPointOut>
                 <relPosition x="100" y="15"/>
               </connectionPointOut>
               <expression>BOOL#TRUE</expression>
             </inVariable>
-            <inVariable localId="26" height="30" width="400" executionOrderId="0" negated="false">
+            <inVariable localId="26" height="30" width="400" negated="false">
               <position x="20" y="270"/>
               <connectionPointOut>
                 <relPosition x="400" y="15"/>
               </connectionPointOut>
               <expression>'int(HMIFrame.checkbox_1.GetValue())'</expression>
             </inVariable>
-            <inVariable localId="27" height="30" width="40" executionOrderId="0" negated="false">
+            <inVariable localId="27" height="30" width="40" negated="false">
               <position x="535" y="505"/>
               <connectionPointOut>
                 <relPosition x="40" y="15"/>
               </connectionPointOut>
               <expression>')'</expression>
             </inVariable>
-            <inVariable localId="28" height="30" width="330" executionOrderId="0" negated="false">
+            <inVariable localId="28" height="30" width="330" negated="false">
               <position x="150" y="415"/>
               <connectionPointOut>
                 <relPosition x="330" y="15"/>
               </connectionPointOut>
               <expression>'HMIFrame.spin_ctrl_1.SetValue('</expression>
             </inVariable>
-            <block localId="30" width="145" height="85" typeName="STRING_TO_INT" executionOrderId="0">
+            <block localId="30" width="145" height="85" typeName="STRING_TO_INT">
               <position x="670" y="215"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -140,7 +140,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="32" width="80" height="80" typeName="ADD" executionOrderId="0">
+            <block localId="32" width="80" height="80" typeName="ADD">
               <position x="135" y="450"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -193,7 +193,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="34" width="80" height="100" typeName="CONCAT" executionOrderId="0">
+            <block localId="34" width="80" height="100" typeName="CONCAT">
               <position x="605" y="430"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -251,7 +251,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="33" height="35" width="85" executionOrderId="0" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="33" height="35" width="85" negatedOut="false" negatedIn="false">
               <position x="235" y="485"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -265,7 +265,7 @@
               </connectionPointOut>
               <expression>counter</expression>
             </inOutVariable>
-            <block localId="35" width="145" height="60" typeName="INT_TO_STRING" executionOrderId="0">
+            <block localId="35" width="145" height="60" typeName="INT_TO_STRING">
               <position x="355" y="450"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -301,7 +301,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="36" width="125" height="90" typeName="python_poll" instanceName="setSpinCtrlValue" executionOrderId="0">
+            <block localId="36" width="125" height="90" typeName="python_poll" instanceName="setSpinCtrlValue">
               <position x="735" y="425"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -339,7 +339,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="37" width="125" height="45" typeName="INT_TO_BOOL" executionOrderId="0">
+            <block localId="37" width="125" height="45" typeName="INT_TO_BOOL">
               <position x="870" y="255"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -361,7 +361,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="38" width="80" height="95" typeName="AND" executionOrderId="0">
+            <block localId="38" width="80" height="95" typeName="AND">
               <position x="1050" y="210"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -392,7 +392,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="39" height="30" width="60" executionOrderId="0" negated="false">
+            <inVariable localId="39" height="30" width="60" negated="false">
               <position x="30" y="485"/>
               <connectionPointOut>
                 <relPosition x="60" y="15"/>

@@ -50,14 +50,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="25" width="85" negated="false">
+            <inVariable localId="1" height="25" width="85" negated="false">
               <position x="160" y="190"/>
               <connectionPointOut>
                 <relPosition x="85" y="10"/>
               </connectionPointOut>
               <expression>LocalVar0</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="24" width="82" negated="false">
+            <outVariable localId="2" height="24" width="82" negated="false">
               <position x="238" y="49"/>
               <connectionPointIn>
                 <relPosition x="0" y="11"/>
@@ -68,7 +68,7 @@
               </connectionPointIn>
               <expression>LocalVar1</expression>
             </outVariable>
-            <block localId="5" typeName="LREAL_TO_STRING" executionOrderId="0" height="40" width="130">
+            <block localId="5" typeName="LREAL_TO_STRING" height="40" width="130">
               <position x="280" y="170"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -90,14 +90,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="9" executionOrderId="0" height="29" width="45" negated="false">
+            <inVariable localId="9" height="29" width="45" negated="false">
               <position x="159" y="47"/>
               <connectionPointOut>
                 <relPosition x="45" y="13"/>
               </connectionPointOut>
               <expression>3.4</expression>
             </inVariable>
-            <block localId="10" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0" width="50" height="80">
+            <block localId="10" typeName="LOGGER" instanceName="LOGGER0" width="50" height="80">
               <position x="510" y="150"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -129,7 +129,7 @@
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inOutVariable localId="11" executionOrderId="0" width="35" height="25" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="11" width="35" height="25" negatedOut="false" negatedIn="false">
               <position x="340" y="125"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -147,7 +147,7 @@
               </connectionPointOut>
               <expression>trig</expression>
             </inOutVariable>
-            <block localId="12" typeName="NOT" executionOrderId="0" width="50" height="40">
+            <block localId="12" typeName="NOT" width="50" height="40">
               <position x="425" y="105"/>
               <inputVariables>
                 <variable formalParameter="IN">

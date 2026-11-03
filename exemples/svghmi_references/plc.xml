@@ -34,14 +34,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="31" executionOrderId="0" height="25" width="85" negated="false">
+            <inVariable localId="31" height="25" width="85" negated="false">
               <position x="175" y="290"/>
               <connectionPointOut>
                 <relPosition x="85" y="10"/>
               </connectionPointOut>
               <expression>PLCHMIVAR</expression>
             </inVariable>
-            <outVariable localId="30" executionOrderId="0" height="25" width="85" negated="false">
+            <outVariable localId="30" height="25" width="85" negated="false">
               <position x="330" y="290"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>

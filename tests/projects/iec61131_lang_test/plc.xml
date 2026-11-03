@@ -233,7 +233,7 @@
         </interface>
         <body>
           <FBD>
-            <block localId="1" typeName="CounterST" instanceName="CounterST0" executionOrderId="0" height="60" width="125">
+            <block localId="1" typeName="CounterST" instanceName="CounterST0" height="60" width="125">
               <position x="207" y="53"/>
               <inputVariables>
                 <variable formalParameter="Reset">
@@ -255,14 +255,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="2" executionOrderId="0" height="30" width="79" negated="false">
+            <inVariable localId="2" height="30" width="79" negated="false">
               <position x="35" y="78"/>
               <connectionPointOut>
                 <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <block localId="4" typeName="CounterFBD" instanceName="CounterFBD0" executionOrderId="0" height="54" width="121">
+            <block localId="4" typeName="CounterFBD" instanceName="CounterFBD0" height="54" width="121">
               <position x="211" y="146"/>
               <inputVariables>
                 <variable formalParameter="Reset">
@@ -305,7 +305,7 @@ If reset is False, counter is incremented every cycle.
 ]]></xhtml:p>
               </content>
             </comment>
-            <block localId="7" typeName="CounterSFC" instanceName="CounterSFC0" executionOrderId="0" height="52" width="121">
+            <block localId="7" typeName="CounterSFC" instanceName="CounterSFC0" height="52" width="121">
               <position x="211" y="237"/>
               <inputVariables>
                 <variable formalParameter="Reset">
@@ -327,7 +327,7 @@ If reset is False, counter is incremented every cycle.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="9" typeName="CounterIL" instanceName="CounterIL0" executionOrderId="0" height="62" width="121">
+            <block localId="9" typeName="CounterIL" instanceName="CounterIL0" height="62" width="121">
               <position x="211" y="322"/>
               <inputVariables>
                 <variable formalParameter="Reset">
@@ -349,28 +349,28 @@ If reset is False, counter is incremented every cycle.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="10" executionOrderId="0" height="30" width="67" negated="false">
+            <inVariable localId="10" height="30" width="67" negated="false">
               <position x="34" y="348"/>
               <connectionPointOut>
                 <relPosition x="67" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <inVariable localId="12" executionOrderId="0" height="30" width="67" negated="false">
+            <inVariable localId="12" height="30" width="67" negated="false">
               <position x="36" y="258"/>
               <connectionPointOut>
                 <relPosition x="67" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <inVariable localId="13" executionOrderId="0" height="30" width="79" negated="false">
+            <inVariable localId="13" height="30" width="79" negated="false">
               <position x="36" y="168"/>
               <connectionPointOut>
                 <relPosition x="79" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <block localId="14" typeName="CounterLD" instanceName="CounterLD0" executionOrderId="0" height="62" width="124">
+            <block localId="14" typeName="CounterLD" instanceName="CounterLD0" height="62" width="124">
               <position x="210" y="412"/>
               <inputVariables>
                 <variable formalParameter="Reset">
@@ -392,14 +392,14 @@ If reset is False, counter is incremented every cycle.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="16" executionOrderId="0" height="30" width="64" negated="false">
+            <inVariable localId="16" height="30" width="64" negated="false">
               <position x="36" y="438"/>
               <connectionPointOut>
                 <relPosition x="64" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <block localId="17" typeName="AverageVal" executionOrderId="0" height="470" width="100">
+            <block localId="17" typeName="AverageVal" height="470" width="100">
               <position x="514" y="28"/>
               <inputVariables>
                 <variable formalParameter="Cnt1">
@@ -457,7 +457,7 @@ If reset is False, counter is incremented every cycle.
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="3" executionOrderId="0" height="30" width="106" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="3" height="30" width="106" negatedOut="false" negatedIn="false">
               <position x="368" y="78"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -471,7 +471,7 @@ If reset is False, counter is incremented every cycle.
               </connectionPointOut>
               <expression>Cnt1</expression>
             </inOutVariable>
-            <inOutVariable localId="5" executionOrderId="0" height="30" width="103" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="5" height="30" width="103" negatedOut="false" negatedIn="false">
               <position x="370" y="168"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -485,7 +485,7 @@ If reset is False, counter is incremented every cycle.
               </connectionPointOut>
               <expression>Cnt2</expression>
             </inOutVariable>
-            <inOutVariable localId="8" executionOrderId="0" height="30" width="97" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="8" height="30" width="97" negatedOut="false" negatedIn="false">
               <position x="375" y="258"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -499,7 +499,7 @@ If reset is False, counter is incremented every cycle.
               </connectionPointOut>
               <expression>Cnt3</expression>
             </inOutVariable>
-            <inOutVariable localId="11" executionOrderId="0" height="30" width="91" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="11" height="30" width="91" negatedOut="false" negatedIn="false">
               <position x="378" y="348"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -513,7 +513,7 @@ If reset is False, counter is incremented every cycle.
               </connectionPointOut>
               <expression>Cnt4</expression>
             </inOutVariable>
-            <inOutVariable localId="15" executionOrderId="0" height="30" width="88" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="15" height="30" width="88" negatedOut="false" negatedIn="false">
               <position x="381" y="438"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -527,7 +527,7 @@ If reset is False, counter is incremented every cycle.
               </connectionPointOut>
               <expression>Cnt5</expression>
             </inOutVariable>
-            <outVariable localId="19" executionOrderId="0" width="94" height="23" negated="false">
+            <outVariable localId="19" width="94" height="23" negated="false">
               <position x="878" y="82"/>
               <connectionPointIn>
                 <relPosition x="0" y="11"/>
@@ -538,7 +538,7 @@ If reset is False, counter is incremented every cycle.
               </connectionPointIn>
               <expression>ResourceGlobal</expression>
             </outVariable>
-            <block localId="20" typeName="REAL_TO_DINT" executionOrderId="0" width="82" height="40">
+            <block localId="20" typeName="REAL_TO_DINT" width="82" height="40">
               <position x="753" y="63"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -560,7 +560,7 @@ If reset is False, counter is incremented every cycle.
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="18" executionOrderId="0" width="55" height="30" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="18" width="55" height="30" negatedOut="false" negatedIn="false">
               <position x="649" y="78"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -574,14 +574,14 @@ If reset is False, counter is incremented every cycle.
               </connectionPointOut>
               <expression>AVCnt</expression>
             </inOutVariable>
-            <inVariable localId="22" executionOrderId="0" width="124" height="23" negated="false">
+            <inVariable localId="22" width="124" height="23" negated="false">
               <position x="1052" y="35"/>
               <connectionPointOut>
                 <relPosition x="124" y="11"/>
               </connectionPointOut>
               <expression>local_complex.a_var</expression>
             </inVariable>
-            <outVariable localId="21" executionOrderId="0" width="190" height="23" negated="false">
+            <outVariable localId="21" width="190" height="23" negated="false">
               <position x="1247" y="38"/>
               <connectionPointIn>
                 <relPosition x="0" y="11"/>
@@ -594,14 +594,14 @@ If reset is False, counter is incremented every cycle.
               </connectionPointIn>
               <expression>local_complex.a_typed_array[1]</expression>
             </outVariable>
-            <inVariable localId="24" executionOrderId="0" width="190" height="23" negated="false">
+            <inVariable localId="24" width="190" height="23" negated="false">
               <position x="995" y="83"/>
               <connectionPointOut>
                 <relPosition x="190" y="11"/>
               </connectionPointOut>
               <expression>local_complex.a_typed_array[2]</expression>
             </inVariable>
-            <outVariable localId="23" executionOrderId="0" width="256" height="23" negated="false">
+            <outVariable localId="23" width="256" height="23" negated="false">
               <position x="1232" y="83"/>
               <connectionPointIn>
                 <relPosition x="0" y="11"/>
@@ -691,14 +691,14 @@ Out := Cnt;]]></xhtml:p>
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="30" width="61" negated="false">
+            <inVariable localId="1" height="30" width="61" negated="false">
               <position x="321" y="58"/>
               <connectionPointOut>
                 <relPosition x="61" y="15"/>
               </connectionPointOut>
               <expression>Reset</expression>
             </inVariable>
-            <outVariable localId="2" executionOrderId="0" height="30" width="39" negated="false">
+            <outVariable localId="2" height="30" width="39" negated="false">
               <position x="675" y="137"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -709,7 +709,7 @@ Out := Cnt;]]></xhtml:p>
               </connectionPointIn>
               <expression>OUT</expression>
             </outVariable>
-            <inOutVariable localId="3" executionOrderId="0" height="30" width="37" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="3" height="30" width="37" negatedOut="false" negatedIn="false">
               <position x="557" y="137"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -725,7 +725,7 @@ Out := Cnt;]]></xhtml:p>
               </connectionPointOut>
               <expression>Cnt</expression>
             </inOutVariable>
-            <block localId="4" typeName="ADD" executionOrderId="0" height="80" width="69">
+            <block localId="4" typeName="ADD" height="80" width="69">
               <position x="328" y="115"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -760,21 +760,21 @@ Out := Cnt;]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="5" executionOrderId="0" height="30" width="163" negated="false">
+            <inVariable localId="5" height="30" width="163" negated="false">
               <position x="222" y="256"/>
               <connectionPointOut>
                 <relPosition x="163" y="15"/>
               </connectionPointOut>
               <expression>ResetCounterValue</expression>
             </inVariable>
-            <inVariable localId="6" executionOrderId="0" height="30" width="21" negated="false">
+            <inVariable localId="6" height="30" width="21" negated="false">
               <position x="254" y="135"/>
               <connectionPointOut>
                 <relPosition x="21" y="15"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <block localId="7" typeName="SEL" executionOrderId="0" height="80" width="69">
+            <block localId="7" typeName="SEL" height="80" width="69">
               <position x="448" y="100"/>
               <inputVariables>
                 <variable formalParameter="G">
@@ -897,7 +897,7 @@ Out := Cnt;]]></xhtml:p>
                 </inline>
               </condition>
             </transition>
-            <transition localId="4" height="2" width="20" executionOrderId="0">
+            <transition localId="4" height="2" width="20">
               <position x="60" y="135"/>
               <connectionPointIn>
                 <relPosition x="10" y="0"/>
@@ -959,7 +959,7 @@ Out := Cnt;]]></xhtml:p>
                 </inline>
               </action>
             </actionBlock>
-            <step localId="7" name="Count" initialStep="false" height="30" width="85" executionOrderId="0">
+            <step localId="7" name="Count" initialStep="false" height="30" width="85">
               <position x="28" y="191"/>
               <connectionPointIn>
                 <relPosition x="42" y="0"/>
@@ -975,7 +975,7 @@ Out := Cnt;]]></xhtml:p>
                 <relPosition x="85" y="15"/>
               </connectionPointOutAction>
             </step>
-            <actionBlock localId="8" height="52" width="164" executionOrderId="0">
+            <actionBlock localId="8" height="52" width="164">
               <position x="154" y="191"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1031,7 +1031,7 @@ Out := Cnt;]]></xhtml:p>
                 </connection>
               </connectionPointIn>
             </jumpStep>
-            <transition localId="13" height="2" width="20" executionOrderId="0">
+            <transition localId="13" height="2" width="20">
               <position x="60" y="242"/>
               <connectionPointIn>
                 <relPosition x="10" y="0"/>
@@ -1051,7 +1051,7 @@ Out := Cnt;]]></xhtml:p>
                 </inline>
               </condition>
             </transition>
-            <transition localId="14" height="2" width="20" executionOrderId="0">
+            <transition localId="14" height="2" width="20">
               <position x="491" y="248"/>
               <connectionPointIn>
                 <relPosition x="10" y="0"/>
@@ -1160,7 +1160,7 @@ ST Out
         </interface>
         <body>
           <LD>
-            <outVariable localId="2" executionOrderId="0" height="30" width="34" negated="false">
+            <outVariable localId="2" height="30" width="34" negated="false">
               <position x="527" y="87"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1171,7 +1171,7 @@ ST Out
               </connectionPointIn>
               <expression>Out</expression>
             </outVariable>
-            <inOutVariable localId="3" executionOrderId="0" height="30" width="34" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="3" height="30" width="34" negatedOut="false" negatedIn="false">
               <position x="409" y="87"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1185,7 +1185,7 @@ ST Out
               </connectionPointOut>
               <expression>Cnt</expression>
             </inOutVariable>
-            <block localId="4" typeName="ADD" executionOrderId="0" height="80" width="67">
+            <block localId="4" typeName="ADD" height="80" width="67">
               <position x="180" y="87"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -1220,21 +1220,21 @@ ST Out
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="5" executionOrderId="0" height="30" width="158" negated="false">
+            <inVariable localId="5" height="30" width="158" negated="false">
               <position x="74" y="228"/>
               <connectionPointOut>
                 <relPosition x="158" y="15"/>
               </connectionPointOut>
               <expression>ResetCounterValue</expression>
             </inVariable>
-            <inVariable localId="6" executionOrderId="0" height="30" width="21" negated="false">
+            <inVariable localId="6" height="30" width="21" negated="false">
               <position x="106" y="107"/>
               <connectionPointOut>
                 <relPosition x="21" y="15"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <block localId="7" typeName="SEL" executionOrderId="0" height="80" width="67">
+            <block localId="7" typeName="SEL" height="80" width="67">
               <position x="300" y="72"/>
               <inputVariables>
                 <variable formalParameter="G">
@@ -2531,7 +2531,7 @@ RESULT := 'OK';
         </interface>
         <body>
           <FBD>
-            <block localId="4" typeName="CONVERSION_TEST" instanceName="CONVERSION_TEST0" executionOrderId="0" height="72" width="136">
+            <block localId="4" typeName="CONVERSION_TEST" instanceName="CONVERSION_TEST0" height="72" width="136">
               <position x="320" y="280"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -2558,7 +2558,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="5" typeName="R_TRIG" instanceName="R_TRIG0" executionOrderId="0" height="48" width="64">
+            <block localId="5" typeName="R_TRIG" instanceName="R_TRIG0" height="48" width="64">
               <position x="200" y="280"/>
               <inputVariables>
                 <variable formalParameter="CLK">
@@ -2580,14 +2580,14 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="6" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="6" height="32" width="48" negated="false">
               <position x="120" y="296"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
               </connectionPointOut>
               <expression>TRUE</expression>
             </inVariable>
-            <block localId="8" typeName="LOGGER" instanceName="LOGGER0" executionOrderId="0" height="112" width="64">
+            <block localId="8" typeName="LOGGER" instanceName="LOGGER0" height="112" width="64">
               <position x="848" y="304"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -2623,21 +2623,21 @@ RESULT := 'OK';
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="9" executionOrderId="0" height="32" width="128" negated="false">
+            <inVariable localId="9" height="32" width="128" negated="false">
               <position x="512" y="352"/>
               <connectionPointOut>
                 <relPosition x="128" y="16"/>
               </connectionPointOut>
               <expression>'CONVERSION: '</expression>
             </inVariable>
-            <inVariable localId="10" executionOrderId="0" height="32" width="56" negated="false">
+            <inVariable localId="10" height="32" width="56" negated="false">
               <position x="760" y="384"/>
               <connectionPointOut>
                 <relPosition x="56" y="16"/>
               </connectionPointOut>
               <expression>DEBUG</expression>
             </inVariable>
-            <block localId="11" typeName="CONCAT" executionOrderId="0" height="64" width="64">
+            <block localId="11" typeName="CONCAT" height="64" width="64">
               <position x="672" y="336"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2682,7 +2682,7 @@ RESULT := 'OK';
                 <xhtml:p><![CDATA[Log when just executed]]></xhtml:p>
               </content>
             </comment>
-            <block localId="13" typeName="TEMPO_TEST" instanceName="TEMPO_TEST0" executionOrderId="0" height="64" width="96">
+            <block localId="13" typeName="TEMPO_TEST" instanceName="TEMPO_TEST0" height="64" width="96">
               <position x="336" y="600"/>
               <inputVariables>
                 <variable formalParameter="RUN">
@@ -2709,7 +2709,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="2" typeName="LOGGER" instanceName="LOGGER1" executionOrderId="0" height="112" width="64">
+            <block localId="2" typeName="LOGGER" instanceName="LOGGER1" height="112" width="64">
               <position x="824" y="624"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -2745,21 +2745,21 @@ RESULT := 'OK';
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="3" executionOrderId="0" height="32" width="128" negated="false">
+            <inVariable localId="3" height="32" width="128" negated="false">
               <position x="488" y="672"/>
               <connectionPointOut>
                 <relPosition x="128" y="16"/>
               </connectionPointOut>
               <expression>'TEMPO: '</expression>
             </inVariable>
-            <inVariable localId="7" executionOrderId="0" height="32" width="56" negated="false">
+            <inVariable localId="7" height="32" width="56" negated="false">
               <position x="736" y="704"/>
               <connectionPointOut>
                 <relPosition x="56" y="16"/>
               </connectionPointOut>
               <expression>DEBUG</expression>
             </inVariable>
-            <block localId="14" typeName="CONCAT" executionOrderId="0" height="64" width="64">
+            <block localId="14" typeName="CONCAT" height="64" width="64">
               <position x="648" y="656"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2798,14 +2798,14 @@ RESULT := 'OK';
                 <xhtml:p><![CDATA[Log when valid]]></xhtml:p>
               </content>
             </comment>
-            <inVariable localId="16" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="16" height="32" width="48" negated="false">
               <position x="200" y="616"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
               </connectionPointOut>
               <expression>TRUE</expression>
             </inVariable>
-            <block localId="17" typeName="AND" executionOrderId="0" height="64" width="64">
+            <block localId="17" typeName="AND" height="64" width="64">
               <position x="1016" y="568"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2840,7 +2840,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="18" typeName="EQ" executionOrderId="0" height="64" width="64">
+            <block localId="18" typeName="EQ" height="64" width="64">
               <position x="912" y="720"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2873,14 +2873,14 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="19" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="19" height="32" width="48" negated="false">
               <position x="816" y="760"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
               </connectionPointOut>
               <expression>'OK'</expression>
             </inVariable>
-            <block localId="20" typeName="SR" instanceName="SR0" executionOrderId="0" height="64" width="48">
+            <block localId="20" typeName="SR" instanceName="SR0" height="64" width="48">
               <position x="1120" y="568"/>
               <inputVariables>
                 <variable formalParameter="S1">
@@ -2907,7 +2907,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="21" typeName="AND" executionOrderId="0" height="96" width="64">
+            <block localId="21" typeName="AND" height="96" width="64">
               <position x="1296" y="496"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2964,7 +2964,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="22" typeName="AND" executionOrderId="0" height="64" width="64">
+            <block localId="22" typeName="AND" height="64" width="64">
               <position x="1040" y="240"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -2999,7 +2999,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="23" typeName="SR" instanceName="SR1" executionOrderId="0" height="64" width="48">
+            <block localId="23" typeName="SR" instanceName="SR1" height="64" width="48">
               <position x="1144" y="240"/>
               <inputVariables>
                 <variable formalParameter="S1">
@@ -3026,7 +3026,7 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <block localId="24" typeName="EQ" executionOrderId="0" height="64" width="64">
+            <block localId="24" typeName="EQ" height="64" width="64">
               <position x="936" y="392"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -3059,21 +3059,21 @@ RESULT := 'OK';
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="25" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="25" height="32" width="48" negated="false">
               <position x="840" y="432"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
               </connectionPointOut>
               <expression>'OK'</expression>
             </inVariable>
-            <inVariable localId="26" executionOrderId="0" height="32" width="56" negated="false">
+            <inVariable localId="26" height="32" width="56" negated="false">
               <position x="1464" y="576"/>
               <connectionPointOut>
                 <relPosition x="56" y="16"/>
               </connectionPointOut>
               <expression>DEBUG</expression>
             </inVariable>
-            <block localId="27" typeName="LOGGER" instanceName="LOGGER2" executionOrderId="0" height="112" width="64">
+            <block localId="27" typeName="LOGGER" instanceName="LOGGER2" height="112" width="64">
               <position x="1552" y="496"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -3107,7 +3107,7 @@ RESULT := 'OK';
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inVariable localId="28" executionOrderId="0" height="32" width="128" negated="false">
+            <inVariable localId="28" height="32" width="128" negated="false">
               <position x="1384" y="544"/>
               <connectionPointOut>
                 <relPosition x="128" y="16"/>
@@ -3124,7 +3124,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
 - time is emulated]]></xhtml:p>
               </content>
             </comment>
-            <block localId="30" typeName="FLOW_CONTROL_TEST" instanceName="FLOW_CONTROL_TEST0" executionOrderId="0" height="72" width="152">
+            <block localId="30" typeName="FLOW_CONTROL_TEST" instanceName="FLOW_CONTROL_TEST0" height="72" width="152">
               <position x="392" y="928"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -3151,7 +3151,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="31" typeName="R_TRIG" instanceName="R_TRIG1" executionOrderId="0" height="48" width="64">
+            <block localId="31" typeName="R_TRIG" instanceName="R_TRIG1" height="48" width="64">
               <position x="272" y="928"/>
               <inputVariables>
                 <variable formalParameter="CLK">
@@ -3173,14 +3173,14 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="32" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="32" height="32" width="48" negated="false">
               <position x="192" y="944"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
               </connectionPointOut>
               <expression>TRUE</expression>
             </inVariable>
-            <block localId="33" typeName="LOGGER" instanceName="LOGGER3" executionOrderId="0" height="112" width="64">
+            <block localId="33" typeName="LOGGER" instanceName="LOGGER3" height="112" width="64">
               <position x="920" y="952"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -3216,7 +3216,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <block localId="34" typeName="CONCAT" executionOrderId="0" height="64" width="64">
+            <block localId="34" typeName="CONCAT" height="64" width="64">
               <position x="744" y="984"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -3249,21 +3249,21 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="35" executionOrderId="0" height="32" width="144" negated="false">
+            <inVariable localId="35" height="32" width="144" negated="false">
               <position x="584" y="1000"/>
               <connectionPointOut>
                 <relPosition x="144" y="16"/>
               </connectionPointOut>
               <expression>'FLOW CONTROL: '</expression>
             </inVariable>
-            <inVariable localId="36" executionOrderId="0" height="32" width="56" negated="false">
+            <inVariable localId="36" height="32" width="56" negated="false">
               <position x="832" y="1032"/>
               <connectionPointOut>
                 <relPosition x="56" y="16"/>
               </connectionPointOut>
               <expression>DEBUG</expression>
             </inVariable>
-            <block localId="37" typeName="SR" instanceName="SR2" executionOrderId="0" height="64" width="48">
+            <block localId="37" typeName="SR" instanceName="SR2" height="64" width="48">
               <position x="1216" y="888"/>
               <inputVariables>
                 <variable formalParameter="S1">
@@ -3290,7 +3290,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="38" typeName="AND" executionOrderId="0" height="64" width="64">
+            <block localId="38" typeName="AND" height="64" width="64">
               <position x="1112" y="888"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -3325,7 +3325,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="39" typeName="EQ" executionOrderId="0" height="64" width="64">
+            <block localId="39" typeName="EQ" height="64" width="64">
               <position x="1008" y="1040"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -3358,7 +3358,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="40" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="40" height="32" width="48" negated="false">
               <position x="912" y="1080"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
@@ -3377,7 +3377,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 <xhtml:p><![CDATA[Log when just executed]]></xhtml:p>
               </content>
             </comment>
-            <block localId="43" typeName="LD_BRANCH_TEST" instanceName="LD_BRANCH_TEST0" executionOrderId="0" height="72" width="152">
+            <block localId="43" typeName="LD_BRANCH_TEST" instanceName="LD_BRANCH_TEST0" height="72" width="152">
               <position x="392" y="1168"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -3404,14 +3404,14 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="44" executionOrderId="0" height="32" width="48" negated="false">
+            <inVariable localId="44" height="32" width="48" negated="false">
               <position x="912" y="1320"/>
               <connectionPointOut>
                 <relPosition x="48" y="16"/>
               </connectionPointOut>
               <expression>'OK'</expression>
             </inVariable>
-            <block localId="45" typeName="EQ" executionOrderId="0" height="64" width="64">
+            <block localId="45" typeName="EQ" height="64" width="64">
               <position x="1008" y="1280"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -3444,7 +3444,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="46" typeName="AND" executionOrderId="0" height="64" width="64">
+            <block localId="46" typeName="AND" height="64" width="64">
               <position x="1112" y="1128"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -3479,7 +3479,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="47" typeName="SR" instanceName="SR3" executionOrderId="0" height="64" width="48">
+            <block localId="47" typeName="SR" instanceName="SR3" height="64" width="48">
               <position x="1216" y="1128"/>
               <inputVariables>
                 <variable formalParameter="S1">
@@ -3565,7 +3565,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
         </interface>
         <body>
           <FBD>
-            <block localId="2" typeName="TON" instanceName="TON0" executionOrderId="0" height="64" width="48">
+            <block localId="2" typeName="TON" instanceName="TON0" height="64" width="48">
               <position x="296" y="440"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -3601,7 +3601,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="3" typeName="R_TRIG" instanceName="R_TRIG0" executionOrderId="0" height="48" width="64">
+            <block localId="3" typeName="R_TRIG" instanceName="R_TRIG0" height="48" width="64">
               <position x="152" y="288"/>
               <inputVariables>
                 <variable formalParameter="CLK">
@@ -3623,7 +3623,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="4" typeName="R_TRIG" instanceName="R_TRIG1" executionOrderId="0" height="48" width="64">
+            <block localId="4" typeName="R_TRIG" instanceName="R_TRIG1" height="48" width="64">
               <position x="384" y="440"/>
               <inputVariables>
                 <variable formalParameter="CLK">
@@ -3645,7 +3645,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="5" typeName="RTC" instanceName="RTC1" executionOrderId="0" height="64" width="64">
+            <block localId="5" typeName="RTC" instanceName="RTC1" height="64" width="64">
               <position x="80" y="184"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -3689,21 +3689,21 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 <relPosition x="72" y="16"/>
               </connectionPointOut>
             </continuation>
-            <inVariable localId="8" executionOrderId="0" height="32" width="40" negated="false">
+            <inVariable localId="8" height="32" width="40" negated="false">
               <position x="80" y="304"/>
               <connectionPointOut>
                 <relPosition x="40" y="16"/>
               </connectionPointOut>
               <expression>RUN</expression>
             </inVariable>
-            <inVariable localId="9" executionOrderId="0" height="32" width="40" negated="false">
+            <inVariable localId="9" height="32" width="40" negated="false">
               <position x="216" y="456"/>
               <connectionPointOut>
                 <relPosition x="40" y="16"/>
               </connectionPointOut>
               <expression>RUN</expression>
             </inVariable>
-            <inVariable localId="10" executionOrderId="0" height="32" width="80" negated="false">
+            <inVariable localId="10" height="32" width="80" negated="false">
               <position x="344" y="184"/>
               <connectionPointOut>
                 <relPosition x="80" y="16"/>
@@ -3716,7 +3716,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 <relPosition x="72" y="16"/>
               </connectionPointOut>
             </continuation>
-            <block localId="12" typeName="MOVE" executionOrderId="0" height="64" width="56">
+            <block localId="12" typeName="MOVE" height="64" width="56">
               <position x="360" y="288"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -3752,7 +3752,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="14" executionOrderId="0" height="32" width="96" negated="false">
+            <outVariable localId="14" height="32" width="96" negated="false">
               <position x="464" y="328"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -3763,7 +3763,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
               </connectionPointIn>
               <expression>START_TIME</expression>
             </outVariable>
-            <block localId="15" typeName="SUB" executionOrderId="0" height="112" width="64">
+            <block localId="15" typeName="SUB" height="112" width="64">
               <position x="616" y="440"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -3808,7 +3808,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="6" executionOrderId="0" height="32" width="96" negated="false">
+            <inVariable localId="6" height="32" width="96" negated="false">
               <position x="472" y="520"/>
               <connectionPointOut>
                 <relPosition x="96" y="16"/>
@@ -3821,7 +3821,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 <xhtml:p><![CDATA[Test that TON and TOFF work as expected]]></xhtml:p>
               </content>
             </comment>
-            <outVariable localId="22" executionOrderId="0" height="32" width="56" negated="false">
+            <outVariable localId="22" height="32" width="56" negated="false">
               <position x="1384" y="456"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -3832,7 +3832,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
               </connectionPointIn>
               <expression>VALID</expression>
             </outVariable>
-            <block localId="13" typeName="SUB" executionOrderId="0" height="112" width="64">
+            <block localId="13" typeName="SUB" height="112" width="64">
               <position x="856" y="440"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -3899,7 +3899,7 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 <relPosition x="104" y="16"/>
               </connectionPointOut>
             </continuation>
-            <block localId="24" typeName="LT" executionOrderId="0" height="104" width="64">
+            <block localId="24" typeName="LT" height="104" width="64">
               <position x="1048" y="440"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -3944,14 +3944,14 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="19" executionOrderId="0" height="32" width="80" negated="false">
+            <inVariable localId="19" height="32" width="80" negated="false">
               <position x="936" y="512"/>
               <connectionPointOut>
                 <relPosition x="80" y="16"/>
               </connectionPointOut>
               <expression>TIME#1s</expression>
             </inVariable>
-            <block localId="26" typeName="SEL" executionOrderId="0" height="144" width="64">
+            <block localId="26" typeName="SEL" height="144" width="64">
               <position x="1264" y="440"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -4005,21 +4005,21 @@ BEREMIZ_TEST_CYCLES CFLAG is used here.
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="27" executionOrderId="0" height="32" width="56" negated="false">
+            <inVariable localId="27" height="32" width="56" negated="false">
               <position x="1152" y="552"/>
               <connectionPointOut>
                 <relPosition x="56" y="16"/>
               </connectionPointOut>
               <expression>'OK'</expression>
             </inVariable>
-            <inVariable localId="28" executionOrderId="0" height="32" width="56" negated="false">
+            <inVariable localId="28" height="32" width="56" negated="false">
               <position x="1152" y="520"/>
               <connectionPointOut>
                 <relPosition x="56" y="16"/>
               </connectionPointOut>
               <expression>'BAD'</expression>
             </inVariable>
-            <outVariable localId="29" executionOrderId="0" height="32" width="64" negated="false">
+            <outVariable localId="29" height="32" width="64" negated="false">
               <position x="1384" y="488"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>

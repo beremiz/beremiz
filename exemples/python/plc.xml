@@ -269,14 +269,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="4" height="30" width="315" executionOrderId="0" negated="false">
+            <inVariable localId="4" height="30" width="315" negated="false">
               <position x="200" y="390"/>
               <connectionPointOut>
                 <relPosition x="315" y="15"/>
               </connectionPointOut>
               <expression>'MyPrintFunction("Hello world\n")'</expression>
             </inVariable>
-            <block localId="5" width="125" height="80" typeName="python_eval" instanceName="py1" executionOrderId="0">
+            <block localId="5" width="125" height="80" typeName="python_eval" instanceName="py1">
               <position x="686" y="400"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -316,7 +316,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="7" width="70" height="45" typeName="NOT" executionOrderId="0">
+            <block localId="7" width="70" height="45" typeName="NOT">
               <position x="180" y="450"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -338,7 +338,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="3" height="30" width="120" executionOrderId="0" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="3" height="30" width="120" negatedOut="false" negatedIn="false">
               <position x="35" y="465"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -356,7 +356,7 @@
               </connectionPointOut>
               <expression>pytest_var2</expression>
             </inOutVariable>
-            <block localId="8" width="125" height="80" typeName="python_eval" instanceName="Block1" executionOrderId="0">
+            <block localId="8" width="125" height="80" typeName="python_eval" instanceName="Block1">
               <position x="686" y="545"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -394,21 +394,21 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="9" height="30" width="370" executionOrderId="0" negated="false">
+            <inVariable localId="9" height="30" width="370" negated="false">
               <position x="295" y="595"/>
               <connectionPointOut>
                 <relPosition x="370" y="15"/>
               </connectionPointOut>
               <expression>'MyPrintFunction("FBID :"+str(FBID)+"\n")'</expression>
             </inVariable>
-            <inVariable localId="11" height="30" width="290" executionOrderId="0" negated="false">
+            <inVariable localId="11" height="30" width="290" negated="false">
               <position x="295" y="735"/>
               <connectionPointOut>
                 <relPosition x="290" y="15"/>
               </connectionPointOut>
               <expression>'PLCIOsBinary.Simple_C_Call(5678)'</expression>
             </inVariable>
-            <block localId="12" width="125" height="80" typeName="python_eval" instanceName="Block2" executionOrderId="0">
+            <block localId="12" width="125" height="80" typeName="python_eval" instanceName="Block2">
               <position x="686" y="687"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -446,14 +446,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="14" height="30" width="290" executionOrderId="0" negated="false">
+            <inVariable localId="14" height="30" width="290" negated="false">
               <position x="290" y="885"/>
               <connectionPointOut>
                 <relPosition x="290" y="15"/>
               </connectionPointOut>
               <expression>'MyPythonFunc(42)'</expression>
             </inVariable>
-            <block localId="15" width="125" height="80" typeName="python_eval" instanceName="Block3" executionOrderId="0">
+            <block localId="15" width="125" height="80" typeName="python_eval" instanceName="Block3">
               <position x="686" y="837"/>
               <inputVariables>
                 <variable formalParameter="TRIG">
@@ -497,7 +497,7 @@
                 <xhtml:p><![CDATA[This part of the example test that, despite of 2T period clock stimulating TRIG pin of pyth_eval blocks, blocks keep executing one after the other, in respect of execution order.]]></xhtml:p>
               </content>
             </comment>
-            <block localId="17" width="80" height="120" typeName="MUX" executionOrderId="0">
+            <block localId="17" width="80" height="120" typeName="MUX">
               <position x="1101" y="790"/>
               <inputVariables>
                 <variable formalParameter="K">
@@ -563,7 +563,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="19" height="35" width="125" executionOrderId="0" negated="false">
+            <outVariable localId="19" height="35" width="125" negated="false">
               <position x="1271" y="805"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -574,7 +574,7 @@
               </connectionPointIn>
               <expression>pytest_var1</expression>
             </outVariable>
-            <block localId="21" width="80" height="120" typeName="MUX" executionOrderId="0">
+            <block localId="21" width="80" height="120" typeName="MUX">
               <position x="1106" y="385"/>
               <inputVariables>
                 <variable formalParameter="K">
@@ -640,14 +640,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="22" height="30" width="74" executionOrderId="0" negated="false">
+            <inVariable localId="22" height="30" width="74" negated="false">
               <position x="981" y="390"/>
               <connectionPointOut>
                 <relPosition x="74" y="15"/>
               </connectionPointOut>
               <expression>mux1_sel</expression>
             </inVariable>
-            <outVariable localId="23" height="35" width="125" executionOrderId="0" negated="false">
+            <outVariable localId="23" height="35" width="125" negated="false">
               <position x="1271" y="400"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -658,7 +658,7 @@
               </connectionPointIn>
               <expression>pytest_var3</expression>
             </outVariable>
-            <outVariable localId="25" height="30" width="60" executionOrderId="0" negated="false">
+            <outVariable localId="25" height="30" width="60" negated="false">
               <position x="320" y="1075"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -669,14 +669,14 @@
               </connectionPointIn>
               <expression>FromC</expression>
             </outVariable>
-            <inVariable localId="1" height="30" width="30" executionOrderId="0" negated="false">
+            <inVariable localId="1" height="30" width="30" negated="false">
               <position x="105" y="1075"/>
               <connectionPointOut>
                 <relPosition x="30" y="15"/>
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
-            <block localId="26" width="80" height="45" typeName="C_Pragma" instanceName="C_Pragma0" executionOrderId="0">
+            <block localId="26" width="80" height="45" typeName="C_Pragma" instanceName="C_Pragma0">
               <position x="185" y="1060"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -698,14 +698,14 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="27" height="30" width="90" executionOrderId="0" negated="false">
+            <inVariable localId="27" height="30" width="90" negated="false">
               <position x="100" y="1190"/>
               <connectionPointOut>
                 <relPosition x="90" y="15"/>
               </connectionPointOut>
               <expression>TestInput</expression>
             </inVariable>
-            <outVariable localId="28" height="30" width="105" executionOrderId="0" negated="false">
+            <outVariable localId="28" height="30" width="105" negated="false">
               <position x="195" y="1125"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -716,7 +716,7 @@
               </connectionPointIn>
               <expression>TestOutput</expression>
             </outVariable>
-            <outVariable localId="29" height="30" width="85" executionOrderId="0" negated="false">
+            <outVariable localId="29" height="30" width="85" negated="false">
               <position x="215" y="1190"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -727,7 +727,7 @@
               </connectionPointIn>
               <expression>FromInput</expression>
             </outVariable>
-            <inVariable localId="2" height="30" width="30" executionOrderId="0" negated="false">
+            <inVariable localId="2" height="30" width="30" negated="false">
               <position x="110" y="1125"/>
               <connectionPointOut>
                 <relPosition x="30" y="15"/>
@@ -759,7 +759,7 @@ Happy hacking! ]]></xhtml:p>
                 <xhtml:p><![CDATA[Fast clock, at least faster that sleep(1). See what happens when python takes time to answer : PLC continues.]]></xhtml:p>
               </content>
             </comment>
-            <outVariable localId="33" height="30" width="133" executionOrderId="0" negated="false">
+            <outVariable localId="33" height="30" width="133" negated="false">
               <position x="580" y="1564"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -770,14 +770,14 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Test_BCD_RESULT</expression>
             </outVariable>
-            <inVariable localId="34" height="30" width="75" executionOrderId="0" negated="false">
+            <inVariable localId="34" height="30" width="75" negated="false">
               <position x="60" y="1564"/>
               <connectionPointOut>
                 <relPosition x="75" y="16"/>
               </connectionPointOut>
               <expression>Test_BCD</expression>
             </inVariable>
-            <block localId="35" width="106" height="60" typeName="BCD_TO_UINT" executionOrderId="0">
+            <block localId="35" width="106" height="60" typeName="BCD_TO_UINT">
               <position x="265" y="1539"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -799,14 +799,14 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="36" height="30" width="66" executionOrderId="0" negated="false">
+            <inVariable localId="36" height="30" width="66" negated="false">
               <position x="60" y="1774"/>
               <connectionPointOut>
                 <relPosition x="66" y="16"/>
               </connectionPointOut>
               <expression>Test_DT</expression>
             </inVariable>
-            <block localId="37" width="255" height="45" typeName="DATE_AND_TIME_TO_TIME_OF_DAY" executionOrderId="0">
+            <block localId="37" width="255" height="45" typeName="DATE_AND_TIME_TO_TIME_OF_DAY">
               <position x="265" y="1759"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -828,7 +828,7 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <block localId="38" width="195" height="45" typeName="DATE_AND_TIME_TO_DATE" executionOrderId="0">
+            <block localId="38" width="195" height="45" typeName="DATE_AND_TIME_TO_DATE">
               <position x="265" y="1834"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -852,7 +852,7 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="40" height="30" width="82" executionOrderId="0" negated="false">
+            <outVariable localId="40" height="30" width="82" negated="false">
               <position x="580" y="1849"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -863,7 +863,7 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Test_Date</expression>
             </outVariable>
-            <outVariable localId="42" height="30" width="98" executionOrderId="0" negated="false">
+            <outVariable localId="42" height="30" width="98" negated="false">
               <position x="465" y="1944"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -874,7 +874,7 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Test_String</expression>
             </outVariable>
-            <outVariable localId="43" height="30" width="82" executionOrderId="0" negated="false">
+            <outVariable localId="43" height="30" width="82" negated="false">
               <position x="465" y="2014"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -885,7 +885,7 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Test_Bool</expression>
             </outVariable>
-            <block localId="44" width="135" height="45" typeName="STRING_TO_BOOL" executionOrderId="0">
+            <block localId="44" width="135" height="45" typeName="STRING_TO_BOOL">
               <position x="265" y="1999"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -907,14 +907,14 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="45" height="30" width="58" executionOrderId="0" negated="false">
+            <inVariable localId="45" height="30" width="58" negated="false">
               <position x="60" y="2014"/>
               <connectionPointOut>
                 <relPosition x="58" y="16"/>
               </connectionPointOut>
               <expression>'True'</expression>
             </inVariable>
-            <block localId="46" width="130" height="45" typeName="INT_TO_STRING" executionOrderId="0">
+            <block localId="46" width="130" height="45" typeName="INT_TO_STRING">
               <position x="265" y="1929"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -936,14 +936,14 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="50" height="30" width="106" executionOrderId="0" negated="false">
+            <inVariable localId="50" height="30" width="106" negated="false">
               <position x="75" y="2275"/>
               <connectionPointOut>
                 <relPosition x="106" y="15"/>
               </connectionPointOut>
               <expression>Global_RS.Q1</expression>
             </inVariable>
-            <block localId="51" width="70" height="85" typeName="AND" executionOrderId="0">
+            <block localId="51" width="70" height="85" typeName="AND">
               <position x="240" y="2255"/>
               <inputVariables>
                 <variable formalParameter="IN1" negated="true">
@@ -974,14 +974,14 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="52" height="30" width="105" executionOrderId="0" negated="false">
+            <inVariable localId="52" height="30" width="105" negated="false">
               <position x="75" y="2310"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>BOOL#TRUE</expression>
             </inVariable>
-            <outVariable localId="13" height="30" width="105" executionOrderId="0" negated="false">
+            <outVariable localId="13" height="30" width="105" negated="false">
               <position x="385" y="2275"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -992,7 +992,7 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Global_RS.S</expression>
             </outVariable>
-            <outVariable localId="20" height="30" width="106" executionOrderId="0" negated="false">
+            <outVariable localId="20" height="30" width="106" negated="false">
               <position x="385" y="2390"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1003,14 +1003,14 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Global_RS.R1</expression>
             </outVariable>
-            <inVariable localId="24" height="30" width="106" executionOrderId="0" negated="false">
+            <inVariable localId="24" height="30" width="106" negated="false">
               <position x="75" y="2390"/>
               <connectionPointOut>
                 <relPosition x="106" y="15"/>
               </connectionPointOut>
               <expression>Global_RS.Q1</expression>
             </inVariable>
-            <block localId="41" width="70" height="85" typeName="OR" executionOrderId="0">
+            <block localId="41" width="70" height="85" typeName="OR">
               <position x="240" y="2370"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -1041,14 +1041,14 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="48" height="30" width="105" executionOrderId="0" negated="false">
+            <inVariable localId="48" height="30" width="105" negated="false">
               <position x="75" y="2425"/>
               <connectionPointOut>
                 <relPosition x="105" y="15"/>
               </connectionPointOut>
               <expression>BOOL#FALSE</expression>
             </inVariable>
-            <outVariable localId="54" height="30" width="135" executionOrderId="0" negated="false">
+            <outVariable localId="54" height="30" width="135" negated="false">
               <position x="930" y="1774"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -1059,7 +1059,7 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>Test_TOD_STRING</expression>
             </outVariable>
-            <block localId="55" width="125" height="45" typeName="TOD_TO_STRING" executionOrderId="0">
+            <block localId="55" width="125" height="45" typeName="TOD_TO_STRING">
               <position x="730" y="1759"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -1081,7 +1081,7 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="39" height="30" width="75" executionOrderId="0" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="39" height="30" width="75" negatedOut="false" negatedIn="false">
               <position x="580" y="1774"/>
               <connectionPointIn>
                 <relPosition x="0" y="16"/>
@@ -1095,14 +1095,14 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointOut>
               <expression>Test_TOD</expression>
             </inOutVariable>
-            <inVariable localId="49" height="30" width="30" executionOrderId="0" negated="false">
+            <inVariable localId="49" height="30" width="30" negated="false">
               <position x="160" y="2510"/>
               <connectionPointOut>
                 <relPosition x="30" y="15"/>
               </connectionPointOut>
               <expression>42</expression>
             </inVariable>
-            <outVariable localId="57" height="30" width="50" executionOrderId="0" negated="false">
+            <outVariable localId="57" height="30" width="50" negated="false">
               <position x="240" y="2510"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1113,7 +1113,7 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>TOTO</expression>
             </outVariable>
-            <outVariable localId="56" height="30" width="50" executionOrderId="0" negated="false">
+            <outVariable localId="56" height="30" width="50" negated="false">
               <position x="240" y="2550"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1126,21 +1126,21 @@ Happy hacking! ]]></xhtml:p>
               </connectionPointIn>
               <expression>TUTU</expression>
             </outVariable>
-            <inVariable localId="58" height="30" width="146" executionOrderId="0" negated="false">
+            <inVariable localId="58" height="30" width="146" negated="false">
               <position x="60" y="1944"/>
               <connectionPointOut>
                 <relPosition x="146" y="16"/>
               </connectionPointOut>
               <expression>Second_Python_Var</expression>
             </inVariable>
-            <inVariable localId="59" height="30" width="30" executionOrderId="0" negated="false">
+            <inVariable localId="59" height="30" width="30" negated="false">
               <position x="100" y="1385"/>
               <connectionPointOut>
                 <relPosition x="30" y="15"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <block localId="61" typeName="function0" executionOrderId="0" height="45" width="111">
+            <block localId="61" typeName="function0" height="45" width="111">
               <position x="760" y="1170"/>
               <inputVariables>
                 <variable formalParameter="LocalVar0">
@@ -1162,14 +1162,14 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="62" executionOrderId="0" height="30" width="58" negated="false">
+            <inVariable localId="62" height="30" width="58" negated="false">
               <position x="665" y="1185"/>
               <connectionPointOut>
                 <relPosition x="58" y="15"/>
               </connectionPointOut>
               <expression>fefvsd</expression>
             </inVariable>
-            <outVariable localId="63" executionOrderId="0" height="30" width="58" negated="false">
+            <outVariable localId="63" height="30" width="58" negated="false">
               <position x="905" y="1185"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1186,7 +1186,7 @@ Happy hacking! ]]></xhtml:p>
                 <xhtml:p><![CDATA[Shows global variables access from resource configuration (res_pytest) and from project's configuration.]]></xhtml:p>
               </content>
             </comment>
-            <inVariable localId="18" height="30" width="74" executionOrderId="0" negated="false">
+            <inVariable localId="18" height="30" width="74" negated="false">
               <position x="986" y="795"/>
               <connectionPointOut>
                 <relPosition x="74" y="15"/>
@@ -1211,14 +1211,14 @@ Happy hacking! ]]></xhtml:p>
                 <xhtml:p><![CDATA[Shows access variable defined in python extension. ]]></xhtml:p>
               </content>
             </comment>
-            <inVariable localId="66" height="30" width="137" executionOrderId="0" negated="false">
+            <inVariable localId="66" height="30" width="137" negated="false">
               <position x="60" y="1685"/>
               <connectionPointOut>
                 <relPosition x="137" y="15"/>
               </connectionPointOut>
               <expression>Test_BCD_WRONG</expression>
             </inVariable>
-            <block localId="67" width="106" height="100" typeName="BCD_TO_UINT" executionOrderId="0">
+            <block localId="67" width="106" height="100" typeName="BCD_TO_UINT">
               <position x="265" y="1620"/>
               <inputVariables>
                 <variable formalParameter="EN">
@@ -1254,7 +1254,7 @@ Happy hacking! ]]></xhtml:p>
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="68" height="30" width="196" executionOrderId="0" negated="false">
+            <outVariable localId="68" height="30" width="196" negated="false">
               <position x="580" y="1685"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1279,7 +1279,7 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
 ]]></xhtml:p>
               </content>
             </comment>
-            <outVariable localId="70" height="30" width="185" executionOrderId="0" negated="false">
+            <outVariable localId="70" height="30" width="185" negated="false">
               <position x="580" y="1645"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1304,7 +1304,7 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
 ]]></xhtml:p>
               </content>
             </comment>
-            <outVariable localId="72" executionOrderId="0" height="30" width="60" negated="false">
+            <outVariable localId="72" height="30" width="60" negated="false">
               <position x="1065" y="1970"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1317,21 +1317,21 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
               </connectionPointIn>
               <expression>Grumpf</expression>
             </outVariable>
-            <inVariable localId="73" executionOrderId="0" height="30" width="85" negated="false">
+            <inVariable localId="73" height="30" width="85" negated="false">
               <position x="625" y="1940"/>
               <connectionPointOut>
                 <relPosition x="85" y="15"/>
               </connectionPointOut>
               <expression>BOOL#TRUE</expression>
             </inVariable>
-            <inVariable localId="74" executionOrderId="0" height="30" width="70" negated="false">
+            <inVariable localId="74" height="30" width="70" negated="false">
               <position x="625" y="1975"/>
               <connectionPointOut>
                 <relPosition x="70" y="15"/>
               </connectionPointOut>
               <expression>Test_DT</expression>
             </inVariable>
-            <block localId="75" typeName="RTC" instanceName="RTC0" executionOrderId="0" height="90" width="65">
+            <block localId="75" typeName="RTC" instanceName="RTC0" height="90" width="65">
               <position x="760" y="1925"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -1371,7 +1371,7 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="76" typeName="DT_TO_STRING" executionOrderId="0" height="40" width="110">
+            <block localId="76" typeName="DT_TO_STRING" height="40" width="110">
               <position x="875" y="1965"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -1393,7 +1393,7 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
                 </variable>
               </outputVariables>
             </block>
-            <block localId="77" typeName="ADD" executionOrderId="0" height="60" width="65">
+            <block localId="77" typeName="ADD" height="60" width="65">
               <position x="170" y="1370"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -1428,7 +1428,7 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
                 </variable>
               </outputVariables>
             </block>
-            <outVariable localId="47" executionOrderId="0" height="30" width="130" negated="false">
+            <outVariable localId="47" height="30" width="130" negated="false">
               <position x="625" y="1335"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1439,14 +1439,14 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
               </connectionPointIn>
               <expression>Test_Python_Var</expression>
             </outVariable>
-            <inVariable localId="79" executionOrderId="0" height="27" width="30" negated="false">
+            <inVariable localId="79" height="27" width="30" negated="false">
               <position x="560" y="1340"/>
               <connectionPointOut>
                 <relPosition x="30" y="15"/>
               </connectionPointOut>
               <expression>23</expression>
             </inVariable>
-            <inOutVariable localId="78" executionOrderId="0" height="30" width="100" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="78" height="30" width="100" negatedOut="false" negatedIn="false">
               <position x="280" y="1385"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -1460,7 +1460,7 @@ Try this out and look at value of  Test_BCD_CONVERTED variable.
               </connectionPointOut>
               <expression>SomeVarName</expression>
             </inOutVariable>
-            <block localId="80" typeName="MOVE" executionOrderId="0" height="40" width="60">
+            <block localId="80" typeName="MOVE" height="40" width="60">
               <position x="570" y="455"/>
               <inputVariables>
                 <variable formalParameter="IN">

@@ -39,7 +39,7 @@
         </interface>
         <body>
           <FBD>
-            <outVariable localId="2" executionOrderId="0" height="25" width="95" negated="false">
+            <outVariable localId="2" height="25" width="95" negated="false">
               <position x="910" y="195"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -50,7 +50,7 @@
               </connectionPointIn>
               <expression>trendval0</expression>
             </outVariable>
-            <outVariable localId="3" executionOrderId="0" height="25" width="95" negated="false">
+            <outVariable localId="3" height="25" width="95" negated="false">
               <position x="910" y="255"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -61,7 +61,7 @@
               </connectionPointIn>
               <expression>trendval1</expression>
             </outVariable>
-            <block localId="4" typeName="ADD" executionOrderId="0" height="75" width="63">
+            <block localId="4" typeName="ADD" height="75" width="63">
               <position x="210" y="190"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -92,7 +92,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="5" typeName="SEL" executionOrderId="0" height="80" width="65">
+            <block localId="5" typeName="SEL" height="80" width="65">
               <position x="485" y="175"/>
               <inputVariables>
                 <variable formalParameter="G">
@@ -134,7 +134,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="6" typeName="GE" executionOrderId="0" height="60" width="65">
+            <block localId="6" typeName="GE" height="60" width="65">
               <position x="370" y="155"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -167,28 +167,28 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="7" executionOrderId="0" height="25" width="20" negated="false">
+            <inVariable localId="7" height="25" width="20" negated="false">
               <position x="150" y="240"/>
               <connectionPointOut>
                 <relPosition x="20" y="10"/>
               </connectionPointOut>
               <expression>1</expression>
             </inVariable>
-            <inVariable localId="8" executionOrderId="0" height="25" width="20" negated="false">
+            <inVariable localId="8" height="25" width="20" negated="false">
               <position x="425" y="235"/>
               <connectionPointOut>
                 <relPosition x="20" y="10"/>
               </connectionPointOut>
               <expression>0</expression>
             </inVariable>
-            <inVariable localId="9" executionOrderId="0" height="25" width="35" negated="false">
+            <inVariable localId="9" height="25" width="35" negated="false">
               <position x="315" y="195"/>
               <connectionPointOut>
                 <relPosition x="35" y="10"/>
               </connectionPointOut>
               <expression>360</expression>
             </inVariable>
-            <block localId="10" typeName="COS" executionOrderId="0" height="40" width="60">
+            <block localId="10" typeName="COS" height="40" width="60">
               <position x="825" y="175"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -210,7 +210,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="11" typeName="INT_TO_REAL" executionOrderId="0" height="40" width="100">
+            <block localId="11" typeName="INT_TO_REAL" height="40" width="100">
               <position x="585" y="175"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -232,7 +232,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <block localId="12" typeName="SIN" executionOrderId="0" height="40" width="60">
+            <block localId="12" typeName="SIN" height="40" width="60">
               <position x="825" y="235"/>
               <inputVariables>
                 <variable formalParameter="IN">
@@ -256,7 +256,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inOutVariable localId="1" executionOrderId="0" height="25" width="70" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="1" height="25" width="70" negatedOut="false" negatedIn="false">
               <position x="70" y="215"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
@@ -280,7 +280,7 @@
                 <xhtml:p><![CDATA[Generate values for curves]]></xhtml:p>
               </content>
             </comment>
-            <block localId="14" typeName="DIV" executionOrderId="0" height="60" width="65">
+            <block localId="14" typeName="DIV" height="60" width="65">
               <position x="720" y="175"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -311,7 +311,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="15" executionOrderId="0" height="25" width="70" negated="false">
+            <inVariable localId="15" height="25" width="70" negated="false">
               <position x="615" y="215"/>
               <connectionPointOut>
                 <relPosition x="70" y="10"/>

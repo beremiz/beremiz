@@ -101,7 +101,7 @@ $ make
 After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p>
               </content>
             </comment>
-            <block localId="5" typeName="CTU" instanceName="CTU0" executionOrderId="0" height="80" width="52">
+            <block localId="5" typeName="CTU" instanceName="CTU0" height="80" width="52">
               <position x="346" y="605"/>
               <inputVariables>
                 <variable formalParameter="CU" edge="rising">
@@ -144,7 +144,7 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
                 </variable>
               </outputVariables>
             </block>
-            <block localId="6" typeName="Generator" instanceName="Generator0" executionOrderId="0" height="60" width="82">
+            <block localId="6" typeName="Generator" instanceName="Generator0" height="60" width="82">
               <position x="224" y="605"/>
               <inputVariables>
                 <variable formalParameter="PON">
@@ -177,21 +177,21 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="1" executionOrderId="0" height="30" width="138" negated="false">
+            <inVariable localId="1" height="30" width="138" negated="false">
               <position x="16" y="620"/>
               <connectionPointOut>
                 <relPosition x="138" y="15"/>
               </connectionPointOut>
               <expression>T#1s</expression>
             </inVariable>
-            <inVariable localId="7" executionOrderId="0" height="30" width="138" negated="false">
+            <inVariable localId="7" height="30" width="138" negated="false">
               <position x="164" y="688"/>
               <connectionPointOut>
                 <relPosition x="138" y="15"/>
               </connectionPointOut>
               <expression>32767</expression>
             </inVariable>
-            <inOutVariable localId="2" executionOrderId="0" height="30" width="138" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="2" height="30" width="138" negatedOut="false" negatedIn="false">
               <position x="544" y="640"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -205,7 +205,7 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
               </connectionPointOut>
               <expression>Counter</expression>
             </inOutVariable>
-            <outVariable localId="8" executionOrderId="0" height="30" width="146" negated="false">
+            <outVariable localId="8" height="30" width="146" negated="false">
               <position x="762" y="640"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -216,7 +216,7 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
               </connectionPointIn>
               <expression>MasterWriteToReg0</expression>
             </outVariable>
-            <inVariable localId="9" executionOrderId="0" height="30" width="154" negated="false">
+            <inVariable localId="9" height="30" width="154" negated="false">
               <position x="81" y="747"/>
               <connectionPointOut>
                 <relPosition x="154" y="15"/>
@@ -229,14 +229,14 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
                 <xhtml:p><![CDATA[Modbus TCP Slave just copies received register value from holding register to input register.]]></xhtml:p>
               </content>
             </comment>
-            <inVariable localId="12" executionOrderId="0" height="30" width="152" negated="false">
+            <inVariable localId="12" height="30" width="152" negated="false">
               <position x="82" y="970"/>
               <connectionPointOut>
                 <relPosition x="152" y="15"/>
               </connectionPointOut>
               <expression>SlaveHoldReg0</expression>
             </inVariable>
-            <outVariable localId="13" executionOrderId="0" height="30" width="123" negated="false">
+            <outVariable localId="13" height="30" width="123" negated="false">
               <position x="548" y="970"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -247,7 +247,7 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
               </connectionPointIn>
               <expression>SlaveInputReg0</expression>
             </outVariable>
-            <block localId="14" typeName="TestAllEqual" instanceName="TestAllEqual0" executionOrderId="0" width="106" height="100">
+            <block localId="14" typeName="TestAllEqual" instanceName="TestAllEqual0" width="106" height="100">
               <position x="763" y="712"/>
               <inputVariables>
                 <variable formalParameter="in0">
@@ -274,7 +274,7 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
               <inOutVariables/>
               <outputVariables/>
             </block>
-            <inOutVariable localId="10" executionOrderId="0" width="137" height="30" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="10" width="137" height="30" negatedOut="false" negatedIn="false">
               <position x="547" y="747"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -288,7 +288,7 @@ After that Modbus extension is ready to be used in Beremiz projects.]]></xhtml:p
               </connectionPointOut>
               <expression>CounterReadBack</expression>
             </inOutVariable>
-            <inVariable localId="15" executionOrderId="0" width="26" height="24" negated="false">
+            <inVariable localId="15" width="26" height="24" negated="false">
               <position x="705" y="770"/>
               <connectionPointOut>
                 <relPosition x="26" y="12"/>

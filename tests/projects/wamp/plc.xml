@@ -44,14 +44,14 @@
         </interface>
         <body>
           <FBD>
-            <inVariable localId="1" executionOrderId="0" height="30" width="55" negated="false">
+            <inVariable localId="1" height="30" width="55" negated="false">
               <position x="57" y="540"/>
               <connectionPointOut>
                 <relPosition x="55" y="15"/>
               </connectionPointOut>
               <expression>PyVar0</expression>
             </inVariable>
-            <block localId="3" typeName="ADD" executionOrderId="0" height="60" width="67">
+            <block localId="3" typeName="ADD" height="60" width="67">
               <position x="168" y="525"/>
               <inputVariables>
                 <variable formalParameter="IN1">
@@ -84,7 +84,7 @@
                 </variable>
               </outputVariables>
             </block>
-            <inVariable localId="4" executionOrderId="0" height="30" width="73" negated="false">
+            <inVariable localId="4" height="30" width="73" negated="false">
               <position x="39" y="580"/>
               <connectionPointOut>
                 <relPosition x="73" y="15"/>
@@ -112,7 +112,7 @@ setup Crossbar.io, router for open Web Application Messaging Protocol (WAMP).
 ]]></xhtml:p>
               </content>
             </comment>
-            <inOutVariable localId="2" executionOrderId="0" height="30" width="55" negatedOut="false" negatedIn="false">
+            <inOutVariable localId="2" height="30" width="55" negatedOut="false" negatedIn="false">
               <position x="270" y="540"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
@@ -126,7 +126,7 @@ setup Crossbar.io, router for open Web Application Messaging Protocol (WAMP).
               </connectionPointOut>
               <expression>PyVar1</expression>
             </inOutVariable>
-            <outVariable localId="6" executionOrderId="0" height="30" width="55" negated="false">
+            <outVariable localId="6" height="30" width="55" negated="false">
               <position x="362" y="540"/>
               <connectionPointIn>
                 <relPosition x="0" y="15"/>
