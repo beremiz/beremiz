@@ -84,7 +84,10 @@ TC6 graphical languages:
    restricted to what TC6 can represent, with POU, variable and configuration forms,
    raw ST and IL bodies, and graphical elements generated from the schema. Also writes
    `tc6_textmap.py`, the mapping of graphical elements `graph.py` follows.
-3. `gen_parser.py` (todo): extended grammar → `iec_parser.py`.
+3. `gen_parser.py`: extended grammar → `iec_parser.py`, a packrat PEG parser that only
+   depends on Python `re` module. Token rules become regular expressions, other rules
+   memoized methods where longest alternative wins. Comments and pragmas are kept
+   apart, by position, for documentation and free comments.
 
 `ebnf.py` is the W3C EBNF model they share (reader, printer, validator).
 

@@ -583,6 +583,16 @@ OVERRIDES = [
             old="Struct_Elem_Name (Located_At Multibit_Part_Access?)? ':' (Simple_Spec_Init"
                 " | Subrange_Spec_Init | Enum_Spec_Init | Array_Spec_Init | Struct_Spec_Init)",
             new="Struct_Elem_Name Located_At? ':' TC6_Type_Spec (':=' TC6_Initial_Value)?"),
+    RuleFix("T05", "Symbolic_Variable", "no namespace in TC6, a.b is a structure member,"
+            " and x.0 a bit",
+            old="('THIS' '.' | (Namespace_Name '.')+)? (Var_Access | Multi_Elem_Var)",
+            new="('THIS' '.')? (Var_Access | Multi_Elem_Var)"),
+    RuleFix("T06", "Func_Access", "no namespace in TC6",
+            old="(Namespace_Name '.')* Func_Name",
+            new="Func_Name"),
+    RuleFix("T07", "Ref_Addr", "no class in TC6, function block instances are variables",
+            old="'REF' '(' (Symbolic_Variable | FB_Instance_Name | Class_Instance_Name) ')'",
+            new="'REF' '(' Symbolic_Variable ')'"),
 ]
 
 
