@@ -256,7 +256,7 @@ void __cleanup_{locstr}(void)
 static void connectionLost(void* context, char* reason)
 {{
     int rc;
-    LogWarning("ConnectionLost, reconnecting\\n");
+    LogWarning("ConnectionLost, reconnecting\n");
     if (pthread_mutex_lock(&MQTT_thread_wakeup_mutex) == 0){{
         /* unblock publish thread so that it can reconnect */
         MQTT_is_disconnected = 1;
