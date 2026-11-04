@@ -8,7 +8,6 @@
 #include <open62541/plugin/securitypolicy_default.h>
 
 #include <open62541/types.h>
-#include <open62541/types_generated_handling.h>
 
 #include <stdint.h>
 #include <unistd.h>
@@ -145,10 +144,11 @@ void __cleanup_{locstr}(void)
         }}                                                                                         \
         cc->securityPolicies = sp;                                                                 \
                                                                                                    \
-        UA_StatusCode spRetval = UA_SecurityPolicy_##Policy(&cc->securityPolicies[cc->securityPoliciesSize],       \
-                                                 certificate, privateKey, &cc->logger);            \
+        UA_StatusCode spRetval = UA_SecurityPolicy_##Policy(                                       \
+            &cc->securityPolicies[cc->securityPoliciesSize],                                       \
+            certificate, privateKey, cc->logging);                                                 \
         if(spRetval != UA_STATUSCODE_GOOD) {{                                                      \
-            UA_LOG_WARNING(&cc->logger, UA_LOGCATEGORY_USERLAND,                                   \
+            UA_LOG_WARNING(cc->logging, UA_LOGCATEGORY_USERLAND,                                   \
                            "Could not add SecurityPolicy Policy with error code %s",               \
                            UA_StatusCode_name(spRetval));                                          \
             UA_free(cc->securityPolicies);                                                         \

@@ -95,7 +95,7 @@ $(build_dir)/matiec/iec2c: $(build_dir)/matiec/$(matiec_checksum).sha1
 $(build_dir)/open62541/build/bin/libopen62541.a: $(build_dir)/open62541/$(open62541_checksum).sha1
 	cd $(build_dir)/open62541 && \
     rm -rf build && mkdir build && cd build && \
-	cmake -D UA_ENABLE_ENCRYPTION=OPENSSL .. && \
+	cmake -D UA_ENABLE_ENCRYPTION=OPENSSL -D CMAKE_POSITION_INDEPENDENT_CODE=ON .. && \
 	make
 
 $(build_dir)/Modbus/libmb.a: | $(build_dir)/Modbus/$(Modbus_checksum).sha1
