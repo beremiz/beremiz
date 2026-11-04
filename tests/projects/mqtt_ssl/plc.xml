@@ -114,6 +114,11 @@
                 <LINT/>
               </type>
             </variable>
+            <variable name="BOTH_CONNECTED">
+              <type>
+                <derived name="R_TRIG"/>
+              </type>
+            </variable>
           </localVars>
           <externalVars>
             <variable name="MQTT_STATUS_3">
@@ -309,6 +314,15 @@
         <body>
           <ST>
             <xhtml:p><![CDATA[(* Simple test checking variables are passed through in both directions *)
+
+(* Change published values each time both clients get (re)connected, so that
+   'TEST OK' is logged again only once new values did pass through broker *)
+BOTH_CONNECTED(CLK := (MQTT_STATUS_3 = 1) & (MQTT_STATUS_4 = 1));
+IF BOTH_CONNECTED.Q THEN
+  dint_topic_a_out := dint_topic_a_out + 1;
+  dint_topic_b_out := dint_topic_b_out + 1;
+END_IF;
+
 IF  (MQTT_STATUS_3 = 1) &
     (MQTT_STATUS_4 = 1) &
     (dint_topic_a_out = dint_topic_a_in) &
@@ -339,7 +353,9 @@ IF  (MQTT_STATUS_3 = 1) &
      TRIG := TRUE,
      MSG := 'TEST OK',
      LEVEL := CRITICAL);
-
+ELSE
+  (* re-arm logger, i.e. while disconnected from broker *)
+  LOGGER0(TRIG := FALSE);
 END_IF;
 COUNT:=COUNT+1;
 ]]></xhtml:p>
