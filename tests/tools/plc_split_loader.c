@@ -15,7 +15,8 @@
 #include <unistd.h>
 
 #define LOG_LEVELS 4
-#define TIMEOUT_MS 10000
+/* real time, and iec61131_lang_test's TEMPO_TEST alone waits a 10s TON */
+#define TIMEOUT_MS 30000
 #define POLL_MS 100
 
 static void *sym(void *handle, const char *name)

@@ -36,8 +36,8 @@ RUN set -xe \
                python3-wxgtk4.0 \
                python3-venv virtualenv cmake ninja-build git \
                \
-               `# to test Linux PLC-SDK` \
-               clang lld qemu-user gcc-aarch64-linux-gnu
+               `# to test Linux PLC-SDK : arm64 cross libc, and libgcc from cross gcc` \
+               clang lld qemu-user libc6-dev-arm64-cross gcc-aarch64-linux-gnu
 
 ### Playwright dependencies : libasound2t64 (seems needed by embedded chromium) ###
 RUN apt-get install -qqy --no-install-recommends libasound2t64 python3-gi
