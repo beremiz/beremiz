@@ -166,9 +166,10 @@ class PLCObject(object):
             self.CurrentPLCFilename = open(
                 self._GetMD5FileName(),
                 "r").read().strip() + lib_ext
-            self.CurrentLogicFilename = open(
-                self._GetLogicMD5FileName(),
-                "r").read().strip() + lib_ext
+            if os.name == "posix":
+                self.CurrentLogicFilename = open(
+                    self._GetLogicMD5FileName(),
+                    "r").read().strip() + lib_ext
             self.PLCStatus = PlcStatus.Stopped
             if autostart:
                 if self.LoadPLC():
@@ -179,7 +180,8 @@ class PLCObject(object):
         except Exception:
             self.PLCStatus = PlcStatus.Empty
             self.CurrentPLCFilename = None
-            self.CurrentLogicFilename = None
+            if os.name == "posix":
+                self.CurrentLogicFilename = None
 
         self.StatusChange()
 
@@ -257,7 +259,8 @@ class PLCObject(object):
                                         __cleanup_PLCLogic.
         """
         ios_md5 = open(self._GetMD5FileName(), "r").read()
-        logic_md5 = open(self._GetLogicMD5FileName(), "r").read()
+        if os.name == "posix":
+            logic_md5 = open(self._GetLogicMD5FileName(), "r").read()
 
         self.PLClibraryLock.acquire()
         try:
@@ -934,17 +937,18 @@ class PLCObject(object):
             if self.CurrentPLCFilename is not None \
             else None
 
-        old_logic_filename = os.path.join(self.workingdir, self.CurrentLogicFilename) \
-            if self.CurrentLogicFilename is not None \
-            else None
+        if os.name == "posix":
+            old_logic_filename = os.path.join(self.workingdir, self.CurrentLogicFilename) \
+                if self.CurrentLogicFilename is not None \
+                else None
 
         try:
             allfiles = open(extra_files_log, "rt").readlines()
             allfiles.extend([extra_files_log,
                              old_PLC_filename,
+                             self._GetMD5FileName()] + [
                              old_logic_filename,
-                             self._GetMD5FileName(),
-                             self._GetLogicMD5FileName()])
+                             self._GetLogicMD5FileName()] if os.name == "posix" else [])
         except Exception:
             self.LogMessage("No files to purge")
             allfiles = []
@@ -969,43 +973,48 @@ class PLCObject(object):
             dlclose(self._PendingOldLogicHandle)
             self._PendingOldLogicHandle = None
 
-        # extrafiles[0] is always the logic binary: (logic_md5 + lib_ext, blobID)
-        if not extrafiles:
-            self.LogMessage(0, "NewPLC: missing logic binary in extrafiles")
-            return False
+        if os.name == "posix":
+            # extrafiles[0] is always the logic binary: (logic_md5 + lib_ext, blobID)
+            if not extrafiles:
+                self.LogMessage(0, "NewPLC: missing logic binary in extrafiles")
+                return False
 
-        logic_entry, other_extrafiles = extrafiles[0], extrafiles[1:]
-        logic_fname, logic_blob_id = logic_entry
-        logic_md5 = os.path.splitext(logic_fname)[0]  # strip extension
+            logic_entry, other_extrafiles = extrafiles[0], extrafiles[1:]
+            logic_fname, logic_blob_id = logic_entry
+            logic_md5 = os.path.splitext(logic_fname)[0]  # strip extension
 
-        # Hot-swap path: PLC running, IOs unchanged, only logic changed.
-        if (self.PLCStatus == PlcStatus.Started
-                and self.MatchMD5(md5sum)
-                and not self._MatchLogicMD5(logic_md5)):
-            return self._HotSwapPLCLogic(logic_md5, logic_blob_id)
+            # Hot-swap path: PLC running, IOs unchanged, only logic changed.
+            if (self.PLCStatus == PlcStatus.Started
+                    and self.MatchMD5(md5sum)
+                    and not self._MatchLogicMD5(logic_md5)):
+                return self._HotSwapPLCLogic(logic_md5, logic_blob_id)
+
+            NewLogicFileName = logic_fname
+            new_logic_filename = os.path.join(self.workingdir, NewLogicFileName)
+            self.LogMessage("NewPLC (%s / logic %s)" % (md5sum, logic_md5))
+        else:
+            self.LogMessage("NewPLC (%s)" % md5sum)
+            other_extrafiles = extrafiles
 
         # Full reload path: PLC must be stopped/empty/broken.
         if self.PLCStatus not in [PlcStatus.Stopped, PlcStatus.Empty, PlcStatus.Broken]:
             return False
 
         NewFileName = md5sum + lib_ext
-        NewLogicFileName = logic_fname
         extra_files_log = self._extra_files_log_path()
 
         new_PLC_filename = os.path.join(self.workingdir, NewFileName)
-        new_logic_filename = os.path.join(self.workingdir, NewLogicFileName)
 
         self.UnLoadPLC()
         self.PurgePLC()
-
-        self.LogMessage("NewPLC (%s / logic %s)" % (md5sum, logic_md5))
 
         try:
             # Write IOs binary
             self.BlobAsFile(plc_object, new_PLC_filename)
 
-            # Write logic binary
-            self.BlobAsFile(logic_blob_id, new_logic_filename)
+            if os.name == "posix":
+                # Write logic binary
+                self.BlobAsFile(logic_blob_id, new_logic_filename)
 
             # Write other extra files (RUNTIME_*.py, etc.)
             # Logic binary is tracked separately via CurrentLogicFilename / _GetLogicMD5FileName()
@@ -1021,14 +1030,16 @@ class PLCObject(object):
                 f.flush()
                 os.fsync(f.fileno())
 
-            # Persist logic MD5
-            with open(self._GetLogicMD5FileName(), "w") as f:
-                f.write(logic_md5)
-                f.flush()
-                os.fsync(f.fileno())
+            if os.name == "posix":
+                # Persist logic MD5
+                with open(self._GetLogicMD5FileName(), "w") as f:
+                    f.write(logic_md5)
+                    f.flush()
+                    os.fsync(f.fileno())
 
             self.CurrentPLCFilename = NewFileName
-            self.CurrentLogicFilename = NewLogicFileName
+            if os.name == "posix":
+                self.CurrentLogicFilename = NewLogicFileName
         except Exception:
             self.PLCStatus = PlcStatus.Broken
             self.StatusChange()
