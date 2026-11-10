@@ -2530,7 +2530,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             if direction in [(EAST, WEST), (WEST, EAST)]:
                 avgy = (self.StartPoint[0].y + self.EndPoint[0].y) // 2
                 if scaling is not None:
-                    avgy = round(avgy / scaling[1]) * scaling[1]
+                    avgy = int(round(avgy / scaling[1]) * scaling[1])
                 if self.StartConnected is not None:
                     movey = avgy - self.StartPoint[0].y
                     startblock = self.StartConnected.GetParentBlock()
@@ -2551,7 +2551,7 @@ class Wire(Graphic_Element, DebugDataConsumer):
             elif direction in [(NORTH, SOUTH), (SOUTH, NORTH)]:
                 avgx = (self.StartPoint[0].x + self.EndPoint[0].x) // 2
                 if scaling is not None:
-                    avgx = round(avgx / scaling[0]) * scaling[0]
+                    avgx = int(round(avgx / scaling[0]) * scaling[0])
                 if self.StartConnected is not None:
                     movex = avgx - self.StartPoint[0].x
                     startblock = self.StartConnected.GetParentBlock()
